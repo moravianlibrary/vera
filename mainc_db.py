@@ -2,16 +2,25 @@ import sys
 import pandas as pd
 import json
 import openpyxl
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QWidget, QFileDialog, QMessageBox
 from PyQt5.QtCore import QTimer, QDateTime
 from openpyxl import Workbook
 
+GET_ACTIVE_RECORDS_STATEMENT = text("""SELECT * FROM board 
+        WHERE extraction_time IS NULL AND category = :category""")
+SET_EXTRACTED_STATEMENT = text("""UPDATE board SET extraction_user = :extraction_user 
+        WHERE sysno = :sysno 
+        AND (volume_number = :volume_number OR :volume_number IS NULL)
+        AND (item_number = :item_number OR :item_number IS NULL)""")
+
 DB_NAME = "digiboard"
 DB_USER = "digiboardAdmin"
-DB_PASSWORD = "LLJEbPghsa342Drh"
+DB_PASSWORD = "password"
 DB_HOST = "localhost"
 DB_PORT = "5432"
+
+ACTIVE_USER = "test_user"
 
 class ExcelExporterApp(QMainWindow):
     def __init__(self):
@@ -25,6 +34,9 @@ class ExcelExporterApp(QMainWindow):
         self.timer.start(2000)
         
         self.all_extracted_units = pd.DataFrame()
+
+        self.db_engine = self.init_db_engine()
+        self.active_user = ACTIVE_USER
 
     def init_ui(self):
         self.setWindowTitle("Excel Exporter")
@@ -49,29 +61,27 @@ class ExcelExporterApp(QMainWindow):
 
         self.central_widget.setLayout(self.layout)
 
-    def init_db(self):
+    def init_db_engine(self):
         return create_engine(f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
 
     def get_category(self, category_name: str):
-        try:
-            connection = self.init_db()
-
-
-            query = f"SELECT * FROM board WHERE category = {category_name}"
-            df = pd.read_sql_query(query, connection)
-
-            connection.close()
-
-            return df
-        except Exception as e:
-            print(f"Error: {e}")
+        with self.db_engine.connect() as connection:
+            params = {
+                'category': category_name
+            }
+            return pd.read_sql_query(GET_ACTIVE_RECORDS_STATEMENT, connection, params=params)
+    
+    def set_extracted(self, sysno: str, volume_number: str, item_number: str):
+        with self.db_engine.connect() as connection:
+            params = {
+                'extraction_user': self.active_user,
+                'sysno': sysno,
+                'volume_number': volume_number,
+                'item_number': item_number
+            }
+            connection.execute(SET_EXTRACTED_STATEMENT, **params)
 
     def run_code(self):
-        
-        excel_file = "list.xlsx"
-        with pd.ExcelFile(excel_file) as xls:
-            sheet_names = xls.sheet_names
-
         self.code_executed = True
         self.timer.stop()
 
@@ -87,27 +97,33 @@ class ExcelExporterApp(QMainWindow):
             category_proportion = float(item["overall_percentage"].strip('%')) / 100
 
             df_category = self.get_category(category_name)
-            if df_category and not df_category.empty:
+            if df_category is not None and not df_category.empty:
 
                 total_extracted_pages = 0
                 extracted_rows = []
 
                 for index, row in df_category.iterrows():
-                    pages = row["pages"]
+                    pages = row["pages_count"]
                     if total_extracted_pages + pages <= target_pages * category_proportion:
                         extracted_rows.append(row)
                         total_extracted_pages += pages
 
-                extracted_data = pd.DataFrame(extracted_rows, columns=df_category.columns)
+                print_columns = ['title', 'sysno', 'volume_number', 'item_number', 'pages_count']
+                extracted_data = pd.DataFrame(extracted_rows, columns=print_columns)
                 output_text.append(f"Extracted from '{category_name.capitalize()}' sheet:\n")
                 output_text.append(extracted_data.to_string(index=False))
-
                 
                 self.all_extracted_units = pd.concat([self.all_extracted_units, extracted_data], ignore_index=True)
+            elif df_category.empty:
+                output_text.append(f"Category '{category_name}' has all documents extracted.\n")
             else:
                 output_text.append(f"Category '{category_name}' not found in db.\n")
         
         self.text_edit.setPlainText('\n'.join(output_text))
+
+    def move_units(self):
+        for _, row in self.all_extracted_units.iterrows():
+            self.set_extracted(row['sysno'], row['volume_number'], row['item_number'])
 
     def export_to_excel(self):
         
@@ -122,38 +138,6 @@ class ExcelExporterApp(QMainWindow):
                 sheet = writer.book.create_sheet(title="Extracted Data", index=0)
                 for i, line in enumerate(lines, start=1):
                     sheet.cell(row=i, column=1, value=line)
-
-    def move_units(self):
-        
-        excel_file = "list.xlsx"
-        current_date = QDateTime.currentDateTime().toString("yyyy-MM-dd")
-        sheet_name = f"Extracted Units - {current_date}"
-        self.export_button.setEnabled(True)
-
-        with pd.ExcelFile(excel_file) as xls:
-            
-            existing_wb = openpyxl.load_workbook(excel_file)
-            
-            if sheet_name not in existing_wb.sheetnames:
-                new_sheet = existing_wb.create_sheet(title=sheet_name)
-
-                
-                for idx, row in self.all_extracted_units.iterrows():
-                    values = row.tolist()
-                    new_sheet.append(values)
-
-                
-                if 'Sheet' in existing_wb.sheetnames:
-                    sheet = existing_wb['Sheet']
-                    existing_wb.remove(sheet)
-
-                
-                existing_wb.save(excel_file)
-
-                QMessageBox.information(self, "Units Moved", f"Extracted units moved to '{sheet_name}' sheet.")
-            else:
-                QMessageBox.warning(self, "Sheet Exists", f"The sheet '{sheet_name}' already exists. Units were not moved.")
-
 
 
 if __name__ == '__main__':

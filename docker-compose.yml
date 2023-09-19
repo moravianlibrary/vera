@@ -6,12 +6,13 @@ services:
     container_name: digiboard-postgres
     environment:
       POSTGRES_USER: digiboardAdmin
-      POSTGRES_PASSWORD: LLJEbPghsa342Drh
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: digiboard
     ports:
       - "5432:5432"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./populate.sql:/docker-entrypoint-initdb.d/populate.sql
       - data:/var/lib/postgresql/data
     networks:
       - digiboard
