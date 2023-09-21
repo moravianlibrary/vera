@@ -13,7 +13,7 @@ class Record(RecordBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserBase(BaseModel):
     email: str
@@ -28,4 +28,4 @@ class User(UserBase):
     is_active: bool
 
     class Config:
-        orm_mode = True
+        from_attributes = True
