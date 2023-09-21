@@ -22,3 +22,28 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def get_record(db: Session, record_id: int):
+    return db.query(models.Record).filter(models.Record.id == record_id).first()
+
+
+def get_record_by_sysno(db: Session, sysno: str):
+    return db.query(models.Record).filter(models.Record.sysno == sysno).first()
+
+
+def get_records(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Record).offset(skip).limit(limit).all()
+
+
+def create_record(db: Session, record: schemas.RecordCreate):
+    db_record = models.Record(
+        sysno=record.sysno, 
+        volume_number=record.volume_number, 
+        item_number=record.item_number, 
+        creator=record.creator
+    )
+    db.add(db_record)
+    db.commit()
+    db.refresh(db_record)
+    return db_record
