@@ -12,13 +12,20 @@ CREATE TABLE IF NOT EXISTS board (
     category VARCHAR(64) NOT NULL,
     title VARCHAR(256) NOT NULL,
     pages_count INTEGER,
+
+	-- Additional information
+	-- model
+	signature VARCHAR(32),
+	issn VARCHAR(32),
+	isbn VARCHAR(32),
+	barcode VARCHAR(32),
     
     -- Insertion details
-    insertion_user VARCHAR(64) NOT NULL,
-    insertion_time TIMESTAMP NOT NULL,
+    creator VARCHAR(64) NOT NULL REFERENCES users(login),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     
     -- Extraction details
-    extractor VARCHAR(64),
+    extractor VARCHAR(64) REFERENCES users(login),
     extracted_at TIMESTAMP
 );
 
@@ -33,36 +40,9 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Create notes table
 CREATE TABLE IF NOT EXISTS notes (
-
+    id serial PRIMARY KEY,
+    board_id INT REFERENCES board(id),
+    user_login VARCHAR(64) REFERENCES users(login),
+    note_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- Create a trigger to insert the insertion timestamp for new records
-CREATE OR REPLACE FUNCTION set_insertion_time()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.insertion_time = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Apply the insertion timestamp trigger
-CREATE TRIGGER trigger_set_insertion_time
-BEFORE INSERT ON board
-FOR EACH ROW
-EXECUTE FUNCTION set_insertion_time();
-
--- Create a trigger to insert the extraction timestamp for updated records
-CREATE OR REPLACE FUNCTION set_extracted_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.extracted_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Apply the extraction timestamp trigger
-CREATE TRIGGER trigger_set_extracted_at
-BEFORE UPDATE ON board
-FOR EACH ROW
-EXECUTE FUNCTION set_extracted_at();
-
