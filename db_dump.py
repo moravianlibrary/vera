@@ -1,9 +1,9 @@
 import pandas as pd
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 DB_NAME = "digiboard"
 DB_USER = "digiboardAdmin"
-DB_PASSWORD = "LLJEbPghsa342Drh"
+DB_PASSWORD = "password"
 DB_HOST = "localhost"
 DB_PORT = "5432"
 QUERY = "SELECT * FROM board"
@@ -16,4 +16,4 @@ if __name__ == '__main__':
 
     db_engine = create_engine(f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
     with db_engine.connect() as connection:
-        print(pd.read_sql_query(QUERY, connection))
+        print(pd.read_sql_query(text(QUERY), connection))

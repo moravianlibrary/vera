@@ -1,3 +1,10 @@
+-- Create users table
+CREATE TABLE IF NOT EXISTS users (
+	email VARCHAR(64) PRIMARY KEY,
+	password VARCHAR(64),
+	department VARCHAR(128)
+);
+
 -- Create the main data table 'board'
 CREATE TABLE IF NOT EXISTS board (
     id SERIAL PRIMARY KEY,
@@ -21,19 +28,12 @@ CREATE TABLE IF NOT EXISTS board (
 	barcode VARCHAR(32),
     
     -- Insertion details
-    creator VARCHAR(64) NOT NULL REFERENCES users(login),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    creator VARCHAR(64) NOT NULL REFERENCES users(email),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     -- Extraction details
-    extractor VARCHAR(64) REFERENCES users(login),
+    extractor VARCHAR(64) REFERENCES users(email),
     extracted_at TIMESTAMP
-);
-
--- Create users table
-CREATE TABLE IF NOT EXISTS users (
-	login VARCHAR(64) PRIMARY KEY,
-	password VARCHAR(64),
-	department VARCHAR(128)
 );
 
 -- Creates roles mapping table
@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS notes (
     id serial PRIMARY KEY,
     board_id INT REFERENCES board(id),
-    user_login VARCHAR(64) REFERENCES users(login),
+    user_email VARCHAR(64) REFERENCES users(email),
     note_text TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_edit_at TIMESTAMP
 );
