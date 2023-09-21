@@ -31,7 +31,7 @@ def get_record(db: Session, record_id: int):
 
 def get_records(db: Session, offset: int = 0, limit: int = 100, sysno: Optional[str] = None):
     return db.query(models.Record)\
-    .filter(sysno is None or models.Record.sysno == sysno)
+    .filter(sysno is None or models.Record.sysno == sysno)\
     .offset(offset).limit(limit).all()
 
 
@@ -54,9 +54,9 @@ def get_note(db: Session, record_id: int, user_id: int):
     .first()
 
 
-def get_notes_for_record(db: Session, offset: int = 0, limit: int = 100, record_id: int):
+def get_notes_for_record(db: Session, record_id: int, offset: int = 0, limit: int = 100):
     return db.query(models.Note)\
-    .filter(models.Note.record_id == record_id)
+    .filter(models.Note.record_id == record_id)\
     .offset(offset).limit(limit).all()
 
 
