@@ -22,7 +22,8 @@ class Note(Base):
     __tablename__ = "notes"
 
     id = Column(Integer, primary_key=True, index=True)
-    board_id = Column(Integer, ForeignKey("board.id"), index=True)
-    user_login = Column(String, ForeignKey("users.login"), index=True)
+    record_id = Column(Integer, ForeignKey("board.id"), index=True)
+    user_id = Column(String, ForeignKey("users.id"), index=True)
     note_text = Column(Text)
     created_at = Column(TIMESTAMP, server_default=func.now())
+    edited_at = Column(TIMESTAMP)

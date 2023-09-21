@@ -29,3 +29,19 @@ class User(UserBase):
 
     class Config:
         from_attributes = True
+
+
+class NoteBase(BaseModel):
+    record_id: str
+    user_id: str
+    note_text: str
+
+
+class NoteCreate(NoteBase):
+    pass
+
+
+class Note(NoteBase):
+    id: int
+    created_at: TIMESTAMP
+    edited_at: Optional[TIMESTAMP]

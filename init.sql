@@ -1,6 +1,7 @@
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
-	email VARCHAR(64) PRIMARY KEY,
+    id serial PRIMARY KEY,
+	email VARCHAR(64) UNIQUE,
 	password VARCHAR(64),
 	department VARCHAR(128)
 );
@@ -41,9 +42,9 @@ CREATE TABLE IF NOT EXISTS board (
 -- Create notes table
 CREATE TABLE IF NOT EXISTS notes (
     id serial PRIMARY KEY,
-    board_id INT REFERENCES board(id),
-    user_email VARCHAR(64) REFERENCES users(email),
+    record_id INT REFERENCES board(id),
+    user_id INT REFERENCES users(id),
     note_text TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_edit_at TIMESTAMP
+    edited_at TIMESTAMP
 );
