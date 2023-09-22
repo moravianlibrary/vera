@@ -26,8 +26,11 @@ services:
       - "8000:8000"
     environment:
       - DEBUG=True
+      - POSTGRES_HOST=postgres
     depends_on:
       - postgres
+    networks:
+      - digiboard
 
   client:
     container_name: digiboard-client
@@ -40,6 +43,8 @@ services:
       - REACT_APP_API_URL=http://api-server:8080  # Replace with your API server's URL
     depends_on:
       - server
+    networks:
+      - digiboard
 
 volumes:
   data:
