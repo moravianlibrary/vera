@@ -5,8 +5,8 @@ from sqlalchemy import TIMESTAMP
 
 class RecordBase(BaseModel):
     sysno: str
-    volume_number: str | None
-    item_number: str | None
+    volume_number: Optional[str]
+    item_number: Optional[str]
 
 class RecordCreate(RecordBase):
     pass

@@ -1,13 +1,6 @@
 version: '3.1'
 
 services:
-  web:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./client:/usr/share/nginx/html
-
   postgres:
     image: postgres:latest
     container_name: digiboard-postgres
@@ -23,6 +16,30 @@ services:
       - data:/var/lib/postgresql/data
     networks:
       - digiboard
+
+  server:
+    container_name: digiboard-server
+    build:
+      context: ./app
+        #dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+    depends_on:
+      - postgres
+
+  client:
+    container_name: digiboard-client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://api-server:8080  # Replace with your API server's URL
+    depends_on:
+      - server
 
 volumes:
   data:

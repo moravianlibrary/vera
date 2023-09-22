@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # from models import UserDB
 # from fastapi_users.authentication import JWTAuthentication
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import List, Optional
 
 import crud, models, schemas
 from database import SessionLocal, engine
@@ -45,7 +45,7 @@ def read_user(user_id: int = Path(...), db: Session = Depends(get_db)):
     return db_user
 
 
-@app.get("/users", response_model=list[schemas.User])
+@app.get("/users", response_model=List[schemas.User])
 def read_users(
     offset: int = Query(0, description="Offset for pagination"),
     limit: int = Query(100, description="Limit for pagination"),
@@ -72,7 +72,7 @@ def get_record_by_id(record_id: int = Path(...), db: Session = Depends(get_db)):
 
 
 # Define the /records endpoint to get a record by sysno
-@app.get("/records", response_model=list[schemas.Record])
+@app.get("/records", response_model=List[schemas.Record])
 def get_records(
     sysno: Optional[str] = Query(None, description="Record sysno"),
     offset: int = Query(0, description="Offset for pagination"),
