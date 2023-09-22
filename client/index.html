@@ -4,18 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Page</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
-    <h1>Welcome to the Home Page</h1>
-    <p>This is the home page of your website.</p>
-    <p>Click the button below to view the Board Data:</p>
-    <button onclick="redirectToBoardData()">View Board Data</button>
+    <nav>
+        <ul class="navbar">
+            <li><a class="active" href="#home">Home</a></li>
+            <li><a href="#board">Board</a></li>
+            <li class="right"><a href="#login">About</a></li>
+        </ul>
+    </nav>
 
-    <script>
-        function redirectToBoardData() {
-            window.location.href = "board.html"; // Redirect to the subpage
-        }
-    </script>
+    <main>
+        <!-- Content Area for Subpages -->
+        <div id="content">
+            <!-- Subpages will be loaded here -->
+        </div>
+    </main>
+
+    <script src="index.js"></script>
+    <script src="board.js"></script>
 </body>
 </html>
 

@@ -1,36 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Board Data</title>
-</head>
-<body>
-    <h1>Board Data</h1>
-    <table id="boardTable">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Sysno</th>
-                <th>Volume Number</th>
-                <th>Item Number</th>
-                <th>Category</th>
-                <th>Title</th>
-                <th>Pages Count</th>
-                <th>Signature</th>
-                <th>ISSN</th>
-                <th>ISBN</th>
-                <th>Barcode</th>
-                <th>Creator</th>
-                <th>Created At</th>
-                <th>Extractor</th>
-                <th>Extracted At</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
 
-    <script src="board.js"></script>
-</body>
-</html>
+<div class="board">
+
+    <ul class="funcbar">
+        <li><button id="insertDocButton">Insert</button></li>
+    </ul>
+
+    <div class="table-container">
+        <table id="boardTable">
+            <thead>
+                <tr>
+                    <th>Sysno</th>
+                    <th>Volume Number</th>
+                    <th>Item Number</th>
+                    <th>Category</th>
+                    <th>Title</th>
+                    <th>Pages Count</th>
+                    <th>Signature</th>
+                    <th>ISSN</th>
+                    <th>ISBN</th>
+                    <th>Barcode</th>
+                    <th>Creator</th>
+                    <th>Created At</th>
+                    <th>Extractor</th>
+                    <th>Extracted At</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+</div>
 

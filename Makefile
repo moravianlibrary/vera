@@ -1,11 +1,13 @@
-run: start-db run-server
+run: start run-server
 
 run-server:
 	python app/digiboard.py
 
-start-db:
+start:
 	docker-compose up -d
-stop-db:
+stop:
 	docker-compose down
+restart:
+	docker-compose down && docker-compose up -d
 clean-db:
 	docker-compose down --volumes
