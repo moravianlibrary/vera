@@ -73,7 +73,7 @@ function DynamicTable() {
 
 function Board() {
   return (
-    <div>
+    <div id='board'>
         <Funcbar />
         <DynamicTable />
     </div>
