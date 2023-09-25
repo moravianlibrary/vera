@@ -10,12 +10,21 @@ class Record(Base):
     sysno = Column(String, index=True, nullable=False)
     volume_number = Column(String)
     item_number = Column(String)
+
     category = Column(String)
     title = Column(String)
     pages_count = Column(Integer)
 
+    signature = Column(String)
+    issn = Column(String)
+    isbn = Column(String)
+    barcode = Column(String)
+
     creator = Column(String)
     created_at = Column(TIMESTAMP)
+
+    extractor = Column(String)
+    extracted_at = Column(TIMESTAMP)
 
 class User(Base):
     __tablename__ = "users"

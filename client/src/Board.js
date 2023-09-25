@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTable } from 'react-table';
 import { Link } from 'react-router-dom';
 
 import './Board.css'
@@ -13,6 +14,67 @@ function Funcbar() {
 }
 
 function DynamicTable() {
+  const columns = useMemo(
+    () => [
+      {
+        Header: 'System number',
+        accessor: 'sysno',
+      },
+      {
+        Header: 'Volume number',
+        accessor: 'volume_number',
+      },
+      {
+        Header: 'Item number',
+        accessor: 'item_number',
+      },
+      {
+        Header: 'Category',
+        accessor: 'category',
+      },
+      {
+        Header: 'Title',
+        accessor: 'title',
+      },
+      {
+        Header: 'Pages count',
+        accessor: 'pages_count',
+      },
+      {
+        Header: 'Signature',
+        accessor: 'signature',
+      },
+      {
+        Header: 'ISSN',
+        accessor: 'issn',
+      },
+      {
+        Header: 'ISBN',
+        accessor: 'isbn',
+      },
+      {
+        Header: 'Barcode',
+        accessor: 'barcode',
+      },
+      {
+        Header: 'Creator',
+        accessor: 'creator',
+      },
+      {
+        Header: 'Created at',
+        accessor: 'created_at',
+      },
+      {
+        Header: 'Extractor',
+        accessor: 'extractor',
+      },
+      {
+        Header: 'Extracted at',
+        accessor: 'extracted_at',
+      },
+    ],[]
+  );
+
   const [data, setData] = useState([]);
   const [visibleColumns, setVisibleColumns] = useState([
     'sysno',
@@ -24,56 +86,56 @@ function DynamicTable() {
   ]);
 
   useEffect(() => {
-    // Fetch data from your API here and set it to the `data` state
-    // Replace this with your actual API endpoint
     fetch('http://localhost:8000/records')
       .then((response) => response.json())
       .then((data) => setData(data))
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
-  // Define all possible columns
-  const allColumns = [
-    'sysno',
-    'volume_number',
-    'item_number',
-    'category',
-    'title',
-    'pages_count',
-    'signature',
-    'issn',
-    'isbn',
-    'barcode',
-    'creator',
-    'created_at',
-    'extractor',
-  ];
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    rows,
+    prepareRow,
+  } = useTable({
+    columns,
+    data,
+    // initialState
+  },
+    // useSortBy
+  );
 
   return (
-    <table>
-      <thead>
-        <tr>
-          {visibleColumns.map((column) => (
-            <th key={column}>{column}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {data.map((row, index) => (
-          <tr key={index}>
-            {visibleColumns.map((column) => (
-              <td key={column}>{row[column]}</td>
+    <table className="table" {...getTableProps()}>
+        <thead>
+            {headerGroups.map(headerGroup => (
+                <tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map(column => (
+                        <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+                    ))}
+                </tr>
             ))}
-          </tr>
-        ))}
-      </tbody>
+        </thead>
+        <tbody {...getTableBodyProps()}>
+            {rows.map((row, i) => {
+                prepareRow(row)
+                return (
+                    <tr {...row.getRowProps()}>
+                        {row.cells.map(cell => {
+                            return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                        })}
+                    </tr>
+                )
+            })}
+        </tbody>
     </table>
-  );
+  )
 }
 
 function Board() {
   return (
-    <div id='board'>
+    <div>
         <Funcbar />
         <DynamicTable />
     </div>

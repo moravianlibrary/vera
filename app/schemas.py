@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from sqlalchemy import TIMESTAMP
+from datetime import datetime
 
 
 class RecordBase(BaseModel):
@@ -14,7 +14,23 @@ class RecordCreate(RecordBase):
 class Record(RecordBase):
     id: int
 
+    category: str
+    title: str
+    pages_count: int
+
+    signature: Optional[str]
+    issn: Optional[str]
+    isbn: Optional[str]
+    barcode: Optional[str]
+
+    creator: str
+    created_at: datetime
+
+    extractor: Optional[str]
+    extracted_at: Optional[datetime]
+
     class Config:
+        arbitrary_types_allowed=True
         from_attributes = True
 
 class UserBase(BaseModel):
@@ -45,8 +61,8 @@ class NoteCreate(NoteBase):
 
 class Note(NoteBase):
     id: int
-    created_at: TIMESTAMP
-    edited_at: Optional[TIMESTAMP]
+    created_at: datetime
+    edited_at: Optional[datetime]
 
     class Config:
         arbitrary_types_allowed=True
