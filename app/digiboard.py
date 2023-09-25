@@ -72,14 +72,16 @@ def get_record_by_id(record_id: int = Path(...), db: Session = Depends(get_db)):
 
 
 # Define the /records endpoint to get a record by sysno
-@app.get("/records", response_model=List[schemas.Record])
+@app.get("/records", response_model=schemas.RecordsResponse)
 def get_records(
     sysno: Optional[str] = Query(None, description="Record sysno"),
     offset: int = Query(0, description="Offset for pagination"),
     limit: int = Query(100, description="Limit for pagination"),
     db: Session = Depends(get_db)
 ):
-    return crud.get_records(db, sysno=sysno, offset=offset, limit=limit)
+    records = crud.get_records(db, sysno=sysno, offset=offset, limit=limit)
+    numFound = crud.get_records_num_found(db, sysno=sysno)
+    return RecordsResponse(records=records, numFound=num_found)
 
 
 @app.post("/records", response_model=schemas.Record)

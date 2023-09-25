@@ -33,6 +33,12 @@ class Record(RecordBase):
         arbitrary_types_allowed=True
         from_attributes = True
 
+
+class RecordsResponse(BaseModel):
+    records: List[Record]
+    numFound: int
+
+
 class UserBase(BaseModel):
     email: str
 
