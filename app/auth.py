@@ -3,8 +3,12 @@ from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+from base64 import b64decode
 from datetime import datetime, timedelta
 from os import environ
+
+from database import get_db
+from crud import get_user_by_username
 
 
 SECRET_KEY=environ.get("JWT_SECRET_KEY")
@@ -33,15 +37,16 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 
-def get_current_user(db: Session, token: str = Depends(oauth2_scheme)):
+# TODO: rework to has_access
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise CREDENTIALS_EXCEPTION
-    except JWTError:
+    except JWTError as jwt_error:
         raise CREDENTIALS_EXCEPTION
-    user = crud.get_user_by_username(db, username)
+    user = get_user_by_username(db, username)
     if user is None:
         raise CREDENTIALS_EXCEPTION
     return user
