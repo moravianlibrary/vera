@@ -29,7 +29,7 @@ class Record(Base):
 class User(Base):
     __tablename__ = "users"
 
-    email = Column(String, primary_key=True, index=True)
+    username = Column(String, primary_key=True, index=True)
     password = Column(String)
     department = Column(String)
 

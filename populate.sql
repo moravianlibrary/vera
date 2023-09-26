@@ -1,4 +1,4 @@
-INSERT INTO users (email, password, department) VALUES ('randiak@mzk.cz', '12345', 'OSDD');
+INSERT INTO users (username, password, department) VALUES ('randiak@mzk.cz', '$2b$12$n4Cj5E86j3tP.QpRBK81M.k6CdkTS4QKSuq5.MAcLza23P6bzJ5mC', 'OSDD');
 
 INSERT INTO board (sysno, title, category, pages_count, creator) VALUES ('ABCDE', 'Dog', 'animals', 347, 'randiak@mzk.cz');
 INSERT INTO board (sysno, title, category, pages_count, creator) VALUES ('ABCDF', 'Cat', 'animals', 254, 'randiak@mzk.cz');

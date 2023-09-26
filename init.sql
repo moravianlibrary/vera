@@ -1,7 +1,7 @@
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id serial PRIMARY KEY,
-	email VARCHAR(64) UNIQUE,
+	username VARCHAR(64) UNIQUE,
 	password VARCHAR(64),
 	department VARCHAR(128)
 );
@@ -29,11 +29,11 @@ CREATE TABLE IF NOT EXISTS board (
 	barcode VARCHAR(32),
     
     -- Insertion details
-    creator VARCHAR(64) NOT NULL REFERENCES users(email),
+    creator VARCHAR(64) NOT NULL REFERENCES users(username),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     -- Extraction details
-    extractor VARCHAR(64) REFERENCES users(email),
+    extractor VARCHAR(64) REFERENCES users(username),
     extracted_at TIMESTAMP
 );
 

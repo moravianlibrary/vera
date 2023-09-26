@@ -3,3 +3,5 @@ sqlalchemy
 uvicorn
 pydantic
 psycopg2-binary
+passlib
+python-jose

@@ -8,8 +8,10 @@ class RecordBase(BaseModel):
     volume_number: Optional[str]
     item_number: Optional[str]
 
+
 class RecordCreate(RecordBase):
     pass
+
 
 class Record(RecordBase):
     id: int
@@ -33,17 +35,22 @@ class Record(RecordBase):
         arbitrary_types_allowed=True
         from_attributes = True
 
+
 class RecordsResponse(BaseModel):
     records: List[Record]
     num_found: int
 
 
 class UserBase(BaseModel):
-    email: str
+    username: str
 
 
 class UserCreate(UserBase):
     password: str
+
+
+class UserLogin(UserCreate):
+    pass
 
 
 class User(UserBase):
@@ -52,6 +59,11 @@ class User(UserBase):
 
     class Config:
         from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 
 class NoteBase(BaseModel):

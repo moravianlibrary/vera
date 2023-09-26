@@ -1,12 +1,11 @@
-from fastapi import FastAPI, Depends, HTTPException, Form, Path, Query
+from fastapi import FastAPI, Depends, HTTPException, Form, Path, Query, status
 from fastapi.middleware.cors import CORSMiddleware
-# from models import UserDB
-# from fastapi_users.authentication import JWTAuthentication
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-import crud, models, schemas
+import auth, crud, models, schemas
 from database import SessionLocal, engine
+
 
 app = FastAPI()
 
@@ -24,10 +23,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# fastapi_users = FastAPIUsers(
-#     user_db=SQLAlchemyUserDatabase(UserDB, database),
-#     auth_backends=[JWTAuthentication(secret=your_secret_key, lifetime_seconds=your_token_lifetime)],
-# )
 
 def get_db():
     db = SessionLocal()
@@ -35,6 +30,18 @@ def get_db():
         yield db
     finally:
         db.close()
+    
+
+@app.post("/auth/login", response_model=schemas.Token)
+async def login_for_access_token(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_username(db, user_login.username)
+    if db_user is None or not auth.verify_password(user_login.password, db_user.password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
+    
+    # access_token_expires = auth.EXPIRES_DELTA
+    access_token = auth.create_access_token(data={"sub": db_user.username})
+    
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @app.get("/users/{user_id}", response_model=schemas.User)
@@ -75,7 +82,7 @@ def get_record_by_id(record_id: int = Path(...), db: Session = Depends(get_db)):
 @app.get("/records", response_model=schemas.RecordsResponse)
 def get_records(
     sysno: Optional[str] = Query(None, description="Record sysno"),
-    page: int = Query(0, description="Pagination page"),
+    page: int = Query(1, description="Pagination page"),
     page_size: int = Query(100, description="Pagination page size"),
     db: Session = Depends(get_db)
 ):
