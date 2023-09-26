@@ -27,6 +27,9 @@ services:
     environment:
       - DEBUG=True
       - POSTGRES_HOST=postgres
+      - JWT_SECRET_KEY="MJJLWBd3FGfDddqkUC4qE+VX5HYexVK6hLkieod5aGQ="
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=300
     depends_on:
       - postgres
     networks:

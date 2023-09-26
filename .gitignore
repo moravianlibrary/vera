@@ -1,2 +1,3 @@
+docker-compose.yml
 data/
 app/__pycache__/
