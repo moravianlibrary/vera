@@ -1,8 +1,29 @@
+.Board {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.funcbar {
+    position: sticky;
+    width: 100%;
+    top: 48px;
+    left: 0;
+    right: 0;
+    background-color: #333;
+    color: #fff;
+    margin-bottom: 52px;
+    /* padding: 30px 0; */
+    z-index: 1000;
+}
+
 .table-container {
-    max-width: 100%;
-    max-height: 100%;
-    overflow-y: auto;
+    /* overflow: scroll; */
     overflow-x: auto;
+    max-width: 100%;
+    overflow-y: auto;
+    max-height: 100%;
 }
 
 ul.funcbar {
@@ -28,8 +49,6 @@ button {
     cursor: pointer;
 }
 
-
-/* Style the table */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -37,7 +56,6 @@ table {
     table-layout: fixed;
 }
 
-/* Style table headers */
 th {
     background-color: #f2f2f2;
     font-weight: bold;
@@ -45,7 +63,6 @@ th {
     padding: 8px;
 }
 
-/* Style table rows */
 tr:nth-child(even) {
     background-color: #f2f2f2;
 }
@@ -58,7 +75,6 @@ td {
     text-overflow: ellipsis; 
 }
 
-/* Hover effect on table rows */
 tr:hover {
     background-color: #ddd;
 }

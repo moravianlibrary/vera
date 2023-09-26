@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime
 
 
@@ -33,10 +33,9 @@ class Record(RecordBase):
         arbitrary_types_allowed=True
         from_attributes = True
 
-
 class RecordsResponse(BaseModel):
     records: List[Record]
-    numFound: int
+    num_found: int
 
 
 class UserBase(BaseModel):

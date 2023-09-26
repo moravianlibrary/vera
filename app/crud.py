@@ -38,7 +38,7 @@ def get_records(db: Session, offset: int = 0, limit: int = 100, sysno: Optional[
 def get_records_num_found(db: Session, sysno: Optional[str] = None):
     return db.query(models.Record)\
     .filter(sysno is None or models.Record.sysno == sysno)\
-    .offset(offset).limit(limit).count()
+    .count()
 
 
 def create_record(db: Session, record: schemas.RecordCreate):

@@ -1,20 +1,18 @@
-/* Style the navigation bar */
-nav {
+nav.navbar {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  background-color: #ffffff; /* Set the background color you want */
-  /* Add more styles as needed */
+  z-index: 1000;
 }
 
-/* ul.navbar {
+ul.navbar {
     list-style-type: none;
     margin: 0;
     padding: 0;
     overflow: hidden;
     background-color: #333;
-} */
+}
 
 ul.navbar li {
     float: left;
