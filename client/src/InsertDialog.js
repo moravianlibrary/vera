@@ -6,13 +6,21 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
+import { useTranslation } from "react-i18next";
 
 const InsertDialog = () => {
-  const customButtonStyle = {
-    // borderRadius: '8px', // Add border radius
-    padding: '10px 20px', // Adjust padding
+  const insertDialogButtonStyle = {
+    padding: '10px 20px',
     textTransform: 'none',
   };
+
+  const insertApplyButtonStyle = {
+    borderRadius: '8px',
+    padding: '10px 20px',
+    textTransform: 'none',
+  }
+
+  const { t } = useTranslation();
 
   const [isOpen, setState] = useState(false);
 
@@ -30,21 +38,20 @@ const InsertDialog = () => {
 
   return (
     <div>
-      <Button variant="text" onClick={handleClickOpen} style={customButtonStyle}>
-        Vytvořit nový záznam
+      <Button variant="text" onClick={handleClickOpen} style={insertDialogButtonStyle}>
+        {t("insert_record_title")}
       </Button>
       <Dialog open={isOpen} onClose={handleClose}>
-        <DialogTitle>Subscribe</DialogTitle>
+        <DialogTitle>{t("insert_record_title")}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            To subscribe to this website, please enter your email address here. We
-            will send updates occasionally.
+            {t("insert_record_tooltip")}
           </DialogContentText>
           <TextField
             autoFocus
             margin="dense"
             id="sysno"
-            label="Sysno"
+            label={t("sysno")}
             type="text"
             fullWidth
             variant="standard"
@@ -52,7 +59,7 @@ const InsertDialog = () => {
           <TextField
             margin="dense"
             id="volume_number"
-            label="Volume Number"
+            label={t("volume_number")}
             type="text"
             fullWidth
             variant="standard"
@@ -60,7 +67,7 @@ const InsertDialog = () => {
           <TextField
             margin="dense"
             id="item_number"
-            label="Item Number"
+            label={t("item_number")}
             type="text"
             fullWidth
             variant="standard"
@@ -68,7 +75,7 @@ const InsertDialog = () => {
           <TextField
             margin="dense"
             id="category"
-            label="Category"
+            label={t("category")}
             type="text"
             fullWidth
             variant="standard"
@@ -76,7 +83,7 @@ const InsertDialog = () => {
           <TextField
             margin="dense"
             id="title"
-            label="Title"
+            label={t("title")}
             type="text"
             fullWidth
             variant="standard"
@@ -84,7 +91,7 @@ const InsertDialog = () => {
           <TextField
             margin="dense"
             id="pages_count"
-            label="Pages Count"
+            label={t("pages_count")}
             type="text"
             fullWidth
             variant="standard"
@@ -96,7 +103,7 @@ const InsertDialog = () => {
           <TextField
             margin="dense"
             id="signature"
-            label="Signature"
+            label={t("signature")}
             type="text"
             fullWidth
             variant="standard"
@@ -104,7 +111,7 @@ const InsertDialog = () => {
           <TextField
             margin="dense"
             id="issn"
-            label="ISSN"
+            label={t("issn")}
             type="text"
             fullWidth
             variant="standard"
@@ -112,7 +119,7 @@ const InsertDialog = () => {
           <TextField
             margin="dense"
             id="isbn"
-            label="ISBN"
+            label={t("isbn")}
             type="text"
             fullWidth
             variant="standard"
@@ -120,15 +127,15 @@ const InsertDialog = () => {
           <TextField
             margin="dense"
             id="barcode"
-            label="Barcode"
+            label={t("barcode")}
             type="text"
             fullWidth
             variant="standard"
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose}>Subscribe</Button>
+          <Button variant='outlined' onClick={handleClose} style={insertApplyButtonStyle}>{t("cancel")}</Button>
+          <Button variant='outlined' onClick={handleInsert} style={insertApplyButtonStyle}>{t("insert_record_apply")}</Button>
         </DialogActions>
       </Dialog>
     </div>

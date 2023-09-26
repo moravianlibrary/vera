@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
+import { useTranslation } from "react-i18next";
 
 import './InsertDialog.js'
 import './Board.css'
@@ -93,12 +94,19 @@ const columns = [
   },
 ];
 
-function PaginateTable() {
+const PaginateTable = () => {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [items, setItems] = useState([]);
   const [totalRows, setTotalRows] = useState(0);
   const [perPage, setPerPage] = useState(25);
+  
+  const { t } = useTranslation();
+
+  const customPaginationOptions = {
+    rowsPerPageText: t("rows_per_page"),
+    rangeSeparatorText: t("range_separator"),
+  };
 
   useEffect(() => {
     fetchData(1, perPage);
@@ -144,6 +152,7 @@ function PaginateTable() {
           paginationPerPage={25}
           paginationServer
           paginationTotalRows={totalRows}
+          paginationComponentOptions={customPaginationOptions}
           onChangePage={handlePageChange}
           onChangeRowsPerPage={handlePerRowsChange}
         />
