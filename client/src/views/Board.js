@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { useTranslation } from "react-i18next";
 
-import './InsertDialog.js'
-import './Board.css'
-import InsertDialog from './InsertDialog.js';
+import InsertDialog from '../dialogs/InsertManuallyDialog.js';
+import { api } from '../services/Api.js';
+import './Board.css';
 
 function Funcbar() {
 
@@ -113,8 +113,7 @@ const PaginateTable = () => {
   }, [perPage])
 
   const fetchData = async (page, page_size) => {
-    fetch(`http://localhost:8000/records?page=${page}&page_size=${page_size}`)
-      .then(res => res.json())
+    api.getRecords(page, page_size)
       .then(
         (result) => {
           setIsLoaded(true);

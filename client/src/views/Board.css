@@ -3,18 +3,18 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    min-height: 150px;
 }
 
 .funcbar {
     position: sticky;
     width: 100%;
-    top: 48px;
+    top: 47px;
     left: 0;
     right: 0;
     background-color: #333;
     color: #fff;
     margin-bottom: 52px;
-    /* padding: 30px 0; */
     z-index: 1000;
 }
 

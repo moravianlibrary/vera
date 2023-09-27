@@ -1,13 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-import "./i18n";
-import './App.css';
 // import Home from './Home'; 
+import { ProtectedRoute } from '../services/Auth';
 import Navbar from './Navbar';
 import Board from './Board';
+import '../config/i18n';
+import './App.css';
 
-import logo from './logo.svg';
+// import logo from './logo.svg';
 
 function App() {
   return (
@@ -17,8 +18,9 @@ function App() {
           <main>
             <Routes>
               {/* <Route path="/" element={<Home />} /> */}
-              <Route path="/board" element={<Board />} />
-              {/* <Route path="/login" element={<About />} /> */}
+              <Route path="/board" element={<ProtectedRoute />}>
+                <Route path="/board" element={<Board />} />
+              </Route>
             </Routes>
           </main>
       </div>

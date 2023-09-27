@@ -8,10 +8,16 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 import { useTranslation } from "react-i18next";
 
-const InsertDialog = () => {
+import api from '../services/Api';
+
+const InsertManuallyDialog = () => {
   const insertDialogButtonStyle = {
-    padding: '10px 20px',
     textTransform: 'none',
+    display: 'block',
+    color: 'white',
+    'text-align': 'center',
+    padding: '14px 16px',
+    'text-decoration': 'none'
   };
 
   const insertApplyButtonStyle = {
@@ -39,10 +45,10 @@ const InsertDialog = () => {
   return (
     <div>
       <Button variant="text" onClick={handleClickOpen} style={insertDialogButtonStyle}>
-        {t("insert_record_title")}
+        {t("insert_record_manually")}
       </Button>
       <Dialog open={isOpen} onClose={handleClose}>
-        <DialogTitle>{t("insert_record_title")}</DialogTitle>
+        <DialogTitle>{t("insert_record_manually")}</DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t("insert_record_tooltip")}
@@ -142,4 +148,4 @@ const InsertDialog = () => {
   );
 };
 
-export default InsertDialog;
+export default InsertManuallyDialog;
