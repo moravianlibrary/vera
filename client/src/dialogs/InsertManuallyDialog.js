@@ -8,7 +8,6 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 import { useTranslation } from "react-i18next";
 
-import PaginateTable from '../views/Board'
 import { api } from '../services/Api';
 
 const InsertManuallyDialog = () => {
