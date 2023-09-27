@@ -84,10 +84,8 @@ def get_records(
 
 
 @app.post("/records", response_model=schemas.Record, dependencies=PROTECTED)
-def create_user(record: schemas.RecordCreate, db: Session = Depends(get_db)):
-    if not record.creator:
-        raise HTTPException(status_code=401, detail="User not authenticated")
-    return crud.create_record(db=db, record=record)
+def create_user(record: schemas.RecordCreate, db: Session = Depends(get_db), user: schemas.User = Depends(auth.get_current_user)):
+    return crud.create_record(db=db, record=record, user=user)
 
 
 @app.get("/records/{record_id}/notes/{user_id}", response_model=schemas.Note, dependencies=PROTECTED)

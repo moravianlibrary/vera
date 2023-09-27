@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import desc
 from typing import Optional
 
 import models, schemas
@@ -16,15 +17,6 @@ def get_users(db: Session, offset: int = 0, limit: int = 100):
     return db.query(models.User).offset(offset).limit(limit).all()
 
 
-def create_user(db: Session, user: schemas.UserCreate):
-    fake_hashed_password = user.password + "notreallyhashed"
-    db_user = models.User(email=user.email, hashed_password=fake_hashed_password)
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
-
-
 def get_record(db: Session, record_id: int):
     return db.query(models.Record).filter(models.Record.id == record_id).first()
 
@@ -32,6 +24,7 @@ def get_record(db: Session, record_id: int):
 def get_records(db: Session, offset: int = 0, limit: int = 100, sysno: Optional[str] = None):
     return db.query(models.Record)\
     .filter(sysno is None or models.Record.sysno == sysno)\
+    .order_by(desc(models.Record.created_at))\
     .offset(offset).limit(limit).all()
 
 
@@ -41,12 +34,15 @@ def get_records_num_found(db: Session, sysno: Optional[str] = None):
     .count()
 
 
-def create_record(db: Session, record: schemas.RecordCreate):
+def create_record(db: Session, record: schemas.RecordCreate, user: schemas.User):
     db_record = models.Record(
         sysno=record.sysno, 
         volume_number=record.volume_number, 
         item_number=record.item_number, 
-        creator=record.creator
+        category=record.category,
+        title=record.title,
+        pages_count=record.pages_count,
+        creator=user.username
     )
     db.add(db_record)
     db.commit()

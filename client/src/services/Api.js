@@ -28,11 +28,36 @@ class Api {
                 return response.data;
             })
             .catch(error => {
-                console.log(axios.getUri());
-                console.log(APP_CONFIG.base_url);
                 throw error;
             }
         );
+    }
+
+    createRecord(sysno, volume_number, item_number, category, title,
+            pages_count, signature, issn, isbn, barcode) {
+        const parsedInt = parseInt(pages_count, 10);
+  
+        const body = {
+            sysno: sysno,
+            volume_number: volume_number,
+            item_number: item_number,
+            category: category,
+            title: title,
+            pages_count: isNaN(parsedInt) ? null : parsedInt,
+            signature: signature,
+            issn: issn,
+            isbn: isbn,
+            barcode: barcode
+        }
+        console.log(body);
+        return axios.post(`/records`, body, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.error(error);
+            })
+        ;
     }
 }
 

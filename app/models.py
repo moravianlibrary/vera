@@ -21,7 +21,7 @@ class Record(Base):
     barcode = Column(String)
 
     creator = Column(String)
-    created_at = Column(TIMESTAMP)
+    created_at = Column(TIMESTAMP, server_default=func.now())
 
     extractor = Column(String)
     extracted_at = Column(TIMESTAMP)

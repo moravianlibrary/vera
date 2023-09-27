@@ -8,7 +8,8 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import TextField from '@material-ui/core/TextField';
 import { useTranslation } from "react-i18next";
 
-import api from '../services/Api';
+import PaginateTable from '../views/Board'
+import { api } from '../services/Api';
 
 const InsertManuallyDialog = () => {
   const insertDialogButtonStyle = {
@@ -29,6 +30,16 @@ const InsertManuallyDialog = () => {
   const { t } = useTranslation();
 
   const [isOpen, setState] = useState(false);
+  const [sysno, setSysno] = useState('');
+  const [volume_number, setVolumeNumber] = useState('');
+  const [item_number, setItemNumber] = useState('');
+  const [category, setCategory] = useState('');
+  const [title, setTitle] = useState('');
+  const [pages_count, setPagesCount] = useState('');
+  const [signature, setSignature] = useState('');
+  const [issn, setIssn] = useState('');
+  const [isbn, setIsbn] = useState('');
+  const [barcode, setBarcode] = useState('');
 
   const handleClickOpen = () => {
     setState(true);
@@ -39,6 +50,8 @@ const InsertManuallyDialog = () => {
   };
 
   const handleInsert = () => {
+    api.createRecord(sysno, volume_number, item_number, category, title,
+        pages_count, signature, issn, isbn, barcode);
     handleClose();
   };
 
@@ -61,6 +74,7 @@ const InsertManuallyDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            onChange={(e) => setSysno(e.target.value)}
           />
           <TextField
             margin="dense"
@@ -69,6 +83,7 @@ const InsertManuallyDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            onChange={(e) => setVolumeNumber(e.target.value)}
           />
           <TextField
             margin="dense"
@@ -77,6 +92,7 @@ const InsertManuallyDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            onChange={(e) => setItemNumber(e.target.value)}
           />
           <TextField
             margin="dense"
@@ -85,6 +101,7 @@ const InsertManuallyDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            onChange={(e) => setCategory(e.target.value)}
           />
           <TextField
             margin="dense"
@@ -93,6 +110,7 @@ const InsertManuallyDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            onChange={(e) => setTitle(e.target.value)}
           />
           <TextField
             margin="dense"
@@ -105,6 +123,7 @@ const InsertManuallyDialog = () => {
               inputMode: 'numeric',
               pattern: '[0-9]*', // Allow only numbers (0-9)
             }}
+            onChange={(e) => setPagesCount(e.target.value)}
           />
           <TextField
             margin="dense"
@@ -113,6 +132,7 @@ const InsertManuallyDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            onChange={(e) => setSignature(e.target.value)}
           />
           <TextField
             margin="dense"
@@ -121,6 +141,7 @@ const InsertManuallyDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            onChange={(e) => setIssn(e.target.value)}
           />
           <TextField
             margin="dense"
@@ -129,6 +150,7 @@ const InsertManuallyDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            onChange={(e) => setIsbn(e.target.value)}
           />
           <TextField
             margin="dense"
@@ -137,6 +159,7 @@ const InsertManuallyDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            onChange={(e) => setBarcode(e.target.value)}
           />
         </DialogContent>
         <DialogActions>

@@ -10,7 +10,14 @@ class RecordBase(BaseModel):
 
 
 class RecordCreate(RecordBase):
-    pass
+    category: str
+    title: str
+    pages_count: Optional[int]
+
+    signature: Optional[str]
+    issn: Optional[str]
+    isbn: Optional[str]
+    barcode: Optional[str]
 
 
 class Record(RecordBase):
@@ -18,7 +25,7 @@ class Record(RecordBase):
 
     category: str
     title: str
-    pages_count: int
+    pages_count: Optional[int]
 
     signature: Optional[str]
     issn: Optional[str]
