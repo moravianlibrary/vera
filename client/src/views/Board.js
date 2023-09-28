@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { useTranslation } from "react-i18next";
 
-import InsertDialog from '../dialogs/InsertManuallyDialog.js';
+import InsertManuallyDialog from '../dialogs/InsertManuallyDialog.js';
+import InsertByIdentifierDialog from '../dialogs/InsertByIdentifierDialog.js';
 import { api } from '../services/Api.js';
 import './Board.css';
 
@@ -11,10 +12,8 @@ function Funcbar() {
   return (
     <div className='funcbar'>
       <ul className="funcbar">
-        {/* <li><button type="button" onClick={handleOpenDialog}>Insert</button></li> */}
-        <li><InsertDialog /></li>
-        {/* <li><button type="button" onClick={() => InsertDialog.handleOpen()}>Insert</button></li> */}
-        {/* <li><button onClick={() => navigateTo('/')} type="button">Home</button></li> */}
+        <li><InsertManuallyDialog /></li>
+        <li><InsertByIdentifierDialog /></li>
       </ul>
     </div>
   );

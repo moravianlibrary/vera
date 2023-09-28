@@ -5,6 +5,8 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import { MenuItem } from '@material-ui/core';
+import { Select } from '@material-ui/core';
 import TextField from '@material-ui/core/TextField';
 import { useTranslation } from "react-i18next";
 
@@ -29,6 +31,8 @@ const InsertByIdentifierDialog = () => {
   const { t } = useTranslation();
 
   const [isOpen, setState] = useState(false);
+  const [identifier, setIdentifier] = useState("sysno");
+  const [identifier_value, setIdentifierValue] = useState("");
   const [sysno, setSysno] = useState('');
   const [volume_number, setVolumeNumber] = useState('');
   const [item_number, setItemNumber] = useState('');
@@ -48,6 +52,27 @@ const InsertByIdentifierDialog = () => {
     setState(false);
   };
 
+  const handleChangeIdentifier = (value) => {
+    setIdentifier(value);
+  };
+
+  const handlePrecreate = () => {
+    api.getPrecreateRecord(identifier, identifier_value)
+            .then(record => {
+                setSysno(record.sysno);
+                setVolumeNumber(record.volume_number);
+                setTitle(record.title);
+                setPagesCount(record.pages_count);
+                setSignature(record.signature);
+                setIssn(record.issn);
+                setIsbn(record.isbn);
+                setBarcode(record.barcode);
+            })
+            .catch(error => {
+                console.error(error);
+            });
+  };
+
   const handleInsert = () => {
     api.createRecord(sysno, volume_number, item_number, category, title,
         pages_count, signature, issn, isbn, barcode);
@@ -57,10 +82,10 @@ const InsertByIdentifierDialog = () => {
   return (
     <div>
       <Button variant="text" onClick={handleClickOpen} style={insertDialogButtonStyle}>
-        {t("insert_record_manually")}
+        {t("insert_record_by_identifier")}
       </Button>
       <Dialog open={isOpen} onClose={handleClose}>
-        <DialogTitle>{t("insert_record_manually")}</DialogTitle>
+        <DialogTitle>{t("insert_record_by_identifier")}</DialogTitle>
         <DialogContent>
           <DialogContentText>
             {t("insert_record_tooltip")}
@@ -76,11 +101,24 @@ const InsertByIdentifierDialog = () => {
           <TextField
             autoFocus
             margin="dense"
+            id="identifier_value"
+            label={t("identifier_value")}
+            type="text"
+            fullWidth
+            variant="standard"
+            onChange={(e) => setIdentifierValue(e.target.value)}
+          />
+          <Button variant='outlined' onClick={handlePrecreate} style={insertApplyButtonStyle}>{t("fill_insert_record")}</Button>
+
+          <TextField
+            autoFocus
+            margin="dense"
             id="sysno"
             label={t("sysno")}
             type="text"
             fullWidth
             variant="standard"
+            value={sysno}
             onChange={(e) => setSysno(e.target.value)}
           />
           <TextField
@@ -90,6 +128,7 @@ const InsertByIdentifierDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            value={volume_number}
             onChange={(e) => setVolumeNumber(e.target.value)}
           />
           <TextField
@@ -117,6 +156,7 @@ const InsertByIdentifierDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
           <TextField
@@ -130,6 +170,7 @@ const InsertByIdentifierDialog = () => {
               inputMode: 'numeric',
               pattern: '[0-9]*', // Allow only numbers (0-9)
             }}
+            value={pages_count}
             onChange={(e) => setPagesCount(e.target.value)}
           />
           <TextField
@@ -139,6 +180,7 @@ const InsertByIdentifierDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            value={signature}
             onChange={(e) => setSignature(e.target.value)}
           />
           <TextField
@@ -148,6 +190,7 @@ const InsertByIdentifierDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            value={issn}
             onChange={(e) => setIssn(e.target.value)}
           />
           <TextField
@@ -157,6 +200,7 @@ const InsertByIdentifierDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            value={isbn}
             onChange={(e) => setIsbn(e.target.value)}
           />
           <TextField
@@ -166,6 +210,7 @@ const InsertByIdentifierDialog = () => {
             type="text"
             fullWidth
             variant="standard"
+            value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
           />
         </DialogContent>

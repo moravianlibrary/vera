@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-import auth, crud, models, schemas
+import auth,  catalog, crud, models, schemas
 from database import get_db
 
 
@@ -86,6 +86,11 @@ def get_records(
 @app.post("/records", response_model=schemas.Record, dependencies=PROTECTED)
 def create_user(record: schemas.RecordCreate, db: Session = Depends(get_db), user: schemas.User = Depends(auth.get_current_user)):
     return crud.create_record(db=db, record=record, user=user)
+
+
+@app.post("/records/precreate_by_identifier", response_model=schemas.RecordPreCreate, dependencies=PROTECTED)
+def create_user(identifier: schemas.Identifier, db: Session = Depends(get_db)):
+    return catalog.generate_record_by_identifier(identifier)
 
 
 @app.get("/records/{record_id}/notes/{user_id}", response_model=schemas.Note, dependencies=PROTECTED)

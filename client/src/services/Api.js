@@ -59,6 +59,21 @@ class Api {
             })
         ;
     }
+
+    getPrecreateRecord(identifier_type, identifier_value) {
+        const body = {
+            identifier_type: identifier_type,
+            value: identifier_value
+        }
+        return axios.post(`/records/precreate_by_identifier`, body, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.error(error);
+            })
+        ;
+    }
 }
 
 export const api = new Api();

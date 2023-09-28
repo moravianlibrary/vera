@@ -3,14 +3,38 @@ from typing import List, Optional
 from datetime import datetime
 
 
+class UserBase(BaseModel):
+    username: str
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class UserLogin(UserCreate):
+    pass
+
+
+class User(UserBase):
+    id: int
+    is_active: bool
+
+    class Config:
+        from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
 class RecordBase(BaseModel):
     sysno: str
     volume_number: Optional[str]
     item_number: Optional[str]
 
 
-class RecordCreate(RecordBase):
-    category: str
+class RecordPreCreate(RecordBase):
     title: str
     pages_count: Optional[int]
 
@@ -18,6 +42,10 @@ class RecordCreate(RecordBase):
     issn: Optional[str]
     isbn: Optional[str]
     barcode: Optional[str]
+
+
+class RecordCreate(RecordPreCreate):
+    category: str
 
 
 class Record(RecordBase):
@@ -48,29 +76,9 @@ class RecordsResponse(BaseModel):
     num_found: int
 
 
-class UserBase(BaseModel):
-    username: str
-
-
-class UserCreate(UserBase):
-    password: str
-
-
-class UserLogin(UserCreate):
-    pass
-
-
-class User(UserBase):
-    id: int
-    is_active: bool
-
-    class Config:
-        from_attributes = True
-
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
+class Identifier(BaseModel):
+    identifier_type: str
+    value: str
 
 
 class NoteBase(BaseModel):
