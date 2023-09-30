@@ -33,24 +33,8 @@ class Api {
         );
     }
 
-    createRecord(sysno, volume_number, item_number, category, title,
-            pages_count, signature, issn, isbn, barcode) {
-        const parsedInt = parseInt(pages_count, 10);
-  
-        const body = {
-            sysno: sysno,
-            volume_number: volume_number,
-            item_number: item_number,
-            category: category,
-            title: title,
-            pages_count: isNaN(parsedInt) ? null : parsedInt,
-            signature: signature,
-            issn: issn,
-            isbn: isbn,
-            barcode: barcode
-        }
-        console.log(body);
-        return axios.post(`/records`, body, { headers: authHeader() })
+    createRecord(record) {
+        return axios.post(`/records`, record.toJson(), { headers: authHeader() })
             .then(response => {
                 return response.data;
             })
