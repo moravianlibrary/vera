@@ -6,6 +6,16 @@ CREATE TABLE IF NOT EXISTS users (
 	department VARCHAR(128)
 );
 
+-- Creates role enum
+CREATE TYPE role AS ENUM ('admin', 'insertor', 'commentator', 'editor', 'extractor');
+
+-- Creates roles mapping table
+CREATE TABLE IF NOT EXISTS user_roles (
+    user_id INT REFERENCES users(id),
+	user_role role,
+	PRIMARY KEY (user_id, user_role)
+);
+
 -- Create the main data table 'board'
 CREATE TABLE IF NOT EXISTS board (
     id SERIAL PRIMARY KEY,
@@ -29,15 +39,34 @@ CREATE TABLE IF NOT EXISTS board (
 	barcode VARCHAR(32),
     
     -- Insertion details
-    creator VARCHAR(64) NOT NULL REFERENCES users(username),
+    creator_id INT NOT NULL REFERENCES users(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
     -- Extraction details
-    extractor VARCHAR(64) REFERENCES users(username),
+    extractor_id INT REFERENCES users(id),
     extracted_at TIMESTAMP
 );
 
--- Creates roles mapping table
+CREATE OR REPLACE VIEW board_with_usernames AS
+SELECT
+    b.id,
+    b.sysno,
+    b.volume_number,
+    b.item_number,
+    b.category,
+    b.title,
+    b.pages_count,
+    b.signature,
+    b.issn,
+    b.isbn,
+    b.barcode,
+    c.username AS creator_username,
+    e.username AS extractor_username,
+    b.created_at,
+    b.extracted_at
+FROM board b
+LEFT JOIN users c ON b.creator_id = c.id
+LEFT JOIN users e ON b.extractor_id = e.id;
 
 -- Create notes table
 CREATE TABLE IF NOT EXISTS notes (

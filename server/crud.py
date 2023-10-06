@@ -17,6 +17,10 @@ def get_users(db: Session, offset: int = 0, limit: int = 100):
     return db.query(models.User).offset(offset).limit(limit).all()
 
 
+def get_user_roles(db: Session, user_id: int):
+    return db.query(models.UserRole).join(models.User).filter(models.User.id == user_id).all()
+
+
 def get_record(db: Session, record_id: int):
     return db.query(models.Record).filter(models.Record.id == record_id).first()
 
