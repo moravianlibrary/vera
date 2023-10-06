@@ -10,6 +10,7 @@ const resources = {
         logout: "Odhlásit se",
 
         cancel: "Zrušit",
+        clear: "Vyčistit",
         username: "Uživatelské jméno",
         password: "Heslo",
         login_button: "Přihlásit",
@@ -18,12 +19,14 @@ const resources = {
         rows_per_page: "Řádků na stránku",
         range_separator: "ze",
 
-        insert_record_manually: "Vytvořit nový záznam ručně",
-        insert_record_by_identifier: "Vytvořit nový záznam pomocou identifikátora",
+        insert_record_title: "Vytvořit nový záznam",
         insert_record_tooltip: "",
+        record_title: "Záznam",
         insert_record_apply: "Vytvořit",
+        fill_insert_title: "Předvyplnit pomocí identifikátora",
         fill_insert_record: "Předvyplnit",
         identifier: "Identifikátor",
+        identifier_value: "Identifikátor",
 
         sysno: "Systémové číslo",
         volume_number: "Ročník",

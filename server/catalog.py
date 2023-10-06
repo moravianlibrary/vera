@@ -1,4 +1,5 @@
 import sys
+from urllib.parse import quote
 import requests
 import xml.etree.ElementTree as ET
 import re
@@ -78,11 +79,11 @@ def generate_record_by_sysno(sysno: str):
     
     return RecordPreCreate(
         sysno=sysno,
-        volume_number=volume,
+        volume_number=quote(volume.encode('utf-8')) if volume is not None else None,
         item_number=None,
-        title=title_result,
+        title=quote(title_result.encode('utf-8')) if title is not None else None,
         pages_count=pages_count,
-        signature=signature,
+        signature=quote(signature.encode('utf-8')) if signature is not None else None,
         issn=None,
         isbn=None,
         barcode=None

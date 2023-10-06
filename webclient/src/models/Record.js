@@ -15,28 +15,18 @@ export class Record {
     barcode;
 
     constructor() {
-        // this.id = 0;
         this.sysno = '';
-        // this.volume_number = '';
-        // this.item_number = '';
-        // this.category = '';
-        // this.title = '';
-        // this.pages_count = 0;
-        // this.signature = '';
-        // this.issn = '';
-        // this.isbn = '';
-        // this.barcode = '';
     }
 
     fromJson(jsonData) {
         this.id = jsonData.id || 0;
         this.sysno = jsonData.sysno || '';
-        this.volume_number = jsonData.volume_number || '';
-        this.item_number = jsonData.item_number || '';
-        this.category = jsonData.category || '';
-        this.title = jsonData.title || '';
+        this.volume_number = jsonData.volume_number ? decodeURIComponent(jsonData.volume_number) : '';
+        this.item_number = jsonData.item_number ? decodeURIComponent(jsonData.item_number) : '';
+        this.category = jsonData.category ? decodeURIComponent(jsonData.category) : '';
+        this.title = jsonData.title ? decodeURIComponent(jsonData.title) : '';
         this.pages_count = jsonData.pages_count || 0;
-        this.signature = jsonData.signature || '';
+        this.signature = jsonData.signature ? decodeURIComponent(jsonData.signature) : '';
         this.issn = jsonData.issn || '';
         this.isbn = jsonData.isbn || '';
         this.barcode = jsonData.barcode || '';
@@ -46,12 +36,12 @@ export class Record {
         return {
         id: this.id,
         sysno: this.sysno,
-        volume_number: this.volume_number,
-        item_number: this.item_number,
-        category: this.category,
-        title: this.title,
+        volume_number: encodeURIComponent(this.volume_number),
+        item_number: encodeURIComponent(this.item_number),
+        category: encodeURIComponent(this.category),
+        title: encodeURIComponent(this.title),
         pages_count: this.pages_count,
-        signature: this.signature,
+        signature: encodeURIComponent(this.signature),
         issn: this.issn,
         isbn: this.isbn,
         barcode: this.barcode,

@@ -89,7 +89,7 @@ def create_user(record: schemas.RecordCreate, db: Session = Depends(get_db), use
 
 
 @app.post("/records/precreate_by_identifier", response_model=schemas.RecordPreCreate, dependencies=PROTECTED)
-def create_user(identifier: schemas.Identifier, db: Session = Depends(get_db)):
+def precreate_by_identifier(identifier: schemas.Identifier, db: Session = Depends(get_db)):
     return catalog.generate_record_by_identifier(identifier)
 
 

@@ -2,18 +2,16 @@ import React, { useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { useTranslation } from "react-i18next";
 
-import InsertManuallyDialog from '../dialogs/InsertManuallyDialog.js';
-import InsertByIdentifierDialog from '../dialogs/InsertByIdentifierDialog.js';
+import InsertByIdentifierDialog from '../dialogs/InsertRecordDialog.js';
 import { api } from '../services/Api.js';
 import './Board.css';
 
-function Funcbar() {
+function Funcbar({ onRefresh }) {
 
   return (
     <div className='funcbar'>
       <ul className="funcbar">
-        <li><InsertManuallyDialog /></li>
-        <li><InsertByIdentifierDialog /></li>
+        <li><InsertByIdentifierDialog onRefresh={onRefresh} /></li>
       </ul>
     </div>
   );
@@ -28,27 +26,27 @@ const columns = [
   {
       name: 'Ročník',
       // cell: row => <img src={row.coverimage} width={50} alt={row.name}></img>,
-      selector: row => row.volume_number,
+      selector: row => decodeURIComponent(row.volume_number) != 'null' ? decodeURIComponent(row.volume_number) : '',
       width: '100px'
   },
   {
       name: 'Číslo periodika',
-      selector: row => row.item_number,
+      selector: row => decodeURIComponent(row.item_number) != 'null' ? decodeURIComponent(row.item_number) : '',
       width: '100px'
   },
   {
       name: 'Kategorie',
-      selector: row => row.category,
+      selector: row => decodeURIComponent(row.category) != 'null' ? decodeURIComponent(row.category) : '',
       // width: '500px'
   },
   {
       name: 'Název',
-      selector: row => row.title,
+      selector: row => decodeURIComponent(row.title) != 'null' ? decodeURIComponent(row.title) : '',
       // width: '100px'
   },
   {
       name: 'Počet stran',
-      selector: row => row.pages_count,
+      selector: row => row.pages_count > 0 ? row.pages_count : '',
       width: '100px'
   },
   {
@@ -73,7 +71,7 @@ const columns = [
   },
   {
       name: 'Vytvořil',
-      selector: row => row.creator,
+      selector: row => decodeURIComponent(row.creator),
       // width: '100px'
   },
   {
@@ -83,7 +81,7 @@ const columns = [
   },
   {
       name: 'Extrahoval',
-      selector: row => row.extractor,
+      selector: row => decodeURIComponent(row.extractor) != 'null' ? decodeURIComponent(row.extractor) : '',
       width: '100px'
   },
   {
@@ -160,10 +158,16 @@ const PaginateTable = () => {
 }
 
 function Board() {
+  const [refreshCount, setRefreshCount] = useState(0);
+
+  const handleRefresh = () => {
+    setRefreshCount(refreshCount + 1);
+  };
+
   return (
     <div className='Board'>
-        <Funcbar />
-        <PaginateTable />
+        <Funcbar onRefresh={handleRefresh} />
+        <PaginateTable key={refreshCount} />
     </div>
   );
 }
