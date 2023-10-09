@@ -3,18 +3,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-import auth,  catalog, crud, models, schemas
+import actions, auth, catalog, crud, models, schemas
 from database import get_db
 
 
 app = FastAPI()
 
-CAN_EDIT_USERS = [Depends(auth.can_edit_users)]
-CAN_BROWSE_RECORDS = [Depends(auth.can_browse_records)]
-CAN_CREATE_RECORDS = [Depends(auth.can_create_records)]
-CAN_COMMENT_ON_RECORD = [Depends(auth.can_comment_on_record)]
-CAN_EDIT_RECORD = [Depends(auth.can_edit_record)]
-CAN_EXTRACT_RECORDS = [Depends(auth.can_extratc_records)]
+CAN_EDIT_USERS = [Depends(actions.can_edit_users)]
+CAN_EDIT_USER = [Depends(actions.can_edit_user)]
+IS_USER = [Depends(actions.is_user)]
+CAN_BROWSE_RECORDS = [Depends(actions.can_browse_records)]
+CAN_CREATE_RECORDS = [Depends(actions.can_create_records)]
+CAN_COMMENT_ON_RECORD = [Depends(actions.can_comment_on_record)]
+CAN_EDIT_RECORD = [Depends(actions.can_edit_record)]
+CAN_EXTRACT_RECORDS = [Depends(actions.can_extract_records)]
 
 origins = [
     "http://localhost:8000",
@@ -31,39 +33,73 @@ app.add_middleware(
 )
 
 
+@app.post("/auth/register", response_model=schemas.User)
+def register(
+            user_create: schemas.UserCreate,
+            db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_username(db, user_create.username)
+    if db_user is not None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Username is already taken")
+    return auth.create_user(db, user_create)
+
+
 @app.post("/auth/login", response_model=schemas.Token)
-async def login_for_access_token(user_login: schemas.UserLogin, db: Session = Depends(get_db)):
+async def login(
+            user_login: schemas.UserLogin,
+            db: Session = Depends(get_db)):
     db_user = crud.get_user_by_username(db, user_login.username)
     if db_user is None or not auth.verify_password(user_login.password, db_user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
-    
-    access_token = auth.create_access_token(data={"sub": db_user.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": auth.create_access_token(data={"sub": db_user.username}), "token_type": "bearer"}
 
 
-# @app.get("/users/{user_id}", response_model=schemas.User)
-# def read_user(user_id: int = Path(...), db: Session = Depends(get_db)):
-#     db_user = crud.get_user(db, user_id=user_id)
-#     if db_user is None:
-#         raise HTTPException(status_code=404, detail="User not found")
-#     return db_user
+@app.get("/users", response_model=schemas.UsersResponse, dependencies=CAN_EDIT_USERS)
+def get_users(
+            offset: int = Query(0, description="Offset for pagination"),
+            limit: int = Query(100, description="Limit for pagination"),
+            db: Session = Depends(get_db)):
+    users = crud.get_users(db, offset=offset, limit=limit), 
+    return schemas.UsersResponse(
+        users=[schemas.UserRoles(
+            id=user.id,
+            username=user.username,
+            department=user.department,
+            roles=(role[0] for role in crud.get_user_roles(db, user.id)))
+            for user in users[0]
+        ],
+        num_found=crud.get_users_num_found(db))
 
 
-# @app.get("/users", response_model=List[schemas.User])
-# def read_users(
-#     offset: int = Query(0, description="Offset for pagination"),
-#     limit: int = Query(100, description="Limit for pagination"),
-#     db: Session = Depends(get_db)
-# ):
-#     return crud.get_users(db, offset=offset, limit=limit)
+@app.get("/users/{user_id}", response_model=schemas.User, dependencies=CAN_EDIT_USER)
+def get_user(
+            user_id: int = Path(...),
+            db: Session = Depends(get_db)):
+    db_user = crud.get_user(db, user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
 
 
-# @app.post("/users", response_model=schemas.User)
-# def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-#     db_user = crud.get_user_by_email(db, email=user.email)
-#     if db_user:
-#         raise HTTPException(status_code=400, detail="Email already registered")
-#     return crud.create_user(db=db, user=user)
+@app.put("/users/{user_id}", response_model=schemas.User, dependencies=CAN_EDIT_USER)
+def update_user(
+            user: schemas.User,
+            user_id: int = Path(...),
+            db: Session = Depends(get_db)):
+    db_user = crud.get_user(db, user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return crud.update_user(db, user)
+
+
+@app.put("/users/{user_id}/password", response_model=schemas.User, dependencies=IS_USER)
+def update_user_password(
+            user_change_password: schemas.UserChangePassword,
+            user_id: int = Path(...),
+            db: Session = Depends(get_db)):
+    db_user = crud.get_user(db, user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return auth.change_user_password(db, user_change_password)
 
 
 # Define the /records/{id} endpoint to get a record by id
@@ -89,7 +125,7 @@ def get_records(
 
 
 @app.post("/records", response_model=schemas.Record, dependencies=CAN_CREATE_RECORDS)
-def create_user(record: schemas.RecordCreate, db: Session = Depends(get_db), user: schemas.User = Depends(auth.get_current_user)):
+def create_record(record: schemas.RecordCreate, db: Session = Depends(get_db), user: schemas.User = Depends(auth.get_current_user)):
     return crud.create_record(db=db, record=record, user=user)
 
 
@@ -127,4 +163,5 @@ def create_note(note: schemas.NoteCreate, db: Session = Depends(get_db)):
 if __name__ == "__main__":
     import uvicorn
 
+    print(crud.get_users(get_db(), 0, 100))
     uvicorn.run(app, host="127.0.0.1", port=8000)

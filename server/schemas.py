@@ -1,6 +1,7 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Set
 from datetime import datetime
+from models import Role
 
 
 class UserBase(BaseModel):
@@ -15,12 +16,25 @@ class UserLogin(UserCreate):
     pass
 
 
+class UserChangePassword(UserCreate):
+    new_password: str
+
+
 class User(UserBase):
     id: int
-    is_active: bool
+    department: Optional[str]
 
     class Config:
         from_attributes = True
+
+
+class UserRoles(User):
+    roles: Set[Role]
+
+
+class UsersResponse(BaseModel):
+    users: List[UserRoles]
+    num_found: int
 
 
 class Token(BaseModel):

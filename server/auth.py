@@ -9,6 +9,8 @@ from os import environ
 
 from database import get_db
 from models import Role
+import schemas
+from typing import Set
 import crud
 
 
@@ -22,18 +24,23 @@ CREDENTIALS_EXCEPTION = HTTPException(
     headers={"WWW-Authenticate": "Bearer"},
 )
 
-FORBIDDEN_EXCEPTION = HTTPException(
-    status_code=status.HTTP_403_FORBIDDEN,
-    detail="User is not allowed to perform action",
-    headers={"WWW-Authenticate": "Bearer"},
-)
-
 password_hasher = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
+def hash_password(plain_password: str) -> str:
+    return password_hasher.hash(plain_password)
+
+
 def verify_password(plain_password, hashed_password):
     return password_hasher.verify(plain_password, hashed_password)
+
+
+def create_user(db: Session, user: schemas.UserCreate):
+    return crud.create_user(db, schemas.UserCreate(
+        username=user.username,
+        password=hash_password(user.password))
+    )
 
 
 def create_access_token(data: dict):
@@ -44,7 +51,7 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 
-def get_current_user(token: str, db: Session):
+def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
@@ -58,43 +65,12 @@ def get_current_user(token: str, db: Session):
     return user
 
 
-def get_current_user_roles(token: str, db: Session):
-    return set(crud.get_user_roles(db, get_current_user(token, db).id))
+def get_current_user_roles(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    return set([roles_tuple[0] for roles_tuple in crud.get_user_roles(db, get_current_user(db, token).id)])
 
 
-def is_current_user_allowed_to(allowed_roles: Set[Role], token:str, db: Session):
-    if not get_current_user_roles(token, db).issubset(allowed_roles):
-        raise FORBIDDEN_EXCEPTION
-
-
-def is_current_user_allowed_to(record: schemas.RecordView, allowed_roles: Set[Role], token:str, db: Session):
-    owner_id = crud.get_record_owner(record.id)
-    current_user = get_current_user(token, db)
-    if owner_id == current_user.id:
-        return
-    if not get_current_user_roles(token, db).issubset(allowed_roles):
-        raise FORBIDDEN_EXCEPTION
-
-
-def can_edit_users(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    is_current_user_allowed_to({Role.admin}, token, db)
-
-
-def can_browse_records(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    is_current_user_allowed_to({Role.admin, Role.insertor, Role.commentator, Role.editor}, token, db)
-
-
-def can_create_records(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    is_current_user_allowed_to({Role.admin, Role.insertor}, token, db)
-
-
-def can_comment_on_record(record: schemas.RecordView, token: str = Depends(oauth3_scheme), db: Session = Depends(get_db)):
-    is_current_user_allowed_to(record, {Role.admin, Role.commentator}, token, db)
-
-
-def can_edit_record(record: schemas.RecordView, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    is_current_user_allowed_to(record, {Role.admin, Role.editor}, token, db)
-
-
-def can_extract_records(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    is_current_user_allowed_to({Role.admin, Role.extractor}, token, db)
+def change_user_password(user_id: int, user_change_password: schemas.UserChangePassword):
+    user = get_current_user()
+    if not verify_password(user_change_password.password, user.password):
+        raise CREDENTIALS_EXCEPTION
+    return crud.update_user_password(user_id, user_change_password)

@@ -60,8 +60,8 @@ SELECT
     b.issn,
     b.isbn,
     b.barcode,
-    c.username AS creator_username,
-    e.username AS extractor_username,
+    c.username AS creator,
+    e.username AS extractor,
     b.created_at,
     b.extracted_at
 FROM board b

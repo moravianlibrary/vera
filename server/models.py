@@ -1,8 +1,9 @@
-from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, Text, TIMESTAMP, func
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, Table, Text, TIMESTAMP, func
 from sqlalchemy.orm import relationship
 
 from enum import Enum as PythonEnum
 from database import Base
+
 
 class Role(PythonEnum):
     admin = "admin"
@@ -36,10 +37,28 @@ class Record(Base):
     extracted_at = Column(TIMESTAMP)
 
 
-class RecordView(Record):
-    __table__ = Table('board_with_usernames', Base.metadata, autoload=True, autoload_with=engine)
-    creator = Column(User)
-    extractor = Column(User)
+class RecordView(Base):
+    __tablename__ = 'board_with_usernames'
+
+    id = Column(Integer, ForeignKey('board.id'), primary_key=True, index=True)
+    sysno = Column(String, index=True, nullable=False)
+    volume_number = Column(String)
+    item_number = Column(String)
+
+    category = Column(String)
+    title = Column(String)
+    pages_count = Column(Integer)
+
+    signature = Column(String)
+    issn = Column(String)
+    isbn = Column(String)
+    barcode = Column(String)
+
+    creator = Column(String, ForeignKey("users.username"))
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+    extractor = Column(String, ForeignKey("users.username"))
+    extracted_at = Column(TIMESTAMP)
 
 
 class User(Base):
