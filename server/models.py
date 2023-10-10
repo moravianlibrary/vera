@@ -2,7 +2,7 @@ from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, Table
 from sqlalchemy.orm import relationship
 
 from database import Base
-from type import ActionType, ActionScope
+from etypes import ActionType, ActionScope
 
 
 class Role(Base):
@@ -16,8 +16,8 @@ class Action(Base):
     __tablename__ = "actions"
 
     role_id = Column(Integer, ForeignKey('roles.id'), primary_key=True, index=True)
-    action_type = Column(ActionType, primary_key=True, index=True)
-    actions_scope = Column(ActionScope)
+    action_type = Column(Enum(ActionType), primary_key=True, index=True)
+    actions_scope = Column(Enum(ActionScope))
 
 
 class Department(Base):

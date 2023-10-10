@@ -2,6 +2,35 @@ from pydantic import BaseModel
 from typing import List, Optional, Set
 from datetime import datetime
 from models import Role
+from etypes import ActionType, ActionScope
+
+
+class Action(BaseModel):
+    action_type: ActionType
+    action_scope: ActionScope
+
+
+class RoleBase(BaseModel):
+    name: str
+
+
+class RoleView(RoleBase):
+    id: int
+    actions: List[Action]
+
+
+class DepartmentBase(BaseModel):
+    abbreviation: str
+    name: str
+
+
+class Department(DepartmentBase):
+    id: int
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 
 class UserBase(BaseModel):
@@ -22,24 +51,21 @@ class UserChangePassword(UserCreate):
 
 class User(UserBase):
     id: int
-    department: Optional[str]
+    department_id: Optional[int]
+    role_id: Optional[int]
 
     class Config:
         from_attributes = True
 
 
-class UserRoles(User):
-    roles: Set[Role]
+class UserView(User):
+    department: Optional[Department]
+    role: Optional[RoleView]
 
 
 class UsersResponse(BaseModel):
-    users: List[UserRoles]
+    users: List[UserView]
     num_found: int
-
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
 
 
 class RecordBase(BaseModel):
@@ -59,24 +85,16 @@ class RecordPreCreate(RecordBase):
 
 
 class RecordCreate(RecordPreCreate):
-    category: str
+    category_id: int
 
 
-class Record(RecordBase):
+class Record(RecordCreate):
     id: int
-
-    category: str
-    title: str
-    pages_count: Optional[int]
-
-    signature: Optional[str]
-    issn: Optional[str]
-    isbn: Optional[str]
-    barcode: Optional[str]
 
     creator: str
     created_at: datetime
 
+    extraction_id: Optional[int]
     extractor: Optional[str]
     extracted_at: Optional[datetime]
 
