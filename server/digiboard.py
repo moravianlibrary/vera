@@ -9,7 +9,7 @@ from database import get_db
 
 app = FastAPI()
 
-CAN_EDIT_USERS = [Depends(actions.can_edit_users)]
+CAN_BROWSE_USERS = [Depends(actions.can_edit_users)]
 CAN_EDIT_USER = [Depends(actions.can_edit_user)]
 IS_USER = [Depends(actions.is_user)]
 CAN_BROWSE_RECORDS = [Depends(actions.can_browse_records)]

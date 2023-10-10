@@ -2,14 +2,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, select
 from typing import Optional
 
-import models, schemas
+from models import Action, Category, Department, Extraction, User, Role
 
 
 def create_user(db: Session,
-                user: schemas.UserCreate):
-    db_user = models.User(
-        username=user.username,
-        password=user.password
+                username: str,
+                password: str):
+    db_user = User(
+        username=username,
+        password=password
     )
     db.add(db_user)
     db.commit()
@@ -19,7 +20,7 @@ def create_user(db: Session,
 
 def get_user_by_username(db: Session,
                          username: str):
-    return db.query(models.User).filter(models.User.username == username).first()
+    return db.query(User).filter(User.username == username).first()
 
 
 def get_users_num_found(db: Session):
@@ -29,12 +30,17 @@ def get_users_num_found(db: Session):
 def get_users(db: Session,
               offset: int,
               limit: int):
-    return db.query(models.User).offset(offset).limit(limit).all()
+    # return db.query(models.User).offset(offset).limit(limit).all()
+    return db.query(User, Role, Action)\
+    .filter(User.id == user_id)\
+    .join(Role, User.role_id == Role.id)\
+    .join(Action, Role.id == Action.role_id)\
+    .all()
 
 
 def get_user(db: Session,
              user_id: int):
-    return db.query(models.User).filter(models.User.id == user_id).first()
+    return db.query(models.User).join().filter(models.User.id == user_id).first()
 
 
 def get_user_roles(db: Session,

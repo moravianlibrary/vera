@@ -97,12 +97,25 @@ CREATE TABLE IF NOT EXISTS comments (
 
 
 -- Create admin role
-INSERT INTO roles (name) VALUES ('admin');
+INSERT INTO roles (name) VALUES ('Admin');
 
 INSERT INTO actions (role_id, action_type, action_scope)
 	SELECT 1, ev.a_type, 'all' FROM (SELECT unnest(enum_range(NULL::ACTION_TYPE)) AS a_type) AS ev;
 
 -- Create views
+CREATE OR REPLACE VIEW user_info_view AS
+SELECT
+	u.id,
+	u.username,
+	u.department_id,
+	d.abbreviation,
+	d.name,
+	u.role_id,
+	r.name
+FROM users u
+LEFT JOIN departments d ON u.department_id = d.id
+LEFT JOIN roles r ON u.role_id = r.id;
+
 CREATE OR REPLACE VIEW records_with_usernames AS
 SELECT
     r.id,
