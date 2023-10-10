@@ -44,13 +44,13 @@ def get_user_roles(db: Session,
 
 def update_user(db: Session,
                 user: schemas.User):
-    db_user = models.User(
-        id=user.id,
-        username=user.username,
-        department=user.department
-    )
-    db.execute(update(models.User).where(models.User.id == user.id).values(models.User.department = user.department))
-    db.commit()
+    # db_user = models.User(
+    #     id=user.id,
+    #     username=user.username,
+    #     department=user.department
+    # )
+    # db.execute(update(models.User).where(models.User.id == user.id).values(models.User.department = user.department))
+    # db.commit()
     return get_user(db, user.id)
 
 

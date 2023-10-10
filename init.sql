@@ -1,35 +1,74 @@
+-- Creates actions types enum
+CREATE TYPE ACTION_TYPE AS ENUM (
+	'edit_user_credentails', 'edit_user_enlistment', 'remove_user',
+	'add_department', 'edit_department', 'remove_department',
+	'add_role', 'edit_role', 'remove_role',
+	'add_category', 'edit_category', 'remove_category',
+	'browse_records', 'add_record', 'edit_record', 'comment_on_record', 'remove_record', 
+	'edit_comment', 'remove_comment',
+	'extract_records'
+);
+
+-- Creates actions scopes enum
+CREATE TYPE ACTION_SCOPE AS ENUM ('own', 'department', 'all');
+
+-- Creates roles table
+CREATE TABLE IF NOT EXISTS roles (
+	id serial PRIMARY KEY,
+	name VARCHAR(64) UNIQUE
+);
+
+-- Creates actions x roles mapping table
+CREATE TABLE IF NOT EXISTS actions (
+	role_id INT NOT NULL REFERENCES roles(id),
+	action_type ACTION_TYPE NOT NULL,
+	action_scope ACTION_SCOPE,
+	PRIMARY KEY (role_id, action_type)
+);
+
+-- Create departments table
+CREATE TABLE IF NOT EXISTS departments (
+	id serial PRIMARY KEY,
+	abbreviation VARCHAR(16) UNIQUE,
+	name VARCHAR(128) UNIQUE
+);
+
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
-    id serial PRIMARY KEY,
+	id serial PRIMARY KEY,
 	username VARCHAR(64) UNIQUE,
 	password VARCHAR(64),
-	department VARCHAR(128)
+	department_id INT REFERENCES departments(id),
+	role_id INT REFERENCES roles(id)
 );
 
--- Creates role enum
-CREATE TYPE role AS ENUM ('admin', 'insertor', 'commentator', 'editor', 'extractor');
-
--- Creates roles mapping table
-CREATE TABLE IF NOT EXISTS user_roles (
-    user_id INT REFERENCES users(id),
-	user_role role,
-	PRIMARY KEY (user_id, user_role)
+-- Create categories table
+CREATE TABLE IF NOT EXISTS categories (
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(128) NOT NULL UNIQUE
 );
 
--- Create the main data table 'board'
-CREATE TABLE IF NOT EXISTS board (
-    id SERIAL PRIMARY KEY,
+-- Create extractions table
+CREATE TABLE IF NOT EXISTS extractions (
+	id SERIAL PRIMARY KEY,
+	extractor_id INT REFERENCES users(id),
+	extracted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create the main data table records
+CREATE TABLE IF NOT EXISTS records (
+	id SERIAL PRIMARY KEY,
     
-    -- Identifiers
-    sysno VARCHAR(16) NOT NULL,
-    volume_number VARCHAR(16),
-    item_number VARCHAR(16),
-    CONSTRAINT unique_combination UNIQUE (sysno, volume_number, item_number),
-    
-    -- Information
-    category VARCHAR(64) NOT NULL,
-    title VARCHAR(256) NOT NULL,
-    pages_count INTEGER,
+	-- Identifiers
+	sysno VARCHAR(16) NOT NULL,
+	volume_number VARCHAR(16),
+	item_number VARCHAR(16),
+	CONSTRAINT unique_combination UNIQUE (sysno, volume_number, item_number),
+
+	-- Information
+	category_id INT REFERENCES categories(id),
+	title VARCHAR(256) NOT NULL,
+	pages_count INTEGER,
 
 	-- Additional information
 	-- model
@@ -37,43 +76,53 @@ CREATE TABLE IF NOT EXISTS board (
 	issn VARCHAR(32),
 	isbn VARCHAR(32),
 	barcode VARCHAR(32),
-    
-    -- Insertion details
-    creator_id INT NOT NULL REFERENCES users(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    
-    -- Extraction details
-    extractor_id INT REFERENCES users(id),
-    extracted_at TIMESTAMP
+
+	-- Insertion details
+	creator_id INT NOT NULL REFERENCES users(id),
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+	-- Extraction details
+	extraction_id INT REFERENCES extractions(id)
 );
 
-CREATE OR REPLACE VIEW board_with_usernames AS
+-- Create comments table
+CREATE TABLE IF NOT EXISTS comments (
+	id serial PRIMARY KEY,
+	record_id INT REFERENCES records(id),
+	user_id INT REFERENCES users(id),
+	text TEXT,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	edited_at TIMESTAMP
+);
+
+
+-- Create admin role
+INSERT INTO roles (name) VALUES ('admin');
+
+INSERT INTO actions (role_id, action_type, action_scope)
+	SELECT 1, ev.a_type, 'all' FROM (SELECT unnest(enum_range(NULL::ACTION_TYPE)) AS a_type) AS ev;
+
+-- Create views
+CREATE OR REPLACE VIEW records_with_usernames AS
 SELECT
-    b.id,
-    b.sysno,
-    b.volume_number,
-    b.item_number,
-    b.category,
-    b.title,
-    b.pages_count,
-    b.signature,
-    b.issn,
-    b.isbn,
-    b.barcode,
+    r.id,
+    r.sysno,
+    r.volume_number,
+    r.item_number,
+    cs.name AS category,
+    r.title,
+    r.pages_count,
+    r.signature,
+    r.issn,
+    r.isbn,
+    r.barcode,
     c.username AS creator,
+    r.created_at,
     e.username AS extractor,
-    b.created_at,
-    b.extracted_at
-FROM board b
-LEFT JOIN users c ON b.creator_id = c.id
-LEFT JOIN users e ON b.extractor_id = e.id;
+    es.extracted_at
+FROM records r
+LEFT JOIN categories cs ON r.category_id = cs.id
+LEFT JOIN users c ON r.creator_id = c.id
+LEFT JOIN extractions es ON r.extraction_id = es.id
+LEFT JOIN users e ON es.extractor_id = e.id;
 
--- Create notes table
-CREATE TABLE IF NOT EXISTS notes (
-    id serial PRIMARY KEY,
-    record_id INT REFERENCES board(id),
-    user_id INT REFERENCES users(id),
-    note_text TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    edited_at TIMESTAMP
-);

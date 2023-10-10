@@ -1,27 +1,67 @@
 from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, Table, Text, TIMESTAMP, func
 from sqlalchemy.orm import relationship
 
-from enum import Enum as PythonEnum
 from database import Base
+from type import ActionType, ActionScope
 
 
-class Role(PythonEnum):
-    admin = "admin"
-    insertor = "insertor"
-    commentator = "commentator"
-    editor = "editor"
-    extractor = "extractor"
+class Role(Base):
+    __tablename__ = "roles"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+
+
+class Action(Base):
+    __tablename__ = "actions"
+
+    role_id = Column(Integer, ForeignKey('roles.id'), primary_key=True, index=True)
+    action_type = Column(ActionType, primary_key=True, index=True)
+    actions_scope = Column(ActionScope)
+
+
+class Department(Base):
+    __tablename__ = "departments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    abbreviation = Column(String)
+    name = Column(String)
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, index=True)
+    password = Column(String)
+    department_id = Column(Integer, ForeignKey("departments.id"), index=True)
+    role_id = Column(Integer, ForeignKey("roles.id"), index=True)
+
+
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String)
+
+
+class Extraction(Base):
+    __tablename__ = "extractions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    extractor_id = Column(String, ForeignKey("users.id"), index=True)
+    extracted_at = Column(TIMESTAMP, server_default=func.now())
 
 
 class Record(Base):
-    __tablename__ = "board"
+    __tablename__ = "records"
 
     id = Column(Integer, primary_key=True, index=True)
     sysno = Column(String, index=True, nullable=False)
     volume_number = Column(String)
     item_number = Column(String)
 
-    category = Column(String)
+    category_id = Column(Integer, ForeignKey("categories.id"), index=True)
     title = Column(String)
     pages_count = Column(Integer)
 
@@ -30,11 +70,21 @@ class Record(Base):
     isbn = Column(String)
     barcode = Column(String)
 
-    creator_id = Column(String, ForeignKey("users.id"), index=True)
+    creator_id = Column(Integer, ForeignKey("users.id"), index=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
 
-    extractor_id = Column(String, ForeignKey("users.id"), index=True)
-    extracted_at = Column(TIMESTAMP)
+    extraction_id = Column(Integer, ForeignKey("extractions.id"), index=True)
+
+
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    record_id = Column(Integer, ForeignKey("records.id"), index=True)
+    user_id = Column(String, ForeignKey("users.id"), index=True)
+    text = Column(Text)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    edited_at = Column(TIMESTAMP)
 
 
 class RecordView(Base):
@@ -59,34 +109,3 @@ class RecordView(Base):
 
     extractor = Column(String, ForeignKey("users.username"))
     extracted_at = Column(TIMESTAMP)
-
-
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, index=True)
-    password = Column(String)
-    department = Column(String)
-    
-    roles = relationship("UserRole", back_populates="user")
-
-
-class UserRole(Base):
-    __tablename__ = "user_roles"
-
-    user_id = Column(String, ForeignKey("users.id"), primary_key=True, index=True)
-    user_role = Column(Enum(Role), primary_key=True)
-
-    user = relationship("User", back_populates="roles")
-
-
-class Note(Base):
-    __tablename__ = "notes"
-
-    id = Column(Integer, primary_key=True, index=True)
-    record_id = Column(Integer, ForeignKey("board.id"), index=True)
-    user_id = Column(String, ForeignKey("users.id"), index=True)
-    note_text = Column(Text)
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    edited_at = Column(TIMESTAMP)
