@@ -108,34 +108,44 @@ SELECT
 	u.id,
 	u.username,
 	u.department_id,
-	d.abbreviation,
-	d.name,
 	u.role_id,
-	r.name
+	d.abbreviation AS department_abbreviation,
+	d.name AS department_name,
+	r.name AS role_name
 FROM users u
 LEFT JOIN departments d ON u.department_id = d.id
 LEFT JOIN roles r ON u.role_id = r.id;
 
-CREATE OR REPLACE VIEW records_with_usernames AS
+CREATE OR REPLACE VIEW user_actions_view AS
 SELECT
-    r.id,
-    r.sysno,
-    r.volume_number,
-    r.item_number,
-    cs.name AS category,
-    r.title,
-    r.pages_count,
-    r.signature,
-    r.issn,
-    r.isbn,
-    r.barcode,
-    c.username AS creator,
-    r.created_at,
-    e.username AS extractor,
-    es.extracted_at
+	u.id,
+	u.department_id,
+	u.role_id,
+	a.action_type,
+	a.action_scope
+FROM users u
+LEFT JOIN actions a ON u.role_id = a.role_id;
+
+CREATE OR REPLACE VIEW record_view AS
+SELECT
+	r.id,
+	r.sysno,
+	r.volume_number,
+	r.item_number,
+	cs.name AS category_name,
+	r.title,
+	r.pages_count,
+	r.signature,
+	r.issn,
+	r.isbn,
+	r.barcode,
+	c.username AS creator,
+	r.created_at,
+	r.extraction_id,
+	e.username AS extractor,
+	es.extracted_at
 FROM records r
 LEFT JOIN categories cs ON r.category_id = cs.id
 LEFT JOIN users c ON r.creator_id = c.id
 LEFT JOIN extractions es ON r.extraction_id = es.id
 LEFT JOIN users e ON es.extractor_id = e.id;
-

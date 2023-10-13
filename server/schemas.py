@@ -58,14 +58,35 @@ class User(UserBase):
         from_attributes = True
 
 
-class UserView(User):
-    department: Optional[Department]
-    role: Optional[RoleView]
+class UserEnlistment(User):
+    department_abbreviation: Optional[str]
+    department_name: Optional[str]
+    role_name: Optional[str]
+
+
+class UserActions(User):
+    actions: List[Action]
+
+
+class UserView(UserEnlistment):
+    actions: List[Action]
 
 
 class UsersResponse(BaseModel):
     users: List[UserView]
     num_found: int
+
+
+class CategoryBase(BaseModel):
+    name: str
+
+
+class CategoryCreate(CategoryBase):
+    pass
+
+
+class Category(CategoryBase):
+    id: int
 
 
 class RecordBase(BaseModel):
@@ -113,17 +134,17 @@ class Identifier(BaseModel):
     value: str
 
 
-class NoteBase(BaseModel):
+class CommentBase(BaseModel):
     record_id: str
     user_id: str
     note_text: str
 
 
-class NoteCreate(NoteBase):
+class CommentCreate(CommentBase):
     pass
 
 
-class Note(NoteBase):
+class Comment(CommentBase):
     id: int
     created_at: datetime
     edited_at: Optional[datetime]

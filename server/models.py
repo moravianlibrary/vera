@@ -87,15 +87,41 @@ class Comment(Base):
     edited_at = Column(TIMESTAMP)
 
 
-class RecordView(Base):
-    __tablename__ = 'board_with_usernames'
+class UserInfoView(Base):
+    __tablename__ = 'user_info_view'
 
-    id = Column(Integer, ForeignKey('board.id'), primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, index=True)
+    department_id = Column(Integer, ForeignKey("departments.id"), index=True)
+    role_id = Column(Integer, ForeignKey("roles.id"), index=True)
+
+    department_abbreviation = Column(String, ForeignKey("departments.abbreviation"))
+    department_name = Column(String, ForeignKey("departments.name"))
+    role_name = Column(String, ForeignKey("roles.name"))
+
+
+class UserActionsView(Base):
+    __tablename__ = 'user_actions_view'
+
+    id = Column(Integer, primary_key=True, index=True)
+    department_id = Column(Integer, ForeignKey("departments.id"), index=True)
+    role_id = Column(Integer, ForeignKey("roles.id"), index=True)
+
+    action_type = Column(Enum(ActionType), ForeignKey("actions.action_type"))
+    actions_scope = Column(Enum(ActionScope), ForeignKey("actions.action_scope"))
+
+
+class RecordView(Base):
+    __tablename__ = 'record_view'
+
+    id = Column(Integer, primary_key=True, index=True)
     sysno = Column(String, index=True, nullable=False)
     volume_number = Column(String)
     item_number = Column(String)
 
-    category = Column(String)
+    category_id = Column(Integer, ForeignKey("categories.id"), index=True)
+    category_name = Column(String, ForeignKey("categories.name"))
+
     title = Column(String)
     pages_count = Column(Integer)
 
@@ -104,8 +130,10 @@ class RecordView(Base):
     isbn = Column(String)
     barcode = Column(String)
 
-    creator = Column(String, ForeignKey("users.username"))
+    creator_id = Column(Integer, ForeignKey("users.id"), index=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
+    creator = Column(String, ForeignKey("users.username"))
 
+    extraction_id = Column(Integer, ForeignKey("extractions.id"), index=True)
     extractor = Column(String, ForeignKey("users.username"))
     extracted_at = Column(TIMESTAMP)
