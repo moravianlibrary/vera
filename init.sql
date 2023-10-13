@@ -1,6 +1,6 @@
 -- Creates actions types enum
 CREATE TYPE ACTION_TYPE AS ENUM (
-	'edit_user_credentails', 'edit_user_enlistment', 'remove_user',
+	'edit_user_credentials', 'edit_user_enlistment', 'remove_user',
 	'add_department', 'edit_department', 'remove_department',
 	'add_role', 'edit_role', 'remove_role',
 	'add_category', 'edit_category', 'remove_category',
@@ -132,6 +132,7 @@ SELECT
 	r.sysno,
 	r.volume_number,
 	r.item_number,
+	r.category_id,
 	cs.name AS category_name,
 	r.title,
 	r.pages_count,
@@ -139,9 +140,11 @@ SELECT
 	r.issn,
 	r.isbn,
 	r.barcode,
+	r.creator_id,
 	c.username AS creator,
 	r.created_at,
 	r.extraction_id,
+	es.extractor_id,
 	e.username AS extractor,
 	es.extracted_at
 FROM records r

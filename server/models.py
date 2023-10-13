@@ -17,7 +17,7 @@ class Action(Base):
 
     role_id = Column(Integer, ForeignKey('roles.id'), primary_key=True, index=True)
     action_type = Column(Enum(ActionType), primary_key=True, index=True)
-    actions_scope = Column(Enum(ActionScope))
+    action_scope = Column(Enum(ActionScope))
 
 
 class Department(Base):
@@ -135,5 +135,6 @@ class RecordView(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
 
     extraction_id = Column(Integer, ForeignKey("extractions.id"), index=True)
+    extractor_id = Column(Integer, ForeignKey("users.id"), index=True)
     extractor = Column(String, ForeignKey("users.username"))
     extracted_at = Column(TIMESTAMP)

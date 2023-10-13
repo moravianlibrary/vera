@@ -30,7 +30,7 @@ def get_roles(db: Session):
 
 def get_role_actions(db: Session,
                      role_id: int):
-    return db.query(models.Action).filter(models.Action.role_id == role_id).first()
+    return db.query(models.Action).filter(models.Action.role_id == role_id).all()
 
 
 def update_role_actions(db: Session,
@@ -225,7 +225,7 @@ def get_records(db: Session,
                 sysno: Optional[str] = None,
                 offset: int = 0, 
                 limit: int = 100):
-    q = db.query(models.Record)
+    q = db.query(models.RecordView)
 
     if sysno is not None:
         q = q.filter(models.Record.sysno == sysno)

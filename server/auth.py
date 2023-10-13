@@ -27,6 +27,7 @@ CREDENTIALS_EXCEPTION = HTTPException(
 password_hasher = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
+# TODO: divide get_current_user login and token validation
 
 def hash_password(plain_password: str) -> str:
     return password_hasher.hash(plain_password)
@@ -65,8 +66,10 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     return user
 
 
-def get_current_user_roles(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
-    return set([roles_tuple[0] for roles_tuple in crud.get_user_roles(db, get_current_user(db, token).id)])
+def get_current_user_actions(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+    user = get_current_user(db, token)
+    actions = crud.get_role_actions(db, user.role_id)
+    return actions
 
 
 def change_user_password(user_id: int, user_change_password: schemas.UserChangePassword):

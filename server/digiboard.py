@@ -9,14 +9,15 @@ from database import get_db
 
 app = FastAPI()
 
-CAN_BROWSE_USERS = [Depends(actions.can_edit_users)]
-CAN_EDIT_USER = [Depends(actions.can_edit_user)]
-IS_USER = [Depends(actions.is_user)]
-CAN_BROWSE_RECORDS = [Depends(actions.can_browse_records)]
-CAN_CREATE_RECORDS = [Depends(actions.can_create_records)]
-CAN_COMMENT_ON_RECORD = [Depends(actions.can_comment_on_record)]
-CAN_EDIT_RECORD = [Depends(actions.can_edit_record)]
-CAN_EXTRACT_RECORDS = [Depends(actions.can_extract_records)]
+CAN_BROWSE_USERS = [Depends(actions.check_permissions)]
+CAN_EDIT_USER = [Depends(actions.check_permissions)]
+CAN_EDIT_USERS = [Depends(actions.check_permissions)]
+IS_USER = [Depends(actions.check_permissions)]
+CAN_BROWSE_RECORDS = [Depends(actions.check_permissions)]
+CAN_CREATE_RECORDS = [Depends(actions.check_permissions)]
+CAN_COMMENT_ON_RECORD = [Depends(actions.check_permissions)]
+CAN_EDIT_RECORD = [Depends(actions.check_permissions)]
+CAN_EXTRACT_RECORDS = [Depends(actions.check_permissions)]
 
 origins = [
     "http://localhost:8000",
@@ -136,7 +137,7 @@ def precreate_by_identifier(identifier: schemas.Identifier, db: Session = Depend
     return catalog.generate_record_by_identifier(identifier)
 
 
-@app.get("/records/{record_id}/notes/{user_id}", response_model=schemas.Note, dependencies=CAN_BROWSE_RECORDS)
+@app.get("/records/{record_id}/notes/{user_id}", response_model=schemas.Comment, dependencies=CAN_BROWSE_RECORDS)
 def get_note(record_id: int = Path(...), user_id: int = Path(...), db: Session = Depends(get_db)):
     note = crud.get_note(db, record_id=record_id, user_id=user_id)
     if record is None:
@@ -144,7 +145,7 @@ def get_note(record_id: int = Path(...), user_id: int = Path(...), db: Session =
     return record
 
 
-@app.get("/records/{record_id}/notes", response_model=schemas.Note, dependencies=CAN_BROWSE_RECORDS)
+@app.get("/records/{record_id}/notes", response_model=schemas.Comment, dependencies=CAN_BROWSE_RECORDS)
 def get_note(
     record_id: int = Path(...),
     offset: int = Query(0, description="Offset for pagination"),
@@ -154,8 +155,8 @@ def get_note(
     return crud.get_notes_for_record(db, record_id=record_id, offset=offset, limit=limit)
 
 
-@app.post("/records/{record_id}/notes", response_model=schemas.Note, dependencies=CAN_COMMENT_ON_RECORD)
-def create_note(note: schemas.NoteCreate, db: Session = Depends(get_db)):
+@app.post("/records/{record_id}/notes", response_model=schemas.Comment, dependencies=CAN_COMMENT_ON_RECORD)
+def create_note(note: schemas.CommentCreate, db: Session = Depends(get_db)):
     db_note = crud.get_note(db, record_id=note.record_id, user_id=note.user_id)
     if db_note:
         raise HTTPException(status_code=400, detail="Email already registered")
