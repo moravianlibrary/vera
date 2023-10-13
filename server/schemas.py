@@ -14,7 +14,7 @@ class RoleBase(BaseModel):
     name: str
 
 
-class RoleView(RoleBase):
+class RoleActions(RoleBase):
     id: int
     actions: List[Action]
 
@@ -112,10 +112,12 @@ class RecordCreate(RecordPreCreate):
 class Record(RecordCreate):
     id: int
 
+    creator_id: int
     creator: str
     created_at: datetime
 
     extraction_id: Optional[int]
+    extractor_id: Optional[int]
     extractor: Optional[str]
     extracted_at: Optional[datetime]
 
@@ -152,3 +154,7 @@ class Comment(CommentBase):
     class Config:
         arbitrary_types_allowed=True
         from_attributes = True
+
+
+class ExtractionCreate(BaseModel):
+    extracted_records: List[int]

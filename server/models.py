@@ -131,8 +131,8 @@ class RecordView(Base):
     barcode = Column(String)
 
     creator_id = Column(Integer, ForeignKey("users.id"), index=True)
-    created_at = Column(TIMESTAMP, server_default=func.now())
     creator = Column(String, ForeignKey("users.username"))
+    created_at = Column(TIMESTAMP, server_default=func.now())
 
     extraction_id = Column(Integer, ForeignKey("extractions.id"), index=True)
     extractor = Column(String, ForeignKey("users.username"))

@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 from os import environ
+from typing import Any
 
 DB_NAME = "digiboard"
 DB_USER = "digiboardAdmin"
@@ -23,3 +24,10 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def create(db: Session, db_item: Any):
+    db.add(db_item)
+    db.commit()
+    db.refresh(db_item)
+    return db_item

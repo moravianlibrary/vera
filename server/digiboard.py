@@ -32,6 +32,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# TODO: add support to log editing of records
+
 
 @app.post("/auth/register", response_model=schemas.User)
 def register(
