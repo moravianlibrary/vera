@@ -87,8 +87,18 @@ class Comment(Base):
     edited_at = Column(TIMESTAMP)
 
 
-class UserInfoView(Base):
-    __tablename__ = 'user_info_view'
+class RoleView(Base):
+    __tablename__ = 'role_view'
+
+    id = Column(Integer, ForeignKey("roles.id"), primary_key=True, index=True)
+    name = Column(String)
+
+    action_type = Column(Enum(ActionType), ForeignKey("actions.action_type"))
+    action_scope = Column(Enum(ActionScope), ForeignKey("actions.action_scope"))
+
+
+class UserView(Base):
+    __tablename__ = 'user_view'
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, index=True)
@@ -98,17 +108,6 @@ class UserInfoView(Base):
     department_abbreviation = Column(String, ForeignKey("departments.abbreviation"))
     department_name = Column(String, ForeignKey("departments.name"))
     role_name = Column(String, ForeignKey("roles.name"))
-
-
-class UserActionsView(Base):
-    __tablename__ = 'user_actions_view'
-
-    id = Column(Integer, primary_key=True, index=True)
-    department_id = Column(Integer, ForeignKey("departments.id"), index=True)
-    role_id = Column(Integer, ForeignKey("roles.id"), index=True)
-
-    action_type = Column(Enum(ActionType), ForeignKey("actions.action_type"))
-    actions_scope = Column(Enum(ActionScope), ForeignKey("actions.action_scope"))
 
 
 class RecordView(Base):

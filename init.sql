@@ -103,7 +103,16 @@ INSERT INTO actions (role_id, action_type, action_scope)
 	SELECT 1, ev.a_type, 'all' FROM (SELECT unnest(enum_range(NULL::ACTION_TYPE)) AS a_type) AS ev;
 
 -- Create views
-CREATE OR REPLACE VIEW user_info_view AS
+CREATE OR REPLACE VIEW role_view AS
+SELECT
+	r.id,
+	r.name,
+	a.action_type,
+	a.action_scope
+FROM roles r
+LEFT JOIN actions a ON r.id = a.role_id;
+
+CREATE OR REPLACE VIEW user_view AS
 SELECT
 	u.id,
 	u.username,
@@ -115,16 +124,6 @@ SELECT
 FROM users u
 LEFT JOIN departments d ON u.department_id = d.id
 LEFT JOIN roles r ON u.role_id = r.id;
-
-CREATE OR REPLACE VIEW user_actions_view AS
-SELECT
-	u.id,
-	u.department_id,
-	u.role_id,
-	a.action_type,
-	a.action_scope
-FROM users u
-LEFT JOIN actions a ON u.role_id = a.role_id;
 
 CREATE OR REPLACE VIEW record_view AS
 SELECT

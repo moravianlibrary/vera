@@ -14,9 +14,20 @@ class RoleBase(BaseModel):
     name: str
 
 
-class RoleActions(RoleBase):
+class Role(RoleBase):
     id: int
+
+
+class RoleActions(Role):
     actions: List[Action]
+
+
+class RolesResponse(BaseModel):
+    roles: List[Role]
+
+
+class RolesActionsResponse(BaseModel):
+    roles: List[RoleActions]
 
 
 class DepartmentBase(BaseModel):
@@ -26,6 +37,10 @@ class DepartmentBase(BaseModel):
 
 class Department(DepartmentBase):
     id: int
+
+
+class DepartmentsResponse(BaseModel):
+    departments: List[Department]
 
 
 class Token(BaseModel):
@@ -64,16 +79,8 @@ class UserEnlistment(User):
     role_name: Optional[str]
 
 
-class UserActions(User):
-    actions: List[Action]
-
-
-class UserView(UserEnlistment):
-    actions: List[Action]
-
-
 class UsersResponse(BaseModel):
-    users: List[UserView]
+    users: List[UserEnlistment]
     num_found: int
 
 
@@ -137,8 +144,6 @@ class Identifier(BaseModel):
 
 
 class CommentBase(BaseModel):
-    record_id: str
-    user_id: str
     note_text: str
 
 
@@ -148,6 +153,8 @@ class CommentCreate(CommentBase):
 
 class Comment(CommentBase):
     id: int
+    record_id: str
+    user_id: str
     created_at: datetime
     edited_at: Optional[datetime]
 
