@@ -42,6 +42,10 @@ ul.funcbar {
     text-decoration: none;
 }
 
+.clickable-row {
+  cursor: pointer;
+}
+
 button {
     background-color: transparent;
     border: none;

@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import InsertByIdentifierDialog from '../dialogs/InsertRecordDialog.js';
 import { api } from '../services/Api.js';
+import { Record } from '../models/Record.js';
 import './Board.css';
 
 function Funcbar({ onRefresh }) {
@@ -20,73 +21,68 @@ function Funcbar({ onRefresh }) {
 const columns = [
   {
       name: 'Systémové číslo',
-      selector: row => row.sysno,
+      selector: record => record.sysno,
       width: '150px'
   },
   {
       name: 'Ročník',
       // cell: row => <img src={row.coverimage} width={50} alt={row.name}></img>,
-      selector: row => decodeURIComponent(row.volume_number) != 'null' ? decodeURIComponent(row.volume_number) : '',
+      selector: record => record.volumeNumber,
       width: '100px'
   },
   {
       name: 'Číslo periodika',
-      selector: row => decodeURIComponent(row.item_number) != 'null' ? decodeURIComponent(row.item_number) : '',
+      selector: record => record.itemNumber,
       width: '100px'
   },
   {
       name: 'Kategorie',
-      selector: row => decodeURIComponent(row.category) != 'null' ? decodeURIComponent(row.category) : '',
+      selector: record => record.category,
       // width: '500px'
   },
   {
       name: 'Název',
-      selector: row => decodeURIComponent(row.title) != 'null' ? decodeURIComponent(row.title) : '',
+      selector: record => record.title,
       // width: '100px'
   },
   {
       name: 'Počet stran',
-      selector: row => row.pages_count > 0 ? row.pages_count : '',
-      width: '100px'
-  },
-  {
-      name: 'Signatura',
-      selector: row => row.signature,
+      selector: record => record.pagesCount,
       width: '100px'
   },
   {
       name: 'ISSN',
-      selector: row => row.issn,
+      selector: record => record.issn,
       width: '100px'
   },
   {
       name: 'ISBN',
-      selector: row => row.isbn,
+      selector: record => record.isbn,
       width: '100px'
   },
   {
       name: 'Čárový kód',
-      selector: row => row.barcode,
+      selector: record => record.barcode,
       width: '100px'
   },
   {
       name: 'Vytvořil',
-      selector: row => decodeURIComponent(row.creator),
+      selector: record => record.creator,
       // width: '100px'
   },
   {
       name: 'Vytvořeno',
-      selector: row => row.created_at,
+      selector: record => record.getCreatedAtFormatted(),
       width: '200px'
   },
   {
       name: 'Extrahoval',
-      selector: row => decodeURIComponent(row.extractor) != 'null' ? decodeURIComponent(row.extractor) : '',
+      selector: record => record.extractor,
       width: '100px'
   },
   {
       name: 'Extrahováno',
-      selector: row => row.extracted_at,
+      selector: record => record.getExtractedAtFormatted(),
       width: '200px'
   },
 ];
@@ -114,7 +110,7 @@ const PaginateTable = () => {
       .then(
         (result) => {
           setIsLoaded(true);
-          setItems(result.records);
+          setItems(result.records.map(record => Record.fromJson(record)));
           setTotalRows(result.num_found);
         },
         (error) => {
@@ -132,6 +128,12 @@ const PaginateTable = () => {
     setPerPage(newPerPage);
   }
 
+  const handleRowClicked = (row) => {
+    // setSelectedRow(row);
+    // Open your dialog or perform any action here
+    console.log('Row clicked:', row);
+  }
+
   if (error) {
     return <div>Error: {error.message}</div>;
   } else if (!isLoaded) {
@@ -141,8 +143,9 @@ const PaginateTable = () => {
       <div className="table-container">
         <DataTable
           columns={columns}
-          highlightOnHover
           data={items}
+          onRowClicked={handleRowClicked}
+          highlightOnHover
           pagination
           paginationRowsPerPageOptions={[10, 25, 50]}
           paginationPerPage={25}

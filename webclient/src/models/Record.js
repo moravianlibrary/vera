@@ -1,3 +1,5 @@
+import { format } from 'date-fns';
+
 export class Record {
     id;
 
@@ -14,111 +16,68 @@ export class Record {
     isbn;
     barcode;
 
+    creator_id;
+    creator;
+    created_at;
+
+    extraction_id;
+    extractor_id;
+    extractor;
+    extracted_at;
+
+    comments_count;
+
     constructor() {
-        this.sysno = '';
+        this.sysno = null;
     }
 
-    fromJson(jsonData) {
-        this.id = jsonData.id || 0;
-        this.sysno = jsonData.sysno || '';
-        this.volume_number = jsonData.volume_number ? decodeURIComponent(jsonData.volume_number) : '';
-        this.item_number = jsonData.item_number ? decodeURIComponent(jsonData.item_number) : '';
-        this.category = jsonData.category ? decodeURIComponent(jsonData.category) : '';
-        this.title = jsonData.title ? decodeURIComponent(jsonData.title) : '';
-        this.pages_count = jsonData.pages_count || 0;
-        this.signature = jsonData.signature ? decodeURIComponent(jsonData.signature) : '';
-        this.issn = jsonData.issn || '';
-        this.isbn = jsonData.isbn || '';
-        this.barcode = jsonData.barcode || '';
+    static fromJson(jsonData) {
+        const record = new Record();
+
+        record.id = jsonData.id;
+        record.sysno = jsonData.sysno;
+        record.volume_number = jsonData.volume_number ? decodeURIComponent(jsonData.volume_number) : null;
+        record.item_number = jsonData.item_number ? decodeURIComponent(jsonData.item_number) : null;
+        record.category = jsonData.category ? decodeURIComponent(jsonData.category) : null;
+        record.title = jsonData.title ? decodeURIComponent(jsonData.title) : null;
+        record.pages_count = jsonData.pages_count;
+        record.signature = jsonData.signature ? decodeURIComponent(jsonData.signature) : null;
+        record.issn = jsonData.issn;
+        record.isbn = jsonData.isbn;
+        record.barcode = jsonData.barcode;
+        record.creator_id = jsonData.creator_id;
+        record.creator = jsonData.creator ? decodeURIComponent(jsonData.creator) : null;
+        record.created_at = jsonData.created_at;
+        record.extraction_id = jsonData.extraction_id;
+        record.extractor_id = jsonData.extractor_id;
+        record.extractor = jsonData.extractor ? decodeURIComponent(jsonData.extractor) : null;
+        record.extracted_at = jsonData.extracted_at;
+        record.comments_count = jsonData.comments_count;
+
+        return record;
     }
 
     toJson() {
         return {
-        id: this.id,
-        sysno: this.sysno,
-        volume_number: encodeURIComponent(this.volume_number),
-        item_number: encodeURIComponent(this.item_number),
-        category: encodeURIComponent(this.category),
-        title: encodeURIComponent(this.title),
-        pages_count: this.pages_count,
-        signature: encodeURIComponent(this.signature),
-        issn: this.issn,
-        isbn: this.isbn,
-        barcode: this.barcode,
+            id: this.id,
+            sysno: this.sysno,
+            volume_number: encodeURIComponent(this.volume_number),
+            item_number: encodeURIComponent(this.item_number),
+            category: encodeURIComponent(this.category),
+            title: encodeURIComponent(this.title),
+            pages_count: this.pages_count,
+            signature: encodeURIComponent(this.signature),
+            issn: this.issn,
+            isbn: this.isbn,
+            barcode: this.barcode,
         };
     }
 
-    getId() {
-        return this.id;
+    getCreatedAtFormatted() {
+        return format(new Date(this.created_at), 'dd.MM.yyyy HH:mm:ss');
     }
 
-    getSysno() {
-        return this.sysno;
-    }
-    setSysno(sysno) {
-        this.sysno = sysno;
-    }
-
-    getVolumeNumber() {
-        return this.volume_number;
-    }
-    setVolumeNumber(volume_number) {
-        this.volume_number = volume_number;
-    }
-
-    getItemNumber() {
-        return this.item_number;
-    }
-    setItemNumber(item_number) {
-        this.item_number = item_number;
-    }
-
-    getCategory() {
-        return this.category;
-    }
-    setCategory(category) {
-        this.category = category;
-    }
-
-    getTitle() {
-        return this.title;
-    }
-    setTitle(title) {
-        this.title = title;
-    }
-
-    getPagesCount() {
-        return this.pages_count;
-    }
-    setPagesCount(pages_count) {
-        this.pages_count = pages_count;
-    }
-
-    getSignature() {
-        return this.signature;
-    }
-    setSignature(signature) {
-        this.signature = signature;
-    }
-
-    getIssn() {
-        return this.issn;
-    }
-    setIssn(issn) {
-        this.issn = issn;
-    }
-
-    getIsbn() {
-        return this.isbn;
-    }
-    setIsbn(isbn) {
-        this.isbn = isbn;
-    }
-
-    getBarcode() {
-        return this.barcode;
-    }
-    setBarcode(barcode) {
-        this.barcode = barcode;
+    getExtractedAtFormatted() {
+        return this.extracted_at ? format(new Date(this.extracted_at), 'dd.MM.yyyy HH:mm:ss') : null;
     }
 }
