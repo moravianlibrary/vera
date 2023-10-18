@@ -34,23 +34,24 @@ app.add_middleware(
 )
 
 # TODO: add support to log editing of records
+# TODO: add checking unique before insert and update
 
 
 @app.post("/auth/register", response_model=schemas.User)
 def register(
             user_create: schemas.UserCreate,
             db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_username(db, user_create.username)
+    db_user = crud.get_user_by_username(user_create.username, db)
     if db_user is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Username is already taken")
-    return auth.create_user(db, user_create)
+    return auth.create_user(user_create, db)
 
 
 @app.post("/auth/login", response_model=schemas.Token)
 async def login(
             user_login: schemas.UserLogin,
             db: Session = Depends(get_db)):
-    db_user = crud.get_user_by_username(db, user_login.username)
+    db_user = crud.get_user_by_username(user_login.username, db)
     if db_user is None or not auth.verify_password(user_login.password, db_user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
     return {"access_token": auth.create_access_token(data={"sub": db_user.username}), "token_type": "bearer"}
@@ -73,18 +74,22 @@ def create_role(role: schemas.RoleBase,
     return crud.create_role(role, db)
 
 
-@app.put("/roles", response_model=schemas.Role)
-def create_role(role: schemas.RoleBase,
+@app.put("/roles", response_model=schemas.RoleActions)
+def create_role(role: schemas.RoleActions,
                 db: Session = Depends(get_db)):
     crud.update_role_actions(role, db)
-    return crud.update_role(role, db)
+    db_role = crud.update_role(role, db)
+    return schemas.RoleActions(
+        id=db_role.id,
+        name=db_role.name,
+        actions=get_role_actions(db_role.id, db)
+    )
 
 
-# TODO: return removed item
 @app.delete("/roles/{role_id}", response_model=schemas.Role)
 def delete_role(role_id: int,
                 db: Session = Depends(get_db)):
-    crud.delete_role(role_id, db)
+    return crud.delete_role(role_id, db)
 
 
 def get_role_actions(role_id: int, db: Session):
@@ -132,11 +137,10 @@ def create_department(department: schemas.Department,
     return department
 
 
-# TODO: return removed item
 @app.delete("/departments/{department_id}", response_model=schemas.Department)
 def delete_department(department_id: int = Path(...),
                       db: Session = Depends(get_db)):
-    crud.delete_department(department_id, db)
+    return crud.delete_department(department_id, db)
 
 
 @app.get("/departments", response_model=schemas.DepartmentsResponse)
@@ -152,6 +156,15 @@ def update_user(user: schemas.User,
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     return crud.update_user(user, db)
+
+
+@app.delete("/users/{user_id}", response_model=schemas.User)
+def update_user(user_id: int = Path(...),
+                db: Session = Depends(get_db)):
+    db_user = crud.get_user(user_id, db)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return crud.delete_user(user_id, db)
 
 
 @app.get("/users/{user_id}", response_model=schemas.UserEnlistment)
@@ -206,7 +219,7 @@ def update_category(category: schemas.Category,
 @app.delete("/categories/{category_id}", response_model=schemas.Category)
 def update_category(category_id: int = Path(...),
                     db: Session = Depends(get_db)):
-    crud.delete_category(category_id, db)
+    return crud.delete_category(category_id, db)
 
 
 @app.get("/categories", response_model=List[schemas.Category])
@@ -214,11 +227,11 @@ def create_category(db: Session = Depends(get_db)):
     return crud.get_categories(db)
 
 
-@app.post("/records", response_model=schemas.Record)
+@app.post("/records", response_model=schemas.RecordView)
 def create_record(record: schemas.RecordCreate,
                   db: Session = Depends(get_db),
                   user: schemas.User = Depends(auth.get_current_user)):
-    return crud.create_record(db=db, record=record, user=user)
+    return crud.create_record(record, user, db)
 
 
 @app.post("/records/precreate_by_identifier", response_model=schemas.RecordPreCreate)
@@ -227,14 +240,23 @@ def precreate_by_identifier(identifier: schemas.Identifier,
     return catalog.generate_record_by_identifier(identifier)
 
 
-@app.put("/records", response_model=schemas.Record)
+@app.put("/records", response_model=schemas.RecordView)
 def update_record(record: schemas.RecordCreate,
                   db: Session = Depends(get_db),
                   user: schemas.User = Depends(auth.get_current_user)):
     return crud.update_record(record, user, db)
 
 
-@app.get("/records/{record_id}", response_model=schemas.Record)
+@app.delete("/records/{record_id}", response_model=schemas.Record)
+def get_record_by_id(record_id: int = Path(...),
+                     db: Session = Depends(get_db)):
+    record = crud.get_record(record_id, db)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Record not found")
+    return crud.delete_record(record_id, db)
+
+
+@app.get("/records/{record_id}", response_model=schemas.RecordView)
 def get_record_by_id(record_id: int = Path(...),
                      db: Session = Depends(get_db)):
     record = crud.get_record(record_id, db)
@@ -244,14 +266,18 @@ def get_record_by_id(record_id: int = Path(...),
 
 
 @app.get("/records", response_model=schemas.RecordsResponse)
-def get_records(
-    sysno: Optional[str] = Query(None, description="Record sysno"),
-    page: int = Query(1, description="Pagination page"),
-    page_size: int = Query(100, description="Pagination page size"),
-    db: Session = Depends(get_db)
-):
-    records = crud.get_records(db, sysno=sysno, offset=((page - 1) * page_size), limit=page_size)
-    num_found = crud.get_records_num_found(db, sysno=sysno)
+def get_records(page: int = Query(1, description="Pagination page"),
+                page_size: int = Query(100, description="Pagination page size"),
+                sysno: Optional[str] = Query(None, description="Record sysno"),
+                extraction_id: Optional[int] = Query(None, description="Record extraction id"),
+                onlyExtracted: Optional[str] = Query(None, description="Show only extracted"),
+                db: Session = Depends(get_db)):
+    query_base = crud.get_records_query_base(db,
+                                             sysno, 
+                                             extraction_id, 
+                                             (onlyExtracted is not None))
+    records = crud.get_records(db, query_base, offset=((page - 1) * page_size), limit=page_size)
+    num_found = crud.get_records_num_found(db, query_base)
     return schemas.RecordsResponse(records=records, num_found=num_found)
 
 
@@ -272,7 +298,7 @@ def update_comment(comment: schemas.Comment,
 
 
 @app.delete("/records/{record_id}/comments/{comment_id}", response_model=schemas.Comment)
-def update_comment(record_id: int = Path(...),
+def delete_comment(record_id: int = Path(...),
                    comment_id: int = Path(...),
                    user: schemas.User = Depends(auth.get_current_user),
                    db: Session = Depends(get_db)):
@@ -283,7 +309,7 @@ def update_comment(record_id: int = Path(...),
 def get_comment(record_id: int = Path(...),
                 comment_id: int = Path(...), 
                 db: Session = Depends(get_db)):
-    return crud.get_comment()
+    return crud.get_comment(comment_id, db)
 
 
 @app.get("/records/{record_id}/comments", response_model=List[schemas.Comment])
@@ -291,6 +317,13 @@ def get_note(record_id: int = Path(...),
              db: Session = Depends(get_db)
 ):
     return crud.get_comments_for_record(record_id, db)
+
+
+@app.post("/records/extract")
+def create_extraction(extraction: schemas.ExtractionCreate,
+                    user: schemas.User = Depends(auth.get_current_user),
+                    db: Session = Depends(get_db)):
+    crud.create_extraction(extraction, user.id, db)
 
 
 if __name__ == "__main__":

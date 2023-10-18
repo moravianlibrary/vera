@@ -120,13 +120,19 @@ class Record(RecordCreate):
     id: int
 
     creator_id: int
-    creator: str
     created_at: datetime
 
     extraction_id: Optional[int]
+
+
+class RecordView(Record):
+    creator: str
+
     extractor_id: Optional[int]
     extractor: Optional[str]
     extracted_at: Optional[datetime]
+
+    comments_count: int
 
     class Config:
         arbitrary_types_allowed=True
@@ -134,7 +140,7 @@ class Record(RecordCreate):
 
 
 class RecordsResponse(BaseModel):
-    records: List[Record]
+    records: List[RecordView]
     num_found: int
 
 
@@ -144,7 +150,7 @@ class Identifier(BaseModel):
 
 
 class CommentBase(BaseModel):
-    note_text: str
+    text: str
 
 
 class CommentCreate(CommentBase):
@@ -153,8 +159,8 @@ class CommentCreate(CommentBase):
 
 class Comment(CommentBase):
     id: int
-    record_id: str
-    user_id: str
+    record_id: int
+    user_id: int
     created_at: datetime
     edited_at: Optional[datetime]
 
@@ -163,5 +169,15 @@ class Comment(CommentBase):
         from_attributes = True
 
 
-class ExtractionCreate(BaseModel):
+class ExtractionBase(BaseModel):
+    pass
+
+
+class ExtractionCreate(ExtractionBase):
     extracted_records: List[int]
+
+
+class Extraction(ExtractionBase):
+    id: int
+    extractor_id: int
+    extracted_at: datetime

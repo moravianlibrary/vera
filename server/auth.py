@@ -37,10 +37,12 @@ def verify_password(plain_password, hashed_password):
     return password_hasher.verify(plain_password, hashed_password)
 
 
-def create_user(db: Session, user: schemas.UserCreate):
-    return crud.create_user(db, schemas.UserCreate(
+def create_user(user: schemas.UserCreate,
+                db: Session):
+    return crud.create_user(schemas.UserCreate(
         username=user.username,
-        password=hash_password(user.password))
+        password=hash_password(user.password)),
+        db
     )
 
 
@@ -60,7 +62,7 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
             raise CREDENTIALS_EXCEPTION
     except JWTError as jwt_error:
         raise CREDENTIALS_EXCEPTION
-    user = crud.get_user_by_username(db, username)
+    user = crud.get_user_by_username(username, db)
     if user is None:
         raise CREDENTIALS_EXCEPTION
     return user

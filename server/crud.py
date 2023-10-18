@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, func, select
+from sqlalchemy import desc, func, update, select
 from typing import Optional
 
 from database import create
@@ -18,11 +18,14 @@ def update_role(role: schemas.Role,
     db.execute(update(models.Role)
                .where(models.Role.id == role.id)
                .values(name=role.name))
+    return db.query(models.Role).filter(models.Role.id == role.id).first()
 
 
 def update_role_actions(role: schemas.Role,
                         db: Session):
-    db.delete(models.Action).where(models.Action.role_id == role.id)
+    actions_to_delete = db.query(models.Action).filter(models.Action.role_id == role.id).all()
+    for action in actions_to_delete:
+        db.delete(action)
 
     for action in role.actions:
         create(db, models.Action(
@@ -36,8 +39,15 @@ def update_role_actions(role: schemas.Role,
 
 def delete_role(role_id: int,
                 db: Session):
-    db.delete(models.Action).where(models.Action.role_id == role.id)
-    db.delete(models.Role).where(models.Role.id == role_id)
+    actions_to_delete = db.query(models.Action).filter(models.Action.role_id == role_id).all()
+    for action in actions_to_delete:
+        db.delete(action)
+
+    db_role = db.query(models.Role).where(models.Role.id == role_id).first()
+    db.delete(db_role)
+
+    db.commit()
+    return db_role
 
 
 def get_role(role_id: int,
@@ -66,12 +76,16 @@ def update_department(department: schemas.DepartmentBase,
                       db: Session):
     db.execute(update(models.Department).where(models.Department.id == department.id)
             .values(abbreviation = department.abbreviation)
-            .values(name = role.name))
+            .values(name = department.name))
+    db.commit()
 
 
 def delete_department(department_id: int,
                       db: Session):
-    db.delete(models.Department).where(models.Department.id == department_id)
+    db_department = db.query(models.Department).where(models.Department.id == department_id).first()
+    db.delete(db_department)
+    db.commit()
+    return db_department
 
 
 def get_departments(db: Session):
@@ -80,7 +94,7 @@ def get_departments(db: Session):
 
 def create_user(user_create: schemas.UserCreate,
                 db: Session):
-    return (db, models.User(
+    return create(db, models.User(
         username=user_create.username,
         password=user_create.password
     ))
@@ -93,7 +107,7 @@ def get_user_by_username(username: str,
 
 def get_user(user_id: int,
              db: Session):
-    return db.query(models.UserView).filter(models.User.id == user_id).first()
+    return db.query(models.UserView).filter(models.UserView.id == user_id).first()
 
 
 def get_user_actions(user_id: int,
@@ -103,12 +117,12 @@ def get_user_actions(user_id: int,
 
 def update_user(user: schemas.User,
                 db: Session):
-    db.execute(update(models.User).where(models.User.id == user.user.id)
+    db.execute(update(models.User).where(models.User.id == user.id)
             .values(username = user.username)
             .values(department_id = user.department_id)
             .values(role_id = user.role_id))
     db.commit()
-    return get_user(db, user.id)
+    return get_user(user.id, db)
 
 
 def update_user_password(user_change_password: schemas.UserChangePassword,
@@ -116,12 +130,15 @@ def update_user_password(user_change_password: schemas.UserChangePassword,
     db.execute(update(models.User).where(models.User.id == user_change_password.id)
             .values(password = user_change_password.new_password))
     db.commit()
-    return get_user(db, user_id)
+    return get_user(user_change_password.id, db)
 
 
 def delete_user(user_id: int,
                 db: Session):
-    db.delete(models.User).where(models.User.id == user_id)
+    db_user = db.query(models.User).where(models.User.id == user_id).first()
+    db.delete(db_user)
+    db.commit()
+    return db_user
 
 
 def get_users(db: Session,
@@ -164,12 +181,15 @@ def update_category(category: schemas.Category,
     db.execute(update(models.Category).where(models.Category.id == category.id)
             .values(name = category.name))
     db.commit()
-    return db.query(models.category).where(models.Category.id == category.id).first()
+    return db.query(models.Category).where(models.Category.id == category.id).first()
 
 
 def delete_category(category_id: int,
                     db: Session):
-    db.delete(models.Category).where(models.Category.id == category_id)
+    db_category = db.query(models.Category).where(models.Category.id == category_id).first()
+    db.delete(db_category)
+    db.commit()
+    return db_category
 
 
 def get_categories(db: Session):
@@ -179,7 +199,7 @@ def get_categories(db: Session):
 def create_record(record: schemas.Record,
                   user: schemas.User,
                   db: Session):
-    return create(db, models.Record(
+    db_record = create(db, models.Record(
         sysno=record.sysno,
         volume_number=record.volume_number,
         item_number=record.item_number,
@@ -192,9 +212,10 @@ def create_record(record: schemas.Record,
         barcode=record.barcode,
         creator_id=user.id
     ))
+    return get_record(db_record.id, db)
 
 
-def update_record(record: schemas.Record,
+def update_record(record: schemas.RecordCreate,
                   user: schemas.User,
                   db: Session):
     db_record = get_record(db, record.id)
@@ -220,7 +241,10 @@ def update_record(record: schemas.Record,
 
 def delete_record(record_id: int,
                   db: Session):
-    db.delete(models.Record).where(models.Record.id == record_id)
+    db_record = db.query(models.Record).where(models.Record.id == record_id).first()
+    db.delete(db_record)
+    db.commit()
+    return db_record
 
 
 def get_record(record_id: int,
@@ -228,27 +252,33 @@ def get_record(record_id: int,
     return db.query(models.RecordView).filter(models.RecordView.id == record_id).first()
 
 
-def get_records(db: Session,
-                sysno: Optional[str] = None,
-                offset: int = 0, 
-                limit: int = 100):
-    q = db.query(models.RecordView)
+def get_records_query_base(db: Session,
+                           sysno: Optional[str] = None,
+                           extraction_id: Optional[int] = None,
+                           onlyExtracted: bool = False):
+    query_base = db.query(models.RecordView)
 
     if sysno is not None:
-        q = q.filter(models.Record.sysno == sysno)
-    
-    return q.order_by(desc(models.RecordView.created_at))\
+        query_base = query_base.filter(models.RecordView.sysno == sysno)
+    if extraction_id is not None:
+        query_base = query_base.filter(models.RecordView.extraction_id == extraction_id)
+    if onlyExtracted:
+        query_base = query_base.filter(models.RecordView.extraction_id.isnot(None))
+
+    return query_base
+
+
+def get_records(db: Session,
+                query_base: Session,
+                offset: int = 0, 
+                limit: int = 100):
+    return query_base.order_by(desc(models.RecordView.created_at))\
     .offset(offset).limit(limit).all()
 
 
 def get_records_num_found(db: Session,
-                          sysno: Optional[str] = None):
-    q = db.query(models.RecordView)
-
-    if sysno is not None:
-        q = q.filter(models.RecordView.sysno == sysno)
-
-    return q.count()
+                          query_base: Session):
+    return query_base.count()
 
 
 def create_comment(comment: schemas.CommentCreate,
@@ -271,12 +301,15 @@ def update_comment(comment: schemas.Comment,
 
 def delete_comment(comment_id: int,
                    db: Session):
-    db.delete(models.Comment).where(models.Comment.id == comment_id)
+    db_comment = db.query(models.Comment).where(models.Comment.id == comment_id).first()
+    db.delete(db_comment)
+    db.commit()
+    return db_comment
 
 
 def get_comment(comment_id: int,
                 db: Session):
-    return db.query(models.Record)\
+    return db.query(models.Comment)\
     .filter(models.Comment.id == comment_id)\
     .first()
 
@@ -287,15 +320,17 @@ def get_comments_for_record(record_id: int,
 
 
 def create_extraction(extraction: schemas.ExtractionCreate,
-                      user: schemas.User,
+                      user_id: int,
                       db: Session):
     if not extraction.extracted_records:
         return
 
     db_extraction = create(db, models.Extraction(
-        extractor_id=user.id
+        extractor_id=user_id
     ))
 
     for record_id in extraction.extracted_records:
         db.execute(update(models.Record).where(models.Record.id == record_id)
             .values(extraction_id = db_extraction.id))
+    
+    return db_extraction

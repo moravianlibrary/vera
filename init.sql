@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS records (
 	sysno VARCHAR(16) NOT NULL,
 	volume_number VARCHAR(16),
 	item_number VARCHAR(16),
-	CONSTRAINT unique_combination UNIQUE (sysno, volume_number, item_number),
+	CONSTRAINT unique_combination UNIQUE NULLS NOT DISTINCT (sysno, volume_number, item_number),
 
 	-- Information
 	category_id INT REFERENCES categories(id),
@@ -145,7 +145,8 @@ SELECT
 	r.extraction_id,
 	es.extractor_id,
 	e.username AS extractor,
-	es.extracted_at
+	es.extracted_at,
+	(SELECT COUNT(*) FROM comments cm WHERE r.id = cm.record_id) AS comments_count
 FROM records r
 LEFT JOIN categories cs ON r.category_id = cs.id
 LEFT JOIN users c ON r.creator_id = c.id

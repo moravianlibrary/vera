@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, Table, Text, TIMESTAMP, func
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, Table, Text, TIMESTAMP, UniqueConstraint, func
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -55,6 +55,7 @@ class Extraction(Base):
 
 class Record(Base):
     __tablename__ = "records"
+    __table_args__ = (UniqueConstraint('sysno'),)
 
     id = Column(Integer, primary_key=True, index=True)
     sysno = Column(String, index=True, nullable=False)
@@ -137,3 +138,5 @@ class RecordView(Base):
     extractor_id = Column(Integer, ForeignKey("users.id"), index=True)
     extractor = Column(String, ForeignKey("users.username"))
     extracted_at = Column(TIMESTAMP)
+
+    comments_count = Column(Integer)
