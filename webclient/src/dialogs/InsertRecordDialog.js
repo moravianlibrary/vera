@@ -16,7 +16,7 @@ import { api } from '../services/Api';
 import { Record } from '../models/Record';
 import RecordTextFields from '../components/RecordTextFields';
 
-const InsertByIdentifierDialog = ({ onRefresh }) => {
+const InsertRecordDialog = ({ onRefresh }) => {
   const insertDialogButtonStyle = {
     textTransform: 'none',
     display: 'block',
@@ -100,6 +100,7 @@ const InsertByIdentifierDialog = ({ onRefresh }) => {
   };
 
   const handleInsert = () => {
+    console.log(record)
     api.createRecord(record);
     handleClear();
     if (typeof onRefresh === 'function') {
@@ -158,4 +159,4 @@ const InsertByIdentifierDialog = ({ onRefresh }) => {
   );
 };
 
-export default InsertByIdentifierDialog;
+export default InsertRecordDialog;

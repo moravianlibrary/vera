@@ -74,8 +74,8 @@ def create_role(role: schemas.RoleBase,
     return crud.create_role(role, db)
 
 
-@app.put("/roles", response_model=schemas.RoleActions)
-def create_role(role: schemas.RoleActions,
+@app.put("/roles/{role_id}", response_model=schemas.RoleActions)
+def update_role(role: schemas.RoleActions,
                 db: Session = Depends(get_db)):
     crud.update_role_actions(role, db)
     db_role = crud.update_role(role, db)
@@ -130,7 +130,7 @@ def create_department(department: schemas.DepartmentBase,
     return crud.create_department(department, db)
 
 
-@app.put("/departments", response_model=schemas.Department)
+@app.put("/departments/{department_id}", response_model=schemas.Department)
 def create_department(department: schemas.Department,
                       db: Session = Depends(get_db)):
     crud.update_department(department, db)
@@ -240,11 +240,12 @@ def precreate_by_identifier(identifier: schemas.Identifier,
     return catalog.generate_record_by_identifier(identifier)
 
 
-@app.put("/records", response_model=schemas.RecordView)
+@app.put("/records/{record_id}", response_model=schemas.RecordView)
 def update_record(record: schemas.RecordCreate,
+                  record_id: int = Path(...),
                   db: Session = Depends(get_db),
                   user: schemas.User = Depends(auth.get_current_user)):
-    return crud.update_record(record, user, db)
+    return crud.update_record(record_id, record, user, db)
 
 
 @app.delete("/records/{record_id}", response_model=schemas.Record)
@@ -289,7 +290,7 @@ def create_comment(comment: schemas.CommentCreate,
     return crud.create_comment(comment, record_id, user.id, db)
 
 
-@app.put("/records/{record_id}/comments", response_model=schemas.Comment)
+@app.put("/records/{record_id}/comments/{comment_id}", response_model=schemas.Comment)
 def update_comment(comment: schemas.Comment,
                    record_id: int = Path(...),
                    user: schemas.User = Depends(auth.get_current_user),

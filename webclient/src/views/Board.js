@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import DataTable from 'react-data-table-component';
 import { useTranslation } from "react-i18next";
 
-import InsertByIdentifierDialog from '../dialogs/InsertRecordDialog.js';
+import InsertRecordDialog from '../dialogs/InsertRecordDialog.js';
+import EditRecordDialog from '../dialogs/EditRecordDialog.js';
 import { api } from '../services/Api.js';
 import { Record } from '../models/Record.js';
 import './Board.css';
@@ -12,7 +13,7 @@ function Funcbar({ onRefresh }) {
   return (
     <div className='funcbar'>
       <ul className="funcbar">
-        <li><InsertByIdentifierDialog onRefresh={onRefresh} /></li>
+        <li><InsertRecordDialog onRefresh={onRefresh} /></li>
       </ul>
     </div>
   );
@@ -32,12 +33,12 @@ const columns = [
   },
   {
       name: 'Číslo periodika',
-      selector: record => record.itemNumber,
+      selector: record => record.item_number,
       width: '100px'
   },
   {
       name: 'Kategorie',
-      selector: record => record.category,
+      selector: record => record.category_name,
       // width: '500px'
   },
   {
@@ -47,7 +48,7 @@ const columns = [
   },
   {
       name: 'Počet stran',
-      selector: record => record.pagesCount,
+      selector: record => record.pages_count,
       width: '100px'
   },
   {
@@ -93,6 +94,9 @@ const PaginateTable = () => {
   const [items, setItems] = useState([]);
   const [totalRows, setTotalRows] = useState(0);
   const [perPage, setPerPage] = useState(25);
+
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const { t } = useTranslation();
 
@@ -128,11 +132,15 @@ const PaginateTable = () => {
     setPerPage(newPerPage);
   }
 
-  const handleRowClicked = (row) => {
-    // setSelectedRow(row);
-    // Open your dialog or perform any action here
-    console.log('Row clicked:', row);
+  const handleRecordEdit = (record) => {
+    setSelectedRecord(record);
+    setIsDialogOpen(true);
   }
+
+  const handleCloseEditDialog = () => {
+    setSelectedRecord(null);
+    setIsDialogOpen(false);
+  };
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -144,7 +152,8 @@ const PaginateTable = () => {
         <DataTable
           columns={columns}
           data={items}
-          onRowClicked={handleRowClicked}
+          onRowDoubleClicked={handleRecordEdit}
+          pointerOnHover
           highlightOnHover
           pagination
           paginationRowsPerPageOptions={[10, 25, 50]}
@@ -155,6 +164,13 @@ const PaginateTable = () => {
           onChangePage={handlePageChange}
           onChangeRowsPerPage={handlePerRowsChange}
         />
+
+        {isDialogOpen && (
+          <EditRecordDialog
+            selectedRecord={selectedRecord}
+            onClose={handleCloseEditDialog}
+          />
+        )}
       </div>
     );
   }

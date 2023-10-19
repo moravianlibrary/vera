@@ -65,7 +65,7 @@ class RecordTextFields extends Component {
             value={record.item_number}
             onChange={(e) => this.setState({ record: { ...record, item_number: e.target.value } })}
           />
-          <TextField
+          {/* <TextField
             margin="dense"
             id="category"
             label={i18n.t("category")}
@@ -73,9 +73,9 @@ class RecordTextFields extends Component {
             fullWidth
             variant="standard"
             value={record.category}
-            onChange={(e) => this.setState({ record: { ...record, category: e.target.value } })}
+            onChange={(e) => this.setState({ record: { ...record, category_id: e.target.value } })}
 
-          />
+          /> */}
           <TextField
             margin="dense"
             id="title"

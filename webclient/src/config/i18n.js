@@ -27,6 +27,8 @@ const resources = {
         fill_insert_record: "Předvyplnit",
         identifier: "Identifikátor",
         identifier_value: "Identifikátor",
+        update_record_apply: "Aktualizovat",
+        delete_record_apply: "Vymazat",
 
         sysno: "Systémové číslo",
         volume_number: "Ročník",

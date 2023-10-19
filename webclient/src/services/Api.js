@@ -58,6 +58,17 @@ class Api {
             })
         ;
     }
+
+    updateRecord(record) {
+        return axios.put(`/records/${record.id}`, record.toJson(), { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.error(error);
+            })
+        ;
+    }
 }
 
 export const api = new Api();

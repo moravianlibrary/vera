@@ -38,7 +38,8 @@ export class Record {
         record.sysno = jsonData.sysno;
         record.volume_number = jsonData.volume_number ? decodeURIComponent(jsonData.volume_number) : null;
         record.item_number = jsonData.item_number ? decodeURIComponent(jsonData.item_number) : null;
-        record.category = jsonData.category ? decodeURIComponent(jsonData.category) : null;
+        record.category_id = jsonData.category_id;
+        record.category_name = jsonData.category_name ? decodeURIComponent(jsonData.category_name) : null;
         record.title = jsonData.title ? decodeURIComponent(jsonData.title) : null;
         record.pages_count = jsonData.pages_count;
         record.signature = jsonData.signature ? decodeURIComponent(jsonData.signature) : null;
@@ -59,14 +60,13 @@ export class Record {
 
     toJson() {
         return {
-            id: this.id,
             sysno: this.sysno,
-            volume_number: encodeURIComponent(this.volume_number),
-            item_number: encodeURIComponent(this.item_number),
-            category: encodeURIComponent(this.category),
-            title: encodeURIComponent(this.title),
+            volume_number: this.volume_number ? encodeURIComponent(this.volume_number) : null,
+            item_number: this.item_number ? encodeURIComponent(this.item_number) : null,
+            category_id: this.category_id,
+            title: this.title ? encodeURIComponent(this.title) : null,
             pages_count: this.pages_count,
-            signature: encodeURIComponent(this.signature),
+            signature: this.signature ? encodeURIComponent(this.signature) : null,
             issn: this.issn,
             isbn: this.isbn,
             barcode: this.barcode,

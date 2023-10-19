@@ -126,6 +126,8 @@ class Record(RecordCreate):
 
 
 class RecordView(Record):
+    category_name: str
+
     creator: str
 
     extractor_id: Optional[int]

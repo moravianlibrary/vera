@@ -215,10 +215,11 @@ def create_record(record: schemas.Record,
     return get_record(db_record.id, db)
 
 
-def update_record(record: schemas.RecordCreate,
+def update_record(record_id: int,
+                  record: schemas.RecordCreate,
                   user: schemas.User,
                   db: Session):
-    db_record = get_record(db, record.id)
+    db_record = db.query(models.Record).filter(models.Record.id == record_id).first()
     
     if not record:
         return
@@ -235,8 +236,8 @@ def update_record(record: schemas.RecordCreate,
     db_record.barcode=record.barcode
 
     db.commit()
-    db.refresh(db_record)
-    return db_record
+
+    return get_record(record_id, db)
 
 
 def delete_record(record_id: int,
