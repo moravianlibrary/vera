@@ -1,6 +1,19 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import DataTable from 'react-data-table-component';
+import React, { useEffect, useState } from 'react';
+
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Paginator } from 'primereact/paginator';
+import { Button } from 'primereact/button';
+import { Ripple } from 'primereact/ripple';
+import { Divider } from 'primereact/divider';
+import { Dropdown } from 'primereact/dropdown';
+import { InputText } from 'primereact/inputtext';
+import { Slider } from 'primereact/slider';
+import { Tooltip } from 'primereact/tooltip';
+import { classNames } from 'primereact/utils';
+
 import { useTranslation } from "react-i18next";
+import i18n from 'i18next';
 
 import InsertRecordDialog from '../dialogs/InsertRecordDialog.js';
 import EditRecordDialog from '../dialogs/EditRecordDialog.js';
@@ -21,82 +34,142 @@ function Funcbar({ onRefresh }) {
 
 const columns = [
   {
-      name: 'Systémové číslo',
+      name: i18n.t('sysno'),
       selector: record => record.sysno,
-      width: '150px'
+      width: '120px'
   },
   {
-      name: 'Ročník',
-      // cell: row => <img src={row.coverimage} width={50} alt={row.name}></img>,
-      selector: record => record.volumeNumber,
-      width: '100px'
+      name: i18n.t('volume_number'),
+      selector: record => record.volume_number,
   },
   {
-      name: 'Číslo periodika',
+      name: i18n.t('item_number'),
       selector: record => record.item_number,
-      width: '100px'
   },
   {
-      name: 'Kategorie',
+      name: i18n.t('category'),
       selector: record => record.category_name,
-      // width: '500px'
   },
   {
-      name: 'Název',
+      name: i18n.t('title'),
       selector: record => record.title,
-      // width: '100px'
   },
   {
-      name: 'Počet stran',
+      name: i18n.t('pages_count'),
       selector: record => record.pages_count,
-      width: '100px'
   },
   {
-      name: 'ISSN',
+      name: i18n.t('signature'),
+      selector: record => record.signature,
+  },
+  {
+      name: i18n.t('issn'),
       selector: record => record.issn,
-      width: '100px'
   },
   {
-      name: 'ISBN',
+      name: i18n.t('isbn'),
       selector: record => record.isbn,
-      width: '100px'
   },
   {
-      name: 'Čárový kód',
+      name: i18n.t('barcode'),
       selector: record => record.barcode,
-      width: '100px'
   },
   {
-      name: 'Vytvořil',
+      name: i18n.t('creator'),
       selector: record => record.creator,
-      // width: '100px'
   },
   {
-      name: 'Vytvořeno',
+      name: i18n.t('created_at'),
       selector: record => record.getCreatedAtFormatted(),
-      width: '200px'
   },
   {
-      name: 'Extrahoval',
+      name: i18n.t('extractor'),
       selector: record => record.extractor,
-      width: '100px'
   },
   {
-      name: 'Extrahováno',
+      name: i18n.t('extracted_at'),
       selector: record => record.getExtractedAtFormatted(),
-      width: '200px'
   },
 ];
 
 const PaginateTable = () => {
+  const template1 = {
+      layout: 'PrevPageLink PageLinks NextPageLink RowsPerPageDropdown CurrentPageReport',
+      PrevPageLink: (options) => {
+          return (
+            <div>
+                vpravo
+              <button onClick={options.onClick} >
+              {/* <button type="button" className={classNames(options.className, 'border-round')} onClick={options.onClick} disabled={options.disabled}> */}
+                <i className="pi pi-check"></i>
+                  <span className="p-3">Previous</span>
+                  <Ripple />
+              </button>
+
+            </div>
+          );
+      },
+      NextPageLink: (options) => {
+          return (
+              <button type="button" className={classNames(options.className, 'border-round')} onClick={options.onClick} disabled={options.disabled}>
+                  <span className="p-3">Next</span>
+                  <Ripple />
+              </button>
+          );
+      },
+      PageLinks: (options) => {
+          if ((options.view.startPage === options.page && options.view.startPage !== 0) || (options.view.endPage === options.page && options.page + 1 !== options.totalPages)) {
+              const className = classNames(options.className, { 'p-disabled': true });
+
+              return (
+                  <span className={className} style={{ userSelect: 'none' }}>
+                      ...
+                  </span>
+              );
+          }
+
+          return (
+              <button type="button" className={options.className} onClick={options.onClick}>
+                  {options.page + 1}
+                  <Ripple />
+              </button>
+          );
+      },
+      RowsPerPageDropdown: (options) => {
+          const dropdownOptions = [
+              { label: 10, value: 10 },
+              { label: 20, value: 20 },
+              { label: 30, value: 30 },
+          ];
+          return (<div>
+            nadpis
+            <Dropdown value={options.value} options={dropdownOptions} onChange={options.onChange} />
+          </div>
+          );
+      },
+      CurrentPageReport: (options) => {
+          return (
+              <span className="mx-3" style={{ color: 'var(--text-color)', userSelect: 'none' }}>
+                  Go to
+                  {/* <InputText size="2" className="ml-1" value={currentPage} tooltip={pageInputTooltip} onKeyDown={(e) => onPageInputKeyDown(e, options)} onChange={onPageInputChange} /> */}
+              </span>
+          );
+      }
+  };
+
+  const tableStyles = {
+    minWidth: '80%',
+  };
+
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [refreshCount, setRefreshCount] = useState(0);
 
-  const [items, setItems] = useState([]);
+  const [offset, setOffset] = useState(0);
+  const [rows, setRows] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalRows, setTotalRows] = useState(0);
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(25);
+  const [records, setRecords] = useState([]);
 
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -109,17 +182,15 @@ const PaginateTable = () => {
   };
 
   useEffect(() => {
-    fetchData(1, perPage);
-  }, [perPage])
+    fetchData(0, rows);
+  }, [rows])
 
-  const fetchData = async (page, page_size) => {
-    console.log(page);
-    setPage(page);
-    api.getRecords(page, page_size)
+  const fetchData = async (offset, rows) => {
+    api.getRecords(offset, rows)
       .then(
         (result) => {
           setIsLoaded(true);
-          setItems(result.records.map(record => Record.fromJson(record)));
+          setRecords(result.records.map(record => Record.fromJson(record)));
           setTotalRows(result.num_found);
         },
         (error) => {
@@ -129,12 +200,12 @@ const PaginateTable = () => {
       )
   }
 
-  const handlePageChange = page => {
-    fetchData(page, perPage);
-  }
-
-  const handlePerRowsChange = async (newPerPage, page) => {
-    setPerPage(newPerPage);
+  const leftContent = <Button type="button" icon="pi pi-star" className="p-button-outlined" />;
+  
+  const handlePageChange = (event) => {
+    setOffset(event.first);
+    setRows(event.rows);
+    fetchData(offset, rows);
   }
 
   const handlePageRefresh = () => {
@@ -153,8 +224,8 @@ const PaginateTable = () => {
 
   const handleUpdateRecord = (record) => {
     api.updateRecord(record).then((updatedRecord) => {
-      const itemIndex = items.findIndex((item) => item.id === updatedRecord.id);
-      items[itemIndex] = record;
+      const itemIndex = records.findIndex((item) => item.id === updatedRecord.id);
+      records[itemIndex] = record;
       handleCloseEditDialog();
       handlePageRefresh();
     })
@@ -165,7 +236,6 @@ const PaginateTable = () => {
 
   const handleDeleteRecord = (record) => {
     api.deleteRecord(record).then((deletedRecord) => {
-      fetchData(page, perPage);
       handleCloseEditDialog();
       handlePageRefresh();
     })
@@ -180,10 +250,35 @@ const PaginateTable = () => {
     return <div>Loading...</div>;
   } else {
     return (
-      <div className="table-container">
-        <DataTable
+      <div className="table-container" style={tableStyles}>
+
+        <DataTable value={records}
+            tableStyle={{ minWidth: '50rem' }} 
+            leftContent={leftContent}
+            // paginator
+            // paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+            // first={offset}
+            // rows={rows}
+            // totalRecords={totalRows}
+            // onPageChange={handlePageChange}
+        >
+          <Column field="sysno" header="Code"></Column>
+          <Column field="volume_number" header="Name"></Column>
+          <Column field="item_number" header="Category"></Column>
+          <Column field="quantity" header="Quantity"></Column>
+        </DataTable>
+
+        {/* <Divider /> */}
+
+        <Paginator first={offset} rows={rows} totalRecords={totalRows} onPageChange={handlePageChange}
+          // template="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+          template={template1}
+        />
+
+    
+        {/* <DataTable
           columns={columns}
-          data={items}
+          data={records}
           onRowDoubleClicked={handleRecordEdit}
           pointerOnHover
           highlightOnHover
@@ -195,7 +290,8 @@ const PaginateTable = () => {
           paginationComponentOptions={customPaginationOptions}
           onChangePage={handlePageChange}
           onChangeRowsPerPage={handlePerRowsChange}
-        />
+          selectableRows
+        /> */}
 
         {isDialogOpen && (
           <EditRecordDialog

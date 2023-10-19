@@ -267,8 +267,8 @@ def get_record_by_id(record_id: int = Path(...),
 
 
 @app.get("/records", response_model=schemas.RecordsResponse)
-def get_records(page: int = Query(1, description="Pagination page"),
-                page_size: int = Query(100, description="Pagination page size"),
+def get_records(offset: int = Query(0, description="Pagination page offset"),
+                limit: int = Query(100, description="Pagination page size"),
                 sysno: Optional[str] = Query(None, description="Record sysno"),
                 extraction_id: Optional[int] = Query(None, description="Record extraction id"),
                 onlyExtracted: Optional[str] = Query(None, description="Show only extracted"),
@@ -277,7 +277,7 @@ def get_records(page: int = Query(1, description="Pagination page"),
                                              sysno, 
                                              extraction_id, 
                                              (onlyExtracted is not None))
-    records = crud.get_records(db, query_base, offset=((page - 1) * page_size), limit=page_size)
+    records = crud.get_records(db, query_base, offset=offset, limit=limit)
     num_found = crud.get_records_num_found(db, query_base)
     return schemas.RecordsResponse(records=records, num_found=num_found)
 

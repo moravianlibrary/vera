@@ -22,8 +22,8 @@ class Api {
             })
     };
 
-    getRecords(page, page_size) {
-        return axios.get(`/records?page=${page}&page_size=${page_size}`, { headers: authHeader() })
+    getRecords(offset, rows) {
+        return axios.get(`/records?offset=${offset}&limit=${rows}`, { headers: authHeader() })
             .then(response => {
                 return response.data;
             })
