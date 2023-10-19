@@ -86,7 +86,7 @@ const InsertRecordDialog = ({ onRefresh }) => {
   };
 
   const preFillRecord = (jsonData) => {
-    record.fromJson(jsonData);
+    setRecord(Record.fromJson(jsonData));
     handleRefresh();
   };
 
@@ -99,8 +99,11 @@ const InsertRecordDialog = ({ onRefresh }) => {
     setRefreshCount(refreshCount + 1);
   };
 
+  const handleRecordChange = (record) => {
+    setRecord(record);
+  }
+
   const handleInsert = () => {
-    console.log(record)
     api.createRecord(record);
     handleClear();
     if (typeof onRefresh === 'function') {
@@ -146,7 +149,7 @@ const InsertRecordDialog = ({ onRefresh }) => {
               <Button variant='outlined' onClick={handlePreFill} style={insertApplyButtonStyle}>{t("fill_insert_record")}</Button>
             </Paper>
 
-            <RecordTextFields record={record} key={refreshCount} />
+            <RecordTextFields record={record} onRecordChange={handleRecordChange} key={refreshCount} />
           </DialogContent>
           <DialogActions style={dialogActionsStyle}>
             <Button variant='outlined' onClick={handleClose} style={insertApplyButtonStyle}>{t("cancel")}</Button>

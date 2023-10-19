@@ -38,10 +38,10 @@ export class Record {
         record.sysno = jsonData.sysno;
         record.volume_number = jsonData.volume_number ? decodeURIComponent(jsonData.volume_number) : null;
         record.item_number = jsonData.item_number ? decodeURIComponent(jsonData.item_number) : null;
-        record.category_id = jsonData.category_id;
+        record.category_id = jsonData.category_id ? parseInt(jsonData.category_id) : null;
         record.category_name = jsonData.category_name ? decodeURIComponent(jsonData.category_name) : null;
         record.title = jsonData.title ? decodeURIComponent(jsonData.title) : null;
-        record.pages_count = jsonData.pages_count;
+        record.pages_count = jsonData.pages_count ? parseInt(jsonData.pages_count) : null;
         record.signature = jsonData.signature ? decodeURIComponent(jsonData.signature) : null;
         record.issn = jsonData.issn;
         record.isbn = jsonData.isbn;
@@ -59,6 +59,7 @@ export class Record {
     }
 
     toJson() {
+        // TODO: check for empty strings
         return {
             sysno: this.sysno,
             volume_number: this.volume_number ? encodeURIComponent(this.volume_number) : null,

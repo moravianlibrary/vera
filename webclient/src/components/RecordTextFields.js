@@ -4,6 +4,8 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import i18n from 'i18next';
 
+import { Record } from '../models/Record';
+
 const containerStyle = {
   display: 'flex',
   flexDirection: 'column',
@@ -25,6 +27,19 @@ class RecordTextFields extends Component {
     };
   }
 
+  handleRecordChange = (e, field) => {
+    this.setState((prevState) => {
+      const updatedRecord = {
+        ...prevState.record,
+        [field]: e.target.value,
+      };
+      const updatedRecordInstance = Record.fromJson(updatedRecord);
+      return { record: updatedRecordInstance };
+    }, () => {
+      this.props.onRecordChange(this.state.record);
+    });
+  }
+
   render() {
     const { record } = this.state;
 
@@ -43,7 +58,7 @@ class RecordTextFields extends Component {
             fullWidth
             variant="standard"
             value={record.sysno}
-            onChange={(e) => this.setState({ record: { ...record, sysno: e.target.value } })}
+            onChange={(e) => this.handleRecordChange(e, 'sysno')}
           /> 
           <TextField
             margin="dense"
@@ -53,7 +68,7 @@ class RecordTextFields extends Component {
             fullWidth
             variant="standard"
             value={record.volume_number}
-            onChange={(e) => this.setState({ record: { ...record, volume_number: e.target.value } })}
+            onChange={(e) => this.handleRecordChange(e, 'volume_number')}
           />
           <TextField
             margin="dense"
@@ -63,9 +78,9 @@ class RecordTextFields extends Component {
             fullWidth
             variant="standard"
             value={record.item_number}
-            onChange={(e) => this.setState({ record: { ...record, item_number: e.target.value } })}
+            onChange={(e) => this.handleRecordChange(e, 'item_number')}
           />
-          {/* <TextField
+          <TextField
             margin="dense"
             id="category"
             label={i18n.t("category")}
@@ -73,9 +88,9 @@ class RecordTextFields extends Component {
             fullWidth
             variant="standard"
             value={record.category}
-            onChange={(e) => this.setState({ record: { ...record, category_id: e.target.value } })}
+            onChange={(e) => this.handleRecordChange(e, 'category_id')}
 
-          /> */}
+          />
           <TextField
             margin="dense"
             id="title"
@@ -84,7 +99,7 @@ class RecordTextFields extends Component {
             fullWidth
             variant="standard"
             value={record.title}
-            onChange={(e) => this.setState({ record: { ...record, title: e.target.value } })}
+            onChange={(e) => this.handleRecordChange(e, 'title')}
           />
           <TextField
             margin="dense"
@@ -98,7 +113,7 @@ class RecordTextFields extends Component {
                 pattern: '[0-9]*',
             }}
             value={record.pages_count}
-            onChange={(e) => this.setState({ record: { ...record, pages_count: e.target.value } })}
+            onChange={(e) => this.handleRecordChange(e, 'pages_count')}
           />
           <TextField
             margin="dense"
@@ -108,7 +123,7 @@ class RecordTextFields extends Component {
             fullWidth
             variant="standard"
             value={record.signature}
-            onChange={(e) => this.setState({ record: { ...record, signature: e.target.value } })}
+            onChange={(e) => this.handleRecordChange(e, 'signature')}
           />
           <TextField
             margin="dense"
@@ -118,7 +133,7 @@ class RecordTextFields extends Component {
             fullWidth
             variant="standard"
             value={record.issn}
-            onChange={(e) => this.setState({ record: { ...record, issn: e.target.value } })}
+            onChange={(e) => this.handleRecordChange(e, 'issn')}
           />
           <TextField
             margin="dense"
@@ -128,7 +143,7 @@ class RecordTextFields extends Component {
             fullWidth
             variant="standard"
             value={record.isbn}
-            onChange={(e) => this.setState({ record: { ...record, isbn: e.target.value } })}
+            onChange={(e) => this.handleRecordChange(e, 'isbn')}
           />
           <TextField
             margin="dense"
@@ -138,7 +153,8 @@ class RecordTextFields extends Component {
             fullWidth
             variant="standard"
             value={record.barcode}
-            onChange={(e) => this.setState({ record: { ...record, barcode: e.target.value } })}
+            onChange={(e) => this.handleRecordChange(e, 'barcode')}
+
           />
         </Paper>
       </div>

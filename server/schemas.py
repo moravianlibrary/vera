@@ -66,17 +66,17 @@ class UserChangePassword(UserCreate):
 
 class User(UserBase):
     id: int
-    department_id: Optional[int]
-    role_id: Optional[int]
+    department_id: Optional[int] = None
+    role_id: Optional[int] = None
 
     class Config:
         from_attributes = True
 
 
 class UserEnlistment(User):
-    department_abbreviation: Optional[str]
-    department_name: Optional[str]
-    role_name: Optional[str]
+    department_abbreviation: Optional[str] = None
+    department_name: Optional[str] = None
+    role_name: Optional[str] = None
 
 
 class UsersResponse(BaseModel):
@@ -98,18 +98,18 @@ class Category(CategoryBase):
 
 class RecordBase(BaseModel):
     sysno: str
-    volume_number: Optional[str]
-    item_number: Optional[str]
+    volume_number: Optional[str] = None
+    item_number: Optional[str] = None
 
 
 class RecordPreCreate(RecordBase):
     title: str
-    pages_count: Optional[int]
+    pages_count: Optional[int] = None
 
-    signature: Optional[str]
-    issn: Optional[str]
-    isbn: Optional[str]
-    barcode: Optional[str]
+    signature: Optional[str] = None
+    issn: Optional[str] = None
+    isbn: Optional[str] = None
+    barcode: Optional[str] = None
 
 
 class RecordCreate(RecordPreCreate):
@@ -130,9 +130,9 @@ class RecordView(Record):
 
     creator: str
 
-    extractor_id: Optional[int]
-    extractor: Optional[str]
-    extracted_at: Optional[datetime]
+    extractor_id: Optional[int] = None
+    extractor: Optional[str] = None
+    extracted_at: Optional[datetime] = None
 
     comments_count: int
 
@@ -164,7 +164,7 @@ class Comment(CommentBase):
     record_id: int
     user_id: int
     created_at: datetime
-    edited_at: Optional[datetime]
+    edited_at: Optional[datetime] = None
 
     class Config:
         arbitrary_types_allowed=True

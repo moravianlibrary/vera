@@ -12,7 +12,7 @@ import { api } from '../services/Api';
 import { Record } from '../models/Record';
 import RecordTextFields from '../components/RecordTextFields';
 
-const EditRecordDialog = ({ selectedRecord, onClose }) => {
+const EditRecordDialog = ({ selectedRecord, onClose, onUpdateRecord, onDeleteRecord }) => {
   const dialogActionsStyle = {
     'margin-right': '20px',
     'margin-left': '20px',
@@ -30,7 +30,6 @@ const EditRecordDialog = ({ selectedRecord, onClose }) => {
     textTransform: 'none',
     margin: '5px',
     color: 'white',
-    // backgroundColor: '#af2535',
     backgroundColor: '#b92f3f',
     border: '2px solid #a51b2b',
   }
@@ -49,7 +48,6 @@ const EditRecordDialog = ({ selectedRecord, onClose }) => {
 
   const handleRecordChange = (updatedRecord) => {
     setRecord(updatedRecord);
-    // this.setState({ record: updatedRecord });
   }
 
   const handleClose = () => {
@@ -58,19 +56,17 @@ const EditRecordDialog = ({ selectedRecord, onClose }) => {
     }
   };
 
-  const handleRefresh = () => {
-    setRefreshCount(refreshCount + 1);
-  };
-
-  const handleDelete = () => {
-    api.deleteRecord(record);
-    handleRefresh();
+  const handleUpdate = () => {
+    if (typeof onUpdateRecord === 'function') {
+      onUpdateRecord(record);
+    }
     handleClose();
   };
 
-  const handleUpdate = () => {
-    console.log(record);
-    api.updateRecord(record);
+  const handleDelete = () => {
+    if (typeof onDeleteRecord === 'function') {
+      onDeleteRecord(record);
+    }
     handleClose();
   };
 
@@ -84,7 +80,7 @@ const EditRecordDialog = ({ selectedRecord, onClose }) => {
               {t("insert_record_tooltip")}
             </DialogContentText>
 
-            <RecordTextFields record={record} key={refreshCount} />
+            <RecordTextFields record={record} onRecordChange={handleRecordChange} key={refreshCount} />
           </DialogContent>
           <DialogActions style={dialogActionsStyle}>
             <div>

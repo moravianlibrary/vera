@@ -91,8 +91,11 @@ const columns = [
 const PaginateTable = () => {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [refreshCount, setRefreshCount] = useState(0);
+
   const [items, setItems] = useState([]);
   const [totalRows, setTotalRows] = useState(0);
+  const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
 
   const [selectedRecord, setSelectedRecord] = useState(null);
@@ -110,6 +113,8 @@ const PaginateTable = () => {
   }, [perPage])
 
   const fetchData = async (page, page_size) => {
+    console.log(page);
+    setPage(page);
     api.getRecords(page, page_size)
       .then(
         (result) => {
@@ -132,6 +137,10 @@ const PaginateTable = () => {
     setPerPage(newPerPage);
   }
 
+  const handlePageRefresh = () => {
+    setRefreshCount(refreshCount + 1);
+  };
+
   const handleRecordEdit = (record) => {
     setSelectedRecord(record);
     setIsDialogOpen(true);
@@ -141,6 +150,29 @@ const PaginateTable = () => {
     setSelectedRecord(null);
     setIsDialogOpen(false);
   };
+
+  const handleUpdateRecord = (record) => {
+    api.updateRecord(record).then((updatedRecord) => {
+      const itemIndex = items.findIndex((item) => item.id === updatedRecord.id);
+      items[itemIndex] = record;
+      handleCloseEditDialog();
+      handlePageRefresh();
+    })
+    .catch((error) => {
+      console.error('Error updating record:', error);
+    });
+  }
+
+  const handleDeleteRecord = (record) => {
+    api.deleteRecord(record).then((deletedRecord) => {
+      fetchData(page, perPage);
+      handleCloseEditDialog();
+      handlePageRefresh();
+    })
+    .catch((error) => {
+      console.error('Error deleting record:', error);
+    });
+  }
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -169,6 +201,8 @@ const PaginateTable = () => {
           <EditRecordDialog
             selectedRecord={selectedRecord}
             onClose={handleCloseEditDialog}
+            onUpdateRecord={handleUpdateRecord}
+            onDeleteRecord={handleDeleteRecord}
           />
         )}
       </div>

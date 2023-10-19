@@ -69,6 +69,17 @@ class Api {
             })
         ;
     }
+
+    deleteRecord(record) {
+        return axios.delete(`/records/${record.id}`, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.error(error);
+            })
+        ;
+    }
 }
 
 export const api = new Api();
