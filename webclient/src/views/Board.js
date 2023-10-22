@@ -10,7 +10,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputText } from 'primereact/inputtext';
 import { Slider } from 'primereact/slider';
 import { Tooltip } from 'primereact/tooltip';
-import { classNames } from 'primereact/utils';
+import { DomHandler, classNames } from 'primereact/utils';
 
 import { useTranslation } from "react-i18next";
 import i18n from 'i18next';
@@ -20,6 +20,11 @@ import EditRecordDialog from '../dialogs/EditRecordDialog.js';
 import { api } from '../services/Api.js';
 import { Record } from '../models/Record.js';
 import './Board.css';
+import { InputTextarea } from 'primereact/inputtextarea';
+import { InputNumber } from 'primereact/inputnumber';
+import { Tag } from 'primereact/tag';
+import { useRef } from 'react';
+import { da } from 'date-fns/locale';
 
 function Funcbar({ onRefresh }) {
 
@@ -32,146 +37,29 @@ function Funcbar({ onRefresh }) {
   );
 }
 
-const columns = [
-  {
-      name: i18n.t('sysno'),
-      selector: record => record.sysno,
-      width: '120px'
-  },
-  {
-      name: i18n.t('volume_number'),
-      selector: record => record.volume_number,
-  },
-  {
-      name: i18n.t('item_number'),
-      selector: record => record.item_number,
-  },
-  {
-      name: i18n.t('category'),
-      selector: record => record.category_name,
-  },
-  {
-      name: i18n.t('title'),
-      selector: record => record.title,
-  },
-  {
-      name: i18n.t('pages_count'),
-      selector: record => record.pages_count,
-  },
-  {
-      name: i18n.t('signature'),
-      selector: record => record.signature,
-  },
-  {
-      name: i18n.t('issn'),
-      selector: record => record.issn,
-  },
-  {
-      name: i18n.t('isbn'),
-      selector: record => record.isbn,
-  },
-  {
-      name: i18n.t('barcode'),
-      selector: record => record.barcode,
-  },
-  {
-      name: i18n.t('creator'),
-      selector: record => record.creator,
-  },
-  {
-      name: i18n.t('created_at'),
-      selector: record => record.getCreatedAtFormatted(),
-  },
-  {
-      name: i18n.t('extractor'),
-      selector: record => record.extractor,
-  },
-  {
-      name: i18n.t('extracted_at'),
-      selector: record => record.getExtractedAtFormatted(),
-  },
-];
-
 const PaginateTable = () => {
-  const template1 = {
-      layout: 'PrevPageLink PageLinks NextPageLink RowsPerPageDropdown CurrentPageReport',
-      PrevPageLink: (options) => {
-          return (
-            <div>
-                vpravo
-              <button onClick={options.onClick} >
-              {/* <button type="button" className={classNames(options.className, 'border-round')} onClick={options.onClick} disabled={options.disabled}> */}
-                <i className="pi pi-check"></i>
-                  <span className="p-3">Previous</span>
-                  <Ripple />
-              </button>
-
-            </div>
-          );
-      },
-      NextPageLink: (options) => {
-          return (
-              <button type="button" className={classNames(options.className, 'border-round')} onClick={options.onClick} disabled={options.disabled}>
-                  <span className="p-3">Next</span>
-                  <Ripple />
-              </button>
-          );
-      },
-      PageLinks: (options) => {
-          if ((options.view.startPage === options.page && options.view.startPage !== 0) || (options.view.endPage === options.page && options.page + 1 !== options.totalPages)) {
-              const className = classNames(options.className, { 'p-disabled': true });
-
-              return (
-                  <span className={className} style={{ userSelect: 'none' }}>
-                      ...
-                  </span>
-              );
-          }
-
-          return (
-              <button type="button" className={options.className} onClick={options.onClick}>
-                  {options.page + 1}
-                  <Ripple />
-              </button>
-          );
-      },
-      RowsPerPageDropdown: (options) => {
-          const dropdownOptions = [
-              { label: 10, value: 10 },
-              { label: 20, value: 20 },
-              { label: 30, value: 30 },
-          ];
-          return (<div>
-            nadpis
-            <Dropdown value={options.value} options={dropdownOptions} onChange={options.onChange} />
-          </div>
-          );
-      },
-      CurrentPageReport: (options) => {
-          return (
-              <span className="mx-3" style={{ color: 'var(--text-color)', userSelect: 'none' }}>
-                  Go to
-                  {/* <InputText size="2" className="ml-1" value={currentPage} tooltip={pageInputTooltip} onKeyDown={(e) => onPageInputKeyDown(e, options)} onChange={onPageInputChange} /> */}
-              </span>
-          );
-      }
-  };
-
   const tableStyles = {
     minWidth: '80%',
   };
+
+    const [editingRows, setEditingRows] = useState([]);
+
 
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [refreshCount, setRefreshCount] = useState(0);
 
   const [offset, setOffset] = useState(0);
-  const [rows, setRows] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [rows, setRows] = useState(15);
   const [totalRows, setTotalRows] = useState(0);
+
+    const [categories, setCategories] = useState([]);
+  const [newRecord, setNewRecord] = useState({});
   const [records, setRecords] = useState([]);
 
-  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [selectedRecord, setSelectedRecord] = useState(new Record());
+  const [selectedRecords, setSelectedRecords] = useState([]);
+  const [insertMode, setInsertMode] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   const { t } = useTranslation();
@@ -183,7 +71,11 @@ const PaginateTable = () => {
 
   useEffect(() => {
     fetchData(0, rows);
-  }, [rows])
+  }, [rows]);
+
+    useEffect(() => {
+        fetchCategories()
+    }, []);
 
   const fetchData = async (offset, rows) => {
     api.getRecords(offset, rows)
@@ -200,12 +92,24 @@ const PaginateTable = () => {
       )
   }
 
+    const fetchCategories = () => {
+        api.getCategories().then(
+            (result) => {
+                setCategories(result.map(category => category.name));
+            },
+            (error) => {
+
+            }
+        )
+    }
+
   const leftContent = <Button type="button" icon="pi pi-star" className="p-button-outlined" />;
   
   const handlePageChange = (event) => {
     setOffset(event.first);
     setRows(event.rows);
     fetchData(offset, rows);
+    console.log("page refresh");
   }
 
   const handlePageRefresh = () => {
@@ -213,12 +117,12 @@ const PaginateTable = () => {
   };
 
   const handleRecordEdit = (record) => {
-    setSelectedRecord(record);
+    setSelectedRecords([record]);
     setIsDialogOpen(true);
   }
 
   const handleCloseEditDialog = () => {
-    setSelectedRecord(null);
+    setSelectedRecords([]);
     setIsDialogOpen(false);
   };
 
@@ -244,6 +148,58 @@ const PaginateTable = () => {
     });
   }
 
+    const textEditor = (options) => {
+        return <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
+    };
+
+    const numberEditor = (options) => {
+        return <InputNumber value={options.value} onValueChange={(e) => options.editorCallback(e.target.value)} min={1} />;
+    };
+
+    const textareaEditor = (options) => {
+        return <InputTextarea type="text" autoResize value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
+    };
+
+    const categoryEditor = (options) => {
+        return (
+            <Dropdown
+                value={options.value}
+                options={categories}
+                onChange={(e) => options.editorCallback(e.value)}
+            />
+        );
+    };
+
+    const handleClickInsert = () => {
+        if (insertMode) {
+            return;
+        }
+        setInsertMode(true);
+        const newRecord = new Record();
+        setRecords((prevRecords) => [newRecord, ...prevRecords]);
+        setTimeout(() => {
+            setEditingRows([...editingRows, newRecord]);
+        }, 1);
+    }
+
+    const onRowEditChange = (event) => {
+        const { data } = event;
+        const activeRowArray = Array.isArray(data) ? data : [data];
+        setEditingRows(activeRowArray);
+    }
+
+    const tableHeader = () => {
+        return (
+            <div>
+                <Button variant="text" onClick={handleClickInsert} >
+                    {t("insert_record_title")}
+                </Button>
+            </div>
+        );
+    }
+
+    const dataTableRef = useRef(null);
+
   if (error) {
     return <div>Error: {error.message}</div>;
   } else if (!isLoaded) {
@@ -252,47 +208,50 @@ const PaginateTable = () => {
     return (
       <div className="table-container" style={tableStyles}>
 
-        <DataTable value={records}
-            tableStyle={{ minWidth: '50rem' }} 
-            leftContent={leftContent}
-            // paginator
-            // paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-            // first={offset}
-            // rows={rows}
-            // totalRecords={totalRows}
-            // onPageChange={handlePageChange}
+        <DataTable
+            value={records}
+            header={tableHeader}
+            editMode="row"
+            onRowEditChange={onRowEditChange}
+            editingRows={editingRows || [false]}
+            // selectionMode="multiple"
+            dragSelection
+            // selectionSelectable={isRowSelectable}
+            onSelectionChange={(e) => setSelectedRecords(e.value)}
+            selection={selectedRecords}
+            rowClassName={(rowData) => (rowData.id ? '' : 'non-selectable')}
+            rowGroupMode="rowspan"
         >
-          <Column field="sysno" header="Code"></Column>
-          <Column field="volume_number" header="Name"></Column>
-          <Column field="item_number" header="Category"></Column>
-          <Column field="quantity" header="Quantity"></Column>
+          <Column field="sysno" header={t('sysno')} editor={textEditor} />
+          <Column field="volume_number" header={t('volume_number')} editor={textEditor} />
+          <Column field="item_number" header={t('item_number')} editor={textEditor} />
+          <Column field="category_name" header={t('category')} editor={categoryEditor} />
+          <Column field="title" header={t('title')} editor={textareaEditor} />
+          <Column field="pages_count" header={t('pages_count')} editor={numberEditor} />
+          <Column field="signature" header={t('signature')} editor={textEditor} />
+          <Column field="issn" header={t('issn')} editor={textEditor} />
+          <Column field="isbn" header={t('isbn')} editor={textEditor} />
+          <Column field="barcode" header={t('barcode')} editor={textEditor} />
+          <Column field="creator" header={t('creator')} />
+          <Column field={r => r.getCreatedAtFormatted()} header={t('created_at')} />
+          <Column field="extractor" header={t('extractor')} />
+          <Column field={r => r.getExtractedAtFormatted()} header={t('extracted_at')} />
+
+            <Column rowEditor />
+          <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
         </DataTable>
 
-        {/* <Divider /> */}
-
-        <Paginator first={offset} rows={rows} totalRecords={totalRows} onPageChange={handlePageChange}
-          // template="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-          template={template1}
+        <Paginator
+          first={offset}
+          rows={rows}
+          rowsPerPageOptions={[10, 15, 20, 25, 50]}
+          totalRecords={totalRows}
+          onPageChange={handlePageChange}
+          template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
+          currentPageReportTemplate={"{first} - {last} " + t('range_separator') + " {totalRecords}"}
+        //   leftContent={leftContent}
         />
-
     
-        {/* <DataTable
-          columns={columns}
-          data={records}
-          onRowDoubleClicked={handleRecordEdit}
-          pointerOnHover
-          highlightOnHover
-          pagination
-          paginationRowsPerPageOptions={[10, 25, 50]}
-          paginationPerPage={25}
-          paginationServer
-          paginationTotalRows={totalRows}
-          paginationComponentOptions={customPaginationOptions}
-          onChangePage={handlePageChange}
-          onChangeRowsPerPage={handlePerRowsChange}
-          selectableRows
-        /> */}
-
         {isDialogOpen && (
           <EditRecordDialog
             selectedRecord={selectedRecord}

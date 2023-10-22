@@ -22,6 +22,17 @@ class Api {
             })
     };
 
+    getCategories() {
+        return axios.get(`/categories`, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                throw error;
+            }
+        );
+    }
+
     getRecords(offset, rows) {
         return axios.get(`/records?offset=${offset}&limit=${rows}`, { headers: authHeader() })
             .then(response => {

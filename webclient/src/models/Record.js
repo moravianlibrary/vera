@@ -75,7 +75,7 @@ export class Record {
     }
 
     getCreatedAtFormatted() {
-        return format(new Date(this.created_at), 'dd.MM.yyyy HH:mm:ss');
+        return this.created_at ? format(new Date(this.created_at), 'dd.MM.yyyy HH:mm:ss') : null;
     }
 
     getExtractedAtFormatted() {

@@ -46,22 +46,30 @@ ul.funcbar {
   cursor: pointer;
 }
 
-button {
+.p-inputtext {
+    width: 100%;
+}
+
+.non-selectable .p-selection-column {
+  display: none;
+}
+
+/* button {
     background-color: transparent;
     border: none;
     color: #fff;
     cursor: pointer;
-}
+} */
 
-table {
+/* table {
     width: 100%;
     border-collapse: collapse;
     margin: 20px 0;
     table-layout: fixed;
-}
+} */
 
-th {
-    background-color: #f2f2f2;
+/* th { */
+    /* background-color: #f2f2f2;
     font-weight: bold;
     text-align: left;
     padding: 8px;
@@ -81,4 +89,4 @@ td {
 
 tr:hover {
     background-color: #ddd;
-}
+} */
