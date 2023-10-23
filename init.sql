@@ -1,16 +1,11 @@
 -- Creates actions types enum
-CREATE TYPE ACTION_TYPE AS ENUM (
-	'edit_user_credentials', 'edit_user_enlistment', 'remove_user',
-	'add_department', 'edit_department', 'remove_department',
-	'add_role', 'edit_role', 'remove_role',
-	'add_category', 'edit_category', 'remove_category',
-	'browse_records', 'add_record', 'edit_record', 'comment_on_record', 'remove_record', 
-	'edit_comment', 'remove_comment',
-	'extract_records'
+CREATE TYPE action_type AS ENUM (
+	'read_datatable_own', 'read_datatable_department', 'read_datatable_all',
+	'edit_datatable_own', 'edit_datatable_department', 'edit_datatable_all',
+	'write_datatable', 'comment_on_datatable',
+	'edit_access', 'edit_categories',
+	'extract'
 );
-
--- Creates actions scopes enum
-CREATE TYPE ACTION_SCOPE AS ENUM ('own', 'department', 'all');
 
 -- Creates roles table
 CREATE TABLE IF NOT EXISTS roles (
@@ -21,9 +16,8 @@ CREATE TABLE IF NOT EXISTS roles (
 -- Creates actions x roles mapping table
 CREATE TABLE IF NOT EXISTS actions (
 	role_id INT NOT NULL REFERENCES roles(id),
-	action_type ACTION_TYPE NOT NULL,
-	action_scope ACTION_SCOPE,
-	PRIMARY KEY (role_id, action_type)
+	action action_type NOT NULL,
+	PRIMARY KEY (role_id, action)
 );
 
 -- Create departments table
@@ -99,16 +93,24 @@ CREATE TABLE IF NOT EXISTS comments (
 -- Create admin role
 INSERT INTO roles (name) VALUES ('Admin');
 
-INSERT INTO actions (role_id, action_type, action_scope)
-	SELECT 1, ev.a_type, 'all' FROM (SELECT unnest(enum_range(NULL::ACTION_TYPE)) AS a_type) AS ev;
+INSERT INTO actions (role_id, action)
+SELECT 1, (ev.a_type)::action_type
+FROM (VALUES
+    ('read_datatable_all'),
+    ('edit_datatable_all'),
+    ('write_datatable'),
+    ('comment_on_datatable'),
+    ('edit_access'),
+    ('edit_categories'),
+    ('extract')
+) AS ev(a_type);
 
 -- Create views
 CREATE OR REPLACE VIEW role_view AS
 SELECT
 	r.id,
 	r.name,
-	a.action_type,
-	a.action_scope
+	a.action
 FROM roles r
 LEFT JOIN actions a ON r.id = a.role_id;
 

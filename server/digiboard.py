@@ -9,15 +9,15 @@ from database import get_db
 
 app = FastAPI()
 
-CAN_BROWSE_USERS = [Depends(actions.check_permissions)]
-CAN_EDIT_USER = [Depends(actions.check_permissions)]
-CAN_EDIT_USERS = [Depends(actions.check_permissions)]
-IS_USER = [Depends(actions.check_permissions)]
-CAN_BROWSE_RECORDS = [Depends(actions.check_permissions)]
-CAN_CREATE_RECORDS = [Depends(actions.check_permissions)]
-CAN_COMMENT_ON_RECORD = [Depends(actions.check_permissions)]
-CAN_EDIT_RECORD = [Depends(actions.check_permissions)]
-CAN_EXTRACT_RECORDS = [Depends(actions.check_permissions)]
+# CAN_BROWSE_USERS = [Depends(actions.check_permissions)]
+# CAN_EDIT_USER = [Depends(actions.check_permissions)]
+# CAN_EDIT_USERS = [Depends(actions.check_permissions)]
+# IS_USER = [Depends(actions.check_permissions)]
+# CAN_BROWSE_RECORDS = [Depends(actions.check_permissions)]
+# CAN_CREATE_RECORDS = [Depends(actions.check_permissions)]
+# CAN_COMMENT_ON_RECORD = [Depends(actions.check_permissions)]
+# CAN_EDIT_RECORD = [Depends(actions.check_permissions)]
+# CAN_EXTRACT_RECORDS = [Depends(actions.check_permissions)]
 
 origins = [
     "http://localhost:8000",
@@ -93,8 +93,7 @@ def delete_role(role_id: int,
 
 
 def get_role_actions(role_id: int, db: Session):
-    return [schemas.Action(action_type=db_action.action_type, action_scope=db_action.action_scope) 
-            for db_action in crud.get_role_actions(role_id, db)]
+    return [action[0] for action in crud.get_role_actions(role_id, db)]
 
 
 @app.get("/roles/{role_id}", response_model=schemas.RoleActions)
@@ -148,7 +147,7 @@ def create_department(db: Session = Depends(get_db)):
     return schemas.DepartmentsResponse(departments=[schemas.Department(id=department.id, abbreviation=department.abbreviation, name=department.name) for department in crud.get_departments(db)])
 
 
-@app.put("/users/{user_id}", response_model=schemas.User)
+@app.put("/users/{user_id}", response_model=schemas.UserEnlistment)
 def update_user(user: schemas.User,
                 user_id: int = Path(...),
                 db: Session = Depends(get_db)):

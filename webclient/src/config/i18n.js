@@ -6,6 +6,7 @@ const resources = {
     translation: {
         home: "Domov",
         board: "Záznamy",
+        access: "Správa oprávnění",
         login: "Přihlásit se",
         logout: "Odhlásit se",
 
@@ -15,6 +16,9 @@ const resources = {
         password: "Heslo",
         login_button: "Přihlásit",
         login_tooltip: "",
+
+        department: "Oddělení",
+        role_name: "Role",
 
         rows_per_page: "Řádků na stránku",
         range_separator: "ze",

@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func, update, select
-from typing import Optional
+from typing import List, Optional
 
 from database import create
+from etypes import ActionType
 import models, schemas
 
 
@@ -30,8 +31,7 @@ def update_role_actions(role: schemas.Role,
     for action in role.actions:
         create(db, models.Action(
             role_id=role.id,
-            action_type=action.action_type,
-            action_scope=action.action_scope
+            action_type=action,
         ))
     
     db.commit()
@@ -57,7 +57,7 @@ def get_role(role_id: int,
 
 def get_role_actions(role_id: int,
                      db: Session):
-    return db.query(models.Action).filter(models.Action.role_id == role_id).all()
+    return db.query(models.Action.action).filter(models.Action.role_id == role_id).all()
 
 
 def get_roles(db: Session):

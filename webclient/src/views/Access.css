@@ -1,0 +1,29 @@
+/* .Access {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 150px;
+} */
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.add-button {
+    position: absolute;
+}
+
+.middle-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.scope_action {
+  display: flex;
+  flex-direction: column;
+}

@@ -64,11 +64,6 @@ const PaginateTable = () => {
   
   const { t } = useTranslation();
 
-  const customPaginationOptions = {
-    rowsPerPageText: t("rows_per_page"),
-    rangeSeparatorText: t("range_separator"),
-  };
-
   useEffect(() => {
     fetchData(0, rows);
   }, [rows]);
@@ -179,7 +174,7 @@ const PaginateTable = () => {
         setRecords((prevRecords) => [newRecord, ...prevRecords]);
         setTimeout(() => {
             setEditingRows([...editingRows, newRecord]);
-        }, 1);
+        }, 500);
     }
 
     const onRowEditChange = (event) => {

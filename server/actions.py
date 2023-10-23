@@ -5,7 +5,7 @@ from typing import Set
 import auth, crud, schemas
 from database import get_db
 from auth import Role
-from etypes import ActionType, ActionScope
+from etypes import ActionType
 
 
 FORBIDDEN_EXCEPTION = HTTPException(
@@ -26,10 +26,3 @@ def extract_token(request: Request):
         return {"message": "Invalid Authorization header format"}
 
     return parts[1]
-
-
-def check_permissions(action_type: ActionType, allowed_scopes: Set[ActionScope], request: Request, db: Session = Depends(get_db)):
-    token = extract_token(request)
-    actions = auth.get_current_user_actions(db, token)
-    for action in actions:
-        print(action)

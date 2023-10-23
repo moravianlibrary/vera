@@ -14,6 +14,7 @@ const Navbar = () => {
       <ul className="navbar">
         <li className='navbar-button'><Link to="/">{t("home")}</Link></li>
         <li><Link to="/board">{t("board")}</Link></li>
+        <li><Link to="/access">{t("access")}</Link></li>
         {/* <li className="right"><Link to="/login">{t("login")}</Link></li> */}
         <li className="right"><LoginDialog /></li>
       </ul>

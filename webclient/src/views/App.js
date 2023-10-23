@@ -3,8 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // import Home from './Home'; 
 import { ProtectedRoute } from '../services/Auth';
-import Navbar from './Navbar';
+import Access from './Access';
 import Board from './Board';
+import Navbar from './Navbar';
 import '../config/i18n';
 import './App.css';
 
@@ -20,6 +21,9 @@ function App() {
               {/* <Route path="/" element={<Home />} /> */}
               <Route path="/board" element={<ProtectedRoute />}>
                 <Route path="/board" element={<Board />} />
+              </Route>
+              <Route path="/access" element={<ProtectedRoute />}>
+                <Route path="/access" element={<Access />} />
               </Route>
             </Routes>
           </main>

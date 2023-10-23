@@ -22,8 +22,62 @@ class Api {
             })
     };
 
+    updateUser(user) {
+        return axios.put(`/users/${user.id}`, user)
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                throw error;
+            })
+    }
+
+    getUsers() {
+        return axios.get(`/users`, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                throw error;
+            }
+        );
+    }
+
     getCategories() {
         return axios.get(`/categories`, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                throw error;
+            }
+        );
+    }
+
+    getDepartments() {
+        return axios.get(`/departments`, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                throw error;
+            }
+        );
+    }
+
+    getRoles() {
+        return axios.get(`/roles`, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                throw error;
+            }
+        );
+    }
+
+    getRolesActions() {
+        return axios.get(`/roles_actions`, { headers: authHeader() })
             .then(response => {
                 return response.data;
             })

@@ -1,8 +1,13 @@
 .App {
-  display: flex;
+  /* display: flex;
   justify-content: center;
   align-items: center;
-  margin: auto;
+  margin: auto; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 150px;
 }
 
 main {

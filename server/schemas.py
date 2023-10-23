@@ -2,12 +2,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Set
 from datetime import datetime
 from models import Role
-from etypes import ActionType, ActionScope
-
-
-class Action(BaseModel):
-    action_type: ActionType
-    action_scope: ActionScope
+from etypes import ActionType
 
 
 class RoleBase(BaseModel):
@@ -19,7 +14,7 @@ class Role(RoleBase):
 
 
 class RoleActions(Role):
-    actions: List[Action]
+    actions: List[ActionType]
 
 
 class RolesResponse(BaseModel):
