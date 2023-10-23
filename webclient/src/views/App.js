@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // import Home from './Home'; 
@@ -8,10 +8,14 @@ import Board from './Board';
 import Navbar from './Navbar';
 import '../config/i18n';
 import './App.css';
+import { Messages } from 'primereact/messages';
 
 // import logo from './logo.svg';
 
+
 function App() {
+  const msgs = useRef(null);
+
   return (
     <Router>
       <div className="App">
@@ -26,6 +30,7 @@ function App() {
                 <Route path="/access" element={<Access />} />
               </Route>
             </Routes>
+            <Messages ref={msgs} />
           </main>
       </div>
     </Router>

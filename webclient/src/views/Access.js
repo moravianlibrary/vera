@@ -15,6 +15,8 @@ import './Access.css';
 import { tab } from "@testing-library/user-event/dist/tab.js";
 import { ColumnGroup } from "primereact/columngroup";
 import { Row } from "primereact/row";
+import RolesTable from "../components/RolesTable.js";
+import { roleEditor } from "../services/Editors.js";
 
 const TableEnum = {
     USERS: 'users',
@@ -38,7 +40,6 @@ const Access = () => {
     const [users, setUsers] = useState([]);
     const [totalUsers, setTotalUsers] = useState(0);
     const [departments, setDepartments] = useState([]);
-    const [roles, setRoles] = useState([]);
     
     const fetchUsers = async () => {
         api.getUsers()
@@ -67,22 +68,9 @@ const Access = () => {
         )
     }
 
-    const fetchRoles = async () => {
-        api.getRolesActions()
-        .then(
-            (result) => {
-                setRoles(result.roles.map(role => Role.fromJson(role)));
-            },
-            (error) => {
-                setError(error);
-            }
-        )
-    }
-
     useEffect(() => {
         fetchUsers();
         fetchDepartments();
-        fetchRoles();
     }, [table]);
 
     const textEditor = (options) => {
@@ -99,16 +87,6 @@ const Access = () => {
         );
     };
 
-    const roleEditor = (options) => {
-        return (
-            <Dropdown
-                value={options.value}
-                options={roles.map(role => role.name)}
-                onChange={(e) => options.editorCallback(e.value)}
-            />
-        );
-    };
-
     const handleInsert = () => {
         if (table == TableEnum.DEPARTMENS) {
             const newDepartment = {};
@@ -116,7 +94,6 @@ const Access = () => {
             setEditingRows([...editingRows, newDepartment]);
         } else if (table == TableEnum.ROLES) {
             const newRole = new Role();
-            setRoles([...roles, newRole]);
             setEditingRows([...editingRows, newRole]);
         }
     };
@@ -139,21 +116,6 @@ const Access = () => {
 
     const handleDepartmentEdit = (event) => {
     }
-
-    const handleRoleEdit = (event) => {
-    }
-
-    const handleChangeActionLevel = (event, fieldName, index) => {
-        let _roles = [...roles];
-        _roles[index][fieldName] = parseInt(event.value, 10);
-        setRoles(_roles);
-    }
-
-    const handleChangeAction = (event, index) => {
-        let _roles = [...roles];
-        _roles[index][event.value] = event.checked;
-        setRoles(_roles);
-    }
     
     const tableHeader = () => {
         return (
@@ -165,70 +127,6 @@ const Access = () => {
             </div>
         );
     };
-
-    const readDatatablePicker = (role, column) => {
-        return (
-            <div className="flex flex-column gap-3">
-                <div>
-                    <Checkbox disabled={!editingRows.includes(role)} value="0" onChange={(event) => handleChangeActionLevel(event, 'read_datatable_level', column.rowIndex)} checked={role.read_datatable_level >= 0} />
-                    <label className="ml-2">{t('read_datatable_none')}</label>
-                </div>
-                <div>
-                    <Checkbox disabled={!editingRows.includes(role)} value="1" onChange={(event) => handleChangeActionLevel(event, 'read_datatable_level', column.rowIndex)} checked={role.read_datatable_level >= 1} />
-                    <label className="ml-2">{t('read_datatable_own')}</label>
-                </div>
-                <div>
-                    <Checkbox disabled={!editingRows.includes(role)} value="2" onChange={(event) => handleChangeActionLevel(event, 'read_datatable_level', column.rowIndex)} checked={role.read_datatable_level >= 2} />
-                    <label className="ml-2">{t('read_datatable_department')}</label>
-                </div>
-                <div>
-                    <Checkbox disabled={!editingRows.includes(role)} value="3" onChange={(event) => handleChangeActionLevel(event, 'read_datatable_level', column.rowIndex)} checked={role.read_datatable_level == 3} />
-                    <label className="ml-2">{t('read_datatable_all')}</label>
-                </div>
-            </div>
-        );
-    };
-    
-    const editDatatablePicker = (role, column) => {
-        return (
-            <div className="flex flex-column gap-3">
-                <div>
-                    <Checkbox disabled={!editingRows.includes(role)} value="0" onChange={(event) => handleChangeActionLevel(event, 'edit_datatable_level', column.rowIndex)} checked={role.edit_datatable_level >= 0} />
-                    <label className="ml-2">{t('edit_datatable_none')}</label>
-                </div>
-                <div>
-                    <Checkbox disabled={!editingRows.includes(role)} value="1" onChange={(event) => handleChangeActionLevel(event, 'edit_datatable_level', column.rowIndex)} checked={role.edit_datatable_level >= 1} />
-                    <label className="ml-2">{t('edit_datatable_own')}</label>
-                </div>
-                <div>
-                    <Checkbox disabled={!editingRows.includes(role)} value="2" onChange={(event) => handleChangeActionLevel(event, 'edit_datatable_level', column.rowIndex)} checked={role.edit_datatable_level >= 2} />
-                    <label className="ml-2">{t('edit_datatable_department')}</label>
-                </div>
-                <div>
-                    <Checkbox disabled={!editingRows.includes(role)} value="3" onChange={(event) => handleChangeActionLevel(event, 'edit_datatable_level', column.rowIndex)} checked={role.edit_datatable_level == 3} />
-                    <label className="ml-2">{t('edit_datatable_all')}</label>
-                </div>
-            </div>
-        );
-    };
-
-    const checkboxPicker = (role, column) => {
-        return (
-            <div>
-                <Checkbox disabled={!editingRows.includes(role)} value={column.field} onChange={(event) => handleChangeAction(event, column.rowIndex)} checked={role[column.field] >= 1} />
-                <label className="ml-2">{t(column.field)}</label>
-            </div>
-        );
-    }
-
-    const headerColumnGroup = (
-        <ColumnGroup>
-            <Row>
-                <Column header={t('role_name')} />
-                <Column header={t('actions')} colSpan={8} />
-            </Row>
-        </ColumnGroup>
-    );
 
     const onRowEditChange = (event) => {
         const { data } = event;
@@ -267,25 +165,9 @@ const Access = () => {
                     <Column field="name" header={t('department_name')} editor={textEditor} />
                     <Column rowEditor />
                 </DataTable> }
-                { table === TableEnum.ROLES && <DataTable
-                    value={roles}
+                { table === TableEnum.ROLES && <RolesTable 
                     header={tableHeader}
-                    editMode="row"
-                    onRowEditChange={onRowEditChange}
-                    editingRows={editingRows || [false]}
-                    onRowEditComplete={handleRoleEdit}
-                    headerColumnGroup={headerColumnGroup}
-                >
-                    <Column field="name" editor={textEditor} />
-                    <Column body={readDatatablePicker} />
-                    <Column body={editDatatablePicker} />
-                    <Column field="write_datatable" body={checkboxPicker} />
-                    <Column field="comment_on_datatable" body={checkboxPicker} />
-                    <Column field="edit_access" body={checkboxPicker} />
-                    <Column field="edit_categories" body={checkboxPicker} />
-                    <Column field="extract" body={checkboxPicker} />
-                    <Column rowEditor />
-                </DataTable> }
+                />}
             </div>
         );
     }
