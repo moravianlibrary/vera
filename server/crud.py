@@ -14,6 +14,17 @@ def create_role(role: schemas.RoleBase,
     ))
 
 
+def create_role_actions(role_id: int,
+                        actions: List[ActionType],
+                        db: Session):
+    for action in actions:
+        create(db, models.Action(
+            role_id=role_id,
+            action=action,
+        ))
+    db.commit()
+
+
 def update_role(role: schemas.Role,
                 db: Session):
     db.execute(update(models.Role)
@@ -27,14 +38,7 @@ def update_role_actions(role: schemas.Role,
     actions_to_delete = db.query(models.Action).filter(models.Action.role_id == role.id).all()
     for action in actions_to_delete:
         db.delete(action)
-
-    for action in role.actions:
-        create(db, models.Action(
-            role_id=role.id,
-            action_type=action,
-        ))
-    
-    db.commit()
+    create_role_actions(role.id, role.actions, db)
 
 
 def delete_role(role_id: int,
@@ -61,7 +65,7 @@ def get_role_actions(role_id: int,
 
 
 def get_roles(db: Session):
-    return db.query(models.Role).all()
+    return db.query(models.Role).order_by(models.Role.name).all()
 
 
 def create_department(department: schemas.DepartmentBase,

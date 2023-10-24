@@ -9,6 +9,10 @@ class RoleBase(BaseModel):
     name: str
 
 
+class RoleCreate(RoleBase):
+    actions: List[ActionType]
+
+
 class Role(RoleBase):
     id: int
 

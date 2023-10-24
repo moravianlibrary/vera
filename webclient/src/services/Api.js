@@ -65,6 +65,39 @@ class Api {
         );
     }
 
+    createDepartment(department) {
+        return axios.post(`/departments`, department, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.error(error);
+            }
+        );
+    }
+
+    updateDepartment(department) {
+        return axios.put(`/departments/${department.id}`, department, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.error(error);
+            }
+        );
+    }
+
+    getRoleNames() {
+        return axios.get(`/roles_names`, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                throw error;
+            }
+        );
+    }
+
     getRoles() {
         return axios.get(`/roles`, { headers: authHeader() })
             .then(response => {
@@ -76,13 +109,24 @@ class Api {
         );
     }
 
-    getRolesActions() {
-        return axios.get(`/roles_actions`, { headers: authHeader() })
+    createRole(role) {
+        return axios.post(`/roles`, role.toJson(), { headers: authHeader() })
             .then(response => {
                 return response.data;
             })
             .catch(error => {
-                throw error;
+                console.error(error);
+            }
+        );
+    }
+
+    updateRole(role) {
+        return axios.put(`/roles/${role.id}`, role.toJson(), { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.error(error);
             }
         );
     }

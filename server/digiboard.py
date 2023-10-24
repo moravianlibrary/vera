@@ -68,17 +68,23 @@ def update_user_password(
     return auth.change_user_password(db, user_change_password)
 
 
-@app.post("/roles", response_model=schemas.Role)
-def create_role(role: schemas.RoleBase,
+@app.post("/roles", response_model=schemas.RoleActions)
+def create_role(role: schemas.RoleCreate,
                 db: Session = Depends(get_db)):
-    return crud.create_role(role, db)
+    db_role = crud.create_role(role, db)
+    crud.create_role_actions(db_role.id, role.actions, db)
+    return schemas.RoleActions(
+        id=db_role.id,
+        name=db_role.name,
+        actions=get_role_actions(db_role.id, db)
+    )
 
 
 @app.put("/roles/{role_id}", response_model=schemas.RoleActions)
 def update_role(role: schemas.RoleActions,
                 db: Session = Depends(get_db)):
-    crud.update_role_actions(role, db)
     db_role = crud.update_role(role, db)
+    crud.update_role_actions(role, db)
     return schemas.RoleActions(
         id=db_role.id,
         name=db_role.name,
@@ -109,12 +115,12 @@ def get_role(role_id: int = Path(...),
     )
 
 
-@app.get("/roles", response_model=schemas.RolesResponse)
-def get_roles(db: Session = Depends(get_db)):
+@app.get("/roles_names", response_model=schemas.RolesResponse)
+def get_roles_names(db: Session = Depends(get_db)):
     return schemas.RolesResponse(roles=[schemas.Role(id=role.id, name=role.name) for role in crud.get_roles(db)])
 
 
-@app.get("/roles_actions", response_model=schemas.RolesActionsResponse)
+@app.get("/roles", response_model=schemas.RolesActionsResponse)
 def get_roles(db: Session = Depends(get_db)):
     return schemas.RolesActionsResponse(roles=[schemas.RoleActions(
         id=role.id,

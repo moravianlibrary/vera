@@ -8,39 +8,77 @@ import { Checkbox } from "primereact/checkbox";
 import { ColumnGroup } from "primereact/columngroup";
 import { Row } from "primereact/row";
 import { textEditor } from '../services/Editors.js';
+import { Role } from "../models/Role";
+import { api } from "../services/Api";
 
-const RolesTable = (options) => {
+
+const RolesTable = (props) => {
+    const { handleAddRow, onRowAdded } = props;
     const { t } = useTranslation();
     
     const [roles, setRoles] = useState([]);
 
-    useEffect(() => {
-        setRoles(data.getRolesActions());
-        console.log(data.getRolesActions());
-    }, [roles]);
-    
     const [editingRows, setEditingRows] = useState([]);
+    const [insertMode, setInsertMode] = useState(false);
+    const [refreshCount, setRefreshCount] = useState(0);
+
+    const handleInsert = () => {
+        if (!insertMode) {
+            setInsertMode(true);
+            const newRole = new Role();
+            setRoles([...roles, newRole]);
+            setEditingRows([...editingRows, newRole]);
+        }
+    };
 
     const onRowEditChange = (event) => {
-        const { data } = event;
+        const { data, index } = event;
+        if (insertMode && index == roles.length - 1) {
+            setInsertMode(false);
+        }
         const activeRowArray = (Array.isArray(data) ? data : [data]).filter(role => role.id != 1);
         setEditingRows(activeRowArray);
-    }
+    };
 
     const handleRoleEdit = (event) => {
-    }
+        const { data, newData, index } = event;
+        data.name = newData.name;
+
+        if (insertMode && index == roles.length - 1) {
+            api.createRole(data);
+        } else {
+            api.updateRole(data);
+            setRefreshCount(refreshCount + 1);
+        }
+    };
 
     const handleChangeActionLevel = (event, fieldName, index) => {
         let _roles = [...roles];
         _roles[index][fieldName] = parseInt(event.value, 10);
         setRoles(_roles);
-    }
+    };
 
     const handleChangeAction = (event, index) => {
         let _roles = [...roles];
         _roles[index][event.value] = event.checked;
         setRoles(_roles);
-    }
+    };
+
+    useEffect(() => {
+        async function fetchRoles() {
+            setRoles(await data.getRoles());
+        }
+        if (!insertMode) {
+            fetchRoles();
+        }
+    }, [insertMode, refreshCount]);
+
+    useEffect(() => {
+        if (handleAddRow) {
+            handleInsert();
+            onRowAdded();
+        }
+    }, [handleAddRow]);
 
     const readDatatablePicker = (role, column) => {
         return (
@@ -108,13 +146,15 @@ const RolesTable = (options) => {
 
     return (
         <DataTable
-            options={options}
             value={roles}
-            // editMode="row"
+            editMode="row"
             onRowEditChange={onRowEditChange}
             editingRows={editingRows || [false]}
-            // onRowEditComplete={handleRoleEdit}
+            onRowEditComplete={handleRoleEdit}
             headerColumnGroup={headerColumnGroup}
+            scrollable
+            scrollHeight="flex"
+            {...props}
         >
             <Column field="name" editor={textEditor} />
             <Column body={readDatatablePicker} />

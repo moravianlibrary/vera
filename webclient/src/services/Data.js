@@ -9,30 +9,54 @@ class Data {
         // );
     }
 
-    async getRolesActions() {
-        let roles = [];
-        api.getRolesActions()
-        .then(
-            (result) => {
-                roles = result.roles.map(role => Role.fromJson(role));
-            },
-            (error) => {
-                this.setError(error);
-            }
-        )
-        return roles;
+    async getRoles() {
+        try {
+            const result = await api.getRoles();
+            return result.roles.map(role => Role.fromJson(role));
+        } catch (error) {
+            this.setError(error);
+            return [];
+        }
     }
 
     async getRolesNames() {
-        api.getRoles()
-        .then(
-            (result) => {
-                return result.roles.map(role => role.name);
-            },
-            (error) => {
-                this.setError(error);
-            }
-        )
+        try {
+            const { roles }= await api.getRoleNames();
+            return roles.map(role => role.name);
+        } catch (error) {
+            this.setError(error);
+            return [];
+        }
+    }
+
+    async getDepartments() {
+        try {
+            const departments = await api.getDepartments();
+            return departments;
+        } catch (error) {
+            this.setError(error);
+            return [];
+        }
+    }
+
+    async getDepartmentsAbbreviations() {
+        try {
+            const { departments } = await api.getDepartments();
+            return departments.map(department => department.abbreviation);
+        } catch (error) {
+            this.setError(error);
+            return [];
+        }
+    }
+
+    async getUsers() {
+        try {
+            const users = await api.getUsers();
+            return users;
+        } catch (error) {
+            this.setError(error);
+            return [];
+        }
     }
 };
 

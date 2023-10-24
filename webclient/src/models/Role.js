@@ -18,6 +18,11 @@ export class Role {
 
     read_datatable_level;
     edit_datatable_level;
+    write_datatable;
+    comment_on_datatable;
+    edit_access;
+    edit_categories;
+    extract;
 
     constructor() {
     }
@@ -31,11 +36,11 @@ export class Role {
 
         role.read_datatable_level = jsonData.actions.includes(ActionType.read_datatable_all) ? 3
                 : jsonData.actions.includes(ActionType.read_datatable_department) ? 2
-                : jsonData.actions.includes(ActionType.read_datatable_department) ? 1
+                : jsonData.actions.includes(ActionType.read_datatable_own) ? 1
                 : 0;
         role.edit_datatable_level = jsonData.actions.includes(ActionType.edit_datatable_all) ? 3
                 : jsonData.actions.includes(ActionType.edit_datatable_department) ? 2
-                : jsonData.actions.includes(ActionType.edit_datatable_department) ? 1
+                : jsonData.actions.includes(ActionType.edit_datatable_own) ? 1
                 : 0;
         role.write_datatable = jsonData.actions.includes(ActionType.write_datatable);
         role.comment_on_datatable = jsonData.actions.includes(ActionType.comment_on_datatable);
