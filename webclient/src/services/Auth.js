@@ -33,10 +33,13 @@ class AuthService {
     }
 }
 
-export default function authHeader() {
+export default function authHeader(contentType = 'application/json') {
     const user = authService.getCurrentUser();
     if (user && user.access_token) {
-        return { Authorization: 'Bearer ' + user.access_token };
+        return {
+            Authorization: 'Bearer ' + user.access_token,
+            'Content-Type': contentType,
+        };
     } else {
         return {};
     }

@@ -257,7 +257,7 @@ async def create_records(file: UploadFile,
                     record_precreate.volume_number,
                     record_precreate.item_number,
                     db) is not None:
-                return
+                continue
             records.append(crud.create_record(
                 schemas.RecordCreate.from_record_precreate(record_precreate, category_id),
                 user,

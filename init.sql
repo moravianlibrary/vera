@@ -61,12 +61,12 @@ CREATE TABLE IF NOT EXISTS records (
 
 	-- Information
 	category_id INT REFERENCES categories(id),
-	title VARCHAR(256) NOT NULL,
+	title VARCHAR(1024) NOT NULL,
 	pages_count INTEGER,
 
 	-- Additional information
 	-- model
-	signature VARCHAR(32),
+	signature VARCHAR(64),
 	issn VARCHAR(32),
 	isbn VARCHAR(32),
 	barcode VARCHAR(32),

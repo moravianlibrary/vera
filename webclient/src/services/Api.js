@@ -154,7 +154,7 @@ class Api {
     }
 
     createRecordsFromFile(formData, category_id) {
-        return axios.post(`/records_file/${category_id}`, formData, { headers: authHeader() })
+        return axios.post(`/records_file/${category_id}`, formData, { headers: authHeader('multipart/form-data') })
             .then(response => {
                 return response.data;
             })
