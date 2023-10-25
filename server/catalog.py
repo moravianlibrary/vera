@@ -9,12 +9,26 @@ from typing import Optional
 
 ALEPH_ENDPOINT = "http://aleph.mzk.cz/OAI?verb=GetRecord&identifier=oai:aleph.mzk.cz:{SYSNO}&metadataPrefix=marc21"
 
+SYSNO_FORMAT_1 = r'MZK\d{2}-\d{9}'
+SYSNO_FORMAT_2 = r'mzk(\d{2})(\d{9})'
+
+
+def parse_sysno(sysno: str):
+    if re.match(SYSNO_FORMAT_1, sysno):
+        return sysno
+    elif re.match(SYSNO_FORMAT_2, sysno):
+        return re.sub(SYSNO_FORMAT_2, r'MZK\1-\2', sysno)
+
 
 def generate_record_by_identifier(identifier: Identifier):
     if identifier.identifier_type == "sysno":
-        return generate_record_by_sysno(identifier.value)
+        return generate_record_by_sysno(parse_sysno(identifier.value))
     else:
         pass
+
+
+def generate_records_from_file(file_content: str):
+    return [generate_record_by_sysno(parse_sysno(line)) for line in file_content.splitlines()] 
 
 
 def generate_record_by_sysno(sysno: str):
@@ -27,6 +41,11 @@ def generate_record_by_sysno(sysno: str):
     if response.status_code != 200:
         print(f"HTTP request failed with status code {response.status_code}")
 
+    namespace = {"marc": "http://www.loc.gov/MARC21/slim"}
+
+    xml_content = response.content
+    root = ET.fromstring(xml_content)
+
     title = None
     subtitle = None
     volume = None
@@ -34,11 +53,6 @@ def generate_record_by_sysno(sysno: str):
     issn = None
     isbn = None
     pages_count = None
-
-    namespace = {"marc": "http://www.loc.gov/MARC21/slim"}
-
-    xml_content = response.content
-    root = ET.fromstring(xml_content)
 
     datafields = root.findall(".//marc:datafield", namespaces=namespace)
 
@@ -76,6 +90,8 @@ def generate_record_by_sysno(sysno: str):
     if subtitle is not None and subtitle.strip() != "":
         title_result += subtitle
 
+    if title is None:
+        return
     
     return RecordPreCreate(
         sysno=sysno,

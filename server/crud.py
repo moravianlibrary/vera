@@ -257,6 +257,18 @@ def get_record(record_id: int,
     return db.query(models.RecordView).filter(models.RecordView.id == record_id).first()
 
 
+def get_record_by_identifiers(sysno: str,
+                              volume_number: Optional[str],
+                              item_number: Optional[str],
+                              db: Session):
+    query_base = db.query(models.Record).filter(models.Record.sysno == sysno)
+    if volume_number:
+        query_base = query_base.filter(models.Record.volume_number == volume_number)
+    if item_number:
+        query_base = query_base.filter(models.Record.item_number == item_number)
+    return query_base.first()
+
+
 def get_records_query_base(db: Session,
                            sysno: Optional[str] = None,
                            extraction_id: Optional[int] = None,

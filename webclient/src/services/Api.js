@@ -153,6 +153,17 @@ class Api {
         ;
     }
 
+    createRecordsFromFile(formData, category_id) {
+        return axios.post(`/records_file/${category_id}`, formData, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.error(error);
+            })
+        ;
+    }
+
     getPrecreateRecord(identifier_type, identifier_value) {
         const body = {
             identifier_type: identifier_type,
@@ -169,7 +180,8 @@ class Api {
     }
 
     updateRecord(record) {
-        return axios.put(`/records/${record.id}`, record.toJson(), { headers: authHeader() })
+        // return axios.put(`/records/${record.id}`, record.toJson(), { headers: authHeader() })
+        return axios.put(`/records/${record.id}`, record, { headers: authHeader() })
             .then(response => {
                 return response.data;
             })
@@ -179,8 +191,8 @@ class Api {
         ;
     }
 
-    deleteRecord(record) {
-        return axios.delete(`/records/${record.id}`, { headers: authHeader() })
+    deleteRecord(id) {
+        return axios.delete(`/records/${id}`, { headers: authHeader() })
             .then(response => {
                 return response.data;
             })

@@ -114,6 +114,21 @@ class RecordPreCreate(RecordBase):
 class RecordCreate(RecordPreCreate):
     category_id: int
 
+    @classmethod
+    def from_record_precreate(cls, record_precreate: RecordPreCreate, category_id: int) -> "RecordCreate":
+        return cls(
+            sysno=record_precreate.sysno,
+            volume_number=record_precreate.volume_number,
+            item_number=record_precreate.item_number,
+            title=record_precreate.title,
+            pages_count=record_precreate.pages_count,
+            signature=record_precreate.signature,
+            issn=record_precreate.issn,
+            isbn=record_precreate.isbn,
+            barcode=record_precreate.barcode,
+            category_id=category_id
+        )
+
 
 class Record(RecordCreate):
     id: int

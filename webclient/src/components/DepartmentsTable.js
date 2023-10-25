@@ -1,11 +1,12 @@
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 
-import { textEditor } from "../services/Editors";
-import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
-import { data } from "../services/Data";
 import { api } from "../services/Api";
+import { dataService } from "../services/Data";
+import { textEditor } from "../services/Editors";
 
 const DepartmentsTable = (props) => {
     const { handleAddRow, onRowAdded } = props;
@@ -48,7 +49,7 @@ const DepartmentsTable = (props) => {
 
     useEffect(() => {
         async function fetchDepartments() {
-            const {departments} = await data.getDepartments();
+            const {departments} = await dataService.getDepartments();
             setDepartments(departments);
         }
         if (!insertMode) {

@@ -28,7 +28,6 @@ export class Record {
     comments_count;
 
     constructor() {
-        this.sysno = null;
     }
 
     static fromJson(jsonData) {

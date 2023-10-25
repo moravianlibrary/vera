@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Form, Path, Query, status
+from fastapi import FastAPI, Depends, HTTPException, Form, Path, Query, status, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -243,6 +243,26 @@ def create_record(record: schemas.RecordCreate,
 def precreate_by_identifier(identifier: schemas.Identifier,
                             db: Session = Depends(get_db)):
     return catalog.generate_record_by_identifier(identifier)
+
+
+@app.post("/records_file/{category_id}")
+async def create_records(file: UploadFile,
+                         category_id: int,
+                         db: Session = Depends(get_db),
+                         user: schemas.User = Depends(auth.get_current_user)):
+    if file.filename:
+        records = []
+        for record_precreate in catalog.generate_records_from_file((await file.read()).decode('utf-8')):
+            if crud.get_record_by_identifiers(record_precreate.sysno,
+                    record_precreate.volume_number,
+                    record_precreate.item_number,
+                    db) is not None:
+                return
+            records.append(crud.create_record(
+                schemas.RecordCreate.from_record_precreate(record_precreate, category_id),
+                user,
+                db))
+        return records
 
 
 @app.put("/records/{record_id}", response_model=schemas.RecordView)

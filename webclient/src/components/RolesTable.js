@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 
-import { data } from "../services/Data";
+import { dataService } from "../services/Data";
 import { useEffect, useState } from "react";
 import { Checkbox } from "primereact/checkbox";
 import { ColumnGroup } from "primereact/columngroup";
@@ -66,7 +66,7 @@ const RolesTable = (props) => {
 
     useEffect(() => {
         async function fetchRoles() {
-            setRoles(await data.getRoles());
+            setRoles(await dataService.getRoles());
         }
         if (!insertMode) {
             fetchRoles();

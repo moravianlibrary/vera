@@ -25,6 +25,7 @@ const resources = {
 
         insert_record_title: "Vytvořit nový záznam",
         insert_record_tooltip: "",
+        insert_records_from_file: "Vytvořit nový záznam",
         record_title: "Záznam",
         insert_record_apply: "Vytvořit",
         fill_insert_title: "Předvyplnit pomocí identifikátora",
