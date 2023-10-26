@@ -12,7 +12,7 @@ export const numberEditor = (options) => {
 };
 
 export const textareaEditor = (options) => {
-    return <InputTextarea type="text" autoResize value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
+    return <InputTextarea type="text" autoResize rows={1} value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
 };
 
 export const categoryEditor = (options) => {

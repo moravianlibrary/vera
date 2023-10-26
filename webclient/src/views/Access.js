@@ -31,7 +31,7 @@ const Access = () => {
     const [table, setTable] = useState(TableEnum.USERS);
     const [tablesOptions] = useState([
         { label: t('users'), value: TableEnum.USERS },
-        { label: t('departmens'), value: TableEnum.DEPARTMENS },
+        { label: t('departments'), value: TableEnum.DEPARTMENS },
         { label: t('roles'), value: TableEnum.ROLES }
     ]);
 

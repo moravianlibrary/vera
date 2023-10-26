@@ -55,6 +55,12 @@ ul.funcbar {
   display: none;
 }
 
+.overflow-hidden {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* button {
     background-color: transparent;
     border: none;

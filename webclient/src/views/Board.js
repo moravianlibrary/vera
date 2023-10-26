@@ -13,6 +13,7 @@ import { dataService } from '../services/Data.js';
 import { categoryEditor, numberEditor, textEditor, textareaEditor } from '../services/Editors.js';
 import SelectCategoryDialog from '../dialogs/SelectEnumDialog';
 import { Record } from '../models/Record.js';
+import { MultiSelect } from 'primereact/multiselect';
 
 const RecordsTable = () => {
     const { t } = useTranslation();
@@ -250,13 +251,42 @@ const RecordsTable = () => {
         );
     };
 
+    const customColumnRenderer = (rowData, column) => {
+        const text = rowData[column.field];
+        const maxLength = Math.max(25, (window.innerWidth - 1683) / 10);
+        // const maxLength = 274;
+        console.log(maxLength);
+        const croppedText = text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+        return (
+            <div className="custom-column">
+                {croppedText}
+            </div>
+        );
+    };
+
+    const handleWindowResize = () => {
+        setRefreshCount(refreshCount + 1);
+    };
+
+    useEffect(() => {
+        window.addEventListener('resize', handleWindowResize);
+
+        return () => {
+          window.removeEventListener('resize', handleWindowResize);
+        };
+    }, []);
+
     return (
       <div className="table-container" >
 
         <DataTable
+            className='records-table'
             value={records}
             key={refreshCount}
             header={tableHeader}
+            // resizableColumns
+            // columnResizeMode="expand"
+            scrollable scrollHeight="flex"
             editMode="row"
             onRowEditChange={handleRowEditChange}
             onRowEditComplete={handleRowEdit}
@@ -277,7 +307,7 @@ const RecordsTable = () => {
                 header={t('category')}
                 editor={(editorOptions) => categoryEditor({ ...editorOptions, categories })}
             />
-            <Column field="title" header={t('title')} editor={textareaEditor} />
+            <Column field="title" header={t('title')} body={customColumnRenderer} editor={textareaEditor} className="overflow-hidden" />
             <Column field="pages_count" header={t('pages_count')} editor={numberEditor} />
             <Column field="signature" header={t('signature')} editor={textEditor} />
             <Column field="issn" header={t('issn')} editor={textEditor} />
