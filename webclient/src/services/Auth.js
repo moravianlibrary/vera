@@ -1,5 +1,3 @@
-import { Component } from 'react';
-import { Route } from 'react-router';
 import { Outlet } from 'react-router-dom';
 
 import { api } from './Api';
@@ -21,6 +19,10 @@ class AuthService {
 
     logout() {
         localStorage.removeItem("user");
+    }
+
+    register(username, password) {
+        return api.createUser(username, password);
     }
 
     getCurrentUser() {

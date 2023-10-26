@@ -143,8 +143,8 @@ const RecordsTable = () => {
 
     useEffect(() => {
         const handleResize = () => {
-            const rowHeight = 80;
-            const remainingHeight = window.innerHeight - 250;
+            const rowHeight = 83;
+            const remainingHeight = window.innerHeight - 253;
             setNumRows(Math.max(5, Math.floor(remainingHeight / rowHeight)));
         };
         handleResize();

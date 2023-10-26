@@ -20,7 +20,20 @@ class Api {
             .catch(error => {
                 throw error;
             })
-    };
+    }
+
+    createUser(username, password) {
+        return axios.post(`/auth/register`, {
+            username: username,
+            password: password
+        })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                throw error;
+            })
+    }
 
     updateUser(user) {
         return axios.put(`/users/${user.id}`, user)

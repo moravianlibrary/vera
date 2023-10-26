@@ -14,8 +14,15 @@ const resources = {
         clear: "Vyčistit",
         username: "Uživatelské jméno",
         password: "Heslo",
+        repeat_password: "Potvrďte heslo",
         login_button: "Přihlásit",
         login_tooltip: "",
+
+        register_action: "Vytvořit nový účet",
+        register_button: "Registrovat",
+        username_missing: "Vyplňte uživatelské jméno",
+        password_invalid_length: "Nesprávná délka hesla (8 - 64 znaků)",
+        passwords_does_not_match: "Hesla se neshodují",
 
         department: "Oddělení",
         role_name: "Role",

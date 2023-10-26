@@ -1,103 +1,77 @@
 import React, { useState, useRef } from 'react';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import TextField from '@material-ui/core/TextField';
 import { useTranslation } from "react-i18next";
 
 import { authService } from '../services/Auth';
+import RegisterDialog from './RegisterDialog';
+import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
+import { InputText } from 'primereact/inputtext';
+import { Card } from 'primereact/card';
+import { Password } from 'primereact/password';
 
 const LoginDialog = () => {
-  const insertDialogButtonStyle = {
-    textTransform: 'none',
-    display: 'block',
-    color: 'white',
-    'text-align': 'center',
-    padding: '14px 16px',
-    'text-decoration': 'none'
-  };
+    const { t } = useTranslation();
 
-  const insertApplyButtonStyle = {
-    borderRadius: '8px',
-    padding: '10px 20px',
-    textTransform: 'none',
-  }
+    const [isLoggedIn, setIsLoggedIn] = useState(authService.getCurrentUser);
+    const [visible, setVisible] = useState(false);
+    const [username, setUsername] = useState(null);
+    const [password, setPassword] = useState('');
+    const [errors, setErrors] = useState({});
 
-  const { t } = useTranslation();
+    const handleOpen = () => {
+        setVisible(true);
+    };
 
-  const [isLoggedIn, setIsLoggedIn] = useState(authService.getCurrentUser);
-  const [isOpen, setState] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+    const handleClose = () => {
+        setVisible(false);
+    };
 
-  const handleClickOpen = () => {
-    setState(true);
-  };
+    const handleLogin = () => {
+        if (!username) {
+            setErrors({username: true});
+        } else {
+            setErrors({});
+            authService.login(username, password);
+            setIsLoggedIn(true);
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        }
+    };
 
-  const handleClose = () => {
-    setState(false);
-  };
-  const handleLogin = () => {
-    authService.login(username, password);
-    setIsLoggedIn(true);
-    handleClose();
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
-  };
+    const handleLogout = () => {
+        authService.logout();
+        setIsLoggedIn(false);
+        window.location.reload();
+    };
 
-  const handleLogout = () => {
-    authService.logout();
-    setIsLoggedIn(false);
-    window.location.reload();
-  };
-
-  return (
-    <div>
-      {!isLoggedIn ? (
-        <Button variant="text" onClick={handleClickOpen} style={insertDialogButtonStyle}>
-          {t("login")}
-        </Button>
-      ) : (
-        <Button variant="text" onClick={handleLogout} style={insertDialogButtonStyle}>
-          {t("logout")}
-        </Button>
-      )}
-      <Dialog open={isOpen} onClose={handleClose}>
-        <DialogTitle>{t("login")}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {t("login_tooltip")}
-          </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="username"
-            label={t("username")}
-            type="text"
-            fullWidth
-            variant="standard"
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <TextField
-            margin="dense"
-            id="password"
-            label={t("password")}
-            type="password"
-            fullWidth
-            variant="standard"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button variant='outlined' onClick={handleLogin} style={insertApplyButtonStyle}>{t("login_button")}</Button>
-        </DialogActions>
-      </Dialog>
-    </div>
-  );
+    return (
+        <div>
+            <Button
+                style={{color: "white"}}
+                text 
+                label={isLoggedIn ? t("logout") : t("login")}
+                onClick={isLoggedIn ? handleLogout : handleOpen}
+            />
+            <Dialog
+                header={t('login')} 
+                visible={visible} 
+                onHide={handleClose}
+            >
+                <Card 
+                    style={{marginBottom: '5px'}}
+                    footer={<Button label={t('login_button')} onClick={handleLogin} />}
+                >
+                    <div className="card flex flex-column align-items-center gap-3 ">
+                        <InputText id='username' placeholder={t('username')} keyfilter="email" value={username} onChange={(e) => setUsername(e.target.value)} />
+                        {errors.username && <small className="p-error">{t('username_missing')}</small>}
+                        <Password placeholder={t('password')} value={password} onChange={(e) => setPassword(e.target.value)} feedback={false} tabIndex={1} toggleMask />
+                    </div>
+                </Card>
+                <RegisterDialog />
+            </Dialog>
+        </div>
+    );
 };
 
 export default LoginDialog;
