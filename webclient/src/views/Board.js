@@ -5,15 +5,14 @@ import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { Paginator } from 'primereact/paginator';
-
-import './Board.css';
-import { Record } from '../models/Record.js';
-import { dataService } from '../services/Data.js';
-import { categoryEditor, numberEditor, textEditor, textareaEditor } from '../services/Editors.js';
-import { Toast } from 'primereact/toast';
 import { SpeedDial } from 'primereact/speeddial';
 import { Tooltip } from 'primereact/tooltip';
-import { FileUpload } from 'primereact/fileupload';
+
+import './Board.css';
+import { dataService } from '../services/Data.js';
+import { categoryEditor, numberEditor, textEditor, textareaEditor } from '../services/Editors.js';
+import SelectCategoryDialog from '../dialogs/SelectEnumDialog';
+import { Record } from '../models/Record.js';
 
 const RecordsTable = () => {
     const { t } = useTranslation();
@@ -30,6 +29,9 @@ const RecordsTable = () => {
     const [refreshCount, setRefreshCount] = useState(0);
     const [refreshDataCount, setRefreshDataCount] = useState(0);
     const [selectedRecords, setSelectedRecords] = useState([]);
+
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [selectCategoryVisible, setSelectCategoryVisible] = useState(false);
     const fileInputRef = useRef(null);
 
     async function fetchRecords() {
@@ -83,10 +85,25 @@ const RecordsTable = () => {
         handlePageRefresh();
     };
 
-    const handleUploadSysnoFile = (file) => {
-      if (file) {
-          dataService.createRecordsFromFile(file, 1);
-      }
+    const handleSelectFile = (file) => {
+        if (file) {
+            setSelectedFile(file);
+            setSelectCategoryVisible(true);
+        }
+    };
+
+    const handleSelectCategory = (category) => {
+        if (selectedFile) {
+            if (category) {
+                dataService.createRecordsFromFile(selectedFile, category.id);
+            }
+            setSelectedFile(null);
+        } else if (selectedRecords) {
+            selectedRecords.map(record => {return {...record, category_id: category.id};})
+                .forEach(record => dataService.updateRecord(record));
+            setSelectedRecords([]);
+            refreshData();
+        }
     };
 
     const handleRowEdit = (event) => {
@@ -113,14 +130,14 @@ const RecordsTable = () => {
     };
 
     const handleDeleteRecord = (record) => {
-      dataService.deleteRecord(record);
-      refreshData();
+        dataService.deleteRecord(record);
+        refreshData();
     }
 
     const handleDeleteSelectedRecords = () => {
-      dataService.deleteRecords(selectedRecords);
-      setSelectedRecords([]);
-      refreshData();
+        dataService.deleteRecords(selectedRecords);
+        setSelectedRecords([]);
+        refreshData();
     }
 
     useEffect(() => {
@@ -188,19 +205,26 @@ const RecordsTable = () => {
                             onChange={(e) => {
                                 const selectedFile = e.target.files[0];
                                 if (selectedFile) {
-                                    handleUploadSysnoFile(selectedFile);
+                                    handleSelectFile(selectedFile);
                                 }
                             }}
                         />;
+                        <SelectCategoryDialog
+                            visible={selectCategoryVisible}
+                            title={t('select_category_title')}
+                            values={categories}
+                            onHide={() => setSelectCategoryVisible(false)}
+                            onSelect={handleSelectCategory}
+                        />
                     </div>
                 </div>
                 <div>
-                    {/* <Button icon="pi pi-pencil"
+                    <Button icon="pi pi-pencil"
                         className="p-button-rounded p-button-text"
                         severity={selectedRecords.length > 0 ? "primary" : "secondary"}
                         disabled={selectedRecords.length == 0}
-                        // onClick={}
-                    /> */}
+                        onClick={() => setSelectCategoryVisible(true)}
+                    />
                     <Button icon="pi pi-trash" 
                         className="p-button-rounded p-button-text"
                         severity={selectedRecords.length > 0 ? "danger" : "secondary"}
