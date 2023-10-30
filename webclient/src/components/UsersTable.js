@@ -19,7 +19,13 @@ const UsersTable = (props) => {
     const [refreshCount, setRefreshCount] = useState(0);
 
     const handleUserEdit = (event) => {
-        console.log(event);
+        const { newData } = event;
+
+        newData.department_id = departments.find(d => d.department_abbreviation === newData.department_abbreviation).id;
+        newData.role_id = roles.find(role => role.name === newData.role_name).id;
+
+        dataService.updateUser(newData);
+        setRefreshCount(refreshCount + 1);
     };
 
     const handleDeleteUser = (user) => {

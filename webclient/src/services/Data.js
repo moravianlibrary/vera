@@ -19,6 +19,16 @@ class DataService {
         }
     }
 
+    async updateUser(user) {
+        try {
+            const updatedUser = await api.updateUser(user);
+            return updatedUser;
+        } catch (error) {
+            this.setError(error);
+            return null;
+        }
+    }
+
     async deleteUser(user) {
         try {
             const deletedUser = await api.deleteUser(user.id);

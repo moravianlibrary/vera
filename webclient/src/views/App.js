@@ -1,8 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // import Home from './Home'; 
-import { ActionAccessRoute, ProtectedRoute } from '../services/Auth';
+import { ActionAccessRoute, authService } from '../services/Auth';
 import Access from './Access';
 import Board from './Board';
 import Navbar from './Navbar';
@@ -16,6 +16,10 @@ import Categories from './Categories';
 
 
 function App() {
+  useEffect(() => {
+    authService.refreshUserData();
+  }, []);
+
   return (
     <ToastProvider>
       <Router>

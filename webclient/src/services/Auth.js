@@ -5,6 +5,7 @@ import { User } from '../models/User';
 import { useToast } from './ToastContext';
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
+import { ActionType } from '../models/Role';
 
 class AuthService {
     login(username, password) {
@@ -20,6 +21,9 @@ class AuthService {
                 console.log("Error occurred while logging in: " + error);
             })
         ;
+        this.refreshIntervalId = setInterval(() => {
+            this.refreshUserData();
+        }, 60000);
     }
 
     getCurrentUser() {
@@ -52,6 +56,26 @@ class AuthService {
                 this.setCurrentUser(user);
             })
     }
+
+    isAllowedTo(action) {
+        return this.getCurrentUser()?.actions.includes(action);
+    }
+
+    isAllowedToEditRecord(record) {
+        const user = this.getCurrentUser();
+        console.log(user && (
+                user.actions.includes(ActionType.edit_datatable_all)
+                || (user.actions.includes(ActionType.edit_datatable_department)
+                    && user.department_id === record.creator_department_id)
+                || (user.actions.includes(ActionType.edit_datatable_own)
+                    && user.id === record.creator_id)));
+        return user && (
+                user.actions.includes(ActionType.edit_datatable_all)
+                || (user.actions.includes(ActionType.edit_datatable_department)
+                    && user.department_id === record.creator_department_id)
+                || (user.actions.includes(ActionType.edit_datatable_own)
+                    && user.id === record.creator_id));
+    }
 }
 
 export default function authHeader(contentType = 'application/json') {
@@ -76,7 +100,6 @@ export const ActionAccessRoute = ({ action = null }) => {
 
 export const ActionAccessComponent = ({ action = null, component }) => {
     const user = authService.getCurrentUser();
-    console.log(user?.actions && (!action ||user.actions.includes(action)));
     return (
         user?.actions && (!action ||user.actions.includes(action))
         ? (<>{component}</>)

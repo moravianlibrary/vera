@@ -14,6 +14,8 @@ import { categoryEditor, numberEditor, textEditor, textareaEditor } from '../ser
 import SelectCategoryDialog from '../dialogs/SelectEnumDialog';
 import { Record } from '../models/Record.js';
 import { MultiSelect } from 'primereact/multiselect';
+import { authService } from '../services/Auth';
+import { ActionType } from '../models/Role';
 
 const RecordsTable = () => {
     const { t } = useTranslation();
@@ -62,7 +64,7 @@ const RecordsTable = () => {
 
     const handleRowEditChange = (event) => {
         const { data } = event;
-        const activeRowArray = Array.isArray(data) ? data : [data];
+        const activeRowArray = (Array.isArray(data) ? data : [data]).filter(record => authService.isAllowedToEditRecord(record));
         setEditingRows(activeRowArray);
     }
 
@@ -142,6 +144,10 @@ const RecordsTable = () => {
         refreshData();
     }
 
+    const isAllowedToEdit = (record) => {
+        return authService.isAllowedToEditRecord(record);
+    };
+
     // useEffect(() => {
     //     const handleResize = () => {
     //         const rowHeight = 83;
@@ -195,6 +201,7 @@ const RecordsTable = () => {
                     <div>
                         <Tooltip target=".speeddial-top-left .p-speeddial-action" position="left" />
                         <SpeedDial model={items}
+                            disabled={!authService.isAllowedTo(ActionType.write_datatable)}
                             direction="down"
                             style={{ left: 10, top: 10 }}
                             size="large"
@@ -210,7 +217,7 @@ const RecordsTable = () => {
                                     handleSelectFile(selectedFile);
                                 }
                             }}
-                        />;
+                        />
                         <SelectCategoryDialog
                             visible={selectCategoryVisible}
                             title={t('select_category_title')}
@@ -241,7 +248,12 @@ const RecordsTable = () => {
     const deleteButton = (record) => {
         if (!insertMode || record.id) {
             return (
-                <Button className="p-button-rounded p-button-text p-button-danger" icon="pi pi-trash" onClick={() => handleDeleteRecord(record)} />
+                <Button className="p-button-rounded p-button-text"
+                    severity={isAllowedToEdit(record) ? "danger" : "secondary"}
+                    disabled={!isAllowedToEdit(record)}
+                    icon="pi pi-trash"
+                    onClick={() => handleDeleteRecord(record)}
+                />
             );
         }
     };
@@ -291,7 +303,7 @@ const RecordsTable = () => {
             dragSelection
             selection={selectedRecords}
             onSelectionChange={(e) => setSelectedRecords(e.value)}
-            isDataSelectable={(event) => !insertMode || event.index != 0}
+            isDataSelectable={(event) => (!insertMode || event.index != 0) && isAllowedToEdit(event.data)}
             rowClassName={(rowData) => (rowData.id ? '' : 'non-selectable')}
             // rowGroupMode="rowspan"
         >
@@ -311,8 +323,8 @@ const RecordsTable = () => {
             <Column field="barcode" header={t('barcode')} editor={textEditor} />
             <Column field="creator" header={t('creator')} />
             <Column field={r => r.getCreatedAtFormatted()} header={t('created_at')} />
-            <Column field="extractor" header={t('extractor')} />
-            <Column field={r => r.getExtractedAtFormatted()} header={t('extracted_at')} />
+            {/* <Column field="extractor" header={t('extractor')} />
+            <Column field={r => r.getExtractedAtFormatted()} header={t('extracted_at')} /> */}
 
             <Column rowEditor />
             <Column body={deleteButton} />
