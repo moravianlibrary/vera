@@ -62,7 +62,7 @@ async def login(
     )
 
 
-@app.get("/current_user", response_model=schemas.CurrentUser)
+@app.get("/auth/current_user", response_model=schemas.CurrentUser)
 def get_current_user(user: schemas.CurrentUser = Depends(auth.get_current_user)):
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")

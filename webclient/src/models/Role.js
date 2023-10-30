@@ -1,4 +1,4 @@
-const ActionType = {
+export const ActionType = {
     read_datatable_own: 'read_datatable_own',
     read_datatable_department: 'read_datatable_department',
     read_datatable_all: 'read_datatable_all',
@@ -73,5 +73,21 @@ export class Role {
             name: this.name,
             actions: actions
         };
+    }
+
+    static expandActions(actions) {
+        if (actions.includes(ActionType.read_datatable_all)) {
+            actions = [...actions, ActionType.read_datatable_department];
+        }
+        if (actions.includes(ActionType.read_datatable_department)) {
+            actions = [...actions, ActionType.read_datatable_own];
+        }
+        if (actions.includes(ActionType.edit_datatable_all)) {
+            actions = [...actions, ActionType.edit_datatable_department];
+        }
+        if (actions.includes(ActionType.edit_datatable_department)) {
+            actions = [...actions, ActionType.edit_datatable_own];
+        }
+        return actions;
     }
 }

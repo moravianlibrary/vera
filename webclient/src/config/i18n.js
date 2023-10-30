@@ -78,6 +78,9 @@ const resources = {
         edit_access: "povolena správa oprávnění",
         edit_categories: "povolena správa kategorii",
         extract: "povolena extrakce",
+
+        insufficient_rights_title: "Nedostatečné prava",
+        insufficient_rights_body: "K provedení dané akce nemate dostačující prava",
     },
   },
 };

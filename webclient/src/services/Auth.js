@@ -1,13 +1,18 @@
 import { Outlet } from 'react-router-dom';
 
 import { api } from './Api';
+import { User } from '../models/User';
+import { useToast } from './ToastContext';
+import { useTranslation } from 'react-i18next';
+import { useEffect } from 'react';
 
 class AuthService {
     login(username, password) {
         api.getToken(username, password)
-            .then(response_data => {
-                if (response_data.access_token) {
-                    localStorage.setItem("user", JSON.stringify(response_data));
+            .then(tokenData => {
+                if (tokenData.access_token) {
+                    this.setCurrentUser(User.fromToken(tokenData));
+                    this.refreshUserData();
                     console.log("User " + username + " successfully logged in.");
                 }
             })
@@ -15,6 +20,15 @@ class AuthService {
                 console.log("Error occurred while logging in: " + error);
             })
         ;
+    }
+
+    getCurrentUser() {
+        const user = localStorage.getItem('user');
+        return user ? User.fromJson(JSON.parse((user))) : null;
+    }
+
+    setCurrentUser(user) {
+        localStorage.setItem('user', JSON.stringify(user));
     }
 
     logout() {
@@ -25,13 +39,18 @@ class AuthService {
         return api.createUser(username, password);
     }
 
-    getCurrentUser() {
-        return JSON.parse(localStorage.getItem('user'));
-    }
-
     isLoggedIn() {
         const user = this.getCurrentUser();
-        return !user || !user.access_token || user.access_token === "";
+        return user && user.access_token && user.access_token !== "";
+    }
+
+    refreshUserData() {
+        api.getCurrentUser()
+            .then(userData => {
+                const user = this.getCurrentUser();
+                user.setUserData(userData);
+                this.setCurrentUser(user);
+            })
     }
 }
 
@@ -47,17 +66,52 @@ export default function authHeader(contentType = 'application/json') {
     }
 }
 
+export const ActionAccessRoute = ({ action = null }) => {
+    const user = authService.getCurrentUser();
+    return !action || (user?.actions && user.actions.includes(action))
+        ? <Outlet />
+        // : <Navigate to="/unauthorized" replace />;
+        : null;
+};
+
+export const ActionAccessComponent = ({ action = null, component }) => {
+    const user = authService.getCurrentUser();
+    return (
+        !action || (user?.actions && user.actions.includes(action))
+        ? (<>{component}</>)
+        : null);
+};
+
 // export const ProtectedRoute = ({ ...rest }) => {
 export const ProtectedRoute = () => {
     const user = authService.getCurrentUser();
+    const showToast = useToast();
+    const { t } = useTranslation();
+
+    useEffect(() => {
+        if (!user || !user.access_token || user.access_token === "") {
+            // showToast('error', t('insufficient_rights_title'), t('insufficient_rights_body'))
+        }
+    }, []);
 
     if (!user || !user.access_token || user.access_token === "") {
-        return (
-        <div>Denied</div>
-        );
+        return null;
     }
 
     return <Outlet />;
+
+    // return (
+    //     <Route
+    //     {...rest}
+    //     render={(props) =>
+    //         auth.isAuthenticated === true ? (
+    //         <Component {...props} />
+    //         ) : (
+    //         <Redirect to="/login" />
+    //         )
+    //     }
+    //     />
+    // );
 };
 
 export const authService = new AuthService();

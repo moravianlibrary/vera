@@ -35,6 +35,17 @@ class Api {
             })
     }
 
+    getCurrentUser() {
+        return axios.get(`/auth/current_user`, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                throw error;
+            }
+        );
+    }
+
     updateUser(user) {
         return axios.put(`/users/${user.id}`, user)
             .then(response => {
