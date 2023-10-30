@@ -45,6 +45,7 @@ class DepartmentsResponse(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+    expires_on: datetime
 
 
 class UserBase(BaseModel):
@@ -76,6 +77,10 @@ class UserEnlistment(User):
     department_abbreviation: Optional[str] = None
     department_name: Optional[str] = None
     role_name: Optional[str] = None
+
+
+class CurrentUser(UserEnlistment):
+    actions: List[ActionType]
 
 
 class UsersResponse(BaseModel):

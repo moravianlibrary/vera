@@ -54,7 +54,19 @@ async def login(
     db_user = crud.get_user_by_username(user_login.username, db)
     if db_user is None or not auth.verify_password(user_login.password, db_user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
-    return {"access_token": auth.create_access_token(data={"sub": db_user.username}), "token_type": "bearer"}
+    access_token, expires_on = auth.create_access_token(data={"sub": db_user.username})
+    return schemas.Token(
+        access_token=access_token,
+        token_type="bearer",
+        expires_on=expires_on
+    )
+
+
+@app.get("/current_user", response_model=schemas.CurrentUser)
+def get_current_user(user: schemas.CurrentUser = Depends(auth.get_current_user)):
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
 @app.put("/users/{user_id}/password", response_model=schemas.User)

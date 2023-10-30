@@ -9,6 +9,7 @@ from os import environ
 
 from database import get_db
 from models import Role
+from etypes import ActionType
 import schemas
 from typing import Set
 import crud
@@ -51,7 +52,7 @@ def create_access_token(data: dict):
     expire = datetime.utcnow() + EXPIRES_DELTA
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    return encoded_jwt, expire
 
 
 def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
@@ -62,16 +63,20 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
             raise CREDENTIALS_EXCEPTION
     except JWTError as jwt_error:
         raise CREDENTIALS_EXCEPTION
-    user = crud.get_user_by_username(username, db)
-    if user is None:
+    user_base = crud.get_user_by_username(username, db)
+    if user_base is None:
         raise CREDENTIALS_EXCEPTION
-    return user
-
-
-def get_current_user_actions(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
-    user = get_current_user(db, token)
-    actions = crud.get_role_actions(db, user.role_id)
-    return actions
+    user = crud.get_user(user_base.id, db)
+    return schemas.CurrentUser(
+        id=user.id,
+        username=user.username,
+        department_id=user.department_id,
+        department_abbreviation=user.department_abbreviation,
+        department_name=user.department_name,
+        role_id=user.role_id,
+        role_name=user.role_name,
+        actions=[ActionType(action[0]) for action in crud.get_role_actions(user.role_id, db)]
+    )
 
 
 def change_user_password(user_id: int, user_change_password: schemas.UserChangePassword):
