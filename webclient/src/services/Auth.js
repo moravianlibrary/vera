@@ -10,8 +10,8 @@ class AuthService {
     login(username, password) {
         api.getToken(username, password)
             .then(tokenData => {
-                if (tokenData.access_token) {
-                    this.setCurrentUser(User.fromToken(tokenData));
+                if (tokenData.data.access_token) {
+                    this.setCurrentUser(User.fromToken(tokenData.data));
                     this.refreshUserData();
                     console.log("User " + username + " successfully logged in.");
                 }
@@ -48,7 +48,7 @@ class AuthService {
         api.getCurrentUser()
             .then(userData => {
                 const user = this.getCurrentUser();
-                user.setUserData(userData);
+                user.setUserData(userData.data);
                 this.setCurrentUser(user);
             })
     }
@@ -76,8 +76,9 @@ export const ActionAccessRoute = ({ action = null }) => {
 
 export const ActionAccessComponent = ({ action = null, component }) => {
     const user = authService.getCurrentUser();
+    console.log(user?.actions && (!action ||user.actions.includes(action)));
     return (
-        !action || (user?.actions && user.actions.includes(action))
+        user?.actions && (!action ||user.actions.includes(action))
         ? (<>{component}</>)
         : null);
 };

@@ -21,7 +21,7 @@ const RecordsTable = () => {
     const [records, setRecords] = useState([]);
     const [totalRows, setTotalRows] = useState(0);
     const [offset, setOffset] = useState(0);
-    const [numRows, setNumRows] = useState(0);
+    const [numRows, setNumRows] = useState(15);
 
     const [categories, setCategories] = useState([]);
 
@@ -56,6 +56,7 @@ const RecordsTable = () => {
   
     const handlePageChange = (event) => {
         setOffset(event.first);
+        setNumRows(event.rows);
         handlePageRefresh();
     }
 
@@ -141,19 +142,19 @@ const RecordsTable = () => {
         refreshData();
     }
 
-    useEffect(() => {
-        const handleResize = () => {
-            const rowHeight = 83;
-            const remainingHeight = window.innerHeight - 253;
-            setNumRows(Math.max(5, Math.floor(remainingHeight / rowHeight)));
-        };
-        handleResize();
+    // useEffect(() => {
+    //     const handleResize = () => {
+    //         const rowHeight = 83;
+    //         const remainingHeight = window.innerHeight - 253;
+    //         setNumRows(Math.max(5, Math.floor(remainingHeight / rowHeight)));
+    //     };
+    //     handleResize();
 
-        window.addEventListener('resize', handleResize);
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
+    //     window.addEventListener('resize', handleResize);
+    //     return () => {
+    //         window.removeEventListener('resize', handleResize);
+    //     };
+    // }, []);
 
     useEffect(() => {
         fetchRecords();
@@ -245,36 +246,30 @@ const RecordsTable = () => {
         }
     };
 
-    const footerEditButtons = () => {
-        return (
-            <Button type="button" icon="pi pi-star" className="p-button-outlined" />
-        );
-    };
+    // const customColumnRenderer = (rowData, column) => {
+    //     const text = rowData[column.field];
+    //     const maxLength = Math.max(25, (window.innerWidth - 1683) / 10);
+    //     // const maxLength = 274;
+    //     console.log(maxLength);
+    //     const croppedText = text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+    //     return (
+    //         <div className="custom-column">
+    //             {croppedText}
+    //         </div>
+    //     );
+    // };
 
-    const customColumnRenderer = (rowData, column) => {
-        const text = rowData[column.field];
-        const maxLength = Math.max(25, (window.innerWidth - 1683) / 10);
-        // const maxLength = 274;
-        console.log(maxLength);
-        const croppedText = text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
-        return (
-            <div className="custom-column">
-                {croppedText}
-            </div>
-        );
-    };
+    // const handleWindowResize = () => {
+    //     setRefreshCount(refreshCount + 1);
+    // };
 
-    const handleWindowResize = () => {
-        setRefreshCount(refreshCount + 1);
-    };
+    // useEffect(() => {
+    //     window.addEventListener('resize', handleWindowResize);
 
-    useEffect(() => {
-        window.addEventListener('resize', handleWindowResize);
-
-        return () => {
-          window.removeEventListener('resize', handleWindowResize);
-        };
-    }, []);
+    //     return () => {
+    //       window.removeEventListener('resize', handleWindowResize);
+    //     };
+    // }, []);
 
     return (
       <div className="table-container" >
@@ -285,7 +280,7 @@ const RecordsTable = () => {
             key={refreshCount}
             header={tableHeader}
             // resizableColumns
-            // columnResizeMode="expand"
+            // columnResizeMode="fit"
             scrollable scrollHeight="flex"
             editMode="row"
             onRowEditChange={handleRowEditChange}
@@ -298,7 +293,7 @@ const RecordsTable = () => {
             onSelectionChange={(e) => setSelectedRecords(e.value)}
             isDataSelectable={(event) => !insertMode || event.index != 0}
             rowClassName={(rowData) => (rowData.id ? '' : 'non-selectable')}
-            rowGroupMode="rowspan"
+            // rowGroupMode="rowspan"
         >
             <Column field="sysno" header={t('sysno')} editor={textEditor} />
             <Column field="volume_number" header={t('volume_number')} editor={textEditor} />
@@ -307,7 +302,8 @@ const RecordsTable = () => {
                 header={t('category')}
                 editor={(editorOptions) => categoryEditor({ ...editorOptions, categories })}
             />
-            <Column field="title" header={t('title')} body={customColumnRenderer} editor={textareaEditor} className="overflow-hidden" />
+            {/* <Column field="title" header={t('title')} body={customColumnRenderer} editor={textareaEditor} className="overflow-hidden" /> */}
+            <Column field="title" header={t('title')} editor={textareaEditor} />
             <Column field="pages_count" header={t('pages_count')} editor={numberEditor} />
             <Column field="signature" header={t('signature')} editor={textEditor} />
             <Column field="issn" header={t('issn')} editor={textEditor} />
@@ -328,7 +324,9 @@ const RecordsTable = () => {
             rows={numRows}
             totalRecords={totalRows}
             onPageChange={handlePageChange}
-            template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+            // template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+            rowsPerPageOptions={[5, 10, 15, 25, 50]}
+            template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
             currentPageReportTemplate={"{first} - {last} " + t('range_separator') + " {totalRecords}"}
             // rightContent={footerEditButtons}
         />

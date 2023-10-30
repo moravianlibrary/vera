@@ -4,9 +4,9 @@ import { useTranslation } from "react-i18next";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 
-import { api } from "../services/Api";
 import { dataService } from "../services/Data";
 import { textEditor } from "../services/Editors";
+import { Button } from "primereact/button";
 
 const DepartmentsTable = (props) => {
     const { handleAddRow, onRowAdded } = props;
@@ -40,11 +40,16 @@ const DepartmentsTable = (props) => {
         const { newData, index } = event;
 
         if (insertMode && index == departments.length - 1) {
-            api.createDepartment(newData);
+            dataService.createDepartment(newData);
         } else {
-            api.updateDepartment(newData);
+            dataService.updateDepartment(newData);
             setRefreshCount(refreshCount + 1);
         }
+    };
+
+    const handleDeleteDepartment = (department) => {
+        dataService.deleteDepartment(department);
+        setRefreshCount(refreshCount + 1);
     };
 
     useEffect(() => {
@@ -64,6 +69,14 @@ const DepartmentsTable = (props) => {
         }
     }, [handleAddRow]);
 
+    const deleteButton = (department) => {
+        if (department.id) {
+            return (
+                <Button className="p-button-rounded p-button-text p-button-danger" icon="pi pi-trash" onClick={() => handleDeleteDepartment(department)} />
+            );
+        }
+    };
+
     return (
         <DataTable
             value={departments}
@@ -76,6 +89,7 @@ const DepartmentsTable = (props) => {
             <Column field="abbreviation" header={t('department_abbreviation')} editor={textEditor} />
             <Column field="name" header={t('department_name')} editor={textEditor} />
             <Column rowEditor />
+            <Column body={deleteButton} />
         </DataTable> 
     );
 };

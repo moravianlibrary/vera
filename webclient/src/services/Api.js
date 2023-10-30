@@ -9,216 +9,98 @@ const axios = Axios.create({
 });
 
 class Api {
-    getToken(username, password) {
-        return axios.post(`/auth/login`, {
-            username: username,
-            password: password
-        })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                throw error;
-            })
-    }
-
     createUser(username, password) {
         return axios.post(`/auth/register`, {
             username: username,
             password: password
-        })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                throw error;
-            })
+        });
+    }
+
+    getToken(username, password) {
+        return axios.post(`/auth/login`, {
+            username: username,
+            password: password
+        });
     }
 
     getCurrentUser() {
-        return axios.get(`/auth/current_user`, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                throw error;
-            }
-        );
-    }
-
-    updateUser(user) {
-        return axios.put(`/users/${user.id}`, user)
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                throw error;
-            })
+        return axios.get(`/auth/current_user`, { headers: authHeader() });
     }
 
     getUsers() {
-        return axios.get(`/users`, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                throw error;
-            }
-        );
+        return axios.get(`/users`, { headers: authHeader() });
     }
 
-    getCategories() {
-        return axios.get(`/categories`, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                throw error;
-            }
-        );
+    updateUser(user) {
+        return axios.put(`/users/${user.id}`, user, { headers: authHeader() });
     }
 
-    createCategory(category) {
-        return axios.post(`/categories`, category, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            }
-        );
-    }
-
-    updateCategory(category) {
-        return axios.put(`/categories/${category.id}`, category, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            }
-        );
-    }
-
-    deleteCategory(id) {
-        return axios.delete(`/categories/${id}`, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            })
-        ;
+    deleteUser(id) {
+        return axios.delete(`/users/${id}`, { headers: authHeader() });
     }
 
     getDepartments() {
-        return axios.get(`/departments`, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                throw error;
-            }
-        );
+        return axios.get(`/departments`, { headers: authHeader() });
     }
 
     createDepartment(department) {
-        return axios.post(`/departments`, department, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            }
-        );
+        return axios.post(`/departments`, department, { headers: authHeader() });
     }
 
     updateDepartment(department) {
-        return axios.put(`/departments/${department.id}`, department, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            }
-        );
+        return axios.put(`/departments/${department.id}`, department, { headers: authHeader() });
+    }
+
+    deleteDepartment(id) {
+        return axios.delete(`/departments/${id}`, { headers: authHeader() });
     }
 
     getRoleNames() {
-        return axios.get(`/roles_names`, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                throw error;
-            }
-        );
+        return axios.get(`/roles_names`, { headers: authHeader() });
     }
 
     getRoles() {
-        return axios.get(`/roles`, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                throw error;
-            }
-        );
+        return axios.get(`/roles`, { headers: authHeader() });
     }
 
     createRole(role) {
-        return axios.post(`/roles`, role.toJson(), { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            }
-        );
+        return axios.post(`/roles`, role.toJson(), { headers: authHeader() });
     }
 
     updateRole(role) {
-        return axios.put(`/roles/${role.id}`, role.toJson(), { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            }
-        );
+        return axios.put(`/roles/${role.id}`, role.toJson(), { headers: authHeader() });
+    }
+
+    deleteRole(id) {
+        return axios.delete(`/roles/${id}`, { headers: authHeader() });
+    }
+
+    getCategories() {
+        return axios.get(`/categories`, { headers: authHeader() });
+    }
+
+    createCategory(category) {
+        return axios.post(`/categories`, category, { headers: authHeader() });
+    }
+
+    updateCategory(category) {
+        return axios.put(`/categories/${category.id}`, category, { headers: authHeader() });
+    }
+
+    deleteCategory(id) {
+        return axios.delete(`/categories/${id}`, { headers: authHeader() });
     }
 
     getRecords(offset, rows) {
-        return axios.get(`/records?offset=${offset}&limit=${rows}`, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                throw error;
-            }
-        );
+        return axios.get(`/records?offset=${offset}&limit=${rows}`, { headers: authHeader() });
     }
 
     createRecord(record) {
-        return axios.post(`/records`, record.toJson(), { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            })
-        ;
+        return axios.post(`/records`, record.toJson(), { headers: authHeader() });
     }
 
     createRecordsFromFile(formData, category_id) {
-        return axios.post(`/records_file/${category_id}`, formData, { headers: authHeader('multipart/form-data') })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            })
-        ;
+        return axios.post(`/records_file/${category_id}`, formData, { headers: authHeader('multipart/form-data') });
     }
 
     getPrecreateRecord(identifier_type, identifier_value) {
@@ -226,37 +108,15 @@ class Api {
             identifier_type: identifier_type,
             value: identifier_value
         }
-        return axios.post(`/records/precreate_by_identifier`, body, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            })
-        ;
+        return axios.post(`/records/precreate_by_identifier`, body, { headers: authHeader() });
     }
 
     updateRecord(record) {
-        // return axios.put(`/records/${record.id}`, record.toJson(), { headers: authHeader() })
-        return axios.put(`/records/${record.id}`, record, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            })
-        ;
+        return axios.put(`/records/${record.id}`, record, { headers: authHeader() });
     }
 
     deleteRecord(id) {
-        return axios.delete(`/records/${id}`, { headers: authHeader() })
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error(error);
-            })
-        ;
+        return axios.delete(`/records/${id}`, { headers: authHeader() });
     }
 }
 

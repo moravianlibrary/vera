@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 
-import { api } from "../services/Api";
 import { textEditor } from "../services/Editors";
 import { Button } from "primereact/button";
 import { dataService } from "../services/Data";
@@ -40,15 +39,16 @@ const Categories = (props) => {
         const { newData, index } = event;
 
         if (insertMode && index == categories.length - 1) {
-            api.createCategory(newData);
+            dataService.createCategory(newData);
         } else {
-            api.updateCategory(newData);
+            dataService.updateCategory(newData);
             setRefreshCount(refreshCount + 1);
         }
     };
 
     const handleDeleteCategory = (category) => {
-        api.deleteCategory(category.id);
+        dataService.deleteCategory(category);
+        setRefreshCount(refreshCount + 1);
     };
 
     useEffect(() => {

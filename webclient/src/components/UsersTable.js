@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
+
 import { departmentEditor, roleEditor, textEditor } from "../services/Editors";
 import { dataService } from "../services/Data";
-import { Dropdown } from "primereact/dropdown";
 
 const UsersTable = (props) => {
     const { t } = useTranslation();
@@ -21,6 +22,11 @@ const UsersTable = (props) => {
         console.log(event);
     };
 
+    const handleDeleteUser = (user) => {
+        dataService.deleteUser(user);
+        setRefreshCount(refreshCount + 1);
+    };
+
     useEffect(() => {
         async function fetchUsers() {
             const {users, num_found} = await dataService.getUsers();
@@ -34,6 +40,14 @@ const UsersTable = (props) => {
         }
         fetchUsers();
     }, [refreshCount]);
+
+    const deleteButton = (user) => {
+        if (user.id) {
+            return (
+                <Button className="p-button-rounded p-button-text p-button-danger" icon="pi pi-trash" onClick={() => handleDeleteUser(user)} />
+            );
+        }
+    };
 
     return (
         <DataTable
@@ -52,6 +66,7 @@ const UsersTable = (props) => {
                 editor={(editorOptions) => roleEditor({ ...editorOptions, roles })}
             />
             <Column rowEditor />
+            <Column body={deleteButton} />
         </DataTable> 
     );
 };

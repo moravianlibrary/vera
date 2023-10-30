@@ -9,7 +9,7 @@ import { ColumnGroup } from "primereact/columngroup";
 import { Row } from "primereact/row";
 import { textEditor } from '../services/Editors.js';
 import { Role } from "../models/Role";
-import { api } from "../services/Api";
+import { Button } from "primereact/button";
 
 
 const RolesTable = (props) => {
@@ -45,9 +45,9 @@ const RolesTable = (props) => {
         data.name = newData.name;
 
         if (insertMode && index == roles.length - 1) {
-            api.createRole(data);
+            dataService.createRole(data);
         } else {
-            api.updateRole(data);
+            dataService.updateRole(data);
             setRefreshCount(refreshCount + 1);
         }
     };
@@ -62,6 +62,11 @@ const RolesTable = (props) => {
         let _roles = [...roles];
         _roles[index][event.value] = event.checked;
         setRoles(_roles);
+    };
+
+    const handleDeleteRole = (role) => {
+        dataService.deleteRole(role);
+        setRefreshCount(refreshCount + 1);
     };
 
     useEffect(() => {
@@ -135,11 +140,19 @@ const RolesTable = (props) => {
         );
     }
 
+    const deleteButton = (role) => {
+        if (role.id) {
+            return (
+                <Button className="p-button-rounded p-button-text p-button-danger" icon="pi pi-trash" onClick={() => handleDeleteRole(role)} />
+            );
+        }
+    };
+
     const headerColumnGroup = (
         <ColumnGroup>
             <Row>
                 <Column header={t('role_name')} />
-                <Column header={t('actions')} colSpan={8} />
+                <Column header={t('actions')} colSpan={9} />
             </Row>
         </ColumnGroup>
     );
@@ -165,6 +178,7 @@ const RolesTable = (props) => {
             <Column field="edit_categories" body={checkboxPicker} />
             <Column field="extract" body={checkboxPicker} />
             <Column rowEditor />
+            <Column body={deleteButton} />
         </DataTable> 
     );
 };

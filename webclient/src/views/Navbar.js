@@ -27,8 +27,11 @@ const Navbar = () => {
           action={ActionType.edit_access} 
           component={<li><Link to="/access">{t("access")}</Link></li>}
         />
-        <li className="right"><UserInfo /></li>
         <li className="right"><LoginDialog /></li>
+        <ActionAccessComponent
+          action={null}
+          component={<li className="right"><UserInfo /></li>}
+        />
       </ul>
     </nav>
   );

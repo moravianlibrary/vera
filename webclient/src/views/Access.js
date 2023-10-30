@@ -2,19 +2,9 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "primereact/button";
-import { Checkbox } from "primereact/checkbox";
-import { Column } from "primereact/column";
-import { ColumnGroup } from "primereact/columngroup";
-import { DataTable } from "primereact/datatable";
-import { Dropdown } from "primereact/dropdown";
-import { InputText } from "primereact/inputtext";
-import { Role } from "../models/Role.js";
-import { Row } from "primereact/row";
 import { SelectButton } from "primereact/selectbutton";
 
 import './Access.css';
-import { api } from '../services/Api.js';
-import { departmentEditor, roleEditor } from "../services/Editors.js";
 import RolesTable from "../components/RolesTable.js";
 import DepartmentsTable from "../components/DepartmentsTable.js";
 import UsersTable from "../components/UsersTable.js";
