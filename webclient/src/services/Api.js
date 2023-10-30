@@ -78,6 +78,39 @@ class Api {
         );
     }
 
+    createCategory(category) {
+        return axios.post(`/categories`, category, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.error(error);
+            }
+        );
+    }
+
+    updateCategory(category) {
+        return axios.put(`/categories/${category.id}`, category, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.error(error);
+            }
+        );
+    }
+
+    deleteCategory(id) {
+        return axios.delete(`/categories/${id}`, { headers: authHeader() })
+            .then(response => {
+                return response.data;
+            })
+            .catch(error => {
+                console.error(error);
+            })
+        ;
+    }
+
     getDepartments() {
         return axios.get(`/departments`, { headers: authHeader() })
             .then(response => {

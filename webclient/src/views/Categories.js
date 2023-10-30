@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Column } from "primereact/column";
@@ -6,6 +6,8 @@ import { DataTable } from "primereact/datatable";
 
 import { api } from "../services/Api";
 import { textEditor } from "../services/Editors";
+import { Button } from "primereact/button";
+import { dataService } from "../services/Data";
 
 const Categories = (props) => {
     const { t } = useTranslation();
@@ -45,14 +47,48 @@ const Categories = (props) => {
         }
     };
 
+    const handleDeleteCategory = (category) => {
+        api.deleteCategory(category.id);
+    };
+
+    useEffect(() => {
+        async function fetchCategories() {
+            const categories = await dataService.getCategories();
+            setCategories(categories);
+        }
+        if (!insertMode) {
+            fetchCategories();
+        }
+    }, [insertMode, refreshCount]);
+
+    const tableHeader = () => {
+        return (
+            <Button icon="pi pi-plus" rounded onClick={handleInsert} />
+        );
+    };
+
+    const deleteButton = (category) => {
+        if (!insertMode || category.id) {
+            return (
+                <Button className="p-button-rounded p-button-text p-button-danger" icon="pi pi-trash" onClick={() => handleDeleteCategory(category)} />
+            );
+        }
+    };
+
     return (
         <DataTable
             value={categories}
+            editMode="row"
+            onRowEditChange={onRowEditChange}
+            editingRows={editingRows || [false]}
             onRowEditComplete={handleCategoryEdit}
+            header={tableHeader}
+            resizableColumns
             {...props}
         >
             <Column field="name" header={t('category_name')} editor={textEditor} />
             <Column rowEditor />
+            <Column body={deleteButton} />
         </DataTable>
     );
 };
