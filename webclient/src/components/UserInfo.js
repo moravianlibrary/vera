@@ -41,6 +41,7 @@ const UserInfo = () => {
             style={{color: "white"}}
             text 
             label={`${user?.username} (${timeRemaining})`}
+            disabled
             // onClick={isLoggedIn ? handleLogout : handleOpen}
         />
     );

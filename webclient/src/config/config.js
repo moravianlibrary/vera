@@ -1,3 +1,3 @@
 export const APP_CONFIG = {
-    base_url: "http://localhost:8000/"
+    base_url: process.env.API_URL || "http://localhost:8000/",
 };

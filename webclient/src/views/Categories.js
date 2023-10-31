@@ -83,7 +83,8 @@ const Categories = (props) => {
             editingRows={editingRows || [false]}
             onRowEditComplete={handleCategoryEdit}
             header={tableHeader}
-            resizableColumns
+            scrollable={true}
+            scrollHeight="flex"
             {...props}
         >
             <Column field="name" header={t('category_name')} editor={textEditor} />
