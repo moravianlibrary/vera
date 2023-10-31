@@ -5,6 +5,7 @@ from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from base64 import b64decode
 from datetime import datetime, timedelta
+from pytz import timezone, UTC
 from os import environ
 
 from database import get_db
@@ -17,6 +18,7 @@ import crud
 
 SECRET_KEY=environ.get("JWT_SECRET_KEY")
 ALGORITHM=environ.get("JWT_ALGORITHM")
+TIMEZONE=environ.get("TIMEZONE")
 EXPIRES_DELTA = timedelta(minutes=int(environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")))
 
 CREDENTIALS_EXCEPTION = HTTPException(
@@ -29,6 +31,7 @@ password_hasher = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 # TODO: divide get_current_user login and token validation
+
 
 def hash_password(plain_password: str) -> str:
     return password_hasher.hash(plain_password)
@@ -52,6 +55,8 @@ def create_access_token(data: dict):
     expire = datetime.utcnow() + EXPIRES_DELTA
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    if TIMEZONE is not None:
+        expire = expire.replace(tzinfo=UTC).astimezone(timezone(TIMEZONE))
     return encoded_jwt, expire
 
 

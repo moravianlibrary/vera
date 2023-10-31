@@ -142,6 +142,7 @@ SELECT
 	r.isbn,
 	r.barcode,
 	r.creator_id,
+	c.department_id AS creator_department_id,
 	c.username AS creator,
 	r.created_at,
 	r.extraction_id,

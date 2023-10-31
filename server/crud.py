@@ -271,12 +271,18 @@ def get_record_by_identifiers(sysno: str,
 
 def get_records_query_base(db: Session,
                            sysno: Optional[str] = None,
+                           creator_id: Optional[int] = None,
+                           creator_department_id: Optional[int] = None,
                            extraction_id: Optional[int] = None,
                            onlyExtracted: bool = False):
     query_base = db.query(models.RecordView)
 
     if sysno is not None:
         query_base = query_base.filter(models.RecordView.sysno == sysno)
+    if creator_id is not None:
+        query_base = query_base.filter(models.RecordView.creator_id == creator_id)
+    if creator_department_id is not None:
+        query_base = query_base.filter(models.RecordView.creator_department_id == creator_department_id)
     if extraction_id is not None:
         query_base = query_base.filter(models.RecordView.extraction_id == extraction_id)
     if onlyExtracted:

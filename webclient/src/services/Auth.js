@@ -35,8 +35,12 @@ class AuthService {
         localStorage.setItem('user', JSON.stringify(user));
     }
 
-    logout() {
+    deleteCurrentUser() {
         localStorage.removeItem("user");
+    }
+
+    logout() {
+        this.deleteCurrentUser();
     }
 
     register(username, password) {
@@ -54,7 +58,9 @@ class AuthService {
                 const user = this.getCurrentUser();
                 user.setUserData(userData.data);
                 this.setCurrentUser(user);
-            })
+            }).catch(error => {
+                this.deleteCurrentUser();
+            });
     }
 
     isAllowedTo(action) {

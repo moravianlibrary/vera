@@ -138,6 +138,10 @@ const RecordsTable = () => {
         refreshData();
     }
 
+    const handleCancelSelectedRecords = () => {
+        setSelectedRecords([]);
+    }
+
     const handleDeleteSelectedRecords = () => {
         dataService.deleteRecords(selectedRecords);
         setSelectedRecords([]);
@@ -203,7 +207,7 @@ const RecordsTable = () => {
                         <SpeedDial model={items}
                             disabled={!authService.isAllowedTo(ActionType.write_datatable)}
                             direction="down"
-                            style={{ left: 10, top: 10 }}
+                            style={{ left: 10, top: 10, zIndex: 10 }}
                             size="large"
                             className="speeddial-top-left"
                         />
@@ -239,6 +243,12 @@ const RecordsTable = () => {
                         severity={selectedRecords.length > 0 ? "danger" : "secondary"}
                         disabled={selectedRecords.length == 0}
                         onClick={handleDeleteSelectedRecords}
+                    />
+                    <Button icon="pi pi-times" 
+                        className="p-button-rounded p-button-text"
+                        severity={selectedRecords.length > 0 ? "primary" : "secondary"}
+                        disabled={selectedRecords.length == 0}
+                        onClick={handleCancelSelectedRecords}
                     />
                 </div>
             </div>
@@ -293,7 +303,9 @@ const RecordsTable = () => {
             header={tableHeader}
             // resizableColumns
             // columnResizeMode="fit"
-            scrollable scrollHeight="flex"
+            scrollable
+            // scrollHeight="flex"
+            scrollHeight="flex"
             editMode="row"
             onRowEditChange={handleRowEditChange}
             onRowEditComplete={handleRowEdit}

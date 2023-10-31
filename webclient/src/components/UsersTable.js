@@ -21,8 +21,12 @@ const UsersTable = (props) => {
     const handleUserEdit = (event) => {
         const { newData } = event;
 
-        newData.department_id = departments.find(d => d.department_abbreviation === newData.department_abbreviation).id;
-        newData.role_id = roles.find(role => role.name === newData.role_name).id;
+        if (newData.department_abbreviation) {
+            newData.department_id = departments.find(d => d.abbreviation === newData.department_abbreviation).id;
+        }
+        if (newData.role_name) {
+            newData.role_id = roles.find(role => role.name === newData.role_name).id;
+        }
 
         dataService.updateUser(newData);
         setRefreshCount(refreshCount + 1);
@@ -40,6 +44,7 @@ const UsersTable = (props) => {
             setTotalUsers(num_found);
 
             const {departments} = await dataService.getDepartments();
+            // setDepartments([{name: ''}, ...departments]);
             setDepartments(departments);
 
             setRoles(await dataService.getRoles());
@@ -50,7 +55,12 @@ const UsersTable = (props) => {
     const deleteButton = (user) => {
         if (user.id) {
             return (
-                <Button className="p-button-rounded p-button-text p-button-danger" icon="pi pi-trash" onClick={() => handleDeleteUser(user)} />
+                <Button className="p-button-rounded p-button-text"
+                    icon="pi pi-trash"
+                    severity={user.role_id == 1 ? "secondary" : "danger"}
+                    disabled={user.role_id === 1}
+                    onClick={() => handleDeleteUser(user)}
+                />
             );
         }
     };

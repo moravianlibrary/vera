@@ -143,7 +143,12 @@ const RolesTable = (props) => {
     const deleteButton = (role) => {
         if (role.id) {
             return (
-                <Button className="p-button-rounded p-button-text p-button-danger" icon="pi pi-trash" onClick={() => handleDeleteRole(role)} />
+                <Button className="p-button-rounded p-button-text"
+                    icon="pi pi-trash"
+                    severity={role.id === 1 ? "secondary" : "danger"}
+                    disabled={role.id === 1}
+                    onClick={() => handleDeleteRole(role)}
+                />
             );
         }
     };

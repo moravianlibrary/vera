@@ -129,6 +129,7 @@ class RecordView(Base):
     barcode = Column(String)
 
     creator_id = Column(Integer, ForeignKey("users.id"), index=True)
+    creator_department_id = Column(Integer, ForeignKey("users.department_id"))
     creator = Column(String, ForeignKey("users.username"))
     created_at = Column(TIMESTAMP, server_default=func.now())
 

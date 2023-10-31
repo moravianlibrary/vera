@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { intervalToDuration } from 'date-fns';
 import { useEffect, useState } from "react";
 import { Button } from "primereact/button";
 import { authService } from "../services/Auth";
@@ -15,8 +15,17 @@ const UserInfo = () => {
             if (currentUser?.expires_on) {
                 const expiresOnDate = new Date(currentUser.expires_on);
                 const now = new Date();
-                const timeRemainingDate = new Date(expiresOnDate - now);
-                setTimeRemaining(format(timeRemainingDate, 'HH:mm:ss'));
+                if (expiresOnDate - now >= 0) {
+                    const duration = intervalToDuration({start: now, end: expiresOnDate});
+                    const hours = duration.hours.toString().padStart(2, '0');
+                    const minutes = duration.minutes.toString().padStart(2, '0');
+                    const seconds = duration.seconds.toString().padStart(2, '0');
+                    setTimeRemaining(`${hours}:${minutes}:${seconds}`);
+                } else {
+                    setTimeRemaining('00:00:00');
+                    authService.deleteCurrentUser();
+                    window.location.reload();
+                }
             }
         };
 

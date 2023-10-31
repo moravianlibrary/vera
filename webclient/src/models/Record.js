@@ -17,6 +17,7 @@ export class Record {
     barcode;
 
     creator_id;
+    creator_department_id;
     creator;
     created_at;
 
@@ -46,6 +47,7 @@ export class Record {
         record.isbn = jsonData.isbn;
         record.barcode = jsonData.barcode;
         record.creator_id = jsonData.creator_id;
+        record.creator_department_id = jsonData.creator_department_id;
         record.creator = jsonData.creator ? decodeURIComponent(jsonData.creator) : null;
         record.created_at = jsonData.created_at;
         record.extraction_id = jsonData.extraction_id;

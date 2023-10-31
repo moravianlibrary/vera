@@ -5,6 +5,7 @@ from typing import List, Optional
 
 import actions, auth, catalog, crud, models, schemas
 from database import get_db
+from etypes import ActionType
 
 
 app = FastAPI()
@@ -309,11 +310,22 @@ def get_records(offset: int = Query(0, description="Pagination page offset"),
                 sysno: Optional[str] = Query(None, description="Record sysno"),
                 extraction_id: Optional[int] = Query(None, description="Record extraction id"),
                 onlyExtracted: Optional[str] = Query(None, description="Show only extracted"),
+                user: schemas.CurrentUser = Depends(auth.get_current_user),
                 db: Session = Depends(get_db)):
+    user_id, department_id = None, None
+    if ActionType.read_datatable_department in user.actions and user.department_id is not None:
+        department_id = user.department_id
+    elif ActionType.read_datatable_own in user.actions:
+        user_id = user.id
+    elif ActionType.read_datatable_all not in user.actions:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is forbidden to read any records")
+
     query_base = crud.get_records_query_base(db,
-                                             sysno, 
-                                             extraction_id, 
-                                             (onlyExtracted is not None))
+                                             sysno=sysno,
+                                             creator_id=user_id,
+                                             creator_department_id=department_id,
+                                             extraction_id=extraction_id, 
+                                             onlyExtracted=(onlyExtracted is not None))
     records = crud.get_records(db, query_base, offset=offset, limit=limit)
     num_found = crud.get_records_num_found(db, query_base)
     return schemas.RecordsResponse(records=records, num_found=num_found)

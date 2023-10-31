@@ -148,6 +148,7 @@ class RecordView(Record):
     category_name: str
 
     creator: str
+    creator_department_id: Optional[int]
 
     extractor_id: Optional[int] = None
     extractor: Optional[str] = None
