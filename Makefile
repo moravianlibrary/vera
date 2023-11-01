@@ -1,4 +1,4 @@
-VERSION = 0.9.1
+VERSION := $(shell cat VERSION)
 
 start:
 	docker-compose up -d
