@@ -8,13 +8,15 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { Card } from 'primereact/card';
 import { Password } from 'primereact/password';
+import { useToast } from '../services/ToastContext';
 
 const LoginDialog = () => {
     const { t } = useTranslation();
+    const showToast = useToast();
 
     const [isLoggedIn, setIsLoggedIn] = useState(authService.getCurrentUser);
     const [visible, setVisible] = useState(false);
-    const [username, setUsername] = useState(null);
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState({});
 
@@ -31,11 +33,17 @@ const LoginDialog = () => {
             setErrors({username: true});
         } else {
             setErrors({});
-            authService.login(username, password);
-            setIsLoggedIn(true);
-            setTimeout(() => {
-                window.location.reload();
-            }, 500);
+            authService.login(username, password)
+            .then(() => {
+                setIsLoggedIn(true);
+                showToast('success', t('successful_login_title'), t('successful_login_body'));
+                setTimeout(() => {
+                    window.location.reload();
+                }, 500);
+            })
+            .catch(() => {
+                setErrors({combination: true});
+            });
         }
     };
 
@@ -66,6 +74,7 @@ const LoginDialog = () => {
                         <InputText id='username' placeholder={t('username')} keyfilter="email" value={username} onChange={(e) => setUsername(e.target.value)} />
                         {errors.username && <small className="p-error">{t('username_missing')}</small>}
                         <Password placeholder={t('password')} value={password} onChange={(e) => setPassword(e.target.value)} feedback={false} tabIndex={1} toggleMask />
+                        {errors.combination && <small className="p-error">{t('invalid_user_combination')}</small>}
                     </div>
                 </Card>
                 <RegisterDialog />

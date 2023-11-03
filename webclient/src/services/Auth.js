@@ -9,21 +9,26 @@ import { ActionType } from '../models/Role';
 
 class AuthService {
     login(username, password) {
-        api.getToken(username, password)
-            .then(tokenData => {
-                if (tokenData.data.access_token) {
-                    this.setCurrentUser(User.fromToken(tokenData.data));
-                    this.refreshUserData();
-                    console.log("User " + username + " successfully logged in.");
-                }
-            })
-            .catch(error => {
-                console.error("Error occurred while logging in: " + error);
-            })
-        ;
-        this.refreshIntervalId = setInterval(() => {
-            this.refreshUserData();
-        }, 60000);
+        return new Promise((resolve, reject) => {
+            api.getToken(username, password)
+                .then(tokenData => {
+                    if (tokenData.data.access_token) {
+                        this.setCurrentUser(User.fromToken(tokenData.data));
+                        this.refreshUserData();
+                        resolve(); 
+                    } else {
+                        reject();
+                    }
+                })
+                .catch(error => {
+                    console.log("Error occurred while logging in: " + error);
+                    reject();
+                })
+            ;
+            this.refreshIntervalId = setInterval(() => {
+                this.refreshUserData();
+            }, 60000);
+        });
     }
 
     getCurrentUser() {
