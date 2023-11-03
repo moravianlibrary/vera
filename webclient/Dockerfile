@@ -15,10 +15,11 @@ COPY . .
 
 # Build the React app for production
 RUN npm run build
+RUN npm install -g serve
 
-# Expose port 80 to the outside world
-EXPOSE 80
+# Expose port 3000 to the outside world
+EXPOSE 3000
 
 # Define the command to start the app when the container runs
-CMD ["npm", "start"]
+CMD ["serve", "-s", "build", "-l", "3000"]
 

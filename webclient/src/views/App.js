@@ -11,6 +11,7 @@ import './App.css';
 import { ToastProvider } from '../services/ToastContext';
 import { ActionType } from '../models/Role';
 import Categories from './Categories';
+import { APP_CONFIG } from '../config/config';
 
 // import logo from './logo.svg';
 

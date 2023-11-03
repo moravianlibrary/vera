@@ -5,11 +5,14 @@ import { APP_CONFIG } from "../config/config";
 
 const axios = Axios.create({
     baseURL: `${APP_CONFIG.base_url}`,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+    },
 });
 
 class Api {
     createUser(username, password) {
+        console.log(`BaseURL: ${APP_CONFIG.base_url}, EndPoint: /auth/register, HttpMethod: POST`);
         return axios.post(`/auth/register`, {
             username: username,
             password: password

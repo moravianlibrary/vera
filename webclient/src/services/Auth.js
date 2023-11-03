@@ -18,7 +18,7 @@ class AuthService {
                 }
             })
             .catch(error => {
-                console.log("Error occurred while logging in: " + error);
+                console.error("Error occurred while logging in: " + error);
             })
         ;
         this.refreshIntervalId = setInterval(() => {
@@ -43,8 +43,13 @@ class AuthService {
         this.deleteCurrentUser();
     }
 
-    register(username, password) {
-        return api.createUser(username, password);
+    async register(username, password) {
+        try {
+            const userResponse = await api.createUser(username, password);
+            return userResponse;
+        } catch (error) {
+            console.error("Error occurred while registering: " + error);
+        }
     }
 
     isLoggedIn() {

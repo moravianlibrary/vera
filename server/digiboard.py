@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Form, Path, Query, status, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from os import environ
 from typing import List, Optional
 
 import actions, auth, catalog, crud, models, schemas
@@ -10,25 +11,10 @@ from etypes import ActionType
 
 app = FastAPI()
 
-# CAN_BROWSE_USERS = [Depends(actions.check_permissions)]
-# CAN_EDIT_USER = [Depends(actions.check_permissions)]
-# CAN_EDIT_USERS = [Depends(actions.check_permissions)]
-# IS_USER = [Depends(actions.check_permissions)]
-# CAN_BROWSE_RECORDS = [Depends(actions.check_permissions)]
-# CAN_CREATE_RECORDS = [Depends(actions.check_permissions)]
-# CAN_COMMENT_ON_RECORD = [Depends(actions.check_permissions)]
-# CAN_EDIT_RECORD = [Depends(actions.check_permissions)]
-# CAN_EXTRACT_RECORDS = [Depends(actions.check_permissions)]
-
-origins = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000"
-]
-origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=(environ.get("ALLOW_ORIGINS").split(",")),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
