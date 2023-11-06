@@ -83,6 +83,10 @@ const resources = {
 
         insufficient_rights_title: "Nedostatečné prava",
         insufficient_rights_body: "K provedení dané akce nemate dostačující prava",
+        successful_login_title: "Úspěšné přihlášení",
+        successful_login_body: "Byli jste úspěšne přihlášení",
+        successful_registration_title: "",
+        successful_registration_body: "",
     },
   },
 };

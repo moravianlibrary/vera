@@ -24,6 +24,28 @@ app.add_middleware(
 # TODO: add checking unique before insert and update
 
 
+@app.on_event("startup")
+async def on_startup():
+    admin_username = environ.get("ADMIN_USERNAME")
+    admin_password = environ.get("ADMIN_PASSWORD")
+
+    if admin_username and admin_password:
+        db = next(get_db())
+        db_user = crud.get_user_by_username("admin", db)
+        if db_user is None:
+            db_user = auth.create_user(schemas.UserCreate(
+                username=admin_username,
+                password=admin_password
+            ), db)
+            crud.update_user(schemas.User(
+                id=db_user.id,
+                username=db_user.username,
+                department_id=None,
+                role_id=1
+            ), db)
+
+
+
 @app.post("/auth/register", response_model=schemas.User)
 def register(
             user_create: schemas.UserCreate,

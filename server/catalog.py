@@ -3,21 +3,25 @@ from urllib.parse import quote
 import requests
 import xml.etree.ElementTree as ET
 import re
+import exceptions
 from schemas import Identifier, RecordPreCreate
 from typing import Optional
 
 
 ALEPH_ENDPOINT = "http://aleph.mzk.cz/OAI?verb=GetRecord&identifier=oai:aleph.mzk.cz:{SYSNO}&metadataPrefix=marc21"
 
-SYSNO_FORMAT_1 = r'MZK\d{2}-\d{9}'
-SYSNO_FORMAT_2 = r'mzk(\d{2})(\d{9})'
+SYSNO_FORMAT = r'^(?:MZK|mzk)(\d{2})-?(\d{9})$'
+SYSNO_BASES = ["MZK01", "MZK03"]
 
 
 def parse_sysno(sysno: str):
-    if re.match(SYSNO_FORMAT_1, sysno):
-        return sysno
-    elif re.match(SYSNO_FORMAT_2, sysno):
-        return re.sub(SYSNO_FORMAT_2, r'MZK\1-\2', sysno)
+    if re.match(SYSNO_FORMAT, sysno):
+        formatted = re.sub(SYSNO_FORMAT, r'MZK\1-\2', sysno)
+        base = formatted.split("-")[0]
+        if base in SYSNO_BASES:
+            return formatted
+        raise exceptions.InvalidSysnoBaseException(SYSNO_BASES, base)
+    raise exceptions.InvalidSysnoException(SYSNO_FORMAT, sysno)
 
 
 def generate_record_by_identifier(identifier: Identifier):
@@ -106,5 +110,33 @@ def generate_record_by_sysno(sysno: str):
     )
 
 
+def test():
+    assert parse_sysno("MZK01-123456789") == "MZK01-123456789", "Test sysno parser for format MZK-XXXXXXXXX failed"
+    assert parse_sysno("mzk03-123456789") == "MZK03-123456789", "Test sysno parser for format mzk-XXXXXXXXX failed"
+    assert parse_sysno("MZK01123456789") == "MZK01-123456789", "Test sysno parser for format MZKXXXXXXXXX failed"
+    assert parse_sysno("mzk03123456789") == "MZK03-123456789", "Test sysno parser for format mzkXXXXXXXXX failed"
+
+    try:
+        parse_sysno("mzk04123456789")
+    except exceptions.InvalidSysnoBaseException as e:
+        print(f"Caught an exception: {e}")
+    else:
+        print("No exception raised")
+
+    try:
+        assert parse_sysno("mzk0312356789") == None, "Test sysno parser for short input failed"
+    except exceptions.InvalidSysnoException as e:
+        print(f"Caught an exception: {e}")
+    else:
+        print("No exception raised")
+    
+    try:
+        assert parse_sysno("mzk031234567890") == None, "Test sysno parser for long input failed"
+    except exceptions.InvalidSysnoException as e:
+        print(f"Caught an exception: {e}")
+    else:
+        print("No exception raised")
+
+
 if __name__ == "__main__":
-    print(generate_record_by_sysno(sys.argv[1]))
+    test()
