@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Set
 from datetime import datetime
 from models import Role
-from etypes import ActionType
+from etypes import ActionType, MaterialType, IssuanceType
 
 
 class RoleBase(BaseModel):
@@ -106,21 +106,41 @@ class RecordBase(BaseModel):
     item_number: Optional[str] = None
 
 
-class RecordPreCreate(RecordBase):
+class Issue(BaseModel):
+    signature: Optional[str]
+    year_issued: Optional[str]
+    volume: Optional[str]
+    item: Optional[str]
+    barcode: Optional[str]
+    issuance_type: IssuanceType
+
+
+class RecordPrecreate(RecordBase):
+    material_type: Optional[MaterialType]
+
     title: str
     pages_count: Optional[int] = None
+    size: Optional[str] = None
+    periodicity: Optional[str] = None
 
+    barcode: Optional[str] = None
     signature: Optional[str] = None
+    ccnb: Optional[str] = None
+
+    publishers: List[str] = []
+    publishing_date: Optional[str] = None
+
     issn: Optional[str] = None
     isbn: Optional[str] = None
-    barcode: Optional[str] = None
+
+    issues: List[Issue]
 
 
-class RecordCreate(RecordPreCreate):
+class RecordCreate(RecordPrecreate):
     category_id: int
 
     @classmethod
-    def from_record_precreate(cls, record_precreate: RecordPreCreate, category_id: int) -> "RecordCreate":
+    def from_record_precreate(cls, record_precreate: RecordPrecreate, category_id: int) -> "RecordCreate":
         return cls(
             sysno=record_precreate.sysno,
             volume_number=record_precreate.volume_number,

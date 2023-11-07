@@ -2,9 +2,11 @@ import sys
 from urllib.parse import quote
 import requests
 import xml.etree.ElementTree as ET
+from lxml import etree
 import re
 import exceptions
-from schemas import Identifier, RecordPreCreate
+from schemas import Identifier, RecordPrecreate
+from catalog_record import CatalogRecord
 from typing import Optional
 
 
@@ -33,6 +35,19 @@ def generate_record_by_identifier(identifier: Identifier):
 
 def generate_records_from_file(file_content: str):
     return [generate_record_by_sysno(parse_sysno(line)) for line in file_content.splitlines()] 
+
+
+def download_from_catalog(sysno: str):
+    response = None
+    try:
+        response = requests.get(ALEPH_ENDPOINT.format(SYSNO=sysno))
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    if response.status_code != 200:
+        print(f"HTTP request failed with status code {response.status_code}")
+
+    return etree.fromstring(response.content)
 
 
 def generate_record_by_sysno(sysno: str):
@@ -97,7 +112,7 @@ def generate_record_by_sysno(sysno: str):
     if title is None:
         return
     
-    return RecordPreCreate(
+    return RecordPrecreate(
         sysno=sysno,
         volume_number=quote(volume.encode('utf-8')) if volume is not None else None,
         item_number=None,
@@ -111,31 +126,35 @@ def generate_record_by_sysno(sysno: str):
 
 
 def test():
-    assert parse_sysno("MZK01-123456789") == "MZK01-123456789", "Test sysno parser for format MZK-XXXXXXXXX failed"
-    assert parse_sysno("mzk03-123456789") == "MZK03-123456789", "Test sysno parser for format mzk-XXXXXXXXX failed"
-    assert parse_sysno("MZK01123456789") == "MZK01-123456789", "Test sysno parser for format MZKXXXXXXXXX failed"
-    assert parse_sysno("mzk03123456789") == "MZK03-123456789", "Test sysno parser for format mzkXXXXXXXXX failed"
-
-    try:
-        parse_sysno("mzk04123456789")
-    except exceptions.InvalidSysnoBaseException as e:
-        print(f"Caught an exception: {e}")
-    else:
-        print("No exception raised")
-
-    try:
-        assert parse_sysno("mzk0312356789") == None, "Test sysno parser for short input failed"
-    except exceptions.InvalidSysnoException as e:
-        print(f"Caught an exception: {e}")
-    else:
-        print("No exception raised")
-    
-    try:
-        assert parse_sysno("mzk031234567890") == None, "Test sysno parser for long input failed"
-    except exceptions.InvalidSysnoException as e:
-        print(f"Caught an exception: {e}")
-    else:
-        print("No exception raised")
+    # sysno_file = "/home/robert/devel/digiboard/mzk01_sysnos.txt"
+    # with open(sysno_file, 'r') as file:
+    #     for line in file:
+    #         sysno = line.strip()
+    #         try:
+    #             record = CatalogRecord(sysno, download_from_catalog(sysno))
+    #             print(record.get_schema())
+    #             if record.issues is not None and len(record.issues) > 0:
+    #                 for issue in record.get_schema().issues:
+    #                     print(f'{record.get_schema().sysno},{issue}')
+    #         except Exception as e:
+    #             print(e)
+    # sysno_file = "/home/robert/devel/digiboard/mzk03_sysnos.txt"
+    # with open(sysno_file, 'r') as file:
+    #     for line in file:
+    #         sysno = line.strip()
+    #         try:
+    #             record = CatalogRecord(sysno, download_from_catalog(sysno))
+    #             print(record.get_schema())
+    #             if record.issues is not None and len(record.issues) > 0:
+    #                 for issue in record.get_schema().issues:
+    #                     print(f'{record.get_schema().sysno},{issue}')
+    #         except Exception as e:
+    #             print(e)
+    print(CatalogRecord("MZK01-000724903", download_from_catalog("MZK01-000724903")).get_schema())
+    print(CatalogRecord("MZK01-001273598", download_from_catalog("MZK01-001273598")).get_schema())
+    #if record.issues is not None and len(record.issues) > 0:
+    #    for issue in record.get_schema().issues:
+    #        print(f'{record.get_schema().sysno},{issue}')
 
 
 if __name__ == "__main__":

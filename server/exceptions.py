@@ -1,3 +1,13 @@
+class CatalogRecordNotFoundException(Exception):
+    def __init__(self, sysno):
+        super().__init__(f"Could not find record with sysno '{sysno}' in catalog.")
+
+
+class CatalogRecordParseException(Exception):
+    def __init__(self, sysno, field):
+        super().__init__(f"Could not parse field '{field}' from record with sysno '{sysno}'.")
+
+
 class InvalidSysnoException(Exception):
     def __init__(self, format, actual):
         super().__init__(f"Invalid sysno format. Expecting sysno of format '{format}', got '{actual}'.")

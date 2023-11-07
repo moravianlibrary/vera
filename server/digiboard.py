@@ -260,7 +260,7 @@ def create_record(record: schemas.RecordCreate,
     return crud.create_record(record, user, db)
 
 
-@app.post("/records/precreate_by_identifier", response_model=schemas.RecordPreCreate)
+@app.post("/records/precreate_by_identifier", response_model=schemas.RecordPrecreate)
 def precreate_by_identifier(identifier: schemas.Identifier,
                             db: Session = Depends(get_db)):
     return catalog.generate_record_by_identifier(identifier)
