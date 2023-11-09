@@ -3,7 +3,7 @@ from sqlalchemy import desc, func, update, select
 from typing import List, Optional
 
 from database import create
-from etypes import ActionType
+from enums import ActionType
 import models, schemas
 
 
@@ -208,12 +208,15 @@ def create_record(record: schemas.Record,
         volume_number=record.volume_number,
         item_number=record.item_number,
         category_id=record.category_id,
+        material_type=record.material_type,
         title=record.title,
+        publishers=record.publishers,
         pages_count=record.pages_count,
+        size=record.size,
         signature=record.signature,
-        issn=record.issn,
-        isbn=record.isbn,
         barcode=record.barcode,
+        ccnb=record.ccnb,
+        isbn=record.isbn,
         creator_id=user.id
     ))
     return get_record(db_record.id, db)
@@ -232,12 +235,14 @@ def update_record(record_id: int,
     db_record.volume_number=record.volume_number
     db_record.item_number=record.item_number
     db_record.category_id=record.category_id
+    db_record.material_type=record.material_type
     db_record.title=record.title
     db_record.pages_count=record.pages_count
-    db_record.signature=record.signature
-    db_record.issn=record.issn
-    db_record.isbn=record.isbn
+    db_record.size=record.size
     db_record.barcode=record.barcode
+    db_record.signature=record.signature
+    db_record.ccnb=record.ccnb
+    db_record.isbn=record.isbn
 
     db.commit()
 

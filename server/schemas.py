@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Set
 from datetime import datetime
 from models import Role
-from etypes import ActionType, MaterialType, IssuanceType
+from enums import ActionType, MaterialType, IssuanceType
 
 
 class RoleBase(BaseModel):
@@ -105,6 +105,18 @@ class RecordBase(BaseModel):
     volume_number: Optional[str] = None
     item_number: Optional[str] = None
 
+    material_type: Optional[MaterialType]
+    title: str
+    publishers: Optional[List[str]] = None
+
+    pages_count: Optional[int] = None
+    size: Optional[str] = None
+    
+    signature: Optional[str] = None
+    barcode: Optional[str] = None
+    ccnb: Optional[str] = None
+    isbn: Optional[str] = None
+
 
 class Issue(BaseModel):
     signature: Optional[str]
@@ -116,27 +128,12 @@ class Issue(BaseModel):
 
 
 class RecordPrecreate(RecordBase):
-    material_type: Optional[MaterialType]
-
-    title: str
-    pages_count: Optional[int] = None
-    size: Optional[str] = None
     periodicity: Optional[str] = None
-
-    barcode: Optional[str] = None
-    signature: Optional[str] = None
-    ccnb: Optional[str] = None
-
-    publishers: List[str] = []
     publishing_date: Optional[str] = None
-
-    issn: Optional[str] = None
-    isbn: Optional[str] = None
-
     issues: List[Issue]
 
 
-class RecordCreate(RecordPrecreate):
+class RecordCreate(RecordBase):
     category_id: int
 
     @classmethod
@@ -145,12 +142,15 @@ class RecordCreate(RecordPrecreate):
             sysno=record_precreate.sysno,
             volume_number=record_precreate.volume_number,
             item_number=record_precreate.item_number,
+            material_type=record_precreate.material_type,
             title=record_precreate.title,
+            publishers=record_precreate.publishers,
             pages_count=record_precreate.pages_count,
+            size=record_precreate.size,
             signature=record_precreate.signature,
-            issn=record_precreate.issn,
-            isbn=record_precreate.isbn,
             barcode=record_precreate.barcode,
+            ccnb=record_precreate.ccnb,
+            isbn=record_precreate.isbn,
             category_id=category_id
         )
 

@@ -1,8 +1,8 @@
-from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, Table, Text, TIMESTAMP, UniqueConstraint, func
+from sqlalchemy import ARRAY, Boolean, Column, Enum, ForeignKey, Integer, String, Table, Text, TIMESTAMP, UniqueConstraint, func
 from sqlalchemy.orm import relationship
 
 from database import Base
-from etypes import ActionType
+from enums import ActionType, MaterialType
 
 
 class Role(Base):
@@ -62,13 +62,18 @@ class Record(Base):
     item_number = Column(String)
 
     category_id = Column(Integer, ForeignKey("categories.id"), index=True)
+
+    material_type = Column(Enum(MaterialType))
     title = Column(String)
+    publishers = Column(ARRAY(String))
+
     pages_count = Column(Integer)
+    size = Column(String)
 
     signature = Column(String)
-    issn = Column(String)
-    isbn = Column(String)
     barcode = Column(String)
+    ccnb = Column(String)
+    isbn = Column(String)
 
     creator_id = Column(Integer, ForeignKey("users.id"), index=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
@@ -120,13 +125,17 @@ class RecordView(Base):
     category_id = Column(Integer, ForeignKey("categories.id"), index=True)
     category_name = Column(String, ForeignKey("categories.name"))
 
+    material_type = Column(Enum(MaterialType))
     title = Column(String)
+    publishers = Column(ARRAY(String))
+
     pages_count = Column(Integer)
+    size = Column(String)
 
     signature = Column(String)
-    issn = Column(String)
-    isbn = Column(String)
     barcode = Column(String)
+    ccnb = Column(String)
+    isbn = Column(String)
 
     creator_id = Column(Integer, ForeignKey("users.id"), index=True)
     creator_department_id = Column(Integer, ForeignKey("users.department_id"))

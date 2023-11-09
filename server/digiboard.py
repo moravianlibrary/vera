@@ -6,7 +6,7 @@ from typing import List, Optional
 
 import actions, auth, catalog, crud, models, schemas
 from database import get_db
-from etypes import ActionType
+from enums import ActionType
 
 
 app = FastAPI()
@@ -266,7 +266,15 @@ def precreate_by_identifier(identifier: schemas.Identifier,
     return catalog.generate_record_by_identifier(identifier)
 
 
-@app.post("/records_file/{category_id}")
+@app.post("/records/precreate_from_file/{category_id}", response_model=List[schemas.RecordPrecreate])
+async def create_records(file: UploadFile,
+                         category_id: int,
+                         db: Session = Depends(get_db),
+                         user: schemas.User = Depends(auth.get_current_user)):
+    pass
+
+
+@app.post("/records/create_from_file/{category_id}", response_model=List[schemas.RecordCreateResult])
 async def create_records(file: UploadFile,
                          category_id: int,
                          db: Session = Depends(get_db),

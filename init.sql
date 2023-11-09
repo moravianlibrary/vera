@@ -6,6 +6,9 @@ CREATE TYPE action_type AS ENUM (
 	'edit_access', 'edit_categories',
 	'extract'
 );
+CREATE TYPE material_type AS ENUM (
+	'book', 'continuing_resource', 'map', 'msuic', 'other'
+);
 
 -- Creates roles table
 CREATE TABLE IF NOT EXISTS roles (
@@ -59,17 +62,21 @@ CREATE TABLE IF NOT EXISTS records (
 	item_number VARCHAR(16),
 	CONSTRAINT unique_combination UNIQUE NULLS NOT DISTINCT (sysno, volume_number, item_number),
 
-	-- Information
 	category_id INT REFERENCES categories(id),
-	title VARCHAR(1024) NOT NULL,
+
+	-- Information
+	material_type material_type,
+	title TEXT NOT NULL,
+	publishers TEXT[],
+
 	pages_count INTEGER,
+	size VARCHAR(32),
 
 	-- Additional information
-	-- model
 	signature VARCHAR(64),
-	issn VARCHAR(32),
-	isbn VARCHAR(32),
 	barcode VARCHAR(32),
+	ccnb VARCHAR(32),
+	isbn VARCHAR(32),
 
 	-- Insertion details
 	creator_id INT NOT NULL REFERENCES users(id),
@@ -135,12 +142,15 @@ SELECT
 	r.item_number,
 	r.category_id,
 	cs.name AS category_name,
+	r.material_type,
 	r.title,
+	r.publishers,
 	r.pages_count,
+	r.size,
 	r.signature,
-	r.issn,
-	r.isbn,
 	r.barcode,
+	r.ccnb,
+	r.isbn,
 	r.creator_id,
 	c.department_id AS creator_department_id,
 	c.username AS creator,

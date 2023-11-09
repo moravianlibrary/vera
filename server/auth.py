@@ -10,7 +10,7 @@ from os import environ
 
 from database import get_db
 from models import Role
-from etypes import ActionType
+from enums import ActionType
 import schemas
 from typing import Set
 import crud

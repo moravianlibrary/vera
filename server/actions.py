@@ -5,7 +5,7 @@ from typing import Set
 import auth, crud, schemas
 from database import get_db
 from auth import Role
-from etypes import ActionType
+from enums import ActionType
 
 
 FORBIDDEN_EXCEPTION = HTTPException(

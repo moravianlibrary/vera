@@ -1,7 +1,7 @@
 import re
 from urllib.parse import quote
 import exceptions, schemas
-from etypes import MaterialType, IssuanceType
+from enums import MaterialType, IssuanceType
 from typing import List, Optional
 
 
@@ -190,7 +190,7 @@ class CatalogRecord:
         self.signature = get_field_text(marc, "910", "b")
         self.additional_signature = get_field_text(marc, "910", "c")
         self.material_type = get_field_text(marc, "990", "a")
-        self.barcode = get_field_text(marc, "996", "b", ind1="4")
+        self.barcode = get_field_text(marc, "996", "b")
 
         self.issues = [Issue(issue) for issue in get_datafields(marc, "996", ind1="6")]
 
@@ -215,7 +215,6 @@ class CatalogRecord:
             signature=get_first_encoded([self.signature, self.additional_signature]),
             ccnb=encode(self.ccnb),
 
-            issn=None,
             isbn=encode(self.isbn),
 
             issues=[issue.get_schema() for issue in self.issues]

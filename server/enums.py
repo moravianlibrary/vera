@@ -6,6 +6,7 @@ class MaterialType(Enum):
     continuing_resource = 'continuing_resource'
     map = 'map'
     music = 'music'
+    other = 'other'
 
 
 class IssuanceType(Enum):
