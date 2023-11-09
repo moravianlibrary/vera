@@ -16,6 +16,8 @@ import { Record } from '../models/Record.js';
 import { MultiSelect } from 'primereact/multiselect';
 import { authService } from '../services/Auth';
 import { ActionType } from '../models/Role';
+import SysnoInput from '../dialogs/TextInputDialog';
+import TextInputDialog from '../dialogs/TextInputDialog';
 
 const RecordsTable = () => {
     const { t } = useTranslation();
@@ -33,6 +35,7 @@ const RecordsTable = () => {
     const [refreshDataCount, setRefreshDataCount] = useState(0);
     const [selectedRecords, setSelectedRecords] = useState([]);
 
+    const [sysnoInputVisible, setSysnoInputVisible] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [selectCategoryVisible, setSelectCategoryVisible] = useState(false);
     const fileInputRef = useRef(null);
@@ -152,20 +155,6 @@ const RecordsTable = () => {
         return authService.isAllowedToEditRecord(record);
     };
 
-    // useEffect(() => {
-    //     const handleResize = () => {
-    //         const rowHeight = 83;
-    //         const remainingHeight = window.innerHeight - 253;
-    //         setNumRows(Math.max(5, Math.floor(remainingHeight / rowHeight)));
-    //     };
-    //     handleResize();
-
-    //     window.addEventListener('resize', handleResize);
-    //     return () => {
-    //         window.removeEventListener('resize', handleResize);
-    //     };
-    // }, []);
-
     useEffect(() => {
         fetchRecords();
         fetchCategories();
@@ -184,17 +173,36 @@ const RecordsTable = () => {
         }
     }, [insertMode]);
 
+    const handleClickInsertBySysno = () => {
+        console.log("set visible");
+        setSysnoInputVisible(true);
+    }
+
+    useEffect(() => {
+        console.log(sysnoInputVisible);
+    }, [sysnoInputVisible]);
+
     const tableHeader = () => {
         const items = [
             {
-                label: t('insert_record_title'),
+                label: t('create_record'),
                 icon: 'pi pi-plus',
-                command: handleClickInsert
+                command: handleClickInsert,
+            },
+            {
+                label: t('insert_record_by_sysno'),
+                icon: 'pi pi-minus',
+                command: handleClickInsertBySysno,
+            },
+            {
+                label: t('insert_record_by_barcode'),
+                icon: 'pi pi-plus',
+                command: handleClickInsert,
             },
             {
                 label: t('insert_records_from_file'),
                 icon: 'pi pi-upload',
-                command: handleClickUploadSysnoFile
+                command: handleClickUploadSysnoFile,
             },
         ];
 
@@ -203,6 +211,7 @@ const RecordsTable = () => {
                 {/* <Button icon="pi pi-plus" rounded raised onClick={handleClickInsert} /> */}
                 <div>
                     <div>
+                        <TextInputDialog visible={sysnoInputVisible} onHide={setSysnoInputVisible(false)} />
                         <Tooltip target=".speeddial-top-left .p-speeddial-action" position="left" />
                         <SpeedDial model={items}
                             disabled={!authService.isAllowedTo(ActionType.write_datatable)}

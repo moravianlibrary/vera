@@ -79,12 +79,6 @@ class AuthService {
 
     isAllowedToEditRecord(record) {
         const user = this.getCurrentUser();
-        console.log(user && (
-                user.actions.includes(ActionType.edit_datatable_all)
-                || (user.actions.includes(ActionType.edit_datatable_department)
-                    && user.department_id === record.creator_department_id)
-                || (user.actions.includes(ActionType.edit_datatable_own)
-                    && user.id === record.creator_id)));
         return user && (
                 user.actions.includes(ActionType.edit_datatable_all)
                 || (user.actions.includes(ActionType.edit_datatable_department)

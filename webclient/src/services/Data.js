@@ -193,9 +193,7 @@ class DataService {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            console.log(formData);
             const createdRecords = await api.createRecordsFromFile(formData, category_id);
-            console.log(createdRecords);
             return createdRecords;
         } catch (error) {
             this.setError(error);
