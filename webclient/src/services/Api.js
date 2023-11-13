@@ -99,6 +99,7 @@ class Api {
     }
 
     createRecord(record) {
+        console.log(record.toJson());
         return axios.post(`/records`, record.toJson(), { headers: authHeader() });
     }
 
@@ -106,7 +107,7 @@ class Api {
         return axios.post(`/records_file/${category_id}`, formData, { headers: authHeader('multipart/form-data') });
     }
 
-    getPrecreateRecord(identifier_type, identifier_value) {
+    precreateRecord(identifier_type, identifier_value) {
         const body = {
             identifier_type: identifier_type,
             value: identifier_value

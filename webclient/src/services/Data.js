@@ -1,3 +1,4 @@
+import { PrecreateRecord } from "../models/PrecreateRecord";
 import { Record } from "../models/Record";
 import { Role } from "../models/Role";
 import { api } from "./Api";
@@ -184,6 +185,7 @@ class DataService {
             const createdRecord = await api.createRecord(record);
             return Record.fromJson(createdRecord);
         } catch (error) {
+            console.log(error);
             this.setError(error);
             return null;
         }
@@ -195,6 +197,16 @@ class DataService {
             formData.append('file', file);
             const createdRecords = await api.createRecordsFromFile(formData, category_id);
             return createdRecords;
+        } catch (error) {
+            this.setError(error);
+            return null;
+        }
+    }
+
+    async precreateRecord(identifier_type, identifier_value) {
+        try {
+            const { data }= await api.precreateRecord(identifier_type, identifier_value);
+            return PrecreateRecord.fromJson(data);
         } catch (error) {
             this.setError(error);
             return null;

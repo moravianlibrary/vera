@@ -6,10 +6,13 @@ export class Record {
     sysno;
     volume_number;
     item_number;
+    material_type;
+    publishers;
 
     category;
     title;
     pages_count;
+    size;
 
     signature;
     issn;
@@ -38,12 +41,15 @@ export class Record {
         record.sysno = jsonData.sysno;
         record.volume_number = jsonData.volume_number ? decodeURIComponent(jsonData.volume_number) : null;
         record.item_number = jsonData.item_number ? decodeURIComponent(jsonData.item_number) : null;
+        record.material_type = jsonData.material_type;
+        record.publishers = jsonData.publishers;
+        record.size = jsonData.size;
         record.category_id = jsonData.category_id ? parseInt(jsonData.category_id) : null;
         record.category_name = jsonData.category_name ? decodeURIComponent(jsonData.category_name) : null;
         record.title = jsonData.title ? decodeURIComponent(jsonData.title) : null;
         record.pages_count = jsonData.pages_count ? parseInt(jsonData.pages_count) : null;
         record.signature = jsonData.signature ? decodeURIComponent(jsonData.signature) : null;
-        record.issn = jsonData.issn;
+        record.ccnb = jsonData.ccnb;
         record.isbn = jsonData.isbn;
         record.barcode = jsonData.barcode;
         record.creator_id = jsonData.creator_id;
@@ -65,13 +71,16 @@ export class Record {
             sysno: this.sysno,
             volume_number: this.volume_number ? encodeURIComponent(this.volume_number) : null,
             item_number: this.item_number ? encodeURIComponent(this.item_number) : null,
-            category_id: this.category_id,
+            material_type: this.material_type,
             title: this.title ? encodeURIComponent(this.title) : null,
+            publishers: this.publishers,
             pages_count: this.pages_count,
+            size: this.size,
             signature: this.signature ? encodeURIComponent(this.signature) : null,
-            issn: this.issn,
-            isbn: this.isbn,
             barcode: this.barcode,
+            ccnb: this.ccnb,
+            isbn: this.isbn,
+            category_id: this.category_id,
         };
     }
 

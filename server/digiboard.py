@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from os import environ
 from typing import List, Optional
 
-import actions, auth, catalog, crud, models, schemas
+import actions, auth, catalog, crud, exceptions, models, schemas
 from database import get_db
 from enums import ActionType
 
@@ -260,10 +260,20 @@ def create_record(record: schemas.RecordCreate,
     return crud.create_record(record, user, db)
 
 
-@app.post("/records/precreate_by_identifier", response_model=schemas.RecordPrecreate)
+@app.post("/records/precreate_by_identifier", response_model=schemas.RecordPrecreateResult)
 def precreate_by_identifier(identifier: schemas.Identifier,
                             db: Session = Depends(get_db)):
-    return catalog.generate_record_by_identifier(identifier)
+    try:
+        return schemas.RecordPrecreateResult(
+            record=catalog.generate_record_by_identifier(identifier),
+            identifier=identifier
+        )
+    except exceptions.CatalogException as e:
+        print(type(e).__name__)
+        return schemas.RecordPrecreateResult(
+            identifier=identifier,
+            error_type=(type(e).__name__)
+        )
 
 
 @app.post("/records/precreate_from_file/{category_id}", response_model=List[schemas.RecordPrecreate])

@@ -16,8 +16,7 @@ import { Record } from '../models/Record.js';
 import { MultiSelect } from 'primereact/multiselect';
 import { authService } from '../services/Auth';
 import { ActionType } from '../models/Role';
-import SysnoInput from '../dialogs/TextInputDialog';
-import TextInputDialog from '../dialogs/TextInputDialog';
+import InsertRecordDialog from '../dialogs/InsertRecordDialog';
 
 const RecordsTable = () => {
     const { t } = useTranslation();
@@ -211,7 +210,12 @@ const RecordsTable = () => {
                 {/* <Button icon="pi pi-plus" rounded raised onClick={handleClickInsert} /> */}
                 <div>
                     <div>
-                        <TextInputDialog visible={sysnoInputVisible} onHide={setSysnoInputVisible(false)} />
+                        <InsertRecordDialog 
+                            header={t('insert_record_using_sysno')}
+                            categories={categories}
+                            visible={sysnoInputVisible} 
+                            onHide={setSysnoInputVisible(false)} 
+                        />
                         <Tooltip target=".speeddial-top-left .p-speeddial-action" position="left" />
                         <SpeedDial model={items}
                             disabled={!authService.isAllowedTo(ActionType.write_datatable)}

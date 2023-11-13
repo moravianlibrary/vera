@@ -140,6 +140,11 @@ class Issue:
                 and date_issued_splitted[0] == year_issued and date_issued_splitted[1] == volume:
             self.volume = volume
             self.year_issued = year_issued
+        elif len(date_issued_splitted) == 2 and date_issued_splitted[1] == item \
+                and date_issued_splitted[0] == year_issued and date_issued_splitted[0] == volume:
+            self.item = item
+            self.volume = volume
+            self.year_issued = year_issued
         else:
             self.item = None
     
@@ -192,7 +197,7 @@ class CatalogRecord:
         self.material_type = get_field_text(marc, "990", "a")
         self.barcode = get_field_text(marc, "996", "b")
 
-        self.issues = [Issue(issue) for issue in get_datafields(marc, "996", ind1="6")]
+        self.issues = [Issue(issue) for issue in get_datafields(marc, "996")]
 
     def get_schema(self) -> schemas.RecordPrecreate:
         title = get_first_encoded([self.title, self.alternative_title])

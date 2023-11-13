@@ -100,6 +100,11 @@ class Category(CategoryBase):
     id: int
 
 
+class Identifier(BaseModel):
+    identifier_type: str
+    value: str
+
+
 class RecordBase(BaseModel):
     sysno: str
     volume_number: Optional[str] = None
@@ -133,6 +138,12 @@ class RecordPrecreate(RecordBase):
     issues: List[Issue]
 
 
+class RecordPrecreateResult(BaseModel):
+    record: Optional[RecordPrecreate] = None
+    identifier: Identifier
+    error_type: Optional[str] = None
+
+
 class RecordCreate(RecordBase):
     category_id: int
 
@@ -153,6 +164,12 @@ class RecordCreate(RecordBase):
             isbn=record_precreate.isbn,
             category_id=category_id
         )
+
+
+class RecordCreateResult(BaseModel):
+    record: Optional[RecordCreate]
+    identifier: Identifier
+    error_type: Optional[str]
 
 
 class Record(RecordCreate):
@@ -184,11 +201,6 @@ class RecordView(Record):
 class RecordsResponse(BaseModel):
     records: List[RecordView]
     num_found: int
-
-
-class Identifier(BaseModel):
-    identifier_type: str
-    value: str
 
 
 class CommentBase(BaseModel):
