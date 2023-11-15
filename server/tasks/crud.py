@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
-from services.database import create
-from tasks.models import Task
+from . import models, schemas
 
 
 def create_task(task: schemas.TaskCreate,
@@ -13,4 +12,4 @@ def create_task(task: schemas.TaskCreate,
 
 def get_task(id: int,
              db: Session):
-    return db.query(Task).filter(Task.id == id).first()
+    return db.query(models.Task).filter(models.Task.id == id).first()

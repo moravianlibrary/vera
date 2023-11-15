@@ -1,0 +1,61 @@
+version: '3.1'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: digiboard-postgres
+    environment:
+      POSTGRES_USER: digiboardAdmin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: digiboard
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./populate.sql:/docker-entrypoint-initdb.d/populate.sql
+      - data:/var/lib/postgresql/data
+    networks:
+      - digiboard
+
+  server:
+    container_name: digiboard-server
+    build:
+      context: ./server
+        #dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - POSTGRES_HOST=postgres
+      - JWT_SECRET_KEY=MJJLWBd3FGfDddqkUC4qE+VX5HYexVK6hLkieod5aGQ=
+      - JWT_ALGORITHM=HS256
+      - ALLOW_ORIGINS=http://localhost:3000
+      - ACCESS_TOKEN_EXPIRE_MINUTES=300
+      - TIMEZONE=Europe/Prague
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=digiboardAdmin
+    depends_on:
+      - postgres
+    networks:
+      - digiboard
+
+  client:
+    container_name: digiboard-client
+    build:
+      context: ./webclient
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://api-server:8080  # Replace with your API server's URL
+    depends_on:
+      - server
+    networks:
+      - digiboard
+
+volumes:
+  data:
+
+networks:
+  digiboard:
+

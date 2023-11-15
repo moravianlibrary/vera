@@ -5,11 +5,6 @@ from datetime import datetime
 from tasks.enums import TaskScope, TaskState, TaskType
 
 
-class QueryPart(BaseModel):
-    field: str
-    
-
-
 class TaskBase(BaseModel):
     task_type: TaskType
     task_scope: TaskScope

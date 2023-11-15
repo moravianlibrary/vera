@@ -1,5 +1,5 @@
-from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, PrimaryKeyConstraint, String, TIMESTAMP, func
-from sqlalchemy.orm import relationship
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, \
+    PrimaryKeyConstraint, String, TIMESTAMP, func
 
 from services.database import Base
 from tasks.enums import TaskType, TaskScope, TaskState
@@ -15,7 +15,8 @@ class Task(Base):
     query = Column(String)
     owner_id = Column(Integer, ForeignKey("users.id"), index=True)
 
-    task_state = Column(Enum(TaskState), server_default=TaskState.PLANNED.value)
+    task_state = Column(Enum(TaskState),
+                        server_default=TaskState.PLANNED.value)
     planned = Column(TIMESTAMP, server_default=func.now())
     started = Column(TIMESTAMP)
     finished = Column(TIMESTAMP)
@@ -43,7 +44,8 @@ class TaskView(Base):
     owner_id = Column(Integer, ForeignKey("users.id"), index=True)
     owner_name = Column(String, ForeignKey("users.username"))
 
-    task_state = Column(Enum(TaskState), server_default=TaskState.PLANNED.value)
+    task_state = Column(Enum(TaskState),
+                        server_default=TaskState.PLANNED.value)
     planned = Column(TIMESTAMP, server_default=func.now())
     started = Column(TIMESTAMP)
     finished = Column(TIMESTAMP)

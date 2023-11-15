@@ -1,31 +1,21 @@
-from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
-from base64 import b64decode
 from datetime import datetime, timedelta
 from pytz import timezone, UTC
 from os import environ
 
-from services.database import get_db
-from models import Role
-from enums import ActionType
-import schemas
-from typing import Set
-import crud
+from roles.enums import ActionType
+from services import exceptions
+from . import crud, schemas
 
 
-SECRET_KEY=environ.get("JWT_SECRET_KEY")
-ALGORITHM=environ.get("JWT_ALGORITHM")
-TIMEZONE=environ.get("TIMEZONE")
-EXPIRES_DELTA = timedelta(minutes=int(environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")))
-
-CREDENTIALS_EXCEPTION = HTTPException(
-    status_code=status.HTTP_401_UNAUTHORIZED,
-    detail="Could not validate credentials",
-    headers={"WWW-Authenticate": "Bearer"},
-)
+SECRET_KEY = environ.get("JWT_SECRET_KEY")
+ALGORITHM = environ.get("JWT_ALGORITHM")
+TIMEZONE = environ.get("TIMEZONE")
+EXPIRES_DELTA = timedelta(minutes=int(
+    environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")))
 
 password_hasher = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
@@ -60,18 +50,18 @@ def create_access_token(data: dict):
     return encoded_jwt, expire
 
 
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
+def get_current_user(db: Session, token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
-            raise CREDENTIALS_EXCEPTION
-    except JWTError as jwt_error:
-        raise CREDENTIALS_EXCEPTION
+            raise exceptions.CredentialsException
+    except JWTError:
+        raise exceptions.CredentialsException
     user_base = crud.get_user_by_username(username, db)
     if user_base is None:
-        raise CREDENTIALS_EXCEPTION
-    user = crud.get_user(user_base.id, db)
+        raise exceptions.CredentialsException
+    user = crud.get_user_view(user_base.id, db)
     return schemas.CurrentUser(
         id=user.id,
         username=user.username,
@@ -80,12 +70,14 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
         department_name=user.department_name,
         role_id=user.role_id,
         role_name=user.role_name,
-        actions=[ActionType(action[0]) for action in crud.get_role_actions(user.role_id, db)]
+        actions=[ActionType(action[0]) for action
+                 in crud.get_role_actions(user.role_id, db)]
     )
 
 
-def change_user_password(user_id: int, user_change_password: schemas.UserChangePassword):
-    user = get_current_user()
+def change_user_password(user_change_password: schemas.UserChangePassword,
+                         db: Session):
+    user = crud.get_user(user_change_password.id, db)
     if not verify_password(user_change_password.password, user.password):
-        raise CREDENTIALS_EXCEPTION
-    return crud.update_user_password(user_id, user_change_password)
+        raise exceptions.CredentialsException
+    return crud.update_user_password(user.id, user_change_password)

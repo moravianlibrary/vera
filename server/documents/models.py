@@ -1,58 +1,11 @@
-from sqlalchemy import ARRAY, Boolean, Column, Enum, ForeignKey, Integer, String, Table, Text, TIMESTAMP, UniqueConstraint, func
-from sqlalchemy.orm import relationship
+from sqlalchemy import ARRAY, Column, Enum, ForeignKey, Integer, String, \
+    Text, TIMESTAMP, UniqueConstraint, func
 
 from services.database import Base
-from enums import ActionType, MaterialType
+from documents.enums import MaterialType
 
 
-class Role(Base):
-    __tablename__ = "roles"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-
-
-class Action(Base):
-    __tablename__ = "actions"
-
-    role_id = Column(Integer, ForeignKey('roles.id'), primary_key=True, index=True)
-    action = Column(Enum(ActionType), primary_key=True, index=True)
-
-
-class Department(Base):
-    __tablename__ = "departments"
-
-    id = Column(Integer, primary_key=True, index=True)
-    abbreviation = Column(String)
-    name = Column(String)
-
-
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, index=True)
-    password = Column(String)
-    department_id = Column(Integer, ForeignKey("departments.id"), index=True)
-    role_id = Column(Integer, ForeignKey("roles.id"), index=True)
-
-
-class Category(Base):
-    __tablename__ = "categories"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-
-
-class Extraction(Base):
-    __tablename__ = "extractions"
-
-    id = Column(Integer, primary_key=True, index=True)
-    extractor_id = Column(String, ForeignKey("users.id"), index=True)
-    extracted_at = Column(TIMESTAMP, server_default=func.now())
-
-
-class Record(Base):
+class Document(Base):
     __tablename__ = "records"
     __table_args__ = (UniqueConstraint('sysno'),)
 
@@ -92,29 +45,7 @@ class Comment(Base):
     edited_at = Column(TIMESTAMP)
 
 
-class RoleView(Base):
-    __tablename__ = 'role_view'
-
-    id = Column(Integer, ForeignKey("roles.id"), primary_key=True, index=True)
-    name = Column(String)
-
-    action_type = Column(Enum(ActionType), ForeignKey("actions.action"))
-
-
-class UserView(Base):
-    __tablename__ = 'user_view'
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, index=True)
-    department_id = Column(Integer, ForeignKey("departments.id"), index=True)
-    role_id = Column(Integer, ForeignKey("roles.id"), index=True)
-
-    department_abbreviation = Column(String, ForeignKey("departments.abbreviation"))
-    department_name = Column(String, ForeignKey("departments.name"))
-    role_name = Column(String, ForeignKey("roles.name"))
-
-
-class RecordView(Base):
+class DocumentView(Base):
     __tablename__ = 'record_view'
 
     id = Column(Integer, primary_key=True, index=True)

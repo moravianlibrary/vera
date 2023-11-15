@@ -1,7 +1,8 @@
 import re
 from urllib.parse import quote
-import exceptions, schemas
-from enums import MaterialType, IssuanceType
+from services import exceptions
+from documents import schemas
+from documents.enums import MaterialType, IssuanceType
 from typing import List, Optional
 
 
@@ -12,7 +13,7 @@ PAGE_COUNT_FORMAT = r'^(\d+) s.*'
 SIZE_FORMAT = r'^(\d+) (cm).*'
 
 
-def get_datafield(marc, tag, ind1 = None, ind2 = None):
+def get_datafield(marc, tag, ind1=None, ind2=None):
     xpath = f'.//marc:datafield[@tag="{tag}"]'
     if ind1 is not None:
         xpath += f'[@ind1="{ind1}"]'
@@ -21,7 +22,7 @@ def get_datafield(marc, tag, ind1 = None, ind2 = None):
     return marc.find(xpath, namespaces=MARC_NS)
 
 
-def get_datafields(marc, tag, ind1 = None, ind2 = None):
+def get_datafields(marc, tag, ind1=None, ind2=None):
     xpath = f'.//marc:datafield[@tag="{tag}"]'
     if ind1 is not None:
         xpath += f'[@ind1="{ind1}"]'
@@ -31,15 +32,16 @@ def get_datafields(marc, tag, ind1 = None, ind2 = None):
 
 
 def get_subfield(datafield, code):
-    return datafield.find(f'.//marc:subfield[@code="{code}"]', namespaces=MARC_NS)
+    return datafield.find(f'.//marc:subfield[@code="{code}"]',
+                          namespaces=MARC_NS)
 
 
 def get_subfield_text(datafield, code):
     subfield = get_subfield(datafield, code)
     return subfield.text if subfield is not None else None
 
-    
-def get_field(marc, tag, code, ind1 = None, ind2 = None):
+
+def get_field(marc, tag, code, ind1=None, ind2=None):
     xpath = f'.//marc:datafield[@tag="{tag}"]'
     if ind1 is not None:
         xpath += f'[@ind1="{ind1}"]'
@@ -49,7 +51,7 @@ def get_field(marc, tag, code, ind1 = None, ind2 = None):
     return marc.find(xpath, namespaces=MARC_NS)
 
 
-def get_fields(marc, tag, code, ind1 = None, ind2 = None):
+def get_fields(marc, tag, code, ind1=None, ind2=None):
     xpath = f'.//marc:datafield[@tag="{tag}"]'
     if ind1 is not None:
         xpath += f'[@ind1="{ind1}"]'
@@ -59,17 +61,17 @@ def get_fields(marc, tag, code, ind1 = None, ind2 = None):
     return marc.findall(xpath, namespaces=MARC_NS)
 
 
-def get_field_text(marc, tag, code, ind1 = None, ind2 = None):
+def get_field_text(marc, tag, code, ind1=None, ind2=None):
     field = get_field(marc, tag, code, ind1, ind2)
     return field.text if field is not None else None
 
 
-def get_fields_text(marc, tag, code, ind1 = None, ind2 = None):
+def get_fields_text(marc, tag, code, ind1=None, ind2=None):
     fields = get_fields(marc, tag, code, ind1, ind2)
     return [field.text for field in fields]
 
 
-def get_field_text_for_tags(marc, tags, code, ind1 = None, ind2 = None):
+def get_field_text_for_tags(marc, tags, code, ind1=None, ind2=None):
     for tag in tags:
         text = get_field_text(marc, tag, code, ind1, ind2)
         if text is not None:
@@ -124,7 +126,7 @@ class Issue:
         volume = get_subfield_text(marc_issue, "v")
         item = get_subfield_text(marc_issue, "i")
         year_issued = get_subfield_text(marc_issue, "y")
-            
+
         self.year_issued = None
         self.volume = None
         self.item = None
@@ -132,22 +134,25 @@ class Issue:
         if date_issued is None:
             return
 
-        date_issued_splitted = re.split("\s+", date_issued)
+        date_issued_splitted = re.split("\\s+", date_issued)
 
         if len(date_issued_splitted) == 3 and date_issued_splitted[2] == item:
             self.item = item
         if 2 <= len(date_issued_splitted) and len(date_issued_splitted) <= 3 \
-                and date_issued_splitted[0] == year_issued and date_issued_splitted[1] == volume:
+                and date_issued_splitted[0] == year_issued \
+                and date_issued_splitted[1] == volume:
             self.volume = volume
             self.year_issued = year_issued
-        elif len(date_issued_splitted) == 2 and date_issued_splitted[1] == item \
-                and date_issued_splitted[0] == year_issued and date_issued_splitted[0] == volume:
+        elif len(date_issued_splitted) == 2 \
+                and date_issued_splitted[1] == item \
+                and date_issued_splitted[0] == year_issued \
+                and date_issued_splitted[0] == volume:
             self.item = item
             self.volume = volume
             self.year_issued = year_issued
         else:
             self.item = None
-    
+
     def get_schema(self):
         return schemas.Issue(
             signature=self.signature,
@@ -156,7 +161,7 @@ class Issue:
             item=self.item,
             barcode=self.barcode,
             issuance_type=IssuanceType.edition if self.volume is None else (
-                IssuanceType.volume if self.item is None else IssuanceType.item   
+                IssuanceType.volume if self.item is None else IssuanceType.item
             )
         )
 
@@ -178,9 +183,11 @@ class CatalogRecord:
 
         self.publishers = get_fields_text(marc, "260", "b")
         self.publishers.extend(get_fields_text(marc, "264", "b"))
-        # self.publishion_place = get_field_text_for_tags(marc, ["260", "264"], "a")
+        # self.publishion_place = get_field_text_for_tags(marc, ["260", "264"],
+        # "a")
         # self.publishers = get_field_text_for_tags(marc, ["260", "264"], "b")
-        self.publishing_date = get_field_text_for_tags(marc, ["260", "264"], "c")
+        self.publishing_date = get_field_text_for_tags(
+            marc, ["260", "264"], "c")
 
         self.extent = get_field_text(marc, "300", "a")
         self.additional_physical_data = get_field_text(marc, "300", "b")
@@ -199,14 +206,14 @@ class CatalogRecord:
 
         self.issues = [Issue(issue) for issue in get_datafields(marc, "996")]
 
-    def get_schema(self) -> schemas.RecordPrecreate:
+    def get_schema(self) -> schemas.DocumentCatalog:
         title = get_first_encoded([self.title, self.alternative_title])
         if title is None:
             raise exceptions.CatalogRecordParseException(self.sysno, 'title')
 
-        return schemas.RecordPrecreate(
+        return schemas.DocumentCatalog(
             sysno=self.sysno,
-            
+
             material_type=parse_material_type(self.material_type),
             publishers=[encode(p) for p in self.publishers],
             publishing_date=encode(self.publishing_date),
@@ -217,7 +224,8 @@ class CatalogRecord:
             periodicity=encode(self.periodicity),
 
             barcode=self.barcode,
-            signature=get_first_encoded([self.signature, self.additional_signature]),
+            signature=get_first_encoded([self.signature,
+                                         self.additional_signature]),
             ccnb=encode(self.ccnb),
 
             isbn=encode(self.isbn),

@@ -1,16 +1,13 @@
-import sys
-from urllib.parse import quote
 import requests
-import xml.etree.ElementTree as ET
 from lxml import etree
 import re
-import exceptions
-from schemas import Identifier, RecordPrecreate
-from catalog_record import CatalogRecord
-from typing import Optional
+import services.exceptions as exceptions
+from documents.schemas import Identifier
+from catalog.catalog_record import CatalogRecord
 
 
-ALEPH_ENDPOINT = "http://aleph.mzk.cz/OAI?verb=GetRecord&identifier=oai:aleph.mzk.cz:{SYSNO}&metadataPrefix=marc21"
+ALEPH_ENDPOINT = "http://aleph.mzk.cz/OAI?verb=GetRecord\
+    &identifier=oai:aleph.mzk.cz:{SYSNO}&metadataPrefix=marc21"
 
 SYSNO_FORMAT = r'^(?:MZK|mzk)(\d{2})-?(\d{9})$'
 SYSNO_BASES = ["MZK01", "MZK03"]
@@ -34,7 +31,8 @@ def generate_record_by_identifier(identifier: Identifier):
 
 
 def generate_records_from_file(file_content: str):
-    return [generate_record_by_sysno(parse_sysno(line)) for line in file_content.splitlines()] 
+    return [generate_record_by_sysno(parse_sysno(line))
+            for line in file_content.splitlines()]
 
 
 def download_from_catalog(sysno: str):
@@ -80,9 +78,11 @@ def test():
     #                     print(f'{record.get_schema().sysno},{issue}')
     #         except Exception as e:
     #             print(e)
-    print(CatalogRecord("MZK01-000724903", download_from_catalog("MZK01-000724903")).get_schema())
-    print(CatalogRecord("MZK01-001273598", download_from_catalog("MZK01-001273598")).get_schema())
-    #if record.issues is not None and len(record.issues) > 0:
+    print(CatalogRecord("MZK01-000724903",
+                        download_from_catalog("MZK01-000724903")).get_schema())
+    print(CatalogRecord("MZK01-001273598",
+                        download_from_catalog("MZK01-001273598")).get_schema())
+    # if record.issues is not None and len(record.issues) > 0:
     #    for issue in record.get_schema().issues:
     #        print(f'{record.get_schema().sysno},{issue}')
 

@@ -1,20 +1,6 @@
 from enum import Enum
 
 
-class MaterialType(Enum):
-    book = 'book'
-    continuing_resource = 'continuing_resource'
-    map = 'map'
-    music = 'music'
-    other = 'other'
-
-
-class IssuanceType(Enum):
-    edition = 'edition'
-    volume = 'volume'
-    item = 'item'
-
-
 class ActionType(Enum):
     read_datatable_own = 'read_datatable_own'
     read_datatable_department = 'read_datatable_department'
