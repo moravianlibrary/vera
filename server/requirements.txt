@@ -9,3 +9,4 @@ python-multipart
 pytz
 requests
 lxml
+asyncio

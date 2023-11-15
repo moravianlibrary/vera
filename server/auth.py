@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from pytz import timezone, UTC
 from os import environ
 
-from database import get_db
+from services.database import get_db
 from models import Role
 from enums import ActionType
 import schemas

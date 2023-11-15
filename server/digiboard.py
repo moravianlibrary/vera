@@ -1,15 +1,21 @@
 from fastapi import FastAPI, Depends, HTTPException, Form, Path, Query, status, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+import asyncio
 from os import environ
 from typing import List, Optional
 
 import actions, auth, catalog, crud, exceptions, models, schemas
-from database import get_db
+from services.database import get_db
 from enums import ActionType
+
+import tasks.router as tasks_router
 
 
 app = FastAPI()
+
+
+app.include_router(tasks_router.router)
 
 
 app.add_middleware(
@@ -395,7 +401,7 @@ def get_note(record_id: int = Path(...),
     return crud.get_comments_for_record(record_id, db)
 
 
-@app.post("/records/extract")
+@app.post("/extract")
 def create_extraction(extraction: schemas.ExtractionCreate,
                     user: schemas.User = Depends(auth.get_current_user),
                     db: Session = Depends(get_db)):

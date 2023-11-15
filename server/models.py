@@ -1,7 +1,7 @@
 from sqlalchemy import ARRAY, Boolean, Column, Enum, ForeignKey, Integer, String, Table, Text, TIMESTAMP, UniqueConstraint, func
 from sqlalchemy.orm import relationship
 
-from database import Base
+from services.database import Base
 from enums import ActionType, MaterialType
 
 

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Set
 
 import auth, crud, schemas
-from database import get_db
+from services.database import get_db
 from auth import Role
 from enums import ActionType
 

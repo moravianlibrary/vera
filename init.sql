@@ -9,6 +9,15 @@ CREATE TYPE action_type AS ENUM (
 CREATE TYPE material_type AS ENUM (
 	'book', 'continuing_resource', 'map', 'msuic', 'other'
 );
+CREATE TYPE TASK_TYPE AS ENUM (
+	'PREDICT_ITEM_PAGES'
+);
+CREATE TYPE TASK_SCOPE AS ENUM (
+    'ALL', 'PROCESSED', 'UNPROCESSED', 'SELECT'
+);
+CREATE TYPE TASK_STATE AS ENUM (
+    'PLANNED', 'RUNNING', 'FINISHED', 'FAILED'
+);
 
 -- Creates roles table
 CREATE TABLE IF NOT EXISTS roles (
@@ -96,6 +105,27 @@ CREATE TABLE IF NOT EXISTS comments (
 	edited_at TIMESTAMP
 );
 
+-- Create tasks table
+CREATE TABLE IF NOT EXISTS tasks (
+	id serial PRIMARY KEY,
+	task_type TASK_TYPE NOT NULL,
+	task_scope TASK_SCOPE NOT NULL,
+	query TEXT,
+	owner_id INT REFERENCES users(id),
+
+	task_state TASK_STATE NOT NULL,
+	planned TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	started TIMESTAMP,
+	finished TIMESTAMP
+);
+
+-- Create task x records mapping table
+CREATE TABLE IF NOT EXISTS task_records_processed (
+	task_id INT REFERENCES tasks(id),
+	record_id INT REFERENCES records(id),
+	processed BOOLEAN,
+    PRIMARY KEY (task_id, record_id)
+);
 
 -- Create admin role
 INSERT INTO roles (name) VALUES ('Admin');
@@ -165,3 +195,24 @@ LEFT JOIN categories cs ON r.category_id = cs.id
 LEFT JOIN users c ON r.creator_id = c.id
 LEFT JOIN extractions es ON r.extraction_id = es.id
 LEFT JOIN users e ON es.extractor_id = e.id;
+
+CREATE OR REPLACE VIEW task_view AS
+SELECT
+	t.id,
+    t.task_type,
+    t.task_scope,
+    t.query,
+    t.owner_id,
+    u.username AS owner_name,
+    t.task_state,
+    t.planned,
+    t.started,
+    t.finished,
+	(SELECT COUNT(*) FROM task_records_processed tr 
+		WHERE t.id = tr.task_id AND processed) 
+		AS processed_count,
+	(SELECT COUNT(*) FROM task_records_processed tr 
+		WHERE t.id = tr.task_id) 
+		AS total_count
+FROM tasks t
+LEFT JOIN users u ON t.owner_id = u.id;

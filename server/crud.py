@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, func, update, select
 from typing import List, Optional
 
-from database import create
+from services.database import create
 from enums import ActionType
 import models, schemas
 
