@@ -43,7 +43,7 @@ class DocumentCatalog(DocumentBase):
     issues: List[Issue]
 
 
-class DocumentPrecreateResult(BaseModel):
+class DocumentCatalogResponse(BaseModel):
     record: Optional[DocumentCatalog] = None
     identifier: Identifier
     error_type: Optional[str] = None
@@ -72,7 +72,7 @@ class DocumentCreate(DocumentBase):
         )
 
 
-class DocumentCreateResult(BaseModel):
+class DocumentCreateResponse(BaseModel):
     record: Optional[DocumentCreate]
     identifier: Identifier
     error_type: Optional[str]
@@ -107,23 +107,3 @@ class DocumentView(Document):
 class DocumentsResponse(BaseModel):
     records: List[DocumentView]
     num_found: int
-
-
-class CommentBase(BaseModel):
-    text: str
-
-
-class CommentCreate(CommentBase):
-    pass
-
-
-class Comment(CommentBase):
-    id: int
-    record_id: int
-    user_id: int
-    created_at: datetime
-    edited_at: Optional[datetime] = None
-
-    class Config:
-        arbitrary_types_allowed = True
-        from_attributes = True

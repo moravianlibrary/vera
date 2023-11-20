@@ -1,0 +1,15 @@
+from sqlalchemy import Column, ForeignKey, Integer, String, Text, TIMESTAMP, \
+    func
+
+from services.database import Base
+
+
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    record_id = Column(Integer, ForeignKey("records.id"), index=True)
+    user_id = Column(String, ForeignKey("users.id"), index=True)
+    text = Column(Text)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    edited_at = Column(TIMESTAMP)

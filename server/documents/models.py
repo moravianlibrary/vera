@@ -1,5 +1,5 @@
 from sqlalchemy import ARRAY, Column, Enum, ForeignKey, Integer, String, \
-    Text, TIMESTAMP, UniqueConstraint, func
+    TIMESTAMP, UniqueConstraint, func
 
 from services.database import Base
 from catalogs.enums import MaterialType
@@ -32,17 +32,6 @@ class Document(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
 
     extraction_id = Column(Integer, ForeignKey("extractions.id"), index=True)
-
-
-class Comment(Base):
-    __tablename__ = "comments"
-
-    id = Column(Integer, primary_key=True, index=True)
-    record_id = Column(Integer, ForeignKey("records.id"), index=True)
-    user_id = Column(String, ForeignKey("users.id"), index=True)
-    text = Column(Text)
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    edited_at = Column(TIMESTAMP)
 
 
 class DocumentView(Base):

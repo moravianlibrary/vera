@@ -1,18 +1,25 @@
 from fastapi import APIRouter, Depends, Path, UploadFile, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Optional
 
 from services.database import get_db
 from roles.enums import ActionType
 from services import exceptions
 from auth.router import get_current_user
 from catalogs.catalog_aleph import generate_record_by_identifier
-from . import crud, schemas
+from documents import crud, schemas
 from users import schemas as users_schemas
 from auth import schemas as auth_schemas
 
 
 router = APIRouter()
+
+
+@router.post("/documents", response_model=schemas.DocumentView)
+def create_document(document: schemas.DocumentCreate,
+                    db: Session = Depends(get_db),
+                    user: users_schemas.User = Depends(get_current_user)):
+    return crud.create_document(document, user, db)
 
 
 @router.put("/documents/{id}", response_model=schemas.DocumentView)
@@ -74,59 +81,10 @@ def get_documents(offset: int = Query(0, description="Pagination page offset"),
     return schemas.DocumentsResponse(documents=documents, num_found=num_found)
 
 
-@router.post("/documents/{id}/comments", response_model=schemas.Comment)
-def create_comment(comment: schemas.CommentCreate,
-                   id: int = Path(...),
-                   user: users_schemas.User = Depends(get_current_user),
-                   db: Session = Depends(get_db)):
-    return crud.create_comment(comment, id, user.id, db)
-
-
-@router.put("/documents/{document_id}/comments/{comment_id}",
-            response_model=schemas.Comment)
-def update_comment(comment: schemas.Comment,
-                   document_id: int = Path(...),
-                   user: users_schemas.User = Depends(get_current_user),
-                   db: Session = Depends(get_db)):
-    return crud.update_comment(comment, db)
-
-
-@router.delete("/documents/{document_id}/comments/{comment_id}",
-               response_model=schemas.Comment)
-def delete_comment(document_id: int = Path(...),
-                   comment_id: int = Path(...),
-                   user: users_schemas.User = Depends(get_current_user),
-                   db: Session = Depends(get_db)):
-    return crud.delete_comment(comment_id, db)
-
-
-@router.get("/documents/{document_id}/comments/{comment_id}",
-            response_model=schemas.Comment)
-def get_comment(document_id: int = Path(...),
-                comment_id: int = Path(...),
-                db: Session = Depends(get_db)):
-    return crud.get_comment(comment_id, db)
-
-
-@router.get("/documents/{document_id}/comments",
-            response_model=List[schemas.Comment])
-def get_note(document_id: int = Path(...),
-             db: Session = Depends(get_db)):
-    return crud.get_comments_for_document(document_id, db)
-
-
-@router.post("/documents", response_model=schemas.DocumentView)
-def create_document(document: schemas.DocumentCreate,
-                    db: Session = Depends(get_db),
-                    user: users_schemas.User = Depends(get_current_user)):
-    return crud.create_document(document, user, db)
-
-
 @router.post("/documents/get_from_catalog",
-             response_model=schemas.DocumentCatalog)
+             response_model=schemas.DocumentCatalogResponse)
 def get_from_catalog(identifier: schemas.Identifier = None,
                      file: UploadFile = None,
-                     category_id: int = Query(0),
                      db: Session = Depends(get_db),
                      user: users_schemas.User = Depends(get_current_user)):
     if identifier:
@@ -139,7 +97,7 @@ def get_from_catalog(identifier: schemas.Identifier = None,
 
 
 @router.post("/documents/create_from_catalog",
-             response_model=schemas.DocumentView)
+             response_model=schemas.DocumentCreateResponse)
 def create_from_catalog(identifier: schemas.Identifier = None,
                         file: UploadFile = None,
                         category_id: Optional[int] = Query(None),
