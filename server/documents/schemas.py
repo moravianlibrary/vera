@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
-from .enums import MaterialType, IdentifierType, IssuanceType
+from documents.enums import IdentifierType
+from catalogs.enums import MaterialType, IssuanceType
 
 
 class Identifier(BaseModel):

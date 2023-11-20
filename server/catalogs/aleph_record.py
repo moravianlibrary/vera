@@ -2,7 +2,7 @@ import re
 from urllib.parse import quote
 from services import exceptions
 from documents import schemas
-from documents.enums import MaterialType, IssuanceType
+from catalogs.enums import MaterialType, IssuanceType
 from typing import List, Optional
 
 

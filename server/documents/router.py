@@ -6,98 +6,13 @@ from services.database import get_db
 from roles.enums import ActionType
 from services import exceptions
 from auth.router import get_current_user
-from catalog import catalog
+from catalogs.catalog_aleph import generate_record_by_identifier
 from . import crud, schemas
 from users import schemas as users_schemas
 from auth import schemas as auth_schemas
 
 
 router = APIRouter()
-
-
-@router.post("/documents", response_model=schemas.DocumentView)
-def create_document(document: schemas.DocumentCreate,
-                    db: Session = Depends(get_db),
-                    user: users_schemas.User = Depends(get_current_user)):
-    return crud.create_document(document, user, db)
-
-
-@router.post("/documents/get_from_catalog",
-             response_model=schemas.DocumentCatalog)
-def get_from_catalog(identifier: schemas.Identifier = None,
-                     file: UploadFile = None,
-                     category_id: int = Query(0),
-                     db: Session = Depends(get_db),
-                     user: users_schemas.User = Depends(get_current_user)):
-    if identifier:
-        pass
-    elif file:
-        pass
-    else:
-        raise exceptions.MissingArgumentException(
-            "Either document or file must be provided")
-
-
-@router.post("/documents/create_from_catalog",
-             response_model=schemas.DocumentView)
-def create_from_catalog(identifier: schemas.Identifier = None,
-                        file: UploadFile = None,
-                        category_id: Optional[int] = Query(None),
-                        db: Session = Depends(get_db),
-                        user: users_schemas.User = Depends(get_current_user)):
-    if identifier:
-        catalog.generate_record_by_identifier(identifier)
-        pass
-
-
-# @router.post("/documents/precreate_by_identifier",
-# response_model=schemas.DocumentPrecreateResult)
-# def precreate_by_identifier(identifier: schemas.Identifier,
-#                             db: Session = Depends(get_db)):
-#     try:
-#         return schemas.DocumentPrecreateResult(
-#             document=catalog.generate_document_by_identifier(identifier),
-#             identifier=identifier
-#         )
-#     except exceptions.CatalogException as e:
-#         print(type(e).__name__)
-#         return schemas.DocumentPrecreateResult(
-#             identifier=identifier,
-#             error_type=(type(e).__name__)
-#         )
-
-
-# @router.post("/documents/precreate_from_file/{category_id}",
-# response_model=List[schemas.DocumentPrecreate])
-# async def create_documents(file: UploadFile,
-#                          category_id: int,
-#                          db: Session = Depends(get_db),
-#                          user: users_schemas.User = Depends(get_current_user)):
-#     pass
-
-
-# @router.post("/documents/create_from_file/{category_id}",
-# response_model=List[schemas.DocumentCreateResult])
-# async def create_documents(
-#                         file: UploadFile,
-#                          category_id: int,
-#                          db: Session = Depends(get_db),
-#                          user: users_schemas.User = Depends(get_current_user)):
-#     if file.filename:
-#         documents = []
-#         for document_precreate in catalog.generate_documents_from_file(
-    # (await file.read()).decode('utf-8')):
-#             if crud.get_document_by_identifiers(document_precreate.sysno,
-#                     document_precreate.volume_number,
-#                     document_precreate.item_number,
-#                     db) is not None:
-#                 continue
-#             documents.routerend(crud.create_document(
-#                 schemas.DocumentCreate.from_document_precreate(
-    # document_precreate, category_id),
-#                 user,
-#                 db))
-#         return documents
 
 
 @router.put("/documents/{id}", response_model=schemas.DocumentView)
@@ -198,3 +113,88 @@ def get_comment(document_id: int = Path(...),
 def get_note(document_id: int = Path(...),
              db: Session = Depends(get_db)):
     return crud.get_comments_for_document(document_id, db)
+
+
+@router.post("/documents", response_model=schemas.DocumentView)
+def create_document(document: schemas.DocumentCreate,
+                    db: Session = Depends(get_db),
+                    user: users_schemas.User = Depends(get_current_user)):
+    return crud.create_document(document, user, db)
+
+
+@router.post("/documents/get_from_catalog",
+             response_model=schemas.DocumentCatalog)
+def get_from_catalog(identifier: schemas.Identifier = None,
+                     file: UploadFile = None,
+                     category_id: int = Query(0),
+                     db: Session = Depends(get_db),
+                     user: users_schemas.User = Depends(get_current_user)):
+    if identifier:
+        pass
+    elif file:
+        pass
+    else:
+        raise exceptions.MissingArgumentException(
+            "Either document or file must be provided")
+
+
+@router.post("/documents/create_from_catalog",
+             response_model=schemas.DocumentView)
+def create_from_catalog(identifier: schemas.Identifier = None,
+                        file: UploadFile = None,
+                        category_id: Optional[int] = Query(None),
+                        db: Session = Depends(get_db),
+                        user: users_schemas.User = Depends(get_current_user)):
+    if identifier:
+        generate_record_by_identifier(identifier)
+        pass
+
+
+# @router.post("/documents/precreate_by_identifier",
+# response_model=schemas.DocumentPrecreateResult)
+# def precreate_by_identifier(identifier: schemas.Identifier,
+#                             db: Session = Depends(get_db)):
+#     try:
+#         return schemas.DocumentPrecreateResult(
+#             document=catalog.generate_document_by_identifier(identifier),
+#             identifier=identifier
+#         )
+#     except exceptions.CatalogException as e:
+#         print(type(e).__name__)
+#         return schemas.DocumentPrecreateResult(
+#             identifier=identifier,
+#             error_type=(type(e).__name__)
+#         )
+
+
+# @router.post("/documents/precreate_from_file/{category_id}",
+# response_model=List[schemas.DocumentPrecreate])
+# async def create_documents(file: UploadFile,
+#                          category_id: int,
+#                          db: Session = Depends(get_db),
+#                          user: users_schemas.User = Depends(get_current_user)):
+#     pass
+
+
+# @router.post("/documents/create_from_file/{category_id}",
+# response_model=List[schemas.DocumentCreateResult])
+# async def create_documents(
+#                         file: UploadFile,
+#                          category_id: int,
+#                          db: Session = Depends(get_db),
+#                          user: users_schemas.User = Depends(get_current_user)):
+#     if file.filename:
+#         documents = []
+#         for document_precreate in catalog.generate_documents_from_file(
+    # (await file.read()).decode('utf-8')):
+#             if crud.get_document_by_identifiers(document_precreate.sysno,
+#                     document_precreate.volume_number,
+#                     document_precreate.item_number,
+#                     db) is not None:
+#                 continue
+#             documents.routerend(crud.create_document(
+#                 schemas.DocumentCreate.from_document_precreate(
+    # document_precreate, category_id),
+#                 user,
+#                 db))
+#         return documents

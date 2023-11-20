@@ -2,7 +2,7 @@ from sqlalchemy import ARRAY, Column, Enum, ForeignKey, Integer, String, \
     Text, TIMESTAMP, UniqueConstraint, func
 
 from services.database import Base
-from documents.enums import MaterialType
+from catalogs.enums import MaterialType
 
 
 class Document(Base):
