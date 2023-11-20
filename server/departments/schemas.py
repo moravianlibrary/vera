@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import List
 
 
 class DepartmentBase(BaseModel):
@@ -13,7 +12,3 @@ class DepartmentCreate(DepartmentBase):
 
 class Department(DepartmentBase):
     id: int
-
-
-class DepartmentsResponse(BaseModel):
-    departments: List[Department]

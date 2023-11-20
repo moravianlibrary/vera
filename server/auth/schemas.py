@@ -25,13 +25,13 @@ class UserLogin(UserCreate):
 
 class UserChangePassword(BaseModel):
     id: int
-    password: str
+    old_password: str
     new_password: str
-
-
-class CurrentUser(UserBase):
-    actions: List[ActionType]
 
 
 class User(UsersUser):
     pass
+
+
+class CurrentUser(User):
+    actions: List[ActionType]

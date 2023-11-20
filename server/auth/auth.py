@@ -20,8 +20,6 @@ EXPIRES_DELTA = timedelta(minutes=int(
 password_hasher = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
-# TODO: divide get_current_user login and token validation
-
 
 def hash_password(plain_password: str) -> str:
     return password_hasher.hash(plain_password)
@@ -78,6 +76,6 @@ def get_current_user(db: Session, token: str):
 def change_user_password(user_change_password: schemas.UserChangePassword,
                          db: Session):
     user = crud.get_user(user_change_password.id, db)
-    if not verify_password(user_change_password.password, user.password):
+    if not verify_password(user_change_password.old_password, user.password):
         raise exceptions.CredentialsException
-    return crud.update_user_password(user.id, user_change_password)
+    return crud.update_user_password(user_change_password, db)

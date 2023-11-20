@@ -19,7 +19,7 @@ def update_category(id: int,
                .values(name=category.name))
     db.commit()
     return (db.query(models.Category)
-            .where(id == category.id)
+            .where(models.Category.id == id)
             .first())
 
 

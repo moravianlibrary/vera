@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Path
 from sqlalchemy.orm import Session
+from typing import List
 
 from services.database import get_db
 from . import crud, schemas
@@ -18,8 +19,7 @@ def create_department(department: schemas.DepartmentCreate,
 def update_department(department: schemas.DepartmentCreate,
                       id: int = Path(...),
                       db: Session = Depends(get_db)):
-    crud.update_department(id, department, db)
-    return department
+    return crud.update_department(id, department, db)
 
 
 @router.delete("/departments/{id}", response_model=schemas.Department)
@@ -28,11 +28,6 @@ def delete_department(id: int = Path(...),
     return crud.delete_department(id, db)
 
 
-@router.get("/departments", response_model=schemas.DepartmentsResponse)
+@router.get("/departments", response_model=List[schemas.Department])
 def get_departments(db: Session = Depends(get_db)):
-    return schemas.DepartmentsResponse(
-        departments=[schemas.Department(id=department.id,
-                                        abbreviation=department.abbreviation,
-                                        name=department.name)
-                     for department in crud.get_departments(db)]
-    )
+    return crud.get_departments(db)

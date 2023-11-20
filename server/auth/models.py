@@ -1,6 +1,7 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
 
 from services.database import Base
+from users.models import UserView as UsersUserView
 
 
 class User(Base):
@@ -11,3 +12,7 @@ class User(Base):
     password = Column(String)
     department_id = Column(Integer, ForeignKey("departments.id"), index=True)
     role_id = Column(Integer, ForeignKey("roles.id"), index=True)
+
+
+class UserView(UsersUserView):
+    pass

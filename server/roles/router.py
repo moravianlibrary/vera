@@ -20,22 +20,23 @@ def create_role(role: schemas.RoleCreate,
     )
 
 
-@router.put("/roles/{role_id}", response_model=schemas.RoleActions)
+@router.put("/roles/{id}", response_model=schemas.RoleActions)
 def update_role(role: schemas.RoleActions,
+                id: int = Path(...),
                 db: Session = Depends(get_db)):
-    db_role = crud.update_role(role, db)
+    db_role = crud.update_role(id, role, db)
     crud.update_role_actions(role, db)
     return schemas.RoleActions(
-        id=db_role.id,
+        id=id,
         name=db_role.name,
         actions=get_role_actions(db_role.id, db)
     )
 
 
-@router.delete("/roles/{role_id}", response_model=schemas.Role)
-def delete_role(role_id: int,
+@router.delete("/roles/{id}", response_model=schemas.Role)
+def delete_role(id: int = Path(...),
                 db: Session = Depends(get_db)):
-    return crud.delete_role(role_id, db)
+    return crud.delete_role(id, db)
 
 
 def get_role_actions(role_id: int, db: Session):

@@ -20,6 +20,9 @@ def update_department(id: int,
                .values(abbreviation=department.abbreviation)
                .values(name=department.name))
     db.commit()
+    return (db.query(models.Department)
+            .where(models.Department.id == id)
+            .first())
 
 
 def delete_department(department_id: int,

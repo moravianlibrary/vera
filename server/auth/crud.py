@@ -2,6 +2,7 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from services.database import create
+from roles.crud import get_role_actions as roles_get_role_actions
 from . import models, schemas
 
 
@@ -29,16 +30,14 @@ def get_user(user_id: int,
 
 def get_user_view(user_id: int,
                   db: Session):
-    return (db.query(models.User)
-            .filter(models.User.id == user_id)
+    return (db.query(models.UserView)
+            .filter(models.UserView.id == user_id)
             .first())
 
 
-def get_user_actions(user_id: int,
+def get_role_actions(role_id: int,
                      db: Session):
-    return (db.query(models.UserActionsView)
-            .filter(models.User.id == user_id)
-            .all())
+    return roles_get_role_actions(role_id, db)
 
 
 def update_user_password(user_change_password: schemas.UserChangePassword,

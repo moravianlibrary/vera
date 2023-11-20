@@ -22,10 +22,10 @@ def update_category(category: schemas.CategoryCreate,
     return crud.update_category(id, category, db)
 
 
-@router.delete("/categories/{category_id}", response_model=schemas.Category)
-def delete_category(category_id: int = Path(...),
+@router.delete("/categories/{id}", response_model=schemas.Category)
+def delete_category(id: int = Path(...),
                     db: Session = Depends(get_db)):
-    return crud.delete_category(category_id, db)
+    return crud.delete_category(id, db)
 
 
 @router.get("/categories", response_model=List[schemas.Category])
