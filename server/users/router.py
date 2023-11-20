@@ -2,35 +2,35 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 
 from services.database import get_db
-from . import crud, schemas
+from users import crud, schemas
 
 
 router = APIRouter()
 
 
-@router.put("/users/{user_id}", response_model=schemas.User)
-def update_user_enlistment(user: schemas.User,
-                           user_id: int = Path(...),
+@router.put("/users/{id}", response_model=schemas.User)
+def update_user_enlistment(user: schemas.UserBase,
+                           id: int = Path(...),
                            db: Session = Depends(get_db)):
-    db_user = crud.get_user(user_id, db)
+    db_user = crud.get_user(id, db)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
-    return crud.update_user(user, db)
+    return crud.update_user(id, user, db)
 
 
-@router.delete("/users/{user_id}", response_model=schemas.User)
-def update_user(user_id: int = Path(...),
+@router.delete("/users/{id}", response_model=schemas.User)
+def update_user(id: int = Path(...),
                 db: Session = Depends(get_db)):
-    db_user = crud.get_user(user_id, db)
+    db_user = crud.get_user(id, db)
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
-    return crud.delete_user(user_id, db)
+    return crud.delete_user(id, db)
 
 
-@router.get("/users/{user_id}", response_model=schemas.User)
-def get_user(user_id: int = Path(...),
+@router.get("/users/{id}", response_model=schemas.User)
+def get_user(id: int = Path(...),
              db: Session = Depends(get_db)):
-    db_user = crud.get_user(user_id, db)
+    db_user = crud.get_user(id, db)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
@@ -40,24 +40,6 @@ def get_user(user_id: int = Path(...),
 def get_users(offset: int = Query(0, description="Offset for pagination"),
               limit: int = Query(100, description="Limit for pagination"),
               db: Session = Depends(get_db)):
-    users = crud.get_users(db, offset=offset, limit=limit),
     return schemas.UsersResponse(
-        users=users[0],
+        users=crud.get_users(db, offset=offset, limit=limit),
         num_found=crud.get_users_num_found(db))
-
-
-# @router.get("/users/{user_id}/actions", response_model=schemas.RoleActions)
-# def get_user(user_id: int = Path(...),
-#              db: Session = Depends(get_db)):
-#     db_user = crud.get_user(user_id, db)
-#     if db_user is None:
-#         raise HTTPException(status_code=404, detail="User not found")
-
-#     db_role = crud.get_role(db_user.role_id, db)
-#     if db_role is None:
-#         raise HTTPException(status_code=404, detail="Role not found")
-#     return schemas.RoleActions(
-#         id=db_role.id,
-#         name=db_role.name,
-#         actions=get_role_actions(db_user.role_id, db)
-#     )

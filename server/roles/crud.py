@@ -14,64 +14,59 @@ def create_role(role: schemas.RoleBase,
     ))
 
 
-def set_role_actions(role_id: int,
-                     actions: List[ActionType],
-                     db: Session):
-    for action in actions:
-        create(db, models.Action(
-            role_id=role_id,
-            action=action,
-        ))
-    db.commit()
-
-
-def update_role(role: schemas.Role,
+def update_role(id: int,
+                role: schemas.Role,
                 db: Session):
     db.execute(update(models.Role)
-               .where(models.Role.id == role.id)
+               .where(models.Role.id == id)
                .values(name=role.name))
-    return db.query(models.Role).filter(models.Role.id == role.id).first()
+
+    return db.query(models.Role).filter(models.Role.id == id).first()
 
 
-def update_role_actions(role: schemas.RoleActions,
-                        db: Session):
-    actions_to_delete = get_role_actions_values(role.id, db)
-    for action in actions_to_delete:
-        db.delete(action)
-    set_role_actions(role.id, role.actions, db)
-
-
-def delete_role(role_id: int,
+def delete_role(id: int,
                 db: Session):
-    actions_to_delete = get_role_actions_values(role_id, db)
-    for action in actions_to_delete:
-        db.delete(action)
+    delete_role_actions(id, db)
 
-    db_role = db.query(models.Role).where(models.Role.id == role_id).first()
+    db_role = db.query(models.Role).where(models.Role.id == id).first()
     db.delete(db_role)
 
     db.commit()
     return db_role
 
 
-def get_role(role_id: int,
+def get_role(id: int,
              db: Session):
-    return db.query(models.Role).filter(models.Role.id == role_id).first()
-
-
-def get_role_actions_values(role_id: int,
-                            db: Session):
-    return (db.query(models.Action)
-            .filter(models.Action.role_id == role_id)
-            .all())
-
-
-def get_role_actions(role_id: int,
-                     db: Session):
-    return (db.query(models.Action.action)
-            .filter(models.Action.role_id == role_id)
-            .all())
+    return db.query(models.Role).filter(models.Role.id == id).first()
 
 
 def get_roles(db: Session):
     return db.query(models.Role).order_by(models.Role.name).all()
+
+
+def get_role_actions(role_id: int,
+                     db: Session):
+    return [action for action, in db.query(models.Action.action)
+            .filter(models.Action.role_id == role_id)]
+
+
+def set_role_actions(id: int,
+                     actions: List[ActionType],
+                     db: Session):
+    delete_role_actions(id, db)
+    for action in actions:
+        create(db, models.Action(
+            role_id=id,
+            action=action,
+        ))
+    db.commit()
+
+
+def delete_role_actions(id: int,
+                        db: Session):
+    actions_to_delete = (db.query(models.Action)
+                         .filter(models.Action.role_id == id)
+                         .all())
+    for action in actions_to_delete:
+        db.delete(action)
+    db.commit()

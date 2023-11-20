@@ -2,30 +2,31 @@ from sqlalchemy import update
 from sqlalchemy.orm import Session
 
 from auth import models
-from . import schemas
+from users import schemas
 from typing import Optional
 
 
-def get_user(user_id: int,
+def get_user(id: int,
              db: Session):
     return (db.query(models.UserView)
-            .filter(models.UserView.id == user_id)
+            .filter(models.UserView.id == id)
             .first())
 
 
-def update_user(user: schemas.User,
+def update_user(id: int,
+                user: schemas.UserBase,
                 db: Session):
-    db.execute(update(models.User).where(models.User.id == user.id)
+    db.execute(update(models.User).where(models.User.id == id)
                .values(username=user.username)
                .values(department_id=user.department_id)
                .values(role_id=user.role_id))
     db.commit()
-    return get_user(user.id, db)
+    return get_user(id, db)
 
 
-def delete_user(user_id: int,
+def delete_user(id: int,
                 db: Session):
-    db_user = db.query(models.User).where(models.User.id == user_id).first()
+    db_user = db.query(models.User).where(models.User.id == id).first()
     db.delete(db_user)
     db.commit()
     return db_user

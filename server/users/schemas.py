@@ -2,11 +2,14 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 
-class User(BaseModel):
-    id: int
+class UserBase(BaseModel):
     username: str
     department_id: Optional[int] = None
     role_id: Optional[int] = None
+
+
+class User(UserBase):
+    id: int
 
     department_abbreviation: Optional[str] = None
     department_name: Optional[str] = None

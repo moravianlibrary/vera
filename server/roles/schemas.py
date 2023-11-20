@@ -17,11 +17,3 @@ class Role(RoleBase):
 
 class RoleActions(Role):
     actions: List[ActionType]
-
-
-class RolesResponse(BaseModel):
-    roles: List[Role]
-
-
-class RolesActionsResponse(BaseModel):
-    roles: List[RoleActions]
