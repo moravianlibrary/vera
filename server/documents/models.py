@@ -6,7 +6,7 @@ from catalogs.enums import MaterialType
 
 
 class Document(Base):
-    __tablename__ = "records"
+    __tablename__ = "documents"
     __table_args__ = (UniqueConstraint('sysno'),)
 
     id = Column(Integer, primary_key=True, index=True)
@@ -35,7 +35,7 @@ class Document(Base):
 
 
 class DocumentView(Base):
-    __tablename__ = 'record_view'
+    __tablename__ = 'document_view'
 
     id = Column(Integer, primary_key=True, index=True)
     sysno = Column(String, index=True, nullable=False)

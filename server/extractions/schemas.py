@@ -8,7 +8,7 @@ class ExtractionBase(BaseModel):
 
 
 class ExtractionCreate(ExtractionBase):
-    extracted_records: List[int]
+    extracted_documents: List[int]
 
 
 class Extraction(ExtractionBase):

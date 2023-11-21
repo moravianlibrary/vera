@@ -119,6 +119,7 @@ class TestUsersEndpoints(unittest.TestCase):
             ],
                         "num_found": 2}
         crud.get_users = MagicMock(return_value=test_users)
+        crud.get_users_num_found = MagicMock(return_value=2)
         response = self.client.get("/users")
         self.assertEqual(response.status_code, 200)
         self.assertEquals(result_users, response.json())

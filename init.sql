@@ -61,8 +61,8 @@ CREATE TABLE IF NOT EXISTS extractions (
 	extracted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create the main data table records
-CREATE TABLE IF NOT EXISTS records (
+-- Create the main data table documents
+CREATE TABLE IF NOT EXISTS documents (
 	id SERIAL PRIMARY KEY,
     
 	-- Identifiers
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS records (
 -- Create comments table
 CREATE TABLE IF NOT EXISTS comments (
 	id serial PRIMARY KEY,
-	record_id INT REFERENCES records(id),
+	document_id INT REFERENCES documents(id),
 	user_id INT REFERENCES users(id),
 	text TEXT,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -119,12 +119,12 @@ CREATE TABLE IF NOT EXISTS tasks (
 	finished TIMESTAMP
 );
 
--- Create task x records mapping table
-CREATE TABLE IF NOT EXISTS task_records_processed (
+-- Create task x documents mapping table
+CREATE TABLE IF NOT EXISTS task_documents (
 	task_id INT REFERENCES tasks(id),
-	record_id INT REFERENCES records(id),
+	document_id INT REFERENCES documents(id),
 	processed BOOLEAN,
-    PRIMARY KEY (task_id, record_id)
+    PRIMARY KEY (task_id, document_id)
 );
 
 -- Create admin role
@@ -164,7 +164,7 @@ FROM users u
 LEFT JOIN departments d ON u.department_id = d.id
 LEFT JOIN roles r ON u.role_id = r.id;
 
-CREATE OR REPLACE VIEW record_view AS
+CREATE OR REPLACE VIEW document_view AS
 SELECT
 	r.id,
 	r.sysno,
@@ -189,8 +189,8 @@ SELECT
 	es.extractor_id,
 	e.username AS extractor,
 	es.extracted_at,
-	(SELECT COUNT(*) FROM comments cm WHERE r.id = cm.record_id) AS comments_count
-FROM records r
+	(SELECT COUNT(*) FROM comments cm WHERE r.id = cm.document_id) AS comments_count
+FROM documents r
 LEFT JOIN categories cs ON r.category_id = cs.id
 LEFT JOIN users c ON r.creator_id = c.id
 LEFT JOIN extractions es ON r.extraction_id = es.id
@@ -208,10 +208,10 @@ SELECT
     t.planned,
     t.started,
     t.finished,
-	(SELECT COUNT(*) FROM task_records_processed tr 
+	(SELECT COUNT(*) FROM task_documents tr 
 		WHERE t.id = tr.task_id AND processed) 
 		AS processed_count,
-	(SELECT COUNT(*) FROM task_records_processed tr 
+	(SELECT COUNT(*) FROM task_documents tr 
 		WHERE t.id = tr.task_id) 
 		AS total_count
 FROM tasks t

@@ -17,7 +17,7 @@ class CommentUpdate(CommentBase):
 
 class Comment(CommentBase):
     id: int
-    record_id: int
+    document_id: int
     user_id: int
     created_at: datetime
     edited_at: Optional[datetime] = None

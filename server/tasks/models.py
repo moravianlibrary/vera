@@ -22,14 +22,14 @@ class Task(Base):
     finished = Column(TIMESTAMP)
 
 
-class TaskRecordsProcessed(Base):
-    __tablename__ = "task_records_processed"
+class TaskDocument(Base):
+    __tablename__ = "task_documents"
 
     task_id = Column(Integer, ForeignKey("tasks.id"), index=True)
-    record_id = Column(Integer, ForeignKey("records.id"), index=True)
+    document_id = Column(Integer, ForeignKey("documents.id"), index=True)
     processed = Column(Boolean, server_default='false')
 
-    __table_args__ = (PrimaryKeyConstraint('task_id', 'record_id'), {})
+    __table_args__ = (PrimaryKeyConstraint('task_id', 'document_id'), {})
 
 
 class TaskView(Base):

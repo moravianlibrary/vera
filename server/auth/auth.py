@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 from pytz import timezone, UTC
 from os import environ
 
-from roles.enums import ActionType
 from services import exceptions
 from . import crud, schemas
 
@@ -68,8 +67,7 @@ def get_current_user(db: Session, token: str):
         department_name=user.department_name,
         role_id=user.role_id,
         role_name=user.role_name,
-        actions=[ActionType(action[0]) for action
-                 in crud.get_role_actions(user.role_id, db)]
+        actions=crud.get_role_actions(user.role_id, db)
     )
 
 

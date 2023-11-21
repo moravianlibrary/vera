@@ -8,7 +8,7 @@ from users import schemas as users_schemas
 
 
 def create_document(document: schemas.Document,
-                    user: users_schemas.User,
+                    creator_id: int,
                     db: Session):
     db_document = create(db, models.Document(
         sysno=document.sysno,
@@ -24,7 +24,7 @@ def create_document(document: schemas.Document,
         barcode=document.barcode,
         ccnb=document.ccnb,
         isbn=document.isbn,
-        creator_id=user.id
+        creator_id=creator_id
     ))
     return get_document_view(db_document.id, db)
 

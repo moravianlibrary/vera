@@ -2,7 +2,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 from documents.enums import IdentifierType
-from catalogs.enums import MaterialType, IssuanceType
+from catalogs.enums import DigitizationState, DocumentCreateResult, \
+    MaterialType, IssuanceType
 
 
 class Identifier(BaseModel):
@@ -15,7 +16,7 @@ class DocumentBase(BaseModel):
     volume_number: Optional[str] = None
     item_number: Optional[str] = None
 
-    material_type: Optional[MaterialType]
+    material_type: Optional[MaterialType] = None
     title: str
     publishers: Optional[List[str]] = None
 
@@ -29,11 +30,11 @@ class DocumentBase(BaseModel):
 
 
 class Issue(BaseModel):
-    signature: Optional[str]
-    year_issued: Optional[str]
-    volume: Optional[str]
-    item: Optional[str]
-    barcode: Optional[str]
+    signature: Optional[str] = None
+    year_issued: Optional[str] = None
+    volume: Optional[str] = None
+    item: Optional[str] = None
+    barcode: Optional[str] = None
     issuance_type: IssuanceType
 
 
@@ -44,17 +45,18 @@ class DocumentCatalog(DocumentBase):
 
 
 class DocumentCatalogResponse(BaseModel):
-    record: Optional[DocumentCatalog] = None
     identifier: Identifier
-    error_type: Optional[str] = None
+    document: Optional[DocumentCatalog] = None
+    digitization_state: Optional[DigitizationState] = None
+    create_result: DocumentCreateResult
 
 
 class DocumentCreate(DocumentBase):
-    category_id: int
+    category_id: Optional[int] = None
 
     @classmethod
     def from_catalog_document(cls, catalog_document: DocumentCatalog,
-                              category_id: int) -> "DocumentCreate":
+                              category_id: Optional[int]) -> "DocumentCreate":
         return cls(
             sysno=catalog_document.sysno,
             volume_number=catalog_document.volume_number,
@@ -72,26 +74,20 @@ class DocumentCreate(DocumentBase):
         )
 
 
-class DocumentCreateResponse(BaseModel):
-    record: Optional[DocumentCreate]
-    identifier: Identifier
-    error_type: Optional[str]
-
-
 class Document(DocumentCreate):
     id: int
 
     creator_id: int
     created_at: datetime
 
-    extraction_id: Optional[int]
+    extraction_id: Optional[int] = None
 
 
 class DocumentView(Document):
-    category_name: str
+    category_name: Optional[str]
 
     creator: str
-    creator_department_id: Optional[int]
+    creator_department_id: Optional[int] = None
 
     extractor_id: Optional[int] = None
     extractor: Optional[str] = None
@@ -104,6 +100,14 @@ class DocumentView(Document):
         from_attributes = True
 
 
+class DocumentCreateResponse(BaseModel):
+    identifier: Identifier
+    document: Optional[DocumentView] = None
+    catalog_document: Optional[DocumentCatalog] = None
+    digitization_state: Optional[DigitizationState] = None
+    create_result: DocumentCreateResult
+
+
 class DocumentsResponse(BaseModel):
-    records: List[DocumentView]
+    documents: List[DocumentView]
     num_found: int

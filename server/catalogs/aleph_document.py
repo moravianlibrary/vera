@@ -1,12 +1,10 @@
 import re
 from urllib.parse import quote
-from services import exceptions
 from documents import schemas
-from catalogs.enums import MaterialType, IssuanceType
-from typing import List, Optional
+from catalogs.enums import DocumentCreateResult, MaterialType, IssuanceType
+from typing import List, Optional, Tuple
 
 
-NS_0 = {"ns0": "http://www.openarchives.org/OAI/2.0/"}
 MARC_NS = {"marc": "http://www.loc.gov/MARC21/slim"}
 
 PAGE_COUNT_FORMAT = r'^(\d+) s.*'
@@ -166,11 +164,8 @@ class Issue:
         )
 
 
-class CatalogRecord:
+class CatalogDocument:
     def __init__(self, sysno, marc):
-        if marc.find(".//ns0:error", namespaces=NS_0) is not None:
-            raise exceptions.CatalogRecordNotFoundException(sysno)
-
         self.sysno = sysno
         self.ccnb = get_field_text(marc, "015", "a")
         self.isbn = get_field_text(marc, "020", "a")
@@ -206,10 +201,11 @@ class CatalogRecord:
 
         self.issues = [Issue(issue) for issue in get_datafields(marc, "996")]
 
-    def get_schema(self) -> schemas.DocumentCatalog:
+    def get_schema(self) -> Tuple[schemas.DocumentCatalog,
+                                  DocumentCreateResult]:
         title = get_first_encoded([self.title, self.alternative_title])
         if title is None:
-            raise exceptions.CatalogRecordParseException(self.sysno, 'title')
+            return None, DocumentCreateResult.CATALOG_DOCUMENT_PARSING_ERROR
 
         return schemas.DocumentCatalog(
             sysno=self.sysno,
@@ -231,4 +227,4 @@ class CatalogRecord:
             isbn=encode(self.isbn),
 
             issues=[issue.get_schema() for issue in self.issues]
-        )
+        ), DocumentCreateResult.PREPARED

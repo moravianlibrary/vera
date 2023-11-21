@@ -23,36 +23,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# TODO: add support to log editing of records
+# TODO: add support to log editing of documents
 # TODO: add checking unique before insert and update
 
 
-# @app.on_event("startup")
-# async def on_startup():
-#     admin_username = environ.get("ADMIN_USERNAME")
-#     admin_password = environ.get("ADMIN_PASSWORD")
+@app.on_event("startup")
+async def on_startup():
+    from services.database import get_db
+    from auth.crud import get_user_by_username
+    from auth.auth import create_user
+    from users.crud import update_user
+    from auth.schemas import UserCreate
+    from users.schemas import UserUpdate
 
-#     if admin_username and admin_password:
-#         db = next(get_db())
-#         db_user = crud.get_user_by_username("admin", db)
-#         if db_user is None:
-#             db_user = auth.create_user(schemas.UserCreate(
-#                 username=admin_username,
-#                 password=admin_password
-#             ), db)
-#             crud.update_user(schemas.User(
-#                 id=db_user.id,
-#                 username=db_user.username,
-#                 department_id=None,
-#                 role_id=1
-#             ), db)
+    admin_username = environ.get("ADMIN_USERNAME")
+    admin_password = environ.get("ADMIN_PASSWORD")
+
+    if admin_username and admin_password:
+        db = next(get_db())
+        db_user = get_user_by_username("admin", db)
+        if db_user is None:
+            db_user = create_user(UserCreate(
+                username=admin_username,
+                password=admin_password
+            ), db)
+            update_user(UserUpdate(
+                id=db_user.id,
+                username=db_user.username,
+                department_id=None,
+                role_id=1
+            ), db)
 
 
 app.include_router(auth_router.router)
 app.include_router(categories_router.router)
 app.include_router(departments_router.router)
 app.include_router(documents_router.router)
-# app.include_router(extractions_router.router)
+app.include_router(extractions_router.router)
 app.include_router(roles_router.router)
 app.include_router(tasks_router.router)
 app.include_router(users_router.router)

@@ -33,13 +33,14 @@ def get_state_by_query(query: str):
 
     if response.status_code != 200:
         return
-    found_records = response.json()
+    found_documents = response.json()
 
-    if found_records['response']['numFound'] == 0:
+    if found_documents['response']['numFound'] == 0:
         return DigitizationState.NOT_DIGITIZED
 
-    return reduce(reduce_func, (parse_state_str(doc['stav'])
-                                for doc in found_records['response']['docs']))
+    return reduce(reduce_func,
+                  (parse_state_str(doc['stav'])
+                   for doc in found_documents['response']['docs']))
 
 
 def get_state_by_identifier(identifier: Identifier):

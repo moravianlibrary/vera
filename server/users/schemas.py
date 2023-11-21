@@ -8,6 +8,10 @@ class UserBase(BaseModel):
     role_id: Optional[int] = None
 
 
+class UserUpdate(UserBase):
+    pass
+
+
 class User(UserBase):
     id: int
 

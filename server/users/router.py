@@ -9,7 +9,7 @@ router = APIRouter()
 
 
 @router.put("/users/{id}", response_model=schemas.User)
-def update_user_enlistment(user: schemas.UserBase,
+def update_user_enlistment(user: schemas.UserUpdate,
                            id: int = Path(...),
                            db: Session = Depends(get_db)):
     db_user = crud.get_user(id, db)
