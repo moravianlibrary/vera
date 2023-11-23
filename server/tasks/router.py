@@ -1,11 +1,10 @@
 from fastapi import APIRouter
-from . import processes, schemas
+from . import schemas
 
 
 router = APIRouter()
 
 
-@router.post("/predict/pages", response_model=schemas.Task)
-async def predict_pages():
-    
-    # return await processes.predict_pages()
+@router.post("/tasks/predict", response_model=schemas.Task)
+def predict_pages():
+    pass

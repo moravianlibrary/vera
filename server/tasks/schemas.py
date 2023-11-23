@@ -21,6 +21,7 @@ class TaskCreation(TaskBase):
     owner_name: str
 
     task_state: TaskState
+
     planned: datetime
     started: Optional[datetime]
     finished: Optional[datetime]

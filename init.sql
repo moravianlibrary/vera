@@ -10,7 +10,7 @@ CREATE TYPE material_type AS ENUM (
 	'book', 'continuing_resource', 'map', 'msuic', 'other'
 );
 CREATE TYPE TASK_TYPE AS ENUM (
-	'PREDICT_ITEM_PAGES'
+	'PREDICT_ITEMS_PAGES'
 );
 CREATE TYPE TASK_SCOPE AS ENUM (
     'ALL', 'PROCESSED', 'UNPROCESSED', 'SELECT'
@@ -105,15 +105,34 @@ CREATE TABLE IF NOT EXISTS comments (
 	edited_at TIMESTAMP
 );
 
+CREATE SEQUENCE task_id_sequence;
+
+CREATE TABLE celery_tasks (
+    id INTEGER DEFAULT nextval('task_id_sequence') PRIMARY KEY,
+    task_id VARCHAR(64) UNIQUE NOT NULL,
+    status VARCHAR(50),
+    result TEXT,
+    date_done TIMESTAMP WITH TIME ZONE,
+    traceback TEXT,
+    name VARCHAR(250),
+    args TEXT,
+    kwargs TEXT,
+    worker VARCHAR(250),
+    retries INTEGER,
+    queue VARCHAR(250)
+);
+
 -- Create tasks table
 CREATE TABLE IF NOT EXISTS tasks (
 	id serial PRIMARY KEY,
 	task_type TASK_TYPE NOT NULL,
 	task_scope TASK_SCOPE NOT NULL,
 	query TEXT,
-	owner_id INT REFERENCES users(id),
 
+	owner_id INT REFERENCES users(id),
+	process_uuid VARCHAR(64) REFERENCES celery_tasks(task_id),
 	task_state TASK_STATE NOT NULL,
+
 	planned TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	started TIMESTAMP,
 	finished TIMESTAMP

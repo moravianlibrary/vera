@@ -17,3 +17,9 @@ class TaskState(Enum):
     RUNNING = 'RUNNING'
     FINISHED = 'FINISHED'
     FAILED = 'FAILED'
+
+
+class TaskDocumentErrorType(Enum):
+    MISING_VOLUME = 'MISSING_VOLUME'
+    MISING_ITEM = 'MISSING_ITEM'
+    CONFLICT_PAGES_COUNT = 'CONFLICT_PAGES_COUNT'

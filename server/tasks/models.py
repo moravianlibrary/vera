@@ -2,7 +2,7 @@ from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, \
     PrimaryKeyConstraint, String, TIMESTAMP, func
 
 from services.database import Base
-from tasks.enums import TaskType, TaskScope, TaskState
+from tasks.enums import TaskDocumentErrorType, TaskType, TaskScope, TaskState
 
 
 class Task(Base):
@@ -28,7 +28,9 @@ class TaskDocument(Base):
 
     task_id = Column(Integer, ForeignKey("tasks.id"), index=True)
     document_id = Column(Integer, ForeignKey("documents.id"), index=True)
+
     processed = Column(Boolean, server_default='false')
+    error_type = Column(TaskDocumentErrorType)
 
     __table_args__ = (PrimaryKeyConstraint('task_id', 'document_id'), {})
 

@@ -5,7 +5,7 @@ from typing import List
 
 from services.database import create
 from tasks import models, schemas
-from documents.models import DocumentView
+from documents.models import Document
 from tasks.enums import TaskState
 
 
@@ -32,9 +32,9 @@ def create_task(task: schemas.TaskCreate,
 
 def get_task_documents(task_id: int,
                        db: Session):
-    return (db.query(DocumentView)
+    return (db.query(Document)
             .join(models.TaskDocument, and_(
-                DocumentView.id == models.TaskDocument.document_id,
+                Document.id == models.TaskDocument.document_id,
                 models.TaskDocument.task_id == task_id,
                 not models.TaskDocument.processed
                 ))

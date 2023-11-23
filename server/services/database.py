@@ -8,6 +8,7 @@ DB_NAME = "digiboard"
 DB_USER = "digiboardAdmin"
 DB_PASSWORD = "password"
 DB_HOST = environ.get("POSTGRES_HOST")
+DB_HOST = "localhost"
 DB_PORT = "5432"
 
 DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}" \
