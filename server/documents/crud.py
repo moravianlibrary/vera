@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 from sqlalchemy import desc
 from typing import Optional
 
@@ -99,7 +99,8 @@ def get_documents_query_base(db: Session,
                              creator_id: Optional[int] = None,
                              creator_department_id: Optional[int] = None,
                              extraction_id: Optional[int] = None,
-                             onlyExtracted: bool = False):
+                             onlyExtracted: bool = False) \
+                                 -> Query[schemas.DocumentView]:
     query_base = db.query(models.DocumentView)
 
     if sysno is not None:

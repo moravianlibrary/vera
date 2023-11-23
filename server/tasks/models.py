@@ -9,6 +9,7 @@ class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
+    process_id = Column(Integer)
 
     task_type = Column(Enum(TaskType))
     task_scope = Column(Enum(TaskScope))

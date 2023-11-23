@@ -163,7 +163,7 @@ class TestDocumentsEndpoints(unittest.TestCase):
         delete_document(documents[0]['document']['id'], self.db)
         self.assertEqual(DigitizationState.NOT_DIGITIZED.value,
                          documents[0]['digitization_state'])
-        self.assertIsNone(documents[1]['document'])
+        self.assertEqual("2619088071", documents[1]['document']['barcode'])
         self.assertEqual(DigitizationState.FINISHED.value,
                          documents[1]['digitization_state'])
         self.assertIsNone(documents[2]['document'])

@@ -17,7 +17,7 @@ from catalogs.enums import DigitizationState, DocumentCreateResult
 router = APIRouter()
 
 
-def create_document_from_schema(document: schemas.DocumentCreate,
+def create_document_from_schema(document: schemas.DocumentCreateResponse,
                                 creator_id: int,
                                 db: Session):
     created_document = None
@@ -40,7 +40,7 @@ def create_document_from_schema(document: schemas.DocumentCreate,
 def create_document(document: schemas.DocumentCreate,
                     db: Session = Depends(get_db),
                     user: users_schemas.User = Depends(get_current_user)):
-    create_document_from_schema(document, user.id, db)
+    return create_document_from_schema(document, user.id, db)
 
 
 @router.put("/documents/{id}", response_model=schemas.DocumentView)
@@ -141,12 +141,14 @@ def create_catalog_document(catalog_document_response:
             and insert_digitized:
         create_result = DocumentCreateResult.ALREADY_DIGITIZED
     else:
-        document, create_result = create_document_from_schema(
+        response = create_document_from_schema(
             schemas.DocumentCreate
             .from_catalog_document(catalog_document, category_id),
             user.id,
             db
         )
+        document = response.document
+        create_result = response.create_result
 
     print(catalog_document_response.identifier)
     print(document)

@@ -8,14 +8,13 @@ from tasks.enums import TaskScope, TaskState, TaskType
 class TaskBase(BaseModel):
     task_type: TaskType
     task_scope: TaskScope
-    query: Optional[str]
 
 
 class TaskCreate(TaskBase):
     pass
 
 
-class Task(TaskBase):
+class TaskCreation(TaskBase):
     id: int
 
     owner_id: int
@@ -23,8 +22,10 @@ class Task(TaskBase):
 
     task_state: TaskState
     planned: datetime
-    started: datetime
-    finished: datetime
+    started: Optional[datetime]
+    finished: Optional[datetime]
 
+
+class Task(TaskCreation):
     processed_count: int
     total_count: int

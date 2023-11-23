@@ -2,7 +2,8 @@ import unittest
 from helper_funcs import setUpEnv
 
 from catalogs.catalog_aleph import generate_document_by_identifier
-from catalogs.enums import DigitizationState, MaterialType, IssuanceType
+from catalogs.enums import DigitizationState, DocumentCreateResult, \
+    MaterialType, IssuanceType
 from documents.schemas import Identifier
 from documents.enums import IdentifierType
 
@@ -16,7 +17,9 @@ class TestAlephCatalog(unittest.TestCase):
             identifier_type=IdentifierType.SYSNO,
             value="MZK01-000724903"
         )
-        document = generate_document_by_identifier(identifier)
+        document, create_result = generate_document_by_identifier(identifier)
+
+        self.assertEqual(create_result, DocumentCreateResult.PREPARED)
 
         self.assertEqual(document.sysno, "MZK01-000724903")
         self.assertEqual(document.volume_number, None)
@@ -44,7 +47,9 @@ class TestAlephCatalog(unittest.TestCase):
             identifier_type=IdentifierType.SYSNO,
             value="MZK01-001273598"
         )
-        document = generate_document_by_identifier(identifier)
+        document, create_result = generate_document_by_identifier(identifier)
+
+        self.assertEqual(create_result, DocumentCreateResult.PREPARED)
 
         self.assertEqual(document.sysno, "MZK01-001273598")
         self.assertEqual(document.volume_number, None)
