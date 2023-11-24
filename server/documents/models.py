@@ -2,7 +2,7 @@ from sqlalchemy import ARRAY, Column, Enum, ForeignKey, Integer, String, \
     TIMESTAMP, UniqueConstraint, func
 
 from services.database import Base
-from catalogs.enums import MaterialType
+from catalogs.enums import DigitizationState, MaterialType
 
 
 class Document(Base):
@@ -22,6 +22,7 @@ class Document(Base):
 
     pages_count = Column(Integer)
     size = Column(String)
+    digitization_state = Column(Enum(DigitizationState))
 
     signature = Column(String)
     barcode = Column(String)
@@ -51,6 +52,7 @@ class DocumentView(Base):
 
     pages_count = Column(Integer)
     size = Column(String)
+    digitization_state = Column(Enum(DigitizationState))
 
     signature = Column(String)
     barcode = Column(String)

@@ -53,10 +53,14 @@ class DocumentCatalogResponse(BaseModel):
 
 class DocumentCreate(DocumentBase):
     category_id: Optional[int] = None
+    digitization_state: Optional[DigitizationState] = None
 
     @classmethod
-    def from_catalog_document(cls, catalog_document: DocumentCatalog,
-                              category_id: Optional[int]) -> "DocumentCreate":
+    def from_catalog_document(
+            cls, catalog_document: DocumentCatalog,
+            category_id: Optional[int],
+            digitization_state: Optional[DigitizationState]
+            ) -> "DocumentCreate":
         return cls(
             sysno=catalog_document.sysno,
             volume_number=catalog_document.volume_number,
@@ -70,7 +74,8 @@ class DocumentCreate(DocumentBase):
             barcode=catalog_document.barcode,
             ccnb=catalog_document.ccnb,
             isbn=catalog_document.isbn,
-            category_id=category_id
+            category_id=category_id,
+            digitization_state=digitization_state
         )
 
 
@@ -106,6 +111,40 @@ class DocumentCreateResponse(BaseModel):
     catalog_document: Optional[DocumentCatalog] = None
     digitization_state: Optional[DigitizationState] = None
     create_result: DocumentCreateResult
+
+
+class DocumentsQuery(BaseModel):
+    id_list: Optional[List[int]] = None
+
+    sysno: Optional[str] = None
+    volume_number: Optional[str] = None
+    item_number: Optional[str] = None
+
+    material_type: Optional[List[MaterialType]] = None
+    title: Optional[str] = None
+    publishers: Optional[str] = None
+
+    category_id: Optional[int] = None
+    digitization_state: Optional[DigitizationState] = None
+
+    pages_count_min: Optional[int] = None
+    pages_count_max: Optional[int] = None
+    size: Optional[str] = None
+
+    signature: Optional[str] = None
+    barcode: Optional[str] = None
+    ccnb: Optional[str] = None
+    isbn: Optional[str] = None
+
+    creator_id: Optional[List[int]] = None
+    creator_department_id: Optional[int] = None
+    created_after: Optional[datetime] = None
+    created_before: Optional[datetime] = None
+
+    extraction_id: Optional[int] = None
+    extractor_id: Optional[int] = None
+    extracted_after: Optional[datetime] = None
+    extracted_before: Optional[datetime] = None
 
 
 class DocumentsResponse(BaseModel):

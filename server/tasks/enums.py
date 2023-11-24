@@ -3,13 +3,7 @@ from enum import Enum
 
 class TaskType(Enum):
     PREDICT_ITEMS_PAGES = 'PREDICT_ITEMS_PAGES'
-
-
-class TaskScope(Enum):
-    ALL = 'ALL'
-    PROCESSED = 'PROCESSED'
-    UNPROCESSED = 'UNPROCESSED'
-    SELECT = 'SELECT'
+    SYNC_FROM_CATALOG = 'SYNC_FROM_CATALOG'
 
 
 class TaskState(Enum):
@@ -17,6 +11,7 @@ class TaskState(Enum):
     RUNNING = 'RUNNING'
     FINISHED = 'FINISHED'
     FAILED = 'FAILED'
+    KILLED = 'KILLED'
 
 
 class TaskDocumentErrorType(Enum):

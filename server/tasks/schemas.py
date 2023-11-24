@@ -2,12 +2,11 @@ from pydantic import BaseModel
 
 from typing import Optional
 from datetime import datetime
-from tasks.enums import TaskScope, TaskState, TaskType
+from tasks.enums import TaskState, TaskType
 
 
 class TaskBase(BaseModel):
     task_type: TaskType
-    task_scope: TaskScope
 
 
 class TaskCreate(TaskBase):
