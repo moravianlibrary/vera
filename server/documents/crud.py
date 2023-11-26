@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from typing import Optional
 
@@ -7,7 +7,7 @@ from documents import models, schemas
 from users import schemas as users_schemas
 
 
-def create_document(document: schemas.Document,
+def create_document(document: schemas.DocumentCreate,
                     creator_id: int,
                     db: Session):
     db_document = create(db, models.Document(
@@ -72,8 +72,8 @@ def get_document(document_id: int,
 
 def get_document_view(document_id: int,
                       db: Session):
-    return (db.query(models.DocumentView)
-            .filter(models.DocumentView.id == document_id)
+    return (db.query(models.document_view(db))
+            .filter(models.Document.id == document_id)
             .first())
 
 
@@ -99,27 +99,26 @@ def get_documents_query_base(db: Session,
                              creator_id: Optional[int] = None,
                              creator_department_id: Optional[int] = None,
                              extraction_id: Optional[int] = None,
-                             onlyExtracted: bool = False) \
-                                 -> Query[schemas.DocumentView]:
-    query_base = db.query(models.DocumentView)
+                             onlyExtracted: bool = False):
+    query_base = models.document_view(db)
 
     if sysno is not None:
-        query_base = query_base.filter(models.DocumentView.sysno == sysno)
+        query_base = query_base.filter(models.Document.sysno == sysno)
     if creator_id is not None:
         query_base = query_base.filter(
-            models.DocumentView.creator_id == creator_id
+            models.Document.creator_id == creator_id
         )
     if creator_department_id is not None:
         query_base = query_base.filter(
-            models.DocumentView.creator_department_id == creator_department_id
+            query_base.creator_department_id == creator_department_id
         )
     if extraction_id is not None:
         query_base = query_base.filter(
-            models.DocumentView.extraction_id == extraction_id
+            models.Document.extraction_id == extraction_id
         )
     if onlyExtracted:
         query_base = query_base.filter(
-            models.DocumentView.extraction_id.isnot(None)
+            models.Document.extraction_id.isnot(None)
         )
 
     return query_base
@@ -129,7 +128,7 @@ def get_documents(db: Session,
                   query_base: Session,
                   offset: int = 0,
                   limit: int = 100):
-    return (query_base.order_by(desc(models.DocumentView.created_at))
+    return (query_base.order_by(desc(models.Document.created_at))
             .offset(offset).limit(limit)
             .all())
 

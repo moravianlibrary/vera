@@ -17,12 +17,3 @@ class Action(Base):
     role_id = Column(Integer, ForeignKey('roles.id'),
                      primary_key=True, index=True)
     action = Column(Enum(ActionType), primary_key=True, index=True)
-
-
-class RoleView(Base):
-    __tablename__ = 'role_view'
-
-    id = Column(Integer, ForeignKey("roles.id"), primary_key=True, index=True)
-    name = Column(String)
-
-    action_type = Column(Enum(ActionType), ForeignKey("actions.action"))

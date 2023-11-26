@@ -3,6 +3,50 @@ from fastapi.testclient import TestClient
 from helper_funcs import get_admin_token, setUpEnv
 
 
+class TestDocumentsModelsInit(unittest.TestCase):
+    def setUp(self):
+        setUpEnv()
+        from services.database import get_db
+        self.db = next(get_db())
+
+    def create_document(self, sysno, volume_number, item_number):
+        from documents.crud import create_document
+        from documents.schemas import DocumentCreate
+        return create_document(
+            DocumentCreate(
+                sysno=sysno,
+                volume_number=volume_number,
+                item_number=item_number,
+                title="Test Title"
+            ),
+            creator_id=1,
+            db=self.db
+        )
+
+    def delete_document(self, sysno, volume_number, item_number):
+        from documents.crud import get_document_by_identifiers, delete_document
+        document = get_document_by_identifiers(
+            sysno, volume_number, item_number, self.db)
+        delete_document(document.id, self.db)
+
+    def document_exists(self, sysno, volume_number, item_number):
+        from documents.crud import get_document_by_identifiers
+        return get_document_by_identifiers(
+            sysno, volume_number, item_number, self.db) is not None
+
+    def test_db_init(self):
+        from services.database import create_tables
+        from digiboard import app
+        create_tables()
+        # sysno = "MZK01-001002003"
+        # volume_number = "1996"
+        # item_number = "10"
+        # document = self.create_document(sysno, volume_number, item_number)
+        # self.assertIn("id", document)
+        # self.assertTrue(self.document_exists(sysno, volume_number, item_number))
+        # self.delete_document(sysno, volume_number, item_number)
+
+
 class TestDocumentsEndpoints(unittest.TestCase):
     def setUp(self):
         setUpEnv()

@@ -11,8 +11,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./populate.sql:/docker-entrypoint-initdb.d/populate.sql
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      # - ./populate.sql:/docker-entrypoint-initdb.d/populate.sql
       - data:/var/lib/postgresql/data
     networks:
       - digiboard

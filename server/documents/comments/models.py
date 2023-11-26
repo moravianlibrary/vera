@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Text, TIMESTAMP, \
+from sqlalchemy import Column, ForeignKey, Integer, Text, TIMESTAMP, \
     func
 
 from services.database import Base
@@ -9,7 +9,7 @@ class Comment(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     document_id = Column(Integer, ForeignKey("documents.id"), index=True)
-    user_id = Column(String, ForeignKey("users.id"), index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     text = Column(Text)
     created_at = Column(TIMESTAMP, server_default=func.now())
     edited_at = Column(TIMESTAMP)

@@ -76,17 +76,17 @@ def set_task_finsihed(id: int,
 
 def get_task(id: int,
              db: Session):
-    return db.query(models.TaskView).filter(models.TaskView.id == id).first()
+    return models.task_view(db).filter(models.Task.id == id).first()
 
 
 def get_tasks(db: Session,
               offset: int = 0,
               limit: int = 100):
-    return (db.query(models.TaskView)
-            .order_by(desc(models.TaskView.planned))
+    return (models.task_view(db)
+            .order_by(desc(models.Task.planned))
             .offset(offset).limit(limit)
             .all())
 
 
 def get_tasks_num_found(db: Session):
-    return db.query(models.TaskView).count()
+    return db.query(models.Task).count()

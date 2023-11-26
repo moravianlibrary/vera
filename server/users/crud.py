@@ -1,15 +1,14 @@
 from sqlalchemy import update
 from sqlalchemy.orm import Session
-
-from auth import models
-from users import schemas
 from typing import Optional
+
+from users import models, schemas
 
 
 def get_user(id: int,
              db: Session):
-    return (db.query(models.UserView)
-            .filter(models.UserView.id == id)
+    return (models.user_view(db)
+            .filter(models.User.id == id)
             .first())
 
 
@@ -32,29 +31,31 @@ def delete_user(id: int,
     return db_user
 
 
+def get_users_query_base(db: Session,
+                         department_id: Optional[int] = None,
+                         role_id: Optional[int] = None):
+    q = models.user_view(db)
+
+    if department_id is not None:
+        q = q.filter(models.User.department_id == department_id)
+    if role_id is not None:
+        q = q.filter(models.User.role_id == role_id)
+    return q
+
+
 def get_users(db: Session,
               department_id: Optional[int] = None,
               role_id: Optional[int] = None,
               offset: int = 0,
               limit: int = 100):
-    q = db.query(models.UserView)
-
-    if department_id is not None:
-        q = q.filter(models.UserView.department_id == department_id)
-    if role_id is not None:
-        q = q.filter(models.UserView.role_id == role_id)
-
-    return q.offset(offset).limit(limit).all()
+    return (get_users_query_base(db, department_id, role_id)
+            .offset(offset)
+            .limit(limit)
+            .all())
 
 
 def get_users_num_found(db: Session,
                         department_id: Optional[int] = None,
                         role_id: Optional[int] = None):
-    q = db.query(models.UserView)
-
-    if department_id is not None:
-        q = q.filter(models.UserView.department_id == department_id)
-    if role_id is not None:
-        q = q.filter(models.UserView.role_id == role_id)
-
-    return q.count()
+    return (get_users_query_base(db, department_id, role_id)
+            .count())

@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 
 from services.database import create
 from roles.crud import get_role_actions as roles_get_role_actions
-from . import models, schemas
+from users import models
+from auth import schemas
 
 
 def create_user(user_create: schemas.UserCreate,
@@ -30,8 +31,8 @@ def get_user(user_id: int,
 
 def get_user_view(user_id: int,
                   db: Session):
-    return (db.query(models.UserView)
-            .filter(models.UserView.id == user_id)
+    return (models.user_view(db)
+            .filter(models.User.id == user_id)
             .first())
 
 

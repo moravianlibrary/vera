@@ -1,8 +1,10 @@
 from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, \
-    PrimaryKeyConstraint, String, TIMESTAMP, func
+    PrimaryKeyConstraint, String, TIMESTAMP, func, case
+from sqlalchemy.orm import Session
 
 from services.database import Base
-from tasks.enums import TaskDocumentErrorType, TaskType, TaskScope, TaskState
+from users.models import User
+from tasks.enums import TaskDocumentErrorType, TaskType, TaskState
 
 
 class Task(Base):
@@ -12,7 +14,6 @@ class Task(Base):
     process_id = Column(Integer)
 
     task_type = Column(Enum(TaskType))
-    task_scope = Column(Enum(TaskScope))
     query = Column(String)
     owner_id = Column(Integer, ForeignKey("users.id"), index=True)
 
@@ -35,23 +36,25 @@ class TaskDocument(Base):
     __table_args__ = (PrimaryKeyConstraint('task_id', 'document_id'), {})
 
 
-class TaskView(Base):
-    __tablename__ = "task_view"
-
-    id = Column(Integer, primary_key=True, index=True)
-
-    task_type = Column(Enum(TaskType))
-    task_scope = Column(Enum(TaskScope))
-    query = Column(String)
-
-    owner_id = Column(Integer, ForeignKey("users.id"), index=True)
-    owner_name = Column(String, ForeignKey("users.username"))
-
-    task_state = Column(Enum(TaskState),
-                        server_default=TaskState.PLANNED.value)
-    planned = Column(TIMESTAMP, server_default=func.now())
-    started = Column(TIMESTAMP)
-    finished = Column(TIMESTAMP)
-
-    processed_count = Column(Integer)
-    total_count = Column(Integer)
+def task_view(db: Session):
+    return db.query(
+        Task.id,
+        Task.process_id,
+        Task.task_type,
+        Task.query,
+        Task.owner_id,
+        User.username.label('owner_name'),
+        Task.task_state,
+        Task.planned,
+        Task.started,
+        Task.finished,
+        (func.sum(case([(TaskDocument.processed, 1)], else_=0))
+         .label('processed_count')),
+        func.count(TaskDocument.document_id).label('total_count'),
+    ).join(
+        User, Task.owner_id == User.id
+    ).join(
+        TaskDocument, Task.id == TaskDocument.task_id
+    ).group_by(
+        Task.id
+    )

@@ -1,7 +1,12 @@
 from sqlalchemy import ARRAY, Column, Enum, ForeignKey, Integer, String, \
     TIMESTAMP, UniqueConstraint, func
+from sqlalchemy.orm import aliased, Session
 
 from services.database import Base
+from categories.models import Category
+from extractions.models import Extraction
+from users.models import User
+from documents.comments.models import Comment
 from catalogs.enums import DigitizationState, MaterialType
 
 
@@ -23,6 +28,7 @@ class Document(Base):
     pages_count = Column(Integer)
     size = Column(String)
     digitization_state = Column(Enum(DigitizationState))
+    dedicated_scanner = Column(String)
 
     signature = Column(String)
     barcode = Column(String)
@@ -35,38 +41,44 @@ class Document(Base):
     extraction_id = Column(Integer, ForeignKey("extractions.id"), index=True)
 
 
-class DocumentView(Base):
-    __tablename__ = 'document_view'
+def document_view(db: Session):
+    creator = aliased(User)
+    extractor = aliased(User)
 
-    id = Column(Integer, primary_key=True, index=True)
-    sysno = Column(String, index=True, nullable=False)
-    volume_number = Column(String)
-    item_number = Column(String)
-
-    category_id = Column(Integer, ForeignKey("categories.id"), index=True)
-    category_name = Column(String, ForeignKey("categories.name"))
-
-    material_type = Column(Enum(MaterialType))
-    title = Column(String)
-    publishers = Column(ARRAY(String))
-
-    pages_count = Column(Integer)
-    size = Column(String)
-    digitization_state = Column(Enum(DigitizationState))
-
-    signature = Column(String)
-    barcode = Column(String)
-    ccnb = Column(String)
-    isbn = Column(String)
-
-    creator_id = Column(Integer, ForeignKey("users.id"), index=True)
-    creator_department_id = Column(Integer, ForeignKey("users.department_id"))
-    creator = Column(String, ForeignKey("users.username"))
-    created_at = Column(TIMESTAMP, server_default=func.now())
-
-    extraction_id = Column(Integer, ForeignKey("extractions.id"), index=True)
-    extractor_id = Column(Integer, ForeignKey("users.id"), index=True)
-    extractor = Column(String, ForeignKey("users.username"))
-    extracted_at = Column(TIMESTAMP)
-
-    comments_count = Column(Integer)
+    return db.query(
+        Document.id,
+        Document.sysno,
+        Document.volume_number,
+        Document.item_number,
+        Document.category_id,
+        Category.name.lbale('category_name'),
+        Document.material_type,
+        Document.title,
+        Document.publishers,
+        Document.pages_count,
+        Document.size,
+        Document.digitization_state,
+        Document.dedicated_scanner,
+        Document.signature,
+        Document.barcode,
+        Document.ccnb,
+        Document.isbn,
+        Document.creator_id,
+        creator.department_id.label('creator_department_id'),
+        creator.username.label('creator'),
+        Document.extraction_id,
+        Extraction.extractor_id,
+        extractor.username.label('extractor'),
+        Extraction.extracted_at,
+        func.count(User.department_id).label('comments_count')
+    ).join(
+        creator, Document.creator_id == User.id
+    ).join(
+        Extraction, Document.extraction_id == Extraction.id
+    ).join(
+        extractor, Extraction.extractor_id == User.id
+    ).join(
+        Comment, Document.id == Comment.document_id
+    ).group_by(
+        Document.id
+    )

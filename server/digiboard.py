@@ -29,12 +29,14 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def on_startup():
-    from services.database import get_db
+    from services.database import create_tables, get_db
     from auth.crud import get_user_by_username
     from auth.auth import create_user
     from users.crud import update_user
     from auth.schemas import UserCreate
     from users.schemas import UserUpdate
+
+    create_tables()
 
     admin_username = environ.get("ADMIN_USERNAME")
     admin_password = environ.get("ADMIN_PASSWORD")
