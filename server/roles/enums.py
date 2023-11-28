@@ -9,6 +9,7 @@ class ActionType(Enum):
     edit_datatable_department = 'edit_datatable_department'
     edit_datatable_all = 'edit_datatable_all'
     write_datatable = 'write_datatable'
+    insert_datatable = 'insert_datatable'
     comment_on_datatable = 'comment_on_datatable'
     edit_access = 'edit_access'
     edit_categories = 'edit_categories'

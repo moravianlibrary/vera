@@ -35,26 +35,40 @@ async def on_startup():
     from users.crud import update_user
     from auth.schemas import UserCreate
     from users.schemas import UserUpdate
+    from roles.crud import get_role, create_role
+    from roles.enums import ActionType
+    from roles.schemas import RoleCreate
 
     create_tables()
 
     admin_username = environ.get("ADMIN_USERNAME")
     admin_password = environ.get("ADMIN_PASSWORD")
+    print(admin_username)
+    print(admin_password)
 
     if admin_username and admin_password:
         db = next(get_db())
-        db_user = get_user_by_username("admin", db)
+
+        db_role = get_role(1, db)
+        if db_role is None:
+            create_role(RoleCreate(
+                name="Admin",
+                actions=list(ActionType)
+            ), db)
+
+        db_user = get_user_by_username("Admin", db)
         if db_user is None:
             db_user = create_user(UserCreate(
                 username=admin_username,
                 password=admin_password
             ), db)
-            update_user(UserUpdate(
-                id=db_user.id,
-                username=db_user.username,
-                department_id=None,
-                role_id=1
-            ), db)
+            update_user(
+                db_user.id,
+                UserUpdate(
+                    username=db_user.username,
+                    department_id=None,
+                    role_id=1
+                ), db)
 
 
 app.include_router(auth_router.router)

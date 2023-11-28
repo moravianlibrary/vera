@@ -51,7 +51,7 @@ def document_view(db: Session):
         Document.volume_number,
         Document.item_number,
         Document.category_id,
-        Category.name.lbale('category_name'),
+        Category.name.label('category_name'),
         Document.material_type,
         Document.title,
         Document.publishers,
