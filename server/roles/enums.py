@@ -13,4 +13,5 @@ class ActionType(Enum):
     comment_on_datatable = 'comment_on_datatable'
     edit_access = 'edit_access'
     edit_categories = 'edit_categories'
+    edit_department_categories = 'edit_department_categories'
     extract = 'extract'

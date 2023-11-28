@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import update
 
 from services.database import create
-from . import models, schemas
+from categories import models, schemas
 
 
 def create_category(category_create: schemas.CategoryCreate,

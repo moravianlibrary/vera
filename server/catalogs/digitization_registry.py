@@ -23,7 +23,8 @@ def parse_state_str(state: str):
 def reduce_func(x, y):
     if x == DigitizationState.FINISHED or y == DigitizationState.FINISHED:
         return DigitizationState.FINISHED
-    if x == DigitizationState.IN_PROGRESS or y == DigitizationState.IN_PROGRESS:
+    if (x == DigitizationState.IN_PROGRESS
+            or y == DigitizationState.IN_PROGRESS):
         return DigitizationState.IN_PROGRESS
     return DigitizationState.PLANNED
 
