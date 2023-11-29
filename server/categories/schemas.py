@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, SerializeAsAny
 from typing import List, Optional
 
 
@@ -9,22 +9,22 @@ class CategoryBase(BaseModel):
 
 class CategoryCreate(CategoryBase):
     parent_id: Optional[int] = None
-    assignable: bool = True
+    assignable: bool = False
     percentage: float = 0
-    disabled: bool = True
+    disabled: bool = False
+    departments: List[int] = []
 
 
-class CategoryCreated(CategoryBase):
+class Category(CategoryCreate):
     id: int
     level: int
 
 
-class Category(CategoryCreated):
-    departments: List[int] = []
-
-
 class CategoryNode(Category):
-    children: List[Category] = []
+    children: List[SerializeAsAny[Category]]
+    count_pages: int
+    count_documents_with_pages: int
+    count_documents: int
 
 
 class CategoryPercentage(BaseModel):

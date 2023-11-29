@@ -6,13 +6,13 @@ from services.database import Base
 from categories.models import Category
 from extractions.models import Extraction
 from users.models import User
-from documents.comments.models import Comment
 from catalogs.enums import DigitizationState, MaterialType
 
 
 class Document(Base):
     __tablename__ = "documents"
-    __table_args__ = (UniqueConstraint('sysno'),)
+    __table_args__ = (UniqueConstraint(
+        'sysno', 'volume_number', 'item_number'),)
 
     id = Column(Integer, primary_key=True, index=True)
     sysno = Column(String, index=True, nullable=False)
@@ -64,21 +64,19 @@ def document_view(db: Session):
         Document.ccnb,
         Document.isbn,
         Document.creator_id,
+        Document.created_at,
         creator.department_id.label('creator_department_id'),
         creator.username.label('creator'),
         Document.extraction_id,
         Extraction.extractor_id,
         extractor.username.label('extractor'),
         Extraction.extracted_at,
-        func.count(User.department_id).label('comments_count')
-    ).join(
-        creator, Document.creator_id == User.id
-    ).join(
+    ).outerjoin(
+        Category, Document.category_id == Category.id
+    ).outerjoin(
+        creator, Document.creator_id == creator.id
+    ).outerjoin(
         Extraction, Document.extraction_id == Extraction.id
-    ).join(
-        extractor, Extraction.extractor_id == User.id
-    ).join(
-        Comment, Document.id == Comment.document_id
-    ).group_by(
-        Document.id
+    ).outerjoin(
+        extractor, Extraction.extractor_id == extractor.id
     )

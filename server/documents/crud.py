@@ -72,7 +72,7 @@ def get_document(document_id: int,
 
 def get_document_view(document_id: int,
                       db: Session):
-    return (db.query(models.document_view(db))
+    return (models.document_view(db)
             .filter(models.Document.id == document_id)
             .first())
 
@@ -98,6 +98,7 @@ def get_documents_query_base(db: Session,
                              sysno: Optional[str] = None,
                              creator_id: Optional[int] = None,
                              creator_department_id: Optional[int] = None,
+                             category_id: Optional[int] = None,
                              extraction_id: Optional[int] = None,
                              onlyExtracted: bool = False):
     query_base = models.document_view(db)
@@ -107,6 +108,10 @@ def get_documents_query_base(db: Session,
     if creator_id is not None:
         query_base = query_base.filter(
             models.Document.creator_id == creator_id
+        )
+    if category_id is not None:
+        query_base = query_base.filter(
+            models.Document.category_id == category_id
         )
     if creator_department_id is not None:
         query_base = query_base.filter(
@@ -124,8 +129,7 @@ def get_documents_query_base(db: Session,
     return query_base
 
 
-def get_documents(db: Session,
-                  query_base: Session,
+def get_documents(query_base: Session,
                   offset: int = 0,
                   limit: int = 100):
     return (query_base.order_by(desc(models.Document.created_at))
@@ -133,6 +137,5 @@ def get_documents(db: Session,
             .all())
 
 
-def get_documents_num_found(db: Session,
-                            query_base: Session):
+def get_documents_num_found(query_base: Session):
     return query_base.count()

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from services.database import get_db
 from services.exceptions import MissingArgumentException, WrongInputException
 from categories import crud, schemas
+from categories.routines import get_category_subtree
 from typing import List
 
 
@@ -22,12 +23,10 @@ def create_category(category: schemas.CategoryCreate,
 def update_category(category: schemas.CategoryCreate,
                     id: int = Path(...),
                     db: Session = Depends(get_db)):
-    db_category = crud.get_category(id, db)
-    if category.parent_id is None and db_category.parent_id is None:
-        return crud.update_root_category(id, category, db)
-    elif category.parent_id is None:
+    parent_id = crud.get_category(id, db).parent_id
+    if category.parent_id is None and parent_id is not None:
         raise Exception("Not implemented change from child to root category")
-    elif db_category.parent_id is None:
+    elif category.parent_id is not None and parent_id is None:
         raise Exception("Not implemented change from root to child category")
     return crud.update_category(id, category, db)
 
@@ -59,7 +58,8 @@ def delete_category(id: int = Path(...),
 
 @router.get("/categories", response_model=List[schemas.CategoryNode])
 def get_categories(db: Session = Depends(get_db)):
-    return crud.get_categories(db)
+    return [get_category_subtree(root_category, db)
+            for root_category in crud.get_root_categories(db)]
 
 
 @router.get("/categories_descriptors",

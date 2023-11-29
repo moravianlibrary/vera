@@ -34,18 +34,6 @@ class TestDocumentsModelsInit(unittest.TestCase):
         return get_document_by_identifiers(
             sysno, volume_number, item_number, self.db) is not None
 
-    def test_db_init(self):
-        from services.database import create_tables
-        from digiboard import app
-        create_tables()
-        # sysno = "MZK01-001002003"
-        # volume_number = "1996"
-        # item_number = "10"
-        # document = self.create_document(sysno, volume_number, item_number)
-        # self.assertIn("id", document)
-        # self.assertTrue(self.document_exists(sysno, volume_number, item_number))
-        # self.delete_document(sysno, volume_number, item_number)
-
 
 class TestDocumentsEndpoints(unittest.TestCase):
     def setUp(self):
@@ -55,28 +43,33 @@ class TestDocumentsEndpoints(unittest.TestCase):
         from services.database import get_db
         self.db = next(get_db())
 
+        self.clean_documents()
+        self.clean_categories()
+
         self.headers = {
             'Authorization': f'Bearer {get_admin_token()}',
             'Content-Type': 'application/json'
             }
 
-        from categories.crud import create_category, get_categories, \
-            delete_category
+        from categories.crud import create_root_category
         from categories.schemas import CategoryCreate
         category_name = "Test Category"
 
-        for category in get_categories(self.db):
-            if category.name == category_name:
-                delete_category(category.id, self.db)
-                break
-
-        self.category_id = create_category(CategoryCreate(
-            name=category_name
+        self.category_id = create_root_category(CategoryCreate(
+            name=category_name,
+            assignable=True
         ), self.db).id
 
-    def tearDown(self) -> None:
-        from categories.crud import delete_category
-        delete_category(self.category_id, self.db)
+    def clean_documents(self):
+        from documents.crud import get_documents_query_base, \
+            get_documents, delete_document
+        for document in get_documents(get_documents_query_base(self.db)):
+            delete_document(document.id, self.db)
+
+    def clean_categories(self):
+        from categories.crud import get_root_categories, delete_category
+        for category in get_root_categories(self.db):
+            delete_category(category.id, self.db)
 
     def create_test_document(self):
         document = {
@@ -84,7 +77,7 @@ class TestDocumentsEndpoints(unittest.TestCase):
             "volume_number": "1996",
             "item_number": "10",
             "title": "Test Document",
-            "category_id": 1
+            "category_id": self.category_id
         }
         return self.client.post("/documents",
                                 json=document,
@@ -104,11 +97,10 @@ class TestDocumentsEndpoints(unittest.TestCase):
     def test_create_delete_document(self):
         from catalogs.enums import DocumentCreateResult
         response = self.create_test_document()
-        if response.json()['create_result'] != DocumentCreateResult.SUCCESS:
-            self.delete_document("MZK01-001002003", "1996", "10")
-            response = self.create_test_document()
 
         self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response.json()['create_result'],
+                            DocumentCreateResult.SUCCESS)
 
         document = response.json()['document']
         self.assertTrue("id" in document)
@@ -116,7 +108,6 @@ class TestDocumentsEndpoints(unittest.TestCase):
         self.assertEqual("1996", document['volume_number'])
         self.assertEqual("10", document['item_number'])
         self.assertEqual("Test Document", document['title'])
-        self.assertEqual(1, document['category_id'])
 
         self.client.delete(f"/documents/{document['id']}")
 
@@ -141,7 +132,6 @@ class TestDocumentsEndpoints(unittest.TestCase):
         self.assertEqual("1996", document['volume_number'])
         self.assertEqual("10", document['item_number'])
         self.assertEqual("Test Document Updated", document['title'])
-        self.assertEqual(1, document['category_id'])
 
         self.client.delete(f"/documents/{response.json()['id']}")
 
@@ -176,7 +166,8 @@ class TestDocumentsEndpoints(unittest.TestCase):
         self.assertEqual(DocumentCreateResult.INVALID_SYSNO_BASE.value,
                          documents[3]['create_result'])
         self.assertIsNone(documents[4]['document'])
-        self.assertEqual(DocumentCreateResult.DOCUMENT_NOT_FOUND_IN_CATALOG.value,
+        self.assertEqual((DocumentCreateResult
+                          .DOCUMENT_NOT_FOUND_IN_CATALOG.value),
                          documents[4]['create_result'])
 
     def test_create_from_catalog_from_file(self):

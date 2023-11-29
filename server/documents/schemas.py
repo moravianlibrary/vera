@@ -98,7 +98,7 @@ class DocumentView(Document):
     extractor: Optional[str] = None
     extracted_at: Optional[datetime] = None
 
-    comments_count: int
+    comments_count: int = 0
 
     class Config:
         arbitrary_types_allowed = True
