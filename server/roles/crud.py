@@ -7,11 +7,14 @@ from . import models, schemas
 from typing import List
 
 
-def create_role(role: schemas.RoleBase,
+def create_role(role: schemas.RoleCreate,
                 db: Session):
-    return create(db, models.Role(
+    db_role = create(db, models.Role(
         name=role.name
     ))
+    if role.actions:
+        set_role_actions(db_role.id, role.actions, db)
+    return db_role
 
 
 def update_role(id: int,
