@@ -10,3 +10,5 @@ pytz
 requests
 lxml
 asyncio
+numpy
+tensorflow

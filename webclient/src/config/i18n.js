@@ -87,6 +87,15 @@ const resources = {
         successful_login_body: "Byli jste úspěšne přihlášení",
         successful_registration_title: "",
         successful_registration_body: "",
+
+        all_categories: "Všechny kategorie",
+        category_count_pages: "stran v kategorii",
+        category_missing_count_pages: "stran chybí k naplnění",
+        category_count_documents_with_pages: "dokumnetů se stranami",
+        category_count_documents: "dokumentů v kategorii",
+
+        show_all_categories: "Zobraz všechny",
+        insert_mode: "Vkládací mód",
     },
   },
 };

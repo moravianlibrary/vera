@@ -13,7 +13,7 @@ def create_quota(quota: schemas.QuotaCreate,
         active=False
     ))
     if quota.active:
-        set_active_quota(quota.id, db)
+        set_active_quota(db_quota.id, db)
     return db_quota
 
 

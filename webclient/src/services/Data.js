@@ -1,3 +1,4 @@
+import { Category } from "../models/Category";
 import { PrecreateRecord } from "../models/PrecreateRecord";
 import { Record } from "../models/Record";
 import { Role } from "../models/Role";
@@ -133,7 +134,7 @@ class DataService {
     async getCategories() {
         try {
             const categories = (await api.getCategories()).data;
-            return categories;
+            return categories.map(category => Category.fromJson(category));
         } catch (error) {
             this.setError(error);
             return [];

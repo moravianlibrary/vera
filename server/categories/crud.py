@@ -53,6 +53,14 @@ def update_category(id: int,
         return db_category
 
 
+def update_distribution(distribution: List[schemas.CategoryPercentage],
+                        db: Session):
+    for item in distribution:
+        db_category = get_category(item.id, db)
+        db_category.percentage = item.percentage
+    db.commit()
+
+
 def delete_category(category_id: int,
                     db: Session):
     for child_id in (db.query(models.Category.id)
@@ -89,6 +97,16 @@ def get_assignable_categories(db: Session):
     return (db.query(models.Category)
             .filter(models.Category.assignable)
             .all())
+
+
+def get_enabled_for_parent(parent_id: int,
+                           db: Session):
+    query = db.query(models.Category)
+    if parent_id is None:
+        query = query.filter(models.Category.parent_id.is_(None))
+    else:
+        query = query.filter(models.Category.parent_id == parent_id)
+    return query.filter(models.Category.disabled.is_(False)).all()
 
 
 def set_category_departments(id: int,

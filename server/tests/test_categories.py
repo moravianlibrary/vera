@@ -219,3 +219,24 @@ class TestCategoriesEndpoints(unittest.TestCase):
 
         self.clear_documents()
         self.delete_category_by_name("root")
+
+    def test_category_distribution(self):
+        from categories.crud import get_root_categories, \
+            get_children_categories
+        self.create_test_category_tree()
+
+        roots = get_root_categories(self.db)
+        self.assertEqual(len(roots), 1)
+        children_ids = [child.id for child
+                        in get_children_categories(roots[0].id, self.db)]
+        self.assertEqual(len(children_ids), 3)
+
+        distribution = [
+            {"id": children_ids[0], "percentage": 40},
+            {"id": children_ids[1], "percentage": 29.8},
+            {"id": children_ids[2], "percentage": 10.2},
+        ]
+        self.client.put("/categories/distribution",
+                        json={"distribution": distribution,
+                              "parent_id": roots[0].id},
+                        headers=self.headers)

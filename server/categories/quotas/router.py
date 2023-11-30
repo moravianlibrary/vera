@@ -12,7 +12,7 @@ router = APIRouter()
 @router.post("/categories/quota", response_model=schemas.Quota)
 def create_quota(quota: schemas.QuotaCreate,
                  db: Session = Depends(get_db)):
-    return crud.create_quota(id, db)
+    return crud.create_quota(quota, db)
 
 
 @router.put("/categories/quota/{id}", response_model=schemas.Quota)
