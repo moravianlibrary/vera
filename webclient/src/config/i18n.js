@@ -96,6 +96,12 @@ const resources = {
 
         show_all_categories: "Zobraz všechny",
         insert_mode: "Vkládací mód",
+        assignable_category: "Přiřaditelná kategorie",
+        use_category_departments: "Umožniť používat pouze oddělením",
+        select_departments: "Vyber oddělení",
+
+        name: "Název",
+        description: "Popis",
     },
   },
 };

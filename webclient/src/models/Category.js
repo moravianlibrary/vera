@@ -54,12 +54,27 @@ export class Category {
         return category;
     }
 
+    toJson() {
+        return {
+            name: this.name,
+            description: this.description,
+            parent_id: this.parent_id,
+            assignable: this.assignable,
+            disabled: this.disabled,
+            departments: this.departments,
+        };
+    }
+
     calcQuota(parent_quota) {
         return ((parent_quota * this.percentage) / 100).toFixed(0);
     }
 
     setName(name) {
         this.name = name;
+    }
+
+    setPercentage(percentage) {
+        this.percentage = percentage;
     }
 
     static createRootCategory(name, children = []) {
@@ -80,6 +95,18 @@ export class Category {
         category.count_documents = children.reduce((accumulator, category) => {
             return accumulator + category.count_documents;
         }, 0);
+
+        return category;
+    }
+
+    static createChildCategory(level) {
+        const category = new Category();
+
+        category.level = level;
+        category.assignable = false;
+        category.percentage = 0;
+        category.disabled = false;
+        category.children = [];
 
         return category;
     }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { ToggleButton } from 'primereact/togglebutton';
 import { Divider } from 'primereact/divider';
 import { textEditor } from "../services/Editors";
 import { Button } from "primereact/button";
@@ -17,15 +18,18 @@ import CategoryNode from "../components/CategoryView";
 export const NodeType = {
     ROOT: 'ROOT',
     CATEGORY: 'CATEGORY',
+    UPDATE_CATEGORY: 'UPDATE_CATEGORY',
     INSERT: 'INSERT'
 };
 
 class Node {
+    type;
     expanded = true;
     className = 'bg-yellow-500';
     style = { borderRadius: '12px' };
     category;
     parentNode;
+    percentage;
     quota;
     children = [];
 
@@ -78,18 +82,42 @@ class Node {
         return node;
     }
 
-    static createInsertNode() {
+    createInsertNode() {
         const node = new Node();
         node.type = NodeType.INSERT;
         node.className = Node.getColorClass(NodeType.INSERT);
+        node.parentNode = this;
         return node;
     }
 
     createInsertNodes() {
-        if (this.type != NodeType.INSERT) {
+        if (this.category.level < 4
+                && (this.children.length == 0
+                    || this.children.every(child => child.type == NodeType.CATEGORY))) {
             this.children.forEach(child => child.createInsertNodes());
-            this.children = [...this.children, Node.createInsertNode()];
+            this.children = [...this.children, this.createInsertNode()];
         }
+    }
+    
+    clearInsertNodes() {
+        this.children = this.children.filter(child => child.type != NodeType.INSERT);
+        this.children.forEach(child => child.clearInsertNodes());
+    }
+
+    insertNewCategoryNode() {
+        const childNode = new Node();
+        childNode.type = NodeType.UPDATE_CATEGORY;
+        childNode.category = Category.createChildCategory(this.category.level + 1);
+        childNode.className = Node.getColorClass(NodeType.CATEGORY, childNode.category);
+        this.children.splice(this.children.length - 1, 0, childNode);
+    }
+
+    setType(type) {
+        this.type = type;
+    }
+
+    setPercentage(percentage) {
+        this.percentage = percentage;
     }
 }
 
@@ -97,54 +125,93 @@ const Categories = (props) => {
     const { t } = useTranslation();
 
     const [categories, setCategories] = useState([]);
+    const [departments, setDepartments] = useState([]);
+
     const [activeNode, setActiveNode] = useState(null);
     const [rootNode, setRootNode] = useState(null);
 
     const [insertMode, setInsertMode] = useState(false);
 
     const [editingRows, setEditingRows] = useState([]);
+    const [editPercentageNodes, setEditPercentageNodes] = useState([]);
+
     const [refreshCount, setRefreshCount] = useState(0);
+    const [refreshDataCount, setRefreshDataCount] = useState(0);
+
+    const refresh = () => {
+        setRefreshCount(refreshCount + 1);
+    };
+
+    const handleClickNode = (node) => {
+        if (node.type == NodeType.ROOT || node.type == NodeType.CATEGORY) {
+            setActiveNode(node);
+        } else if (node.type == NodeType.INSERT) {
+            node.parentNode.insertNewCategoryNode();
+        }
+        refresh();
+    };
 
     const handleMoveUpCategory = () => {
         setActiveNode(activeNode.parentNode);
+        refresh();
     }
 
-    const handleInsertMode = (e) => {
-        activeNode.createInsertNodes();
-    };
-
-    const handleInsert = () => {
+    const toggleInsertMode = () => {
         if (!insertMode) {
-            setInsertMode(true);
-            const newCategory = {};
-            setCategories([...categories, newCategory]);
-            setEditingRows([...editingRows, newCategory]);
-        }
-    };
-
-    const onRowEditChange = (event) => {
-        const { data, index } = event;
-        if (insertMode && index == categories.length - 1) {
-            setInsertMode(false);
-        }
-        const activeRowArray = Array.isArray(data) ? data : [data];
-        setEditingRows(activeRowArray);
-    };
-
-    const handleCategoryEdit = (event) => {
-        const { newData, index } = event;
-
-        if (insertMode && index == categories.length - 1) {
-            dataService.createCategory(newData);
+            activeNode.createInsertNodes();
         } else {
-            dataService.updateCategory(newData);
-            setRefreshCount(refreshCount + 1);
+            rootNode.clearInsertNodes();
+        }
+        setInsertMode(!insertMode);
+    };
+
+    const handleEditCategory = (node) => {
+        node.setType(NodeType.UPDATE_CATEGORY);
+        refresh();
+    };
+
+    const handleUpdateCategory = (node, values) => {
+    };
+
+    const handleCloseCategoryEditing = (node) => {
+        node.setType(NodeType.CATEGORY);
+        refresh();
+    };
+
+    const handleDeleteCategory = (node) => {
+    };
+
+    const handleEditPercentage = (node) => {
+        node.parentNode.children.forEach(child => child.setPercentage(child.category.percentage));
+        setEditPercentageNodes(node.parentNode.children);
+    };
+
+    const onPercentageChange = (node, value) => {
+        console.log(editPercentageNodes);
+        node.setPercentage(value);
+    }
+
+    const handleUpdatePercentage = () => {
+        const sum = editPercentageNodes.reduce((accumulator, node) => accumulator + node.percentage, 0);
+        console.log(sum);
+        if (sum == 100) {
+            const parent_id = editPercentageNodes[0].category.parent_id;
+            const distribution = editPercentageNodes.map((node) => {
+                return {
+                    id: node.category.id,
+                    percentage: node.percentage,
+                };
+            });
+            if (dataService.updateDistribution(parent_id, distribution)) {
+                setEditPercentageNodes([]);
+                editPercentageNodes.map((node) => node.category.setPercentage(node.percentage));
+            }
         }
     };
 
-    const handleDeleteCategory = (category) => {
-        dataService.deleteCategory(category);
-        setRefreshCount(refreshCount + 1);
+    const handleClosePercentageEditing = () => {
+        editPercentageNodes.forEach((node) => node.setPercentage(node.category.percentage));
+        setEditPercentageNodes([]);
     };
 
     useEffect(() => {
@@ -157,19 +224,13 @@ const Categories = (props) => {
                 setRootNode(rootNode);
                 setActiveNode(rootNode);
             }
+            const departments = await dataService.getDepartments();
+            setDepartments(departments);
         }
         if (!insertMode) {
             fetchCategories();
         }
-    }, [insertMode, refreshCount]);
-
-    const deleteButton = (category) => {
-        if (!insertMode || category.id) {
-            return (
-                <Button className="p-button-rounded p-button-text p-button-danger" icon="pi pi-trash" onClick={() => handleDeleteCategory(category)} />
-            );
-        }
-    };
+    }, []);
 
     const floatingPanelStyle = {
         position: 'absolute',
@@ -198,7 +259,7 @@ const Categories = (props) => {
                     text
                     icon="pi pi-eye"
                     label={t('insert_mode')}
-                    onClick={handleInsertMode}
+                    onClick={(e) => toggleInsertMode()}
                 />
             </div>
             <div className="flex justify-content-center m-5">
@@ -213,7 +274,19 @@ const Categories = (props) => {
             {activeNode &&
             <OrganizationChart
                 value={[activeNode]}
-                nodeTemplate={(node) => <CategoryNode node={node} onClick={setActiveNode} />}
+                nodeTemplate={(node) => <CategoryNode node={node}
+                    departments={departments}
+                    onClick={handleClickNode}
+                    onEdit={handleEditCategory}
+                    onUpdate={handleUpdateCategory}
+                    onCloseEditing={handleCloseCategoryEditing}
+                    onDelete={handleDeleteCategory}
+                    onEditPercentage={handleEditPercentage}
+                    editPercentageNodes={editPercentageNodes}
+                    onPercentageChange={onPercentageChange}
+                    onUpdatePercentage={handleUpdatePercentage}
+                    onClosePercentageEditing={handleClosePercentageEditing}
+                />}
             />}
         </div>
     );

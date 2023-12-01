@@ -171,6 +171,16 @@ class DataService {
         }
     }
 
+    async updateDistribution(parent_id, distribution) {
+        try {
+            const result = await api.updateDistribution(parent_id, distribution);
+            return result.status === 200;
+        } catch (error) {
+            this.setError(error);
+            return null;
+        }
+    }
+
     async getRecords(offset, rows) {
         try {
             const { records, num_found } = (await api.getRecords(offset, rows)).data;

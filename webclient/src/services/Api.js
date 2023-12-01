@@ -83,15 +83,19 @@ class Api {
     }
 
     createCategory(category) {
-        return axios.post(`/categories`, category, { headers: authHeader() });
+        return axios.post(`/categories/category`, category, { headers: authHeader() });
     }
 
     updateCategory(category) {
-        return axios.put(`/categories/${category.id}`, category, { headers: authHeader() });
+        return axios.put(`/categories/category/${category.id}`, category.toJson(), { headers: authHeader() });
     }
 
     deleteCategory(id) {
-        return axios.delete(`/categories/${id}`, { headers: authHeader() });
+        return axios.delete(`/categories/category/${id}`, { headers: authHeader() });
+    }
+
+    updateDistribution(parent_id, distribution) {
+        return axios.put(`/categories/distribution?parent_id=${parent_id}`, distribution, { headers: authHeader() });
     }
 
     getRecords(offset, rows) {
@@ -99,7 +103,6 @@ class Api {
     }
 
     createRecord(record) {
-        console.log(record.toJson());
         return axios.post(`/records`, record.toJson(), { headers: authHeader() });
     }
 
