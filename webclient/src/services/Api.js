@@ -101,6 +101,10 @@ class Api {
         return axios.put(`/categories/distribution`, distribution, { headers: authHeader() });
     }
 
+    getQuotas() {
+        return axios.get(`/categories/quota`, { headers: authHeader() });
+    }
+
     getRecords(offset, rows) {
         return axios.get(`/records?offset=${offset}&limit=${rows}`, { headers: authHeader() });
     }

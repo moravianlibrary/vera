@@ -7,6 +7,7 @@ from catalogs.enums import DocumentCreateResult
 
 
 def get_digitization_state(document: schemas.DocumentCatalog):
+    state = None
     if document.barcode:
         state = get_state_by_identifier(schemas.Identifier(
             identifier_type=IdentifierType.BARCODE,
@@ -18,7 +19,7 @@ def get_digitization_state(document: schemas.DocumentCatalog):
             identifier_type=IdentifierType.CCNB,
             value=document.ccnb
         ))
-    return state
+    return state if state is not None else DigitizationState.NOT_DIGITIZED
 
 
 def get_catalog_response(identifier: schemas.Identifier):

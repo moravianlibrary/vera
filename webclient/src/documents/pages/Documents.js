@@ -8,17 +8,17 @@ import { Paginator } from 'primereact/paginator';
 import { SpeedDial } from 'primereact/speeddial';
 import { Tooltip } from 'primereact/tooltip';
 
-import './Board.css';
-import { dataService } from '../services/Data.js';
-import { categoryEditor, numberEditor, textEditor, textareaEditor } from '../services/Editors.js';
-import SelectCategoryDialog from '../dialogs/SelectEnumDialog';
-import { Record } from '../models/Record.js';
+import './Documents.css';
+import { dataService } from '../../services/Data.js';
+import { categoryEditor, numberEditor, textEditor, textareaEditor } from '../../services/Editors.js';
+import SelectCategoryDialog from '../../dialogs/SelectEnumDialog.js';
+import { Record } from '../../models/Record.js';
 import { MultiSelect } from 'primereact/multiselect';
-import { authService } from '../services/Auth';
-import { ActionType } from '../models/Role';
-import InsertRecordDialog from '../dialogs/InsertRecordDialog';
+import { authService } from '../../services/Auth.js';
+import { ActionType } from '../../models/Role.js';
+import InsertRecordDialog from '../../dialogs/InsertRecordDialog.js';
 
-const RecordsTable = () => {
+const Documents = () => {
     const { t } = useTranslation();
 
     const [records, setRecords] = useState([]);
@@ -371,4 +371,4 @@ const RecordsTable = () => {
     );
 }
 
-export default RecordsTable;
+export default Documents;

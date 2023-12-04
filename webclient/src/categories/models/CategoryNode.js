@@ -55,7 +55,7 @@ export class CategoryNode {
         node.children = children
                 ? children.map((child, index) => CategoryNode.createCategoryNode(child, node, quotas[index], expanded))
                 : [];
-
+        
         return node;
     }
 

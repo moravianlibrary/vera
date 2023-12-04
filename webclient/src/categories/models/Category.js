@@ -1,23 +1,3 @@
-export class Quota {
-    id;
-    name;
-    description;
-    pages_count;
-    active;
-
-    static fromJson(json) {
-        const qouta= new Quota();
-
-        qouta.id = json.id;
-        qouta.name = json.name;
-        qouta.description = json.description;
-        qouta.pages_count = json.pages_count;
-        qouta.active = json.active;
-
-        return qouta;
-    }
-}
-
 export class Category {
     id;
     name;
@@ -47,9 +27,18 @@ export class Category {
         category.disabled = json.disabled;
         category.departments = json.departments;
         category.children = json.children ? json.children.map(child => this.fromJson(child)) : [];
-        category.count_pages = json.count_pages;
-        category.count_documents_with_pages = json.count_documents_with_pages;
-        category.count_documents = json.count_documents;
+        category.count_pages = json.count_pages
+                + category.children.reduce((accumulator, category) => {
+                    return accumulator + category.count_pages;
+                }, 0);
+        category.count_documents_with_pages = json.count_documents_with_pages
+                + category.children.reduce((accumulator, category) => {
+                    return accumulator + category.count_documents_with_pages;
+                }, 0);
+        category.count_documents = json.count_documents
+                + category.children.reduce((accumulator, category) => {
+                    return accumulator + category.count_documents;
+                }, 0);
 
         return category;
     }

@@ -79,59 +79,66 @@ def get_documents(offset: int = Query(0, description="Pagination page offset"),
         extraction_id=extraction_id,
         onlyExtracted=(onlyExtracted is not None)
     )
-    documents = crud.get_documents(db, query_base, offset=offset, limit=limit)
-    num_found = crud.get_documents_num_found(db, query_base)
+    documents = crud.get_documents(query_base, offset=offset, limit=limit)
+    num_found = crud.get_documents_num_found(query_base)
     return schemas.DocumentsResponse(documents=documents, num_found=num_found)
 
 
 @router.post("/documents/get_from_catalog",
-             response_model=List[schemas.DocumentCatalogResponse])
-async def get_from_catalog(identifier: Optional[schemas.Identifier] = None,
-                           file: Optional[UploadFile] = None,
-                           identifier_type: Optional[IdentifierType]
-                           = IdentifierType.SYSNO,
-                           db: Session = Depends(get_db),
+             response_model=schemas.DocumentCatalogResponse)
+async def get_from_catalog(identifier: schemas.Identifier,
                            user: users_schemas.User
                            = Depends(get_current_user)):
-    if identifier:
-        return [get_catalog_response(identifier)]
-    elif file and file.filename:
+    return get_catalog_response(identifier)
+
+
+@router.post("/documents/get_from_catalog_file",
+             response_model=List[schemas.DocumentCatalogResponse])
+async def get_from_catalog_file(
+        file: Optional[UploadFile] = None,
+        identifier_type: IdentifierType = Query(IdentifierType.SYSNO),
+        user: users_schemas.User = Depends(get_current_user)):
+    if file and file.filename:
         return [get_catalog_response(schemas.Identifier
                                      (identifier_type=identifier_type,
                                       value=line))
                 for line in (await file.read()).decode('utf-8').splitlines()]
     raise exceptions.MissingArgumentException(
-        "Either document or file must be provided")
+        "File must be provided")
 
 
 @router.post("/documents/create_from_catalog",
-             response_model=List[schemas.DocumentCreateResponse])
+             response_model=schemas.DocumentCreateResponse)
 async def create_from_catalog(identifier: Optional[schemas.Identifier] = None,
-                              file: Optional[UploadFile] = None,
-                              identifier_type: Optional[IdentifierType]
-                              = IdentifierType.SYSNO,
                               category_id: Optional[int] = Query(None),
-                              insert_digitized: bool = False,
+                              insert_digitized: bool = Query(False),
                               db: Session = Depends(get_db),
                               user: users_schemas.User
                               = Depends(get_current_user)):
-    if identifier:
-        return [create_catalog_document(
-            get_catalog_response(identifier),
-            category_id,
-            insert_digitized,
-            user.id,
-            db)
-        ]
-    elif file and file.filename:
-        return [create_catalog_document(
-            get_catalog_response(schemas.Identifier
-                                 (identifier_type=identifier_type,
-                                  value=line)),
-            category_id,
-            insert_digitized,
-            user.id,
-            db)
-                for line in (await file.read()).decode('utf-8').splitlines()]
-    raise exceptions.MissingArgumentException(
-        "Either document or file must be provided")
+    return create_catalog_document(
+        get_catalog_response(identifier),
+        category_id,
+        insert_digitized,
+        user.id,
+        db)
+
+
+@router.post("/documents/create_from_catalog_file",
+             response_model=List[schemas.DocumentCreateResponse])
+async def create_from_catalog_file(
+        file: Optional[UploadFile] = None,
+        identifier_type: IdentifierType = Query(IdentifierType.SYSNO),
+        category_id: Optional[int] = Query(None),
+        insert_digitized: bool = Query(False),
+        db: Session = Depends(get_db),
+        user: users_schemas.User
+        = Depends(get_current_user)):
+    return [create_catalog_document(
+        get_catalog_response(schemas.Identifier
+                             (identifier_type=identifier_type,
+                              value=line)),
+        category_id,
+        insert_digitized,
+        user.id,
+        db)
+            for line in (await file.read()).decode('utf-8').splitlines()]

@@ -40,8 +40,8 @@ def create_catalog_document(catalog_document_response:
         pass
     elif len(catalog_document.issues) > 1:
         create_result = DocumentCreateResult.MULTIPLE_ISSUE_CHOICES
-    elif digitization_state == DigitizationState.NOT_DIGITIZED \
-            and insert_digitized:
+    elif digitization_state != DigitizationState.NOT_DIGITIZED \
+            and not insert_digitized:
         create_result = DocumentCreateResult.ALREADY_DIGITIZED
     else:
         response = create_document_from_schema(

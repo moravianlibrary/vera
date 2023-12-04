@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // import Home from './Home'; 
 import { ActionAccessRoute, authService } from '../services/Auth';
 import Access from './Access';
-import Board from './Board';
 import Navbar from './Navbar';
 import '../config/i18n';
 import './App.css';
@@ -12,6 +11,7 @@ import { ToastProvider } from '../services/ToastContext';
 import { ActionType } from '../models/Role';
 import { APP_CONFIG } from '../config/config';
 import Categories from '../categories/pages/Categories';
+import Documents from '../documents/pages/Documents';
 
 // import logo from './logo.svg';
 
@@ -30,7 +30,7 @@ function App() {
               <Routes>
                 {/* <Route path="/" element={<Home />} /> */}
                 <Route element={<ActionAccessRoute action={ActionType.read_datatable_own} />}>
-                  <Route path="/board" element={<Board />} />
+                  <Route path="/board" element={<Documents />} />
                 </Route>
                 <Route element={<ActionAccessRoute action={ActionType.edit_categories} />}>
                   <Route path="/categories" element={<Categories />} />

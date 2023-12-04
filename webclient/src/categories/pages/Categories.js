@@ -14,6 +14,8 @@ const Categories = (props) => {
     const { t } = useTranslation();
 
     const [categories, setCategories] = useState([]);
+    const [quotas, setQuotas] = useState([]);
+    const [activeQuota, setActiveQuota] = useState(null);
     const [departments, setDepartments] = useState([]);
 
     const [activeNode, setActiveNode] = useState(null);
@@ -124,17 +126,24 @@ const Categories = (props) => {
     };
 
     useEffect(() => {
+        async function fetchQuotas() {
+            const quotas = await dataService.getQuotas();
+            setQuotas(quotas);
+            setActiveQuota(quotas.find(quota => quota.active));
+        }
         async function fetchCategories() {
             const categories = await dataService.getCategories();
+            const quotas = await dataService.getQuotas();
+            const quota = quotas.find(quota => quota.active);
             setCategories(categories);
             if (categories && categories.length > 0) {
                 const rootCategory = Category.createRootCategory(t('all_categories'), categories);
-                const rootNode = CategoryNode.createRootNode(rootCategory, 994, true);
+                const rootNode = CategoryNode.createRootNode(rootCategory, quota.pages_count, true);
                 setRootNode(rootNode);
                 setActiveNode(rootNode);
             } else {
                 const rootCategory = Category.createRootCategory(t('all_categories'), []);
-                const rootNode = CategoryNode.createRootNode(rootCategory, 994, true);
+                const rootNode = CategoryNode.createRootNode(rootCategory, quota.pages_count, true);
                 setRootNode(rootNode);
                 setActiveNode(rootNode);
             }
@@ -142,6 +151,7 @@ const Categories = (props) => {
             setDepartments(departments);
         }
         if (!insertMode) {
+            fetchQuotas();
             fetchCategories();
         }
     }, [refreshDataCount]);

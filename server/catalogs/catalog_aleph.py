@@ -12,12 +12,15 @@ ALEPH_ENDPOINT = "http://aleph.mzk.cz/OAI?verb=GetRecord\
 
 NS_0 = {"ns0": "http://www.openarchives.org/OAI/2.0/"}
 
-SYSNO_FORMAT = r'^(?:MZK|mzk)(\d{2})-?(\d{9})$'
+SYSNO_FORMAT_1 = r'^\d{9}$'
+SYSNO_FORMAT_2 = r'^(?:MZK|mzk)(\d{2})-?(\d{9})$'
 SYSNO_BASES = ["MZK01", "MZK03"]
 
 
 def parse_sysno(sysno: str):
-    formatted = re.sub(SYSNO_FORMAT, r'MZK\1-\2', sysno)
+    if re.match(SYSNO_FORMAT_1, sysno):
+        return f"{SYSNO_BASES[0]}-{sysno}"
+    formatted = re.sub(SYSNO_FORMAT_2, r'MZK\1-\2', sysno)
     base = formatted.split("-")[0]
     if base in SYSNO_BASES:
         return formatted
@@ -46,7 +49,8 @@ def download_from_catalog(sysno: str):
 
 def generate_document_by_identifier(identifier: Identifier):
     if identifier.identifier_type == IdentifierType.SYSNO:
-        if not re.match(SYSNO_FORMAT, identifier.value):
+        if (not re.match(SYSNO_FORMAT_1, identifier.value)
+                and not re.match(SYSNO_FORMAT_2, identifier.value)):
             return None, DocumentCreateResult.INVALID_SYSNO
         sysno = parse_sysno(identifier.value)
         if sysno is None:

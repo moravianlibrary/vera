@@ -1,4 +1,5 @@
 import { Category } from "../categories/models/Category";
+import { Quota } from "../categories/models/Quota";
 import { PrecreateRecord } from "../models/PrecreateRecord";
 import { Record } from "../models/Record";
 import { Role } from "../models/Role";
@@ -178,6 +179,16 @@ class DataService {
         } catch (error) {
             this.setError(error);
             return null;
+        }
+    }
+
+    async getQuotas() {
+        try {
+            const quotas = (await api.getQuotas()).data;
+            return quotas.map(quota => Quota.fromJson(quota));
+        } catch (error) {
+            this.setError(error);
+            return [];
         }
     }
 

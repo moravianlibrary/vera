@@ -135,6 +135,27 @@ class TestDocumentsEndpoints(unittest.TestCase):
 
         self.client.delete(f"/documents/{response.json()['id']}")
 
+    def test_get_from_catalog(self):
+        from catalogs.enums import DigitizationState
+
+        headers = {
+            'Authorization': f'Bearer {get_admin_token()}'
+            }
+
+        response = self.client.post(
+            "/documents/get_from_catalog",
+            json={'identifier_type': 'SYSNO',
+                  'value': 'mzk03001066272'},
+            headers=headers
+        )
+
+        self.assertEqual(response.status_code, 200)
+        document = response.json()
+        print(document)
+        self.assertEqual("2610417932", document['document']['barcode'])
+        self.assertEqual(DigitizationState.NOT_DIGITIZED.value,
+                         document['digitization_state'])
+
     def test_get_from_catalog_from_file(self):
         from catalogs.enums import DigitizationState, DocumentCreateResult
 
@@ -145,7 +166,7 @@ class TestDocumentsEndpoints(unittest.TestCase):
             }
 
         response = self.client.post(
-            "/documents/get_from_catalog",
+            "/documents/get_from_catalog_file",
             files={'file': open(test_file_path, 'rb')},
             headers=headers
         )
@@ -186,7 +207,7 @@ class TestDocumentsEndpoints(unittest.TestCase):
             }
 
         response = self.client.post(
-            "/documents/create_from_catalog",
+            "/documents/create_from_catalog_file",
             files={'file': open(test_file_path, 'rb')},
             headers=headers
         )
