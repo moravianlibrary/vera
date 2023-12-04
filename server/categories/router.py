@@ -44,7 +44,8 @@ def update_distribution(distribution: List[schemas.CategoryPercentage],
         raise MissingArgumentException(
             "Percentage distribution does not contains "
             "all children from one parent")
-    if sum([item.percentage for item in distribution]) != 100.0:
+    if (sum([item.percentage for item in distribution]) != 100.0
+            and sum([item.percentage for item in distribution]) != 0.0):
         raise WrongInputException(
             "Percentage of all categories on one level has to sum to 100.")
     crud.update_distribution(distribution, db)

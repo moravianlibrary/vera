@@ -95,7 +95,10 @@ class Api {
     }
 
     updateDistribution(parent_id, distribution) {
-        return axios.put(`/categories/distribution?parent_id=${parent_id}`, distribution, { headers: authHeader() });
+        if (parent_id) {
+            return axios.put(`/categories/distribution?parent_id=${parent_id}`, distribution, { headers: authHeader() });
+        }
+        return axios.put(`/categories/distribution`, distribution, { headers: authHeader() });
     }
 
     getRecords(offset, rows) {

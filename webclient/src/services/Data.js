@@ -1,4 +1,4 @@
-import { Category } from "../models/Category";
+import { Category } from "../categories/models/Category";
 import { PrecreateRecord } from "../models/PrecreateRecord";
 import { Record } from "../models/Record";
 import { Role } from "../models/Role";
