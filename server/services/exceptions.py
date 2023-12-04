@@ -28,6 +28,11 @@ class CredentialsException(HTTPException):
                          headers={"WWW-Authenticate": "Bearer"})
 
 
+class CategoryIsNotEmptyException(HTTPException):
+    def __init__(self):
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST,
+                         detail="Only empty categories can be deleted")
+
 class WrongInputException(HTTPException):
     def __init__(self, detail):
         super().__init__(status_code=status.HTTP_400_BAD_REQUEST,

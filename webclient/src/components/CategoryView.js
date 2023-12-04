@@ -5,7 +5,7 @@ import { MultiSelect } from 'primereact/multiselect';
 import { useTranslation } from "react-i18next";
 import { InputText } from "primereact/inputtext";
 import { useEffect, useRef, useState } from "react";
-import { NodeType } from "../views/Categories";
+import { NodeType } from "../categories/Categories";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Checkbox } from 'primereact/checkbox';
 import { Panel } from "primereact/panel";
@@ -80,7 +80,7 @@ const PercentageComponent = (props) => {
     if (editMode) {
         return (
             <div className="flex align-items-center gap-1">
-                <div className="p-inputgroup flex-1">
+                <div className="p-inputgroup flex-1" style={{ width: '115px' }}>
                     <InputNumber
                         autoFocus={autoFocusInput}
                         size={2}

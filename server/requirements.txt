@@ -12,3 +12,4 @@ lxml
 asyncio
 numpy
 tensorflow
+typing-extensions==4.8.0

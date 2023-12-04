@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 
 from services.database import get_db
-from services.exceptions import MissingArgumentException, WrongInputException
+from services.exceptions import MissingArgumentException, \
+    WrongInputException, CategoryIsNotEmptyException
 from categories import crud, schemas
 from categories.routines import get_category_subtree
 from typing import List, Optional
@@ -11,15 +12,16 @@ from typing import List, Optional
 router = APIRouter()
 
 
-@router.post("/categories/category", response_model=schemas.Category)
+@router.post("/categories/category", response_model=schemas.CategoryNode)
 def create_category(category: schemas.CategoryCreate,
                     db: Session = Depends(get_db)):
-    if category.parent_id is None:
-        return crud.create_root_category(category, db)
-    return crud.create_category(category, db)
+    new_category = (crud.create_root_category(category, db)
+                    if category.parent_id is None
+                    else crud.create_category(category, db))
+    return get_category_subtree(new_category, db)
 
 
-@router.put("/categories/category/{id}", response_model=schemas.Category)
+@router.put("/categories/category/{id}", response_model=schemas.CategoryNode)
 def update_category(category: schemas.CategoryCreate,
                     id: int = Path(...),
                     db: Session = Depends(get_db)):
@@ -52,8 +54,8 @@ def update_distribution(distribution: List[schemas.CategoryPercentage],
 def delete_category(id: int = Path(...),
                     db: Session = Depends(get_db)):
     db_category = crud.get_category(id, db)
-    if db_category.parent_id is None:
-        return crud.delete_root_category(id, db)
+    if db_category.percentage != 0:
+        raise CategoryIsNotEmptyException()
     return crud.delete_category(id, db)
 
 

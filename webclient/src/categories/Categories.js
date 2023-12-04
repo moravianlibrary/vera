@@ -1,23 +1,17 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ToggleButton } from 'primereact/togglebutton';
 import { Divider } from 'primereact/divider';
-import { textEditor } from "../services/Editors";
 import { Button } from "primereact/button";
 import { dataService } from "../services/Data";
-import { Menu } from 'primereact/menu';
 import { OrganizationChart } from "primereact/organizationchart";
-import { OverlayPanel } from 'primereact/overlaypanel';
-import CategoryView from "../components/CategoryView";
-import { Card } from 'primereact/card';
 import { Category } from "../models/Category";
-import { Panel } from 'primereact/panel';
 import CategoryNode from "../components/CategoryView";
 
 export const NodeType = {
     ROOT: 'ROOT',
     CATEGORY: 'CATEGORY',
+    DISABLED: 'DISABLED',
     UPDATE_CATEGORY: 'UPDATE_CATEGORY',
     INSERT: 'INSERT'
 };
@@ -57,7 +51,7 @@ class Node {
     static createCategoryNode(category, parentNode, quota, expanded) {
         const node = new Node();
 
-        node.type = NodeType.CATEGORY;
+        node.type = category.disabled ? NodeType.DISABLED : NodeType.CATEGORY;
         node.category = category;
         node.parentNode = parentNode;
         node.quota = quota;
@@ -65,9 +59,15 @@ class Node {
         node.className = Node.getColorClass(NodeType.CATEGORY, category);
 
         const { children } = category;
-        const quotas_tmp = children.slice(1, children.length).map(child => Number(child.calcQuota(quota)));
-        const rest = quota - quotas_tmp.reduce((accumulator, quota) => accumulator + quota, 0);
-        const quotas = [...quotas_tmp, rest];
+        const quotas_tmp = children.map(child => Number(child.calcQuota(quota)));
+        const difference = quota - quotas_tmp.reduce((accumulator, quota) => accumulator + quota, 0);
+
+        const quotas = difference !== 0
+                ? quotas_tmp.reverse()
+                    .map((quota, index) => index === quotas_tmp.slice().reverse().findIndex(q => q !== 0) ? quota + difference : quota)
+                    .reverse()
+                : quotas_tmp;
+
         node.children = children
                 ? children.map((child, index) => Node.createCategoryNode(child, node, quotas[index], expanded))
                 : [];
@@ -107,7 +107,7 @@ class Node {
     insertNewCategoryNode() {
         const childNode = new Node();
         childNode.type = NodeType.UPDATE_CATEGORY;
-        childNode.category = Category.createChildCategory(this.category.level + 1);
+        childNode.category = this.category.createChildCategory();
         childNode.className = Node.getColorClass(NodeType.CATEGORY, childNode.category);
         this.children.splice(this.children.length - 1, 0, childNode);
     }
@@ -118,6 +118,14 @@ class Node {
 
     setPercentage(percentage) {
         this.percentage = percentage;
+    }
+
+    setCategory(category) {
+        this.category = category;
+    }
+
+    deleteChild(node) {
+        this.children = this.children.filter(child => child !== node);
     }
 }
 
@@ -132,7 +140,6 @@ const Categories = (props) => {
 
     const [insertMode, setInsertMode] = useState(false);
 
-    const [editingRows, setEditingRows] = useState([]);
     const [editPercentageNodes, setEditPercentageNodes] = useState([]);
 
     const [refreshCount, setRefreshCount] = useState(0);
@@ -171,6 +178,15 @@ const Categories = (props) => {
     };
 
     const handleUpdateCategory = (node, values) => {
+        if (node.category.id) {
+            dataService.updateCategory(node.category.createUpdateClone(values)).then(response => {
+                node.category.update(response.data);
+            });
+        } else {
+            dataService.createCategory(node.category.createUpdateClone(values)).then(response => {
+                node.setCategory(Category.fromJson(response.data));
+            });
+        }
     };
 
     const handleCloseCategoryEditing = (node) => {
@@ -179,6 +195,11 @@ const Categories = (props) => {
     };
 
     const handleDeleteCategory = (node) => {
+        if (node.category.isEmpty()) {
+            dataService.deleteCategory(node.category);
+            node.parentNode.deleteChild(node);
+            refresh();
+        }
     };
 
     const handleEditPercentage = (node) => {
@@ -280,6 +301,7 @@ const Categories = (props) => {
                     onEdit={handleEditCategory}
                     onUpdate={handleUpdateCategory}
                     onCloseEditing={handleCloseCategoryEditing}
+                    // onDisable={handleDisableCategory}
                     onDelete={handleDeleteCategory}
                     onEditPercentage={handleEditPercentage}
                     editPercentageNodes={editPercentageNodes}

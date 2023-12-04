@@ -83,7 +83,7 @@ class Api {
     }
 
     createCategory(category) {
-        return axios.post(`/categories/category`, category, { headers: authHeader() });
+        return axios.post(`/categories/category`, category.toJson(), { headers: authHeader() });
     }
 
     updateCategory(category) {
