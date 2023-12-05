@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { Divider } from 'primereact/divider';
 import { Button } from "primereact/button";
 import { dataService } from "../../services/Data";
 import { OrganizationChart } from "primereact/organizationchart";
@@ -9,13 +8,16 @@ import { Category } from "../models/Category";
 import CategoryNodeComponent from "../components/CategoryNodeComponent";
 import NodeType from "../models/CategoryNodeType";
 import { CategoryNode } from "../models/CategoryNode";
+import CategoriesMenuPanel from "../panels/CategoriesMenuPanel";
+import QuotasMenuPanel from "../panels/QuotasMenuPanel";
+import { Quota } from "../models/Quota";
 
 const Categories = (props) => {
     const { t } = useTranslation();
 
     const [categories, setCategories] = useState([]);
     const [quotas, setQuotas] = useState([]);
-    const [activeQuota, setActiveQuota] = useState(null);
+    const [selectedQuota, selectQuota] = useState(Quota.emptyQuota(t('empty_quota')));
     const [departments, setDepartments] = useState([]);
 
     const [activeNode, setActiveNode] = useState(null);
@@ -47,6 +49,9 @@ const Categories = (props) => {
 
     const handleMoveUpCategory = () => {
         setActiveNode(activeNode.parentNode);
+        if (insertMode) {
+            activeNode.parentNode.createInsertNodes();
+        }
         refresh();
     }
 
@@ -71,9 +76,12 @@ const Categories = (props) => {
             });
         } else {
             dataService.createCategory(node.category.createUpdateClone(values)).then(response => {
-                node.setCategory(Category.fromJson(response.data));
+                const category = Category.fromJson(response.data);
+                node.setCategory(category);
+                node.parentNode.category.children = [...node.parentNode.category.children, category];
             });
         }
+        handleUpdatePercentage();
         node.setType(NodeType.CATEGORY);
     };
 
@@ -125,67 +133,100 @@ const Categories = (props) => {
         setEditPercentageNodes([]);
     };
 
+    const handleSelectQuota = (quota) => {
+        selectQuota(quota);
+        refreshData();
+    };
+
+    const handleUpdateQuota = async (quota) => {
+        if (quota.id) {
+            const updatedQuota = await dataService.updateQuota(quota);
+            const updatedQuotas = quotas.map(q => {
+                if (q.id === updatedQuota.id) {
+                    return updatedQuota;
+                }
+                if (quota.active && q.active) {
+                    q.active = false;
+                }
+                return q;
+            });
+            setQuotas(updatedQuotas);
+            selectQuota(updatedQuota);
+        } else {
+            const newQuota = await dataService.createQuota(quota);
+            setQuotas([...quotas, newQuota]);
+        }
+    };
+
+    const handleDeleteQuota = (quota) => {
+        if (dataService.deleteQuota(quota)) {
+            setQuotas(quotas.filter(q => q != quota));
+        }
+    };
+
+    const handleSetActiveQuota = (quota) => {
+        quota.active = true;
+        handleUpdateQuota(quota);
+    };
+
     useEffect(() => {
+        if (editPercentageNodes.length === 0) {
+            refresh();
+        }
+    }, [editPercentageNodes]);
+
+    useEffect(() => {
+        if (!selectedQuota) {
+            return;
+        }
+        const rootCategory = categories && categories.length > 0
+                ? Category.createRootCategory(t('all_categories'), categories)
+                : Category.createRootCategory(t('all_categories'), []);
+        const rootNode = CategoryNode.createRootNode(rootCategory, selectedQuota.pages_count, true);
+        setRootNode(rootNode);
+        const newActive = activeNode ? rootNode.find(activeNode) : rootNode;
+        if (insertMode) {
+            newActive.createInsertNodes();
+        }
+        setActiveNode(newActive);
+    }, [selectedQuota, categories]);
+
+    useEffect(() => {
+        async function fetchCategories() {
+            const categories = await dataService.getCategories();
+            setCategories(categories);
+        }
         async function fetchQuotas() {
             const quotas = await dataService.getQuotas();
             setQuotas(quotas);
-            setActiveQuota(quotas.find(quota => quota.active));
-        }
-        async function fetchCategories() {
-            const categories = await dataService.getCategories();
-            const quotas = await dataService.getQuotas();
-            const quota = quotas.find(quota => quota.active);
-            setCategories(categories);
-            if (categories && categories.length > 0) {
-                const rootCategory = Category.createRootCategory(t('all_categories'), categories);
-                const rootNode = CategoryNode.createRootNode(rootCategory, quota.pages_count, true);
-                setRootNode(rootNode);
-                setActiveNode(rootNode);
-            } else {
-                const rootCategory = Category.createRootCategory(t('all_categories'), []);
-                const rootNode = CategoryNode.createRootNode(rootCategory, quota.pages_count, true);
-                setRootNode(rootNode);
-                setActiveNode(rootNode);
+            const activeQuota = quotas.find(quota => quota.active);
+            if (activeQuota) {
+                selectQuota(activeQuota);
             }
+        }
+        async function fetchDepartments() {
             const departments = await dataService.getDepartments();
             setDepartments(departments);
         }
-        if (!insertMode) {
-            fetchQuotas();
-            fetchCategories();
-        }
-    }, [refreshDataCount]);
-
-    const floatingPanelStyle = {
-        position: 'absolute',
-        // position: 'fixed',
-        top: '20px',
-        left: '20px',
-        zIndex: '1000',
-        boxShadow: '0px 0px 10px 0px rgba(0,0,0,0.35)',
-        margin: '0px',
-        padding: '0px',
-    };
+        fetchCategories();
+        fetchQuotas();
+        fetchDepartments();
+    }, []);
 
     return (
         <div style={{ overflow: "auto" }}>
-            <div className="flex flex-column bg-white" style={floatingPanelStyle}>
-                <Button
-                    className="m-0"
-                    text
-                    icon="pi pi-eye"
-                    label={t('show_all_categories')}
-                    onClick={(e) => setActiveNode(rootNode)}
-                />
-                <Divider className="m-0" />
-                <Button
-                    className="m-0"
-                    text
-                    icon="pi pi-eye"
-                    label={t('insert_mode')}
-                    onClick={(e) => toggleInsertMode()}
-                />
-            </div>
+            <CategoriesMenuPanel
+                onShowAllCategories={(e) => setActiveNode(rootNode)}
+                onToggleInsertMode={toggleInsertMode}
+            />
+            <QuotasMenuPanel
+                selectedQuota={selectedQuota}
+                quotas={quotas}
+                onSelect={handleSelectQuota}
+                onUpdate={handleUpdateQuota}
+                onDelete={handleDeleteQuota}
+                onSetActive={handleSetActiveQuota}
+            />
             <div className="flex justify-content-center m-5">
                 {activeNode && activeNode.parentNode &&
                 <Button

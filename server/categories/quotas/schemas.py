@@ -6,7 +6,7 @@ class QuotaCreate(BaseModel):
     name: str
     description: Optional[str] = None
     pages_count: int
-    active: bool = True
+    active: bool = False
 
 
 class Quota(QuotaCreate):

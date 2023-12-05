@@ -39,7 +39,7 @@ const CategoryViewNode = (props) => {
             </div>
             <div className="flex flex-column align-items-start">
                 {missingPagesCount > 0 &&
-                <div><span className="font-bold warning">{missingPagesCount}</span> {t('category_missing_count_pages')}</div>}
+                <div className="text-red-700"><span className="font-bold">{missingPagesCount}</span> {t('category_missing_count_pages')}</div>}
                 {node.category.description && <span>{category.description}</span>}
                 <div><span className="font-bold">{category.count_pages}</span> {t('category_count_pages')}</div>
                 <div><span className="font-bold">{category.count_documents_with_pages}</span> {t('category_count_documents_with_pages')}</div>

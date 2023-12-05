@@ -192,6 +192,36 @@ class DataService {
         }
     }
 
+    async createQuota(quota) {
+        try {
+            const createdQuota = (await api.createQuota(quota)).data;
+            return createdQuota;
+        } catch (error) {
+            this.setError(error);
+            return null;
+        }
+    }
+
+    async updateQuota(quota) {
+        try {
+            const updatedQuota = (await api.updateQuota(quota)).data;
+            return updatedQuota;
+        } catch (error) {
+            this.setError(error);
+            return null;
+        }
+    }
+
+    async deleteQuota(quota) {
+        try {
+            const deletedQuota = (await api.deleteQuota(quota.id)).data;
+            return deletedQuota;
+        } catch (error) {
+            this.setError(error);
+            return null;
+        }
+    }
+
     async getRecords(offset, rows) {
         try {
             const { records, num_found } = (await api.getRecords(offset, rows)).data;

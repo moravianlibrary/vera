@@ -105,6 +105,20 @@ class Api {
         return axios.get(`/categories/quota`, { headers: authHeader() });
     }
 
+    createQuota(quota) {
+        console.log(quota);
+        return axios.post(`/categories/quota`, quota, { headers: authHeader() });
+    }
+
+    updateQuota(quota) {
+        console.log(quota);
+        return axios.put(`/categories/quota/${quota.id}`, quota, { headers: authHeader() });
+    }
+
+    deleteQuota(id) {
+        return axios.delete(`/categories/quota/${id}`, { headers: authHeader() });
+    }
+
     getRecords(offset, rows) {
         return axios.get(`/records?offset=${offset}&limit=${rows}`, { headers: authHeader() });
     }

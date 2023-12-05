@@ -14,6 +14,8 @@ def create_quota(quota: schemas.QuotaCreate,
     ))
     if quota.active:
         set_active_quota(db_quota.id, db)
+    if len(get_quotas(db)) == 1:
+        set_active_quota(db_quota.id, db)
     return db_quota
 
 
@@ -26,10 +28,19 @@ def set_active_quota(id: int,
 def update_quota(quota_id: int,
                  quota: schemas.QuotaCreate,
                  db: Session):
-    db_query = db.query(models.Quota).filter(models.Quota.id == quota_id)
-    db_query.update(quota)
-    db.commit()
-    return db_query.first()
+    db_quota = (db.query(models.Quota)
+                .filter(models.Quota.id == quota_id).first())
+
+    if db_quota:
+        db_quota.name = quota.name
+        db_quota.description = quota.description
+        db_quota.pages_count = quota.pages_count
+        if quota.active:
+            set_active_quota(db_quota.id, db)
+
+        db.commit()
+        db.refresh(db_quota)
+        return db_quota
 
 
 def delete_quota(quota_id: int,

@@ -102,6 +102,10 @@ const resources = {
 
         name: "Název",
         description: "Popis",
+
+        select_quota: "Výběr kvótu",
+        active_quota: "Aktivní kvóta",
+        set_active_quota: "Nastavit jako aktívni kvótu",
     },
   },
 };

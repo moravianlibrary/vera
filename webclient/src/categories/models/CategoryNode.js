@@ -111,5 +111,19 @@ export class CategoryNode {
 
     deleteChild(node) {
         this.children = this.children.filter(child => child !== node);
+        this.category.children = this.category.children.filter(child => child.id !== node.category.id);
+    }
+
+    find(node) {
+        if (this.category.id === node.category.id) {
+            return this;
+        }
+        for (const child of this.children) {
+            const result = child.find(node);
+            if (result) {
+                return result;
+            }
+        }
+        return null;
     }
 }
