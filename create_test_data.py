@@ -127,7 +127,7 @@ def create_test_documents():
         # "Content-Type": "application/json"
     }
 
-    endpoint = f"{URL}/categories/descriptors?assignable_categories=True"
+    endpoint = f"{URL}/categories/descriptors?assignable=True"
     response = requests.get(endpoint)
     category_ids = [item['id'] for item in response.json()]
     category_index = 0

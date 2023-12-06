@@ -1,9 +1,10 @@
 import { Category } from "../categories/models/Category";
 import { Quota } from "../categories/models/Quota";
-import { PrecreateRecord } from "../models/PrecreateRecord";
-import { Record } from "../models/Record";
+import { PrecreateDocument } from "../documents/models/PrecreateDocument";
+import { Document } from "../documents/models/Document";
 import { Role } from "../models/Role";
 import { api } from "./Api";
+import { DocumentResult } from "../documents/models/DocumentResult";
 
 class DataService {
     setError(error) {
@@ -142,6 +143,27 @@ class DataService {
         }
     }
 
+    async getAssignableCategories() {
+        try {
+            const categories = (await api.getAssignableCategories()).data;
+            console.log(categories);
+            return categories.map(category => Category.fromJson(category));
+        } catch (error) {
+            this.setError(error);
+            return [];
+        }
+    }
+
+    async getRootCategories() {
+        try {
+            const categories = (await api.getRootCategories()).data;
+            return categories.map(category => Category.fromJson(category));
+        } catch (error) {
+            this.setError(error);
+            return [];
+        }
+    }
+
     async createCategory(category) {
         try {
             const createdCategory = await api.createCategory(category);
@@ -222,20 +244,20 @@ class DataService {
         }
     }
 
-    async getRecords(offset, rows) {
+    async getDocuments(offset, rows) {
         try {
-            const { records, num_found } = (await api.getRecords(offset, rows)).data;
-            return { records: records.map(record => Record.fromJson(record)), num_found };
+            const { documents, num_found } = (await api.getDocuments(offset, rows)).data;
+            return { documents: documents.map(document => Document.fromJson(document)), num_found };
         } catch (error) {
             this.setError(error);
             return [];
         }
     }
 
-    async createRecord(record) {
+    async createDocument(document) {
         try {
-            const createdRecord = await api.createRecord(record);
-            return Record.fromJson(createdRecord);
+            const createdDocument = await api.createDocument(document);
+            return Document.fromJson(createdDocument);
         } catch (error) {
             console.log(error);
             this.setError(error);
@@ -243,51 +265,66 @@ class DataService {
         }
     }
 
-    async createRecordsFromFile(file, category_id) {
+    async insertDocument(identifier, value, category_id, insert_digitized) {
+        try {
+            const createData = {
+                identifier_type: identifier,
+                value: value
+            };
+            const newDocument = category_id ? await api.insertDocument(createData, category_id, insert_digitized)
+                    : await api.insertDocument(createData, insert_digitized);
+            return DocumentResult.fromJson(newDocument.data);
+        } catch (error) {
+            console.log(error);
+            this.setError(error);
+            return null;
+        }
+    }
+    async createDocumentsFromFile(file, category_id) {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            const createdRecords = await api.createRecordsFromFile(formData, category_id);
-            return createdRecords;
+            const createdDocuments = await api.createDocumentsFromFile(formData, category_id);
+            return createdDocuments;
         } catch (error) {
             this.setError(error);
             return null;
         }
     }
 
-    async precreateRecord(identifier_type, identifier_value) {
+    async precreateDocument(identifier_type, identifier_value) {
         try {
-            const { data }= await api.precreateRecord(identifier_type, identifier_value);
-            return PrecreateRecord.fromJson(data);
+            const { data }= await api.precreateDocument(identifier_type, identifier_value);
+            return PrecreateDocument.fromJson(data);
         } catch (error) {
             this.setError(error);
             return null;
         }
     }
 
-    async updateRecord(record) {
+    async updateDocument(document) {
         try {
-            const updatedRecord = await api.updateRecord(record);
-            return Record.fromJson(updatedRecord);
+            const updatedDocument = await api.updateDocument(document);
+            return Document.fromJson(updatedDocument);
         } catch (error) {
             this.setError(error);
             return null;
         }
     }
 
-    async deleteRecord(record) {
+    async deleteDocument(document) {
         try {
-            const deletedRecord = await api.deleteRecord(record.id);
-            return Record.fromJson(deletedRecord);
+            const deletedDocument = await api.deleteDocument(document.id);
+            return Document.fromJson(deletedDocument);
         } catch (error) {
             this.setError(error);
             return null;
         }
     }
 
-    async deleteRecords(records) {
-        const deletedRecords = records.map(record => this.deleteRecord(record));
-        return deletedRecords;
+    async deleteDocuments(documents) {
+        const deletedDocuments = documents.map(document => this.deleteDocument(document));
+        return deletedDocuments;
     }
 };
 

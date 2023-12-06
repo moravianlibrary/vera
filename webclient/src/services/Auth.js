@@ -77,7 +77,7 @@ class AuthService {
         return this.getCurrentUser()?.actions.includes(action);
     }
 
-    isAllowedToEditRecord(record) {
+    isAllowedToEditDocument(record) {
         const user = this.getCurrentUser();
         return user && (
                 user.actions.includes(ActionType.edit_datatable_all)

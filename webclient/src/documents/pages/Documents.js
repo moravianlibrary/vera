@@ -12,16 +12,18 @@ import './Documents.css';
 import { dataService } from '../../services/Data.js';
 import { categoryEditor, numberEditor, textEditor, textareaEditor } from '../../services/Editors.js';
 import SelectCategoryDialog from '../../dialogs/SelectEnumDialog.js';
-import { Record } from '../../models/Record.js';
+import { Document } from '../models/Document.js';
 import { MultiSelect } from 'primereact/multiselect';
 import { authService } from '../../services/Auth.js';
 import { ActionType } from '../../models/Role.js';
 import InsertRecordDialog from '../../dialogs/InsertRecordDialog.js';
+import { Dialog } from 'primereact/dialog';
+import InsertDocuments from './InsertDocuments.js';
 
 const Documents = () => {
     const { t } = useTranslation();
 
-    const [records, setRecords] = useState([]);
+    const [documents, setDocuments] = useState([]);
     const [totalRows, setTotalRows] = useState(0);
     const [offset, setOffset] = useState(0);
     const [numRows, setNumRows] = useState(15);
@@ -32,21 +34,21 @@ const Documents = () => {
     const [insertMode, setInsertMode] = useState(false);
     const [refreshCount, setRefreshCount] = useState(0);
     const [refreshDataCount, setRefreshDataCount] = useState(0);
-    const [selectedRecords, setSelectedRecords] = useState([]);
+    const [selectedDocuments, setSelectedDocuments] = useState([]);
 
     const [sysnoInputVisible, setSysnoInputVisible] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [selectCategoryVisible, setSelectCategoryVisible] = useState(false);
     const fileInputRef = useRef(null);
 
-    async function fetchRecords() {
-        const { records, num_found } = await dataService.getRecords(offset, numRows);
-        setRecords(records);
+    async function fetchDocuments() {
+        const { documents, num_found } = await dataService.getDocuments(offset, numRows);
+        setDocuments(documents);
         setTotalRows(num_found);
     }
 
     async function fetchCategories() {
-        const categories = await dataService.getCategories();
+        const categories = await dataService.getAssignableCategories();
         setCategories(categories);
     }
 
@@ -66,7 +68,7 @@ const Documents = () => {
 
     const handleRowEditChange = (event) => {
         const { data } = event;
-        const activeRowArray = (Array.isArray(data) ? data : [data]).filter(record => authService.isAllowedToEditRecord(record));
+        const activeRowArray = (Array.isArray(data) ? data : [data]).filter(document => authService.isAllowedToEditDocument(document));
         setEditingRows(activeRowArray);
     }
 
@@ -83,11 +85,11 @@ const Documents = () => {
         }
     };
 
-    const handleInsertNewRecord = (restRecords) => {
-        const newRecord = new Record();
-        restRecords.unshift(newRecord);
-        setRecords(restRecords);
-        setEditingRows([...editingRows, newRecord]);
+    const handleInsertNewDocument = (restDocuments) => {
+        const newDocument = new Document();
+        restDocuments.unshift(newDocument);
+        setDocuments(restDocuments);
+        setEditingRows([...editingRows, newDocument]);
         handlePageRefresh();
     };
 
@@ -101,13 +103,13 @@ const Documents = () => {
     const handleSelectCategory = (category) => {
         if (selectedFile) {
             if (category) {
-                dataService.createRecordsFromFile(selectedFile, category.id);
+                dataService.createDocumentsFromFile(selectedFile, category.id);
             }
             setSelectedFile(null);
-        } else if (selectedRecords) {
-            selectedRecords.map(record => {return {...record, category_id: category.id};})
-                .forEach(record => dataService.updateRecord(record));
-            setSelectedRecords([]);
+        } else if (selectedDocuments) {
+            selectedDocuments.map(document => {return {...document, category_id: category.id};})
+                .forEach(document => dataService.updateDocument(document));
+            setSelectedDocuments([]);
             refreshData();
         }
     };
@@ -118,12 +120,12 @@ const Documents = () => {
         newData.category_id = categories.find(category => category.name === newData.category_name).id;
 
         if (insertMode && index == 0) {
-            dataService.createRecord(newData).then(record => {
+            dataService.createDocument(newData).then(document => {
                 setInsertMode(false);
             });
         } else {
-            dataService.updateRecord(newData).then(record => {
-                records[index] = record ? record : data;
+            dataService.updateDocument(newData).then(document => {
+                documents[index] = document ? document : data;
                 handlePageRefresh();
             });
         }
@@ -135,40 +137,40 @@ const Documents = () => {
         }
     };
 
-    const handleDeleteRecord = (record) => {
-        dataService.deleteRecord(record);
+    const handleDeleteDocument = (document) => {
+        dataService.deleteDocument(document);
         refreshData();
     }
 
-    const handleCancelSelectedRecords = () => {
-        setSelectedRecords([]);
+    const handleCancelSelectedDocuments = () => {
+        setSelectedDocuments([]);
     }
 
-    const handleDeleteSelectedRecords = () => {
-        dataService.deleteRecords(selectedRecords);
-        setSelectedRecords([]);
+    const handleDeleteSelectedDocuments = () => {
+        dataService.deleteDocuments(selectedDocuments);
+        setSelectedDocuments([]);
         refreshData();
     }
 
-    const isAllowedToEdit = (record) => {
-        return authService.isAllowedToEditRecord(record);
+    const isAllowedToEdit = (document) => {
+        return authService.isAllowedToEditDocument(document);
     };
 
     useEffect(() => {
-        fetchRecords();
+        fetchDocuments();
         fetchCategories();
     }, [offset, numRows, refreshDataCount]);
 
     useEffect(() => {
-        async function insertRecordToPage() {
-            const { records, num_found } = await dataService.getRecords(offset, numRows - 1);
+        async function insertDocumentToPage() {
+            const { documents, num_found } = await dataService.getDocuments(offset, numRows - 1);
             setTotalRows(num_found);
-            handleInsertNewRecord(records);
+            handleInsertNewDocument(documents);
         }
         if (insertMode) {
-            insertRecordToPage();
+            insertDocumentToPage();
         } else {
-            fetchRecords();
+            fetchDocuments();
         }
     }, [insertMode]);
 
@@ -184,22 +186,22 @@ const Documents = () => {
     const tableHeader = () => {
         const items = [
             {
-                label: t('create_record'),
+                label: t('create_document'),
                 icon: 'pi pi-plus',
                 command: handleClickInsert,
             },
             {
-                label: t('insert_record_by_sysno'),
+                label: t('insert_document_by_sysno'),
                 icon: 'pi pi-minus',
                 command: handleClickInsertBySysno,
             },
             {
-                label: t('insert_record_by_barcode'),
+                label: t('insert_document_by_barcode'),
                 icon: 'pi pi-plus',
                 command: handleClickInsert,
             },
             {
-                label: t('insert_records_from_file'),
+                label: t('insert_documents_from_file'),
                 icon: 'pi pi-upload',
                 command: handleClickUploadSysnoFile,
             },
@@ -210,12 +212,24 @@ const Documents = () => {
                 {/* <Button icon="pi pi-plus" rounded raised onClick={handleClickInsert} /> */}
                 <div>
                     <div>
-                        <InsertRecordDialog 
-                            header={t('insert_record_using_sysno')}
+                        <Dialog
+                            className='w-3'
+                            visible={sysnoInputVisible} 
+                            onHide={(e) => setSysnoInputVisible(false)}
+                            // maximized={true}
+                        >
+                            <InsertDocuments
+                                // categories={categories}
+                                onInsert={refreshData}
+                                onClose={() => setSysnoInputVisible(false)}
+                            />   
+                        </Dialog>
+                        {/* <InsertRecordDialog
+                            header={t('insert_document_using_sysno')}
                             categories={categories}
                             visible={sysnoInputVisible} 
                             onHide={setSysnoInputVisible(false)} 
-                        />
+                        /> */}
                         <Tooltip target=".speeddial-top-left .p-speeddial-action" position="left" />
                         <SpeedDial model={items}
                             disabled={!authService.isAllowedTo(ActionType.write_datatable)}
@@ -247,35 +261,35 @@ const Documents = () => {
                 <div>
                     <Button icon="pi pi-pencil"
                         className="p-button-rounded p-button-text"
-                        severity={selectedRecords.length > 0 ? "primary" : "secondary"}
-                        disabled={selectedRecords.length == 0}
+                        severity={selectedDocuments.length > 0 ? "primary" : "secondary"}
+                        disabled={selectedDocuments.length == 0}
                         onClick={() => setSelectCategoryVisible(true)}
                     />
                     <Button icon="pi pi-trash" 
                         className="p-button-rounded p-button-text"
-                        severity={selectedRecords.length > 0 ? "danger" : "secondary"}
-                        disabled={selectedRecords.length == 0}
-                        onClick={handleDeleteSelectedRecords}
+                        severity={selectedDocuments.length > 0 ? "danger" : "secondary"}
+                        disabled={selectedDocuments.length == 0}
+                        onClick={handleDeleteSelectedDocuments}
                     />
                     <Button icon="pi pi-times" 
                         className="p-button-rounded p-button-text"
-                        severity={selectedRecords.length > 0 ? "primary" : "secondary"}
-                        disabled={selectedRecords.length == 0}
-                        onClick={handleCancelSelectedRecords}
+                        severity={selectedDocuments.length > 0 ? "primary" : "secondary"}
+                        disabled={selectedDocuments.length == 0}
+                        onClick={handleCancelSelectedDocuments}
                     />
                 </div>
             </div>
         );
     }
 
-    const deleteButton = (record) => {
-        if (!insertMode || record.id) {
+    const deleteButton = (document) => {
+        if (!insertMode || document.id) {
             return (
                 <Button className="p-button-rounded p-button-text"
-                    severity={isAllowedToEdit(record) ? "danger" : "secondary"}
-                    disabled={!isAllowedToEdit(record)}
+                    severity={isAllowedToEdit(document) ? "danger" : "secondary"}
+                    disabled={!isAllowedToEdit(document)}
                     icon="pi pi-trash"
-                    onClick={() => handleDeleteRecord(record)}
+                    onClick={() => handleDeleteDocument(document)}
                 />
             );
         }
@@ -310,8 +324,8 @@ const Documents = () => {
       <div className="table-container" >
 
         <DataTable
-            className='records-table'
-            value={records}
+            className='documents-table'
+            value={documents}
             key={refreshCount}
             header={tableHeader}
             // resizableColumns
@@ -326,8 +340,8 @@ const Documents = () => {
             editingRows={editingRows || [false]}
             selectionMode="multiple"
             dragSelection
-            selection={selectedRecords}
-            onSelectionChange={(e) => setSelectedRecords(e.value)}
+            selection={selectedDocuments}
+            onSelectionChange={(e) => setSelectedDocuments(e.value)}
             isDataSelectable={(event) => (!insertMode || event.index != 0) && isAllowedToEdit(event.data)}
             rowClassName={(rowData) => (rowData.id ? '' : 'non-selectable')}
             // rowGroupMode="rowspan"
@@ -359,12 +373,12 @@ const Documents = () => {
         <Paginator
             first={offset}
             rows={numRows}
-            totalRecords={totalRows}
+            totalDocuments={totalRows}
             onPageChange={handlePageChange}
             // template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
             rowsPerPageOptions={[5, 10, 15, 25, 50]}
             template="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
-            currentPageReportTemplate={"{first} - {last} " + t('range_separator') + " {totalRecords}"}
+            currentPageReportTemplate={"{first} - {last} " + t('range_separator') + " {totalDocuments}"}
             // rightContent={footerEditButtons}
         />
       </div>

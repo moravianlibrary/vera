@@ -82,6 +82,14 @@ class Api {
         return axios.get(`/categories`, { headers: authHeader() });
     }
 
+    getAssignableCategories() {
+        return axios.get(`/categories/descriptors?assignable=true`, { headers: authHeader() });
+    }
+
+    getRootCategories() {
+        return axios.get(`/categories/descriptors?root=true`, { headers: authHeader() });
+    }
+
     createCategory(category) {
         return axios.post(`/categories/category`, category.toJson(), { headers: authHeader() });
     }
@@ -119,32 +127,44 @@ class Api {
         return axios.delete(`/categories/quota/${id}`, { headers: authHeader() });
     }
 
-    getRecords(offset, rows) {
-        return axios.get(`/records?offset=${offset}&limit=${rows}`, { headers: authHeader() });
+    getDocuments(offset, rows) {
+        return axios.get(`/documents?offset=${offset}&limit=${rows}`, { headers: authHeader() });
     }
 
-    createRecord(record) {
-        return axios.post(`/records`, record.toJson(), { headers: authHeader() });
+    createDocument(document) {
+        return axios.post(`/documents`, document.toJson(), { headers: authHeader() });
     }
 
-    createRecordsFromFile(formData, category_id) {
-        return axios.post(`/records_file/${category_id}`, formData, { headers: authHeader('multipart/form-data') });
+    insertDocument(createData, category_id, insert_digitized) {
+        return axios.post(
+            `/documents/create_from_catalog?category_id=${category_id}&insert_digitized=${insert_digitized}`,
+            createData, { headers: authHeader() });
     }
 
-    precreateRecord(identifier_type, identifier_value) {
+    insertDocument(createData, insert_digitized) {
+        return axios.post(
+            `/documents/create_from_catalog?insert_digitized=${insert_digitized}`,
+            createData, { headers: authHeader() });
+    }
+
+    createDocumentsFromFile(formData, category_id) {
+        return axios.post(`/documents_file/${category_id}`, formData, { headers: authHeader('multipart/form-data') });
+    }
+
+    precreateDocument(identifier_type, identifier_value) {
         const body = {
             identifier_type: identifier_type,
             value: identifier_value
         }
-        return axios.post(`/records/precreate_by_identifier`, body, { headers: authHeader() });
+        return axios.post(`/documents/precreate_by_identifier`, body, { headers: authHeader() });
     }
 
-    updateRecord(record) {
-        return axios.put(`/records/${record.id}`, record, { headers: authHeader() });
+    updateDocument(document) {
+        return axios.put(`/documents/${document.id}`, document, { headers: authHeader() });
     }
 
-    deleteRecord(id) {
-        return axios.delete(`/records/${id}`, { headers: authHeader() });
+    deleteDocument(id) {
+        return axios.delete(`/documents/${id}`, { headers: authHeader() });
     }
 }
 

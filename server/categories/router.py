@@ -68,10 +68,10 @@ def get_categories(db: Session = Depends(get_db)):
 
 @router.get("/categories/descriptors",
             response_model=List[schemas.CategoryDescriptor])
-def get_categories_descriptors(root_categories: bool = Query(False),
-                               assignable_categories: bool = Query(False),
+def get_categories_descriptors(root: bool = Query(False),
+                               assignable: bool = Query(False),
                                db: Session = Depends(get_db)):
-    if root_categories:
+    if root:
         return crud.get_root_categories(db)
-    elif assignable_categories:
+    elif assignable:
         return crud.get_assignable_categories(db)

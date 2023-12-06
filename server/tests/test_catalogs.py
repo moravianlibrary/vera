@@ -72,6 +72,14 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(document.issues[0].volume, "2012")
         self.assertEqual(document.issues[0].item, "1")
 
+    def test_find_document_by_barcode(self):
+        identifier = Identifier(
+            identifier_type=IdentifierType.BARCODE,
+            value="2610629074"
+        )
+        document, create_result = generate_document_by_identifier(identifier)
+        self.assertEqual(document.sysno, "MZK01-001449649")
+
 
 class TestDigitizationRegister(unittest.TestCase):
     def setUp(self):

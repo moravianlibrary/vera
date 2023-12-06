@@ -106,6 +106,24 @@ const resources = {
         select_quota: "Výběr kvótu",
         active_quota: "Aktivní kvóta",
         set_active_quota: "Nastavit jako aktívni kvótu",
+
+        next_step: "Dále",
+        prev_step: "Zpět",
+        insert_settings: "Nastavení vkládání",
+        choose_identifier: "Vyber identifikátor",
+        choose_category: "Vyber kategorii",
+        insert_values: "Výběr hodnot",
+        choose_issues: "Výběr vydání",
+        insert_result: "Výsledek",
+        insert_another: "Vložit další",
+        finish: "Skončit",
+        details: "Detaily",
+
+        document_successfuly_created: "Dokument úspěšně vytvořený",
+        unique_document_violation: "Duplicitní dokument",
+        invalid_sysno: "Nevalidní systémové číslo",
+        document_not_found_in_catalog: "Dokument nenalezen v katalogu",
+
     },
   },
 };
