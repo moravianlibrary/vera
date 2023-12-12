@@ -11,26 +11,27 @@ NS_MODS = {'mods': 'http://www.loc.gov/mods/v3'}
 VOLUME_YEAR = "^(\\d{4})$"
 VOLUME_RANGE = "^(\\d{4})-(\\d{4})$"
 
-RANGE_YEARS_1 = r"^(.*)\s(?:\d{1,2}\.\s?){2}(\d{4})\s?-\s?" \
+RANGE_YEARS_1 = r"^(.*),?\s(?:\d{1,2}\.\s?){2}\[?(\d{4})\]?\s?-\s?" \
     r"(?:\d{1,2}\.\s?){0,2}\s?(\d{4})\??$"
-RANGE_YEARS_2 = r"^(.*)\s(?:\d{1,2}\.\s?)(\d{4})\s?-\s?" \
+RANGE_YEARS_2 = r"^(.*),?\s(?:\d{1,2}\.\s?)\[?(\d{4})\]?\s?-\s?" \
     r"(?:\d{1,2}\.\s?){0,2}\s?(\d{4})\??$"
-RANGE_YEARS_3 = r"^(.*)\s(\d{4})\s?-\s?(?:\d{1,2}\.\s?){0,2}\s?(\d{4})\??$"
-RANGE_YEARS_4 = r"^(.*)\s(\d{4})-(\d{2})\??$"
+RANGE_YEARS_3 = r"^(.*),?\s\[?(\d{4})\]?\s?-" \
+    r"\s?(?:\d{1,2}\.\s?){0,2}\s?(\d{4})\??$"
+RANGE_YEARS_4 = r"^(.*),?\s\[?(\d{4})\]?-(\d{2})\??$"
 
-FROM_YEAR_1 = r"^(.*)\s(?:\d{1,2}\.\s?){2}(\d{4})\s?-$"
-FROM_YEAR_2 = r"^(.*)\s(?:\d{1,2}\.\s?)(\d{4})\s?-$"
-FROM_YEAR_3 = r"^(.*)\s(?:od\sr\.\s?)(\d{4})\s?-?$"
-FROM_YEAR_4 = r"^(.*)\s(\d{4})\s?-$"
+FROM_YEAR_1 = r"^(.*),?\s(?:\d{1,2}\.\s?){2}(\d{4})\s?-$"
+FROM_YEAR_2 = r"^(.*),?\s(?:\d{1,2}\.\s?)(\d{4})\s?-$"
+FROM_YEAR_3 = r"^(.*),?\s(?:od\sr\.\s?)(\d{4})\s?-?$"
+FROM_YEAR_4 = r"^(.*),?\s(\d{4})\s?-$"
 FROM_YEAR_5 = r"^(?:[Oo]d\s)(?:r\.\s?)?(\d{4})\s?-?\s(.*)$"
 FROM_YEAR_6 = r"^(?:[Oo]d\s)(?:\d{1,2}\.\s?){1,2}(\d{4})\s?-?(.*)$"
 FROM_YEAR_7 = r"^(.*)\s[Oo]d\s(?:ro)?č\.\s?\d{1,3}\s?\(?(\d{4})(?:-\d{2})?\)?$"
 FROM_YEAR_8 = r"^(.*)\s[Oo]d\s(?:\[.*\])?\s?" \
     r"(?:\d{1,2}\.\s?){0,2}\(?(\d{4})(?:-\d{2})?\)?$"
 
-TO_YEAR_1 = r"^(.*)\s(?:do\sr\.\s?)(\d{4})\s?-?$"
-TO_YEAR_2 = r"^(.*)\sdo\s(?:\d{1,2}\.\s?){0,2}(\d{4})\s?-?$"
-TO_YEAR_3 = r"^(.*)\s[Dd]o\s(?:ro)?č\.\s?\d{1,3}\s?\(?(\d{4})(?:-\d{2})?\)?$"
+TO_YEAR_1 = r"^(.*),?\s(?:do\sr\.\s?)(\d{4})\s?-?$"
+TO_YEAR_2 = r"^(.*),?\sdo\s(?:\d{1,2}\.\s?){0,2}(\d{4})\s?-?$"
+TO_YEAR_3 = r"^(.*),?\s[Dd]o\s(?:ro)?č\.\s?\d{1,3}\s?\(?(\d{4})(?:-\d{2})?\)?$"
 
 SINGLE_YEAR = r"^(.*)\s(\d{4})$"
 
@@ -164,7 +165,8 @@ def get_frequencies(root_pid):
         tree = etree.fromstring(response.content)
         frequency_elements = tree.xpath(
             '//mods:frequency/text()', namespaces=NS_MODS)
-        return [freq.strip() for freq in frequency_elements]
+        return [item for freq in frequency_elements
+                for item in freq.strip().split(';')]
 
 
 if __name__ == "__main__":
