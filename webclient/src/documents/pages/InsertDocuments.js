@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import Identifier from '../models/Identifier.js';
 import CreateResult from '../models/CreateResult.js';
 import InsertDocumentsSettings from "../components/InsertDocumentsSettings.js";
-import { Button } from "primereact/button";
 import InsertDocumentsValues from "../components/InsertDocumentsValues.js";
 import { dataService } from "../../services/Data.js";
 import InsertDocumentsResult from "../components/InsertDocumentsResult.js";
@@ -27,6 +26,7 @@ const InsertDocuments = (props) => {
     const [identifier, setIdentifier] = useState(identifiers[0]);
     const [category, setCategory] = useState(null);
 
+    const [multiIssue, setMultiIssue] = useState([]);
     const [results, showResults] = useState([]);
 
     const handleSelectSettings = (values) => {
@@ -38,10 +38,12 @@ const InsertDocuments = (props) => {
         setActiveIndex(activeIndex + 1);
         if (values.value) {
             const result = await dataService.insertDocument(identifier, values.value, category, false);
-            showResults([result]);
             if (result.create_result == CreateResult.MULTIPLE_ISSUE_CHOICES) {
+                setMultiIssue([result]);
+                // .filter(result => result.create_result == CreateResult.MULTIPLE_ISSUE_CHOICES);
                 setActiveIndex(2);
             } else {
+                showResults([result]);
                 setActiveIndex(3);
                 const hasSuccesfulInsert = result.create_result === CreateResult.SUCCESS;
                 if (hasSuccesfulInsert && props.onInsert) {
@@ -49,6 +51,11 @@ const InsertDocuments = (props) => {
                 }
             }
         }
+    };
+
+    const handleSelectIssue = async (issue) => {
+        console.log(issue);
+        const result = await dataService.insertDocument(Identifier.BARCODE, issue.barcode, category, false);
     };
 
     const handleClose = () => {
@@ -74,7 +81,8 @@ const InsertDocuments = (props) => {
             />}
             {activeIndex === 2 &&
             <InsertDocumentsIssues
-                results={results}
+                data={multiIssue}
+                onSelect={handleSelectIssue}
             />}
             {activeIndex === 3 &&
             <InsertDocumentsResult

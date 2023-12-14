@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 
+import { Button } from "primereact/button";
 import { Panel } from 'primereact/panel';
 
 import CreateResult from "../models/CreateResult";
+import DigitizationState from "../models/DigitizationState";
 import IssuanceType from "../models/IssuanceType";
+import naturalSort from "../SortUtils";
 import { useTranslation } from "react-i18next";
 
 const InsertDocumentsIssues = (props) => {
@@ -13,58 +16,63 @@ const InsertDocumentsIssues = (props) => {
     const [volumes, setVolumes] = useState([]);
 
     const handleClickIssue = (issue) => {
-        console.log(issue);
+        if (props.onSelect) {
+            props.onSelect(issue);
+        }
     };
 
     useEffect(() => {
-        if (!props.results) {
-            return;
-        }
-        const chooseIssueDocuments = props.results
-                .filter(result => result.create_result == CreateResult.MULTIPLE_ISSUE_CHOICES);
-        if (!chooseIssueDocuments || chooseIssueDocuments.lenght == 0 || !chooseIssueDocuments[0]) {
+        if (!props.data || props.data.lenght == 0 || !props.data[0]) {
             return;
         }
 
-        const catalogDocument = chooseIssueDocuments[0].catalog_document
+        const catalogDocument = props.data[0].catalog_document;
 
         setEditions(catalogDocument.issues
             .filter(issue => issue.issuance_type == IssuanceType.EDITION));
         setVolumes(catalogDocument.issues
             .filter(issue => issue.issuance_type == IssuanceType.VOLUME)
-            .sort((a, b) => (a.volume < b.volume) ? -1 : (a.volume > b.volume) ? 1 : 0));
-    }, [props.results]);
+            .sort((a, b) => naturalSort(a.volume, b.volume)));
+    }, [props.data]);
 
     const getIssueDiv = (issue) => {
+        const active = !issue.already_exists && issue.digitization_state == DigitizationState.NOT_DIGITIZED;
+        const state = issue.already_exists ? t('document_already_exists')
+                : issue.digitization_state == DigitizationState.FINISHED ? t('digitization_finished')
+                : null;
+
         return (
-            <div className="flex flex-column flex-1 p-3 border-2 surface-border surface-card border-round"
-                style={{ cursor: 'pointer', margin: '2px' }}
+            <Button className="flex flex-1 overflow-visible text-gray-800" outlined
+                disabled={!active}
                 onClick={e => handleClickIssue(issue)}
             >
-                {issue.signature && <div className="flex gap-1">
-                    <span className="font-bold">{t('signature')}:</span>
-                    <span>{issue.signature}</span>
-                </div>}
-                {issue.barcode && <div className="flex gap-1">
-                    <span className="font-bold white-space-nowrap">{t('barcode')}:</span>
-                    <span>{issue.barcode}</span>
-                </div>}
-                {issue.yearIssued && <div className="flex gap-1">
-                    <span className="font-bold white-space-nowrap">{t('year_issued')}:</span>
-                    <span>{issue.yearIssued}</span>
-                </div>}
-                {issue.volume && <div className="flex gap-1">
-                    <span className="font-bold white-space-nowrap">{t('volume')}:</span>
-                    <span>{issue.volume}</span>
-                </div>}
-            </div>
+                <div className="flex flex-column flex-1 align-items-start">
+                    {state && <span className="font-bold text-lg">{state}</span>}
+                    {issue.signature && <div className="flex gap-1">
+                        <span className="font-bold">{t('signature')}:</span>
+                        <span>{issue.signature}</span>
+                    </div>}
+                    {issue.barcode && <div className="flex gap-1">
+                        <span className="font-bold white-space-nowrap">{t('barcode')}:</span>
+                        <span>{issue.barcode}</span>
+                    </div>}
+                    {issue.yearIssued && <div className="flex gap-1">
+                        <span className="font-bold white-space-nowrap">{t('year_issued')}:</span>
+                        <span>{issue.yearIssued}</span>
+                    </div>}
+                    {issue.volume && <div className="flex gap-1">
+                        <span className="font-bold white-space-nowrap">{t('volume')}:</span>
+                        <span>{issue.volume}</span>
+                    </div>}
+                </div>
+            </Button>
         );
     };
 
     const getIssuesDiv = (header, issues) => {
         return (
             <Panel header={header} className="flex flex-column p-1">
-                <div className="flex flex-wrap" >
+                <div className="flex flex-wrap gap-1" >
                     {issues.map(issue => (getIssueDiv(issue)))}
                 </div>
             </Panel>
