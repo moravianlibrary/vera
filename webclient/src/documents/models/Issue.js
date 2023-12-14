@@ -13,7 +13,6 @@ export class Issue {
         issue.signature = jsonData.signature;
         issue.yearIssued = jsonData.year_issued;
         issue.volume = jsonData.volume;
-        issue.item = jsonData.item;
         issue.barcode = jsonData.barcode;
         issue.issuanceType = jsonData.issuance_type;
 

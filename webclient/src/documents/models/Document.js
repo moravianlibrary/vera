@@ -5,7 +5,6 @@ export class Document {
 
     sysno;
     volume_number;
-    item_number;
     material_type;
     publishers;
 
@@ -40,7 +39,6 @@ export class Document {
         document.id = jsonData.id;
         document.sysno = jsonData.sysno;
         document.volume_number = jsonData.volume_number ? decodeURIComponent(jsonData.volume_number) : null;
-        document.item_number = jsonData.item_number ? decodeURIComponent(jsonData.item_number) : null;
         document.material_type = jsonData.material_type;
         document.publishers = jsonData.publishers;
         document.size = jsonData.size;
@@ -70,7 +68,6 @@ export class Document {
         return {
             sysno: this.sysno,
             volume_number: this.volume_number ? encodeURIComponent(this.volume_number) : null,
-            item_number: this.item_number ? encodeURIComponent(this.item_number) : null,
             material_type: this.material_type,
             title: this.title ? encodeURIComponent(this.title) : null,
             publishers: this.publishers,

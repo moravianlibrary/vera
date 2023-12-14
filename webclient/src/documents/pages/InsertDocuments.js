@@ -8,6 +8,7 @@ import { Button } from "primereact/button";
 import InsertDocumentsValues from "../components/InsertDocumentsValues.js";
 import { dataService } from "../../services/Data.js";
 import InsertDocumentsResult from "../components/InsertDocumentsResult.js";
+import InsertDocumentsIssues from "../components/InsertDocumentsIssues.js";
 
 const InsertDocuments = (props) => {
     const { t } = useTranslation();
@@ -37,11 +38,15 @@ const InsertDocuments = (props) => {
         setActiveIndex(activeIndex + 1);
         if (values.value) {
             const result = await dataService.insertDocument(identifier, values.value, category, false);
-            setActiveIndex(3);
             showResults([result]);
-            const hasSuccesfulInsert = result.create_result === CreateResult.SUCCESS;
-            if (hasSuccesfulInsert && props.onInsert) {
-                props.onInsert();
+            if (result.create_result == CreateResult.MULTIPLE_ISSUE_CHOICES) {
+                setActiveIndex(2);
+            } else {
+                setActiveIndex(3);
+                const hasSuccesfulInsert = result.create_result === CreateResult.SUCCESS;
+                if (hasSuccesfulInsert && props.onInsert) {
+                    props.onInsert();
+                }
             }
         }
     };
@@ -66,6 +71,10 @@ const InsertDocuments = (props) => {
                 identifierName={identifier.toLowerCase()}
                 onAccept={handleSelectValues}
                 onGoBack={(e) => setActiveIndex(0)}
+            />}
+            {activeIndex === 2 &&
+            <InsertDocumentsIssues
+                results={results}
             />}
             {activeIndex === 3 &&
             <InsertDocumentsResult
