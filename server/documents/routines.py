@@ -12,7 +12,7 @@ def create_document_from_schema(document: schemas.DocumentCreateResponse,
     created_document = None
     create_result = DocumentCreateResult.UNIQUE_DOCUMENT_VIOLATION
     db_document = crud.get_document_by_identifiers(
-        document.sysno, document.volume_number, db
+        document.sysno, document.volume_number, document.barcode, db
     )
     if db_document is None:
         created_document = crud.create_document(document, creator_id, db)
@@ -40,6 +40,14 @@ def create_catalog_document(catalog_document_response:
         pass
     elif len(catalog_document.issues) > 1:
         create_result = DocumentCreateResult.MULTIPLE_ISSUE_CHOICES
+        for index, issue in enumerate(catalog_document.issues):
+            catalog_document.issues[index].already_exists = \
+                crud.get_document_by_identifiers(
+                    catalog_document.sysno,
+                    issue.volume,
+                    issue.barcode,
+                    db
+                )
     elif digitization_state != DigitizationState.NOT_DIGITIZED \
             and not insert_digitized:
         create_result = DocumentCreateResult.ALREADY_DIGITIZED

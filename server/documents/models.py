@@ -12,7 +12,7 @@ from catalogs.enums import DigitizationState, MaterialType
 class Document(Base):
     __tablename__ = "documents"
     __table_args__ = (UniqueConstraint(
-        'sysno', 'volume_number'),)
+        'sysno', 'volume_number', 'barcode'),)
 
     id = Column(Integer, primary_key=True, index=True)
     sysno = Column(String, index=True, nullable=False)

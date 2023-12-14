@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional, Tuple
+from typing import List, Optional
 from datetime import datetime
 from documents.enums import IdentifierType
 from catalogs.enums import DigitizationState, DocumentCreateResult, \
@@ -35,6 +35,8 @@ class Issue(BaseModel):
     item: Optional[str] = None
     barcode: Optional[str] = None
     issuance_type: IssuanceType
+    digitization_state: Optional[DigitizationState] = None
+    already_exists: bool = False
 
 
 class DocumentCatalog(DocumentBase):

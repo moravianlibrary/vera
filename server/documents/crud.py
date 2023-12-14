@@ -77,12 +77,17 @@ def get_document_view(document_id: int,
 
 def get_document_by_identifiers(sysno: str,
                                 volume_number: Optional[str],
+                                barcode: Optional[str],
                                 db: Session):
     query_base = (db.query(models.Document)
                   .filter(models.Document.sysno == sysno))
     if volume_number:
         query_base = query_base.filter(
             models.Document.volume_number == volume_number
+        )
+    if barcode:
+        query_base = query_base.filter(
+            models.Document.barcode == barcode
         )
     return query_base.first()
 

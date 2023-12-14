@@ -82,16 +82,16 @@ class TestDocumentsEndpoints(unittest.TestCase):
                                 json=document,
                                 headers=self.headers)
 
-    def delete_document(self, sysno, volume_number):
+    def delete_document(self, sysno, volume_number, barcode):
         from documents.crud import get_document_by_identifiers, delete_document
         document = get_document_by_identifiers(
-            sysno, volume_number, self.db)
+            sysno, volume_number, barcode, self.db)
         delete_document(document.id, self.db)
 
-    def document_exists(self, sysno, volume_number, item_number):
+    def document_exists(self, sysno, volume_number, barcode):
         from documents.crud import get_document_by_identifiers
         return get_document_by_identifiers(
-            sysno, volume_number, self.db) is not None
+            sysno, volume_number, barcode, self.db) is not None
 
     def test_create_delete_document(self):
         from catalogs.enums import DocumentCreateResult
@@ -113,7 +113,7 @@ class TestDocumentsEndpoints(unittest.TestCase):
         from catalogs.enums import DocumentCreateResult
         response = self.create_test_document()
         if response.json()['create_result'] != DocumentCreateResult.SUCCESS:
-            self.delete_document("MZK01-001002003", "1996")
+            self.delete_document("MZK01-001002003", "1996", None)
             response = self.create_test_document()
 
         document = response.json()['document']
