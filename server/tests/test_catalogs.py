@@ -23,7 +23,6 @@ class TestAlephCatalog(unittest.TestCase):
 
         self.assertEqual(document.sysno, "MZK01-000724903")
         self.assertEqual(document.volume_number, None)
-        self.assertEqual(document.item_number, None)
         self.assertEqual(document.material_type, MaterialType.book)
         self.assertEqual(document.pages_count, 755)
         self.assertEqual(document.size, "19 cm")
@@ -53,7 +52,6 @@ class TestAlephCatalog(unittest.TestCase):
 
         self.assertEqual(document.sysno, "MZK01-001273598")
         self.assertEqual(document.volume_number, None)
-        self.assertEqual(document.item_number, None)
         self.assertEqual(document.material_type,
                          MaterialType.continuing_resource)
         self.assertEqual(document.pages_count, None)

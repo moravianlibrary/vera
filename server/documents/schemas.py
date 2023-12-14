@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from datetime import datetime
 from documents.enums import IdentifierType
 from catalogs.enums import DigitizationState, DocumentCreateResult, \
@@ -14,7 +14,11 @@ class Identifier(BaseModel):
 class DocumentBase(BaseModel):
     sysno: str
     volume_number: Optional[str] = None
-    item_number: Optional[str] = None
+
+    signature: Optional[str] = None
+    barcode: Optional[str] = None
+    ccnb: Optional[str] = None
+    isbn: Optional[str] = None
 
     material_type: Optional[MaterialType] = None
     title: str
@@ -22,11 +26,6 @@ class DocumentBase(BaseModel):
 
     pages_count: Optional[int] = None
     size: Optional[str] = None
-
-    signature: Optional[str] = None
-    barcode: Optional[str] = None
-    ccnb: Optional[str] = None
-    isbn: Optional[str] = None
 
 
 class Issue(BaseModel):
@@ -64,16 +63,15 @@ class DocumentCreate(DocumentBase):
         return cls(
             sysno=catalog_document.sysno,
             volume_number=catalog_document.volume_number,
-            item_number=catalog_document.item_number,
+            signature=catalog_document.signature,
+            barcode=catalog_document.barcode,
+            ccnb=catalog_document.ccnb,
+            isbn=catalog_document.isbn,
             material_type=catalog_document.material_type,
             title=catalog_document.title,
             publishers=catalog_document.publishers,
             pages_count=catalog_document.pages_count,
             size=catalog_document.size,
-            signature=catalog_document.signature,
-            barcode=catalog_document.barcode,
-            ccnb=catalog_document.ccnb,
-            isbn=catalog_document.isbn,
             category_id=category_id,
             digitization_state=digitization_state
         )
@@ -118,7 +116,6 @@ class DocumentsQuery(BaseModel):
 
     sysno: Optional[str] = None
     volume_number: Optional[str] = None
-    item_number: Optional[str] = None
 
     material_type: Optional[List[MaterialType]] = None
     title: Optional[str] = None

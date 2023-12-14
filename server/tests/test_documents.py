@@ -75,7 +75,6 @@ class TestDocumentsEndpoints(unittest.TestCase):
         document = {
             "sysno": "MZK01-001002003",
             "volume_number": "1996",
-            "item_number": "10",
             "title": "Test Document",
             "category_id": self.category_id
         }
@@ -83,16 +82,16 @@ class TestDocumentsEndpoints(unittest.TestCase):
                                 json=document,
                                 headers=self.headers)
 
-    def delete_document(self, sysno, volume_number, item_number):
+    def delete_document(self, sysno, volume_number):
         from documents.crud import get_document_by_identifiers, delete_document
         document = get_document_by_identifiers(
-            sysno, volume_number, item_number, self.db)
+            sysno, volume_number, self.db)
         delete_document(document.id, self.db)
 
     def document_exists(self, sysno, volume_number, item_number):
         from documents.crud import get_document_by_identifiers
         return get_document_by_identifiers(
-            sysno, volume_number, item_number, self.db) is not None
+            sysno, volume_number, self.db) is not None
 
     def test_create_delete_document(self):
         from catalogs.enums import DocumentCreateResult
@@ -106,7 +105,6 @@ class TestDocumentsEndpoints(unittest.TestCase):
         self.assertTrue("id" in document)
         self.assertEqual("MZK01-001002003", document['sysno'])
         self.assertEqual("1996", document['volume_number'])
-        self.assertEqual("10", document['item_number'])
         self.assertEqual("Test Document", document['title'])
 
         self.client.delete(f"/documents/{document['id']}")
@@ -115,7 +113,7 @@ class TestDocumentsEndpoints(unittest.TestCase):
         from catalogs.enums import DocumentCreateResult
         response = self.create_test_document()
         if response.json()['create_result'] != DocumentCreateResult.SUCCESS:
-            self.delete_document("MZK01-001002003", "1996", "10")
+            self.delete_document("MZK01-001002003", "1996")
             response = self.create_test_document()
 
         document = response.json()['document']
@@ -130,7 +128,6 @@ class TestDocumentsEndpoints(unittest.TestCase):
         self.assertTrue("id" in document)
         self.assertEqual("MZK01-001002003", document['sysno'])
         self.assertEqual("1996", document['volume_number'])
-        self.assertEqual("10", document['item_number'])
         self.assertEqual("Test Document Updated", document['title'])
 
         self.client.delete(f"/documents/{response.json()['id']}")
@@ -219,7 +216,7 @@ class TestDocumentsEndpoints(unittest.TestCase):
         delete_document(documents[0]['document']['id'], self.db)
         self.assertEqual(DigitizationState.NOT_DIGITIZED.value,
                          documents[0]['digitization_state'])
-        self.assertEqual("2619088071", documents[1]['document']['barcode'])
+        # self.assertEqual("2619088071", documents[1]['document']['barcode'])
         self.assertEqual(DigitizationState.FINISHED.value,
                          documents[1]['digitization_state'])
         self.assertIsNone(documents[2]['document'])

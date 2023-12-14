@@ -13,7 +13,6 @@ def create_document(document: schemas.DocumentCreate,
     db_document = create(db, models.Document(
         sysno=document.sysno,
         volume_number=document.volume_number,
-        item_number=document.item_number,
         category_id=document.category_id,
         material_type=document.material_type,
         title=document.title,
@@ -39,7 +38,6 @@ def update_document(document_id: int,
 
     db_document.sysno = document.sysno
     db_document.volume_number = document.volume_number
-    db_document.item_number = document.item_number
     db_document.category_id = document.category_id
     db_document.material_type = document.material_type
     db_document.title = document.title
@@ -79,17 +77,12 @@ def get_document_view(document_id: int,
 
 def get_document_by_identifiers(sysno: str,
                                 volume_number: Optional[str],
-                                item_number: Optional[str],
                                 db: Session):
     query_base = (db.query(models.Document)
                   .filter(models.Document.sysno == sysno))
     if volume_number:
         query_base = query_base.filter(
             models.Document.volume_number == volume_number
-        )
-    if item_number:
-        query_base = query_base.filter(
-            models.Document.item_number == item_number
         )
     return query_base.first()
 
