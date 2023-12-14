@@ -230,6 +230,31 @@ class TestDocumentsEndpoints(unittest.TestCase):
                          .DOCUMENT_NOT_FOUND_IN_CATALOG.value,
                          documents[4]['create_result'])
 
+    def test_insert_by_sysno_with_some_issues_already_existing(self):
+        # from catalogs.enums import DigitizationState, DocumentCreateResult
+        # from documents.crud import delete_document
+
+        sysno = "MZK01-000165329"
+        volume = "39"
+        barcode = "2619868037"
+
+        if self.document_exists(sysno, volume, barcode):
+            self.delete_document(sysno, volume, barcode)
+
+        headers = {
+            'Authorization': f'Bearer {get_admin_token()}'
+            }
+
+        response = self.client.post(
+            "/documents/get_from_catalog",
+            json={'identifier_type': 'BARCODE',
+                  'value': barcode},
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        document = response.json()
+        print(document)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -32,12 +32,31 @@ def create_catalog_document(catalog_document_response:
                             user_id: int,
                             db: Session):
     catalog_document = catalog_document_response.document
+    identifier = catalog_document_response.identifier
     digitization_state = catalog_document_response.digitization_state
     create_result = catalog_document_response.create_result
     document = None
 
     if create_result != DocumentCreateResult.PREPARED:
         pass
+    elif identifier.identifier_type == IdentifierType.BARCODE:
+        if catalog_document.issues:
+            for issue in catalog_document.issues:
+                if identifier.value == issue.barcode:
+                    create_issue = \
+                        schemas.DocumentCreate.from_catalog_document(
+                            catalog_document, category_id, digitization_state
+                        )
+                    create_issue.barcode = issue.barcode
+                    create_issue.signature = issue.signature
+                    create_issue.volume_number = issue.volume
+                    # create_issue.year_issued = issue.year_issued
+                    response = create_document_from_schema(
+                        create_issue, user_id, db
+                    )
+                    document = response.document
+                    create_result = response.create_result
+                    break
     elif len(catalog_document.issues) > 1:
         create_result = DocumentCreateResult.MULTIPLE_ISSUE_CHOICES
         for index, issue in enumerate(catalog_document.issues):
