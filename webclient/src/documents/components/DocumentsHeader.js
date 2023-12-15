@@ -46,6 +46,7 @@ const DocumentsHeader = (props) => {
                 icon="pi pi-pencil"
                 outlined
                 onClick={handleCreate}
+                disabled
             />
             <Button
                 label="Upload"
