@@ -89,7 +89,7 @@ const InsertDocuments = (props) => {
     }
 
     return (
-        <div className="flex flex-column gap-6 overflow-hidden">
+        <div className="flex flex-column gap-6 overflow-hidden" style={{ 'min-width': '600px' }}>
             <Steps model={items} activeIndex={activeIndex} onSelect={(e) => setActiveIndex(e.index)} readOnly={true} />
             <div className="flex-1 overflow-auto">
                 {activeIndex === 0 &&
@@ -118,6 +118,17 @@ const InsertDocuments = (props) => {
                     onClose={handleClose}
                 />}
             </div>
+            {/* <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                    const selectedFile = e.target.files[0];
+                    if (selectedFile) {
+                        handleSelectFile(selectedFile);
+                    }
+                }}
+            /> */}
         </div>
     );
 };
