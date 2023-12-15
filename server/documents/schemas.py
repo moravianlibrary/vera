@@ -78,6 +78,29 @@ class DocumentCreate(DocumentBase):
             digitization_state=digitization_state
         )
 
+    @classmethod
+    def from_catalog_document_issue(
+            cls, catalog_document: DocumentCatalog,
+            issue: Issue,
+            category_id: Optional[int],
+            digitization_state: Optional[DigitizationState]
+            ) -> "DocumentCreate":
+        return cls(
+            sysno=catalog_document.sysno,
+            volume_number=issue.volume,
+            signature=issue.signature,
+            barcode=issue.barcode,
+            ccnb=catalog_document.ccnb,
+            isbn=catalog_document.isbn,
+            material_type=catalog_document.material_type,
+            title=catalog_document.title,
+            publishers=catalog_document.publishers,
+            pages_count=catalog_document.pages_count,
+            size=catalog_document.size,
+            category_id=category_id,
+            digitization_state=digitization_state
+        )
+
 
 class Document(DocumentCreate):
     id: int

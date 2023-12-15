@@ -246,14 +246,26 @@ class TestDocumentsEndpoints(unittest.TestCase):
             }
 
         response = self.client.post(
-            "/documents/get_from_catalog",
+            "/documents/create_from_catalog",
             json={'identifier_type': 'BARCODE',
                   'value': barcode},
             headers=headers
         )
         self.assertEqual(response.status_code, 200)
         document = response.json()
-        print(document)
+        self.assertEqual("39", document['document']['volume_number'])
+
+        response = self.client.post(
+            "/documents/create_from_catalog",
+            json={'identifier_type': 'SYSNO',
+                  'value': sysno},
+            headers=headers
+        )
+        self.assertEqual(response.status_code, 200)
+        documents = response.json()
+        for issue in documents['catalog_document']['issues']:
+            self.assertEqual(issue['barcode'] == barcode,
+                             issue['already_exists'])
 
 
 if __name__ == '__main__':

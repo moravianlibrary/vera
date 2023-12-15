@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class DigitizationState(Enum):
-    FINISHED = 'FINSHED'
+    FINISHED = 'FINISHED'
     IN_PROGRESS = 'IN_PROGRESS'
     PLANNED = 'PLANNED'
     NOT_DIGITIZED = 'NOT_DIGITIZED'

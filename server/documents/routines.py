@@ -43,19 +43,19 @@ def create_catalog_document(catalog_document_response:
         if catalog_document.issues:
             for issue in catalog_document.issues:
                 if identifier.value == issue.barcode:
-                    create_issue = \
-                        schemas.DocumentCreate.from_catalog_document(
-                            catalog_document, category_id, digitization_state
+                    create_issue = schemas.DocumentCreate\
+                        .from_catalog_document_issue(
+                            catalog_document,
+                            issue,
+                            category_id,
+                            issue.digitization_state
                         )
-                    create_issue.barcode = issue.barcode
-                    create_issue.signature = issue.signature
-                    create_issue.volume_number = issue.volume
-                    # create_issue.year_issued = issue.year_issued
                     response = create_document_from_schema(
                         create_issue, user_id, db
                     )
                     document = response.document
                     create_result = response.create_result
+                    digitization_state = issue.digitization_state
                     break
     elif len(catalog_document.issues) > 1:
         create_result = DocumentCreateResult.MULTIPLE_ISSUE_CHOICES
@@ -66,7 +66,7 @@ def create_catalog_document(catalog_document_response:
                     issue.volume,
                     issue.barcode,
                     db
-                )
+                ) is not None
     elif digitization_state != DigitizationState.NOT_DIGITIZED \
             and not insert_digitized:
         create_result = DocumentCreateResult.ALREADY_DIGITIZED
