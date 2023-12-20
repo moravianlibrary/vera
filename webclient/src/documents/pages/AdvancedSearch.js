@@ -55,9 +55,9 @@ const FieldRule = (props) => {
     ];
     const [selectedField, setSelectedField] = useState({});
 
-    const textOptions = ["equals", "starts_with", "ends_with", "contains", "not_contains", "not_equals"];
+    const textOptions = ["equals", "starts_with", "ends_with", "contains", "not_contains", "not_equals", "null"];
     const [textOption, setTextOption] = useState("equals");
-    const numberOptions = ["equal_to", "not_equal_to", "less_than", "more_than", "between"];
+    const numberOptions = ["equal_to", "not_equal_to", "less_than", "more_than", "between", "null"];
     const [numberOption, setNumberOption] = useState("equal_to");
 
     const [textValue, setTextValue] = useState("");
@@ -65,23 +65,27 @@ const FieldRule = (props) => {
     const [numberValue2, setNumberValue2] = useState(0);
 
     useEffect(() => {
-        setData(props.data);
+        const { data } = props;
         if (data.field_name) {
             const field = fieldOptions.find(field => field.name === data.field_name);
             if (field) {
-                setSelectedField(field);
-                if (field.type === FieldType.TEXT) {
+                console.log(selectedField === null || selectedField.name !== field.name);
+                if (selectedField === null || selectedField.name !== field.name) {
+                    setSelectedField(field);
+                }
+                if (field.type === FieldType.TEXT && textValue !== data.value) {
                     setTextValue(data.value);
                 } else if (field.type === FieldType.NUMBER) {
-                    if (Array.isArray(data.value)) {
+                    if (Array.isArray(data.value) && (numberValue1 !== data.value[0] || numberValue2 !== data.value[1])) {
                         setNumberValue1(data.value[0]);
                         setNumberValue1(data.value[1]);
-                    } else {
+                    } else if (numberValue1 !== data.value) {
                         setNumberValue1(data.value);
                     }
                 }
             }
         }
+        setData(data);
     }, [props.data]);
 
     useEffect(() => {
@@ -100,7 +104,7 @@ const FieldRule = (props) => {
             }
             props.onDataUpdate(data);
         }
-    }, [textValue, numberValue1, numberValue2]);
+    }, [textValue, numberValue1, numberValue2, selectedField]);
 
     const handleDelete = () => {
         if (props.onDelete) {
@@ -110,19 +114,22 @@ const FieldRule = (props) => {
 
     return (
         <div className="flex p-0 m-0 gap-1">
-            <Button
-                icon="pi pi-times"
-                text
-                severity="danger"
-                onClick={handleDelete}
-            />
-            <Dropdown
-                value={selectedField}
-                onChange={(e) => setSelectedField(e.value)}
-                options={fieldOptions}
-                optionLabel={(option) => t(option.name)} 
-                placeholder={t('select_document_field')}
-            />
+            <div className="p-inputgroup flex">
+                <Button
+                    icon="pi pi-times"
+                    size="small"
+                    outlined
+                    severity="danger"
+                    onClick={handleDelete}
+                />
+                <Dropdown
+                    value={selectedField}
+                    onChange={(e) => setSelectedField(e.value)}
+                    options={fieldOptions}
+                    optionLabel={(option) => t(option.name)} 
+                    placeholder={t('select_document_field')}
+                />
+            </div>
             {selectedField && selectedField.type && selectedField.type === FieldType.TEXT &&
             <div className="flex gap-1">
                 <Dropdown
