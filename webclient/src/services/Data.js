@@ -146,7 +146,6 @@ class DataService {
     async getAssignableCategories() {
         try {
             const categories = (await api.getAssignableCategories()).data;
-            console.log(categories);
             return categories.map(category => Category.fromJson(category));
         } catch (error) {
             this.setError(error);

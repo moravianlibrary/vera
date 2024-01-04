@@ -1,12 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useTranslation } from "react-i18next";
-
-import { Button } from 'primereact/button';
-import { Column } from 'primereact/column';
-import { DataTable } from 'primereact/datatable';
-import { Paginator } from 'primereact/paginator';
-import { SpeedDial } from 'primereact/speeddial';
-import { Tooltip } from 'primereact/tooltip';
 
 import './Documents.css';
 import { dataService } from '../../services/Data.js';
@@ -83,12 +75,14 @@ const Documents = () => {
         dataService.deleteDocuments(selectedDocuments);
         setSelectedDocuments([]);
     }
+    console.log(categories);
 
     return (
       <div className="table-container" >
         <DocumentsHeader
             onCreate={() => setCreateMode(true)}
             onInsert={() => setInsertMode(true)}
+            categories={categories}
         />
         <DocumentsTable
             documents={documents}

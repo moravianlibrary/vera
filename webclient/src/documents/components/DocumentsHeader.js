@@ -65,7 +65,7 @@ const DocumentsHeader = (props) => {
 
     const centerContent = (
         <React.Fragment>
-            <DocumentsSearchBar />
+            <DocumentsSearchBar categories={props.categories} />
         </React.Fragment>
     );
 
