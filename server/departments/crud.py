@@ -35,5 +35,12 @@ def delete_department(department_id: int,
     return db_department
 
 
+def get_department(name: str,
+                   db: Session):
+    return (db.query(models.Department)
+            .filter(models.Department.name == name)
+            .first())
+
+
 def get_departments(db: Session):
     return db.query(models.Department).all()

@@ -1,37 +1,12 @@
 from pydantic import BaseModel
-from datetime import datetime
-from typing import List
+from typing import List, Optional
 from roles.enums import ActionType
-from users.schemas import User as UsersUser
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    expires_on: datetime
-
-
-class UserBase(BaseModel):
+class CurrentUser(BaseModel):
     username: str
-
-
-class UserCreate(UserBase):
-    password: str
-
-
-class UserLogin(UserCreate):
-    pass
-
-
-class UserChangePassword(BaseModel):
-    id: int
-    old_password: str
-    new_password: str
-
-
-class User(UsersUser):
-    pass
-
-
-class CurrentUser(User):
+    department_id: Optional[int]
+    department_name: Optional[str]
+    role_id: int
+    role_name: str
     actions: List[ActionType]

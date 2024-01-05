@@ -43,6 +43,11 @@ def get_role(id: int,
     return db.query(models.Role).filter(models.Role.id == id).first()
 
 
+def get_role_by_name(name: str,
+                     db: Session):
+    return db.query(models.Role).filter(models.Role.name == name).first()
+
+
 def get_roles(db: Session):
     return db.query(models.Role).order_by(models.Role.name).all()
 
