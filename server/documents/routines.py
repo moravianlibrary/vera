@@ -7,7 +7,7 @@ from catalogs.enums import DigitizationState, DocumentCreateResult
 
 
 def create_document_from_schema(document: schemas.DocumentCreateResponse,
-                                creator_id: int,
+                                creator: str,
                                 db: Session):
     created_document = None
     create_result = DocumentCreateResult.UNIQUE_DOCUMENT_VIOLATION
@@ -15,7 +15,7 @@ def create_document_from_schema(document: schemas.DocumentCreateResponse,
         document.sysno, document.volume_number, document.barcode, db
     )
     if db_document is None:
-        created_document = crud.create_document(document, creator_id, db)
+        created_document = crud.create_document(document, creator, db)
         create_result = DocumentCreateResult.SUCCESS
     return schemas.DocumentCreateResponse(
         identifier=schemas.Identifier(

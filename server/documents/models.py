@@ -1,11 +1,10 @@
 from sqlalchemy import ARRAY, Column, Enum, ForeignKey, Integer, String, \
     TIMESTAMP, UniqueConstraint, func
-from sqlalchemy.orm import aliased, Session
+from sqlalchemy.orm import Session
 
 from services.database import Base
 from categories.models import Category
 from extractions.models import Extraction
-from users.models import User
 from catalogs.enums import DigitizationState, MaterialType
 
 
@@ -38,16 +37,14 @@ class Document(Base):
     languages = Column(ARRAY(String))
     frequencies = Column(ARRAY(String))
 
-    creator_id = Column(Integer, ForeignKey("users.id"), index=True)
     created_at = Column(TIMESTAMP, server_default=func.now())
+    creator = Column(String, index=True)
+    department = Column(String, index=True)
 
     extraction_id = Column(Integer, ForeignKey("extractions.id"), index=True)
 
 
 def document_view(db: Session):
-    creator = aliased(User)
-    extractor = aliased(User)
-
     return db.query(
         Document.id,
         Document.sysno,
@@ -68,20 +65,14 @@ def document_view(db: Session):
         Document.places,
         Document.languages,
         Document.frequencies,
-        Document.creator_id,
         Document.created_at,
-        creator.department_id.label('creator_department_id'),
-        creator.username.label('creator'),
+        Document.creator,
+        Document.department,
         Document.extraction_id,
-        Extraction.extractor_id,
-        extractor.username.label('extractor'),
+        Extraction.extractor,
         Extraction.extracted_at,
     ).outerjoin(
         Category, Document.category_id == Category.id
     ).outerjoin(
-        creator, Document.creator_id == creator.id
-    ).outerjoin(
         Extraction, Document.extraction_id == Extraction.id
-    ).outerjoin(
-        extractor, Extraction.extractor_id == extractor.id
     )

@@ -21,7 +21,7 @@ def create_category(category: schemas.CategoryCreate,
     return get_category_subtree(new_category, db)
 
 
-@router.put("/categories/category/{id}", response_model=schemas.CategoryNode)
+@router.put("/categories/category/{id}", response_model=schemas.Category)
 def update_category(category: schemas.CategoryCreate,
                     id: int = Path(...),
                     db: Session = Depends(get_db)):

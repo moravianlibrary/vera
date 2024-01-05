@@ -3,7 +3,6 @@ from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, \
 from sqlalchemy.orm import Session
 
 from services.database import Base
-from users.models import User
 from tasks.enums import TaskDocumentErrorType, TaskType, TaskState
 
 
@@ -15,7 +14,7 @@ class Task(Base):
 
     task_type = Column(Enum(TaskType))
     query = Column(String)
-    owner_id = Column(Integer, ForeignKey("users.id"), index=True)
+    owner = Column(String, index=True)
 
     task_state = Column(Enum(TaskState),
                         server_default=TaskState.PLANNED.value)
@@ -42,8 +41,7 @@ def task_view(db: Session):
         Task.process_id,
         Task.task_type,
         Task.query,
-        Task.owner_id,
-        User.username.label('owner_name'),
+        Task.owner,
         Task.task_state,
         Task.planned,
         Task.started,
@@ -51,8 +49,6 @@ def task_view(db: Session):
         (func.sum(case([(TaskDocument.processed, 1)], else_=0))
          .label('processed_count')),
         func.count(TaskDocument.document_id).label('total_count'),
-    ).join(
-        User, Task.owner_id == User.id
     ).join(
         TaskDocument, Task.id == TaskDocument.task_id
     ).group_by(

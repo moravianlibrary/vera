@@ -10,8 +10,7 @@ from documents import crud, schemas
 from documents.enums import IdentifierType
 from documents.routines import create_document_from_schema, \
     create_catalog_document
-from users import schemas as users_schemas
-from auth import schemas as auth_schemas
+from auth.schemas import CurrentUser
 from catalogs.routines import get_catalog_response
 
 
@@ -21,15 +20,15 @@ router = APIRouter()
 @router.post("/documents", response_model=schemas.DocumentCreateResponse)
 def create_document(document: schemas.DocumentCreate,
                     db: Session = Depends(get_db),
-                    user: users_schemas.User = Depends(get_current_user)):
-    return create_document_from_schema(document, user.id, db)
+                    user: CurrentUser = Depends(get_current_user)):
+    return create_document_from_schema(document, user.username, db)
 
 
 @router.put("/documents/{id}", response_model=schemas.DocumentView)
 def update_document(document: schemas.DocumentCreate,
                     id: int = Path(...),
                     db: Session = Depends(get_db),
-                    user: users_schemas.User = Depends(get_current_user)):
+                    user: CurrentUser = Depends(get_current_user)):
     return crud.update_document(id, document, user, db)
 
 
@@ -60,22 +59,22 @@ def get_documents(offset: int = Query(0, description="Pagination page offset"),
                   Query(None, description="document extraction id"),
                   onlyExtracted: Optional[str] =
                   Query(None, description="Show only extracted"),
-                  user: auth_schemas.CurrentUser = Depends(get_current_user),
+                  user: CurrentUser = Depends(get_current_user),
                   db: Session = Depends(get_db)):
-    user_id, department_id = None, None
+    username, department = None, None
     if ActionType.read_datatable_department in user.actions \
             and user.department_id is not None:
-        department_id = user.department_id
+        department = user.department_name
     elif ActionType.read_datatable_own in user.actions:
-        user_id = user.id
+        username = user.username
     elif ActionType.read_datatable_all not in user.actions:
         raise exceptions.UserNotAllowedToReadDocumentsException
 
     query_base = crud.get_documents_query_base(
         db,
         sysno=sysno,
-        creator_id=user_id,
-        creator_department_id=department_id,
+        creator=username,
+        department=department,
         extraction_id=extraction_id,
         onlyExtracted=(onlyExtracted is not None)
     )
@@ -87,7 +86,7 @@ def get_documents(offset: int = Query(0, description="Pagination page offset"),
 @router.post("/documents/get_from_catalog",
              response_model=schemas.DocumentCatalogResponse)
 async def get_from_catalog(identifier: schemas.Identifier,
-                           user: users_schemas.User
+                           user: CurrentUser
                            = Depends(get_current_user)):
     return get_catalog_response(identifier)
 
@@ -97,7 +96,7 @@ async def get_from_catalog(identifier: schemas.Identifier,
 async def get_from_catalog_file(
         file: Optional[UploadFile] = None,
         identifier_type: IdentifierType = Query(IdentifierType.SYSNO),
-        user: users_schemas.User = Depends(get_current_user)):
+        user: CurrentUser = Depends(get_current_user)):
     if file and file.filename:
         return [get_catalog_response(schemas.Identifier
                                      (identifier_type=identifier_type,
@@ -113,13 +112,13 @@ async def create_from_catalog(identifier: Optional[schemas.Identifier] = None,
                               category_id: Optional[int] = Query(None),
                               insert_digitized: bool = Query(False),
                               db: Session = Depends(get_db),
-                              user: users_schemas.User
+                              user: CurrentUser
                               = Depends(get_current_user)):
     return create_catalog_document(
         get_catalog_response(identifier),
         category_id,
         insert_digitized,
-        user.id,
+        user.username,
         db)
 
 
@@ -131,7 +130,7 @@ async def create_from_catalog_file(
         category_id: Optional[int] = Query(None),
         insert_digitized: bool = Query(False),
         db: Session = Depends(get_db),
-        user: users_schemas.User
+        user: CurrentUser
         = Depends(get_current_user)):
     return [create_catalog_document(
         get_catalog_response(schemas.Identifier
@@ -139,6 +138,6 @@ async def create_from_catalog_file(
                               value=line)),
         category_id,
         insert_digitized,
-        user.id,
+        user.username,
         db)
             for line in (await file.read()).decode('utf-8').splitlines()]

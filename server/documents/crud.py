@@ -3,12 +3,12 @@ from sqlalchemy import desc
 from typing import Optional
 
 from services.database import create
+from auth.schemas import CurrentUser
 from documents import models, schemas
-from users import schemas as users_schemas
 
 
 def create_document(document: schemas.DocumentCreate,
-                    creator_id: int,
+                    creator: str,
                     db: Session):
     db_document = create(db, models.Document(
         sysno=document.sysno,
@@ -23,14 +23,14 @@ def create_document(document: schemas.DocumentCreate,
         barcode=document.barcode,
         ccnb=document.ccnb,
         isbn=document.isbn,
-        creator_id=creator_id
+        creator=creator
     ))
     return get_document_view(db_document.id, db)
 
 
 def update_document(document_id: int,
                     document: schemas.DocumentCreate,
-                    user: users_schemas.User,
+                    user: CurrentUser,
                     db: Session):
     db_document = get_document(document_id, db)
     if not document:
@@ -94,8 +94,8 @@ def get_document_by_identifiers(sysno: str,
 
 def get_documents_query_base(db: Session,
                              sysno: Optional[str] = None,
-                             creator_id: Optional[int] = None,
-                             creator_department_id: Optional[int] = None,
+                             creator: Optional[str] = None,
+                             department: Optional[str] = None,
                              category_id: Optional[int] = None,
                              extraction_id: Optional[int] = None,
                              onlyExtracted: bool = False):
@@ -103,17 +103,17 @@ def get_documents_query_base(db: Session,
 
     if sysno is not None:
         query_base = query_base.filter(models.Document.sysno == sysno)
-    if creator_id is not None:
+    if creator is not None:
         query_base = query_base.filter(
-            models.Document.creator_id == creator_id
+            models.Document.creator == creator
         )
     if category_id is not None:
         query_base = query_base.filter(
             models.Document.category_id == category_id
         )
-    if creator_department_id is not None:
+    if department is not None:
         query_base = query_base.filter(
-            query_base.creator_department_id == creator_department_id
+            query_base.department == department
         )
     if extraction_id is not None:
         query_base = query_base.filter(

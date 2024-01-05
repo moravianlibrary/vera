@@ -22,16 +22,26 @@ class TestCategoriesEndpoints(unittest.TestCase):
         for category in get_root_categories(self.db):
             delete_category(category.id, self.db)
 
+    def delete_category_by_name_rec(self, category, name: str):
+        from categories.crud import delete_category
+        if name == category.name:
+            delete_category(category.id, self.db)
+        else:
+            for category in category.children:
+                self.delete_category_by_name_rec(category, name)
+
     def delete_category_by_name(self, name: str):
-        from categories.crud import get_root_categories, delete_category
-        for category in get_root_categories(self.db):
-            if name == category.name:
-                delete_category(category.id, self.db)
+        from categories.crud import get_root_categories
+        from categories.routines import get_category_subtree
+        categories = [get_category_subtree(root_category, self.db)
+                      for root_category in get_root_categories(self.db)]
+        for category in categories:
+            self.delete_category_by_name_rec(category, name)
 
     def test_create_root_category(self):
         name = "Test Root Category Name"
         description = "Test Root Category Description"
-        response = self.client.post("/categories", json={
+        response = self.client.post("/categories/category", json={
             "name": name,
             "description": description
             })
@@ -50,7 +60,7 @@ class TestCategoriesEndpoints(unittest.TestCase):
         name = "Test Root Category Name"
         description = "Test Root Category Description"
         updated_name = "Updated Test Category"
-        response = self.client.post("/categories", json={
+        response = self.client.post("/categories/category", json={
             "name": name,
             "description": description
             })
@@ -58,9 +68,11 @@ class TestCategoriesEndpoints(unittest.TestCase):
         self.assertTrue("id" in response.json())
 
         category_id = response.json()['id']
-        response = self.client.put(f"/categories/{category_id}", json={
-            "name": updated_name,
-            "description": description
+        response = self.client.put(
+            f"/categories/category/{category_id}",
+            json={
+                "name": updated_name,
+                "description": description
             })
         self.assertEqual(response.status_code, 200)
         self.assertEqual(category_id, response.json()['id'])
@@ -69,35 +81,35 @@ class TestCategoriesEndpoints(unittest.TestCase):
         self.delete_category_by_name(updated_name)
 
     def create_test_category_tree(self):
-        response = self.client.post("/categories", json={"name": "root"})
+        response = self.client.post("/categories/category", json={"name": "root"})
         root_id = response.json()['id']
-        response = self.client.post("/categories", json={
+        response = self.client.post("/categories/category", json={
             "name": "child 1",
             "parent_id": root_id
             })
         child1_id = response.json()['id']
-        response = self.client.post("/categories", json={
+        response = self.client.post("/categories/category", json={
             "name": "child 2",
             "parent_id": root_id
             })
         child2_id = response.json()['id']
-        response = self.client.post("/categories", json={
+        response = self.client.post("/categories/category", json={
             "name": "child 3",
             "parent_id": root_id
             })
-        response = self.client.post("/categories", json={
+        response = self.client.post("/categories/category", json={
             "name": "grandchild 11",
             "parent_id": child1_id
             })
-        response = self.client.post("/categories", json={
+        response = self.client.post("/categories/category", json={
             "name": "grandchild 21",
             "parent_id": child2_id
             })
-        response = self.client.post("/categories", json={
+        response = self.client.post("/categories/category", json={
             "name": "grandchild 22",
             "parent_id": child2_id
             })
-        response = self.client.post("/categories", json={
+        response = self.client.post("/categories/category", json={
             "name": "grandchild 23",
             "parent_id": child2_id
             })

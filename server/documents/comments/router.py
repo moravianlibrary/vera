@@ -4,8 +4,8 @@ from typing import List
 
 from services.database import get_db
 from auth.router import get_current_user
+from auth.schemas import CurrentUser
 from . import crud, schemas
-from users import schemas as users_schemas
 
 
 router = APIRouter()
@@ -14,7 +14,7 @@ router = APIRouter()
 @router.post("/documents/{id}/comments", response_model=schemas.Comment)
 def create_comment(comment: schemas.CommentCreate,
                    id: int = Path(...),
-                   user: users_schemas.User = Depends(get_current_user),
+                   user: CurrentUser = Depends(get_current_user),
                    db: Session = Depends(get_db)):
     return crud.create_comment(comment, id, user.id, db)
 
@@ -23,7 +23,7 @@ def create_comment(comment: schemas.CommentCreate,
             response_model=schemas.Comment)
 def update_comment(comment: schemas.Comment,
                    document_id: int = Path(...),
-                   user: users_schemas.User = Depends(get_current_user),
+                   user: CurrentUser = Depends(get_current_user),
                    db: Session = Depends(get_db)):
     return crud.update_comment(comment, db)
 
@@ -32,7 +32,7 @@ def update_comment(comment: schemas.Comment,
                response_model=schemas.Comment)
 def delete_comment(document_id: int = Path(...),
                    comment_id: int = Path(...),
-                   user: users_schemas.User = Depends(get_current_user),
+                   user: CurrentUser = Depends(get_current_user),
                    db: Session = Depends(get_db)):
     return crud.delete_comment(comment_id, db)
 

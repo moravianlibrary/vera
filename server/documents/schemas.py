@@ -105,17 +105,15 @@ class DocumentCreate(DocumentBase):
 class Document(DocumentCreate):
     id: int
 
-    creator_id: int
+    creator: str
     created_at: datetime
+    department: Optional[str]
 
     extraction_id: Optional[int] = None
 
 
 class DocumentView(Document):
     category_name: Optional[str]
-
-    creator: str
-    creator_department_id: Optional[int] = None
 
     extractor_id: Optional[int] = None
     extractor: Optional[str] = None
@@ -158,7 +156,7 @@ class DocumentsQuery(BaseModel):
     ccnb: Optional[str] = None
     isbn: Optional[str] = None
 
-    creator_id: Optional[List[int]] = None
+    creator: Optional[List[int]] = None
     creator_department_id: Optional[int] = None
     created_after: Optional[datetime] = None
     created_before: Optional[datetime] = None
