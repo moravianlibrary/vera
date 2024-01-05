@@ -7,6 +7,7 @@ import UserInfo from '../components/UserInfo';
 import { ActionAccessComponent } from '../services/Auth';
 import './Navbar.css';
 import { ActionType } from '../models/Role';
+import Login from './Login';
 
 const Navbar = () => {
   const { t } = useTranslation();
@@ -27,7 +28,7 @@ const Navbar = () => {
           action={ActionType.edit_access} 
           component={<li><Link to="/access">{t("access")}</Link></li>}
         />
-        <li className="right"><LoginDialog /></li>
+        <li className="right"><Login /></li>
         <ActionAccessComponent
           action={null}
           component={<li className="right"><UserInfo /></li>}
