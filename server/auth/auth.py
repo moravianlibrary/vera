@@ -11,6 +11,8 @@ from . import schemas
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
+KEYCLOAK_USER_FIELD = environ.get('KEYCLOAK_USER_FIELD')
+USER_FIELD = KEYCLOAK_USER_FIELD if KEYCLOAK_USER_FIELD else 'username'
 CLIENT_ID = environ.get('KEYCLOAK_CLIENT_ID')
 
 keycloak_openid = KeycloakOpenID(
@@ -31,7 +33,6 @@ def get_user_from_token(db: Session, token: str):
             print(user_info)
             raise exceptions.CredentialsException
 
-        print(user_info)
         keycloak_roles = user_info['resource_access'][CLIENT_ID]['roles']
 
         roles = [role for role_name in keycloak_roles
@@ -59,7 +60,7 @@ def get_user_from_token(db: Session, token: str):
             department_name = departments[0].name
 
         return schemas.CurrentUser(
-            username=user_info['username'],
+            username=user_info[USER_FIELD],
             department_id=department_id,
             department_name=department_name,
             role_id=roles[0].id,
