@@ -1,5 +1,4 @@
 import { Outlet } from 'react-router-dom';
-import keycloak from '../services/Keycloak';
 
 import { api } from './Api';
 import { User } from '../models/User';
@@ -9,21 +8,6 @@ import { useEffect } from 'react';
 import { ActionType } from '../models/Role';
 
 class AuthService {
-    login() {
-        keycloak.init({ onLoad: 'login-required' })
-        .then((authenticated) => {
-            if (authenticated) {
-            console.log('User is authenticated');
-            // Additional logic upon successful authentication
-            } else {
-            console.error('Authentication failed');
-            }
-        })
-        .catch((error) => {
-            console.error('Initialization error', error);
-        });
-    }
-
     getCurrentUser() {
         const user = localStorage.getItem('user');
         return user ? User.fromJson(JSON.parse((user))) : null;
