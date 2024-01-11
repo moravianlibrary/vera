@@ -2,16 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../services/ToastContext';
-import { authService } from '../services/Auth';
 import UserInfo from '../components/UserInfo';
+import { useKeycloak } from '@react-keycloak/web';
 import { accessService } from '../services/AccessService';
-import { useKeycloak } from '../services/Keycloak';
-import { useLocation } from 'react-router-dom';
+import { useUser } from '../models/UserContext';
 
 const Login = () => {
     const { t } = useTranslation();
     const showToast = useToast();
-    const { keycloak } = useKeycloak();
+    const { keycloak, initialized } = useKeycloak();
+    const { setUser } = useUser();
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -27,26 +27,25 @@ const Login = () => {
         }
     };
 
-    // useEffect(() => {
-    //     const exchangeCodeForToken = async () => {
-    //         const params = new URLSearchParams(location.search);
-    //         const code = params.get('code');
-    //         if (code !== null && await keycloak.exchangeCodeForToken(code)) {
-    //         }
-    //     };
-    //     if (!keycloak.isLoggedIn) {
-    //         exchangeCodeForToken();
-    //     }
-    //     console.log(keycloak);
-    // }, [location]);
+    useEffect(() => {
+        if (initialized) {
+            localStorage.setItem('token', keycloak.token);
+            setIsLoggedIn(initialized && keycloak.token !== null && !keycloak.isTokenExpired());
+        }
+    }, [keycloak.token]);
 
     useEffect(() => {
-        setIsLoggedIn(keycloak.isLoggedIn);
-    }, [keycloak.isLoggedIn]);
+        const getCurrentUser = async () => {
+            const user = await accessService.getCurrentUser();
+            if (user !== null) {
+                setUser(user);
+            }
+        };
+        getCurrentUser();
+    }, []);
 
     return (
         <div>
-            {isLoggedIn && <UserInfo />}
             <Button
                 style={{color: "white"}}
                 text 

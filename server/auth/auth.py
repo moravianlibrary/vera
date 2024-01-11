@@ -16,6 +16,7 @@ USER_FIELD = KEYCLOAK_USER_FIELD if KEYCLOAK_USER_FIELD else 'username'
 SERVER_URL = environ.get('KEYCLOAK_SERVER_URL')
 REALM_NAME = environ.get('KEYCLOAK_REALM')
 CLIENT_ID = environ.get('KEYCLOAK_CLIENT_ID')
+ISSUER_CLIENT_ID = environ.get('KEYCLOAK_ISSUER_CLIENT_ID')
 CLIENT_SECRET_KEY = environ.get('KEYCLOAK_CLIENT_SECRET_KEY')
 
 keycloak_openid = KeycloakOpenID(
@@ -36,16 +37,16 @@ def get_token_from_code(code: str, redirect_uri: str):
 
 def get_user_from_token(db: Session, token: str):
     try:
-        print(CLIENT_ID)
         user_info = keycloak_openid.introspect(token)
         if not user_info['active']:
             print(user_info)
             raise exceptions.CredentialsException
-        if user_info['client_id'] != CLIENT_ID:
+        if user_info['client_id'] != ISSUER_CLIENT_ID:
             print(user_info)
             raise exceptions.CredentialsException
 
-        keycloak_roles = user_info['resource_access'][CLIENT_ID]['roles']
+        keycloak_roles = (user_info['resource_access']
+                          [ISSUER_CLIENT_ID]['roles'])
 
         roles = [role for role_name in keycloak_roles
                  if (role := roles_crud.get_role_by_name(role_name, db))

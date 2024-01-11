@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { authService } from '../../services/Auth.js';
+import { accessService } from '../../services/AccessService.js';
 
 const DocumentsTable = (props) => {
     const { t } = useTranslation();
@@ -20,7 +20,7 @@ const DocumentsTable = (props) => {
     );
 
     const isAllowedToEdit = (document) => {
-        return authService.isAllowedToEditDocument(document);
+        return accessService.isAllowedToEditDocument(document);
     };
 
     const handleLazyLoad = (e) => {

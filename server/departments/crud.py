@@ -8,7 +8,7 @@ from . import models, schemas
 def create_department(department: schemas.DepartmentBase,
                       db: Session):
     return create(db, models.Department(
-        abbreviation=department.abbreviation,
+        # abbreviation=department.abbreviation,
         name=department.name
     ))
 

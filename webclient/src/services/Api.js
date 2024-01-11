@@ -15,18 +15,6 @@ class Api {
         return axios.get(`/auth/current_user`, { headers: authHeader() });
     }
 
-    getUsers() {
-        return axios.get(`/users`, { headers: authHeader() });
-    }
-
-    updateUser(user) {
-        return axios.put(`/users/${user.id}`, user, { headers: authHeader() });
-    }
-
-    deleteUser(id) {
-        return axios.delete(`/users/${id}`, { headers: authHeader() });
-    }
-
     getDepartments() {
         return axios.get(`/departments`, { headers: authHeader() });
     }

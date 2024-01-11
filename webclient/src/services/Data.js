@@ -85,7 +85,7 @@ class DataService {
 
     async getRolesNames() {
         try {
-            const { roles } = (await api.getRoleNames()).data;
+            const roles = (await api.getRoleNames()).data;
             return roles.map(role => role.name);
         } catch (error) {
             this.setError(error);
@@ -95,7 +95,7 @@ class DataService {
 
     async getRoles() {
         try {
-            const { roles } = (await api.getRoles()).data;
+            const roles = (await api.getRoles()).data;
             return roles.map(role => Role.fromJson(role));
         } catch (error) {
             this.setError(error);

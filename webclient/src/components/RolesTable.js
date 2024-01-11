@@ -71,7 +71,11 @@ const RolesTable = (props) => {
 
     useEffect(() => {
         async function fetchRoles() {
-            setRoles(await dataService.getRoles());
+            const roles = await dataService.getRoles();
+            if (roles) {
+                setRoles(roles);
+            }
+            console.log(`roles: ${roles}`);
         }
         if (!insertMode) {
             fetchRoles();

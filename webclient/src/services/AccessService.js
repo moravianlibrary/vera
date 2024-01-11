@@ -1,30 +1,40 @@
 import { Outlet } from "react-router-dom";
 import { User } from "../models/User";
 import { api } from "./Api";
+import { ActionType } from "../models/Role";
+import { useToast } from "./ToastContext";
+import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
+import { useUser } from "../models/UserContext";
+import { useKeycloak } from "@react-keycloak/web";
 
 class AccessService {
-    async loadCurrentUser() {
+    async getCurrentUser() {
         try {
-            this.deleteCurrentUser();
-            const user = (await api.getCurrentUser()).data;
-            localStorage.setItem('user', JSON.stringify(user));
+            return (await api.getCurrentUser()).data;
         } catch (error) {
             console.error('Error loading current user:', error.message);
         }
+        return null;
+    }
+    
+    isAllowedTo(user, action) {
+        return user?.actions.includes(action);
     }
 
-    getCurrentUser() {
-        const user = localStorage.getItem('user');
-        return user ? User.fromJson(JSON.parse((user))) : null;
-    }
-
-    deleteCurrentUser() {
-        localStorage.removeItem("user");
+    isAllowedToEditDocument(user, record) {
+        return user && (
+                user.actions.includes(ActionType.edit_datatable_all)
+                || (user.actions.includes(ActionType.edit_datatable_department)
+                    && user.department_id === record.creator_department_id)
+                || (user.actions.includes(ActionType.edit_datatable_own)
+                    && user.id === record.creator_id));
     }
 };
 
 export const ActionAccessRoute = ({ action = null }) => {
-    const user = accessService.getCurrentUser();
+    const { user } = useUser();
+
     return !action || (user?.actions && user.actions.includes(action))
         ? <Outlet />
         // : <Navigate to="/unauthorized" replace />;
@@ -32,11 +42,44 @@ export const ActionAccessRoute = ({ action = null }) => {
 };
 
 export const ActionAccessComponent = ({ action = null, component }) => {
-    const user = accessService.getCurrentUser();
+    const { user } = useUser();
+
     return (
         user?.actions && (!action ||user.actions.includes(action))
         ? (<>{component}</>)
         : null);
+};
+
+// export const ProtectedRoute = ({ ...rest }) => {
+export const ProtectedRoute = () => {
+    const { user } = useUser();
+    const showToast = useToast();
+    const { t } = useTranslation();
+
+    useEffect(() => {
+        if (!user || !user.access_token || user.access_token === "") {
+            // showToast('error', t('insufficient_rights_title'), t('insufficient_rights_body'))
+        }
+    }, []);
+
+    if (!user || !user.access_token || user.access_token === "") {
+        return null;
+    }
+
+    return <Outlet />;
+
+    // return (
+    //     <Route
+    //     {...rest}
+    //     render={(props) =>
+    //         auth.isAuthenticated === true ? (
+    //         <Component {...props} />
+    //         ) : (
+    //         <Redirect to="/login" />
+    //         )
+    //     }
+    //     />
+    // );
 };
 
 export default function authHeader(contentType = 'application/json') {
@@ -47,7 +90,9 @@ export default function authHeader(contentType = 'application/json') {
             'Content-Type': contentType,
         };
     } else {
-        return {};
+        return {
+            'Content-Type': contentType,
+        };
     }
 }
 

@@ -30,10 +30,11 @@ services:
       - POSTGRES_HOST=postgres
       - ALLOW_ORIGINS=http://localhost:3000
       - TIMEZONE=Europe/Prague
-      - KEYCLOAK_CLIENT_ID=vera
+      - KEYCLOAK_CLIENT_ID=vera-backend
       - KEYCLOAK_REALM=mzk
       - KEYCLOAK_SERVER_URL=https://keycloak.osdd.mzk.cz
-      - KEYCLOAK_CLIENT_SECRET_KEY=xxEgeNBg7JN3SSWgGDz2SfstZop2xG6a
+      - KEYCLOAK_CLIENT_SECRET_KEY=AVGFxZoFoaD61OUwyiTCc3IAAS3PJNTC
+      - KEYCLOAK_ISSUER_CLIENT_ID=vera
     depends_on:
       - postgres
     networks:

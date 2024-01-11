@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // import Home from './Home'; 
-import { ActionAccessRoute, authService } from '../services/Auth';
 import Access from './Access';
 import Navbar from './Navbar';
 import '../config/i18n';
@@ -13,12 +12,18 @@ import { APP_CONFIG } from '../config/config';
 import Categories from '../categories/pages/Categories';
 import Documents from '../documents/pages/Documents';
 import Login from './Login';
-import KeycloakProvider from '../services/Keycloak';
+import { ReactKeycloakProvider } from '@react-keycloak/web';
+import keycloak from '../services/Keycloak';
+import { ActionAccessRoute } from '../services/AccessService';
+import { UserProvider } from '../models/UserContext';
 
 
 function App() {
   return (
-    <KeycloakProvider>
+    <ReactKeycloakProvider
+      authClient={keycloak}
+    >
+      <UserProvider>
       <ToastProvider>
         <Router>
           <div className="App">
@@ -40,7 +45,8 @@ function App() {
           </div>
         </Router>
       </ToastProvider>
-    </KeycloakProvider>
+      </UserProvider>
+    </ReactKeycloakProvider>
   );
 }
 

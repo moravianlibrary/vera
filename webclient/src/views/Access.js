@@ -7,10 +7,8 @@ import { SelectButton } from "primereact/selectbutton";
 import './Access.css';
 import RolesTable from "../components/RolesTable.js";
 import DepartmentsTable from "../components/DepartmentsTable.js";
-import UsersTable from "../components/UsersTable.js";
 
 const TableEnum = {
-    USERS: 'users',
     DEPARTMENS: 'departments',
     ROLES: 'roles'
 };
@@ -18,9 +16,8 @@ const TableEnum = {
 const Access = () => {
     const { t } = useTranslation();
 
-    const [table, setTable] = useState(TableEnum.USERS);
+    const [table, setTable] = useState(TableEnum.DEPARTMENS);
     const [tablesOptions] = useState([
-        { label: t('users'), value: TableEnum.USERS },
         { label: t('departments'), value: TableEnum.DEPARTMENS },
         { label: t('roles'), value: TableEnum.ROLES }
     ]);
@@ -58,9 +55,6 @@ const Access = () => {
 
     return (
         <div className="Access">
-            { table === TableEnum.USERS && <UsersTable
-                header={tableHeader}
-            />}
             { table === TableEnum.DEPARTMENS && <DepartmentsTable 
                 header={tableHeader}
                 handleAddRow={addDepartment}

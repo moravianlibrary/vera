@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class DepartmentBase(BaseModel):
-    abbreviation: str
+    # abbreviation: str
     name: str
 
 

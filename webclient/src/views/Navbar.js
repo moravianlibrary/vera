@@ -2,12 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
 
-import LoginDialog from '../dialogs/LoginDialog';
 import UserInfo from '../components/UserInfo';
-import { ActionAccessComponent } from '../services/Auth';
 import './Navbar.css';
 import { ActionType } from '../models/Role';
 import Login from './Login';
+import { ActionAccessComponent } from '../services/AccessService';
 
 const Navbar = () => {
   const { t } = useTranslation();

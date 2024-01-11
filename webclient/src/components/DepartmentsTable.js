@@ -54,7 +54,7 @@ const DepartmentsTable = (props) => {
 
     useEffect(() => {
         async function fetchDepartments() {
-            const {departments} = await dataService.getDepartments();
+            const departments = await dataService.getDepartments();
             setDepartments(departments);
         }
         if (!insertMode) {
@@ -86,7 +86,6 @@ const DepartmentsTable = (props) => {
             onRowEditComplete={handleDepartmentEdit}
             {...props}
         >
-            <Column field="abbreviation" header={t('department_abbreviation')} editor={textEditor} />
             <Column field="name" header={t('department_name')} editor={textEditor} />
             <Column rowEditor />
             <Column body={deleteButton} />
