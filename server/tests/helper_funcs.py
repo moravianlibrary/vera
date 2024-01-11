@@ -19,11 +19,15 @@ def get_admin_token() -> str:
         "password": environ.get('VERA_PASSWORD'),
         'grant_type': 'password'
     }
+    # print(environ.get('KEYCLOAK_CLIENT_ID'))
+    # print(environ.get('KEYCLOAK_CLIENT_SECRET_KEY'))
+    # print(environ.get('VERA_USERNAME'))
+    # print(environ.get('VERA_PASSWORD'))
 
     response = requests.post(TOKEN_CALL.format(
         KEYCLOAK_HOST=environ.get('KEYCLOAK_SERVER_URL'),
         REALM_NAME=environ.get('KEYCLOAK_REALM')
     ), data=body)
+    # print(response)
 
-    print(response)
     return response.json()['access_token']

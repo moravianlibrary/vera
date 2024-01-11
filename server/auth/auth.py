@@ -8,23 +8,35 @@ from roles import crud as roles_crud
 from departments import crud as depts_crud
 from . import schemas
 
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 KEYCLOAK_USER_FIELD = environ.get('KEYCLOAK_USER_FIELD')
 USER_FIELD = KEYCLOAK_USER_FIELD if KEYCLOAK_USER_FIELD else 'username'
+
+SERVER_URL = environ.get('KEYCLOAK_SERVER_URL')
+REALM_NAME = environ.get('KEYCLOAK_REALM')
 CLIENT_ID = environ.get('KEYCLOAK_CLIENT_ID')
+CLIENT_SECRET_KEY = environ.get('KEYCLOAK_CLIENT_SECRET_KEY')
 
 keycloak_openid = KeycloakOpenID(
-    server_url=environ.get('KEYCLOAK_SERVER_URL'),
-    realm_name=environ.get('KEYCLOAK_REALM'),
+    server_url=SERVER_URL,
+    realm_name=REALM_NAME,
     client_id=CLIENT_ID,
-    client_secret_key=environ.get('KEYCLOAK_CLIENT_SECRET_KEY')
+    client_secret_key=CLIENT_SECRET_KEY
 )
+
+
+def get_token_from_code(code: str, redirect_uri: str):
+    return keycloak_openid.token(
+        grant_type='authorization_code',
+        code=code,
+        redirect_uri=redirect_uri
+    )
 
 
 def get_user_from_token(db: Session, token: str):
     try:
+        print(CLIENT_ID)
         user_info = keycloak_openid.introspect(token)
         if not user_info['active']:
             print(user_info)

@@ -3,13 +3,15 @@ import { Button } from 'primereact/button';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../services/ToastContext';
 import { authService } from '../services/Auth';
-import keycloak from '../services/Keycloak';
-import { useKeycloak } from '@react-keycloak/web';
+import UserInfo from '../components/UserInfo';
+import { accessService } from '../services/AccessService';
+import { useKeycloak } from '../services/Keycloak';
+import { useLocation } from 'react-router-dom';
 
 const Login = () => {
     const { t } = useTranslation();
     const showToast = useToast();
-    const { keycloak, initialized } = useKeycloak();
+    const { keycloak } = useKeycloak();
 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -25,20 +27,26 @@ const Login = () => {
         }
     };
 
+    // useEffect(() => {
+    //     const exchangeCodeForToken = async () => {
+    //         const params = new URLSearchParams(location.search);
+    //         const code = params.get('code');
+    //         if (code !== null && await keycloak.exchangeCodeForToken(code)) {
+    //         }
+    //     };
+    //     if (!keycloak.isLoggedIn) {
+    //         exchangeCodeForToken();
+    //     }
+    //     console.log(keycloak);
+    // }, [location]);
+
     useEffect(() => {
-        if (initialized) {
-            if (keycloak.token !== null && !keycloak.isTokenExpired()) {
-                setIsLoggedIn(true);
-            } else {
-                setIsLoggedIn(false);
-            }
-        } else {
-            setIsLoggedIn(false);
-        }
-    }, [keycloak.token]);
+        setIsLoggedIn(keycloak.isLoggedIn);
+    }, [keycloak.isLoggedIn]);
 
     return (
         <div>
+            {isLoggedIn && <UserInfo />}
             <Button
                 style={{color: "white"}}
                 text 

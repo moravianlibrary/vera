@@ -1,6 +1,6 @@
 import Axios from "axios";
 
-import authHeader from "./Auth";
+import authHeader from "./AccessService";
 import { APP_CONFIG } from "../config/config";
 
 const axios = Axios.create({
@@ -11,21 +11,6 @@ const axios = Axios.create({
 });
 
 class Api {
-    createUser(username, password) {
-        console.log(`BaseURL: ${APP_CONFIG.base_url}, EndPoint: /auth/register, HttpMethod: POST`);
-        return axios.post(`/auth/register`, {
-            username: username,
-            password: password
-        });
-    }
-
-    getToken(username, password) {
-        return axios.post(`/auth/login`, {
-            username: username,
-            password: password
-        });
-    }
-
     getCurrentUser() {
         return axios.get(`/auth/current_user`, { headers: authHeader() });
     }

@@ -12,32 +12,20 @@ import { ActionType } from '../models/Role';
 import { APP_CONFIG } from '../config/config';
 import Categories from '../categories/pages/Categories';
 import Documents from '../documents/pages/Documents';
-import { ReactKeycloakProvider } from '@react-keycloak/web';
-// import { KeycloakProvider } from "keycloak-react-web";
-import keycloak from '../services/Keycloak';
+import Login from './Login';
+import KeycloakProvider from '../services/Keycloak';
 
-// import logo from './logo.svg';
-
-const keycloakProviderInitConfig = {
-  // onLoad: 'login-required',
-  onLoad: 'check-sso',
-  useNonce: true,
-}
 
 function App() {
-  console.log(JSON.stringify(keycloak.tokenParsed));
   return (
-    <ReactKeycloakProvider
-      initOptions={keycloakProviderInitConfig}
-      authClient={keycloak}
-    >
+    <KeycloakProvider>
       <ToastProvider>
         <Router>
           <div className="App">
               <Navbar />
               <main>
                 <Routes>
-                  {/* <Route path="/" element={<Home />} /> */}
+                  <Route path="/login" element={<Login />} />
                   <Route element={<ActionAccessRoute action={ActionType.read_datatable_own} />}>
                     <Route path="/board" element={<Documents />} />
                   </Route>
@@ -52,7 +40,7 @@ function App() {
           </div>
         </Router>
       </ToastProvider>
-    </ReactKeycloakProvider>
+    </KeycloakProvider>
   );
 }
 

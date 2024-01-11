@@ -5,6 +5,7 @@ import { User } from '../models/User';
 import { useToast } from './ToastContext';
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
+import { useKeycloak } from '@react-keycloak/web';
 import { ActionType } from '../models/Role';
 
 class AuthService {
@@ -18,7 +19,6 @@ class AuthService {
     }
 
     deleteCurrentUser() {
-        localStorage.removeItem("user");
     }
 
     logout() {
@@ -62,18 +62,6 @@ class AuthService {
                     && user.department_id === record.creator_department_id)
                 || (user.actions.includes(ActionType.edit_datatable_own)
                     && user.id === record.creator_id));
-    }
-}
-
-export default function authHeader(contentType = 'application/json') {
-    const user = authService.getCurrentUser();
-    if (user && user.access_token) {
-        return {
-            Authorization: 'Bearer ' + user.access_token,
-            'Content-Type': contentType,
-        };
-    } else {
-        return {};
     }
 }
 
