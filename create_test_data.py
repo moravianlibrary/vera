@@ -2,7 +2,7 @@ import requests
 from keycloak_auth import get_token
 
 
-URL = "https://api.digiboard.osdd.mzk.cz/"
+URL = "https://api.digiboard.osdd.mzk.cz"
 
 
 def create_test_category_tree():
