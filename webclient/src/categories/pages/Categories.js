@@ -195,6 +195,7 @@ const Categories = (props) => {
     useEffect(() => {
         async function fetchCategories() {
             const categories = await dataService.getCategories();
+            console.log(categories);
             setCategories(categories);
         }
         async function fetchQuotas() {
