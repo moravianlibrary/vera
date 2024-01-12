@@ -75,7 +75,6 @@ const RolesTable = (props) => {
             if (roles) {
                 setRoles(roles);
             }
-            console.log(`roles: ${roles}`);
         }
         if (!insertMode) {
             fetchRoles();
@@ -176,7 +175,7 @@ const RolesTable = (props) => {
             headerColumnGroup={headerColumnGroup}
             scrollable
             scrollHeight="flex"
-            {...props}
+            header={props.header}
         >
             <Column field="name" editor={textEditor} />
             <Column body={readDatatablePicker} />

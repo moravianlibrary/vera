@@ -123,6 +123,11 @@ const resources = {
         unique_document_violation: "Duplicitní dokument",
         invalid_sysno: "Nevalidní systémové číslo",
         document_not_found_in_catalog: "Dokument nenalezen v katalogu",
+                    
+        "Token validation failed": "Validace tokenu selhala",
+        "User does not have an assigned role": "Uživatel nemá přiřazenu žádnou roli",
+        "User have more than one assigned role": "Uživatel má přiřazené více než jednu roli",
+        "User have more than one assigned department": "Uživatel má přiřazen více než jedno oddělení",
 
     },
   },

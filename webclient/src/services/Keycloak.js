@@ -9,6 +9,12 @@ const keycloakProperties = {
     clientId: 'vera',
 };
 
+export const keycloakInitOptions = {
+    onLoad: 'check-sso',
+    silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+    pkceMethod: 'S256',
+};
+
 const keycloak = new Keycloak(keycloakProperties);
 
 export default keycloak;

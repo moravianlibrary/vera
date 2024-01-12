@@ -84,7 +84,7 @@ const DepartmentsTable = (props) => {
             onRowEditChange={onRowEditChange}
             editingRows={editingRows || [false]}
             onRowEditComplete={handleDepartmentEdit}
-            {...props}
+            header={props.header}
         >
             <Column field="name" header={t('department_name')} editor={textEditor} />
             <Column rowEditor />

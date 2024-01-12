@@ -6,6 +6,8 @@ import UserInfo from '../components/UserInfo';
 import { useKeycloak } from '@react-keycloak/web';
 import { accessService } from '../services/AccessService';
 import { useUser } from '../models/UserContext';
+import { api } from '../services/Api';
+import { User } from '../models/User';
 
 const Login = () => {
     const { t } = useTranslation();
@@ -16,31 +18,44 @@ const Login = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const handleLogin = () => {
-        if (!isLoggedIn) {
+        if (initialized && !keycloak.authenticated) {
             keycloak.login();
         }
     };
 
     const handleLogout = () => {
-        if (isLoggedIn) {
-            keycloak.logout();
+        keycloak.logout();
+    };
+
+    const getCurrentUser = async () => {
+        if (!initialized || keycloak.isTokenExpired()) {
+            return;
+        }
+
+        try {
+            const user = await api.getCurrentUser();
+            setUser(User.fromJson(user.data));
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                if (error.response.data?.detail !== null) {
+                    showToast("error", t(error.response.data.detail), "");
+                }
+            }
         }
     };
 
     useEffect(() => {
         if (initialized) {
             localStorage.setItem('token', keycloak.token);
-            setIsLoggedIn(initialized && keycloak.token !== null && !keycloak.isTokenExpired());
+            const isLoggedIn = initialized && keycloak.token !== null && !keycloak.isTokenExpired();
+            if (isLoggedIn) {
+                getCurrentUser();
+                setIsLoggedIn(isLoggedIn);
+            }
         }
     }, [keycloak.token]);
 
     useEffect(() => {
-        const getCurrentUser = async () => {
-            const user = await accessService.getCurrentUser();
-            if (user !== null) {
-                setUser(user);
-            }
-        };
         getCurrentUser();
     }, []);
 

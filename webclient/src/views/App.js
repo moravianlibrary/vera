@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { StrictMode, useEffect, useRef, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // import Home from './Home'; 
@@ -13,38 +13,43 @@ import Categories from '../categories/pages/Categories';
 import Documents from '../documents/pages/Documents';
 import Login from './Login';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
-import keycloak from '../services/Keycloak';
+import keycloak, { keycloakInitOptions } from '../services/Keycloak';
 import { ActionAccessRoute } from '../services/AccessService';
 import { UserProvider } from '../models/UserContext';
 
 
 function App() {
+  console.log(keycloak);
+
   return (
     <ReactKeycloakProvider
       authClient={keycloak}
+      initOptions={keycloakInitOptions}
     >
       <UserProvider>
-      <ToastProvider>
-        <Router>
-          <div className="App">
-              <Navbar />
-              <main>
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route element={<ActionAccessRoute action={ActionType.read_datatable_own} />}>
-                    <Route path="/board" element={<Documents />} />
-                  </Route>
-                  <Route element={<ActionAccessRoute action={ActionType.edit_categories} />}>
-                    <Route path="/categories" element={<Categories />} />
-                  </Route>
-                  <Route element={<ActionAccessRoute action={ActionType.edit_access} />}>
-                    <Route path="/access" element={<Access />} />
-                  </Route>
-                </Routes>
-              </main>
-          </div>
-        </Router>
-      </ToastProvider>
+        <ToastProvider>
+          <StrictMode>
+            <Router>
+              <div className="App">
+                  <Navbar />
+                  <main>
+                    <Routes>
+                      <Route path="/login" element={<Login />} />
+                      <Route element={<ActionAccessRoute action={ActionType.read_datatable_own} />}>
+                        <Route path="/board" element={<Documents />} />
+                      </Route>
+                      <Route element={<ActionAccessRoute action={ActionType.edit_categories} />}>
+                        <Route path="/categories" element={<Categories />} />
+                      </Route>
+                      <Route element={<ActionAccessRoute action={ActionType.edit_access} />}>
+                        <Route path="/access" element={<Access />} />
+                      </Route>
+                    </Routes>
+                  </main>
+              </div>
+            </Router>
+          </StrictMode>
+        </ToastProvider>
       </UserProvider>
     </ReactKeycloakProvider>
   );

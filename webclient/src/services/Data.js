@@ -258,7 +258,6 @@ class DataService {
             const createdDocument = await api.createDocument(document);
             return Document.fromJson(createdDocument);
         } catch (error) {
-            console.log(error);
             this.setError(error);
             return null;
         }
@@ -274,7 +273,6 @@ class DataService {
                     : await api.insertDocument(createData, insert_digitized);
             return DocumentResult.fromJson(newDocument.data);
         } catch (error) {
-            console.log(error);
             this.setError(error);
             return null;
         }

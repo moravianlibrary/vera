@@ -87,12 +87,10 @@ class Api {
     }
 
     createQuota(quota) {
-        console.log(quota);
         return axios.post(`/categories/quota`, quota, { headers: authHeader() });
     }
 
     updateQuota(quota) {
-        console.log(quota);
         return axios.put(`/categories/quota/${quota.id}`, quota, { headers: authHeader() });
     }
 
