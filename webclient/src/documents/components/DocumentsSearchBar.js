@@ -16,9 +16,9 @@ const DocumentsSearchBar = (props) => {
     return (
         <div className="flex">
             <div className="p-inputgroup flex">
-                <InputText placeholder="Search" />
-                <Button icon="pi pi-search" />
-                <Button outlined icon="pi pi-ellipsis-v" onClick={(e) => advancedSearchRef.current.toggle(e)}/>
+                <InputText placeholder="Search" disabled />
+                <Button icon="pi pi-search" disabled />
+                <Button outlined icon="pi pi-ellipsis-v" disabled onClick={(e) => advancedSearchRef.current.toggle(e)}/>
                 <OverlayPanel ref={advancedSearchRef} >
                     <AdvancedSearch
                         categories={props.categories}

@@ -33,6 +33,7 @@ const resources = {
         range_separator: "ze",
 
         insert_record_title: "Vytvořit nový záznam",
+        insert_document: "Přidat dokument",
         insert_record_tooltip: "",
         insert_records_from_file: "Vytvořit nové záznamy ze subora",
         select_category_title: "Vyberte kategorii",
@@ -44,6 +45,7 @@ const resources = {
         identifier_value: "Identifikátor",
         update_record_apply: "Aktualizovat",
         delete_record_apply: "Vymazat",
+        document_already_exists: "Dokument již přidán",
 
         sysno: "Systémové číslo",
         volume_number: "Ročník",

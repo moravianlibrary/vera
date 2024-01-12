@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 
-import { dataService } from "../services/Data";
 import { useEffect, useState } from "react";
 import { Checkbox } from "primereact/checkbox";
 import { ColumnGroup } from "primereact/columngroup";
@@ -10,11 +9,13 @@ import { Row } from "primereact/row";
 import { textEditor } from '../services/Editors.js';
 import { Role } from "../models/Role";
 import { Button } from "primereact/button";
+import { useData } from "../services/Data.js";
 
 
 const RolesTable = (props) => {
     const { handleAddRow, onRowAdded } = props;
     const { t } = useTranslation();
+    const { dataService } = useData();
     
     const [roles, setRoles] = useState([]);
 

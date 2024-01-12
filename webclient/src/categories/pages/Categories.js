@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "primereact/button";
-import { dataService } from "../../services/Data";
+import { useData } from "../../services/Data";
 import { OrganizationChart } from "primereact/organizationchart";
 import { Category } from "../models/Category";
 import CategoryNodeComponent from "../components/CategoryNodeComponent";
@@ -14,6 +14,7 @@ import { Quota } from "../models/Quota";
 
 const Categories = (props) => {
     const { t } = useTranslation();
+    const { dataService } = useData();
 
     const [categories, setCategories] = useState([]);
     const [quotas, setQuotas] = useState([]);
@@ -194,6 +195,7 @@ const Categories = (props) => {
     useEffect(() => {
         async function fetchCategories() {
             const categories = await dataService.getCategories();
+            console.log(categories);
             setCategories(categories);
         }
         async function fetchQuotas() {

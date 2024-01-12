@@ -5,7 +5,8 @@ from services.database import get_db
 from services.exceptions import MissingArgumentException, \
     WrongInputException, CategoryIsNotEmptyException
 from categories import crud, schemas
-from categories.routines import get_category_subtree
+from categories.routines import get_category_subtree, \
+    get_assignable_categories
 from typing import List, Optional
 
 
@@ -74,4 +75,4 @@ def get_categories_descriptors(root: bool = Query(False),
     if root:
         return crud.get_root_categories(db)
     elif assignable:
-        return crud.get_assignable_categories(db)
+        return get_assignable_categories(db)

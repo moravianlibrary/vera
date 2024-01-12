@@ -3,18 +3,26 @@ import React, { useEffect, useState } from "react";
 import DocumentsSearchBar from "./DocumentsSearchBar";
 import { SelectButton } from "primereact/selectbutton";
 import { Toolbar } from "primereact/toolbar";
+import { useTranslation } from "react-i18next";
 
 const DocumentsHeader = (props) => {
+    const { t } = useTranslation();
+
     const [advancedSearch, setAdvancedSearch] = useState(false);
     const [hasSelection, setHasSelection] = useState(false);
     const [displayOption, setDisplayOption] = useState("datatable");
     const displayOptions = [
         { name: 'Option 1', icon: 'pi pi-table', value: "datatable" },
-        { name: 'Option 2', icon: 'pi pi-chart-bar', value: "graph" },
+        { name: 'Option 2', icon: 'pi pi-chart-bar', value: "graph", disabled: true },
     ];
 
-    useEffect(
-        () => setHasSelection(props.hasSelection),
+    const handleSetDisplayOption = (e) => {
+        if (e.value !== null) {
+            setDisplayOption(e.value);
+        }
+    };
+
+    useEffect(() => setHasSelection(props.hasSelection),
         [props.hasSelection]
     );
 
@@ -42,21 +50,14 @@ const DocumentsHeader = (props) => {
     const startContent = (
         <React.Fragment>
             <Button
-                label="New"
-                icon="pi pi-pencil"
-                outlined
-                onClick={handleCreate}
-                disabled
-            />
-            <Button
-                label="Upload"
+                label={t('insert_document')}
                 icon="pi pi-plus"
                 outlined
                 onClick={handleInsert}
             />
             <i className="pi pi-bars p-toolbar-separator m-1" />
             <SelectButton value={displayOption}
-                onChange={(e) => setDisplayOption(e.value)}
+                onChange={handleSetDisplayOption}
                 itemTemplate={displayOptionTemplate}
                 options={displayOptions}
             />

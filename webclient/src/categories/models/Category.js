@@ -14,6 +14,8 @@ export class Category {
     count_documents_with_pages;
     count_documents;
 
+    parent_category;
+
     static fromJson(json) {
         const category = new Category();
 
@@ -39,6 +41,9 @@ export class Category {
                 + category.children.reduce((accumulator, category) => {
                     return accumulator + category.count_documents;
                 }, 0);
+        if (json.parent_category) {
+            category.parent_category = Category.fromJson(json.parent_category);
+        }
 
         return category;
     }

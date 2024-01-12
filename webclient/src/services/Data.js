@@ -5,8 +5,34 @@ import { Document } from "../documents/models/Document";
 import { Role } from "../models/Role";
 import { api } from "./Api";
 import { DocumentResult } from "../documents/models/DocumentResult";
+import { createContext, useContext } from "react";
+import Identifier from "../documents/models/Identifier";
+import CreateResult from "../documents/models/CreateResult";
 
 class DataService {
+    constructor() {
+        this.listeners = new Set();
+
+        this.multiIssueDocuments = [];
+    }
+
+    subscribe(eventName, listener) {
+        this.listeners.add({ eventName, listener });
+        document.addEventListener(eventName, listener);
+    }
+
+    unsubscribe(eventName, listener) {
+        this.listeners.delete({ eventName, listener });
+    }
+
+    publish(eventName, eventData = null) {
+        this.listeners.forEach(({ eventName: listenerEventName, listener }) => {
+            if (eventName === listenerEventName) {
+                listener(eventData);
+            }
+        });
+    }
+
     setError(error) {
         // msgs.current.show(
         //     {sticky: true, severity: 'error', summary: 'Error', detail: 'Message Content', closable: false}
@@ -269,14 +295,14 @@ class DataService {
                 identifier_type: identifier,
                 value: value
             };
-            const newDocument = category_id ? await api.insertDocument(createData, category_id, insert_digitized)
-                    : await api.insertDocument(createData, insert_digitized);
+            const newDocument = await api.insertDocument(createData, insert_digitized, category_id);
             return DocumentResult.fromJson(newDocument.data);
         } catch (error) {
             this.setError(error);
             return null;
         }
     }
+
     async createDocumentsFromFile(file, category_id) {
         try {
             const formData = new FormData();
@@ -323,6 +349,68 @@ class DataService {
         const deletedDocuments = documents.map(document => this.deleteDocument(document));
         return deletedDocuments;
     }
+
+    setMultiIssueDocuments(multiIssueDocuments) {
+        this.multiIssueDocuments = multiIssueDocuments;
+        this.publish('multiIssueDocumentsChanged');
+    }
+
+    hasMultiIssueDocument() {
+        return this.multiIssueDocuments?.length > 0;
+    }
+
+    getMultiIssueDocument() {
+        return this.multiIssueDocuments[0];
+    }
+
+    async selectFromMultiIssueDocument(selectedIssue, category) {
+        let editedIssues = this.multiIssueDocuments[0].catalog_document.issues.map(issue => {
+            if (issue.barcode === selectedIssue.barcode) {
+                return {
+                    ...issue,
+                    creating: true
+                }
+            } else {
+                return issue;
+            }
+        });
+        this.multiIssueDocuments[0].catalog_document.issues = editedIssues;
+        this.publish('multiIssueDocumentsChanged');
+
+        const result = await this.insertDocument(Identifier.BARCODE, selectedIssue.barcode, category, false);
+
+        editedIssues = this.multiIssueDocuments[0].catalog_document.issues.map(issue => {
+            if (issue.barcode === selectedIssue.barcode) {
+                console.log(issue);
+                return {
+                    ...issue,
+                    creating: false,
+                    already_exists: result.create_result === CreateResult.SUCCESS
+                }
+            } else {
+                return issue;
+            }
+        });
+        this.multiIssueDocuments[0].catalog_document.issues = editedIssues;
+        this.publish('multiIssueDocumentsChanged');
+    }
 };
 
-export const dataService = new DataService();
+const dataService = new DataService();
+const DataContext = createContext();
+
+export const DataProvider = ({ children }) => {
+    return (
+        <DataContext.Provider value={{ dataService }}>
+            {children}
+        </DataContext.Provider>
+    );
+};
+
+export const useData = () => {
+    const context = useContext(DataContext);
+    if (!context) {
+        throw new Error('useUser must be used within a UserProvider');
+    }
+    return context;
+};

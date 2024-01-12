@@ -22,13 +22,13 @@ class AccessService {
         return user?.actions.includes(action);
     }
 
-    isAllowedToEditDocument(user, record) {
-        return user && (
+    isAllowedToEditDocument(user, document) {
+        return user && user.actions && (
                 user.actions.includes(ActionType.edit_datatable_all)
                 || (user.actions.includes(ActionType.edit_datatable_department)
-                    && user.department_id === record.creator_department_id)
+                    && user.department_id === document.creator_department_id)
                 || (user.actions.includes(ActionType.edit_datatable_own)
-                    && user.id === record.creator_id));
+                    && user.id === document.creator_id));
     }
 };
 

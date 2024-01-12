@@ -1,19 +1,8 @@
 import requests
+from keycloak_auth import get_token
 
 
 URL = "http://localhost:8000"
-
-
-def get_token():
-    headers = {
-        "Content-Type": "application/json"
-    }
-    response = requests.post(f"{URL}/auth/login", headers=headers, json={
-        "username": "admin",
-        "password": "digiboardAdmin"
-        })
-
-    return response.json()['access_token']
 
 
 def create_test_category_tree():
