@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "primereact/button";
 import { Panel } from 'primereact/panel';
 
+import { useData } from "../../services/Data.js";
 import CreateResult from "../models/CreateResult";
 import DigitizationState from "../models/DigitizationState";
 import IssuanceType from "../models/IssuanceType";
@@ -13,6 +14,7 @@ import { ProgressBar } from "primereact/progressbar";
 import { ScrollPanel } from "primereact/scrollpanel";
 
 const InsertDocumentsIssues = (props) => {
+    const { dataService } = useData();
     const { t } = useTranslation();
 
     const [editions, setEditions] = useState([]);
@@ -30,6 +32,20 @@ const InsertDocumentsIssues = (props) => {
         }
     };
 
+    const handleMultiIssueDocumentsChanged = () => {
+        if (!dataService.hasMultiIssueDocument()) {
+            return;
+        }
+
+        const catalogDocument = dataService.getMultiIssueDocument().catalog_document;
+
+        setEditions(catalogDocument.issues
+            .filter(issue => issue.issuance_type == IssuanceType.EDITION));
+        setVolumes(catalogDocument.issues
+            .filter(issue => issue.issuance_type == IssuanceType.VOLUME)
+            .sort((a, b) => naturalSort(a.volume, b.volume)));
+    };
+
     const handleClickIssue = (issue) => {
         if (props.onSelect) {
             props.onSelect(issue);
@@ -37,22 +53,13 @@ const InsertDocumentsIssues = (props) => {
     };
 
     useEffect(() => {
-        if (!props.data || props.data.lenght == 0 || !props.data[0]) {
-            return;
-        }
+        dataService.subscribe('multiIssueDocumentsChanged', handleMultiIssueDocumentsChanged);
 
-        const catalogDocument = props.data[0].catalog_document;
-
-        setEditions(catalogDocument.issues
-            .filter(issue => issue.issuance_type == IssuanceType.EDITION));
-        setVolumes(catalogDocument.issues
-            .filter(issue => issue.issuance_type == IssuanceType.VOLUME)
-            .sort((a, b) => naturalSort(a.volume, b.volume)));
-    }, [props.data]);
+        handleMultiIssueDocumentsChanged();
+    }, []);
 
     const IssueDiv = (props) => {
         const issue = props.issue;
-        const [creating, setCreating] = useState(issue.creating);
 
         const active = !issue.already_exists && issue.digitization_state == DigitizationState.NOT_DIGITIZED;
         const state = issue.already_exists ? t('document_already_exists')
@@ -60,17 +67,16 @@ const InsertDocumentsIssues = (props) => {
                 : null;
         
         const handleClick = (e) => {
-            setCreating(true);
             handleClickIssue(issue);
         };
 
         return (
             <Button className="flex flex-1 overflow-visible text-gray-800" outlined
-                disabled={!active}
+                disabled={!active || issue.creating}
                 onClick={handleClick}
             >
                 <div className="flex flex-column flex-1 align-items-start">
-                    {creating && <ProgressBar mode="indeterminate" style={{ height: '6px', width: '100%' }} />}
+                    {issue.creating && <ProgressBar mode="indeterminate" style={{ height: '6px', width: '100%' }} />}
                     {state && <span className="font-bold text-lg">{state}</span>}
                     {issue.signature && <div className="flex gap-1">
                         <span className="font-bold">{t('signature')}:</span>

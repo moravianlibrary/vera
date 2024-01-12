@@ -16,6 +16,7 @@ import { ReactKeycloakProvider } from '@react-keycloak/web';
 import keycloak, { keycloakInitOptions } from '../services/Keycloak';
 import { ActionAccessRoute } from '../services/AccessService';
 import { UserProvider } from '../models/UserContext';
+import { DataProvider } from '../services/Data';
 
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
       initOptions={keycloakInitOptions}
     >
       <UserProvider>
+        <DataProvider>
         <ToastProvider>
           <StrictMode>
             <Router>
@@ -50,6 +52,7 @@ function App() {
             </Router>
           </StrictMode>
         </ToastProvider>
+        </DataProvider>
       </UserProvider>
     </ReactKeycloakProvider>
   );

@@ -1,11 +1,11 @@
 import { Steps } from "primereact/steps";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Identifier from '../models/Identifier.js';
 import CreateResult from '../models/CreateResult.js';
 import InsertDocumentsSettings from "../components/InsertDocumentsSettings.js";
 import InsertDocumentsValues from "../components/InsertDocumentsValues.js";
-import { dataService } from "../../services/Data.js";
+import { useData } from "../../services/Data.js";
 import InsertDocumentsResult from "../components/InsertDocumentsResult.js";
 import InsertDocumentsIssues from "../components/InsertDocumentsIssues.js";
 import { Card } from "primereact/card";
@@ -13,6 +13,7 @@ import { ScrollPanel } from "primereact/scrollpanel";
 
 const InsertDocuments = (props) => {
     const { t } = useTranslation();
+    const { dataService } = useData();
 
     const identifiers = [Identifier.SYSNO, Identifier.BARCODE];
     const categories = props.categories;
@@ -28,20 +29,19 @@ const InsertDocuments = (props) => {
     const [identifier, setIdentifier] = useState(identifiers[0]);
     const [category, setCategory] = useState(null);
 
-    const [multiIssue, setMultiIssue] = useState([]);
     const [results, showResults] = useState([]);
 
     const handleSelectSettings = (values) => {
         setIdentifier(values.identifier);
+        setCategory(values.category_id);
         setActiveIndex(activeIndex + 1);
     };
 
     const handleSelectValues = async (values) => {
-        setActiveIndex(activeIndex + 1);
         if (values.value) {
             const result = await dataService.insertDocument(identifier, values.value, category, false);
             if (result.create_result == CreateResult.MULTIPLE_ISSUE_CHOICES) {
-                setMultiIssue([result]);
+                dataService.setMultiIssueDocuments([result]);
                 // .filter(result => result.create_result == CreateResult.MULTIPLE_ISSUE_CHOICES);
                 setActiveIndex(2);
             } else {
@@ -53,34 +53,35 @@ const InsertDocuments = (props) => {
                 }
             }
         }
+        setActiveIndex(activeIndex + 1);
     };
 
-    const handleSelectIssue = async (create_issue) => {
-        multiIssue[0].catalog_document.issues = multiIssue[0].catalog_document.issues.map(issue => {
-            if (issue.barcode === create_issue.barcode) {
-                issue.creating = true;
-            }
-            return issue;
-        });
-        const result = await dataService.insertDocument(Identifier.BARCODE, create_issue.barcode, category, false);
-        multiIssue[0].catalog_document.issues = multiIssue[0].catalog_document.issues.map(issue => {
-            if (issue.barcode === create_issue.barcode) {
-                issue.creating = false;
-            }
-            return issue;
-        });
-        if (result.create_result == CreateResult.SUCCESS) {
-            multiIssue[0].catalog_document.issues = multiIssue[0].catalog_document.issues.map(issue => {
-                if (issue.barcode === create_issue.barcode) {
-                    issue.already_exists = true;
-                }
-                return issue;
-            });
-            if (props.onInsert) {
-                props.onInsert();
-            }
-        }
+    const handleSelectIssue = (issue) => {
+        console.log(category);
+        dataService.selectFromMultiIssueDocument(issue, category);
     };
+
+    // useEffect(() => {
+    //     const handleCreateIssue = async (barcode) => {
+    //         setCreateIssue(null);
+    //         const prevCreatingIssues = creatingIssues;
+    //         setCreatingIssues([...prevCreatingIssues, barcode]);
+
+    //         const result = await dataService.insertDocument(Identifier.BARCODE, barcode, category, false);
+    //         setCreatingIssues(creatingIssues.filter(b => b !== barcode));
+
+    //         if (result.create_result == CreateResult.SUCCESS) {
+    //             setCreatedIssues([...createdIssues, barcode]);
+    //             if (props.onInsert) {
+    //                 props.onInsert();
+    //             }
+    //         }
+    //     };
+
+    //     if (createIssue !== null) {
+    //         handleCreateIssue(createIssue);
+    //     }
+    // }, [createIssue]);
 
     const handleClose = () => {
         if (props.onClose) {
@@ -106,7 +107,6 @@ const InsertDocuments = (props) => {
                 />}
                 {activeIndex === 2 &&
                 <InsertDocumentsIssues
-                    data={multiIssue}
                     onSelect={handleSelectIssue}
                     onGoBack={(e) => setActiveIndex(1)}
                     onNext={(e) => setActiveIndex(3)}

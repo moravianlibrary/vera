@@ -14,13 +14,21 @@ const InsertDocumentsSettings = (props) => {
     const [category, setCategory] = useState(null);
 
     const handleAccept = (e) => {
+        console.log(category);
         if (props.onAccept) {
             props.onAccept({
                 identifier: value,
-                // category: category.id
+                category_id: category
             });
         }
     }
+
+    const renderLabel = (category) => {
+        if (category.parent_category) {
+            return `${renderLabel(category.parent_category)} > ${category.name}`;
+        }
+        return category.name;
+    };
 
     return (
         <div className="flex flex-column gap-3">
@@ -35,16 +43,17 @@ const InsertDocumentsSettings = (props) => {
             <div className="flex align-items-center gap-3">
                 <span>{t('choose_category')}:</span>
                 <Dropdown
-                    options={categories}
+                    options={categories.map(category => (
+                        { label: renderLabel(category), value: category.id }
+                    ))}
                     value={category}
-                    // name="name"
                     onChange={(e) => setCategory(e.value)}
                 />
             </div>
-            <div>
+            {/* <div>
                 <span>{t('')}</span>
                 <Checkbox />
-            </div>
+            </div> */}
             <Button
                 icon="pi pi-caret-right"
                 iconPos="right"

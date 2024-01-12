@@ -106,16 +106,16 @@ class Api {
         return axios.post(`/documents`, document.toJson(), { headers: authHeader() });
     }
 
-    insertDocument(createData, category_id, insert_digitized) {
-        return axios.post(
-            `/documents/create_from_catalog?category_id=${category_id}&insert_digitized=${insert_digitized}`,
-            createData, { headers: authHeader() });
-    }
-
-    insertDocument(createData, insert_digitized) {
-        return axios.post(
-            `/documents/create_from_catalog?insert_digitized=${insert_digitized}`,
-            createData, { headers: authHeader() });
+    insertDocument(createData, insert_digitized, category_id = null) {
+        if (category_id !== null) {
+            return axios.post(
+                `/documents/create_from_catalog?category_id=${category_id}&insert_digitized=${insert_digitized}`,
+                createData, { headers: authHeader() });
+        } else {
+            return axios.post(
+                `/documents/create_from_catalog?insert_digitized=${insert_digitized}`,
+                createData, { headers: authHeader() });
+        }
     }
 
     createDocumentsFromFile(formData, category_id) {

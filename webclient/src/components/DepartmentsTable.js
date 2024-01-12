@@ -4,13 +4,14 @@ import { useTranslation } from "react-i18next";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 
-import { dataService } from "../services/Data";
 import { textEditor } from "../services/Editors";
 import { Button } from "primereact/button";
+import { useData } from "../services/Data";
 
 const DepartmentsTable = (props) => {
     const { handleAddRow, onRowAdded } = props;
     const { t } = useTranslation();
+    const { dataService } = useData();
 
     const [departments, setDepartments] = useState([]);
     

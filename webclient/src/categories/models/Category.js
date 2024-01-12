@@ -39,6 +39,9 @@ export class Category {
                 + category.children.reduce((accumulator, category) => {
                     return accumulator + category.count_documents;
                 }, 0);
+        category.parent_category = json.parent_category !== null
+                ? Category.fromJson(json.parent_category)
+                : null;
 
         return category;
     }

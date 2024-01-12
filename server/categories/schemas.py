@@ -34,3 +34,4 @@ class CategoryPercentage(BaseModel):
 
 class CategoryDescriptor(CategoryBase):
     id: int
+    parent_category: Optional['CategoryDescriptor'] = None

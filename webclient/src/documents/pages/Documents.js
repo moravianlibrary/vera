@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import './Documents.css';
-import { dataService } from '../../services/Data.js';
 import { Dialog } from 'primereact/dialog';
 import InsertDocuments from './InsertDocuments.js';
 import DocumentsHeader from '../components/DocumentsHeader.js';
 import DocumentsTable from './DocumentsTable.js';
+import { useData } from '../../services/Data.js';
 
 const Documents = () => {
+    const { dataService } = useData();
+
     const loadAmount = 50;
 
     const [categories, setCategories] = useState([]);
@@ -63,8 +65,12 @@ const Documents = () => {
         }
     }
 
-    const handleDeleteDocument = (document) => {
-        dataService.deleteDocument(document);
+    const handleDeleteDocument = async (document) => {
+        const deletedDocument = await dataService.deleteDocument(document);
+        if (deletedDocument !== null) {
+            const editedDocuments = documents.filter(d => d.id !== document.id);
+            setDocuments(editedDocuments);
+        }
     }
 
     const handleCancelSelectedDocuments = () => {
@@ -75,7 +81,6 @@ const Documents = () => {
         dataService.deleteDocuments(selectedDocuments);
         setSelectedDocuments([]);
     }
-    console.log(categories);
 
     return (
       <div className="table-container" >
@@ -87,9 +92,12 @@ const Documents = () => {
         <DocumentsTable
             documents={documents}
             onLazyLoad={handleLazyLoad}
+            onDelete={handleDeleteDocument}
         />
         <Dialog visible={insertMode} onHide={(e) => setInsertMode(false)}>
-            <InsertDocuments />
+            <InsertDocuments
+                categories={categories}
+            />
         </Dialog>
       </div>
     );
