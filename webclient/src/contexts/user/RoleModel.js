@@ -24,9 +24,6 @@ export class Role {
     edit_categories;
     extract;
 
-    constructor() {
-    }
-
     static fromJson(jsonData) {
         const role = new Role();
 
@@ -54,12 +51,12 @@ export class Role {
     toJson() {
         const actionsValues = Object.values(ActionType);
         const actions = [
-            this.read_datatable_level == 1,
-            this.read_datatable_level == 2,
-            this.read_datatable_level == 3,
-            this.edit_datatable_level == 1,
-            this.edit_datatable_level == 2,
-            this.edit_datatable_level == 3,
+            this.read_datatable_level === 1,
+            this.read_datatable_level === 2,
+            this.read_datatable_level === 3,
+            this.edit_datatable_level === 1,
+            this.edit_datatable_level === 2,
+            this.edit_datatable_level === 3,
             this.write_datatable,
             this.comment_on_datatable,
             this.edit_access,

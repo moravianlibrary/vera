@@ -54,7 +54,7 @@ const Documents = () => {
 
         newData.category_id = categories.find(category => category.name === newData.category_name).id;
 
-        if (insertMode && index == 0) {
+        if (insertMode && index === 0) {
             dataService.createDocument(newData).then(document => {
                 setInsertMode(false);
             });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "primereact/button";
@@ -26,9 +26,9 @@ const Access = () => {
     const [addRole, setAddRole] = useState(false);
 
     const handleInsert = (event) => {
-        if (table == TableEnum.DEPARTMENS) {
+        if (table === TableEnum.DEPARTMENS) {
             setAddDepartment(true);
-        } else if (table == TableEnum.ROLES) {
+        } else if (table === TableEnum.ROLES) {
             setAddRole(true);
         }
     };

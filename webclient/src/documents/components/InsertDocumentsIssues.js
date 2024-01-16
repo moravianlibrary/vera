@@ -40,9 +40,9 @@ const InsertDocumentsIssues = (props) => {
         const catalogDocument = dataService.getMultiIssueDocument().catalog_document;
 
         setEditions(catalogDocument.issues
-            .filter(issue => issue.issuance_type == IssuanceType.EDITION));
+            .filter(issue => issue.issuance_type === IssuanceType.EDITION));
         setVolumes(catalogDocument.issues
-            .filter(issue => issue.issuance_type == IssuanceType.VOLUME)
+            .filter(issue => issue.issuance_type === IssuanceType.VOLUME)
             .sort((a, b) => naturalSort(a.volume, b.volume)));
     };
 
@@ -61,9 +61,9 @@ const InsertDocumentsIssues = (props) => {
     const IssueDiv = (props) => {
         const issue = props.issue;
 
-        const active = !issue.already_exists && issue.digitization_state == DigitizationState.NOT_DIGITIZED;
+        const active = !issue.already_exists && issue.digitization_state === DigitizationState.NOT_DIGITIZED;
         const state = issue.already_exists ? t('document_already_exists')
-                : issue.digitization_state == DigitizationState.FINISHED ? t('digitization_finished')
+                : issue.digitization_state === DigitizationState.FINISHED ? t('digitization_finished')
                 : null;
         
         const handleClick = (e) => {

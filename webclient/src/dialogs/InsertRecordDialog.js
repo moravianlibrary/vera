@@ -65,7 +65,7 @@ const InsertRecordDialog = (props) => {
     };
 
     const handleIssueClick = (issue) => {
-        dataService.createRecord(record.toCreateRecord(categories.find(c => c.name == category).id, issue));
+        dataService.createRecord(record.toCreateRecord(categories.find(c => c.name === category).id, issue));
     }
 
     useEffect(() => {

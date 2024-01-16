@@ -40,9 +40,9 @@ const InsertDocuments = (props) => {
     const handleSelectValues = async (values) => {
         if (values.value) {
             const result = await dataService.insertDocument(identifier, values.value, category, false);
-            if (result.create_result == CreateResult.MULTIPLE_ISSUE_CHOICES) {
+            if (result.create_result === CreateResult.MULTIPLE_ISSUE_CHOICES) {
                 dataService.setMultiIssueDocuments([result]);
-                // .filter(result => result.create_result == CreateResult.MULTIPLE_ISSUE_CHOICES);
+                // .filter(result => result.create_result === CreateResult.MULTIPLE_ISSUE_CHOICES);
                 setActiveIndex(2);
             } else {
                 showResults([result]);
@@ -70,7 +70,7 @@ const InsertDocuments = (props) => {
     //         const result = await dataService.insertDocument(Identifier.BARCODE, barcode, category, false);
     //         setCreatingIssues(creatingIssues.filter(b => b !== barcode));
 
-    //         if (result.create_result == CreateResult.SUCCESS) {
+    //         if (result.create_result === CreateResult.SUCCESS) {
     //             setCreatedIssues([...createdIssues, barcode]);
     //             if (props.onInsert) {
     //                 props.onInsert();

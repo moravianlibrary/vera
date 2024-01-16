@@ -6,13 +6,13 @@ import UpdateCategoryNode from "./UpdateCategoryNode";
 const CategoryNodeComponent = (props) => {
     if (!props.node) {
         return;
-    } else if (props.node.type == NodeType.INSERT) {
+    } else if (props.node.type === NodeType.INSERT) {
         return (<InsertCategoryNode {...props} />)
-    } else if (props.node.type == NodeType.ROOT) {
+    } else if (props.node.type === NodeType.ROOT) {
         return (<CategoryViewNode {...props} />)
-    } else if (props.node.type == NodeType.CATEGORY) {
+    } else if (props.node.type === NodeType.CATEGORY) {
         return (<CategoryViewNode {...props} />)
-    } else if (props.node.type == NodeType.UPDATE_CATEGORY) {
+    } else if (props.node.type === NodeType.UPDATE_CATEGORY) {
         return (<UpdateCategoryNode {...props} />)
     }
 }

@@ -30,7 +30,7 @@ const DepartmentsTable = (props) => {
 
     const onRowEditChange = (event) => {
         const { data, index } = event;
-        if (insertMode && index == departments.length - 1) {
+        if (insertMode && index === departments.length - 1) {
             setInsertMode(false);
         }
         const activeRowArray = Array.isArray(data) ? data : [data];
@@ -40,7 +40,7 @@ const DepartmentsTable = (props) => {
     const handleDepartmentEdit = (event) => {
         const { newData, index } = event;
 
-        if (insertMode && index == departments.length - 1) {
+        if (insertMode && index === departments.length - 1) {
             dataService.createDepartment(newData);
         } else {
             dataService.updateDepartment(newData);

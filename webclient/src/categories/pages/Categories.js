@@ -40,9 +40,9 @@ const Categories = (props) => {
     };
 
     const handleClickNode = (node) => {
-        if (node.type == NodeType.ROOT || node.type == NodeType.CATEGORY) {
+        if (node.type === NodeType.ROOT || node.type === NodeType.CATEGORY) {
             setActiveNode(node);
-        } else if (node.type == NodeType.INSERT) {
+        } else if (node.type === NodeType.INSERT) {
             node.parentNode.insertNewCategoryNode();
         }
         refresh();
@@ -113,7 +113,7 @@ const Categories = (props) => {
 
     const handleUpdatePercentage = () => {
         const sum = editPercentageNodes.reduce((accumulator, node) => accumulator + node.percentage, 0);
-        if (sum == 100 || sum == 0) {
+        if (sum === 100 || sum === 0) {
             const parent_id = editPercentageNodes[0].category.parent_id;
             const distribution = editPercentageNodes.map((node) => {
                 return {

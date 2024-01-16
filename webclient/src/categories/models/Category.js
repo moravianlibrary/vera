@@ -60,7 +60,7 @@ export class Category {
     }
 
     isEmpty() {
-        return this.count_documents == 0 && this.percentage == 0;
+        return this.count_documents === 0 && this.percentage === 0;
     }
 
     createUpdateClone(values) {
