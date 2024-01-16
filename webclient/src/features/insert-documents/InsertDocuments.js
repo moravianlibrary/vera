@@ -1,13 +1,13 @@
 import { Steps } from "primereact/steps";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import Identifier from '../models/Identifier.js';
-import CreateResult from '../models/CreateResult.js';
-import InsertDocumentsSettings from "../components/InsertDocumentsSettings.js";
-import InsertDocumentsValues from "../components/InsertDocumentsValues.js";
+import Identifier from '../../documents/models/Identifier.js';
+import CreateResult from '../../documents/models/CreateResult.js';
+import InsertDocumentsSettings from "./InsertDocumentsSettings.js";
+import InsertDocumentsValues from "../../documents/components/InsertDocumentsValues.js";
 import { useData } from "../../services/Data.js";
-import InsertDocumentsResult from "../components/InsertDocumentsResult.js";
-import InsertDocumentsIssues from "../components/InsertDocumentsIssues.js";
+import InsertDocumentsResult from "../../documents/components/InsertDocumentsResult.js";
+import InsertDocumentsIssues from "../../documents/components/InsertDocumentsIssues.js";
 import { Card } from "primereact/card";
 import { ScrollPanel } from "primereact/scrollpanel";
 

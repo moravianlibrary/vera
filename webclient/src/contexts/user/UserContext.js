@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
-import keycloak, { keycloakInitOptions } from '../services/Keycloak';
-import { User } from './User';
+import keycloak, { keycloakInitOptions } from '../../services/Keycloak';
+import { User } from './UserModel';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '../services/ToastContext';
-import { api } from '../services/Api';
+import { useToast } from '../../services/ToastContext';
+import { api } from '../../services/Api';
 
 const UserContext = createContext();
 

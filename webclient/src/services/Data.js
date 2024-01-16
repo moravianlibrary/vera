@@ -2,7 +2,7 @@ import { Category } from "../categories/models/Category";
 import { Quota } from "../categories/models/Quota";
 import { PrecreateDocument } from "../documents/models/PrecreateDocument";
 import { Document } from "../documents/models/Document";
-import { Role } from "../models/Role";
+import { Role } from "../contexts/user/RoleModel";
 import { api } from "./Api";
 import { DocumentResult } from "../documents/models/DocumentResult";
 import { createContext, useContext } from "react";

@@ -8,7 +8,7 @@ import 'primeicons/primeicons.css';
 import 'primereact/resources/primereact.css';  
 
 import './index.css';
-import App from './views/App';
+import App from './pages/App';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root')!);

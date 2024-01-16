@@ -1,4 +1,4 @@
-import { Role } from "./Role";
+import { Role } from "./RoleModel";
 
 export class User {
     access_token;

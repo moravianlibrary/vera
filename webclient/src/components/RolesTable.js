@@ -7,7 +7,7 @@ import { Checkbox } from "primereact/checkbox";
 import { ColumnGroup } from "primereact/columngroup";
 import { Row } from "primereact/row";
 import { textEditor } from '../services/Editors.js';
-import { Role } from "../models/Role";
+import { Role } from "../contexts/user/RoleModel.js";
 import { Button } from "primereact/button";
 import { useData } from "../services/Data.js";
 

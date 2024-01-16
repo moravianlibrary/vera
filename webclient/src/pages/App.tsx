@@ -3,16 +3,16 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // import Home from './Home'; 
 import Access from './Access';
-import Navbar from './Navbar';
+import Navbar from '../components/Navbar';
 import '../config/i18n';
-import './App.css';
+import '../styles/App.css';
 import { ToastProvider } from '../services/ToastContext';
-import { ActionType } from '../models/Role';
+import { ActionType } from '../contexts/user/RoleModel';
 import Categories from '../categories/pages/Categories';
-import Documents from '../documents/pages/Documents';
-import Login from './Login';
+import Documents from '../pages/Documents';
+import Login from '../components/Login';
 import { ActionAccessRoute } from '../services/AccessService';
-import { UserProvider } from '../models/UserContext';
+import { UserProvider } from '../contexts/user/UserContext';
 import { DataProvider } from '../services/Data';
 
 

@@ -1,11 +1,11 @@
 import { Outlet } from "react-router-dom";
-import { User } from "../models/User";
+import { User } from "../contexts/user/UserModel";
 import { api } from "./Api";
-import { ActionType } from "../models/Role";
+import { ActionType } from "../contexts/user/RoleModel";
 import { useToast } from "./ToastContext";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
-import { useUser } from "../models/UserContext";
+import { useUser } from "../contexts/user/UserContext";
 import { useKeycloak } from "@react-keycloak/web";
 
 class AccessService {

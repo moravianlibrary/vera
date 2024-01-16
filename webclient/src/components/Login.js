@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
 import { useTranslation } from 'react-i18next';
-import { useUser } from '../models/UserContext';
+import { useUser } from '../contexts/user/UserContext';
 
 const Login = () => {
     const { t } = useTranslation();

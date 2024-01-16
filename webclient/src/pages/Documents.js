@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-import './Documents.css';
+import '../styles/Documents.css';
 import { Dialog } from 'primereact/dialog';
-import InsertDocuments from './InsertDocuments.js';
-import DocumentsHeader from '../components/DocumentsHeader.js';
-import DocumentsTable from './DocumentsTable.js';
-import { useData } from '../../services/Data.js';
+import InsertDocuments from '../features/insert-documents/InsertDocuments.js';
+import DocumentsHeader from '../documents/components/DocumentsHeader.js';
+import DocumentsTable from '../documents/pages/DocumentsTable.js';
+import { useData } from '../services/Data.js';
 
 const Documents = () => {
     const { dataService } = useData();

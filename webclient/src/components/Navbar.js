@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
 
 // import UserInfo from '../components/UserInfo';
-import './Navbar.css';
-import { ActionType } from '../models/Role';
+import '../styles/Navbar.css';
+import { ActionType } from '../contexts/user/RoleModel';
 import Login from './Login';
 import { ActionAccessComponent } from '../services/AccessService';
 

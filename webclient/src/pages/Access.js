@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
 import { SelectButton } from "primereact/selectbutton";
 
-import './Access.css';
+import '../styles/Access.css';
 import RolesTable from "../components/RolesTable.js";
 import DepartmentsTable from "../components/DepartmentsTable.js";
 
