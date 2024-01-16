@@ -27,25 +27,26 @@ const Login = () => {
         keycloak.logout();
     };
 
-    const getCurrentUser = async () => {
-        if (!initialized || keycloak.isTokenExpired()) {
-            return;
-        }
-
-        try {
-            const user = await api.getCurrentUser();
-            setUser(User.fromJson(user.data));
-            console.log(User.fromJson(user.data));
-        } catch (error) {
-            if (error.response && error.response.status === 401) {
-                if (error.response.data?.detail !== null) {
-                    showToast("error", t(error.response.data.detail), "");
-                }
-            }
-        }
-    };
 
     useEffect(() => {
+        const getCurrentUser = async () => {
+            if (!initialized || keycloak.isTokenExpired()) {
+                return;
+            }
+
+            try {
+                const user = await api.getCurrentUser();
+                setUser(User.fromJson(user.data));
+                console.log(User.fromJson(user.data));
+            } catch (error) {
+                if (error.response && error.response.status === 401) {
+                    if (error.response.data?.detail !== null) {
+                        showToast("error", t(error.response.data.detail), "");
+                    }
+                }
+            }
+        };
+
         if (initialized) {
             localStorage.setItem('token', keycloak.token);
             console.log('save_token');
