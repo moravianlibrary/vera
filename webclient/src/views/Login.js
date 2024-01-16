@@ -34,8 +34,8 @@ const Login = () => {
 
         try {
             const user = await api.getCurrentUser();
-            console.log(User.fromJson(user.data));
             setUser(User.fromJson(user.data));
+            console.log(User.fromJson(user.data));
         } catch (error) {
             if (error.response && error.response.status === 401) {
                 if (error.response.data?.detail !== null) {
@@ -48,7 +48,12 @@ const Login = () => {
     useEffect(() => {
         if (initialized) {
             localStorage.setItem('token', keycloak.token);
+            console.log('save_token');
             const isLoggedIn = initialized && keycloak.token !== null && !keycloak.isTokenExpired();
+            console.log(`is_logged_in: ${isLoggedIn}`);
+            console.log(`initialized: ${initialized}`);
+            console.log(`keycloak.token: ${keycloak.token}`);
+            console.log(`keycloak.isTokenExpired: ${keycloak.isTokenExpired()}`);
             if (isLoggedIn) {
                 getCurrentUser();
                 setIsLoggedIn(isLoggedIn);
