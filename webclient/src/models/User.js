@@ -7,15 +7,17 @@ export class User {
     department_name;
     role_name;
     actions;
+    isLoggedIn = false;
 
     static createUser(userData) {
         const user = new User();
-        this.username = userData.username;
-        this.department_id = userData.department_id;
-        this.department_name = userData.department_name;
-        this.role_id = userData.role_id;
-        this.role_name = userData.role_name;
-        this.actions = Role.expandActions(userData.actions);
+        user.username = userData.username;
+        user.department_id = userData.department_id;
+        user.department_name = userData.department_name;
+        user.role_id = userData.role_id;
+        user.role_name = userData.role_name;
+        user.actions = Role.expandActions(userData.actions);
+        user.isLoggedIn = true;
         return user;
     }
 
