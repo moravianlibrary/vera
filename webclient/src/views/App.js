@@ -12,24 +12,16 @@ import { APP_CONFIG } from '../config/config';
 import Categories from '../categories/pages/Categories';
 import Documents from '../documents/pages/Documents';
 import Login from './Login';
-import { ReactKeycloakProvider } from '@react-keycloak/web';
-import keycloak, { keycloakInitOptions } from '../services/Keycloak';
 import { ActionAccessRoute } from '../services/AccessService';
 import { UserProvider } from '../models/UserContext';
 import { DataProvider } from '../services/Data';
 
 
 function App() {
-  console.log(keycloak);
-
   return (
-    <ReactKeycloakProvider
-      authClient={keycloak}
-      initOptions={keycloakInitOptions}
-    >
+    <ToastProvider>
       <UserProvider>
         <DataProvider>
-        <ToastProvider>
           <StrictMode>
             <Router>
               <div className="App">
@@ -51,10 +43,9 @@ function App() {
               </div>
             </Router>
           </StrictMode>
-        </ToastProvider>
         </DataProvider>
       </UserProvider>
-    </ReactKeycloakProvider>
+    </ToastProvider>
   );
 }
 
