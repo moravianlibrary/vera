@@ -59,7 +59,7 @@ const Login = () => {
                 setIsLoggedIn(isLoggedIn);
             }
         }
-    }, [keycloak.token]);
+    }, [initialized, keycloak, keycloak.token]);
 
     useEffect(() => {
         // getCurrentUser();
