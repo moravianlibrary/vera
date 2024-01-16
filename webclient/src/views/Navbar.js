@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from "react-i18next";
 
-import UserInfo from '../components/UserInfo';
+// import UserInfo from '../components/UserInfo';
 import './Navbar.css';
 import { ActionType } from '../models/Role';
 import Login from './Login';
@@ -28,10 +28,10 @@ const Navbar = () => {
           component={<li><Link to="/access">{t("access")}</Link></li>}
         />
         <li className="right"><Login /></li>
-        <ActionAccessComponent
+        {/* <ActionAccessComponent
           action={null}
           component={<li className="right"><UserInfo /></li>}
-        />
+        /> */}
       </ul>
     </nav>
   );

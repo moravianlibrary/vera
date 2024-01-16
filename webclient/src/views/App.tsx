@@ -1,4 +1,4 @@
-import React, { StrictMode, useEffect, useRef, useState } from 'react';
+import React, { StrictMode } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // import Home from './Home'; 
@@ -8,7 +8,6 @@ import '../config/i18n';
 import './App.css';
 import { ToastProvider } from '../services/ToastContext';
 import { ActionType } from '../models/Role';
-import { APP_CONFIG } from '../config/config';
 import Categories from '../categories/pages/Categories';
 import Documents from '../documents/pages/Documents';
 import Login from './Login';

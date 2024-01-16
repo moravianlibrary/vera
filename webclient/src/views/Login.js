@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from 'primereact/button';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '../services/ToastContext';
-import UserInfo from '../components/UserInfo';
 import { useUser } from '../models/UserContext';
 
 const Login = () => {
@@ -17,6 +15,15 @@ const Login = () => {
 
     return (
         <div>
+            {isLoggedIn &&
+            <Button
+                style={{color: "white"}}
+                text 
+                // label={`${user?.username} (${timeRemaining})`}
+                label={user?.username}
+                disabled
+                // onClick={isLoggedIn ? handleLogout : handleOpen}
+            />}
             <Button
                 style={{color: "white"}}
                 text 
