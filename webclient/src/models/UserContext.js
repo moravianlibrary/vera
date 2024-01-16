@@ -38,6 +38,8 @@ export const UserProvider = ({ children }) => {
                 if (error.response.data?.detail !== null) {
                     showToast("error", t(error.response.data.detail), "");
                 }
+            } else if (error.code === 'ERR_NETWORK') {
+                showToast("error", t('app_not_available'), "");
             }
         }
     }

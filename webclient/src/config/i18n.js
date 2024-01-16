@@ -130,6 +130,7 @@ const resources = {
         "User does not have an assigned role": "Uživatel nemá přiřazenu žádnou roli",
         "User have more than one assigned role": "Uživatel má přiřazené více než jednu roli",
         "User have more than one assigned department": "Uživatel má přiřazen více než jedno oddělení",
+        app_not_available: "Aplikace není dostupna",
 
     },
   },
