@@ -11,8 +11,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      # - ./populate.sql:/docker-entrypoint-initdb.d/populate.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./populate.sql:/docker-entrypoint-initdb.d/populate.sql
       - data:/var/lib/postgresql/data
     networks:
       - digiboard
@@ -24,19 +24,32 @@ services:
         #dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    restart: unless-stopped
     environment:
       - DEBUG=True
       - POSTGRES_HOST=postgres
+      - JWT_SECRET_KEY=MJJLWBd3FGfDddqkUC4qE+VX5HYexVK6hLkieod5aGQ=
+      - JWT_ALGORITHM=HS256
       - ALLOW_ORIGINS=http://localhost:3000
+      - ACCESS_TOKEN_EXPIRE_MINUTES=300
       - TIMEZONE=Europe/Prague
-      - KEYCLOAK_CLIENT_ID=vera-backend
-      - KEYCLOAK_REALM=mzk
-      - KEYCLOAK_SERVER_URL=https://keycloak.osdd.mzk.cz
-      - KEYCLOAK_CLIENT_SECRET_KEY=AVGFxZoFoaD61OUwyiTCc3IAAS3PJNTC
-      - KEYCLOAK_ISSUER_CLIENT_ID=vera
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=digiboardAdmin
     depends_on:
       - postgres
+    networks:
+      - digiboard
+
+  client:
+    container_name: digiboard-client
+    build:
+      context: ./webclient
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://api-server:8080  # Replace with your API server's URL
+    depends_on:
+      - server
     networks:
       - digiboard
 
