@@ -4,7 +4,7 @@ import keycloak, { keycloakInitOptions } from '../../services/Keycloak';
 import { User } from './UserModel';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../services/ToastContext';
-import { api } from '../../services/Api';
+import ApiUser from '../../adapters/ApiUser';
 
 const UserContext = createContext();
 
@@ -30,7 +30,7 @@ export const UserProvider = ({ children }) => {
 
     const getCurrentUser = async () => {
         try {
-            const user = await api.getCurrentUser();
+            const user = await ApiUser.getCurrentUser();
             setUserData(user.data);
         } catch (error) {
             setUser(new User());
