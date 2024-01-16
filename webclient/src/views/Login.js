@@ -34,6 +34,7 @@ const Login = () => {
 
         try {
             const user = await api.getCurrentUser();
+            console.log(User.fromJson(user.data));
             setUser(User.fromJson(user.data));
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -56,7 +57,7 @@ const Login = () => {
     }, [keycloak.token]);
 
     useEffect(() => {
-        getCurrentUser();
+        // getCurrentUser();
     }, []);
 
     return (
