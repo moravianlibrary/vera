@@ -2,7 +2,7 @@ import axiosInstance, { authHeader } from "./ApiBase";
 
 interface Department {
     id: number;
-    // Add other department properties
+    name: string;
 }
 
 namespace ApiDepartments {

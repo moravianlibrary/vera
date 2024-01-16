@@ -1,8 +1,30 @@
 import axiosInstance, { authHeader } from "./ApiBase";
 
 interface Category {
-    id: number;
+    id?: number;
+    name: string;
+    description?: string | null;
+    parent_id?: number | null;
+    assignable: boolean;
+    percentage: number;
+    disabled: boolean;
+    departments: number[];
+    level?: number | null;
+    parent_category?: Category | null;
     toJson(): object;
+}
+
+interface CategoryPercentage {
+    id: number;
+    percentage: number;
+}
+
+interface Quota {
+    id: number;
+    name: string;
+    description?: string | null;
+    pages_count: number;
+    active?: boolean;
 }
 
 namespace ApiCategories {
@@ -30,7 +52,7 @@ namespace ApiCategories {
         return axiosInstance.delete(`/categories/category/${id}`, { headers: authHeader() });
     }
 
-    export function updateDistribution(parent_id: number, distribution: any) {
+    export function updateDistribution(parent_id: number, distribution: CategoryPercentage[]) {
         if (parent_id) {
             return axiosInstance.put(`/categories/distribution?parent_id=${parent_id}`, distribution, { headers: authHeader() });
         }
@@ -38,14 +60,14 @@ namespace ApiCategories {
     }
 
     export function getQuotas() {
-        return axiosInstance.get("/categories/quota", { headers: authHeader() });
+        return axiosInstance.get<Quota[]>("/categories/quota", { headers: authHeader() });
     }
 
-    export function createQuota(quota: any) {
+    export function createQuota(quota: Quota) {
         return axiosInstance.post("/categories/quota", quota, { headers: authHeader() });
     }
 
-    export function updateQuota(quota: any) {
+    export function updateQuota(quota: Quota) {
         return axiosInstance.put(`/categories/quota/${quota.id}`, quota, { headers: authHeader() });
     }
 

@@ -1,8 +1,10 @@
+import { ActionType } from "../types/ActionType";
 import axiosInstance, { authHeader } from "./ApiBase";
 
 interface Role {
     id: number;
-    // Add other role properties
+    name: string;
+    actions: ActionType[];
 }
 
 namespace ApiRoles {

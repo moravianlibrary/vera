@@ -13,7 +13,7 @@ from typing import List, Optional
 router = APIRouter()
 
 
-@router.post("/categories/category", response_model=schemas.CategoryNode)
+@router.post("/categories/category", response_model=schemas.Category)
 def create_category(category: schemas.CategoryCreate,
                     db: Session = Depends(get_db)):
     new_category = (crud.create_root_category(category, db)
