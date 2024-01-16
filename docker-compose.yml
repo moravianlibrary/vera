@@ -11,8 +11,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./populate.sql:/docker-entrypoint-initdb.d/populate.sql
+      # - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      # - ./populate.sql:/docker-entrypoint-initdb.d/populate.sql
       - data:/var/lib/postgresql/data
     networks:
       - digiboard
@@ -24,6 +24,7 @@ services:
         #dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    restart: unless-stopped
     environment:
       - DEBUG=True
       - POSTGRES_HOST=postgres
@@ -36,20 +37,6 @@ services:
       - KEYCLOAK_ISSUER_CLIENT_ID=vera
     depends_on:
       - postgres
-    networks:
-      - digiboard
-
-  client:
-    container_name: digiboard-client
-    build:
-      context: ./webclient
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
-    environment:
-      - REACT_APP_API_URL=http://api-server:8080  # Replace with your API server's URL
-    depends_on:
-      - server
     networks:
       - digiboard
 
