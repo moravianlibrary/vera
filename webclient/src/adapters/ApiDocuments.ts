@@ -90,7 +90,8 @@ namespace ApiDocuments {
         return axiosInstance.delete<Document>(`/documents/${id}`, { headers: authHeader() });
     }
 
-    export function insertDocument(identifier: Identifier, insert_digitized: boolean, category_id?: number | null) {
+    export function insertDocument(identifier: Identifier, category_id: number | null, insert_digitized: boolean) {
+        console.log(identifier);
         const url = category_id !== null
             ? `/documents/create_from_catalog?category_id=${category_id}&insert_digitized=${insert_digitized}`
             : `/documents/create_from_catalog?insert_digitized=${insert_digitized}`;

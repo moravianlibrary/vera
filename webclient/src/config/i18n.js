@@ -120,6 +120,7 @@ const resources = {
         insert_another: "Vložit další",
         finish: "Skončit",
         details: "Detaily",
+        count: "Počet",
 
         document_successfuly_created: "Dokument úspěšně vytvořený",
         unique_document_violation: "Duplicitní dokument",

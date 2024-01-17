@@ -1,11 +1,13 @@
 import { Messages } from "primereact/messages";
 import { useEffect, useRef } from "react";
-import CreateResult from "../models/CreateResult";
 import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
+import { DocumentCreationStatus } from "../../types/DocumentCreationStatus";
+import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 
 const InsertDocumentsResult = (props) => {
     const { t } = useTranslation();
+    const { results } = useInsertDocuments();
     const messages = useRef(null);
 
     const handleRestart = () => {
@@ -31,24 +33,24 @@ const InsertDocumentsResult = (props) => {
     };
 
     const getStatusSeverity = (status) => {
-        if (status === CreateResult.SUCCESS) {
+        if (status === DocumentCreationStatus.Success) {
             return "success";
-        } else if (status === CreateResult.UNIQUE_DOCUMENT_VIOLATION
-                || status === CreateResult.ALREADY_DIGITIZED) {
+        } else if (status === DocumentCreationStatus.UniqueDocumentViolation
+                || status === DocumentCreationStatus.AlreadyDigitized) {
             return "warn";
         }
         return "error";
     };
 
     const getStatusTitle = (status) => {
-        if (status === CreateResult.SUCCESS) {
+        if (status === DocumentCreationStatus.Success) {
             return t('document_successfuly_created');
         }
         return t(status.toLowerCase());
     }
 
     const generateMessageForStatus = (results, status) => {
-        const documents = props.results.filter(result => result.create_result === status);
+        const documents = results.filter(result => result.create_result === status);
         if (documents.length === 0) {
             return null;
         }
@@ -70,17 +72,16 @@ const InsertDocumentsResult = (props) => {
     };
 
     useEffect(() => {
-        console.log(props.results);
         if (messages.current) {
             messages.current.clear();
 
-            const newMessages = Object.values(CreateResult)
-            .map(status => generateMessageForStatus(props.results, status))
+            const newMessages = Object.values(DocumentCreationStatus)
+            .map(status => generateMessageForStatus(results, status))
             .filter(message => message !== null);
 
             messages.current.show(newMessages);
         }
-    }, [props.results]);
+    }, [results]);
 
     return (
         <div>
@@ -93,6 +94,7 @@ const InsertDocumentsResult = (props) => {
                     onClick={handleRestart}
                 />
                 <Button
+                    disabled
                     icon="pi pi-question"
                     outlined
                     label={t('details')}

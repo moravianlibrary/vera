@@ -4,19 +4,22 @@ import { Button } from "primereact/button";
 import { Panel } from 'primereact/panel';
 
 import { useData } from "../../services/Data.js";
-import CreateResult from "../models/CreateResult";
-import DigitizationState from "../models/DigitizationState";
-import IssuanceType from "../models/IssuanceType";
-import naturalSort from "../SortUtils";
+import CreateResult from "../../documents/models/CreateResult.js";
+import DigitizationState from "../../documents/models/DigitizationState.js";
+import IssuanceType from "../../documents/models/IssuanceType.js";
+import naturalSort from "../../documents/SortUtils.js";
 import { useTranslation } from "react-i18next";
 import { ProgressSpinner } from "primereact/progressspinner";
 import { ProgressBar } from "primereact/progressbar";
 import { ScrollPanel } from "primereact/scrollpanel";
+import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext.js";
 
 const InsertDocumentsIssues = (props) => {
     const { dataService } = useData();
+    const { chooseIssuesDocuments, createIssue, creatingIssues, createdIssues } = useInsertDocuments();
     const { t } = useTranslation();
 
+    const [index, setIndex] = useState(0);
     const [editions, setEditions] = useState([]);
     const [volumes, setVolumes] = useState([]);
 
@@ -26,18 +29,14 @@ const InsertDocumentsIssues = (props) => {
         }
     };
 
-    const handleNext = (e) => {
-        if (props.onNext) {
-            props.onNext();
+    const handleGoNext = (e) => {
+        if (props.onGoNext) {
+            props.onGoNext();
         }
     };
 
-    const handleMultiIssueDocumentsChanged = () => {
-        if (!dataService.hasMultiIssueDocument()) {
-            return;
-        }
-
-        const catalogDocument = dataService.getMultiIssueDocument().catalog_document;
+    const handleChooseIssuesForDocument = (index) => {
+        const catalogDocument = chooseIssuesDocuments[index].catalog_document;
 
         setEditions(catalogDocument.issues
             .filter(issue => issue.issuance_type === IssuanceType.EDITION));
@@ -47,36 +46,68 @@ const InsertDocumentsIssues = (props) => {
     };
 
     const handleClickIssue = (issue) => {
-        if (props.onSelect) {
-            props.onSelect(issue);
-        }
+        createIssue(index, issue);
     };
 
     useEffect(() => {
-        dataService.subscribe('multiIssueDocumentsChanged', handleMultiIssueDocumentsChanged);
+        if (chooseIssuesDocuments) {
+            if (chooseIssuesDocuments.length === 0) {
+                handleGoNext();
+            }
+            handleChooseIssuesForDocument(index);
+        }
+        // dataService.subscribe('multiIssueDocumentsChanged', handleMultiIssueDocumentsChanged);
 
-        handleMultiIssueDocumentsChanged();
-    }, []);
+        // handleMultiIssueDocumentsChanged();
+    }, [chooseIssuesDocuments]);
 
     const IssueDiv = (props) => {
         const issue = props.issue;
 
-        const active = !issue.already_exists && issue.digitization_state === DigitizationState.NOT_DIGITIZED;
-        const state = issue.already_exists ? t('document_already_exists')
-                : issue.digitization_state === DigitizationState.FINISHED ? t('digitization_finished')
-                : null;
+    const active = !issue.already_exists && issue.digitization_state === DigitizationState.NOT_DIGITIZED;
+        const [state, setState] = useState(issue.already_exists
+                ? t('document_already_exists')
+                : issue.digitization_state === DigitizationState.FINISHED
+                    ? t('digitization_finished')
+                    : null);
+        const [creating, setCreating] = useState(false);
+        const [created, setCreated] = useState(false);
         
         const handleClick = (e) => {
             handleClickIssue(issue);
         };
 
+        useEffect(() => {
+            if (creatingIssues && !issue.already_exists && !created && creatingIssues.filter(i => i.barcode === issue.barcode).length > 0) {
+                setCreating(true);
+            }
+        }, [creatingIssues]);
+
+        useEffect(() => {
+            if (createdIssues && !issue.already_exists && createdIssues.filter(i => i.barcode === issue.barcode).length > 0) {
+                setCreated(true);
+                setState(t('document_already_exists'));
+                // setCreating(false);
+            }
+        }, [createdIssues]);
+
+        useEffect(() => {
+            if (created) {
+                setCreating(false);
+            }
+            // if (issue.already_exists || createdIssues.filter(i => i.barcode === issue.barcode).length > 0) {
+            //     setCreated(true);
+            //     setState(t('document_already_exists'));
+            // }
+        }, [created]);
+
         return (
             <Button className="flex flex-1 overflow-visible text-gray-800" outlined
-                disabled={!active || issue.creating}
+                disabled={!active || createdIssues.filter(i => i.barcode === issue.barcode).length > 0}
                 onClick={handleClick}
             >
                 <div className="flex flex-column flex-1 align-items-start">
-                    {issue.creating && <ProgressBar mode="indeterminate" style={{ height: '6px', width: '100%' }} />}
+                    {creating && <ProgressBar mode="indeterminate" style={{ height: '6px', width: '100%' }} />}
                     {state && <span className="font-bold text-lg">{state}</span>}
                     {issue.signature && <div className="flex gap-1">
                         <span className="font-bold">{t('signature')}:</span>
@@ -103,7 +134,7 @@ const InsertDocumentsIssues = (props) => {
         return (
             <Panel header={header} className="flex flex-column p-1">
                 <div className="flex flex-wrap gap-1" >
-                    {issues.map(issue => <IssueDiv issue={issue}/>)}
+                    {issues.map(issue => <IssueDiv key={issue.barcode} issue={issue}/>)}
                 </div>
             </Panel>
         );
@@ -130,7 +161,7 @@ const InsertDocumentsIssues = (props) => {
                     iconPos="right"
                     outlined
                     label={t('next_step')}
-                    onClick={handleNext}
+                    onClick={handleGoNext}
                 />
             </div>
         </div>

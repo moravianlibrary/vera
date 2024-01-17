@@ -1,25 +1,16 @@
 import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 
 const InsertDocumentsSettings = (props) => {
     const { t } = useTranslation();
+    const { identifiers, identifier, setIdentifier, categories, category, setCategory } = useInsertDocuments();
 
-    const options = props.options;
-    const [value, setValue] = useState(options[0]);
-
-    const categories = props.categories;
-    const [category, setCategory] = useState(null);
-
-    const handleAccept = (e) => {
-        console.log(category);
-        if (props.onAccept) {
-            props.onAccept({
-                identifier: value,
-                category_id: category
-            });
+    const handleGoNext = (e) => {
+        if (props.onGoNext) {
+            props.onGoNext();
         }
     }
 
@@ -35,9 +26,9 @@ const InsertDocumentsSettings = (props) => {
             <div className="flex align-items-center gap-3">
                 <span>{t('choose_identifier')}:</span>
                 <Dropdown
-                    options={options}
-                    value={value}
-                    onChange={(e) => setValue(e.value)}
+                    options={identifiers}
+                    value={identifier.value}
+                    onChange={(e) => setIdentifier(e.value)}
                 />
             </div>
             <div className="flex align-items-center gap-3">
@@ -59,7 +50,7 @@ const InsertDocumentsSettings = (props) => {
                 iconPos="right"
                 outlined
                 label={t('next_step')}
-                onClick={handleAccept}
+                onClick={handleGoNext}
             />
         </div>
     );

@@ -4,10 +4,10 @@ import { useTranslation } from "react-i18next";
 import Identifier from '../../documents/models/Identifier.js';
 import CreateResult from '../../documents/models/CreateResult.js';
 import InsertDocumentsSettings from "./InsertDocumentsSettings.js";
-import InsertDocumentsValues from "../../documents/components/InsertDocumentsValues.js";
+import InsertDocumentsValues from "./InsertDocumentsValues.js";
 import { useData } from "../../services/Data.js";
-import InsertDocumentsResult from "../../documents/components/InsertDocumentsResult.js";
-import InsertDocumentsIssues from "../../documents/components/InsertDocumentsIssues.js";
+import InsertDocumentsResult from "./InsertDocumentsResult.js";
+import InsertDocumentsIssues from "./InsertDocumentsIssues.js";
 import { Card } from "primereact/card";
 import { ScrollPanel } from "primereact/scrollpanel";
 import { InsertDocumentsProvider, useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext.js";
@@ -16,7 +16,7 @@ const InsertDocuments = (props) => {
     const { t } = useTranslation();
     const { dataService } = useData();
 
-    const { identifiers, identifier, setIdentifier } = useInsertDocuments();
+    // const { identifiers, identifier, setIdentifier } = useInsertDocuments();
 
     const categories = props.categories;
 
@@ -30,53 +30,9 @@ const InsertDocuments = (props) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const [category, setCategory] = useState(null);
 
-    const handleSelectSettings = (values) => {
-        setIdentifier(values.identifier);
-        setCategory(values.category_id);
-        setActiveIndex(activeIndex + 1);
-    };
-
-    const handleSelectValues = async (values) => {
-        // if (values.value) {
-        //     const result = await dataService.insertDocument(identifier, values.value, category, false);
-        //     if (result.create_result === CreateResult.MULTIPLE_ISSUE_CHOICES) {
-        //         dataService.setMultiIssueDocuments([result]);
-        //         // .filter(result => result.create_result === CreateResult.MULTIPLE_ISSUE_CHOICES);
-        //         setActiveIndex(2);
-        //     } else {
-        //         showResults([result]);
-        //         setActiveIndex(3);
-        //         const hasSuccesfulInsert = result.create_result === CreateResult.SUCCESS;
-        //         if (hasSuccesfulInsert && props.onInsert) {
-        //             props.onInsert();
-        //         }
-        //     }
-        // }
-        setActiveIndex(activeIndex + 1);
-    };
-
-    const handleSelectIssue = (issue) => {
-        console.log(category);
-        dataService.selectFromMultiIssueDocument(issue, category);
-    };
 
     // useEffect(() => {
     //     const handleCreateIssue = async (barcode) => {
-    //         setCreateIssue(null);
-    //         const prevCreatingIssues = creatingIssues;
-    //         setCreatingIssues([...prevCreatingIssues, barcode]);
-
-    //         const result = await dataService.insertDocument(Identifier.BARCODE, barcode, category, false);
-    //         setCreatingIssues(creatingIssues.filter(b => b !== barcode));
-
-    //         if (result.create_result === CreateResult.SUCCESS) {
-    //             setCreatedIssues([...createdIssues, barcode]);
-    //             if (props.onInsert) {
-    //                 props.onInsert();
-    //             }
-    //         }
-    //     };
-
     //     if (createIssue !== null) {
     //         handleCreateIssue(createIssue);
     //     }
@@ -90,24 +46,24 @@ const InsertDocuments = (props) => {
 
     return (
         <InsertDocumentsProvider>
-            <div className="flex flex-column gap-6 overflow-hidden" style={{ 'min-width': '600px' }}>
+            <div className="flex flex-column gap-6 overflow-hidden" style={{ 'minWidth': '600px' }}>
                 <Steps model={items} activeIndex={activeIndex} onSelect={(e) => setActiveIndex(e.index)} readOnly={true} />
                 <div className="flex-1 overflow-auto">
                     {activeIndex === 0 &&
                     <InsertDocumentsSettings
-                        categories={categories}
-                        onAccept={handleSelectSettings}
+                        onGoNext={() => setActiveIndex(1)}
                     />}
                     {activeIndex === 1 &&
                     <InsertDocumentsValues
-                        onAccept={handleSelectValues}
+                        onGoNext={() => setActiveIndex(2)}
+                        onSkipNext={() => setActiveIndex(3)}
                         onGoBack={(e) => setActiveIndex(0)}
                     />}
                     {activeIndex === 2 &&
                     <InsertDocumentsIssues
                         // onSelect={handleSelectIssue}
-                        onGoBack={(e) => setActiveIndex(1)}
-                        onNext={(e) => setActiveIndex(3)}
+                        onGoNext={(e) => setActiveIndex(3)}
+                        // onGoBack={(e) => setActiveIndex(1)}
                     />}
                     {activeIndex === 3 &&
                     <InsertDocumentsResult

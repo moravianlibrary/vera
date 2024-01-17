@@ -2,7 +2,7 @@ import { createContext, useContext, useState, ReactNode, useEffect } from "react
 import ApiCategories, { AssignableCategory, Category } from "../../adapters/ApiCategories";
 
 interface AssignableCategoriesContextProps {
-    categories: AssignableCategory[];
+    fetchCategories: () => Promise<Category[]>;
 }
 
 const AssignableCategoriesContext = createContext<AssignableCategoriesContextProps | undefined>(undefined);
@@ -12,11 +12,7 @@ interface AssignableCategoriesProviderProps {
 }
 
 export const AssignableCategoriesProvider: React.FC<AssignableCategoriesProviderProps> = ({ children }) => {
-    const [categories, setCategories] = useState<Category[]>([]);
-
-    const contextValue: AssignableCategoriesContextProps = {
-        categories
-    };
+    const [categories, setCategories] = useState<Category[]>();
 
     const loadCategories = async () => {
         ApiCategories.getAssignableCategories()
@@ -24,10 +20,23 @@ export const AssignableCategoriesProvider: React.FC<AssignableCategoriesProvider
             const transformedData: Category[] = response.data.map(assignableCategory => {
                 return Object.assign({}, assignableCategory) as Category;
             });
+            console.log(transformedData);
             setCategories(transformedData);
         }).catch(error => {
             console.error(`Could not receive assignable categories: ${error}`);
         });
+    };
+
+    const fetchCategories = async () => {
+        console.log(`fetch categories from server ${!categories}`)
+        if (!categories) {
+            await loadCategories();
+        }
+        return categories ? categories : [];
+    }
+
+    const contextValue: AssignableCategoriesContextProps = {
+        fetchCategories
     };
 
     return (
