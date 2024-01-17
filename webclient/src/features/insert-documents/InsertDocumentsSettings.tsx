@@ -3,16 +3,15 @@ import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
+import React from "react";
 
-const InsertDocumentsSettings = (props) => {
+interface InsertDocumentsSettingsProps {
+    onGoNext: () => void;
+}
+
+const InsertDocumentsSettings: React.FC<InsertDocumentsSettingsProps> = (props) => {
     const { t } = useTranslation();
     const { identifiers, identifier, setIdentifier, categories, category, setCategory } = useInsertDocuments();
-
-    const handleGoNext = (e) => {
-        if (props.onGoNext) {
-            props.onGoNext();
-        }
-    }
 
     const renderLabel = (category) => {
         if (category.parent_category) {
@@ -50,7 +49,7 @@ const InsertDocumentsSettings = (props) => {
                 iconPos="right"
                 outlined
                 label={t('next_step')}
-                onClick={handleGoNext}
+                onClick={props.onGoNext}
             />
         </div>
     );

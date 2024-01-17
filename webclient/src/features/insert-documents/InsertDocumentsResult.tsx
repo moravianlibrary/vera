@@ -4,8 +4,14 @@ import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
 import { DocumentCreationStatus } from "../../types/DocumentCreationStatus";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
+import React from "react";
 
-const InsertDocumentsResult = (props) => {
+interface InsertDocumentsResultProps {
+    onRestart?: () => void;
+    onClose?: () => void;
+}
+
+const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
     const { t } = useTranslation();
     const { results } = useInsertDocuments();
     const messages = useRef(null);

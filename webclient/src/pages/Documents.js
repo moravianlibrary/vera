@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import '../styles/Documents.css';
 import { Dialog } from 'primereact/dialog';
-import InsertDocuments from '../features/insert-documents/InsertDocuments.js';
+import InsertDocuments from '../features/insert-documents/InsertDocuments';
 import DocumentsHeader from '../documents/components/DocumentsHeader.js';
 import DocumentsTable from '../documents/pages/DocumentsTable.js';
 import { useData } from '../services/Data.js';

@@ -4,10 +4,17 @@ import { ProgressBar } from "primereact/progressbar";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
+import React from "react";
 
-const InsertDocumentsValues = (props) => {
+interface InsertDocumentsValuesProps {
+  onGoBack?: () => void;
+  onGoNext?: () => void;
+  onSkipNext?: () => void;
+}
+
+const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
     const { t } = useTranslation();
-    const { identifier, value, setValue, acceptInput, chooseIssuesDocuments } = useInsertDocuments();
+    const { identifier, setValue, acceptInput, chooseIssuesDocuments } = useInsertDocuments();
 
     const [accepted, setAccepted] = useState(false);
 
@@ -49,10 +56,21 @@ const InsertDocumentsValues = (props) => {
                 <InputText
                     autoFocus
                     disabled={accepted}
-                    value={value}
+                    value={identifier.value}
                     onChange={(e) => setValue(e.target.value)}
                     onKeyDown={handleKeyPress}
                 />
+                {/* <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    onChange={(e) => {
+                        const selectedFile = e.target.files[0];
+                        if (selectedFile) {
+                            handleSelectFile(selectedFile);
+                        }
+                    }}
+                /> */}
             </div>
             <div className="flex justify-content-between p-1">
                 <Button
@@ -62,7 +80,7 @@ const InsertDocumentsValues = (props) => {
                     onClick={handleGoBack}
                 />
                 <Button
-                    disabled={value === ""}
+                    disabled={identifier.value === ""}
                     icon="pi pi-caret-right"
                     iconPos="right"
                     outlined

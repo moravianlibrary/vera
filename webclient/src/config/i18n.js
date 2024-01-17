@@ -49,6 +49,7 @@ const resources = {
 
         sysno: "Systémové číslo",
         volume_number: "Ročník",
+        volume: "Ročník",
         item_number: "Číslo periodika",
         category: "Kategorie",
         title: "Název",
@@ -61,6 +62,7 @@ const resources = {
         created_at: "Vytvořeno",
         extractor: "Extrahoval",
         extracted_at: "Extrahováno",
+        year_issued: "Rok vydání",
 
         users: "Uživatelé",
         departments: "Oddělení",
