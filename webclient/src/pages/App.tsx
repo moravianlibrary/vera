@@ -14,6 +14,7 @@ import Login from '../components/Login';
 import { ActionAccessRoute } from '../services/AccessService';
 import { UserProvider } from '../contexts/user/UserContext';
 import { DataProvider } from '../services/Data';
+import DataProviders from '../contexts/data/DataContext';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
     <ToastProvider>
       <UserProvider>
         <DataProvider>
+        <DataProviders>
           <StrictMode>
             <Router>
               <div className="App">
@@ -42,6 +44,7 @@ function App() {
               </div>
             </Router>
           </StrictMode>
+        </DataProviders>
         </DataProvider>
       </UserProvider>
     </ToastProvider>
