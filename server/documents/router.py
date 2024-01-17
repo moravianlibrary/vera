@@ -62,12 +62,14 @@ def get_documents(offset: int = Query(0, description="Pagination page offset"),
                   user: CurrentUser = Depends(get_current_user),
                   db: Session = Depends(get_db)):
     username, department = None, None
-    if ActionType.read_datatable_department in user.actions \
+    if ActionType.read_datatable_all in user.actions:
+        pass
+    elif ActionType.read_datatable_department in user.actions \
             and user.department_id is not None:
         department = user.department_name
     elif ActionType.read_datatable_own in user.actions:
         username = user.username
-    elif ActionType.read_datatable_all not in user.actions:
+    else:
         raise exceptions.UserNotAllowedToReadDocumentsException
 
     query_base = crud.get_documents_query_base(
