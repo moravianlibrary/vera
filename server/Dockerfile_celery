@@ -1,0 +1,28 @@
+# Use an official Python runtime as a parent image
+FROM python:3.8-slim
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Install any needed packages specified in requirements.txt
+COPY requirements_celery.txt /app/
+RUN pip install --no-cache-dir -r requirements_celery.txt
+
+# Copy the current directory contents into the container at /app
+COPY auth /app/auth
+COPY catalogs /app/catalogs
+COPY categories /app/categories
+COPY departments /app/departments
+COPY documents /app/documents
+COPY extractions /app/extractions
+COPY predictions /app/predictions
+COPY roles /app/roles
+COPY services /app/services
+COPY tasks /app/tasks
+COPY celery_worker.py /app
+
+# Define environment variable
+
+# Run app.py when the container launches
+CMD ["celery", "-A", "celery_worker", "worker", "--loglevel=info", "--uid=nobody"]
+

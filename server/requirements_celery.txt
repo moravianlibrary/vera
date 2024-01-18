@@ -1,0 +1,8 @@
+sqlalchemy
+pydantic
+psycopg2-binary
+numpy
+tensorflow==2.13.1
+typing-extensions==4.5.0
+redis
+celery

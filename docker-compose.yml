@@ -17,6 +17,29 @@ services:
     networks:
       - digiboard
 
+  redis:
+    container_name: digiboard-redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - digiboard
+
+  worker:
+    container_name: digiboard-worker
+    build:
+      context: ./server
+      dockerfile: Dockerfile_celery
+    restart: unless-stopped
+    environment:
+      - BROKER_URL=redis://redis:6379/0
+      - POSTGRES_HOST=postgres
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - digiboard
+
   server:
     container_name: digiboard-server
     build:
@@ -26,6 +49,7 @@ services:
       - "8000:8000"
     restart: unless-stopped
     environment:
+      - BROKER_URL=redis://redis:6379/0
       - DEBUG=True
       - POSTGRES_HOST=postgres
       - ALLOW_ORIGINS=http://localhost:3000
@@ -37,6 +61,7 @@ services:
       - KEYCLOAK_ISSUER_CLIENT_ID=vera
     depends_on:
       - postgres
+      - worker
     networks:
       - digiboard
 

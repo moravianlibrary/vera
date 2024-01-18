@@ -1,5 +1,9 @@
 VERSION := $(shell cat VERSION)
 
+server:
+	docker-compose down server
+	docker-compose build server
+	docker-compose up -d server
 start:
 	docker-compose up -d
 stop:
@@ -14,3 +18,4 @@ tag:
 push:
 	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-server:$(VERSION)
 	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-client:$(VERSION)
+

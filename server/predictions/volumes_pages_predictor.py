@@ -1,7 +1,8 @@
 import numpy as np
 import pickle
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.saving import load_model
+from tensorflow.keras.utils import pad_sequences
+from typing import List
 
 
 MODEL_PATH = 'predictions/models/page5.2.h5'
@@ -10,7 +11,7 @@ PUBLISHER_TOKENIZER_PATH = 'predictions/models/tokenizer_publisher.pickle'
 MAX_SEQ_LENGTH = 100
 
 
-class ItemsPagesPredictor:
+class VolumesPagesPredictor:
     def __init__(self,
                  model_path: str = MODEL_PATH,
                  name_tokenizer_path: str = NAME_TOKENIZER_PATH,
@@ -26,24 +27,28 @@ class ItemsPagesPredictor:
     def predict(self,
                 name: str,
                 year: int,
-                issue: int,
-                publisher: str) -> float:
+                issues_count: int,
+                publishers: List[str]) -> float:
 
         name_seq = self.name_tokenizer.texts_to_sequences([name])
         publisher_seq = \
-            self.publisher_tokenizer.texts_to_sequences([publisher])
+            self.publisher_tokenizer.texts_to_sequences(publishers)
 
         name_seq_padded = pad_sequences(name_seq, maxlen=self.max_seq_length)
         publisher_seq_padded = pad_sequences(
             publisher_seq, maxlen=self.max_seq_length
         )
 
-        input_data = np.concatenate((
-            name_seq_padded,
-            publisher_seq_padded,
-            np.array([[issue]]),
-            np.array([[year]])
-            ), axis=1)
+        result = 0.0
+        for issue_number in range(1, issues_count + 1):
+            input_data = np.concatenate((
+                name_seq_padded,
+                publisher_seq_padded,
+                np.array([[issue_number]]),
+                np.array([[year]])
+                ), axis=1)
 
-        prediction = self.model.predict(input_data)
-        return float(prediction[0][0])
+            prediction = self.model.predict(input_data)
+            result += float(prediction[0][0])
+
+        return result
