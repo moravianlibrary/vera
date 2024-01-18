@@ -1,34 +1,25 @@
-import { Messages } from "primereact/messages";
+import { Messages, MessagesMessage } from "primereact/messages";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
 import { DocumentCreationStatus } from "../../types/DocumentCreationStatus";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import React from "react";
+import { DocumentCreationResponse } from "../../adapters/ApiDocuments";
 
 interface InsertDocumentsResultProps {
-    onRestart?: () => void;
-    onClose?: () => void;
+    onRestart: () => void;
+    onClose: () => void;
 }
+
+type MessageSeverity = 'success' | 'info' | 'warn' | 'error' | undefined;
 
 const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
     const { t } = useTranslation();
     const { results } = useInsertDocuments();
     const messages = useRef(null);
 
-    const handleRestart = () => {
-        if (props.onRestart) {
-            props.onRestart();
-        }
-    }
-
-    const handleClose = () => {
-        if (props.onClose) {
-            props.onClose();
-        }
-    }
-
-    const generateMessage = (severity, header, text) => {
+    const generateMessage = (severity: MessageSeverity, header: string, text: string): MessagesMessage => {
         return {
             sticky: true,
             severity: severity,
@@ -38,7 +29,7 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
         };
     };
 
-    const getStatusSeverity = (status) => {
+    const getStatusSeverity = (status: DocumentCreationStatus): MessageSeverity => {
         if (status === DocumentCreationStatus.Success) {
             return "success";
         } else if (status === DocumentCreationStatus.UniqueDocumentViolation
@@ -48,14 +39,14 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
         return "error";
     };
 
-    const getStatusTitle = (status) => {
+    const getStatusTitle = (status: DocumentCreationStatus): string => {
         if (status === DocumentCreationStatus.Success) {
             return t('document_successfuly_created');
         }
         return t(status.toLowerCase());
     }
 
-    const generateMessageForStatus = (results, status) => {
+    const generateMessageForStatus = (results: DocumentCreationResponse[], status: DocumentCreationStatus) => {
         const documents = results.filter(result => result.create_result === status);
         if (documents.length === 0) {
             return null;
@@ -79,13 +70,14 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
 
     useEffect(() => {
         if (messages.current) {
-            messages.current.clear();
+            const currentMessages: Messages = messages.current;
+            currentMessages.clear();
 
-            const newMessages = Object.values(DocumentCreationStatus)
-            .map(status => generateMessageForStatus(results, status))
-            .filter(message => message !== null);
+            const newMessages: MessagesMessage[] = Object.values(DocumentCreationStatus)
+                    .map(status => generateMessageForStatus(results, status))
+                    .filter((message): message is MessagesMessage => message !== null);
 
-            messages.current.show(newMessages);
+            currentMessages.show(newMessages);
         }
     }, [results]);
 
@@ -97,21 +89,21 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
                     icon="pi pi-replay"
                     outlined
                     label={t('insert_another')}
-                    onClick={handleRestart}
+                    onClick={() => props.onRestart()}
                 />
                 <Button
                     disabled
                     icon="pi pi-question"
                     outlined
                     label={t('details')}
-                    onClick={handleRestart}
+                    onClick={() => props.onRestart()}
                 />
                 <Button
                     icon="pi pi-times"
                     iconPos="left"
                     outlined
                     label={t('finish')}
-                    onClick={handleClose}
+                    onClick={() => props.onClose()}
                 />
             </div>
         </div>

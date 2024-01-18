@@ -44,13 +44,15 @@ const InsertDocumentsSettings: React.FC<InsertDocumentsSettingsProps> = (props) 
                 <span>{t('')}</span>
                 <Checkbox />
             </div> */}
-            <Button
-                icon="pi pi-caret-right"
-                iconPos="right"
-                outlined
-                label={t('next_step')}
-                onClick={props.onGoNext}
-            />
+            <div className="flex justify-content-end p-1">
+                <Button
+                    icon="pi pi-caret-right"
+                    iconPos="right"
+                    outlined
+                    label={t('next_step')}
+                    onClick={props.onGoNext}
+                />
+            </div>
         </div>
     );
 };

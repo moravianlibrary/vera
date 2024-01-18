@@ -24,7 +24,7 @@ const DocumentIssueCard: React.FC<IssueDivProps> = ({ issue, onClick }) => {
     const [creating, setCreating] = useState(false);
     const [created, setCreated] = useState(false);
     
-    const handleClick = (e) => {
+    const handleClick = () => {
         onClick(issue);
     };
 

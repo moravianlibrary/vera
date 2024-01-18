@@ -1,4 +1,4 @@
-import { ReactNode, createContext, useContext, useEffect, useState } from "react";
+import React, { ReactNode, createContext, useContext, useEffect, useState } from "react";
 import { IdentifierType } from "../../types/IdentifierType";
 import { useTranslation } from "react-i18next";
 import { useAssignableCategories } from "../categories/CategoriesContext";
@@ -16,8 +16,8 @@ interface InsertDocumentsContextProps {
     identifier: LabeledIdentifier;
     setIdentifier: (type: IdentifierType) => void;
     categories: Category[];
-    category: Category | null;
-    setCategory: (category: Category | null) => void;
+    category: number | null;
+    setCategory: (category: number | null) => void;
     setValue: (value: string) => void;
     acceptInput: () => void;
     chooseIssuesDocuments: DocumentCreationResponse[];
@@ -48,36 +48,37 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
             value: "",
             label: t(IdentifierType.Barcode.toLowerCase())
     }];
-    const [identifier, setIdentifier] = useState(identifiers[0]);
-    const [categories, setCategories] = useState([]);
-    const [category, setCategory] = useState(null);
+    const [identifier, setIdentifier] = useState<LabeledIdentifier>(identifiers[0]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [category, setCategory] = useState<number | null>(null);
 
     // Second step variables
-    const [filePath, setFilePath] = useState(null);
+    const [filePath, setFilePath] = useState<string | null>(null);
     
     // Third step variables
-    const [chooseIssuesDocuments, setChooseIssuesDocuments] = useState([]);
-    const [creatingIssues, setCreatingIssues] = useState([]);
-    const [createdIssues, setCreatedIssues] = useState([]);
+    const [chooseIssuesDocuments, setChooseIssuesDocuments] = useState<DocumentCreationResponse[]>([]);
+    const [creatingIssues, setCreatingIssues] = useState<Issue[]>([]);
+    const [createdIssues, setCreatedIssues] = useState<Issue[]>([]);
 
     // Fourth step variables
-    const [results, setResults] = useState([]);
+    const [results, setResults] = useState<DocumentCreationResponse[]>([]);
 
     // First step functions
-    const setIdentifierByValue = (value) => {
-        const filteredIdentifiers = identifiers.filter(i => i.value === value);
+    const setIdentifierByType = (type: IdentifierType) => {
+        const filteredIdentifiers = identifiers.filter(i => i.value === type);
         if (filteredIdentifiers.length === 1) {
             setIdentifier(filteredIdentifiers[0]);
         }
     };
 
     // Second step functions
-    const setValue = (value) => {
+    const setValue = (value: string) => {
         setIdentifier({...identifier, value: value});
     };
 
     const acceptInput = async () => {
-        ApiDocuments.insertDocument(identifier, category ? category.id : null, false)
+        console.log(category);
+        ApiDocuments.insertDocument(identifier, category, false)
         .then(response => {
             if (response.data.create_result === CreateResult.MULTIPLE_ISSUE_CHOICES) {
                 setChooseIssuesDocuments([response.data]);
@@ -93,7 +94,7 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
     };
 
     // Third step functions
-    const createIssue = async (index, issue) => {
+    const createIssue = async (index: number, issue: Issue) => {
         setCreatingIssues(prevCreatingIssues => [...prevCreatingIssues, issue]);
 
         ApiDocuments.insertDocument({identifier_type: IdentifierType.Barcode, value: issue.barcode}, category, false)
@@ -120,7 +121,7 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
 
     return (
         <InsertDocumentsContext.Provider value={{
-            identifiers, identifier, setIdentifier: setIdentifierByValue,
+            identifiers, identifier, setIdentifier: setIdentifierByType,
             categories, category, setCategory,
             setValue, acceptInput,
             chooseIssuesDocuments, createIssue, creatingIssues, createdIssues,

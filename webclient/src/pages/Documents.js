@@ -97,6 +97,7 @@ const Documents = () => {
         <Dialog visible={insertMode} onHide={(e) => setInsertMode(false)}>
             <InsertDocuments
                 categories={categories}
+                onClose={() => setInsertMode(false)}
             />
         </Dialog>
       </div>
