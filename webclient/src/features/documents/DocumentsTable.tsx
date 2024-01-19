@@ -50,9 +50,13 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     };
 
     const pagesCountBody = (document: DocumentModel) => {
-        return document.pages_count_predicted
-                ? `${document.pages_count} (${document.pages_count_predicted})`
-                : document.pages_count;
+        return document.pages_count
+                ? document.pages_count_predicted
+                        ? `${document.pages_count} (${document.pages_count_predicted})`
+                        : document.pages_count
+                : document.pages_count_predicted
+                        ? `(${document.pages_count_predicted})`
+                        : null;
     };
 
     return (

@@ -5,7 +5,7 @@ const resources = {
   cz: {
     translation: {
         home: "Domov",
-        board: "Záznamy",
+        board: "Dokumenty",
         categories: "Kategorie",
         access: "Správa oprávnění",
         login: "Přihlásit se",
