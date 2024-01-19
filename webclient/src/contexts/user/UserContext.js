@@ -3,7 +3,7 @@ import { ReactKeycloakProvider } from '@react-keycloak/web';
 import keycloak, { keycloakInitOptions } from '../../services/Keycloak';
 import { User } from './UserModel';
 import { useTranslation } from 'react-i18next';
-import { useToast } from '../../services/ToastContext';
+import { useToast } from '../toast/ToastContext';
 import ApiUser from '../../adapters/ApiUser';
 
 const UserContext = createContext();

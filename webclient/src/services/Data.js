@@ -2,7 +2,6 @@ import { Category } from "../categories/models/Category";
 import { Quota } from "../categories/models/Quota";
 import { PrecreateDocument } from "../documents/models/PrecreateDocument";
 import { Document } from "../documents/models/Document";
-import { Role } from "../contexts/user/RoleModel";
 import { DocumentResult } from "../documents/models/DocumentResult";
 import { createContext, useContext } from "react";
 import Identifier from "../documents/models/Identifier";
@@ -12,6 +11,7 @@ import ApiDepartments from "../adapters/ApiDepartments";
 import ApiRoles from "../adapters/ApiRoles";
 import ApiCategories from "../adapters/ApiCategories";
 import ApiDocuments from "../adapters/ApiDocuments";
+import { RoleModel } from "../types/RoleModel";
 
 class DataService {
     constructor() {
@@ -96,7 +96,7 @@ class DataService {
     async getRoles() {
         try {
             const roles = (await ApiRoles.getRoles()).data;
-            return roles.map(role => Role.fromJson(role));
+            return roles.map(role => new RoleModel(role));
         } catch (error) {
             this.setError(error);
             return [];

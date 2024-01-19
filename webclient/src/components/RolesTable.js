@@ -7,9 +7,9 @@ import { Checkbox } from "primereact/checkbox";
 import { ColumnGroup } from "primereact/columngroup";
 import { Row } from "primereact/row";
 import { textEditor } from '../services/Editors.js';
-import { Role } from "../contexts/user/RoleModel.js";
 import { Button } from "primereact/button";
 import { useData } from "../services/Data.js";
+import { RoleModel } from "../types/RoleModel";
 
 
 const RolesTable = (props) => {
@@ -26,7 +26,7 @@ const RolesTable = (props) => {
     const handleInsert = () => {
         if (!insertMode) {
             setInsertMode(true);
-            const newRole = new Role();
+            const newRole = new RoleModel();
             setRoles([...roles, newRole]);
             setEditingRows([...editingRows, newRole]);
         }

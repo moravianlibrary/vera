@@ -1,4 +1,4 @@
-import { Role } from "./RoleModel";
+import { RoleModel } from "../../types/RoleModel";
 
 export class User {
     access_token;
@@ -16,7 +16,7 @@ export class User {
         user.department_name = userData.department_name;
         user.role_id = userData.role_id;
         user.role_name = userData.role_name;
-        user.actions = Role.expandActions(userData.actions);
+        user.actions = RoleModel.expandActions(userData.actions);
         user.isLoggedIn = true;
         return user;
     }
