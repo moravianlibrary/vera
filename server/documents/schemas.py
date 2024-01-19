@@ -105,6 +105,9 @@ class DocumentCreate(DocumentBase):
 class Document(DocumentCreate):
     id: int
 
+    pages_count_predicted: Optional[int]
+    dedicated_scanner: Optional[str]
+
     creator: str
     created_at: datetime
 
