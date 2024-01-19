@@ -50,7 +50,6 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     };
 
     const pagesCountBody = (document: DocumentModel) => {
-        console.log(document.pages_count_predicted);
         return document.pages_count_predicted
                 ? `${document.pages_count} (${document.pages_count_predicted})`
                 : document.pages_count;
@@ -86,7 +85,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
             />
             {/* <Column field="title" header={t('title')} body={customColumnRenderer} editor={textareaEditor} className="overflow-hidden" /> */}
             <Column field='title' header={t('title')} editor={textareaEditor} />
-            <Column field='paegs_count' body={pagesCountBody} header={t('pages_count')} editor={numberEditor} />
+            <Column field='pages_count' body={pagesCountBody} header={t('pages_count')} editor={numberEditor} />
             <Column field='signature' header={t('signature')} editor={textEditor} />
             <Column field="barcode" header={t('barcode')} editor={textEditor} />
             <Column field="ccnb" header={t('ccnb')} editor={textEditor} />
