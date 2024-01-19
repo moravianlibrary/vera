@@ -51,32 +51,28 @@ def get_document(id: int = Path(...),
 
 
 @router.get("/documents", response_model=schemas.DocumentsResponse)
-def get_documents(offset: int = Query(0, description="Pagination page offset"),
+def get_documents(query: Optional[schemas.DocumentsQuery] = None,
+                  offset: int = Query(0, description="Pagination page offset"),
                   limit: int = Query(100, description="Pagination page size"),
-                  sysno: Optional[str] =
-                  Query(None, description="document sysno"),
-                  extraction_id: Optional[int] =
-                  Query(None, description="document extraction id"),
-                  onlyExtracted: Optional[str] =
-                  Query(None, description="Show only extracted"),
                   user: CurrentUser = Depends(get_current_user),
                   db: Session = Depends(get_db)):
-    username, department = None, None
-    if ActionType.read_datatable_department in user.actions \
+    if ActionType.read_datatable_all in user.actions:
+        pass
+    elif ActionType.read_datatable_department in user.actions \
             and user.department_id is not None:
-        department = user.department_name
+        # department = user.department_name
+        pass
     elif ActionType.read_datatable_own in user.actions:
-        username = user.username
-    elif ActionType.read_datatable_all not in user.actions:
+        if query is None:
+            query = schemas.DocumentsQuery({
+                user: user.username
+            })
+    else:
         raise exceptions.UserNotAllowedToReadDocumentsException
 
     query_base = crud.get_documents_query_base(
         db,
-        sysno=sysno,
-        creator=username,
-        department=department,
-        extraction_id=extraction_id,
-        onlyExtracted=(onlyExtracted is not None)
+        query
     )
     documents = crud.get_documents(query_base, offset=offset, limit=limit)
     num_found = crud.get_documents_num_found(query_base)

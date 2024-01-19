@@ -2,12 +2,16 @@ import { Category } from "../categories/models/Category";
 import { Quota } from "../categories/models/Quota";
 import { PrecreateDocument } from "../documents/models/PrecreateDocument";
 import { Document } from "../documents/models/Document";
-import { Role } from "../models/Role";
-import { api } from "./Api";
+import { Role } from "../contexts/user/RoleModel";
 import { DocumentResult } from "../documents/models/DocumentResult";
 import { createContext, useContext } from "react";
 import Identifier from "../documents/models/Identifier";
 import CreateResult from "../documents/models/CreateResult";
+import ApiUser from "../adapters/ApiUser";
+import ApiDepartments from "../adapters/ApiDepartments";
+import ApiRoles from "../adapters/ApiRoles";
+import ApiCategories from "../adapters/ApiCategories";
+import ApiDocuments from "../adapters/ApiDocuments";
 
 class DataService {
     constructor() {
@@ -39,39 +43,9 @@ class DataService {
         // );
     }
 
-    async getUsers() {
-        try {
-            const users = (await api.getUsers()).data;
-            return users;
-        } catch (error) {
-            this.setError(error);
-            return [];
-        }
-    }
-
-    async updateUser(user) {
-        try {
-            const updatedUser = await api.updateUser(user);
-            return updatedUser;
-        } catch (error) {
-            this.setError(error);
-            return null;
-        }
-    }
-
-    async deleteUser(user) {
-        try {
-            const deletedUser = await api.deleteUser(user.id);
-            return deletedUser;
-        } catch (error) {
-            this.setError(error);
-            return null;
-        }
-    }
-
     async getDepartments() {
         try {
-            const departments = (await api.getDepartments()).data;
+            const departments = (await ApiDepartments.getDepartments()).data;
             return departments;
         } catch (error) {
             this.setError(error);
@@ -81,7 +55,7 @@ class DataService {
 
     async createDepartment(department) {
         try {
-            const createdDepartment = await api.createDepartment(department);
+            const createdDepartment = await ApiDepartments.createDepartment(department);
             return createdDepartment;
         } catch (error) {
             this.setError(error);
@@ -91,7 +65,7 @@ class DataService {
 
     async updateDepartment(department) {
         try {
-            const updatedDepartment = await api.updateDepartment(department);
+            const updatedDepartment = await ApiDepartments.updateDepartment(department);
             return updatedDepartment;
         } catch (error) {
             this.setError(error);
@@ -101,7 +75,7 @@ class DataService {
 
     async deleteDepartment(department) {
         try {
-            const deletedDepartment = await api.deleteDepartment(department.id);
+            const deletedDepartment = await ApiDepartments.deleteDepartment(department.id);
             return deletedDepartment;
         } catch (error) {
             this.setError(error);
@@ -111,7 +85,7 @@ class DataService {
 
     async getRolesNames() {
         try {
-            const roles = (await api.getRoleNames()).data;
+            const roles = (await ApiRoles.getRoleNames()).data;
             return roles.map(role => role.name);
         } catch (error) {
             this.setError(error);
@@ -121,7 +95,7 @@ class DataService {
 
     async getRoles() {
         try {
-            const roles = (await api.getRoles()).data;
+            const roles = (await ApiRoles.getRoles()).data;
             return roles.map(role => Role.fromJson(role));
         } catch (error) {
             this.setError(error);
@@ -131,7 +105,7 @@ class DataService {
 
     async createRole(role) {
         try {
-            const createdRole = await api.createRole(role);
+            const createdRole = await ApiRoles.createRole(role);
             return createdRole;
         } catch (error) {
             this.setError(error);
@@ -141,7 +115,7 @@ class DataService {
 
     async updateRole(role) {
         try {
-            const updatedRole = await api.updateRole(role);
+            const updatedRole = await ApiRoles.updateRole(role);
             return updatedRole;
         } catch (error) {
             this.setError(error);
@@ -151,7 +125,7 @@ class DataService {
 
     async deleteRole(role) {
         try {
-            const deletedRole = await api.deleteRole(role.id);
+            const deletedRole = await ApiRoles.deleteRole(role.id);
             return deletedRole;
         } catch (error) {
             this.setError(error);
@@ -161,7 +135,7 @@ class DataService {
 
     async getCategories() {
         try {
-            const categories = (await api.getCategories()).data;
+            const categories = (await ApiCategories.getCategories()).data;
             return categories.map(category => Category.fromJson(category));
         } catch (error) {
             this.setError(error);
@@ -171,7 +145,7 @@ class DataService {
 
     async getAssignableCategories() {
         try {
-            const categories = (await api.getAssignableCategories()).data;
+            const categories = (await ApiCategories.getAssignableCategories()).data;
             return categories.map(category => Category.fromJson(category));
         } catch (error) {
             this.setError(error);
@@ -181,7 +155,7 @@ class DataService {
 
     async getRootCategories() {
         try {
-            const categories = (await api.getRootCategories()).data;
+            const categories = (await ApiCategories.getRootCategories()).data;
             return categories.map(category => Category.fromJson(category));
         } catch (error) {
             this.setError(error);
@@ -191,7 +165,7 @@ class DataService {
 
     async createCategory(category) {
         try {
-            const createdCategory = await api.createCategory(category);
+            const createdCategory = await ApiCategories.createCategory(category);
             return createdCategory;
         } catch (error) {
             this.setError(error);
@@ -201,7 +175,7 @@ class DataService {
 
     async updateCategory(category) {
         try {
-            const updatedCategory = await api.updateCategory(category);
+            const updatedCategory = await ApiCategories.updateCategory(category);
             return updatedCategory;
         } catch (error) {
             this.setError(error);
@@ -211,7 +185,7 @@ class DataService {
 
     async deleteCategory(category) {
         try {
-            const deletedCategory = await api.deleteCategory(category.id);
+            const deletedCategory = await ApiCategories.deleteCategory(category.id);
             return deletedCategory;
         } catch (error) {
             this.setError(error);
@@ -221,7 +195,7 @@ class DataService {
 
     async updateDistribution(parent_id, distribution) {
         try {
-            const result = await api.updateDistribution(parent_id, distribution);
+            const result = await ApiCategories.updateDistribution(parent_id, distribution);
             return result.status === 200;
         } catch (error) {
             this.setError(error);
@@ -231,7 +205,7 @@ class DataService {
 
     async getQuotas() {
         try {
-            const quotas = (await api.getQuotas()).data;
+            const quotas = (await ApiCategories.getQuotas()).data;
             return quotas.map(quota => Quota.fromJson(quota));
         } catch (error) {
             this.setError(error);
@@ -241,7 +215,7 @@ class DataService {
 
     async createQuota(quota) {
         try {
-            const createdQuota = (await api.createQuota(quota)).data;
+            const createdQuota = (await ApiCategories.createQuota(quota)).data;
             return createdQuota;
         } catch (error) {
             this.setError(error);
@@ -251,7 +225,7 @@ class DataService {
 
     async updateQuota(quota) {
         try {
-            const updatedQuota = (await api.updateQuota(quota)).data;
+            const updatedQuota = (await ApiCategories.updateQuota(quota)).data;
             return updatedQuota;
         } catch (error) {
             this.setError(error);
@@ -261,7 +235,7 @@ class DataService {
 
     async deleteQuota(quota) {
         try {
-            const deletedQuota = (await api.deleteQuota(quota.id)).data;
+            const deletedQuota = (await ApiCategories.deleteQuota(quota.id)).data;
             return deletedQuota;
         } catch (error) {
             this.setError(error);
@@ -271,7 +245,7 @@ class DataService {
 
     async getDocuments(offset, rows) {
         try {
-            const { documents, num_found } = (await api.getDocuments(offset, rows)).data;
+            const { documents, num_found } = (await ApiDocuments.getDocuments(offset, rows)).data;
             return { documents: documents.map(document => Document.fromJson(document)), num_found };
         } catch (error) {
             this.setError(error);
@@ -281,7 +255,7 @@ class DataService {
 
     async createDocument(document) {
         try {
-            const createdDocument = await api.createDocument(document);
+            const createdDocument = await ApiDocuments.createDocument(document);
             return Document.fromJson(createdDocument);
         } catch (error) {
             this.setError(error);
@@ -295,7 +269,7 @@ class DataService {
                 identifier_type: identifier,
                 value: value
             };
-            const newDocument = await api.insertDocument(createData, insert_digitized, category_id);
+            const newDocument = await ApiDocuments.insertDocument(createData, insert_digitized, category_id);
             return DocumentResult.fromJson(newDocument.data);
         } catch (error) {
             this.setError(error);
@@ -307,7 +281,7 @@ class DataService {
         try {
             const formData = new FormData();
             formData.append('file', file);
-            const createdDocuments = await api.createDocumentsFromFile(formData, category_id);
+            const createdDocuments = await ApiDocuments.createDocumentsFromFile(formData, category_id);
             return createdDocuments;
         } catch (error) {
             this.setError(error);
@@ -317,7 +291,7 @@ class DataService {
 
     async precreateDocument(identifier_type, identifier_value) {
         try {
-            const { data }= await api.precreateDocument(identifier_type, identifier_value);
+            const { data }= await ApiDocuments.precreateDocument(identifier_type, identifier_value);
             return PrecreateDocument.fromJson(data);
         } catch (error) {
             this.setError(error);
@@ -327,7 +301,7 @@ class DataService {
 
     async updateDocument(document) {
         try {
-            const updatedDocument = await api.updateDocument(document);
+            const updatedDocument = await ApiDocuments.updateDocument(document);
             return Document.fromJson(updatedDocument);
         } catch (error) {
             this.setError(error);
@@ -337,7 +311,7 @@ class DataService {
 
     async deleteDocument(document) {
         try {
-            const deletedDocument = await api.deleteDocument(document.id);
+            const deletedDocument = await ApiDocuments.deleteDocument(document.id);
             return Document.fromJson(deletedDocument);
         } catch (error) {
             this.setError(error);

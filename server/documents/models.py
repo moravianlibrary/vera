@@ -30,6 +30,8 @@ class Document(Base):
     pages_count = Column(Integer)
     size = Column(String)
     digitization_state = Column(Enum(DigitizationState))
+
+    pages_count_predicted = Column(Integer)
     dedicated_scanner = Column(String)
 
     publishers = Column(ARRAY(String))
@@ -39,7 +41,6 @@ class Document(Base):
 
     created_at = Column(TIMESTAMP, server_default=func.now())
     creator = Column(String, index=True)
-    department = Column(String, index=True)
 
     extraction_id = Column(Integer, ForeignKey("extractions.id"), index=True)
 
@@ -60,6 +61,7 @@ def document_view(db: Session):
         Document.pages_count,
         Document.size,
         Document.digitization_state,
+        Document.pages_count_predicted,
         Document.dedicated_scanner,
         Document.publishers,
         Document.places,
@@ -67,7 +69,6 @@ def document_view(db: Session):
         Document.frequencies,
         Document.created_at,
         Document.creator,
-        Document.department,
         Document.extraction_id,
         Extraction.extractor,
         Extraction.extracted_at,

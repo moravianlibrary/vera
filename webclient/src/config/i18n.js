@@ -49,6 +49,7 @@ const resources = {
 
         sysno: "Systémové číslo",
         volume_number: "Ročník",
+        volume: "Ročník",
         item_number: "Číslo periodika",
         category: "Kategorie",
         title: "Název",
@@ -61,6 +62,7 @@ const resources = {
         created_at: "Vytvořeno",
         extractor: "Extrahoval",
         extracted_at: "Extrahováno",
+        year_issued: "Rok vydání",
 
         users: "Uživatelé",
         departments: "Oddělení",
@@ -120,6 +122,7 @@ const resources = {
         insert_another: "Vložit další",
         finish: "Skončit",
         details: "Detaily",
+        count: "Počet",
 
         document_successfuly_created: "Dokument úspěšně vytvořený",
         unique_document_violation: "Duplicitní dokument",
@@ -130,6 +133,26 @@ const resources = {
         "User does not have an assigned role": "Uživatel nemá přiřazenu žádnou roli",
         "User have more than one assigned role": "Uživatel má přiřazené více než jednu roli",
         "User have more than one assigned department": "Uživatel má přiřazen více než jedno oddělení",
+        app_not_available: "Aplikace není dostupna",
+
+        tasks: "Úkoly",
+        id: "Id",
+        task_type: "Název úkolu",
+        owner: "Vlastník",
+        task_state: "Stav",
+        documents_count: "Počet dokumentů",
+        planned: "Naplánováno",
+        started: "Spuštěno",
+        finished: "Ukončeno",
+        duration: "Trvání",
+
+        Planned: "Naplánováno",
+        Running: "Běží",
+        Finished: "Dokončeno",
+        Failed: "Chyba",
+        Killed: "Zrušeno",
+
+        PredictVolumePages: "Predikce počtu stran ročníků",
 
     },
   },

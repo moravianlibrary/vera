@@ -105,9 +105,11 @@ class DocumentCreate(DocumentBase):
 class Document(DocumentCreate):
     id: int
 
+    pages_count_predicted: Optional[int]
+    dedicated_scanner: Optional[str]
+
     creator: str
     created_at: datetime
-    department: Optional[str]
 
     extraction_id: Optional[int] = None
 
@@ -115,7 +117,6 @@ class Document(DocumentCreate):
 class DocumentView(Document):
     category_name: Optional[str]
 
-    extractor_id: Optional[int] = None
     extractor: Optional[str] = None
     extracted_at: Optional[datetime] = None
 
@@ -156,13 +157,12 @@ class DocumentsQuery(BaseModel):
     ccnb: Optional[str] = None
     isbn: Optional[str] = None
 
-    creator: Optional[List[int]] = None
-    creator_department_id: Optional[int] = None
+    creator: Optional[List[str]] = None
     created_after: Optional[datetime] = None
     created_before: Optional[datetime] = None
 
     extraction_id: Optional[int] = None
-    extractor_id: Optional[int] = None
+    extractor: Optional[str] = None
     extracted_after: Optional[datetime] = None
     extracted_before: Optional[datetime] = None
 

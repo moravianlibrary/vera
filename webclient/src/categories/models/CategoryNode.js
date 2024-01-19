@@ -12,10 +12,10 @@ export class CategoryNode {
     children = [];
 
     static getColorClass(type, category) {
-        if (type == NodeType.ROOT) {
+        if (type === NodeType.ROOT) {
             return 'bg-cyan-400';
         }
-        if (type == NodeType.INSERT) {
+        if (type === NodeType.INSERT) {
             return 'bg-blue-100';
         }
         if (category.assignable) {
@@ -76,8 +76,8 @@ export class CategoryNode {
 
     createInsertNodes() {
         if (this.category.level < 4
-                && (this.children.length == 0
-                    || this.children.every(child => child.type == NodeType.CATEGORY))) {
+                && (this.children.length === 0
+                    || this.children.every(child => child.type === NodeType.CATEGORY))) {
             this.children.forEach(child => child.createInsertNodes());
             this.children = [...this.children, this.createInsertNode()];
         }

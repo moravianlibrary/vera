@@ -7,7 +7,7 @@ import { Checkbox } from "primereact/checkbox";
 import { ColumnGroup } from "primereact/columngroup";
 import { Row } from "primereact/row";
 import { textEditor } from '../services/Editors.js';
-import { Role } from "../models/Role";
+import { Role } from "../contexts/user/RoleModel.js";
 import { Button } from "primereact/button";
 import { useData } from "../services/Data.js";
 
@@ -34,7 +34,7 @@ const RolesTable = (props) => {
 
     const onRowEditChange = (event) => {
         const { data, index } = event;
-        if (insertMode && index == roles.length - 1) {
+        if (insertMode && index === roles.length - 1) {
             setInsertMode(false);
         }
         const activeRowArray = (Array.isArray(data) ? data : [data]).filter(role => role.id != 1);
@@ -45,7 +45,7 @@ const RolesTable = (props) => {
         const { data, newData, index } = event;
         data.name = newData.name;
 
-        if (insertMode && index == roles.length - 1) {
+        if (insertMode && index === roles.length - 1) {
             dataService.createRole(data);
         } else {
             dataService.updateRole(data);
@@ -105,7 +105,7 @@ const RolesTable = (props) => {
                     <label className="ml-2">{t('read_datatable_department')}</label>
                 </div>
                 <div>
-                    <Checkbox disabled={!editingRows.includes(role)} value="3" onChange={(event) => handleChangeActionLevel(event, 'read_datatable_level', column.rowIndex)} checked={role.read_datatable_level == 3} />
+                    <Checkbox disabled={!editingRows.includes(role)} value="3" onChange={(event) => handleChangeActionLevel(event, 'read_datatable_level', column.rowIndex)} checked={role.read_datatable_level === 3} />
                     <label className="ml-2">{t('read_datatable_all')}</label>
                 </div>
             </div>
@@ -128,7 +128,7 @@ const RolesTable = (props) => {
                     <label className="ml-2">{t('edit_datatable_department')}</label>
                 </div>
                 <div>
-                    <Checkbox disabled={!editingRows.includes(role)} value="3" onChange={(event) => handleChangeActionLevel(event, 'edit_datatable_level', column.rowIndex)} checked={role.edit_datatable_level == 3} />
+                    <Checkbox disabled={!editingRows.includes(role)} value="3" onChange={(event) => handleChangeActionLevel(event, 'edit_datatable_level', column.rowIndex)} checked={role.edit_datatable_level === 3} />
                     <label className="ml-2">{t('edit_datatable_all')}</label>
                 </div>
             </div>

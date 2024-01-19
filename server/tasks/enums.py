@@ -2,19 +2,18 @@ from enum import Enum
 
 
 class TaskType(Enum):
-    PREDICT_ITEMS_PAGES = 'PREDICT_ITEMS_PAGES'
-    SYNC_FROM_CATALOG = 'SYNC_FROM_CATALOG'
+    PredictVolumePages = 'PredictVolumePages'
+    SyncFromCatalog = 'SyncFromCatalog'
 
 
 class TaskState(Enum):
-    PLANNED = 'PLANNED'
-    RUNNING = 'RUNNING'
-    FINISHED = 'FINISHED'
-    FAILED = 'FAILED'
-    KILLED = 'KILLED'
+    Planned = 'Planned'
+    Running = 'Running'
+    Finished = 'Finished'
+    Failed = 'Failed'
+    Killed = 'Killed'
 
 
 class TaskDocumentErrorType(Enum):
-    MISING_VOLUME = 'MISSING_VOLUME'
-    MISING_ITEM = 'MISSING_ITEM'
-    CONFLICT_PAGES_COUNT = 'CONFLICT_PAGES_COUNT'
+    MissingVolume = 'MissingVolume'
+    ConflictPagesCount = 'ConflictPagesCount'

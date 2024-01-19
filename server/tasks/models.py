@@ -17,7 +17,7 @@ class Task(Base):
     owner = Column(String, index=True)
 
     task_state = Column(Enum(TaskState),
-                        server_default=TaskState.PLANNED.value)
+                        server_default=TaskState.Planned.value)
     planned = Column(TIMESTAMP, server_default=func.now())
     started = Column(TIMESTAMP)
     finished = Column(TIMESTAMP)
@@ -30,7 +30,7 @@ class TaskDocument(Base):
     document_id = Column(Integer, ForeignKey("documents.id"), index=True)
 
     processed = Column(Boolean, server_default='false')
-    error_type = Column(TaskDocumentErrorType)
+    error_type = Column(Enum(TaskDocumentErrorType))
 
     __table_args__ = (PrimaryKeyConstraint('task_id', 'document_id'), {})
 
@@ -46,7 +46,7 @@ def task_view(db: Session):
         Task.planned,
         Task.started,
         Task.finished,
-        (func.sum(case([(TaskDocument.processed, 1)], else_=0))
+        (func.sum(case((TaskDocument.processed, 1), else_=0))
          .label('processed_count')),
         func.count(TaskDocument.document_id).label('total_count'),
     ).join(

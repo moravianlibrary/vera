@@ -1,6 +1,6 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Query, Session
 from sqlalchemy import desc
-from typing import Optional
+from typing import Any, Optional
 
 from services.database import create
 from auth.schemas import CurrentUser
@@ -92,39 +92,43 @@ def get_document_by_identifiers(sysno: str,
     return query_base.first()
 
 
-def get_documents_query_base(db: Session,
-                             sysno: Optional[str] = None,
-                             creator: Optional[str] = None,
-                             department: Optional[str] = None,
-                             category_id: Optional[int] = None,
-                             extraction_id: Optional[int] = None,
-                             onlyExtracted: bool = False):
-    query_base = models.document_view(db)
-
-    if sysno is not None:
-        query_base = query_base.filter(models.Document.sysno == sysno)
-    if creator is not None:
-        query_base = query_base.filter(
-            models.Document.creator == creator
-        )
-    if category_id is not None:
-        query_base = query_base.filter(
-            models.Document.category_id == category_id
-        )
-    if department is not None:
-        query_base = query_base.filter(
-            query_base.department == department
-        )
-    if extraction_id is not None:
-        query_base = query_base.filter(
-            models.Document.extraction_id == extraction_id
-        )
-    if onlyExtracted:
-        query_base = query_base.filter(
-            models.Document.extraction_id.isnot(None)
-        )
+def filter_documents_query_base(
+            query_base: Query[Any],
+            query: Optional[schemas.DocumentsQuery] = None):
+    if query:
+        if query and query.id_list:
+            query_base = query_base.filter(
+                models.Document.id.in_(query.id_list)
+            )
+        if query.sysno is not None:
+            query_base = query_base.filter(
+                models.Document.sysno == query.sysno
+            )
+        if query.creator is not None:
+            query_base = query_base.filter(
+                models.Document.creator == query.creator
+            )
+        if query.category_id is not None:
+            query_base = query_base.filter(
+                models.Document.category_id == query.category_id
+            )
+        if query.extraction_id is not None:
+            query_base = query_base.filter(
+                models.Document.extraction_id == query.extraction_id
+            )
 
     return query_base
+
+
+def get_documents_query_base(db: Session,
+                             query: Optional[schemas.DocumentsQuery] = None):
+    return filter_documents_query_base(models.document_view(db), query)
+
+
+def get_documents_ids_query_base(
+            db: Session,
+            query: Optional[schemas.DocumentsQuery] = None):
+    return filter_documents_query_base(db.query(models.Document.id), query)
 
 
 def get_documents(query_base: Session,

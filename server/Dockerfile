@@ -8,11 +8,23 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /app
 
 # Copy the requirements file to the container and install dependencies
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements_server.txt /app/
+RUN pip install --no-cache-dir -r requirements_server.txt
 
 # Copy the entire project directory into the container
-COPY . /app/
+COPY auth /app/auth
+COPY catalogs /app/catalogs
+COPY categories /app/categories
+COPY departments /app/departments
+COPY documents /app/documents
+COPY extractions /app/extractions
+COPY predictions /app/predictions
+COPY roles /app/roles
+COPY services /app/services
+COPY tasks /app/tasks
+COPY celery_worker.py /app
+COPY digiboard.py /app
+
 
 # Expose port 8000 for the FastAPI application
 EXPOSE 8000

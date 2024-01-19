@@ -1,8 +1,0 @@
-# Start database in docker
-docker-compose up -d
-# Print logs from docker
-docker container logs digiboard-postgres
-# Shutdown database
-docker-compose down
-# Shutdown database and remove all database data
-docker-compose down --volumes

@@ -26,14 +26,14 @@ const CategoryViewNode = (props) => {
     return (
     <div className="flex flex-column">
             <div className="flex justify-content-between align-items-baseline gap-2">
-                {node.type == NodeType.CATEGORY && <CategoryEditMenu {...props} />}
+                {node.type === NodeType.CATEGORY && <CategoryEditMenu {...props} />}
                 <span className="font-bold text-lg mb-3"
                     onClick={() => handleClick()}
                     style={{ cursor: "pointer" }}
                 >
                     {node.category.name}
                 </span>
-                {node.type == NodeType.CATEGORY &&
+                {node.type === NodeType.CATEGORY &&
                     <PercentageComponent percentage={node.category.percentage} {...props} />
                 }
             </div>

@@ -36,7 +36,7 @@ const PercentageComponent = (props) => {
     useEffect(() => {
         setValue(props.node.category.percentage);
         setEditMode(props.editPercentageNodes.includes(props.node));
-        setAutoFocusInput(props.editPercentageNodes.length > 0 && props.editPercentageNodes[0] == props.node);
+        setAutoFocusInput(props.editPercentageNodes.length > 0 && props.editPercentageNodes[0] === props.node);
     }, [props.editPercentageNodes, props.node]);
 
     if (editMode) {

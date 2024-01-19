@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime
-from tasks.enums import TaskState, TaskType
+from tasks.enums import TaskState, TaskType, TaskDocumentErrorType
 
 
 class TaskBase(BaseModel):
@@ -16,16 +16,28 @@ class TaskCreate(TaskBase):
 class TaskCreation(TaskBase):
     id: int
 
-    owner_id: int
-    owner_name: str
+    owner: str
+    query: str
 
     task_state: TaskState
-
     planned: datetime
     started: Optional[datetime]
     finished: Optional[datetime]
 
 
+class TaskError(BaseModel):
+    error_type: TaskDocumentErrorType
+    count: int
+
+
 class Task(TaskCreation):
     processed_count: int
     total_count: int
+    # errors: List[TaskError]
+
+
+class TaskDocument(BaseModel):
+    document_id: int
+
+    processed: bool
+    error_type: Optional[TaskDocumentErrorType]

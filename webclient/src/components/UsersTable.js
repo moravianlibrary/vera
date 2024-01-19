@@ -57,7 +57,7 @@ const UsersTable = (props) => {
             return (
                 <Button className="p-button-rounded p-button-text"
                     icon="pi pi-trash"
-                    severity={user.role_id == 1 ? "secondary" : "danger"}
+                    severity={user.role_id === 1 ? "secondary" : "danger"}
                     disabled={user.role_id === 1}
                     onClick={() => handleDeleteUser(user)}
                 />
