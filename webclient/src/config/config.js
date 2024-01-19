@@ -3,7 +3,6 @@ const APP_CONFIG_DEV = {
 };
 
 const APP_CONFIG_PROD = {
-    // base_url: "http://localhost:8000/",
     base_url: "https://api.digiboard.osdd.mzk.cz/",
 };
 
