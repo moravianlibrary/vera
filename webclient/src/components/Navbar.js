@@ -24,6 +24,10 @@ const Navbar = () => {
           component={<li><Link to="/categories">{t("categories")}</Link></li>}
         />
         <ActionAccessComponent
+          action={ActionType.edit_categories} 
+          component={<li><Link to="/tasks">{t("tasks")}</Link></li>}
+        />
+        <ActionAccessComponent
           action={ActionType.edit_access} 
           component={<li><Link to="/access">{t("access")}</Link></li>}
         />

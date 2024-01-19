@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import ApiCategories, { AssignableCategory, Category } from "../../adapters/ApiCategories";
 
 interface AssignableCategoriesContextProps {

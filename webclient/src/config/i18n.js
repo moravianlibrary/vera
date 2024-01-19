@@ -135,6 +135,25 @@ const resources = {
         "User have more than one assigned department": "Uživatel má přiřazen více než jedno oddělení",
         app_not_available: "Aplikace není dostupna",
 
+        tasks: "Úkoly",
+        id: "Id",
+        task_type: "Název úkolu",
+        owner: "Vlastník",
+        task_state: "Stav",
+        documents_count: "Počet dokumentů",
+        planned: "Naplánováno",
+        started: "Spuštěno",
+        finished: "Ukončeno",
+        duration: "Trvání",
+
+        Planned: "Naplánováno",
+        Running: "Běží",
+        Finished: "Dokončeno",
+        Failed: "Chyba",
+        Killed: "Zrušeno",
+
+        PredictVolumePages: "Predikce počtu stran ročníků",
+
     },
   },
 };

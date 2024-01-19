@@ -15,6 +15,7 @@ import { ActionAccessRoute } from '../services/AccessService';
 import { UserProvider } from '../contexts/user/UserContext';
 import { DataProvider } from '../services/Data';
 import DataProviders from '../contexts/data/DataContext';
+import Tasks from './Tasks';
 
 
 function App() {
@@ -35,6 +36,9 @@ function App() {
                       </Route>
                       <Route element={<ActionAccessRoute action={ActionType.edit_categories} />}>
                         <Route path="/categories" element={<Categories />} />
+                      </Route>
+                      <Route element={<ActionAccessRoute action={ActionType.edit_categories} />}>
+                        <Route path="/tasks" element={<Tasks />} />
                       </Route>
                       <Route element={<ActionAccessRoute action={ActionType.edit_access} />}>
                         <Route path="/access" element={<Access />} />
