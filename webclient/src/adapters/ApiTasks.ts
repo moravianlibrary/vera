@@ -2,6 +2,7 @@ import axiosInstance, { authHeader } from "./ApiBase";
 import { ActionType } from "../types/ActionType";
 import { TaskType } from "../types/TaskType";
 import { TaskState } from "../types/TaskState";
+import { DocumentsQuery } from "./ApiDocuments";
 
 interface Task {
     id: number;
@@ -20,8 +21,9 @@ interface Task {
 }
 
 namespace ApiTasks {
-    export function planTask(task_type: TaskType) {
-        return axiosInstance.post(`/tasks`, task_type, { headers: authHeader() });
+    export function planTask(task_type: TaskType, query: DocumentsQuery) {
+        const body = { task: {task_type: task_type}, query: query }
+        return axiosInstance.post(`/tasks`, body, { headers: authHeader() });
     }
 
     export function getTasks(offset: number, limit: number) {

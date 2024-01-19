@@ -41,13 +41,18 @@ interface Document extends DocumentBase {
     pages_count_predicted: number | null;
     dedicated_scanner: string | null;
 
-    created_at: Date;
+    created_at: string;
     creator: string;
     department: string | null;
 
     extraction_id: number | null;
     extractor: string | null;
-    extracted_at: Date | null;
+    extracted_at: string | null;
+}
+
+interface DocumentsResponse {
+    documents: Document[];
+    num_found: number;
 }
 
 interface Issue {
@@ -73,9 +78,13 @@ interface DocumentCreationResponse {
     create_result: DocumentCreationStatus;
 }
 
+interface DocumentsQuery {
+    id_list?: number[];
+}
+
 namespace ApiDocuments {
     export function getDocuments(offset: number, rows: number) {
-        return axiosInstance.get<Document[]>(`/documents?offset=${offset}&limit=${rows}`, { headers: authHeader() });
+        return axiosInstance.get<DocumentsResponse>(`/documents?offset=${offset}&limit=${rows}`, { headers: authHeader() });
     }
 
     export function createDocument(document: Document) {
@@ -109,4 +118,4 @@ namespace ApiDocuments {
 }
 
 export default ApiDocuments;
-export type { Identifier, DocumentBase, Document, Issue, CatalogDocument, DocumentCreationResponse };
+export type { Identifier, DocumentBase, Document, Issue, CatalogDocument, DocumentCreationResponse, DocumentsQuery };

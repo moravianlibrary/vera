@@ -1,12 +1,17 @@
 import { Button } from "primereact/button";
-import React, { useEffect, useState } from "react";
-import DocumentsSearchBar from "./DocumentsSearchBar";
+import React, { useEffect, useRef, useState } from "react";
+import DocumentsSearchBar from "../../documents/components/DocumentsSearchBar";
 import { SelectButton } from "primereact/selectbutton";
 import { Toolbar } from "primereact/toolbar";
 import { useTranslation } from "react-i18next";
+import { useDocuments } from "../../contexts/documents/DocumentsContext";
+import { OverlayPanel } from "primereact/overlaypanel";
+import { Menu } from "primereact/menu";
+import { TaskType } from "../../types/TaskType";
 
 const DocumentsHeader = (props) => {
     const { t } = useTranslation();
+    const { selectedDocuments, handleStartTask } = useDocuments();
 
     const [advancedSearch, setAdvancedSearch] = useState(false);
     const [hasSelection, setHasSelection] = useState(false);
@@ -16,15 +21,21 @@ const DocumentsHeader = (props) => {
         { name: 'Option 2', icon: 'pi pi-chart-bar', value: "graph", disabled: true },
     ];
 
+    const taskSelectorMenuRef = useRef(null);
+    const taskSelectorItems = [{items: [
+        { label: t(TaskType.PredictVolumePages), command: () => handleStartTask(TaskType.PredictVolumePages), },
+        // { label: 'Export', }
+    ]}];
+
     const handleSetDisplayOption = (e) => {
         if (e.value !== null) {
             setDisplayOption(e.value);
         }
     };
 
-    useEffect(() => setHasSelection(props.hasSelection),
-        [props.hasSelection]
-    );
+    useEffect(() => {
+        setHasSelection(selectedDocuments.length > 0);
+    }, [selectedDocuments]);
 
     const handleCreate = (e) => {
         if (props.onCreate) {
@@ -35,6 +46,12 @@ const DocumentsHeader = (props) => {
     const handleInsert = (e) => {
         if (props.onInsert) {
             props.onInsert();
+        }
+    };
+
+    const toggleTaskSelectorMenu = (event) => {
+        if (taskSelectorMenuRef.current) {
+            (taskSelectorMenuRef.current as OverlayPanel).toggle(event);
         }
     };
 
@@ -78,9 +95,18 @@ const DocumentsHeader = (props) => {
 
     const endContent = (
         <React.Fragment>
+            <Menu model={taskSelectorItems} popup ref={taskSelectorMenuRef} id="popup_menu_left" />
+            <Button icon="pi pi-th-large"
+                className="p-button-rounded p-button-text"
+                severity={hasSelection ? "help" : "secondary"}
+                disabled={!hasSelection}
+                onClick={toggleTaskSelectorMenu}
+                aria-controls="popup_menu_left"
+                aria-haspopup
+            />
             <Button icon="pi pi-pencil"
                 className="p-button-rounded p-button-text"
-                severity={hasSelection ? "primary" : "secondary"}
+                severity={hasSelection ? "info" : "secondary"}
                 disabled={!hasSelection}
                 // onClick={() => setSelectCategoryVisible(true)}
             />
@@ -92,7 +118,7 @@ const DocumentsHeader = (props) => {
             />
             <Button icon="pi pi-times" 
                 className="p-button-rounded p-button-text"
-                severity={hasSelection ? "primary" : "secondary"}
+                severity={hasSelection ? "info" : "secondary"}
                 disabled={!hasSelection}
                 // onClick={handleCancelSelectedDocuments}
             />
