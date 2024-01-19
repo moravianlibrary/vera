@@ -90,12 +90,11 @@ def set_document_error_type(task_id: int,
 
 def set_predicted_pages_count(task_id: int,
                               document_id: int,
-                              predicted_pages_count: int,
+                              pages_count_predicted: int,
                               db: Session):
-    db.execute(update(models.TaskDocument)
-               .where(models.TaskDocument.task_id == task_id
-                      and models.TaskDocument.document_id == document_id)
-               .values(predicted_pages_count=predicted_pages_count))
+    db.execute(update(Document)
+               .where(Document.id == document_id)
+               .values(pages_count_predicted=pages_count_predicted))
     db.commit()
 
 

@@ -23,7 +23,7 @@ def create_task(task: schemas.TaskCreate,
                      get_documents_ids_query_base(db, query).all()]
     task = crud.create_task(task, documents_ids, user.username,
                             query.model_dump_json(), db)
-    result = predict_volumes_pages_task.delay(task_id=task.id)
+    predict_volumes_pages_task.delay(task_id=task.id)
     return crud.get_task(task.id, db)
 
 

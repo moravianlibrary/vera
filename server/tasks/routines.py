@@ -15,14 +15,14 @@ def parse_volume_number(volume_number: str):
 
 def predict_volumes_pages(task_id: int,
                           db: Session):
-    predicator = VolumesPagesPredictor()
+    predictor = VolumesPagesPredictor()
     for document in crud.get_unprocessed_task_documents(task_id, db):
         print(f"Processing document with id {document.id}")
         if document.volume_number is None:
             crud.set_document_error_type(
                 task_id, document.id, TaskDocumentErrorType.MissingVolume, db)
         else:
-            pages_count = predicator.predict(
+            pages_count = predictor.predict(
                 name=document.title,
                 year=parse_volume_number(document.volume_number),
                 issues_count=1,

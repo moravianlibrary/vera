@@ -33,7 +33,7 @@ class TaskError(BaseModel):
 class Task(TaskCreation):
     processed_count: int
     total_count: int
-    errors: List[TaskError]
+    # errors: List[TaskError]
 
 
 class TaskDocument(BaseModel):

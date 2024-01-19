@@ -3,8 +3,8 @@ import unittest
 
 class TestPredictions(unittest.TestCase):
     def test_predict_items_pages(self):
-        from predictions.volumes_pages_predictor import ItemsPagesPredictor
-        predictor = ItemsPagesPredictor()
+        from predictions.volumes_pages_predictor import VolumesPagesPredictor
+        predictor = VolumesPagesPredictor()
         predicted = predictor.predict(
             "test name",
             1996,
@@ -13,3 +13,4 @@ class TestPredictions(unittest.TestCase):
         )
         self.assertIsNotNone(predicted)
         self.assertIsInstance(predicted, float)
+        print(predicted)
