@@ -1,14 +1,24 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { ReactNode, createContext, useContext, useState } from 'react';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import keycloak, { keycloakInitOptions } from '../../services/Keycloak';
-import { User } from './UserModel';
+import { User } from '../../types/UserModel';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../toast/ToastContext';
 import ApiUser from '../../adapters/ApiUser';
 
-const UserContext = createContext();
+interface UserContextProps {
+    login: () => void;
+    logout: () => void;
+    user: User;
+}
 
-export const UserProvider = ({ children }) => {
+const UserContext = createContext<UserContextProps | undefined>(undefined);
+
+interface UserProviderProps {
+    children: ReactNode;
+}
+
+export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     const { t } = useTranslation();
     const showToast = useToast();
     const [user, setUser] = useState(new User());
@@ -47,7 +57,7 @@ export const UserProvider = ({ children }) => {
     const handleKeycloakEvent = (eventType, error) => {
         // console.log(`eventType: ${eventType}, error: ${error}`);
         if (eventType === 'onReady') {
-            if (keycloak.authenticated) {
+            if (keycloak.authenticated && keycloak.token) {
                 localStorage.setItem('token', keycloak.token);
                 getCurrentUser();
             } else {

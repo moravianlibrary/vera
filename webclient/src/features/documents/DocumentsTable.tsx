@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { accessService } from '../../services/AccessService.js';
-import { useUser } from '../../contexts/user/UserContext.js';
+import { useUser } from '../../contexts/user/UserContext';
 import { useDocuments } from '../../contexts/documents/DocumentsContext';
 import { Document } from '../../adapters/ApiDocuments';
 import DocumentModel from '../../types/DocumentModel';
