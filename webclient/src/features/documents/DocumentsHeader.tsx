@@ -9,7 +9,12 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { Menu } from "primereact/menu";
 import { TaskType } from "../../types/TaskType";
 
-const DocumentsHeader = (props) => {
+interface DocumentsHeaderProps {
+    onInsert: () => void;
+    onCreate: () => void;
+}
+
+const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const { t } = useTranslation();
     const { selectedDocuments, handleStartTask } = useDocuments();
 
@@ -37,18 +42,6 @@ const DocumentsHeader = (props) => {
         setHasSelection(selectedDocuments.length > 0);
     }, [selectedDocuments]);
 
-    const handleCreate = (e) => {
-        if (props.onCreate) {
-            props.onCreate();
-        }
-    };
-
-    const handleInsert = (e) => {
-        if (props.onInsert) {
-            props.onInsert();
-        }
-    };
-
     const toggleTaskSelectorMenu = (event) => {
         if (taskSelectorMenuRef.current) {
             (taskSelectorMenuRef.current as OverlayPanel).toggle(event);
@@ -70,7 +63,7 @@ const DocumentsHeader = (props) => {
                 label={t('insert_document')}
                 icon="pi pi-plus"
                 outlined
-                onClick={handleInsert}
+                onClick={props.onInsert}
             />
             <i className="pi pi-bars p-toolbar-separator m-1" />
             <SelectButton value={displayOption}
@@ -83,7 +76,7 @@ const DocumentsHeader = (props) => {
 
     const centerContent = (
         <React.Fragment>
-            <DocumentsSearchBar categories={props.categories} />
+            {/* <DocumentsSearchBar categories={props.categories} /> */}
         </React.Fragment>
     );
 
