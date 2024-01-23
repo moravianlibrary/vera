@@ -8,7 +8,7 @@ import { accessService } from '../../services/AccessService.js';
 import { useUser } from '../../contexts/user/UserContext';
 import { useDocuments } from '../../contexts/documents/DocumentsContext';
 import { Document } from '../../adapters/ApiDocuments';
-import DocumentModel from '../../types/DocumentModel';
+import DocumentModel from '../../contexts/documents/DocumentModel.js';
 
 interface DocumentsTableProps {
 }

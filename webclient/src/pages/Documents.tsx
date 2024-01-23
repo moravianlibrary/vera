@@ -6,6 +6,7 @@ import InsertDocuments from '../features/insert-documents/InsertDocuments';
 import DocumentsHeader from '../features/documents/DocumentsHeader';
 import DocumentsTable from '../features/documents/DocumentsTable';
 import { DocumentsProvider } from '../contexts/documents/DocumentsContext';
+import { AssignableCategoriesProvider } from '../contexts/categories/AssignableCategoriesContext';
 
 const Documents: React.FC = () => {
     const [insertMode, setInsertMode] = useState(false);
@@ -13,18 +14,20 @@ const Documents: React.FC = () => {
 
     return (
         <div className="table-container" >
-            <DocumentsProvider>
-                <DocumentsHeader
-                    onInsert={() => setInsertMode(true)}
-                    onCreate={() => setCreateMode(true)}
-                />
-                <DocumentsTable />
-                <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
-                    <InsertDocuments
-                        onClose={() => setInsertMode(false)}
+            <AssignableCategoriesProvider>
+                <DocumentsProvider>
+                    <DocumentsHeader
+                        onInsert={() => setInsertMode(true)}
+                        onCreate={() => setCreateMode(true)}
                     />
-                </Dialog>
-            </DocumentsProvider>
+                    <DocumentsTable />
+                    <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
+                        <InsertDocuments
+                            onClose={() => setInsertMode(false)}
+                        />
+                    </Dialog>
+                </DocumentsProvider>
+            </AssignableCategoriesProvider>
         </div>
     );
 }

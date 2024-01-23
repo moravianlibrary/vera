@@ -1,5 +1,3 @@
-import { Category } from "../categories/models/Category";
-import { Quota } from "../categories/models/Quota";
 import { PrecreateDocument } from "../documents/models/PrecreateDocument";
 import { Document } from "../documents/models/Document";
 import { DocumentResult } from "../documents/models/DocumentResult";
@@ -11,7 +9,7 @@ import ApiDepartments from "../adapters/ApiDepartments";
 import ApiRoles from "../adapters/ApiRoles";
 import ApiCategories from "../adapters/ApiCategories";
 import ApiDocuments from "../adapters/ApiDocuments";
-import { RoleModel } from "../types/RoleModel";
+import { RoleModel } from "../contexts/user/RoleModel";
 
 class DataService {
     constructor() {
@@ -127,116 +125,6 @@ class DataService {
         try {
             const deletedRole = await ApiRoles.deleteRole(role.id);
             return deletedRole;
-        } catch (error) {
-            this.setError(error);
-            return null;
-        }
-    }
-
-    async getCategories() {
-        try {
-            const categories = (await ApiCategories.getCategories()).data;
-            return categories.map(category => Category.fromJson(category));
-        } catch (error) {
-            this.setError(error);
-            return [];
-        }
-    }
-
-    async getAssignableCategories() {
-        try {
-            const categories = (await ApiCategories.getAssignableCategories()).data;
-            return categories.map(category => Category.fromJson(category));
-        } catch (error) {
-            this.setError(error);
-            return [];
-        }
-    }
-
-    async getRootCategories() {
-        try {
-            const categories = (await ApiCategories.getRootCategories()).data;
-            return categories.map(category => Category.fromJson(category));
-        } catch (error) {
-            this.setError(error);
-            return [];
-        }
-    }
-
-    async createCategory(category) {
-        try {
-            const createdCategory = await ApiCategories.createCategory(category);
-            return createdCategory;
-        } catch (error) {
-            this.setError(error);
-            return null;
-        }
-    }
-
-    async updateCategory(category) {
-        try {
-            const updatedCategory = await ApiCategories.updateCategory(category);
-            return updatedCategory;
-        } catch (error) {
-            this.setError(error);
-            return null;
-        }
-    }
-
-    async deleteCategory(category) {
-        try {
-            const deletedCategory = await ApiCategories.deleteCategory(category.id);
-            return deletedCategory;
-        } catch (error) {
-            this.setError(error);
-            return null;
-        }
-    }
-
-    async updateDistribution(parent_id, distribution) {
-        try {
-            const result = await ApiCategories.updateDistribution(parent_id, distribution);
-            return result.status === 200;
-        } catch (error) {
-            this.setError(error);
-            return null;
-        }
-    }
-
-    async getQuotas() {
-        try {
-            const quotas = (await ApiCategories.getQuotas()).data;
-            return quotas.map(quota => Quota.fromJson(quota));
-        } catch (error) {
-            this.setError(error);
-            return [];
-        }
-    }
-
-    async createQuota(quota) {
-        try {
-            const createdQuota = (await ApiCategories.createQuota(quota)).data;
-            return createdQuota;
-        } catch (error) {
-            this.setError(error);
-            return null;
-        }
-    }
-
-    async updateQuota(quota) {
-        try {
-            const updatedQuota = (await ApiCategories.updateQuota(quota)).data;
-            return updatedQuota;
-        } catch (error) {
-            this.setError(error);
-            return null;
-        }
-    }
-
-    async deleteQuota(quota) {
-        try {
-            const deletedQuota = (await ApiCategories.deleteQuota(quota.id)).data;
-            return deletedQuota;
         } catch (error) {
             this.setError(error);
             return null;

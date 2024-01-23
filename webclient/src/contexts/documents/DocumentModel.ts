@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Document } from "../adapters/ApiDocuments";
+import { Document } from "../../adapters/ApiDocuments";
 
 class DocumentModel implements Document {
     id: number;

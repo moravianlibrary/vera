@@ -7,6 +7,12 @@ class UniqueViolationException(HTTPException):
                          detail=detail)
 
 
+class UniqueCategoryNameViolationException(UniqueViolationException):
+    def __init__(self):
+        super().__init__(detail="Category does not have unique name"
+                         "amongst its siblings")
+
+
 class UserNotAllowedException(HTTPException):
     def __init__(self):
         super().__init__(status_code=status.HTTP_403_FORBIDDEN,

@@ -7,13 +7,12 @@ import Navbar from '../components/Navbar';
 import '../config/i18n';
 import '../styles/App.css';
 import { ToastProvider } from '../contexts/toast/ToastContext';
-import Categories from '../categories/pages/Categories';
+import Categories from '../pages/Categories';
 import Documents from '../pages/Documents';
 import Login from '../components/Login';
 import { ActionAccessRoute } from '../services/AccessService';
 import { UserProvider } from '../contexts/user/UserContext';
 import { DataProvider } from '../services/Data';
-import DataProviders from '../contexts/data/DataContext';
 import Tasks from './Tasks';
 import { ActionType } from '../types/ActionType';
 
@@ -23,7 +22,6 @@ function App() {
     <ToastProvider>
       <UserProvider>
         <DataProvider>
-        <DataProviders>
           <StrictMode>
             <Router>
               <div className="App">
@@ -48,7 +46,6 @@ function App() {
               </div>
             </Router>
           </StrictMode>
-        </DataProviders>
         </DataProvider>
       </UserProvider>
     </ToastProvider>

@@ -24,3 +24,4 @@ namespace ApiDepartments {
 }
 
 export default ApiDepartments;
+export type { Department };

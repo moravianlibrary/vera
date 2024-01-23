@@ -9,7 +9,7 @@ import { Row } from "primereact/row";
 import { textEditor } from '../services/Editors.js';
 import { Button } from "primereact/button";
 import { useData } from "../services/Data.js";
-import { RoleModel } from "../types/RoleModel";
+import { RoleModel } from "../contexts/user/RoleModel";
 
 
 const RolesTable = (props) => {

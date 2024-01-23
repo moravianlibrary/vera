@@ -154,6 +154,12 @@ const resources = {
 
         PredictVolumePages: "Predikce počtu stran ročníků",
 
+        invalid_percentage_distribution: "Neplatné procentuální rozdělení",
+        unique_category_name_violation: "Porušení jedinečného názvu kategorie",
+        unique_category_name_violation_detail: "Sourozenecké kategorie by měly mít jedinečné názvy",
+        "Category deletion failed": "Smazání kategorie se nezdařilo",
+        "Only empty categories can be deleted": "Smazat lze pouze prázdné kategorie",
+
     },
   },
 };

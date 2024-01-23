@@ -1,7 +1,7 @@
 import React, { ReactNode, createContext, useContext, useState } from 'react';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import keycloak, { keycloakInitOptions } from '../../services/Keycloak';
-import { User } from '../../types/UserModel';
+import { User } from './UserModel';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../toast/ToastContext';
 import ApiUser from '../../adapters/ApiUser';

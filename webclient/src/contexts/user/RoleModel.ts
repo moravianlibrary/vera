@@ -1,5 +1,5 @@
-import { Role } from "../adapters/ApiRoles";
-import { ActionType } from "./ActionType";
+import { Role } from "../../adapters/ApiRoles";
+import { ActionType } from "../../types/ActionType";
 
 export class RoleModel implements Role {
     id?: number;

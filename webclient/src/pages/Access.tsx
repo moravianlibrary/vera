@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "primereact/button";
@@ -45,7 +45,7 @@ const Access = () => {
     const tableHeader = () => {
         return (
             <div className="table-header">
-                <Button severity={table === TableEnum.USERS && "secondary"} className="add-button" icon="pi pi-plus" rounded onClick={handleInsert} />
+                <Button className="add-button" icon="pi pi-plus" rounded onClick={handleInsert} />
                 <div className="middle-container">
                     <SelectButton className="select-button" value={table} onChange={(e) => setTable(e.value ? e.value : table)} options={tablesOptions} />
                 </div>

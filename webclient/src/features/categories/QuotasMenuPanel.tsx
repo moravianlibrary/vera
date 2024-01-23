@@ -6,9 +6,8 @@ import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Menu } from "primereact/menu";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Quota } from "../models/Quota";
 
 const QuotasMenuPanel = (props) => {
     const { t } = useTranslation();
@@ -21,7 +20,7 @@ const QuotasMenuPanel = (props) => {
     const [description, setDescription] = useState("");
     const [pagesCount, setPagesCount] = useState(0);
 
-    const floatingPanelStyle = {
+    const floatingPanelStyle: React.CSSProperties = {
         position: 'fixed',
         top: '70px',
         right: '20px',
@@ -47,7 +46,7 @@ const QuotasMenuPanel = (props) => {
     };
 
     const handleInsertQuota = () => {
-        handleEditQuota(new Quota());
+        // handleEditQuota(new Quota());
         setInsertMode(true);
     };
 
@@ -58,14 +57,14 @@ const QuotasMenuPanel = (props) => {
 
     const handleUpdateQuota = () => {
         if (props.onUpdate) {
-            const quota = new Quota();
-            if (!insertMode) {
-                quota.id = selectedQuota.id;
-            }
-            quota.name = name;
-            quota.description = description;
-            quota.pages_count = pagesCount;
-            props.onUpdate(quota);
+            // const quota = new Quota();
+            // if (!insertMode) {
+            //     quota.id = selectedQuota.id;
+            // }
+            // quota.name = name;
+            // quota.description = description;
+            // quota.pages_count = pagesCount;
+            // props.onUpdate(quota);
         }
         setEditMode(false);
         setInsertMode(false);

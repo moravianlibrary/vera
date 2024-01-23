@@ -19,6 +19,8 @@ interface Category extends CreateCategory {
     count_pages: number;
     count_documents_with_pages: number;
     count_documents: number;
+
+    children: Category[];
 }
 
 interface AssignableCategory {
@@ -69,7 +71,7 @@ namespace ApiCategories {
         return axiosInstance.delete<Category>(`/categories/category/${id}`, { headers: authHeader() });
     }
 
-    export function updateDistribution(parent_id: number, distribution: CategoryPercentage[]) {
+    export function updateDistribution(parent_id: number | null, distribution: CategoryPercentage[]) {
         if (parent_id) {
             return axiosInstance.put(`/categories/distribution?parent_id=${parent_id}`, distribution, { headers: authHeader() });
         }
@@ -94,4 +96,4 @@ namespace ApiCategories {
 }
 
 export default ApiCategories;
-export type { Category, CategoryPercentage, AssignableCategory, Quota };
+export type { CreateCategory, Category, CategoryPercentage, AssignableCategory, Quota };

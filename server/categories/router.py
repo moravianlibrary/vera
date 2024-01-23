@@ -3,10 +3,11 @@ from sqlalchemy.orm import Session
 
 from services.database import get_db
 from services.exceptions import MissingArgumentException, \
-    WrongInputException, CategoryIsNotEmptyException
+    WrongInputException, CategoryIsNotEmptyException, \
+    UniqueCategoryNameViolationException
 from categories import crud, schemas
 from categories.routines import get_category_subtree, \
-    get_assignable_categories
+    get_assignable_categories, has_unique_name
 from typing import List, Optional
 
 
@@ -16,6 +17,8 @@ router = APIRouter()
 @router.post("/categories/category", response_model=schemas.Category)
 def create_category(category: schemas.CategoryCreate,
                     db: Session = Depends(get_db)):
+    if not has_unique_name(category, None, db):
+        raise UniqueCategoryNameViolationException
     new_category = (crud.create_root_category(category, db)
                     if category.parent_id is None
                     else crud.create_category(category, db))
@@ -26,6 +29,8 @@ def create_category(category: schemas.CategoryCreate,
 def update_category(category: schemas.CategoryCreate,
                     id: int = Path(...),
                     db: Session = Depends(get_db)):
+    if not has_unique_name(category, id, db):
+        raise UniqueCategoryNameViolationException
     parent_id = crud.get_category(id, db).parent_id
     if category.parent_id is None and parent_id is not None:
         raise Exception("Not implemented change from child to root category")
