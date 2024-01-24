@@ -9,6 +9,7 @@ export class CategoryNode {
     parentNode: CategoryNode | undefined;
     children: CategoryNode[] = [];
 
+    predecessors_departments: number[] = [];
     count_pages: number = 0;
     count_documents_with_pages: number = 0;
     count_documents: number = 0;
@@ -19,18 +20,27 @@ export class CategoryNode {
 
     constructor(type: NodeType, category: Category, quota: number, parentNode?: CategoryNode) {
         this.type = type;
+        this.category = category;
         this.quota = quota;
         this.parentNode = parentNode;
         this.percentage = category.percentage;
         this.className = CategoryNode.getClassName(type, category);
+
+        if (parentNode && (parentNode.predecessors_departments.length > 0
+                || parentNode.category.departments.length > 0)) {
+            this.predecessors_departments = Array.from(new Set([
+                ...parentNode.predecessors_departments,
+                ...parentNode.category.departments,
+                ...this.category.departments
+            ])).sort();
+        }
 
         const childrenQuotas = CategoryNode.getChildrenQuotas(category.children, quota);
         this.children = category.children.map((child, index) => (
             new CategoryNode(NodeType.Category, child, childrenQuotas[index], this)))
             .sort((a, b) => a.category.id - b.category.id);
 
-        this.setCategory(category);
-        this.aggregateStats();
+        this.aggregateStats(quota);
     }
 
     static generateRootNode(name: string, categories: Category[], quota: number): CategoryNode {
@@ -117,22 +127,27 @@ export class CategoryNode {
         this.children = [...this.children, newNode];
     }
 
-    updateChildren(children: Category[], quotaPagesCount: number) {
-        const childrenQuotas = CategoryNode.getChildrenQuotas(children, quotaPagesCount);
-        this.children.forEach((child, index) => (
-            child.updateChildren(children[index].children, childrenQuotas[index])));
-
-        this.aggregateStats();
-        this.quota = quotaPagesCount;
+    updateChildren(children: Category[]) {
+        this.children.forEach((child, index) => child.updateChildren(children[index].children));
     }
 
-    aggregateStats() {
+    aggregateStats(quotaPagesCount: number) {
+        const childrenQuotas = CategoryNode.getChildrenQuotas(this.children.map(c => c.category), quotaPagesCount);
+        this.children.forEach((child, index) => child.aggregateStats(childrenQuotas[index]));
+
         this.count_pages = (this.category.count_pages || 0) + (this.children.reduce((total, child) => (
             total + (child.count_pages || 0)), 0) as number);
         this.count_documents = (this.category.count_documents || 0 )+ (this.children.reduce((total, child) => (
             total + (child.count_documents || 0)), 0) as number);
         this.count_documents_with_pages = (this.category.count_documents_with_pages || 0) + (this.children.reduce((total, child) => (
             total + (child.count_documents_with_pages || 0)), 0) as number);
+
+        this.quota = quotaPagesCount;
+    }
+
+    propagateDepartments(departments: number[] = []) {
+        this.predecessors_departments = Array.from(new Set([...departments, ...this.category.departments])).sort();
+        this.children.forEach(child => child.propagateDepartments(this.predecessors_departments))
     }
 
     setType(type) {
@@ -144,6 +159,9 @@ export class CategoryNode {
     }
 
     setCategory(category) {
+        if (this.category.departments !== category.departments) {
+            this.children.forEach(child => child.propagateDepartments(category.departments));
+        }
         this.category = category;
     }
 

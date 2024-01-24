@@ -15,7 +15,8 @@ def get_category_subtree(category: schemas.Category,
         assignable=category.assignable,
         percentage=category.percentage,
         disabled=category.disabled,
-        departments=crud.get_category_departments(category.id, db),
+        departments=[d[0] for d
+                     in crud.get_category_departments(category.id, db)],
         children=[get_category_subtree(child, db)
                   for child in crud.get_children_categories(category.id, db)],
         count_pages=crud.get_pages_count(category.id, db),

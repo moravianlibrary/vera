@@ -177,6 +177,8 @@ const resources = {
         "The quota is already active": "Kvóta je již aktivní",
         "The quota has been successfully set as active": "Kvóta byla úspěšně nastavena jako aktivní",
 
+        "This setting is propagated downwards": "Toto nastavení se propaguje směrem dolů",
+
     },
   },
 };
