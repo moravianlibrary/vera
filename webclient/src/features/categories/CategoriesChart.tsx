@@ -7,7 +7,6 @@ import CategoriesChartNode from "./CategoriesChartNode";
 import CategoriesChartUpdate from "./CategoriesChartUpdate";
 import { CategoryNode } from "../../contexts/categories/CategoryNodeModel";
 import { Button } from "primereact/button";
-import CategoriesChartInsert from "./CategoriesChartInsert";
 
 interface CategoriesChartProps {
 };
@@ -18,8 +17,6 @@ const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
     const getCategoryNodeComponent = (node: CategoryNode) => {
         if (!node) {
             return;
-        } else if (node.type === NodeType.Insert) {
-            return (<CategoriesChartInsert node={node} />)
         } else if (node.type === NodeType.Root) {
             return (<CategoriesChartRoot node={node} />)
         } else if (node.type === NodeType.Category) {
