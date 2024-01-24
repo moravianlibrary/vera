@@ -8,17 +8,22 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { Menu } from "primereact/menu";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useQuotas } from "../../contexts/categories/QuotasContext";
+import { Quota } from "../../adapters/ApiCategories";
+import { Tooltip } from "primereact/tooltip";
+import { useToast } from "../../contexts/toast/ToastContext";
 
 const QuotasMenuPanel = (props) => {
     const { t } = useTranslation();
-    const [selectedQuota, setSelectedQuota] = useState(null);
-    const [quotas, setQuotas] = useState([]);
+    const showToast = useToast();
+    const { quotas, selectedQuota, handleSelectQuota, handleCreateQuota,
+        handleUpdateQuota, handleDeleteQuota, handleSetActiveQuota } = useQuotas();
 
     const [editMode, setEditMode] = useState(false);
     const [insertMode, setInsertMode] = useState(false);
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [pagesCount, setPagesCount] = useState(0);
+    const [name, setName] = useState<string | undefined>(undefined);
+    const [description, setDescription] = useState<string | undefined>(undefined);
+    const [pagesCount, setPagesCount] = useState<number | undefined>(undefined);
 
     const floatingPanelStyle: React.CSSProperties = {
         position: 'fixed',
@@ -30,67 +35,80 @@ const QuotasMenuPanel = (props) => {
         padding: '0px',
     };
 
-    const handleSelectQuota = (e) => {
-        if (props.onSelect) {
-            props.onSelect(e.target.value);
-        }
-    };
-
-    const handleEditQuota = (quota) => {
-        if (quota) {
-            setName(quota.name);
-            setDescription(quota.description);
-            setPagesCount(quota.pages_count);
-        }
+    const handleEditQuota = () => {
+        setName(selectedQuota!.name);
+        setDescription(selectedQuota!.description ? selectedQuota!.description : undefined);
+        setPagesCount(selectedQuota!.pages_count);
         setEditMode(true);
     };
 
     const handleInsertQuota = () => {
-        // handleEditQuota(new Quota());
+        setName("");
+        setDescription(undefined);
+        setPagesCount(undefined);
+        setEditMode(true);
         setInsertMode(true);
     };
+
+    const handleAcceptChanges = () => {
+        if (!name) {
+            showToast("warn", t("The quota name must be filled"), "");
+            return;
+        }
+        if (!pagesCount) {
+            showToast("warn", t("The quota pages count must be filled"), "");
+            return;
+        }
+        if (insertMode) {
+            handleCreateQuota({ name, description, pages_count: pagesCount });
+        } else {
+            handleUpdateQuota({ name, description, pages_count: pagesCount });
+        }
+    }
 
     const handleCancelEdit = () => {
         setEditMode(false);
         setInsertMode(false);
     }
 
-    const handleUpdateQuota = () => {
-        if (props.onUpdate) {
-            // const quota = new Quota();
-            // if (!insertMode) {
-            //     quota.id = selectedQuota.id;
-            // }
-            // quota.name = name;
-            // quota.description = description;
-            // quota.pages_count = pagesCount;
-            // props.onUpdate(quota);
-        }
-        setEditMode(false);
-        setInsertMode(false);
-    };
-
-    const handleDeleteQuota = () => {
-        if (props.onDelete) {
-            props.onDelete(selectedQuota);
-        }
-    };
-
-    const handleSetActive = () => {
-        if (props.onSetActive) {
-            props.onSetActive(selectedQuota);
-        }
-    };
-
     useEffect(() => {
-        setSelectedQuota(props.selectedQuota);
-    }, [props.selectedQuota]);
+        handleCancelEdit();
+    }, [quotas]);
 
-    useEffect(() => {
-        setQuotas(props.quotas);
-    }, [props.quotas]);
+    const TooltipDropdownItem = ({ item }) => {
+        return (
+            <div>
+                <Tooltip className="max-w-30rem" target=".quota-description" position="left" />
+                <div className="quota-description" data-pr-tooltip={item.description} >
+                    {item.name}
+                </div>
+            </div>
+        );
+    };
 
-    if (selectedQuota && editMode) {
+    if (!selectedQuota) {
+        return (
+            <div className="flex flex-column bg-white p-2 gap-2" style={floatingPanelStyle}>
+                <span className="font-bold p-2">{t('select_quota')}:</span>
+                <div className="flex">
+                    <Dropdown
+                        options={quotas}
+                        optionLabel="name"
+                        value={selectedQuota}
+                        onChange={(e) => handleSelectQuota(e.value)}
+                        itemTemplate={(item) => <TooltipDropdownItem item={item} />}
+                    />
+                    <Button
+                        className="pi pi-plus p-2"
+                        text
+                        onClick={handleInsertQuota}
+                    />
+                </div>
+            </div>
+        );
+    }
+
+    if (editMode) {
         return (
             <div className="flex flex-column bg-white p-2 gap-2" style={floatingPanelStyle}>
                 <InputText
@@ -105,11 +123,11 @@ const QuotasMenuPanel = (props) => {
                     <span className="font-bold">{t('pages_count')}:</span>
                     <InputNumber className="w-10rem"
                         value={pagesCount}
-                        onValueChange={(e) => setPagesCount(e.target.value)} 
+                        onValueChange={(e) => setPagesCount(e.target.value!)} 
                     />
                 </div>
                 <div className="flex justify-content-end gap-2">
-                    <Button outlined severity="success" onClick={handleUpdateQuota}>
+                    <Button outlined severity="success" onClick={handleAcceptChanges}>
                         <i className="pi pi-check" />
                     </Button>
                     <Button outlined severity="danger" onClick={handleCancelEdit}>
@@ -128,7 +146,8 @@ const QuotasMenuPanel = (props) => {
                     options={quotas}
                     optionLabel="name"
                     value={selectedQuota}
-                    onChange={handleSelectQuota}
+                    onChange={(e) => handleSelectQuota(e.value)}
+                    itemTemplate={(item) => <TooltipDropdownItem item={item} />}
                 />
                 <Button
                     className="pi pi-plus p-2"
@@ -136,30 +155,26 @@ const QuotasMenuPanel = (props) => {
                     onClick={handleInsertQuota}
                 />
             </div>
-            {selectedQuota && selectedQuota.description &&
-            <span>{selectedQuota.description}</span>}
-            {selectedQuota &&
-            <span className="font-bold">{t('pages_count')}: {selectedQuota.pages_count}</span>}
-            {selectedQuota && selectedQuota.active &&
+            <span className="font-bold">{t('pages_count')}: {selectedQuota.pages_count}</span>
+            {selectedQuota.active &&
             <span className="font-bold text-yellow-800">{t('active_quota')}</span>}
-            {selectedQuota &&
             <div className="flex justify-content-end gap-2">
                 {!selectedQuota.active &&
                 <Button
                     className="text-yellow-800"
                     outlined
                     tooltip={t('set_active_quota')}
-                    onClick={handleSetActive}
+                    onClick={handleSetActiveQuota}
                 >
                     <i className="pi pi-star-fill" />
                 </Button>}
-                <Button outlined onClick={(e) => handleEditQuota(selectedQuota)}>
+                <Button outlined onClick={handleEditQuota}>
                     <i className="pi pi-pencil" />
                 </Button>
                 <Button outlined severity="danger" onClick={handleDeleteQuota}>
                     <i className="pi pi-trash" />
                 </Button>
-            </div>}
+            </div>
         </div>
     );
 };

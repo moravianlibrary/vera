@@ -54,4 +54,11 @@ def delete_quota(quota_id: int,
 
 
 def get_quotas(db: Session):
-    return db.query(models.Quota).all()
+    return db.query(models.Quota).order_by(models.Quota.id).all()
+
+
+def get_quota_by_name(name: str,
+                      db: Session):
+    return (db.query(models.Quota)
+            .filter(models.Quota.name == name)
+            .first())

@@ -41,8 +41,7 @@ const CategoryNodesContext = createContext<CategoryNodesContextProps | undefined
 
 interface CategoryNodesProviderProps {
     categories: Category[] | undefined;
-    departments: Department[];
-    quotas: Quota[];
+    selectedQuota: Quota | undefined;
     children: ReactNode;
 }
 
@@ -56,14 +55,22 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (prop
     const [editPercentageNodes, setEditPercentageNodes] = useState<CategoryNode[]>([]);
     const [focusEditPercentageIndex, setFocusEditPercentageIndex] = useState<number>(0);
 
-    const createCategoryNodes = (categories: Category[], quotas: Quota[]) => {
+    const createCategoryNodes = (categories: Category[], selectedQuota?: Quota) => {
+        const quotaPagesCount = selectedQuota ? selectedQuota.pages_count : 0;
         const createdRootNode = CategoryNode.generateRootNode(
-            t('all_categories'), categories, 1000);
+            t('all_categories'), categories, quotaPagesCount);
         setRootNode(createdRootNode);
         setCategoryNodes([createdRootNode]);
     };
 
-    const updateCategoryNodes = (categories: Category[], quotas: Quota[]) => {
+    const updateCategoryNodes = (categories: Category[], selectedQuota?: Quota) => {
+        if (!rootNode) {
+            createCategoryNodes(categories, selectedQuota);
+            return;
+        }
+        const quotaPagesCount = selectedQuota ? selectedQuota.pages_count : 0;
+        rootNode.updateChildren(categories, quotaPagesCount);
+        setCategoryNodes([...categoryNodes!]);
     };
 
     const handleEditCategoryNode = (node: CategoryNode) => {
@@ -213,15 +220,14 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (prop
     };
 
     useEffect(() => {
-        if (props.categories && props.quotas) {
-            console.log(props.categories);
+        if (props.categories) {
             if (rootNode === undefined) {
-                createCategoryNodes(props.categories, props.quotas);
+                createCategoryNodes(props.categories, props.selectedQuota);
             } else {
-                updateCategoryNodes(props.categories, props.quotas);
+                updateCategoryNodes(props.categories, props.selectedQuota);
             }
         }
-    }, [props.categories, props.quotas]);
+    }, [props.categories, props.selectedQuota]);
 
     const contextValue: CategoryNodesContextProps = {
         categoryNodes,

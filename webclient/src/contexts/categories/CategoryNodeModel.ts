@@ -9,6 +9,10 @@ export class CategoryNode {
     parentNode: CategoryNode | undefined;
     children: CategoryNode[] = [];
 
+    count_pages: number = 0;
+    count_documents_with_pages: number = 0;
+    count_documents: number = 0;
+
     className = 'bg-yellow-500';
     expanded: boolean = true;
     style = { borderRadius: '12px' };
@@ -26,6 +30,7 @@ export class CategoryNode {
             .sort((a, b) => a.category.id - b.category.id);
 
         this.setCategory(category);
+        this.aggregateStats();
     }
 
     static generateRootNode(name: string, categories: Category[], quota: number): CategoryNode {
@@ -42,9 +47,9 @@ export class CategoryNode {
             percentage: 100,
             level: -1,
 
-            count_pages: categories.reduce((total, category) => total + category.count_pages, 0),
-            count_documents_with_pages: categories.reduce((total, category) => total + category.count_documents_with_pages, 0),
-            count_documents: categories.reduce((total, category) => total + category.count_documents, 0),
+            count_pages: 0,
+            count_documents_with_pages: 0,
+            count_documents: 0,
             
             children: categories
         }
@@ -112,70 +117,23 @@ export class CategoryNode {
         this.children = [...this.children, newNode];
     }
 
-    // static createCategoryNode(category, parentNode, quota, expanded) {
-    //     const node = new CategoryNode();
+    updateChildren(children: Category[], quotaPagesCount: number) {
+        const childrenQuotas = CategoryNode.getChildrenQuotas(children, quotaPagesCount);
+        this.children.forEach((child, index) => (
+            child.updateChildren(children[index].children, childrenQuotas[index])));
 
-    //     node.type = NodeType.Category;
-    //     node.category = category;
-    //     node.parentNode = parentNode;
-    //     node.quota = quota;
+        this.aggregateStats();
+        this.quota = quotaPagesCount;
+    }
 
-    //     node.className = CategoryNode.getClassName(NodeType.Category, category);
-
-    //     const { children } = category;
-    //     const quotas_tmp = children.map(child => Number(child.calcQuota(quota)));
-    //     const difference = quota - quotas_tmp.reduce((accumulator, quota) => accumulator + quota, 0);
-
-    //     const quotas = difference !== 0
-    //             ? quotas_tmp.reverse()
-    //                 .map((quota, index) => index === quotas_tmp.slice().reverse().findIndex(q => q !== 0) ? quota + difference : quota)
-    //                 .reverse()
-    //             : quotas_tmp;
-
-    //     node.children = children
-    //             ? children.map((child, index) => CategoryNode.createCategoryNode(child, node, quotas[index], expanded))
-    //             : [];
-        
-    //     return node;
-    // }
-
-    // static createRootNode(category, quota, expanded) {
-    //     const node = CategoryNode.createCategoryNode(category, null, quota, expanded);
-    //     node.type = NodeType.Root;
-    //     node.className = CategoryNode.getClassName(NodeType.Root, category);
-    //     return node;
-    // }
-
-    // createInsertNode() {
-    //     const node = new CategoryNode();
-    //     node.type = NodeType.Insert;
-    //     node.className = CategoryNode.getClassName(NodeType.Insert, this.category);
-    //     node.parentNode = this;
-    //     return node;
-    // }
-
-    // createInsertNodes() {
-    //     if (this.category.level < 4
-    //             && (this.children.length === 0
-    //                 || this.children.every(child => child.type === NodeType.Category))) {
-    //         this.children.forEach(child => child.createInsertNodes());
-    //         this.children = [...this.children, this.createInsertNode()];
-    //     }
-    // }
-    
-    // clearInsertNodes() {
-    //     this.children = this.children.filter(child => child.type != NodeType.Insert);
-    //     this.children.forEach(child => child.clearInsertNodes());
-    // }
-
-    // insertNewCategoryNode() {
-    //     const childNode = new CategoryNode();
-    //     childNode.parentNode = this;
-    //     childNode.type = NodeType.UpdateCategory;
-    //     // childNode.category = this.category.createChildCategory();
-    //     childNode.className = CategoryNode.getClassName(NodeType.Category, childNode.category);
-    //     this.children.splice(this.children.length - 1, 0, childNode);
-    // }
+    aggregateStats() {
+        this.count_pages = (this.category.count_pages || 0) + (this.children.reduce((total, child) => (
+            total + (child.count_pages || 0)), 0) as number);
+        this.count_documents = (this.category.count_documents || 0 )+ (this.children.reduce((total, child) => (
+            total + (child.count_documents || 0)), 0) as number);
+        this.count_documents_with_pages = (this.category.count_documents_with_pages || 0) + (this.children.reduce((total, child) => (
+            total + (child.count_documents_with_pages || 0)), 0) as number);
+    }
 
     setType(type) {
         this.type = type;
@@ -186,15 +144,7 @@ export class CategoryNode {
     }
 
     setCategory(category) {
-        this.category = {
-            ...category,
-            count_pages: (category.count_pages || 0) + (this.children.reduce((total, child) => (
-                total + (child.category.count_pages || 0)), 0) as number),
-            count_documents: (category.count_documents || 0 )+ (this.children.reduce((total, child) => (
-                total + (child.category.count_documents || 0)), 0) as number),
-            count_documents_with_pages: (category.count_documents_with_pages || 0) + (this.children.reduce((total, child) => (
-                total + (child.category.count_documents_with_pages || 0)), 0) as number),
-        };
+        this.category = category;
     }
 
     setName(name: string) {

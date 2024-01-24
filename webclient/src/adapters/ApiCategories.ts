@@ -82,7 +82,7 @@ namespace ApiCategories {
         return axiosInstance.get<Quota[]>("/categories/quota", { headers: authHeader() });
     }
 
-    export function createQuota(quota: Quota) {
+    export function createQuota(quota: CreateQuota) {
         return axiosInstance.post<Quota>("/categories/quota", quota, { headers: authHeader() });
     }
 
@@ -96,4 +96,4 @@ namespace ApiCategories {
 }
 
 export default ApiCategories;
-export type { CreateCategory, Category, CategoryPercentage, AssignableCategory, Quota };
+export type { CreateCategory, Category, CategoryPercentage, AssignableCategory, CreateQuota, Quota };

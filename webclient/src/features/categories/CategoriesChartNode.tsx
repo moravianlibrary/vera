@@ -18,7 +18,7 @@ const CategoriesChartNode: React.FC<CategoriesChartNodeProps> = ({ node }) => {
     const [missingPagesCount, setMissingPagesCount] = useState(0);
 
     useEffect(() => {
-        setMissingPagesCount(Math.max(node.quota - category.count_pages, 0));
+        setMissingPagesCount(Math.max(node.quota - node.count_pages, 0));
     }, [node.quota]);
 
     const getTooltipText = (): string | undefined => {
@@ -46,9 +46,9 @@ const CategoriesChartNode: React.FC<CategoriesChartNodeProps> = ({ node }) => {
             <div className="flex flex-column align-items-start">
                 {missingPagesCount > 0 &&
                 <div className="text-red-700"><span className="font-bold">{missingPagesCount}</span> {t('category_missing_count_pages')}</div>}
-                <div><span className="font-bold">{category.count_pages}</span> {t('category_count_pages')}</div>
-                <div><span className="font-bold">{category.count_documents_with_pages}</span> {t('category_count_documents_with_pages')}</div>
-                <div><span className="font-bold">{category.count_documents}</span> {t('category_count_documents')}</div>
+                <div><span className="font-bold">{node.count_pages}</span> {t('category_count_pages')}</div>
+                <div><span className="font-bold">{node.count_documents_with_pages}</span> {t('category_count_documents_with_pages')}</div>
+                <div><span className="font-bold">{node.count_documents}</span> {t('category_count_documents')}</div>
             </div>
         </div>
     );

@@ -13,10 +13,15 @@ class UniqueCategoryNameViolationException(UniqueViolationException):
                          "amongst its siblings")
 
 
+class UniqueQuotaNameViolationException(UniqueViolationException):
+    def __init__(self):
+        super().__init__(detail="The quota must have a unique name")
+
+
 class UserNotAllowedException(HTTPException):
     def __init__(self):
         super().__init__(status_code=status.HTTP_403_FORBIDDEN,
-                         detail="User is not allowed to perform action",
+                         detail="User is forbidden to perform action",
                          headers={"WWW-Authenticate": "Bearer"})
 
 

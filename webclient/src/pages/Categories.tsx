@@ -6,6 +6,7 @@ import { CategoriesProvider, useCategories } from "../contexts/categories/Catego
 import { DepartmentsProvider, useDepartments } from "../contexts/departments/DepartmentsContext";
 import { CategoryNodesProvider } from "../contexts/categories/CategoryNodesContext";
 import CategoriesChart from "../features/categories/CategoriesChart";
+import { QuotasProvider, useQuotas } from "../contexts/categories/QuotasContext";
 
 interface CategoriesProps {}
 
@@ -16,7 +17,9 @@ const Categories: React.FC<CategoriesProps> = (props) => {
         <div style={{ overflow: "auto" }}>
             <CategoriesProvider>
                 <DepartmentsProvider>
-                    <CategoriesDiv/>
+                    <QuotasProvider>
+                        <CategoriesDiv/>
+                    </QuotasProvider>
                 </DepartmentsProvider>
             </CategoriesProvider>
         </div>
@@ -25,14 +28,12 @@ const Categories: React.FC<CategoriesProps> = (props) => {
 
 const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
     const { categories } = useCategories();
-    const { departments } = useDepartments();
-    const quotas = [];
+    const { selectedQuota } = useQuotas();
 
     return (
         <CategoryNodesProvider
             categories={categories}
-            departments={departments}
-            quotas={quotas}
+            selectedQuota={selectedQuota}
         >
             <div style={{ overflow: "auto" }}>
                 <CategoriesMenuPanel />

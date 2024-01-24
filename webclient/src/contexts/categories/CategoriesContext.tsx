@@ -22,7 +22,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({ children
             });
             setCategories(transformedData);
         }).catch(error => {
-            console.error(`Could not receive assignable categories: ${error}`);
+            console.error(`Could not receive categories: ${error}`);
         });
     };
 

@@ -5,6 +5,7 @@ import { Menu } from "primereact/menu";
 import { CategoryNode } from "../../contexts/categories/CategoryNodeModel";
 import { MenuItem } from "primereact/menuitem";
 import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
+import { NodeType } from "../../contexts/categories/CategoryNodeType";
 
 interface CategoryNodeEditMenuProps {
     node: CategoryNode
@@ -19,6 +20,16 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => 
             (menuRef.current as Menu).toggle(event);
         }
     };
+    const rootItems: MenuItem[] = [{
+            template: (item, options) => {
+                return (
+                    <Button className="p-2" text severity="secondary" onClick={() => handleInsertChildNode(node)}>
+                        <i className="pi pi-plus" />
+                    </Button>
+                )
+            }
+        }
+    ];
 
     const items: MenuItem[] = [
         {
@@ -56,7 +67,7 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => 
         <div className="flex">
             <Menu
                 className="surface-300 w-auto"
-                model={items}
+                model={node.type === NodeType.Root ? rootItems : items}
                 popup
                 popupAlignment="right"
                 ref={menuRef} />
