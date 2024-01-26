@@ -1,16 +1,17 @@
 import { Dropdown } from "primereact/dropdown";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { NumberOptions } from "../models/SearchNodes";
+import { NumberOption } from "../../../contexts/documents/search/SearchNodes";
 import { InputNumber } from "primereact/inputnumber";
+import React from "react";
 
 const AdvancedSearchNumberField = (props) => {
     const { t } = useTranslation();
 
     const { data } = props;
     const [option, setOption] = useState(data.option);
-    const [value1, setValue1] = useState(data.option === NumberOptions.BETWEEN ? data.value[0] : data.value);
-    const [value2, setValue2] = useState(data.option === NumberOptions.BETWEEN ? data.value[1] : "");
+    const [value1, setValue1] = useState(data.option === NumberOption.Between ? data.value[0] : data.value);
+    const [value2, setValue2] = useState(data.option === NumberOption.Between ? data.value[1] : "");
 
     const handleSelectOption = (e) => {
         data.setOption(e.value);
@@ -18,7 +19,7 @@ const AdvancedSearchNumberField = (props) => {
     };
 
     const handleChangeValue1 = (e) => {
-        if (option === NumberOptions.BETWEEN) {
+        if (option === NumberOption.Between) {
             data.setFirstValue(e.value);
         } else {
             data.setValue(e.value);
@@ -27,7 +28,7 @@ const AdvancedSearchNumberField = (props) => {
     };
 
     const handleChangeValue2 = (e) => {
-        if (option === NumberOptions.BETWEEN) {
+        if (option === NumberOption.Between) {
             data.setSecondValue(e.value);
         }
         setValue2(e.value);
@@ -38,18 +39,18 @@ const AdvancedSearchNumberField = (props) => {
             <Dropdown
                 value={option}
                 onChange={handleSelectOption}
-                options={Object.values(NumberOptions)}
-                optionLabel={(option) => t(option)} 
+                options={Object.values(NumberOption)}
+                // optionLabel={(option) => t(option)} 
                 placeholder={t('select_number_operation')}
             />
-            {option !== NumberOptions.IS_NULL && option !== NumberOptions.IS_NOT_NULL &&
+            {option !== NumberOption.IsNull && option !== NumberOption.IsNotNull &&
             <InputNumber
                 autoFocus
                 value={value1}
                 onValueChange={handleChangeValue1}
                 min={0} max={100000}
                 maxFractionDigits={0} />}
-            {option === NumberOptions.BETWEEN &&
+            {option === NumberOption.Between &&
             <InputNumber
                 value={value2}
                 onValueChange={handleChangeValue2}

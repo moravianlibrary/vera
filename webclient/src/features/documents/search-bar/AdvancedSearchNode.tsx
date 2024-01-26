@@ -1,4 +1,5 @@
-import { RuleType } from "../models/SearchNodes";
+import React from "react";
+import { RuleType } from "../../../contexts/documents/search/SearchNodes";
 import AdvancedSearchField from "./AdvancedSearchField";
 import AdvancedSearchGroup from "./AdvancedSearchGroup";
 import AdvancedSearchTextField from "./AdvancedSearchTextField";
@@ -14,11 +15,11 @@ function getBackground(level) {
 
 const AdvancedSearchNode = (props) => {
     switch (props.data?.type) {
-        case RuleType.GROUP: return <AdvancedSearchGroup {...props} bgColor={getBackground(props.data.level)} />;
-        case RuleType.FIELD:
-        case RuleType.TEXT_FIELD:
-        case RuleType.NUMBER_FIELD:
-        case RuleType.ENUM_FIELD: return <AdvancedSearchField {...props} />;
+        case RuleType.Group: return <AdvancedSearchGroup {...props} bgColor={getBackground(props.data.level)} />;
+        case RuleType.Field:
+        case RuleType.TextField:
+        case RuleType.NumberField:
+        case RuleType.EnumField: return <AdvancedSearchField {...props} />;
     }
     return (<div></div>);
 };

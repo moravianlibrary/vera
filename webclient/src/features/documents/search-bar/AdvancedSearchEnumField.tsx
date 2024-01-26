@@ -1,8 +1,9 @@
 import { Dropdown } from "primereact/dropdown";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { EnumOptions, TextOptions } from "../models/SearchNodes";
-import DocumentField from "../models/DocumentField";
+import { EnumOption, TextOption } from "../../../contexts/documents/search/SearchNodes";
+import DocumentField from "../../../documents/models/DocumentField";
+import React from "react";
 
 const AdvancedSearchEnumField = (props) => {
     const { t } = useTranslation();
@@ -29,15 +30,15 @@ const AdvancedSearchEnumField = (props) => {
             <Dropdown
                 value={option}
                 onChange={handleSelectOption}
-                options={Object.values(EnumOptions)}
-                optionLabel={(option) => t(option)} 
+                options={Object.values(EnumOption)}
+                // optionLabel={(option) => t(option)} 
                 placeholder={t('select_enum_operation')} />
-            {option !== TextOptions.IS_NULL && option !== TextOptions.IS_NOT_NULL &&
+            {option !== TextOption.IsNull && option !== TextOption.IsNotNull &&
             <Dropdown
                 value={value}
                 onChange={handleChangeValue}
                 options={options}
-                optionLabel={(option) => option.name} 
+                // optionLabel={(option) => option.name} 
                 placeholder={placeholder} />}
         </div>
     );

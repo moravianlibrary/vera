@@ -2,7 +2,8 @@ import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TextOptions } from "../models/SearchNodes";
+import { TextOption } from "../../../contexts/documents/search/SearchNodes";
+import React from "react";
 
 const AdvancedSearchTextField = (props) => {
     const { t } = useTranslation();
@@ -27,10 +28,10 @@ const AdvancedSearchTextField = (props) => {
                 className="w-12rem"
                 value={option}
                 onChange={handleSelectOption}
-                options={Object.values(TextOptions)}
-                optionLabel={(option) => t(option)} 
+                options={Object.values(TextOption)}
+                // optionLabel={(option) => t(option)} 
                 placeholder={t('select_text_operation')} />
-            {option !== TextOptions.IS_NULL && option !== TextOptions.IS_NOT_NULL &&
+            {option !== TextOption.IsNull && option !== TextOption.IsNotNull &&
             <InputText
                 className="w-14rem"
                 autoFocus

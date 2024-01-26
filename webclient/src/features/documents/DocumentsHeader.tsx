@@ -1,6 +1,6 @@
 import { Button } from "primereact/button";
 import React, { useEffect, useRef, useState } from "react";
-import DocumentsSearchBar from "../../documents/components/DocumentsSearchBar";
+import DocumentsSearchBar from "./search-bar/DocumentsSearchBar";
 import { SelectButton } from "primereact/selectbutton";
 import { Toolbar } from "primereact/toolbar";
 import { useTranslation } from "react-i18next";
@@ -76,7 +76,7 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
 
     const centerContent = (
         <React.Fragment>
-            {/* <DocumentsSearchBar categories={props.categories} /> */}
+            <DocumentsSearchBar />
         </React.Fragment>
     );
 

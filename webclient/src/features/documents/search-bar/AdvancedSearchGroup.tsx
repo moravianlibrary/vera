@@ -3,17 +3,24 @@ import { Card } from "primereact/card";
 import { Dropdown } from "primereact/dropdown";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { GroupOptions } from "../models/SearchNodes";
+import { GroupOption, SearchGroup } from "../../../contexts/documents/search/SearchNodes";
 import AdvancedSearchNode from "./AdvancedSearchNode";
 import { setSeconds } from "date-fns";
+import React from "react";
 
 const MAX_GROUP_LEVEL = 2
 const MAX_FIELD_LEVEL = MAX_GROUP_LEVEL + 1;
 
-const AdvancedSearchGroup = (props) => {
+interface AdvancedSearchGroupProps {
+    data: SearchGroup;
+    index: number;
+    bgColor: any;
+}
+
+const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = (props) => {
     const { t } = useTranslation();
 
-    const { data, index, enums } = props;
+    const { data, index } = props;
     const [option, setOption] = useState(props.data.option);
     const [subRules, setSubRules] = useState(props.data.subRules);
 
@@ -35,9 +42,9 @@ const AdvancedSearchGroup = (props) => {
     };
 
     const handleDelete = () => {
-        if (props.onDelete) {
-            props.onDelete(index);
-        }
+        // if (props.onDelete) {
+        //     props.onDelete(index);
+        // }
     };
 
     const handleDeleteSubRule = (index) => {
@@ -55,8 +62,8 @@ const AdvancedSearchGroup = (props) => {
             <Dropdown
                 value={option}
                 onChange={handleSelectOption}
-                options={Object.values(GroupOptions)}
-                optionLabel={(option) => t(option)} 
+                options={Object.values(GroupOption)}
+                itemTemplate={(option) => t(option)} 
                 placeholder="Select a City"
             />
             {data.level > 0 && <Button
@@ -97,7 +104,7 @@ const AdvancedSearchGroup = (props) => {
             {subRules.map((rule, index) =>
                 <AdvancedSearchNode key={`rule_${Date.now()}_${index}`}
                     data={rule}
-                    enums={enums}
+                    // enums={enums}
                     index={index}
                     onUpdate={handleUpdateSubRule}
                     onDelete={handleDeleteSubRule} />

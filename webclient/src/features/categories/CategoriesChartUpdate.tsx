@@ -89,7 +89,7 @@ const CategoriesChartUpdate: React.FC<CategoriesChartUpdateProps> = ({ node }) =
                             <Chip key={d_id} label={departmentsOptions.find(d => d_id === d.id)?.name}/>
                         ))}
                     </div> */}
-                    <Tooltip target=".use-category-departments"  />
+                    {/* <Tooltip target=".use-category-departments"  /> */}
                     <span className="text-left use-category-departments"
                         data-pr-tooltip={t("This setting is propagated downwards")}
                     >{t('use_category_departments')}:</span>
