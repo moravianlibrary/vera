@@ -1,11 +1,11 @@
 import React, { ReactNode, createContext, useContext, useEffect, useState } from "react";
 import { IdentifierType } from "../../types/IdentifierType";
 import { useTranslation } from "react-i18next";
-import { useAssignableCategories } from "../categories/CategoriesContext";
+import { useAssignableCategories } from "../categories/AssignableCategoriesContext";
 import ApiDocuments, { DocumentCreationResponse, Identifier, Issue } from "../../adapters/ApiDocuments";
 import CreateResult from "../../documents/models/CreateResult";
 import { DocumentCreationStatus } from "../../types/DocumentCreationStatus";
-import { Category } from "../../adapters/ApiCategories";
+import { AssignableCategory } from "../../adapters/ApiCategories";
 
 interface LabeledIdentifier extends Identifier {
     label: string;
@@ -15,7 +15,7 @@ interface InsertDocumentsContextProps {
     identifiers: LabeledIdentifier[];
     identifier: LabeledIdentifier;
     setIdentifier: (type: IdentifierType) => void;
-    categories: Category[];
+    categories: AssignableCategory[];
     category: number | null;
     setCategory: (category: number | null) => void;
     setValue: (value: string) => void;
@@ -35,7 +35,7 @@ const InsertDocumentsContext = createContext<InsertDocumentsContextProps | undef
 
 export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = ({ children }) => {
     const { t } = useTranslation();
-    const { fetchCategories } = useAssignableCategories();
+    const { categories } = useAssignableCategories();
 
     // First step variables
     const identifiers = [
@@ -49,7 +49,6 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
             label: t(IdentifierType.Barcode.toLowerCase())
     }];
     const [identifier, setIdentifier] = useState<LabeledIdentifier>(identifiers[0]);
-    const [categories, setCategories] = useState<Category[]>([]);
     const [category, setCategory] = useState<number | null>(null);
 
     // Second step variables
@@ -109,15 +108,6 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
             console.error(`Error while inserting document: ${error}`);
         });
     };
-
-    const fetchData = async () => {
-        const fetchedCategories = await fetchCategories();
-        setCategories(fetchedCategories);
-    };
-
-    useEffect(() => {
-        fetchData();
-    }, [fetchCategories]);
 
     return (
         <InsertDocumentsContext.Provider value={{

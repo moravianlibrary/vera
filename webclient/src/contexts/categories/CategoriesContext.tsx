@@ -1,53 +1,49 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import ApiCategories, { AssignableCategory, Category } from "../../adapters/ApiCategories";
+import ApiCategories, { Category } from "../../adapters/ApiCategories";
 
-interface AssignableCategoriesContextProps {
-    fetchCategories: () => Promise<Category[]>;
+interface CategoriesContextProps {
+    categories: Category[] | undefined;
 }
 
-const AssignableCategoriesContext = createContext<AssignableCategoriesContextProps | undefined>(undefined);
+const CategoriesContext = createContext<CategoriesContextProps | undefined>(undefined);
 
-interface AssignableCategoriesProviderProps {
+interface CategoriesProviderProps {
     children: ReactNode;
 }
 
-export const AssignableCategoriesProvider: React.FC<AssignableCategoriesProviderProps> = ({ children }) => {
-    const [categories, setCategories] = useState<Category[]>();
+export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({ children }) => {
+    const [categories, setCategories] = useState<Category[] | undefined>(undefined);
 
     const loadCategories = async () => {
-        ApiCategories.getAssignableCategories()
+        ApiCategories.getCategories()
         .then(response => {
-            const transformedData: Category[] = response.data.map(assignableCategory => {
-                return Object.assign({}, assignableCategory) as Category;
+            const transformedData: Category[] = response.data.map(category => {
+                return Object.assign({}, category) as Category;
             });
-            console.log(transformedData);
             setCategories(transformedData);
         }).catch(error => {
-            console.error(`Could not receive assignable categories: ${error}`);
+            console.error(`Could not receive categories: ${error}`);
         });
     };
 
-    const fetchCategories = async () => {
-        console.log(`fetch categories from server ${!categories}`)
-        if (!categories) {
-            await loadCategories();
-        }
-        return categories ? categories : [];
-    }
+    useEffect(() => {
+        console.log(`Fetching categories from server.`);
+        loadCategories();
+    }, []);
 
-    const contextValue: AssignableCategoriesContextProps = {
-        fetchCategories
+    const contextValue: CategoriesContextProps = {
+        categories
     };
 
     return (
-        <AssignableCategoriesContext.Provider value={contextValue}>
+        <CategoriesContext.Provider value={contextValue}>
             {children}
-        </AssignableCategoriesContext.Provider>
+        </CategoriesContext.Provider>
     );
 };
 
-export const useAssignableCategories = (): AssignableCategoriesContextProps => {
-    const context = useContext(AssignableCategoriesContext);
+export const useCategories = (): CategoriesContextProps => {
+    const context = useContext(CategoriesContext);
 
     if (!context) {
         throw new Error('useCategories must be used within a CategoriesProvider');

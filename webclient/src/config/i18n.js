@@ -5,7 +5,7 @@ const resources = {
   cz: {
     translation: {
         home: "Domov",
-        board: "Záznamy",
+        board: "Dokumenty",
         categories: "Kategorie",
         access: "Správa oprávnění",
         login: "Přihlásit se",
@@ -63,6 +63,9 @@ const resources = {
         extractor: "Extrahoval",
         extracted_at: "Extrahováno",
         year_issued: "Rok vydání",
+
+        "Name": "Název",
+        "Pages count": "Počet stran",
 
         users: "Uživatelé",
         departments: "Oddělení",
@@ -153,6 +156,41 @@ const resources = {
         Killed: "Zrušeno",
 
         PredictVolumePages: "Predikce počtu stran ročníků",
+
+        invalid_percentage_distribution: "Neplatné procentuální rozdělení",
+        unique_category_name_violation: "Porušení jedinečného názvu kategorie",
+        unique_category_name_violation_detail: "Sourozenecké kategorie by měly mít jedinečné názvy",
+        "Category deletion failed": "Smazání kategorie se nezdařilo",
+        "Only empty categories can be deleted": "Smazat lze pouze prázdné kategorie",
+
+        "The quota name must be filled": "Název kvóty musí být vyplněn",
+        "The quota pages count must be filled": "Počet stránek kvóty musí být vyplněn",
+        "Quota deletion failed": "Smazání kvóty se nezdařilo",
+        "An active quota cannot be deleted": "Aktivní kvótu nelze smazat",
+        "The quota must have a unique name": "Kvóta musí mít jedinečný název",
+        "Quota creation failed": "Vytvoření kvóty se nezdařilo",
+        "Quota update failed": "Aktualizace kvóty se nezdařila",
+        "The quota has not changed": "Kvóta se nezměnila",
+        "The quota was created successfully": "Kvóta byla úspěšně vytvořena",
+        "The quota was updated successfully": "Kvóta byla úspěšně aktualizovaná",
+        "The quota was deleted successfully": "Kvóta byla úspěšně smazána",
+        "The quota is already active": "Kvóta je již aktivní",
+        "The quota has been successfully set as active": "Kvóta byla úspěšně nastavena jako aktivní",
+
+        "This setting is propagated downwards": "Toto nastavení se propaguje směrem dolů",
+
+        "Apply filter": "Aktivuj filtr",
+        "Save filter": "Uložit filtr",
+        "Clear filter": "Vyčistit filtr",
+        "Add rule": "Přidat pravidlo",
+        "Add group": "Přidat skupinu",
+        "Match all": "Splňuje všechny",
+        "Match any": "Splňuje jakékoli",
+        "System number": "Systémove číslo",
+        "Volume": "Ročník",
+        "Category": "Kategorie",
+        "Title": "Název",
+        "Choose a category": "Vyber kategorie",
 
     },
   },

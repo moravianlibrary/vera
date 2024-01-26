@@ -1,4 +1,4 @@
-import { RuleType } from "./SearchNodes";
+import { RuleType } from "../../contexts/documents/search/SearchNodes";
 
 const DocumentField = {
     SYSNO: {name: "sysno", type: RuleType.TEXT_FIELD},

@@ -2,7 +2,7 @@ import { ActionType } from "../types/ActionType";
 import axiosInstance, { authHeader } from "./ApiBase";
 
 interface Role {
-    id: number;
+    id?: number;
     name: string;
     actions: ActionType[];
 }
@@ -30,3 +30,4 @@ namespace ApiRoles {
 }
 
 export default ApiRoles;
+export type { Role };

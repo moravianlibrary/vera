@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { accessService } from '../../services/AccessService.js';
-import { useUser } from '../../contexts/user/UserContext.js';
+import { useUser } from '../../contexts/user/UserContext';
 import { useDocuments } from '../../contexts/documents/DocumentsContext';
 import { Document } from '../../adapters/ApiDocuments';
-import DocumentModel from '../../types/DocumentModel';
+import DocumentModel from '../../contexts/documents/DocumentModel.js';
 
 interface DocumentsTableProps {
 }
@@ -50,9 +50,13 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     };
 
     const pagesCountBody = (document: DocumentModel) => {
-        return document.pages_count_predicted
-                ? `${document.pages_count} (${document.pages_count_predicted})`
-                : document.pages_count;
+        return document.pages_count
+                ? document.pages_count_predicted
+                        ? `${document.pages_count} (${document.pages_count_predicted})`
+                        : document.pages_count
+                : document.pages_count_predicted
+                        ? `(${document.pages_count_predicted})`
+                        : null;
     };
 
     return (

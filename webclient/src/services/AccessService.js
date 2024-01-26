@@ -1,12 +1,10 @@
 import { Outlet } from "react-router-dom";
-import { User } from "../contexts/user/UserModel";
-import { ActionType } from "../contexts/user/RoleModel";
-import { useToast } from "./ToastContext";
+import { useToast } from "../contexts/toast/ToastContext";
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 import { useUser } from "../contexts/user/UserContext";
-import { useKeycloak } from "@react-keycloak/web";
 import ApiUser from "../adapters/ApiUser";
+import { ActionType } from "../types/ActionType";
 
 class AccessService {
     async getCurrentUser() {
@@ -24,10 +22,10 @@ class AccessService {
 
     isAllowedToEditDocument(user, document) {
         return user && user.actions && (
-                user.actions.includes(ActionType.edit_datatable_all)
-                || (user.actions.includes(ActionType.edit_datatable_department)
+                user.actions.includes(ActionType.EditDatatableAll)
+                || (user.actions.includes(ActionType.EditDatatableDepartment)
                     && user.department_id === document.creator_department_id)
-                || (user.actions.includes(ActionType.edit_datatable_own)
+                || (user.actions.includes(ActionType.EditDatatableOwn)
                     && user.id === document.creator_id));
     }
 };

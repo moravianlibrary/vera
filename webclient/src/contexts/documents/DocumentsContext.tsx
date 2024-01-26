@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import ApiDocuments, { Document, DocumentsQuery } from "../../adapters/ApiDocuments";
 import { VirtualScrollerLazyEvent } from "primereact/virtualscroller";
-import DocumentModel from "../../types/DocumentModel";
+import DocumentModel from "./DocumentModel";
 import { TaskType } from "../../types/TaskType";
 import ApiTasks from "../../adapters/ApiTasks";
 
