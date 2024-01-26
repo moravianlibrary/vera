@@ -1,34 +1,37 @@
-import { Dropdown } from "primereact/dropdown";
+import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { NumberOption } from "../../../contexts/documents/search/SearchNodes";
-import { InputNumber } from "primereact/inputnumber";
+import { NumberOption, SearchNumberField } from "../../../contexts/documents/search/SearchNodes";
+import { InputNumber, InputNumberValueChangeEvent } from "primereact/inputnumber";
 import React from "react";
 
-const AdvancedSearchNumberField = (props) => {
+interface AdvancedSearchNumberFieldProps {
+    data: SearchNumberField;
+}
+
+const AdvancedSearchNumberField: React.FC<AdvancedSearchNumberFieldProps> = ({ data }) => {
     const { t } = useTranslation();
 
-    const { data } = props;
-    const [option, setOption] = useState(data.option);
-    const [value1, setValue1] = useState(data.option === NumberOption.Between ? data.value[0] : data.value);
-    const [value2, setValue2] = useState(data.option === NumberOption.Between ? data.value[1] : "");
+    const [option, setOption] = useState<NumberOption | undefined>(data.option as NumberOption);
+    const [value1, setValue1] = useState<number | null | undefined>(data.option === NumberOption.Between ? data.value?.[0] : data.value);
+    const [value2, setValue2] = useState<number | null | undefined>(data.option === NumberOption.Between ? data.value?.[1] : undefined);
 
-    const handleSelectOption = (e) => {
+    const handleSelectOption = (e: DropdownChangeEvent) => {
         data.setOption(e.value);
         setOption(e.value);
     };
 
-    const handleChangeValue1 = (e) => {
-        if (option === NumberOption.Between) {
+    const handleChangeValue1 = (e: InputNumberValueChangeEvent) => {
+        if (option === NumberOption.Between && data.setFirstValue) {
             data.setFirstValue(e.value);
         } else {
-            data.setValue(e.value);
+            data.setValue(e.value ? e.value : undefined);
         }
         setValue1(e.value);
     };
 
-    const handleChangeValue2 = (e) => {
-        if (option === NumberOption.Between) {
+    const handleChangeValue2 = (e: InputNumberValueChangeEvent) => {
+        if (option === NumberOption.Between && data.setSecondValue) {
             data.setSecondValue(e.value);
         }
         setValue2(e.value);
@@ -36,26 +39,27 @@ const AdvancedSearchNumberField = (props) => {
 
     return (
         <div className="flex gap-1">
-            <Dropdown
+            <Dropdown className="w-12rem"
                 value={option}
                 onChange={handleSelectOption}
                 options={Object.values(NumberOption)}
-                // optionLabel={(option) => t(option)} 
-                placeholder={t('select_number_operation')}
+                placeholder={t('Select operation')}
             />
             {option !== NumberOption.IsNull && option !== NumberOption.IsNotNull &&
-            <InputNumber
-                autoFocus
-                value={value1}
-                onValueChange={handleChangeValue1}
-                min={0} max={100000}
-                maxFractionDigits={0} />}
-            {option === NumberOption.Between &&
-            <InputNumber
-                value={value2}
-                onValueChange={handleChangeValue2}
-                min={0} max={100000}
-                maxFractionDigits={0} />}
+            <div className="flex w-14rem gap-1">
+                <InputNumber
+                    autoFocus
+                    value={value1}
+                    onValueChange={handleChangeValue1}
+                    min={0} max={100000}
+                    maxFractionDigits={0} />
+                {option === NumberOption.Between &&
+                <InputNumber
+                    value={value2}
+                    onValueChange={handleChangeValue2}
+                    min={0} max={100000}
+                    maxFractionDigits={0} />}
+            </div>}
         </div>
     );
 };

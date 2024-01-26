@@ -1,72 +1,35 @@
 import { Button } from "primereact/button";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { SearchGroup } from "../../../contexts/documents/search/SearchNodes.js";
 import AdvancedSearchNode from "./AdvancedSearchNode";
-import DocumentField from "../../../documents/models/DocumentField.js";
-import { useCategories } from "../../../contexts/categories/CategoriesContext";
 import React from "react";
-import { useDocumentsSearch } from "../../../contexts/documents/search/DocumentsSearch";
+import { useDocumentsSearch } from "../../../contexts/documents/search/DocumentsSearchContext";
 
-const FieldType = {
-    TEXT: 'TEXT',
-    NUMBER: 'NUMBER',
-    CATEGORY: 'CATEGORY',
-};
-
-const AdvancedSearch = () => {
+const AdvancedSearch: React.FC = () => {
     const { t } = useTranslation();
-    const { rootSearchNode } = useDocumentsSearch();
-    const { categories } = useCategories();
-
-    const enums = {
-        [DocumentField.CATEGORY.name]: {
-            values: categories,
-            placeholder: t('choose_category')
-        }
-    };
-
-    // const handleUpdateFilter = (data) => {
-    //     setFilter(data);
-    // }
-
-    const handleClearFilters = () => {
-        // if (props.onApplyFilter) {
-        //     props.onApplyFilter(filter);
-        // }
-    };
-
-    const handleApplyFilters = () => {
-        // localStorage.setItem('advanced_search', JSON.stringify(filter.toJson()));
-        console.log(rootSearchNode);
-        // if (props.onApplyFilter) {
-        //     props.onApplyFilter(filter);
-        // }
-    };
-
-    useEffect(() => {
-        // const activeFilter = SearchGroup.fromJson(JSON.parse(localStorage.getItem('advanced_search')));
-        // if (activeFilter && !activeFilter.isEmpty()) {
-        //     setFilter(activeFilter);
-        // }
-        console.log(rootSearchNode);
-    }, [rootSearchNode]);
+    const { rootSearchNode, handleApplyFilter, handleSaveFilter, handleClearFilter } = useDocumentsSearch();
 
     return (
         <div className="flex flex-column gap-1 flex-grow-0">
             <div className="overflow-auto" style={{ 'maxHeight': '75vh' }}>
-                <AdvancedSearchNode data={rootSearchNode} enums={enums} />
+                <AdvancedSearchNode data={rootSearchNode} />
             </div>
             <div className="flex justify-content-between">
+                <div className="flex gap-1">
+                    <Button
+                        label={t('Clear filter')}
+                        outlined
+                        onClick={handleClearFilter}
+                    />
+                    <Button
+                        label={t('Save filter')}
+                        outlined
+                        onClick={handleSaveFilter}
+                    />
+                </div>
                 <Button
-                    label={t('clear_filters')}
+                    label={t('Apply filter')}
                     outlined
-                    onClick={handleClearFilters}
-                />
-                <Button
-                    label={t('apply_filters')}
-                    outlined
-                    onClick={handleApplyFilters}
+                    onClick={handleApplyFilter}
                 />
             </div>
         </div>

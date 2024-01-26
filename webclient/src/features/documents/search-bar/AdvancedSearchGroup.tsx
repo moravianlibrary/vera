@@ -1,11 +1,10 @@
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
-import { Dropdown } from "primereact/dropdown";
+import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GroupOption, SearchGroup } from "../../../contexts/documents/search/SearchNodes";
 import AdvancedSearchNode from "./AdvancedSearchNode";
-import { setSeconds } from "date-fns";
 import React from "react";
 
 const MAX_GROUP_LEVEL = 2
@@ -13,48 +12,38 @@ const MAX_FIELD_LEVEL = MAX_GROUP_LEVEL + 1;
 
 interface AdvancedSearchGroupProps {
     data: SearchGroup;
-    index: number;
-    bgColor: any;
+    index?: number;
+    onDelete?: (index: number) => void;
+    bgColor: string | undefined;
 }
 
-const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = (props) => {
+const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = ({ data, index, bgColor, onDelete }) => {
     const { t } = useTranslation();
 
-    const { data, index } = props;
-    const [option, setOption] = useState(props.data.option);
-    const [subRules, setSubRules] = useState(props.data.subRules);
+    const options = Object.keys(GroupOption).map(option => (
+        { value: option, label: t(option === GroupOption.MatchAll ? "Match all" : "Match any") }));
+    const [option, setOption] = useState(data.option);
+    const [subRules, setSubRules] = useState(data.subRules);
 
     useEffect(() => setSubRules(data.subRules), [data]);
 
-    const handleCreateRuleGroup = (e) => {
+    const handleCreateRuleGroup = () => {
         data.createSubGroup();
         setSubRules(data.subRules);
     };
     
-    const handleCreateFieldRule = (e) => {
+    const handleCreateFieldRule = () => {
         data.createSubField();
         setSubRules(data.subRules);
     };
 
-    const handleUpdateSubRule= (subRule, index) => {
-        data.updateSubRule(subRule, index);
-        setSubRules(data.subRules);
-    };
-
-    const handleDelete = () => {
-        // if (props.onDelete) {
-        //     props.onDelete(index);
-        // }
-    };
-
-    const handleDeleteSubRule = (index) => {
+    const handleDeleteSubRule = (index: number) => {
         data.deleteSubRule(index);
         setSubRules(data.subRules);
     };
 
-    const handleSelectOption = (e) => {
+    const handleSelectOption = (e: DropdownChangeEvent) => {
         data.setOption(e.value);
-        setOption(data.option);
     };
 
     const groupHeader = (
@@ -62,15 +51,13 @@ const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = (props) => {
             <Dropdown
                 value={option}
                 onChange={handleSelectOption}
-                options={Object.values(GroupOption)}
-                itemTemplate={(option) => t(option)} 
-                placeholder="Select a City"
+                options={options}
             />
             {data.level > 0 && <Button
                 icon="pi pi-times"
                 text
                 severity="danger"
-                onClick={handleDelete}
+                onClick={() => onDelete!(index!)}
             />}
         </div>
     );
@@ -80,13 +67,13 @@ const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = (props) => {
             {data.level < MAX_FIELD_LEVEL && 
             <div className="flex">
                 <Button
-                    label={t('create_field_rule')}
+                    label={t('Add rule')}
                     text
                     onClick={handleCreateFieldRule}
                 />
                 {data.level < MAX_GROUP_LEVEL && 
                 <Button
-                    label={t('create_rule_group')}
+                    label={t('Add group')}
                     text
                     onClick={handleCreateRuleGroup}
                 />}
@@ -96,7 +83,7 @@ const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = (props) => {
     
     return (
         <Card
-            style={{ background: props.bgColor }}
+            style={{ background: bgColor }}
             header={groupHeader}
             footer={groupFooter}
         >
@@ -104,9 +91,7 @@ const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = (props) => {
             {subRules.map((rule, index) =>
                 <AdvancedSearchNode key={`rule_${Date.now()}_${index}`}
                     data={rule}
-                    // enums={enums}
                     index={index}
-                    onUpdate={handleUpdateSubRule}
                     onDelete={handleDeleteSubRule} />
             )}
         </div>

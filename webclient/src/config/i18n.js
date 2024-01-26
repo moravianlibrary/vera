@@ -179,6 +179,19 @@ const resources = {
 
         "This setting is propagated downwards": "Toto nastavení se propaguje směrem dolů",
 
+        "Apply filter": "Přidat filtr",
+        "Save filter": "Uložit filtr",
+        "Clear filter": "Vyčistit filtr",
+        "Add rule": "Přidat pravidlo",
+        "Add group": "Přidat skupinu",
+        "Match all": "Splňuje všechny",
+        "Match any": "Splňuje jakékoli",
+        "System number": "Systémove číslo",
+        "Volume": "Ročník",
+        "Category": "Kategorie",
+        "Title": "Název",
+        "Choose a category": "Vyber kategorie",
+
     },
   },
 };

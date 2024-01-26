@@ -7,7 +7,7 @@ import DocumentsHeader from '../features/documents/DocumentsHeader';
 import DocumentsTable from '../features/documents/DocumentsTable';
 import { DocumentsProvider } from '../contexts/documents/DocumentsContext';
 import { AssignableCategoriesProvider } from '../contexts/categories/AssignableCategoriesContext';
-import { DocumentsSearchProvider } from '../contexts/documents/search/DocumentsSearch';
+import { DocumentsSearchProvider } from '../contexts/documents/search/DocumentsSearchContext';
 
 const Documents: React.FC = () => {
     const [insertMode, setInsertMode] = useState(false);

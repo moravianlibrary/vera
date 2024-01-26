@@ -1,54 +1,44 @@
 import { Button } from "primereact/button";
-import { Dropdown } from "primereact/dropdown";
+import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { useTranslation } from "react-i18next";
 
-import { useEffect, useState } from "react";
-import { RuleType, SearchField } from "../../../contexts/documents/search/SearchNodes";
+import { useState } from "react";
+import { RuleType, SearchTreeField, SearchField, SearchNumberField, SearchTextField } from "../../../contexts/documents/search/SearchNodes";
 import AdvancedSearchTextField from "./AdvancedSearchTextField";
-import AdvancedSearchNumberField from "./AdvancedSearchNumberField";
-import AdvancedSearchEnumField from "./AdvancedSearchEnumField";
 import React from "react";
-import DocumentSearchField, { DocumentField, DocumentSearchFieldType } from "../../../contexts/documents/search/DocumentSearchField";
+import DocumentSearchField, { DocumentField } from "../../../contexts/documents/search/DocumentSearchField";
+import AdvancedSearchTreeField from "./AdvancedSearchTreeField";
+import AdvancedSearchNumberField from "./AdvancedSearchNumberField";
 
 interface AdvancedSearchFieldProps {
     data: SearchField;
     index: number;
+    onDelete: (index: number) => void;
 }
 
-const AdvancedSearchField: React.FC<AdvancedSearchFieldProps> = ({ data, index }) => {
+const AdvancedSearchField: React.FC<AdvancedSearchFieldProps> = ({ data, index, onDelete }) => {
     const { t } = useTranslation();
 
-    // const [selectedField, setSelectedField] = useState(Object.values(DocumentField).find(field => field.name === data.name));
     const [selectedField, setSelectedField] = useState<DocumentField | undefined>(data.field);
     const [type, setType] = useState<RuleType>(data.type);
 
-    const handleChangeFieldType = (event) => {
+    const handleChangeFieldType = (event: DropdownChangeEvent) => {
         const field = DocumentSearchField[event.value];
         setSelectedField(event.value);
-        data.transform(field.type, field.name);
+        data.transform(field.type, event.value);
         setType(field.type);
     };
 
-    const handleDelete = () => {
-        // if (props.onDelete) {
-        //     props.onDelete(index);
-        // }
-    };
-
-    useEffect(() => {
-        console.log(data);
-    }, [data, data.type]);
-
     return (
         <div className="flex p-0 m-0 gap-1">
-            <div className="p-inputgroup flex">
+            <div className="p-inputgroup flex max-w-min">
                 <Button
                     className="max-w-1rem"
                     icon="pi pi-times"
                     size="small"
                     outlined
                     severity="danger"
-                    onClick={handleDelete}
+                    onClick={() => onDelete(index)}
                 />
                 <Dropdown
                     className="max-w-14rem w-14rem"
@@ -60,11 +50,11 @@ const AdvancedSearchField: React.FC<AdvancedSearchFieldProps> = ({ data, index }
             </div>
             <div className="flex">
                 {type === RuleType.TextField &&
-                <AdvancedSearchTextField data={data} />}
+                <AdvancedSearchTextField data={data as SearchTextField} />}
                 {type === RuleType.NumberField &&
-                <AdvancedSearchNumberField data={data} />}
-                {type === RuleType.EnumField &&
-                <AdvancedSearchEnumField data={data} />}
+                <AdvancedSearchNumberField data={data as SearchNumberField} />}
+                {type === RuleType.TreeField &&
+                <AdvancedSearchTreeField data={data as SearchTreeField} />}
             </div>
         </div>
     );

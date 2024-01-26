@@ -3,7 +3,6 @@ import { InputText } from "primereact/inputtext";
 import React, { useRef } from "react";
 import AdvancedSearch from "./AdvancedSearch";
 import { OverlayPanel } from "primereact/overlaypanel";
-import { CategoriesProvider } from "../../../contexts/categories/CategoriesContext";
 
 const DocumentsSearchBar = () => {
     const advancedSearchRef = useRef<OverlayPanel | null>(null);
@@ -17,9 +16,7 @@ const DocumentsSearchBar = () => {
                 <InputText placeholder="Search" disabled />
                 <Button icon="pi pi-search" disabled />
                 <OverlayPanel ref={advancedSearchRef} >
-                    <CategoriesProvider>
-                        <AdvancedSearch/>   
-                    </CategoriesProvider>
+                    <AdvancedSearch/>   
                 </OverlayPanel>
                 <Button icon="pi pi-ellipsis-v"
                     outlined

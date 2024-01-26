@@ -6,12 +6,12 @@ export enum RuleType {
     Field = 'Field',
     TextField = 'TextField',
     NumberField = 'NumberField',
-    EnumField = 'EnumField',
+    TreeField = 'TreeField',
 }
 
 export enum GroupOption {
-    MatchAll = 'Match all',
-    MatchAny = 'Match any'
+    MatchAll = 'MatchAll',
+    MatchAny = 'MatchAny'
 }
 
 export enum TextOption {
@@ -35,15 +35,12 @@ export enum NumberOption {
     IsNotNull = "IsNotNull",
 };
 
-export enum EnumOption {
+export enum TreeOption {
     IsIn = "IsIn",
     IsNotIn = "IsNotIn",
     IsNull = "IsNull",
     IsNotNull = "IsNotNull",
 };
-
-interface SearchNodeParams {
-}
 
 type SubRule = SearchGroup | SearchField;
 
@@ -53,7 +50,7 @@ interface SearchGroupParams {
     subRules: SubRule[];
 }
 
-type FieldOption = TextOption | NumberOption | EnumOption | undefined;
+type FieldOption = TextOption | NumberOption | TreeOption | undefined;
 type Value = string | number | [number | undefined, number | undefined] | undefined;
 
 interface SearchFieldParams {
@@ -67,7 +64,7 @@ const DEFAULT_GROUP_OPTION = GroupOption.MatchAll;
 const DEFAULT_FIELDS_OPTIONS: Record<RuleType, FieldOption> = {
     [RuleType.TextField]: TextOption.Equals,
     [RuleType.NumberField]: NumberOption.EqualTo,
-    [RuleType.EnumField]: EnumOption.IsIn,
+    [RuleType.TreeField]: TreeOption.IsIn,
     [RuleType.Group]: undefined,
     [RuleType.Field]: undefined,
 };
@@ -79,20 +76,6 @@ export class SearchNode {
     constructor(type: RuleType, level: number) {
         this.type = type;
         this.level = level;
-    }
-
-    // toJson() {
-    //     return {
-    //         type: this.type,
-    //         level: this.level
-    //     };
-    // }
-
-    static init() {
-        const saved = localStorage.getItem('advancedsearch');
-        return saved
-                ? new SearchGroup(JSON.parse(saved) as SearchGroupParams)
-                : new SearchGroup({ level: 0, option: DEFAULT_GROUP_OPTION, subRules: [] });
     }
 };
 
@@ -109,7 +92,7 @@ export class SearchGroup extends SearchNode {
                     case RuleType.Group: return new SearchGroup(subRule as SearchGroupParams);
                     case RuleType.TextField: return new SearchTextField(subRule as SearchFieldParams);
                     case RuleType.NumberField: return new SearchNumberField(subRule as SearchFieldParams);
-                    case RuleType.EnumField: return new SearchEnumField(subRule as SearchFieldParams);
+                    case RuleType.TreeField: return new SearchTreeField(subRule as SearchFieldParams);
                     default:
                         throw new Error(`Unsupported rule type: ${subRule.type}`);
                 }
@@ -153,6 +136,13 @@ export class SearchGroup extends SearchNode {
         ];
         this.subRules = updatedSubRules;
     }
+
+    static init() {
+        const saved = localStorage.getItem('advanced_search');
+        return saved
+                ? new SearchGroup(JSON.parse(saved) as SearchGroupParams)
+                : new SearchGroup({ level: 0, option: DEFAULT_GROUP_OPTION, subRules: [] });
+    }
 }
 
 export class SearchField extends SearchNode {
@@ -174,21 +164,6 @@ export class SearchField extends SearchNode {
     static default(level: number) {
         return SearchField.create(RuleType.Field, level);
     }
-
-    // toJson() {
-    //     console.log({
-    //         ...super.toJson(),
-    //         field: this.field,
-    //         option: this.option,
-    //         value: this.value,
-    //     });
-    //     return {
-    //         ...super.toJson(),
-    //         field: this.field,
-    //         option: this.option,
-    //         value: this.value,
-    //     };
-    // }
 
     setOption(option: FieldOption) {
         this.option = option;
@@ -226,17 +201,17 @@ export class SearchNumberField extends SearchField {
         super.setOption(option);
     }
 
-    setFirstValue(value: number | undefined) {
-        this.value = [value, this.value?.[1]];
+    setFirstValue(value: number | null | undefined) {
+        this.value = [value ? value : undefined, this.value?.[1]];
     }
 
-    setSecondValue(value: number | undefined) {
-        this.value = [this.value?.[0], value];
+    setSecondValue(value: number | null | undefined) {
+        this.value = [this.value?.[0], value ? value : undefined];
     }
 }
 
-export class SearchEnumField extends SearchField {
+export class SearchTreeField extends SearchField {
     constructor(params: SearchFieldParams) {
-        super(RuleType.EnumField, params);
+        super(RuleType.TreeField, params);
     }
 }

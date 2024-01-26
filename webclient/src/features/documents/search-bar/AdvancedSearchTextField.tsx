@@ -1,23 +1,26 @@
-import { Dropdown } from "primereact/dropdown";
+import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TextOption } from "../../../contexts/documents/search/SearchNodes";
+import { SearchTextField, TextOption } from "../../../contexts/documents/search/SearchNodes";
 import React from "react";
 
-const AdvancedSearchTextField = (props) => {
+interface AdvancedSearchTextFieldProps {
+    data: SearchTextField;
+}
+
+const AdvancedSearchTextField: React.FC<AdvancedSearchTextFieldProps> = ({ data }) => {
     const { t } = useTranslation();
 
-    const { data } = props;
-    const [option, setOption] = useState(data.option);
-    const [value, setValue] = useState(data.value);
+    const [option, setOption] = useState<TextOption>(data.option as TextOption);
+    const [value, setValue] = useState<string>(data.value as string);
 
-    const handleSelectOption = (e) => {
+    const handleSelectOption = (e: DropdownChangeEvent) => {
         data.setOption(e.value);
         setOption(e.value);
     };
 
-    const handleChangeValue = (e) => {
+    const handleChangeValue = (e: React.ChangeEvent<HTMLInputElement>) => {
         data.setValue(e.target.value);
         setValue(e.target.value);
     };
@@ -29,8 +32,8 @@ const AdvancedSearchTextField = (props) => {
                 value={option}
                 onChange={handleSelectOption}
                 options={Object.values(TextOption)}
-                // optionLabel={(option) => t(option)} 
-                placeholder={t('select_text_operation')} />
+                // options={Object.keys(TextOption).map(option => ({ value: option, label: t(option) }))}
+                placeholder={t('Select operation')} />
             {option !== TextOption.IsNull && option !== TextOption.IsNotNull &&
             <InputText
                 className="w-14rem"
