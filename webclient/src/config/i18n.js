@@ -179,7 +179,7 @@ const resources = {
 
         "This setting is propagated downwards": "Toto nastavení se propaguje směrem dolů",
 
-        "Apply filter": "Přidat filtr",
+        "Apply filter": "Aktivuj filtr",
         "Save filter": "Uložit filtr",
         "Clear filter": "Vyčistit filtr",
         "Add rule": "Přidat pravidlo",

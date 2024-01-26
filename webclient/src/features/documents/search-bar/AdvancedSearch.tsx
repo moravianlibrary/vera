@@ -27,6 +27,7 @@ const AdvancedSearch: React.FC = () => {
                     />
                 </div>
                 <Button
+                    disabled
                     label={t('Apply filter')}
                     outlined
                     onClick={handleApplyFilter}
