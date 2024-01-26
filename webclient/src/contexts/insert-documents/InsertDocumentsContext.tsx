@@ -41,11 +41,11 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
     const identifiers = [
         {
             identifier_type: IdentifierType.Sysno,
-            value: "",
+            value: "System number",
             label: t(IdentifierType.Sysno.toLowerCase())
         }, {
             identifier_type: IdentifierType.Barcode,
-            value: "",
+            value: "Barcode",
             label: t(IdentifierType.Barcode.toLowerCase())
     }];
     const [identifier, setIdentifier] = useState<LabeledIdentifier>(identifiers[0]);
