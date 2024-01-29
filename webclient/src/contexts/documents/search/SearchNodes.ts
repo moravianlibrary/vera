@@ -44,7 +44,7 @@ export enum TreeOption {
 
 type SubRule = SearchGroup | SearchField;
 
-interface SearchGroupParams {
+export interface SearchGroupParams {
     level: number;
     option: GroupOption;
     subRules: SubRule[];
@@ -79,7 +79,7 @@ export class SearchNode {
     }
 };
 
-export class SearchGroup extends SearchNode {
+export class SearchGroup extends SearchNode implements SearchGroupParams {
     option: GroupOption;
     subRules: SubRule[];
 
@@ -137,15 +137,19 @@ export class SearchGroup extends SearchNode {
         this.subRules = updatedSubRules;
     }
 
+    static createEmpty() {
+        return new SearchGroup({ level: 0, option: DEFAULT_GROUP_OPTION, subRules: [] });
+    }
+
     static init() {
         const saved = localStorage.getItem('advanced_search');
         return saved
                 ? new SearchGroup(JSON.parse(saved) as SearchGroupParams)
-                : new SearchGroup({ level: 0, option: DEFAULT_GROUP_OPTION, subRules: [] });
+                : SearchGroup.createEmpty();
     }
 }
 
-export class SearchField extends SearchNode {
+export class SearchField extends SearchNode implements SearchFieldParams {
     field: DocumentField | undefined;
     option: FieldOption;
     value: Value;

@@ -33,6 +33,7 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
     const [categoryTree, setCategoryTree] = useState<TreeNode[]>([]);
 
     const handleApplyFilter = () => {
+        setActiveQuery({ search_group: rootSearchNode });
     };
 
     const handleSaveFilter = () => {
@@ -40,7 +41,8 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
     };
 
     const handleClearFilter = () => {
-        setRootSearchNode(SearchGroup.init());
+        setRootSearchNode(SearchGroup.createEmpty());
+        console.log(SearchGroup.createEmpty());
     };
 
     const getTreeFieldOptions = (enumField: DocumentField) => {

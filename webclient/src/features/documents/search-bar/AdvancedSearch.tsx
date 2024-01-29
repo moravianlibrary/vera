@@ -13,7 +13,7 @@ const AdvancedSearch: React.FC = () => {
             <div className="overflow-auto" style={{ 'maxHeight': '75vh' }}>
                 <AdvancedSearchNode data={rootSearchNode} />
             </div>
-            <div className="flex justify-content-between">
+            <div className="flex justify-content-between gap-1">
                 <div className="flex gap-1">
                     <Button
                         label={t('Clear filter')}
@@ -27,7 +27,6 @@ const AdvancedSearch: React.FC = () => {
                     />
                 </div>
                 <Button
-                    disabled
                     label={t('Apply filter')}
                     outlined
                     onClick={handleApplyFilter}

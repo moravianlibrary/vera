@@ -1,0 +1,25 @@
+variables:
+  BASE_IMAGE_NAME: holly
+  CONTAINER_PUSH_EXTRA_FLAGS: "-q"
+  DEPLOY_REPOSITORY: gitlab.mzk.cz/osdd/deploys/holly
+  TARGET_IMAGE_TEMPLATE_NAME: mzk.cz/holly
+  BUILD_IMAGE_TAG: branch-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+
+include:
+  - project: osdd/gitlab-ci-pipelines
+    ref: main
+    file: /templates/.gitlab-ci-2.yml
+
+stages:
+  - test
+  - build
+  - deploy
+
+
+Build:
+  extends: .build and push image
+    
+
+Deploy:
+  extends: .deploy image
+
