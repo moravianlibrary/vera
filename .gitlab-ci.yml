@@ -53,6 +53,8 @@ build and push image:
     # build image
     - make image
 
+    - make tag
+  
     # upload image cache to repo
     - make push
 
