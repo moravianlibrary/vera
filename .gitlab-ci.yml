@@ -45,10 +45,10 @@ build and push image:
   script:
     - cd ${CI_PROJECT_DIR}
     # get cached image
-    - |
-      if docker pull -q $CACHE_IMAGE_NAME; then
-        echo "Cache image has been loaded"
-      fi
+    # - |
+    #   if docker pull -q $CACHE_IMAGE_NAME; then
+    #     echo "Cache image has been loaded"
+    #   fi
 
     # build image
     - make image
