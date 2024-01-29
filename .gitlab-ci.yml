@@ -5,7 +5,7 @@ variables:
   BUILD_IMAGE_TAG: branch-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
   BUILD_IMAGE_NAME: $CI_REGISTRY_IMAGE/$BASE_IMAGE_NAME:$BUILD_IMAGE_TAG
   CACHE_IMAGE_NAME: $CI_REGISTRY_IMAGE/$BASE_IMAGE_NAME:build
-  DEPLOY_REPOSITORY: gitlab.mzk.cz:osdd/deploys/random
+  DEPLOY_REPOSITORY: gitlab.mzk.cz:osdd/deploys/digiboard
   DEPLOY_JOB_IMAGE: "docker.app.knihovny.cz/ci-builds/kustomize:latest"
   TARGET_IMAGE_TEMPLATE_NAME: mzk.cz/busybox
   CONTAINER_PUSH_EXTRA_FLAGS: "-q"
