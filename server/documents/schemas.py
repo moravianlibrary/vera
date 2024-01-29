@@ -1,7 +1,9 @@
+from __future__ import annotations
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from datetime import datetime
-from documents.enums import IdentifierType
+from documents.enums import DocumentField, GroupOption, IdentifierType, \
+    NumberOption, TextOption, TreeOption
 from catalogs.enums import DigitizationState, DocumentCreateResult, \
     MaterialType, IssuanceType
 
@@ -135,36 +137,21 @@ class DocumentCreateResponse(BaseModel):
     create_result: DocumentCreateResult
 
 
+class SearchField(BaseModel):
+    field: DocumentField
+    option: TextOption | NumberOption | TreeOption
+    value: Optional[str | int | Tuple[int, int]]
+
+
+class SearchGroup(BaseModel):
+    option: GroupOption
+    subRules: List[SearchGroup | SearchField]
+
+
 class DocumentsQuery(BaseModel):
     id_list: Optional[List[int]] = None
-
-    sysno: Optional[str] = None
-    volume_number: Optional[str] = None
-
-    material_type: Optional[List[MaterialType]] = None
-    title: Optional[str] = None
-    publishers: Optional[str] = None
-
-    category_id: Optional[int] = None
-    digitization_state: Optional[DigitizationState] = None
-
-    pages_count_min: Optional[int] = None
-    pages_count_max: Optional[int] = None
-    size: Optional[str] = None
-
-    signature: Optional[str] = None
-    barcode: Optional[str] = None
-    ccnb: Optional[str] = None
-    isbn: Optional[str] = None
-
-    creator: Optional[List[str]] = None
-    created_after: Optional[datetime] = None
-    created_before: Optional[datetime] = None
-
-    extraction_id: Optional[int] = None
-    extractor: Optional[str] = None
-    extracted_after: Optional[datetime] = None
-    extracted_before: Optional[datetime] = None
+    search_phrase: Optional[str] = None
+    search_group: Optional[SearchGroup] = None
 
 
 class DocumentsResponse(BaseModel):

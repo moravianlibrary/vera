@@ -1,10 +1,11 @@
-from sqlalchemy.orm import Query, Session
+from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from typing import Any, Optional
+from typing import Optional
 
 from services.database import create
 from auth.schemas import CurrentUser
 from documents import models, schemas
+from documents.search import filter_documents_query_base
 
 
 def create_document(document: schemas.DocumentCreate,
@@ -90,34 +91,6 @@ def get_document_by_identifiers(sysno: str,
             models.Document.barcode == barcode
         )
     return query_base.first()
-
-
-def filter_documents_query_base(
-            query_base: Query[Any],
-            query: Optional[schemas.DocumentsQuery] = None):
-    if query:
-        if query and query.id_list:
-            query_base = query_base.filter(
-                models.Document.id.in_(query.id_list)
-            )
-        if query.sysno is not None:
-            query_base = query_base.filter(
-                models.Document.sysno == query.sysno
-            )
-        if query.creator is not None:
-            query_base = query_base.filter(
-                models.Document.creator == query.creator
-            )
-        if query.category_id is not None:
-            query_base = query_base.filter(
-                models.Document.category_id == query.category_id
-            )
-        if query.extraction_id is not None:
-            query_base = query_base.filter(
-                models.Document.extraction_id == query.extraction_id
-            )
-
-    return query_base
 
 
 def get_documents_query_base(db: Session,

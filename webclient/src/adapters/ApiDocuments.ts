@@ -1,3 +1,5 @@
+import { DocumentField } from "../contexts/documents/search/DocumentSearchField";
+import { GroupOption, SearchGroupParams } from "../contexts/documents/search/SearchNodes";
 import { DigitizationState } from "../types/DigitizationState";
 import { DocumentCreationStatus } from "../types/DocumentCreationStatus";
 import { IdentifierType } from "../types/IdentifierType";
@@ -80,6 +82,8 @@ interface DocumentCreationResponse {
 
 interface DocumentsQuery {
     id_list?: number[];
+    search_phrase?: string;
+    search_group?: SearchGroupParams;
 }
 
 namespace ApiDocuments {
