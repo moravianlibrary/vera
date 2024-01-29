@@ -14,8 +14,10 @@ clean:
 	docker-compose down --volumes
 tag:
 	docker tag digiboard-server:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-server:$(VERSION)
+	docker tag digiboard-worker:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-worker:$(VERSION)
 	docker tag digiboard-client:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-client:$(VERSION)
 push:
 	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-server:$(VERSION)
+	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-worker:$(VERSION)
 	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-client:$(VERSION)
 
