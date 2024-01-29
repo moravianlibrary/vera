@@ -105,7 +105,8 @@ deploy image:
     - pwd
     - git checkout ${DEPLOY_REPO_BRANCH}
     - echo "Deploying ${BUILD_IMAGE_NAME}"
-    - kustomize edit set image ${TARGET_IMAGE_TEMPLATE_NAME}=${BUILD_IMAGE_NAME}
+    - make kustomize
+    # - kustomize edit set image ${TARGET_IMAGE_TEMPLATE_NAME}=${BUILD_IMAGE_NAME}
     # provide commit-id
     - mkdir -p config
     - echo -n ${CI_COMMIT_SHORT_SHA} > config/commit-id.txt
