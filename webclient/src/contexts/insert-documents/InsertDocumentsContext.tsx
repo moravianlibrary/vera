@@ -7,7 +7,8 @@ import CreateResult from "../../documents/models/CreateResult";
 import { DocumentCreationStatus } from "../../types/DocumentCreationStatus";
 import { AssignableCategory } from "../../adapters/ApiCategories";
 
-interface LabeledIdentifier extends Identifier {
+interface LabeledIdentifier {
+    value: IdentifierType;
     label: string;
 }
 
@@ -18,6 +19,7 @@ interface InsertDocumentsContextProps {
     categories: AssignableCategory[];
     category: number | null;
     setCategory: (category: number | null) => void;
+    value: string;
     setValue: (value: string) => void;
     acceptInput: () => void;
     chooseIssuesDocuments: DocumentCreationResponse[];
@@ -40,18 +42,17 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
     // First step variables
     const identifiers = [
         {
-            identifier_type: IdentifierType.Sysno,
-            value: "System number",
-            label: t(IdentifierType.Sysno.toLowerCase())
+            value: IdentifierType.Sysno,
+            label: t("System number")
         }, {
-            identifier_type: IdentifierType.Barcode,
-            value: "Barcode",
-            label: t(IdentifierType.Barcode.toLowerCase())
+            value: IdentifierType.Barcode,
+            label: t("Barcode")
     }];
     const [identifier, setIdentifier] = useState<LabeledIdentifier>(identifiers[0]);
     const [category, setCategory] = useState<number | null>(null);
 
     // Second step variables
+    const [value, setValue] = useState<string>("");
     const [filePath, setFilePath] = useState<string | null>(null);
     
     // Third step variables
@@ -70,14 +71,12 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
         }
     };
 
-    // Second step functions
-    const setValue = (value: string) => {
-        setIdentifier({...identifier, value: value});
-    };
-
     const acceptInput = async () => {
-        console.log(category);
-        ApiDocuments.insertDocument(identifier, category, false)
+        const inputIdentifier: Identifier = {
+            identifier_type: identifier.value,
+            value: value
+        }
+        ApiDocuments.insertDocument(inputIdentifier, category, false)
         .then(response => {
             if (response.data.create_result === CreateResult.MULTIPLE_ISSUE_CHOICES) {
                 setChooseIssuesDocuments([response.data]);
@@ -113,7 +112,7 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
         <InsertDocumentsContext.Provider value={{
             identifiers, identifier, setIdentifier: setIdentifierByType,
             categories, category, setCategory,
-            setValue, acceptInput,
+            value, setValue, acceptInput,
             chooseIssuesDocuments, createIssue, creatingIssues, createdIssues,
             results
         }}>

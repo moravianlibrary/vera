@@ -14,14 +14,14 @@ interface InsertDocumentsValuesProps {
 
 const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
     const { t } = useTranslation();
-    const { identifier, setValue, acceptInput, chooseIssuesDocuments } = useInsertDocuments();
+    const { identifier, value, setValue, acceptInput, chooseIssuesDocuments } = useInsertDocuments();
 
     const [accepted, setAccepted] = useState(false);
 
     const handleAcceptInput = async () => {
         // TODO: handle situation when value and filePath are not set
         setAccepted(true);
-        await acceptInput();
+        acceptInput();
     };
 
     const handleKeyPress = (event) => {
@@ -56,7 +56,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
                 <InputText
                     autoFocus
                     disabled={accepted}
-                    value={identifier.value}
+                    value={value}
                     onChange={(e) => setValue(e.target.value)}
                     onKeyDown={handleKeyPress}
                 />
@@ -80,7 +80,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
                     onClick={handleGoBack}
                 />
                 <Button
-                    disabled={identifier.value === ""}
+                    disabled={value === ""}
                     icon="pi pi-caret-right"
                     iconPos="right"
                     outlined

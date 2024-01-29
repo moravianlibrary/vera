@@ -58,6 +58,7 @@ const resources = {
         issn: "ISSN",
         isbn: "ISBN",
         barcode: "Čárový kód",
+        "Barcode": "Čárový kód",
         creator: "Vytvořil",
         created_at: "Vytvořeno",
         extractor: "Extrahoval",
