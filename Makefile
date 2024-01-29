@@ -19,9 +19,9 @@ build:
 clean:
 	docker-compose down --volumes
 tag:
-	docker tag digiboard-server:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-server:$(VERSION)
-	docker tag digiboard-worker:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-worker:$(VERSION)
-	docker tag digiboard-client:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-client:$(VERSION)
+	docker tag digiboard-server:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-server:$(BUILD_IMAGE_TAG)
+	docker tag digiboard-worker:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-worker:$(BUILD_IMAGE_TAG)
+	docker tag digiboard-client:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-client:$(BUILD_IMAGE_TAG)
 push:
 	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-server:$(BUILD_IMAGE_TAG)
 	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-worker:$(BUILD_IMAGE_TAG)
