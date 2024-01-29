@@ -145,7 +145,7 @@ class SearchField(BaseModel):
 
 class SearchGroup(BaseModel):
     option: GroupOption
-    subRules: List[SearchGroup | SearchField]
+    sub_rules: List[SearchGroup | SearchField]
 
 
 class DocumentsQuery(BaseModel):

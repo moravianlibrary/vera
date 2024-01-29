@@ -11,7 +11,7 @@ class DocumentField(Enum):
     Sysno = 'Sysno'
     Volume = 'Volume'
     Category = 'Category'
-    Title = 'Title'
+    Title = 'title'
     PagesCount = 'PagesCount'
 
 

@@ -43,22 +43,22 @@ class TestDocumentsEndpoints(unittest.TestCase):
         from services.database import get_db
         self.db = next(get_db())
 
-        self.clean_documents()
-        self.clean_categories()
+        # self.clean_documents()
+        # self.clean_categories()
 
         self.headers = {
             'Authorization': f'Bearer {get_admin_token()}',
             'Content-Type': 'application/json'
             }
 
-        from categories.crud import create_root_category
-        from categories.schemas import CategoryCreate
-        category_name = "Test Category"
+        # from categories.crud import create_root_category
+        # from categories.schemas import CategoryCreate
+        # category_name = "Test Category"
 
-        self.category_id = create_root_category(CategoryCreate(
-            name=category_name,
-            assignable=True
-        ), self.db).id
+        # self.category_id = create_root_category(CategoryCreate(
+        #     name=category_name,
+        #     assignable=True
+        # ), self.db).id
 
     def clean_documents(self):
         from documents.crud import get_documents_query_base, \
@@ -76,7 +76,7 @@ class TestDocumentsEndpoints(unittest.TestCase):
             "sysno": "MZK01-001002003",
             "volume_number": "1996",
             "title": "Test Document",
-            "category_id": self.category_id
+            # "category_id": self.category_id
         }
         return self.client.post("/documents",
                                 json=document,
@@ -266,6 +266,38 @@ class TestDocumentsEndpoints(unittest.TestCase):
         for issue in documents['catalog_document']['issues']:
             self.assertEqual(issue['barcode'] == barcode,
                              issue['already_exists'])
+
+    def test_search_query(self):
+        from documents.crud import create_document, delete_document, \
+            get_documents_query_base, get_documents, get_documents_num_found
+        from documents.schemas import DocumentCreate, DocumentsQuery, \
+            SearchGroup, SearchField, GroupOption, TextOption, DocumentField
+        document = DocumentCreate(
+            sysno="MZK01-001002003",
+            volume_number="1996",
+            title="Test Document",
+        )
+        document = create_document(document, "test", self.db)
+
+        query = DocumentsQuery(
+            search_group=SearchGroup(
+                option=GroupOption.MatchAll,
+                sub_rules=[
+                    SearchField(
+                        field=DocumentField.Title,
+                        option=TextOption.StartsWith,
+                        value="Test"
+                    )
+                ]
+            )
+        )
+
+        base = get_documents_query_base(self.db, query)
+
+        print(base)
+        print(get_documents(base))
+        print(get_documents_num_found(base))
+        delete_document(document.id, self.db)
 
 
 if __name__ == '__main__':
