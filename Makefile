@@ -21,6 +21,6 @@ push:
 	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-worker:$(VERSION)
 	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-client:$(VERSION)
 image:
-	docker build -t digiboard-server:latest server/Dockerfile
-	docker build -t digiboard-worker:latest server/Dockerfile_celery
-	docker build -t digiboard-client:latest webclient/Dockerfile
+	docker build -t digiboard-server:latest -f server/Dockerfile
+	docker build -t digiboard-worker:latest -f server/Dockerfile_celery
+	docker build -t digiboard-client:latest -f webclient/Dockerfile
