@@ -56,17 +56,21 @@ def get_documents(query: Optional[schemas.DocumentsQuery] = None,
                   limit: int = Query(100, description="Pagination page size"),
                   user: CurrentUser = Depends(get_current_user),
                   db: Session = Depends(get_db)):
+    print(user.actions)
     if ActionType.read_datatable_all in user.actions:
         pass
-    elif ActionType.read_datatable_department in user.actions \
-            and user.department_id is not None:
-        # department = user.department_name
-        pass
-    elif ActionType.read_datatable_own in user.actions:
+    # elif ActionType.read_datatable_department in user.actions \
+    #         and user.department_id is not None:
+    #     if query is None:
+    #         query = schemas.DocumentsQuery(
+    #             department_id=user.department_id
+    #         )
+    elif ActionType.read_datatable_own in user.actions \
+            or ActionType.read_datatable_department in user.actions:
         if query is None:
-            query = schemas.DocumentsQuery({
-                user: user.username
-            })
+            query = schemas.DocumentsQuery(
+                username=user.username
+            )
     else:
         raise exceptions.UserNotAllowedToReadDocumentsException
 

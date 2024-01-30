@@ -5,7 +5,7 @@ import { Button } from "primereact/button";
 import { SelectButton } from "primereact/selectbutton";
 
 import '../styles/Access.css';
-import RolesTable from "../components/RolesTable.js";
+import RolesTable from "../components/RolesTable";
 import DepartmentsTable from "../components/DepartmentsTable.js";
 
 const TableEnum = {

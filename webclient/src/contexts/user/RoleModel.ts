@@ -34,6 +34,35 @@ export class RoleModel implements Role {
         this.extract = data.actions.includes(ActionType.Extract);
     }
 
+    static createEmpty() {
+        return new RoleModel({
+            name: "",
+            actions: []
+        });
+    }
+
+    setName(name: string) {
+        this.name = name;
+    }
+
+    updateActions() {
+        const actionsValues = Object.values(ActionType);
+        this.actions = [
+            this.read_datatable_level === 1,
+            this.read_datatable_level === 2,
+            this.read_datatable_level === 3,
+            this.edit_datatable_level === 1,
+            this.edit_datatable_level === 2,
+            this.edit_datatable_level === 3,
+            this.write_datatable,
+            this.comment_on_datatable,
+            this.edit_access,
+            this.edit_categories,
+            this.extract,
+        ].map((enabled, index) => enabled ? actionsValues[index] : null)
+        .filter((item) => item !== null) as ActionType[];
+    }
+
     toJson(): any {
         const actionsValues = Object.values(ActionType);
         const actions = [

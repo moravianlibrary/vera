@@ -1,17 +1,25 @@
 from sqlalchemy import or_, and_
 from sqlalchemy.sql import text
-from typing import List, Optional
+from typing import List, Optional, Union
 from fastapi import Query
 
 from documents import models, schemas
 from categories.models import Category
 from documents.enums import GroupOption, NumberOption, TextOption, TreeOption
+# from departments.models import Department
 
 
 def filter_documents_query_base(
             query_base: Query,
             query: Optional[schemas.DocumentsQuery] = None):
     if query:
+        # if query.department_id:
+        #     pass
+        # elif query.username:
+        if query.username:
+            query_base = query_base.filter(
+                models.Document.creator == query.username
+            )
         if query.id_list:
             return filter_by_id_list(query.id_list, query_base)
         if query.search_phrase:
@@ -47,7 +55,7 @@ def filter_by_group(search_group: schemas.SearchGroup,
     return query_base.filter(build_filter(search_group, text('')))
 
 
-def build_filter(search_rule: schemas.SearchGroup | schemas.SearchField,
+def build_filter(search_rule: Union[schemas.SearchGroup, schemas.SearchField],
                  query_base: Query):
     if isinstance(search_rule, schemas.SearchGroup):
         return build_group_filter(search_rule, query_base)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pydantic import BaseModel
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 from datetime import datetime
 from documents.enums import DocumentField, GroupOption, IdentifierType, \
     NumberOption, TextOption, TreeOption
@@ -139,19 +139,21 @@ class DocumentCreateResponse(BaseModel):
 
 class SearchField(BaseModel):
     field: DocumentField
-    option: TextOption | NumberOption | TreeOption
-    value: Optional[str | int | Tuple[int, int]]
+    option: Union[TextOption, NumberOption, TreeOption]
+    value: Optional[Union[str, int, Tuple[int, int]]]
 
 
 class SearchGroup(BaseModel):
     option: GroupOption
-    sub_rules: List[SearchGroup | SearchField]
+    sub_rules: List[Union[SearchGroup, SearchField]]
 
 
 class DocumentsQuery(BaseModel):
     id_list: Optional[List[int]] = None
     search_phrase: Optional[str] = None
     search_group: Optional[SearchGroup] = None
+    department_id: Optional[int] = None
+    username: Optional[str] = None
 
 
 class DocumentsResponse(BaseModel):
