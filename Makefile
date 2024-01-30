@@ -27,9 +27,9 @@ push:
 	docker push registry.gitlab.mzk.cz/osdd/vera/vera-worker:$(BUILD_IMAGE_TAG)
 	docker push registry.gitlab.mzk.cz/osdd/vera/vera-client:$(BUILD_IMAGE_TAG)
 image:
-	docker build -t digiboard-server:latest -f server/Dockerfile server/
-	docker build -t digiboard-worker:latest -f server/Dockerfile_celery server/
-	docker build -t digiboard-client:latest -f webclient/Dockerfile webclient/
+	docker build -t vera-server:latest -f server/Dockerfile server/
+	docker build -t vera-worker:latest -f server/Dockerfile_celery server/
+	docker build -t vera-client:latest -f webclient/Dockerfile webclient/
 kustomize:
     kustomize edit set 'image' $(TARGET_SERVER_IMAGE_TEMPLATE_NAME)=$(BUILD_SERVER_IMAGE_NAME)
     kustomize edit set 'image' $(TARGET_WORKER_IMAGE_TEMPLATE_NAME)=$(BUILD_WORKER_IMAGE_NAME)
