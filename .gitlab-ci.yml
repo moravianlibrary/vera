@@ -44,7 +44,7 @@ build and push image:
     - mkdir -p artifacts/images
 
   script:
-    - echo "Building using config for $REACT_APP_ENV"
+    - echo "Building using config for environment ${REACT_APP_ENV}"
     - cd ${CI_PROJECT_DIR}
     # get cached image
     # - |
