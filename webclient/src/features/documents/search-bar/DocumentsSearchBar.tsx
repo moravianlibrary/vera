@@ -19,6 +19,7 @@ const DocumentsSearchBar = () => {
                     <AdvancedSearch/>   
                 </OverlayPanel>
                 <Button icon="pi pi-ellipsis-v"
+                    disabled
                     outlined
                     onClick={(e) => (advancedSearchRef.current as OverlayPanel).toggle(e)}
                 />
