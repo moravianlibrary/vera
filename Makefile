@@ -30,7 +30,7 @@ image:
 	docker build -t vera-server:latest -f server/Dockerfile server/
 	docker build -t vera-worker:latest -f server/Dockerfile_celery server/
 	docker build -t vera-client:latest -f webclient/Dockerfile webclient/
-kustomize:
+deploy:
     kustomize edit set 'image' $(TARGET_SERVER_IMAGE_TEMPLATE_NAME)=$(BUILD_SERVER_IMAGE_NAME)
     kustomize edit set 'image' $(TARGET_WORKER_IMAGE_TEMPLATE_NAME)=$(BUILD_WORKER_IMAGE_NAME)
     kustomize edit set 'image' $(TARGET_CLIENT_IMAGE_TEMPLATE_NAME)=$(BUILD_CLIENT_IMAGE_NAME)
