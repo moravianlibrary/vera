@@ -1,6 +1,6 @@
 BUILD_SERVER_IMAGE_NAME := $(CI_REGISTRY_IMAGE)/vera-server:$(BUILD_IMAGE_TAG)
 BUILD_WORKER_IMAGE_NAME := $(CI_REGISTRY_IMAGE)/vera-worker:$(BUILD_IMAGE_TAG)
-BUILD_CLIENT_IMAGE_NAME := $(CI_REGISTRY_IMAGE)/digboard-client:$(BUILD_IMAGE_TAG)
+BUILD_CLIENT_IMAGE_NAME := $(CI_REGISTRY_IMAGE)/vera-client:$(BUILD_IMAGE_TAG)
 
 TARGET_SERVER_IMAGE_TEMPLATE_NAME := mzk.cz/vera-server
 TARGET_WORKER_IMAGE_TEMPLATE_NAME := mzk.cz/vera-worker
@@ -27,6 +27,10 @@ push:
 	docker push registry.gitlab.mzk.cz/osdd/vera/vera-worker:$(VERSION)
 	docker push registry.gitlab.mzk.cz/osdd/vera/vera-client:$(VERSION)
 image:
-	docker build -t vera-server:latest server/Dockerfile
-	docker build -t vera-worker:latest server/Dockerfile_celery
-	docker build -t vera-client:latest webclient/Dockerfile
+	docker build -t digiboard-server:latest -f server/Dockerfile server/
+	docker build -t digiboard-worker:latest -f server/Dockerfile_celery server/
+	docker build -t digiboard-client:latest -f webclient/Dockerfile webclient/
+kustomize:
+    kustomize edit set 'image' $(TARGET_SERVER_IMAGE_TEMPLATE_NAME)=$(BUILD_SERVER_IMAGE_NAME)
+    kustomize edit set 'image' $(TARGET_WORKER_IMAGE_TEMPLATE_NAME)=$(BUILD_WORKER_IMAGE_NAME)
+    kustomize edit set 'image' $(TARGET_CLIENT_IMAGE_TEMPLATE_NAME)=$(BUILD_CLIENT_IMAGE_NAME)
