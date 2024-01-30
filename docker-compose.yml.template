@@ -3,11 +3,11 @@ version: '3.1'
 services:
   postgres:
     image: postgres:latest
-    container_name: digiboard-postgres
+    container_name: vera-postgres
     environment:
-      POSTGRES_USER: digiboardAdmin
+      POSTGRES_USER: veraAdmin
       POSTGRES_PASSWORD:
-      POSTGRES_DB: digiboard
+      POSTGRES_DB: vera
     ports:
       - "5432:5432"
     volumes:
@@ -15,10 +15,10 @@ services:
       - ./populate.sql:/docker-entrypoint-initdb.d/populate.sql
       - data:/var/lib/postgresql/data
     networks:
-      - digiboard
+      - vera
 
   server:
-    container_name: digiboard-server
+    container_name: vera-server
     build:
       context: ./app
         #dockerfile: Dockerfile
@@ -33,10 +33,10 @@ services:
     depends_on:
       - postgres
     networks:
-      - digiboard
+      - vera
 
   client:
-    container_name: digiboard-client
+    container_name: vera-client
     build:
       context: ./client
       dockerfile: Dockerfile
@@ -47,11 +47,11 @@ services:
     depends_on:
       - server
     networks:
-      - digiboard
+      - vera
 
 volumes:
   data:
 
 networks:
-  digiboard:
+  vera:
 

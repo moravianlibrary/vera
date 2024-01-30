@@ -7,7 +7,7 @@ class TestAuthEndpoints(unittest.TestCase):
     def setUp(self):
         setUpEnv()
 
-        from digiboard import app
+        from vera import app
         self.client = TestClient(app)
 
     def test_current_user(self):

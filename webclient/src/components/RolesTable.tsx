@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Column } from "primereact/column";
-import { DataTable } from "primereact/datatable";
+import { DataTable, DataTableEditingRows, DataTableRowEditCompleteEvent, DataTableValueArray } from "primereact/datatable";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Checkbox } from "primereact/checkbox";
 import { ColumnGroup } from "primereact/columngroup";
 import { Row } from "primereact/row";
@@ -17,16 +17,16 @@ const RolesTable = (props) => {
     const { t } = useTranslation();
     const { dataService } = useData();
     
-    const [roles, setRoles] = useState([]);
+    const [roles, setRoles] = useState<RoleModel[]>([]);
 
-    const [editingRows, setEditingRows] = useState([]);
-    const [insertMode, setInsertMode] = useState(false);
-    const [refreshCount, setRefreshCount] = useState(0);
+    const [editingRows, setEditingRows] = useState<RoleModel[]>([]);
+    const [insertMode, setInsertMode] = useState<boolean>(false);
+    const [refreshCount, setRefreshCount] = useState<number>(0);
 
     const handleInsert = () => {
         if (!insertMode) {
             setInsertMode(true);
-            const newRole = new RoleModel();
+            const newRole = RoleModel.createEmpty();
             setRoles([...roles, newRole]);
             setEditingRows([...editingRows, newRole]);
         }
@@ -41,9 +41,11 @@ const RolesTable = (props) => {
         setEditingRows(activeRowArray);
     };
 
-    const handleRoleEdit = (event) => {
+    const handleRoleEdit = (event: DataTableRowEditCompleteEvent) => {
         const { data, newData, index } = event;
-        data.name = newData.name;
+        const roleModel: RoleModel = data as RoleModel;
+        roleModel.setName(newData.name);
+        roleModel.updateActions();
 
         if (insertMode && index === roles.length - 1) {
             dataService.createRole(data);
@@ -171,7 +173,8 @@ const RolesTable = (props) => {
             value={roles}
             editMode="row"
             onRowEditChange={onRowEditChange}
-            editingRows={editingRows || [false]}
+            // editingRows={editingRows || [false]}
+            editingRows={editingRows as DataTableValueArray | DataTableEditingRows || []}
             onRowEditComplete={handleRoleEdit}
             headerColumnGroup={headerColumnGroup}
             scrollable

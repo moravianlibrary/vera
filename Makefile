@@ -19,18 +19,14 @@ build:
 clean:
 	docker-compose down --volumes
 tag:
-	docker tag digiboard-server:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-server:$(BUILD_IMAGE_TAG)
-	docker tag digiboard-worker:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-worker:$(BUILD_IMAGE_TAG)
-	docker tag digiboard-client:latest registry.gitlab.mzk.cz/osdd/digiboard/digiboard-client:$(BUILD_IMAGE_TAG)
+	docker tag vera-server:latest registry.gitlab.mzk.cz/osdd/vera/vera-server:$(VERSION)
+	docker tag vera-worker:latest registry.gitlab.mzk.cz/osdd/vera/vera-worker:$(VERSION)
+	docker tag vera-client:latest registry.gitlab.mzk.cz/osdd/vera/vera-client:$(VERSION)
 push:
-	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-server:$(BUILD_IMAGE_TAG)
-	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-worker:$(BUILD_IMAGE_TAG)
-	docker push registry.gitlab.mzk.cz/osdd/digiboard/digiboard-client:$(BUILD_IMAGE_TAG)
+	docker push registry.gitlab.mzk.cz/osdd/vera/vera-server:$(VERSION)
+	docker push registry.gitlab.mzk.cz/osdd/vera/vera-worker:$(VERSION)
+	docker push registry.gitlab.mzk.cz/osdd/vera/vera-client:$(VERSION)
 image:
-	docker build -t digiboard-server:latest -f server/Dockerfile server/
-	docker build -t digiboard-worker:latest -f server/Dockerfile_celery server/
-	docker build -t digiboard-client:latest -f webclient/Dockerfile webclient/
-kustomize:
-    kustomize edit set 'image' $(TARGET_SERVER_IMAGE_TEMPLATE_NAME)=$(BUILD_SERVER_IMAGE_NAME)
-    kustomize edit set 'image' $(TARGET_WORKER_IMAGE_TEMPLATE_NAME)=$(BUILD_WORKER_IMAGE_NAME)
-    kustomize edit set 'image' $(TARGET_CLIENT_IMAGE_TEMPLATE_NAME)=$(BUILD_CLIENT_IMAGE_NAME)
+	docker build -t vera-server:latest server/Dockerfile
+	docker build -t vera-worker:latest server/Dockerfile_celery
+	docker build -t vera-client:latest webclient/Dockerfile

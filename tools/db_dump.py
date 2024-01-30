@@ -1,8 +1,8 @@
 import pandas as pd
 from sqlalchemy import create_engine, text
 
-DB_NAME = "digiboard"
-DB_USER = "digiboardAdmin"
+DB_NAME = "vera"
+DB_USER = "veraAdmin"
 DB_PASSWORD = "password"
 DB_HOST = "localhost"
 DB_PORT = "5432"

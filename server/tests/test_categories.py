@@ -6,7 +6,7 @@ from helper_funcs import get_admin_token, setUpEnv
 class TestCategoriesEndpoints(unittest.TestCase):
     def setUp(self):
         setUpEnv()
-        from digiboard import app
+        from vera import app
         self.client = TestClient(app)
         from services.database import get_db
         self.db = next(get_db())
@@ -81,7 +81,8 @@ class TestCategoriesEndpoints(unittest.TestCase):
         self.delete_category_by_name(updated_name)
 
     def create_test_category_tree(self):
-        response = self.client.post("/categories/category", json={"name": "root"})
+        response = self.client.post("/categories/category", json={
+            "name": "root"})
         root_id = response.json()['id']
         response = self.client.post("/categories/category", json={
             "name": "child 1",

@@ -23,11 +23,11 @@ COPY roles /app/roles
 COPY services /app/services
 COPY tasks /app/tasks
 COPY celery_worker.py /app
-COPY digiboard.py /app
+COPY vera.py /app
 
 
 # Expose port 8000 for the FastAPI application
 EXPOSE 8000
 
 # Start the FastAPI application when the container is run
-CMD ["uvicorn", "digiboard:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "vera:app", "--host", "0.0.0.0", "--port", "8000"]
