@@ -109,7 +109,7 @@ deploy image:
     - pwd
     - git checkout ${DEPLOY_REPO_BRANCH}
     - echo "Deploying ${BUILD_IMAGE_NAME}"
-    - make deploy
+    - make -C ${CI_PROJECT_DIR} deploy
     # - kustomize edit set image ${TARGET_IMAGE_TEMPLATE_NAME}=${BUILD_IMAGE_NAME}
     # provide commit-id
     - mkdir -p config
