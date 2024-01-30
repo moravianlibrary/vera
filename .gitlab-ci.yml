@@ -43,6 +43,8 @@ build and push image:
     - mkdir -p artifacts/images
 
   script:
+    - if [ "$CI_COMMIT_BRANCH" == "main" ]; then export REACT_APP_ENV="main"; fi
+    - if [ "$CI_COMMIT_BRANCH" == "test" ]; then export REACT_APP_ENV="test"; fi
     - cd ${CI_PROJECT_DIR}
     # get cached image
     # - |
