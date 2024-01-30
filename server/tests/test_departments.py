@@ -7,7 +7,7 @@ from helper_funcs import setUpEnv
 class TestDepartmentsEndpoints(unittest.TestCase):
     def setUp(self):
         setUpEnv()
-        from digiboard import app
+        from vera import app
         self.client = TestClient(app)
         from services.database import get_db
         self.db = next(get_db())

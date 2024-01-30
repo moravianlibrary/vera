@@ -20,4 +20,10 @@ export class User {
         user.isLoggedIn = true;
         return user;
     }
+
+    static createEmptyUser() {
+        const user = new User();
+        user.isLoggedIn = true;
+        return user;
+    }
 }

@@ -3,28 +3,28 @@ version: '3.1'
 services:
   postgres:
     image: postgres:latest
-    container_name: digiboard-postgres
+    container_name: vera-postgres
     environment:
-      POSTGRES_USER: digiboardAdmin
+      POSTGRES_USER: veraAdmin
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: digiboard
+      POSTGRES_DB: vera
     ports:
       - "5432:5432"
     volumes:
       - data:/var/lib/postgresql/data
     networks:
-      - digiboard
+      - vera
 
   redis:
-    container_name: digiboard-redis
+    container_name: vera-redis
     image: redis:latest
     ports:
       - "6379:6379"
     networks:
-      - digiboard
+      - vera
 
   worker:
-    container_name: digiboard-worker
+    container_name: vera-worker
     build:
       context: ./server
       dockerfile: Dockerfile_celery
@@ -36,10 +36,10 @@ services:
       - postgres
       - redis
     networks:
-      - digiboard
+      - vera
 
   server:
-    container_name: digiboard-server
+    container_name: vera-server
     build:
       context: ./server
         #dockerfile: Dockerfile
@@ -60,10 +60,10 @@ services:
       - worker
       - postgres
     networks:
-      - digiboard
+      - vera
 
   client:
-    container_name: digiboard-client
+    container_name: vera-client
     build:
       context: ./webclient
       dockerfile: Dockerfile
@@ -74,11 +74,11 @@ services:
     depends_on:
       - server
     networks:
-      - digiboard
+      - vera
 
 volumes:
   data:
 
 networks:
-  digiboard:
+  vera:
 

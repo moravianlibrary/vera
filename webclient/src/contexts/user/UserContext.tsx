@@ -35,7 +35,9 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     };
 
     const handleLogout = () => {
-        keycloak.logout();
+        if (keycloak && keycloak.authenticated) {
+            keycloak.logout();
+        }
     };
 
     const getCurrentUser = async () => {
@@ -51,6 +53,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
             } else if (error.code === 'ERR_NETWORK') {
                 showToast("error", t('app_not_available'), "");
             }
+            const newUser = User.createEmptyUser();
+            setUser(newUser);
         }
     }
 

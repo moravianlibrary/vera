@@ -102,6 +102,7 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (prop
             ApiCategories.createCategory(updatedCategory)
             .then(response => {
                 node.setCategory(response.data);
+                node.setType(NodeType.Category);
                 handleCloseCategoryNodeEdit(node);
             }).catch(handleCategoryUpdateError);
         } else if (node.type === NodeType.UpdateCategory) {

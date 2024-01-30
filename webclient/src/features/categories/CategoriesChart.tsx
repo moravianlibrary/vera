@@ -35,6 +35,7 @@ const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
     return (
         <div className="flex flex-column align-items-center gap-3 m-2">
             <Button
+                className="absolute"
                 visible={!(!categoryNodes[0].parentNode)}
                 size="large"
                 rounded
@@ -42,6 +43,7 @@ const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
                 onClick={() => handleFocusParentNode()}
             />
             <OrganizationChart
+                className="w-full mt-7"
                 value={categoryNodes}
                 nodeTemplate={getCategoryNodeComponent}
             />
