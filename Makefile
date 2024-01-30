@@ -19,13 +19,13 @@ build:
 clean:
 	docker-compose down --volumes
 tag:
-	docker tag vera-server:latest registry.gitlab.mzk.cz/osdd/vera/vera-server:$(VERSION)
-	docker tag vera-worker:latest registry.gitlab.mzk.cz/osdd/vera/vera-worker:$(VERSION)
-	docker tag vera-client:latest registry.gitlab.mzk.cz/osdd/vera/vera-client:$(VERSION)
+	docker tag vera-server:latest registry.gitlab.mzk.cz/osdd/vera/vera-server:$(BUILD_IMAGE_TAG)
+	docker tag vera-worker:latest registry.gitlab.mzk.cz/osdd/vera/vera-worker:$(BUILD_IMAGE_TAG)
+	docker tag vera-client:latest registry.gitlab.mzk.cz/osdd/vera/vera-client:$(BUILD_IMAGE_TAG)
 push:
-	docker push registry.gitlab.mzk.cz/osdd/vera/vera-server:$(VERSION)
-	docker push registry.gitlab.mzk.cz/osdd/vera/vera-worker:$(VERSION)
-	docker push registry.gitlab.mzk.cz/osdd/vera/vera-client:$(VERSION)
+	docker push registry.gitlab.mzk.cz/osdd/vera/vera-server:$(BUILD_IMAGE_TAG)
+	docker push registry.gitlab.mzk.cz/osdd/vera/vera-worker:$(BUILD_IMAGE_TAG)
+	docker push registry.gitlab.mzk.cz/osdd/vera/vera-client:$(BUILD_IMAGE_TAG)
 image:
 	docker build -t digiboard-server:latest -f server/Dockerfile server/
 	docker build -t digiboard-worker:latest -f server/Dockerfile_celery server/
