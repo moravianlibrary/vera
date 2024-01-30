@@ -2,10 +2,10 @@
 FROM node:14-alpine
 
 # Build args
-ARG NODE_ENV
+ARG REACT_APP_ENV
 
 # Environment vars
-ENV NODE_ENV=$NODE_ENV
+ENV REACT_APP_ENV=$REACT_APP_ENV
 
 # Set the working directory in the container
 WORKDIR /app

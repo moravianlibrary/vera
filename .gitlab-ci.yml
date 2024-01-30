@@ -9,6 +9,7 @@ variables:
   DEPLOY_JOB_IMAGE: "docker.app.knihovny.cz/ci-builds/kustomize:latest"
   TARGET_IMAGE_TEMPLATE_NAME: mzk.cz/vera
   CONTAINER_PUSH_EXTRA_FLAGS: "-q"
+  REACT_APP_ENV: $CI_COMMIT_REF_NAME
 
 stages:
   - test
@@ -43,8 +44,7 @@ build and push image:
     - mkdir -p artifacts/images
 
   script:
-    - if [ "$CI_COMMIT_BRANCH" == "main" ]; then export REACT_APP_ENV="main"; fi
-    - if [ "$CI_COMMIT_BRANCH" == "test" ]; then export REACT_APP_ENV="test"; fi
+    - echo "Building using config for $REACT_APP_ENV"
     - cd ${CI_PROJECT_DIR}
     # get cached image
     # - |
