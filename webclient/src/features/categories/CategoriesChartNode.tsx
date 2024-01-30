@@ -28,7 +28,7 @@ const CategoriesChartNode: React.FC<CategoriesChartNodeProps> = ({ node }) => {
     }
 
     return (
-    <div className="flex flex-column">
+    <div className="flex flex-column w-max">
             <div className="flex justify-content-between align-items-baseline gap-2">
                 <CategoryNodeEditMenu node={node} />
                 <div className="flex gap-1 justify-content-center align-items-baseline">
