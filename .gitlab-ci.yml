@@ -1,11 +1,11 @@
 
 variables:
   CACHE_REGISTRY_URL: docker.app.knihovny.cz
-  BASE_IMAGE_NAME: unknown
+  BASE_IMAGE_NAME: digiboard
   BUILD_IMAGE_TAG: branch-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
   BUILD_IMAGE_NAME: $CI_REGISTRY_IMAGE/$BASE_IMAGE_NAME:$BUILD_IMAGE_TAG
   CACHE_IMAGE_NAME: $CI_REGISTRY_IMAGE/$BASE_IMAGE_NAME:build
-  DEPLOY_REPOSITORY: gitlab.mzk.cz:osdd/deploys/random
+  DEPLOY_REPOSITORY: "gitlab.mzk.cz:osdd/deploys/digiboard"
   DEPLOY_JOB_IMAGE: "docker.app.knihovny.cz/ci-builds/kustomize:latest"
   TARGET_IMAGE_TEMPLATE_NAME: mzk.cz/busybox
   CONTAINER_PUSH_EXTRA_FLAGS: "-q"
@@ -15,7 +15,7 @@ stages:
   - build
   - deploy
 
-.build and push image:
+build and push image:
   stage: build
   image: ${CACHE_REGISTRY_URL}/mirrors/docker:20.10-git
   artifacts:
@@ -45,24 +45,26 @@ stages:
   script:
     - cd ${CI_PROJECT_DIR}
     # get cached image
-    - |
-      if docker pull -q $CACHE_IMAGE_NAME; then
-        echo "Cache image has been loaded"
-      fi
+    # - |
+    #   if docker pull -q $CACHE_IMAGE_NAME; then
+    #     echo "Cache image has been loaded"
+    #   fi
 
     # build image
-    - make image IMAGE_NAME=$CACHE_IMAGE_NAME
+    - make image
 
+    - make tag
+  
     # upload image cache to repo
-    - make push IMAGE_NAME=$CACHE_IMAGE_NAME
+    - make push
 
     # save images under new name
-    - docker tag $CACHE_IMAGE_NAME $BUILD_IMAGE_NAME
-    - echo docker push -q $BUILD_IMAGE_NAME
-    - echo $BUILD_IMAGE_NAME > artifacts/images/name.txt
-    - docker push -q $BUILD_IMAGE_NAME 
+    # - docker tag $CACHE_IMAGE_NAME $BUILD_IMAGE_NAME
+    # - echo docker push -q $BUILD_IMAGE_NAME
+    # - echo $BUILD_IMAGE_NAME > artifacts/images/name.txt
+    # - docker push -q $BUILD_IMAGE_NAME 
 
-.deploy image:
+deploy image:
   stage: deploy
   image: ${DEPLOY_JOB_IMAGE}
   retry:
@@ -103,7 +105,8 @@ stages:
     - pwd
     - git checkout ${DEPLOY_REPO_BRANCH}
     - echo "Deploying ${BUILD_IMAGE_NAME}"
-    - kustomize edit set image ${TARGET_IMAGE_TEMPLATE_NAME}=${BUILD_IMAGE_NAME}
+    - make kustomize
+    # - kustomize edit set image ${TARGET_IMAGE_TEMPLATE_NAME}=${BUILD_IMAGE_NAME}
     # provide commit-id
     - mkdir -p config
     - echo -n ${CI_COMMIT_SHORT_SHA} > config/commit-id.txt

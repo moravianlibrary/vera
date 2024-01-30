@@ -1,4 +1,10 @@
-VERSION := $(shell cat VERSION)
+BUILD_SERVER_IMAGE_NAME := $(CI_REGISTRY_IMAGE)/digiboard-server:$(BUILD_IMAGE_TAG)
+BUILD_WORKER_IMAGE_NAME := $(CI_REGISTRY_IMAGE)/digiboard-worker:$(BUILD_IMAGE_TAG)
+BUILD_CLIENT_IMAGE_NAME := $(CI_REGISTRY_IMAGE)/digboard-client:$(BUILD_IMAGE_TAG)
+
+TARGET_SERVER_IMAGE_TEMPLATE_NAME := mzk.cz/digiboard-server
+TARGET_WORKER_IMAGE_TEMPLATE_NAME := mzk.cz/digiboard-worker
+TARGET_CLIENT_IMAGE_TEMPLATE_NAME := mzk.cz/digiboard-client
 
 server:
 	docker-compose down server
