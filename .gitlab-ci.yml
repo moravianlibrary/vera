@@ -128,8 +128,7 @@ deploy image:
         cat >> ${TMP_DIR}/commit-message <<EOF
         deploy(${CI_COMMIT_SHORT_SHA}): ${CI_COMMIT_TITLE}
         * ${CI_COMMIT_REF_NAME}
-        * Upgrade image version to ${BUILD_IMAGE_NAME}
-        * Upgrade image tag to ${BUILD_IMAGE_tag}
+        * Upgrade image tags to ${BUILD_IMAGE_TAG}
         * commit: ${CI_PROJECT_URL}/-/commit/${CI_COMMIT_SHORT_SHA}
         * CI job: ${CI_JOB_URL}
         EOF
