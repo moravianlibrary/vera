@@ -94,6 +94,7 @@ deploy image:
     - echo "Deploying ${BUILD_IMAGE_NAME}:${BUILD_IMAGE_TAG}"
     #- mkdir ${HOME}/.ssh; install -m 0600 ${K8S_DEPLOY_KEY} ${HOME}/.ssh/id_rsa
     #- ssh-keyscan gitlab.mzk.cz >> ${HOME}/.ssh/known_hosts
+    - echo "Cloning https://${GITLAB_DEPLOY_TOKEN}:${GITLAB_DEPLOY_TOKEN_PASSWORD}@${DEPLOY_REPOSITORY}.git to deployment"
     - git clone https://${GITLAB_DEPLOY_TOKEN}:${GITLAB_DEPLOY_TOKEN_PASSWORD}@${DEPLOY_REPOSITORY}.git deployment
     - |
         if [ $CI_COMMIT_BRANCH == "main" ]; then
