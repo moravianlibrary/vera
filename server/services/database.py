@@ -4,8 +4,8 @@ from sqlalchemy.orm import sessionmaker, Session
 from os import environ
 from typing import Any
 
-DB_NAME = "digiboard"
-DB_USER = "digiboardAdmin"
+DB_NAME = "vera"
+DB_USER = "veraAdmin"
 DB_PASSWORD = "password"
 DB_HOST = environ.get("POSTGRES_HOST")
 DB_PORT = "5432"
