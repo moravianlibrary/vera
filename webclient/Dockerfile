@@ -4,9 +4,6 @@ FROM node:14-alpine
 # Build args
 ARG REACT_APP_ENV
 
-# Environment vars
-ENV REACT_APP_ENV=$REACT_APP_ENV
-
 # Set the working directory in the container
 WORKDIR /app
 
@@ -20,7 +17,11 @@ RUN npm install
 COPY . .
 
 # Build the React app for production
-RUN npm run build
+RUN if [ "$REACT_APP_ENV" = "main" ]; then \
+      npm run build:main; \
+    elif [ "$REACT_APP_ENV" = "test" ]; then \
+      npm run build:test; \
+    fi
 RUN npm install -g serve
 
 # Expose port 3000 to the outside world
