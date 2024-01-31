@@ -25,6 +25,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+	"build:main": "NODE_ENV=main react-scripts build",
+	"build:test": "NODE_ENV=test react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

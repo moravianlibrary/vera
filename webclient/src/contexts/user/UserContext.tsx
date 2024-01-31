@@ -43,8 +43,10 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     const getCurrentUser = async () => {
         try {
             const user = await ApiUser.getCurrentUser();
+            console.log(user);
             setUserData(user.data);
         } catch (error) {
+            console.error(error);
             setUser(new User());
             if (error.response && error.response.status === 401) {
                 if (error.response.data?.detail !== null) {
@@ -59,7 +61,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
 
     const handleKeycloakEvent = (eventType, error) => {
-        // console.log(`eventType: ${eventType}, error: ${error}`);
         if (eventType === 'onReady') {
             if (keycloak.authenticated && keycloak.token) {
                 localStorage.setItem('token', keycloak.token);
