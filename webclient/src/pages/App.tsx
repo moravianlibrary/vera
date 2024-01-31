@@ -18,6 +18,7 @@ import { ActionType } from '../types/ActionType';
 
 
 function App() {
+  console.log(process.env.REACT_APP_ENV);
   return (
     <ToastProvider>
       <UserProvider>

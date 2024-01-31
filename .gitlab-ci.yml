@@ -1,14 +1,15 @@
 
 variables:
   CACHE_REGISTRY_URL: docker.app.knihovny.cz
-  BASE_IMAGE_NAME: digiboard
+  BASE_IMAGE_NAME: vera
   BUILD_IMAGE_TAG: branch-$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
   BUILD_IMAGE_NAME: $CI_REGISTRY_IMAGE/$BASE_IMAGE_NAME:$BUILD_IMAGE_TAG
   CACHE_IMAGE_NAME: $CI_REGISTRY_IMAGE/$BASE_IMAGE_NAME:build
-  DEPLOY_REPOSITORY: "gitlab.mzk.cz:osdd/deploys/digiboard"
+  DEPLOY_REPOSITORY: "gitlab.mzk.cz:osdd/deploys/vera"
   DEPLOY_JOB_IMAGE: "docker.app.knihovny.cz/ci-builds/kustomize:latest"
-  TARGET_IMAGE_TEMPLATE_NAME: mzk.cz/busybox
+  TARGET_IMAGE_TEMPLATE_NAME: mzk.cz/vera
   CONTAINER_PUSH_EXTRA_FLAGS: "-q"
+  REACT_APP_ENV: $CI_COMMIT_REF_NAME
 
 stages:
   - test
@@ -90,10 +91,14 @@ deploy image:
         when: always
         allow_failure: false
 
+  before_script:
+    - apk add make
+
   script:
     - echo "Deploying ${BUILD_IMAGE_NAME}:${BUILD_IMAGE_TAG}"
     #- mkdir ${HOME}/.ssh; install -m 0600 ${K8S_DEPLOY_KEY} ${HOME}/.ssh/id_rsa
     #- ssh-keyscan gitlab.mzk.cz >> ${HOME}/.ssh/known_hosts
+    - echo "Cloning https://${GITLAB_DEPLOY_TOKEN}:${GITLAB_DEPLOY_TOKEN_PASSWORD}@${DEPLOY_REPOSITORY}.git to deployment"
     - git clone https://${GITLAB_DEPLOY_TOKEN}:${GITLAB_DEPLOY_TOKEN_PASSWORD}@${DEPLOY_REPOSITORY}.git deployment
     - |
         if [ $CI_COMMIT_BRANCH == "main" ]; then
@@ -105,7 +110,9 @@ deploy image:
     - pwd
     - git checkout ${DEPLOY_REPO_BRANCH}
     - echo "Deploying ${BUILD_IMAGE_NAME}"
-    - make kustomize
+    - cp ../Makefile .
+    - make deploy
+    - rm Makefile
     # - kustomize edit set image ${TARGET_IMAGE_TEMPLATE_NAME}=${BUILD_IMAGE_NAME}
     # provide commit-id
     - mkdir -p config
@@ -122,8 +129,7 @@ deploy image:
         cat >> ${TMP_DIR}/commit-message <<EOF
         deploy(${CI_COMMIT_SHORT_SHA}): ${CI_COMMIT_TITLE}
         * ${CI_COMMIT_REF_NAME}
-        * Upgrade image version to ${BUILD_IMAGE_NAME}
-        * Upgrade image tag to ${BUILD_IMAGE_tag}
+        * Upgrade image tags to ${BUILD_IMAGE_TAG}
         * commit: ${CI_PROJECT_URL}/-/commit/${CI_COMMIT_SHORT_SHA}
         * CI job: ${CI_JOB_URL}
         EOF

@@ -1,8 +1,8 @@
 import Axios, { AxiosInstance } from "axios";
-import { APP_CONFIG } from "../config/config";
+import config from "../config/config";
 
 const axiosInstance: AxiosInstance = Axios.create({
-    baseURL: `${APP_CONFIG.base_url}`,
+    baseURL: `${config.apiUrl}`,
     headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
