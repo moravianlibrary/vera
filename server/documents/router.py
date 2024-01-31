@@ -95,7 +95,7 @@ async def get_from_catalog(identifier: schemas.Identifier,
              response_model=List[schemas.DocumentCatalogResponse])
 async def get_from_catalog_file(
         file: Optional[UploadFile] = None,
-        identifier_type: IdentifierType = Query(IdentifierType.SYSNO),
+        identifier_type: IdentifierType = Query(IdentifierType.Sysno),
         user: CurrentUser = Depends(get_current_user)):
     if file and file.filename:
         return [get_catalog_response(schemas.Identifier
@@ -126,7 +126,7 @@ async def create_from_catalog(identifier: Optional[schemas.Identifier] = None,
              response_model=List[schemas.DocumentCreateResponse])
 async def create_from_catalog_file(
         file: Optional[UploadFile] = None,
-        identifier_type: IdentifierType = Query(IdentifierType.SYSNO),
+        identifier_type: IdentifierType = Query(IdentifierType.Sysno),
         category_id: Optional[int] = Query(None),
         insert_digitized: bool = Query(False),
         db: Session = Depends(get_db),
