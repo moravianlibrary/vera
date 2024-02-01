@@ -4,6 +4,7 @@ import { Dropdown } from "primereact/dropdown";
 import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import React from "react";
+import { AssignableCategory } from "../../adapters/ApiCategories";
 
 interface InsertDocumentsSettingsProps {
     onGoNext: () => void;
@@ -13,7 +14,7 @@ const InsertDocumentsSettings: React.FC<InsertDocumentsSettingsProps> = (props) 
     const { t } = useTranslation();
     const { identifiers, identifier, setIdentifier, categories, category, setCategory } = useInsertDocuments();
 
-    const renderLabel = (category) => {
+    const renderLabel = (category: AssignableCategory) => {
         if (category.parent_category) {
             return `${renderLabel(category.parent_category)} > ${category.name}`;
         }

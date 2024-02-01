@@ -4,6 +4,8 @@ import { Button } from "primereact/button";
 import { InputNumber } from "primereact/inputnumber";
 import { CategoryNode } from "../../contexts/categories/CategoryNodeModel";
 import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
+import { ActionAccessComponent } from "../../services/AccessService";
+import { ActionType } from "../../types/ActionType";
 
 interface CateogryPercentageProps {
     node: CategoryNode
@@ -66,10 +68,12 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
                 <span>{node.percentage}%</span>
                 <span className="font-bold">]</span>
             </div>
-            <Button className="p-1" text severity="secondary"
-                onClick={() => handleEditPercentage(node)}>
-                <i className="pi pi-pencil" />
-            </Button>
+            <ActionAccessComponent action={ActionType.EditCategoriesAll}>
+                <Button className="p-1" text severity="secondary"
+                    onClick={() => handleEditPercentage(node)}>
+                    <i className="pi pi-pencil" />
+                </Button>
+            </ActionAccessComponent>
         </div>
     );
 };

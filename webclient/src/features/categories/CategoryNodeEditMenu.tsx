@@ -6,6 +6,8 @@ import { CategoryNode } from "../../contexts/categories/CategoryNodeModel";
 import { MenuItem } from "primereact/menuitem";
 import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
 import { NodeType } from "../../contexts/categories/CategoryNodeType";
+import { ActionAccessComponent } from "../../services/AccessService";
+import { ActionType } from "../../types/ActionType";
 
 interface CategoryNodeEditMenuProps {
     node: CategoryNode
@@ -65,15 +67,17 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => 
 
     return (
         <div className="flex">
-            <Menu
-                className="surface-300 w-auto"
-                model={node.type === NodeType.Root ? rootItems : items}
-                popup
-                popupAlignment="right"
-                ref={menuRef} />
-            <Button className="p-1" text severity="secondary" onClick={handleToggleMenu}>
-                <i className="pi pi-cog" />
-            </Button>
+            <ActionAccessComponent action={ActionType.EditCategoriesAll}>
+                <Menu
+                    className="surface-300 w-auto"
+                    model={node.type === NodeType.Root ? rootItems : items}
+                    popup
+                    popupAlignment="right"
+                    ref={menuRef} />
+                <Button className="p-1" text severity="secondary" onClick={handleToggleMenu}>
+                    <i className="pi pi-cog" />
+                </Button>
+            </ActionAccessComponent>
         </div>
     );
 };
