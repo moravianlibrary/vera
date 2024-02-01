@@ -2,16 +2,26 @@ from enum import Enum
 
 
 class ActionType(Enum):
-    read_datatable_own = 'read_datatable_own'
-    read_datatable_department = 'read_datatable_department'
-    read_datatable_all = 'read_datatable_all'
-    edit_datatable_own = 'edit_datatable_own'
-    edit_datatable_department = 'edit_datatable_department'
-    edit_datatable_all = 'edit_datatable_all'
-    write_datatable = 'write_datatable'
-    insert_datatable = 'insert_datatable'
-    comment_on_datatable = 'comment_on_datatable'
-    edit_access = 'edit_access'
-    edit_categories = 'edit_categories'
-    edit_department_categories = 'edit_department_categories'
-    extract = 'extract'
+    ReadDatatableOwn = 'ReadDatatableOwn'
+    ReadDatatableDepartment = 'ReadDatatableDepartment'
+    ReadDatatableAll = 'ReadDatatableAll'
+    EditDatatableOwn = 'EditDatatableOwn'
+    EditDatatableDepartment = 'EditDatatableDepartment'
+    EditDatatableAll = 'EditDatatableAll'
+    WriteDatatable = 'WriteDatatable'
+    InsertDatatable = 'InsertDatatable'
+    CommentOnDatatable = 'CommentOnDatatable'
+
+    ReadCategoriesAll = 'ReadCategoriesAll'
+    ReadCategoriesDepartment = 'ReadCategoriesDepartment'
+    EditCategoriesAll = 'EditCategoriesAll'
+    EditCategoriesDepartment = 'EditCategoriesDepartment'
+
+    PlanTasks = 'PlanTasks'
+    AdminTasks = 'AdminTasks'
+
+    EditAccess = 'EditAccess'
+
+    Extract = 'Extract'
+
+    AdminDatabase = 'AdminDatabase'
