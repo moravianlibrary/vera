@@ -55,6 +55,7 @@ const resources = {
         title: "Název",
         pages_count: "Počet stran",
         signature: "Signatura",
+        "Signature": "Signatura",
         issn: "ISSN",
         isbn: "ISBN",
         barcode: "Čárový kód",
