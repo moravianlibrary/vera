@@ -11,6 +11,8 @@ ALEPH_SYSNO_ENDPOINT = "https://aleph.mzk.cz/OAI?verb=GetRecord\
     &identifier=oai:aleph.mzk.cz:{SYSNO}&metadataPrefix=marc21"
 ALEPH_FIND_BY_BARCODE_EDNPOINT = \
     "https://aleph.mzk.cz/X?op=find&base={BASE}&code=bc&request={BARCODE}"
+ALEPH_FIND_BY_SIGNATURE_EDNPOINT = \
+    "https://aleph.mzk.cz/X?op=find&base={BASE}&code=SIG&request={SIGNATURE}"
 ALEPH_FIND_DOCUMENTS_ENDPOINT = "https://aleph.mzk.cz//X?op=present\
     &set_number={SET_NUMBER}&set_entry={SET_ENTRY}"
 
@@ -51,6 +53,7 @@ def download_from_catalog(sysno: str):
     return etree.fromstring(response.content)
 
 
+# TODO: raise exception if catalog is not available (403)
 def find_sysno(request_url: str):
     try:
         response = requests.get(request_url)
@@ -85,8 +88,16 @@ def find_sysno_by_barcode(barcode: str):
             return f"{base}-{sysno}"
 
 
+def find_sysno_by_signature(signature: str):
+    for base in SYSNO_BASES:
+        sysno = find_sysno(ALEPH_FIND_BY_SIGNATURE_EDNPOINT
+                           .format(BASE=base, SIGNATURE=signature))
+        if sysno is not None:
+            return f"{base}-{sysno}"
+
+
 def generate_document_by_identifier(identifier: Identifier):
-    if identifier.identifier_type == IdentifierType.SYSNO:
+    if identifier.identifier_type == IdentifierType.Sysno:
         if (not re.match(SYSNO_FORMAT_1, identifier.value)
                 and not re.match(SYSNO_FORMAT_2, identifier.value)):
             return None, DocumentCreateResult.INVALID_SYSNO
@@ -94,8 +105,13 @@ def generate_document_by_identifier(identifier: Identifier):
         if sysno is None:
             return None, DocumentCreateResult.INVALID_SYSNO_BASE
         return generate_document_by_sysno(sysno)
-    if identifier.identifier_type == IdentifierType.BARCODE:
+    if identifier.identifier_type == IdentifierType.Barcode:
         sysno = find_sysno_by_barcode(identifier.value)
+        if sysno is None:
+            return None, DocumentCreateResult.DOCUMENT_NOT_FOUND_IN_CATALOG
+        return generate_document_by_sysno(sysno)
+    if identifier.identifier_type == IdentifierType.Signature:
+        sysno = find_sysno_by_signature(identifier.value)
         if sysno is None:
             return None, DocumentCreateResult.DOCUMENT_NOT_FOUND_IN_CATALOG
         return generate_document_by_sysno(sysno)

@@ -30,20 +30,12 @@ app.add_middleware(
 @app.on_event("startup")
 async def on_startup():
     from services.database import create_tables, get_db
-    from roles.crud import get_role, create_role
-    from roles.enums import ActionType
-    from roles.schemas import RoleCreate
+    from auth.routines import init_default_roles
 
     create_tables()
 
     db = next(get_db())
-
-    db_role = get_role(1, db)
-    if db_role is None:
-        create_role(RoleCreate(
-            name="Admin",
-            actions=list(ActionType)
-        ), db)
+    init_default_roles(db)
 
 
 app.include_router(auth_router.router)

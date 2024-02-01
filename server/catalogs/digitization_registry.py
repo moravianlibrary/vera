@@ -45,7 +45,7 @@ def get_state_by_query(query: str):
 
 
 def get_state_by_identifier(identifier: Identifier):
-    if identifier.identifier_type == IdentifierType.BARCODE:
+    if identifier.identifier_type == IdentifierType.Barcode:
         return get_state_by_query(f'carkod:"{identifier.value}"')
-    if identifier.identifier_type == IdentifierType.CCNB:
+    if identifier.identifier_type == IdentifierType.Ccnb:
         return get_state_by_query(f'ccnb:"{identifier.value}"')
