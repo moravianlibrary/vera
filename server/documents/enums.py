@@ -2,10 +2,9 @@ from enum import Enum
 
 
 class IdentifierType(Enum):
-    Sysno = 'Sysno'
-    Barcode = 'Barcode'
-    Signature = 'Signature'
-    Ccnb = 'Ccnb'
+    SYSNO = 'SYSNO'
+    BARCODE = 'BARCODE'
+    CCNB = 'CCNB'
 
 
 class DocumentField(Enum):

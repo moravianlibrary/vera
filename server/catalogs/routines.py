@@ -11,12 +11,12 @@ def get_digitization_state(barcode: str, ccnb: Optional[str] = None):
     state = None
     if barcode:
         state = get_state_by_identifier(schemas.Identifier(
-            identifier_type=IdentifierType.Barcode,
+            identifier_type=IdentifierType.BARCODE,
             value=barcode
         ))
     if ccnb and (state is None or state == DigitizationState.NOT_DIGITIZED):
         state = get_state_by_identifier(schemas.Identifier(
-            identifier_type=IdentifierType.Ccnb,
+            identifier_type=IdentifierType.CCNB,
             value=ccnb
         ))
     return state if state is not None else DigitizationState.NOT_DIGITIZED

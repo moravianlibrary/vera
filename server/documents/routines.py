@@ -19,7 +19,7 @@ def create_document_from_schema(document: schemas.DocumentCreateResponse,
         create_result = DocumentCreateResult.SUCCESS
     return schemas.DocumentCreateResponse(
         identifier=schemas.Identifier(
-            identifier_type=IdentifierType.Sysno, value=document.sysno),
+            identifier_type=IdentifierType.SYSNO, value=document.sysno),
         document=created_document,
         create_result=create_result
     )
@@ -39,7 +39,7 @@ def create_catalog_document(catalog_document_response:
 
     if create_result != DocumentCreateResult.PREPARED:
         pass
-    elif identifier.identifier_type == IdentifierType.Barcode:
+    elif identifier.identifier_type == IdentifierType.BARCODE:
         if catalog_document.issues:
             for issue in catalog_document.issues:
                 if identifier.value == issue.barcode:
