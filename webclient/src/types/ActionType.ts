@@ -22,6 +22,9 @@ enum ActionType {
     Extract = 'Extract',
 
     AdminDatabase = 'AdminDatabase',
+
+    ReadDatatable = 'ReadDatatable',
+    ReadCategories = 'ReadCategories',
 }
 
 export { ActionType };
