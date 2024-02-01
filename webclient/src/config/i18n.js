@@ -193,6 +193,26 @@ const resources = {
         "Title": "Název",
         "Choose a category": "Vyber kategorie",
 
+        "Role": "Role",
+        "Actions": "Akce",
+        "Operations": "Operace",
+        
+        "Own": "Vlastní",
+        "Department's": "Oddělení",
+        "All": "Všechny",
+
+        "Allowed to read documents": "Povoleno číst dokumenty",
+        "Allowed to edit documents": "Povoleno upravovat dokumenty",
+        "Document insertion allowed": "Povoleno vkládat dokumenty",
+        "Document creation allowed": "Povoleno vytvářet dokumenty",
+        "Commenting on documents allowed": "Povoleno komentovat dokumenty",
+        "Planning tasks allowed": "Povoleno plánovat úkoly",
+        "Administrating tasks allowed": "Povoleno spravovat úkoly",
+        "Allowed to read categories": "Povoleno číst kategorie",
+        "Allowed to edit categories": "Povoleno upravovat kategorie",
+        "Extraction allowed": "Povoleno extrahovat",
+        "Editing access settings allowed": "Povoleno upravovat přístupová nastavení",
+        "Administrating database allowed": "Povoleno spravovat databázi",
     },
   },
 };
