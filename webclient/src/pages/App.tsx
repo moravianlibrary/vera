@@ -33,10 +33,10 @@ function App() {
                       <Route element={<ActionAccessRoute action={ActionType.ReadDatatableOwn} />}>
                         <Route path="/board" element={<Documents />} />
                       </Route>
-                      <Route element={<ActionAccessRoute action={ActionType.ReadCategoriesDepartment} />}>
+                      <Route element={<ActionAccessRoute action={ActionType.EditCategories} />}>
                         <Route path="/categories" element={<Categories />} />
                       </Route>
-                      <Route element={<ActionAccessRoute action={ActionType.PlanTasks} />}>
+                      <Route element={<ActionAccessRoute action={ActionType.EditCategories} />}>
                         <Route path="/tasks" element={<Tasks />} />
                       </Route>
                       <Route element={<ActionAccessRoute action={ActionType.EditAccess} />}>
