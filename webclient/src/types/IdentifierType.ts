@@ -1,6 +1,7 @@
 enum IdentifierType {
-    Sysno = 'SYSNO',
-    Barcode = 'BARCODE',
+    Sysno = 'Sysno',
+    Barcode = 'Barcode',
+    Signature= 'Signature',
 }
 
 export { IdentifierType };

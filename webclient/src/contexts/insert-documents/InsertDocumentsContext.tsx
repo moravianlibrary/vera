@@ -47,6 +47,9 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
         }, {
             value: IdentifierType.Barcode,
             label: t("Barcode")
+        }, {
+            value: IdentifierType.Signature,
+            label: t("Signature")
     }];
     const [identifier, setIdentifier] = useState<LabeledIdentifier>(identifiers[0]);
     const [category, setCategory] = useState<number | null>(null);
