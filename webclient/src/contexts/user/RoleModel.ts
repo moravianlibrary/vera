@@ -36,24 +36,14 @@ export class RoleModel implements Role {
     }
 
     static expandActions(actions: ActionType[]): ActionType[] {
-        if (actions.includes(ActionType.ReadDatatableAll)) {
-            actions = [...actions, ActionType.ReadDatatableDepartment];
+        if (actions.includes(ActionType.ReadDatatableOwn)
+                || actions.includes(ActionType.ReadDatatableDepartment)
+                || actions.includes(ActionType.ReadDatatableAll)) {
+            actions = [...actions, ActionType.ReadDatatable];
         }
-        if (actions.includes(ActionType.ReadDatatableDepartment)) {
-            actions = [...actions, ActionType.ReadDatatableOwn];
-        }
-        if (actions.includes(ActionType.EditDatatableAll)) {
-            actions = [...actions, ActionType.EditDatatableDepartment];
-        }
-        if (actions.includes(ActionType.EditDatatableDepartment)) {
-            actions = [...actions, ActionType.EditDatatableOwn];
-        }
-
-        if (actions.includes(ActionType.ReadCategoriesAll)) {
-            actions = [...actions, ActionType.ReadCategoriesDepartment];
-        }
-        if (actions.includes(ActionType.EditCategoriesAll)) {
-            actions = [...actions, ActionType.EditCategoriesDepartment];
+        if (actions.includes(ActionType.ReadCategoriesDepartment)
+                || actions.includes(ActionType.ReadCategoriesAll)) {
+            actions = [...actions, ActionType.ReadCategories];
         }
         return actions;
     }

@@ -123,7 +123,7 @@ def create_test_documents():
 
     for sysno in open('test_sysnos.txt', 'r').readlines():
         data = {
-            "identifier_type": "SYSNO",
+            "identifier_type": "Sysno",
             "value": f"{sysno.strip()}"
         }
 

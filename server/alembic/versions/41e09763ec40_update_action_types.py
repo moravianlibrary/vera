@@ -38,7 +38,7 @@ def upgrade() -> None:
                 'EditAccess',
                 'Extract',
                 'AdminDatabase'
-            )
+            );
         """)
 
         op.execute("""
@@ -85,7 +85,7 @@ def downgrade() -> None:
                 'comment_on_datatable',
                 'edit_categories',
                 'edit_access',
-                'extract',
+                'extract'
             )
         """)
 

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { accessService } from '../../services/AccessService.js';
+import { accessService } from '../../services/AccessService';
 import { useUser } from '../../contexts/user/UserContext';
 import { useDocuments } from '../../contexts/documents/DocumentsContext';
 import { Document } from '../../adapters/ApiDocuments';

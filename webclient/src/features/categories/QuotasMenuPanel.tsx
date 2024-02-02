@@ -12,6 +12,8 @@ import { useQuotas } from "../../contexts/categories/QuotasContext";
 import { Quota } from "../../adapters/ApiCategories";
 import { Tooltip } from "primereact/tooltip";
 import { useToast } from "../../contexts/toast/ToastContext";
+import { ActionAccessComponent } from "../../services/AccessService";
+import { ActionType } from "../../types/ActionType";
 
 const QuotasMenuPanel = (props) => {
     const { t } = useTranslation();
@@ -98,11 +100,13 @@ const QuotasMenuPanel = (props) => {
                         onChange={(e) => handleSelectQuota(e.value)}
                         itemTemplate={(item) => <TooltipDropdownItem item={item} />}
                     />
-                    <Button
-                        className="pi pi-plus p-2"
-                        text
-                        onClick={handleInsertQuota}
-                    />
+                    <ActionAccessComponent action={ActionType.EditCategoriesAll} >
+                        <Button
+                            className="pi pi-plus p-2"
+                            text
+                            onClick={handleInsertQuota}
+                        />
+                    </ActionAccessComponent>
                 </div>
             </div>
         );
@@ -149,32 +153,36 @@ const QuotasMenuPanel = (props) => {
                     onChange={(e) => handleSelectQuota(e.value)}
                     itemTemplate={(item) => <TooltipDropdownItem item={item} />}
                 />
-                <Button
-                    className="pi pi-plus p-2"
-                    text
-                    onClick={handleInsertQuota}
-                />
+                <ActionAccessComponent action={ActionType.EditCategoriesAll} >
+                    <Button
+                        className="pi pi-plus p-2"
+                        text
+                        onClick={handleInsertQuota}
+                    />
+                </ActionAccessComponent>
             </div>
             <span className="font-bold">{t('pages_count')}: {selectedQuota.pages_count}</span>
             {selectedQuota.active &&
             <span className="font-bold text-yellow-800">{t('active_quota')}</span>}
-            <div className="flex justify-content-end gap-2">
-                {!selectedQuota.active &&
-                <Button
-                    className="text-yellow-800"
-                    outlined
-                    tooltip={t('set_active_quota')}
-                    onClick={handleSetActiveQuota}
-                >
-                    <i className="pi pi-star-fill" />
-                </Button>}
-                <Button outlined onClick={handleEditQuota}>
-                    <i className="pi pi-pencil" />
-                </Button>
-                <Button outlined severity="danger" onClick={handleDeleteQuota}>
-                    <i className="pi pi-trash" />
-                </Button>
-            </div>
+            <ActionAccessComponent action={ActionType.EditCategoriesAll} >
+                <div className="flex justify-content-end gap-2">
+                    {!selectedQuota.active &&
+                    <Button
+                        className="text-yellow-800"
+                        outlined
+                        tooltip={t('set_active_quota')}
+                        onClick={handleSetActiveQuota}
+                    >
+                        <i className="pi pi-star-fill" />
+                    </Button>}
+                    <Button outlined onClick={handleEditQuota}>
+                        <i className="pi pi-pencil" />
+                    </Button>
+                    <Button outlined severity="danger" onClick={handleDeleteQuota}>
+                        <i className="pi pi-trash" />
+                    </Button>
+                </div>
+            </ActionAccessComponent>
         </div>
     );
 };

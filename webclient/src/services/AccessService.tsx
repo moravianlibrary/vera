@@ -1,10 +1,11 @@
 import { Outlet } from "react-router-dom";
 import { useToast } from "../contexts/toast/ToastContext";
 import { useTranslation } from "react-i18next";
-import { useEffect } from "react";
+import { ReactNode, useEffect } from "react";
 import { useUser } from "../contexts/user/UserContext";
 import ApiUser from "../adapters/ApiUser";
 import { ActionType } from "../types/ActionType";
+import React from "react";
 
 class AccessService {
     async getCurrentUser() {
@@ -39,45 +40,20 @@ export const ActionAccessRoute = ({ action = null }) => {
         : null;
 };
 
-export const ActionAccessComponent = ({ action = null, component }) => {
+interface ActionAccessComponentProps {
+    action: ActionType;
+    children: ReactNode;
+}
+
+export const ActionAccessComponent: React.FC<ActionAccessComponentProps> = ({ action, children }) => {
     const { user } = useUser();
 
-    return (
-        user?.actions && (!action ||user.actions.includes(action))
-        ? (<>{component}</>)
-        : null);
-};
-
-// export const ProtectedRoute = ({ ...rest }) => {
-export const ProtectedRoute = () => {
-    const { user } = useUser();
-    const showToast = useToast();
-    const { t } = useTranslation();
-
-    useEffect(() => {
-        if (!user || !user.access_token || user.access_token === "") {
-            // showToast('error', t('insufficient_rights_title'), t('insufficient_rights_body'))
-        }
-    }, []);
-
-    if (!user || !user.access_token || user.access_token === "") {
+    if (!user || !user.actions?.includes(action)) {
+        // return (<div></div>)
         return null;
     }
 
-    return <Outlet />;
-
-    // return (
-    //     <Route
-    //     {...rest}
-    //     render={(props) =>
-    //         auth.isAuthenticated === true ? (
-    //         <Component {...props} />
-    //         ) : (
-    //         <Redirect to="/login" />
-    //         )
-    //     }
-    //     />
-    // );
+    return <>{children}</>;
 };
 
 export const accessService = new AccessService();

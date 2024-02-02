@@ -15,22 +15,18 @@ const Navbar = () => {
     <nav className='navbar'>
       <ul className="navbar">
         <li className='navbar-button'><Link to="/">{t("home")}</Link></li>
-        <ActionAccessComponent
-          action={ActionType.ReadDatatableOwn} 
-          component={<li><Link to="/board">{t("board")}</Link></li>}
-        />
-        <ActionAccessComponent
-          action={ActionType.EditCategories} 
-          component={<li><Link to="/categories">{t("categories")}</Link></li>}
-        />
-        <ActionAccessComponent
-          action={ActionType.EditCategories} 
-          component={<li><Link to="/tasks">{t("tasks")}</Link></li>}
-        />
-        <ActionAccessComponent
-          action={ActionType.EditAccess} 
-          component={<li><Link to="/access">{t("access")}</Link></li>}
-        />
+        <ActionAccessComponent action={ActionType.ReadDatatable}>
+          <li><Link to="/board">{t("board")}</Link></li>
+        </ActionAccessComponent>
+        <ActionAccessComponent action={ActionType.ReadCategories}>
+          <li><Link to="/categories">{t("categories")}</Link></li>
+        </ActionAccessComponent>
+        <ActionAccessComponent action={ActionType.PlanTasks}>
+          <li><Link to="/tasks">{t("tasks")}</Link></li>
+        </ActionAccessComponent>
+        <ActionAccessComponent action={ActionType.EditAccess}>
+          <li><Link to="/access">{t("access")}</Link></li>
+        </ActionAccessComponent>
         <li className="right"><Login /></li>
         {/* <ActionAccessComponent
           action={null}
