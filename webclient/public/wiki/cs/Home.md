@@ -9,3 +9,13 @@ Repozitár s aplikáciou sa nachádza [tu](https://gitlab.mzk.cz/osdd/vera). Do 
 - [Navigace](Navigation.md)
 - [Dokumenty](Documents.md)
   - [Vkládanie dokumentov](InsertDocuments.md)
+
+#### Plánovaný vývoj
+- extrakcia dokumentov pre digitalizáciu
+- možnosť sekvenčného vkladania dokumentov
+- vyhľadávanie v dokumentoch
+- možnosť označiť všetky dokumenty, ktoré spadajú do vyhľadávania a vykonávať akcie nad týmito dokumentami
+- možnosť exportovať označené dokumenty do súbora (texťák, excel, ...)
+- priradenie kategórie k nejakému oddeleniu
+- agregované informácie o dokumentoch
+- záloha databázi do json-u, obnovenie zo zálohy
