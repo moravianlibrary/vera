@@ -63,13 +63,13 @@ const CategoriesChartUpdate: React.FC<CategoriesChartUpdateProps> = ({ node }) =
                 </div>
                 <InputText
                     placeholder={t('name')}
-                    keyfilter={/^[a-zA-Z0-9\s]+$/}
+                    keyfilter={new RegExp('^[0-9\\p{L}\\s\\.,!?]*$', 'u')}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                 /> 
                 <InputTextarea
                     placeholder={t('description')}
-                    keyfilter={/^[a-zA-Z0-9\s,:\.]+$/}
+                    keyfilter={new RegExp('^[0-9\\p{L}\\s\\.,!?]*$', 'u')}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                 />

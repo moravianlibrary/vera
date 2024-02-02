@@ -10,8 +10,8 @@ const keycloakProperties = {
 };
 
 export const keycloakInitOptions = {
-    // onLoad: 'check-sso',
-    // silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+    onLoad: 'check-sso',
+    silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
     pkceMethod: 'S256',
 };
 

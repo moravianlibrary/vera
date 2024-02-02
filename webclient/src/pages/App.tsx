@@ -15,6 +15,7 @@ import { UserProvider } from '../contexts/user/UserContext';
 import { DataProvider } from '../services/Data';
 import Tasks from './Tasks';
 import { ActionType } from '../types/ActionType';
+import Home from './Home';
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
                   <Navbar />
                   <main>
                     <Routes>
+                      <Route path="/" element={<Home />} />
                       <Route path="/login" element={<Login />} />
                       <Route element={<ActionAccessRoute action={ActionType.ReadDatatable} />}>
                         <Route path="/board" element={<Documents />} />

@@ -61,7 +61,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
 
     const handleKeycloakEvent = (eventType, error) => {
-        if (eventType === 'onReady') {
+        if (eventType === 'onReady' || eventType === 'onAuthRefreshSuccess') {
             if (keycloak.authenticated && keycloak.token) {
                 localStorage.setItem('token', keycloak.token);
                 getCurrentUser();
