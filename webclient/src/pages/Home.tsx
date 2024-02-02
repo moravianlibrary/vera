@@ -71,6 +71,7 @@ export const Wiki: React.FC<WikiProps> = ({ language }) => {
     const wikiToolbar: React.FC = () => {
         return (
             <div className="flex gap-3 align-items-center">
+                <img src="/logo48.png" />
                 <strong style={{ fontSize: '1.5em' }} >Wiki</strong>
                 <div className="p-inputgroup">
                     <Button className="pi pi-home" outlined disabled={page === "Home.md"} onClick={() => handleClickOnPage("Home.md")} />
