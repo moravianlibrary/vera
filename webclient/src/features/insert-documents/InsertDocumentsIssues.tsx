@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Button } from "primereact/button";
 import { Panel } from 'primereact/panel';
 
-import { useData } from "../../services/Data.js";
 import IssuanceType from "../../documents/models/IssuanceType.js";
 import naturalSort from "../../documents/SortUtils.js";
 import { useTranslation } from "react-i18next";
@@ -18,7 +17,6 @@ interface InsertDocumentsIssuesProps {
 }
 
 const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
-    const { dataService } = useData();
     const { chooseIssuesDocuments, createIssue, creatingIssues, createdIssues } = useInsertDocuments();
     const { t } = useTranslation();
 
@@ -61,7 +59,7 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
 
     return (
         <div>
-            <div className="flex flex-column overflow-auto" style={{height: 'calc(100vh - 430px)'}}>
+            <div className="flex flex-column overflow-auto" style={{maxHeight: 'calc(100vh - 430px)'}} >
                 {editions && editions.length > 0 &&
                 getIssuesDiv("Edice", editions)}
                 {volumes && volumes.length > 0 &&
