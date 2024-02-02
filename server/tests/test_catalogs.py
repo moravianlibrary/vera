@@ -14,7 +14,7 @@ class TestAlephCatalog(unittest.TestCase):
 
     def test_get_one_edition_document(self):
         identifier = Identifier(
-            identifier_type=IdentifierType.SYSNO,
+            identifier_type=IdentifierType.Sysno,
             value="MZK01-000724903"
         )
         document, create_result = generate_document_by_identifier(identifier)
@@ -43,7 +43,7 @@ class TestAlephCatalog(unittest.TestCase):
 
     def test_get_multiple_issues_document(self):
         identifier = Identifier(
-            identifier_type=IdentifierType.SYSNO,
+            identifier_type=IdentifierType.Sysno,
             value="MZK01-001273598"
         )
         document, create_result = generate_document_by_identifier(identifier)
@@ -72,11 +72,27 @@ class TestAlephCatalog(unittest.TestCase):
 
     def test_find_document_by_barcode(self):
         identifier = Identifier(
-            identifier_type=IdentifierType.BARCODE,
+            identifier_type=IdentifierType.Barcode,
             value="2610629074"
         )
         document, create_result = generate_document_by_identifier(identifier)
         self.assertEqual(document.sysno, "MZK01-001449649")
+
+    def test_find_document_by_signature(self):
+        identifier = Identifier(
+            identifier_type=IdentifierType.Signature,
+            value="OB3-0114.497"
+        )
+        document, create_result = generate_document_by_identifier(identifier)
+        self.assertEqual(document.sysno, "MZK01-001091763")
+
+    def test_find_document_by_signature_2(self):
+        identifier = Identifier(
+            identifier_type=IdentifierType.Signature,
+            value="Bf3-0289.114"
+        )
+        document, create_result = generate_document_by_identifier(identifier)
+        self.assertEqual(document.sysno, "MZK01-001091763")
 
 
 class TestDigitizationRegister(unittest.TestCase):
@@ -86,6 +102,6 @@ class TestDigitizationRegister(unittest.TestCase):
     def test_get_state_by_barcode(self):
         from catalogs.digitization_registry import get_state_by_identifier
         self.assertEqual(get_state_by_identifier(
-            Identifier(identifier_type=IdentifierType.BARCODE,
+            Identifier(identifier_type=IdentifierType.Barcode,
                        value="2619213824")),
                          DigitizationState.FINISHED)
