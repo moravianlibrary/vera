@@ -49,25 +49,28 @@ def upgrade() -> None:
         op.execute("""
             UPDATE actions
             SET new_action_column = CASE
-                WHEN action = 'read_datatable_own' THEN 'ReadDatatableOwn'
-                WHEN action = 'read_datatable_department' THEN 'ReadDatatableDepartment'
-                WHEN action = 'read_datatable_all' THEN 'ReadDatatableAll'
-                WHEN action = 'edit_datatable_own' THEN 'EditDatatableOwn'
-                WHEN action = 'edit_datatable_department' THEN 'EditDatatableDepartment'
-                WHEN action = 'edit_datatable_all' THEN 'EditDatatableAll'
-                WHEN action = 'write_datatable' THEN 'WriteDatatable'
-                WHEN action = 'insert_datatable' THEN 'InsertDatatable'
-                WHEN action = 'comment_on_datatable' THEN 'CommentOnDatatable'
-                WHEN action = 'edit_categories' THEN 'EditCategoriesAll'
-                WHEN action = 'edit_access' THEN 'EditAccess'
-                WHEN action = 'extract' THEN 'Extract'
-                ELSE action
+                WHEN action = 'read_datatable_own' THEN 'ReadDatatableOwn'::new_actiontype
+                WHEN action = 'read_datatable_department' THEN 'ReadDatatableDepartment'::new_actiontype
+                WHEN action = 'read_datatable_all' THEN 'ReadDatatableAll'::new_actiontype
+                WHEN action = 'edit_datatable_own' THEN 'EditDatatableOwn'::new_actiontype
+                WHEN action = 'edit_datatable_department' THEN 'EditDatatableDepartment'::new_actiontype
+                WHEN action = 'edit_datatable_all' THEN 'EditDatatableAll'::new_actiontype
+                WHEN action = 'write_datatable' THEN 'WriteDatatable'::new_actiontype
+                WHEN action = 'insert_datatable' THEN 'InsertDatatable'::new_actiontype
+                WHEN action = 'comment_on_datatable' THEN 'CommentOnDatatable'::new_actiontype
+                WHEN action = 'edit_categories' THEN 'EditCategoriesAll'::new_actiontype
+                WHEN action = 'edit_access' THEN 'EditAccess'::new_actiontype
+                WHEN action = 'extract' THEN 'Extract'::new_actiontype
             END;
         """)
 
         op.execute("ALTER TABLE actions DROP COLUMN action;")
 
         op.execute("ALTER TABLE actions RENAME COLUMN new_action_column TO action;")
+
+        op.execute("DROP TYPE IF EXISTS actiontype;")
+
+        op.execute("ALTER TYPE new_actiontype RENAME TO actiontype;")
 
 
 def downgrade() -> None:
@@ -97,22 +100,25 @@ def downgrade() -> None:
         op.execute("""
             UPDATE actions
             SET old_action_column = CASE
-                WHEN action = 'ReadDatatableOwn' THEN 'read_datatable_own'
-                WHEN action = 'ReadDatatableDepartment' THEN 'read_datatable_department'
-                WHEN action = 'ReadDatatableAll' THEN 'read_datatable_all'
-                WHEN action = 'EditDatatableOwn' THEN 'edit_datatable_own'
-                WHEN action = 'EditDatatableDepartment' THEN 'edit_datatable_department'
-                WHEN action = 'EditDatatableAll' THEN 'edit_datatable_all'
-                WHEN action = 'WriteDatatable' THEN 'write_datatable'
-                WHEN action = 'InsertDatatable' THEN 'insert_datatable'
-                WHEN action = 'CommentOnDatatable' THEN 'comment_on_datatable'
-                WHEN action = 'EditCategoriesAll' THEN 'edit_categories'
-                WHEN action = 'EditAccess' THEN 'edit_access'
-                WHEN action = 'Extract' THEN 'extract'
-                ELSE action
+                WHEN action = 'ReadDatatableOwn' THEN 'read_datatable_own'::old_actiontype
+                WHEN action = 'ReadDatatableDepartment' THEN 'read_datatable_department'::old_actiontype
+                WHEN action = 'ReadDatatableAll' THEN 'read_datatable_all'::old_actiontype
+                WHEN action = 'EditDatatableOwn' THEN 'edit_datatable_own'::old_actiontype
+                WHEN action = 'EditDatatableDepartment' THEN 'edit_datatable_department'::old_actiontype
+                WHEN action = 'EditDatatableAll' THEN 'edit_datatable_all'::old_actiontype
+                WHEN action = 'WriteDatatable' THEN 'write_datatable'::old_actiontype
+                WHEN action = 'InsertDatatable' THEN 'insert_datatable'::old_actiontype
+                WHEN action = 'CommentOnDatatable' THEN 'comment_on_datatable'::old_actiontype
+                WHEN action = 'EditCategoriesAll' THEN 'edit_categories'::old_actiontype
+                WHEN action = 'EditAccess' THEN 'edit_access'::old_actiontype
+                WHEN action = 'Extract' THEN 'extract'::old_actiontype
             END;
         """)
 
         op.execute("ALTER TABLE actions DROP COLUMN action;")
 
         op.execute("ALTER TABLE actions RENAME COLUMN old_action_column TO action;")
+
+        op.execute("DROP TYPE IF EXISTS actiontype;")
+
+        op.execute("ALTER TYPE old_actiontype RENAME TO actiontype;")
