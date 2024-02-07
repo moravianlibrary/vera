@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from services.database import get_db
@@ -8,6 +8,14 @@ from extractions import crud, schemas
 
 
 router = APIRouter()
+
+
+@router.post("/extract/generate", response_model=schemas.Extraction)
+def generate_extraction(pages_count: int = Query(0),
+                        db: Session = Depends(get_db)):
+    if pages_count <= 0:
+        return
+    pass
 
 
 @router.post("/extract", response_model=schemas.Extraction)

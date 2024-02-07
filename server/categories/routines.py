@@ -14,6 +14,7 @@ def get_category_subtree(category: schemas.Category,
         level=category.level,
         assignable=category.assignable,
         percentage=category.percentage,
+        extract_whole=category.extract_whole,
         disabled=category.disabled,
         departments=[d[0] for d
                      in crud.get_category_departments(category.id, db)],

@@ -21,3 +21,11 @@ def create_extraction(extraction: schemas.ExtractionCreate,
                    .values(extraction_id=db_extraction.id))
 
     return db_extraction
+
+
+def get_category_documents(category_id: int,
+                           db: Session):
+    return db.query(models.Document).filter(
+        models.Document.category_id == category_id,
+        models.Document.extracted.is_(False),
+    ).all()

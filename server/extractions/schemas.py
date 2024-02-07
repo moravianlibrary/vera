@@ -15,3 +15,8 @@ class Extraction(ExtractionBase):
     id: int
     extractor_id: int
     extracted_at: datetime
+
+
+class DocumentPagesCount(BaseModel):
+    id: int
+    pages_count: int
