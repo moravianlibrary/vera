@@ -7,6 +7,19 @@ from extractions.schemas import DocumentPagesCount, ExtractionCreateBase
 # from extractions.crud import get_category_documents
 
 
+class CategoryNode:
+    def __init__(self, category, parent_node):
+        self.category = category
+        self.parent_node = parent_node
+        self.pages_count = 0
+
+    def set_pages_count(self, pages_count):
+        self.pages_count = pages_count
+
+    def get_pages_count_limit(self):
+        
+
+
 def generate_extraction(props: ExtractionCreateBase,
                         target_pages: int,
                         db: Session):
@@ -53,7 +66,7 @@ def generate_extraction(props: ExtractionCreateBase,
             )
             selected_pages += child_pages
             if props.balance_total_pages:
-                missing_from_prev = child_quota - child_pages
+                missing_from_prev = child_pages - child_quota
             elif child_pages < child_quota:
                 missing_from_prev = child_quota - child_pages
 
