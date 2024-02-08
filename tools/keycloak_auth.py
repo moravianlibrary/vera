@@ -26,3 +26,7 @@ def get_token():
     if r.ok:
         return r.json()[TOKEN_KEY]
 
+
+if __name__ == "__main__":
+    print(get_token())
+
