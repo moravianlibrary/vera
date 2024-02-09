@@ -13,9 +13,10 @@ class TestExtractions(unittest.TestCase):
         from extractions.routines import generate_extraction
         from extractions.schemas import ExtractionCreateBase
         selected_ids, selected_pages_count = generate_extraction(
-            ExtractionCreateBase(), 1000, self.db
+            ExtractionCreateBase(), 994, self.db
         )
         print(selected_ids)
+        print(selected_pages_count)
 
     def test_extract_one_document(self):
         from extractions.routines import generate_extraction
