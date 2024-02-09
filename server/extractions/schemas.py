@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import List
 
+from categories.schemas import CategoryNode
+
 
 class ExtractionBase(BaseModel):
     pass
@@ -33,3 +35,13 @@ class Extraction(ExtractionBase):
 class DocumentPagesCount(BaseModel):
     id: int
     pages_count: int
+
+
+class ExtractionCategoryNode(CategoryNode):
+    extracted_pages_count: int
+    extracted_documents_count: int
+
+
+class Extractions(BaseModel):
+    extractions: List[Extraction]
+    num_found: int
