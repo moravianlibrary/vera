@@ -21,6 +21,9 @@ const Navbar = () => {
         <ActionAccessComponent action={ActionType.ReadCategories}>
           <li><Link to="/categories">{t("categories")}</Link></li>
         </ActionAccessComponent>
+        <ActionAccessComponent action={ActionType.Extract}>
+          <li><Link to="/extractions">{t("extractions")}</Link></li>
+        </ActionAccessComponent>
         <ActionAccessComponent action={ActionType.PlanTasks}>
           <li><Link to="/tasks">{t("tasks")}</Link></li>
         </ActionAccessComponent>

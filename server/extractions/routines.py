@@ -3,8 +3,10 @@ from typing import Dict, List, Optional
 
 from categories import crud
 from categories.schemas import Category
-from extractions.schemas import DocumentPagesCount, ExtractionCreateBase
+from extractions.schemas import DocumentPagesCount, ExtractionCreate, \
+    ExtractionCategoryNode
 # from extractions.crud import get_category_documents
+from extractions.crud import get_extraction_documents
 
 
 class CategoryNode:
@@ -174,7 +176,7 @@ def bottom_up_generator_rec(category_id: int,
     bottom_up_generator_rec(parent_id, category_nodes, category_nodes, db)
 
 
-def generate_extraction(props: ExtractionCreateBase,
+def generate_extraction(props: ExtractionCreate,
                         target_pages: int,
                         db: Session):
     target_pages_threshold: float = max(props.target_pages_threshold, .0)
@@ -328,3 +330,36 @@ def select_within_threshold(category_node: CategoryLeaf,
 
     # backtrack(0, target_pages)
     # return selected_documents, selected_pages_count
+
+
+def get_category_subtree(extraction_id,
+                         category: Category,
+                         db: Session):
+    documents = get_extraction_documents(
+        extraction_id, db, category.id
+    )
+    extracted_pages_count = 0
+    for document in documents:
+        extracted_pages_count += document.pages_count
+
+    return ExtractionCategoryNode(
+        id=category.id,
+        name=category.name,
+        description=category.description,
+        parent_id=category.parent_id,
+        level=category.level,
+        assignable=category.assignable,
+        percentage=category.percentage,
+        extract_whole=category.extract_whole,
+        disabled=category.disabled,
+        departments=[d[0] for d
+                     in crud.get_category_departments(category.id, db)],
+        children=[get_category_subtree(extraction_id, child, db)
+                  for child in crud.get_children_categories(category.id, db)],
+        count_pages=crud.get_pages_count(category.id, db),
+        count_documents_with_pages=(
+            crud.get_documents_count(category.id, True, db)),
+        count_documents=crud.get_documents_count(category.id, False, db),
+        extracted_pages_count=extracted_pages_count,
+        extracted_documents_count=len(documents)
+    )

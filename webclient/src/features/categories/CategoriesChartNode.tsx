@@ -27,6 +27,36 @@ const CategoriesChartNode: React.FC<CategoriesChartNodeProps> = ({ node }) => {
         }
     }
 
+    const categoriesStats = () => {
+        return (
+            <div className="flex flex-column align-items-start">
+                {missingPagesCount > 0 &&
+                <div className="text-red-700"><span className="font-bold">{missingPagesCount}</span> {t('category_missing_count_pages')}</div>}
+                <div><span className="font-bold">{node.count_pages}</span> {t('category_count_pages')}</div>
+                <div><span className="font-bold">{node.count_documents_with_pages}</span> {t('category_count_documents_with_pages')}</div>
+                <div><span className="font-bold">{node.count_documents}</span> {t('category_count_documents')}</div>
+            </div>
+        );
+    }
+
+    const extractedCategoriesStats = () => {
+        return (
+            <div className="flex flex-column align-items-start">
+                {/* {missingPagesCount > 0 &&
+                <div className="text-red-700"><span className="font-bold">{missingPagesCount}</span> {t('category_missing_count_pages')}</div>} */}
+                <div>
+                    <span className="font-bold">{node.extracted_pages_count}/{node.count_pages}</span>
+                    {t(' extracted pages')}
+                </div>
+                <div>
+                    <span className="font-bold">{node.extracted_documents_count}/{node.count_documents_with_pages}</span>
+                    {t(' extracted documents')}
+                </div>
+                <div><span className="font-bold">{node.count_documents}</span> {t('category_count_documents')}</div>
+            </div>
+        );
+    }
+
     return (
     <div className="flex flex-column w-max">
             <div className="flex justify-content-between align-items-baseline gap-2">
@@ -43,13 +73,10 @@ const CategoriesChartNode: React.FC<CategoriesChartNodeProps> = ({ node }) => {
                 </div>
                 <CategoryPercentage node={node} />
             </div>
-            <div className="flex flex-column align-items-start">
-                {missingPagesCount > 0 &&
-                <div className="text-red-700"><span className="font-bold">{missingPagesCount}</span> {t('category_missing_count_pages')}</div>}
-                <div><span className="font-bold">{node.count_pages}</span> {t('category_count_pages')}</div>
-                <div><span className="font-bold">{node.count_documents_with_pages}</span> {t('category_count_documents_with_pages')}</div>
-                <div><span className="font-bold">{node.count_documents}</span> {t('category_count_documents')}</div>
-            </div>
+                {!node.extracted &&
+                categoriesStats()}
+                {node.extracted &&
+                extractedCategoriesStats()}
         </div>
     );
 };

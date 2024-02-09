@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import update
-from typing import List
+from sqlalchemy import and_, desc, update
+from typing import List, Optional
 
 from services.database import create
 from documents.models import Document
@@ -45,6 +45,23 @@ def get_category_documents(category_id: int,
     ).all()
 
 
+def get_extraction_documents(extraction_id: int,
+                             db: Session,
+                             category_id: Optional[int] = None):
+    query_base = (
+        db.query(Document.id, Document.pages_count, Document.category_id)
+        .join(models.Extraction, and_(
+            models.Extraction.id == extraction_id,
+            models.Extraction.document_ids.any(Document.id)
+        ))
+    )
+    if category_id:
+        query_base = query_base.filter(
+            Document.category_id == category_id
+        )
+    return query_base.all()
+
+
 def get_extraction(extraction_id: int,
                    db: Session):
     return (db.query(models.Extraction)
@@ -53,8 +70,9 @@ def get_extraction(extraction_id: int,
 
 def get_extractions(db: Session,
                     offset: int = 0,
-                    limit: int = 50):
+                    limit: int = 50) -> List[models.Extraction]:
     return (db.query(models.Extraction)
+            .order_by(desc(models.Extraction.id))
             .offset(offset).limit(limit)
             .all())
 

@@ -20,6 +20,10 @@ interface Category extends CreateCategory {
     count_documents_with_pages: number;
     count_documents: number;
 
+    
+    extracted_pages_count?: number;
+    extracted_documents_count?: number;
+
     children: Category[];
 }
 
@@ -49,6 +53,10 @@ interface Quota extends CreateQuota {
 namespace ApiCategories {
     export function getCategories() {
         return axiosInstance.get<Category[]>("/categories", { headers: authHeader() });
+    }
+
+    export function getExtractionCategories(extractionId: number) {
+        return axiosInstance.get<Category[]>(`/extractions/${extractionId}/categories`, { headers: authHeader() });
     }
 
     export function getAssignableCategories() {

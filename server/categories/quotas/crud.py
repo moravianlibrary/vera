@@ -62,3 +62,10 @@ def get_quota_by_name(name: str,
     return (db.query(models.Quota)
             .filter(models.Quota.name == name)
             .first())
+
+
+def get_quota(quota_id: int,
+              db: Session):
+    return (db.query(models.Quota)
+            .filter(models.Quota.id == quota_id)
+            .first())

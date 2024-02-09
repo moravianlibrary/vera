@@ -9,11 +9,20 @@ class TestExtractions(unittest.TestCase):
         from services.database import get_db
         self.db = next(get_db())
 
+    def test_crud_on_live_db(self):
+        from extractions.crud import get_extractions
+        for extraction in get_extractions(self.db):
+            print(
+                extraction.id, extraction.extractor,
+                extraction.extracted_at,
+                extraction.document_ids
+            )
+
     def test_on_live_db(self):
         from extractions.routines import generate_extraction
-        from extractions.schemas import ExtractionCreateBase
+        from extractions.schemas import ExtractionCreate
         selected_ids, selected_pages_count = generate_extraction(
-            ExtractionCreateBase(), 994, self.db
+            ExtractionCreate(), 994, self.db
         )
         print(selected_ids)
         print(selected_pages_count)
@@ -21,7 +30,7 @@ class TestExtractions(unittest.TestCase):
     def test_extract_one_document(self):
         from extractions.routines import generate_extraction
         from extractions.schemas import DocumentPagesCount, \
-            ExtractionCreateBase
+            ExtractionCreate
         from categories.models import Category
 
         category_documents = [
@@ -39,25 +48,25 @@ class TestExtractions(unittest.TestCase):
                 mock_get_root_categories.return_value = categories
 
                 selected_ids, selected_pages_count = generate_extraction(
-                    ExtractionCreateBase(), 10, self.db
+                    ExtractionCreate(), 10, self.db
                 )
                 self.assertListEqual([1], selected_ids)
                 self.assertEqual(10, selected_pages_count)
 
                 selected_ids, selected_pages_count = generate_extraction(
-                    ExtractionCreateBase(), 11, self.db
+                    ExtractionCreate(), 11, self.db
                 )
                 self.assertListEqual([1], selected_ids)
                 self.assertEqual(10, selected_pages_count)
 
                 selected_ids, selected_pages_count = generate_extraction(
-                    ExtractionCreateBase(), 9, self.db
+                    ExtractionCreate(), 9, self.db
                 )
                 self.assertListEqual([], selected_ids)
                 self.assertEqual(0, selected_pages_count)
 
                 selected_ids, selected_pages_count = generate_extraction(
-                    ExtractionCreateBase(
+                    ExtractionCreate(
                         target_pages_threshold=0.1
                     ), 11, self.db
                 )
@@ -67,7 +76,7 @@ class TestExtractions(unittest.TestCase):
     def test_extract_whole_document(self):
         from extractions.routines import generate_extraction
         from extractions.schemas import DocumentPagesCount, \
-            ExtractionCreateBase
+            ExtractionCreate
         from categories.models import Category
 
         category_documents = [
@@ -89,25 +98,25 @@ class TestExtractions(unittest.TestCase):
                     mock_get_root_categories.return_value = 10
 
                     selected_ids, selected_pages_count = generate_extraction(
-                        ExtractionCreateBase(), 10, self.db
+                        ExtractionCreate(), 10, self.db
                     )
                     self.assertListEqual([1], selected_ids)
                     self.assertEqual(10, selected_pages_count)
 
                     selected_ids, selected_pages_count = generate_extraction(
-                        ExtractionCreateBase(), 11, self.db
+                        ExtractionCreate(), 11, self.db
                     )
                     self.assertListEqual([1], selected_ids)
                     self.assertEqual(10, selected_pages_count)
 
                     selected_ids, selected_pages_count = generate_extraction(
-                        ExtractionCreateBase(), 9, self.db
+                        ExtractionCreate(), 9, self.db
                     )
                     self.assertListEqual([], selected_ids)
                     self.assertEqual(0, selected_pages_count)
 
                     selected_ids, selected_pages_count = generate_extraction(
-                        ExtractionCreateBase(
+                        ExtractionCreate(
                             include_whole_categories=True
                         ), 9, self.db
                     )
@@ -115,7 +124,7 @@ class TestExtractions(unittest.TestCase):
                     self.assertEqual(10, selected_pages_count)
 
                     selected_ids, selected_pages_count = generate_extraction(
-                        ExtractionCreateBase(
+                        ExtractionCreate(
                             whole_categories_threshold=0.2
                         ), 9, self.db
                     )
@@ -123,7 +132,7 @@ class TestExtractions(unittest.TestCase):
                     self.assertEqual(10, selected_pages_count)
 
                     selected_ids, selected_pages_count = generate_extraction(
-                        ExtractionCreateBase(
+                        ExtractionCreate(
                             whole_categories_threshold=0.1
                         ), 9, self.db
                     )

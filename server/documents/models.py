@@ -1,5 +1,6 @@
-from sqlalchemy import ARRAY, Column, Enum, ForeignKey, Integer, String, \
+from sqlalchemy import Column, Enum, ForeignKey, Integer, String, \
     TIMESTAMP, UniqueConstraint, func
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Session
 
 from services.database import Base

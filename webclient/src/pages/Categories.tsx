@@ -27,13 +27,14 @@ const Categories: React.FC<CategoriesProps> = (props) => {
 };
 
 const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
-    const { categories } = useCategories();
+    const { categories, extractionId } = useCategories();
     const { selectedQuota } = useQuotas();
 
     return (
         <CategoryNodesProvider
             categories={categories}
             selectedQuota={selectedQuota}
+            extractedCategories={extractionId !== null}
         >
             <div
                 style={{ height: "calc(100vh - 60px)" }}
