@@ -28,7 +28,7 @@ def create_extraction(props: schemas.ExtractionCreate,
         raise EmptyExtraction
 
     selected_documents, selected_pages_count = generate_extraction(
-        props, props.pages_count, db
+        props, pages_count, db
     )
     extraction = crud.create_extraction(
         user.username, selected_documents, db
