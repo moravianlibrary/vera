@@ -22,7 +22,7 @@ class TestExtractions(unittest.TestCase):
         from extractions.routines import generate_extraction
         from extractions.schemas import ExtractionCreate
         selected_ids, selected_pages_count = generate_extraction(
-            ExtractionCreate(), 994, self.db
+            ExtractionCreate(), 15000, self.db
         )
         print(selected_ids)
         print(selected_pages_count)

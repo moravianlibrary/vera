@@ -15,7 +15,7 @@ interface CategoriesProviderProps {
 
 export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({ children }) => {
     const [categories, setCategories] = useState<Category[] | undefined>(undefined);
-    const [extractionId, setExtractionId] = useState<number | null>(4);
+    const [extractionId, setExtractionId] = useState<number | null>(8);
 
     const loadCategories = async () => {
         ApiCategories.getCategories()

@@ -59,7 +59,10 @@ class CategoryNode:
                                                    self.pages_count)
 
     def get_difference_for_child(self, child: 'CategoryNode'):
-        if self.difference == 0:
+        difference = self.difference
+        if self.parent_node:
+            difference += self.parent_node.get_difference_for_child(self)
+        if difference == 0:
             return 0
 
         active_children_percentage = [
@@ -67,9 +70,9 @@ class CategoryNode:
             for child in self.children if not child.is_done
         ]
         if len(active_children_percentage) == 1:
-            return self.difference
+            return difference
 
-        return int((self.difference * child.category.percentage)
+        return int((difference * child.category.percentage)
                    / sum(active_children_percentage))
 
     def get_target_pages(self):
@@ -101,6 +104,14 @@ class CategoryLeaf(CategoryNode):
         self.is_done = True
         self.parent_node.add_child_pages_count(self.target_pages, pages_count)
 
+    def get_fullfilment_ratio(self, db: Session):
+        from extractions.crud import get_category_documents
+        category_id = self.category.id
+        pages_count = sum([document.pages_count
+                           for document
+                           in get_category_documents(category_id, db)])
+        return float(pages_count) / self.get_target_pages()
+
     def __repr__(self):
         return (f"CategoryLeaf(category={self.category}, "
                 f"target_pages={self.target_pages}, "
@@ -129,14 +140,6 @@ def bottom_up_generator(target_pages: int, db: Session):
 
     clustered_nodes[0][0].populate_children(None, target_pages)
     return assignable_nodes
-    print(clustered_nodes.keys())
-    curr = clustered_nodes[0][0]
-    next = []
-    while curr is not None:
-        id_ = curr.category.id if curr.category else None
-        print(f"{id_}: {curr.target_pages}")
-        next.extend(curr.children)
-        curr = next.pop() if next else None
 
 
 def bottom_up_generator_rec(category_id: int,
@@ -213,6 +216,7 @@ def generate_extraction(props: ExtractionCreate,
         selected_documents.extend(document_ids)
         selected_pages_count += pages_count
 
+    other_nodes.sort(key=lambda node: node.get_fullfilment_ratio(db))
     for node in other_nodes:
         document_ids, pages_count = select_within_threshold(
             node, target_pages_threshold, 1000, db)
@@ -255,7 +259,6 @@ def select_within_threshold(category_node: CategoryLeaf,
 
     selected_documents = []
     selected_pages_count = 0
-    lower_limit = int(target_pages * (1 - threshold))
     upper_limit = int(target_pages * (1 + threshold))
 
     n = len(documents)
@@ -265,7 +268,7 @@ def select_within_threshold(category_node: CategoryLeaf,
     selected_docs = [[False] * (dp_y_size + 1) for _ in range(n + 1)]
 
     def get_scaled_pages_count(index: int) -> int:
-        return documents[i].pages_count
+        return documents[index].pages_count
 
     for count in range(dp_y_size + 1):
         dp[n][count] = count
@@ -291,8 +294,7 @@ def select_within_threshold(category_node: CategoryLeaf,
             j += documents[i].pages_count
         i += 1
 
-    if (selected_pages_count < lower_limit
-            or upper_limit < selected_pages_count):
+    if (upper_limit < selected_pages_count):
         return [], 0
 
     return selected_documents, selected_pages_count
