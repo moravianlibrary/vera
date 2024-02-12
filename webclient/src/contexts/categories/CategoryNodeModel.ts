@@ -133,7 +133,12 @@ export class CategoryNode {
     }
 
     updateChildren(children: Category[]) {
-        this.children.forEach((child, index) => child.updateChildren(children[index].children));
+        this.children.forEach((child, index) => child.update(children[index]));
+    }
+
+    update(category: Category) {
+        this.category = category;
+        this.children.forEach((child, index) => child.update(category.children[index]));
     }
 
     aggregateStats(quotaPagesCount: number) {

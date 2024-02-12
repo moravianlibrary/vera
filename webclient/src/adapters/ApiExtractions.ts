@@ -12,6 +12,7 @@ interface Extraction {
     id: number;
     extractor: string;
     extracted_at: string;
+    target_pages: number;
     document_ids: number[];
 }
 

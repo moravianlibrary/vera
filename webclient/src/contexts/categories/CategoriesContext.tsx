@@ -5,6 +5,7 @@ import ApiExtractions from "../../adapters/ApiExtractions";
 interface CategoriesContextProps {
     categories: Category[] | undefined;
     extractionId: number | null;
+    setExtractionId: (extractionId: number) => void;
 }
 
 const CategoriesContext = createContext<CategoriesContextProps | undefined>(undefined);
@@ -15,9 +16,10 @@ interface CategoriesProviderProps {
 
 export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({ children }) => {
     const [categories, setCategories] = useState<Category[] | undefined>(undefined);
-    const [extractionId, setExtractionId] = useState<number | null>(8);
+    const [extractionId, setExtractionId] = useState<number | null>(null);
 
     const loadCategories = async () => {
+        console.log(`Fetching categories from server.`);
         ApiCategories.getCategories()
         .then(response => {
             const transformedData: Category[] = response.data.map(category => {
@@ -30,6 +32,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({ children
     };
 
     const loadExtractionCategories = async () => {
+        console.log(`Fetching extraction categories from server.`);
         ApiCategories.getExtractionCategories(extractionId!)
         .then(response => {
             const transformedData: Category[] = response.data.map(category => {
@@ -42,17 +45,19 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({ children
     };
 
     useEffect(() => {
-        console.log(`Fetching categories from server.`);
-        if (extractionId === null) {
-            loadCategories();
-        } else {
-            loadExtractionCategories();
+        if (!categories) {
+            if (extractionId !== null) {
+                loadExtractionCategories();
+            } else {
+                loadCategories();
+            }
         }
-    }, []);
+    }, [categories, extractionId]);
 
     const contextValue: CategoriesContextProps = {
         categories,
         extractionId,
+        setExtractionId,
     };
 
     return (

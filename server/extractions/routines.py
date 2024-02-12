@@ -138,6 +138,9 @@ def bottom_up_generator(target_pages: int, db: Session):
     for parent_id in parent_ids:
         bottom_up_generator_rec(parent_id, clustered_nodes, category_nodes, db)
 
+    if not clustered_nodes:
+        return []
+
     clustered_nodes[0][0].populate_children(None, target_pages)
     return assignable_nodes
 

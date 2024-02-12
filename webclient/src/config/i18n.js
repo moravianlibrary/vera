@@ -214,6 +214,13 @@ const resources = {
         "Extraction allowed": "Povoleno extrahovat",
         "Editing access settings allowed": "Povoleno upravovat přístupová nastavení",
         "Administrating database allowed": "Povoleno spravovat databázi",
+
+        "Extractions": "Extrakce",
+        "Extractor": "Extrahoval",
+        "Extracted at": "Extrahováno",
+        "Target pages count": "Cílový počet stránek",
+        "Documents count": "Počet dokumentů",
+        "Show in categories": "Zobrazit v kategoriích",
     },
   },
 };

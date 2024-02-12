@@ -9,6 +9,7 @@ from services.exceptions import EmptyExtraction
 
 
 def create_extraction(username: str,
+                      target_pages: int,
                       document_ids: List[int],
                       db: Session):
     if not document_ids:
@@ -16,6 +17,7 @@ def create_extraction(username: str,
 
     return create(db, models.Extraction(
         extractor=username,
+        target_pages=target_pages,
         document_ids=document_ids
     ))
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import CategoriesMenuPanel from "../features/categories/CategoriesMenuPanel";
 import QuotasMenuPanel from "../features/categories/QuotasMenuPanel";
@@ -7,12 +7,13 @@ import { DepartmentsProvider, useDepartments } from "../contexts/departments/Dep
 import { CategoryNodesProvider } from "../contexts/categories/CategoryNodesContext";
 import CategoriesChart from "../features/categories/CategoriesChart";
 import { QuotasProvider, useQuotas } from "../contexts/categories/QuotasContext";
+import { useSearchParams } from "react-router-dom";
 
 interface CategoriesProps {}
 
 interface CategoriesDivProps {}
 
-const Categories: React.FC<CategoriesProps> = (props) => {
+const Categories: React.FC<CategoriesProps> = () => {
     return (
         <div style={{ overflow: "auto" }}>
             <CategoriesProvider>
@@ -27,8 +28,16 @@ const Categories: React.FC<CategoriesProps> = (props) => {
 };
 
 const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
-    const { categories, extractionId } = useCategories();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const { categories, extractionId, setExtractionId } = useCategories();
     const { selectedQuota } = useQuotas();
+
+    useEffect(() => {
+        if (searchParams.has("extractionId")) {
+            setExtractionId(parseInt(searchParams.get("extractionId")!, 10));
+        }
+    }, [searchParams, setExtractionId]);
 
     return (
         <CategoryNodesProvider

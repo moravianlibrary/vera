@@ -9,4 +9,5 @@ class Extraction(Base):
     id = Column(Integer, primary_key=True, index=True)
     extractor = Column(String, index=True)
     extracted_at = Column(TIMESTAMP, server_default=func.now())
+    target_pages = Column(Integer)
     document_ids = Column(ARRAY(Integer))

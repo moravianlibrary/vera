@@ -5,6 +5,7 @@ class ExtractionModel implements Extraction {
     id: number;
     extractor: string;
     extracted_at: string;
+    target_pages: number;
     document_ids: number[];
     documents_count: number;
 
@@ -12,6 +13,7 @@ class ExtractionModel implements Extraction {
         this.id = data.id;
         this.extractor = data.extractor;
         this.extracted_at = ExtractionModel.formatDatetime(data.extracted_at);
+        this.target_pages = data.target_pages;
         this.document_ids = data.document_ids;
         this.documents_count = data.document_ids.length;
     }
