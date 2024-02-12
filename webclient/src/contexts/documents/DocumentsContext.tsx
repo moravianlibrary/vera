@@ -19,11 +19,13 @@ const DocumentsContext = createContext<DocumentsContextProps | undefined>(undefi
 
 interface DocumentsProviderProps {
     children: ReactNode;
+    query?: DocumentsQuery;
 }
 
-export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
+export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
     const loadAmount = 50;
     const [offset, setOffset] = useState<number>(0);
+    const [query, setQuery] = useState<DocumentsQuery | undefined>();
     const [documents, setDocuments] = useState<DocumentModel[]>([]);
     const [numFound, setNumFound] = useState<number>(0);
     const [selectedDocuments, setSelectedDocuments] = useState<DocumentModel[]>([]);
@@ -41,12 +43,33 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }
         });
     };
 
+    const loadQueryDocuments = async (offset: number) => {
+        ApiDocuments.queryDocuments(query!, offset, loadAmount)
+        .then(response => {
+            const transformedData: DocumentModel[] = response.data.documents.map(document => {
+                return new DocumentModel(document);
+            });
+            if (offset === 0) {
+                setDocuments([...transformedData]);
+            } else {
+                setDocuments([...documents, ...transformedData]);
+            }
+            setNumFound(response.data.num_found);
+        }).catch(error => {
+            console.error(`Could not receive documents: ${error}`);
+        });
+    };
+
     const handleLazyLoad = (event: VirtualScrollerLazyEvent) => {
         const { last } = event;
 
         if (typeof last === 'number' && last >= offset + loadAmount) {
             setOffset(offset + loadAmount);
-            loadDocuments(offset + loadAmount);
+            if (query) {
+                loadQueryDocuments(offset + loadAmount);
+            } else {
+                loadDocuments(offset + loadAmount);
+            }
         }
     };
     
@@ -92,12 +115,20 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }
     };
 
     useEffect(() => {
-        loadDocuments(offset);
-    }, []);
+        if (query) {
+            loadQueryDocuments(offset);
+        } else {
+            loadDocuments(offset);
+        }
+    }, [query]);
+
+    useEffect(() => {
+        setQuery(props.query);
+    }, [props.query]);
 
     return (
         <DocumentsContext.Provider value={contextValue}>
-            {children}
+            {props.children}
         </DocumentsContext.Provider>
     );
 };

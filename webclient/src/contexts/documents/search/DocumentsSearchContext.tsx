@@ -4,6 +4,7 @@ import { SearchGroup } from "./SearchNodes";
 import { DocumentField } from "./DocumentSearchField";
 import ApiCategories, { Category } from "../../../adapters/ApiCategories";
 import { TreeNode } from "primereact/treenode";
+import ApiExtractions from "../../../adapters/ApiExtractions";
 
 interface TreeOption {
     id: number;
@@ -22,11 +23,12 @@ interface DocumentsSearchContextProps {
 
 interface DocumentsSearchProviderProps {
     children: ReactNode;
+    extractionId?: number | null;
 }
 
 const DocumentsSearchContext = createContext<DocumentsSearchContextProps | undefined>(undefined);
 
-export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = ({ children }) => {
+export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = ({ children, extractionId }) => {
     const [rootSearchNode, setRootSearchNode] = useState<SearchGroup>(SearchGroup.init());
     const [activeQuery, setActiveQuery] = useState<DocumentsQuery | undefined>(undefined);
 
@@ -87,6 +89,17 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
             console.error(error);
         });
     }, [])
+    
+    useEffect(() => {
+        if (extractionId) {
+            ApiExtractions.getExtraction(extractionId)
+            .then(response => {
+                setActiveQuery({ id_list: response.data.document_ids });
+            }).catch(error => {
+                console.error(error);
+            });
+        }
+    }, [extractionId])
 
     return (
         <DocumentsSearchContext.Provider value={contextValue}>

@@ -87,6 +87,14 @@ interface DocumentsQuery {
 }
 
 namespace ApiDocuments {
+    export function queryDocuments(query: DocumentsQuery, offset: number, rows: number) {
+        return axiosInstance.post<DocumentsResponse>(
+            `/documents/query?offset=${offset}&limit=${rows}`,
+            query,
+            { headers: authHeader("application/json") }
+        );
+    }
+
     export function getDocuments(offset: number, rows: number) {
         return axiosInstance.get<DocumentsResponse>(`/documents?offset=${offset}&limit=${rows}`, { headers: authHeader() });
     }

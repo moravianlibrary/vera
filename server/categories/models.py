@@ -14,6 +14,7 @@ class Category(Base):
     level = Column(Integer)
     assignable = Column(Boolean)
     percentage = Column(Float)
+    extract_whole = Column(Boolean)
     disabled = Column(Boolean)
 
     __table_args__ = (UniqueConstraint('name', 'parent_id'),)

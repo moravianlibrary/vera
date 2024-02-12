@@ -3,12 +3,14 @@ import { Divider } from "primereact/divider";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
+import { useCategories } from "../../contexts/categories/CategoriesContext";
 
 interface CategoriesMenuPanelProps {}
 
 const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
     const { t } = useTranslation();
     const { handleFocusRootNode } = useCategoryNodes();
+    const { extractionId } = useCategories();
     const [insertMode, setInsertMode] = useState(false);
 
     const handleTogleInsertMode = (e) => {

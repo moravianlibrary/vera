@@ -15,6 +15,7 @@ def create_root_category(category: schemas.CategoryCreate,
         level=0,
         assignable=category.assignable,
         percentage=0,
+        extract_whole=category.extract_whole,
         disabled=False
     ))
 
@@ -29,6 +30,7 @@ def create_category(category: schemas.CategoryCreate,
         level=(db_parent.level + 1),
         assignable=category.assignable,
         percentage=0,
+        extract_whole=category.extract_whole,
         disabled=False
     ))
 
@@ -43,6 +45,7 @@ def update_category(id: int,
         db_category.name = category.name
         db_category.description = category.description
         db_category.assignable = category.assignable
+        db_category.extract_whole = category.extract_whole
         db_category.disabled = category.disabled
 
         if category.departments is not None:

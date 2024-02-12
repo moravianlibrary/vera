@@ -4,6 +4,7 @@ enum NodeType {
     CreateCategory = 'CreatCategory',
     UpdateCategory = 'UpdateCategory',
     Insert = 'Insert',
+    Extracted = 'Extracted'
 }
 
 export { NodeType };

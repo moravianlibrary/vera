@@ -11,6 +11,7 @@ class CategoryCreate(CategoryBase):
     parent_id: Optional[int] = None
     assignable: bool = False
     percentage: float = 0
+    extract_whole: bool = False
     disabled: bool = False
     departments: List[int] = []
 

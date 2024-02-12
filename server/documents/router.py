@@ -56,7 +56,38 @@ def get_documents(query: Optional[schemas.DocumentsQuery] = None,
                   limit: int = Query(100, description="Pagination page size"),
                   user: CurrentUser = Depends(get_current_user),
                   db: Session = Depends(get_db)):
-    print(user.actions)
+    if ActionType.ReadDatatableAll in user.actions:
+        pass
+    # elif ActionType.read_datatable_department in user.actions \
+    #         and user.department_id is not None:
+    #     if query is None:
+    #         query = schemas.DocumentsQuery(
+    #             department_id=user.department_id
+    #         )
+    elif ActionType.ReadDatatableOwn in user.actions \
+            or ActionType.ReadDatatableDepartment in user.actions:
+        if query is None:
+            query = schemas.DocumentsQuery(
+                username=user.username
+            )
+    else:
+        raise exceptions.UserNotAllowedToReadDocumentsException
+
+    query_base = crud.get_documents_query_base(
+        db,
+        query
+    )
+    documents = crud.get_documents(query_base, offset=offset, limit=limit)
+    num_found = crud.get_documents_num_found(query_base)
+    return schemas.DocumentsResponse(documents=documents, num_found=num_found)
+
+
+@router.post("/documents/query", response_model=schemas.DocumentsResponse)
+def query_documents(query: Optional[schemas.DocumentsQuery],
+                    offset: int = Query(0, description="Pagination offset"),
+                    limit: int = Query(100, description="Pagination size"),
+                    user: CurrentUser = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
     if ActionType.ReadDatatableAll in user.actions:
         pass
     # elif ActionType.read_datatable_department in user.actions \

@@ -39,6 +39,12 @@ class CredentialsException(HTTPException):
                          headers={"WWW-Authenticate": "Bearer"})
 
 
+class EmptyExtraction(HTTPException):
+    def __init__(self):
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST,
+                         detail="Empty extraction can not be created")
+
+
 class CategoryIsNotEmptyException(HTTPException):
     def __init__(self):
         super().__init__(status_code=status.HTTP_400_BAD_REQUEST,
