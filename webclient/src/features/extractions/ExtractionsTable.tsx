@@ -12,6 +12,17 @@ const ExtractionsTable: React.FC = () => {
 
     const { extractions } = useExtractions();
 
+    const documentsButton = (extraction: ExtractionModel) => {
+        return (
+            <Link to={`/documents?extractionId=${extraction.id}`}>
+                <Button
+                    text
+                    label={t("Show in documents")}
+                />
+            </Link>
+        );
+    };
+
     const categoriesButton = (extraction: ExtractionModel) => {
         return (
             <Link to={`/categories?extractionId=${extraction.id}`}>
@@ -21,7 +32,7 @@ const ExtractionsTable: React.FC = () => {
                 />
             </Link>
         );
-    }
+    };
 
     return (
         <DataTable
@@ -32,6 +43,7 @@ const ExtractionsTable: React.FC = () => {
             <Column field='extracted_at' header={t('Extracted at')} />
             <Column field="target_pages" header={t('Target pages count')} />
             <Column field="documents_count" header={t('Documents count')} />
+            <Column body={documentsButton} />
             <Column body={categoriesButton} />
         </DataTable>
     )

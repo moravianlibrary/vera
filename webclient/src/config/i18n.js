@@ -221,6 +221,7 @@ const resources = {
         "Target pages count": "Cílový počet stránek",
         "Documents count": "Počet dokumentů",
         "Show in categories": "Zobrazit v kategoriích",
+        "Show in documents": "Zobrazit v dokumentech",
     },
   },
 };

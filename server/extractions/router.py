@@ -60,6 +60,12 @@ def get_extractions(offset: int = Query(0, description="Pagination offset"),
     )
 
 
+@router.get("/extractions/{id}", response_model=schemas.Extraction)
+def get_extraction(id: int = Path(...),
+                   db: Session = Depends(get_db)):
+    return crud.get_extraction(id, db)
+
+
 @router.get("/extractions/{id}/categories",
             response_model=List[schemas.ExtractionCategoryNode])
 def get_categories(id: int = Path(...),

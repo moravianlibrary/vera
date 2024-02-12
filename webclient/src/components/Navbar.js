@@ -16,7 +16,7 @@ const Navbar = () => {
       <ul className="navbar">
         <li className='navbar-button'><Link to="/">{t("home")}</Link></li>
         <ActionAccessComponent action={ActionType.ReadDatatable}>
-          <li><Link to="/board">{t("board")}</Link></li>
+          <li><Link to="/documents">{t("board")}</Link></li>
         </ActionAccessComponent>
         <ActionAccessComponent action={ActionType.ReadCategories}>
           <li><Link to="/categories">{t("categories")}</Link></li>

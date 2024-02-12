@@ -44,6 +44,10 @@ namespace ApiExtractions {
         return axiosInstance.put<Extraction>(url, createProps, { headers: authHeader() });
     }
 
+    export function getExtraction(id: number) {
+        return axiosInstance.get<Extraction>(`/extractions/${id}`, { headers: authHeader() });
+    }
+
     export function markExtracted(id: number) {
         return axiosInstance.post(`/extractions/${id}/mark`, { headers: authHeader() });
     }

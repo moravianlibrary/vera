@@ -34,7 +34,7 @@ function App() {
                       <Route path="/" element={<Home />} />
                       <Route path="/login" element={<Login />} />
                       <Route element={<ActionAccessRoute action={ActionType.ReadDatatable} />}>
-                        <Route path="/board" element={<Documents />} />
+                        <Route path="/documents" element={<Documents />} />
                       </Route>
                       <Route element={<ActionAccessRoute action={ActionType.ReadCategories} />}>
                         <Route path="/categories" element={<Categories />} />
