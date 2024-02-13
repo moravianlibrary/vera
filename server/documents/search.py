@@ -5,7 +5,8 @@ from fastapi import Query
 
 from documents import models, schemas
 from categories.models import Category
-from documents.enums import GroupOption, NumberOption, TextOption, TreeOption
+from documents.enums import GroupOption, NumberOption, TextOption, \
+    TreeOption, SortOrder, DocumentField
 # from departments.models import Department
 
 
@@ -13,21 +14,45 @@ def filter_documents_query_base(
             query_base: Query,
             query: Optional[schemas.DocumentsQuery] = None):
     if query:
-        # if query.department_id:
-        #     pass
-        # elif query.username:
-        if query.username:
-            query_base = query_base.filter(
-                models.Document.creator == query.username
-            )
-        if query.id_list:
-            return filter_by_id_list(query.id_list, query_base)
-        if query.search_phrase:
-            return filter_by_search_phrase(query.search_phrase, query_base)
-        if query.search_group:
-            return filter_by_group(query.search_group, query_base)
+        query_base = filter_by_query(query_base, query)
+        if query.sort:
+            query_base = sort_query(query_base, query.sort)
 
     return query_base
+
+
+def sort_query(query_base: Query,
+               sort: schemas.QuerySort):
+    curr_sort = sort
+    while curr_sort:
+        field_name = parse_field(curr_sort.field)
+        if curr_sort.order == SortOrder.Ascending:
+            query_base = query_base.order_by(
+                getattr(models.Document, field_name).asc()
+            )
+        else:
+            query_base = query_base.order_by(
+                getattr(models.Document, field_name).desc()
+            )
+        curr_sort = curr_sort.and_then
+    return query_base
+
+
+def filter_by_query(query_base: Query,
+                    query: schemas.DocumentsQuery):
+    # if query.department_id:
+    #     pass
+    # elif query.username:
+    if query.username:
+        query_base = query_base.filter(
+            models.Document.creator == query.username
+        )
+    if query.id_list:
+        return filter_by_id_list(query.id_list, query_base)
+    if query.search_phrase:
+        return filter_by_search_phrase(query.search_phrase, query_base)
+    if query.search_group:
+        return filter_by_group(query.search_group, query_base)
 
 
 def filter_by_id_list(id_list: List[int],
@@ -134,3 +159,8 @@ def build_tree_filter(field, option, value):
         return field.is_(None)
     elif option == TreeOption.IsNotNull:
         return field.isnot(None)
+
+
+def parse_field(field: DocumentField):
+    if field == DocumentField.Category:
+        return "category_id"

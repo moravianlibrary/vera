@@ -80,10 +80,16 @@ interface DocumentCreationResponse {
     create_result: DocumentCreationStatus;
 }
 
+interface QuerySort {
+    field: DocumentField;
+    and_then?: QuerySort;
+}
+
 interface DocumentsQuery {
     id_list?: number[];
     search_phrase?: string;
     search_group?: SearchGroupParams;
+    sort?: QuerySort;
 }
 
 namespace ApiDocuments {

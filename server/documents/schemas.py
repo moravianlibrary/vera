@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Tuple, Union
 from datetime import datetime
 from documents.enums import DocumentField, GroupOption, IdentifierType, \
-    NumberOption, TextOption, TreeOption
+    NumberOption, TextOption, TreeOption, SortOrder
 from catalogs.enums import DigitizationState, DocumentCreateResult, \
     MaterialType, IssuanceType
 
@@ -148,12 +148,19 @@ class SearchGroup(BaseModel):
     sub_rules: List[Union[SearchGroup, SearchField]]
 
 
+class QuerySort(BaseModel):
+    field: DocumentField
+    order: SortOrder = SortOrder.Descending
+    and_then: Optional[QuerySort] = None
+
+
 class DocumentsQuery(BaseModel):
     id_list: Optional[List[int]] = None
     search_phrase: Optional[str] = None
     search_group: Optional[SearchGroup] = None
     department_id: Optional[int] = None
     username: Optional[str] = None
+    sort: Optional[QuerySort] = None
 
 
 class DocumentsResponse(BaseModel):

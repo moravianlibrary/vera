@@ -47,3 +47,8 @@ class TreeOption(Enum):
     IsNotIn = "IsNotIn"
     IsNull = "IsNull"
     IsNotNull = "IsNotNull"
+
+
+class SortOrder(Enum):
+    Ascending = 'Ascending'
+    Descending = 'Descending'
