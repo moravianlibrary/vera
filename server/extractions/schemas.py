@@ -21,7 +21,9 @@ class Extraction(ExtractionBase):
     id: int
     extractor: str
     extracted_at: datetime
+    marked: bool
     target_pages: int
+    extracted_pages: int
     document_ids: List[int]
 
     class Config:

@@ -5,6 +5,8 @@ import ExtractionModel from "./ExtractionModel";
 interface ExtractionsContextProps {
     extractions: Extraction[];
     numFound: number;
+    markExtraction: (extraction_id: number) => void;
+    unmarkExtraction: (extraction_id: number) => void;
 }
 
 const ExtractionsContext = createContext<ExtractionsContextProps | undefined>(undefined);
@@ -32,6 +34,46 @@ export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({ childr
         });
     };
 
+    const markExtraction = async (extraction_id: number) => {
+        ApiExtractions.markExtracted(extraction_id)
+        .then(response => {
+            setExtractions(
+                extractions.map(extraction => {
+                    if (extraction.id === extraction_id) {
+                        return {
+                            ...extraction,
+                            marked: true
+                        };
+                    }
+                    return extraction;
+                })
+            );
+        })
+        .catch(error => {
+            console.error(error);
+        });
+    };
+
+    const unmarkExtraction = async (extraction_id: number) => {
+        ApiExtractions.unmarkExtracted(extraction_id)
+        .then(response => {
+            setExtractions(
+                extractions.map(extraction => {
+                    if (extraction.id === extraction_id) {
+                        return {
+                            ...extraction,
+                            marked: false
+                        };
+                    }
+                    return extraction;
+                })
+            );
+        })
+        .catch(error => {
+            console.error(error);
+        });
+    };
+
     useEffect(() => {
         console.log(`Fetching extractions from server.`);
         loadExtractions();
@@ -39,7 +81,9 @@ export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({ childr
 
     const contextValue: ExtractionsContextProps = {
         extractions,
-        numFound
+        numFound,
+        markExtraction,
+        unmarkExtraction
     };
 
     return (

@@ -222,6 +222,8 @@ const resources = {
         "Documents count": "Počet dokumentů",
         "Show in categories": "Zobrazit v kategoriích",
         "Show in documents": "Zobrazit v dokumentech",
+        "Mark documents": "Označit dokumenty",
+        "Unmark documents": "Zrušit označení dokumentů",
     },
   },
 };
