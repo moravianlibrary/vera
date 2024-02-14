@@ -180,8 +180,8 @@ class CatalogDocument:
 
         self.publishers = get_fields_text(marc, "260", "b")
         self.publishers.extend(get_fields_text(marc, "264", "b"))
-        self.publishing_places = get_field_text_for_tags(marc, ["260", "264"],
-                                                         "a")
+        self.publishing_places = get_fields_text(marc, "260", "a")
+        self.publishing_places.extend(get_fields_text(marc, "264", "a"))
         # self.publishers = get_field_text_for_tags(marc, ["260", "264"], "b")
         self.publishing_date = get_field_text_for_tags(
             marc, ["260", "264"], "c")
@@ -215,7 +215,7 @@ class CatalogDocument:
             material_type=parse_material_type(self.material_type),
             publishers=[encode(p) for p in self.publishers],
             publishing_date=encode(self.publishing_date),
-            publishing_places=encode(self.publishing_places),
+            publishing_places=[encode(p) for p in self.publishing_places],
             languages=self.languages,
 
             title=title,

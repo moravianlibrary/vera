@@ -29,7 +29,7 @@ def create_document(document: schemas.DocumentCreate,
         digitization_state=document.digitization_state,
 
         publishers=document.publishers,
-        publisihng_places=document.publishing_places,
+        publishing_places=document.publishing_places,
         languages=document.languages,
         frequencies=document.frequencies,
 

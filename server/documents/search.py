@@ -1,7 +1,7 @@
 from sqlalchemy import or_, and_
 from sqlalchemy.sql import text
+from sqlalchemy.orm import Query
 from typing import List, Optional, Union
-from fastapi import Query
 
 from documents import models, schemas
 from categories.models import Category
