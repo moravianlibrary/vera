@@ -7,9 +7,11 @@ class TestPredictions(unittest.TestCase):
         predictor = VolumesPagesPredictor()
         predicted = predictor.predict(
             "test name",
-            1996,
-            10,
-            ["Moravska zemska knihovna"]
+            "1996",
+            ["Moravska zemska knihovna"],
+            ["Brno"],
+            ["cze"],
+            ["Deník"]
         )
         self.assertIsNotNone(predicted)
         self.assertIsInstance(predicted, float)

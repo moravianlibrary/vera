@@ -2,6 +2,7 @@ sqlalchemy
 pydantic
 psycopg2-binary
 numpy
+pandas
 tensorflow==2.13.1
 typing-extensions==4.5.0
 redis

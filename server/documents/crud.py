@@ -3,7 +3,6 @@ from sqlalchemy import desc
 from typing import Optional
 
 from services.database import create
-from auth.schemas import CurrentUser
 from documents import models, schemas
 from documents.search import filter_documents_query_base
 
@@ -14,16 +13,26 @@ def create_document(document: schemas.DocumentCreate,
     db_document = create(db, models.Document(
         sysno=document.sysno,
         volume_number=document.volume_number,
+
         category_id=document.category_id,
-        material_type=document.material_type,
-        title=document.title,
-        publishers=document.publishers,
-        pages_count=document.pages_count,
-        size=document.size,
+
         signature=document.signature,
         barcode=document.barcode,
         ccnb=document.ccnb,
         isbn=document.isbn,
+
+        material_type=document.material_type,
+        title=document.title,
+
+        pages_count=document.pages_count,
+        size=document.size,
+        digitization_state=document.digitization_state,
+
+        publishers=document.publishers,
+        publisihng_places=document.publishing_places,
+        languages=document.languages,
+        frequencies=document.frequencies,
+
         creator=creator
     ))
     return get_document_view(db_document.id, db)
@@ -31,7 +40,7 @@ def create_document(document: schemas.DocumentCreate,
 
 def update_document(document_id: int,
                     document: schemas.DocumentCreate,
-                    user: CurrentUser,
+                    username: str,
                     db: Session):
     db_document = get_document(document_id, db)
     if not document:
@@ -39,15 +48,24 @@ def update_document(document_id: int,
 
     db_document.sysno = document.sysno
     db_document.volume_number = document.volume_number
+
     db_document.category_id = document.category_id
-    db_document.material_type = document.material_type
-    db_document.title = document.title
-    db_document.pages_count = document.pages_count
-    db_document.size = document.size
+
     db_document.barcode = document.barcode
     db_document.signature = document.signature
     db_document.ccnb = document.ccnb
     db_document.isbn = document.isbn
+
+    db_document.material_type = document.material_type
+    db_document.title = document.title
+
+    db_document.pages_count = document.pages_count
+    db_document.size = document.size
+
+    db_document.publishers = document.publishers
+    db_document.publishing_places = document.publishing_places
+    db_document.languages = document.languages
+    db_document.frequencies = document.frequencies
 
     db.commit()
 

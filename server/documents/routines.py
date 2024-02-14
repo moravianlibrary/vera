@@ -4,6 +4,7 @@ from typing import Optional
 from documents import crud, schemas
 from documents.enums import IdentifierType
 from catalogs.enums import DigitizationState, DocumentCreateResult
+from catalogs.routines import get_catalog_response
 
 
 def create_document_from_schema(document: schemas.DocumentCreateResponse,
@@ -89,6 +90,21 @@ def create_catalog_document(catalog_document_response:
         digitization_state=digitization_state,
         create_result=create_result
     )
+
+
+def update_document_from_catalog(document: schemas.Document,
+                                 owner: str,
+                                 db: Session):
+    catalog_response = get_catalog_response(
+        schemas.Identifier(
+            IdentifierType.Barcode,
+            document.barcode
+        )
+    )
+    document = schemas.DocumentCreate.from_catalog_document(
+        catalog_response.document
+    )
+    crud.update_document(document.id, document, owner, db)
 
 
 def get_documents_query():

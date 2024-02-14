@@ -77,14 +77,16 @@ def set_document_processed(task_id: int,
     db.commit()
 
 
-def set_document_error_type(task_id: int,
-                            document_id: int,
-                            error_type: TaskDocumentErrorType,
-                            db: Session):
+def set_document_error(task_id: int,
+                       document_id: int,
+                       error_type: TaskDocumentErrorType,
+                       stack_trace: str,
+                       db: Session):
     db.execute(update(models.TaskDocument)
                .where(models.TaskDocument.task_id == task_id
                       and models.TaskDocument.document_id == document_id)
-               .values(error_type=error_type))
+               .values(error_type=error_type,
+                       stack_trace=stack_trace))
     db.commit()
 
 
@@ -99,7 +101,7 @@ def set_predicted_pages_count(task_id: int,
 
 
 def get_task(id: int,
-             db: Session):
+             db: Session) -> schemas.Task:
     return models.task_view(db).filter(models.Task.id == id).first()
 
 

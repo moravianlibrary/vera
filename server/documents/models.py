@@ -36,7 +36,7 @@ class Document(Base):
     dedicated_scanner = Column(String)
 
     publishers = Column(ARRAY(String))
-    places = Column(ARRAY(String))
+    publishing_places = Column(ARRAY(String))
     languages = Column(ARRAY(String))
     frequencies = Column(ARRAY(String))
 
@@ -65,7 +65,7 @@ def document_view(db: Session):
         Document.pages_count_predicted,
         Document.dedicated_scanner,
         Document.publishers,
-        Document.places,
+        Document.publishing_places,
         Document.languages,
         Document.frequencies,
         Document.created_at,

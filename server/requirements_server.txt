@@ -13,6 +13,7 @@ lxml
 asyncio
 numpy
 tensorflow
+pandas
 typing-extensions==4.8.0
 python-keycloak
 redis

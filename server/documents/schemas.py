@@ -24,7 +24,11 @@ class DocumentBase(BaseModel):
 
     material_type: Optional[MaterialType] = None
     title: str
+
     publishers: Optional[List[str]] = None
+    publishing_places: Optional[List[str]] = None
+    languages: Optional[List[str]] = None
+    frequencies: Optional[List[str]] = None
 
     pages_count: Optional[int] = None
     size: Optional[str] = None
@@ -42,7 +46,6 @@ class Issue(BaseModel):
 
 
 class DocumentCatalog(DocumentBase):
-    periodicity: Optional[str] = None
     publishing_date: Optional[str] = None
     issues: List[Issue]
 
@@ -67,15 +70,23 @@ class DocumentCreate(DocumentBase):
         return cls(
             sysno=catalog_document.sysno,
             volume_number=catalog_document.volume_number,
+
             signature=catalog_document.signature,
             barcode=catalog_document.barcode,
             ccnb=catalog_document.ccnb,
             isbn=catalog_document.isbn,
+
             material_type=catalog_document.material_type,
             title=catalog_document.title,
-            publishers=catalog_document.publishers,
+
             pages_count=catalog_document.pages_count,
             size=catalog_document.size,
+
+            publishers=catalog_document.publishers,
+            publishing_places=catalog_document.publishing_places,
+            languages=catalog_document.languages,
+            frequencies=catalog_document.frequencies,
+
             category_id=category_id,
             digitization_state=digitization_state
         )
@@ -90,15 +101,23 @@ class DocumentCreate(DocumentBase):
         return cls(
             sysno=catalog_document.sysno,
             volume_number=issue.volume,
+
             signature=issue.signature,
             barcode=issue.barcode,
             ccnb=catalog_document.ccnb,
             isbn=catalog_document.isbn,
+
             material_type=catalog_document.material_type,
             title=catalog_document.title,
-            publishers=catalog_document.publishers,
+
             pages_count=catalog_document.pages_count,
             size=catalog_document.size,
+
+            publishers=catalog_document.publishers,
+            publishing_places=catalog_document.publishing_places,
+            languages=catalog_document.languages,
+            frequencies=catalog_document.frequencies,
+
             category_id=category_id,
             digitization_state=digitization_state
         )

@@ -15,5 +15,5 @@ class TaskState(Enum):
 
 
 class TaskDocumentErrorType(Enum):
-    MissingVolume = 'MissingVolume'
-    ConflictPagesCount = 'ConflictPagesCount'
+    ValueError = 'ValueError'
+    UnknownError = 'UnknownError'

@@ -8,7 +8,7 @@ from auth.schemas import CurrentUser
 from auth.router import get_current_user
 from documents.schemas import DocumentsQuery
 from documents.crud import get_documents_ids_query_base
-from celery_worker import predict_volumes_pages_task
+from celery_worker import run_task
 
 
 router = APIRouter()
@@ -23,7 +23,7 @@ def create_task(task: schemas.TaskCreate,
                      get_documents_ids_query_base(db, query).all()]
     task = crud.create_task(task, documents_ids, user.username,
                             query.model_dump_json(), db)
-    predict_volumes_pages_task.delay(task_id=task.id)
+    run_task.delay(task_id=task.id)
     return crud.get_task(task.id, db)
 
 

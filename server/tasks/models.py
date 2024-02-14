@@ -31,6 +31,7 @@ class TaskDocument(Base):
 
     processed = Column(Boolean, server_default='false')
     error_type = Column(Enum(TaskDocumentErrorType))
+    stack_trace = Column(String)
 
     __table_args__ = (PrimaryKeyConstraint('task_id', 'document_id'), {})
 

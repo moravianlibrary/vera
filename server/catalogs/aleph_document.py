@@ -77,7 +77,7 @@ def get_field_text_for_tags(marc, tags, code, ind1=None, ind2=None):
     return None
 
 
-def encode(text: Optional[str]) -> [str]:
+def encode(text: Optional[str]) -> Optional[str]:
     return quote(text.encode('utf-8')) if text is not None else None
 
 
@@ -170,6 +170,8 @@ class CatalogDocument:
         self.ccnb = get_field_text(marc, "015", "a")
         self.isbn = get_field_text(marc, "020", "a")
 
+        self.languages = get_fields_text(marc, "041", "a")
+
         self.title = get_field_text(marc, "245", "a")
         self.alternative_title = get_field_text(marc, "245", "b")
         self.part_number = get_field_text(marc, "245", "n")
@@ -178,8 +180,8 @@ class CatalogDocument:
 
         self.publishers = get_fields_text(marc, "260", "b")
         self.publishers.extend(get_fields_text(marc, "264", "b"))
-        # self.publishion_place = get_field_text_for_tags(marc, ["260", "264"],
-        # "a")
+        self.publishing_places = get_field_text_for_tags(marc, ["260", "264"],
+                                                         "a")
         # self.publishers = get_field_text_for_tags(marc, ["260", "264"], "b")
         self.publishing_date = get_field_text_for_tags(
             marc, ["260", "264"], "c")
@@ -213,17 +215,18 @@ class CatalogDocument:
             material_type=parse_material_type(self.material_type),
             publishers=[encode(p) for p in self.publishers],
             publishing_date=encode(self.publishing_date),
+            publishing_places=encode(self.publishing_places),
+            languages=self.languages,
 
             title=title,
             pages_count=parse_page_count(self.extent),
             size=parse_size(self.size),
-            periodicity=encode(self.periodicity),
+            frequencies=encode(self.periodicity),
 
             barcode=self.barcode,
             signature=get_first_encoded([self.signature,
                                          self.additional_signature]),
             ccnb=encode(self.ccnb),
-
             isbn=encode(self.isbn),
 
             issues=[issue.get_schema() for issue in self.issues]

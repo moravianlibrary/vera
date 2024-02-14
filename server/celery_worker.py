@@ -2,8 +2,8 @@ from celery import Celery
 from os import environ
 
 from services.database import DATABASE_URL, get_db
-from tasks.routines import predict_volumes_pages
-from tasks.enums import TaskState
+from tasks.routines import predict_volumes_pages, sync_from_catalog
+from tasks.enums import TaskState, TaskType
 from tasks import crud
 
 celery_worker = Celery(
@@ -18,12 +18,16 @@ celery_worker = Celery(
 
 
 @celery_worker.task
-def predict_volumes_pages_task(task_id: int):
+def run_task(task_id: int):
     db = next(get_db())
+    task = crud.get_task(task_id, db)
     crud.set_task_started(task_id, db)
     crud.update_task_state(task_id, TaskState.Running, db)
     try:
-        predict_volumes_pages(task_id, db)
+        if task.task_type == TaskType.PredictVolumePages:
+            predict_volumes_pages(task_id, db)
+        elif task.task_type == TaskType.SyncFromCatalog:
+            sync_from_catalog(task_id, task.owner, db)
         crud.set_task_finsihed(task_id, db)
         crud.update_task_state(task_id, TaskState.Finished, db)
     except Exception as e:
