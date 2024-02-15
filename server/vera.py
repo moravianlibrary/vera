@@ -29,13 +29,9 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def on_startup():
-    from services.database import create_tables, get_db
-    from auth.routines import init_default_roles
+    from services.database import create_tables
 
     create_tables()
-
-    db = next(get_db())
-    init_default_roles(db)
 
 
 app.include_router(auth_router.router)

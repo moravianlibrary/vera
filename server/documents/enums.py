@@ -1,24 +1,31 @@
 from enum import Enum
 
 
-class IdentifierType(Enum):
-    Sysno = 'Sysno'
-    Barcode = 'Barcode'
-    Signature = 'Signature'
-    Ccnb = 'Ccnb'
+class DocumentCreateResult(Enum):
+    DocumentNotFoundInCatalog = "DocumentNotFoundInCatalog"
+    CatalogDocumentParsingError = "CatalogDocumentParsingError"
+    UniqueDocumentViolation = "UniqueDocumentViolation"
+    InvalidIdentifier = "InvalidIdentifier"
+    InvalidSysno = "InvalidSysno"
+    InvalidSysnoBase = "InvalidSysnoBase"
+    MultipleIssueChoices = "MultipleIssueChoices"
+    AlreadyDigitized = "AlreadyDigitized"
+    Prepared = "Prepared"
+    MultipleIssues = "MultipleIssues"
+    Success = "Success"
 
 
 class DocumentField(Enum):
-    Sysno = 'Sysno'
-    Volume = 'Volume'
-    Category = 'Category'
-    Title = 'title'
-    PagesCount = 'PagesCount'
+    Sysno = "Sysno"
+    Volume = "Volume"
+    Category = "Category"
+    Title = "title"
+    PagesCount = "PagesCount"
 
 
 class GroupOption(Enum):
-    MatchAll = 'MatchAll'
-    MatchAny = 'MatchAny'
+    MatchAll = "MatchAll"
+    MatchAny = "MatchAny"
 
 
 class TextOption(Enum):
@@ -50,5 +57,5 @@ class TreeOption(Enum):
 
 
 class SortOrder(Enum):
-    Ascending = 'Ascending'
-    Descending = 'Descending'
+    Ascending = "Ascending"
+    Descending = "Descending"

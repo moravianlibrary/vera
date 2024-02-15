@@ -1,125 +1,119 @@
 from __future__ import annotations
 from pydantic import BaseModel
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 from datetime import datetime
-from documents.enums import DocumentField, GroupOption, IdentifierType, \
-    NumberOption, TextOption, TreeOption, SortOrder
-from catalogs.enums import DigitizationState, DocumentCreateResult, \
-    MaterialType, IssuanceType
-
-
-class Identifier(BaseModel):
-    identifier_type: IdentifierType
-    value: str
+from documents.enums import (
+    DocumentCreateResult,
+    DocumentField,
+    GroupOption,
+    NumberOption,
+    TextOption,
+    TreeOption,
+    SortOrder,
+)
+from catalogs.enums import (
+    DigitizationState,
+    MaterialType,
+    IssuanceType,
+)
+from catalogs.schemas import CatalogDocument, CatalogIssue
 
 
 class DocumentBase(BaseModel):
     sysno: str
-    volume_number: Optional[str] = None
-
-    signature: Optional[str] = None
+    volume: Optional[str] = None
     barcode: Optional[str] = None
-    ccnb: Optional[str] = None
-    isbn: Optional[str] = None
+
+    cnb: Optional[str] = None
+    isbn_issn: Optional[str] = None
+    signature: Optional[str] = None
 
     material_type: Optional[MaterialType] = None
-    title: str
+    issuance_type: Optional[IssuanceType] = None
+    title: str = None
+    digitization_state: DigitizationState = DigitizationState.NotDigitized
 
-    publishers: Optional[List[str]] = None
-    publishing_places: Optional[List[str]] = None
-    languages: Optional[List[str]] = None
-    frequencies: Optional[List[str]] = None
+    year: Optional[str] = None
+    bundle: Optional[str] = None
 
     pages_count: Optional[int] = None
     size: Optional[str] = None
 
+    publishers: List[str] = []
+    publishing_places: List[str] = []
 
-class Issue(BaseModel):
-    signature: Optional[str] = None
-    year_issued: Optional[str] = None
-    volume: Optional[str] = None
-    item: Optional[str] = None
-    barcode: Optional[str] = None
-    issuance_type: IssuanceType
-    digitization_state: Optional[DigitizationState] = None
-    already_exists: bool = False
+    publisher: Optional[str] = None
+    publishing_place: Optional[str] = None
+    publishing_year: Optional[str] = None
+    languages: List[str] = []
 
-
-class DocumentCatalog(DocumentBase):
-    publishing_date: Optional[str] = None
-    issues: List[Issue]
-
-
-class DocumentCatalogResponse(BaseModel):
-    identifier: Identifier
-    document: Optional[DocumentCatalog] = None
-    digitization_state: Optional[DigitizationState] = None
-    create_result: DocumentCreateResult
+    frequencies: List[Dict[str, str]] = []
 
 
 class DocumentCreate(DocumentBase):
+    document_exists: bool = True
     category_id: Optional[int] = None
-    digitization_state: Optional[DigitizationState] = None
 
     @classmethod
     def from_catalog_document(
-            cls, catalog_document: DocumentCatalog,
-            category_id: Optional[int],
-            digitization_state: Optional[DigitizationState]
-            ) -> "DocumentCreate":
+        cls,
+        catalog_document: CatalogDocument,
+        category_id: Optional[int],
+    ) -> "DocumentCreate":
         return cls(
             sysno=catalog_document.sysno,
-            volume_number=catalog_document.volume_number,
-
-            signature=catalog_document.signature,
+            volume=catalog_document.volume,
             barcode=catalog_document.barcode,
-            ccnb=catalog_document.ccnb,
-            isbn=catalog_document.isbn,
-
+            cnb=catalog_document.cnb,
+            isbn_issn=catalog_document.isbn_issn,
+            signature=catalog_document.signature,
             material_type=catalog_document.material_type,
             title=catalog_document.title,
-
+            digitization_state=catalog_document.digitization_state,
+            year=catalog_document.year,
+            bundle=catalog_document.bundle,
             pages_count=catalog_document.pages_count,
             size=catalog_document.size,
-
             publishers=catalog_document.publishers,
             publishing_places=catalog_document.publishing_places,
+            publisher=catalog_document.publisher,
+            publishing_place=catalog_document.publishing_place,
+            publishing_year=catalog_document.publishing_year,
             languages=catalog_document.languages,
             frequencies=catalog_document.frequencies,
-
             category_id=category_id,
-            digitization_state=digitization_state
         )
 
     @classmethod
-    def from_catalog_document_issue(
-            cls, catalog_document: DocumentCatalog,
-            issue: Issue,
-            category_id: Optional[int],
-            digitization_state: Optional[DigitizationState]
-            ) -> "DocumentCreate":
+    def from_catalog_issue(
+        cls,
+        catalog_document: CatalogDocument,
+        catalog_issue: CatalogIssue,
+        category_id: Optional[int],
+    ) -> "DocumentCreate":
         return cls(
             sysno=catalog_document.sysno,
-            volume_number=issue.volume,
-
-            signature=issue.signature,
-            barcode=issue.barcode,
-            ccnb=catalog_document.ccnb,
-            isbn=catalog_document.isbn,
-
+            volume_number=catalog_issue.volume,
+            barcode=catalog_issue.barcode,
+            cnb=catalog_document.cnb,
+            isbn_issn=catalog_document.isbn_issn,
+            signature=catalog_issue.signature,
             material_type=catalog_document.material_type,
+            issuance_type=catalog_issue.type,
             title=catalog_document.title,
-
+            digitization_state=catalog_document.digitization_state,
+            year=catalog_issue.year,
+            bundle=catalog_issue.bundle,
             pages_count=catalog_document.pages_count,
             size=catalog_document.size,
-
             publishers=catalog_document.publishers,
             publishing_places=catalog_document.publishing_places,
+            publisher=catalog_document.publisher,
+            publishing_place=catalog_document.publishing_place,
+            publishing_year=catalog_document.publishing_year,
             languages=catalog_document.languages,
             frequencies=catalog_document.frequencies,
-
             category_id=category_id,
-            digitization_state=digitization_state
         )
 
 
@@ -149,10 +143,8 @@ class DocumentView(Document):
 
 
 class DocumentCreateResponse(BaseModel):
-    identifier: Identifier
     document: Optional[DocumentView] = None
-    catalog_document: Optional[DocumentCatalog] = None
-    digitization_state: Optional[DigitizationState] = None
+    catalog_document: Optional[CatalogDocument] = None
     create_result: DocumentCreateResult
 
 

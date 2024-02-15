@@ -5,12 +5,17 @@ from typing import List
 VOLUME_YEAR = "^(\\d{4})$"
 VOLUME_RANGE = "^(\\d{4})-(\\d{4})$"
 
-RANGE_YEARS_1 = r"^(.*)\s(?:\d{1,2}\.\s?){2}\[?(\d{4})\]?\s?-\s?" \
+RANGE_YEARS_1 = (
+    r"^(.*)\s(?:\d{1,2}\.\s?){2}\[?(\d{4})\]?\s?-\s?"
     r"(?:\d{1,2}\.\s?){0,2}\s?(\d{4})$"
-RANGE_YEARS_2 = r"^(.*)\s(?:\d{1,2}\.\s?)\[?(\d{4})\]?\s?-\s?" \
+)
+RANGE_YEARS_2 = (
+    r"^(.*)\s(?:\d{1,2}\.\s?)\[?(\d{4})\]?\s?-\s?"
     r"(?:\d{1,2}\.\s?){0,2}\s?(\d{4})$"
-RANGE_YEARS_3 = r"^(.*)\s\[?(\d{4})\]?\s?-" \
-    r"\s?(?:\d{1,2}\.\s?){0,2}\s?(\d{4})$"
+)
+RANGE_YEARS_3 = (
+    r"^(.*)\s\[?(\d{4})\]?\s?-" r"\s?(?:\d{1,2}\.\s?){0,2}\s?(\d{4})$"
+)
 RANGE_YEARS_4 = r"^(.*)\s\[?(\d{4})\]?-(\d{2})$"
 
 FROM_YEAR_1 = r"^(.*)\s(?:\d{1,2}\.\s?){2}(\d{4})\s?-$"
@@ -20,8 +25,10 @@ FROM_YEAR_4 = r"^(.*)\s(\d{4})\s?-$"
 FROM_YEAR_5 = r"^(?:[Oo]d\s)(?:r\.\s?)?(\d{4})\s?-?\s(.*)$"
 FROM_YEAR_6 = r"^(?:[Oo]d\s)(?:\d{1,2}\.\s?){1,2}(\d{4})\s?-?(.*)$"
 FROM_YEAR_7 = r"^(.*)\s[Oo]d\s(?:ro)?č\.\s?\d{1,3}\s?\(?(\d{4})(?:-\d{2})?\)?$"
-FROM_YEAR_8 = r"^(.*)\s[Oo]d\s(?:\[.*\])?\s?" \
+FROM_YEAR_8 = (
+    r"^(.*)\s[Oo]d\s(?:\[.*\])?\s?"
     r"(?:\d{1,2}\.\s?){0,2}\(?(\d{4})(?:-\d{2})?\)?$"
+)
 
 TO_YEAR_1 = r"^(.*)\s(?:do\sr\.\s?)(\d{4})\s?-?$"
 TO_YEAR_2 = r"^(.*)\sdo\s(?:\d{1,2}\.\s?){0,2}(\d{4})\s?-?$"
@@ -32,10 +39,13 @@ SINGLE_YEAR = r"^(.*)\s(\d{4})$"
 
 YEARLY = r"^(\d{1,3})(-\d{1,3})?\s?(:?x|×|čísla)\s?ročně"
 YEARLY_ATYPICAL = r"^Aktualizováno\s(\d{1,3})x\sročně"
-YEAR_BOOK = r"^(Ročenka|ročenka|Ročně|Annual|Aktualizováno\sročně|" \
+YEAR_BOOK = (
+    r"^(Ročenka|ročenka|Ročně|Annual|Aktualizováno\sročně|"
     r"Aktualizováno\s1x\sza\sdva\sroky)"
-ONCE_IN_N_YEARS = r"^((Vychází\s)?(1x|jednou).*(roky|let|ročně)|" \
-    r"Biennial|Triennial)"
+)
+ONCE_IN_N_YEARS = (
+    r"^((Vychází\s)?(1x|jednou).*(roky|let|ročně)|" r"Biennial|Triennial)"
+)
 TWICE_A_YEAR = r"^(Semiannual)"
 QUARTERLY = r"^(Aktualizováno\sčtvrtletně)"
 
@@ -45,8 +55,10 @@ ONCE_A_MONTH = r"^(měsíčník|Měsíčník|Monthly|monthly)"
 N_TIMES_IN_MONTH = r"^(\d{1,3})\s?(x|×)\s(měsíčně|mesíčně)"
 ONCE_IN_N_MONTHS = r"^1x\sza\s(\d)\směsíce"
 
-BIWEEKLY = r"^(jednou\sza\sdva\stýdny|Biweekly|čtrnáctideník|čtrnáctidenník|" \
+BIWEEKLY = (
+    r"^(jednou\sza\sdva\stýdny|Biweekly|čtrnáctideník|čtrnáctidenník|"
     r"1x\sza\s14\sdní|1x\sza\s2\stýdny)"
+)
 WEEKLY = r"^(Týdeník|týdeník|týdně|jednou\stýdně)"
 N_TIMES_IN_WEEK = r"^(\d{1,3})\s?(x|×)\stýdně"
 
@@ -55,11 +67,15 @@ DAILY_EXCEPT = r"^(denně|Denně)\s(mimo|kromě)"
 DAY_OF_WEEK = r"každý\spátek"
 N_TIMES_IN_DAY = r"^(\d{1,3})\s?(x|×)\sdenně"
 
-NON_REGULAR = r"^(Vychází\snepravidelně|Různá\speriodicita|[Nn]epravidelně|" \
+NON_REGULAR = (
+    r"^(Vychází\snepravidelně|Různá\speriodicita|[Nn]epravidelně|"
     r"Completely\sirregular|Aktualizováno\s(nepravidelně|průběžně))"
-UNKNOWN = r"^(Unknown|" \
-    r"Periodicita\s(neuvedena|není\s(známa|zjištěna)|je\sneurčitelná)|" \
+)
+UNKNOWN = (
+    r"^(Unknown|"
+    r"Periodicita\s(neuvedena|není\s(známa|zjištěna)|je\sneurčitelná)|"
     r"Neznámo|Není\sznáma|No\sissue\sfrequency\sfound)"
+)
 
 
 def parse_year(year_issued: str) -> int:
@@ -69,11 +85,10 @@ def parse_year(year_issued: str) -> int:
     match = re.match(VOLUME_YEAR, year_issued)
     if match:
         return int(year_issued)
-    raise ValueError("Could not parse volume number")
+    raise ValueError("Could not parse publishing year.")
 
 
-def parse_frequency(year_issued: str,
-                    frequencies: List[str]) -> int:
+def parse_frequency(year_issued: str, frequencies: List[str]) -> int:
     match = re.match(VOLUME_RANGE, year_issued)
     if match:
         result = parse_frequency_for_year(match.group(1), frequencies)
@@ -190,8 +205,9 @@ def parse_frequency_for_year(volume_year, issue_frequencies):
             if match.group(2) == volume_year:
                 return match.group(1)
 
-    return next((freq for freq in issue_frequencies
-                 if freq not in matched), None)
+    return next(
+        (freq for freq in issue_frequencies if freq not in matched), None
+    )
 
 
 def parse_frequency_to_x(frequency):

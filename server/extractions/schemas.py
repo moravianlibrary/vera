@@ -10,9 +10,8 @@ class ExtractionBase(BaseModel):
 
 
 class ExtractionCreate(ExtractionBase):
-    target_pages_threshold: float = .05
-    whole_categories_threshold: float = .05
-    include_whole_categories: bool = False
+    target_pages_threshold: float = 0.05
+    whole_categories_threshold: float = 0.05
     balance_total_pages: bool = False
     include_categories: List[int] = []
 
