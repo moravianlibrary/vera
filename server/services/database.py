@@ -42,10 +42,24 @@ def check_connection():
     return False
 
 
+def get_actual_revision():
+    from sqlalchemy import text
+
+    try:
+        with engine.connect() as connection:
+            result = connection.execute(
+                text("SELECT version_num FROM alembic_version;")
+            )
+            row = result.fetchone()
+            if row is not None:
+                return row[0]
+    except Exception:
+        return None
+
+
 def check_database_revision():
     from alembic.command import upgrade
     from alembic.config import Config
-
     from alembic.script import ScriptDirectory
 
     alembic_cfg = Config("alembic.ini")
@@ -53,13 +67,13 @@ def check_database_revision():
     alembic_cfg.set_main_option("sqlalchemy.url", DATABASE_URL)
 
     heads = script_dir.get_revisions("head")
-    latest_revision = heads[0] if heads else None
+    latest_revision = heads[0].revision if heads else None
 
-    upgrade(alembic_cfg, "head")
+    if get_actual_revision() != latest_revision:
+        upgrade(alembic_cfg, "head")
 
-    revision = latest_revision.revision if latest_revision else None
     logger.info(
-        f"Using database revision {revision}.",
+        f"Using database revision {latest_revision}.",
     )
 
 
