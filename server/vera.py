@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+from contextlib import asynccontextmanager
 from os import environ
 
 import auth.router as auth_router
@@ -12,7 +14,29 @@ import roles.router as roles_router
 import tasks.router as tasks_router
 
 
-app = FastAPI()
+logger = logging.getLogger("uvicorn")
+
+
+# TODO: fix logging.
+# TODO: add support to logger editing of documents
+# TODO: add checking unique before insert and update
+
+
+@asynccontextmanager
+async def lifespan(app_: FastAPI):
+    from services.database import check_connection, check_database_revision
+
+    logger.info("Checking database connection.")
+    if not check_connection():
+        logger.info("Database connection failed. Exiting.")
+        return
+    logger.info("Database connection successfully established.")
+    check_database_revision()
+    yield
+    logger.info("Shutting down.")
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 app.add_middleware(
@@ -23,58 +47,52 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# TODO: add support to log editing of documents
-# TODO: add checking unique before insert and update
 
+# from roles.schemas import RoleCreate
+# from roles.enums import ActionType
+# from services.database import create_tables, get_db
 
-@app.on_event("startup")
-async def on_startup():
-    from roles.crud import get_role_by_name, create_role
-    from roles.schemas import RoleCreate
-    from roles.enums import ActionType
-    from services.database import create_tables, get_db
+# create_tables()
+# db = next(get_db())
 
-    create_tables()
-    db = next(get_db())
+# db_role = get_role_by_name("Admin", db)
+# if db_role is None:
+#     create_role(RoleCreate(name="Admin", actions=list(ActionType)), db)
 
-    db_role = get_role_by_name("Admin", db)
-    if db_role is None:
-        create_role(RoleCreate(name="Admin", actions=list(ActionType)), db)
+# db_role = get_role_by_name("User", db)
+# if db_role is None:
+#     create_role(
+#         RoleCreate(
+#             name="User",
+#             actions=[
+#                 ActionType.ReadDatatableDepartment,
+#                 ActionType.EditDatatableOwn,
+#                 ActionType.InsertDatatable,
+#                 ActionType.CommentOnDatatable,
+#                 ActionType.ReadCategoriesDepartment,
+#                 ActionType.PlanTasks,
+#             ],
+#         ),
+#         db,
+#     )
 
-    db_role = get_role_by_name("User", db)
-    if db_role is None:
-        create_role(
-            RoleCreate(
-                name="User",
-                actions=[
-                    ActionType.ReadDatatableDepartment,
-                    ActionType.EditDatatableOwn,
-                    ActionType.InsertDatatable,
-                    ActionType.CommentOnDatatable,
-                    ActionType.ReadCategoriesDepartment,
-                    ActionType.PlanTasks,
-                ],
-            ),
-            db,
-        )
-
-    db_role = get_role_by_name("HeadOfDepartment", db)
-    if db_role is None:
-        create_role(
-            RoleCreate(
-                name="HeadOfDepartment",
-                actions=[
-                    ActionType.ReadDatatableDepartment,
-                    ActionType.EditDatatableDepartment,
-                    ActionType.InsertDatatable,
-                    ActionType.CommentOnDatatable,
-                    ActionType.ReadCategoriesDepartment,
-                    ActionType.EditCategoriesDepartment,
-                    ActionType.PlanTasks,
-                ],
-            ),
-            db,
-        )
+# db_role = get_role_by_name("HeadOfDepartment", db)
+# if db_role is None:
+#     create_role(
+#         RoleCreate(
+#             name="HeadOfDepartment",
+#             actions=[
+#                 ActionType.ReadDatatableDepartment,
+#                 ActionType.EditDatatableDepartment,
+#                 ActionType.InsertDatatable,
+#                 ActionType.CommentOnDatatable,
+#                 ActionType.ReadCategoriesDepartment,
+#                 ActionType.EditCategoriesDepartment,
+#                 ActionType.PlanTasks,
+#             ],
+#         ),
+#         db,
+#     )
 
 
 app.include_router(auth_router.router)
@@ -90,4 +108,9 @@ app.include_router(tasks_router.router)
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(
+        app,
+        host="127.0.0.1",
+        port=8000,
+        log_level="fine",
+    )
