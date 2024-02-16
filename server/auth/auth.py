@@ -4,10 +4,11 @@ from keycloak import KeycloakOpenID
 from os import environ
 
 
+from auth.crud import add_user
 from services import exceptions
 from roles import crud as roles_crud
-from departments import crud as depts_crud
-from . import schemas
+from departments.crud import get_user_departments
+from auth.schemas import CurrentUser
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
@@ -28,7 +29,7 @@ keycloak_openid = KeycloakOpenID(
 )
 
 
-def get_user_from_token(db: Session, token: str) -> schemas.CurrentUser:
+def get_user_from_token(db: Session, token: str) -> CurrentUser:
     """
     Retrieves user information from the token and performs validation checks.
 
@@ -70,13 +71,7 @@ def get_user_from_token(db: Session, token: str) -> schemas.CurrentUser:
             else "User has more than one assigned role"
         )
 
-    departments = [
-        depts_crud.get_department(role_name, db)
-        for role_name in keycloak_roles
-    ]
-    departments = [
-        department for department in departments if department is not None
-    ]
+    departments = get_user_departments(user_info[USER_FIELD], db)
 
     if len(departments) > 1:
         print(user_info)
@@ -90,7 +85,9 @@ def get_user_from_token(db: Session, token: str) -> schemas.CurrentUser:
         else (None, None)
     )
 
-    return schemas.CurrentUser(
+    add_user(user_info[USER_FIELD], db)
+
+    return CurrentUser(
         username=user_info[USER_FIELD],
         department_id=department_id,
         department_name=department_name,

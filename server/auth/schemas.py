@@ -10,3 +10,7 @@ class CurrentUser(BaseModel):
     role_id: int
     role_name: str
     actions: List[ActionType]
+
+
+class User(BaseModel):
+    username: str

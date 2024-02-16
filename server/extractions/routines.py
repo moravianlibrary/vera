@@ -90,9 +90,7 @@ class CategoryNode:
 
     def get_target_pages(self):
         if self.parent_node is None:
-            raise Exception(
-                "Executing get_target_pages() on root node is forbidden"
-            )
+            return self.target_pages
         return self.target_pages + self.parent_node.get_difference_for_child(
             self
         )
@@ -119,7 +117,10 @@ class CategoryLeaf(CategoryNode):
             raise Exception("Node pages count can be set only once")
         self.pages_count = pages_count
         self.is_done = True
-        self.parent_node.add_child_pages_count(self.target_pages, pages_count)
+        if self.parent_node is not None:
+            self.parent_node.add_child_pages_count(
+                self.target_pages, pages_count
+            )
 
     def get_fullfilment_ratio(self, db: Session):
         from extractions.crud import get_category_documents
@@ -144,16 +145,16 @@ class CategoryLeaf(CategoryNode):
         )
 
 
-def bottom_up_generator(target_pages: int, db: Session):
-    assignable_nodes = []
-    clustered_nodes = {}
+def bottom_up_generator(target_pages: int, db: Session) -> List[CategoryLeaf]:
+    assignable_nodes: List[CategoryLeaf] = []
+    clustered_nodes: Dict[int, List[CategoryNode]] = {}
 
     for category in crud.get_assignable_categories(db):
         parent_id = category.parent_id
         if parent_id not in clustered_nodes:
-            clustered_nodes[parent_id] = []
+            clustered_nodes[parent_id if parent_id else 0] = []
         leaf = CategoryLeaf(category)
-        clustered_nodes[parent_id].append(leaf)
+        clustered_nodes[parent_id if parent_id else 0].append(leaf)
         assignable_nodes.append(leaf)
 
     parent_ids = list(clustered_nodes.keys())
@@ -195,15 +196,6 @@ def bottom_up_generator_rec(
         else:
             clustered_nodes[parent_id] = [parent_node]
 
-    # parent_id = node.category.parent_id
-    # if parent_id is None:
-    #     parent_id = 0
-
-    # if parent_id in category_nodes:
-    #     category_nodes[parent_id].add_child(node)
-    # elif parent_id not in clustered_nodes:
-    #     clustered_nodes[parent_id] = []
-    # clustered_nodes[parent_id].append(node)
     bottom_up_generator_rec(parent_id, category_nodes, category_nodes, db)
 
 
@@ -216,9 +208,9 @@ def generate_extraction(
     )
 
     assignable_nodes = bottom_up_generator(target_pages, db)
-    include_nodes = []
-    extract_whole_nodes = []
-    other_nodes = []
+    include_nodes: List[CategoryLeaf] = []
+    extract_whole_nodes: List[CategoryLeaf] = []
+    other_nodes: List[CategoryLeaf] = []
 
     for node in assignable_nodes:
         if (
@@ -240,7 +232,6 @@ def generate_extraction(
         selected_documents.extend(document_ids)
         selected_pages_count += pages_count
 
-    print(extract_whole_nodes)
     for node in extract_whole_nodes:
         document_ids, pages_count = extract_whole_category(
             node, whole_categories_threshold, db

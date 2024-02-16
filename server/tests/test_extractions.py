@@ -45,36 +45,38 @@ class TestExtractions(unittest.TestCase):
 
         with patch(
             "extractions.crud.get_category_documents"
-        ) as mock_get_category_documents:
+        ) as mock_get_category_documents, patch(
+            "categories.crud.get_root_categories"
+        ) as mock_get_root_categories, patch(
+            "categories.crud.get_assignable_categories"
+        ) as mock_get_assignable_categories:
             mock_get_category_documents.return_value = category_documents
-            with patch(
-                "categories.crud.get_root_categories"
-            ) as mock_get_root_categories:
-                mock_get_root_categories.return_value = categories
+            mock_get_root_categories.return_value = categories
+            mock_get_assignable_categories.return_value = categories
 
-                selected_ids, selected_pages_count = generate_extraction(
-                    ExtractionCreate(), 10, self.db
-                )
-                self.assertListEqual([1], selected_ids)
-                self.assertEqual(10, selected_pages_count)
+            selected_ids, selected_pages_count = generate_extraction(
+                ExtractionCreate(), 10, self.db
+            )
+            self.assertListEqual([1], selected_ids)
+            self.assertEqual(10, selected_pages_count)
 
-                selected_ids, selected_pages_count = generate_extraction(
-                    ExtractionCreate(), 11, self.db
-                )
-                self.assertListEqual([1], selected_ids)
-                self.assertEqual(10, selected_pages_count)
+            selected_ids, selected_pages_count = generate_extraction(
+                ExtractionCreate(), 11, self.db
+            )
+            self.assertListEqual([1], selected_ids)
+            self.assertEqual(10, selected_pages_count)
 
-                selected_ids, selected_pages_count = generate_extraction(
-                    ExtractionCreate(), 9, self.db
-                )
-                self.assertListEqual([], selected_ids)
-                self.assertEqual(0, selected_pages_count)
+            selected_ids, selected_pages_count = generate_extraction(
+                ExtractionCreate(), 9, self.db
+            )
+            self.assertListEqual([], selected_ids)
+            self.assertEqual(0, selected_pages_count)
 
-                selected_ids, selected_pages_count = generate_extraction(
-                    ExtractionCreate(target_pages_threshold=0.1), 11, self.db
-                )
-                self.assertListEqual([1], selected_ids)
-                self.assertEqual(10, selected_pages_count)
+            selected_ids, selected_pages_count = generate_extraction(
+                ExtractionCreate(target_pages_threshold=0.1), 11, self.db
+            )
+            self.assertListEqual([1], selected_ids)
+            self.assertEqual(10, selected_pages_count)
 
     def test_extract_whole_document(self):
         from extractions.routines import generate_extraction
@@ -96,48 +98,48 @@ class TestExtractions(unittest.TestCase):
 
         with patch(
             "extractions.crud.get_category_documents"
-        ) as mock_get_category_documents:
+        ) as mock_get_category_documents, patch(
+            "categories.crud.get_root_categories"
+        ) as mock_get_root_categories, patch(
+            "categories.crud.get_assignable_categories"
+        ) as mock_get_assignable_categories, patch(
+            "categories.crud.get_pages_count"
+        ) as mock_get_root_categories:
             mock_get_category_documents.return_value = category_documents
-            with patch(
-                "categories.crud.get_root_categories"
-            ) as mock_get_root_categories:
-                mock_get_root_categories.return_value = categories
-                with patch(
-                    "categories.crud.get_pages_count"
-                ) as mock_get_root_categories:
-                    mock_get_root_categories.return_value = 10
+            mock_get_root_categories.return_value = categories
+            mock_get_assignable_categories.return_value = categories
+            mock_get_root_categories.return_value = 10
 
-                    selected_ids, selected_pages_count = generate_extraction(
-                        ExtractionCreate(), 10, self.db
-                    )
-                    self.assertListEqual([1], selected_ids)
-                    self.assertEqual(10, selected_pages_count)
+            selected_ids, selected_pages_count = generate_extraction(
+                ExtractionCreate(), 10, self.db
+            )
+            self.assertListEqual([1], selected_ids)
+            self.assertEqual(10, selected_pages_count)
 
-                    selected_ids, selected_pages_count = generate_extraction(
-                        ExtractionCreate(), 11, self.db
-                    )
-                    self.assertListEqual([1], selected_ids)
-                    self.assertEqual(10, selected_pages_count)
+            selected_ids, selected_pages_count = generate_extraction(
+                ExtractionCreate(), 11, self.db
+            )
+            self.assertListEqual([1], selected_ids)
+            self.assertEqual(10, selected_pages_count)
 
-                    selected_ids, selected_pages_count = generate_extraction(
-                        ExtractionCreate(), 9, self.db
-                    )
-                    self.assertListEqual([], selected_ids)
-                    self.assertEqual(0, selected_pages_count)
+            selected_ids, selected_pages_count = generate_extraction(
+                ExtractionCreate(), 9, self.db
+            )
+            self.assertListEqual([], selected_ids)
+            self.assertEqual(0, selected_pages_count)
 
-                    # TODO: make this scenario work
-                    # selected_ids, selected_pages_count = generate_extraction(
-                    #     ExtractionCreate(whole_categories_threshold=0.2),
-                    #     9,
-                    #     self.db,
-                    # )
-                    # self.assertListEqual([1], selected_ids)
-                    # self.assertEqual(10, selected_pages_count)
+            selected_ids, selected_pages_count = generate_extraction(
+                ExtractionCreate(whole_categories_threshold=0.2),
+                9,
+                self.db,
+            )
+            self.assertListEqual([1], selected_ids)
+            self.assertEqual(10, selected_pages_count)
 
-                    selected_ids, selected_pages_count = generate_extraction(
-                        ExtractionCreate(whole_categories_threshold=0.1),
-                        9,
-                        self.db,
-                    )
-                    self.assertListEqual([], selected_ids)
-                    self.assertEqual(0, selected_pages_count)
+            selected_ids, selected_pages_count = generate_extraction(
+                ExtractionCreate(whole_categories_threshold=0.1),
+                9,
+                self.db,
+            )
+            self.assertListEqual([], selected_ids)
+            self.assertEqual(0, selected_pages_count)

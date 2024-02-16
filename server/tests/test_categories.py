@@ -18,35 +18,21 @@ class TestCategoriesEndpoints(unittest.TestCase):
             "Content-Type": "application/json",
         }
 
-    def clear_categories(self):
-        from categories.crud import get_root_categories, delete_category
+    def delete_category_by_name(self, name: str):
+        from categories.crud import delete_category, get_root_categories
+        from documents.crud import delete_document
+        from extractions.crud import get_category_documents
 
         for category in get_root_categories(self.db):
-            delete_category(category.id, self.db)
-
-    def delete_category_by_name_rec(self, category, name: str):
-        from categories.crud import delete_category
-
-        if name == category.name:
-            delete_category(category.id, self.db)
-        else:
-            for category in category.children:
-                self.delete_category_by_name_rec(category, name)
-
-    def delete_category_by_name(self, name: str):
-        from categories.crud import get_root_categories
-        from categories.routines import get_category_subtree
-
-        categories = [
-            get_category_subtree(root_category, self.db)
-            for root_category in get_root_categories(self.db)
-        ]
-        for category in categories:
-            self.delete_category_by_name_rec(category, name)
+            if category.name == name:
+                for document in get_category_documents(category.id, self.db):
+                    delete_document(document.id, self.db)
+                delete_category(category.id, self.db)
 
     def test_create_root_category(self):
         name = "Test Root Category Name"
         description = "Test Root Category Description"
+        self.delete_category_by_name(name)
         response = self.client.post(
             "/categories/category",
             json={"name": name, "description": description},
@@ -66,6 +52,7 @@ class TestCategoriesEndpoints(unittest.TestCase):
         name = "Test Root Category Name"
         description = "Test Root Category Description"
         updated_name = "Updated Test Category"
+        self.delete_category_by_name(updated_name)
         response = self.client.post(
             "/categories/category",
             json={"name": name, "description": description},
@@ -85,6 +72,7 @@ class TestCategoriesEndpoints(unittest.TestCase):
         self.delete_category_by_name(updated_name)
 
     def create_test_category_tree(self):
+        self.delete_category_by_name("root")
         response = self.client.post(
             "/categories/category", json={"name": "root"}
         )
@@ -164,7 +152,21 @@ class TestCategoriesEndpoints(unittest.TestCase):
 
     def test_delete_subtree(self):
         self.create_test_category_tree()
-        self.delete_category_by_name("child 2")
+        from categories.crud import (
+            delete_category,
+            get_root_categories,
+            get_children_categories,
+        )
+
+        categories = get_root_categories(self.db)
+        curr_category = categories.pop()
+        while curr_category:
+            children = get_children_categories(curr_category.id, self.db)
+            for child in children:
+                if child.name == "child 2":
+                    delete_category(child.id, self.db)
+            categories.extend(children)
+            curr_category = categories.pop() if categories else None
 
         response = self.client.get("/categories")
         test_tree = response.json()["name" == "root"]
@@ -193,25 +195,10 @@ class TestCategoriesEndpoints(unittest.TestCase):
 
         self.delete_category_by_name("root")
 
-    def clear_documents(self):
-        from documents.crud import (
-            get_documents_query_base,
-            get_documents,
-            delete_document,
-        )
-
-        documents_ids = [
-            document.id
-            for document in get_documents(get_documents_query_base(self.db))
-        ]
-        for document_id in documents_ids:
-            delete_document(document_id, self.db)
-
     def test_get_categories(self):
         from categories.crud import get_root_categories, update_category
         from categories.schemas import CategoryCreate
 
-        self.clear_documents()
         self.create_test_category_tree()
 
         category = get_root_categories(self.db)[0]
@@ -232,31 +219,31 @@ class TestCategoriesEndpoints(unittest.TestCase):
 
         document1 = {
             "sysno": "MZK01-001002003",
-            "volume_number": "1996",
-            "item_number": "10",
+            "volume": "1996",
             "title": "Test Document",
             "pages_count": 10,
             "category_id": category.id,
         }
         document2 = {
             "sysno": "MZK01-001002003",
-            "volume_number": "1997",
-            "item_number": "10",
+            "volume": "1997",
             "title": "Test Document",
             "category_id": category.id,
         }
         document3 = {
             "sysno": "MZK01-001002003",
-            "volume_number": "1998",
-            "item_number": "10",
+            "volume": "1998",
             "title": "Test Document",
             "pages_count": 20,
             "category_id": category.id,
         }
 
-        self.client.post("/documents", json=document1, headers=self.headers)
-        self.client.post("/documents", json=document2, headers=self.headers)
-        self.client.post("/documents", json=document3, headers=self.headers)
+        document_ids = [
+            self.client.post(
+                "/documents", json=document, headers=self.headers
+            ).json()["document"]["id"]
+            for document in [document1, document2, document3]
+        ]
 
         response = self.client.get("/categories")
         test_tree = response.json()["name" == "root"]
@@ -269,7 +256,10 @@ class TestCategoriesEndpoints(unittest.TestCase):
         self.assertEqual(test_tree["count_documents_with_pages"], 2)
         self.assertEqual(test_tree["count_documents"], 3)
 
-        self.clear_documents()
+        for document_id in document_ids:
+            self.client.delete(
+                f"/documents/{document_id}", headers=self.headers
+            )
         self.delete_category_by_name("root")
 
     def test_category_distribution(self):

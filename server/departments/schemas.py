@@ -1,8 +1,9 @@
 from pydantic import BaseModel
+from typing import List
 
 
 class DepartmentBase(BaseModel):
-    # abbreviation: str
+    abbreviation: str
     name: str
 
 
@@ -12,3 +13,4 @@ class DepartmentCreate(DepartmentBase):
 
 class Department(DepartmentBase):
     id: int
+    users: List[str] = []

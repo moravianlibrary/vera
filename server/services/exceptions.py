@@ -1,6 +1,14 @@
 from fastapi import HTTPException, status
 
 
+class DepartmentNotFoundException(HTTPException):
+    def __init__(self, id):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Department with id {id} was not found",
+        )
+
+
 class DocumentNotFoundException(HTTPException):
     def __init__(self, id):
         super().__init__(
