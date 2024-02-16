@@ -2,7 +2,6 @@ from celery import Celery
 from os import environ
 
 from services.database import DATABASE_URL, get_db
-from tasks.routines import predict_volumes_pages, sync_from_catalog
 from tasks.enums import TaskState, TaskType
 from tasks import crud
 
@@ -11,14 +10,16 @@ celery_worker = Celery(
     broker=environ.get("BROKER_URL"),
     result_backend=f"db+{DATABASE_URL}",
     database_table_names={
-        'task': 'celery_tasks',
-        'group': 'celery_groups',
-    }
+        "task": "celery_tasks",
+        "group": "celery_groups",
+    },
 )
 
 
 @celery_worker.task
 def run_task(task_id: int):
+    from tasks.routines import predict_volumes_pages, sync_from_catalog
+
     db = next(get_db())
     task = crud.get_task(task_id, db)
     crud.set_task_started(task_id, db)
