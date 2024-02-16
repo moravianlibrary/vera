@@ -7,7 +7,8 @@ def setUpEnv():
     from os import environ
 
     environ["POSTGRES_HOST"] = "localhost"
-    environ["ALLOW_ORIGINS"] = "http://localhost:3000"
+    environ["ALLOW_ORIGINS"] = "*"
+    # environ["ALLOW_ORIGINS"] = "http://localhost:3000"
     environ["KEYCLOAK_CLIENT_ID"] = "vera-backend"
     environ["KEYCLOAK_ISSUER_CLIENT_ID"] = "vera"
 

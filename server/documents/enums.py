@@ -8,9 +8,12 @@ class DocumentCreateResult(Enum):
     InvalidIdentifier = "InvalidIdentifier"
     InvalidSysno = "InvalidSysno"
     InvalidSysnoBase = "InvalidSysnoBase"
+    InvalidCatalogDocument = "InvalidCatalogDocument"
+    CatalogError = "CatalogError"
     MultipleIssueChoices = "MultipleIssueChoices"
     AlreadyDigitized = "AlreadyDigitized"
-    Prepared = "Prepared"
+    DigitizationInProgress = "DigitizationInProgress"
+    DigitizationPlanned = "DigitizationPlanned"
     MultipleIssues = "MultipleIssues"
     Success = "Success"
 

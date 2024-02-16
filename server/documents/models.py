@@ -20,7 +20,7 @@ from catalogs.enums import DigitizationState, MaterialType, IssuanceType
 
 class Document(Base):
     __tablename__ = "documents"
-    __table_args__ = (UniqueConstraint("sysno", "volume_number", "barcode"),)
+    __table_args__ = (UniqueConstraint("sysno", "volume", "barcode"),)
 
     id = Column(Integer, primary_key=True, index=True)
     sysno = Column(String, index=True, nullable=False)
@@ -46,7 +46,7 @@ class Document(Base):
 
     publisher = Column(String)
     publishing_place = Column(String)
-    publishing_date = Column(String)
+    publishing_year = Column(String)
     languages = Column(ARRAY(String))
 
     frequencies = Column(JSON)

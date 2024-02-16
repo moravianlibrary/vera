@@ -5,28 +5,33 @@ from typing import Optional
 from services.database import create
 from documents import models, schemas
 from documents.search import filter_documents_query_base
+from services import exceptions
 
 
 def create_document(
     document: schemas.DocumentCreate, creator: str, db: Session
-):
+) -> schemas.DocumentView:
     db_document = create(
         db,
         models.Document(
             sysno=document.sysno,
-            volume_number=document.volume_number,
-            category_id=document.category_id,
-            signature=document.signature,
+            volume=document.volume,
             barcode=document.barcode,
-            ccnb=document.ccnb,
-            isbn=document.isbn,
+            category_id=document.category_id,
+            cnb=document.cnb,
+            isbn_issn=document.isbn_issn,
+            signature=document.signature,
             material_type=document.material_type,
+            issuance_type=document.issuance_type,
             title=document.title,
+            digitization_state=document.digitization_state,
+            year=document.year,
+            bundle=document.bundle,
             pages_count=document.pages_count,
             size=document.size,
-            digitization_state=document.digitization_state,
-            publishers=document.publishers,
-            publishing_places=document.publishing_places,
+            publisher=document.publisher,
+            publishing_place=document.publishing_place,
+            publishing_year=document.publishing_year,
             languages=document.languages,
             frequencies=document.frequencies,
             creator=creator,
@@ -37,34 +42,16 @@ def create_document(
 
 def update_document(
     document_id: int,
-    document: schemas.DocumentCreate,
+    new_document: schemas.DocumentCreate,
     username: str,
     db: Session,
-):
-    db_document = get_document(document_id, db)
-    if not document:
-        return
+) -> schemas.DocumentView:
+    existing_document = get_document(document_id, db)
+    if not existing_document:
+        raise exceptions.DocumentNotFoundException(document_id)
 
-    db_document.sysno = document.sysno
-    db_document.volume_number = document.volume_number
-
-    db_document.category_id = document.category_id
-
-    db_document.barcode = document.barcode
-    db_document.signature = document.signature
-    db_document.ccnb = document.ccnb
-    db_document.isbn = document.isbn
-
-    db_document.material_type = document.material_type
-    db_document.title = document.title
-
-    db_document.pages_count = document.pages_count
-    db_document.size = document.size
-
-    db_document.publishers = document.publishers
-    db_document.publishing_places = document.publishing_places
-    db_document.languages = document.languages
-    db_document.frequencies = document.frequencies
+    for field in new_document.model_dump(exclude_unset=True):
+        setattr(existing_document, field, getattr(new_document, field))
 
     db.commit()
 
@@ -73,17 +60,22 @@ def update_document(
 
 def delete_document(document_id: int, db: Session):
     db_document = get_document(document_id, db)
+    if db_document is None:
+        raise exceptions.DocumentNotFoundException(id)
     db.delete(db_document)
     db.commit()
     return db_document
 
 
 def get_document(document_id: int, db: Session):
-    return (
+    document = (
         db.query(models.Document)
         .filter(models.Document.id == document_id)
         .first()
     )
+    if document is None:
+        raise exceptions.DocumentNotFoundException(id)
+    return document
 
 
 def get_document_view(document_id: int, db: Session):
@@ -92,15 +84,6 @@ def get_document_view(document_id: int, db: Session):
         .filter(models.Document.id == document_id)
         .first()
     )
-
-
-def document_exists(
-    sysno: str,
-    volume: Optional[str],
-    barcode: Optional[str],
-    db: Session,
-) -> bool:
-    return get_document_by_identifiers(sysno, volume, barcode, db) is not None
 
 
 def get_document_by_identifiers(
@@ -117,6 +100,15 @@ def get_document_by_identifiers(
     if barcode:
         query_base = query_base.filter(models.Document.barcode == barcode)
     return query_base.first()
+
+
+def document_exists(
+    sysno: str,
+    volume: Optional[str],
+    barcode: Optional[str],
+    db: Session,
+) -> bool:
+    return get_document_by_identifiers(sysno, volume, barcode, db) is not None
 
 
 def get_documents_query_base(

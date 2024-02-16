@@ -20,7 +20,7 @@ from catalogs.schemas import CatalogDocument, CatalogIssue
 
 
 class DocumentBase(BaseModel):
-    sysno: str
+    sysno: Optional[str] = None
     volume: Optional[str] = None
     barcode: Optional[str] = None
 
@@ -30,8 +30,8 @@ class DocumentBase(BaseModel):
 
     material_type: Optional[MaterialType] = None
     issuance_type: Optional[IssuanceType] = None
-    title: str = None
-    digitization_state: DigitizationState = DigitizationState.NotDigitized
+    title: Optional[str] = None
+    digitization_state: Optional[DigitizationState] = None
 
     year: Optional[str] = None
     bundle: Optional[str] = None
@@ -39,19 +39,18 @@ class DocumentBase(BaseModel):
     pages_count: Optional[int] = None
     size: Optional[str] = None
 
-    publishers: List[str] = []
-    publishing_places: List[str] = []
+    publishers: Optional[List[str]] = None
+    publishing_places: Optional[List[str]] = None
 
     publisher: Optional[str] = None
     publishing_place: Optional[str] = None
     publishing_year: Optional[str] = None
-    languages: List[str] = []
+    languages: Optional[List[str]] = None
 
-    frequencies: List[Dict[str, str]] = []
+    frequencies: Optional[List[Dict[str, str]]] = None
 
 
 class DocumentCreate(DocumentBase):
-    document_exists: bool = True
     category_id: Optional[int] = None
 
     @classmethod
@@ -93,11 +92,15 @@ class DocumentCreate(DocumentBase):
     ) -> "DocumentCreate":
         return cls(
             sysno=catalog_document.sysno,
-            volume_number=catalog_issue.volume,
+            volume=catalog_issue.volume,
             barcode=catalog_issue.barcode,
             cnb=catalog_document.cnb,
             isbn_issn=catalog_document.isbn_issn,
-            signature=catalog_issue.signature,
+            signature=(
+                catalog_issue.signature
+                if catalog_issue.signature
+                else catalog_document.signature
+            ),
             material_type=catalog_document.material_type,
             issuance_type=catalog_issue.type,
             title=catalog_document.title,

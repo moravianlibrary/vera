@@ -18,7 +18,7 @@ class AlephIssue:
         return values[0] if values else None
 
     @property
-    def type(self) -> str:
+    def type(self) -> IssuanceType:
         if self.field.get_subfields("i"):
             return IssuanceType.Bundle
         if self.field.get_subfields("y"):
@@ -26,12 +26,12 @@ class AlephIssue:
         return IssuanceType.Unit
 
     @property
-    def barcode(self) -> str:
-        return self.field.get_subfields("b")[0]
+    def barcode(self) -> Optional[str]:
+        return self.get_code_value("b")
 
     @property
-    def signature(self) -> str:
-        return self.field.get_subfields("c")[0]
+    def signature(self) -> Optional[str]:
+        return self.get_code_value("c")
 
     @property
     def year(self) -> Optional[str]:

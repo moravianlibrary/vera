@@ -52,6 +52,8 @@ def get_document_by_identifier(
 def generate_catalog_document(identifier: Identifier):
     document, response_status = get_document_by_identifier(identifier)
     return CatalogResponse(
-        document=CatalogDocument.from_aleph_document(document),
+        document=(
+            CatalogDocument.from_aleph_document(document) if document else None
+        ),
         response_status=response_status,
     )

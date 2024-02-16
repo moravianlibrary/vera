@@ -35,12 +35,13 @@ class Identifier(BaseModel):
 
 class CatalogIssue(BaseModel):
     type: IssuanceType
-    barcode: str
-    signature: str
+    barcode: Optional[str]
+    signature: Optional[str]
     year: Optional[str] = None
     volume: Optional[str] = None
     bundle: Optional[str] = None
     digitization_state: DigitizationState = DigitizationState.NotDigitized
+    already_exists: bool = False
 
     @classmethod
     def from_aleph_issue(
