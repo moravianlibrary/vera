@@ -14,6 +14,7 @@ class Role(Base):
 class Action(Base):
     __tablename__ = "actions"
 
-    role_id = Column(Integer, ForeignKey('roles.id'),
-                     primary_key=True, index=True)
-    action = Column(Enum(ActionType), primary_key=True, index=True)
+    role_id = Column(
+        Integer, ForeignKey("roles.id"), primary_key=True, index=True
+    )
+    action = Column(Enum(ActionType), primary_key=True)
