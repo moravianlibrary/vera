@@ -21,6 +21,7 @@ def upgrade() -> None:
     op.add_column(
         "categories", sa.Column("extract_whole", sa.Boolean(), nullable=True)
     )
+    op.execute("UPDATE categories SET extract_whole = false;")
 
 
 def downgrade() -> None:
