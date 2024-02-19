@@ -10,6 +10,7 @@ from services.exceptions import EmptyExtraction
 
 def create_extraction(username: str,
                       target_pages: int,
+                      extracted_pages: int,
                       document_ids: List[int],
                       db: Session):
     if not document_ids:
@@ -18,6 +19,7 @@ def create_extraction(username: str,
     return create(db, models.Extraction(
         extractor=username,
         target_pages=target_pages,
+        extracted_pages=extracted_pages,
         document_ids=document_ids
     ))
 
@@ -27,6 +29,9 @@ def set_documents_extracted(extraction_id: int,
     for document_id in get_extraction(extraction_id, db).document_ids:
         db.execute(update(Document).where(Document.id == document_id)
                    .values(extraction_id=extraction_id))
+    db.execute(update(models.Extraction)
+               .where(models.Extraction.id == extraction_id)
+               .values(marked=True))
     db.commit()
 
 
@@ -35,6 +40,9 @@ def unset_documents_extracted(extraction_id: int,
     for document_id in get_extraction(extraction_id, db).document_ids:
         db.execute(update(Document).where(Document.id == document_id)
                    .values(extraction_id=None))
+    db.execute(update(models.Extraction)
+               .where(models.Extraction.id == extraction_id)
+               .values(marked=False))
     db.commit()
 
 

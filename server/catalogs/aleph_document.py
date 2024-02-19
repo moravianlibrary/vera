@@ -1,230 +1,221 @@
-import re
 from urllib.parse import quote
-from documents import schemas
-from catalogs.enums import DocumentCreateResult, MaterialType, IssuanceType
-from typing import List, Optional, Tuple
+
+from pymarc import Field
+from catalogs.enums import IssuanceType
+from typing import Dict, List, Optional
 
 
-MARC_NS = {"marc": "http://www.loc.gov/MARC21/slim"}
-
-PAGE_COUNT_FORMAT = r'^(\d+) s.*'
-SIZE_FORMAT = r'^(\d+) (cm).*'
+def encode(text: Optional[str]) -> Optional[str]:
+    return quote(text.encode("utf-8")) if text is not None else None
 
 
-def get_datafield(marc, tag, ind1=None, ind2=None):
-    xpath = f'.//marc:datafield[@tag="{tag}"]'
-    if ind1 is not None:
-        xpath += f'[@ind1="{ind1}"]'
-    if ind2 is not None:
-        xpath += f'[@ind2="{ind2}"]'
-    return marc.find(xpath, namespaces=MARC_NS)
+class AlephIssue:
+    def __init__(self, field: Field):
+        self.field = field
 
+    def get_code_value(self, code) -> Optional[str]:
+        values = self.field.get_subfields(code)
+        return values[0] if values else None
 
-def get_datafields(marc, tag, ind1=None, ind2=None):
-    xpath = f'.//marc:datafield[@tag="{tag}"]'
-    if ind1 is not None:
-        xpath += f'[@ind1="{ind1}"]'
-    if ind2 is not None:
-        xpath += f'[@ind2="{ind2}"]'
-    return marc.findall(xpath, namespaces=MARC_NS)
+    @property
+    def type(self) -> IssuanceType:
+        if self.field.get_subfields("i"):
+            return IssuanceType.Bundle
+        if self.field.get_subfields("y"):
+            return IssuanceType.Volume
+        return IssuanceType.Unit
 
+    @property
+    def barcode(self) -> Optional[str]:
+        return self.get_code_value("b")
 
-def get_subfield(datafield, code):
-    return datafield.find(f'.//marc:subfield[@code="{code}"]',
-                          namespaces=MARC_NS)
+    @property
+    def signature(self) -> Optional[str]:
+        return self.get_code_value("c")
 
+    @property
+    def year(self) -> Optional[str]:
+        return self.get_code_value("y")
 
-def get_subfield_text(datafield, code):
-    subfield = get_subfield(datafield, code)
-    return subfield.text if subfield is not None else None
-
-
-def get_field(marc, tag, code, ind1=None, ind2=None):
-    xpath = f'.//marc:datafield[@tag="{tag}"]'
-    if ind1 is not None:
-        xpath += f'[@ind1="{ind1}"]'
-    if ind2 is not None:
-        xpath += f'[@ind2="{ind2}"]'
-    xpath += f'/marc:subfield[@code="{code}"]'
-    return marc.find(xpath, namespaces=MARC_NS)
-
-
-def get_fields(marc, tag, code, ind1=None, ind2=None):
-    xpath = f'.//marc:datafield[@tag="{tag}"]'
-    if ind1 is not None:
-        xpath += f'[@ind1="{ind1}"]'
-    if ind2 is not None:
-        xpath += f'[@ind2="{ind2}"]'
-    xpath += f'/marc:subfield[@code="{code}"]'
-    return marc.findall(xpath, namespaces=MARC_NS)
-
-
-def get_field_text(marc, tag, code, ind1=None, ind2=None):
-    field = get_field(marc, tag, code, ind1, ind2)
-    return field.text if field is not None else None
-
-
-def get_fields_text(marc, tag, code, ind1=None, ind2=None):
-    fields = get_fields(marc, tag, code, ind1, ind2)
-    return [field.text for field in fields]
-
-
-def get_field_text_for_tags(marc, tags, code, ind1=None, ind2=None):
-    for tag in tags:
-        text = get_field_text(marc, tag, code, ind1, ind2)
-        if text is not None:
-            return text
-    return None
-
-
-def encode(text: Optional[str]) -> [str]:
-    return quote(text.encode('utf-8')) if text is not None else None
-
-
-def get_first_encoded(texts: List[Optional[str]]) -> Optional[str]:
-    for text in texts:
-        encoded = encode(text)
-        if encoded is not None:
-            return encoded
-    return None
-
-
-def parse_page_count(extent: Optional[str]) -> Optional[int]:
-    if extent is None:
-        return None
-    match = re.search(PAGE_COUNT_FORMAT, extent)
-    return int(match.group(1)) if match else None
-
-
-def parse_size(size: Optional[str]) -> Optional[str]:
-    if size is None:
-        return None
-    match = re.search(SIZE_FORMAT, size)
-    return re.sub(SIZE_FORMAT, r'\1 \2', size) if match else None
-
-
-def parse_material_type(type: Optional[str]):
-    if type is None:
-        return None
-    elif type == "BK":
-        return MaterialType.book
-    elif type == "CR" or type == "SE":
-        return MaterialType.continuing_resource
-    elif type == "MP":
-        return MaterialType.map
-    elif type == "MU":
-        return MaterialType.music
-
-
-class Issue:
-    def __init__(self, marc_issue):
-        self.barcode = get_subfield_text(marc_issue, "b")
-        self.signature = get_subfield_text(marc_issue, "c")
-        date_issued = get_subfield_text(marc_issue, "d")
-        volume = get_subfield_text(marc_issue, "v")
-        item = get_subfield_text(marc_issue, "i")
-        year_issued = get_subfield_text(marc_issue, "y")
-
-        self.year_issued = None
-        self.volume = None
-        self.item = None
-
-        if date_issued is None:
-            return
-
-        date_issued_splitted = re.split("\\s+", date_issued)
-
-        if len(date_issued_splitted) == 3 and date_issued_splitted[2] == item:
-            self.item = item
-        if 2 <= len(date_issued_splitted) and len(date_issued_splitted) <= 3 \
-                and date_issued_splitted[0] == year_issued \
-                and date_issued_splitted[1] == volume:
-            self.volume = volume
-            self.year_issued = year_issued
-        elif len(date_issued_splitted) == 2 \
-                and date_issued_splitted[1] == item \
-                and date_issued_splitted[0] == year_issued \
-                and date_issued_splitted[0] == volume:
-            self.item = item
-            self.volume = volume
-            self.year_issued = year_issued
-        else:
-            self.item = None
-
-    def get_schema(self):
-        return schemas.Issue(
-            signature=self.signature,
-            year_issued=self.year_issued,
-            volume=self.volume,
-            item=self.item,
-            barcode=self.barcode,
-            issuance_type=IssuanceType.edition if self.volume is None else (
-                IssuanceType.volume if self.item is None else IssuanceType.item
-            )
+    @property
+    def volume(self) -> Optional[str]:
+        return (
+            self.get_code_value("d")
+            if self.type == IssuanceType.Unit
+            else self.get_code_value("v")
         )
 
+    @property
+    def bundle(self) -> Optional[str]:
+        return self.get_code_value("i")
 
-class CatalogDocument:
+    def __str__(self):
+        properties = [
+            f"type: {self.type}",
+            f"barcode: {self.barcode}",
+            f"signature: {self.signature}",
+            f"year: {self.year}",
+            f"volume: {self.volume}",
+            f"bundle: {self.bundle}",
+        ]
+        return "\n".join(properties)
+
+
+class AlephDocument:
     def __init__(self, sysno, marc):
-        self.sysno = sysno
-        self.ccnb = get_field_text(marc, "015", "a")
-        self.isbn = get_field_text(marc, "020", "a")
+        from pymarc import marcxml, Record
+        from io import BytesIO
+        from lxml import etree
 
-        self.title = get_field_text(marc, "245", "a")
-        self.alternative_title = get_field_text(marc, "245", "b")
-        self.part_number = get_field_text(marc, "245", "n")
-        self.part_title = get_field_text(marc, "245", "p")
-        self.edition = get_field_text(marc, "250", "a")
+        marc_xml_bytes = etree.tostring(marc)
+        marc_xml_file_like = BytesIO(marc_xml_bytes)
+        record: Record = marcxml.parse_xml_to_array(marc_xml_file_like)[0]
+        self.record = record
+        self._sysno = sysno
 
-        self.publishers = get_fields_text(marc, "260", "b")
-        self.publishers.extend(get_fields_text(marc, "264", "b"))
-        # self.publishion_place = get_field_text_for_tags(marc, ["260", "264"],
-        # "a")
-        # self.publishers = get_field_text_for_tags(marc, ["260", "264"], "b")
-        self.publishing_date = get_field_text_for_tags(
-            marc, ["260", "264"], "c")
+    def get_values(self, tag, code, ind1=None, ind2=None):
+        return [
+            subfield
+            for field in self.record.get_fields(tag)
+            for subfield in field.get_subfields(code)
+            if ind1 is None or field.indicator1 == ind1
+            if ind2 is None or field.indicator2 == ind2
+        ]
 
-        self.extent = get_field_text(marc, "300", "a")
-        self.additional_physical_data = get_field_text(marc, "300", "b")
-        self.size = get_field_text(marc, "300", "c")
-        self.periodicity = get_field_text(marc, "310", "a")
-        self.issuance_data = get_field_text(marc, "362", "a")
+    def get_value(self, tag, code):
+        values = self.get_values(tag, code)
+        return values[0] if values else None
 
-        self.subtitle = get_field_text(marc, "490", "a")
-        self.subtitle_version = get_field_text(marc, "490", "v")
+    @property
+    def sysno(self) -> str:
+        return self._sysno
 
-        self.sigla = get_field_text(marc, "910", "a")
-        self.signature = get_field_text(marc, "910", "b")
-        self.additional_signature = get_field_text(marc, "910", "c")
-        self.material_type = get_field_text(marc, "990", "a")
-        self.barcode = get_field_text(marc, "996", "b")
+    @property
+    def cnb(self) -> Optional[str]:
+        return self.get_value("015", "a")
 
-        self.issues = [Issue(issue) for issue in get_datafields(marc, "996")]
+    @property
+    def isbn_issn(self) -> Optional[str]:
+        return self.record.isbn if self.record.isbn else self.record.issn
 
-    def get_schema(self) -> Tuple[schemas.DocumentCatalog,
-                                  DocumentCreateResult]:
-        title = get_first_encoded([self.title, self.alternative_title])
-        if title is None:
-            return None, DocumentCreateResult.CATALOG_DOCUMENT_PARSING_ERROR
+    @property
+    def sigla(self) -> Optional[str]:
+        return self.get_value("910", "a")
 
-        return schemas.DocumentCatalog(
-            sysno=self.sysno,
+    @property
+    def signature(self) -> Optional[str]:
+        signature = self.get_value("910", "b")
+        return signature if signature else self.get_value("910", "c")
 
-            material_type=parse_material_type(self.material_type),
-            publishers=[encode(p) for p in self.publishers],
-            publishing_date=encode(self.publishing_date),
+    @property
+    def title(self) -> Optional[str]:
+        return self.record.title
 
-            title=title,
-            pages_count=parse_page_count(self.extent),
-            size=parse_size(self.size),
-            periodicity=encode(self.periodicity),
+    @property
+    def part_number(self) -> Optional[str]:
+        return self.get_value("245", "n")
 
-            barcode=self.barcode,
-            signature=get_first_encoded([self.signature,
-                                         self.additional_signature]),
-            ccnb=encode(self.ccnb),
+    @property
+    def part_title(self) -> Optional[str]:
+        return self.get_value("245", "p")
 
-            isbn=encode(self.isbn),
+    @property
+    def edition(self) -> Optional[str]:
+        return self.get_value("250", "a")
 
-            issues=[issue.get_schema() for issue in self.issues]
-        ), DocumentCreateResult.PREPARED
+    @property
+    def material_type(self) -> Optional[str]:
+        return self.get_value("990", "a")
+
+    @property
+    def publishers(self) -> List[str]:
+        values = self.get_values("260", "b")
+        values.extend(self.get_values("264", "b", ind2="1"))
+        return values
+
+    @property
+    def publishing_places(self) -> List[str]:
+        values = self.get_values("260", "a")
+        values.extend(self.get_values("264", "a", ind2="1"))
+        return values
+
+    @property
+    def publisher(self) -> Optional[str]:
+        return self.record.publisher
+
+    @property
+    def publishing_place(self) -> Optional[str]:
+        publishing_places = self.get_values("260", "a")
+        publishing_places.extend(self.get_values("264", "a", ind2="1"))
+        return publishing_places[0] if publishing_places else None
+
+    @property
+    def publishing_year(self) -> Optional[str]:
+        return self.record.pubyear
+
+    @property
+    def languages(self) -> List[str]:
+        return self.get_values("041", "a")
+
+    @property
+    def extent(self) -> Optional[str]:
+        return self.get_value("300", "a")
+
+    @property
+    def additional_physical_data(self) -> Optional[str]:
+        return self.get_value("300", "b")
+
+    @property
+    def size(self) -> Optional[str]:
+        return self.get_value("300", "c")
+
+    @property
+    def frequencies(self) -> List[Dict[str, str]]:
+        """Returns a list of dictionaries containing
+        frequency and date information.
+
+        Returns: List[Dict[str, str]]: List of dictionaries with keys
+        "frequency" and "date"
+        """
+        return [
+            {
+                "frequency": freq_subfield,
+                "date": date_subfield,
+            }
+            for field in self.record.get_fields("310", "321")
+            for freq_subfield, date_subfield in zip(
+                field.get_subfields("a"), field.get_subfields("b")
+            )
+            if len(field.get_subfields("a")) == len(field.get_subfields("b"))
+        ]
+
+    @property
+    def issues(self) -> List[AlephIssue]:
+        return [AlephIssue(field) for field in self.record.get_fields("996")]
+
+    def __str__(self) -> str:
+        issues_str = "\n\n".join(str(issue) for issue in self.issues)
+        properties = [
+            f"sysno: {self.sysno}",
+            f"cnb: {self.cnb}",
+            f"isbn_issn: {self.isbn_issn}",
+            f"sigla: {self.sigla}",
+            f"signature: {self.signature}",
+            f"title: {self.title}",
+            f"part_number: {self.part_number}",
+            f"part_title: {self.part_title}",
+            f"edition: {self.edition}",
+            f"material_type: {self.material_type}",
+            f"publishers: {self.publishers}",
+            f"publishing_places: {self.publishing_places}",
+            f"publisher: {self.publisher}",
+            f"publishing_place: {self.publishing_place}",
+            f"publishing_year: {self.publishing_year}",
+            f"languages: {self.languages}",
+            f"extent: {self.extent}",
+            f"additional_physical_data: {self.additional_physical_data}",
+            f"size: {self.size}",
+            f"frequencies: {self.frequencies}",
+            f"issues:\n\n{issues_str}",
+        ]
+        return "\n".join(properties)

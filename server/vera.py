@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import logging
+from contextlib import asynccontextmanager
 from os import environ
 
 import auth.router as auth_router
@@ -12,7 +14,29 @@ import roles.router as roles_router
 import tasks.router as tasks_router
 
 
-app = FastAPI()
+logger = logging.getLogger("uvicorn")
+
+
+# TODO: fix logging.
+# TODO: add support to logger editing of documents
+# TODO: add checking unique before insert and update
+
+
+@asynccontextmanager
+async def lifespan(app_: FastAPI):
+    from services.database import check_connection, check_database_revision
+
+    logger.info("Checking database connection.")
+    if not check_connection():
+        logger.info("Database connection failed. Exiting.")
+        return
+    logger.info("Database connection successfully established.")
+    check_database_revision()
+    yield
+    logger.info("Shutting down.")
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 app.add_middleware(
@@ -22,20 +46,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# TODO: add support to log editing of documents
-# TODO: add checking unique before insert and update
-
-
-@app.on_event("startup")
-async def on_startup():
-    from services.database import create_tables, get_db
-    from auth.routines import init_default_roles
-
-    create_tables()
-
-    db = next(get_db())
-    init_default_roles(db)
 
 
 app.include_router(auth_router.router)
@@ -51,4 +61,9 @@ app.include_router(tasks_router.router)
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(
+        app,
+        host="127.0.0.1",
+        port=8000,
+        log_level="fine",
+    )

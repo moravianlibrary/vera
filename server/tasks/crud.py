@@ -11,112 +11,129 @@ from documents.models import Document
 from tasks.enums import TaskState
 
 
-def create_task(task: schemas.TaskCreate,
-                documents_ids: List[int],
-                owner: str,
-                query: str,
-                db: Session):
-    db_task = create(db, models.Task(
-        task_type=task.task_type,
-        query=query,
-        owner=owner
-    ))
+def create_task(
+    task: schemas.TaskCreate,
+    documents_ids: List[int],
+    owner: str,
+    query: str,
+    db: Session,
+):
+    db_task = create(
+        db, models.Task(task_type=task.task_type, query=query, owner=owner)
+    )
 
     for document_id in documents_ids:
-        create(db, models.TaskDocument(
-            task_id=db_task.id,
-            document_id=document_id
-        ))
+        create(
+            db,
+            models.TaskDocument(task_id=db_task.id, document_id=document_id),
+        )
 
     return db_task
 
 
-def get_unprocessed_task_documents(task_id: int,
-                                   db: Session):
-    return (db.query(Document)
-            .join(models.TaskDocument, and_(
+def get_unprocessed_task_documents(task_id: int, db: Session):
+    return (
+        db.query(Document)
+        .join(
+            models.TaskDocument,
+            and_(
                 Document.id == models.TaskDocument.document_id,
                 models.TaskDocument.task_id == task_id,
-                models.TaskDocument.processed.is_(False)
-                ))
-            .all())
+                models.TaskDocument.processed.is_(False),
+            ),
+        )
+        .all()
+    )
 
 
-def update_task_state(id: int,
-                      task_state: TaskState,
-                      db: Session):
-    db.execute(update(models.Task)
-               .where(models.Task.id == id)
-               .values(task_state=task_state))
+def update_task_state(id: int, task_state: TaskState, db: Session):
+    db.execute(
+        update(models.Task)
+        .where(models.Task.id == id)
+        .values(task_state=task_state)
+    )
     db.commit()
 
 
-def set_task_started(id: int,
-                     db: Session):
-    db.execute(update(models.Task)
-               .where(models.Task.id == id and models.Task.started is None)
-               .values(started=datetime.utcnow()))
+def set_task_started(id: int, db: Session):
+    db.execute(
+        update(models.Task)
+        .where(models.Task.id == id and models.Task.started is None)
+        .values(started=datetime.utcnow())
+    )
     db.commit()
 
 
-def set_task_finsihed(id: int,
-                      db: Session):
-    db.execute(update(models.Task)
-               .where(models.Task.id == id and models.Task.finished is None)
-               .values(finished=datetime.utcnow()))
+def set_task_finsihed(id: int, db: Session):
+    db.execute(
+        update(models.Task)
+        .where(models.Task.id == id and models.Task.finished is None)
+        .values(finished=datetime.utcnow())
+    )
     db.commit()
 
 
-def set_document_processed(task_id: int,
-                           document_id: int,
-                           db: Session):
-    db.execute(update(models.TaskDocument)
-               .where(models.TaskDocument.task_id == task_id
-                      and models.TaskDocument.document_id == document_id)
-               .values(processed=True))
+def set_document_processed(task_id: int, document_id: int, db: Session):
+    db.execute(
+        update(models.TaskDocument)
+        .where(
+            models.TaskDocument.task_id == task_id
+            and models.TaskDocument.document_id == document_id
+        )
+        .values(processed=True)
+    )
     db.commit()
 
 
-def set_document_error_type(task_id: int,
-                            document_id: int,
-                            error_type: TaskDocumentErrorType,
-                            db: Session):
-    db.execute(update(models.TaskDocument)
-               .where(models.TaskDocument.task_id == task_id
-                      and models.TaskDocument.document_id == document_id)
-               .values(error_type=error_type))
+def set_document_error(
+    task_id: int,
+    document_id: int,
+    error_type: TaskDocumentErrorType,
+    error_message: str,
+    db: Session,
+):
+    db.execute(
+        update(models.TaskDocument)
+        .where(
+            models.TaskDocument.task_id == task_id
+            and models.TaskDocument.document_id == document_id
+        )
+        .values(error_type=error_type, error_message=error_message)
+    )
     db.commit()
 
 
-def set_predicted_pages_count(task_id: int,
-                              document_id: int,
-                              pages_count_predicted: int,
-                              db: Session):
-    db.execute(update(Document)
-               .where(Document.id == document_id)
-               .values(pages_count_predicted=pages_count_predicted))
+def set_predicted_pages_count(
+    task_id: int, document_id: int, pages_count_predicted: int, db: Session
+):
+    db.execute(
+        update(Document)
+        .where(Document.id == document_id)
+        .values(pages_count_predicted=pages_count_predicted)
+    )
     db.commit()
 
 
-def get_task(id: int,
-             db: Session):
+def get_task(id: int, db: Session) -> schemas.Task:
     return models.task_view(db).filter(models.Task.id == id).first()
 
 
-def get_task_documents(task_id: int,
-                       db: Session):
-    return (db.query(models.TaskDocument)
-            .filter(models.TaskDocument.task_id == task_id)
-            .all())
+def get_task_documents(task_id: int, db: Session):
+    return (
+        db.query(models.TaskDocument)
+        .filter(models.TaskDocument.task_id == task_id)
+        .all()
+    )
 
 
-def get_tasks(db: Session,
-              offset: int = 0,
-              limit: int = 50):
-    return (models.task_view(db)
-            .order_by(desc(models.Task.planned))
-            .offset(offset).limit(limit)
-            .all())
+def get_tasks(db: Session, offset: int = 0, limit: int = 50):
+    return (
+        models.task_view(db)
+        .order_by(desc(models.Task.planned))
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
 
 def get_tasks_num_found(db: Session):

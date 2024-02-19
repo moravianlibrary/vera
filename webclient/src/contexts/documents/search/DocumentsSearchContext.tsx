@@ -94,7 +94,7 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
         if (extractionId) {
             ApiExtractions.getExtraction(extractionId)
             .then(response => {
-                setActiveQuery({ id_list: response.data.document_ids });
+                setActiveQuery({ id_list: response.data.document_ids, sort: { field: DocumentField.Category } });
             }).catch(error => {
                 console.error(error);
             });

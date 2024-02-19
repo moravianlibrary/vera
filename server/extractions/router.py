@@ -31,7 +31,8 @@ def create_extraction(props: schemas.ExtractionCreate,
         props, pages_count, db
     )
     extraction = crud.create_extraction(
-        user.username, pages_count, selected_documents, db
+        user.username, pages_count,
+        selected_pages_count, selected_documents, db
     )
     if quota_id is not None:
         crud.set_documents_extracted(extraction.id, db)

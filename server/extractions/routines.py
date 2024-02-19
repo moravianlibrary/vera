@@ -3,15 +3,20 @@ from typing import Dict, List, Optional
 
 from categories import crud
 from categories.schemas import Category
-from extractions.schemas import DocumentPagesCount, ExtractionCreate, \
-    ExtractionCategoryNode
+from extractions.schemas import (
+    DocumentPagesCount,
+    ExtractionCreate,
+    ExtractionCategoryNode,
+)
+
 # from extractions.crud import get_category_documents
 from extractions.crud import get_extraction_documents
 
 
 class CategoryNode:
-    def __init__(self, category: Optional[Category],
-                 children: List['CategoryNode']):
+    def __init__(
+        self, category: Optional[Category], children: List["CategoryNode"]
+    ):
         self.category = category
         self.parent_node = None
         self.children = children
@@ -24,17 +29,21 @@ class CategoryNode:
     def add_child(self, child_node):
         self.children.append(child_node)
 
-    def populate_children(self, parent_node: Optional['CategoryNode'],
-                          target_pages: int):
+    def populate_children(
+        self, parent_node: Optional["CategoryNode"], target_pages: int
+    ):
         self.parent_node = parent_node
         self.target_pages = target_pages
         if not self.children:
             return
 
-        active_children_percentage = sum([
-            child.category.percentage
-            for child in self.children if not child.is_done
-        ])
+        active_children_percentage = sum(
+            [
+                child.category.percentage
+                for child in self.children
+                if not child.is_done
+            ]
+        )
         children_target_pages = 0
         for i, child in enumerate(self.children):
             if i < len(self.children) - 1:
@@ -50,15 +59,16 @@ class CategoryNode:
     def add_child_pages_count(self, target_pages, pages_count):
         if self.is_done:
             raise Exception("All children categories were already extracted")
-        self.difference += (target_pages - pages_count)
+        self.difference += target_pages - pages_count
         self.pages_count += pages_count
         self.count_children_extracted += 1
         self.is_done = self.count_children_extracted == len(self.children)
         if self.is_done and self.parent_node is not None:
-            self.parent_node.add_child_pages_count(self.target_pages,
-                                                   self.pages_count)
+            self.parent_node.add_child_pages_count(
+                self.target_pages, self.pages_count
+            )
 
-    def get_difference_for_child(self, child: 'CategoryNode'):
+    def get_difference_for_child(self, child: "CategoryNode"):
         difference = self.difference
         if self.parent_node:
             difference += self.parent_node.get_difference_for_child(self)
@@ -67,28 +77,33 @@ class CategoryNode:
 
         active_children_percentage = [
             child.category.percentage
-            for child in self.children if not child.is_done
+            for child in self.children
+            if not child.is_done
         ]
         if len(active_children_percentage) == 1:
             return difference
 
-        return int((difference * child.category.percentage)
-                   / sum(active_children_percentage))
+        return int(
+            (difference * child.category.percentage)
+            / sum(active_children_percentage)
+        )
 
     def get_target_pages(self):
         if self.parent_node is None:
-            raise Exception(
-                "Executing get_target_pages() on root node is forbidden")
-        return (self.target_pages
-                + self.parent_node.get_difference_for_child(self))
+            return self.target_pages
+        return self.target_pages + self.parent_node.get_difference_for_child(
+            self
+        )
 
     def __repr__(self):
-        return (f"CategoryNode(category={self.category}, "
-                f"target_pages={self.target_pages}, "
-                f"pages_count={self.pages_count}, "
-                f"difference={self.difference}, "
-                f"count_children_extracted={self.count_children_extracted}, "
-                f"is_done={self.is_done})")
+        return (
+            f"CategoryNode(category={self.category}, "
+            f"target_pages={self.target_pages}, "
+            f"pages_count={self.pages_count}, "
+            f"difference={self.difference}, "
+            f"count_children_extracted={self.count_children_extracted}, "
+            f"is_done={self.is_done})"
+        )
 
 
 class CategoryLeaf(CategoryNode):
@@ -102,35 +117,44 @@ class CategoryLeaf(CategoryNode):
             raise Exception("Node pages count can be set only once")
         self.pages_count = pages_count
         self.is_done = True
-        self.parent_node.add_child_pages_count(self.target_pages, pages_count)
+        if self.parent_node is not None:
+            self.parent_node.add_child_pages_count(
+                self.target_pages, pages_count
+            )
 
     def get_fullfilment_ratio(self, db: Session):
         from extractions.crud import get_category_documents
+
         category_id = self.category.id
-        pages_count = sum([document.pages_count
-                           for document
-                           in get_category_documents(category_id, db)])
+        pages_count = sum(
+            [
+                document.pages_count
+                for document in get_category_documents(category_id, db)
+            ]
+        )
         return float(pages_count) / self.get_target_pages()
 
     def __repr__(self):
-        return (f"CategoryLeaf(category={self.category}, "
-                f"target_pages={self.target_pages}, "
-                f"pages_count={self.pages_count}, "
-                f"difference={self.difference}, "
-                f"count_children_extracted={self.count_children_extracted}, "
-                f"is_done={self.is_done}")
+        return (
+            f"CategoryLeaf(category={self.category}, "
+            f"target_pages={self.target_pages}, "
+            f"pages_count={self.pages_count}, "
+            f"difference={self.difference}, "
+            f"count_children_extracted={self.count_children_extracted}, "
+            f"is_done={self.is_done}"
+        )
 
 
-def bottom_up_generator(target_pages: int, db: Session):
-    assignable_nodes = []
-    clustered_nodes = {}
+def bottom_up_generator(target_pages: int, db: Session) -> List[CategoryLeaf]:
+    assignable_nodes: List[CategoryLeaf] = []
+    clustered_nodes: Dict[int, List[CategoryNode]] = {}
 
     for category in crud.get_assignable_categories(db):
         parent_id = category.parent_id
         if parent_id not in clustered_nodes:
-            clustered_nodes[parent_id] = []
+            clustered_nodes[parent_id if parent_id else 0] = []
         leaf = CategoryLeaf(category)
-        clustered_nodes[parent_id].append(leaf)
+        clustered_nodes[parent_id if parent_id else 0].append(leaf)
         assignable_nodes.append(leaf)
 
     parent_ids = list(clustered_nodes.keys())
@@ -145,10 +169,12 @@ def bottom_up_generator(target_pages: int, db: Session):
     return assignable_nodes
 
 
-def bottom_up_generator_rec(category_id: int,
-                            clustered_nodes: Dict[int, List[CategoryNode]],
-                            category_nodes: Dict[int, CategoryNode],
-                            db: Session):
+def bottom_up_generator_rec(
+    category_id: int,
+    clustered_nodes: Dict[int, List[CategoryNode]],
+    category_nodes: Dict[int, CategoryNode],
+    db: Session,
+):
     if category_id == 0 or category_id in category_nodes:
         return
 
@@ -170,33 +196,27 @@ def bottom_up_generator_rec(category_id: int,
         else:
             clustered_nodes[parent_id] = [parent_node]
 
-    # parent_id = node.category.parent_id
-    # if parent_id is None:
-    #     parent_id = 0
-
-    # if parent_id in category_nodes:
-    #     category_nodes[parent_id].add_child(node)
-    # elif parent_id not in clustered_nodes:
-    #     clustered_nodes[parent_id] = []
-    # clustered_nodes[parent_id].append(node)
     bottom_up_generator_rec(parent_id, category_nodes, category_nodes, db)
 
 
-def generate_extraction(props: ExtractionCreate,
-                        target_pages: int,
-                        db: Session):
-    target_pages_threshold: float = max(props.target_pages_threshold, .0)
-    whole_categories_threshold: float = max(props.whole_categories_threshold,
-                                            .0)
+def generate_extraction(
+    props: ExtractionCreate, target_pages: int, db: Session
+):
+    target_pages_threshold: float = max(props.target_pages_threshold, 0.0)
+    whole_categories_threshold: float = max(
+        props.whole_categories_threshold, 0.0
+    )
 
     assignable_nodes = bottom_up_generator(target_pages, db)
-    include_nodes = []
-    extract_whole_nodes = []
-    other_nodes = []
+    include_nodes: List[CategoryLeaf] = []
+    extract_whole_nodes: List[CategoryLeaf] = []
+    other_nodes: List[CategoryLeaf] = []
 
     for node in assignable_nodes:
-        if (props.include_categories
-                and node.category.id in props.include_categories):
+        if (
+            props.include_categories
+            and node.category.id in props.include_categories
+        ):
             include_nodes.append(node)
         elif node.category.extract_whole:
             extract_whole_nodes.append(node)
@@ -214,7 +234,8 @@ def generate_extraction(props: ExtractionCreate,
 
     for node in extract_whole_nodes:
         document_ids, pages_count = extract_whole_category(
-            node, whole_categories_threshold, db)
+            node, whole_categories_threshold, db
+        )
         node.set_extraction(pages_count)
         selected_documents.extend(document_ids)
         selected_pages_count += pages_count
@@ -222,7 +243,8 @@ def generate_extraction(props: ExtractionCreate,
     other_nodes.sort(key=lambda node: node.get_fullfilment_ratio(db))
     for node in other_nodes:
         document_ids, pages_count = select_within_threshold(
-            node, target_pages_threshold, 1000, db)
+            node, target_pages_threshold, 1000, db
+        )
         node.set_extraction(pages_count)
         selected_documents.extend(document_ids)
         selected_pages_count += pages_count
@@ -230,32 +252,36 @@ def generate_extraction(props: ExtractionCreate,
     return selected_documents, selected_pages_count
 
 
-def extract_whole_category(category_node: CategoryLeaf,
-                           whole_categories_threshold: float,
-                           db: Session):
+def extract_whole_category(
+    category_node: CategoryLeaf, whole_categories_threshold: float, db: Session
+):
     document_ids, pages_count = select_whole_category(category_node, db)
     target_pages = category_node.get_target_pages()
-    if (pages_count > target_pages * (1 + whole_categories_threshold)):
+    print(pages_count > target_pages * (1 + whole_categories_threshold))
+    if pages_count > target_pages * (1 + whole_categories_threshold):
         return [], 0
     return document_ids, pages_count
 
 
-def select_whole_category(category_node: CategoryLeaf,
-                          db: Session):
+def select_whole_category(category_node: CategoryLeaf, db: Session):
     from extractions.crud import get_category_documents
+
     category_id = category_node.category.id
-    document_ids = [document.id for document
-                    in get_category_documents(category_id, db)]
+    document_ids = [
+        document.id for document in get_category_documents(category_id, db)
+    ]
     pages_count = crud.get_pages_count(category_id, db)
     return document_ids, pages_count
 
 
-def select_within_threshold(category_node: CategoryLeaf,
-                            threshold: float,
-                            max_pages_order: int,
-                            db: Session
-                            ) -> List[DocumentPagesCount]:
+def select_within_threshold(
+    category_node: CategoryLeaf,
+    threshold: float,
+    max_pages_order: int,
+    db: Session,
+) -> List[DocumentPagesCount]:
     from extractions.crud import get_category_documents
+
     category_id = category_node.category.id
     documents = get_category_documents(category_id, db)
     target_pages = category_node.get_target_pages()
@@ -297,7 +323,7 @@ def select_within_threshold(category_node: CategoryLeaf,
             j += documents[i].pages_count
         i += 1
 
-    if (upper_limit < selected_pages_count):
+    if upper_limit < selected_pages_count:
         return [], 0
 
     return selected_documents, selected_pages_count
@@ -337,12 +363,8 @@ def select_within_threshold(category_node: CategoryLeaf,
     # return selected_documents, selected_pages_count
 
 
-def get_category_subtree(extraction_id,
-                         category: Category,
-                         db: Session):
-    documents = get_extraction_documents(
-        extraction_id, db, category.id
-    )
+def get_category_subtree(extraction_id, category: Category, db: Session):
+    documents = get_extraction_documents(extraction_id, db, category.id)
     extracted_pages_count = 0
     for document in documents:
         extracted_pages_count += document.pages_count
@@ -357,14 +379,18 @@ def get_category_subtree(extraction_id,
         percentage=category.percentage,
         extract_whole=category.extract_whole,
         disabled=category.disabled,
-        departments=[d[0] for d
-                     in crud.get_category_departments(category.id, db)],
-        children=[get_category_subtree(extraction_id, child, db)
-                  for child in crud.get_children_categories(category.id, db)],
+        departments=[
+            d[0] for d in crud.get_category_departments(category.id, db)
+        ],
+        children=[
+            get_category_subtree(extraction_id, child, db)
+            for child in crud.get_children_categories(category.id, db)
+        ],
         count_pages=crud.get_pages_count(category.id, db),
         count_documents_with_pages=(
-            crud.get_documents_count(category.id, True, db)),
+            crud.get_documents_count(category.id, True, db)
+        ),
         count_documents=crud.get_documents_count(category.id, False, db),
         extracted_pages_count=extracted_pages_count,
-        extracted_documents_count=len(documents)
+        extracted_documents_count=len(documents),
     )
