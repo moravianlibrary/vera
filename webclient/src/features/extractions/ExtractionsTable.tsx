@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
 import ExtractionModel from "../../contexts/extractions/ExtractionModel";
+import ExtractionsHeader from "./ExtractionsHeader";
 
 const ExtractionsTable: React.FC = () => {
     const { t } = useTranslation();

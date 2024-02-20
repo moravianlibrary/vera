@@ -17,7 +17,7 @@ def get_current_user(
     return get_user_from_token(db, token)
 
 
-@router.get("/users", response_model=List[User])
+@router.get("/auth/users", response_model=List[User])
 def get_users(
     db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
 ):
