@@ -10,11 +10,8 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.orm import Session
 
 from services.database import Base
-from categories.models import Category
-from extractions.models import Extraction
 from catalogs.enums import DigitizationState, MaterialType, IssuanceType
 
 
@@ -58,38 +55,3 @@ class Document(Base):
     creator = Column(String, index=True)
 
     extraction_id = Column(Integer, ForeignKey("extractions.id"), index=True)
-
-
-def document_view(db: Session):
-    return (
-        db.query(
-            Document.id,
-            Document.sysno,
-            Document.volume,
-            Document.barcode,
-            Document.category_id,
-            Category.name.label("category_name"),
-            Document.cnb,
-            Document.isbn_issn,
-            Document.signature,
-            Document.material_type,
-            Document.issuance_type,
-            Document.title,
-            Document.digitization_state,
-            Document.pages_count,
-            Document.size,
-            Document.publisher,
-            Document.publishing_place,
-            Document.languages,
-            Document.frequencies,
-            Document.pages_count_predicted,
-            Document.dedicated_scanner,
-            Document.created_at,
-            Document.creator,
-            Document.extraction_id,
-            Extraction.extractor,
-            Extraction.extracted_at,
-        )
-        .outerjoin(Category, Document.category_id == Category.id)
-        .outerjoin(Extraction, Document.extraction_id == Extraction.id)
-    )

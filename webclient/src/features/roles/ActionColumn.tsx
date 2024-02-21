@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { LabeledAction } from "./RolesTable";
 import { useTranslation } from "react-i18next";
 import { Checkbox, CheckboxChangeEvent } from "primereact/checkbox";

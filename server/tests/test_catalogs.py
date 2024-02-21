@@ -118,6 +118,15 @@ class TestAlephCatalog(unittest.TestCase):
         document = catalog_response.document
         self.assertEqual(document.sysno, "MZK01-001091763")
 
+    def test_parse_frequencies(self):
+        identifier = Identifier(
+            identifier_type=IdentifierType.Sysno, value="MZK01-000230291"
+        )
+        catalog_response = generate_catalog_document(identifier)
+        document = catalog_response.document
+        self.assertEqual(document.sysno, "MZK01-000230291")
+        print(document.frequencies)
+
 
 class TestDigitizationRegister(unittest.TestCase):
     def setUp(self):

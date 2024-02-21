@@ -120,16 +120,17 @@ namespace ApiDocuments {
     export function insertDocument(identifier: Identifier, category_id: number | null, insert_digitized: boolean) {
         console.log(identifier);
         const url = category_id !== null
-            ? `/documents/create_from_catalog?category_id=${category_id}&insert_digitized=${insert_digitized}`
-            : `/documents/create_from_catalog?insert_digitized=${insert_digitized}`;
+            ? `/catalogs?category_id=${category_id}&insert_digitized=${insert_digitized}`
+            : `/catalogs?insert_digitized=true`;
+            // : `/catalogs?insert_digitized=${insert_digitized}`;
 
         return axiosInstance.post<DocumentCreationResponse>(url, identifier, { headers: authHeader() });
     }
 
     export function insertDocumentsFile(formData: FormData, insert_digitized: boolean, category_id?: number | null) {
         const url = category_id !== null
-            ? `/documents/create_from_catalog?category_id=${category_id}&insert_digitized=${insert_digitized}`
-            : `/documents/create_from_catalog?insert_digitized=${insert_digitized}`;
+            ? `/catalogs/list?category_id=${category_id}&insert_digitized=${insert_digitized}`
+            : `/catalogs/list?insert_digitized=${insert_digitized}`;
 
         return axiosInstance.post<DocumentCreationResponse[]>(url, formData, { headers: authHeader() });
     }

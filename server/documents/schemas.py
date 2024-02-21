@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pydantic import BaseModel
-from typing import Dict, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 from datetime import datetime
 from documents.enums import (
     DocumentCreateResult,
@@ -16,7 +16,7 @@ from catalogs.enums import (
     MaterialType,
     IssuanceType,
 )
-from catalogs.schemas import CatalogDocument, CatalogIssue
+from catalogs.schemas import CatalogDocument, CatalogIssue, Frequency
 
 
 class DocumentBase(BaseModel):
@@ -47,7 +47,7 @@ class DocumentBase(BaseModel):
     publishing_year: Optional[str] = None
     languages: Optional[List[str]] = None
 
-    frequencies: Optional[List[Dict[str, str]]] = None
+    frequencies: Optional[List[Frequency]] = None
 
 
 class DocumentCreate(DocumentBase):

@@ -3,9 +3,46 @@ from sqlalchemy import desc
 from typing import Optional
 
 from services.database import create
+from categories.models import Category
 from documents import models, schemas
 from documents.search import filter_documents_query_base
+from extractions.models import Extraction
 from services import exceptions
+
+
+def document_view(db: Session):
+    return (
+        db.query(
+            models.Document.id,
+            models.Document.sysno,
+            models.Document.volume,
+            models.Document.barcode,
+            models.Document.category_id,
+            Category.name.label("category_name"),
+            models.Document.cnb,
+            models.Document.isbn_issn,
+            models.Document.signature,
+            models.Document.material_type,
+            models.Document.issuance_type,
+            models.Document.title,
+            models.Document.digitization_state,
+            models.Document.pages_count,
+            models.Document.size,
+            models.Document.publisher,
+            models.Document.publishing_place,
+            models.Document.languages,
+            models.Document.frequencies,
+            models.Document.pages_count_predicted,
+            models.Document.dedicated_scanner,
+            models.Document.created_at,
+            models.Document.creator,
+            models.Document.extraction_id,
+            Extraction.extractor,
+            Extraction.extracted_at,
+        )
+        .outerjoin(Category, models.Document.category_id == Category.id)
+        .outerjoin(Extraction, models.Document.extraction_id == Extraction.id)
+    )
 
 
 def create_document(
@@ -33,7 +70,10 @@ def create_document(
             publishing_place=document.publishing_place,
             publishing_year=document.publishing_year,
             languages=document.languages,
-            frequencies=document.frequencies,
+            # frequencies=document.frequencies,
+            frequencies=[
+                frequency.model_dump() for frequency in document.frequencies
+            ],
             creator=creator,
         ),
     )
@@ -79,11 +119,7 @@ def get_document(document_id: int, db: Session):
 
 
 def get_document_view(document_id: int, db: Session):
-    return (
-        models.document_view(db)
-        .filter(models.Document.id == document_id)
-        .first()
-    )
+    return document_view(db).filter(models.Document.id == document_id).first()
 
 
 def get_document_by_identifiers(
@@ -114,7 +150,7 @@ def document_exists(
 def get_documents_query_base(
     db: Session, query: Optional[schemas.DocumentsQuery] = None
 ):
-    return filter_documents_query_base(models.document_view(db), query)
+    return filter_documents_query_base(document_view(db), query)
 
 
 def get_documents_ids_query_base(

@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
 import ExtractionModel from "../../contexts/extractions/ExtractionModel";
-import ExtractionsHeader from "./ExtractionsHeader";
 
 const ExtractionsTable: React.FC = () => {
     const { t } = useTranslation();
@@ -17,7 +16,7 @@ const ExtractionsTable: React.FC = () => {
         return (
             <Link to={`/documents?extractionId=${extraction.id}`}>
                 <Button
-                    text
+                    outlined
                     label={t("Show in documents")}
                 />
             </Link>
@@ -28,7 +27,7 @@ const ExtractionsTable: React.FC = () => {
         return (
             <Link to={`/categories?extractionId=${extraction.id}`}>
                 <Button
-                    text
+                    outlined
                     label={t("Show in categories")}
                 />
             </Link>

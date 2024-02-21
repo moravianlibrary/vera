@@ -170,24 +170,34 @@ class AlephDocument:
         return self.get_value("300", "c")
 
     @property
-    def frequencies(self) -> List[Dict[str, str]]:
+    def frequencies(self) -> List[Dict[str, Optional[str]]]:
         """Returns a list of dictionaries containing
         frequency and date information.
 
         Returns: List[Dict[str, str]]: List of dictionaries with keys
         "frequency" and "date"
         """
-        return [
-            {
-                "frequency": freq_subfield,
-                "date": date_subfield,
-            }
-            for field in self.record.get_fields("310", "321")
-            for freq_subfield, date_subfield in zip(
-                field.get_subfields("a"), field.get_subfields("b")
-            )
-            if len(field.get_subfields("a")) == len(field.get_subfields("b"))
-        ]
+        frequencies_list = []
+        for field in self.record.get_fields("310", "321"):
+            subfields = field.subfields
+            i = 0
+            while i < len(subfields):
+                frequency = subfields[i].value
+                if i + 1 < len(subfields) and subfields[i + 1].code == "b":
+                    while (
+                        i + 1 < len(subfields) and subfields[i + 1].code == "b"
+                    ):
+                        frequencies_list.append(
+                            {
+                                "frequency": frequency,
+                                "date": subfields[i + 1].value,
+                            }
+                        )
+                        i += 1
+                else:
+                    frequencies_list.append({"frequency": frequency})
+                i += 1
+        return frequencies_list
 
     @property
     def issues(self) -> List[AlephIssue]:

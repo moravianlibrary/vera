@@ -4,6 +4,7 @@ from os import environ
 from services.database import DATABASE_URL, get_db
 from tasks.enums import TaskState, TaskType
 from tasks import crud
+import predictions
 
 celery_worker = Celery(
     "tasks",

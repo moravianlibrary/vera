@@ -4,7 +4,8 @@ from typing import Optional, Tuple
 from catalogs import aleph_api
 from catalogs.aleph_document import AlephDocument
 from catalogs.enums import CatalogResponseStatus, IdentifierType
-from catalogs.schemas import CatalogDocument, CatalogResponse, Identifier
+from catalogs.parsers import from_aleph_document
+from catalogs.schemas import CatalogResponse, Identifier
 
 
 SYSNO_FORMAT_1 = r"^\d{9}$"
@@ -52,8 +53,6 @@ def get_document_by_identifier(
 def generate_catalog_document(identifier: Identifier):
     document, response_status = get_document_by_identifier(identifier)
     return CatalogResponse(
-        document=(
-            CatalogDocument.from_aleph_document(document) if document else None
-        ),
+        document=(from_aleph_document(document) if document else None),
         response_status=response_status,
     )

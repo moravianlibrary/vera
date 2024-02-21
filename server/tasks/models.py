@@ -1,19 +1,24 @@
 from sqlalchemy import (
     Boolean,
+    case,
     Column,
     Enum,
+    func,
     ForeignKey,
     Integer,
     PrimaryKeyConstraint,
     String,
     TIMESTAMP,
-    func,
-    case,
 )
 from sqlalchemy.orm import Session
 
 from services.database import Base
-from tasks.enums import TaskDocumentErrorType, TaskType, TaskState
+
+from tasks.enums import (
+    TaskDocumentErrorType,
+    TaskType,
+    TaskState,
+)
 
 
 class Task(Base):

@@ -7,8 +7,8 @@ from typing import List
 from services.database import create
 from tasks import models, schemas
 from tasks.enums import TaskDocumentErrorType
-from documents.models import Document
 from tasks.enums import TaskState
+from documents.models import Document
 
 
 def create_task(
@@ -31,7 +31,9 @@ def create_task(
     return db_task
 
 
-def get_unprocessed_task_documents(task_id: int, db: Session):
+def get_unprocessed_task_documents(
+    task_id: int, db: Session
+) -> List[Document]:
     return (
         db.query(Document)
         .join(
@@ -94,10 +96,8 @@ def set_document_error(
 ):
     db.execute(
         update(models.TaskDocument)
-        .where(
-            models.TaskDocument.task_id == task_id
-            and models.TaskDocument.document_id == document_id
-        )
+        .where(models.TaskDocument.task_id == task_id)
+        .where(models.TaskDocument.document_id == document_id)
         .values(error_type=error_type, error_message=error_message)
     )
     db.commit()

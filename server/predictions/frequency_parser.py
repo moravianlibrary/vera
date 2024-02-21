@@ -1,40 +1,38 @@
 import re
-from typing import List
+from typing import List, Optional
+from catalogs.schemas import Frequency
 
 
-VOLUME_YEAR = "^(\\d{4})$"
-VOLUME_RANGE = "^(\\d{4})-(\\d{4})$"
+VOLUME_YEAR = r"^\s*(\d{4})\s*$"
+VOLUME_RANGE = r"^\s*(\d{4})-(\d{4})?\s*$"
 
 RANGE_YEARS_1 = (
-    r"^(.*)\s(?:\d{1,2}\.\s?){2}\[?(\d{4})\]?\s?-\s?"
+    r"^(?:\d{1,2}\.\s?){2}\[?(\d{4})\]?\s?-\s?"
     r"(?:\d{1,2}\.\s?){0,2}\s?(\d{4})$"
 )
 RANGE_YEARS_2 = (
-    r"^(.*)\s(?:\d{1,2}\.\s?)\[?(\d{4})\]?\s?-\s?"
+    r"^(?:\d{1,2}\.\s?)\[?(\d{4})\]?\s?-\s?"
     r"(?:\d{1,2}\.\s?){0,2}\s?(\d{4})$"
 )
-RANGE_YEARS_3 = (
-    r"^(.*)\s\[?(\d{4})\]?\s?-" r"\s?(?:\d{1,2}\.\s?){0,2}\s?(\d{4})$"
-)
-RANGE_YEARS_4 = r"^(.*)\s\[?(\d{4})\]?-(\d{2})$"
+RANGE_YEARS_3 = r"^\[?(\d{4})\]?\s?-" r"\s?(?:\d{1,2}\.\s?){0,2}\s?(\d{4})$"
+RANGE_YEARS_4 = r"^\[?(\d{4})\]?-(\d{2})$"
 
-FROM_YEAR_1 = r"^(.*)\s(?:\d{1,2}\.\s?){2}(\d{4})\s?-$"
-FROM_YEAR_2 = r"^(.*)\s(?:\d{1,2}\.\s?)(\d{4})\s?-$"
-FROM_YEAR_3 = r"^(.*)\s(?:od\sr\.\s?)(\d{4})\s?-?$"
-FROM_YEAR_4 = r"^(.*)\s(\d{4})\s?-$"
-FROM_YEAR_5 = r"^(?:[Oo]d\s)(?:r\.\s?)?(\d{4})\s?-?\s(.*)$"
-FROM_YEAR_6 = r"^(?:[Oo]d\s)(?:\d{1,2}\.\s?){1,2}(\d{4})\s?-?(.*)$"
-FROM_YEAR_7 = r"^(.*)\s[Oo]d\s(?:ro)?č\.\s?\d{1,3}\s?\(?(\d{4})(?:-\d{2})?\)?$"
+FROM_YEAR_1 = r"^(?:\d{1,2}\.\s?){2}(\d{4})\s?-$"
+FROM_YEAR_2 = r"^(?:\d{1,2}\.\s?)(\d{4})\s?-$"
+FROM_YEAR_3 = r"^(?:od\sr\.\s?)(\d{4})\s?-?$"
+FROM_YEAR_4 = r"^(\d{4})\s?-$"
+FROM_YEAR_5 = r"^(?:[Oo]d\s)(?:r\.\s?)?(\d{4})\s?-?$"
+FROM_YEAR_6 = r"^(?:[Oo]d\s)(?:\d{1,2}\.\s?){1,2}(\d{4})\s?-?$"
+FROM_YEAR_7 = r"^[Oo]d\s(?:ro)?č\.\s?\d{1,3}\s?\(?(\d{4})(?:-\d{2})?\)?$"
 FROM_YEAR_8 = (
-    r"^(.*)\s[Oo]d\s(?:\[.*\])?\s?"
-    r"(?:\d{1,2}\.\s?){0,2}\(?(\d{4})(?:-\d{2})?\)?$"
+    r"^[Oo]d\s(?:\[.*\])?\s?" r"(?:\d{1,2}\.\s?){0,2}\(?(\d{4})(?:-\d{2})?\)?$"
 )
 
-TO_YEAR_1 = r"^(.*)\s(?:do\sr\.\s?)(\d{4})\s?-?$"
-TO_YEAR_2 = r"^(.*)\sdo\s(?:\d{1,2}\.\s?){0,2}(\d{4})\s?-?$"
-TO_YEAR_3 = r"^(.*)\s[Dd]o\s(?:ro)?č\.\s?\d{1,3}\s?\(?(\d{4})(?:-\d{2})?\)?$"
+TO_YEAR_1 = r"^(?:do\sr\.\s?)(\d{4})\s?-?$"
+TO_YEAR_2 = r"^do\s(?:\d{1,2}\.\s?){0,2}(\d{4})\s?-?$"
+TO_YEAR_3 = r"^[Dd]o\s(?:ro)?č\.\s?\d{1,3}\s?\(?(\d{4})(?:-\d{2})?\)?$"
 
-SINGLE_YEAR = r"^(.*)\s(\d{4})$"
+SINGLE_YEAR = r"^(\d{4})$"
 
 
 YEARLY = r"^(\d{1,3})(-\d{1,3})?\s?(:?x|×|čísla)\s?ročně"
@@ -84,11 +82,11 @@ def parse_year(year_issued: str) -> int:
         return int(match.group(1))
     match = re.match(VOLUME_YEAR, year_issued)
     if match:
-        return int(year_issued)
-    raise ValueError("Could not parse publishing year.")
+        return int(match.group(1))
+    raise ValueError(f"Could not parse publishing year '{year_issued}'.")
 
 
-def parse_frequency(year_issued: str, frequencies: List[str]) -> int:
+def parse_frequency(year_issued: str, frequencies: List[Frequency]) -> int:
     match = re.match(VOLUME_RANGE, year_issued)
     if match:
         result = parse_frequency_for_year(match.group(1), frequencies)
@@ -104,109 +102,112 @@ def parse_frequency(year_issued: str, frequencies: List[str]) -> int:
     return 0
 
 
-def parse_frequency_for_year(volume_year, issue_frequencies):
+def parse_frequency_for_year(
+    volume_year: int, frequencies: List[Frequency]
+) -> Optional[str]:
     matched = []
-    for issue_frequency in issue_frequencies:
-        match = re.match(RANGE_YEARS_1, issue_frequency)
+    for frequency in frequencies:
+        match = re.match(RANGE_YEARS_1, frequency.date)
         if match:
-            matched.append(issue_frequency)
-            if match.group(2) <= volume_year and volume_year <= match.group(3):
-                return match.group(1)
+            matched.append(frequency)
+            if match.group(1) <= volume_year and volume_year <= match.group(2):
+                return frequency.frequency
 
-        match = re.match(RANGE_YEARS_2, issue_frequency)
+        match = re.match(RANGE_YEARS_2, frequency.date)
         if match:
-            matched.append(issue_frequency)
-            if match.group(2) <= volume_year and volume_year <= match.group(3):
-                return match.group(1)
+            matched.append(frequency)
+            if match.group(1) <= volume_year and volume_year <= match.group(2):
+                return frequency.frequency
 
-        match = re.match(RANGE_YEARS_3, issue_frequency)
+        match = re.match(RANGE_YEARS_3, frequency.date)
         if match:
-            matched.append(issue_frequency)
-            if match.group(2) <= volume_year and volume_year <= match.group(3):
-                return match.group(1)
+            matched.append(frequency)
+            if match.group(1) <= volume_year and volume_year <= match.group(2):
+                return frequency.frequency
 
-        match = re.match(RANGE_YEARS_4, issue_frequency)
+        match = re.match(RANGE_YEARS_4, frequency.date)
         if match:
-            matched.append(issue_frequency)
-            from_year = match.group(2)
-            to_year = from_year[:2] + match.group(3)
+            matched.append(frequency)
+            from_year = match.group(1)
+            to_year = from_year[:2] + match.group(2)
             if from_year <= volume_year and volume_year <= to_year:
-                return match.group(1)
+                return frequency.frequency
 
-        match = re.match(FROM_YEAR_1, issue_frequency)
+        match = re.match(FROM_YEAR_1, frequency.date)
         if match:
-            matched.append(issue_frequency)
-            if match.group(2) <= volume_year:
-                return match.group(1)
-
-        match = re.match(FROM_YEAR_2, issue_frequency)
-        if match:
-            matched.append(issue_frequency)
-            if match.group(2) <= volume_year:
-                return match.group(1)
-
-        match = re.match(FROM_YEAR_3, issue_frequency)
-        if match:
-            matched.append(issue_frequency)
-            if match.group(2) <= volume_year:
-                return match.group(1)
-
-        match = re.match(FROM_YEAR_4, issue_frequency)
-        if match:
-            matched.append(issue_frequency)
-            if match.group(2) <= volume_year:
-                return match.group(1)
-
-        match = re.match(FROM_YEAR_5, issue_frequency)
-        if match:
-            matched.append(issue_frequency)
+            matched.append(frequency)
             if match.group(1) <= volume_year:
-                return match.group(2)
+                return frequency.frequency
 
-        match = re.match(FROM_YEAR_6, issue_frequency)
+        match = re.match(FROM_YEAR_2, frequency.date)
         if match:
-            matched.append(issue_frequency)
+            matched.append(frequency)
             if match.group(1) <= volume_year:
-                return match.group(2)
+                return frequency.frequency
 
-        match = re.match(FROM_YEAR_7, issue_frequency)
+        match = re.match(FROM_YEAR_3, frequency.date)
         if match:
-            matched.append(issue_frequency)
-            if match.group(2) <= volume_year:
-                return match.group(1)
+            matched.append(frequency)
+            if match.group(1) <= volume_year:
+                return frequency.frequency
 
-        match = re.match(FROM_YEAR_8, issue_frequency)
+        match = re.match(FROM_YEAR_4, frequency.date)
         if match:
-            matched.append(issue_frequency)
-            if match.group(2) <= volume_year:
-                return match.group(1)
+            matched.append(frequency)
+            if match.group(1) <= volume_year:
+                return frequency.frequency
 
-        match = re.match(TO_YEAR_1, issue_frequency)
+        match = re.match(FROM_YEAR_5, frequency.date)
         if match:
-            matched.append(issue_frequency)
-            if volume_year <= match.group(2):
-                return match.group(1)
+            matched.append(frequency)
+            if match.group(1) <= volume_year:
+                return frequency.frequency
 
-        match = re.match(TO_YEAR_2, issue_frequency)
+        match = re.match(FROM_YEAR_6, frequency.date)
         if match:
-            matched.append(issue_frequency)
-            if volume_year <= match.group(2):
-                return match.group(1)
+            matched.append(frequency)
+            if match.group(1) <= volume_year:
+                return frequency.frequency
 
-        match = re.match(TO_YEAR_3, issue_frequency)
+        match = re.match(FROM_YEAR_7, frequency.date)
         if match:
-            matched.append(issue_frequency)
-            if volume_year <= match.group(2):
-                return match.group(1)
+            matched.append(frequency)
+            if match.group(1) <= volume_year:
+                return frequency.frequency
 
-        match = re.match(SINGLE_YEAR, issue_frequency)
+        match = re.match(FROM_YEAR_8, frequency.date)
         if match:
-            matched.append(issue_frequency)
-            if match.group(2) == volume_year:
-                return match.group(1)
+            matched.append(frequency)
+            if match.group(1) <= volume_year:
+                return frequency.frequency
+
+        match = re.match(TO_YEAR_1, frequency.date)
+        if match:
+            matched.append(frequency)
+            if volume_year <= match.group(1):
+                return frequency.frequency
+
+        match = re.match(TO_YEAR_2, frequency.date)
+        if match:
+            matched.append(frequency)
+            if volume_year <= match.group(1):
+                return frequency.frequency
+
+        match = re.match(TO_YEAR_3, frequency.date)
+        if match:
+            matched.append(frequency)
+            if volume_year <= match.group(1):
+                return frequency.frequency
+
+        match = re.match(SINGLE_YEAR, frequency.date)
+        if match:
+            matched.append(frequency)
+            if match.group(1) == volume_year:
+                return frequency.frequency
 
     return next(
-        (freq for freq in issue_frequencies if freq not in matched), None
+        (freq.frequency for freq in frequencies if freq not in matched),
+        None,
     )
 
 
