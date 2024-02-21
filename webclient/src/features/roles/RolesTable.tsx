@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Column } from "primereact/column";
+import { Column, ColumnEditorOptions } from "primereact/column";
 import { DataTable, DataTableEditingRows, DataTableRowEditEvent, DataTableValueArray } from "primereact/datatable";
 
 import React from "react";
@@ -8,9 +8,9 @@ import { Row } from "primereact/row";
 import { textEditor } from '../../services/Editors.js';
 import { Button } from "primereact/button";
 import { RoleModel } from "../../contexts/user/RoleModel";
-import ActionGroupColumn from "./ActionGroupColumn";
+import ActionGroupColumn, { ActionGroupColumnEditor } from "./ActionGroupColumn";
 import { ActionType } from "../../types/ActionType";
-import ActionColumn from "./ActionColumn";
+import ActionColumn, { ActionColumnEditor } from "./ActionColumn";
 import { useRoles } from "../../contexts/roles/RolesContext";
 
 export interface LabeledAction {
@@ -92,24 +92,43 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
     const extractAction = { action: ActionType.Extract, label: "Extraction allowed" };
     const adminDatabaseAction = { action: ActionType.AdminDatabase, label: "Administrating database allowed" };
 
-    const getActionsColumn = (role: RoleModel) => {
+    const actionsColumn = (role: RoleModel) => {
         return (
             <div className="flex flex-wrap gap-3 align-items-center">
-                    <ActionGroupColumn actions={readDatatableActions} role={role} disabled={!editingRoles.includes(role)} label="Allowed to read documents" />
-                    <ActionGroupColumn actions={editDatatableActions} role={role} disabled={!editingRoles.includes(role)} label="Allowed to edit documents" />
-                    <ActionColumn action={insertDatatableAction} role={role} disabled={!editingRoles.includes(role)} />
-                    <ActionColumn action={writeDatatableAction} role={role} disabled={!editingRoles.includes(role)} />
-                    <ActionColumn action={commentOnDatatableAction} role={role} disabled={!editingRoles.includes(role)} />
-                    <ActionColumn action={planTasksAction} role={role} disabled={!editingRoles.includes(role)} />
-                    <ActionColumn action={adminTasksAction} role={role} disabled={!editingRoles.includes(role)} />
-                    <ActionGroupColumn actions={readCategoriesActions} role={role} disabled={!editingRoles.includes(role)} label="Allowed to read categories" />
-                    <ActionGroupColumn actions={editCategoriesActions} role={role} disabled={!editingRoles.includes(role)} label="Allowed to edit categories" />
-                    <ActionColumn action={extractAction} role={role} disabled={!editingRoles.includes(role)} />
-                    <ActionColumn action={editAccessAction} role={role} disabled={!editingRoles.includes(role)} />
-                    <ActionColumn action={adminDatabaseAction} role={role} disabled={!editingRoles.includes(role)} />
+                    <ActionGroupColumn actions={readDatatableActions} role={role} label="Allowed to read documents" />
+                    <ActionGroupColumn actions={editDatatableActions} role={role} label="Allowed to edit documents" />
+                    <ActionColumn action={insertDatatableAction} role={role} />
+                    <ActionColumn action={writeDatatableAction} role={role} />
+                    <ActionColumn action={commentOnDatatableAction} role={role} />
+                    <ActionColumn action={planTasksAction} role={role} />
+                    <ActionColumn action={adminTasksAction} role={role} />
+                    <ActionGroupColumn actions={readCategoriesActions} role={role} label="Allowed to read categories" />
+                    <ActionGroupColumn actions={editCategoriesActions} role={role} label="Allowed to edit categories" />
+                    <ActionColumn action={extractAction} role={role} />
+                    <ActionColumn action={editAccessAction} role={role} />
+                    <ActionColumn action={adminDatabaseAction} role={role} />
             </div>
         );
-    }
+    };
+
+    const actionsEditor = (options: ColumnEditorOptions) => {
+        return (
+            <div className="flex flex-wrap gap-3 align-items-center">
+                    <ActionGroupColumnEditor actions={readDatatableActions} options={options} label="Allowed to read documents" />
+                    <ActionGroupColumnEditor actions={editDatatableActions} options={options} label="Allowed to edit documents" />
+                    <ActionColumnEditor action={insertDatatableAction} options={options} />
+                    <ActionColumnEditor action={writeDatatableAction} options={options} />
+                    <ActionColumnEditor action={commentOnDatatableAction} options={options} />
+                    <ActionColumnEditor action={planTasksAction} options={options} />
+                    <ActionColumnEditor action={adminTasksAction} options={options} />
+                    <ActionGroupColumnEditor actions={readCategoriesActions} options={options} label="Allowed to read categories" />
+                    <ActionGroupColumnEditor actions={editCategoriesActions} options={options} label="Allowed to edit categories" />
+                    <ActionColumnEditor action={extractAction} options={options} />
+                    <ActionColumnEditor action={editAccessAction} options={options} />
+                    <ActionColumnEditor action={adminDatabaseAction} options={options} />
+            </div>
+        );
+    };
 
     return (
         <DataTable
@@ -124,7 +143,11 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
             header={props.header}
         >
             <Column field="name" editor={textEditor} />
-            <Column body={role => getActionsColumn(role)} />
+            <Column
+                field="actions"
+                body={role => actionsColumn(role)}
+                editor={actionsEditor}
+            />
             <Column rowEditor />
             <Column body={deleteButton} />
         </DataTable> 
