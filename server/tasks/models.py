@@ -72,7 +72,7 @@ def task_view(db: Session):
             func.count(TaskDocument.document_id).label("total_count"),
             (
                 func.sum(
-                    case((TaskDocument.error_type is None, 0), else_=1)
+                    case((TaskDocument.error_type.is_(None), 0), else_=1)
                 ).label("error_count")
             ),
         )

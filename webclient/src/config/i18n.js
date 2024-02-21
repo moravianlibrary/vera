@@ -234,6 +234,8 @@ const resources = {
         "Generate": "Generovat",
         " extracted pages": " extrahováno stránek",
         " extracted documents": " extrahováno dokumentů",
+
+        "Error count": "Počet chyb",
     },
   },
 };
