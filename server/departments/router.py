@@ -30,20 +30,6 @@ def delete_department(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.delete_department(id, db)
 
 
-@router.put("/departments/{id}/user", response_model=schemas.Department)
-def add_user_to_department(
-    username: str, id: int = Path(...), db: Session = Depends(get_db)
-):
-    return crud.add_user_to_department(id, username, db)
-
-
-@router.delete("/departments/{id}/user", response_model=schemas.Department)
-def delete_user_from_department(
-    username: str, id: int = Path(...), db: Session = Depends(get_db)
-):
-    return crud.delete_user_from_department(id, username, db)
-
-
 @router.get("/departments", response_model=List[schemas.Department])
 def get_departments(db: Session = Depends(get_db)):
     return crud.get_departments(db)

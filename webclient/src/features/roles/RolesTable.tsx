@@ -117,7 +117,7 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
             editMode="row"
             onRowEditChange={handleRowEditChange}
             editingRows={editingRoles as DataTableValueArray | DataTableEditingRows || []}
-            onRowEditComplete={(e) => handleAcceptEdit(e.data as RoleModel)}
+            onRowEditComplete={(e) => handleAcceptEdit(e.newData as RoleModel)}
             headerColumnGroup={headerColumnGroup}
             scrollable
             scrollHeight="flex"
