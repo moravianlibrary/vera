@@ -1,9 +1,10 @@
 import { DocumentField } from "../contexts/documents/search/DocumentSearchField";
 import { GroupOption, SearchGroupParams } from "../contexts/documents/search/SearchNodes";
 import { DigitizationState } from "../types/DigitizationState";
-import { DocumentCreationStatus } from "../types/DocumentCreationStatus";
+import { DocumentCreateResult } from "../types/DocumentCreateResult";
 import { IdentifierType } from "../types/IdentifierType";
 import { IssuanceType } from "../types/IssuanceType";
+import { MaterialType } from "../types/MaterialType";
 import axiosInstance, { authHeader } from "./ApiBase";
 
 interface Identifier {
@@ -11,28 +12,40 @@ interface Identifier {
     value: string;
 }
 
+interface Frequency {
+    frequency: string;
+    date: string | null;
+}
+
 interface DocumentBase {
     sysno: string;
-    volume_number: string | null;
+    volume: string | null;
+    barcode: string | null;
 
-    signature: string | null;
-    barcode: string;
     ccnb: string | null;
-    isbn: string | null;
+    isbn_issn: string | null;
+    signature: string | null;
 
-    material_type: string;
+    material_type: MaterialType;
+    issuance_type: IssuanceType;
     title: string;
-
-    publishers: string[];
-    publishing_dates: string[];
-    places: string[];
-    languages: string[];
-    frequencies: string[];
+    digitization_state: DigitizationState;
+    
+    year: string | null;
+    bundle: string | null;
 
     pages_count: number | null;
     size: string | null;
 
-    // digitization_state: string;
+    publishers: string[];
+    publishing_places: string[];
+
+    publisher: string | null;
+    publishing_place: string | null;
+    publishing_year: string | null;
+    languages: string[];
+
+    frequencies: Frequency[] | null;
 }
 
 interface Document extends DocumentBase {
@@ -58,13 +71,13 @@ interface DocumentsResponse {
 }
 
 interface Issue {
+    type: IssuanceType;
     barcode: string;
     signature?: string | null;
-    year_issued?: string | null;
+    year?: string | null;
     volume?: string | null;
-    item?: string | null;
-    issuance_type: IssuanceType;
-    digitization_state?: DigitizationState | null;
+    bundle?: string | null;
+    digitization_state: DigitizationState | null;
     already_exists: boolean;
 }
 
@@ -73,11 +86,9 @@ interface CatalogDocument extends DocumentBase {
 }
 
 interface DocumentCreationResponse {
-    identifier: Identifier;
     document?: Document | null;
     catalog_document?: CatalogDocument | null;
-    digitization_state?: DigitizationState | null;
-    create_result: DocumentCreationStatus;
+    create_result: DocumentCreateResult;
 }
 
 interface QuerySort {
@@ -137,4 +148,4 @@ namespace ApiDocuments {
 }
 
 export default ApiDocuments;
-export type { Identifier, DocumentBase, Document, Issue, CatalogDocument, DocumentCreationResponse, DocumentsQuery };
+export type { Identifier, DocumentBase, Document, Issue, CatalogDocument, DocumentCreationResponse, DocumentsQuery, Frequency };

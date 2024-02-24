@@ -3,9 +3,10 @@ import { IdentifierType } from "../../types/IdentifierType";
 import { useTranslation } from "react-i18next";
 import { useAssignableCategories } from "../categories/AssignableCategoriesContext";
 import ApiDocuments, { DocumentCreationResponse, Identifier, Issue } from "../../adapters/ApiDocuments";
-import CreateResult from "../../documents/models/CreateResult";
-import { DocumentCreationStatus } from "../../types/DocumentCreationStatus";
+import { DocumentCreateResult } from "../../types/DocumentCreateResult";
 import { AssignableCategory } from "../../adapters/ApiCategories";
+import { useToast } from "../toast/ToastContext";
+import InsertResultModel from "./InsertResultModel";
 
 interface LabeledIdentifier {
     value: IdentifierType;
@@ -26,7 +27,7 @@ interface InsertDocumentsContextProps {
     createIssue: (index: number, issue: Issue) => void;
     creatingIssues: Issue[];
     createdIssues: Issue[];
-    results: DocumentCreationResponse[];
+    result: InsertResultModel;
 }
 
 interface InsertDocumentsProviderProps {
@@ -37,6 +38,7 @@ const InsertDocumentsContext = createContext<InsertDocumentsContextProps | undef
 
 export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = ({ children }) => {
     const { t } = useTranslation();
+    const showToast = useToast();
     const { categories } = useAssignableCategories();
 
     // First step variables
@@ -64,7 +66,7 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
     const [createdIssues, setCreatedIssues] = useState<Issue[]>([]);
 
     // Fourth step variables
-    const [results, setResults] = useState<DocumentCreationResponse[]>([]);
+    const [result, setResult] = useState<InsertResultModel>(new InsertResultModel());
 
     // First step functions
     const setIdentifierByType = (type: IdentifierType) => {
@@ -81,12 +83,14 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
         }
         ApiDocuments.insertDocument(inputIdentifier, category, false)
         .then(response => {
-            if (response.data.create_result === CreateResult.MULTIPLE_ISSUE_CHOICES) {
+            if (response.data.create_result === DocumentCreateResult.MultipleIssues) {
                 setChooseIssuesDocuments([response.data]);
-                setResults([]);
+                setResult(new InsertResultModel());
             } else {
                 setChooseIssuesDocuments([]);
-                setResults([response.data]);
+                const newResult = new InsertResultModel();
+                newResult.addDocumentResponse(response.data);
+                setResult(newResult);
             }
             setValue("");
         }).catch(error => {
@@ -100,12 +104,13 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
 
         ApiDocuments.insertDocument({identifier_type: IdentifierType.Barcode, value: issue.barcode}, category, false)
         .then(response => {
-            if (response.data.create_result !== DocumentCreationStatus.Success) {
+            if (response.data.create_result !== DocumentCreateResult.Success) {
                 console.error('Could not create given issue. This code should be unreachable.');;
             }
             setCreatingIssues(prevCreatingIssues => prevCreatingIssues.filter(i => i.barcode !== issue.barcode));
             setCreatedIssues(prevCreatedIssues => [...prevCreatedIssues, issue]);
-            setResults(prevResults => [...prevResults, response.data]);
+            const messageProps = result.addDocumentResponse(response.data);
+            showToast(messageProps.severity, t(messageProps.summary), t(messageProps.detail));
         }).catch(error => {
             console.error(`Error while inserting document: ${error}`);
         });
@@ -117,7 +122,7 @@ export const InsertDocumentsProvider: React.FC<InsertDocumentsProviderProps> = (
             categories, category, setCategory,
             value, setValue, acceptInput,
             chooseIssuesDocuments, createIssue, creatingIssues, createdIssues,
-            results
+            result
         }}>
             {children}
         </InsertDocumentsContext.Provider>
