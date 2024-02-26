@@ -126,10 +126,10 @@ const TaskDocuments: React.FC<TaskDocumentsProps> = ({task}) => {
         <DataTable
             value={documents}
         >
-            <Column field="id" header={t('Id')} />
-            <Column field="processed" header={t('id')} />
-            <Column field="error_type" header={t('id')} />
-            <Column field="error_message" header={t('id')} />
+            <Column field="document_id" header={t('Document id')} />
+            <Column field="processed" header={t('Processed')} />
+            <Column field="error_type" header={t('Error type')} />
+            <Column field="error_message" header={t('Error message')} />
         </DataTable>
     );
 }

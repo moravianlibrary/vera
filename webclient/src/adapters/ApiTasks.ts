@@ -22,7 +22,7 @@ interface Task {
 }
 
 interface TaskDocument {
-    id: number;
+    document_id: number;
     processed: boolean;
     error_type: string;
     error_message: string;
