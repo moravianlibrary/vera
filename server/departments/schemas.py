@@ -5,6 +5,7 @@ from typing import List
 class DepartmentBase(BaseModel):
     abbreviation: str
     name: str
+    users: List[str] = []
 
 
 class DepartmentCreate(DepartmentBase):
@@ -13,4 +14,3 @@ class DepartmentCreate(DepartmentBase):
 
 class Department(DepartmentBase):
     id: int
-    users: List[str] = []

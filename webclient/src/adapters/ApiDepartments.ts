@@ -1,8 +1,10 @@
 import axiosInstance, { authHeader } from "./ApiBase";
 
 interface Department {
-    id: number;
+    id?: number;
     name: string;
+    abbreviation: string;
+    users: string[];
 }
 
 namespace ApiDepartments {

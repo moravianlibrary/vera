@@ -18,6 +18,14 @@ interface Task {
 
     processed_count: number;
     total_count: number;
+    error_count: number;
+}
+
+interface TaskDocument {
+    id: number;
+    processed: boolean;
+    error_type: string;
+    error_message: string;
 }
 
 namespace ApiTasks {
@@ -31,9 +39,9 @@ namespace ApiTasks {
     }
 
     export function getTaskDocuments(task_id: number) {
-        return axiosInstance.get<Task[]>(`/tasks/${task_id}/documents`, { headers: authHeader() });
+        return axiosInstance.get<TaskDocument[]>(`/tasks/${task_id}/documents`, { headers: authHeader() });
     }
 }
 
 export default ApiTasks;
-export type { Task };
+export type { Task, TaskDocument };

@@ -1,7 +1,7 @@
 enum IssuanceType {
-    Edition = 'edition',
-    Volume = 'volume',
-    Item = 'item'
+    Unit = 'Unit',
+    Volume = 'Volume',
+    Bundle = 'Bundle'
 }
 
 export { IssuanceType };

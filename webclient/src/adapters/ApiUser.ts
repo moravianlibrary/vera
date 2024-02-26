@@ -14,6 +14,10 @@ namespace ApiUser {
     export function getCurrentUser() {
         return axiosInstance.get<User>(`/auth/current_user`, { headers: authHeader() });
     }
+
+    export function getUsers() {
+        return axiosInstance.get<{ username: string }[]>(`/auth/users`, { headers: authHeader() });
+    }
 }
 
 export default ApiUser;

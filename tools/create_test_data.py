@@ -128,7 +128,7 @@ def create_test_documents():
         }
 
         category_id = category_ids[category_index]
-        endpoint = (f"{URL}/documents/create_from_catalog"
+        endpoint = (f"{URL}/catalogs"
                     f"?category_id={category_id}"
                     f"&insert_digitized=true")
         requests.post(endpoint, headers=headers, json=data)
@@ -136,6 +136,6 @@ def create_test_documents():
 
 
 if __name__ == "__main__":
-    create_test_category_tree()
-    create_test_quota()
+    #create_test_category_tree()
+    #create_test_quota()
     create_test_documents()

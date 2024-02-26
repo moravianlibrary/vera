@@ -1,6 +1,7 @@
 import React, { ReactNode, createContext, useContext, useRef } from 'react';
 import { Toast } from 'primereact/toast';
 import { Severity } from '../../types/PrimeReactTypes';
+import { useTranslation } from 'react-i18next';
 
 
 interface ToastContextProps {
@@ -18,6 +19,7 @@ interface ToastProviderProps {
 }
 
 export function ToastProvider({ children }: ToastProviderProps): JSX.Element {
+    const { t } = useTranslation();
     const toast = useRef(null);
 
     const showToast = (severity: Severity, summary: string, detail: string, life = 5000, sticky = false) => {
@@ -26,8 +28,8 @@ export function ToastProvider({ children }: ToastProviderProps): JSX.Element {
         }
         (toast.current as Toast).show({
             severity: severity,
-            summary: summary,
-            detail: detail,
+            summary: t(summary),
+            detail: t(detail),
             life: life,
             sticky: sticky
         });

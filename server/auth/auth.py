@@ -73,12 +73,6 @@ def get_user_from_token(db: Session, token: str) -> CurrentUser:
 
     departments = get_user_departments(user_info[USER_FIELD], db)
 
-    if len(departments) > 1:
-        print(user_info)
-        raise exceptions.CredentialsException(
-            "User has more than one assigned department"
-        )
-
     department_id, department_name = (
         (departments[0].id, departments[0].name)
         if len(departments) == 1

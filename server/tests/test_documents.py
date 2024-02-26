@@ -336,6 +336,62 @@ class TestDocumentsEndpoints(unittest.TestCase):
                 issue["barcode"] == barcode, issue["already_exists"]
             )
 
+    def test_insert_with_frequencies(self):
+        sysno1 = "MZK01-000165329"
+        sysno2 = "MZK01-000230291"
+
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+
+        response = self.client.post(
+            "/catalogs",
+            json={"identifier_type": "Sysno", "value": sysno1},
+            headers=headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        frequencies = response.json()["catalog_document"]["frequencies"]
+        self.assertEqual(
+            [{"frequency": "1x měsíčně", "date": None}], frequencies
+        )
+
+        response = self.client.post(
+            "/catalogs",
+            json={"identifier_type": "Sysno", "value": sysno2},
+            headers=headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        frequencies = response.json()["catalog_document"]["frequencies"]
+        self.assertEqual(
+            [
+                {"frequency": "1x týdně", "date": "Od roč. 1, č. 47 (1945)"},
+                {"frequency": "2x týdně", "date": "Roč. 1, č. 1-46 (1945)"},
+            ],
+            frequencies,
+        )
+
+    def test_serialize_frequency(self):
+        from catalogs.schemas import Frequency
+        from documents.crud import get_document
+
+        sysno = "MZK01-000165329"
+        volume = "39"
+        barcode = "2619868037"
+
+        self.delete_document(sysno, volume, barcode)
+
+        headers = {"Authorization": f"Bearer {get_admin_token()}"}
+
+        response = self.client.post(
+            "/catalogs",
+            params={"insert_digitized": ["true"]},
+            json={"identifier_type": "Barcode", "value": barcode},
+            headers=headers,
+        )
+        self.assertEqual(response.status_code, 200)
+        id = response.json()["document"]["id"]
+
+        document = get_document(id, self.db)
+        print([Frequency(**freq) for freq in document.frequencies])
+
     def test_search_query(self):
         from documents.crud import (
             create_document,

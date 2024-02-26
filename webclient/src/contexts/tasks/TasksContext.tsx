@@ -29,7 +29,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     };
 
     const contextValue: TasksContextProps = {
-        tasks
+        tasks,
     };
 
     useEffect(() => {

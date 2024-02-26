@@ -1,9 +1,8 @@
 import axiosInstance, { authHeader } from "./ApiBase";
 
-interface ExtractionCreate {
+interface ExtractionProps {
     target_pages_threshold: number;
     whole_categories_threshold: number;
-    include_whole_categories: boolean;
     balance_total_pages: boolean;
     include_categories: number[];
 }
@@ -31,19 +30,19 @@ namespace ApiExtractions {
         );
     }
 
-    export function generateExtraction(createProps: ExtractionCreate,
-                pages_count: number | null = null,
-                quota_id: number | null = null) {
-        const params: string[][] = [];
-        if (pages_count !== null) {
+    export function generateExtraction(createProps: ExtractionProps, pages_count?: number, quota_id?: number) {
+        const params: { [key: string]: string } = {}
+        if (pages_count) {
             params['pages_count'] = String(pages_count);
         }
-        if (quota_id !== null) {
+        if (quota_id) {
             params['quota_id'] = String(quota_id);
         }
         const queryParams = new URLSearchParams(params).toString();
-        const url = `/extract/generate${queryParams ? `?${queryParams}` : ''}`;
-        return axiosInstance.put<Extraction>(url, createProps, { headers: authHeader() });
+        console.log(queryParams);
+        const url = `/extractions/generate${queryParams ? `?${queryParams}` : ''}`;
+        console.log(url);
+        return axiosInstance.post<Extraction>(url, createProps, { headers: authHeader() });
     }
 
     export function getExtraction(id: number) {
@@ -60,4 +59,4 @@ namespace ApiExtractions {
 }
 
 export default ApiExtractions;
-export type { Extraction };
+export type { ExtractionProps, Extraction, Extractions };

@@ -1,19 +1,24 @@
 from sqlalchemy import (
     Boolean,
+    case,
     Column,
     Enum,
+    func,
     ForeignKey,
     Integer,
     PrimaryKeyConstraint,
     String,
     TIMESTAMP,
-    func,
-    case,
 )
 from sqlalchemy.orm import Session
 
 from services.database import Base
-from tasks.enums import TaskDocumentErrorType, TaskType, TaskState
+
+from tasks.enums import (
+    TaskDocumentErrorType,
+    TaskType,
+    TaskState,
+)
 
 
 class Task(Base):
@@ -67,7 +72,7 @@ def task_view(db: Session):
             func.count(TaskDocument.document_id).label("total_count"),
             (
                 func.sum(
-                    case((TaskDocument.error_type is None, 0), else_=1)
+                    case((TaskDocument.error_type.is_(None), 0), else_=1)
                 ).label("error_count")
             ),
         )

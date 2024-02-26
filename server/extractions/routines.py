@@ -132,7 +132,8 @@ class CategoryLeaf(CategoryNode):
                 for document in get_category_documents(category_id, db)
             ]
         )
-        return float(pages_count) / self.get_target_pages()
+        target_pages = self.get_target_pages()
+        return float(pages_count) / target_pages if target_pages else 0
 
     def __repr__(self):
         return (
@@ -150,6 +151,8 @@ def bottom_up_generator(target_pages: int, db: Session) -> List[CategoryLeaf]:
     clustered_nodes: Dict[int, List[CategoryNode]] = {}
 
     for category in crud.get_assignable_categories(db):
+        if category.percentage == 0.0:
+            continue
         parent_id = category.parent_id
         if parent_id not in clustered_nodes:
             clustered_nodes[parent_id if parent_id else 0] = []
@@ -318,9 +321,13 @@ def select_within_threshold(
     j = 0
     while i < n:
         if selected_docs[i][j]:
+            j += documents[i].pages_count
+            if j > upper_limit:
+                break
             selected_documents.append(documents[i].id)
             selected_pages_count += documents[i].pages_count
-            j += documents[i].pages_count
+            if j > target_pages:
+                break
         i += 1
 
     if upper_limit < selected_pages_count:

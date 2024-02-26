@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import { Button } from "primereact/button";
 import { Panel } from 'primereact/panel';
 
-import IssuanceType from "../../documents/models/IssuanceType.js";
 import naturalSort from "../../documents/SortUtils.js";
 import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import DocumentIssueCard from "./DocumentIssueCard";
 import React from "react";
 import { Issue } from "../../adapters/ApiDocuments.js";
+import { IssuanceType } from "../../types/IssuanceType";
 
 interface InsertDocumentsIssuesProps {
     onGoBack?: () => void;
@@ -17,20 +17,24 @@ interface InsertDocumentsIssuesProps {
 }
 
 const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
-    const { chooseIssuesDocuments, createIssue, creatingIssues, createdIssues } = useInsertDocuments();
+    const { chooseIssuesDocuments, createIssue } = useInsertDocuments();
     const { t } = useTranslation();
 
     const [index, setIndex] = useState(0);
     const [editions, setEditions] = useState<Issue[]>([]);
     const [volumes, setVolumes] = useState<Issue[]>([]);
+    const [bundles, setBundles] = useState<Issue[]>([]);
 
     const handleChooseIssuesForDocument = (index) => {
         const catalogDocument = chooseIssuesDocuments[index].catalog_document!;
 
         setEditions(catalogDocument.issues
-            .filter(issue => issue.issuance_type === IssuanceType.EDITION));
+            .filter(issue => issue.type === IssuanceType.Unit));
         setVolumes(catalogDocument.issues
-            .filter(issue => issue.issuance_type === IssuanceType.VOLUME)
+            .filter(issue => issue.type === IssuanceType.Volume)
+            .sort((a, b) => naturalSort(a.volume, b.volume)));
+        setBundles(catalogDocument.issues
+            .filter(issue => issue.type === IssuanceType.Bundle)
             .sort((a, b) => naturalSort(a.volume, b.volume)));
     };
 
@@ -64,6 +68,8 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
                 getIssuesDiv("Edice", editions)}
                 {volumes && volumes.length > 0 &&
                 getIssuesDiv("Rocniky", volumes)}
+                {bundles && bundles.length > 0 &&
+                getIssuesDiv("Svazky cisel", bundles)}
             </div>
             <div className="flex justify-content-between p-1">
                 <Button

@@ -16,7 +16,7 @@ const ExtractionsTable: React.FC = () => {
         return (
             <Link to={`/documents?extractionId=${extraction.id}`}>
                 <Button
-                    text
+                    outlined
                     label={t("Show in documents")}
                 />
             </Link>
@@ -27,7 +27,7 @@ const ExtractionsTable: React.FC = () => {
         return (
             <Link to={`/categories?extractionId=${extraction.id}`}>
                 <Button
-                    text
+                    outlined
                     label={t("Show in categories")}
                 />
             </Link>
