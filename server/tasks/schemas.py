@@ -27,13 +27,15 @@ class TaskCreation(TaskBase):
 
 class TaskError(BaseModel):
     error_type: TaskDocumentErrorType
+    error_message: Optional[str]
     count: int
 
 
 class Task(TaskCreation):
     processed_count: int
     total_count: int
-    # errors: List[TaskError]
+    error_count: int
+    errors: List[TaskError] = []
 
 
 class TaskDocument(BaseModel):
@@ -41,3 +43,4 @@ class TaskDocument(BaseModel):
 
     processed: bool
     error_type: Optional[TaskDocumentErrorType]
+    error_message: Optional[str]

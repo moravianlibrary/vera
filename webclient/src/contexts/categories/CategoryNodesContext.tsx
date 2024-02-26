@@ -43,6 +43,7 @@ interface CategoryNodesProviderProps {
     categories: Category[] | undefined;
     selectedQuota: Quota | undefined;
     children: ReactNode;
+    extractedCategories: boolean;
 }
 
 export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (props) => {
@@ -58,7 +59,8 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (prop
     const createCategoryNodes = (categories: Category[], selectedQuota?: Quota) => {
         const quotaPagesCount = selectedQuota ? selectedQuota.pages_count : 0;
         const createdRootNode = CategoryNode.generateRootNode(
-            t('all_categories'), categories, quotaPagesCount);
+            t('all_categories'), categories, quotaPagesCount, props.extractedCategories
+        );
         setRootNode(createdRootNode);
         setCategoryNodes([createdRootNode]);
     };

@@ -59,6 +59,8 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
                         : null;
     };
 
+    console.log(documents);
+
     return (
         <DataTable
             className='documents-table'
@@ -82,7 +84,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
         >
             <Column field="id" header={t('id')} />
             <Column field="sysno" header={t('sysno')} editor={textEditor} />
-            <Column field='volume_number' header={t('volume_number')} editor={textEditor} />
+            <Column field='volume' header={t('Volume')} editor={textEditor} />
             <Column field="category_name"
                 header={t('category')}
                 editor={(editorOptions) => categoryEditor({ ...editorOptions, categories })}
@@ -90,9 +92,9 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
             {/* <Column field="title" header={t('title')} body={customColumnRenderer} editor={textareaEditor} className="overflow-hidden" /> */}
             <Column field='title' header={t('title')} editor={textareaEditor} />
             <Column field='pages_count' body={pagesCountBody} header={t('pages_count')} editor={numberEditor} />
-            <Column field='signature' header={t('signature')} editor={textEditor} />
-            <Column field="barcode" header={t('barcode')} editor={textEditor} />
-            <Column field="ccnb" header={t('ccnb')} editor={textEditor} />
+            <Column field='signature' header={t('Signature')} editor={textEditor} />
+            <Column field="barcode" header={t('Barcode')} editor={textEditor} />
+            <Column field="ccnb" header={t('CNB')} editor={textEditor} />
             <Column field="isbn" header={t('isbn')} editor={textEditor} />
             <Column field="creator" header={t('creator')} />
             <Column field='created_at' header={t('created_at')} />

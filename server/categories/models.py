@@ -1,5 +1,13 @@
-from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, \
-    UniqueConstraint, PrimaryKeyConstraint, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Float,
+    ForeignKey,
+    Integer,
+    UniqueConstraint,
+    PrimaryKeyConstraint,
+    String,
+)
 from services.database import Base
 
 
@@ -9,21 +17,22 @@ class Category(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     description = Column(String)
-    parent_id = Column(Integer, ForeignKey('categories.id'),
-                       index=True, nullable=True)
+    parent_id = Column(
+        Integer, ForeignKey("categories.id"), index=True, nullable=True
+    )
     level = Column(Integer)
     assignable = Column(Boolean)
     percentage = Column(Float)
+    extract_whole = Column(Boolean)
     disabled = Column(Boolean)
 
-    __table_args__ = (UniqueConstraint('name', 'parent_id'),)
+    __table_args__ = (UniqueConstraint("name", "parent_id"),)
 
 
 class CategoryDepartments(Base):
     __tablename__ = "category_departments"
 
-    category_id = Column(Integer, ForeignKey('categories.id'), index=True)
-    department_id = Column(Integer, ForeignKey('departments.id'), index=True)
+    category_id = Column(Integer, ForeignKey("categories.id"), index=True)
+    department_id = Column(Integer, ForeignKey("departments.id"), index=True)
 
-    __table_args__ = (PrimaryKeyConstraint(
-        'category_id', 'department_id'), {})
+    __table_args__ = (PrimaryKeyConstraint("category_id", "department_id"), {})

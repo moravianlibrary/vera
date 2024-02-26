@@ -12,10 +12,10 @@ import Documents from '../pages/Documents';
 import Login from '../components/Login';
 import { ActionAccessRoute } from '../services/AccessService';
 import { UserProvider } from '../contexts/user/UserContext';
-import { DataProvider } from '../services/Data';
 import Tasks from './Tasks';
 import { ActionType } from '../types/ActionType';
 import Home from './Home';
+import Extractions from './Extractions';
 
 
 function App() {
@@ -23,7 +23,6 @@ function App() {
   return (
     <ToastProvider>
       <UserProvider>
-        <DataProvider>
           <StrictMode>
             <Router>
               <div className="App">
@@ -33,10 +32,13 @@ function App() {
                       <Route path="/" element={<Home />} />
                       <Route path="/login" element={<Login />} />
                       <Route element={<ActionAccessRoute action={ActionType.ReadDatatable} />}>
-                        <Route path="/board" element={<Documents />} />
+                        <Route path="/documents" element={<Documents />} />
                       </Route>
                       <Route element={<ActionAccessRoute action={ActionType.ReadCategories} />}>
                         <Route path="/categories" element={<Categories />} />
+                      </Route>
+                      <Route element={<ActionAccessRoute action={ActionType.Extract} />}>
+                        <Route path="/extractions" element={<Extractions />} />
                       </Route>
                       <Route element={<ActionAccessRoute action={ActionType.PlanTasks} />}>
                         <Route path="/tasks" element={<Tasks />} />
@@ -49,7 +51,6 @@ function App() {
               </div>
             </Router>
           </StrictMode>
-        </DataProvider>
       </UserProvider>
     </ToastProvider>
   );

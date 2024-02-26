@@ -10,21 +10,23 @@ router = APIRouter()
 
 
 @router.post("/departments", response_model=schemas.Department)
-def create_department(department: schemas.DepartmentCreate,
-                      db: Session = Depends(get_db)):
+def create_department(
+    department: schemas.DepartmentCreate, db: Session = Depends(get_db)
+):
     return crud.create_department(department, db)
 
 
 @router.put("/departments/{id}", response_model=schemas.Department)
-def update_department(department: schemas.DepartmentCreate,
-                      id: int = Path(...),
-                      db: Session = Depends(get_db)):
+def update_department(
+    department: schemas.DepartmentCreate,
+    id: int = Path(...),
+    db: Session = Depends(get_db),
+):
     return crud.update_department(id, department, db)
 
 
 @router.delete("/departments/{id}", response_model=schemas.Department)
-def delete_department(id: int = Path(...),
-                      db: Session = Depends(get_db)):
+def delete_department(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.delete_department(id, db)
 
 

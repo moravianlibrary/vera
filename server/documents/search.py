@@ -1,71 +1,97 @@
 from sqlalchemy import or_, and_
 from sqlalchemy.sql import text
+from sqlalchemy.orm import Query
 from typing import List, Optional, Union
-from fastapi import Query
 
 from documents import models, schemas
 from categories.models import Category
-from documents.enums import GroupOption, NumberOption, TextOption, TreeOption
+from documents.enums import (
+    GroupOption,
+    NumberOption,
+    TextOption,
+    TreeOption,
+    SortOrder,
+    DocumentField,
+)
+
 # from departments.models import Department
 
 
 def filter_documents_query_base(
-            query_base: Query,
-            query: Optional[schemas.DocumentsQuery] = None):
+    query_base: Query, query: Optional[schemas.DocumentsQuery] = None
+):
     if query:
-        # if query.department_id:
-        #     pass
-        # elif query.username:
-        if query.username:
-            query_base = query_base.filter(
-                models.Document.creator == query.username
-            )
-        if query.id_list:
-            return filter_by_id_list(query.id_list, query_base)
-        if query.search_phrase:
-            return filter_by_search_phrase(query.search_phrase, query_base)
-        if query.search_group:
-            return filter_by_group(query.search_group, query_base)
+        query_base = filter_by_query(query_base, query)
+        if query.sort:
+            query_base = sort_query(query_base, query.sort)
 
     return query_base
 
 
-def filter_by_id_list(id_list: List[int],
-                      query_base: Query):
-    return query_base.filter(
-        models.Document.id.in_(id_list)
-    )
+def sort_query(query_base: Query, sort: schemas.QuerySort):
+    curr_sort = sort
+    while curr_sort:
+        field_name = parse_field(curr_sort.field)
+        if curr_sort.order == SortOrder.Ascending:
+            query_base = query_base.order_by(
+                getattr(models.Document, field_name).asc()
+            )
+        else:
+            query_base = query_base.order_by(
+                getattr(models.Document, field_name).desc()
+            )
+        curr_sort = curr_sort.and_then
+    return query_base
 
 
-def filter_by_search_phrase(search_phrase: str,
-                            query_base: Query):
+def filter_by_query(query_base: Query, query: schemas.DocumentsQuery):
+    # if query.department_id:
+    #     pass
+    # elif query.username:
+    if query.username:
+        query_base = query_base.filter(
+            models.Document.creator == query.username
+        )
+    if query.id_list:
+        return filter_by_id_list(query.id_list, query_base)
+    if query.search_phrase:
+        return filter_by_search_phrase(query.search_phrase, query_base)
+    if query.search_group:
+        return filter_by_group(query.search_group, query_base)
+
+
+def filter_by_id_list(id_list: List[int], query_base: Query):
+    return query_base.filter(models.Document.id.in_(id_list))
+
+
+def filter_by_search_phrase(search_phrase: str, query_base: Query):
     return query_base.filter(
         models.Document.sysno.startswith(search_phrase)
         or models.Document.barcode.startswith(search_phrase)
         or models.Document.signature.startswith(search_phrase)
         or models.Document.title.startswith(search_phrase)
         or models.Category.name.startswith(search_phrase)
-    ).outerjoin(
-        Category, models.Document.category_id == Category.id
-    )
+    ).outerjoin(Category, models.Document.category_id == Category.id)
 
 
-def filter_by_group(search_group: schemas.SearchGroup,
-                    query_base: Query):
-    return query_base.filter(build_filter(search_group, text('')))
+def filter_by_group(search_group: schemas.SearchGroup, query_base: Query):
+    return query_base.filter(build_filter(search_group, text("")))
 
 
-def build_filter(search_rule: Union[schemas.SearchGroup, schemas.SearchField],
-                 query_base: Query):
+def build_filter(
+    search_rule: Union[schemas.SearchGroup, schemas.SearchField],
+    query_base: Query,
+):
     if isinstance(search_rule, schemas.SearchGroup):
         return build_group_filter(search_rule, query_base)
     return build_field_filter(search_rule)
 
 
-def build_group_filter(search_group: schemas.SearchGroup,
-                       query_base: Query):
-    sub_filters = [build_filter(sub_rule, query_base)
-                   for sub_rule in search_group.sub_rules]
+def build_group_filter(search_group: schemas.SearchGroup, query_base: Query):
+    sub_filters = [
+        build_filter(sub_rule, query_base)
+        for sub_rule in search_group.sub_rules
+    ]
     if search_group.option == GroupOption.MatchAll:
         return and_(*sub_filters)
     elif search_group.option == GroupOption.MatchAny:
@@ -134,3 +160,8 @@ def build_tree_filter(field, option, value):
         return field.is_(None)
     elif option == TreeOption.IsNotNull:
         return field.isnot(None)
+
+
+def parse_field(field: DocumentField):
+    if field == DocumentField.Category:
+        return "category_id"

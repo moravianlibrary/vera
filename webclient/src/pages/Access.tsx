@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "primereact/button";
@@ -6,8 +6,9 @@ import { SelectButton } from "primereact/selectbutton";
 
 import '../styles/Access.css';
 import RolesTable from "../features/roles/RolesTable";
-import DepartmentsTable from "../components/DepartmentsTable.js";
+import DepartmentsTable from "../features/departments/DepartmentsTable";
 import { RolesProvider, useRoles } from "../contexts/roles/RolesContext";
+import { DepartmentsProvider, useDepartments } from "../contexts/departments/DepartmentsContext";
 
 const TableEnum = {
     DEPARTMENS: 'departments',
@@ -16,14 +17,17 @@ const TableEnum = {
 
 const Access = () => {
     return (
-        <RolesProvider>
-            <AccessDiv />
-        </RolesProvider>
+        <DepartmentsProvider>
+            <RolesProvider>
+                <AccessDiv />
+            </RolesProvider>
+        </DepartmentsProvider>
     )
 }
 
 const AccessDiv = () => {
     const { t } = useTranslation();
+    const { handleAddDepartment } = useDepartments();
     const { handleAddRole } = useRoles();
 
     const [table, setTable] = useState(TableEnum.DEPARTMENS);
@@ -32,18 +36,13 @@ const AccessDiv = () => {
         { label: t('roles'), value: TableEnum.ROLES }
     ]);
 
-    const [addDepartment, setAddDepartment] = useState(false);
 
     const handleInsert = (event) => {
         if (table === TableEnum.DEPARTMENS) {
-            setAddDepartment(true);
+            handleAddDepartment();
         } else if (table === TableEnum.ROLES) {
             handleAddRole();
         }
-    };
-
-    const resetAddDepartment = () => {
-        setAddDepartment(false);
     };
 
     const tableHeader = () => {
@@ -57,15 +56,17 @@ const AccessDiv = () => {
         );
     };
 
+    if (table === TableEnum.DEPARTMENS) {
+        return (
+            <div className="Access">
+                <DepartmentsTable header={tableHeader} />
+            </div>
+        );
+    }
+
     return (
         <div className="Access">
-            { table === TableEnum.DEPARTMENS && <DepartmentsTable 
-                header={tableHeader}
-                handleAddRow={addDepartment}
-                onRowAdded={resetAddDepartment}
-            />}
-            { table === TableEnum.ROLES &&
-            <RolesTable header={tableHeader} />}
+            <RolesTable header={tableHeader} />
         </div>
     );
 };

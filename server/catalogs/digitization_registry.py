@@ -1,32 +1,32 @@
 import requests
 from functools import reduce
+from typing import Optional
 
-from catalogs.enums import DigitizationState
-from documents.schemas import Identifier
-from documents.enums import IdentifierType
+from catalogs.enums import DigitizationState, IdentifierType
+from catalogs.schemas import Identifier
 
 
-REGISTER_SEARCH_ENDPOINT = \
+REGISTER_SEARCH_ENDPOINT = (
     "https://registrdigitalizace.cz/rdcz/search/rdcz/select?q={QUERY}"
+)
 
 
 def parse_state_str(state: str):
     if state == "dokončeno":
-        return DigitizationState.FINISHED
+        return DigitizationState.Finished
     elif state == "zpracování":
-        return DigitizationState.IN_PROGRESS
+        return DigitizationState.InProgress
     elif state == "plánováno":
-        return DigitizationState.PLANNED
-    return DigitizationState.NOT_DIGITIZED
+        return DigitizationState.Planned
+    return DigitizationState.NotDigitized
 
 
 def reduce_func(x, y):
-    if x == DigitizationState.FINISHED or y == DigitizationState.FINISHED:
-        return DigitizationState.FINISHED
-    if (x == DigitizationState.IN_PROGRESS
-            or y == DigitizationState.IN_PROGRESS):
-        return DigitizationState.IN_PROGRESS
-    return DigitizationState.PLANNED
+    if x == DigitizationState.Finished or y == DigitizationState.Finished:
+        return DigitizationState.Finished
+    if x == DigitizationState.InProgress or y == DigitizationState.InProgress:
+        return DigitizationState.InProgress
+    return DigitizationState.Planned
 
 
 def get_state_by_query(query: str):
@@ -36,16 +36,33 @@ def get_state_by_query(query: str):
         return
     found_documents = response.json()
 
-    if found_documents['response']['numFound'] == 0:
-        return DigitizationState.NOT_DIGITIZED
+    if found_documents["response"]["numFound"] == 0:
+        return DigitizationState.NotDigitized
 
-    return reduce(reduce_func,
-                  (parse_state_str(doc['stav'])
-                   for doc in found_documents['response']['docs']))
+    return reduce(
+        reduce_func,
+        (
+            parse_state_str(doc["stav"])
+            for doc in found_documents["response"]["docs"]
+        ),
+    )
 
 
 def get_state_by_identifier(identifier: Identifier):
     if identifier.identifier_type == IdentifierType.Barcode:
         return get_state_by_query(f'carkod:"{identifier.value}"')
-    if identifier.identifier_type == IdentifierType.Ccnb:
+    if identifier.identifier_type == IdentifierType.Cnb:
         return get_state_by_query(f'ccnb:"{identifier.value}"')
+
+
+def get_digitization_state(barcode: Optional[str], cnb: Optional[str] = None):
+    state = None
+    if barcode:
+        state = get_state_by_identifier(
+            Identifier(identifier_type=IdentifierType.Barcode, value=barcode)
+        )
+    if cnb and (state is None or state == DigitizationState.NotDigitized):
+        state = get_state_by_identifier(
+            Identifier(identifier_type=IdentifierType.Cnb, value=cnb)
+        )
+    return state if state is not None else DigitizationState.NotDigitized

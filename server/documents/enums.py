@@ -1,24 +1,34 @@
 from enum import Enum
 
 
-class IdentifierType(Enum):
-    Sysno = 'Sysno'
-    Barcode = 'Barcode'
-    Signature = 'Signature'
-    Ccnb = 'Ccnb'
+class DocumentCreateResult(Enum):
+    DocumentNotFoundInCatalog = "DocumentNotFoundInCatalog"
+    CatalogDocumentParsingError = "CatalogDocumentParsingError"
+    UniqueDocumentViolation = "UniqueDocumentViolation"
+    InvalidIdentifier = "InvalidIdentifier"
+    InvalidSysno = "InvalidSysno"
+    InvalidSysnoBase = "InvalidSysnoBase"
+    InvalidCatalogDocument = "InvalidCatalogDocument"
+    CatalogError = "CatalogError"
+    MultipleIssueChoices = "MultipleIssueChoices"
+    AlreadyDigitized = "AlreadyDigitized"
+    DigitizationInProgress = "DigitizationInProgress"
+    DigitizationPlanned = "DigitizationPlanned"
+    MultipleIssues = "MultipleIssues"
+    Success = "Success"
 
 
 class DocumentField(Enum):
-    Sysno = 'Sysno'
-    Volume = 'Volume'
-    Category = 'Category'
-    Title = 'title'
-    PagesCount = 'PagesCount'
+    Sysno = "Sysno"
+    Volume = "Volume"
+    Category = "Category"
+    Title = "title"
+    PagesCount = "PagesCount"
 
 
 class GroupOption(Enum):
-    MatchAll = 'MatchAll'
-    MatchAny = 'MatchAny'
+    MatchAll = "MatchAll"
+    MatchAny = "MatchAny"
 
 
 class TextOption(Enum):
@@ -47,3 +57,8 @@ class TreeOption(Enum):
     IsNotIn = "IsNotIn"
     IsNull = "IsNull"
     IsNotNull = "IsNotNull"
+
+
+class SortOrder(Enum):
+    Ascending = "Ascending"
+    Descending = "Descending"

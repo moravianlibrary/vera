@@ -29,7 +29,6 @@ export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
             const transformedData: Role[] = response.data.map(role => {
                 return Object.assign({}, role) as Role;
             });
-            console.log(transformedData);
             setRolesData(transformedData);
         }).catch(error => {
             console.error(`Could not receive assignable roles: ${error}`);
@@ -54,7 +53,7 @@ export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
     const handleCancelEdit = (role: RoleModel) => {
         setEditingRoles(editingRoles.filter(er => er !== role));
         if (role.id === undefined) {
-            setRoles(roles.filter(er => er !== role));
+            setRoles(roles.filter(r => r !== role));
         }
     }
     

@@ -1,22 +1,25 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+from typing import List
 
+from auth.auth import get_user_from_token, oauth2_scheme
+from auth import crud
+from auth.schemas import CurrentUser, User
 from services.database import get_db
-from . import auth, schemas
 
 
 router = APIRouter()
 
 
-@router.get("/auth/token", response_model=schemas.TokenResponse)
-def get_token_from_code(
-        code: str = Query(..., description="Authorization code from Keycloak"),
-        redirect_uri: str =
-        Query(..., description="Redirect URI used during login")):
-    return auth.get_token_from_code(code, redirect_uri)
+@router.get("/auth/current_user", response_model=CurrentUser)
+def get_current_user(
+    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+):
+    return get_user_from_token(db, token)
 
 
-@router.get("/auth/current_user", response_model=schemas.CurrentUser)
-def get_current_user(db: Session = Depends(get_db),
-                     token: str = Depends(auth.oauth2_scheme)):
-    return auth.get_user_from_token(db, token)
+@router.get("/auth/users", response_model=List[User])
+def get_users(
+    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+):
+    return crud.get_users(db)

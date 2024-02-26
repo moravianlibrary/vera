@@ -9,6 +9,10 @@ export class CategoryNode {
     parentNode: CategoryNode | undefined;
     children: CategoryNode[] = [];
 
+    extracted: boolean;
+    extracted_pages_count: number = 0;
+    extracted_documents_count: number = 0;
+
     predecessors_departments: number[] = [];
     count_pages: number = 0;
     count_documents_with_pages: number = 0;
@@ -18,13 +22,14 @@ export class CategoryNode {
     expanded: boolean = true;
     style = { borderRadius: '12px' };
 
-    constructor(type: NodeType, category: Category, quota: number, parentNode?: CategoryNode) {
+    constructor(type: NodeType, category: Category, quota: number, extracted: boolean, parentNode?: CategoryNode) {
         this.type = type;
         this.category = category;
         this.quota = quota;
         this.parentNode = parentNode;
         this.percentage = category.percentage;
         this.className = CategoryNode.getClassName(type, category);
+        this.extracted = extracted;
 
         if (parentNode && (parentNode.predecessors_departments.length > 0
                 || parentNode.category.departments.length > 0)) {
@@ -37,13 +42,13 @@ export class CategoryNode {
 
         const childrenQuotas = CategoryNode.getChildrenQuotas(category.children, quota);
         this.children = category.children.map((child, index) => (
-            new CategoryNode(NodeType.Category, child, childrenQuotas[index], this)))
+            new CategoryNode(NodeType.Category, child, childrenQuotas[index], extracted, this)))
             .sort((a, b) => a.category.id - b.category.id);
 
         this.aggregateStats(quota);
     }
 
-    static generateRootNode(name: string, categories: Category[], quota: number): CategoryNode {
+    static generateRootNode(name: string, categories: Category[], quota: number, extracted: boolean): CategoryNode {
         const rootCategory: Category = {
             id: 0,
             name: name,
@@ -63,7 +68,7 @@ export class CategoryNode {
             
             children: categories
         }
-        return new CategoryNode(NodeType.Root, rootCategory, quota);
+        return new CategoryNode(NodeType.Root, rootCategory, quota, extracted);
     }
 
     static getClassName(type: NodeType, category?: Category): string {
@@ -123,12 +128,17 @@ export class CategoryNode {
             
             children: []
         };
-        const newNode = new CategoryNode(NodeType.CreateCategory, newCategory, 0, this);
+        const newNode = new CategoryNode(NodeType.CreateCategory, newCategory, 0, false, this);
         this.children = [...this.children, newNode];
     }
 
     updateChildren(children: Category[]) {
-        this.children.forEach((child, index) => child.updateChildren(children[index].children));
+        this.children.forEach((child, index) => child.update(children[index]));
+    }
+
+    update(category: Category) {
+        this.category = category;
+        this.children.forEach((child, index) => child.update(category.children[index]));
     }
 
     aggregateStats(quotaPagesCount: number) {
@@ -137,10 +147,15 @@ export class CategoryNode {
 
         this.count_pages = (this.category.count_pages || 0) + (this.children.reduce((total, child) => (
             total + (child.count_pages || 0)), 0) as number);
-        this.count_documents = (this.category.count_documents || 0 )+ (this.children.reduce((total, child) => (
+        this.count_documents = (this.category.count_documents || 0 ) + (this.children.reduce((total, child) => (
             total + (child.count_documents || 0)), 0) as number);
         this.count_documents_with_pages = (this.category.count_documents_with_pages || 0) + (this.children.reduce((total, child) => (
             total + (child.count_documents_with_pages || 0)), 0) as number);
+
+        this.extracted_pages_count = (this.category.extracted_pages_count || 0) + (this.children.reduce((total, child) => (
+            total + (child.extracted_pages_count || 0)), 0) as number);
+        this.extracted_documents_count = (this.category.extracted_documents_count || 0) + (this.children.reduce((total, child) => (
+            total + (child.extracted_documents_count || 0)), 0) as number);
 
         this.quota = quotaPagesCount;
     }

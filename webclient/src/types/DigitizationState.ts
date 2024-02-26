@@ -1,8 +1,8 @@
 enum DigitizationState {
-    Finished = 'FINISHED',
-    InProgress = 'IN_PROGRESS',
-    Planned = 'PLANNED',
-    NotDigitized = 'NOT_DIGITIZED'
+    Finished = 'Finished',
+    InProgress = 'InProgress',
+    Planned = 'Planned',
+    NotDigitized = 'NotDigitized'
 }
 
 export { DigitizationState };

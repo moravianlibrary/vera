@@ -48,6 +48,7 @@ const InsertDocuments: React.FC<InsertDocumentsProps> = (props) => {
                     {activeIndex === 2 &&
                     <InsertDocumentsIssues
                         onGoNext={() => setActiveIndex(3)}
+                        onGoBack={() => setActiveIndex(1)}
                     />}
                     {activeIndex === 3 &&
                     <InsertDocumentsResult
