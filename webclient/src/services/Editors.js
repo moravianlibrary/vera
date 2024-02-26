@@ -2,6 +2,9 @@ import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
+import { useAssignableCategories } from "../contexts/categories/AssignableCategoriesContext";
+import { MaterialType } from "../types/MaterialType";
+import { IssuanceType } from "../types/IssuanceType";
 
 export const textEditor = (options) => {
     return <InputText type="text" value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
@@ -15,11 +18,32 @@ export const textareaEditor = (options) => {
     return <InputTextarea type="text" autoResize rows={1} value={options.value} onChange={(e) => options.editorCallback(e.target.value)} />;
 };
 
-export const categoryEditor = (options) => {
+export const CategoryEditor = (options) => {
+    const { categories } = useAssignableCategories();
     return (
         <Dropdown
             value={options.value}
-            options={options.categories.map(category => category.name)}
+            options={categories.map(category => category.name)}
+            onChange={(e) => options.editorCallback(e.value)}
+        />
+    );
+};
+
+export const MaterialTypeEditor = (options) => {
+    return (
+        <Dropdown
+            value={options.value}
+            options={Object.values(MaterialType)}
+            onChange={(e) => options.editorCallback(e.value)}
+        />
+    );
+};
+
+export const IssuanceTypeEditor = (options) => {
+    return (
+        <Dropdown
+            value={options.value}
+            options={Object.values(IssuanceType)}
             onChange={(e) => options.editorCallback(e.value)}
         />
     );

@@ -22,7 +22,7 @@ interface DocumentBase {
     volume: string | null;
     barcode: string | null;
 
-    ccnb: string | null;
+    cnb: string | null;
     isbn_issn: string | null;
     signature: string | null;
 

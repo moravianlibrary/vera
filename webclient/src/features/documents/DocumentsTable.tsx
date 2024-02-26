@@ -1,6 +1,6 @@
-import { DataTable, DataTableRowEditCompleteEvent, DataTableSelectionMultipleChangeEvent, DataTableValueArray } from 'primereact/datatable';
-import { categoryEditor, numberEditor, textEditor, textareaEditor } from '../../services/Editors.js';
-import React, { useState } from 'react';
+import { DataTable, DataTableRowEditCompleteEvent, DataTableRowEditEvent, DataTableSelectionMultipleChangeEvent, DataTableValueArray } from 'primereact/datatable';
+import { CategoryEditor, IssuanceTypeEditor, MaterialTypeEditor, numberEditor, textEditor, textareaEditor } from '../../services/Editors.js';
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -9,8 +9,22 @@ import { useUser } from '../../contexts/user/UserContext';
 import { useDocuments } from '../../contexts/documents/DocumentsContext';
 import { Document } from '../../adapters/ApiDocuments';
 import DocumentModel from '../../contexts/documents/DocumentModel.js';
+import { MaterialType } from '../../types/MaterialType.js';
+import { Tooltip } from 'primereact/tooltip';
+import { OverlayPanel } from 'primereact/overlaypanel';
+import { useOverlayScrollListener } from 'primereact/hooks';
+import { Menu } from 'primereact/menu';
+
 
 interface DocumentsTableProps {
+}
+
+interface DocumentDetailsProps {
+    document: DocumentModel;
+}
+
+interface DocumentDetailsBodyProps {
+    document: DocumentModel;
 }
 
 const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
@@ -20,6 +34,16 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     const { user } = useUser();
     const [categories, setCategories] = useState([]);
     const [insertMode, setInsertMode] = useState(false);
+
+    const [expandedRows, setExpandedRows] = useState<DocumentModel[]>([]);
+
+    const handleRowExpand = (e: DataTableRowEditEvent) => {
+        setExpandedRows([...expandedRows, e.data as DocumentModel]);
+    };
+
+    const handleRowCollapse = (e: DataTableRowEditEvent) => {
+        setExpandedRows(expandedRows.filter(row => row.id !== e.data.id));
+    };
 
     const isAllowedToEdit = (document: Document) => {
         return accessService.isAllowedToEditDocument(user, document);
@@ -59,13 +83,34 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
                         : null;
     };
 
-    console.log(documents);
+    const titleBody = (document: DocumentModel) => {
+        const titleStyle: any = {
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 2,
+            overflow: 'hidden',
+        };
+        return (
+            <span style={titleStyle} className='overflow-ellipsis'>
+                {document.title}
+            </span>
+        );
+    };
+
+    const typeBody = (document: DocumentModel) => {
+        return document.issuance_type
+            ? `${t(document.material_type)} - ${t(document.issuance_type)}`
+            : t(document.material_type);
+    };
+
+    const descriptionBody = (document: DocumentModel) => {
+        return [document.year, document.volume, document.bundle].filter(x => x).join(' ');
+    };
 
     return (
         <DataTable
             className='documents-table'
             value={documents}
-            // key={refreshCount}
             // header={tableHeader}
             // resizableColumns
             // columnResizeMode="fit"
@@ -73,37 +118,133 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
             // scrollHeight="flex"
             scrollHeight="calc(100vh - 150px)"
             virtualScrollerOptions={{ lazy: true, onLazyLoad: handleLazyLoad, itemSize: 81, delay: 0 }}
-            editMode="row"
-            onRowEditComplete={handleRowEditComplete}
-            selectionMode="multiple"
-            // dragSelection
+            onScroll={e => (e.target)}
+            selectionMode="checkbox"
             selection={selectedDocuments}
             onSelectionChange={handleSelectionChange}
-            // isDataSelectable={(event) => (!insertMode || event.index != 0) && isAllowedToEdit(event.data)}
-            // rowGroupMode="rowspan"
         >
-            <Column field="id" header={t('id')} />
-            <Column field="sysno" header={t('sysno')} editor={textEditor} />
-            <Column field='volume' header={t('Volume')} editor={textEditor} />
+            <Column field='details' body={document => <DocumentDetailsBody document={document} />} />
+            <Column field="sysno" header={t('sysno')} />
+            <Column field="type" header={t('Type')} body={typeBody} />
+            <Column field='description' header={t('Description')} body={descriptionBody} />
             <Column field="category_name"
                 header={t('category')}
-                editor={(editorOptions) => categoryEditor({ ...editorOptions, categories })}
             />
-            {/* <Column field="title" header={t('title')} body={customColumnRenderer} editor={textareaEditor} className="overflow-hidden" /> */}
-            <Column field='title' header={t('title')} editor={textareaEditor} />
-            <Column field='pages_count' body={pagesCountBody} header={t('pages_count')} editor={numberEditor} />
-            <Column field='signature' header={t('Signature')} editor={textEditor} />
-            <Column field="barcode" header={t('Barcode')} editor={textEditor} />
-            <Column field="ccnb" header={t('CNB')} editor={textEditor} />
-            <Column field="isbn" header={t('isbn')} editor={textEditor} />
+            <Column field='title' header={t('title')} body={titleBody} />
+            <Column field='pages_count' body={pagesCountBody} header={t('pages_count')} />
+            <Column field='signature' header={t('Signature')} />
+            <Column field="barcode" header={t('Barcode')} />
+            <Column field="cnb" header={t('CNB')} />
             <Column field="creator" header={t('creator')} />
             <Column field='created_at' header={t('created_at')} />
-            {/* <Column field="extractor" header={t('extractor')} />
-            <Column field={r => r.getExtractedAtFormatted()} header={t('extracted_at')} /> */}
 
-            <Column rowEditor />
-            <Column body={deleteButton} />
             <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+        </DataTable>
+    );
+};
+
+const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc }) => {
+    const { t } = useTranslation();
+
+    const op = useRef<OverlayPanel>(null);
+
+    return (
+        <div className='document-details-body flex' style={{ position: 'relative' }}>
+            <Button className='details-button'
+                text
+                onClick={(event) => op.current!.toggle(event)}
+            >
+                {/* <i className='pi pi-external-link'/> */}
+                <i className='pi pi-info-circle'/>
+            </Button>
+            <OverlayPanel
+                ref={op}
+                // style={{ maxWidth: '500px' }}
+                style={{ width: '500px' }}
+                showCloseIcon
+                appendTo={document.getElementById('.documents-details-body') as HTMLElement}
+                // appendTo='self'
+            >
+                <div>
+                    <DocumentDetailsTooltip document={doc} />
+                </div>
+            </OverlayPanel>
+        </div>
+    );
+};
+
+const DocumentDetailsTooltip: React.FC<DocumentDetailsProps> = ({ document }) => {
+    const { t } = useTranslation();
+
+    return (
+        <div>
+            {document.getTooltipFieldList(t).map(field => {
+                return (
+                    <div key={field.label} className='flex justify-content-between gap-8'>
+                        <label>{t(field.label)}:</label>
+                        <span>{field.value as string}</span>
+                    </div>
+                );
+            })}
+        </div>      
+    );
+};
+
+const DocumentDetails: React.FC<DocumentDetailsProps> = ({ document }) => {
+    const { t } = useTranslation();
+
+    const data = [
+        {'field': "System number", 'value': document.sysno},
+        {'field': "Material type", 'value': document.material_type, editor: MaterialTypeEditor},
+        {'field': "Volume number", 'value': document.volume},
+        {'field': "Bundle", 'value': document.bundle},
+        {'field': "Volume year", 'value': document.year},
+        {'field': "Issuance type", 'value': document.issuance_type, editor: IssuanceTypeEditor},
+        {'field': "Category", 'value': document.category_name, editor: CategoryEditor},
+        {'field': "Barcode", 'value': document.barcode},
+        {'field': "CNB", 'value': document.cnb},
+        {'field': "ISBN/ISSN", 'value': document.isbn_issn},
+        {'field': "Signature", 'value': document.signature},
+        {'field': "Title", 'value': document.title},
+        {'field': "Digitization state", 'value': document.digitization_state, editable: false},
+        {'field': "Pages count", 'value': document.pages_count},
+        {'field': "Pages count predicted", 'value': document.pages_count_predicted},
+        {'field': "Size", 'value': document.size},
+        {'field': "Publisher", 'value': document.publisher},
+        {'field': "Publishing place", 'value': document.publishing_place},
+        {'field': "Publishing year", 'value': document.publishing_year},
+        {'field': "Languages", 'value': document.languages},
+        {'field': "Frequencies", 'value': document.frequencies},
+        {'field': "Creator", 'value': document.creator},
+        {'field': "Creator department", 'value': document.department},
+        {'field': "Created at", 'value': document.created_at},
+        {'field': "Extraction id", 'value': document.extraction_id},
+        {'field': "Extractor", 'value': document.extractor},
+        {'field': "Extracted at", 'value': document.extracted_at},
+    ];
+
+    const cellEditor = (options) => {
+        if (!options.rowData || options.rowData.editable === false) {
+            return;
+        }
+        return options.rowData.editor ? options.rowData.editor(options) : textEditor(options);
+    };
+
+    const handleCellEditComplete = (e) => {
+        console.log(e.newRowData);
+    };
+
+    return (
+        <DataTable value={data}
+            editMode='cell'
+        >
+            <Column field="field" header={t('Field')} />
+            <Column field="value"
+                header={t('Value')}
+                // body={row => <DocumentDetailsBody />}
+                // editor={(options) => cellEditor(options)}
+                // onCellEditComplete={handleCellEditComplete}
+            />
         </DataTable>
     );
 };
