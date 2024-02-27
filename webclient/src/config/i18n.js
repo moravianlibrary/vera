@@ -112,7 +112,7 @@ const resources = {
         name: "Název",
         description: "Popis",
 
-        select_quota: "Výběr kvótu",
+        select_quota: "Výběr kvóty",
         active_quota: "Aktivní kvóta",
         set_active_quota: "Nastavit jako aktívni kvótu",
 
@@ -251,6 +251,37 @@ const resources = {
         " extracted documents": " extrahováno dokumentů",
 
         "Error count": "Počet chyb",
+
+        "Material type": "Typ materialu",
+        "Year": "Rok",
+        "Bundle": "Svazek čísel",
+        "Issuance type": "Typ vydáni",
+        "CNB": "ČNB",
+        "Digitization state": "Stav digitalizace",
+        "Pages count predicted": "Predikovaný počet stran",
+        "Size": "Velikost",
+        "Publisher": "Vydávatel",
+        "Publishing place": "Misto vydáni",
+        "Publishing year": "Rok vydáni",
+        "Languages": "Jazyky",
+        "Frequencies": "Frekvence",
+        "Creator": "Vytvořil",
+        "Creator department": "Oddělení",
+        "Created at": "Vytvořeno",
+        "Extraction id": "Id extrakce",
+        "Type": "Typ",
+        "Description": "Popis",
+
+        "Book": "Kniha",
+        "ContinuingResource": "Periodikum",
+        "Map": "Mapa",
+        "Music": "Hudba",
+        "Other": "Ostatní",
+
+        "Cancel": "Zrušit",
+        "Delete": "Smazat",
+        "Delete document": "Smazání dokumentu",
+        "Are you sure you want to delete this document?": "Opravdu chcete smazat tento dokument?",
     },
   },
 };

@@ -26,6 +26,8 @@ def document_view(db: Session):
             models.Document.issuance_type,
             models.Document.title,
             models.Document.digitization_state,
+            models.Document.year,
+            models.Document.bundle,
             models.Document.pages_count,
             models.Document.size,
             models.Document.publisher,
