@@ -277,6 +277,11 @@ const resources = {
         "Map": "Mapa",
         "Music": "Hudba",
         "Other": "Ostatní",
+
+        "Cancel": "Zrušit",
+        "Delete": "Smazat",
+        "Delete document": "Smazání dokumentu",
+        "Are you sure you want to delete this document?": "Opravdu chcete smazat tento dokument?",
     },
   },
 };

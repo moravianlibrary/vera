@@ -16,7 +16,7 @@ interface DocumentsHeaderProps {
 
 const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const { t } = useTranslation();
-    const { selectedDocuments, handleStartTask } = useDocuments();
+    const { selectedDocuments, handleStartTask, handleSelectDocuments } = useDocuments();
 
     const [advancedSearch, setAdvancedSearch] = useState(false);
     const [hasSelection, setHasSelection] = useState(false);
@@ -89,7 +89,9 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const endContent = (
         <React.Fragment>
             <Menu model={taskSelectorItems} popup ref={taskSelectorMenuRef} id="popup_menu_left" />
-            <Button icon="pi pi-th-large"
+            <Button 
+                // icon="pi pi-th-large"
+                icon="pi pi-list"
                 className="p-button-rounded p-button-text"
                 severity={hasSelection ? "help" : "secondary"}
                 disabled={!hasSelection}
@@ -97,23 +99,18 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
                 aria-controls="popup_menu_left"
                 aria-haspopup
             />
-            <Button icon="pi pi-pencil"
-                className="p-button-rounded p-button-text"
-                severity={hasSelection ? "info" : "secondary"}
-                disabled={!hasSelection}
-                // onClick={() => setSelectCategoryVisible(true)}
-            />
             <Button icon="pi pi-trash" 
                 className="p-button-rounded p-button-text"
                 severity={hasSelection ? "danger" : "secondary"}
-                disabled={!hasSelection}
+                // disabled={!hasSelection}
+                disabled
                 // onClick={handleDeleteSelectedDocuments}
             />
             <Button icon="pi pi-times" 
                 className="p-button-rounded p-button-text"
                 severity={hasSelection ? "info" : "secondary"}
                 disabled={!hasSelection}
-                // onClick={handleCancelSelectedDocuments}
+                onClick={() => handleSelectDocuments([])}
             />
         </React.Fragment>
     );

@@ -14,6 +14,7 @@ import { Tooltip } from 'primereact/tooltip';
 import { OverlayPanel } from 'primereact/overlaypanel';
 import { useOverlayScrollListener } from 'primereact/hooks';
 import { Menu } from 'primereact/menu';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 
 
 interface DocumentsTableProps {
@@ -145,8 +146,15 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
 
 const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc }) => {
     const { t } = useTranslation();
+    const { handleDeleteDocument } = useDocuments();
 
     const op = useRef<OverlayPanel>(null);
+    const [confirmVisible, setConfirmVisible] = useState(false);
+
+    const handleAcceptDelete = () => {
+        handleDeleteDocument(doc)
+        op.current!.hide();
+    }
 
     return (
         <div className='document-details-body flex' style={{ position: 'relative' }}>
@@ -154,8 +162,9 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc
                 text
                 onClick={(event) => op.current!.toggle(event)}
             >
-                {/* <i className='pi pi-external-link'/> */}
-                <i className='pi pi-info-circle'/>
+                {/* <i className='pi pi-info-circle'/> */}
+                <i className='pi pi-book'/>
+                {/* <i className='pi pi-ellipsis-v'/> */}
             </Button>
             <OverlayPanel
                 ref={op}
@@ -165,8 +174,27 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc
                 appendTo={document.getElementById('.documents-details-body') as HTMLElement}
                 // appendTo='self'
             >
-                <div>
+                <div className='flex flex-column gap-3 align-items-start'>
                     <DocumentDetailsTooltip document={doc} />
+                    <Button
+                        icon="pi pi-trash"
+                        severity='danger'
+                        outlined
+                        label={t('Delete')}
+                        onClick={() => setConfirmVisible(true)}
+                    />
+                    <ConfirmDialog
+                        // group="declarative"
+                        visible={confirmVisible}
+                        onHide={() => setConfirmVisible(false)}
+                        header={t('Delete document')}
+                        message={t("Are you sure you want to delete this document?")}
+                        icon="pi pi-exclamation-triangle"
+                        acceptLabel={t('Delete')}
+                        acceptClassName='p-button-danger'
+                        rejectLabel={t('Cancel')}
+                        accept={handleAcceptDelete}
+                    />
                 </div>
             </OverlayPanel>
         </div>
@@ -176,13 +204,27 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc
 const DocumentDetailsTooltip: React.FC<DocumentDetailsProps> = ({ document }) => {
     const { t } = useTranslation();
 
+    const copyToClipboard = (value: string) => {
+        navigator.clipboard.writeText(value);
+    };
+
     return (
         <div>
             {document.getTooltipFieldList(t).map(field => {
                 return (
                     <div key={field.label} className='flex justify-content-between gap-8'>
                         <label>{t(field.label)}:</label>
-                        <span>{field.value as string}</span>
+                        <div className='flex justify-content-between gap-1'>
+                            <span className='p-1 max-w-19rem'>{field.value as string}</span>
+                            <Button
+                                className='p-0 text-xs align-content-center'
+                                severity='info'
+                                text
+                                onClick={() => copyToClipboard(field.value as string)}
+                            >
+                                <i className='pi pi-copy p-0' />
+                            </Button>
+                        </div>
                     </div>
                 );
             })}
