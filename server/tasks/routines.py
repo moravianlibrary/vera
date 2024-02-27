@@ -79,17 +79,66 @@ def predict_volumes_pages(task_id: int, db: Session):
 
 
 def sync_from_catalog(task_id: int, owner: str, db: Session):
-    from documents.routines import update_document_from_catalog
+    from catalogs.enums import IdentifierType
+    from catalogs.routines import generate_catalog_document
+    from catalogs.schemas import Identifier
+    from documents.schemas import DocumentCreate
+
+    def update_document_from_catalog(document: Document):
+        catalog_response = generate_catalog_document(
+            Identifier(
+                identifier_type=IdentifierType.Barcode, value=document.barcode
+            )
+        )
+        newDocument = None
+        if document.issuance_type:
+            issue = [
+                issue
+                for issue in catalog_response.document.issues
+                if issue.barcode == document.barcode
+            ][0]
+            newDocument = DocumentCreate.from_catalog_issue(
+                catalog_response.document, issue, document.category_id
+            )
+        else:
+            newDocument = DocumentCreate.from_catalog_document(
+                catalog_response.document, document.category_id
+            )
+        crud.update_document(document.id, newDocument, owner, db)
+
+    def set_document_error(
+        document_id: int,
+        error_type: TaskDocumentErrorType,
+        error_message: str,
+    ):
+        crud.set_document_error(
+            task_id,
+            document_id,
+            error_type,
+            error_message,
+            db,
+        )
 
     for document in crud.get_unprocessed_task_documents(task_id, db):
-        try:
-            update_document_from_catalog(document.id, owner, db)
-        except Exception as e:
-            crud.set_document_error(
-                task_id,
-                document.id,
-                TaskDocumentErrorType.UnknownError,
-                e.message,
-                db,
-            )
+        update_document_from_catalog(document)
+        # try:
+        #     update_document_from_catalog(document)
+        # except ValueError as e:
+        #     set_document_error(
+        #         document.id,
+        #         TaskDocumentErrorType.ValueError,
+        #         e.args[0],
+        #     )
+        # except TypeError as e:
+        #     set_document_error(
+        #         document.id,
+        #         TaskDocumentErrorType.ValueError,
+        #         e.args[0],
+        #     )
+        # except Exception as e:
+        #     set_document_error(
+        #         document.id,
+        #         TaskDocumentErrorType.ValueError,
+        #         e.args[0],
+        #     )
         crud.set_document_processed(task_id, document.id, db)

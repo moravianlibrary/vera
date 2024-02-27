@@ -15,6 +15,7 @@ import { OverlayPanel } from 'primereact/overlaypanel';
 import { useOverlayScrollListener } from 'primereact/hooks';
 import { Menu } from 'primereact/menu';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { useToast } from '../../contexts/toast/ToastContext';
 
 
 interface DocumentsTableProps {
@@ -203,9 +204,11 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc
 
 const DocumentDetailsTooltip: React.FC<DocumentDetailsProps> = ({ document }) => {
     const { t } = useTranslation();
+    const showToast = useToast();
 
     const copyToClipboard = (value: string) => {
         navigator.clipboard.writeText(value);
+        showToast("info", t("Copied to clipboard"), "");
     };
 
     return (

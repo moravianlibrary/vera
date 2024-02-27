@@ -6,7 +6,6 @@ from catalogs.enums import IdentifierType
 from catalogs.enums import CatalogResponseStatus as Status, DigitizationState
 from catalogs.schemas import CatalogResponse, Identifier
 from documents.enums import DocumentCreateResult as Result
-from catalogs.routines import generate_catalog_document
 
 
 CATALOG_RESPONSE_MAPPING = {
@@ -125,18 +124,6 @@ def create_catalog_document(
         catalog_document=catalog_document,
         create_result=create_result,
     )
-
-
-def update_document_from_catalog(
-    document: schemas.Document, owner: str, db: Session
-):
-    catalog_response = generate_catalog_document(
-        Identifier(IdentifierType.Barcode, document.barcode)
-    )
-    document = schemas.DocumentCreate.from_catalog_document(
-        catalog_response.document
-    )
-    crud.update_document(document.id, document, owner, db)
 
 
 def get_documents_query():

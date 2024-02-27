@@ -37,7 +37,7 @@ class DocumentModel implements Document {
     publisher: string | null;
     publishing_place: string | null;
     publishing_year: string | null;
-    languages: string[];
+    languages: string[] | null;
 
     frequencies: Frequency[] | null;
 
@@ -135,7 +135,7 @@ class DocumentModel implements Document {
             {label: "Publisher", value: this.publisher},
             {label: "Publishing place", value: this.publishing_place},
             {label: "Publishing year", value: this.publishing_year},
-            {label: "Languages", value: this.languages.length > 0 ? this.languages.join(', ') : null},
+            {label: "Languages", value: this.languages && this.languages.length > 0 ? this.languages.join(', ') : null},
             {label: "Frequencies", value: DocumentModel.formatFrequencies(this.frequencies)},
             {label: "Creator", value: this.creator},
             {label: "Creator department", value: this.department},

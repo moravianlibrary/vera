@@ -43,7 +43,7 @@ interface DocumentBase {
     publisher: string | null;
     publishing_place: string | null;
     publishing_year: string | null;
-    languages: string[];
+    languages: string[] | null;
 
     frequencies: Frequency[] | null;
 }

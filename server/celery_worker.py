@@ -1,10 +1,14 @@
 from celery import Celery
-from os import environ
+from os import environ, path
+from sys import path as sys_path
 
 from services.database import DATABASE_URL, get_db
 from tasks.enums import TaskState, TaskType
 from tasks import crud
-import predictions
+
+
+sys_path.append(path.abspath("/app"))
+
 
 celery_worker = Celery(
     "tasks",

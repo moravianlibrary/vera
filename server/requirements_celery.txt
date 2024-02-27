@@ -1,6 +1,7 @@
 sqlalchemy
 pydantic
 psycopg2-binary
+pymarc
 numpy
 lxml
 pandas

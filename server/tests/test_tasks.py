@@ -9,5 +9,5 @@ class TestRolesEndpoints(unittest.TestCase):
     def test_task_by_id(self):
         from celery_worker import run_task
 
-        task_id = 2
+        task_id = 22
         run_task(task_id)

@@ -28,7 +28,8 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
 
     const taskSelectorMenuRef = useRef(null);
     const taskSelectorItems = [{items: [
-        { label: t(TaskType.PredictVolumePages), command: () => handleStartTask(TaskType.PredictVolumePages), },
+        { label: t("Predict volumes page counts"), command: () => handleStartTask(TaskType.PredictVolumePages), },
+        { label: t("Sync from catalog"), command: () => handleStartTask(TaskType.SyncFromCatalog), },
         // { label: 'Export', }
     ]}];
 

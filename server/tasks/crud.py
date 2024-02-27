@@ -9,6 +9,7 @@ from tasks import models, schemas
 from tasks.enums import TaskDocumentErrorType
 from tasks.enums import TaskState
 from documents.models import Document
+from documents.schemas import DocumentCreate
 
 
 def create_task(
@@ -103,17 +104,6 @@ def set_document_error(
     db.commit()
 
 
-def set_predicted_pages_count(
-    task_id: int, document_id: int, pages_count_predicted: int, db: Session
-):
-    db.execute(
-        update(Document)
-        .where(Document.id == document_id)
-        .values(pages_count_predicted=pages_count_predicted)
-    )
-    db.commit()
-
-
 def get_task(id: int, db: Session) -> schemas.Task:
     return models.task_view(db).filter(models.Task.id == id).first()
 
@@ -138,3 +128,30 @@ def get_tasks(db: Session, offset: int = 0, limit: int = 50):
 
 def get_tasks_num_found(db: Session):
     return db.query(models.Task).count()
+
+
+def set_predicted_pages_count(
+    task_id: int, document_id: int, pages_count_predicted: int, db: Session
+):
+    db.execute(
+        update(Document)
+        .where(Document.id == document_id)
+        .values(pages_count_predicted=pages_count_predicted)
+    )
+    db.commit()
+
+
+def update_document(
+    document_id: int,
+    new_document: DocumentCreate,
+    username: str,
+    db: Session,
+) -> None:
+    document = db.query(Document).filter(Document.id == document_id).first()
+    if not document:
+        return
+
+    for field in new_document.dict(exclude_unset=True):
+        setattr(document, field, getattr(new_document, field))
+
+    db.commit()

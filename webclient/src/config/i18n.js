@@ -272,7 +272,7 @@ const resources = {
         "Type": "Typ",
         "Description": "Popis",
 
-        "Book": "Kniha",
+        "Book": "Monografie",
         "ContinuingResource": "Periodikum",
         "Map": "Mapa",
         "Music": "Hudba",
@@ -282,6 +282,8 @@ const resources = {
         "Delete": "Smazat",
         "Delete document": "Smazání dokumentu",
         "Are you sure you want to delete this document?": "Opravdu chcete smazat tento dokument?",
+
+        "Copied to clipboard": "Zkopírováno do schránky",
     },
   },
 };
