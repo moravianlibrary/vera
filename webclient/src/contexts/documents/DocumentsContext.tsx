@@ -79,8 +79,8 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
     const handleDeleteDocument = async (document: DocumentModel) => {
         const deletedDocument = await ApiDocuments.deleteDocument(document.id);
         if (deletedDocument !== null) {
-            const editedDocuments = documents.filter(d => d.id !== document.id);
-            setDocuments(editedDocuments);
+            setDocuments(prevDocuments => prevDocuments.filter(d => d.id !== document.id));
+            setSelectedDocuments(prevDocuments => prevDocuments.filter(d => d.id !== document.id));
             setOffset(offset - 1);
             // TODO: deleting documents makes lazy load reload one page two times
         }
@@ -112,6 +112,7 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
         .then(response => {
             if (response.data.id_list) {
                 setDocuments(prevDocuments => prevDocuments.filter(d => !response.data.id_list!.includes(d.id)));
+                setSelectedDocuments(prevDocuments => prevDocuments.filter(d => !response.data.id_list!.includes(d.id)));
             } else {
                 setOffset(0);
             }

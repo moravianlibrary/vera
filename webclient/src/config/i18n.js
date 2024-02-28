@@ -278,10 +278,16 @@ const resources = {
         "Music": "Hudba",
         "Other": "Ostatní",
 
+        InProgress: "Probiha",
+        NotDigitized: "Nedigitalizováno",
+
         "Cancel": "Zrušit",
         "Delete": "Smazat",
         "Delete document": "Smazání dokumentu",
+        "Delete documents": "Smazání dokumentů",
         "Are you sure you want to delete this document?": "Opravdu chcete smazat tento dokument?",
+        "Are you sure you want to delete all selected documents?": "Opravdu chcete smazat všechny vybrané dokumenty?",
+        "Number of selected documents": "Počet vybraných dokumentů",
 
         "Copied to clipboard": "Zkopírováno do schránky",
 

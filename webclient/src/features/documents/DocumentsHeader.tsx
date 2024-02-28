@@ -10,6 +10,7 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { TaskType } from "../../types/TaskType";
 import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { ca } from "date-fns/locale";
+import { ConfirmDialog } from "primereact/confirmdialog";
 
 interface DocumentsHeaderProps {
     onInsert: () => void;
@@ -46,6 +47,7 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
         { label: t("Sync from digitization registry"), command: () => handleStartTask(TaskType.SyncFromDigitizationRegistry), },
         // { label: 'Export', }
     ];
+    const [confirmDeletionVisible, setConfirmDeletionVisible] = useState(false);
 
     const handleSetDisplayOption = (e) => {
         if (e.value !== null) {
@@ -103,29 +105,45 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
 
     const endContent = (
         <React.Fragment>
-            <TieredMenu model={taskSelectorItems} popup ref={taskSelectorMenuRef} id="popup_menu_left" />
-            <Button 
-                // icon="pi pi-th-large"
-                icon="pi pi-list"
-                className="p-button-rounded p-button-text"
-                severity={hasSelection ? "help" : "secondary"}
-                disabled={!hasSelection}
-                onClick={toggleTaskSelectorMenu}
-                aria-controls="popup_menu_left"
-                aria-haspopup
-            />
-            <Button icon="pi pi-trash" 
-                className="p-button-rounded p-button-text"
-                severity={hasSelection ? "danger" : "secondary"}
-                disabled={!hasSelection}
-                onClick={handleDeleteDocuments}
-            />
-            <Button icon="pi pi-times" 
-                className="p-button-rounded p-button-text"
-                severity={hasSelection ? "info" : "secondary"}
-                disabled={!hasSelection}
-                onClick={() => handleSelectDocuments([])}
-            />
+            <div className="flex flex-column align-items-end">
+                <div>
+                <TieredMenu model={taskSelectorItems} popup ref={taskSelectorMenuRef} id="popup_menu_left" />
+                <Button 
+                    // icon="pi pi-th-large"
+                    icon="pi pi-list"
+                    className="p-button-rounded p-button-text"
+                    severity={hasSelection ? "help" : "secondary"}
+                    disabled={!hasSelection}
+                    onClick={toggleTaskSelectorMenu}
+                    aria-controls="popup_menu_left"
+                    aria-haspopup
+                />
+                <Button icon="pi pi-trash" 
+                    className="p-button-rounded p-button-text"
+                    severity={hasSelection ? "danger" : "secondary"}
+                    disabled={!hasSelection}
+                    onClick={() => setConfirmDeletionVisible(true)}
+                />
+                <Button icon="pi pi-times" 
+                    className="p-button-rounded p-button-text"
+                    severity={hasSelection ? "info" : "secondary"}
+                    disabled={!hasSelection}
+                    onClick={() => handleSelectDocuments([])}
+                />
+                <ConfirmDialog
+                    visible={confirmDeletionVisible}
+                    onHide={() => setConfirmDeletionVisible(false)}
+                    header={t('Delete documents')}
+                    message={t("Are you sure you want to delete all selected documents?")}
+                    icon="pi pi-exclamation-triangle"
+                    acceptLabel={t('Delete')}
+                    acceptClassName='p-button-danger'
+                    rejectLabel={t('Cancel')}
+                    accept={handleDeleteDocuments}
+                />
+                </div>
+                <span className="text-sm text-gray-700">{t('Number of selected documents')}: {selectedDocuments.length}</span>
+            </div>
         </React.Fragment>
     );
 
