@@ -130,7 +130,7 @@ const resources = {
         count: "Počet",
         "Count": "Počet",
 
-        "Document is already digitized": "Dokument je již digitalizován",
+        "Document is already digitized": "Dokument již digitalizován",
         "Document already digitized": "Dokument již digitalizován",
         "Error while parsing catalog response": "Chyba při zpracování odpovědi katalogu",
         "Error while connecting to catalog": "Chyba při připojování katalogu",

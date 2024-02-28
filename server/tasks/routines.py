@@ -32,19 +32,25 @@ def run_task(task_id: int, func: callable, db: Session):
             set_document_error(
                 document.id,
                 TaskDocumentErrorType.ValueError,
-                e.args[0],
+                str(e),
             )
         except TypeError as e:
+            error_message = str(e)
+            print(error_message)
+            print("TypeError")
             set_document_error(
                 document.id,
                 TaskDocumentErrorType.ValueError,
-                e.args[0],
+                str(e),
             )
         except Exception as e:
+            error_message = str(e)
+            print(error_message)
+            print("Exception")
             set_document_error(
                 document.id,
-                TaskDocumentErrorType.ValueError,
-                e.args[0],
+                TaskDocumentErrorType.UnknownError,
+                str(e),
             )
         crud.set_document_processed(task_id, document.id, db)
 
@@ -89,11 +95,17 @@ def sync_from_catalog(task_id: int, owner: str, db: Session):
     from documents.schemas import DocumentCreate
 
     def update_document_from_catalog(document: Document):
-        catalog_response = generate_catalog_document(
+        identifier = (
             Identifier(
                 identifier_type=IdentifierType.Barcode, value=document.barcode
             )
+            if document.barcode
+            else Identifier(
+                identifier_type=IdentifierType.Sysno, value=document.sysno
+            )
         )
+
+        catalog_response = generate_catalog_document(identifier)
         newDocument = None
         if document.issuance_type:
             issue = [

@@ -176,7 +176,7 @@ def update_document(
         setattr(document, field, getattr(new_document, field))
 
     frequencies = (
-        [frequency.model_dump() for frequency in document.frequencies]
+        [frequency.dict() for frequency in new_document.frequencies]
         if document.frequencies
         else []
     )

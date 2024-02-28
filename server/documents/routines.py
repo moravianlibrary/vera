@@ -52,7 +52,6 @@ def create_catalog_document(
             )
         )
 
-    digitization_state = catalog_document.digitization_state
     document = None
 
     if identifier.identifier_type == IdentifierType.Barcode:
@@ -60,6 +59,22 @@ def create_catalog_document(
             return schemas.DocumentCreateResponse(
                 create_result=Result.InvalidCatalogDocument
             )
+
+        issue = next(
+            (
+                issue
+                for issue in catalog_document.issues
+                if issue.barcode == identifier.value
+            ),
+            None,
+        )
+        if issue is None:
+            return schemas.DocumentCreateResponse(
+                create_result=Result.InvalidCatalogDocument
+            )
+
+        digitization_state = issue.digitization_state
+
         if (
             digitization_state == DigitizationState.Finished
             and not insert_digitized
@@ -82,15 +97,6 @@ def create_catalog_document(
                 create_result=Result.DigitizationPlanned
             )
 
-        issue = next(
-            (
-                issue
-                for issue in catalog_document.issues
-                if issue.barcode == identifier.value
-            ),
-            None,
-        )
-
         create_issue = schemas.DocumentCreate.from_catalog_issue(
             catalog_document,
             issue,
@@ -109,6 +115,34 @@ def create_catalog_document(
                 is not None
             )
     else:
+        digitization_state = (
+            catalog_document.issues[0].digitization_state
+            if len(catalog_document.issues) == 1
+            else catalog_document.digitization_state
+        )
+
+        if (
+            digitization_state == DigitizationState.Finished
+            and not insert_digitized
+        ):
+            return schemas.DocumentCreateResponse(
+                create_result=Result.AlreadyDigitized
+            )
+        if (
+            digitization_state == DigitizationState.InProgress
+            and not insert_digitized
+        ):
+            return schemas.DocumentCreateResponse(
+                create_result=Result.DigitizationInProgress
+            )
+        if (
+            digitization_state == DigitizationState.Planned
+            and not insert_digitized
+        ):
+            return schemas.DocumentCreateResponse(
+                create_result=Result.DigitizationPlanned
+            )
+
         response = create_document(
             schemas.DocumentCreate.from_catalog_document(
                 catalog_document, category_id

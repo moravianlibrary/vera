@@ -104,7 +104,7 @@ class DocumentCreate(DocumentBase):
             material_type=catalog_document.material_type,
             issuance_type=catalog_issue.type,
             title=catalog_document.title,
-            digitization_state=catalog_document.digitization_state,
+            digitization_state=catalog_issue.digitization_state,
             year=catalog_issue.year,
             bundle=catalog_issue.bundle,
             pages_count=catalog_document.pages_count,

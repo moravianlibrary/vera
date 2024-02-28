@@ -1,5 +1,4 @@
 import requests
-from functools import reduce
 from typing import Optional
 
 from catalogs.enums import DigitizationState, IdentifierType
@@ -39,13 +38,16 @@ def get_state_by_query(query: str):
     if found_documents["response"]["numFound"] == 0:
         return DigitizationState.NotDigitized
 
-    return reduce(
-        reduce_func,
-        (
-            parse_state_str(doc["stav"])
-            for doc in found_documents["response"]["docs"]
-        ),
-    )
+    if found_documents["response"]["numFound"] > 1:
+        return DigitizationState.NotDigitized
+    return parse_state_str(found_documents["response"]["docs"][0]["stav"])
+    # return reduce(
+    #     reduce_func,
+    #     (
+    #         parse_state_str(doc["stav"])
+    #         for doc in found_documents["response"]["docs"]
+    #     ),
+    # )
 
 
 def get_state_by_identifier(identifier: Identifier):
