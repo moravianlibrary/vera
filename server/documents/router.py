@@ -1,5 +1,8 @@
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
+from starlette.responses import FileResponse
+import pandas as pd
+import tempfile
 from typing import List, Optional
 
 from services.database import get_db
@@ -108,6 +111,113 @@ def query_documents(
     documents = crud.get_documents(query_base, offset=offset, limit=limit)
     num_found = crud.get_documents_num_found(query_base)
     return schemas.DocumentsResponse(documents=documents, num_found=num_found)
+
+
+@router.post(
+    "/documents/query/to_file", response_model=schemas.DocumentsResponse
+)
+def download_documents(
+    query: schemas.DocumentsQuery,
+    user: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if ActionType.ReadDatatableAll in user.actions:
+        pass
+    # elif ActionType.read_datatable_department in user.actions \
+    #         and user.department_id is not None:
+    #     if query is None:
+    #         query = schemas.DocumentsQuery(
+    #             department_id=user.department_id
+    #         )
+    elif (
+        ActionType.ReadDatatableOwn in user.actions
+        or ActionType.ReadDatatableDepartment in user.actions
+    ):
+        if query is None:
+            query = schemas.DocumentsQuery(username=user.username)
+    else:
+        raise exceptions.UserNotAllowedToReadDocumentsException
+
+    query_base = crud.get_documents_query_base(db, query)
+    num_found = crud.get_documents_num_found(query_base)
+
+    documents = crud.get_documents(query_base, limit=num_found)
+    documents_data = [
+        crud.documents_view_to_dict(document) for document in documents
+    ]
+
+    df = pd.DataFrame(documents_data)
+
+    with tempfile.NamedTemporaryFile(
+        suffix=".xlsx", delete=False
+    ) as temp_excel:
+        df.to_excel(temp_excel.name, index=False)
+
+    # headers = {"Content-Disposition": 'attachment; filename="Book.xlsx"'}
+    return FileResponse(
+        temp_excel.name,
+        media_type=(
+            "application/vnd."
+            "openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        ),
+        filename="documents.xlsx",
+    )
+
+
+@router.put("/documents/query/category")
+def update_query_documents(
+    query: schemas.DocumentsQuery,
+    category_id: Optional[int] = None,
+    user: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if ActionType.ReadDatatableAll in user.actions:
+        pass
+    # elif ActionType.read_datatable_department in user.actions \
+    #         and user.department_id is not None:
+    #     if query is None:
+    #         query = schemas.DocumentsQuery(
+    #             department_id=user.department_id
+    #         )
+    elif (
+        ActionType.ReadDatatableOwn in user.actions
+        or ActionType.ReadDatatableDepartment in user.actions
+    ):
+        if query is None:
+            query = schemas.DocumentsQuery(username=user.username)
+    else:
+        raise exceptions.UserNotAllowedToReadDocumentsException
+
+    query_base = crud.get_documents_query_base(db, query)
+    crud.update_documents(query_base, "category_id", category_id, db)
+
+
+@router.delete("/documents/query")
+def delete_query_documents(
+    query: schemas.DocumentsQuery,
+    user: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if ActionType.ReadDatatableAll in user.actions:
+        pass
+    # elif ActionType.read_datatable_department in user.actions \
+    #         and user.department_id is not None:
+    #     if query is None:
+    #         query = schemas.DocumentsQuery(
+    #             department_id=user.department_id
+    #         )
+    elif (
+        ActionType.ReadDatatableOwn in user.actions
+        or ActionType.ReadDatatableDepartment in user.actions
+    ):
+        if query is None:
+            query = schemas.DocumentsQuery(username=user.username)
+    else:
+        raise exceptions.UserNotAllowedToReadDocumentsException
+
+    query_base = crud.get_documents_query_base(db, query)
+    crud.delete_documents(query_base, db)
 
 
 @router.get(
