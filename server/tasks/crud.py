@@ -196,6 +196,15 @@ def update_digitization_state(
     db.commit()
 
 
+def delete_document(document_id: int, db: Session):
+    db.execute(
+        update(models.TaskDocument)
+        .where(models.TaskDocument.document_id == document_id)
+        .values(deleted=True)
+    )
+    db.commit()
+
+
 def delete_task(task_id: int, db: Session):
     db_task_documents = (
         db.query(models.TaskDocument)

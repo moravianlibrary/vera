@@ -13,6 +13,9 @@ interface DocumentsContextProps {
     selectedDocuments: Document[];
     handleSelectDocuments: (selectedDocuments: DocumentModel[]) => void;
     handleStartTask: (taskType: TaskType) => void;
+    handleDeleteDocuments: () => void;
+    handleUpdateCategory: (category_id: number, category_name: string) => void;
+    handleExportDocuments: () => void;
 }
 
 const DocumentsContext = createContext<DocumentsContextProps | undefined>(undefined);
@@ -76,8 +79,8 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
     const handleDeleteDocument = async (document: DocumentModel) => {
         const deletedDocument = await ApiDocuments.deleteDocument(document.id);
         if (deletedDocument !== null) {
-            const editedDocuments = documents.filter(d => d.id !== document.id);
-            setDocuments(editedDocuments);
+            setDocuments(prevDocuments => prevDocuments.filter(d => d.id !== document.id));
+            setSelectedDocuments(prevDocuments => prevDocuments.filter(d => d.id !== document.id));
             setOffset(offset - 1);
             // TODO: deleting documents makes lazy load reload one page two times
         }
@@ -104,6 +107,63 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
         ApiTasks.planTask(taskType, query);
     };
 
+    const handleDeleteDocuments = () => {
+        ApiDocuments.deleteDocuments(query ? query : {id_list: selectedDocuments.map(d => d.id)})
+        .then(response => {
+            if (response.data.id_list) {
+                setDocuments(prevDocuments => prevDocuments.filter(d => !response.data.id_list!.includes(d.id)));
+                setSelectedDocuments(prevDocuments => prevDocuments.filter(d => !response.data.id_list!.includes(d.id)));
+            } else {
+                setOffset(0);
+            }
+        }).catch(error => {
+            console.error(`Could not update documents category: ${error}`);
+        });
+    };
+
+    const handleUpdateCategory = (category_id: number, category_name: string) => {
+        ApiDocuments.updateCategory(query ? query : {id_list: selectedDocuments.map(d => d.id)}, category_id)
+        .then(response => {
+            if (response.data.id_list) {
+                (documents.map(d => {
+                    if (response.data.id_list!.includes(d.id)) {
+                        d.category_id = category_id;
+                        d.category_name = category_name;
+                    }
+                    return d;
+                }));
+                setDocuments(prevDocuments => prevDocuments.map(d => {
+                    if (response.data.id_list!.includes(d.id)) {
+                        d.category_id = category_id;
+                        d.category_name = category_name;
+                    }
+                    return d;
+                }));
+            } else {
+                setOffset(0);
+            }
+        }).catch(error => {
+            console.error(`Could not update documents category: ${error}`);
+        });
+    };
+
+    const handleExportDocuments = async () => {
+        ApiDocuments.exportDocuments(query ? query : {id_list: selectedDocuments.map(d => d.id)})
+        .then(response => {
+            const blob = new Blob([response.data], { type: response.headers['content-type'] });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'documents.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        }).catch(error => {
+            console.error(`Could not export documents: ${error}`);
+        });
+    };
+
     const contextValue: DocumentsContextProps = {
         documents,
         handleLazyLoad,
@@ -111,7 +171,10 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
         handleUpdateDocument,
         selectedDocuments,
         handleSelectDocuments,
-        handleStartTask
+        handleStartTask,
+        handleDeleteDocuments,
+        handleUpdateCategory,
+        handleExportDocuments,
     };
 
     useEffect(() => {

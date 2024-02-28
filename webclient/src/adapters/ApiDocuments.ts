@@ -145,6 +145,30 @@ namespace ApiDocuments {
 
         return axiosInstance.post<DocumentCreationResponse[]>(url, formData, { headers: authHeader() });
     }
+
+    export function deleteDocuments(query: DocumentsQuery) {
+        return axiosInstance.post<DocumentsQuery>(
+            `/documents/query/delete`,
+            query,
+            { headers: authHeader("application/json") }
+        );
+    }
+
+    export function updateCategory(query: DocumentsQuery, category_id: number) {
+        return axiosInstance.put<DocumentsQuery>(
+            `/documents/query/category?category_id=${category_id}`,
+            query,
+            { headers: authHeader("application/json") }
+        );
+    }
+
+    export function exportDocuments(query: DocumentsQuery) {
+        return axiosInstance.post<Blob>(
+            `/documents/query/export`,
+            query,
+            { headers: authHeader("application/json"), responseType: 'blob' }
+        );
+    }
 }
 
 export default ApiDocuments;

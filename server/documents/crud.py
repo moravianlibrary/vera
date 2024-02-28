@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from typing import Optional
+from typing import List, Optional
 
 from services.database import create
 from categories.models import Category
@@ -8,6 +8,7 @@ from documents import models, schemas
 from documents.search import filter_documents_query_base
 from extractions.models import Extraction
 from services import exceptions
+from tasks.crud import delete_document as delete_task_document
 
 
 def document_view(db: Session):
@@ -46,6 +47,48 @@ def document_view(db: Session):
         .outerjoin(Category, models.Document.category_id == Category.id)
         .outerjoin(Extraction, models.Document.extraction_id == Extraction.id)
     )
+
+
+def documents_view_to_dict(row):
+    return {
+        "id": row.id,
+        "sysno": row.sysno,
+        "volume": row.volume,
+        "barcode": row.barcode,
+        "category_id": row.category_id,
+        "category_name": row.category_name,
+        "cnb": row.cnb,
+        "isbn_issn": row.isbn_issn,
+        "signature": row.signature,
+        "material_type": (
+            row.material_type.value if row.material_type else None
+        ),
+        "issuance_type": (
+            row.issuance_type.value if row.issuance_type else None
+        ),
+        "title": row.title,
+        "digitization_state": (
+            row.digitization_state.value if row.digitization_state else None
+        ),
+        "year": row.year,
+        "bundle": row.bundle,
+        "pages_count": row.pages_count,
+        "size": row.size,
+        "publisher": row.publisher,
+        "publishing_place": row.publishing_place,
+        "publishing_year": row.publishing_year,
+        "languages": row.languages,
+        "frequencies": row.frequencies,
+        "pages_count_predicted": row.pages_count_predicted,
+        "dedicated_scanner": row.dedicated_scanner,
+        "created_at": row.created_at.isoformat() if row.created_at else None,
+        "creator": row.creator,
+        "extraction_id": row.extraction_id,
+        "extractor": row.extractor,
+        "extracted_at": (
+            row.extracted_at.isoformat() if row.extracted_at else None
+        ),
+    }
 
 
 def create_document(
@@ -107,6 +150,7 @@ def delete_document(document_id: int, db: Session):
     db_document = get_document(document_id, db)
     if db_document is None:
         raise exceptions.DocumentNotFoundException(id)
+    delete_task_document(document_id, db)
     db.delete(db_document)
     db.commit()
     return db_document
@@ -164,7 +208,9 @@ def get_documents_ids_query_base(
     return filter_documents_query_base(db.query(models.Document.id), query)
 
 
-def get_documents(query_base: Session, offset: int = 0, limit: int = 100):
+def get_documents(
+    query_base: Session, offset: int = 0, limit: int = 100
+) -> List[schemas.Document]:
     return (
         query_base.order_by(desc(models.Document.created_at))
         .offset(offset)
@@ -175,3 +221,19 @@ def get_documents(query_base: Session, offset: int = 0, limit: int = 100):
 
 def get_documents_num_found(query_base: Session):
     return query_base.count()
+
+
+def update_documents(query_base: Session, field_name: str, value, db: Session):
+    for document in query_base.all():
+        db.query(models.Document).filter(
+            models.Document.id == document.id
+        ).update({field_name: value})
+    db.commit()
+
+
+def delete_documents(query_base: Session, db: Session):
+    for document in query_base.all():
+        db.query(models.Document).filter(
+            models.Document.id == document.id
+        ).delete()
+    db.commit()

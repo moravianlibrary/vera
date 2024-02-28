@@ -278,10 +278,16 @@ const resources = {
         "Music": "Hudba",
         "Other": "Ostatní",
 
+        InProgress: "Probiha",
+        NotDigitized: "Nedigitalizováno",
+
         "Cancel": "Zrušit",
         "Delete": "Smazat",
         "Delete document": "Smazání dokumentu",
+        "Delete documents": "Smazání dokumentů",
         "Are you sure you want to delete this document?": "Opravdu chcete smazat tento dokument?",
+        "Are you sure you want to delete all selected documents?": "Opravdu chcete smazat všechny vybrané dokumenty?",
+        "Number of selected documents": "Počet vybraných dokumentů",
 
         "Copied to clipboard": "Zkopírováno do schránky",
 
@@ -299,6 +305,15 @@ const resources = {
         "Document is missing a publisher": "Dokument neobsahuje vydávatele",
         "Document is missing a publishing places": "Dokument neobsahuje město vydáni",
         "Document is missing language information": "Dokument neobsahuje informace o jazyků",
+
+        "Export to file": "Exportovat do souboru",
+        "Export to XSLX": "Exportovat do XSLX",
+        "Change category": "Změnit kategorii",
+        "Predict volumes page counts": "Predikovat počet stránek ročníků",
+        "Sync from catalog": "Synchronizovat z katalogu",
+        SyncFromCatalog: "Synchronizace z katalogu",
+        "Sync from digitization registry": "Synchronizovat z registru digitalizace",
+        SyncFromDigitizationRegistry: "Synchronizace z registru digitalizace",
     },
   },
 };

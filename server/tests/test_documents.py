@@ -432,10 +432,102 @@ class TestDocumentsEndpoints(unittest.TestCase):
 
         base = get_documents_query_base(self.db, query)
 
-        print(base)
-        print(get_documents(base))
-        print(get_documents_num_found(base))
+        get_documents(base)
+        get_documents_num_found(base)
         delete_document(document.id, self.db)
+
+    def test_update_category_by_query(self):
+        from categories.crud import create_root_category, delete_category
+        from categories.schemas import CategoryCreate
+        from documents.crud import (
+            create_document,
+            delete_document,
+            get_documents_query_base,
+            get_documents,
+            get_documents_num_found,
+            update_documents,
+        )
+        from documents.schemas import (
+            DocumentCreate,
+            DocumentsQuery,
+        )
+
+        category_id = create_root_category(
+            CategoryCreate(name="test category", assignable=True), self.db
+        ).id
+
+        document_ids = []
+        document = DocumentCreate(
+            sysno="MZK01-001002003",
+            volume_number="1996",
+            title="Test Document",
+            category_id=category_id,
+        )
+        document_ids.append(create_document(document, "test", self.db).id)
+        document = DocumentCreate(
+            sysno="MZK01-001002003",
+            volume_number="1997",
+            title="Test Document",
+            category_id=category_id,
+        )
+        document_ids.append(create_document(document, "test", self.db).id)
+
+        query = DocumentsQuery(id_list=document_ids)
+
+        base = get_documents_query_base(self.db, query)
+
+        documents = get_documents(base)
+        for document in documents:
+            self.assertEqual(document.category_id, category_id)
+        self.assertEqual(get_documents_num_found(base), 2)
+
+        update_documents(base, "category_id", None, self.db)
+
+        documents = get_documents(base)
+        for document in documents:
+            self.assertEqual(document.category_id, None)
+        self.assertEqual(get_documents_num_found(base), 2)
+
+        for document_id in document_ids:
+            delete_document(document_id, self.db)
+        delete_category(category_id, self.db)
+
+    def test_delete_category_by_query(self):
+        from documents.crud import (
+            create_document,
+            get_documents_query_base,
+            get_documents_num_found,
+            delete_documents,
+        )
+        from documents.schemas import (
+            DocumentCreate,
+            DocumentsQuery,
+        )
+
+        document_ids = []
+        document = DocumentCreate(
+            sysno="MZK01-001002003",
+            volume_number="1996",
+            title="Test Document",
+        )
+        document_ids.append(create_document(document, "test", self.db).id)
+        document = DocumentCreate(
+            sysno="MZK01-001002003",
+            volume_number="1997",
+            title="Test Document",
+        )
+        document_ids.append(create_document(document, "test", self.db).id)
+
+        query = DocumentsQuery(id_list=document_ids)
+
+        base = get_documents_query_base(self.db, query)
+
+        self.assertEqual(get_documents_num_found(base), 2)
+
+        delete_documents(base, self.db)
+
+        base = get_documents_query_base(self.db, query)
+        self.assertEqual(get_documents_num_found(base), 0)
 
 
 if __name__ == "__main__":

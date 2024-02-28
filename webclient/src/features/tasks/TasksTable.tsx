@@ -125,7 +125,7 @@ const TaskDocuments: React.FC<TaskDocumentsProps> = ({task}) => {
         ApiTasks.getTaskDocuments(task.id).then(response => {
             setDocuments(response.data ? response.data : []);
             setShowDocuments(response.data ? response.data : []);
-            setErrorTypes([...new Set(response.data.map(d => d.error_type).filter(t => t)), "Without error"]);
+            setErrorTypes([...new Set(response.data.map(d => d.error_type ? d.error_type : "Without error").filter(t => t))]);
         }).catch(error => {
             console.error(`Could not receive task documents: ${error}`);
         });
@@ -146,7 +146,7 @@ const TaskDocuments: React.FC<TaskDocumentsProps> = ({task}) => {
         return (
             <div className='flex justify-content-start align-items-center gap-4'>
                 <span>{t('Error type')}</span>
-                {errorTypes.length > 0 &&
+                {errorTypes.length > 1 && errorTypes.includes("Without error") &&
                 <MultiSelect
                     className='m-0 h-full'
                     value={errorTypesFilter}
@@ -159,12 +159,20 @@ const TaskDocuments: React.FC<TaskDocumentsProps> = ({task}) => {
         );
     };
 
+    const processedBody = (document: TaskDocument) => {
+        if (document.processed) {
+            return <i className="pi pi-check text-green-700"></i>;
+        } else {
+            return <i className="pi pi-times text-red-700"></i>;
+        }
+    };
+
     return (
         <DataTable
             value={showDocuments}
         >
             <Column field="document_id" header={t('Document id')} />
-            <Column field="processed" header={t('Processed')} />
+            <Column field="processed" header={t('Processed')} body={processedBody} />
             <Column
                 field="error_type"
                 header={errorTypeHeader}

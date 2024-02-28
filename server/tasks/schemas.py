@@ -40,6 +40,7 @@ class Task(TaskCreation):
 
 class TaskDocument(BaseModel):
     document_id: int
+    deleted: bool
 
     processed: bool
     error_type: Optional[TaskDocumentErrorType]
