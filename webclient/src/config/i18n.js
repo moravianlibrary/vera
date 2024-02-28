@@ -285,6 +285,16 @@ const resources = {
 
         "Copied to clipboard": "Zkopírováno do schránky",
 
+        "Document id": "Id dokumentu",
+        "Processed": "Zpracováno",
+        "Error type": "Typ chyby",
+        "Error message": "Zpráva o chybe",
+        ValueError: "Neplatná hodnota",
+        UnknownError: "Neznámá chyba",
+        "Finished with errors": "Ukončeno s chybami",
+        "Any": "Jakýkoli",
+        "Without error": "Bez chyby",
+
         "Document is missing a volume year": "Dokument neobsahuje rok vydáni",
         "Document is missing a publisher": "Dokument neobsahuje vydávatele",
         "Document is missing a publishing places": "Dokument neobsahuje město vydáni",
