@@ -5,6 +5,9 @@ from catalogs.enums import IssuanceType
 from typing import Dict, List, Optional
 
 
+DEFAULT_DOCUMENT_LANGUAGE = "cze"
+
+
 def encode(text: Optional[str]) -> Optional[str]:
     return quote(text.encode("utf-8")) if text is not None else None
 
@@ -155,7 +158,8 @@ class AlephDocument:
 
     @property
     def languages(self) -> List[str]:
-        return self.get_values("041", "a")
+        languages = self.get_values("041", "a")
+        return languages if languages else [DEFAULT_DOCUMENT_LANGUAGE]
 
     @property
     def extent(self) -> Optional[str]:
