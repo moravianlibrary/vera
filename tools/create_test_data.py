@@ -136,6 +136,6 @@ def create_test_documents():
 
 
 if __name__ == "__main__":
-    #create_test_category_tree()
-    #create_test_quota()
+    create_test_category_tree()
+    create_test_quota()
     create_test_documents()

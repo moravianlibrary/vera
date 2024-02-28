@@ -20,6 +20,7 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
             const currentMessages: Messages = messages.current;
             currentMessages.clear();
             currentMessages.show(result.getMessages(t));
+            console.log(result.getMessages(t));
         }
     }, [result]);
 

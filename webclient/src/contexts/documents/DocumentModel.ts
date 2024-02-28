@@ -4,6 +4,11 @@ import { DigitizationState } from "../../types/DigitizationState";
 import { MaterialType } from "../../types/MaterialType";
 import { IssuanceType } from "../../types/IssuanceType";
 
+interface DocumentTooltipField {
+    label: string;
+    value: string | number | null;
+}
+
 class DocumentModel implements Document {
     id: number;
 
@@ -11,7 +16,7 @@ class DocumentModel implements Document {
     volume: string | null;
     barcode: string | null;
 
-    ccnb: string | null;
+    cnb: string | null;
     isbn_issn: string | null;
     signature: string | null;
 
@@ -32,14 +37,14 @@ class DocumentModel implements Document {
     publisher: string | null;
     publishing_place: string | null;
     publishing_year: string | null;
-    languages: string[];
+    languages: string[] | null;
 
     frequencies: Frequency[] | null;
 
     category_id: number | null;
     category_name: string | null;
-    created_at: string;
     creator: string;
+    created_at: string;
     department: string | null;
 
     pages_count_predicted: number | null;
@@ -57,13 +62,16 @@ class DocumentModel implements Document {
         this.barcode = data.barcode;
 
         this.signature = data.signature ? decodeURIComponent(data.signature) : null;
-        this.ccnb = data.ccnb;
+        this.cnb = data.cnb;
         this.isbn_issn = data.isbn_issn;
     
         this.material_type = data.material_type;
         this.issuance_type = data.issuance_type;
         this.title = decodeURIComponent(data.title);
         this.digitization_state = data.digitization_state;
+
+        this.year = data.year;
+        this.bundle = data.bundle;
 
         this.pages_count = data.pages_count;
         this.size = data.size;
@@ -96,7 +104,47 @@ class DocumentModel implements Document {
         return datetime ? format(new Date(datetime), 'dd.MM.yyyy HH:mm:ss') : null;
     }
 
+    static formatFrequencies(frequencies: Frequency[] | null) {
+        return frequencies && frequencies!.length > 0 ? frequencies?.map((f) => 
+            f.date ? `${f.date}: ${f.frequency}` : f.frequency
+        ).join('\n') : null;
+    }
+
     toJson() {
+    }
+
+    getTooltipFieldList(t) {
+        const data: DocumentTooltipField[] = [
+            {label: "Id", value: this.id},
+            {label: "System number", value: this.sysno},
+            {label: "Material type", value: t(this.material_type)},
+            {label: "Issuance type", value: t(this.issuance_type)},
+            {label: "Year", value: this.year},
+            {label: "Volume", value: this.volume},
+            {label: "Bundle", value: this.bundle},
+            {label: "Category", value: this.category_name},
+            {label: "Signature", value: this.signature},
+            {label: "Barcode", value: this.barcode},
+            {label: "CNB", value: this.cnb},
+            {label: "ISBN/ISSN", value: this.isbn_issn},
+            {label: "Title", value: this.title},
+            {label: "Digitization state", value: t(this.digitization_state)},
+            {label: "Pages count", value: this.pages_count},
+            {label: "Pages count predicted", value: this.pages_count_predicted},
+            {label: "Size", value: this.size},
+            {label: "Publisher", value: this.publisher},
+            {label: "Publishing place", value: this.publishing_place},
+            {label: "Publishing year", value: this.publishing_year},
+            {label: "Languages", value: this.languages && this.languages.length > 0 ? this.languages.join(', ') : null},
+            {label: "Frequencies", value: DocumentModel.formatFrequencies(this.frequencies)},
+            {label: "Creator", value: this.creator},
+            {label: "Creator department", value: this.department},
+            {label: "Created at", value: this.created_at},
+            {label: "Extraction id", value: this.extraction_id},
+            {label: "Extractor", value: this.extractor},
+            {label: "Extracted at", value: this.extracted_at},
+        ];
+        return data.filter(field => field.value);
     }
 }
 

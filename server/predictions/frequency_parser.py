@@ -107,6 +107,9 @@ def parse_frequency_for_year(
 ) -> Optional[str]:
     matched = []
     for frequency in frequencies:
+        if frequency.date is None:
+            continue
+
         match = re.match(RANGE_YEARS_1, frequency.date)
         if match:
             matched.append(frequency)
@@ -211,14 +214,14 @@ def parse_frequency_for_year(
     )
 
 
-def parse_frequency_to_x(frequency):
+def parse_frequency_to_x(frequency) -> int:
     match = re.match(YEARLY, frequency)
     if match:
-        return match.group(1)
+        return int(match.group(1))
 
     match = re.match(YEARLY_ATYPICAL, frequency)
     if match:
-        return match.group(1)
+        return int(match.group(1))
 
     match = re.match(TWICE_A_YEAR, frequency)
     if match:

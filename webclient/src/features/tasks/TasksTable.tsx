@@ -5,8 +5,10 @@ import ApiTasks, { Task, TaskDocument } from "../../adapters/ApiTasks";
 import { Column } from 'primereact/column';
 import { useTranslation } from 'react-i18next';
 import { TaskState } from '../../types/TaskState';
-import { format } from 'date-fns';
+import { format, min } from 'date-fns';
 import { Tag } from 'primereact/tag';
+import { MultiSelect } from 'primereact/multiselect';
+import { FilterMatchMode } from 'primereact/api';
 
 interface TasksTableProps {
 }
@@ -77,10 +79,12 @@ const TasksTable: React.FC<TasksTableProps> = (props) => {
         if (minutes === 0) {
             return `${seconds} s`;
         }
+        const paddedSeconds = seconds < 10 ? `0${seconds}` : seconds;
         if (hours === 0) {
-            return `$${minutes}:${seconds}`;
+            return `${minutes}:${paddedSeconds}`;
         }
-        return `${hours}:${minutes}:${seconds}`;
+        const paddedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+        return `${hours}:${paddedMinutes}:${paddedSeconds}`;
     };
 
     return (
@@ -113,23 +117,68 @@ const TaskDocuments: React.FC<TaskDocumentsProps> = ({task}) => {
     const { t } = useTranslation();
 
     const [documents, setDocuments] = useState<TaskDocument[]>([]);
+    const [showDocuments, setShowDocuments] = useState<TaskDocument[]>([]);
+    const [errorTypes, setErrorTypes] = useState<string[]>([]);
+    const [errorTypesFilter, setErrorTypesFilter] = useState<string[]>([]);
 
     useEffect(() => {
         ApiTasks.getTaskDocuments(task.id).then(response => {
             setDocuments(response.data ? response.data : []);
+            setShowDocuments(response.data ? response.data : []);
+            setErrorTypes([...new Set(response.data.map(d => d.error_type ? d.error_type : "Without error").filter(t => t))]);
         }).catch(error => {
             console.error(`Could not receive task documents: ${error}`);
         });
     }, []);
 
+    useEffect(() => {
+        if (errorTypesFilter.length === 0) {
+            setShowDocuments(documents);
+            return;
+        }
+        setShowDocuments(documents.filter(document => {
+            return errorTypesFilter.includes("Without error") && !document.error_type
+                || errorTypesFilter.includes(document.error_type);
+        }));
+    }, [errorTypesFilter]);
+
+    const errorTypeHeader = () => {
+        return (
+            <div className='flex justify-content-start align-items-center gap-4'>
+                <span>{t('Error type')}</span>
+                {errorTypes.length > 1 && errorTypes.includes("Without error") &&
+                <MultiSelect
+                    className='m-0 h-full'
+                    value={errorTypesFilter}
+                    options={errorTypes.map(type => ({label: t(type), value: type}))}
+                    onChange={(e) => setErrorTypesFilter(e.value)}
+                    placeholder={t('Any')}
+                    emptyFilterMessage=""
+                />}
+            </div>
+        );
+    };
+
+    const processedBody = (document: TaskDocument) => {
+        if (document.processed) {
+            return <i className="pi pi-check text-green-700"></i>;
+        } else {
+            return <i className="pi pi-times text-red-700"></i>;
+        }
+    };
+
     return (
         <DataTable
-            value={documents}
+            value={showDocuments}
         >
             <Column field="document_id" header={t('Document id')} />
-            <Column field="processed" header={t('Processed')} />
-            <Column field="error_type" header={t('Error type')} />
-            <Column field="error_message" header={t('Error message')} />
+            <Column field="processed" header={t('Processed')} body={processedBody} />
+            <Column
+                field="error_type"
+                header={errorTypeHeader}
+                body={(document) => t(document.error_type)}
+            />
+            <Column field="error_message" header={t('Error message')} body={(document) => t(document.error_message)} />
         </DataTable>
     );
 }

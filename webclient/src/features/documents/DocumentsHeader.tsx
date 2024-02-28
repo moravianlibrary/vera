@@ -1,4 +1,5 @@
 import { Button } from "primereact/button";
+import { TieredMenu } from 'primereact/tieredmenu';
 import React, { useEffect, useRef, useState } from "react";
 import DocumentsSearchBar from "./search-bar/DocumentsSearchBar";
 import { SelectButton } from "primereact/selectbutton";
@@ -6,8 +7,10 @@ import { Toolbar } from "primereact/toolbar";
 import { useTranslation } from "react-i18next";
 import { useDocuments } from "../../contexts/documents/DocumentsContext";
 import { OverlayPanel } from "primereact/overlaypanel";
-import { Menu } from "primereact/menu";
 import { TaskType } from "../../types/TaskType";
+import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
+import { ca } from "date-fns/locale";
+import { ConfirmDialog } from "primereact/confirmdialog";
 
 interface DocumentsHeaderProps {
     onInsert: () => void;
@@ -16,7 +19,9 @@ interface DocumentsHeaderProps {
 
 const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const { t } = useTranslation();
-    const { selectedDocuments, handleStartTask } = useDocuments();
+    const { selectedDocuments, handleStartTask, handleSelectDocuments,
+        handleDeleteDocuments, handleUpdateCategory, handleExportDocuments } = useDocuments();
+    const { categories } = useAssignableCategories();
 
     const [advancedSearch, setAdvancedSearch] = useState(false);
     const [hasSelection, setHasSelection] = useState(false);
@@ -27,10 +32,22 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     ];
 
     const taskSelectorMenuRef = useRef(null);
-    const taskSelectorItems = [{items: [
-        { label: t(TaskType.PredictVolumePages), command: () => handleStartTask(TaskType.PredictVolumePages), },
+    const taskSelectorItems = [
+        {
+            label: t("Export to file"),
+            items: [
+                { label: t("Export to XSLX"), command: () => handleExportDocuments(), },
+        ]},
+        {
+            label: t("Change category"),
+            items: categories.map(category => ({ label: category.getPath(), command: () => handleUpdateCategory(category.id, category.name), }))
+        },
+        { label: t("Predict volumes page counts"), command: () => handleStartTask(TaskType.PredictVolumePages), },
+        { label: t("Sync from catalog"), command: () => handleStartTask(TaskType.SyncFromCatalog), },
+        { label: t("Sync from digitization registry"), command: () => handleStartTask(TaskType.SyncFromDigitizationRegistry), },
         // { label: 'Export', }
-    ]}];
+    ];
+    const [confirmDeletionVisible, setConfirmDeletionVisible] = useState(false);
 
     const handleSetDisplayOption = (e) => {
         if (e.value !== null) {
@@ -88,33 +105,45 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
 
     const endContent = (
         <React.Fragment>
-            <Menu model={taskSelectorItems} popup ref={taskSelectorMenuRef} id="popup_menu_left" />
-            <Button icon="pi pi-th-large"
-                className="p-button-rounded p-button-text"
-                severity={hasSelection ? "help" : "secondary"}
-                disabled={!hasSelection}
-                onClick={toggleTaskSelectorMenu}
-                aria-controls="popup_menu_left"
-                aria-haspopup
-            />
-            <Button icon="pi pi-pencil"
-                className="p-button-rounded p-button-text"
-                severity={hasSelection ? "info" : "secondary"}
-                disabled={!hasSelection}
-                // onClick={() => setSelectCategoryVisible(true)}
-            />
-            <Button icon="pi pi-trash" 
-                className="p-button-rounded p-button-text"
-                severity={hasSelection ? "danger" : "secondary"}
-                disabled={!hasSelection}
-                // onClick={handleDeleteSelectedDocuments}
-            />
-            <Button icon="pi pi-times" 
-                className="p-button-rounded p-button-text"
-                severity={hasSelection ? "info" : "secondary"}
-                disabled={!hasSelection}
-                // onClick={handleCancelSelectedDocuments}
-            />
+            <div className="flex flex-column align-items-end">
+                <div>
+                <TieredMenu model={taskSelectorItems} popup ref={taskSelectorMenuRef} id="popup_menu_left" />
+                <Button 
+                    // icon="pi pi-th-large"
+                    icon="pi pi-list"
+                    className="p-button-rounded p-button-text"
+                    severity={hasSelection ? "help" : "secondary"}
+                    disabled={!hasSelection}
+                    onClick={toggleTaskSelectorMenu}
+                    aria-controls="popup_menu_left"
+                    aria-haspopup
+                />
+                <Button icon="pi pi-trash" 
+                    className="p-button-rounded p-button-text"
+                    severity={hasSelection ? "danger" : "secondary"}
+                    disabled={!hasSelection}
+                    onClick={() => setConfirmDeletionVisible(true)}
+                />
+                <Button icon="pi pi-times" 
+                    className="p-button-rounded p-button-text"
+                    severity={hasSelection ? "info" : "secondary"}
+                    disabled={!hasSelection}
+                    onClick={() => handleSelectDocuments([])}
+                />
+                <ConfirmDialog
+                    visible={confirmDeletionVisible}
+                    onHide={() => setConfirmDeletionVisible(false)}
+                    header={t('Delete documents')}
+                    message={t("Are you sure you want to delete all selected documents?")}
+                    icon="pi pi-exclamation-triangle"
+                    acceptLabel={t('Delete')}
+                    acceptClassName='p-button-danger'
+                    rejectLabel={t('Cancel')}
+                    accept={handleDeleteDocuments}
+                />
+                </div>
+                <span className="text-sm text-gray-700">{t('Number of selected documents')}: {selectedDocuments.length}</span>
+            </div>
         </React.Fragment>
     );
 

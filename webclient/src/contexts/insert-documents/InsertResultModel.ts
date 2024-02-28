@@ -26,7 +26,7 @@ class InsertResultModel {
 
     getResultSummary (result: DocumentCreateResult): string {
         switch (result) {
-            case DocumentCreateResult.AlreadyDigitized: return "Document is already digitized";
+            case DocumentCreateResult.AlreadyDigitized: return "Document already digitized";
             case DocumentCreateResult.CatalogDocumentParsingError: return "Error while parsing catalog response";
             case DocumentCreateResult.CatalogError: return "Error while connecting to catalog";
             case DocumentCreateResult.DigitizationInProgress: return "Document digitization in progress";
@@ -78,7 +78,7 @@ class InsertResultModel {
         if (documents.length === 1) {
             return {
                 severity: this.getResultSeverity(documents[0].create_result),
-                summary: this.getResultSummary(documents[0].create_result),
+                summary: t(this.getResultSummary(documents[0].create_result)),
                 detail: this.getResultDetail(documents[0].document
                     ? documents[0].document
                     : documents[0].catalog_document

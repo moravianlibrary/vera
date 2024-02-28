@@ -62,6 +62,7 @@ const DocumentIssueCard: React.FC<IssueDivProps> = ({ issue, onClick }) => {
             </div>
         );
     }
+    console.log(issue);
 
     return (
         <Button className="flex flex-1 overflow-visible text-gray-800" outlined
@@ -130,7 +131,7 @@ const DocumentIssueContent: React.FC<DocumentIssueContentProps> = ({ issue, disa
     const { t } = useTranslation();
 
     const className = disabled
-        ? "flex flex-column flex-1 align-items-start text-gray-500"
+        ? "flex flex-column flex-1 align-items-start text-gray-400"
         : "flex flex-column flex-1 align-items-start text-gray-800";
 
     return (
@@ -144,7 +145,7 @@ const DocumentIssueContent: React.FC<DocumentIssueContentProps> = ({ issue, disa
                 <span>{issue.barcode}</span>
             </div>}
             {issue.year && <div className="flex gap-1">
-                <span className="font-bold white-space-nowrap">{t('Year issued')}:</span>
+                <span className="font-bold white-space-nowrap">{t('Year')}:</span>
                 <span>{issue.year}</span>
             </div>}
             {issue.volume && <div className="flex gap-1">

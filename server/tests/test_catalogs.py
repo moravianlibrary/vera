@@ -9,7 +9,7 @@ from catalogs.enums import (
     IdentifierType,
     IssuanceType,
 )
-from catalogs.schemas import Identifier
+from catalogs.schemas import Frequency, Identifier
 
 
 class TestAlephCatalog(unittest.TestCase):
@@ -80,9 +80,9 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(
             document.frequencies,
             [
-                {"frequency": "3x ročně", "date": "2016-"},
-                {"frequency": "2x ročně,", "date": "2015"},
-                {"frequency": "1x ročně,", "date": "2012-2014"},
+                Frequency(frequency="3x ročně", date="2016-"),
+                Frequency(frequency="2x ročně,", date="2015"),
+                Frequency(frequency="1x ročně,", date="2012-2014"),
             ],
         )
         self.assertEqual(document.publishing_year, "2012-")
@@ -142,4 +142,41 @@ class TestDigitizationRegister(unittest.TestCase):
                 )
             ),
             DigitizationState.Finished,
+        )
+
+        self.assertEqual(
+            get_state_by_identifier(
+                Identifier(
+                    identifier_type=IdentifierType.Barcode, value="2610280747"
+                )
+            ),
+            DigitizationState.Finished,
+        )
+
+    def test_state_after_creating_document(self):
+        from catalogs.enums import IdentifierType
+        from catalogs.schemas import Identifier
+        from documents.crud import get_document_by_identifiers, delete_document
+        from documents.enums import DocumentCreateResult
+        from documents.routines import create_catalog_document
+        from services.database import get_db
+
+        sysno = "MZK01-000369077"
+        volume = "2005"
+        barcode = "2610280747"
+        identifier = Identifier(
+            identifier_type=IdentifierType.Barcode, value=barcode
+        )
+        db = next(get_db())
+
+        document = get_document_by_identifiers(sysno, volume, barcode, db)
+        if document:
+            delete_document(document.id, db)
+
+        response = generate_catalog_document(identifier)
+        result = create_catalog_document(
+            response, identifier, None, False, "test_user", db
+        )
+        self.assertEqual(
+            result.create_result, DocumentCreateResult.AlreadyDigitized
         )

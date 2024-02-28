@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import ApiCategories, { AssignableCategory } from "../../adapters/ApiCategories";
+import AssignableCategoryModel from "./AssignableCategoryModel";
 
 interface AssignableCategoriesContextProps {
-    categories: AssignableCategory[];
+    categories: AssignableCategoryModel[];
 }
 
 const AssignableCategoriesContext = createContext<AssignableCategoriesContextProps | undefined>(undefined);
@@ -12,13 +13,13 @@ interface AssignableCategoriesProviderProps {
 }
 
 export const AssignableCategoriesProvider: React.FC<AssignableCategoriesProviderProps> = ({ children }) => {
-    const [categories, setCategories] = useState<AssignableCategory[]>([]);
+    const [categories, setCategories] = useState<AssignableCategoryModel[]>([]);
 
     const loadCategories = async () => {
         ApiCategories.getAssignableCategories()
         .then(response => {
-            const transformedData: AssignableCategory[] = response.data.map(assignableCategory => {
-                return Object.assign({}, assignableCategory) as AssignableCategory;
+            const transformedData: AssignableCategoryModel[] = response.data.map(assignableCategory => {
+                return new AssignableCategoryModel(assignableCategory);
             });
             console.log(transformedData);
             setCategories(transformedData);
