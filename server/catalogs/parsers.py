@@ -10,7 +10,7 @@ from catalogs.enums import (
 from catalogs.schemas import CatalogDocument, CatalogIssue, Frequency
 
 
-PAGE_COUNT_FORMAT = r"^(\d+) s.*"
+PAGE_COUNT_FORMAT = r"^(\d+) s\..*"
 MATERIAL_TYPE_MAPPING = {
     "BK": MaterialType.Book,
     "CR": MaterialType.ContinuingResource,

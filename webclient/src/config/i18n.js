@@ -284,6 +284,11 @@ const resources = {
         "Are you sure you want to delete this document?": "Opravdu chcete smazat tento dokument?",
 
         "Copied to clipboard": "Zkopírováno do schránky",
+
+        "Document is missing a volume year": "Dokument neobsahuje rok vydáni",
+        "Document is missing a publisher": "Dokument neobsahuje vydávatele",
+        "Document is missing a publishing places": "Dokument neobsahuje město vydáni",
+        "Document is missing language information": "Dokument neobsahuje informace o jazyků",
     },
   },
 };

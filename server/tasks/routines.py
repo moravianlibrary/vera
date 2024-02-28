@@ -62,22 +62,22 @@ def predict_volumes_pages(task_id: int, db: Session):
     predictor = VolumesPagesPredictor()
 
     def predict_volume_pages(document: Document) -> None:
-        if document.publishing_year is None:
-            raise ValueError("Document is missing a publishing year.")
+        if document.year is None:
+            raise ValueError("Document is missing a volume year.")
         if document.publisher is None:
             raise ValueError("Document is missing a publisher.")
         if document.publishing_place is None:
             raise ValueError("Document is missing a publishing places.")
-        # if not document.languages:
-        #     raise ValueError("Document does not specify any language.")
+        if not document.languages:
+            raise ValueError("Document does not specify any language.")
         pages_count = predictor.predict(
             name=document.title,
-            year=parse_year(document.publishing_year),
+            year=parse_year(document.year),
             publisher=document.publisher,
             origin=document.publishing_place,
-            language=document.languages[0] if document.languages else "cze",
+            language=document.languages[0],
             frequency=parse_frequency(
-                document.publishing_year,
+                document.year,
                 [Frequency(**freq) for freq in document.frequencies],
             ),
         )

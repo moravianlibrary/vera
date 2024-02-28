@@ -32,6 +32,7 @@ def document_view(db: Session):
             models.Document.size,
             models.Document.publisher,
             models.Document.publishing_place,
+            models.Document.publishing_year,
             models.Document.languages,
             models.Document.frequencies,
             models.Document.pages_count_predicted,
