@@ -9,20 +9,23 @@ COPY requirements_celery.txt /app/
 RUN pip install --no-cache-dir -r requirements_celery.txt
 
 # Copy the current directory contents into the container at /app
-COPY auth /app/auth
-# COPY catalogs /app/catalogs
-COPY catalogs/enums.py /app/catalogs/enums.py
-COPY catalogs/schemas.py /app/catalogs/schemas.py
+# COPY auth /app/auth
+COPY catalogs /app/catalogs
 # COPY categories /app/categories
+COPY categories/models.py /app/categories/models.py
 # COPY departments /app/departments
 # COPY documents /app/documents
+# COPY documents/crud.py /app/documents/crud.py
 COPY documents/enums.py /app/documents/enums.py
 COPY documents/models.py /app/documents/models.py
+# COPY documents/routines.py /app/documents/routines.py
 COPY documents/schemas.py /app/documents/schemas.py
+COPY documents/search.py /app/documents/search.py
 # COPY extractions /app/extractions
+COPY extractions/models.py /app/extractions/models.py
 COPY predictions /app/predictions
 # COPY roles /app/roles
-COPY services /app/services
+COPY services/database.py /app/services/database.py
 # COPY tasks /app/tasks
 COPY tasks/crud.py /app/tasks/crud.py
 COPY tasks/enums.py /app/tasks/enums.py

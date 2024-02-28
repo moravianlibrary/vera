@@ -27,15 +27,32 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
 
     const handleChooseIssuesForDocument = (index) => {
         const catalogDocument = chooseIssuesDocuments[index].catalog_document!;
+        console.log(catalogDocument.issues);
 
         setEditions(catalogDocument.issues
-            .filter(issue => issue.type === IssuanceType.Unit));
+            .filter(issue => issue.type === IssuanceType.Unit)
+            .sort((a, b) => a.barcode.localeCompare(b.barcode)));
         setVolumes(catalogDocument.issues
             .filter(issue => issue.type === IssuanceType.Volume)
-            .sort((a, b) => naturalSort(a.volume, b.volume)));
+            .sort((a, b) => {
+                let value = naturalSort(a.volume, b.volume);
+                if (value === 0) {
+                    let value = naturalSort(a.year, b.year);
+                }
+                return value;
+            }));
         setBundles(catalogDocument.issues
             .filter(issue => issue.type === IssuanceType.Bundle)
-            .sort((a, b) => naturalSort(a.volume, b.volume)));
+            .sort((a, b) => {
+                let value = naturalSort(a.volume, b.volume);
+                if (value === 0) {
+                    let value = naturalSort(a.year, b.year);
+                }
+                if (value === 0) {
+                    let value = naturalSort(a.bundle, b.bundle);
+                }
+                return value;
+            }));
     };
 
     const handleClickIssue = (issue) => {

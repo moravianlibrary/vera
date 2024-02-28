@@ -2,7 +2,7 @@ import unittest
 
 
 class TestPredictions(unittest.TestCase):
-    def test_predict_items_pages(self):
+    def test_predict_volume_pages(self):
         from predictions.volumes_pages_predictor import VolumesPagesPredictor
 
         predictor = VolumesPagesPredictor()
@@ -13,6 +13,68 @@ class TestPredictions(unittest.TestCase):
             "Moravska zemska knihovna",
             "Brno",
             "cze",
+        )
+        self.assertIsNotNone(predicted)
+        self.assertIsInstance(predicted, float)
+        print(predicted)
+
+    def test_predict_volume_pages_2(self):
+        from catalogs.schemas import Frequency
+        from predictions.frequency_parser import parse_frequency, parse_year
+        from predictions.volumes_pages_predictor import VolumesPagesPredictor
+
+        title = "Svobodné slovo : list Československé strany socialistické."
+        year = "1952"
+        publisher = "Československá strana socialistická,"
+        publishing_place = "Praha :"
+        language = "cze"
+        frequencies = [{"frequency": "Deník"}]
+
+        predictor = VolumesPagesPredictor()
+        predicted = predictor.predict(
+            name=title,
+            year=parse_year(year),
+            publisher=publisher,
+            origin=publishing_place,
+            language=language,
+            frequency=parse_frequency(
+                year,
+                [Frequency(**freq) for freq in frequencies],
+            ),
+        )
+        self.assertIsNotNone(predicted)
+        self.assertIsInstance(predicted, float)
+        print(predicted)
+
+    def test_predict_volume_pages_3(self):
+        from catalogs.schemas import Frequency
+        from predictions.frequency_parser import parse_frequency, parse_year
+        from predictions.volumes_pages_predictor import VolumesPagesPredictor
+
+        title = "Bílé Karpaty : časopis moravsko-slovenského pomezí"
+        year = "2021"
+        publisher = (
+            "Společnost pro trvale udržitelný život, regionální "
+            "pobočka Bílé Karpaty ;"
+        )
+        publishing_place = "Uherské Hradiště :"
+        language = "cze"
+        frequencies = [
+            {"frequency": "2x ročně", "date": "2006-"},
+            {"frequency": "4x ročně", "date": "1994-2005"},
+        ]
+
+        predictor = VolumesPagesPredictor()
+        predicted = predictor.predict(
+            name=title,
+            year=parse_year(year),
+            publisher=publisher,
+            origin=publishing_place,
+            language=language,
+            frequency=parse_frequency(
+                year,
+                [Frequency(**freq) for freq in frequencies],
+            ),
         )
         self.assertIsNotNone(predicted)
         self.assertIsInstance(predicted, float)

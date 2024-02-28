@@ -29,6 +29,13 @@ class TestCategoriesEndpoints(unittest.TestCase):
                     delete_document(document.id, self.db)
                 delete_category(category.id, self.db)
 
+    def delete_document(self, sysno, volume, barcode):
+        from documents.crud import get_document_by_identifiers, delete_document
+
+        document = get_document_by_identifiers(sysno, volume, barcode, self.db)
+        if document is not None:
+            delete_document(document.id, self.db)
+
     def test_create_root_category(self):
         name = "Test Root Category Name"
         description = "Test Root Category Description"
@@ -112,10 +119,13 @@ class TestCategoriesEndpoints(unittest.TestCase):
         self.create_test_category_tree()
 
         response = self.client.get("/categories")
-        test_tree = response.json()["name" == "root"]
-        import json
+        test_tree = [
+            item for item in response.json() if item.get("name") == "root"
+        ][0]
 
-        print(json.dumps(test_tree, indent=2))
+        # import json
+        # print(json.dumps(test_tree, indent=2))
+
         self.assertIsNotNone(test_tree)
         self.assertEqual(
             [child["name"] for child in test_tree["children"]],
@@ -140,8 +150,10 @@ class TestCategoriesEndpoints(unittest.TestCase):
             [child["name"] for child in child1_tree["children"]],
             ["grandchild 11"],
         )
+        children = [child["name"] for child in child2_tree["children"]]
+        children.sort()
         self.assertEqual(
-            [child["name"] for child in child2_tree["children"]],
+            children,
             ["grandchild 21", "grandchild 22", "grandchild 23"],
         )
         self.assertEqual(
@@ -169,7 +181,9 @@ class TestCategoriesEndpoints(unittest.TestCase):
             curr_category = categories.pop() if categories else None
 
         response = self.client.get("/categories")
-        test_tree = response.json()["name" == "root"]
+        test_tree = [
+            item for item in response.json() if item.get("name") == "root"
+        ][0]
         self.assertIsNotNone(test_tree)
         self.assertEqual(
             [child["name"] for child in test_tree["children"]],
@@ -199,9 +213,14 @@ class TestCategoriesEndpoints(unittest.TestCase):
         from categories.crud import get_root_categories, update_category
         from categories.schemas import CategoryCreate
 
+        sysno = "MZK01-001002003"
+        for volume in ["1996", "1997", "1998"]:
+            self.delete_document(sysno, volume, None)
+
         self.create_test_category_tree()
 
-        category = get_root_categories(self.db)[0]
+        roots = get_root_categories(self.db)
+        category = [root for root in roots if root.name == "root"][0]
         category.assignable = True
         update_category(
             category.id,
@@ -246,7 +265,9 @@ class TestCategoriesEndpoints(unittest.TestCase):
         ]
 
         response = self.client.get("/categories")
-        test_tree = response.json()["name" == "root"]
+        test_tree = [
+            item for item in response.json() if item.get("name") == "root"
+        ][0]
         self.assertIsNotNone(test_tree)
         self.assertEqual(
             [child["name"] for child in test_tree["children"]],
@@ -257,7 +278,7 @@ class TestCategoriesEndpoints(unittest.TestCase):
         self.assertEqual(test_tree["count_documents"], 3)
 
         for document_id in document_ids:
-            self.client.delete(
+            response = self.client.delete(
                 f"/documents/{document_id}", headers=self.headers
             )
         self.delete_category_by_name("root")
@@ -271,9 +292,10 @@ class TestCategoriesEndpoints(unittest.TestCase):
         self.create_test_category_tree()
 
         roots = get_root_categories(self.db)
-        self.assertEqual(len(roots), 1)
+        test_root = [root for root in roots if root.name == "root"][0]
         children_ids = [
-            child.id for child in get_children_categories(roots[0].id, self.db)
+            child.id
+            for child in get_children_categories(test_root.id, self.db)
         ]
         self.assertEqual(len(children_ids), 3)
 
@@ -287,3 +309,4 @@ class TestCategoriesEndpoints(unittest.TestCase):
             json={"distribution": distribution, "parent_id": roots[0].id},
             headers=self.headers,
         )
+        self.delete_category_by_name("root")

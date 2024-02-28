@@ -43,6 +43,7 @@ class TestDepartmentsEndpoints(unittest.TestCase):
     def test_create_department(self):
         name = "New Test Department"
         abbreviation = "NTD"
+        self.delete_department_by_name(name)
         response = self.client.post(
             "/departments", json={"name": name, "abbreviation": abbreviation}
         )
@@ -91,12 +92,22 @@ class TestDepartmentsEndpoints(unittest.TestCase):
 
         username = "test_user"
         response = self.client.put(
-            f"/departments/{document_id}/user", params={"username": username}
+            f"/departments/{document_id}",
+            json={
+                "name": name,
+                "abbreviation": abbreviation,
+                "users": [username],
+            },
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(username in response.json()["users"])
-        response = self.client.delete(
-            f"/departments/{document_id}/user", params={"username": username}
+        response = self.client.put(
+            f"/departments/{document_id}",
+            json={
+                "name": name,
+                "abbreviation": abbreviation,
+                "users": [],
+            },
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["users"], [])

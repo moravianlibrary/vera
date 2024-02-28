@@ -145,7 +145,7 @@ const DocumentIssueContent: React.FC<DocumentIssueContentProps> = ({ issue, disa
                 <span>{issue.barcode}</span>
             </div>}
             {issue.year && <div className="flex gap-1">
-                <span className="font-bold white-space-nowrap">{t('Year issued')}:</span>
+                <span className="font-bold white-space-nowrap">{t('Year')}:</span>
                 <span>{issue.year}</span>
             </div>}
             {issue.volume && <div className="flex gap-1">

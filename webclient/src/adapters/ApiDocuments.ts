@@ -43,7 +43,7 @@ interface DocumentBase {
     publisher: string | null;
     publishing_place: string | null;
     publishing_year: string | null;
-    languages: string[];
+    languages: string[] | null;
 
     frequencies: Frequency[] | null;
 }
@@ -132,7 +132,7 @@ namespace ApiDocuments {
         console.log(identifier);
         const url = category_id !== null
             ? `/catalogs?category_id=${category_id}&insert_digitized=${insert_digitized}`
-            : `/catalogs?insert_digitized=true`;
+            : `/catalogs?insert_digitized=${insert_digitized}`;
             // : `/catalogs?insert_digitized=${insert_digitized}`;
 
         return axiosInstance.post<DocumentCreationResponse>(url, identifier, { headers: authHeader() });

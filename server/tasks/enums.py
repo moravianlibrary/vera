@@ -4,6 +4,7 @@ from enum import Enum
 class TaskType(Enum):
     PredictVolumePages = "PredictVolumePages"
     SyncFromCatalog = "SyncFromCatalog"
+    SyncFromDigitizationRegistry = "SyncFromDigitizationRegistry"
 
 
 class TaskState(Enum):

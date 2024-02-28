@@ -130,7 +130,7 @@ const resources = {
         count: "Počet",
         "Count": "Počet",
 
-        "Document is already digitized": "Dokument je již digitalizován",
+        "Document is already digitized": "Dokument již digitalizován",
         "Document already digitized": "Dokument již digitalizován",
         "Error while parsing catalog response": "Chyba při zpracování odpovědi katalogu",
         "Error while connecting to catalog": "Chyba při připojování katalogu",
@@ -272,7 +272,7 @@ const resources = {
         "Type": "Typ",
         "Description": "Popis",
 
-        "Book": "Kniha",
+        "Book": "Monografie",
         "ContinuingResource": "Periodikum",
         "Map": "Mapa",
         "Music": "Hudba",
@@ -282,6 +282,23 @@ const resources = {
         "Delete": "Smazat",
         "Delete document": "Smazání dokumentu",
         "Are you sure you want to delete this document?": "Opravdu chcete smazat tento dokument?",
+
+        "Copied to clipboard": "Zkopírováno do schránky",
+
+        "Document id": "Id dokumentu",
+        "Processed": "Zpracováno",
+        "Error type": "Typ chyby",
+        "Error message": "Zpráva o chybe",
+        ValueError: "Neplatná hodnota",
+        UnknownError: "Neznámá chyba",
+        "Finished with errors": "Ukončeno s chybami",
+        "Any": "Jakýkoli",
+        "Without error": "Bez chyby",
+
+        "Document is missing a volume year": "Dokument neobsahuje rok vydáni",
+        "Document is missing a publisher": "Dokument neobsahuje vydávatele",
+        "Document is missing a publishing places": "Dokument neobsahuje město vydáni",
+        "Document is missing language information": "Dokument neobsahuje informace o jazyků",
     },
   },
 };

@@ -1,4 +1,14 @@
 const naturalSort = (a, b) => {
+    if (a === null) {
+        return -1;
+    }
+    if (b === null) {
+        return 1;
+    }
+    if (a === b) {
+        return 0;
+    }
+
     const numA = parseInt(a);
     const numB = parseInt(b);
 

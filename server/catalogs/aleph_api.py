@@ -9,7 +9,7 @@ GET_RECORD_ENDPOINT = "{ALEPH_BASE}/OAI?verb=GetRecord\
     &identifier=oai:aleph.mzk.cz:{SYSNO}&metadataPrefix=marc21"
 FIND_EDNPOINT = "{ALEPH_BASE}/X?op=find"
 FIND_BY_BARCODE_EDNPOINT = (
-    "{ALEPH_BASE}/X?op=find&base={BASE}&code=bc&request={BARCODE}"
+    "{ALEPH_BASE}/X?op=find&base={BASE}&code=BAR&request={BARCODE}"
 )
 FIND_BY_SIGNATURE_EDNPOINT = (
     "{ALEPH_BASE}/X?op=find&base={BASE}&code=SIG&request={SIGNATURE}"
