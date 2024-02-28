@@ -73,9 +73,11 @@ def create_document(
             publishing_year=document.publishing_year,
             languages=document.languages,
             # frequencies=document.frequencies,
-            frequencies=[
-                frequency.model_dump() for frequency in document.frequencies
-            ],
+            frequencies=(
+                [frequency.model_dump() for frequency in document.frequencies]
+                if document.frequencies
+                else []
+            ),
             creator=creator,
         ),
     )

@@ -9,7 +9,7 @@ from catalogs.enums import (
     IdentifierType,
     IssuanceType,
 )
-from catalogs.schemas import Identifier
+from catalogs.schemas import Frequency, Identifier
 
 
 class TestAlephCatalog(unittest.TestCase):
@@ -80,9 +80,9 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(
             document.frequencies,
             [
-                {"frequency": "3x ročně", "date": "2016-"},
-                {"frequency": "2x ročně,", "date": "2015"},
-                {"frequency": "1x ročně,", "date": "2012-2014"},
+                Frequency(frequency="3x ročně", date="2016-"),
+                Frequency(frequency="2x ročně,", date="2015"),
+                Frequency(frequency="1x ročně,", date="2012-2014"),
             ],
         )
         self.assertEqual(document.publishing_year, "2012-")

@@ -5,11 +5,32 @@ from datetime import datetime
 from typing import List
 
 from services.database import create
+
+from catalogs.enums import DigitizationState
+from documents.models import Document
+from documents.schemas import DocumentCreate
 from tasks import models, schemas
 from tasks.enums import TaskDocumentErrorType
 from tasks.enums import TaskState
-from documents.models import Document
-from documents.schemas import DocumentCreate
+
+
+UPDATE_COLUMN_NAMES = [
+    "cnb",
+    "isbn_issn",
+    "signature",
+    "material_type",
+    "issuance_type",
+    "title",
+    "year",
+    "bundle",
+    "pages_count",
+    "size",
+    "publisher",
+    "publishing_place",
+    "publishing_year",
+    "languages",
+]
+FREQUENCIES_COLUMN_NAME = "frequencies"
 
 
 def create_task(
@@ -151,7 +172,42 @@ def update_document(
     if not document:
         return
 
-    for field in new_document.dict(exclude_unset=True):
+    for field in UPDATE_COLUMN_NAMES:
         setattr(document, field, getattr(new_document, field))
 
+    frequencies = (
+        [frequency.model_dump() for frequency in document.frequencies]
+        if document.frequencies
+        else []
+    )
+    setattr(document, FREQUENCIES_COLUMN_NAME, frequencies)
+
     db.commit()
+
+
+def update_digitization_state(
+    document_id: int, digitization_state: DigitizationState, db: Session
+):
+    db.execute(
+        update(Document)
+        .where(Document.id == document_id)
+        .values(digitization_state=digitization_state)
+    )
+    db.commit()
+
+
+def delete_task(task_id: int, db: Session):
+    db_task_documents = (
+        db.query(models.TaskDocument)
+        .where(models.TaskDocument.task_id == task_id)
+        .all()
+    )
+    for db_task_document in db_task_documents:
+        db.delete(db_task_document)
+    db.commit()
+
+    db_task = db.query(models.Task).where(models.Task.id == task_id).first()
+    db.delete(db_task)
+
+    db.commit()
+    return db_task

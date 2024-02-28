@@ -23,7 +23,17 @@ celery_worker = Celery(
 
 @celery_worker.task
 def run_task(task_id: int):
-    from tasks.routines import predict_volumes_pages, sync_from_catalog
+    from tasks.routines import (
+        predict_volumes_pages,
+        sync_from_catalog,
+        sync_from_digitization_registry,
+    )
+
+    import categories.models
+    import extractions.models
+
+    sys_path.append(path.abspath("categories/"))
+    sys_path.append(path.abspath("extractions/"))
 
     db = next(get_db())
     task = crud.get_task(task_id, db)
@@ -34,6 +44,9 @@ def run_task(task_id: int):
             predict_volumes_pages(task_id, db)
         elif task.task_type == TaskType.SyncFromCatalog:
             sync_from_catalog(task_id, task.owner, db)
+        elif task.task_type == TaskType.SyncFromDigitizationRegistry:
+            sync_from_digitization_registry(task_id, task.owner, db)
+
         crud.set_task_finsihed(task_id, db)
         crud.update_task_state(task_id, TaskState.Finished, db)
     except Exception as e:

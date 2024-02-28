@@ -30,6 +30,7 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const taskSelectorItems = [{items: [
         { label: t("Predict volumes page counts"), command: () => handleStartTask(TaskType.PredictVolumePages), },
         { label: t("Sync from catalog"), command: () => handleStartTask(TaskType.SyncFromCatalog), },
+        { label: t("Sync from digitization registry"), command: () => handleStartTask(TaskType.SyncFromDigitizationRegistry), },
         // { label: 'Export', }
     ]}];
 

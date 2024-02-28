@@ -1,6 +1,7 @@
 enum TaskType {
     PredictVolumePages = 'PredictVolumePages',
-    SyncFromCatalog = 'SyncFromCatalog'
+    SyncFromCatalog = 'SyncFromCatalog',
+    SyncFromDigitizationRegistry = 'SyncFromDigitizationRegistry',
 }
 
 export { TaskType };
