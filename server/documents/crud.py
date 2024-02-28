@@ -8,6 +8,7 @@ from documents import models, schemas
 from documents.search import filter_documents_query_base
 from extractions.models import Extraction
 from services import exceptions
+from tasks.crud import delete_document as delete_task_document
 
 
 def document_view(db: Session):
@@ -149,6 +150,7 @@ def delete_document(document_id: int, db: Session):
     db_document = get_document(document_id, db)
     if db_document is None:
         raise exceptions.DocumentNotFoundException(id)
+    delete_task_document(document_id, db)
     db.delete(db_document)
     db.commit()
     return db_document

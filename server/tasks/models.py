@@ -43,7 +43,8 @@ class TaskDocument(Base):
     __tablename__ = "task_documents"
 
     task_id = Column(Integer, ForeignKey("tasks.id"), index=True)
-    document_id = Column(Integer, ForeignKey("documents.id"), index=True)
+    document_id = Column(Integer, index=True)
+    deleted = Column(Boolean, server_default="false")
 
     processed = Column(Boolean, server_default="false")
     error_type = Column(Enum(TaskDocumentErrorType))

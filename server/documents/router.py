@@ -113,9 +113,7 @@ def query_documents(
     return schemas.DocumentsResponse(documents=documents, num_found=num_found)
 
 
-@router.post(
-    "/documents/query/to_file", response_model=schemas.DocumentsResponse
-)
+@router.post("/documents/query/export")
 def download_documents(
     query: schemas.DocumentsQuery,
     user: CurrentUser = Depends(get_current_user),
@@ -153,7 +151,6 @@ def download_documents(
     ) as temp_excel:
         df.to_excel(temp_excel.name, index=False)
 
-    # headers = {"Content-Disposition": 'attachment; filename="Book.xlsx"'}
     return FileResponse(
         temp_excel.name,
         media_type=(
@@ -162,10 +159,11 @@ def download_documents(
             "spreadsheetml.sheet"
         ),
         filename="documents.xlsx",
+        headers={"Content-Disposition": "attachment"},
     )
 
 
-@router.put("/documents/query/category")
+@router.put("/documents/query/category", response_model=schemas.DocumentsQuery)
 def update_query_documents(
     query: schemas.DocumentsQuery,
     category_id: Optional[int] = None,
@@ -191,9 +189,10 @@ def update_query_documents(
 
     query_base = crud.get_documents_query_base(db, query)
     crud.update_documents(query_base, "category_id", category_id, db)
+    return query
 
 
-@router.delete("/documents/query")
+@router.post("/documents/query/delete", response_model=schemas.DocumentsQuery)
 def delete_query_documents(
     query: schemas.DocumentsQuery,
     user: CurrentUser = Depends(get_current_user),
@@ -218,6 +217,7 @@ def delete_query_documents(
 
     query_base = crud.get_documents_query_base(db, query)
     crud.delete_documents(query_base, db)
+    return query
 
 
 @router.get(
