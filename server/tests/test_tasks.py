@@ -98,7 +98,7 @@ class TestRolesEndpoints(unittest.TestCase):
         from documents.schemas import DocumentCreate
         from tasks.crud import update_document
 
-        document_id = 459
+        document_id = 408
         document = get_document(document_id, self.db)
 
         catalog_response = generate_catalog_document(

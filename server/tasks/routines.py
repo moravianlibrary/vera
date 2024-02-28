@@ -23,6 +23,7 @@ def run_task(task_id: int, func: callable, db: Session):
             error_message,
             db,
         )
+        crud.set_document_processed(task_id, document_id, db)
 
     for document in crud.get_unprocessed_task_documents(task_id, db):
         print(f"Processing document with id {document.id}")
@@ -52,7 +53,8 @@ def run_task(task_id: int, func: callable, db: Session):
                 TaskDocumentErrorType.UnknownError,
                 str(e),
             )
-        crud.set_document_processed(task_id, document.id, db)
+        else:
+            crud.set_document_processed(task_id, document.id, db)
 
 
 def predict_volumes_pages(task_id: int, db: Session):
@@ -63,13 +65,13 @@ def predict_volumes_pages(task_id: int, db: Session):
 
     def predict_volume_pages(document: Document) -> None:
         if document.year is None:
-            raise ValueError("Document is missing a volume year.")
+            raise ValueError("Document is missing a volume year")
         if document.publisher is None:
-            raise ValueError("Document is missing a publisher.")
+            raise ValueError("Document is missing a publisher")
         if document.publishing_place is None:
-            raise ValueError("Document is missing a publishing places.")
+            raise ValueError("Document is missing a publishing places")
         if not document.languages:
-            raise ValueError("Document does not specify any language.")
+            raise ValueError("Document is missing language information")
         pages_count = predictor.predict(
             name=document.title,
             year=parse_year(document.year),
@@ -106,6 +108,10 @@ def sync_from_catalog(task_id: int, owner: str, db: Session):
         )
 
         catalog_response = generate_catalog_document(identifier)
+        if catalog_response.document is None:
+            raise ValueError(
+                f"Document with identifier {identifier} not found in catalog"
+            )
         newDocument = None
         if document.issuance_type:
             issue = [
