@@ -31,7 +31,6 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
         }
     }, [focusEditPercentageIndex]);
 
-
     if (editPercentageNodes.includes(node)) {
         return (
             <div className="flex align-items-center gap-1">
@@ -42,9 +41,9 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
                         onFocus={() => handleFocusPercentageNode(node)}
                         size={2}
                         value={node.percentage}
-                        onValueChange={(e) => handlePercentageChange(node, e.value!)}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
+                                handlePercentageChange(node, parseFloat((e.target as HTMLInputElement).value));
                                 handleGoToNextPercentage();
                             }
                         }}

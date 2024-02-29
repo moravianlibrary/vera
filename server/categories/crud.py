@@ -123,7 +123,11 @@ def get_enabled_for_parent(parent_id: int, db: Session):
         query = query.filter(models.Category.parent_id.is_(None))
     else:
         query = query.filter(models.Category.parent_id == parent_id)
-    return query.filter(models.Category.disabled.is_(False)).all()
+    return (
+        query.filter(models.Category.disabled.is_(False))
+        .order_by(models.Category.id)
+        .all()
+    )
 
 
 def set_category_departments(
