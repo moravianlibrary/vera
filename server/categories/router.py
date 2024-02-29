@@ -60,7 +60,7 @@ def update_distribution(
         category.id for category in crud.get_enabled_for_parent(parent_id, db)
     ]
 
-    if [item.id for item in distribution] != categories_ids:
+    if sorted([item.id for item in distribution]) != categories_ids:
         raise MissingArgumentException(
             "Percentage distribution does not contains "
             "all children from one parent"

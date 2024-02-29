@@ -21,3 +21,4 @@ namespace ApiUser {
 }
 
 export default ApiUser;
+export type { User };

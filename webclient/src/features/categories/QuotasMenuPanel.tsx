@@ -88,30 +88,6 @@ const QuotasMenuPanel = (props) => {
         );
     };
 
-    if (!selectedQuota) {
-        return (
-            <div className="flex flex-column bg-white p-2 gap-2" style={floatingPanelStyle}>
-                <span className="font-bold p-2">{t('select_quota')}:</span>
-                <div className="flex">
-                    <Dropdown
-                        options={quotas}
-                        optionLabel="name"
-                        value={selectedQuota}
-                        onChange={(e) => handleSelectQuota(e.value)}
-                        itemTemplate={(item) => <TooltipDropdownItem item={item} />}
-                    />
-                    <ActionAccessComponent action={ActionType.EditCategoriesAll} >
-                        <Button
-                            className="pi pi-plus p-2"
-                            text
-                            onClick={handleInsertQuota}
-                        />
-                    </ActionAccessComponent>
-                </div>
-            </div>
-        );
-    }
-
     if (editMode) {
         return (
             <div className="flex flex-column bg-white p-2 gap-2" style={floatingPanelStyle}>
@@ -137,6 +113,30 @@ const QuotasMenuPanel = (props) => {
                     <Button outlined severity="danger" onClick={handleCancelEdit}>
                         <i className="pi pi-times" />
                     </Button>
+                </div>
+            </div>
+        );
+    }
+
+    if (!selectedQuota) {
+        return (
+            <div className="flex flex-column bg-white p-2 gap-2" style={floatingPanelStyle}>
+                <span className="font-bold p-2">{t('select_quota')}:</span>
+                <div className="flex">
+                    <Dropdown
+                        options={quotas}
+                        optionLabel="name"
+                        value={selectedQuota}
+                        onChange={(e) => handleSelectQuota(e.value)}
+                        itemTemplate={(item) => <TooltipDropdownItem item={item} />}
+                    />
+                    <ActionAccessComponent action={ActionType.EditCategoriesAll} >
+                        <Button
+                            className="pi pi-plus p-2"
+                            text
+                            onClick={handleInsertQuota}
+                        />
+                    </ActionAccessComponent>
                 </div>
             </div>
         );
