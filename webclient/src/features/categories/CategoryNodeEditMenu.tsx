@@ -8,6 +8,8 @@ import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext
 import { NodeType } from "../../contexts/categories/CategoryNodeType";
 import { ActionAccessComponent } from "../../services/AccessService";
 import { ActionType } from "../../types/ActionType";
+import { UserModel } from "../../contexts/user/UserModel";
+import { useUser } from "../../contexts/user/UserContext";
 
 interface CategoryNodeEditMenuProps {
     node: CategoryNode
@@ -15,6 +17,7 @@ interface CategoryNodeEditMenuProps {
 
 const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => {
     const { handleEditCategoryNode, handleInsertChildNode, handleDeleteCategoryNode } = useCategoryNodes();
+    const { user } = useUser();
     const menuRef = useRef(null);
 
     const handleToggleMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -65,12 +68,34 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => 
         }
     ];
 
+    const getMenuItems = () => {
+        if (node.type === NodeType.Root) {
+            return rootItems;
+        } else if (user.actions!.includes(ActionType.EditCategoriesAll)) {
+            return items;
+        } else if (user.actions!.includes(ActionType.EditCategoriesDepartment)) {
+            return node.category.level >= 1 ? items : rootItems;
+        } else {
+            return [];
+        }
+    }
+
+    const canEditDepartmentCategory = (user: UserModel) => {
+        return (user.actions
+                && user.department_id
+                && user.actions.includes(ActionType.EditCategoriesDepartment)
+                && node.category.departments.includes(user.department_id)) as boolean;
+    }
+
     return (
         <div className="flex">
-            <ActionAccessComponent action={ActionType.EditCategoriesAll}>
+            <ActionAccessComponent
+                action={ActionType.EditCategoriesAll}
+                evaluate={canEditDepartmentCategory}
+            >
                 <Menu
                     className="surface-300 w-auto"
-                    model={node.type === NodeType.Root ? rootItems : items}
+                    model={getMenuItems()}
                     popup
                     popupAlignment="right"
                     ref={menuRef} />
