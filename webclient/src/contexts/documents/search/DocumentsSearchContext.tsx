@@ -15,6 +15,7 @@ interface DocumentsSearchContextProps {
     rootSearchNode: SearchGroup | undefined;
     activeQuery: DocumentsQuery | undefined;
     handleApplyFilter: () => void;
+    handleCancelFilter: () => void;
     handleSaveFilter: () => void;
     handleClearFilter: () => void;
     getTreeFieldOptions: (enumField: DocumentField) => TreeNode[];
@@ -39,13 +40,16 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
         setActiveQuery({ search_group: rootSearchNode });
     };
 
+    const handleCancelFilter = () => {
+        setActiveQuery(undefined);
+    };
+
     const handleSaveFilter = () => {
         localStorage.setItem('advanced_search', JSON.stringify(rootSearchNode));
     };
 
     const handleClearFilter = () => {
         setRootSearchNode(SearchGroup.createEmpty());
-        console.log(SearchGroup.createEmpty());
     };
 
     const getTreeFieldOptions = (enumField: DocumentField) => {
@@ -66,6 +70,7 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
         rootSearchNode,
         activeQuery,
         handleApplyFilter,
+        handleCancelFilter,
         handleSaveFilter,
         handleClearFilter,
         getTreeFieldOptions,

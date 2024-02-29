@@ -43,6 +43,7 @@ const Documents: React.FC = () => {
         } else if (searchParams.has("categoryId")) {
             handleSetCategoryIds(parseInt(searchParams.get("categoryId")!, 10));
         }
+        window.history.replaceState(null, '', `${window.location.pathname}`);
     }, [searchParams, setExtractionId]);
 
     return (

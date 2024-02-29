@@ -316,6 +316,12 @@ const resources = {
         SyncFromDigitizationRegistry: "Synchronizace z registru digitalizace",
 
         "documents without CNB": "dokumentů bez ČNB",
+        "Number of found documents": "Počet nalezených dokumentů",
+        "Active filtering": "Aktivní filtr",
+        "Cancel filtering": "Zrušit filtr",
+        "Cancel document selection": "Zrušit výběr dokumentu",
+        "Delete selected documents": "Smazat vybrané dokumenty",
+        "Other options": "Ostatní možnosti",
         
     },
   },

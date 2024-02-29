@@ -32,7 +32,15 @@ interface DocumentDetailsBodyProps {
 const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     const { t } = useTranslation();
 
-    const { documents, handleLazyLoad, handleDeleteDocument, handleUpdateDocument, selectedDocuments, handleSelectDocuments } = useDocuments();
+    const {
+        documents,
+        handleLazyLoad,
+        handleDeleteDocument,
+        handleUpdateDocument,
+        selectedDocuments,
+        handleSelectDocuments,
+        handleSelectAllDocuments
+    } = useDocuments();
     const { user } = useUser();
     const [categories, setCategories] = useState([]);
     const [insertMode, setInsertMode] = useState(false);
@@ -69,6 +77,11 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     };
 
     const handleSelectionChange = (event: DataTableSelectionMultipleChangeEvent<DataTableValueArray>) => {
+        if (event.type === 'all') {
+            handleSelectAllDocuments();
+            return;
+        }
+
         const selectedDocuments: DocumentModel[] = event.value.map((selectedItem) => {
             return selectedItem as DocumentModel;
         });
