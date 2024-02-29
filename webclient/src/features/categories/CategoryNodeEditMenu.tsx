@@ -15,6 +15,8 @@ interface CategoryNodeEditMenuProps {
     node: CategoryNode
 }
 
+const MAX_CATEGORY_LEVEL = 3;
+
 const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => {
     const { handleEditCategoryNode, handleInsertChildNode, handleDeleteCategoryNode } = useCategoryNodes();
     const { user } = useUser();
@@ -68,9 +70,33 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => 
         }
     ];
 
+    const leafItems: MenuItem[] = [
+        {
+            template: (item, options) => {
+                return (
+                    <Button className="p-2" text severity="secondary" onClick={() => handleEditCategoryNode(node)}>
+                        <i className="pi pi-pencil" />
+                    </Button>
+                )
+            }
+        }, {
+            separator: true
+        }, {
+            template: (item, options) => {
+                return (
+                    <Button className="p-2" text severity="secondary" onClick={() => handleDeleteCategoryNode(node)}>
+                        <i className="pi pi-trash" />
+                    </Button>
+                )
+            }
+        }
+    ];
+
     const getMenuItems = () => {
         if (node.type === NodeType.Root) {
             return rootItems;
+        } else if (node.category.assignable || node.category.level === MAX_CATEGORY_LEVEL) {
+            return leafItems;
         } else if (user.actions!.includes(ActionType.EditCategoriesAll)) {
             return items;
         } else if (user.actions!.includes(ActionType.EditCategoriesDepartment)) {
