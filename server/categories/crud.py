@@ -220,3 +220,12 @@ def get_documents_count(id: int, only_with_pages: bool, db: Session):
             )
         ).scalar()
     return query.scalar()
+
+
+def get_documents_without_cnb_count(category_id: int, db: Session):
+    return (
+        db.query(func.count(Document.id))
+        .filter(Document.category_id == category_id)
+        .filter(Document.cnb.is_(None))
+        .scalar()
+    )

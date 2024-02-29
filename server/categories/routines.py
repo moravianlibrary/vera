@@ -4,8 +4,7 @@ from typing import Optional
 from categories import crud, schemas
 
 
-def get_category_subtree(category: schemas.Category,
-                         db: Session):
+def get_category_subtree(category: schemas.Category, db: Session):
     return schemas.CategoryNode(
         id=category.id,
         name=category.name,
@@ -16,14 +15,21 @@ def get_category_subtree(category: schemas.Category,
         percentage=category.percentage,
         extract_whole=category.extract_whole,
         disabled=category.disabled,
-        departments=[d[0] for d
-                     in crud.get_category_departments(category.id, db)],
-        children=[get_category_subtree(child, db)
-                  for child in crud.get_children_categories(category.id, db)],
+        departments=[
+            d[0] for d in crud.get_category_departments(category.id, db)
+        ],
+        children=[
+            get_category_subtree(child, db)
+            for child in crud.get_children_categories(category.id, db)
+        ],
         count_pages=crud.get_pages_count(category.id, db),
+        count_documents_without_cnb=(
+            crud.get_documents_without_cnb_count(category.id, db)
+        ),
         count_documents_with_pages=(
-            crud.get_documents_count(category.id, True, db)),
-        count_documents=crud.get_documents_count(category.id, False, db)
+            crud.get_documents_count(category.id, True, db)
+        ),
+        count_documents=crud.get_documents_count(category.id, False, db),
     )
 
 
@@ -34,29 +40,50 @@ def get_category_descriptor(id: int, db: Session):
             id=category.id,
             name=category.name,
             description=category.description,
-            parent_category=(get_category_descriptor(category.parent_id, db)
-                             if category.parent_id else None),
+            parent_category=(
+                get_category_descriptor(category.parent_id, db)
+                if category.parent_id
+                else None
+            ),
         )
     return None
 
 
 def get_assignable_categories(db: Session):
     categories = crud.get_assignable_categories(db)
-    return [schemas.CategoryDescriptor(
-        id=category.id,
-        name=category.name,
-        description=category.description,
-        parent_category=get_category_descriptor(category.parent_id, db),
-        ) for category in categories]
+    return [
+        schemas.CategoryDescriptor(
+            id=category.id,
+            name=category.name,
+            description=category.description,
+            parent_category=get_category_descriptor(category.parent_id, db),
+        )
+        for category in categories
+    ]
 
 
-def has_unique_name(category: schemas.CategoryCreate,
-                    category_id: Optional[int],
-                    db: Session):
-    categories = (crud.get_root_categories(db)
-                  if category.parent_id is None
-                  else crud.get_children_categories(category.parent_id, db))
+def has_unique_name(
+    category: schemas.CategoryCreate, category_id: Optional[int], db: Session
+):
+    categories = (
+        crud.get_root_categories(db)
+        if category.parent_id is None
+        else crud.get_children_categories(category.parent_id, db)
+    )
     return all(
         category.name != other.name or category_id == other.id
         for other in categories
+    )
+
+
+def generate_category_descriptor(category_id: int, db: Session):
+    category = crud.get_category(category_id, db)
+    return schemas.CategoryDescriptor(
+        id=category_id,
+        name=category.name,
+        description=category.description,
+        children_categories=[
+            generate_category_descriptor(child.id, db)
+            for child in crud.get_children_categories(category_id, db)
+        ],
     )

@@ -24,11 +24,12 @@ interface DocumentsSearchContextProps {
 interface DocumentsSearchProviderProps {
     children: ReactNode;
     extractionId?: number | null;
+    categoryIds?: number[];
 }
 
 const DocumentsSearchContext = createContext<DocumentsSearchContextProps | undefined>(undefined);
 
-export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = ({ children, extractionId }) => {
+export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = ({ children, extractionId, categoryIds }) => {
     const [rootSearchNode, setRootSearchNode] = useState<SearchGroup>(SearchGroup.init());
     const [activeQuery, setActiveQuery] = useState<DocumentsQuery | undefined>(undefined);
 
@@ -99,7 +100,13 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
                 console.error(error);
             });
         }
-    }, [extractionId])
+    }, [extractionId]);
+
+    useEffect(() => {
+        if (categoryIds && categoryIds.length > 0) {
+            setActiveQuery({ search_group: SearchGroup.createCategoryIdSearch(categoryIds) });
+        }
+    }, [categoryIds]);
 
     return (
         <DocumentsSearchContext.Provider value={contextValue}>

@@ -2,8 +2,9 @@ import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { SearchTextField, TextOption } from "../../../contexts/documents/search/SearchNodes";
+import { SearchTextField } from "../../../contexts/documents/search/SearchNodes";
 import React from "react";
+import { TextOption } from "../../../types/SearchTypes";
 
 interface AdvancedSearchTextFieldProps {
     data: SearchTextField;

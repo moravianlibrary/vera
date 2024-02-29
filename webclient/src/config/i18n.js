@@ -314,6 +314,9 @@ const resources = {
         SyncFromCatalog: "Synchronizace z katalogu",
         "Sync from digitization registry": "Synchronizovat z registru digitalizace",
         SyncFromDigitizationRegistry: "Synchronizace z registru digitalizace",
+
+        "documents without CNB": "dokumentů bez ČNB",
+        
     },
   },
 };

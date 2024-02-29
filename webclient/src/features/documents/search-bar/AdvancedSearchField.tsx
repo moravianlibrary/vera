@@ -3,12 +3,13 @@ import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { useTranslation } from "react-i18next";
 
 import { useState } from "react";
-import { RuleType, SearchTreeField, SearchField, SearchNumberField, SearchTextField } from "../../../contexts/documents/search/SearchNodes";
+import { SearchTreeField, SearchField, SearchNumberField, SearchTextField } from "../../../contexts/documents/search/SearchNodes";
 import AdvancedSearchTextField from "./AdvancedSearchTextField";
 import React from "react";
 import DocumentSearchField, { DocumentField } from "../../../contexts/documents/search/DocumentSearchField";
 import AdvancedSearchTreeField from "./AdvancedSearchTreeField";
 import AdvancedSearchNumberField from "./AdvancedSearchNumberField";
+import { RuleType } from "../../../types/SearchTypes";
 
 interface AdvancedSearchFieldProps {
     data: SearchField;

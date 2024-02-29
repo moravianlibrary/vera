@@ -1,4 +1,4 @@
-import { RuleType } from "./SearchNodes";
+import { RuleType } from "../../../types/SearchTypes";
 
 export enum DocumentField {
     Sysno = 'Sysno',

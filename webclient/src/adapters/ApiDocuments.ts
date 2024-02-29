@@ -1,5 +1,5 @@
 import { DocumentField } from "../contexts/documents/search/DocumentSearchField";
-import { GroupOption, SearchGroupParams } from "../contexts/documents/search/SearchNodes";
+import { SearchGroupParams } from "../contexts/documents/search/SearchNodes";
 import { DigitizationState } from "../types/DigitizationState";
 import { DocumentCreateResult } from "../types/DocumentCreateResult";
 import { IdentifierType } from "../types/IdentifierType";
