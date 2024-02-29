@@ -9,22 +9,47 @@ import { DocumentsProvider } from '../contexts/documents/DocumentsContext';
 import { AssignableCategoriesProvider } from '../contexts/categories/AssignableCategoriesContext';
 import { DocumentsSearchProvider, useDocumentsSearch } from '../contexts/documents/search/DocumentsSearchContext';
 import { useSearchParams } from 'react-router-dom';
+import ApiCategories, { AssignableCategory } from '../adapters/ApiCategories';
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [extractionId, setExtractionId] = useState<number | null>(null);
+    const [categoryIds, setCategoryIds] = useState<number[]>([]);
+
+    const handleSetCategoryIds = (categoryId: number) => {
+        ApiCategories.getCategory(categoryId)
+        .then((response) => {
+            const flattenCategoryIds: number[] = [];
+            const traverseCategories = (category: AssignableCategory) => {
+                flattenCategoryIds.push(category.id);
+                if (category.children_categories && category.children_categories.length > 0) {
+                    category.children_categories.forEach((childCategory: any) => {
+                        traverseCategories(childCategory);
+                    });
+                }
+            }
+            traverseCategories(response.data);
+            setCategoryIds(flattenCategoryIds);
+        })
+        .catch((error) => {
+            console.error(error);
+        })
+    };
 
     useEffect(() => {
         if (searchParams.has("extractionId")) {
             setExtractionId(parseInt(searchParams.get("extractionId")!, 10));
+        } else if (searchParams.has("categoryId")) {
+            handleSetCategoryIds(parseInt(searchParams.get("categoryId")!, 10));
         }
+        window.history.replaceState(null, '', `${window.location.pathname}`);
     }, [searchParams, setExtractionId]);
 
     return (
         <div className="table-container" >
             <AssignableCategoriesProvider>
-                <DocumentsSearchProvider extractionId={extractionId}>
+                <DocumentsSearchProvider extractionId={extractionId} categoryIds={categoryIds} >
                     <DocumentsDiv />
                 </DocumentsSearchProvider>
             </AssignableCategoriesProvider>

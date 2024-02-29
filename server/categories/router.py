@@ -10,6 +10,7 @@ from services.exceptions import (
 )
 from categories import crud, schemas
 from categories.routines import (
+    generate_category_descriptor,
     get_category_subtree,
     get_assignable_categories,
     has_unique_name,
@@ -60,7 +61,7 @@ def update_distribution(
         category.id for category in crud.get_enabled_for_parent(parent_id, db)
     ]
 
-    if [item.id for item in distribution] != categories_ids:
+    if sorted([item.id for item in distribution]) != categories_ids:
         raise MissingArgumentException(
             "Percentage distribution does not contains "
             "all children from one parent"
@@ -100,6 +101,20 @@ def get_categories_descriptors(
     db: Session = Depends(get_db),
 ):
     if root:
-        return crud.get_root_categories(db)
+        return [
+            generate_category_descriptor(category.id, db)
+            for category in crud.get_root_categories(db)
+        ]
     elif assignable:
         return get_assignable_categories(db)
+
+
+@router.get(
+    "/categories/descriptors/{category_id}",
+    response_model=schemas.CategoryDescriptor,
+)
+def get_category_descriptor(
+    category_id: int = Path(...),
+    db: Session = Depends(get_db),
+):
+    return generate_category_descriptor(category_id, db)

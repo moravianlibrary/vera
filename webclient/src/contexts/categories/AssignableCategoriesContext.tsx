@@ -21,7 +21,6 @@ export const AssignableCategoriesProvider: React.FC<AssignableCategoriesProvider
             const transformedData: AssignableCategoryModel[] = response.data.map(assignableCategory => {
                 return new AssignableCategoryModel(assignableCategory);
             });
-            console.log(transformedData);
             setCategories(transformedData);
         }).catch(error => {
             console.error(`Could not receive assignable categories: ${error}`);

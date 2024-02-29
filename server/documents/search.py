@@ -14,7 +14,14 @@ from documents.enums import (
     DocumentField,
 )
 
-# from departments.models import Department
+
+DOCUMENT_FIELDS_MAPPING = {
+    DocumentField.Sysno: "sysno",
+    DocumentField.Volume: "volume",
+    DocumentField.Category: "category_id",
+    DocumentField.Title: "title",
+    DocumentField.PagesCount: "pages_count",
+}
 
 
 def filter_documents_query_base(
@@ -31,7 +38,7 @@ def filter_documents_query_base(
 def sort_query(query_base: Query, sort: schemas.QuerySort):
     curr_sort = sort
     while curr_sort:
-        field_name = parse_field(curr_sort.field)
+        field_name = DOCUMENT_FIELDS_MAPPING.get(curr_sort.field)
         if curr_sort.order == SortOrder.Ascending:
             query_base = query_base.order_by(
                 getattr(models.Document, field_name).asc()
@@ -70,7 +77,7 @@ def filter_by_search_phrase(search_phrase: str, query_base: Query):
         or models.Document.barcode.startswith(search_phrase)
         or models.Document.signature.startswith(search_phrase)
         or models.Document.title.startswith(search_phrase)
-        or models.Category.name.startswith(search_phrase)
+        or Category.name.startswith(search_phrase)
     ).outerjoin(Category, models.Document.category_id == Category.id)
 
 
@@ -99,7 +106,8 @@ def build_group_filter(search_group: schemas.SearchGroup, query_base: Query):
 
 
 def build_field_filter(search_field: schemas.SearchField):
-    field = getattr(models.Document, search_field.field.value)
+    field_name = DOCUMENT_FIELDS_MAPPING[search_field.field]
+    field = getattr(models.Document, field_name)
     if search_field.option in TextOption:
         return build_text_filter(
             field, search_field.option, search_field.value
@@ -108,7 +116,7 @@ def build_field_filter(search_field: schemas.SearchField):
         return build_number_filter(
             field, search_field.option, search_field.value
         )
-    elif search_field.option == TreeOption:
+    elif search_field.option in TreeOption:
         return build_tree_filter(
             field, search_field.option, search_field.value
         )
@@ -160,8 +168,3 @@ def build_tree_filter(field, option, value):
         return field.is_(None)
     elif option == TreeOption.IsNotNull:
         return field.isnot(None)
-
-
-def parse_field(field: DocumentField):
-    if field == DocumentField.Category:
-        return "category_id"

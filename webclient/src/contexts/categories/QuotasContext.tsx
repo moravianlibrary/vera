@@ -65,6 +65,9 @@ export const QuotasProvider: React.FC<QuotasProviderProps> = ({ children }) => {
             } else {
                 setQuotas([newQuota])
             }
+            if (newQuota.active) {
+                setSelectedQuota(newQuota);
+            }
         }).catch(error => {
             if (400 <= error.response?.status && error.response?.status < 500) {
                 showToast("error", t("Quota creation failed"), t(error.response.data.detail));

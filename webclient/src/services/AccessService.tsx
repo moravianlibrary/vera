@@ -6,6 +6,7 @@ import { useUser } from "../contexts/user/UserContext";
 import ApiUser from "../adapters/ApiUser";
 import { ActionType } from "../types/ActionType";
 import React from "react";
+import { UserModel } from "../contexts/user/UserModel";
 
 class AccessService {
     async getCurrentUser() {
@@ -40,20 +41,30 @@ export const ActionAccessRoute = ({ action = null }) => {
         : null;
 };
 
+
 interface ActionAccessComponentProps {
-    action: ActionType;
+    action?: ActionType;
+    evaluate?: (user: UserModel) => boolean;
     children: ReactNode;
 }
 
-export const ActionAccessComponent: React.FC<ActionAccessComponentProps> = ({ action, children }) => {
+export const ActionAccessComponent: React.FC<ActionAccessComponentProps> = (props) => {
+    const { action, evaluate, children } = props;
     const { user } = useUser();
 
-    if (!user || !user.actions?.includes(action)) {
-        // return (<div></div>)
+    if (!user) {
         return null;
     }
 
-    return <>{children}</>;
+    if (action && user.actions?.includes(action)) {
+        return <>{children}</>;
+    }
+    if (evaluate && evaluate(user)) {
+        return <>{children}</>;
+    }
+
+    return null;
+
 };
 
 export const accessService = new AccessService();

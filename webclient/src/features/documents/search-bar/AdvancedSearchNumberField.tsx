@@ -1,9 +1,10 @@
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { NumberOption, SearchNumberField } from "../../../contexts/documents/search/SearchNodes";
+import { SearchNumberField } from "../../../contexts/documents/search/SearchNodes";
 import { InputNumber, InputNumberValueChangeEvent } from "primereact/inputnumber";
 import React from "react";
+import { NumberOption } from "../../../types/SearchTypes";
 
 interface AdvancedSearchNumberFieldProps {
     data: SearchNumberField;

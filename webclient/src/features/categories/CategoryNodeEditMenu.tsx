@@ -8,13 +8,20 @@ import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext
 import { NodeType } from "../../contexts/categories/CategoryNodeType";
 import { ActionAccessComponent } from "../../services/AccessService";
 import { ActionType } from "../../types/ActionType";
+import { UserModel } from "../../contexts/user/UserModel";
+import { useUser } from "../../contexts/user/UserContext";
+import { useTranslation } from "react-i18next";
 
 interface CategoryNodeEditMenuProps {
     node: CategoryNode
 }
 
+const MAX_CATEGORY_LEVEL = 3;
+
 const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => {
+    const { t } = useTranslation();
     const { handleEditCategoryNode, handleInsertChildNode, handleDeleteCategoryNode } = useCategoryNodes();
+    const { user } = useUser();
     const menuRef = useRef(null);
 
     const handleToggleMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -25,7 +32,14 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => 
     const rootItems: MenuItem[] = [{
             template: (item, options) => {
                 return (
-                    <Button className="p-2" text severity="secondary" onClick={() => handleInsertChildNode(node)}>
+                    <Button
+                        className="p-2"
+                        text
+                        severity="secondary"
+                        onClick={() => handleInsertChildNode(node)}
+                        tooltip={t('Add child category')}
+                        tooltipOptions={{ position: 'right', showDelay: 500 }}
+                    >
                         <i className="pi pi-plus" />
                     </Button>
                 )
@@ -37,7 +51,14 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => 
         {
             template: (item, options) => {
                 return (
-                    <Button className="p-2" text severity="secondary" onClick={() => handleEditCategoryNode(node)}>
+                    <Button
+                        className="p-2"
+                        text
+                        severity="secondary"
+                        onClick={() => handleEditCategoryNode(node)}
+                        tooltip={t('Edit category')}
+                        tooltipOptions={{ position: 'right', showDelay: 500 }}
+                    >
                         <i className="pi pi-pencil" />
                     </Button>
                 )
@@ -47,7 +68,14 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => 
         }, {
             template: (item, options) => {
                 return (
-                    <Button className="p-2" text severity="secondary" onClick={() => handleDeleteCategoryNode(node)}>
+                    <Button
+                        className="p-2"
+                        text
+                        severity="secondary"
+                        onClick={() => handleDeleteCategoryNode(node)}
+                        tooltip={t('Delete category')}
+                        tooltipOptions={{ position: 'right', showDelay: 500 }}
+                    >
                         <i className="pi pi-trash" />
                     </Button>
                 )
@@ -57,7 +85,14 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => 
         } , {
             template: (item, options) => {
                 return (
-                    <Button className="p-2" text severity="secondary" onClick={() => handleInsertChildNode(node)}>
+                    <Button
+                        className="p-2"
+                        text
+                        severity="secondary"
+                        onClick={() => handleInsertChildNode(node)}
+                        tooltip={t('Add child category')}
+                        tooltipOptions={{ position: 'right', showDelay: 500 }}
+                    >
                         <i className="pi pi-plus" />
                     </Button>
                 )
@@ -65,16 +100,83 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({ node }) => 
         }
     ];
 
+    const leafItems: MenuItem[] = [
+        {
+            template: (item, options) => {
+                return (
+                    <Button
+                        className="p-2"
+                        text
+                        severity="secondary"
+                        onClick={() => handleEditCategoryNode(node)}
+                        tooltip={t('Edit category')}
+                        tooltipOptions={{ position: 'right', showDelay: 500 }}
+                    >
+                        <i className="pi pi-pencil" />
+                    </Button>
+                )
+            }
+        }, {
+            separator: true
+        }, {
+            template: (item, options) => {
+                return (
+                    <Button
+                        className="p-2"
+                        text
+                        severity="secondary"
+                        onClick={() => handleDeleteCategoryNode(node)}
+                        tooltip={t('Delete category')}
+                        tooltipOptions={{ position: 'right', showDelay: 500 }}
+                    >
+                        <i className="pi pi-trash" />
+                    </Button>
+                )
+            }
+        }
+    ];
+
+    const getMenuItems = () => {
+        if (node.type === NodeType.Root) {
+            return rootItems;
+        } else if (node.category.assignable || node.category.level === MAX_CATEGORY_LEVEL) {
+            return leafItems;
+        } else if (user.actions!.includes(ActionType.EditCategoriesAll)) {
+            return items;
+        } else if (user.actions!.includes(ActionType.EditCategoriesDepartment)) {
+            return node.category.level >= 1 ? items : rootItems;
+        } else {
+            return [];
+        }
+    }
+
+    const canEditDepartmentCategory = (user: UserModel) => {
+        return (user.actions
+                && user.department_id
+                && user.actions.includes(ActionType.EditCategoriesDepartment)
+                && node.category.departments.includes(user.department_id)) as boolean;
+    }
+
     return (
         <div className="flex">
-            <ActionAccessComponent action={ActionType.EditCategoriesAll}>
+            <ActionAccessComponent
+                action={ActionType.EditCategoriesAll}
+                evaluate={canEditDepartmentCategory}
+            >
                 <Menu
                     className="surface-300 w-auto"
-                    model={node.type === NodeType.Root ? rootItems : items}
+                    model={getMenuItems()}
                     popup
                     popupAlignment="right"
                     ref={menuRef} />
-                <Button className="p-1" text severity="secondary" onClick={handleToggleMenu}>
+                <Button
+                    className="p-1"
+                    text
+                    severity="secondary"
+                    onClick={handleToggleMenu}
+                    tooltip={t("Category options")}
+                    tooltipOptions={{ position: 'left', showDelay: 1000 }}
+                >
                     <i className="pi pi-cog" />
                 </Button>
             </ActionAccessComponent>

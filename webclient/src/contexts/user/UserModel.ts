@@ -1,6 +1,7 @@
+import { User } from "../../adapters/ApiUser";
 import { RoleModel } from "./RoleModel";
 
-export class User {
+export class UserModel {
     username: string | undefined;
     department_id: number | undefined;
     department_name: string | undefined;
@@ -9,11 +10,11 @@ export class User {
     actions: string[] | undefined;
     isLoggedIn: boolean = false;
 
-    static createUser(userData: any): User {
-        const user = new User();
+    static createUser(userData: User): UserModel {
+        const user = new UserModel();
         user.username = userData.username;
-        user.department_id = userData.department_id;
-        user.department_name = userData.department_name;
+        user.department_id = userData.department_id ? userData.department_id : undefined;
+        user.department_name = userData.department_name ? userData.department_name : undefined;
         user.role_id = userData.role_id;
         user.role_name = userData.role_name;
         user.actions = RoleModel.expandActions(userData.actions);
@@ -22,7 +23,7 @@ export class User {
     }
 
     static createEmptyUser() {
-        const user = new User();
+        const user = new UserModel();
         user.isLoggedIn = true;
         return user;
     }

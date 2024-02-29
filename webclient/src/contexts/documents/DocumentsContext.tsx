@@ -4,14 +4,19 @@ import { VirtualScrollerLazyEvent } from "primereact/virtualscroller";
 import DocumentModel from "./DocumentModel";
 import { TaskType } from "../../types/TaskType";
 import ApiTasks from "../../adapters/ApiTasks";
+import { SearchGroup } from "./search/SearchNodes";
 
 interface DocumentsContextProps {
     documents: Document[];
+    numFound: number;
     handleLazyLoad: (event: VirtualScrollerLazyEvent) => void;
     handleDeleteDocument: (document: DocumentModel) => void;
     handleUpdateDocument: (updatedDocument: DocumentModel, index: number) => void;
     selectedDocuments: Document[];
     handleSelectDocuments: (selectedDocuments: DocumentModel[]) => void;
+    handleSelectAllDocuments: () => void;
+    handleCancelSelection: () => void;
+    selectAll: boolean;
     handleStartTask: (taskType: TaskType) => void;
     handleDeleteDocuments: () => void;
     handleUpdateCategory: (category_id: number, category_name: string) => void;
@@ -32,6 +37,7 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
     const [documents, setDocuments] = useState<DocumentModel[]>([]);
     const [numFound, setNumFound] = useState<number>(0);
     const [selectedDocuments, setSelectedDocuments] = useState<DocumentModel[]>([]);
+    const [selectAll, setSelectAll] = useState<boolean>(false);
 
     const loadDocuments = async (offset: number) => {
         ApiDocuments.getDocuments(offset, loadAmount)
@@ -39,7 +45,17 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
             const transformedData: DocumentModel[] = response.data.documents.map(document => {
                 return new DocumentModel(document);
             });
-            setDocuments([...documents, ...transformedData]);
+            if (offset === 0) {
+                setDocuments([...transformedData]);
+                if (selectAll) {
+                    setSelectedDocuments([...transformedData]);
+                }
+            } else {
+                setDocuments([...documents, ...transformedData]);
+                if (selectAll) {
+                    setSelectedDocuments([...selectedDocuments, ...transformedData]);
+                }
+            }
             setNumFound(response.data.num_found);
         }).catch(error => {
             console.error(`Could not receive documents: ${error}`);
@@ -54,8 +70,14 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
             });
             if (offset === 0) {
                 setDocuments([...transformedData]);
+                if (selectAll) {
+                    setSelectedDocuments([...transformedData]);
+                }
             } else {
                 setDocuments([...documents, ...transformedData]);
+                if (selectAll) {
+                    setSelectedDocuments([...selectedDocuments, ...transformedData]);
+                }
             }
             setNumFound(response.data.num_found);
         }).catch(error => {
@@ -101,14 +123,32 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
         setSelectedDocuments(selectedDocuments);
     };
 
+    const handleSelectAllDocuments = () => {
+        if (selectAll) {
+            setSelectedDocuments([]);
+        } else {
+            setSelectedDocuments([...documents]);
+        }
+        setSelectAll(!selectAll);
+    };
+
+    const handleCancelSelection = () => {
+        setSelectedDocuments([]);
+        setSelectAll(false);
+    };
+
     const handleStartTask = async (taskType: TaskType) => {
-        const idList = selectedDocuments.map(d => d.id);
-        const query: DocumentsQuery = { id_list: idList };
-        ApiTasks.planTask(taskType, query);
+        const selectQuery = selectAll
+                    ? query ? query : { search_group: SearchGroup.createEmpty() }
+                    :{id_list: selectedDocuments.map(d => d.id)};
+        ApiTasks.planTask(taskType, selectQuery);
     };
 
     const handleDeleteDocuments = () => {
-        ApiDocuments.deleteDocuments(query ? query : {id_list: selectedDocuments.map(d => d.id)})
+        const selectQuery = selectAll
+                    ? query ? query : { search_group: SearchGroup.createEmpty() }
+                    :{id_list: selectedDocuments.map(d => d.id)};
+        ApiDocuments.deleteDocuments(selectQuery)
         .then(response => {
             if (response.data.id_list) {
                 setDocuments(prevDocuments => prevDocuments.filter(d => !response.data.id_list!.includes(d.id)));
@@ -122,7 +162,10 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
     };
 
     const handleUpdateCategory = (category_id: number, category_name: string) => {
-        ApiDocuments.updateCategory(query ? query : {id_list: selectedDocuments.map(d => d.id)}, category_id)
+        const selectQuery = selectAll
+                    ? query ? query : { search_group: SearchGroup.createEmpty() }
+                    :{id_list: selectedDocuments.map(d => d.id)};
+        ApiDocuments.updateCategory(selectQuery, category_id)
         .then(response => {
             if (response.data.id_list) {
                 (documents.map(d => {
@@ -148,7 +191,10 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
     };
 
     const handleExportDocuments = async () => {
-        ApiDocuments.exportDocuments(query ? query : {id_list: selectedDocuments.map(d => d.id)})
+        const selectQuery = selectAll
+                    ? query ? query : { search_group: SearchGroup.createEmpty() }
+                    :{id_list: selectedDocuments.map(d => d.id)};
+        ApiDocuments.exportDocuments(selectQuery)
         .then(response => {
             const blob = new Blob([response.data], { type: response.headers['content-type'] });
             const url = window.URL.createObjectURL(blob);
@@ -166,11 +212,15 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
 
     const contextValue: DocumentsContextProps = {
         documents,
+        numFound,
         handleLazyLoad,
         handleDeleteDocument,
         handleUpdateDocument,
         selectedDocuments,
         handleSelectDocuments,
+        handleSelectAllDocuments,
+        handleCancelSelection,
+        selectAll,
         handleStartTask,
         handleDeleteDocuments,
         handleUpdateCategory,
@@ -179,9 +229,9 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
 
     useEffect(() => {
         if (query) {
-            loadQueryDocuments(offset);
+            loadQueryDocuments(0);
         } else {
-            loadDocuments(offset);
+            loadDocuments(0);
         }
     }, [query]);
 
