@@ -39,7 +39,8 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
         handleUpdateDocument,
         selectedDocuments,
         handleSelectDocuments,
-        handleSelectAllDocuments
+        handleSelectAllDocuments,
+        selectAll
     } = useDocuments();
     const { user } = useUser();
     const [categories, setCategories] = useState([]);
@@ -80,6 +81,9 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
         if (event.type === 'all') {
             handleSelectAllDocuments();
             return;
+        }
+        if (selectAll) {
+            handleSelectAllDocuments();
         }
 
         const selectedDocuments: DocumentModel[] = event.value.map((selectedItem) => {
