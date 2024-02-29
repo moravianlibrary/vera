@@ -137,6 +137,9 @@ export class CategoryNode {
     }
 
     update(category: Category) {
+        if (this.category.children !== category.children) {
+            return;
+        }
         this.category = category;
         this.children.forEach((child, index) => child.update(category.children[index]));
     }

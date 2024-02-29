@@ -8,23 +8,27 @@ from documents.models import Document
 
 
 def create_root_category(category: schemas.CategoryCreate, db: Session):
-    return create(
+    db_category = create(
         db,
         models.Category(
             name=category.name,
             description=category.description,
             level=0,
-            assignable=category.assignable,
+            assignable=False,
             percentage=0,
             extract_whole=category.extract_whole,
             disabled=False,
         ),
     )
+    if category.departments is not None:
+        set_category_departments(db_category.id, category.departments, db)
+
+    return db_category
 
 
 def create_category(category: schemas.CategoryCreate, db: Session):
     db_parent = get_category(category.parent_id, db)
-    return create(
+    db_category = create(
         db,
         models.Category(
             name=category.name,
@@ -38,25 +42,36 @@ def create_category(category: schemas.CategoryCreate, db: Session):
         ),
     )
 
+    parent_departments = [
+        department.department_id
+        for department in get_category_departments(category.parent_id, db)
+    ]
+    if parent_departments:
+        set_category_departments(db_category.id, parent_departments, db)
+
+    return db_category
+
 
 def update_category(id: int, category: schemas.CategoryCreate, db: Session):
     db_category = (
         db.query(models.Category).filter(models.Category.id == id).first()
     )
 
-    if db_category:
-        db_category.name = category.name
-        db_category.description = category.description
-        db_category.assignable = category.assignable
-        db_category.extract_whole = category.extract_whole
-        db_category.disabled = category.disabled
+    if not db_category:
+        return
 
-        if category.departments is not None:
-            set_category_departments(id, category.departments, db)
+    db_category.name = category.name
+    db_category.description = category.description
+    db_category.assignable = category.assignable
+    db_category.extract_whole = category.extract_whole
+    db_category.disabled = category.disabled
 
-        db.commit()
-        db.refresh(db_category)
-        return db_category
+    if category.departments is not None and db_category.level == 0:
+        set_category_departments(id, category.departments, db)
+
+    db.commit()
+    db.refresh(db_category)
+    return db_category
 
 
 def update_distribution(
@@ -69,17 +84,10 @@ def update_distribution(
 
 
 def delete_category(category_id: int, db: Session):
-    for child_id in (
-        db.query(models.Category.id)
-        .where(models.Category.parent_id == category_id)
-        .all()
-    ):
-        delete_category(child_id[0], db)
-    db_category = (
-        db.query(models.Category)
-        .where(models.Category.id == category_id)
-        .first()
-    )
+    for child_id in get_children_categories(category_id, db):
+        delete_category(child_id.id, db)
+
+    db_category = get_category(category_id, db)
     db.delete(db_category)
     db.commit()
     return db_category
@@ -118,30 +126,49 @@ def get_enabled_for_parent(parent_id: int, db: Session):
     return query.filter(models.Category.disabled.is_(False)).all()
 
 
-def set_category_departments(id: int, departments_ids: List[int], db: Session):
-    delete_category_departments(id, db)
+def set_category_departments(
+    category_id: int, departments_ids: List[int], db: Session
+):
+    db_departments_ids = [
+        department.department_id
+        for department in get_category_departments(category_id, db)
+    ]
+
+    for department_id in db_departments_ids:
+        if department_id not in departments_ids:
+            delete_category_department(category_id, department_id, db)
+
     for department_id in departments_ids:
-        create(
-            db,
-            models.CategoryDepartments(
-                category_id=id, department_id=department_id
-            ),
-        )
+        if department_id not in db_departments_ids:
+            add_category_department(category_id, department_id, db)
+
     db.commit()
 
 
-def delete_category_departments(id: int, db: Session):
-    delete_departments = (
-        db.query(models.CategoryDepartments)
-        .filter(models.CategoryDepartments.category_id == id)
-        .all()
+def add_category_department(category_id: int, department_id, db: Session):
+    create(
+        db,
+        models.CategoryDepartments(
+            category_id=category_id, department_id=department_id
+        ),
     )
-    for item in delete_departments:
-        db.delete(item)
-    db.commit()
+    for category in get_children_categories(category_id, db):
+        add_category_department(category.id, department_id, db)
 
 
-def get_category_departments(id: int, db: Session):
+def delete_category_department(category_id: int, department_id, db: Session):
+    db.query(models.CategoryDepartments).filter(
+        models.CategoryDepartments.category_id == category_id
+    ).filter(
+        models.CategoryDepartments.department_id == department_id
+    ).delete()
+    for category in get_children_categories(category_id, db):
+        delete_category_department(category.id, department_id, db)
+
+
+def get_category_departments(
+    id: int, db: Session
+) -> List[models.CategoryDepartments]:
     return (
         db.query(models.CategoryDepartments.department_id)
         .filter(models.CategoryDepartments.category_id == id)
