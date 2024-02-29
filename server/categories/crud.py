@@ -7,6 +7,9 @@ from categories import models, schemas
 from documents.models import Document
 
 
+MAX_CATEGORY_LEVEL = 3
+
+
 def create_root_category(category: schemas.CategoryCreate, db: Session):
     db_category = create(
         db,
@@ -28,6 +31,9 @@ def create_root_category(category: schemas.CategoryCreate, db: Session):
 
 def create_category(category: schemas.CategoryCreate, db: Session):
     db_parent = get_category(category.parent_id, db)
+    if db_parent.level == MAX_CATEGORY_LEVEL:
+        raise Exception("Maximum category level reached")
+
     db_category = create(
         db,
         models.Category(
@@ -87,6 +93,9 @@ def delete_category(category_id: int, db: Session):
     for child_id in get_children_categories(category_id, db):
         delete_category(child_id.id, db)
 
+    db.query(models.CategoryDepartments).filter(
+        models.CategoryDepartments.category_id == category_id
+    ).delete()
     db_category = get_category(category_id, db)
     db.delete(db_category)
     db.commit()
