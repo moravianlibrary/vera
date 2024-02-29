@@ -314,6 +314,21 @@ const resources = {
         SyncFromCatalog: "Synchronizace z katalogu",
         "Sync from digitization registry": "Synchronizovat z registru digitalizace",
         SyncFromDigitizationRegistry: "Synchronizace z registru digitalizace",
+
+        "documents without CNB": "dokumentů bez ČNB",
+        "Number of found documents": "Počet nalezených dokumentů",
+        "Active filtering": "Aktivní filtr",
+        "Cancel filtering": "Zrušit filtr",
+        "Cancel document selection": "Zrušit výběr dokumentu",
+        "Delete selected documents": "Smazat vybrané dokumenty",
+        "Other options": "Ostatní možnosti",
+
+        "Edit distribution": "Upravit rozdelení",
+        "Category options": "Možnosti kategorie",
+        "Edit category": "Upravit kategorii",
+        "Delete category": "Smazat kategorii",
+        "Add child category": "Přidat podkategorii",
+        
     },
   },
 };

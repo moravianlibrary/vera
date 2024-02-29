@@ -394,6 +394,9 @@ def get_category_subtree(extraction_id, category: Category, db: Session):
             for child in crud.get_children_categories(category.id, db)
         ],
         count_pages=crud.get_pages_count(category.id, db),
+        count_documents_without_cnb=(
+            crud.get_documents_without_cnb_count(category.id, db)
+        ),
         count_documents_with_pages=(
             crud.get_documents_count(category.id, True, db)
         ),

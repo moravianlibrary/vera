@@ -15,6 +15,7 @@ interface DocumentsSearchContextProps {
     rootSearchNode: SearchGroup | undefined;
     activeQuery: DocumentsQuery | undefined;
     handleApplyFilter: () => void;
+    handleCancelFilter: () => void;
     handleSaveFilter: () => void;
     handleClearFilter: () => void;
     getTreeFieldOptions: (enumField: DocumentField) => TreeNode[];
@@ -24,11 +25,12 @@ interface DocumentsSearchContextProps {
 interface DocumentsSearchProviderProps {
     children: ReactNode;
     extractionId?: number | null;
+    categoryIds?: number[];
 }
 
 const DocumentsSearchContext = createContext<DocumentsSearchContextProps | undefined>(undefined);
 
-export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = ({ children, extractionId }) => {
+export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = ({ children, extractionId, categoryIds }) => {
     const [rootSearchNode, setRootSearchNode] = useState<SearchGroup>(SearchGroup.init());
     const [activeQuery, setActiveQuery] = useState<DocumentsQuery | undefined>(undefined);
 
@@ -38,13 +40,16 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
         setActiveQuery({ search_group: rootSearchNode });
     };
 
+    const handleCancelFilter = () => {
+        setActiveQuery(undefined);
+    };
+
     const handleSaveFilter = () => {
         localStorage.setItem('advanced_search', JSON.stringify(rootSearchNode));
     };
 
     const handleClearFilter = () => {
         setRootSearchNode(SearchGroup.createEmpty());
-        console.log(SearchGroup.createEmpty());
     };
 
     const getTreeFieldOptions = (enumField: DocumentField) => {
@@ -65,6 +70,7 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
         rootSearchNode,
         activeQuery,
         handleApplyFilter,
+        handleCancelFilter,
         handleSaveFilter,
         handleClearFilter,
         getTreeFieldOptions,
@@ -99,7 +105,13 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
                 console.error(error);
             });
         }
-    }, [extractionId])
+    }, [extractionId]);
+
+    useEffect(() => {
+        if (categoryIds && categoryIds.length > 0) {
+            setActiveQuery({ search_group: SearchGroup.createCategoryIdSearch(categoryIds) });
+        }
+    }, [categoryIds]);
 
     return (
         <DocumentsSearchContext.Provider value={contextValue}>

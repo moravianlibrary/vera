@@ -3,9 +3,10 @@ import { Card } from "primereact/card";
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { GroupOption, SearchGroup } from "../../../contexts/documents/search/SearchNodes";
+import { SearchGroup } from "../../../contexts/documents/search/SearchNodes";
 import AdvancedSearchNode from "./AdvancedSearchNode";
 import React from "react";
+import { GroupOption } from "../../../types/SearchTypes";
 
 const MAX_GROUP_LEVEL = 2
 const MAX_FIELD_LEVEL = MAX_GROUP_LEVEL + 1;
@@ -23,23 +24,23 @@ const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = ({ data, index, 
     const options = Object.keys(GroupOption).map(option => (
         { value: option, label: t(option === GroupOption.MatchAll ? "Match all" : "Match any") }));
     const [option, setOption] = useState(data.option);
-    const [subRules, setSubRules] = useState(data.subRules);
+    const [subRules, setSubRules] = useState(data.sub_rules);
 
-    useEffect(() => setSubRules(data.subRules), [data]);
+    useEffect(() => setSubRules(data.sub_rules), [data]);
 
     const handleCreateRuleGroup = () => {
         data.createSubGroup();
-        setSubRules(data.subRules);
+        setSubRules(data.sub_rules);
     };
     
     const handleCreateFieldRule = () => {
         data.createSubField();
-        setSubRules(data.subRules);
+        setSubRules(data.sub_rules);
     };
 
     const handleDeleteSubRule = (index: number) => {
         data.deleteSubRule(index);
-        setSubRules(data.subRules);
+        setSubRules(data.sub_rules);
     };
 
     const handleSelectOption = (e: DropdownChangeEvent) => {

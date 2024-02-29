@@ -25,6 +25,7 @@ class CategoryNode(Category):
     children: List[SerializeAsAny[Category]]
     count_pages: int
     count_documents_with_pages: int
+    count_documents_without_cnb: int
     count_documents: int
 
 
@@ -35,4 +36,5 @@ class CategoryPercentage(BaseModel):
 
 class CategoryDescriptor(CategoryBase):
     id: int
-    parent_category: Optional['CategoryDescriptor'] = None
+    parent_category: Optional["CategoryDescriptor"] = None
+    children_categories: Optional[List["CategoryDescriptor"]] = None

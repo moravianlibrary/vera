@@ -1,7 +1,8 @@
 import React from "react";
-import { RuleType, SearchField, SearchGroup } from "../../../contexts/documents/search/SearchNodes";
+import { SearchField, SearchGroup } from "../../../contexts/documents/search/SearchNodes";
 import AdvancedSearchField from "./AdvancedSearchField";
 import AdvancedSearchGroup from "./AdvancedSearchGroup";
+import { RuleType } from "../../../types/SearchTypes";
 
 function getBackground(level: number) {
     switch (level) {

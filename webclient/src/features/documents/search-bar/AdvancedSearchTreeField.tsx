@@ -1,10 +1,11 @@
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TreeOption, SearchTreeField, TextOption } from "../../../contexts/documents/search/SearchNodes";
+import { SearchTreeField } from "../../../contexts/documents/search/SearchNodes";
 import React from "react";
 import { useDocumentsSearch } from "../../../contexts/documents/search/DocumentsSearchContext";
 import { TreeSelect, TreeSelectChangeEvent, TreeSelectSelectionKeysType } from "primereact/treeselect";
+import { TextOption, TreeOption } from "../../../types/SearchTypes";
 
 interface AdvancedSearchTreeFieldProps {
     data: SearchTreeField;

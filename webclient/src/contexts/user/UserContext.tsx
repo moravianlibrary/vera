@@ -43,7 +43,6 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     const getCurrentUser = async () => {
         try {
             const user = await ApiUser.getCurrentUser();
-            console.log(user);
             setUserData(user.data);
         } catch (error) {
             console.error(error);

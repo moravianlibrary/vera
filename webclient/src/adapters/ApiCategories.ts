@@ -17,8 +17,9 @@ interface Category extends CreateCategory {
     level: number;
 
     count_pages: number;
-    count_documents_with_pages: number;
     count_documents: number;
+    count_documents_with_pages: number;
+    count_documents_without_cnb: number;
 
     
     extracted_pages_count?: number;
@@ -32,6 +33,7 @@ interface AssignableCategory {
     name: string;
     description: string | null;
     parent_category?: AssignableCategory | null;
+    children_categories?: AssignableCategory[] | null;
 }
 
 interface CategoryPercentage {
@@ -65,6 +67,10 @@ namespace ApiCategories {
 
     export function getRootCategories() {
         return axiosInstance.get<AssignableCategory[]>("/categories/descriptors?root=true", { headers: authHeader() });
+    }
+
+    export function getCategory(categoryId: number) {
+        return axiosInstance.get<AssignableCategory>(`/categories/descriptors/${categoryId}`, { headers: authHeader() });
     }
 
     export function createCategory(category: CreateCategory) {

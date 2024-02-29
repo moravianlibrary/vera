@@ -9,7 +9,6 @@ import { useDocuments } from "../../contexts/documents/DocumentsContext";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { TaskType } from "../../types/TaskType";
 import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
-import { ca } from "date-fns/locale";
 import { ConfirmDialog } from "primereact/confirmdialog";
 
 interface DocumentsHeaderProps {
@@ -19,8 +18,16 @@ interface DocumentsHeaderProps {
 
 const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const { t } = useTranslation();
-    const { selectedDocuments, handleStartTask, handleSelectDocuments,
-        handleDeleteDocuments, handleUpdateCategory, handleExportDocuments } = useDocuments();
+    const {
+        numFound,
+        selectedDocuments,
+        handleStartTask,
+        handleSelectDocuments,
+        selectAll,
+        handleDeleteDocuments,
+        handleUpdateCategory,
+        handleExportDocuments
+    } = useDocuments();
     const { categories } = useAssignableCategories();
 
     const [advancedSearch, setAdvancedSearch] = useState(false);
@@ -107,7 +114,7 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
         <React.Fragment>
             <div className="flex flex-column align-items-end">
                 <div>
-                <TieredMenu model={taskSelectorItems} popup ref={taskSelectorMenuRef} id="popup_menu_left" />
+                <TieredMenu className="w-auto" model={taskSelectorItems} popup ref={taskSelectorMenuRef} id="popup_menu_left" />
                 <Button 
                     // icon="pi pi-th-large"
                     icon="pi pi-list"
@@ -117,18 +124,24 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
                     onClick={toggleTaskSelectorMenu}
                     aria-controls="popup_menu_left"
                     aria-haspopup
+                    tooltip={t('Other options')}
+                    tooltipOptions={{ position: 'top', showDelay: 500 }}
                 />
                 <Button icon="pi pi-trash" 
                     className="p-button-rounded p-button-text"
                     severity={hasSelection ? "danger" : "secondary"}
                     disabled={!hasSelection}
                     onClick={() => setConfirmDeletionVisible(true)}
+                    tooltip={t('Delete selected documents')}
+                    tooltipOptions={{ position: 'top', showDelay: 500 }}
                 />
                 <Button icon="pi pi-times" 
                     className="p-button-rounded p-button-text"
                     severity={hasSelection ? "info" : "secondary"}
                     disabled={!hasSelection}
                     onClick={() => handleSelectDocuments([])}
+                    tooltip={t('Cancel document selection')}
+                    tooltipOptions={{ position: 'top', showDelay: 500 }}
                 />
                 <ConfirmDialog
                     visible={confirmDeletionVisible}
@@ -142,7 +155,7 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
                     accept={handleDeleteDocuments}
                 />
                 </div>
-                <span className="text-sm text-gray-700">{t('Number of selected documents')}: {selectedDocuments.length}</span>
+                <span className="text-sm text-gray-700">{t('Number of selected documents')}: {selectAll ? numFound : selectedDocuments.length}</span>
             </div>
         </React.Fragment>
     );

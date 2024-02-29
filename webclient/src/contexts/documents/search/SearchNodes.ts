@@ -1,57 +1,16 @@
-import { fi } from "date-fns/locale";
+import { GroupOption, NumberOption, RuleType, TextOption, TreeOption } from "../../../types/SearchTypes";
 import { DocumentField } from "./DocumentSearchField";
-
-export enum RuleType {
-    Group = 'Group',
-    Field = 'Field',
-    TextField = 'TextField',
-    NumberField = 'NumberField',
-    TreeField = 'TreeField',
-}
-
-export enum GroupOption {
-    MatchAll = 'MatchAll',
-    MatchAny = 'MatchAny'
-}
-
-export enum TextOption {
-    Equals = "Equals",
-    StartsWith = "StartsWith",
-    EndsWith = "EndsWith",
-    Contains = "Contains",
-    NotContains = "NotContains",
-    NotEquals = "NotEquals",
-    IsNull = "IsNull",
-    IsNotNull = "IsNotNull",
-};
-
-export enum NumberOption {
-    EqualTo = "EqualTo",
-    NotEqualTo = "NotEqualTo",
-    LessThan = "LessThan",
-    MoreThan = "MoreThan",
-    Between = "Between",
-    IsNull = "IsNull",
-    IsNotNull = "IsNotNull",
-};
-
-export enum TreeOption {
-    IsIn = "IsIn",
-    IsNotIn = "IsNotIn",
-    IsNull = "IsNull",
-    IsNotNull = "IsNotNull",
-};
 
 type SubRule = SearchGroup | SearchField;
 
 export interface SearchGroupParams {
     level: number;
     option: GroupOption;
-    subRules: SubRule[];
+    sub_rules: SubRule[];
 }
 
 type FieldOption = TextOption | NumberOption | TreeOption | undefined;
-type Value = string | number | [number | undefined, number | undefined] | undefined;
+type Value = string | number | [number | undefined, number | undefined] | number[] | undefined;
 
 interface SearchFieldParams {
     level: number;
@@ -81,13 +40,13 @@ export class SearchNode {
 
 export class SearchGroup extends SearchNode implements SearchGroupParams {
     option: GroupOption;
-    subRules: SubRule[];
+    sub_rules: SubRule[];
 
     constructor(params: SearchGroupParams) {
         super(RuleType.Group, params.level)
         this.option = params.option;
-        this.subRules = params.subRules
-            ? params.subRules.map(subRule => {
+        this.sub_rules = params.sub_rules
+            ? params.sub_rules.map(subRule => {
                 switch (subRule.type) {
                     case RuleType.Group: return new SearchGroup(subRule as SearchGroupParams);
                     case RuleType.TextField: return new SearchTextField(subRule as SearchFieldParams);
@@ -105,40 +64,44 @@ export class SearchGroup extends SearchNode implements SearchGroupParams {
     }
 
     isEmpty() {
-        return this.subRules?.length === 0;
+        return this.sub_rules?.length === 0;
     }
 
     createSubGroup() {
-        const newGroup = new SearchGroup({ level: this.level + 1, option: DEFAULT_GROUP_OPTION, subRules: [] });
-        this.subRules = [...this.subRules, newGroup];
+        const newGroup = new SearchGroup({ level: this.level + 1, option: DEFAULT_GROUP_OPTION, sub_rules: [] });
+        this.sub_rules = [...this.sub_rules, newGroup];
     }
 
     createSubField() {
         const newField = SearchField.create(RuleType.Field, this.level + 1);
-        this.subRules = [...this.subRules, newField];
+        this.sub_rules = [...this.sub_rules, newField];
     }
 
     updateSubRule(subRule: SubRule, index: number) {   
         const updatedSubRules = [
-            ...this.subRules.slice(0, index),
+            ...this.sub_rules.slice(0, index),
             subRule,
-            ...this.subRules.slice(index + 1)
+            ...this.sub_rules.slice(index + 1)
         ];
-        console.log(this.subRules);
+        console.log(this.sub_rules);
         console.log(updatedSubRules);
-        this.subRules = updatedSubRules;
+        this.sub_rules = updatedSubRules;
     }
 
     deleteSubRule(index) {
         const updatedSubRules = [
-            ...this.subRules.slice(0, index),
-            ...this.subRules.slice(index + 1)
+            ...this.sub_rules.slice(0, index),
+            ...this.sub_rules.slice(index + 1)
         ];
-        this.subRules = updatedSubRules;
+        this.sub_rules = updatedSubRules;
+    }
+
+    static createCategoryIdSearch(categoryIds: number[]) {
+        return new SearchGroup({ level: 0, option: DEFAULT_GROUP_OPTION, sub_rules: [SearchField.createCategoryIdField(categoryIds)] });
     }
 
     static createEmpty() {
-        return new SearchGroup({ level: 0, option: DEFAULT_GROUP_OPTION, subRules: [] });
+        return new SearchGroup({ level: 0, option: DEFAULT_GROUP_OPTION, sub_rules: [] });
     }
 
     static init() {
@@ -182,6 +145,10 @@ export class SearchField extends SearchNode implements SearchFieldParams {
         this.field = field;
         this.option = DEFAULT_FIELDS_OPTIONS[type];
         this.value = value;
+    }
+
+    static createCategoryIdField(categoryIds: number[]) {
+        return SearchField.create(RuleType.TreeField, 0, DocumentField.Category, TreeOption.IsIn, categoryIds);
     }
 }
 
