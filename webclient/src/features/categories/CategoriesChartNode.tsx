@@ -61,6 +61,7 @@ const CategoryNodeBody: React.FC<CategoryNodeBodyProps> = ({ node }) => {
                         severity='secondary'
                         text
                         tooltip={t('Show in documents')}
+                        tooltipOptions={{ position: 'right', showDelay: 500 }}
                     >
                         <i className='pi pi-external-link p-1' />
                     </Button>

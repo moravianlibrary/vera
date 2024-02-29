@@ -322,6 +322,12 @@ const resources = {
         "Cancel document selection": "Zrušit výběr dokumentu",
         "Delete selected documents": "Smazat vybrané dokumenty",
         "Other options": "Ostatní možnosti",
+
+        "Edit distribution": "Upravit rozdelení",
+        "Category options": "Možnosti kategorie",
+        "Edit category": "Upravit kategorii",
+        "Delete category": "Smazat kategorii",
+        "Add child category": "Přidat podkategorii",
         
     },
   },

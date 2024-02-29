@@ -7,12 +7,15 @@ import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext
 import { ActionAccessComponent } from "../../services/AccessService";
 import { ActionType } from "../../types/ActionType";
 import { UserModel } from "../../contexts/user/UserModel";
+import { useTranslation } from "react-i18next";
 
 interface CateogryPercentageProps {
     node: CategoryNode
 }
 
 const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
+    const { t } = useTranslation();
+
     const {
         handleEditPercentage,
         editPercentageNodes,
@@ -82,7 +85,10 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
                 evaluate={canEditDepartmentCategory}
             >
                 <Button className="p-1" text severity="secondary"
-                    onClick={() => handleEditPercentage(node)}>
+                    onClick={() => handleEditPercentage(node)}
+                    tooltip={t('Edit distribution')}
+                    tooltipOptions={{ position: 'right', showDelay: 500 }}
+                >
                     <i className="pi pi-pencil" />
                 </Button>
             </ActionAccessComponent>
