@@ -24,6 +24,8 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
         handleStartTask,
         handleSelectDocuments,
         selectAll,
+        handleSelectAllDocuments,
+        handleCancelSelection,
         handleDeleteDocuments,
         handleUpdateCategory,
         handleExportDocuments
@@ -139,7 +141,7 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
                     className="p-button-rounded p-button-text"
                     severity={hasSelection ? "info" : "secondary"}
                     disabled={!hasSelection}
-                    onClick={() => handleSelectDocuments([])}
+                    onClick={handleCancelSelection}
                     tooltip={t('Cancel document selection')}
                     tooltipOptions={{ position: 'top', showDelay: 500 }}
                 />

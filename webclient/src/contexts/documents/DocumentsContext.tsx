@@ -15,6 +15,7 @@ interface DocumentsContextProps {
     selectedDocuments: Document[];
     handleSelectDocuments: (selectedDocuments: DocumentModel[]) => void;
     handleSelectAllDocuments: () => void;
+    handleCancelSelection: () => void;
     selectAll: boolean;
     handleStartTask: (taskType: TaskType) => void;
     handleDeleteDocuments: () => void;
@@ -131,6 +132,11 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
         setSelectAll(!selectAll);
     };
 
+    const handleCancelSelection = () => {
+        setSelectedDocuments([]);
+        setSelectAll(false);
+    };
+
     const handleStartTask = async (taskType: TaskType) => {
         const selectQuery = selectAll
                     ? query ? query : { search_group: SearchGroup.createEmpty() }
@@ -213,6 +219,7 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
         selectedDocuments,
         handleSelectDocuments,
         handleSelectAllDocuments,
+        handleCancelSelection,
         selectAll,
         handleStartTask,
         handleDeleteDocuments,
