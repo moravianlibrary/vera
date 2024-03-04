@@ -30,6 +30,7 @@ class DocumentModel implements Document {
 
     pages_count: number | null;
     size: string | null;
+    locationUri: string | null;
 
     publishers: string[];
     publishing_places: string[];
@@ -75,6 +76,7 @@ class DocumentModel implements Document {
 
         this.pages_count = data.pages_count;
         this.size = data.size;
+        this.locationUri = data.locationUri;
 
         this.publishers = data.publishers;
         this.publishing_places = data.publishing_places;
@@ -132,6 +134,7 @@ class DocumentModel implements Document {
             {label: "Pages count", value: this.pages_count},
             {label: "Pages count predicted", value: this.pages_count_predicted},
             {label: "Size", value: this.size},
+            {label: "Location URI", value: this.locationUri},
             {label: "Publisher", value: this.publisher},
             {label: "Publishing place", value: this.publishing_place},
             {label: "Publishing year", value: this.publishing_year},
