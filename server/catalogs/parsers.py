@@ -10,7 +10,6 @@ from catalogs.enums import (
 from catalogs.schemas import CatalogDocument, CatalogIssue, Frequency
 
 
-PAGE_COUNT_FORMAT = r"^(\d+) s\..*"
 MATERIAL_TYPE_MAPPING = {
     "BK": MaterialType.Book,
     "CR": MaterialType.ContinuingResource,
@@ -18,6 +17,15 @@ MATERIAL_TYPE_MAPPING = {
     "MP": MaterialType.Map,
     "MU": MaterialType.Music,
 }
+
+PAGE_COUNT_FORMAT = (
+    r"^\s*(?:\[?(?:XC|xc|XL|xl|L?X{0,3}|l?x{0,3})"
+    r"(?:IX|ix|IV|iv|V?I{0,3}|v?i{0,3})\]?\s*-?\s*)?"
+    r"(\d+)\s*"
+    r"(?:[,-]\s*\[?(?:\d+|(?:XC|xc|XL|xl|L?X{0,3}|l?x{0,3})"
+    r"(?:IX|ix|IV|iv|V?I{0,3}|v?i{0,3}))\]?)?\s*"
+    r"(s\.|stran).*"
+)
 
 
 def parse_page_count(extent: Optional[str]) -> Optional[int]:
@@ -67,6 +75,7 @@ def from_aleph_document(
         bundle=issue.bundle if one_issue else None,
         pages_count=parse_page_count(aleph_document.extent),
         size=aleph_document.size,
+        locationUri=aleph_document.locationUri,
         publishers=aleph_document.publishers,
         publishing_places=aleph_document.publishing_places,
         publisher=aleph_document.publisher,

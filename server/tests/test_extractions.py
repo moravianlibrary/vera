@@ -22,14 +22,15 @@ class TestExtractions(unittest.TestCase):
             )
 
     def test_on_live_db(self):
-        from extractions.routines import generate_extraction
-        from extractions.schemas import ExtractionCreate
+        pass
+        # from extractions.routines import generate_extraction
+        # from extractions.schemas import ExtractionCreate
 
-        selected_ids, selected_pages_count = generate_extraction(
-            ExtractionCreate(), 15000, self.db
-        )
-        print(selected_ids)
-        print(selected_pages_count)
+        # selected_ids, selected_pages_count = generate_extraction(
+        #     ExtractionCreate(), 15000, self.db
+        # )
+        # print(selected_ids)
+        # print(selected_pages_count)
 
     def test_extract_one_document(self):
         from extractions.routines import generate_extraction

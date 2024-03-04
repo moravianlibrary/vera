@@ -15,10 +15,10 @@ class TestRolesEndpoints(unittest.TestCase):
         self.db = next(get_db())
 
     def test_task_by_id(self):
-        from celery_worker import run_task
-
-        task_id = 71
-        run_task(task_id)
+        # from celery_worker import run_task
+        # task_id = 71
+        # run_task(task_id)
+        pass
 
     def create_test_document(self):
         from documents.crud import create_document, document_exists

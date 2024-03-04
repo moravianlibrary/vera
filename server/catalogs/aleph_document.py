@@ -174,6 +174,11 @@ class AlephDocument:
         return self.get_value("300", "c")
 
     @property
+    def locationUri(self) -> Optional[str]:
+        values = self.get_values("856", "u", ind1="4", ind2="1")
+        return values[0] if values else None
+
+    @property
     def frequencies(self) -> List[Dict[str, Optional[str]]]:
         """Returns a list of dictionaries containing
         frequency and date information.
@@ -229,6 +234,7 @@ class AlephDocument:
             f"extent: {self.extent}",
             f"additional_physical_data: {self.additional_physical_data}",
             f"size: {self.size}",
+            f"locationUri: {self.locationUri}",
             f"frequencies: {self.frequencies}",
             f"issues:\n\n{issues_str}",
         ]

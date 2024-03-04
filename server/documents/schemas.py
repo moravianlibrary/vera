@@ -38,6 +38,7 @@ class DocumentBase(BaseModel):
 
     pages_count: Optional[int] = None
     size: Optional[str] = None
+    locationUri: Optional[str] = None
 
     publishers: Optional[List[str]] = None
     publishing_places: Optional[List[str]] = None
@@ -73,6 +74,7 @@ class DocumentCreate(DocumentBase):
             bundle=catalog_document.bundle,
             pages_count=catalog_document.pages_count,
             size=catalog_document.size,
+            locationUri=catalog_document.locationUri,
             publishers=catalog_document.publishers,
             publishing_places=catalog_document.publishing_places,
             publisher=catalog_document.publisher,
@@ -109,6 +111,7 @@ class DocumentCreate(DocumentBase):
             bundle=catalog_issue.bundle,
             pages_count=catalog_document.pages_count,
             size=catalog_document.size,
+            locationUri=catalog_document.locationUri,
             publishers=catalog_document.publishers,
             publishing_places=catalog_document.publishing_places,
             publisher=catalog_document.publisher,
