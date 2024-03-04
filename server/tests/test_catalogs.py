@@ -180,3 +180,18 @@ class TestDigitizationRegister(unittest.TestCase):
         self.assertEqual(
             result.create_result, DocumentCreateResult.AlreadyDigitized
         )
+
+    def test_parse_pages_count(self):
+        from catalogs.parsers import parse_page_count
+
+        self.assertEqual(parse_page_count("66 s."), 66)
+        self.assertEqual(parse_page_count("17 s. :"), 17)
+        self.assertEqual(parse_page_count("86 - [II] s. "), 86)
+        self.assertEqual(parse_page_count("[I]-16-[III] s. ;"), 16)
+        self.assertEqual(parse_page_count("41, [i] s. ;"), 41)
+        self.assertEqual(parse_page_count("22, [3] s. ;"), 22)
+        self.assertEqual(parse_page_count("55, 1 s., 3 l. ;"), 55)
+        self.assertEqual(parse_page_count("67, [2] s. :"), 67)
+        self.assertEqual(parse_page_count("27 stran :"), 27)
+        self.assertIsNone(parse_page_count("12 sv."))
+        self.assertIsNone(parse_page_count("7 sv."))
