@@ -336,6 +336,12 @@ class TestDocumentsEndpoints(unittest.TestCase):
                 issue["barcode"] == barcode, issue["already_exists"]
             )
 
+        self.assertEqual(
+            document["locationUri"],
+            "http://www.digitalniknihovna.cz/mzk/"
+            "uuid/uuid:3e68f1f0-9d7f-11e4-a2db-005056825209",
+        )
+
     def test_insert_with_frequencies(self):
         sysno1 = "MZK01-000165329"
         sysno2 = "MZK01-000230291"

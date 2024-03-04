@@ -40,6 +40,7 @@ class Document(Base):
 
     pages_count = Column(Integer)
     size = Column(String)
+    locationUri = Column(String)
 
     publisher = Column(String)
     publishing_place = Column(String)

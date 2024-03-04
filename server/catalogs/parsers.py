@@ -75,6 +75,7 @@ def from_aleph_document(
         bundle=issue.bundle if one_issue else None,
         pages_count=parse_page_count(aleph_document.extent),
         size=aleph_document.size,
+        locationUri=aleph_document.locationUri,
         publishers=aleph_document.publishers,
         publishing_places=aleph_document.publishing_places,
         publisher=aleph_document.publisher,

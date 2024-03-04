@@ -195,3 +195,20 @@ class TestDigitizationRegister(unittest.TestCase):
         self.assertEqual(parse_page_count("27 stran :"), 27)
         self.assertIsNone(parse_page_count("12 sv."))
         self.assertIsNone(parse_page_count("7 sv."))
+
+    def test_parse_location_uri(self):
+        identifier = Identifier(
+            identifier_type=IdentifierType.Sysno, value="MZK01-000258273"
+        )
+        catalog_response = generate_catalog_document(identifier)
+        document = catalog_response.document
+        response_status = catalog_response.response_status
+
+        self.assertEqual(response_status, CatalogResponseStatus.Success)
+
+        self.assertIsNotNone(document.locationUri)
+        self.assertEqual(
+            document.locationUri,
+            "http://www.digitalniknihovna.cz/mzk/uuid/"
+            "uuid:21834a15-a176-11e0-8965-0050569d679d",
+        )
