@@ -29,6 +29,7 @@ UPDATE_COLUMN_NAMES = [
     "publishing_place",
     "publishing_year",
     "languages",
+    "locationUri",
 ]
 FREQUENCIES_COLUMN_NAME = "frequencies"
 

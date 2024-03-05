@@ -113,7 +113,7 @@ def sync_from_catalog(task_id: int, owner: str, db: Session):
                 f"Document with identifier {identifier} not found in catalog"
             )
         newDocument = None
-        if document.issuance_type:
+        if catalog_response.document.issues:
             issue = [
                 issue
                 for issue in catalog_response.document.issues
