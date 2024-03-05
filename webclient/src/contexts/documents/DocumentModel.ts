@@ -3,10 +3,12 @@ import { Document, Frequency } from "../../adapters/ApiDocuments";
 import { DigitizationState } from "../../types/DigitizationState";
 import { MaterialType } from "../../types/MaterialType";
 import { IssuanceType } from "../../types/IssuanceType";
+import { DigitizationRegistry } from "../../services/DigitizationRegistry";
 
 interface DocumentTooltipField {
     label: string;
     value: string | number | null;
+    uri?: string | null;
 }
 
 class DocumentModel implements Document {
@@ -112,13 +114,17 @@ class DocumentModel implements Document {
         ).join('\n') : null;
     }
 
+    getAlephUri() {
+        return `http://aleph.mzk.cz/OAI?verb=GetRecord&identifier=oai:aleph.mzk.cz:${this.sysno}&metadataPrefix=marc21`;
+    }
+
     toJson() {
     }
 
     getTooltipFieldList(t) {
         const data: DocumentTooltipField[] = [
             {label: "Id", value: this.id},
-            {label: "System number", value: this.sysno},
+            {label: "System number", value: this.sysno, uri: this.getAlephUri()},
             {label: "Material type", value: t(this.material_type)},
             {label: "Issuance type", value: t(this.issuance_type)},
             {label: "Year", value: this.year},
@@ -130,11 +136,11 @@ class DocumentModel implements Document {
             {label: "CNB", value: this.cnb},
             {label: "ISBN/ISSN", value: this.isbn_issn},
             {label: "Title", value: this.title},
-            {label: "Digitization state", value: t(this.digitization_state)},
+            {label: "Digitization state", value: t(this.digitization_state), uri: DigitizationRegistry.getDocumentLink(this.barcode)},
             {label: "Pages count", value: this.pages_count},
             {label: "Pages count predicted", value: this.pages_count_predicted},
             {label: "Size", value: this.size},
-            {label: "Location URI", value: this.locationUri},
+            {label: "Location URI", value: this.locationUri, uri: this.locationUri},
             {label: "Publisher", value: this.publisher},
             {label: "Publishing place", value: this.publishing_place},
             {label: "Publishing year", value: this.publishing_year},

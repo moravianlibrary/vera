@@ -16,6 +16,7 @@ import { useOverlayScrollListener } from 'primereact/hooks';
 import { Menu } from 'primereact/menu';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { useToast } from '../../contexts/toast/ToastContext';
+import { Dialog } from 'primereact/dialog';
 
 
 interface DocumentsTableProps {
@@ -167,30 +168,31 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc
     const { handleDeleteDocument } = useDocuments();
 
     const op = useRef<OverlayPanel>(null);
+    const [panelVisible, setPanelVisible] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState(false);
 
     const handleAcceptDelete = () => {
         handleDeleteDocument(doc)
         op.current!.hide();
-    }
+    };
 
     return (
         <div className='document-details-body flex' style={{ position: 'relative' }}>
             <Button className='details-button'
-                text
-                onClick={(event) => op.current!.toggle(event)}
+                text={!panelVisible}
+                onClick={() => setPanelVisible(!panelVisible)}
             >
-                {/* <i className='pi pi-info-circle'/> */}
                 <i className='pi pi-book'/>
-                {/* <i className='pi pi-ellipsis-v'/> */}
             </Button>
-            <OverlayPanel
-                ref={op}
-                // style={{ maxWidth: '500px' }}
-                style={{ width: '500px' }}
-                showCloseIcon
-                appendTo={document.getElementById('.documents-details-body') as HTMLElement}
-                // appendTo='self'
+            <Dialog
+                id={`document-details-${doc.id}`}
+                style={{ maxWidth: '600px', marginLeft: '96px' }}
+                visible={panelVisible}
+                onHide={() => setPanelVisible(false)}
+                modal={false}
+                position='left'
+                minX={96}
+                minY={96}
             >
                 <div className='flex flex-column gap-3 align-items-start'>
                     <DocumentDetailsTooltip document={doc} />
@@ -214,7 +216,7 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc
                         accept={handleAcceptDelete}
                     />
                 </div>
-            </OverlayPanel>
+            </Dialog>
         </div>
     );
 };
@@ -229,13 +231,22 @@ const DocumentDetailsTooltip: React.FC<DocumentDetailsProps> = ({ document }) =>
     };
 
     return (
-        <div>
+        <div className="flex flex-column gap-1">
             {document.getTooltipFieldList(t).map(field => {
                 return (
-                    <div key={field.label} className='flex justify-content-between gap-8'>
+                    <div key={field.label} className='flex justify-content-between gap-5 m-1'>
                         <label>{t(field.label)}:</label>
-                        <div className='flex justify-content-between gap-1'>
-                            <span className='p-1 max-w-19rem'>{field.value as string}</span>
+                        <div className='flex gap-1'>
+                            <span className='p-0 max-w-23rem'>{field.value as string}</span>
+                            {field.uri &&
+                            <Button
+                                className='p-0 text-xs align-content-center'
+                                severity='info'
+                                text
+                                onClick={() => window.open(field.uri as string, '_blank')}
+                            >
+                                <i className='pi pi-external-link p-0' />
+                            </Button>}
                             <Button
                                 className='p-0 text-xs align-content-center'
                                 severity='info'
