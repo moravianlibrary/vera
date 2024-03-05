@@ -254,6 +254,7 @@ const resources = {
 
         "Material type": "Typ materialu",
         "Year": "Rok",
+        "Unit": "Vydáni",
         "Bundle": "Svazek čísel",
         "Issuance type": "Typ vydáni",
         "CNB": "ČNB",
