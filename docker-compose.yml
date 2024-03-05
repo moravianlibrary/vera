@@ -32,6 +32,7 @@ services:
     environment:
       - BROKER_URL=redis://redis:6379/0
       - POSTGRES_HOST=postgres
+      - TIMEZONE=Europe/Prague
     depends_on:
       - postgres
       - redis
