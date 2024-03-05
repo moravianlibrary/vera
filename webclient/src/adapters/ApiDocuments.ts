@@ -36,6 +36,7 @@ interface DocumentBase {
 
     pages_count: number | null;
     size: string | null;
+    locationUri: string | null;
 
     publishers: string[];
     publishing_places: string[];

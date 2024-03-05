@@ -59,6 +59,7 @@ class CatalogDocument(BaseModel):
     pages_count: Optional[int] = None
     # additional_physical_data: Optional[str] = None
     size: Optional[str] = None
+    locationUri: Optional[str] = None
 
     publishers: List[str] = []
     publishing_places: List[str] = []
