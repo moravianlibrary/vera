@@ -186,13 +186,13 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc
             </Button>
             <Dialog
                 id={`document-details-${doc.id}`}
-                style={{ maxWidth: '600px', marginLeft: '96px' }}
+                style={{ maxWidth: '600px', marginLeft: '96px', marginTop: '48px' }}
                 visible={panelVisible}
                 onHide={() => setPanelVisible(false)}
                 modal={false}
                 position='left'
                 minX={96}
-                minY={96}
+                minY={48}
             >
                 <div className='flex flex-column gap-3 align-items-start'>
                     <DocumentDetailsTooltip document={doc} />
