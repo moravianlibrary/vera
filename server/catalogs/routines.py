@@ -116,6 +116,14 @@ def get_document_by_identifier(
     return document, CatalogResponseStatus.Success
 
 
+def get_document_by_identifier_type(
+    identifier_type: IdentifierType, value: str
+):
+    return get_document_by_identifier(
+        Identifier(identifier_type=identifier_type, value=value)
+    )
+
+
 def generate_catalog_document(identifier: Identifier):
     document, response_status = get_document_by_identifier(identifier)
     return CatalogResponse(

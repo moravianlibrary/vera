@@ -170,6 +170,7 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc
     const op = useRef<OverlayPanel>(null);
     const [panelVisible, setPanelVisible] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState(false);
+    const [dialogPosition, setDialogPosition] = useState({ top: 0, left: 0 });
 
     const handleAcceptDelete = () => {
         handleDeleteDocument(doc)
@@ -186,13 +187,13 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc
             </Button>
             <Dialog
                 id={`document-details-${doc.id}`}
-                style={{ maxWidth: '600px', marginLeft: '96px', marginTop: '48px' }}
+                style={{ maxWidth: '600px', marginLeft: '96px', marginTop: '48px', top: dialogPosition.top, left: dialogPosition.left }}
                 visible={panelVisible}
                 onHide={() => setPanelVisible(false)}
                 modal={false}
                 position='left'
                 minX={96}
-                minY={48}
+                // minY={48}
             >
                 <div className='flex flex-column gap-3 align-items-start'>
                     <DocumentDetailsTooltip document={doc} />
