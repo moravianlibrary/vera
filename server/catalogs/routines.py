@@ -45,7 +45,8 @@ class LRUCache:
 
     def put(self, sysno, document: CatalogDocument):
         if len(self.cache) >= self.capacity:
-            self.cache.popitem(last=False)
+            first_key = next(iter(self.cache))
+            self.cache.pop(first_key)
         self.cache[sysno] = document
         self.put_documents_by_barcode(document)
         self.save_cache()
@@ -118,7 +119,7 @@ def get_document_by_identifier(
 
 def get_document_by_identifier_type(
     identifier_type: IdentifierType, value: str
-):
+) -> Tuple[Optional[AlephDocument], CatalogResponseStatus]:
     return get_document_by_identifier(
         Identifier(identifier_type=identifier_type, value=value)
     )

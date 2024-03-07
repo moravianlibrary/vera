@@ -14,8 +14,7 @@ const DocumentsSearchBar = () => {
 
     const advancedSearchRef = useRef<OverlayPanel | null>(null);
 
-    const handleSearch = () => {
-    };
+    const handleSearch = () => {};
     console.log(activeQuery);
 
     return (
@@ -23,27 +22,36 @@ const DocumentsSearchBar = () => {
             <div className="p-inputgroup flex">
                 <InputText placeholder="Search" disabled />
                 <Button icon="pi pi-search" disabled />
-                <OverlayPanel ref={advancedSearchRef} >
-                    <AdvancedSearch/>   
+                <OverlayPanel ref={advancedSearchRef}>
+                    <AdvancedSearch />
                 </OverlayPanel>
-                <Button icon="pi pi-ellipsis-v"
+                <Button
+                    icon="pi pi-ellipsis-v"
                     disabled
                     outlined
-                    onClick={(e) => (advancedSearchRef.current as OverlayPanel).toggle(e)}
+                    onClick={(e) =>
+                        (advancedSearchRef.current as OverlayPanel).toggle(e)
+                    }
                 />
-                <Button icon="pi pi-times"
+                <Button
+                    icon="pi pi-times"
                     severity="danger"
                     disabled={activeQuery === undefined}
                     outlined={activeQuery === undefined}
                     onClick={handleCancelFilter}
-                    tooltip={t('Cancel filtering')}
-                    tooltipOptions={{ position: 'top', showDelay: 500 }}
+                    tooltip={t("Cancel filtering")}
+                    tooltipOptions={{ position: "top", showDelay: 500 }}
                 />
             </div>
             <div className="flex mt-1 text-sm justify-content-between">
-                <span className="text-gray-700">{t('Number of found documents')}: {numFound}</span>
-                {activeQuery &&
-                <span className="text-yellow-700">{t('Active filtering')}</span>}
+                <span className="text-gray-700">
+                    {t("Number of found documents")}: {numFound}
+                </span>
+                {activeQuery && (
+                    <span className="text-yellow-700">
+                        {t("Active filtering")}
+                    </span>
+                )}
             </div>
         </div>
     );

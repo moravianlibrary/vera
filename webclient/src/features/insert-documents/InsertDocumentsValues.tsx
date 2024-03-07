@@ -1,5 +1,7 @@
 import { Button } from "primereact/button";
+import { FileUpload } from "primereact/fileupload";
 import { InputText } from "primereact/inputtext";
+import { TabView, TabPanel } from "primereact/tabview";
 import { ProgressBar } from "primereact/progressbar";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,14 +9,21 @@ import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocume
 import React from "react";
 
 interface InsertDocumentsValuesProps {
-  onGoBack?: () => void;
-  onGoNext?: () => void;
-  onSkipNext?: () => void;
+    onGoBack?: () => void;
+    onGoNext?: () => void;
+    onSkipNext?: () => void;
 }
 
 const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
     const { t } = useTranslation();
-    const { identifier, value, setValue, acceptInput, chooseIssuesDocuments } = useInsertDocuments();
+    const {
+        identifier,
+        value,
+        setValue,
+        handleFileUpload,
+        acceptInput,
+        chooseIssuesDocuments,
+    } = useInsertDocuments();
 
     const [accepted, setAccepted] = useState(false);
 
@@ -25,7 +34,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
     };
 
     const handleKeyPress = (event) => {
-        if (event.key === 'Enter') {
+        if (event.key === "Enter") {
             handleAcceptInput();
         }
     };
@@ -34,7 +43,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
         if (props.onGoBack) {
             props.onGoBack();
         }
-    }
+    };
 
     useEffect(() => {
         if (accepted) {
@@ -50,33 +59,42 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
 
     return (
         <div className="flex flex-column gap-5">
-            {accepted && <ProgressBar mode="indeterminate" style={{ height: '6px', width: '100%' }} />}
-            <div className="flex align-items-center gap-2">
-                <span>{identifier.label}:</span>
-                <InputText
-                    autoFocus
-                    disabled={accepted}
-                    value={value}
-                    onChange={(e) => setValue(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                />
-                {/* <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{ display: 'none' }}
-                    onChange={(e) => {
-                        const selectedFile = e.target.files[0];
-                        if (selectedFile) {
-                            handleSelectFile(selectedFile);
-                        }
-                    }}
-                /> */}
-            </div>
+            <TabView className="">
+                <TabPanel header={t("Using value")}>
+                    {accepted && (
+                        <ProgressBar
+                            mode="indeterminate"
+                            style={{ height: "6px", width: "100%" }}
+                        />
+                    )}
+                    <div className="flex align-items-center gap-2">
+                        <span>{identifier.label}:</span>
+                        <InputText
+                            autoFocus
+                            disabled={accepted}
+                            value={value}
+                            onChange={(e) => setValue(e.target.value)}
+                            onKeyDown={handleKeyPress}
+                        />
+                    </div>
+                </TabPanel>
+                <TabPanel header={t("Using files")}>
+                    <div>
+                        <FileUpload
+                            mode="advanced"
+                            customUpload={true}
+                            uploadHandler={handleFileUpload}
+                            multiple
+                            maxFileSize={2000000}
+                        />
+                    </div>
+                </TabPanel>
+            </TabView>
             <div className="flex justify-content-between p-1">
                 <Button
                     icon="pi pi-caret-left"
                     outlined
-                    label={t('prev_step')}
+                    label={t("prev_step")}
                     onClick={handleGoBack}
                 />
                 <Button
@@ -84,7 +102,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
                     icon="pi pi-caret-right"
                     iconPos="right"
                     outlined
-                    label={t('next_step')}
+                    label={t("next_step")}
                     onClick={handleAcceptInput}
                 />
             </div>

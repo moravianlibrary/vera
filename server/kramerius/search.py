@@ -7,7 +7,8 @@ from kramerius.types import SolrConjuction, SolrField
 
 
 START_CURSOR_MARK = "*"
-PAGINATE_PAGE_SIZE = 1000
+PAGINATE_PAGE_SIZE = 100
+# PAGINATE_PAGE_SIZE = 1000
 
 SolrValue = Union[str, int, float, List, Tuple, Enum]
 

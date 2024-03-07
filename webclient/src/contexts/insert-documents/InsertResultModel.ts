@@ -102,6 +102,12 @@ class InsertResultModel {
                 .map(result => this.generateMessageForResult(t, result))
                 .filter((message): message is MessagesMessage => message !== null);
     }
+
+    isSuccessful(): boolean {
+        return this.document_responses
+            .filter(r => r.create_result !== DocumentCreateResult.Success)
+            .length === 0;
+    }
 }
 
 export default InsertResultModel;

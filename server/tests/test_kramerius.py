@@ -7,4 +7,5 @@ class TestPredictions(unittest.TestCase):
             find_missing_periodical_volumes,
         )
 
-        find_missing_periodical_volumes()
+        with open("/tmp/test_missing_volumes.csv", "w") as file:
+            find_missing_periodical_volumes(file)

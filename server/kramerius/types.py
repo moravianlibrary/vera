@@ -18,6 +18,13 @@ class SolrField(Enum):
 
     DateMin = "date.min"
     DateMax = "date.max"
+    DateRangeStartYear = "date_range_start.year"
+    DateRangeEndYear = "date_range_end.year"
+
+    Title = "title.search"
+    TitleSort = "title.sort"
+    PartNumberSort = "part.number.sort"
+    PartNumberString = "part.number.str"
 
 
 class SolrConjuction(Enum):

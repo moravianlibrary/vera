@@ -10,13 +10,26 @@ interface InsertDocumentsSettingsProps {
     onGoNext: () => void;
 }
 
-const InsertDocumentsSettings: React.FC<InsertDocumentsSettingsProps> = (props) => {
+const InsertDocumentsSettings: React.FC<InsertDocumentsSettingsProps> = (
+    props
+) => {
     const { t } = useTranslation();
-    const { identifiers, identifier, setIdentifier, categories, category, setCategory } = useInsertDocuments();
+    const {
+        identifiers,
+        identifier,
+        setIdentifier,
+        categories,
+        category,
+        setCategory,
+        insertAnother,
+        setInsertAnother,
+    } = useInsertDocuments();
 
     const renderLabel = (category: AssignableCategory) => {
         if (category.parent_category) {
-            return `${renderLabel(category.parent_category)} > ${category.name}`;
+            return `${renderLabel(category.parent_category)} > ${
+                category.name
+            }`;
         }
         return category.name;
     };
@@ -24,7 +37,7 @@ const InsertDocumentsSettings: React.FC<InsertDocumentsSettingsProps> = (props) 
     return (
         <div className="flex flex-column gap-3">
             <div className="flex align-items-center gap-3">
-                <span>{t('choose_identifier')}:</span>
+                <span>{t("choose_identifier")}:</span>
                 <Dropdown
                     options={identifiers}
                     value={identifier.value}
@@ -32,25 +45,29 @@ const InsertDocumentsSettings: React.FC<InsertDocumentsSettingsProps> = (props) 
                 />
             </div>
             <div className="flex align-items-center gap-3">
-                <span>{t('choose_category')}:</span>
+                <span>{t("choose_category")}:</span>
                 <Dropdown
-                    options={categories.map(category => (
-                        { label: renderLabel(category), value: category.id }
-                    ))}
+                    options={categories.map((category) => ({
+                        label: renderLabel(category),
+                        value: category.id,
+                    }))}
                     value={category}
                     onChange={(e) => setCategory(e.value)}
                 />
             </div>
-            {/* <div>
-                <span>{t('')}</span>
-                <Checkbox />
-            </div> */}
+            <div className="flex align-items-center gap-3">
+                <span>{t("Insert another upon successful insertion")}:</span>
+                <Checkbox
+                    checked={insertAnother}
+                    onChange={(e) => setInsertAnother(e.checked!)}
+                />
+            </div>
             <div className="flex justify-content-end p-1">
                 <Button
                     icon="pi pi-caret-right"
                     iconPos="right"
                     outlined
-                    label={t('next_step')}
+                    label={t("next_step")}
                     onClick={props.onGoNext}
                 />
             </div>
