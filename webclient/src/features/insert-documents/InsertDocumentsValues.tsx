@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import React from "react";
+import InsertDocumentsFiles from "./InsertDocumentsFiles";
 
 interface InsertDocumentsValuesProps {
     onGoBack?: () => void;
@@ -20,7 +21,8 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
         identifier,
         value,
         setValue,
-        handleFileUpload,
+        fileUploadValues,
+        clearFileUploadValues,
         acceptInput,
         chooseIssuesDocuments,
     } = useInsertDocuments();
@@ -40,6 +42,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
     };
 
     const handleGoBack = () => {
+        clearFileUploadValues();
         if (props.onGoBack) {
             props.onGoBack();
         }
@@ -48,7 +51,6 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
     useEffect(() => {
         if (accepted) {
             setAccepted(false);
-            console.log(chooseIssuesDocuments);
             if (chooseIssuesDocuments.length > 0 && props.onGoNext) {
                 props.onGoNext();
             } else if (props.onSkipNext) {
@@ -59,8 +61,11 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
 
     return (
         <div className="flex flex-column gap-5">
-            <TabView className="">
-                <TabPanel header={t("Using value")}>
+            <TabView>
+                <TabPanel
+                    header={t("Using value")}
+                    disabled={fileUploadValues.length > 0}
+                >
                     {accepted && (
                         <ProgressBar
                             mode="indeterminate"
@@ -79,15 +84,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
                     </div>
                 </TabPanel>
                 <TabPanel header={t("Using files")}>
-                    <div>
-                        <FileUpload
-                            mode="advanced"
-                            customUpload={true}
-                            uploadHandler={handleFileUpload}
-                            multiple
-                            maxFileSize={2000000}
-                        />
-                    </div>
+                    <InsertDocumentsFiles />
                 </TabPanel>
             </TabView>
             <div className="flex justify-content-between p-1">

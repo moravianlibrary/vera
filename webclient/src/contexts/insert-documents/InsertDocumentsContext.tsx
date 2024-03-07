@@ -25,7 +25,7 @@ interface LabeledIdentifier {
 }
 
 interface FileUploadValue {
-    file: string;
+    filename: string;
     value: string;
     identifier: LabeledIdentifier;
     category_id: number | null;
@@ -47,6 +47,7 @@ interface InsertDocumentsContextProps {
     setValue: (value: string) => void;
     fileUploadValues: FileUploadValue[];
     handleFileUpload: (e: FileUploadHandlerEvent) => void;
+    clearFileUploadValues: () => void;
 
     acceptInput: () => void;
     chooseIssuesDocuments: DocumentCreationResponse[];
@@ -127,7 +128,7 @@ export const InsertDocumentsProvider: React.FC<
                         setFileUploadValues((prevFileUploadValues) => [
                             ...prevFileUploadValues,
                             {
-                                file: file.name,
+                                filename: file.name,
                                 value: value,
                                 identifier: identifier,
                                 category_id: category,
@@ -138,6 +139,10 @@ export const InsertDocumentsProvider: React.FC<
             };
             fileReader.readAsText(file);
         });
+    };
+
+    const clearFileUploadValues = () => {
+        setFileUploadValues([]);
     };
 
     const acceptInput = async () => {
@@ -225,6 +230,7 @@ export const InsertDocumentsProvider: React.FC<
                 setValue,
                 fileUploadValues,
                 handleFileUpload,
+                clearFileUploadValues,
 
                 acceptInput,
                 chooseIssuesDocuments,
