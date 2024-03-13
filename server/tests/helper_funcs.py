@@ -13,6 +13,26 @@ def setUpEnv():
     environ["KEYCLOAK_ISSUER_CLIENT_ID"] = "vera"
 
 
+def createTestClient():
+    from fastapi.testclient import TestClient
+    from vera import app
+
+    return TestClient(app)
+
+
+def createTestUser(actions=[]):
+    from auth.schemas import CurrentUser
+
+    return CurrentUser(
+        username="test_user",
+        department_id=10,
+        department_name="test_department",
+        role_id=7,
+        role_name="test_role",
+        actions=actions,
+    )
+
+
 def get_admin_token() -> str:
     from os import environ
     import requests

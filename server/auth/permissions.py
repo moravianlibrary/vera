@@ -1,7 +1,7 @@
 from fastapi import Depends
 
 from auth.permissions_validator import (
-    has_category_department_access,
+    CategoryAccessValidator,
     PermissionsValidator,
 )
 from roles.types import ActionType
@@ -11,12 +11,8 @@ EditAccessPermission = [Depends(PermissionsValidator([ActionType.EditAccess]))]
 
 CreateCategoryPermission = [
     Depends(
-        PermissionsValidator([ActionType.EditCategoriesAll]).or_(
-            PermissionsValidator([ActionType.EditCategoriesDepartment]).and_(
-                PermissionsValidator(
-                    required_function=has_category_department_access
-                )
-            )
-        )
+        CategoryAccessValidator()
+        .with_access_permissions([ActionType.EditCategoriesDepartment])
+        .with_override_permissions([ActionType.EditCategoriesAll])
     )
 ]

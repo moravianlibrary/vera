@@ -1,6 +1,6 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from typing import Callable, List, Union
+from typing import List
 
 from auth.auth_client import get_user_from_token, oauth2_scheme
 from auth.exceptions import PermissionDeniedException
@@ -11,15 +11,8 @@ from services.database import get_db
 
 
 class PermissionsValidator:
-    def __init__(
-        self,
-        required_permissions: List[ActionType] = [],
-        required_function: Callable[..., bool] = None,
-    ):
+    def __init__(self, required_permissions: List[ActionType]):
         self.required_permissions = required_permissions
-        self.required_function = required_function
-        self.or_permission = None
-        self.and_permission = None
 
     def __call__(
         self,
@@ -30,69 +23,67 @@ class PermissionsValidator:
         user_permissions_set = set(user.actions)
         required_permissions_set = set(self.required_permissions)
 
-        if not required_permissions_set.issubset(user_permissions_set) and (
-            not self.or_permissions
-            or not any(
-                or_permission(token, db)
-                for or_permission in self.or_permissions
-            )
-        ):
+        if required_permissions_set.issubset(user_permissions_set):
             raise PermissionDeniedException()
 
-    def validate(self, user: CurrentUser, db: Session):
-        user_permissions_set = set(user.actions)
-        required_permissions_set = set(self.required_permissions)
 
-        if not required_permissions_set.issubset(user_permissions_set) and (
-            not self.or_permissions
-            or not any(
-                or_permission(token, db)
-                for or_permission in self.or_permissions
-            )
-        ):
-            raise PermissionDeniedException()
-        print("has permission")
+class AccessValidator:
+    def __init__(self):
+        self.access_permissions = set()
+        self.override_permissions = set()
+
+    def __call__(self):
         return True
 
-    def or_(self, other: Union["PermissionsValidator", Callable[..., bool]]):
-        self.or_permissions.append(other)
+    def evaluate_override(self, user: CurrentUser):
+        user_permissions_set = set(user.actions)
+        print(user_permissions_set)
+        return (
+            self.override_permissions is not None
+            and self.override_permissions.issubset(user_permissions_set)
+        )
+
+    def with_access_permissions(self, access_permissions: List[ActionType]):
+        self.access_permissions = set(access_permissions)
+        return self
+
+    def with_override_permissions(
+        self, override_permissions: List[ActionType]
+    ):
+        self.override_permissions = set(override_permissions)
         return self
 
 
-class StateValidator:
-    def __init__(
-        self,
-        required_function: Callable[..., bool] = None,
-    ):
-        self.required_function = required_function
-        self.or_permission = None
-        self.and_permission = None
+def get_create_category_body(category: CategoryCreate):
+    return category
 
+
+class CategoryAccessValidator(AccessValidator):
     def __call__(
         self,
+        category: CategoryCreate = Depends(get_create_category_body),
         token: str = Depends(oauth2_scheme),
         db: Session = Depends(get_db),
     ):
-        pass
+        from categories.crud import get_category_departments
 
+        user = get_user_from_token(token, db)
+        if self.evaluate_override(user):
+            print("overrided")
+            return True
 
-def has_department_access(
-    required_departments: List[int],
-    token: str,
-    db: Session,
-):
-    user = get_user_from_token(token, db)
-    if user.department_id not in required_departments:
-        raise PermissionDeniedException
+        required_departments = (
+            get_category_departments(category.parent_id, db),
+            token,
+            db,
+        )
+        print(required_departments)
 
+        if (
+            user.department_id not in required_departments
+            or self.access_permissions is not None
+            and not self.access_permissions.issubset(set(user.actions))
+        ):
+            raise PermissionDeniedException()
 
-def has_category_department_access(
-    category: CategoryCreate,
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db),
-):
-    from categories.crud import get_category_departments
-
-    has_department_access(
-        get_category_departments(category.parent_id, db), token, db
-    )
+        return True

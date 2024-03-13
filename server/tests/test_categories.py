@@ -293,30 +293,42 @@ class TestCategoriesEndpoints(unittest.TestCase):
         )
         self.delete_category_by_name("root")
 
+    @patch("auth.auth_client.get_user_from_token")
     @patch("categories.crud.create_category")
     @patch("categories.crud.create_root_category")
     @patch("categories.routines.get_category_subtree")
     @patch("categories.routines.has_unique_name")
-    def test_create_root_category(
+    def test_create_root_category_access_all_granted(
         self,
+        mock_get_user_from_token,
         mock_create_category,
         mock_create_root_category,
-        get_category_subtree,
-        has_unique_name,
+        mock_get_category_subtree,
+        mock_has_unique_name,
     ):
+        from auth.schemas import CurrentUser
         from categories.schemas import Category, CategoryNode
+        from roles.types import ActionType
 
         # Arrange
         name = "Test Root Category Name"
         description = "Test Root Category Description"
 
+        mock_get_user_from_token.return_value = CurrentUser(
+            username="test_user",
+            department_id=1,
+            department_name="test_department",
+            role_id=1,
+            role_name="test_role",
+            actions=[ActionType.EditCategoriesAll.value],
+        )
         mock_create_root_category.return_value = Category(
             id=1, name=name, description=description, parent_id=None, level=0
         )
         mock_create_category.return_value = Category(
             id=1, name="child 1", parent_id=1, level=1
         )
-        get_category_subtree.return_value = CategoryNode(
+        mock_get_category_subtree.return_value = CategoryNode(
             id=1,
             name=name,
             description=description,
@@ -333,7 +345,7 @@ class TestCategoriesEndpoints(unittest.TestCase):
             count_documents_with_pages=0,
             count_documents=0,
         )
-        has_unique_name.return_value = True
+        mock_has_unique_name.return_value = True
 
         # Act
         response = self.client.post(
