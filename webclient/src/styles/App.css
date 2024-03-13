@@ -18,3 +18,7 @@ main {
   /* height: 100%; */
   /* overflow: hidden; */
 }
+
+.p-progressbar-determinate .p-progressbar-value-animate {
+  transition: width 100ms ease-in-out;
+}

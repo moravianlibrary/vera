@@ -1,30 +1,46 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import ApiCategories, { AssignableCategory } from "../../adapters/ApiCategories";
+import React, {
+    createContext,
+    useContext,
+    useState,
+    ReactNode,
+    useEffect,
+} from "react";
+import ApiCategories, {
+    AssignableCategory,
+} from "../../adapters/ApiCategories";
 import AssignableCategoryModel from "./AssignableCategoryModel";
 
 interface AssignableCategoriesContextProps {
     categories: AssignableCategoryModel[];
 }
 
-const AssignableCategoriesContext = createContext<AssignableCategoriesContextProps | undefined>(undefined);
+const AssignableCategoriesContext = createContext<
+    AssignableCategoriesContextProps | undefined
+>(undefined);
 
 interface AssignableCategoriesProviderProps {
     children: ReactNode;
 }
 
-export const AssignableCategoriesProvider: React.FC<AssignableCategoriesProviderProps> = ({ children }) => {
+export const AssignableCategoriesProvider: React.FC<
+    AssignableCategoriesProviderProps
+> = ({ children }) => {
     const [categories, setCategories] = useState<AssignableCategoryModel[]>([]);
 
     const loadCategories = async () => {
         ApiCategories.getAssignableCategories()
-        .then(response => {
-            const transformedData: AssignableCategoryModel[] = response.data.map(assignableCategory => {
-                return new AssignableCategoryModel(assignableCategory);
+            .then((response) => {
+                const transformedData: AssignableCategoryModel[] =
+                    response.data.map((assignableCategory) => {
+                        return new AssignableCategoryModel(assignableCategory);
+                    });
+                setCategories(transformedData);
+            })
+            .catch((error) => {
+                console.error(
+                    `Could not receive assignable categories: ${error}`
+                );
             });
-            setCategories(transformedData);
-        }).catch(error => {
-            console.error(`Could not receive assignable categories: ${error}`);
-        });
     };
 
     useEffect(() => {
@@ -33,7 +49,7 @@ export const AssignableCategoriesProvider: React.FC<AssignableCategoriesProvider
     }, []);
 
     const contextValue: AssignableCategoriesContextProps = {
-        categories
+        categories,
     };
 
     return (
@@ -47,7 +63,9 @@ export const useAssignableCategories = (): AssignableCategoriesContextProps => {
     const context = useContext(AssignableCategoriesContext);
 
     if (!context) {
-        throw new Error('useAssignableCategories must be used within a AssignableCategoriesProvider');
+        throw new Error(
+            "useAssignableCategories must be used within a AssignableCategoriesProvider"
+        );
     }
 
     return context;

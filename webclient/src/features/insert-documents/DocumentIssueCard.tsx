@@ -32,41 +32,63 @@ interface DocumentIssueContentProps {
 
 const DocumentIssueCard: React.FC<IssueDivProps> = ({ issue, onClick }) => {
     const { creatingIssues, createdIssues } = useInsertDocuments();
-    
-    const active = !issue.already_exists && issue.digitization_state === DigitizationState.NotDigitized;
+
+    const active =
+        !issue.already_exists &&
+        issue.digitization_state === DigitizationState.NotDigitized;
     const [state, setState] = useState<State>(
-        issue.already_exists ? IssueStates.AlreadyExists : issue.digitization_state
+        issue.already_exists
+            ? IssueStates.AlreadyExists
+            : issue.digitization_state
     );
-    
+
     const handleClick = () => {
         onClick(issue);
     };
 
     useEffect(() => {
-        if (creatingIssues && state === DigitizationState.NotDigitized && creatingIssues.filter(i => i.barcode === issue.barcode).length > 0) {
+        if (
+            creatingIssues &&
+            state === DigitizationState.NotDigitized &&
+            creatingIssues.filter((i) => i.barcode === issue.barcode).length > 0
+        ) {
             setState(IssueStates.Creating);
         }
     }, [creatingIssues]);
 
     useEffect(() => {
-        if (createdIssues && !issue.already_exists && createdIssues.filter(i => i.barcode === issue.barcode).length > 0) {
+        if (
+            createdIssues &&
+            !issue.already_exists &&
+            createdIssues.filter((i) => i.barcode === issue.barcode).length > 0
+        ) {
             setState(IssueStates.Created);
         }
     }, [createdIssues]);
 
     if (state !== null && state !== DigitizationState.NotDigitized) {
         return (
-            <div className="px-4 py-3" style={{ border: '1px solid black', borderRadius: '5px' }} >
-                <DocumentIssueHeader issue={issue} state={state} />
-                <DocumentIssueContent issue={issue} disabled />
+            <div
+                className="flex flex-1 px-4 py-3"
+                style={{ border: "1px solid black", borderRadius: "5px" }}
+            >
+                <div className="flex flex-column">
+                    <DocumentIssueHeader issue={issue} state={state} />
+                    <DocumentIssueContent issue={issue} disabled />
+                </div>
             </div>
         );
     }
-    console.log(issue);
 
     return (
-        <Button className="flex flex-1 overflow-visible text-gray-800" outlined
-            disabled={!active || createdIssues.filter(i => i.barcode === issue.barcode).length > 0}
+        <Button
+            className="flex flex-1 overflow-visible text-gray-800"
+            outlined
+            disabled={
+                !active ||
+                createdIssues.filter((i) => i.barcode === issue.barcode)
+                    .length > 0
+            }
             onClick={handleClick}
         >
             <div className="flex flex-column flex-1 align-items-start">
@@ -77,7 +99,10 @@ const DocumentIssueCard: React.FC<IssueDivProps> = ({ issue, onClick }) => {
     );
 };
 
-const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({ issue, state }) => {
+const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({
+    issue,
+    state,
+}) => {
     const { t } = useTranslation();
 
     if (state === null) {
@@ -87,37 +112,56 @@ const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({ issue, state 
     if (state === IssueStates.Creating) {
         return (
             <div className="flex p-2">
-                <ProgressBar mode="indeterminate" style={{ height: '6px', width: '100%' }} />
+                <ProgressBar
+                    mode="indeterminate"
+                    style={{ height: "6px", width: "100%" }}
+                />
             </div>
         );
     }
 
     const getMessage = () => {
-        switch(state) {
-            case IssueStates.AlreadyExists: return "Document already exists";
-            case IssueStates.Created: return "Document already exists";
-            case DigitizationState.Finished: return "Document already digitized";
-            case DigitizationState.InProgress: return "Document digitization in progress";
-            case DigitizationState.InProgress: return "Document digitization planned";
-            default: return "";
+        switch (state) {
+            case IssueStates.AlreadyExists:
+                return "Document already exists";
+            case IssueStates.Created:
+                return "Document already exists";
+            case DigitizationState.Finished:
+                return "Document already digitized";
+            case DigitizationState.InProgress:
+                return "Document digitization in progress";
+            case DigitizationState.InProgress:
+                return "Document digitization planned";
+            default:
+                return "";
         }
     };
 
     const getLinkButton = () => {
-        if (state === DigitizationState.Finished
-                || state === DigitizationState.InProgress
-                || state === DigitizationState.Planned) {        
+        if (
+            state === DigitizationState.Finished ||
+            state === DigitizationState.InProgress ||
+            state === DigitizationState.Planned
+        ) {
             return (
                 <Button
                     className="p-1"
                     text
-                    onClick={() => window.open(DigitizationRegistry.getDocumentLink(issue.barcode), '_blank')}
+                    onClick={() =>
+                        window.open(
+                            DigitizationRegistry.getDocumentLink(issue.barcode),
+                            "_blank"
+                        )
+                    }
                 >
-                    <i className="pi pi-external-link" onClick={() => console.log('Icon clicked')} />
+                    <i
+                        className="pi pi-external-link"
+                        onClick={() => console.log("Icon clicked")}
+                    />
                 </Button>
             );
         }
-    }
+    };
 
     return (
         <div className="flex align-items-baseline">
@@ -125,9 +169,12 @@ const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({ issue, state 
             {getLinkButton()}
         </div>
     );
-}
+};
 
-const DocumentIssueContent: React.FC<DocumentIssueContentProps> = ({ issue, disabled }) => {
+const DocumentIssueContent: React.FC<DocumentIssueContentProps> = ({
+    issue,
+    disabled,
+}) => {
     const { t } = useTranslation();
 
     const className = disabled
@@ -136,28 +183,46 @@ const DocumentIssueContent: React.FC<DocumentIssueContentProps> = ({ issue, disa
 
     return (
         <div className={className}>
-            {issue.signature && <div className="flex gap-1">
-                <span className="font-bold">{t('signature')}:</span>
-                <span>{issue.signature}</span>
-            </div>}
-            {issue.barcode && <div className="flex gap-1">
-                <span className="font-bold white-space-nowrap">{t('Barcode')}:</span>
-                <span>{issue.barcode}</span>
-            </div>}
-            {issue.year && <div className="flex gap-1">
-                <span className="font-bold white-space-nowrap">{t('Year')}:</span>
-                <span>{issue.year}</span>
-            </div>}
-            {issue.volume && <div className="flex gap-1">
-                <span className="font-bold white-space-nowrap">{t('Volume')}:</span>
-                <span>{issue.volume}</span>
-            </div>}
-            {issue.bundle && <div className="flex gap-1">
-                <span className="font-bold white-space-nowrap">{t('Bundle')}:</span>
-                <span>{issue.bundle}</span>
-            </div>}
+            {issue.signature && (
+                <div className="flex gap-1">
+                    <span className="font-bold">{t("signature")}:</span>
+                    <span>{issue.signature}</span>
+                </div>
+            )}
+            {issue.barcode && (
+                <div className="flex gap-1">
+                    <span className="font-bold white-space-nowrap">
+                        {t("Barcode")}:
+                    </span>
+                    <span>{issue.barcode}</span>
+                </div>
+            )}
+            {issue.year && (
+                <div className="flex gap-1">
+                    <span className="font-bold white-space-nowrap">
+                        {t("Year")}:
+                    </span>
+                    <span>{issue.year}</span>
+                </div>
+            )}
+            {issue.volume && (
+                <div className="flex gap-1">
+                    <span className="font-bold white-space-nowrap">
+                        {t("Volume")}:
+                    </span>
+                    <span>{issue.volume}</span>
+                </div>
+            )}
+            {issue.bundle && (
+                <div className="flex gap-1">
+                    <span className="font-bold white-space-nowrap">
+                        {t("Bundle")}:
+                    </span>
+                    <span>{issue.bundle}</span>
+                </div>
+            )}
         </div>
-    )
-}
+    );
+};
 
 export default DocumentIssueCard;

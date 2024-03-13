@@ -139,12 +139,16 @@ namespace ApiDocuments {
         return axiosInstance.post<DocumentCreationResponse>(url, identifier, { headers: authHeader() });
     }
 
-    export function insertDocumentsFile(formData: FormData, insert_digitized: boolean, category_id?: number | null) {
-        const url = category_id !== null
-            ? `/catalogs/list?category_id=${category_id}&insert_digitized=${insert_digitized}`
-            : `/catalogs/list?insert_digitized=${insert_digitized}`;
+    export function insertDocumentsList(identifier_type: IdentifierType, values: string[], category_id?: number | null, insert_digitized?: boolean) {
+        let url = "/catalogs/list?"
+        url += `identifier_type=${identifier_type}&`;
+        url += `values=${values.join(",")}&`;
+        if (category_id) {
+            url += `category_id=${category_id}&`
+        }
+        url += `insert_digitized=${insert_digitized}`;
 
-        return axiosInstance.post<DocumentCreationResponse[]>(url, formData, { headers: authHeader() });
+        return axiosInstance.post<DocumentCreationResponse[]>(url, { headers: authHeader() });
     }
 
     export function deleteDocuments(query: DocumentsQuery) {
