@@ -65,6 +65,20 @@ def get_assignable_categories(db: Session):
 def has_unique_name(
     category: schemas.CategoryCreate, category_id: Optional[int], db: Session
 ):
+    """
+    A function that checks if a category name is unique
+    within its parent category.
+
+    Args:
+        category (schemas.CategoryCreate): The category object to check.
+        category_id (Optional[int]): The ID of the category to exclude
+        from the uniqueness check.
+        db (Session): The database session.
+
+    Returns:
+        bool: True if the category name is unique within its parent category,
+        False otherwise.
+    """
     categories = (
         crud.get_root_categories(db)
         if category.parent_id is None

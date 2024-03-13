@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Enum, ForeignKey, Integer, String
 
 from services.database import Base
-from roles.enums import ActionType
+from roles.types import ActionType
 
 
 class Role(Base):

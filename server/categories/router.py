@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 
+from auth.permissions import CreateCategoryPermission
 from services.database import get_db
 from services.exceptions import (
     MissingArgumentException,
@@ -18,10 +19,14 @@ from categories.routines import (
 from typing import List, Optional
 
 
-router = APIRouter()
+router = APIRouter(prefix="/categories")
 
 
-@router.post("/categories/category", response_model=schemas.Category)
+@router.post(
+    "/category",
+    dependencies=CreateCategoryPermission,
+    response_model=schemas.Category,
+)
 def create_category(
     category: schemas.CategoryCreate, db: Session = Depends(get_db)
 ):
@@ -35,7 +40,7 @@ def create_category(
     return get_category_subtree(new_category, db)
 
 
-@router.put("/categories/category/{id}", response_model=schemas.Category)
+@router.put("/category/{id}", response_model=schemas.Category)
 def update_category(
     category: schemas.CategoryCreate,
     id: int = Path(...),
@@ -51,7 +56,7 @@ def update_category(
     return crud.update_category(id, category, db)
 
 
-@router.put("/categories/distribution", response_model=None)
+@router.put("/distribution", response_model=None)
 def update_distribution(
     distribution: List[schemas.CategoryPercentage],
     parent_id: Optional[int] = Query(None),
@@ -76,7 +81,7 @@ def update_distribution(
     crud.update_distribution(distribution, db)
 
 
-@router.delete("/categories/category/{id}", response_model=schemas.Category)
+@router.delete("/category/{id}", response_model=schemas.Category)
 def delete_category(id: int = Path(...), db: Session = Depends(get_db)):
     db_category = crud.get_category(id, db)
     if db_category.percentage != 0:
@@ -84,7 +89,7 @@ def delete_category(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.delete_category(id, db)
 
 
-@router.get("/categories", response_model=List[schemas.CategoryNode])
+@router.get("", response_model=List[schemas.CategoryNode])
 def get_categories(db: Session = Depends(get_db)):
     return [
         get_category_subtree(root_category, db)
@@ -92,9 +97,7 @@ def get_categories(db: Session = Depends(get_db)):
     ]
 
 
-@router.get(
-    "/categories/descriptors", response_model=List[schemas.CategoryDescriptor]
-)
+@router.get("/descriptors", response_model=List[schemas.CategoryDescriptor])
 def get_categories_descriptors(
     root: bool = Query(False),
     assignable: bool = Query(False),
@@ -110,7 +113,7 @@ def get_categories_descriptors(
 
 
 @router.get(
-    "/categories/descriptors/{category_id}",
+    "/descriptors/{category_id}",
     response_model=schemas.CategoryDescriptor,
 )
 def get_category_descriptor(

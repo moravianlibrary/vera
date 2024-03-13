@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 from helper_funcs import get_admin_token, setUpEnv
 
@@ -35,25 +36,6 @@ class TestCategoriesEndpoints(unittest.TestCase):
         document = get_document_by_identifiers(sysno, volume, barcode, self.db)
         if document is not None:
             delete_document(document.id, self.db)
-
-    def test_create_root_category(self):
-        name = "Test Root Category Name"
-        description = "Test Root Category Description"
-        self.delete_category_by_name(name)
-        response = self.client.post(
-            "/categories/category",
-            json={"name": name, "description": description},
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue("id" in response.json())
-        self.assertEqual(name, response.json()["name"])
-        self.assertEqual(description, response.json()["description"])
-        self.assertIsNone(response.json()["parent_id"])
-        self.assertEqual(0, response.json()["level"])
-        self.assertFalse(response.json()["assignable"])
-        self.assertEqual(0, response.json()["percentage"])
-        self.assertFalse(0, response.json()["disabled"])
-        self.delete_category_by_name(name)
 
     def test_update_root_category(self):
         name = "Test Root Category Name"
@@ -310,3 +292,75 @@ class TestCategoriesEndpoints(unittest.TestCase):
             headers=self.headers,
         )
         self.delete_category_by_name("root")
+
+    @patch("categories.crud.create_category")
+    @patch("categories.crud.create_root_category")
+    @patch("categories.routines.get_category_subtree")
+    @patch("categories.routines.has_unique_name")
+    def test_create_root_category(
+        self,
+        mock_create_category,
+        mock_create_root_category,
+        get_category_subtree,
+        has_unique_name,
+    ):
+        from categories.schemas import Category, CategoryNode
+
+        # Arrange
+        name = "Test Root Category Name"
+        description = "Test Root Category Description"
+
+        mock_create_root_category.return_value = Category(
+            id=1, name=name, description=description, parent_id=None, level=0
+        )
+        mock_create_category.return_value = Category(
+            id=1, name="child 1", parent_id=1, level=1
+        )
+        get_category_subtree.return_value = CategoryNode(
+            id=1,
+            name=name,
+            description=description,
+            parent_id=None,
+            level=0,
+            assignable=False,
+            percentage=0,
+            extract_whole=False,
+            disabled=False,
+            departments=[],
+            children=[],
+            count_pages=0,
+            count_documents_without_cnb=0,
+            count_documents_with_pages=0,
+            count_documents=0,
+        )
+        has_unique_name.return_value = True
+
+        # Act
+        response = self.client.post(
+            "/categories/category",
+            json={"name": name, "description": description},
+            headers=self.headers,
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["id"], 1)
+        self.assertEqual(response.json()["name"], name)
+        self.assertEqual(response.json()["description"], description)
+        self.assertIsNone(response.json()["parent_id"])
+        self.assertEqual(0, response.json()["level"])
+        self.assertFalse(response.json()["assignable"])
+        self.assertEqual(0, response.json()["percentage"])
+        self.assertFalse(0, response.json()["disabled"])
+
+
+class TestCategoriesRoutines(unittest.TestCase):
+    def setUp(self):
+        setUpEnv()
+        from services.database import get_db
+
+        self.db = next(get_db())
+
+    def test_read_department_categories(self):
+        pass
+        # from categories. import

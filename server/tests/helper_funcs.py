@@ -33,3 +33,25 @@ def get_admin_token() -> str:
     )
 
     return response.json()["access_token"]
+
+
+def get_test_user_token() -> str:
+    from os import environ
+    import requests
+
+    body = {
+        "client_id": environ.get("KEYCLOAK_ISSUER_CLIENT_ID"),
+        "username": "vera_user",
+        "password": "vera_user",
+        "grant_type": "password",
+    }
+
+    response = requests.post(
+        TOKEN_CALL.format(
+            KEYCLOAK_HOST=environ.get("KEYCLOAK_SERVER_URL"),
+            REALM_NAME=environ.get("KEYCLOAK_REALM"),
+        ),
+        data=body,
+    )
+
+    return response.json()["access_token"]

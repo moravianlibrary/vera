@@ -16,7 +16,7 @@ class TestRolesEndpoints(unittest.TestCase):
 
         from roles.crud import create_role
         from roles.schemas import RoleCreate
-        from roles.enums import ActionType
+        from roles.types import ActionType
 
         self.name = "Test Role"
         self.actions = [ActionType.WriteDatatable]
@@ -41,7 +41,7 @@ class TestRolesEndpoints(unittest.TestCase):
             pass
 
     def test_create_role(self):
-        from roles.enums import ActionType
+        from roles.types import ActionType
 
         name = "New Test Role"
         actions = [ActionType.WriteDatatable.value]
@@ -55,7 +55,7 @@ class TestRolesEndpoints(unittest.TestCase):
         self.delete_role_by_name(name)
 
     def test_update_role(self):
-        from roles.enums import ActionType
+        from roles.types import ActionType
 
         name = "Updated Role"
         actions = [ActionType.Extract.value]
@@ -78,7 +78,7 @@ class TestRolesEndpoints(unittest.TestCase):
     def test_get_roles(self):
         from roles import crud
         from roles.schemas import Role
-        from roles.enums import ActionType
+        from roles.types import ActionType
 
         test_roles = [
             Role(id=2, name="role 2"),
