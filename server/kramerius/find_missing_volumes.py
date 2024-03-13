@@ -1,4 +1,4 @@
-from typing import IO
+from typing import IO, Optional
 
 from catalogs.aleph_document import AlephDocument, AlephIssue
 from catalogs.enums import CatalogResponseStatus, IdentifierType, IssuanceType
@@ -74,13 +74,26 @@ def write_output(
     catalog_document: AlephDocument,
     issue: AlephIssue,
 ):
+    def parse_to_csv_cell(value: Optional[str]) -> str:
+        if value is None:
+            return ""
+        if '"' in value:
+            value = value.replace('"', '""')
+            return f'"{value}"'
+        elif "," in value:
+            return f'"{value}"'
+        return value
+
     file.write(
         f"{parent.pid},"
-        f'"{parent.title}","{catalog_document.title}",'
-        f"{catalog_document.sysno},{issue.type.value},{issue.barcode},"
-        f"{issue.year if issue.year else ''},"
-        f"{issue.volume if issue.volume else ''},"
-        f"{issue.bundle if issue.bundle else ''}\n"
+        f"{parse_to_csv_cell(parent.title)},"
+        f"{parse_to_csv_cell(catalog_document.title)},"
+        f"{catalog_document.sysno},"
+        f"{issue.type.value},"
+        f"{issue.barcode},"
+        f"{parse_to_csv_cell(issue.year)},"
+        f"{parse_to_csv_cell(issue.volume)},"
+        f"{parse_to_csv_cell(issue.bundle)}\n"
     )
 
 

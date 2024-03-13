@@ -16,24 +16,18 @@ import ApiDocuments, {
 import { DocumentCreateResult } from "../../types/DocumentCreateResult";
 import { AssignableCategory } from "../../adapters/ApiCategories";
 import { useToast } from "../toast/ToastContext";
-import InsertResultModel from "./InsertResultModel";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
+import { generateMessageForResponse } from "../../features/insert-documents/InsertDocumentsFunctions";
 
-interface LabeledIdentifier {
-    value: IdentifierType;
-    label: string;
-}
-
-interface FileUploadValue {
+export interface FileUploadValue {
     filename: string;
     value: string;
-    identifier: LabeledIdentifier;
+    identifier: IdentifierType;
     category_id: number | null;
 }
 
 interface InsertDocumentsContextProps {
-    identifiers: LabeledIdentifier[];
-    identifier: LabeledIdentifier;
+    identifier: IdentifierType;
     setIdentifier: (type: IdentifierType) => void;
 
     categories: AssignableCategory[];
@@ -47,14 +41,15 @@ interface InsertDocumentsContextProps {
     setValue: (value: string) => void;
     fileUploadValues: FileUploadValue[];
     handleFileUpload: (e: FileUploadHandlerEvent) => void;
+    updateFileUploadRow: (index: number, data: FileUploadValue) => void;
     clearFileUploadValues: () => void;
 
     acceptInput: () => void;
+    results: DocumentCreationResponse[];
     chooseIssuesDocuments: DocumentCreationResponse[];
     createIssue: (index: number, issue: Issue) => void;
     creatingIssues: Issue[];
     createdIssues: Issue[];
-    result: InsertResultModel;
 }
 
 interface InsertDocumentsProviderProps {
@@ -73,22 +68,8 @@ export const InsertDocumentsProvider: React.FC<
     const { categories } = useAssignableCategories();
 
     // First step variables
-    const identifiers = [
-        {
-            value: IdentifierType.Sysno,
-            label: t("System number"),
-        },
-        {
-            value: IdentifierType.Barcode,
-            label: t("Barcode"),
-        },
-        {
-            value: IdentifierType.Signature,
-            label: t("Signature"),
-        },
-    ];
-    const [identifier, setIdentifier] = useState<LabeledIdentifier>(
-        identifiers[0]
+    const [identifier, setIdentifier] = useState<IdentifierType>(
+        IdentifierType.Sysno
     );
     const [category, setCategory] = useState<number | null>(null);
     const [insertAnother, setInsertAnother] = useState<boolean>(false);
@@ -98,25 +79,18 @@ export const InsertDocumentsProvider: React.FC<
     const [fileUploadValues, setFileUploadValues] = useState<FileUploadValue[]>(
         []
     );
-
-    // Third step variables
+    const [results, setResults] = useState<DocumentCreationResponse[]>([]);
     const [chooseIssuesDocuments, setChooseIssuesDocuments] = useState<
         DocumentCreationResponse[]
     >([]);
+
+    // Third step variables
     const [creatingIssues, setCreatingIssues] = useState<Issue[]>([]);
     const [createdIssues, setCreatedIssues] = useState<Issue[]>([]);
 
-    // Fourth step variables
-    const [result, setResult] = useState<InsertResultModel>(
-        new InsertResultModel()
-    );
-
-    // First step functions
-    const setIdentifierByType = (type: IdentifierType) => {
-        const filteredIdentifiers = identifiers.filter((i) => i.value === type);
-        if (filteredIdentifiers.length === 1) {
-            setIdentifier(filteredIdentifiers[0]);
-        }
+    // Second step functions
+    const handleSetValue = (value: string) => {
+        setValue(value);
     };
 
     const handleFileUpload = (e: FileUploadHandlerEvent) => {
@@ -124,51 +98,80 @@ export const InsertDocumentsProvider: React.FC<
             const fileReader = new FileReader();
             fileReader.onload = (e) => {
                 if (e.target) {
-                    (e.target.result as string).split("\n").forEach((value) => {
-                        setFileUploadValues((prevFileUploadValues) => [
-                            ...prevFileUploadValues,
-                            {
-                                filename: file.name,
-                                value: value,
-                                identifier: identifier,
-                                category_id: category,
-                            },
-                        ]);
-                    });
+                    (e.target.result as string)
+                        .split("\n")
+                        .filter((line) => line.length > 0)
+                        .forEach((value) => {
+                            setFileUploadValues((prevFileUploadValues) => [
+                                ...prevFileUploadValues,
+                                {
+                                    filename: file.name,
+                                    value: value,
+                                    identifier: identifier,
+                                    category_id: category,
+                                },
+                            ]);
+                        });
                 }
             };
             fileReader.readAsText(file);
         });
     };
 
+    const updateFileUploadRow = (index: number, data: FileUploadValue) => {
+        setFileUploadValues((prevFileUploadValues) =>
+            prevFileUploadValues.map((row, i) => (i === index ? data : row))
+        );
+    };
+
     const clearFileUploadValues = () => {
         setFileUploadValues([]);
     };
 
-    const acceptInput = async () => {
+    const processCreateResponses = (response: DocumentCreationResponse) => {
+        if (response.create_result === DocumentCreateResult.MultipleIssues) {
+            setChooseIssuesDocuments((prev) => [...prev, response]);
+        } else {
+            setResults((prev) => [...prev, response]);
+        }
+    };
+
+    const createFromValue = async () => {
         const inputIdentifier: Identifier = {
-            identifier_type: identifier.value,
+            identifier_type: identifier,
             value: value,
         };
         ApiDocuments.insertDocument(inputIdentifier, category, false)
-            .then((response) => {
-                if (
-                    response.data.create_result ===
-                    DocumentCreateResult.MultipleIssues
-                ) {
-                    setChooseIssuesDocuments([response.data]);
-                    setResult(new InsertResultModel());
-                } else {
-                    setChooseIssuesDocuments([]);
-                    const newResult = new InsertResultModel();
-                    newResult.addDocumentResponse(response.data);
-                    setResult(newResult);
-                }
-                setValue("");
-            })
+            .then((response) => processCreateResponses(response.data))
             .catch((error) => {
                 console.error(`Error while inserting document: ${error}`);
             });
+    };
+
+    const createFromFiles = async () => {
+        for (const fileUploadValue of fileUploadValues) {
+            const inputIdentifier: Identifier = {
+                identifier_type: fileUploadValue.identifier,
+                value: fileUploadValue.value,
+            };
+
+            await ApiDocuments.insertDocument(inputIdentifier, category, false)
+                .then((response) => processCreateResponses(response.data))
+                .catch((error) => {
+                    console.error(`Error while inserting document: ${error}`);
+                });
+        }
+    };
+
+    const acceptInput = async () => {
+        setResults([]);
+        setChooseIssuesDocuments([]);
+        if (value !== "") {
+            await createFromValue();
+        }
+        if (fileUploadValues.length > 0) {
+            await createFromFiles();
+        }
     };
 
     // Third step functions
@@ -200,7 +203,8 @@ export const InsertDocumentsProvider: React.FC<
                     ...prevCreatedIssues,
                     issue,
                 ]);
-                const messageProps = result.addDocumentResponse(response.data);
+                setResults((prev) => [...prev, response.data]);
+                const messageProps = generateMessageForResponse(response.data);
                 showToast(
                     messageProps.severity,
                     t(messageProps.summary),
@@ -215,9 +219,8 @@ export const InsertDocumentsProvider: React.FC<
     return (
         <InsertDocumentsContext.Provider
             value={{
-                identifiers,
                 identifier,
-                setIdentifier: setIdentifierByType,
+                setIdentifier,
 
                 categories,
                 category,
@@ -227,17 +230,18 @@ export const InsertDocumentsProvider: React.FC<
                 setInsertAnother,
 
                 value,
-                setValue,
+                setValue: handleSetValue,
                 fileUploadValues,
                 handleFileUpload,
+                updateFileUploadRow,
                 clearFileUploadValues,
 
                 acceptInput,
+                results,
                 chooseIssuesDocuments,
                 createIssue,
                 creatingIssues,
                 createdIssues,
-                result,
             }}
         >
             {children}

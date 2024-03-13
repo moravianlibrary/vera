@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import React from "react";
 import { AssignableCategory } from "../../adapters/ApiCategories";
+import { getLocalizedIdentifiers, identifiers } from "../../types/Identifiers";
+import CategoryPicker from "../../components/pickers/CategoryPicker";
 
 interface InsertDocumentsSettingsProps {
     onGoNext: () => void;
@@ -15,7 +17,6 @@ const InsertDocumentsSettings: React.FC<InsertDocumentsSettingsProps> = (
 ) => {
     const { t } = useTranslation();
     const {
-        identifiers,
         identifier,
         setIdentifier,
         categories,
@@ -39,21 +40,22 @@ const InsertDocumentsSettings: React.FC<InsertDocumentsSettingsProps> = (
             <div className="flex align-items-center gap-3">
                 <span>{t("choose_identifier")}:</span>
                 <Dropdown
-                    options={identifiers}
-                    value={identifier.value}
+                    options={getLocalizedIdentifiers(t)}
+                    value={identifier}
                     onChange={(e) => setIdentifier(e.value)}
                 />
             </div>
             <div className="flex align-items-center gap-3">
                 <span>{t("choose_category")}:</span>
-                <Dropdown
+                <CategoryPicker category_id={category} callback={setCategory} />
+                {/* <Dropdown
                     options={categories.map((category) => ({
                         label: renderLabel(category),
                         value: category.id,
                     }))}
                     value={category}
                     onChange={(e) => setCategory(e.value)}
-                />
+                /> */}
             </div>
             <div className="flex align-items-center gap-3">
                 <span>{t("Insert another upon successful insertion")}:</span>

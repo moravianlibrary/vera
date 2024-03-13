@@ -80,8 +80,7 @@ def get_document_by_sysno(sysno: str):
         if document is None:
             return None, CatalogResponseStatus.DocumentNotFound
         return document, CatalogResponseStatus.Success
-    else:
-        return None, CatalogResponseStatus.InvalidSysno
+    return None, CatalogResponseStatus.InvalidSysno
 
 
 def get_document_by_identifier(

@@ -3,6 +3,6 @@ const QUERY = 'results;q={BARCODE}';
 
 export class DigitizationRegistry {
     static getDocumentLink(barcode: string | null) {
-        return barcode ? BASE_URL + QUERY.replace('{BARCODE}', barcode) : null;
+        return barcode ? BASE_URL + QUERY.replace('{BARCODE}', barcode) : undefined;
     }
 }
