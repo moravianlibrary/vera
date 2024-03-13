@@ -1,5 +1,5 @@
 import { Button } from "primereact/button";
-import { TieredMenu } from 'primereact/tieredmenu';
+import { TieredMenu } from "primereact/tieredmenu";
 import React, { useEffect, useRef, useState } from "react";
 import DocumentsSearchBar from "./search-bar/DocumentsSearchBar";
 import { SelectButton } from "primereact/selectbutton";
@@ -28,7 +28,7 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
         handleCancelSelection,
         handleDeleteDocuments,
         handleUpdateCategory,
-        handleExportDocuments
+        handleExportDocuments,
     } = useDocuments();
     const { categories } = useAssignableCategories();
 
@@ -36,8 +36,13 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const [hasSelection, setHasSelection] = useState(false);
     const [displayOption, setDisplayOption] = useState("datatable");
     const displayOptions = [
-        { name: 'Option 1', icon: 'pi pi-table', value: "datatable" },
-        { name: 'Option 2', icon: 'pi pi-chart-bar', value: "graph", disabled: true },
+        { name: "Option 1", icon: "pi pi-table", value: "datatable" },
+        {
+            name: "Option 2",
+            icon: "pi pi-chart-bar",
+            value: "graph",
+            disabled: true,
+        },
     ];
 
     const taskSelectorMenuRef = useRef(null);
@@ -45,16 +50,32 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
         {
             label: t("Export to file"),
             items: [
-                { label: t("Export to XSLX"), command: () => handleExportDocuments(), },
-        ]},
+                {
+                    label: t("Export to XSLX"),
+                    command: () => handleExportDocuments(),
+                },
+            ],
+        },
         {
             label: t("Change category"),
-            items: categories.map(category => ({ label: category.getPath(), command: () => handleUpdateCategory(category.id, category.name), }))
+            items: categories.map((category) => ({
+                label: category.getPath(),
+                command: () => handleUpdateCategory(category.id, category.name),
+            })),
         },
-        { label: t("Predict volumes page counts"), command: () => handleStartTask(TaskType.PredictVolumePages), },
-        { label: t("Sync from catalog"), command: () => handleStartTask(TaskType.SyncFromCatalog), },
-        { label: t("Sync from digitization registry"), command: () => handleStartTask(TaskType.SyncFromDigitizationRegistry), },
-        // { label: 'Export', }
+        {
+            label: t("Predict volumes page counts"),
+            command: () => handleStartTask(TaskType.PredictVolumePages),
+        },
+        {
+            label: t("Sync from catalog"),
+            command: () => handleStartTask(TaskType.SyncFromCatalog),
+        },
+        {
+            label: t("Sync from digitization registry"),
+            command: () =>
+                handleStartTask(TaskType.SyncFromDigitizationRegistry),
+        },
     ];
     const [confirmDeletionVisible, setConfirmDeletionVisible] = useState(false);
 
@@ -86,13 +107,14 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const startContent = (
         <React.Fragment>
             <Button
-                label={t('insert_document')}
+                label={t("insert_document")}
                 icon="pi pi-plus"
                 outlined
                 onClick={props.onInsert}
             />
             <i className="pi pi-bars p-toolbar-separator m-1" />
-            <SelectButton value={displayOption}
+            <SelectButton
+                value={displayOption}
                 onChange={handleSetDisplayOption}
                 itemTemplate={displayOptionTemplate}
                 options={displayOptions}
@@ -116,55 +138,72 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
         <React.Fragment>
             <div className="flex flex-column align-items-end">
                 <div>
-                <TieredMenu className="w-auto" model={taskSelectorItems} popup ref={taskSelectorMenuRef} id="popup_menu_left" />
-                <Button 
-                    // icon="pi pi-th-large"
-                    icon="pi pi-list"
-                    className="p-button-rounded p-button-text"
-                    severity={hasSelection ? "help" : "secondary"}
-                    disabled={!hasSelection}
-                    onClick={toggleTaskSelectorMenu}
-                    aria-controls="popup_menu_left"
-                    aria-haspopup
-                    tooltip={t('Other options')}
-                    tooltipOptions={{ position: 'top', showDelay: 500 }}
-                />
-                <Button icon="pi pi-trash" 
-                    className="p-button-rounded p-button-text"
-                    severity={hasSelection ? "danger" : "secondary"}
-                    disabled={!hasSelection}
-                    onClick={() => setConfirmDeletionVisible(true)}
-                    tooltip={t('Delete selected documents')}
-                    tooltipOptions={{ position: 'top', showDelay: 500 }}
-                />
-                <Button icon="pi pi-times" 
-                    className="p-button-rounded p-button-text"
-                    severity={hasSelection ? "info" : "secondary"}
-                    disabled={!hasSelection}
-                    onClick={handleCancelSelection}
-                    tooltip={t('Cancel document selection')}
-                    tooltipOptions={{ position: 'top', showDelay: 500 }}
-                />
-                <ConfirmDialog
-                    visible={confirmDeletionVisible}
-                    onHide={() => setConfirmDeletionVisible(false)}
-                    header={t('Delete documents')}
-                    message={t("Are you sure you want to delete all selected documents?")}
-                    icon="pi pi-exclamation-triangle"
-                    acceptLabel={t('Delete')}
-                    acceptClassName='p-button-danger'
-                    rejectLabel={t('Cancel')}
-                    accept={handleDeleteDocuments}
-                />
+                    <TieredMenu
+                        className="w-auto"
+                        model={taskSelectorItems}
+                        popup
+                        ref={taskSelectorMenuRef}
+                        id="popup_menu_left"
+                    />
+                    <Button
+                        // icon="pi pi-th-large"
+                        icon="pi pi-list"
+                        className="p-button-rounded p-button-text"
+                        severity={hasSelection ? "help" : "secondary"}
+                        disabled={!hasSelection}
+                        onClick={toggleTaskSelectorMenu}
+                        aria-controls="popup_menu_left"
+                        aria-haspopup
+                        tooltip={t("Other options")}
+                        tooltipOptions={{ position: "top", showDelay: 500 }}
+                    />
+                    <Button
+                        icon="pi pi-trash"
+                        className="p-button-rounded p-button-text"
+                        severity={hasSelection ? "danger" : "secondary"}
+                        disabled={!hasSelection}
+                        onClick={() => setConfirmDeletionVisible(true)}
+                        tooltip={t("Delete selected documents")}
+                        tooltipOptions={{ position: "top", showDelay: 500 }}
+                    />
+                    <Button
+                        icon="pi pi-times"
+                        className="p-button-rounded p-button-text"
+                        severity={hasSelection ? "info" : "secondary"}
+                        disabled={!hasSelection}
+                        onClick={handleCancelSelection}
+                        tooltip={t("Cancel document selection")}
+                        tooltipOptions={{ position: "top", showDelay: 500 }}
+                    />
+                    <ConfirmDialog
+                        visible={confirmDeletionVisible}
+                        onHide={() => setConfirmDeletionVisible(false)}
+                        header={t("Delete documents")}
+                        message={t(
+                            "Are you sure you want to delete all selected documents?"
+                        )}
+                        icon="pi pi-exclamation-triangle"
+                        acceptLabel={t("Delete")}
+                        acceptClassName="p-button-danger"
+                        rejectLabel={t("Cancel")}
+                        accept={handleDeleteDocuments}
+                    />
                 </div>
-                <span className="text-sm text-gray-700">{t('Number of selected documents')}: {selectAll ? numFound : selectedDocuments.length}</span>
+                <span className="text-sm text-gray-700">
+                    {t("Number of selected documents")}:{" "}
+                    {selectAll ? numFound : selectedDocuments.length}
+                </span>
             </div>
         </React.Fragment>
     );
 
     if (advancedSearch) {
         return (
-            <Toolbar start={startContent} center={centerContent} end={endContent} />
+            <Toolbar
+                start={startContent}
+                center={centerContent}
+                end={endContent}
+            />
         );
     }
 

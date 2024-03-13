@@ -1,26 +1,37 @@
-import { DataTable, DataTableRowEditCompleteEvent, DataTableRowEditEvent, DataTableSelectionMultipleChangeEvent, DataTableValueArray } from 'primereact/datatable';
-import { CategoryEditor, IssuanceTypeEditor, MaterialTypeEditor, numberEditor, textEditor, textareaEditor } from '../../services/Editors.js';
-import React, { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Column } from 'primereact/column';
-import { Button } from 'primereact/button';
-import { accessService } from '../../services/AccessService';
-import { useUser } from '../../contexts/user/UserContext';
-import { useDocuments } from '../../contexts/documents/DocumentsContext';
-import { Document } from '../../adapters/ApiDocuments';
-import DocumentModel from '../../contexts/documents/DocumentModel.js';
-import { MaterialType } from '../../types/MaterialType.js';
-import { Tooltip } from 'primereact/tooltip';
-import { OverlayPanel } from 'primereact/overlaypanel';
-import { useOverlayScrollListener } from 'primereact/hooks';
-import { Menu } from 'primereact/menu';
-import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
-import { useToast } from '../../contexts/toast/ToastContext';
-import { Dialog } from 'primereact/dialog';
+import {
+    DataTable,
+    DataTableRowEditCompleteEvent,
+    DataTableRowEditEvent,
+    DataTableSelectionMultipleChangeEvent,
+    DataTableValueArray,
+} from "primereact/datatable";
+import {
+    CategoryEditor,
+    IssuanceTypeEditor,
+    MaterialTypeEditor,
+    numberEditor,
+    textEditor,
+    textareaEditor,
+} from "../../services/Editors.js";
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Column } from "primereact/column";
+import { Button } from "primereact/button";
+import { accessService } from "../../services/AccessService";
+import { useUser } from "../../contexts/user/UserContext";
+import { useDocuments } from "../../contexts/documents/DocumentsContext";
+import { Document } from "../../adapters/ApiDocuments";
+import DocumentModel from "../../contexts/documents/DocumentModel.js";
+import { MaterialType } from "../../types/MaterialType.js";
+import { Tooltip } from "primereact/tooltip";
+import { OverlayPanel } from "primereact/overlaypanel";
+import { useOverlayScrollListener } from "primereact/hooks";
+import { Menu } from "primereact/menu";
+import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { useToast } from "../../contexts/toast/ToastContext";
+import { Dialog } from "primereact/dialog";
 
-
-interface DocumentsTableProps {
-}
+interface DocumentsTableProps {}
 
 interface DocumentDetailsProps {
     document: DocumentModel;
@@ -41,7 +52,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
         selectedDocuments,
         handleSelectDocuments,
         handleSelectAllDocuments,
-        selectAll
+        selectAll,
     } = useDocuments();
     const { user } = useUser();
     const [categories, setCategories] = useState([]);
@@ -54,7 +65,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     };
 
     const handleRowCollapse = (e: DataTableRowEditEvent) => {
-        setExpandedRows(expandedRows.filter(row => row.id !== e.data.id));
+        setExpandedRows(expandedRows.filter((row) => row.id !== e.data.id));
     };
 
     const isAllowedToEdit = (document: Document) => {
@@ -64,8 +75,11 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     const deleteButton = (document: DocumentModel) => {
         if (!insertMode || document.id) {
             return (
-                <Button className="p-button-rounded p-button-text"
-                    severity={isAllowedToEdit(document) ? "danger" : "secondary"}
+                <Button
+                    className="p-button-rounded p-button-text"
+                    severity={
+                        isAllowedToEdit(document) ? "danger" : "secondary"
+                    }
                     disabled={!isAllowedToEdit(document)}
                     icon="pi pi-trash"
                     onClick={() => handleDeleteDocument(document)}
@@ -78,8 +92,10 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
         handleUpdateDocument(event.newData as DocumentModel, event.index);
     };
 
-    const handleSelectionChange = (event: DataTableSelectionMultipleChangeEvent<DataTableValueArray>) => {
-        if (event.type === 'all') {
+    const handleSelectionChange = (
+        event: DataTableSelectionMultipleChangeEvent<DataTableValueArray>
+    ) => {
+        if (event.type === "all") {
             handleSelectAllDocuments();
             return;
         }
@@ -87,31 +103,33 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
             handleSelectAllDocuments();
         }
 
-        const selectedDocuments: DocumentModel[] = event.value.map((selectedItem) => {
-            return selectedItem as DocumentModel;
-        });
+        const selectedDocuments: DocumentModel[] = event.value.map(
+            (selectedItem) => {
+                return selectedItem as DocumentModel;
+            }
+        );
         handleSelectDocuments(selectedDocuments);
     };
 
     const pagesCountBody = (document: DocumentModel) => {
         return document.pages_count
-                ? document.pages_count_predicted
-                        ? `${document.pages_count} (${document.pages_count_predicted})`
-                        : document.pages_count
-                : document.pages_count_predicted
-                        ? `(${document.pages_count_predicted})`
-                        : null;
+            ? document.pages_count_predicted
+                ? `${document.pages_count} (${document.pages_count_predicted})`
+                : document.pages_count
+            : document.pages_count_predicted
+            ? `(${document.pages_count_predicted})`
+            : null;
     };
 
     const titleBody = (document: DocumentModel) => {
         const titleStyle: any = {
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
+            display: "-webkit-box",
+            WebkitBoxOrient: "vertical",
             WebkitLineClamp: 2,
-            overflow: 'hidden',
+            overflow: "hidden",
         };
         return (
-            <span style={titleStyle} className='overflow-ellipsis'>
+            <span style={titleStyle} className="overflow-ellipsis">
                 {document.title}
             </span>
         );
@@ -124,95 +142,129 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     };
 
     const descriptionBody = (document: DocumentModel) => {
-        return [document.year, document.volume, document.bundle].filter(x => x).join(' ');
+        return [document.year, document.volume, document.bundle]
+            .filter((x) => x)
+            .join(" ");
     };
 
     return (
         <DataTable
-            className='documents-table'
+            className="documents-table"
             value={documents}
             // header={tableHeader}
             // resizableColumns
             // columnResizeMode="fit"
             scrollable
             // scrollHeight="flex"
-            scrollHeight="calc(100vh - 150px)"
-            virtualScrollerOptions={{ lazy: true, onLazyLoad: handleLazyLoad, itemSize: 81, delay: 0 }}
-            onScroll={e => (e.target)}
+            scrollHeight="calc(100vh - 160px)"
+            virtualScrollerOptions={{
+                lazy: true,
+                onLazyLoad: handleLazyLoad,
+                itemSize: 81,
+                delay: 0,
+            }}
+            onScroll={(e) => e.target}
             selectionMode="checkbox"
             selection={selectedDocuments}
             onSelectionChange={handleSelectionChange}
         >
-            <Column field='details' body={document => <DocumentDetailsBody document={document} />} />
-            <Column field="sysno" header={t('sysno')} />
-            <Column field="type" header={t('Type')} body={typeBody} />
-            <Column field='description' header={t('Description')} body={descriptionBody} />
-            <Column field="category_name"
-                header={t('category')}
+            <Column
+                field="details"
+                body={(document) => <DocumentDetailsBody document={document} />}
             />
-            <Column field='title' header={t('title')} body={titleBody} />
-            <Column field='pages_count' body={pagesCountBody} header={t('pages_count')} />
-            <Column field='signature' header={t('Signature')} />
-            <Column field="barcode" header={t('Barcode')} />
-            <Column field="cnb" header={t('CNB')} />
-            <Column field="creator" header={t('creator')} />
-            <Column field='created_at' header={t('created_at')} />
+            <Column field="sysno" header={t("sysno")} />
+            <Column field="type" header={t("Type")} body={typeBody} />
+            <Column
+                field="description"
+                header={t("Description")}
+                body={descriptionBody}
+            />
+            <Column field="category_name" header={t("category")} />
+            <Column field="title" header={t("title")} body={titleBody} />
+            <Column
+                field="pages_count"
+                body={pagesCountBody}
+                header={t("pages_count")}
+            />
+            <Column
+                className="pointer-events-none"
+                field="signature"
+                header={t("Signature")}
+            />
+            <Column field="barcode" header={t("Barcode")} />
+            <Column field="cnb" header={t("CNB")} />
+            <Column field="creator" header={t("creator")} />
+            <Column field="created_at" header={t("created_at")} />
 
-            <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+            <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
         </DataTable>
     );
 };
 
-const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc }) => {
+const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({
+    document: doc,
+}) => {
     const { t } = useTranslation();
     const { handleDeleteDocument } = useDocuments();
 
-    const op = useRef<OverlayPanel>(null);
     const [panelVisible, setPanelVisible] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState(false);
+    const [dialogPosition, setDialogPosition] = useState({ top: 0, left: 0 });
 
     const handleAcceptDelete = () => {
-        handleDeleteDocument(doc)
-        op.current!.hide();
+        setPanelVisible(false);
+        handleDeleteDocument(doc);
     };
 
     return (
-        <div className='document-details-body flex' style={{ position: 'relative' }}>
-            <Button className='details-button'
+        <div
+            className="document-details-body flex"
+            style={{ position: "relative" }}
+        >
+            <Button
+                className="details-button"
                 text={!panelVisible}
                 onClick={() => setPanelVisible(!panelVisible)}
             >
-                <i className='pi pi-book'/>
+                <i className="pi pi-book" />
             </Button>
             <Dialog
                 id={`document-details-${doc.id}`}
-                style={{ maxWidth: '600px', marginLeft: '96px', marginTop: '48px' }}
+                style={{
+                    maxWidth: "600px",
+                    marginLeft: "96px",
+                    marginTop: "48px",
+                    top: dialogPosition.top,
+                    left: dialogPosition.left,
+                }}
                 visible={panelVisible}
                 onHide={() => setPanelVisible(false)}
                 modal={false}
-                position='left'
+                position="left"
                 minX={96}
-                minY={48}
+                // minY={48}
             >
-                <div className='flex flex-column gap-3 align-items-start'>
+                <div className="flex flex-column gap-3 align-items-start">
                     <DocumentDetailsTooltip document={doc} />
                     <Button
                         icon="pi pi-trash"
-                        severity='danger'
+                        severity="danger"
                         outlined
-                        label={t('Delete')}
+                        label={t("Delete")}
                         onClick={() => setConfirmVisible(true)}
                     />
                     <ConfirmDialog
                         // group="declarative"
                         visible={confirmVisible}
                         onHide={() => setConfirmVisible(false)}
-                        header={t('Delete document')}
-                        message={t("Are you sure you want to delete this document?")}
+                        header={t("Delete document")}
+                        message={t(
+                            "Are you sure you want to delete this document?"
+                        )}
                         icon="pi pi-exclamation-triangle"
-                        acceptLabel={t('Delete')}
-                        acceptClassName='p-button-danger'
-                        rejectLabel={t('Cancel')}
+                        acceptLabel={t("Delete")}
+                        acceptClassName="p-button-danger"
+                        rejectLabel={t("Cancel")}
                         accept={handleAcceptDelete}
                     />
                 </div>
@@ -221,7 +273,9 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({ document: doc
     );
 };
 
-const DocumentDetailsTooltip: React.FC<DocumentDetailsProps> = ({ document }) => {
+const DocumentDetailsTooltip: React.FC<DocumentDetailsProps> = ({
+    document,
+}) => {
     const { t } = useTranslation();
     const showToast = useToast();
 
@@ -232,34 +286,47 @@ const DocumentDetailsTooltip: React.FC<DocumentDetailsProps> = ({ document }) =>
 
     return (
         <div className="flex flex-column gap-1">
-            {document.getTooltipFieldList(t).map(field => {
+            {document.getTooltipFieldList(t).map((field) => {
                 return (
-                    <div key={field.label} className='flex justify-content-between gap-5 m-1'>
+                    <div
+                        key={field.label}
+                        className="flex justify-content-between gap-5 m-1"
+                    >
                         <label>{t(field.label)}:</label>
-                        <div className='flex gap-1'>
-                            <span className='p-0 max-w-23rem'>{field.value as string}</span>
-                            {field.uri &&
+                        <div className="flex gap-1">
+                            <span className="p-0 max-w-23rem">
+                                {field.value as string}
+                            </span>
+                            {field.uri && (
+                                <Button
+                                    className="p-0 text-xs align-content-center"
+                                    severity="info"
+                                    text
+                                    onClick={() =>
+                                        window.open(
+                                            field.uri as string,
+                                            "_blank"
+                                        )
+                                    }
+                                >
+                                    <i className="pi pi-external-link p-0" />
+                                </Button>
+                            )}
                             <Button
-                                className='p-0 text-xs align-content-center'
-                                severity='info'
+                                className="p-0 text-xs align-content-center"
+                                severity="info"
                                 text
-                                onClick={() => window.open(field.uri as string, '_blank')}
+                                onClick={() =>
+                                    copyToClipboard(field.value as string)
+                                }
                             >
-                                <i className='pi pi-external-link p-0' />
-                            </Button>}
-                            <Button
-                                className='p-0 text-xs align-content-center'
-                                severity='info'
-                                text
-                                onClick={() => copyToClipboard(field.value as string)}
-                            >
-                                <i className='pi pi-copy p-0' />
+                                <i className="pi pi-copy p-0" />
                             </Button>
                         </div>
                     </div>
                 );
             })}
-        </div>      
+        </div>
     );
 };
 
@@ -267,40 +334,61 @@ const DocumentDetails: React.FC<DocumentDetailsProps> = ({ document }) => {
     const { t } = useTranslation();
 
     const data = [
-        {'field': "System number", 'value': document.sysno},
-        {'field': "Material type", 'value': document.material_type, editor: MaterialTypeEditor},
-        {'field': "Volume number", 'value': document.volume},
-        {'field': "Bundle", 'value': document.bundle},
-        {'field': "Volume year", 'value': document.year},
-        {'field': "Issuance type", 'value': document.issuance_type, editor: IssuanceTypeEditor},
-        {'field': "Category", 'value': document.category_name, editor: CategoryEditor},
-        {'field': "Barcode", 'value': document.barcode},
-        {'field': "CNB", 'value': document.cnb},
-        {'field': "ISBN/ISSN", 'value': document.isbn_issn},
-        {'field': "Signature", 'value': document.signature},
-        {'field': "Title", 'value': document.title},
-        {'field': "Digitization state", 'value': document.digitization_state, editable: false},
-        {'field': "Pages count", 'value': document.pages_count},
-        {'field': "Pages count predicted", 'value': document.pages_count_predicted},
-        {'field': "Size", 'value': document.size},
-        {'field': "Publisher", 'value': document.publisher},
-        {'field': "Publishing place", 'value': document.publishing_place},
-        {'field': "Publishing year", 'value': document.publishing_year},
-        {'field': "Languages", 'value': document.languages},
-        {'field': "Frequencies", 'value': document.frequencies},
-        {'field': "Creator", 'value': document.creator},
-        {'field': "Creator department", 'value': document.department},
-        {'field': "Created at", 'value': document.created_at},
-        {'field': "Extraction id", 'value': document.extraction_id},
-        {'field': "Extractor", 'value': document.extractor},
-        {'field': "Extracted at", 'value': document.extracted_at},
+        { field: "System number", value: document.sysno },
+        {
+            field: "Material type",
+            value: document.material_type,
+            editor: MaterialTypeEditor,
+        },
+        { field: "Volume number", value: document.volume },
+        { field: "Bundle", value: document.bundle },
+        { field: "Volume year", value: document.year },
+        {
+            field: "Issuance type",
+            value: document.issuance_type,
+            editor: IssuanceTypeEditor,
+        },
+        {
+            field: "Category",
+            value: document.category_name,
+            editor: CategoryEditor,
+        },
+        { field: "Barcode", value: document.barcode },
+        { field: "CNB", value: document.cnb },
+        { field: "ISBN/ISSN", value: document.isbn_issn },
+        { field: "Signature", value: document.signature },
+        { field: "Title", value: document.title },
+        {
+            field: "Digitization state",
+            value: document.digitization_state,
+            editable: false,
+        },
+        { field: "Pages count", value: document.pages_count },
+        {
+            field: "Pages count predicted",
+            value: document.pages_count_predicted,
+        },
+        { field: "Size", value: document.size },
+        { field: "Publisher", value: document.publisher },
+        { field: "Publishing place", value: document.publishing_place },
+        { field: "Publishing year", value: document.publishing_year },
+        { field: "Languages", value: document.languages },
+        { field: "Frequencies", value: document.frequencies },
+        { field: "Creator", value: document.creator },
+        { field: "Creator department", value: document.department },
+        { field: "Created at", value: document.created_at },
+        { field: "Extraction id", value: document.extraction_id },
+        { field: "Extractor", value: document.extractor },
+        { field: "Extracted at", value: document.extracted_at },
     ];
 
     const cellEditor = (options) => {
         if (!options.rowData || options.rowData.editable === false) {
             return;
         }
-        return options.rowData.editor ? options.rowData.editor(options) : textEditor(options);
+        return options.rowData.editor
+            ? options.rowData.editor(options)
+            : textEditor(options);
     };
 
     const handleCellEditComplete = (e) => {
@@ -308,12 +396,11 @@ const DocumentDetails: React.FC<DocumentDetailsProps> = ({ document }) => {
     };
 
     return (
-        <DataTable value={data}
-            editMode='cell'
-        >
-            <Column field="field" header={t('Field')} />
-            <Column field="value"
-                header={t('Value')}
+        <DataTable value={data} editMode="cell">
+            <Column field="field" header={t("Field")} />
+            <Column
+                field="value"
+                header={t("Value")}
                 // body={row => <DocumentDetailsBody />}
                 // editor={(options) => cellEditor(options)}
                 // onCellEditComplete={handleCellEditComplete}
