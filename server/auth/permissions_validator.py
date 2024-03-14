@@ -2,7 +2,6 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from typing import List
 
-from auth.auth_client import get_user_from_token, oauth2_scheme
 from auth.dependencies import get_current_user
 from auth.exceptions import PermissionDeniedException
 from auth.schemas import CurrentUser
@@ -69,12 +68,11 @@ class CreateCategoryAccessValidator(AccessValidator):
     def __call__(
         self,
         category: CategoryCreate = Depends(get_create_category_body),
-        token: str = Depends(oauth2_scheme),
+        user: CurrentUser = Depends(get_current_user),
         db: Session = Depends(get_db),
     ):
         from categories.crud import get_category_departments
 
-        user = get_user_from_token(token, db)
         if self.evaluate_override(user):
             return True
 
@@ -100,16 +98,16 @@ class UpdateCategoryAccessValidator(AccessValidator):
         self,
         category_id: int = Depends(get_category_id),
         category: CategoryCreate = Depends(get_create_category_body),
-        token: str = Depends(oauth2_scheme),
+        user: CurrentUser = Depends(get_current_user),
         db: Session = Depends(get_db),
     ):
         from categories.crud import get_category, get_category_departments
 
-        user = get_user_from_token(token, db)
         if self.evaluate_override(user):
             return True
 
         db_category = get_category(category_id, db)
+
         if db_category.parent_id != category.parent_id:
             required_departments = [
                 category_department.department_id
@@ -146,12 +144,11 @@ class EditCategoryDistributionAccessValidator(AccessValidator):
     def __call__(
         self,
         parent_id: int = Depends(get_parent_id),
-        token: str = Depends(oauth2_scheme),
+        user: CurrentUser = Depends(get_current_user),
         db: Session = Depends(get_db),
     ):
         from categories.crud import get_category_departments
 
-        user = get_user_from_token(token, db)
         if self.evaluate_override(user):
             return True
 
@@ -174,12 +171,11 @@ class CategoryIdAccessValidator(AccessValidator):
     def __call__(
         self,
         category_id: int = Depends(get_category_id),
-        token: str = Depends(oauth2_scheme),
+        user: CurrentUser = Depends(get_current_user),
         db: Session = Depends(get_db),
     ):
         from categories.crud import get_category_departments
 
-        user = get_user_from_token(token, db)
         if self.evaluate_override(user):
             return True
 

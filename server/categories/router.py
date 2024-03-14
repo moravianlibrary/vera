@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 
-from auth.router import get_current_user
+from auth.dependencies import get_current_user
 from auth.permissions import (
     CreateCategoryPermission,
     DeleteCategoryPermission,
