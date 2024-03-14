@@ -3,14 +3,19 @@ TOKEN_CALL = (
 )
 
 
-def setUpEnv():
+def mockClsEnv(cls):
     from os import environ
+    from unittest.mock import patch
 
-    environ["POSTGRES_HOST"] = "localhost"
-    environ["ALLOW_ORIGINS"] = "*"
-    # environ["ALLOW_ORIGINS"] = "http://localhost:3000"
-    environ["KEYCLOAK_CLIENT_ID"] = "vera-backend"
-    environ["KEYCLOAK_ISSUER_CLIENT_ID"] = "vera"
+    cls.mock_env_vars = {
+        "POSTGRES_HOST": "localhost",
+        "ALLOW_ORIGINS": "*",
+        # "ALLOW_ORIGINS": "http://localhost:3000",
+        "KEYCLOAK_CLIENT_ID": "vera-backend",
+        "KEYCLOAK_ISSUER_CLIENT_ID": "vera",
+    }
+    cls.patcher = patch.dict(environ, cls.mock_env_vars)
+    cls.patcher.start()
 
 
 def createTestClient():
@@ -31,6 +36,12 @@ def createTestUser(actions=[]):
         role_name="test_role",
         actions=actions,
     )
+
+
+def get_all_actions_except(actions):
+    from roles.types import ActionType
+
+    return [action for action in ActionType if action not in actions]
 
 
 def get_admin_token() -> str:

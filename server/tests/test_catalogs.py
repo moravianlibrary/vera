@@ -1,5 +1,5 @@
 import unittest
-from helper_funcs import setUpEnv
+from tests.helper_funcs import setUpEnv
 
 from catalogs.routines import generate_catalog_document
 from catalogs.enums import (

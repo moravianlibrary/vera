@@ -114,6 +114,19 @@ def get_root_categories(db: Session):
     )
 
 
+def get_department_root_categories(department_id: int, db: Session):
+    return (
+        db.query(models.Category)
+        .join(
+            models.CategoryDepartments,
+            models.Category.id == models.CategoryDepartments.category_id,
+        )
+        .filter(models.CategoryDepartments.department_id == department_id)
+        .filter(models.Category.parent_id.is_(None))
+        .all()
+    )
+
+
 def get_children_categories(parent_id: int, db: Session):
     return (
         db.query(models.Category)
@@ -124,6 +137,19 @@ def get_children_categories(parent_id: int, db: Session):
 
 def get_assignable_categories(db: Session):
     return db.query(models.Category).filter(models.Category.assignable).all()
+
+
+def get_department_assignable_categories(department_id: int, db: Session):
+    return (
+        db.query(models.Category)
+        .join(
+            models.CategoryDepartments,
+            models.Category.id == models.CategoryDepartments.category_id,
+        )
+        .filter(models.CategoryDepartments.department_id == department_id)
+        .filter(models.Category.assignable)
+        .all()
+    )
 
 
 def get_enabled_for_parent(parent_id: int, db: Session):

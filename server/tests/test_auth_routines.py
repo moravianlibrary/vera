@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from helper_funcs import createTestUser, setUpEnv
+from tests.helper_funcs import createTestUser, setUpEnv
 
 
 class TestAuthRoutines(unittest.TestCase):

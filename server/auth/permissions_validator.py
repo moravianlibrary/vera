@@ -20,11 +20,13 @@ class PermissionsValidator:
         db: Session = Depends(get_db),
     ):
         user = get_user_from_token(token, db)
-        user_permissions_set = set(user.actions)
-        required_permissions_set = set(self.required_permissions)
+        user_permissions = set(user.actions)
+        print(user_permissions)
 
-        if required_permissions_set.issubset(user_permissions_set):
-            raise PermissionDeniedException()
+        for required_permission in self.required_permissions:
+            if required_permission in user_permissions:
+                return True
+        raise PermissionDeniedException()
 
 
 class AccessValidator:
@@ -37,7 +39,6 @@ class AccessValidator:
 
     def evaluate_override(self, user: CurrentUser):
         user_permissions_set = set(user.actions)
-        print(user_permissions_set)
         return (
             self.override_permissions is not None
             and self.override_permissions.issubset(user_permissions_set)
@@ -58,7 +59,15 @@ def get_create_category_body(category: CategoryCreate):
     return category
 
 
-class CategoryAccessValidator(AccessValidator):
+def get_category_id(category_id: int):
+    return category_id
+
+
+def get_parent_id(parent_id: int):
+    return parent_id
+
+
+class CreateCategoryAccessValidator(AccessValidator):
     def __call__(
         self,
         category: CategoryCreate = Depends(get_create_category_body),
@@ -69,15 +78,119 @@ class CategoryAccessValidator(AccessValidator):
 
         user = get_user_from_token(token, db)
         if self.evaluate_override(user):
-            print("overrided")
             return True
 
-        required_departments = (
-            get_category_departments(category.parent_id, db),
-            token,
-            db,
-        )
-        print(required_departments)
+        required_departments = [
+            category_department.department_id
+            for category_department in get_category_departments(
+                category.parent_id, db
+            )
+        ]
+
+        if (
+            user.department_id not in required_departments
+            or self.access_permissions is not None
+            and not self.access_permissions.issubset(set(user.actions))
+        ):
+            raise PermissionDeniedException()
+
+        return True
+
+
+class UpdateCategoryAccessValidator(AccessValidator):
+    def __call__(
+        self,
+        category_id: int = Depends(get_category_id),
+        category: CategoryCreate = Depends(get_create_category_body),
+        token: str = Depends(oauth2_scheme),
+        db: Session = Depends(get_db),
+    ):
+        from categories.crud import get_category, get_category_departments
+
+        user = get_user_from_token(token, db)
+        if self.evaluate_override(user):
+            return True
+
+        db_category = get_category(category_id, db)
+        if db_category.parent_id != category.parent_id:
+            required_departments = [
+                category_department.department_id
+                for category_department in get_category_departments(
+                    db_category.parent_id, db
+                )
+            ]
+
+            if (
+                user.department_id not in required_departments
+                or self.access_permissions is not None
+                and not self.access_permissions.issubset(set(user.actions))
+            ):
+                raise PermissionDeniedException()
+
+        required_departments = [
+            category_department.department_id
+            for category_department in get_category_departments(
+                category.parent_id, db
+            )
+        ]
+
+        if (
+            user.department_id not in required_departments
+            or self.access_permissions is not None
+            and not self.access_permissions.issubset(set(user.actions))
+        ):
+            raise PermissionDeniedException()
+
+        return True
+
+
+class EditCategoryDistributionAccessValidator(AccessValidator):
+    def __call__(
+        self,
+        parent_id: int = Depends(get_parent_id),
+        token: str = Depends(oauth2_scheme),
+        db: Session = Depends(get_db),
+    ):
+        from categories.crud import get_category_departments
+
+        user = get_user_from_token(token, db)
+        if self.evaluate_override(user):
+            return True
+
+        required_departments = [
+            category_department.department_id
+            for category_department in get_category_departments(parent_id, db)
+        ]
+
+        if (
+            user.department_id not in required_departments
+            or self.access_permissions is not None
+            and not self.access_permissions.issubset(set(user.actions))
+        ):
+            raise PermissionDeniedException()
+
+        return True
+
+
+class CategoryIdAccessValidator(AccessValidator):
+    def __call__(
+        self,
+        category_id: int = Depends(get_category_id),
+        token: str = Depends(oauth2_scheme),
+        db: Session = Depends(get_db),
+    ):
+        from categories.crud import get_category_departments
+
+        user = get_user_from_token(token, db)
+        if self.evaluate_override(user):
+            return True
+
+        required_departments = [
+            category_department.department_id
+            for category_department in get_category_departments(
+                category_id, db
+            )
+        ]
 
         if (
             user.department_id not in required_departments

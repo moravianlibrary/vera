@@ -62,6 +62,19 @@ def get_assignable_categories(db: Session):
     ]
 
 
+def get_department_assignable_categories(department_id: int, db: Session):
+    categories = crud.get_department_assignable_categories(department_id, db)
+    return [
+        schemas.CategoryDescriptor(
+            id=category.id,
+            name=category.name,
+            description=category.description,
+            parent_category=get_category_descriptor(category.parent_id, db),
+        )
+        for category in categories
+    ]
+
+
 def has_unique_name(
     category: schemas.CategoryCreate, category_id: Optional[int], db: Session
 ):
