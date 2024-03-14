@@ -1,11 +1,16 @@
 import unittest
 from unittest.mock import patch
-from tests.helper_funcs import createTestUser, setUpEnv
+from tests.helper_funcs import createTestUser, mockClsEnv
 
 
 class TestAuthRoutines(unittest.TestCase):
-    def setUp(self):
-        setUpEnv()
+    @classmethod
+    def setUpClass(cls):
+        mockClsEnv(cls)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
 
     @patch("auth.auth_client.get_user_from_token")
     def test_mock_get_user_from_token(self, mock_get_user_from_token):

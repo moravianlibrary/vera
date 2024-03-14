@@ -1,18 +1,19 @@
 import unittest
 from unittest.mock import patch
-from helper_funcs import (
-    createTestClient,
-    createTestUser,
-    setUpEnv,
-)
+from helper_funcs import createTestClient, createTestUser, mockClsEnv
 
 
 from roles.types import ActionType
 
 
 class TestCategoriesEndpoints(unittest.TestCase):
-    def setUpClass(self):
-        setUpEnv()
+    @classmethod
+    def setUpClass(cls):
+        mockClsEnv(cls)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
 
     @patch("auth.auth_client.get_user_from_token")
     @patch("categories.crud.create_root_category")

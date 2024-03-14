@@ -1,11 +1,18 @@
 import unittest
-from helper_funcs import setUpEnv
+from helper_funcs import mockClsEnv
 from unittest.mock import patch
 
 
 class TestExtractions(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        mockClsEnv(cls)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
+
     def setUp(self):
-        setUpEnv()
         from services.database import get_db
 
         self.db = next(get_db())

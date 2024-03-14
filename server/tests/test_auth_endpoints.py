@@ -20,7 +20,8 @@ class TestAuthEndpoints(unittest.TestCase):
 
         importlib.invalidate_caches()
 
-    @patch("auth.auth_client.get_user_from_token")
+    # @patch("auth.auth_client.get_user_from_token")
+    @patch("auth.router.get_user_from_token")
     def test_current_user(self, mock_get_user_from_token: Mock):
         # Arange
         test_user = createTestUser()
@@ -40,8 +41,8 @@ class TestAuthEndpoints(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["username"], test_user.username)
 
-    @patch("auth.auth_client.get_user_from_token")
-    @patch("auth.crud.get_users")
+    @patch("auth.dependencies.get_user_from_token")
+    @patch("auth.router.get_users_crud")
     def test_get_users_permitted(
         self, mock_get_users: Mock, mock_get_user_from_token: Mock
     ):
@@ -63,7 +64,7 @@ class TestAuthEndpoints(unittest.TestCase):
         # Assert
         self.assertEqual(response.status_code, 200)
 
-    @patch("auth.auth_client.get_user_from_token")
+    @patch("auth.dependencies.get_user_from_token", autospec=True)
     def test_get_users_prohibited(self, mock_get_user_from_token: Mock):
         # Arange
         test_user = createTestUser()

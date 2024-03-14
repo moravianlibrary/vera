@@ -4,7 +4,7 @@ from helper_funcs import (
     createTestClient,
     createTestUser,
     get_all_actions_except,
-    setUpEnv,
+    mockClsEnv,
 )
 
 
@@ -13,8 +13,13 @@ from roles.types import ActionType
 
 
 class TestDepartmentsEndpoints(unittest.TestCase):
-    def setUp(self):
-        setUpEnv()
+    @classmethod
+    def setUpClass(cls):
+        mockClsEnv(cls)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
 
     @patch("auth.auth_client.get_user_from_token")
     @patch("departments.crud.create_department")

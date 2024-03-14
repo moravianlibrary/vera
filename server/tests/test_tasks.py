@@ -1,10 +1,17 @@
 import unittest
-from helper_funcs import setUpEnv
+from helper_funcs import mockClsEnv
 
 
 class TestRolesEndpoints(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        mockClsEnv(cls)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
+
     def setUp(self):
-        setUpEnv()
         from services.database import get_db
 
         self.test_sysno = "MZK01-000165329"

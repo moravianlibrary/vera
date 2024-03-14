@@ -1,11 +1,18 @@
 import unittest
 from fastapi.testclient import TestClient
-from helper_funcs import get_admin_token, setUpEnv
+from helper_funcs import get_admin_token, mockClsEnv
 
 
 class TestDocumentsCrud(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        mockClsEnv(cls)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
+
     def setUp(self):
-        setUpEnv()
 
         from services.database import get_db
 
@@ -86,8 +93,15 @@ class TestDocumentsCrud(unittest.TestCase):
 
 
 class TestDocumentsEndpoints(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        mockClsEnv(cls)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
+
     def setUp(self):
-        setUpEnv()
         from vera import app
 
         self.client = TestClient(app)

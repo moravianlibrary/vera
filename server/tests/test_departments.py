@@ -1,12 +1,19 @@
 import unittest
 from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
-from helper_funcs import setUpEnv
+from helper_funcs import mockClsEnv
 
 
 class TestDepartmentsEndpoints(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        mockClsEnv(cls)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
+
     def setUp(self):
-        setUpEnv()
         from vera import app
 
         self.client = TestClient(app)

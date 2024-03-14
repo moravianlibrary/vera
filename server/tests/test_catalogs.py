@@ -1,5 +1,5 @@
 import unittest
-from tests.helper_funcs import setUpEnv
+from tests.helper_funcs import mockClsEnv
 
 from catalogs.routines import generate_catalog_document
 from catalogs.enums import (
@@ -13,8 +13,13 @@ from catalogs.schemas import Frequency, Identifier
 
 
 class TestAlephCatalog(unittest.TestCase):
-    def setUp(self):
-        setUpEnv()
+    @classmethod
+    def setUpClass(cls):
+        mockClsEnv(cls)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
 
     def test_print_document(self):
         identifier = Identifier(
@@ -129,8 +134,13 @@ class TestAlephCatalog(unittest.TestCase):
 
 
 class TestDigitizationRegister(unittest.TestCase):
-    def setUp(self):
-        setUpEnv()
+    @classmethod
+    def setUpClass(cls):
+        mockClsEnv(cls)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
 
     def test_get_state_by_barcode(self):
         from catalogs.digitization_registry import get_state_by_identifier
