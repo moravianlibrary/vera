@@ -359,8 +359,8 @@ class TestCategoriesEndpoints(TestEndpoints):
     @patch("categories.router.crud.update_distribution")
     def test_update_distribution_permitted(
         self,
-        mock_update_distribution,
-        mock_get_enabled_for_parent,
+        mock_update_distribution: Mock,
+        mock_get_enabled_for_parent: Mock,
     ):
         from categories.schemas import Category
 
@@ -402,6 +402,170 @@ class TestCategoriesEndpoints(TestEndpoints):
 
         # Assert
         self.assertEqual(response.status_code, 200)
+
+    @patch("categories.router.crud.get_enabled_for_parent")
+    @patch("categories.router.crud.update_distribution")
+    def test_update_distribution_permitted_invalid_sum(
+        self,
+        mock_update_distribution: Mock,
+        mock_get_enabled_for_parent: Mock,
+    ):
+        from categories.schemas import Category
+
+        # Arrange
+        mockUser(createTestUser([ActionType.EditCategoriesAll]))
+        input_data = [
+            {"id": 2, "percentage": 50.0},
+            {"id": 3, "percentage": 40.0},
+        ]
+        child_categories = [
+            Category(
+                id=2,
+                name="Test Category 1",
+                level=1,
+                parent_id=1,
+                percentage=50,
+            ),
+            Category(
+                id=3,
+                name="Test Category 2",
+                level=1,
+                parent_id=1,
+                percentage=50,
+            ),
+        ]
+
+        mock_get_enabled_for_parent.return_value = child_categories
+        mock_update_distribution.return_value = None
+
+        # Act
+        response = self.client.put(
+            "/categories/distribution?parent_id=1",
+            json=input_data,
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "Percentage of all categories on one level has to sum to 100.",
+            response.json()["detail"],
+        )
+
+    @patch("categories.router.crud.get_enabled_for_parent")
+    @patch("categories.router.crud.update_distribution")
+    def test_update_distribution_permitted_missing_category(
+        self,
+        mock_update_distribution: Mock,
+        mock_get_enabled_for_parent: Mock,
+    ):
+        from categories.schemas import Category
+
+        # Arrange
+        mockUser(createTestUser([ActionType.EditCategoriesAll]))
+        input_data = [
+            {"id": 2, "percentage": 50.0},
+            {"id": 3, "percentage": 50.0},
+        ]
+        child_categories = [
+            Category(
+                id=2,
+                name="Test Category 1",
+                level=1,
+                parent_id=1,
+                percentage=50,
+            ),
+            Category(
+                id=3,
+                name="Test Category 2",
+                level=1,
+                parent_id=1,
+                percentage=30,
+            ),
+            Category(
+                id=4,
+                name="Test Category 3",
+                level=1,
+                parent_id=1,
+                percentage=20,
+            ),
+        ]
+
+        mock_get_enabled_for_parent.return_value = child_categories
+        mock_update_distribution.return_value = None
+
+        # Act
+        response = self.client.put(
+            "/categories/distribution?parent_id=1",
+            json=input_data,
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "Percentage distribution does not contains "
+            "all children from one parent",
+            response.json()["detail"],
+        )
+
+    @patch("categories.router.crud.get_enabled_for_parent")
+    @patch("categories.router.crud.update_distribution")
+    def test_update_distribution_permitted_excessive_category(
+        self,
+        mock_update_distribution: Mock,
+        mock_get_enabled_for_parent: Mock,
+    ):
+        from categories.schemas import Category
+
+        # Arrange
+        mockUser(createTestUser([ActionType.EditCategoriesAll]))
+        input_data = [
+            {"id": 2, "percentage": 100.0},
+        ]
+        child_categories = [
+            Category(
+                id=2,
+                name="Test Category 1",
+                level=1,
+                parent_id=1,
+                percentage=50,
+            ),
+            Category(
+                id=3,
+                name="Test Category 2",
+                level=1,
+                parent_id=1,
+                percentage=30,
+            ),
+        ]
+
+        mock_get_enabled_for_parent.return_value = child_categories
+        mock_update_distribution.return_value = None
+
+        # Act
+        response = self.client.put(
+            "/categories/distribution?parent_id=1",
+            json=input_data,
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            "Percentage distribution does not contains "
+            "all children from one parent",
+            response.json()["detail"],
+        )
 
     @patch("categories.router.crud.get_category")
     @patch("categories.router.crud.delete_category")

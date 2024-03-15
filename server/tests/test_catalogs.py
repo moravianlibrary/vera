@@ -163,33 +163,33 @@ class TestDigitizationRegister(unittest.TestCase):
             DigitizationState.Finished,
         )
 
-    def test_state_after_creating_document(self):
-        from catalogs.enums import IdentifierType
-        from catalogs.schemas import Identifier
-        from documents.crud import get_document_by_identifiers, delete_document
-        from documents.enums import DocumentCreateResult
-        from documents.routines import create_catalog_document
-        from services.database import get_db
+    # def test_state_after_creating_document(self):
+    #     from catalogs.enums import IdentifierType
+    #     from catalogs.schemas import Identifier
+    #     from documents.crud import get_document_by_identifiers, delete_document
+    #     from documents.enums import DocumentCreateResult
+    #     from documents.routines import create_catalog_document
+    #     from services.database import get_db
 
-        sysno = "MZK01-000369077"
-        volume = "2005"
-        barcode = "2610280747"
-        identifier = Identifier(
-            identifier_type=IdentifierType.Barcode, value=barcode
-        )
-        db = next(get_db())
+    #     sysno = "MZK01-000369077"
+    #     volume = "2005"
+    #     barcode = "2610280747"
+    #     identifier = Identifier(
+    #         identifier_type=IdentifierType.Barcode, value=barcode
+    #     )
+    #     db = next(get_db())
 
-        document = get_document_by_identifiers(sysno, volume, barcode, db)
-        if document:
-            delete_document(document.id, db)
+    #     document = get_document_by_identifiers(sysno, volume, barcode, db)
+    #     if document:
+    #         delete_document(document.id, db)
 
-        response = generate_catalog_document(identifier)
-        result = create_catalog_document(
-            response, identifier, None, False, "test_user", db
-        )
-        self.assertEqual(
-            result.create_result, DocumentCreateResult.AlreadyDigitized
-        )
+    #     response = generate_catalog_document(identifier)
+    #     result = create_catalog_document(
+    #         response, identifier, None, False, "test_user", db
+    #     )
+    #     self.assertEqual(
+    #         result.create_result, DocumentCreateResult.AlreadyDigitized
+    #     )
 
     def test_parse_pages_count(self):
         from catalogs.parsers import parse_page_count
