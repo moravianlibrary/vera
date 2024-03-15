@@ -17,6 +17,19 @@ class KrameriusSearch:
     def __init__(self, api: KrameriusApi):
         self.api = api
 
+    def get_document(self, pid):
+        params = (
+            SearchParams()
+            .with_rows(1)
+            .with_query(SearchQuery(SolrField.Pid, pid).build())
+        )
+        response = self.api.search(params.build())
+        return (
+            KrameriusDocument(response["response"]["docs"][0])
+            if response["response"]["numFound"] > 0
+            else None
+        )
+
     def num_found(self, query: "SearchQuery"):
         params = SearchParams().with_query(query).with_rows(0)
         return self.api.search(params.build())["response"]["numFound"]
