@@ -122,4 +122,15 @@ class TestFindMissingVolumes(TestRoutines):
 
     def test_find_missing_volumes_volume_years_in_title(self):
         # Arrange
-        pass
+        # pass
+        from kramerius.routines.find_missing_volumes import (
+            find_missing_periodical_volumes,
+            write_output,
+        )
+
+        with open("/tmp/find_missing_volumes.csv", "w") as file:
+
+            def write_line(periodical, catalog_document, issue):
+                write_output(file, periodical, catalog_document, issue)
+
+            find_missing_periodical_volumes(write_line)
