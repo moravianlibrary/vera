@@ -1,6 +1,6 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from auth.dependencies import get_current_user
 from auth.exceptions import PermissionDeniedException
@@ -60,7 +60,7 @@ def get_category_id(category_id: int):
     return category_id
 
 
-def get_parent_id(parent_id: int):
+def get_parent_id(parent_id: Optional[int]):
     return parent_id
 
 
@@ -143,7 +143,7 @@ class UpdateCategoryAccessValidator(AccessValidator):
 class EditCategoryDistributionAccessValidator(AccessValidator):
     def __call__(
         self,
-        parent_id: int = Depends(get_parent_id),
+        parent_id: Optional[int] = Depends(get_parent_id),
         user: CurrentUser = Depends(get_current_user),
         db: Session = Depends(get_db),
     ):
@@ -151,6 +151,8 @@ class EditCategoryDistributionAccessValidator(AccessValidator):
 
         if self.evaluate_override(user):
             return True
+        if parent_id is None:
+            return False
 
         required_departments = [
             category_department.department_id

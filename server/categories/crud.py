@@ -1,6 +1,6 @@
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
 from services.database import create
 from categories import models, schemas
@@ -152,7 +152,7 @@ def get_department_assignable_categories(department_id: int, db: Session):
     )
 
 
-def get_enabled_for_parent(parent_id: int, db: Session):
+def get_enabled_for_parent(parent_id: Optional[int], db: Session):
     query = db.query(models.Category)
     if parent_id is None:
         query = query.filter(models.Category.parent_id.is_(None))
