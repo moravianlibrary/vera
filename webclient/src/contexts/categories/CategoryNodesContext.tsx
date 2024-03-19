@@ -107,7 +107,7 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
             rootNode.updateChildren(categories);
         }
         const quotaPagesCount = selectedQuota ? selectedQuota.pages_count : 0;
-        rootNode.aggregateStats(quotaPagesCount);
+        rootNode.aggregateStats(quotaPagesCount, 100);
         setCategoryNodes([...categoryNodes!]);
     };
 

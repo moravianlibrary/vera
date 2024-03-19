@@ -6,6 +6,7 @@ export class CategoryNode {
     category: Category;
     quota: number;
     percentage: number | undefined;
+    overallPercentage: number;
     parentNode: CategoryNode | undefined;
     children: CategoryNode[] = [];
 
@@ -29,6 +30,7 @@ export class CategoryNode {
         this.quota = quota;
         this.parentNode = parentNode;
         this.percentage = category.percentage;
+        this.overallPercentage = category.percentage;
         this.className = CategoryNode.getClassName(type, category);
         this.extracted = extracted;
 
@@ -45,8 +47,7 @@ export class CategoryNode {
         this.children = category.children.map((child, index) => (
             new CategoryNode(NodeType.Category, child, childrenQuotas[index], extracted, this)))
             .sort((a, b) => a.category.id - b.category.id);
-
-        this.aggregateStats(quota);
+        // this.aggregateStats(quota, parentNode ? parentNode.overallPercentage : 100);
     }
 
     static generateRootNode(name: string, categories: Category[], quota: number, extracted: boolean): CategoryNode {
@@ -70,7 +71,9 @@ export class CategoryNode {
             
             children: categories
         }
-        return new CategoryNode(NodeType.Root, rootCategory, quota, extracted);
+        const rootNode = new CategoryNode(NodeType.Root, rootCategory, quota, extracted);
+        rootNode.aggregateStats(quota, 100);
+        return rootNode;
     }
 
     static getClassName(type: NodeType, category?: Category): string {
@@ -147,9 +150,9 @@ export class CategoryNode {
         this.children.forEach((child, index) => child.update(category.children[index]));
     }
 
-    aggregateStats(quotaPagesCount: number) {
+    aggregateStats(quotaPagesCount: number, overallPercentage: number) {
         const childrenQuotas = CategoryNode.getChildrenQuotas(this.children.map(c => c.category), quotaPagesCount);
-        this.children.forEach((child, index) => child.aggregateStats(childrenQuotas[index]));
+        this.children.forEach((child, index) => child.aggregateStats(childrenQuotas[index], (overallPercentage * child.category.percentage) / 100));
 
         this.count_pages = (this.category.count_pages || 0) + (this.children.reduce((total, child) => (
             total + (child.count_pages || 0)), 0) as number);
@@ -166,6 +169,7 @@ export class CategoryNode {
             total + (child.extracted_documents_count || 0)), 0) as number);
 
         this.quota = quotaPagesCount;
+        this.overallPercentage = overallPercentage;
     }
 
     propagateDepartments(departments: number[] = []) {
