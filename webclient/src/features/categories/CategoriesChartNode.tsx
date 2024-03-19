@@ -9,7 +9,7 @@ import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
 
 interface CategoriesChartNodeProps {
-    node: CategoryNode
+    node: CategoryNode;
 }
 
 interface CategoryNodeBodyProps extends CategoriesChartNodeProps {}
@@ -25,15 +25,16 @@ const CategoriesChartNode: React.FC<CategoriesChartNodeProps> = ({ node }) => {
         if (category.description) {
             return `${category.name}: ${category.description}`;
         }
-    }
+    };
 
     return (
         <div className="flex flex-column w-max">
             <div className="flex justify-content-between align-items-baseline gap-2">
                 <CategoryNodeEditMenu node={node} />
                 <div className="flex gap-1 justify-content-center align-items-baseline">
-                    <Tooltip className="max-w-30rem" target=".category-name"  />
-                    <span className="category-name font-bold text-lg mb-3"
+                    <Tooltip className="max-w-30rem" target=".category-name" />
+                    <span
+                        className="category-name font-bold text-lg mb-3"
                         onClick={() => handleFocusNode(node)}
                         style={{ cursor: "pointer" }}
                         data-pr-tooltip={getTooltipText()}
@@ -43,7 +44,7 @@ const CategoriesChartNode: React.FC<CategoriesChartNodeProps> = ({ node }) => {
                 </div>
                 <CategoryPercentage node={node} />
             </div>
-            <CategoryNodeBody node={node} />
+            <CategoryNodeStats node={node} />
         </div>
     );
 };
@@ -54,20 +55,27 @@ const CategoryNodeBody: React.FC<CategoryNodeBodyProps> = ({ node }) => {
     return (
         <div className="flex align-items-end gap-3">
             <CategoryNodeStats node={node} />
-            <div className="flex flex-column">
-                <Link to={`/documents?categoryId=${node.category.id}`}>
-                    <Button
-                        className='p-0 text-xs align-content-center'
-                        severity='secondary'
-                        text
-                        tooltip={t('Show in documents')}
-                        tooltipOptions={{ position: 'right', showDelay: 500 }}
-                    >
-                        <i className='pi pi-external-link p-1' />
-                    </Button>
-                </Link>
-            </div>
-        </div>   
+            {/* <div className="flex flex-column"> */}
+        </div>
+    );
+};
+
+const CategoryDocumentsLink: React.FC<CategoryNodeStatsProps> = ({ node }) => {
+    const { t } = useTranslation();
+
+    return (
+        <Link to={`/documents?categoryId=${node.category.id}`}>
+            <Button
+                // className="p-0 m-0 relative text-xs align-content-center"
+                className="p-0 m-0 text-xs"
+                severity="secondary"
+                text
+                tooltip={t("Show in documents")}
+                tooltipOptions={{ position: "right", showDelay: 500 }}
+            >
+                <i className="pi pi-external-link p-1" />
+            </Button>
+        </Link>
     );
 };
 
@@ -79,37 +87,114 @@ const CategoryNodeStats: React.FC<CategoryNodeStatsProps> = ({ node }) => {
     useEffect(() => {
         setMissingPagesCount(Math.max(node.quota - node.count_pages, 0));
     }, [node.quota]);
-        
+
     if (node.extracted) {
         return (
-            <div className="flex flex-column align-items-start">
-                {/* {missingPagesCount > 0 &&
+            <div className="flex">
+                <div className="flex flex-column align-items-start">
+                    {/* {missingPagesCount > 0 &&
                 <div className="text-red-700"><span className="font-bold">{missingPagesCount}</span> {t('category_missing_count_pages')}</div>} */}
-                <div>
-                    <span className="font-bold">{node.extracted_pages_count}/{node.count_pages}</span>
-                    {t(' extracted pages')}
+                    <div>
+                        <span className="font-bold">
+                            {node.extracted_pages_count}/{node.count_pages}
+                        </span>
+                        {t(" extracted pages")}
+                    </div>
+                    <div>
+                        <span className="font-bold">
+                            {node.extracted_documents_count}/
+                            {node.count_documents_with_pages}
+                        </span>
+                        {t(" extracted documents")}
+                    </div>
+                    <div>
+                        <span className="font-bold">
+                            {node.count_documents}
+                        </span>{" "}
+                        {t("category_count_documents")}
+                    </div>
                 </div>
-                <div>
-                    <span className="font-bold">{node.extracted_documents_count}/{node.count_documents_with_pages}</span>
-                    {t(' extracted documents')}
-                </div>
-                <div><span className="font-bold">{node.count_documents}</span> {t('category_count_documents')}</div>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-column align-items-start">
-            <div className="flex flex-column align-items-start mb-2">
-                {missingPagesCount > 0 &&
-                <div className="text-red-700"><span className="font-bold">{missingPagesCount}</span> {t('category_missing_count_pages')}</div>}
-                {node.count_documents_without_cnb > 0 &&
-                <div className="text-red-700"><span className="font-bold">{node.count_documents_without_cnb}</span> {t('documents without CNB')}</div>}
+        <div className="flex flex-column align-items-start gap-2">
+            <div className="flex flex-column align-items-start">
+                {missingPagesCount > 0 && (
+                    <div className="text-red-700">
+                        <span className="font-bold">{missingPagesCount}</span>{" "}
+                        {t("category_missing_count_pages")}
+                    </div>
+                )}
+                {node.count_documents_without_cnb > 0 && (
+                    <div className="text-red-700">
+                        <span className="font-bold">
+                            {node.count_documents_without_cnb}
+                        </span>{" "}
+                        {t("documents without CNB")}
+                    </div>
+                )}
             </div>
             <div className="flex flex-column align-items-start">
-                <div><span className="font-bold">{node.count_pages}</span> {t('category_count_pages')}</div>
-                <div><span className="font-bold">{node.count_documents_with_pages}</span> {t('category_count_documents_with_pages')}</div>
-                <div><span className="font-bold">{node.count_documents}</span> {t('category_count_documents')}</div>
+                <div>
+                    <span className="font-bold">{node.overallPercentage}%</span>{" "}
+                    {t("from overall percentage")}
+                </div>
+                <div className="flex gap-2">
+                    <div>
+                        <span className="font-bold">{node.quota}</span>{" "}
+                        {t("pages by intention")}
+                    </div>
+                    <div
+                        className={
+                            missingPagesCount <= 0
+                                ? "font-bold text-green-900"
+                                : "font-bold text-red-700"
+                        }
+                    >
+                        <span>{"["}</span>
+                        <i
+                            className={
+                                missingPagesCount <= 0
+                                    ? "pi pi-check"
+                                    : "pi pi-times"
+                            }
+                        />
+                        <span>{"]"}</span>
+                    </div>
+                    {/* {missingPagesCount == 0 && (
+                        <span className="font-bold text-green-900">{`[${t(
+                            "Fulfilled"
+                        )}]`}</span>
+                    )}
+                    {missingPagesCount > 0 && (
+                        <span className="font-bold text-red-700">{`[${t(
+                            "Unfulfilled"
+                        )}]`}</span>
+                    )} */}
+                </div>
+            </div>
+            <div className="flex w-full align-items-end gap-2 justify-content-between">
+                <div className="flex flex-column align-items-start">
+                    <div>
+                        <span className="font-bold">{node.count_pages}</span>{" "}
+                        {t("category_count_pages")}
+                    </div>
+                    <div>
+                        <span className="font-bold">
+                            {node.count_documents_with_pages}
+                        </span>{" "}
+                        {t("category_count_documents_with_pages")}
+                    </div>
+                    <div>
+                        <span className="font-bold">
+                            {node.count_documents}
+                        </span>{" "}
+                        {t("category_count_documents")}
+                    </div>
+                </div>
+                <CategoryDocumentsLink node={node} />
             </div>
         </div>
     );

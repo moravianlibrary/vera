@@ -336,6 +336,10 @@ const resources = {
         "Choose issues": "Výběr vydání",
         "Result": "Výsledek",
         "Details": "Detaily",
+
+        "from overall percentage": "z celkových procent",
+        "pages by intention": "stran pro záměr",
+        "Extracted pages count": "Počet extrahováných stránek",
     },
   },
 };
