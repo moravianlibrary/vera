@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from typing import Dict, List, Optional
+from collections import deque
+from typing import Deque, Dict, List, Optional
 
 from categories import crud
 from categories.schemas import Category
@@ -160,25 +161,36 @@ def bottom_up_generator(target_pages: int, db: Session) -> List[CategoryLeaf]:
         clustered_nodes[parent_id if parent_id else 0].append(leaf)
         assignable_nodes.append(leaf)
 
-    parent_ids = list(clustered_nodes.keys())
-    category_nodes = {}
-    for parent_id in parent_ids:
-        bottom_up_generator_rec(parent_id, clustered_nodes, category_nodes, db)
+    categories_queue: Deque[int] = deque(clustered_nodes.keys())
+    category_nodes: Dict[int, CategoryNode] = {0: CategoryNode(None, [])}
 
-    if not clustered_nodes:
+    bottom_up_generator_rec(
+        categories_queue, clustered_nodes, category_nodes, db
+    )
+
+    if 0 not in category_nodes:
         return []
 
-    clustered_nodes[0][0].populate_children(None, target_pages)
+    category_nodes.get(0).populate_children(None, target_pages)
+
     return assignable_nodes
 
 
 def bottom_up_generator_rec(
-    category_id: int,
+    categories_queue: Deque[int],
     clustered_nodes: Dict[int, List[CategoryNode]],
     category_nodes: Dict[int, CategoryNode],
     db: Session,
 ):
-    if category_id == 0 or category_id in category_nodes:
+    if not categories_queue:
+        return
+
+    category_id = categories_queue.popleft()
+
+    if category_id == 0:
+        bottom_up_generator_rec(
+            categories_queue, clustered_nodes, category_nodes, db
+        )
         return
 
     category = crud.get_category(category_id, db)
@@ -191,15 +203,16 @@ def bottom_up_generator_rec(
     if parent_node:
         parent_node.add_child(node)
     else:
-        parent_node = CategoryNode(None, [])
-        parent_node.add_child(node)
-        category_nodes[parent_id] = parent_node
         if parent_id in clustered_nodes:
-            clustered_nodes[parent_id].append(parent_node)
+            clustered_nodes[parent_id].append(node)
         else:
-            clustered_nodes[parent_id] = [parent_node]
+            clustered_nodes[parent_id] = [node]
+        if parent_id not in categories_queue:
+            categories_queue.append(parent_id)
 
-    bottom_up_generator_rec(parent_id, category_nodes, category_nodes, db)
+    bottom_up_generator_rec(
+        categories_queue, clustered_nodes, category_nodes, db
+    )
 
 
 def generate_extraction(
