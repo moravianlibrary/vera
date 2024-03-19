@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
-from roles.enums import ActionType
+from roles.types import ActionType
 
 
 class CurrentUser(BaseModel):

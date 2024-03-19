@@ -13,7 +13,7 @@ class TaskCreate(TaskBase):
     pass
 
 
-class TaskCreation(TaskBase):
+class TaskDefinition(TaskBase):
     id: int
 
     owner: str
@@ -31,11 +31,12 @@ class TaskError(BaseModel):
     count: int
 
 
-class Task(TaskCreation):
+class Task(TaskDefinition):
     processed_count: int
     total_count: int
     error_count: int
     errors: List[TaskError] = []
+    result_lines: int = 0
 
 
 class TaskDocument(BaseModel):

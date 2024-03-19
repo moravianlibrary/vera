@@ -92,6 +92,7 @@ class KrameriusDocument:
             f"Signature: {self.signature}\n"
             f"CNB: {self.cnb}\n"
             f"Sysno: {self.sysno}\n"
+            f"Title: {self.title}\n"
             f"Date min: {self.date_min}\n"
             f"Date max: {self.date_max}\n"
             f"Date range start year: {self.date_range_start_year}\n"

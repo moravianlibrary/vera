@@ -5,7 +5,9 @@ from departments import models, schemas
 from services.database import create
 
 
-def create_department(department: schemas.DepartmentBase, db: Session):
+def create_department(
+    department: schemas.DepartmentCreate, db: Session
+) -> models.Department:
     db_department = create(
         db,
         models.Department(
@@ -18,7 +20,7 @@ def create_department(department: schemas.DepartmentBase, db: Session):
 
 
 def update_department(
-    id: int, department: schemas.DepartmentBase, db: Session
+    id: int, department: schemas.DepartmentCreate, db: Session
 ):
     db.execute(
         update(models.Department)

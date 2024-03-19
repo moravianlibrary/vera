@@ -138,6 +138,21 @@ def get_task_documents(task_id: int, db: Session):
     )
 
 
+def get_task_result(
+    task_id: int,
+    offset: int,
+    limit: int,
+    db: Session,
+):
+    return (
+        models.task_view(db)
+        .filter(models.Task.id == task_id)
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+
 def get_tasks(db: Session, offset: int = 0, limit: int = 50):
     return (
         models.task_view(db)
@@ -214,6 +229,15 @@ def delete_task(task_id: int, db: Session):
     )
     for db_task_document in db_task_documents:
         db.delete(db_task_document)
+
+    db_task_results = (
+        db.query(models.TaskResult)
+        .where(models.TaskResult.task_id == task_id)
+        .all()
+    )
+    for db_task_result in db_task_results:
+        db.delete(db_task_result)
+
     db.commit()
 
     db_task = db.query(models.Task).where(models.Task.id == task_id).first()
