@@ -10,7 +10,7 @@ import { UserModel } from "../../contexts/user/UserModel";
 import { useTranslation } from "react-i18next";
 
 interface CateogryPercentageProps {
-    node: CategoryNode
+    node: CategoryNode;
 }
 
 const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
@@ -30,7 +30,10 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
     const inputRef = useRef(null);
 
     useEffect(() => {
-        if (editPercentageNodes[focusEditPercentageIndex] === node && inputRef.current) {
+        if (
+            editPercentageNodes[focusEditPercentageIndex] === node &&
+            inputRef.current
+        ) {
             (inputRef.current as InputNumber).focus();
         }
     }, [focusEditPercentageIndex]);
@@ -38,7 +41,7 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
     if (editPercentageNodes.includes(node)) {
         return (
             <div className="flex align-items-center gap-1">
-                <div className="p-inputgroup flex-1" style={{ width: '115px' }}>
+                <div className="p-inputgroup flex-1" style={{ width: "115px" }}>
                     <InputNumber
                         ref={inputRef}
                         autoFocus={node === editPercentageNodes[0]}
@@ -46,19 +49,39 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
                         size={2}
                         value={node.percentage}
                         onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                handlePercentageChange(node, parseFloat((e.target as HTMLInputElement).value));
+                            if (e.key === "Enter") {
+                                handlePercentageChange(
+                                    node,
+                                    parseFloat(
+                                        (e.target as HTMLInputElement).value
+                                    )
+                                );
                                 handleGoToNextPercentage();
                             }
                         }}
-                        min={0} max={100}
-                        maxFractionDigits={2} />
+                        onChange={(e) =>
+                            handlePercentageChange(node, e.value ? e.value : 0)
+                        }
+                        min={0}
+                        max={100}
+                        maxFractionDigits={2}
+                    />
                     <span className="p-inputgroup-addon">%</span>
                 </div>
-                <Button className="p-1" text severity="secondary" onClick={handleUpdatePercentage}>
+                <Button
+                    className="p-1"
+                    text
+                    severity="secondary"
+                    onClick={handleUpdatePercentage}
+                >
                     <i className="pi pi-check" />
                 </Button>
-                <Button className="p-1" text severity="secondary" onClick={handleClosePercentageEdit}>
+                <Button
+                    className="p-1"
+                    text
+                    severity="secondary"
+                    onClick={handleClosePercentageEdit}
+                >
                     <i className="pi pi-times" />
                 </Button>
             </div>
@@ -66,12 +89,12 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
     }
 
     const canEditDepartmentCategory = (user: UserModel) => {
-        return (node.category.level >= 1
-                && user.actions
-                && user.department_id
-                && user.actions.includes(ActionType.EditCategoriesDepartment)
-                && node.category.departments.includes(user.department_id)) as boolean;
-    }
+        return (node.category.level >= 1 &&
+            user.actions &&
+            user.department_id &&
+            user.actions.includes(ActionType.EditCategoriesDepartment) &&
+            node.category.departments.includes(user.department_id)) as boolean;
+    };
 
     return (
         <div className="flex align-items-center">
@@ -84,10 +107,13 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
                 action={ActionType.EditCategoriesAll}
                 evaluate={canEditDepartmentCategory}
             >
-                <Button className="p-1" text severity="secondary"
+                <Button
+                    className="p-1"
+                    text
+                    severity="secondary"
                     onClick={() => handleEditPercentage(node)}
-                    tooltip={t('Edit distribution')}
-                    tooltipOptions={{ position: 'right', showDelay: 500 }}
+                    tooltip={t("Edit distribution")}
+                    tooltipOptions={{ position: "right", showDelay: 500 }}
                 >
                     <i className="pi pi-pencil" />
                 </Button>
