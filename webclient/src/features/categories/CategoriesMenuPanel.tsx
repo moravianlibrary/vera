@@ -29,6 +29,7 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
     const [selectedCategory, setSelectedCategory] = useState<number | null>(
         null
     );
+    const [minimized, setMinimized] = useState(false);
 
     useEffect(() => {
         if (categoryNodes && categoryNodes.length > 0) {
@@ -51,11 +52,36 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
         padding: "0px",
     };
 
+    if (minimized) {
+        return (
+            <Button
+                style={floatingPanelStyle}
+                text
+                rounded
+                icon="pi pi-chevron-right"
+                onClick={() => setMinimized(false)}
+            />
+        );
+    }
+
     return (
         <div
             className="flex flex-column bg-white p-1"
             style={floatingPanelStyle}
         >
+            <Button
+                className="absolute"
+                style={{
+                    top: "0px",
+                    right: "0px",
+                    translate: "105% -0%",
+                    boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.35)",
+                }}
+                text
+                rounded
+                icon="pi pi-chevron-left"
+                onClick={() => setMinimized(true)}
+            />
             <Button
                 className="m-0 text-800"
                 text
