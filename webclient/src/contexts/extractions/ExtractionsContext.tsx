@@ -1,5 +1,14 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import ApiExtractions, { Extraction, ExtractionProps } from "../../adapters/ApiExtractions";
+import React, {
+    createContext,
+    useContext,
+    useState,
+    ReactNode,
+    useEffect,
+} from "react";
+import ApiExtractions, {
+    Extraction,
+    ExtractionProps,
+} from "../../adapters/ApiExtractions";
 import ExtractionModel from "./ExtractionModel";
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
@@ -8,18 +17,26 @@ interface ExtractionsContextProps {
     extractions: Extraction[];
     numFound: number;
     defaultProps: ExtractionProps;
-    generateExtraction: (createProps: ExtractionProps, pages_count?: number, quota_id?: number) => void;
+    generateExtraction: (
+        createProps: ExtractionProps,
+        pages_count?: number,
+        quota_id?: number
+    ) => void;
     markExtraction: (extraction_id: number) => void;
     unmarkExtraction: (extraction_id: number) => void;
 }
 
-const ExtractionsContext = createContext<ExtractionsContextProps | undefined>(undefined);
+const ExtractionsContext = createContext<ExtractionsContextProps | undefined>(
+    undefined
+);
 
 interface ExtractionsProviderProps {
     children: ReactNode;
 }
 
-export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({ children }) => {
+export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({
+    children,
+}) => {
     const { t } = useTranslation();
     const showToast = useToast();
 
@@ -27,7 +44,7 @@ export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({ childr
         target_pages_threshold: 0.05,
         whole_categories_threshold: 0.05,
         balance_total_pages: false,
-        include_categories: []
+        include_categories: [],
     };
     const loadAmount = 50;
     const [offset, setOffset] = useState<number>(0);
@@ -36,69 +53,86 @@ export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({ childr
 
     const loadExtractions = async () => {
         ApiExtractions.getExtractions(offset, loadAmount)
-        .then(response => {
-            const transformedData: Extraction[] = response.data.extractions.map(extraction => {
-                return new ExtractionModel(extraction);
+            .then((response) => {
+                const transformedData: Extraction[] =
+                    response.data.extractions.map((extraction) => {
+                        return new ExtractionModel(extraction);
+                    });
+                setExtractions(transformedData);
+                setNumFound(response.data.num_found);
+            })
+            .catch((error) => {
+                console.error(`Could not receive extractions: ${error}`);
             });
-            setExtractions(transformedData);
-            setNumFound(response.data.num_found);
-        }).catch(error => {
-            console.error(`Could not receive extractions: ${error}`);
-        });
     };
 
-    const generateExtraction = async (createData: ExtractionProps, pages_count?: number, quota_id?: number) => {  
+    const generateExtraction = async (
+        createData: ExtractionProps,
+        pages_count?: number,
+        quota_id?: number
+    ) => {
         console.log(pages_count);
         ApiExtractions.generateExtraction(createData, pages_count, quota_id)
-        .then(response => {
-            setExtractions([new ExtractionModel(response.data), ...extractions]);
-        })
-        .catch(error => {
-            if (error.response && error.response.status && error.response.status === 400) {
-                showToast("error", t("Extraction creation failed"), t(error.response.data.detail));
-            }
-            console.error(error);
-        });
+            .then((response) => {
+                setExtractions([
+                    new ExtractionModel(response.data),
+                    ...extractions,
+                ]);
+            })
+            .catch((error) => {
+                if (
+                    error.response &&
+                    error.response.status &&
+                    error.response.status === 400
+                ) {
+                    showToast(
+                        "error",
+                        t("Extraction creation failed"),
+                        t(error.response.data.detail)
+                    );
+                }
+                console.error(error);
+            });
     };
 
     const markExtraction = async (extraction_id: number) => {
         ApiExtractions.markExtracted(extraction_id)
-        .then(response => {
-            setExtractions(
-                extractions.map(extraction => {
-                    if (extraction.id === extraction_id) {
-                        return {
-                            ...extraction,
-                            marked: true
-                        };
-                    }
-                    return extraction;
-                })
-            );
-        })
-        .catch(error => {
-            console.error(error);
-        });
+            .then((response) => {
+                setExtractions(
+                    extractions.map((extraction) => {
+                        if (extraction.id === extraction_id) {
+                            return {
+                                ...extraction,
+                                marked: true,
+                            };
+                        }
+                        return extraction;
+                    })
+                );
+            })
+            .catch((error) => {
+                console.error(error);
+            });
     };
 
     const unmarkExtraction = async (extraction_id: number) => {
         ApiExtractions.unmarkExtracted(extraction_id)
-        .then(response => {
-            setExtractions(
-                extractions.map(extraction => {
-                    if (extraction.id === extraction_id) {
-                        return {
-                            ...extraction,
-                            marked: false
-                        };
-                    }
-                    return extraction;
-                })
-            );
-        })
-        .catch(error => {
-            console.error(error);
-        });
+            .then((response) => {
+                setExtractions(
+                    extractions.map((extraction) => {
+                        if (extraction.id === extraction_id) {
+                            return {
+                                ...extraction,
+                                marked: false,
+                            };
+                        }
+                        return extraction;
+                    })
+                );
+            })
+            .catch((error) => {
+                console.error(error);
+            });
     };
 
     useEffect(() => {
@@ -112,7 +146,7 @@ export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({ childr
         defaultProps,
         generateExtraction,
         markExtraction,
-        unmarkExtraction
+        unmarkExtraction,
     };
 
     return (
@@ -126,7 +160,9 @@ export const useExtractions = (): ExtractionsContextProps => {
     const context = useContext(ExtractionsContext);
 
     if (!context) {
-        throw new Error('useExtractions must be used within a ExtractionsProvider');
+        throw new Error(
+            "useExtractions must be used within a ExtractionsProvider"
+        );
     }
 
     return context;
