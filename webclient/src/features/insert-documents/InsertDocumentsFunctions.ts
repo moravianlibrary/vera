@@ -48,7 +48,7 @@ export function messageSeverityToSeverity(status: MessageSeverity): ActionSeveri
     return;
 }
 
-export function actionSeverityToActionSeverity(status: MessageSeverity): Severity {
+export function messageSeverityToActionSeverity(status: MessageSeverity): Severity {
     switch (status) {
         case MessageSeverity.SUCCESS: return "success";
         case MessageSeverity.WARN: return "warning";
