@@ -85,9 +85,8 @@ def task_view(db: Session):
                     case((TaskDocument.error_type.is_(None), 0), else_=1)
                 ).label("error_count")
             ),
-            func.count(TaskResult.id).label("result_lines"),
-        )
-        .outerjoin(TaskDocument, Task.id == TaskDocument.task_id)
-        .outerjoin(TaskResult, Task.id == TaskResult.task_id)
+            # func.count(TaskResult.id).label("result_lines"),
+        ).outerjoin(TaskDocument, Task.id == TaskDocument.task_id)
+        # .outerjoin(TaskResult, Task.id == TaskResult.task_id)
         .group_by(Task.id)
     )

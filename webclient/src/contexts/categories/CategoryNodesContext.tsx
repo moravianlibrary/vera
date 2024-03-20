@@ -38,6 +38,10 @@ interface CategoryNodesContextProps {
     handleFocusNode: (node: CategoryNode) => void;
     handleFocusParentNode: () => void;
     handleFocusRootNode: () => void;
+    focusAssignable: boolean;
+    handleFocusAssignableCategories: () => void;
+    handleFocusCategory: (category_id: number) => void;
+    activeLevel: number | null;
     handleFocusLevel: (level: number) => void;
 
     handleEditPercentage: (node: CategoryNode) => void;
@@ -73,6 +77,8 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
     const [categoryNodes, setCategoryNodes] = useState<
         CategoryNode[] | undefined
     >(undefined);
+    const [activeLevel, setActiveLevel] = useState<number | null>(0);
+    const [focusAssignable, setFocusAssignable] = useState<boolean>(false);
 
     const [editPercentageNodes, setEditPercentageNodes] = useState<
         CategoryNode[]
@@ -203,6 +209,14 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
 
     const handleFocusNode = (node: CategoryNode) => {
         setCategoryNodes([node]);
+        setFocusAssignable(false);
+        setActiveLevel(null);
+        if (
+            editPercentageNodes.length > 0 &&
+            editPercentageNodes[0].category.level <= node.category.level
+        ) {
+            setEditPercentageNodes([]);
+        }
     };
 
     const handleFocusParentNode = () => {
@@ -211,22 +225,95 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
             categoryNodes?.length > 0 &&
             categoryNodes[0].parentNode
         ) {
-            setCategoryNodes([categoryNodes[0].parentNode]);
+            if (categoryNodes[0].parentNode.type === NodeType.Root) {
+                handleFocusRootNode();
+            } else {
+                setCategoryNodes([categoryNodes[0].parentNode]);
+            }
         }
     };
 
     const handleFocusRootNode = () => {
+        setFocusAssignable(false);
+        setActiveLevel(0);
         setCategoryNodes([rootNode!]);
     };
 
-    const handleFocusLevel = (level: number) => {};
+    const handleFocusCategory = (category_id: number) => {
+        const focusNode = rootNode!.getCategoryNodeById(category_id);
+        if (focusNode) {
+            setFocusAssignable(false);
+            setActiveLevel(null);
+            setCategoryNodes([focusNode]);
+        } else {
+            handleFocusRootNode();
+        }
+    };
+
+    const handleFocusAssignableCategories = () => {
+        const focusNodes = rootNode!.getAssignableCategoryNodes();
+        if (focusNodes.length === 0) {
+            return;
+        }
+
+        setFocusAssignable(true);
+        setActiveLevel(null);
+        setEditPercentageNodes([]);
+        setCategoryNodes([
+            CategoryNode.generateLevelRootNode(
+                t("Assignable categories"),
+                focusNodes,
+                props.extractedCategories
+            ),
+        ]);
+    };
+
+    const handleFocusLevel = (level: number) => {
+        if (level === 0) {
+            handleFocusRootNode();
+            return;
+        }
+
+        const focusNodes = rootNode!.getNodesByLevel(level);
+        if (focusNodes.length === 0) {
+            return;
+        }
+
+        if (
+            editPercentageNodes.length > 0 &&
+            editPercentageNodes[0].category.level <= level
+        ) {
+            setEditPercentageNodes([]);
+        }
+
+        setFocusAssignable(false);
+        setActiveLevel(level);
+        setCategoryNodes([
+            CategoryNode.generateLevelRootNode(
+                `${t("Categories of level")} ${level}`,
+                focusNodes,
+                props.extractedCategories
+            ),
+        ]);
+    };
 
     const handleEditPercentage = (node: CategoryNode) => {
         if (editPercentageNodes.length > 0) {
             return;
         }
-        if (categoryNodes?.length === 1 && categoryNodes[0] === node) {
-            setCategoryNodes([node.parentNode!]);
+        if (
+            categoryNodes?.length === 1 &&
+            categoryNodes[0] === node &&
+            node.parentNode
+        ) {
+            handleFocusNode(node.parentNode);
+        }
+        if (
+            activeLevel !== null &&
+            node.parentNode &&
+            activeLevel === node.category.level
+        ) {
+            handleFocusNode(node.parentNode);
         }
         setEditPercentageNodes(node.parentNode!.children);
     };
@@ -321,6 +408,10 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
         handleFocusNode,
         handleFocusParentNode,
         handleFocusRootNode,
+        focusAssignable,
+        handleFocusAssignableCategories,
+        handleFocusCategory,
+        activeLevel,
         handleFocusLevel,
 
         handleEditPercentage,
