@@ -13,10 +13,10 @@ import {
     getLocalizedIdentifiers,
 } from "../../types/Identifiers";
 import { IdentifierType } from "../../types/IdentifierType";
-import CategoryEditor from "../../components/editors/CategoryEditor";
 import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
+import AssignableCategoryEditor from "../../components/editors/AssignableCategoryEditor";
 
 const InsertDocumentsFiles: React.FC = () => {
     const { t } = useTranslation();
@@ -122,7 +122,9 @@ const InsertDocumentsFiles: React.FC = () => {
                 field="category_id"
                 header={t("Category")}
                 body={(v) => categoryBody(v.category_id)}
-                editor={(options) => <CategoryEditor options={options} />}
+                editor={(options) => (
+                    <AssignableCategoryEditor options={options} />
+                )}
                 onCellEditComplete={onCellValueEdit}
             />
             <Column rowEditor />

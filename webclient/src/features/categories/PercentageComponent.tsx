@@ -8,6 +8,7 @@ import { ActionAccessComponent } from "../../services/AccessService";
 import { ActionType } from "../../types/ActionType";
 import { UserModel } from "../../contexts/user/UserModel";
 import { useTranslation } from "react-i18next";
+import { Tooltip } from "primereact/tooltip";
 
 interface CateogryPercentageProps {
     node: CategoryNode;
@@ -27,23 +28,27 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
         handleFocusPercentageNode,
     } = useCategoryNodes();
 
-    const inputRef = useRef(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<InputNumber>(null);
 
     useEffect(() => {
         if (
             editPercentageNodes[focusEditPercentageIndex] === node &&
+            containerRef.current &&
             inputRef.current
         ) {
-            (inputRef.current as InputNumber).focus();
+            containerRef.current.scrollIntoView();
+            inputRef.current.focus();
         }
     }, [focusEditPercentageIndex]);
 
     if (editPercentageNodes.includes(node)) {
         return (
-            <div className="flex align-items-center gap-1">
+            <div ref={containerRef} className="flex align-items-center gap-1">
                 <div className="p-inputgroup flex-1" style={{ width: "115px" }}>
                     <InputNumber
                         ref={inputRef}
+                        className="input-percentage"
                         autoFocus={node === editPercentageNodes[0]}
                         onFocus={() => handleFocusPercentageNode(node)}
                         size={2}
@@ -65,6 +70,14 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
                         min={0}
                         max={100}
                         maxFractionDigits={2}
+                        tooltip={t(
+                            "You can move to the next category using the Enter key"
+                        )}
+                        tooltipOptions={{
+                            position: "top",
+                            showEvent: "click",
+                            hideDelay: 3000,
+                        }}
                     />
                     <span className="p-inputgroup-addon">%</span>
                 </div>

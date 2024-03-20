@@ -6,7 +6,7 @@ import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocume
 import React from "react";
 import { AssignableCategory } from "../../adapters/ApiCategories";
 import { getLocalizedIdentifiers, identifiers } from "../../types/Identifiers";
-import CategoryPicker from "../../components/pickers/CategoryPicker";
+import AssignableCategoryPicker from "../../components/pickers/AssignableCategoryPicker";
 
 interface InsertDocumentsSettingsProps {
     onGoNext: () => void;
@@ -47,7 +47,10 @@ const InsertDocumentsSettings: React.FC<InsertDocumentsSettingsProps> = (
             </div>
             <div className="flex align-items-center gap-3">
                 <span>{t("choose_category")}:</span>
-                <CategoryPicker category_id={category} callback={setCategory} />
+                <AssignableCategoryPicker
+                    category_id={category}
+                    callback={setCategory}
+                />
                 {/* <Dropdown
                     options={categories.map((category) => ({
                         label: renderLabel(category),
