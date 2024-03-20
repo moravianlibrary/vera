@@ -59,12 +59,26 @@ def unset_documents_extracted(extraction_id: int, db: Session):
     db.commit()
 
 
+def get_category_documents_count(category_id: int, db: Session):
+    return (
+        db.query(Document)
+        .filter(
+            Document.category_id == category_id,
+            Document.pages_count.is_not(None),
+            Document.pages_count_predicted.is_not(None),
+            Document.extraction_id.is_(None),
+        )
+        .count()
+    )
+
+
 def get_category_documents(category_id: int, db: Session):
     return (
         db.query(Document)
         .filter(
             Document.category_id == category_id,
             Document.pages_count.is_not(None),
+            Document.pages_count_predicted.is_not(None),
             Document.extraction_id.is_(None),
         )
         .all()
