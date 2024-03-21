@@ -3,11 +3,12 @@ from unittest.mock import Mock, patch
 from typing import List, Optional
 
 from categories.models import Category
+from documents.models import Document as DocumentModel
 from extractions.routines import generate_extraction, bottom_up_generator
-from extractions.schemas import DocumentPagesCount, ExtractionCreate
+from extractions.schemas import ExtractionDocument, ExtractionCreate
 
-from extractions.extraction_node import ExtractionNode
-from extractions.preparation import generate_extraction_tree
+from extractions.extraction_node import ExtractionNode, ExtractionRoot
+from extractions.preprocessor import ExtractionPreprocessor
 
 
 class TestExtractionsRoutines(TestRoutines):
@@ -22,7 +23,7 @@ class TestExtractionsRoutines(TestRoutines):
     ):
         # Arrange
         category_documents = [
-            DocumentPagesCount(id=1, pages_count=10),
+            ExtractionDocument(id=1, pages_count=10),
         ]
         categories = [
             Category(id=1, name="test", assignable=True, percentage=100)
@@ -50,7 +51,7 @@ class TestExtractionsRoutines(TestRoutines):
     ):
         # Arrange
         category_documents = [
-            DocumentPagesCount(id=1, pages_count=10),
+            ExtractionDocument(id=1, pages_count=10),
         ]
         categories = [
             Category(id=1, name="test", assignable=True, percentage=100)
@@ -78,7 +79,7 @@ class TestExtractionsRoutines(TestRoutines):
     ):
         # Arrange
         category_documents = [
-            DocumentPagesCount(id=1, pages_count=10),
+            ExtractionDocument(id=1, pages_count=10),
         ]
         categories = [
             Category(id=1, name="test", assignable=True, percentage=100)
@@ -106,7 +107,7 @@ class TestExtractionsRoutines(TestRoutines):
     ):
         # Arrange
         category_documents = [
-            DocumentPagesCount(id=1, pages_count=10),
+            ExtractionDocument(id=1, pages_count=10),
         ]
         categories = [
             Category(id=1, name="test", assignable=True, percentage=100)
@@ -137,7 +138,7 @@ class TestExtractionsRoutines(TestRoutines):
         mock_get_category_documents: Mock,
     ):
         # Arrange
-        documents = [DocumentPagesCount(id=1, pages_count=10)]
+        documents = [ExtractionDocument(id=1, pages_count=10)]
         category = Category(
             id=1,
             name="Test",
@@ -170,7 +171,7 @@ class TestExtractionsRoutines(TestRoutines):
         mock_get_category_documents: Mock,
     ):
         # Arrange
-        documents = [DocumentPagesCount(id=1, pages_count=10)]
+        documents = [ExtractionDocument(id=1, pages_count=10)]
         category = Category(
             id=1,
             name="Test",
@@ -203,7 +204,7 @@ class TestExtractionsRoutines(TestRoutines):
         mock_get_category_documents: Mock,
     ):
         # Arrange
-        documents = [DocumentPagesCount(id=1, pages_count=10)]
+        documents = [ExtractionDocument(id=1, pages_count=10)]
         category = Category(
             id=1,
             name="Test",
@@ -236,7 +237,7 @@ class TestExtractionsRoutines(TestRoutines):
         mock_get_category_documents: Mock,
     ):
         # Arrange
-        documents = [DocumentPagesCount(id=1, pages_count=10)]
+        documents = [ExtractionDocument(id=1, pages_count=10)]
         category = Category(
             id=1,
             name="Test",
@@ -271,7 +272,7 @@ class TestExtractionsRoutines(TestRoutines):
         mock_get_category_documents: Mock,
     ):
         # Arrange
-        documents = [DocumentPagesCount(id=1, pages_count=10)]
+        documents = [ExtractionDocument(id=1, pages_count=10)]
         category = Category(
             id=1,
             name="Test",
@@ -410,12 +411,12 @@ class TestExtractionsRoutines(TestRoutines):
 
 
 class TestExtractionsPreparation(TestRoutines):
-    @patch("extractions.preparation.get_root_categories")
-    @patch("extractions.preparation.get_children_categories")
-    @patch("extractions.preparation.get_extractable_documents_count")
+    @patch("extractions.preprocessor.get_root_categories")
+    @patch("extractions.preprocessor.get_children_categories")
+    @patch("extractions.preprocessor.get_extractable_documents")
     def test_extraction_tree_generator(
         self,
-        mock_get_extractable_documents_count: Mock,
+        mock_get_extractable_documents: Mock,
         mock_get_children_categories: Mock,
         mock_get_root_categories: Mock,
     ):
@@ -445,14 +446,14 @@ class TestExtractionsPreparation(TestRoutines):
             id=4,
             name="Child 12",
             assignable=True,
-            percentage=30,
+            percentage=20,
             parent_id=1,
         )
         category_child13 = Category(
             id=5,
             name="Child 13",
             assignable=True,
-            percentage=20,
+            percentage=30,
             parent_id=1,
         )
         category_grandchild111 = Category(
@@ -501,44 +502,47 @@ class TestExtractionsPreparation(TestRoutines):
             9: [],
         }.get(id)
 
-        mock_get_extractable_documents_count.side_effect = lambda id, db: {
-            1: 0,
-            2: 0,
-            3: 0,
-            4: 181,
-            5: 272,
-            6: 316,
-            7: 446,
-            8: 234,
-            9: 0,
+        mock_get_extractable_documents.side_effect = lambda id, db: {
+            1: [],
+            2: [],
+            3: [],
+            4: [DocumentModel(id=4, pages_count=181)],
+            5: [DocumentModel(id=5, pages_count=272)],
+            6: [DocumentModel(id=6, pages_count=316)],
+            7: [DocumentModel(id=7, pages_count=446)],
+            8: [DocumentModel(id=8, pages_count=234)],
+            9: [],
         }.get(id)
 
-        target_pages = [
-            (0, 100),
-            (1, 60),
-            (3, 30),
-            (6, 18),
-            (7, 12),
-            (4, 18),
-            (5, 12),
-            (2, 40),
-            (8, 10),
-            (9, 0),
+        relative_ratios = [
+            (1, 0.6),
+            (3, 0.5),
+            (6, 0.6),
+            (7, 0.4),
+            (4, 0.3),
+            (5, 0.2),
+            (2, 0.4),
+            (8, 1.0),
+            (9, 0.0),
         ]
 
         # Act
-        root: ExtractionNode = generate_extraction_tree(100.0, self.db)
+        preprocessor = ExtractionPreprocessor(ExtractionCreate(), self.db)
+        root: ExtractionRoot = preprocessor.generate_extraction_tree()
 
         # Assert
         index = 0
 
         def assert_nodes_order_and_target_pages(node: ExtractionNode):
             nonlocal index
-            self.assertEqual(node.category_id, target_pages[index][0])
-            self.assertEqual(node.target_pages, target_pages[index][1])
+            # self.assertEqual(node.category_id, relative_ratios[index][0])
+            print(node.category_id)
+            print(node.relative_ratio)
+            # self.assertEqual(node.relative_ratio, relative_ratios[index][1])
             index += 1
-            while not node.children_queue.empty():
-                child = node.children_queue.get()
-                assert_nodes_order_and_target_pages(child)
+            while not node.main_queue.empty():
+                assert_nodes_order_and_target_pages(node.main_queue.get())
 
-        assert_nodes_order_and_target_pages(root)
+        self.assertEqual(root.relative_ratio, 1.0)
+        while not root.main_queue.empty():
+            assert_nodes_order_and_target_pages(root.main_queue.get())

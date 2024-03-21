@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, desc, update
+from sqlalchemy import and_, desc, or_, update
 from typing import List, Optional
 
 from services.database import create
@@ -57,6 +57,26 @@ def unset_documents_extracted(extraction_id: int, db: Session):
         .values(marked=False)
     )
     db.commit()
+
+
+def get_extractable_documents(category_id: int, db: Session):
+    return (
+        db.query(Document)
+        .filter(Document.category_id == category_id)
+        .filter(
+            or_(
+                and_(
+                    Document.pages_count.is_not(None), Document.pages_count > 0
+                ),
+                and_(
+                    Document.pages_count_predicted.is_not(None),
+                    Document.pages_count_predicted > 0,
+                ),
+            )
+        )
+        .filter(Document.cnb.is_(None))
+        .all()
+    )
 
 
 def get_category_documents_count(category_id: int, db: Session):

@@ -232,7 +232,7 @@ def get_pages_count(id: int, db: Session):
 def get_extractable_documents_count(category_id: int, db: Session):
     query = (
         db.query(func.count(Document.id))
-        .filter(Document.category_id == id)
+        .filter(Document.category_id == category_id)
         .filter(
             or_(
                 and_(

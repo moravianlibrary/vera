@@ -5,7 +5,7 @@ from typing import Deque, Dict, List, Optional
 from categories import crud
 from categories.schemas import Category
 from extractions.schemas import (
-    DocumentPagesCount,
+    ExtractionDocument,
     ExtractionCreate,
     ExtractionCategoryNode,
 )
@@ -295,7 +295,7 @@ def select_within_threshold(
     threshold: float,
     max_pages_order: int,
     db: Session,
-) -> List[DocumentPagesCount]:
+) -> List[ExtractionDocument]:
     from extractions.crud import get_category_documents
 
     category_id = category_node.category.id
