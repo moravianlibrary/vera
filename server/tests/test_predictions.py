@@ -16,7 +16,6 @@ class TestPredictions(unittest.TestCase):
         )
         self.assertIsNotNone(predicted)
         self.assertIsInstance(predicted, float)
-        print(predicted)
 
     def test_predict_volume_pages_2(self):
         from catalogs.schemas import Frequency
@@ -44,7 +43,6 @@ class TestPredictions(unittest.TestCase):
         )
         self.assertIsNotNone(predicted)
         self.assertIsInstance(predicted, float)
-        print(predicted)
 
     def test_predict_volume_pages_3(self):
         from catalogs.schemas import Frequency
@@ -78,4 +76,3 @@ class TestPredictions(unittest.TestCase):
         )
         self.assertIsNotNone(predicted)
         self.assertIsInstance(predicted, float)
-        print(predicted)

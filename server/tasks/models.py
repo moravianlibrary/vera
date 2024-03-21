@@ -10,6 +10,7 @@ from sqlalchemy import (
     String,
     TIMESTAMP,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
 
 from services.database import Base
@@ -53,6 +54,14 @@ class TaskDocument(Base):
     __table_args__ = (PrimaryKeyConstraint("task_id", "document_id"), {})
 
 
+class TaskResult(Base):
+    __tablename__ = "task_results"
+
+    id = Column(Integer, primary_key=True, index=True)
+    task_id = Column(Integer, ForeignKey("tasks.id"), index=True)
+    data = Column(JSONB)
+
+
 def task_view(db: Session):
     return (
         db.query(
@@ -76,7 +85,8 @@ def task_view(db: Session):
                     case((TaskDocument.error_type.is_(None), 0), else_=1)
                 ).label("error_count")
             ),
-        )
-        .join(TaskDocument, Task.id == TaskDocument.task_id)
+            # func.count(TaskResult.id).label("result_lines"),
+        ).outerjoin(TaskDocument, Task.id == TaskDocument.task_id)
+        # .outerjoin(TaskResult, Task.id == TaskResult.task_id)
         .group_by(Task.id)
     )

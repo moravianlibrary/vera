@@ -1,25 +1,31 @@
 import AssignableCategoryModel from "../../contexts/categories/AssignableCategoryModel";
 import { TreeSelect, TreeSelectProps } from "primereact/treeselect";
 import React from "react";
-import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { TreeNode } from "primereact/treenode";
+import { useCategories } from "../../contexts/categories/CategoriesContext";
+import { Category } from "../../adapters/ApiCategories";
 
 interface CategoryPickerProps {
     category_id: number | null;
     callback(category_id: number | null): void;
+    className?: string;
 }
 
 const CategoryPicker: React.FC<CategoryPickerProps> = ({
     category_id,
     callback,
+    className,
 }) => {
-    const { categories } = useAssignableCategories();
+    const { categories } = useCategories();
 
-    const categoriesOptions = buildCategoryTree(categories);
-    const selected = categories.find((c) => c.id === category_id);
+    const categoriesOptions = categories ? buildCategoryTree(categories) : [];
+    const selected = category_id
+        ? findCategoryById(categories ? categories : [], category_id)
+        : null;
 
     return (
         <TreeSelect
+            className={`${className ? className : ""} w-full`}
             value={selected ? selected.id.toString() : null}
             valueTemplate={(nodes, props) => (
                 <CategoryPickerValues nodes={nodes} props={props} />
@@ -47,7 +53,9 @@ const CategoryPickerValues: React.FC<CategoryPickerValuesProps> = ({
         return nodes.length > 0 ? (
             <span>{nodes.map((n) => n.data).join(", ")}</span>
         ) : props.emptyMessage ? (
-            <span>{props.emptyMessage}</span>
+            <span className="text-overflow-ellipsis white-space-nowrap">
+                {props.emptyMessage}
+            </span>
         ) : (
             <span>-</span>
         );
@@ -55,43 +63,28 @@ const CategoryPickerValues: React.FC<CategoryPickerValuesProps> = ({
     return <span>{nodes.data}</span>;
 };
 
-function buildCategoryTree(categories: AssignableCategoryModel[]) {
-    const categoryMap = new Map<number, AssignableCategoryModel>();
-    const childrenMap = new Map<number, AssignableCategoryModel[]>();
-    const rootCategories: AssignableCategoryModel[] = [];
-
-    const flattenCategory = (category: AssignableCategoryModel) => {
-        categoryMap.set(category.id, category);
-        if (category.parent_category) {
-            if (!childrenMap.has(category.parent_category.id)) {
-                childrenMap.set(category.parent_category.id, []);
-                flattenCategory(category.parent_category);
-            }
-            childrenMap.get(category.parent_category.id)?.push(category);
-        } else {
-            rootCategories.push(category);
-        }
-    };
-    categories.forEach((c) => flattenCategory(c));
-
-    const buildCategorySubTree = (category: AssignableCategoryModel) => {
-        const children = childrenMap.get(category.id);
-        if (!children) {
-            return {
-                key: category.id,
-                label: category.name,
-                data: category.getPath(),
-            };
-        }
+function buildCategoryTree(categories: Category[]) {
+    return categories.map((category) => {
         return {
             key: category.id,
             label: category.name,
-            children: children.map((c) => buildCategorySubTree(c)),
-            selectable: false,
+            data: category.name,
+            children: buildCategoryTree(category.children),
         };
-    };
+    });
+}
 
-    return rootCategories.map((c) => buildCategorySubTree(c));
+function findCategoryById(categories: Category[], id: number) {
+    for (const category of categories) {
+        if (category.id === id) {
+            return category;
+        }
+        const foundInChildren = findCategoryById(category.children, id);
+        if (foundInChildren) {
+            return foundInChildren;
+        }
+    }
+    return null;
 }
 
 export default CategoryPicker;

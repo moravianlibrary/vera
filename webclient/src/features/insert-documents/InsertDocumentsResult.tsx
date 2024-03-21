@@ -14,6 +14,8 @@ import {
     getResultSummary,
     getResultsDetails,
     isSingleSuccessfulResult,
+    messageSeverityToActionSeverity,
+    messageSeverityToSeverity,
     parseResultsToLocalizedMessages,
 } from "./InsertDocumentsFunctions";
 import { DocumentCreationResponse } from "../../adapters/ApiDocuments";
@@ -108,13 +110,7 @@ const InsertResultDetails: React.FC<InsertResultDetailsProps> = ({
         return (
             <Tag
                 value={document.result_localized}
-                severity={
-                    severity === "warn"
-                        ? "warning"
-                        : severity === "error"
-                        ? "danger"
-                        : severity
-                }
+                severity={messageSeverityToActionSeverity(severity)}
             ></Tag>
         );
     };

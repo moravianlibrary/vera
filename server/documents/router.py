@@ -6,7 +6,7 @@ import tempfile
 from typing import List, Optional
 
 from services.database import get_db
-from roles.enums import ActionType
+from roles.types import ActionType
 from services import exceptions
 from auth.router import get_current_user
 from documents import crud, schemas

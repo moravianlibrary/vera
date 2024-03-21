@@ -1,8 +1,18 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import ApiCategories, { Category, CategoryPercentage, Quota } from "../../adapters/ApiCategories";
+import React, {
+    createContext,
+    useContext,
+    useState,
+    ReactNode,
+    useEffect,
+} from "react";
+import ApiCategories, {
+    Category,
+    CategoryPercentage,
+    Quota,
+} from "../../adapters/ApiCategories";
 import { Department } from "../../adapters/ApiDepartments";
 import { CategoryNode } from "./CategoryNodeModel";
-import { useToast } from '../toast/ToastContext';
+import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
 import { NodeType } from "./CategoryNodeType";
 
@@ -17,7 +27,10 @@ interface CategoryNodesContextProps {
     categoryNodes: CategoryNode[] | undefined;
 
     handleEditCategoryNode: (node: CategoryNode) => void;
-    handleUpdateCategoryNode: (node: CategoryNode, params: CategoryUpdateParams) => void;
+    handleUpdateCategoryNode: (
+        node: CategoryNode,
+        params: CategoryUpdateParams
+    ) => void;
     handleCloseCategoryNodeEdit: (node: CategoryNode) => void;
     handleDeleteCategoryNode: (node: CategoryNode) => void;
     handleInsertChildNode: (node: CategoryNode) => void;
@@ -25,6 +38,10 @@ interface CategoryNodesContextProps {
     handleFocusNode: (node: CategoryNode) => void;
     handleFocusParentNode: () => void;
     handleFocusRootNode: () => void;
+    focusAssignable: boolean;
+    handleFocusAssignableCategories: () => void;
+    handleFocusCategory: (category_id: number) => void;
+    activeLevel: number | null;
     handleFocusLevel: (level: number) => void;
 
     handleEditPercentage: (node: CategoryNode) => void;
@@ -37,7 +54,9 @@ interface CategoryNodesContextProps {
     handleFocusPercentageNode: (node: CategoryNode) => void;
 }
 
-const CategoryNodesContext = createContext<CategoryNodesContextProps | undefined>(undefined);
+const CategoryNodesContext = createContext<
+    CategoryNodesContextProps | undefined
+>(undefined);
 
 interface CategoryNodesProviderProps {
     categories: Category[] | undefined;
@@ -46,26 +65,46 @@ interface CategoryNodesProviderProps {
     extractedCategories: boolean;
 }
 
-export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (props) => {
+export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
+    props
+) => {
     const { t } = useTranslation();
     const showToast = useToast();
 
-    const [rootNode, setRootNode] = useState<CategoryNode | undefined>(undefined);
-    const [categoryNodes, setCategoryNodes] = useState<CategoryNode[] | undefined>(undefined);
+    const [rootNode, setRootNode] = useState<CategoryNode | undefined>(
+        undefined
+    );
+    const [categoryNodes, setCategoryNodes] = useState<
+        CategoryNode[] | undefined
+    >(undefined);
+    const [activeLevel, setActiveLevel] = useState<number | null>(0);
+    const [focusAssignable, setFocusAssignable] = useState<boolean>(false);
 
-    const [editPercentageNodes, setEditPercentageNodes] = useState<CategoryNode[]>([]);
-    const [focusEditPercentageIndex, setFocusEditPercentageIndex] = useState<number>(0);
+    const [editPercentageNodes, setEditPercentageNodes] = useState<
+        CategoryNode[]
+    >([]);
+    const [focusEditPercentageIndex, setFocusEditPercentageIndex] =
+        useState<number>(0);
 
-    const createCategoryNodes = (categories: Category[], selectedQuota?: Quota) => {
+    const createCategoryNodes = (
+        categories: Category[],
+        selectedQuota?: Quota
+    ) => {
         const quotaPagesCount = selectedQuota ? selectedQuota.pages_count : 0;
         const createdRootNode = CategoryNode.generateRootNode(
-            t('all_categories'), categories, quotaPagesCount, props.extractedCategories
+            t("all_categories"),
+            categories,
+            quotaPagesCount,
+            props.extractedCategories
         );
         setRootNode(createdRootNode);
         setCategoryNodes([createdRootNode]);
     };
 
-    const updateCategoryNodes = (categories: Category[], selectedQuota?: Quota) => {
+    const updateCategoryNodes = (
+        categories: Category[],
+        selectedQuota?: Quota
+    ) => {
         if (!rootNode) {
             createCategoryNodes(categories, selectedQuota);
             return;
@@ -74,7 +113,7 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (prop
             rootNode.updateChildren(categories);
         }
         const quotaPagesCount = selectedQuota ? selectedQuota.pages_count : 0;
-        rootNode.aggregateStats(quotaPagesCount);
+        rootNode.aggregateStats(quotaPagesCount, 100);
         setCategoryNodes([...categoryNodes!]);
     };
 
@@ -84,35 +123,49 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (prop
     };
 
     const handleCategoryUpdateError = (error: any) => {
-        if (error.response && error.response.status && error.response.status == 409) {
-            showToast("error", t('unique_category_name_violation'), t('unique_category_name_violation_detail'))
+        if (
+            error.response &&
+            error.response.status &&
+            error.response.status == 409
+        ) {
+            showToast(
+                "error",
+                t("unique_category_name_violation"),
+                t("unique_category_name_violation_detail")
+            );
         } else {
             console.error(error);
         }
     };
 
-    const handleUpdateCategoryNode = (node: CategoryNode, params: CategoryUpdateParams) => {
+    const handleUpdateCategoryNode = (
+        node: CategoryNode,
+        params: CategoryUpdateParams
+    ) => {
         const updatedCategory = {
-            ...(node.category),
+            ...node.category,
             name: params.name,
             description: params.description,
             assignable: params.assignable,
             departments: params.departments,
-            parent_id: node.category.parent_id !== 0 ? node.category.parent_id : null
+            parent_id:
+                node.category.parent_id !== 0 ? node.category.parent_id : null,
         };
         if (node.type === NodeType.CreateCategory) {
             ApiCategories.createCategory(updatedCategory)
-            .then(response => {
-                node.setCategory(response.data);
-                node.setType(NodeType.Category);
-                handleCloseCategoryNodeEdit(node);
-            }).catch(handleCategoryUpdateError);
+                .then((response) => {
+                    node.setCategory(response.data);
+                    node.setType(NodeType.Category);
+                    handleCloseCategoryNodeEdit(node);
+                })
+                .catch(handleCategoryUpdateError);
         } else if (node.type === NodeType.UpdateCategory) {
             ApiCategories.updateCategory(updatedCategory)
-            .then(response => {
-                node.setCategory(response.data);
-                handleCloseCategoryNodeEdit(node);
-            }).catch(handleCategoryUpdateError);
+                .then((response) => {
+                    node.setCategory(response.data);
+                    handleCloseCategoryNodeEdit(node);
+                })
+                .catch(handleCategoryUpdateError);
         }
     };
 
@@ -127,16 +180,26 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (prop
 
     const handleDeleteCategoryNode = (node: CategoryNode) => {
         ApiCategories.deleteCategory(node.category.id)
-        .then(response => {
-            node.parentNode?.deleteChild(node);
-            setCategoryNodes([...categoryNodes!]);
-        }).catch(error => {
-            if (error.response && error.response.status && 400 <= error.response.status && error.response.status < 500) {
-                showToast("error", t("Category deletion failed"), t(error.response.data.detail));
-            } else {
-                console.error(error);
-            }
-        });
+            .then((response) => {
+                node.parentNode?.deleteChild(node);
+                setCategoryNodes([...categoryNodes!]);
+            })
+            .catch((error) => {
+                if (
+                    error.response &&
+                    error.response.status &&
+                    400 <= error.response.status &&
+                    error.response.status < 500
+                ) {
+                    showToast(
+                        "error",
+                        t("Category deletion failed"),
+                        t(error.response.data.detail)
+                    );
+                } else {
+                    console.error(error);
+                }
+            });
     };
 
     const handleInsertChildNode = (node: CategoryNode) => {
@@ -146,30 +209,114 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (prop
 
     const handleFocusNode = (node: CategoryNode) => {
         setCategoryNodes([node]);
+        setFocusAssignable(false);
+        setActiveLevel(null);
+        if (
+            editPercentageNodes.length > 0 &&
+            editPercentageNodes[0].category.level <= node.category.level
+        ) {
+            setEditPercentageNodes([]);
+        }
     };
 
     const handleFocusParentNode = () => {
-        if (categoryNodes &&categoryNodes?.length > 0 && categoryNodes[0].parentNode) {
-            setCategoryNodes([categoryNodes[0].parentNode]);
+        if (
+            categoryNodes &&
+            categoryNodes?.length > 0 &&
+            categoryNodes[0].parentNode
+        ) {
+            if (categoryNodes[0].parentNode.type === NodeType.Root) {
+                handleFocusRootNode();
+            } else {
+                setCategoryNodes([categoryNodes[0].parentNode]);
+            }
         }
     };
 
     const handleFocusRootNode = () => {
+        setFocusAssignable(false);
+        setActiveLevel(0);
         setCategoryNodes([rootNode!]);
     };
 
+    const handleFocusCategory = (category_id: number) => {
+        const focusNode = rootNode!.getCategoryNodeById(category_id);
+        if (focusNode) {
+            setFocusAssignable(false);
+            setActiveLevel(null);
+            setCategoryNodes([focusNode]);
+        } else {
+            handleFocusRootNode();
+        }
+    };
+
+    const handleFocusAssignableCategories = () => {
+        const focusNodes = rootNode!.getAssignableCategoryNodes();
+        if (focusNodes.length === 0) {
+            return;
+        }
+
+        setFocusAssignable(true);
+        setActiveLevel(null);
+        setEditPercentageNodes([]);
+        setCategoryNodes([
+            CategoryNode.generateLevelRootNode(
+                t("Assignable categories"),
+                focusNodes,
+                props.extractedCategories
+            ),
+        ]);
+    };
+
     const handleFocusLevel = (level: number) => {
-    }
+        if (level === 0) {
+            handleFocusRootNode();
+            return;
+        }
+
+        const focusNodes = rootNode!.getNodesByLevel(level);
+        if (focusNodes.length === 0) {
+            return;
+        }
+
+        if (
+            editPercentageNodes.length > 0 &&
+            editPercentageNodes[0].category.level <= level
+        ) {
+            setEditPercentageNodes([]);
+        }
+
+        setFocusAssignable(false);
+        setActiveLevel(level);
+        setCategoryNodes([
+            CategoryNode.generateLevelRootNode(
+                `${t("Categories of level")} ${level}`,
+                focusNodes,
+                props.extractedCategories
+            ),
+        ]);
+    };
 
     const handleEditPercentage = (node: CategoryNode) => {
         if (editPercentageNodes.length > 0) {
             return;
         }
-        if (categoryNodes?.length === 1 && categoryNodes[0] === node) {
-            setCategoryNodes([node.parentNode!]);
+        if (
+            categoryNodes?.length === 1 &&
+            categoryNodes[0] === node &&
+            node.parentNode
+        ) {
+            handleFocusNode(node.parentNode);
+        }
+        if (
+            activeLevel !== null &&
+            node.parentNode &&
+            activeLevel === node.category.level
+        ) {
+            handleFocusNode(node.parentNode);
         }
         setEditPercentageNodes(node.parentNode!.children);
-    }; 
+    };
 
     const handlePercentageChange = (node: CategoryNode, value: number) => {
         node.setPercentage(value);
@@ -189,39 +336,53 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (prop
             if (n === node) {
                 setFocusEditPercentageIndex(i);
             }
-        })
+        });
     };
 
     const handleUpdatePercentage = () => {
-        const percentageSum = editPercentageNodes.reduce((total, node) => total + (node.percentage || 0), 0);
+        const percentageSum = editPercentageNodes.reduce(
+            (total, node) => total + (node.percentage || 0),
+            0
+        );
+        console.log(percentageSum);
         if (percentageSum !== 100) {
-            showToast("error", t('invalid_percentage_distribution'), "");
+            showToast("error", t("invalid_percentage_distribution"), "");
             return;
         }
-        if (editPercentageNodes.filter(node => node.percentage !== node.category.percentage).length > 0) {
-            const newDistribution: CategoryPercentage[] = editPercentageNodes.map(node => ({
-                id: node.category.id,
-                percentage: node.percentage ? node.percentage : 0
-            }));
-            const parentId: number | null = editPercentageNodes[0].parentNode!.category.id !== 0
-                    ? editPercentageNodes[0].parentNode!.category.id : null;
+        if (
+            editPercentageNodes.filter(
+                (node) => node.percentage !== node.category.percentage
+            ).length > 0
+        ) {
+            const newDistribution: CategoryPercentage[] =
+                editPercentageNodes.map((node) => ({
+                    id: node.category.id,
+                    percentage: node.percentage ? node.percentage : 0,
+                }));
+            const parentId: number | null =
+                editPercentageNodes[0].parentNode!.category.id !== 0
+                    ? editPercentageNodes[0].parentNode!.category.id
+                    : null;
             ApiCategories.updateDistribution(parentId, newDistribution)
-            .then(response => {
-                editPercentageNodes.forEach(node => {
-                    node.setCategory({
-                        ...node.category,
-                        percentage: node.percentage
+                .then((response) => {
+                    editPercentageNodes.forEach((node) => {
+                        node.setCategory({
+                            ...node.category,
+                            percentage: node.percentage,
+                        });
                     });
                 })
-            }).catch(error => {
-                console.error(error);
-            });
+                .catch((error) => {
+                    console.error(error);
+                });
         }
         setEditPercentageNodes([]);
     };
 
     const handleClosePercentageEdit = () => {
-        editPercentageNodes.forEach(node => node.setPercentage(node.category.percentage));
+        editPercentageNodes.forEach((node) =>
+            node.setPercentage(node.category.percentage)
+        );
         setEditPercentageNodes([]);
     };
 
@@ -247,6 +408,10 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (prop
         handleFocusNode,
         handleFocusParentNode,
         handleFocusRootNode,
+        focusAssignable,
+        handleFocusAssignableCategories,
+        handleFocusCategory,
+        activeLevel,
         handleFocusLevel,
 
         handleEditPercentage,
@@ -270,7 +435,9 @@ export const useCategoryNodes = (): CategoryNodesContextProps => {
     const context = useContext(CategoryNodesContext);
 
     if (!context) {
-        throw new Error('useCategoryNodes must be used within a CategoryNodesProvider');
+        throw new Error(
+            "useCategoryNodes must be used within a CategoryNodesProvider"
+        );
     }
 
     return context;

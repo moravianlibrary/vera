@@ -6,6 +6,7 @@ export class CategoryNode {
     category: Category;
     quota: number;
     percentage: number | undefined;
+    overallPercentage: number;
     parentNode: CategoryNode | undefined;
     children: CategoryNode[] = [];
 
@@ -29,6 +30,7 @@ export class CategoryNode {
         this.quota = quota;
         this.parentNode = parentNode;
         this.percentage = category.percentage;
+        this.overallPercentage = category.percentage;
         this.className = CategoryNode.getClassName(type, category);
         this.extracted = extracted;
 
@@ -41,12 +43,13 @@ export class CategoryNode {
             ])).sort();
         }
 
-        const childrenQuotas = CategoryNode.getChildrenQuotas(category.children, quota);
-        this.children = category.children.map((child, index) => (
-            new CategoryNode(NodeType.Category, child, childrenQuotas[index], extracted, this)))
-            .sort((a, b) => a.category.id - b.category.id);
-
-        this.aggregateStats(quota);
+        if (type !== NodeType.LevelRoot) {
+            const childrenQuotas = CategoryNode.getChildrenQuotas(category.children, quota);
+            this.children = category.children.map((child, index) => (
+                new CategoryNode(NodeType.Category, child, childrenQuotas[index], extracted, this)))
+                .sort((a, b) => a.category.id - b.category.id);
+            // this.aggregateStats(quota, parentNode ? parentNode.overallPercentage : 100);
+        }
     }
 
     static generateRootNode(name: string, categories: Category[], quota: number, extracted: boolean): CategoryNode {
@@ -70,11 +73,45 @@ export class CategoryNode {
             
             children: categories
         }
-        return new CategoryNode(NodeType.Root, rootCategory, quota, extracted);
+        const rootNode = new CategoryNode(NodeType.Root, rootCategory, quota, extracted);
+        rootNode.aggregateStats(quota, 100);
+        return rootNode;
+    }
+
+    static generateLevelRootNode(name: string, childNodes: CategoryNode[], extracted: boolean): CategoryNode {
+        const levelRootNode = new CategoryNode(NodeType.LevelRoot, {
+            id: -1,
+            name: name,
+            description: null,
+            parent_id: null,
+
+            assignable: false,
+            disabled: false,
+            departments: [],
+
+            percentage: 100,
+            level: -1,
+
+            count_pages: 0,
+            count_documents: 0,
+            count_documents_with_pages: 0,
+            count_documents_without_cnb: 0,
+            
+            children: []
+        }, childNodes.reduce((total, child) => total + child.quota, 0), extracted);
+
+        levelRootNode.children = childNodes;
+        levelRootNode.count_pages = childNodes.reduce((total, child) => total + child.count_pages, 0);
+        levelRootNode.count_documents = childNodes.reduce((total, child) => total + child.count_documents, 0);
+        levelRootNode.count_documents_with_pages = childNodes.reduce((total, child) => total + child.count_documents_with_pages, 0);
+        levelRootNode.count_documents_without_cnb = childNodes.reduce((total, child) => total + child.count_documents_without_cnb, 0);
+        levelRootNode.extracted_pages_count = childNodes.reduce((total, child) => total + child.extracted_pages_count, 0);
+        levelRootNode.extracted_documents_count = childNodes.reduce((total, child) => total + child.extracted_documents_count, 0);
+        return levelRootNode;
     }
 
     static getClassName(type: NodeType, category?: Category): string {
-        if (type === NodeType.Root) {
+        if (type === NodeType.Root || type === NodeType.LevelRoot) {
             return 'bg-cyan-400';
         }
         if (type === NodeType.Insert) {
@@ -136,20 +173,22 @@ export class CategoryNode {
     }
 
     updateChildren(children: Category[]) {
-        this.children.forEach((child, index) => child.update(children[index]));
+        children.forEach(child => {
+            const node = this.children.find(c => c.category.id === child.id);
+            if (node) {
+                node.update(child);
+            }
+        })
     }
 
     update(category: Category) {
-        if (this.category.children !== category.children) {
-            return;
-        }
         this.category = category;
-        this.children.forEach((child, index) => child.update(category.children[index]));
+        this.updateChildren(category.children);
     }
 
-    aggregateStats(quotaPagesCount: number) {
+    aggregateStats(quotaPagesCount: number, overallPercentage: number) {
         const childrenQuotas = CategoryNode.getChildrenQuotas(this.children.map(c => c.category), quotaPagesCount);
-        this.children.forEach((child, index) => child.aggregateStats(childrenQuotas[index]));
+        this.children.forEach((child, index) => child.aggregateStats(childrenQuotas[index], (overallPercentage * child.category.percentage) / 100));
 
         this.count_pages = (this.category.count_pages || 0) + (this.children.reduce((total, child) => (
             total + (child.count_pages || 0)), 0) as number);
@@ -166,6 +205,7 @@ export class CategoryNode {
             total + (child.extracted_documents_count || 0)), 0) as number);
 
         this.quota = quotaPagesCount;
+        this.overallPercentage = overallPercentage;
     }
 
     propagateDepartments(departments: number[] = []) {
@@ -225,5 +265,40 @@ export class CategoryNode {
             }
         }
         return null;
+    }
+
+    getCategoryNodeById(id: number): CategoryNode | null {
+        if (this.category.id === id) {
+            return this;
+        }
+        for (const child of this.children) {
+            const result = child.getCategoryNodeById(id);
+            if (result) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    getNodesByLevel(level: number): CategoryNode[] {
+        if (this.category.level === level) {
+            return [this];
+        }
+        const nodes: CategoryNode[] = [];
+        for (const child of this.children) {
+            nodes.push(...child.getNodesByLevel(level));
+        }
+        return nodes;
+    }
+
+    getAssignableCategoryNodes(): CategoryNode[] {
+        const nodes: CategoryNode[] = [];
+        if (this.category.assignable) {
+            nodes.push(this);
+        }
+        for (const child of this.children) {
+            nodes.push(...child.getAssignableCategoryNodes());
+        }
+        return nodes;
     }
 }

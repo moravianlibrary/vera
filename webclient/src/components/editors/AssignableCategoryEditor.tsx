@@ -1,22 +1,24 @@
 import { ColumnEditorOptions } from "primereact/column";
 import React from "react";
-import CategoryPicker from "../pickers/CategoryPicker";
+import AssignableCategoryPicker from "../pickers/AssignableCategoryPicker";
 
-interface CategoryEditorProps {
+interface AssignableCategoryEditorProps {
     options: ColumnEditorOptions;
 }
 
-const CategoryEditor: React.FC<CategoryEditorProps> = ({ options }) => {
+const AssignableCategoryEditor: React.FC<AssignableCategoryEditorProps> = ({
+    options,
+}) => {
     if (options.editorCallback === undefined) {
         return null;
     }
 
     return (
-        <CategoryPicker
+        <AssignableCategoryPicker
             category_id={options.value}
             callback={(category_id) => options.editorCallback!(category_id)}
         />
     );
 };
 
-export default CategoryEditor;
+export default AssignableCategoryEditor;

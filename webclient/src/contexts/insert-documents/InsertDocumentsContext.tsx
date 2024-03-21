@@ -18,6 +18,7 @@ import { AssignableCategory } from "../../adapters/ApiCategories";
 import { useToast } from "../toast/ToastContext";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { generateMessageForResponse } from "../../features/insert-documents/InsertDocumentsFunctions";
+import { ActionSeverity } from "../../types/PrimeReactTypes";
 
 export interface FileUploadValue {
     filename: string;
@@ -206,7 +207,7 @@ export const InsertDocumentsProvider: React.FC<
                 setResults((prev) => [...prev, response.data]);
                 const messageProps = generateMessageForResponse(response.data);
                 showToast(
-                    messageProps.severity,
+                    messageProps.severity as ActionSeverity,
                     t(messageProps.summary),
                     t(messageProps.detail)
                 );

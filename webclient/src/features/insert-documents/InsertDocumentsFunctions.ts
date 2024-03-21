@@ -5,6 +5,7 @@ import { MessageSeverity } from "primereact/api";
 import { MaterialType } from "../../types/MaterialType";
 import { IssuanceType } from "../../types/IssuanceType";
 import { TFunction } from "i18next";
+import { ActionSeverity, Severity } from "../../types/PrimeReactTypes";
 
 export interface InsertResultDetail {
     result: DocumentCreateResult;
@@ -35,6 +36,26 @@ export function getResultSeverity(status: DocumentCreateResult): MessageSeverity
         return MessageSeverity.WARN;
     }
     return MessageSeverity.ERROR;
+}
+
+export function messageSeverityToSeverity(status: MessageSeverity): ActionSeverity {
+    switch (status) {
+        case MessageSeverity.SUCCESS: return "success";
+        case MessageSeverity.WARN: return "warn";
+        case MessageSeverity.ERROR: return "error";
+        case MessageSeverity.INFO: return "info";
+    }
+    return;
+}
+
+export function messageSeverityToActionSeverity(status: MessageSeverity): Severity {
+    switch (status) {
+        case MessageSeverity.SUCCESS: return "success";
+        case MessageSeverity.WARN: return "warning";
+        case MessageSeverity.ERROR: return "danger";
+        case MessageSeverity.INFO: return "info";
+    }
+    return;
 }
 
 export function getResultSummary(result: DocumentCreateResult): string {

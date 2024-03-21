@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from .enums import ActionType
+from .types import ActionType
 
 
 class RoleBase(BaseModel):

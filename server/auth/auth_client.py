@@ -29,13 +29,13 @@ keycloak_openid = KeycloakOpenID(
 )
 
 
-def get_user_from_token(db: Session, token: str) -> CurrentUser:
+def get_user_from_token(token: str, db: Session) -> CurrentUser:
     """
     Retrieves user information from the token and performs validation checks.
 
     Args:
-        db (Session): The database session
         token (str): The user token to be validated
+        db (Session): The database session
 
     Returns:
         schemas.CurrentUser: The current user object with username, department,
