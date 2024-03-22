@@ -6,7 +6,8 @@ from services.database import get_db
 from auth.schemas import CurrentUser
 from auth.router import get_current_user
 from extractions import crud, schemas
-from extractions.routines import generate_extraction, get_category_subtree
+from extractions.generator import ExtractionGenerator
+from extractions.routines import get_category_subtree
 from services.exceptions import EmptyExtraction
 from categories.quotas.crud import get_quota
 from categories.crud import get_root_categories
@@ -28,16 +29,17 @@ def create_extraction(
     elif pages_count is None or pages_count <= 0:
         raise EmptyExtraction
 
-    selected_documents, selected_pages_count = generate_extraction(
-        props, pages_count, db
-    )
+    generator = ExtractionGenerator(pages_count, props, db)
+    generator.generate()
+
     extraction = crud.create_extraction(
         user.username,
         pages_count,
-        selected_pages_count,
-        selected_documents,
+        generator.extracted_pages_count,
+        generator.extracted_documents,
         db,
     )
+
     if quota_id is not None:
         crud.set_documents_extracted(extraction.id, db)
     return extraction

@@ -1,5 +1,5 @@
 from queue import PriorityQueue
-from typing import List
+from typing import Dict, List
 
 from categories.models import Category as CategoryModel
 from documents.models import Document as DocumentModel
@@ -17,6 +17,7 @@ class ExtractionRoot:
         self.parent_node = None
 
         self.main_queue: PriorityQueue["ExtractionNode"] = PriorityQueue()
+        self.requeue_nodes: Dict[int, "ExtractionNode"] = {}
 
         for child in children:
             child.set_parent(self)
@@ -31,9 +32,6 @@ class ExtractionRoot:
 
     def get_next(self) -> "ExtractionNode":
         return self.main_queue.get()
-
-    def add_extracted_pages(self, pages_count: int):
-        self.extracted_pages += pages_count
 
     def propagate_extracted_pages(self, extracted_pages: int):
         self.extracted_pages += extracted_pages
@@ -50,11 +48,14 @@ class ExtractionRoot:
 
     def requeue(self, node: "ExtractionNode"):
         if node.is_fully_extracted():
+            if self.requeue_nodes.get(node.category_id):
+                self.requeue_nodes.pop(node.category_id)
             return
-        if node.assignable:
-            self.remaining_capacity_queue.put(node)
-        else:
-            self.main_queue.put(node)
+        self.requeue_nodes[node.category_id] = node
+
+    def switch_to_requeue(self):
+        for child in self.requeue_nodes.values():
+            self.main_queue.put(child)
 
 
 class ExtractionNode(ExtractionRoot):
