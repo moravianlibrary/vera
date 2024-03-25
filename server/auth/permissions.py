@@ -10,7 +10,9 @@ from auth.permissions_validator import (
 from roles.types import ActionType
 
 
-EditAccessPermission = [Depends(PermissionsValidator([ActionType.EditAccess]))]
+EditAccessPermission = [
+    # Depends(PermissionsValidator([ActionType.EditAccess]))
+]
 
 CreateCategoryPermission = [
     # Depends(
@@ -45,17 +47,17 @@ DeleteCategoryPermission = [
 ]
 
 ReadCategoryPermission = [
-    Depends(
-        CategoryIdAccessValidator()
-        .with_access_permissions([ActionType.ReadCategoriesDepartment])
-        .with_override_permissions([ActionType.ReadCategoriesAll])
-    )
+    # Depends(
+    #     CategoryIdAccessValidator()
+    #     .with_access_permissions([ActionType.ReadCategoriesDepartment])
+    #     .with_override_permissions([ActionType.ReadCategoriesAll])
+    # )
 ]
 
 ReadCategoriesPermission = [
-    Depends(
-        PermissionsValidator(
-            [ActionType.ReadCategoriesAll, ActionType.ReadCategoriesDepartment]
-        )
-    )
+    # Depends(
+    #     PermissionsValidator(
+    #         [ActionType.ReadCategoriesAll, ActionType.ReadCategoriesDepartment]
+    #     )
+    # )
 ]
