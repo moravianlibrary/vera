@@ -588,3 +588,143 @@ class TestExtractionsPreparation(TestRoutines):
         # Assert
         self.assertListEqual(ids, [7, 5, 6, 2])
         self.assertEqual(count, 994)
+
+    @patch("extractions.preprocessor.get_root_categories")
+    @patch("extractions.preprocessor.get_children_categories")
+    @patch("extractions.preprocessor.get_extractable_documents")
+    def test_extraction_simple_tree(
+        self,
+        mock_get_extractable_documents: Mock,
+        mock_get_children_categories: Mock,
+        mock_get_root_categories: Mock,
+    ):
+        # Arrange
+        odbor_periodik = Category(
+            id=1,
+            name="Odbor Periodik",
+            assignable=True,
+            percentage=10,
+            parent_id=None,
+        )
+        morava = Category(
+            id=2,
+            name="Morava",
+            assignable=False,
+            percentage=20,
+            parent_id=1,
+        )
+        noviny = Category(
+            id=3,
+            name="Noviny",
+            assignable=True,
+            percentage=50,
+            parent_id=2,
+        )
+        casopisy = Category(
+            id=4,
+            name="Casopisy",
+            assignable=True,
+            percentage=50,
+            parent_id=2,
+        )
+        vyrocni_zpravy = Category(
+            id=5,
+            name="Vyrocni Zpravy",
+            assignable=True,
+            percentage=15,
+            parent_id=1,
+        )
+        kontinuita = Category(
+            id=6,
+            name="Kontinuita",
+            assignable=True,
+            percentage=15,
+            parent_id=1,
+        )
+        dary = Category(
+            id=7,
+            name="Dary",
+            assignable=True,
+            percentage=35,
+            parent_id=1,
+        )
+        projekty = Category(
+            id=8,
+            name="Projekty",
+            assignable=False,
+            percentage=10,
+            parent_id=1,
+        )
+        alkaro = Category(
+            id=9,
+            name="Alkaro",
+            assignable=True,
+            percentage=100,
+            parent_id=8,
+        )
+        test = Category(
+            id=10,
+            name="Test",
+            assignable=False,
+            percentage=5,
+            parent_id=1,
+        )
+        category_root2 = Category(
+            id=11,
+            name="Root 2",
+            assignable=False,
+            percentage=90,
+            parent_id=None,
+        )
+        category_child21 = Category(
+            id=12,
+            name="Child 21",
+            assignable=True,
+            percentage=100,
+            parent_id=None,
+        )
+
+        mock_get_root_categories.return_value = [
+            odbor_periodik,
+            category_root2,
+        ]
+
+        mock_get_children_categories.side_effect = lambda id, db: {
+            1: [morava, vyrocni_zpravy, kontinuita, dary, projekty, test],
+            2: [noviny, casopisy],
+            3: [],
+            4: [],
+            5: [],
+            6: [],
+        }.get(id)
+
+        mock_get_extractable_documents.side_effect = lambda id, db: {
+            1: [
+                DocumentModel(id=1, pages_count=176),
+                DocumentModel(id=2, pages_count=151),
+                DocumentModel(id=3, pages_count=446),
+            ],
+            2: [
+                DocumentModel(id=4, pages_count=270),
+                DocumentModel(id=5, pages_count_predicted=27),
+                DocumentModel(id=6, pages_count=316),
+            ],
+            3: [],
+            4: [
+                DocumentModel(id=7, pages_count_predicted=500),
+            ],
+        }.get(id)
+
+        # Act
+        generator = ExtractionGenerator(
+            1000, ExtractionCreate(target_pages_threshold=0.05), self.db
+        )
+        generator.generate()
+        ids, count = (
+            generator.extracted_documents,
+            generator.extracted_pages_count,
+        )
+
+        # Assert
+        self.assertListEqual(ids, [7, 5, 6, 2])
+        self.assertEqual(count, 994)
