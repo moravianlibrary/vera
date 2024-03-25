@@ -5,6 +5,9 @@ from typing import List
 from categories.schemas import CategoryNode
 
 
+# TODO: save extraction settings
+
+
 class ExtractionBase(BaseModel):
     pass
 
@@ -30,7 +33,7 @@ class Extraction(ExtractionBase):
         from_attributes = True
 
 
-class DocumentPagesCount(BaseModel):
+class ExtractionDocument(BaseModel):
     id: int
     pages_count: int
 
