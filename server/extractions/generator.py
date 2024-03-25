@@ -1,10 +1,9 @@
 from sqlalchemy.orm import Session
-from collections import deque
-from typing import Deque, List
+from typing import List
 
 from extractions.preprocessor import ExtractionPreprocessor
 from extractions.schemas import ExtractionCreate, ExtractionDocument
-from extractions.extraction_node import ExtractionRoot, ExtractionNode
+from extractions.extraction_node import ExtractionNode
 
 
 class ExtractionGenerator:
@@ -12,58 +11,59 @@ class ExtractionGenerator:
         self, target_pages: int, settings: ExtractionCreate, db: Session
     ):
         self.target_pages = target_pages
+        self.lower_limit = target_pages * (1 - settings.target_pages_threshold)
         self.settings = settings
         self.db = db
-        self.extraction_root: ExtractionRoot = ExtractionPreprocessor(
+        self.extraction_root: ExtractionNode = ExtractionPreprocessor(
             settings, db
         ).generate_extraction_tree()
         self.extracted_documents: List[int] = []
         self.extracted_pages_count = 0
-        self.extraction_index = 0
+        self.target_pages_window = 0
 
     @property
     def relative_target_pages(self) -> int:
         return (
             self.target_pages - self.extracted_pages_count
-            if self.extraction_index == 0
-            else self.target_pages - self.extraction_root.extracted_pages
-        )
+        ) - self.extraction_root.fully_extracted_pages
 
-    def generate(self):
-        while self.extraction_root.has_next():
-            node = self.extraction_root.get_next()
-            leaf_path: Deque[ExtractionNode] = deque()
-            while not node.assignable:
-                leaf_path.append(node)
-                node = node.get_next()
+    def generate(self, leafs: List[ExtractionNode] = None):
+        leafs = self.extraction_root.get_leafs() if leafs is None else leafs
+        if len(leafs) == 0:
+            return
 
+        leafs.sort()
+        for node in leafs:
+            print("Generating", node.category_id)
             if (
                 self.settings.include_categories
                 and node.category_id in self.settings.include_categories
             ):
-                self.extract_include_category(node.category_id)
+                self.extract_include_category(node)
             elif node.extract_whole:
                 self.extract_whole_category(node)
             else:
                 self.extract_category(node)
 
-            while leaf_path:
-                prev_node = leaf_path.pop()
-                prev_node.requeue(node)
-                node = prev_node
-            self.extraction_root.requeue(node)
+        self.extracted_pages_count = self.extraction_root.extracted_pages
 
-        if self.extracted_pages_count == self.extraction_root.extracted_pages:
+        if len(leafs) == 1 and leafs[0] == self.extraction_root:
             return
 
-        self.extracted_pages_count = self.extraction_root.extracted_pages
-        self.extraction_root.switch_to_requeue()
+        leafs = self.extraction_root.get_leafs()
+        max_level = max([leaf.level for leaf in leafs]) if leafs else -1
         if (
-            self.extracted_pages_count <= self.target_pages
-            and self.extraction_root.has_next()
+            self.extracted_pages_count <= self.lower_limit
+            and len(leafs) > 0
+            and max_level >= 0
         ):
-            self.extraction_index += 1
-            self.generate()
+            leafs = self.extraction_root.get_leafs()
+            self.extraction_root.fully_extracted_pages = 0
+            self.extraction_root.propagate_documents_up(max_level)
+            self.generate(leafs)
+        elif max_level == -1:
+            self.extraction_root.fully_extracted_pages = 0
+            self.generate([self.extraction_root])
 
     def extract_include_category(self, node: ExtractionNode):
         documents = node.documents
@@ -72,9 +72,11 @@ class ExtractionGenerator:
             self.extracted_documents.append(document.id)
 
     def extract_whole_category(self, node: ExtractionNode):
-        upper_limit = node.get_relative_target_pages(
-            self.relative_target_pages
-        ) * (1 + self.settings.whole_categories_threshold)
+        upper_limit = (
+            node.get_relative_target_pages(self.relative_target_pages)
+            * (1 + self.settings.whole_categories_threshold)
+            + self.target_pages_window
+        )
         if node.total_pages <= upper_limit:
             documents = node.documents
             node.set_extracted(documents, node.total_pages)
@@ -83,16 +85,27 @@ class ExtractionGenerator:
 
     def extract_category(self, node: ExtractionNode):
         documents = node.documents
-        if self.extraction_index == 0:
-            target_pages = node.get_relative_target_pages(
-                self.relative_target_pages
-            )
-        elif node.parent_node is not None:
-            target_pages = node.parent_node.get_relative_target_pages(
-                self.relative_target_pages
-            )
-        else:
-            target_pages = self.relative_target_pages
+        incl = [
+            doc.id for doc in documents if doc.id in self.extracted_documents
+        ]
+        if len(incl) > 0:
+            print(node)
+            print([doc.id for doc in node.documents])
+            print([doc.id for doc in node.extracted_documents])
+            print(self.extracted_documents)
+        # if self.extraction_index == 0:
+        #     target_pages = node.get_relative_target_pages(
+        #         self.relative_target_pages
+        #     )
+        # elif node.parent_node is not None:
+        #     target_pages = node.parent_node.get_relative_target_pages(
+        #         self.relative_target_pages
+        #     )
+        # else:
+        #     target_pages = self.relative_target_pages
+        target_pages = node.get_relative_target_pages(
+            self.relative_target_pages
+        )
 
         n = len(documents)
         # page_size = int(target_pages * self.settings.target_pages_threshold)
@@ -101,6 +114,12 @@ class ExtractionGenerator:
         lower_limit = target_pages
         upper_limit = int(
             target_pages * (1 + self.settings.target_pages_threshold)
+        )
+
+        print(
+            f"Category {node.category_id} target pages: {target_pages}, "
+            f"upper: {upper_limit}, "
+            f"pages: {[doc.pages_count for doc in node.documents]}"
         )
 
         dp = [[0] * (page_size + 1) for _ in range(n + 1)]

@@ -7,7 +7,7 @@ from categories.crud import (
 )
 from categories.models import Category as CategoryModel
 from extractions.crud import get_extractable_documents
-from extractions.extraction_node import ExtractionNode, ExtractionRoot
+from extractions.extraction_node import ExtractionNode, getExtractionRoot
 from extractions.schemas import ExtractionCreate
 
 
@@ -16,7 +16,7 @@ class ExtractionPreprocessor:
         self.settings = settings
         self.db = db
 
-    def generate_extraction_tree(self) -> ExtractionRoot:
+    def generate_extraction_tree(self) -> ExtractionNode:
         root_categories = get_root_categories(self.db)
         children_nodes = [
             self.generate_extraction_tree_rec(
@@ -27,7 +27,7 @@ class ExtractionPreprocessor:
         total_percentage = sum([child.percentage for child in children_nodes])
         for child in children_nodes:
             child.set_relative_ratio(child.percentage / total_percentage)
-        return ExtractionRoot(children_nodes)
+        return getExtractionRoot(children_nodes)
 
     def generate_extraction_tree_rec(
         self,
