@@ -75,7 +75,8 @@ class ExtractionGenerator:
         target_pages = node.get_relative_target_pages(self.target_pages)
 
         n = len(documents)
-        page_size = int(target_pages * self.settings.target_pages_threshold)
+        # page_size = int(target_pages * self.settings.target_pages_threshold)
+        page_size = int(target_pages)
 
         lower_limit = target_pages
         upper_limit = int(
@@ -88,7 +89,7 @@ class ExtractionGenerator:
         def get_scaled_pages_count(index: int) -> int:
             scaled_pages_count = int(
                 documents[index].pages_count
-                * self.settings.target_pages_threshold
+                # * self.settings.target_pages_threshold
             )
             return scaled_pages_count if scaled_pages_count > 0 else 1
 
@@ -112,7 +113,7 @@ class ExtractionGenerator:
         i, j = 0, 0
         while i < n:
             if selected_docs[i][j]:
-                j += documents[i].pages_count
+                j += get_scaled_pages_count(i)
                 if j > upper_limit:
                     break
                 selected_documents.append(documents[i])
