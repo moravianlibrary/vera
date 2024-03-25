@@ -31,7 +31,7 @@ class ExtractionRoot:
         return not self.main_queue.empty()
 
     def get_next(self) -> "ExtractionNode":
-        return self.main_queue.get()
+        return self.main_queue.get(0)
 
     def propagate_extracted_pages(self, extracted_pages: int):
         self.extracted_pages += extracted_pages
@@ -111,9 +111,9 @@ class ExtractionNode(ExtractionRoot):
 
     def is_fully_extracted(self) -> bool:
         return (
-            self.assignable
-            and self.extracted_pages == self.total_pages
-            or not self.has_next()
+            self.extracted_pages == self.total_pages
+            if self.assignable
+            else not self.has_next()
         )
 
     def set_extracted(

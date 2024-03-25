@@ -3,10 +3,9 @@ from unittest.mock import Mock, patch
 
 from categories.models import Category
 from documents.models import Document as DocumentModel
+from extractions.extraction_node import ExtractionNode, ExtractionRoot
 from extractions.generator import ExtractionGenerator
 from extractions.schemas import ExtractionCreate
-
-from extractions.extraction_node import ExtractionNode, ExtractionRoot
 from extractions.preprocessor import ExtractionPreprocessor
 
 
@@ -431,3 +430,161 @@ class TestExtractionsPreparation(TestRoutines):
         self.assertEqual(root.relative_ratio, 1.0)
         while not root.main_queue.empty():
             assert_nodes_order_and_target_pages(root.main_queue.get())
+
+    @patch("extractions.preprocessor.get_root_categories")
+    @patch("extractions.preprocessor.get_children_categories")
+    @patch("extractions.preprocessor.get_extractable_documents")
+    def test_extraction(
+        self,
+        mock_get_extractable_documents: Mock,
+        mock_get_children_categories: Mock,
+        mock_get_root_categories: Mock,
+    ):
+        # Arrange
+        category_root1 = Category(
+            id=1,
+            name="Root 1",
+            assignable=True,
+            percentage=50,
+            parent_id=None,
+        )
+        category_root2 = Category(
+            id=2,
+            name="Root 2",
+            assignable=True,
+            percentage=30,
+            parent_id=None,
+        )
+        category_root3 = Category(
+            id=3,
+            name="Root 3",
+            assignable=True,
+            percentage=20,
+            parent_id=None,
+        )
+
+        mock_get_root_categories.return_value = [
+            category_root1,
+            category_root2,
+            category_root3,
+        ]
+
+        mock_get_children_categories.side_effect = lambda id, db: {
+            1: [],
+            2: [],
+            3: [],
+        }.get(id)
+
+        mock_get_extractable_documents.side_effect = lambda id, db: {
+            1: [
+                DocumentModel(id=1, pages_count=176),
+                DocumentModel(id=2, pages_count=203),
+                DocumentModel(id=3, pages_count=446),
+            ],
+            2: [
+                DocumentModel(id=4, pages_count=270),
+                DocumentModel(id=5, pages_count_predicted=27),
+                DocumentModel(id=6, pages_count=316),
+            ],
+            3: [
+                DocumentModel(id=7, pages_count=323),
+                DocumentModel(id=8, pages_count=234),
+                DocumentModel(id=9, pages_count=46),
+            ],
+        }.get(id)
+
+        # Act
+        generator = ExtractionGenerator(
+            1200, ExtractionCreate(target_pages_threshold=0.05), self.db
+        )
+        generator.generate()
+        ids, count = (
+            generator.extracted_documents,
+            generator.extracted_pages_count,
+        )
+
+        # Assert
+        self.assertListEqual(ids, [8, 5, 6, 3, 1])
+        self.assertEqual(count, 1199)
+
+    @patch("extractions.preprocessor.get_root_categories")
+    @patch("extractions.preprocessor.get_children_categories")
+    @patch("extractions.preprocessor.get_extractable_documents")
+    def test_extraction_simple_tree(
+        self,
+        mock_get_extractable_documents: Mock,
+        mock_get_children_categories: Mock,
+        mock_get_root_categories: Mock,
+    ):
+        # Arrange
+        category_root1 = Category(
+            id=1,
+            name="Root 1",
+            assignable=True,
+            percentage=5,
+            parent_id=None,
+        )
+        category_root2 = Category(
+            id=2,
+            name="Root 2",
+            assignable=True,
+            percentage=5,
+            parent_id=None,
+        )
+        category_root3 = Category(
+            id=3,
+            name="Root 3",
+            assignable=False,
+            percentage=90,
+            parent_id=None,
+        )
+        category_child31 = Category(
+            id=4,
+            name="Child 31",
+            assignable=True,
+            percentage=100,
+            parent_id=None,
+        )
+
+        mock_get_root_categories.return_value = [
+            category_root1,
+            category_root2,
+            category_root3,
+        ]
+
+        mock_get_children_categories.side_effect = lambda id, db: {
+            1: [],
+            2: [],
+            3: [category_child31],
+        }.get(id)
+
+        mock_get_extractable_documents.side_effect = lambda id, db: {
+            1: [
+                DocumentModel(id=1, pages_count=176),
+                DocumentModel(id=2, pages_count=151),
+                DocumentModel(id=3, pages_count=446),
+            ],
+            2: [
+                DocumentModel(id=4, pages_count=270),
+                DocumentModel(id=5, pages_count_predicted=27),
+                DocumentModel(id=6, pages_count=316),
+            ],
+            3: [],
+            4: [
+                DocumentModel(id=7, pages_count_predicted=500),
+            ],
+        }.get(id)
+
+        # Act
+        generator = ExtractionGenerator(
+            1000, ExtractionCreate(target_pages_threshold=0.05), self.db
+        )
+        generator.generate()
+        ids, count = (
+            generator.extracted_documents,
+            generator.extracted_pages_count,
+        )
+
+        # Assert
+        self.assertListEqual(ids, [7, 5, 6, 2])
+        self.assertEqual(count, 994)
