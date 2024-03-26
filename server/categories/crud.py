@@ -229,8 +229,34 @@ def get_pages_count(id: int, db: Session):
     ) or 0
 
 
+def get_extractable_pages_count(category_id: int, db: Session):
+    return (
+        db.query(
+            func.sum(
+                func.coalesce(
+                    Document.pages_count, Document.pages_count_predicted
+                )
+            )
+        )
+        .filter(Document.category_id == category_id)
+        .filter(
+            or_(
+                and_(
+                    Document.pages_count.is_not(None), Document.pages_count > 0
+                ),
+                and_(
+                    Document.pages_count_predicted.is_not(None),
+                    Document.pages_count_predicted > 0,
+                ),
+            )
+        )
+        .filter(Document.cnb.is_not(None))
+        .scalar()
+    ) or 0
+
+
 def get_extractable_documents_count(category_id: int, db: Session):
-    query = (
+    return (
         db.query(func.count(Document.id))
         .filter(Document.category_id == category_id)
         .filter(
@@ -244,10 +270,9 @@ def get_extractable_documents_count(category_id: int, db: Session):
                 ),
             )
         )
-        .filter(Document.cnb.is_(None))
+        .filter(Document.cnb.is_not(None))
         .scalar()
-    )
-    return query.scalar()
+    ) or 0
 
 
 def get_documents_count(id: int, only_with_pages: bool, db: Session):
