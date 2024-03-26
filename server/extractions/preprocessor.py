@@ -7,7 +7,7 @@ from categories.crud import (
 )
 from categories.models import Category as CategoryModel
 from extractions.crud import get_extractable_documents
-from extractions.extraction_node import ExtractionNode, ExtractionRoot
+from extractions.extraction_node import ExtractionNode, getExtractionRoot
 from extractions.schemas import ExtractionCreate
 
 
@@ -16,24 +16,22 @@ class ExtractionPreprocessor:
         self.settings = settings
         self.db = db
 
-    def generate_extraction_tree(self) -> ExtractionRoot:
-        root_categories = get_root_categories(self.db)
-        children_nodes = [
-            self.generate_extraction_tree_rec(
-                root_category,
-            )[0]
-            for root_category in root_categories
-        ]
+    def generate_extraction_tree(self) -> ExtractionNode:
+        children_nodes: List[ExtractionNode] = []
+        for root in get_root_categories(self.db):
+            node, pages_count = self.generate_extraction_tree_rec(root)
+            if node:
+                children_nodes.append(node)
         total_percentage = sum([child.percentage for child in children_nodes])
         for child in children_nodes:
             child.set_relative_ratio(child.percentage / total_percentage)
-        return ExtractionRoot(children_nodes)
+        return getExtractionRoot(children_nodes)
 
     def generate_extraction_tree_rec(
         self,
         category: CategoryModel,
     ) -> Tuple[ExtractionNode, int]:
-        if category.percentage == 0:
+        if category.percentage == 0 or category.percentage is None:
             return (None, 0)
 
         if category.assignable:
@@ -43,15 +41,17 @@ class ExtractionPreprocessor:
                 and category.id in self.settings.include_categories,
                 documents=get_extractable_documents(category.id, self.db),
             )
-            return (node, node.total_pages)
+            return (
+                (node, node.total_pages) if node.total_pages > 0 else (None, 0)
+            )
 
         children_nodes: List[ExtractionNode] = []
         children_pages_count = 0
         for child in get_children_categories(category.id, self.db):
-            node = self.generate_extraction_tree_rec(child)
-            if node[0]:
-                children_nodes.append(node[0])
-                children_pages_count += node[1]
+            node, pages_count = self.generate_extraction_tree_rec(child)
+            if node:
+                children_nodes.append(node)
+                children_pages_count += pages_count
 
         if not children_nodes:
             return (None, 0)

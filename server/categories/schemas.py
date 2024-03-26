@@ -24,9 +24,11 @@ class Category(CategoryCreate):
 class CategoryNode(Category):
     children: List[SerializeAsAny[Category]]
     count_pages: int
-    count_documents_with_pages: int
-    count_documents_without_cnb: int
+    count_pages_extractable: int
     count_documents: int
+    count_documents_with_pages: int
+    count_documents_extractable: int
+    count_documents_without_cnb: int
 
 
 class CategoryPercentage(BaseModel):

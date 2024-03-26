@@ -74,7 +74,7 @@ def get_extractable_documents(category_id: int, db: Session):
                 ),
             )
         )
-        .filter(Document.cnb.is_(None))
+        .filter(Document.cnb.is_not(None))
         .all()
     )
 

@@ -71,7 +71,7 @@ export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({
         pages_count?: number,
         quota_id?: number
     ) => {
-        console.log(pages_count);
+        console.log(createData);
         ApiExtractions.generateExtraction(createData, pages_count, quota_id)
             .then((response) => {
                 setExtractions([
