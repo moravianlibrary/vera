@@ -16,3 +16,8 @@ class ExtractionDocument:
             or self.predicted_pages_count
             or 0
         )
+
+    def __repr__(self) -> str:
+        return (
+            f"ExtractionDocument(id={self.id}, pages_count={self.pages_count})"
+        )

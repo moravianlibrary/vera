@@ -63,7 +63,6 @@ class ExtractionNode:
         for node in self.children:
             node.get_leafs_rec(leafs)
         if not leafs and self.assignable:
-            print("Root as leaf")
             return [self]
         return leafs
 
@@ -126,9 +125,6 @@ class ExtractionNode:
         )
         self.children = []
         self.assignable = True
-        print(f"Category {self.category_id}")
-        print(f"Documents: {[doc.id for doc in self._documents]}")
-        print()
         return []
 
     def __lt__(self, other: "ExtractionNode"):
@@ -174,10 +170,10 @@ class ExtractionNode:
         children_info_str = "\n".join(children_info)
         self.main_queue = new_queue
         return (
-            f"ExtractionRoot:\n"
+            f"ExtractionNode {self.category_id}:\n"
             f"- relative_ratio={self.relative_ratio}\n"
             f"- total_pages={self.total_pages}\n"
             f"- extracted_pages={self.extracted_pages})\n"
             f"- queue:\n"
-            f"{children_info_str}"
+            f"{children_info_str}\n"
         )
