@@ -13,7 +13,9 @@ def get_category_subtree(extraction_id, category: Category, db: Session):
     documents = get_extraction_documents(extraction_id, db, category.id)
     extracted_pages_count = 0
     for document in documents:
-        extracted_pages_count += document.pages_count
+        extracted_pages_count += (
+            document.pages_count or document.pages_count_predicted
+        )
 
     return ExtractionCategoryNode(
         id=category.id,

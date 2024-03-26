@@ -1,13 +1,69 @@
 import AssignableCategoryModel from "../../contexts/categories/AssignableCategoryModel";
-import { TreeSelect, TreeSelectProps } from "primereact/treeselect";
-import React from "react";
+import {
+    TreeSelect,
+    TreeSelectProps,
+    TreeSelectSelectionKeysType,
+} from "primereact/treeselect";
+import React, { useEffect, useState } from "react";
 import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { TreeNode } from "primereact/treenode";
+
+interface AssignableCategoriesPickerProps {
+    categories_ids: number[];
+    callback(categories_ids: number[]): void;
+    className?: string;
+}
 
 interface AssignableCategoryPickerProps {
     category_id: number | null;
     callback(category_id: number | null): void;
 }
+
+export const AssignableCategoriesPicker: React.FC<
+    AssignableCategoriesPickerProps
+> = ({ categories_ids, callback, className }) => {
+    const { categories } = useAssignableCategories();
+
+    const categoriesOptions = buildCategoryTree(categories);
+    const [selected, setSelected] =
+        useState<TreeSelectSelectionKeysType | null>(null);
+
+    useEffect(() => {
+        if (categories_ids && categories_ids.length > 0) {
+            const newSelected = {};
+            categories
+                .filter((c) => categories_ids.includes(c.id))
+                .forEach((c) => {
+                    newSelected[c.id.toString()] = true;
+                });
+            console.log(newSelected);
+            setSelected(newSelected);
+        } else {
+            setSelected({});
+        }
+    }, [categories_ids]);
+
+    const handleChange = (event) => {
+        if (!event.value) {
+            return callback([]);
+        }
+        callback(Object.keys(event.value).map(Number));
+    };
+
+    return (
+        <TreeSelect
+            className={`${className ? className : ""}`}
+            value={selected}
+            display="chip"
+            selectionMode="multiple"
+            metaKeySelection={false}
+            options={categoriesOptions}
+            onChange={handleChange}
+            filter
+            showClear
+        />
+    );
+};
 
 const AssignableCategoryPicker: React.FC<AssignableCategoryPickerProps> = ({
     category_id,
