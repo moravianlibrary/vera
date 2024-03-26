@@ -169,7 +169,7 @@ const resources = {
         unique_category_name_violation: "Porušení jedinečného názvu kategorie",
         unique_category_name_violation_detail: "Sourozenecké kategorie by měly mít jedinečné názvy",
         "Category deletion failed": "Smazání kategorie se nezdařilo",
-        "Only empty categories can be deleted": "Smazat lze pouze prázdné kategorie",
+        "Only empty categories can be deleted": "Smazat lze pouze prázdné kategorie, s prideleným rozdelením 0%",
 
         "The quota name must be filled": "Název záměru musí být vyplněn",
         "The quota pages count must be filled": "Počet stránek záměru musí být vyplněn",
