@@ -185,8 +185,22 @@ const CategoryNodeStats: React.FC<CategoryNodeStatsProps> = ({ node }) => {
             </div>
             <div className="flex flex-column align-items-start">
                 <div>
+                    <span className="font-bold">
+                        {node.count_pages_extractable}
+                    </span>{" "}
+                    {t("extractable pages")}
+                </div>
+                <div>
                     <span className="font-bold">{node.count_pages}</span>{" "}
                     {t("category_count_pages")}
+                </div>
+            </div>
+            <div className="flex flex-column align-items-start">
+                <div>
+                    <span className="font-bold">
+                        {node.count_documents_extractable}
+                    </span>{" "}
+                    {t("extractable documents")}
                 </div>
                 <div>
                     <span className="font-bold">

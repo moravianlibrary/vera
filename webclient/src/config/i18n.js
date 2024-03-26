@@ -350,6 +350,8 @@ const resources = {
         "Documents are still included in the categories": "Dokumenty jsou stále zařazeny do kategorií",
         "Documents are no longer included in the categories": "Dokumenty již nejsou zařazeny do kategorií",
         "Show extraction": "Zobrazit extrakci",
+        "extractable pages": "extrahovatelných stránek",
+        "extractable documents": "extrahovatelných dokumentů",
     },
   },
 };
