@@ -16,8 +16,10 @@ export class CategoryNode {
 
     predecessors_departments: number[] = [];
     count_pages: number = 0;
+    count_pages_extractable: number = 0;
     count_documents: number = 0;
     count_documents_with_pages: number = 0;
+    count_documents_extractable: number = 0;
     count_documents_without_cnb: number = 0;
 
     className = 'bg-yellow-500';
@@ -67,8 +69,10 @@ export class CategoryNode {
             level: -1,
 
             count_pages: 0,
+            count_pages_extractable: 0,
             count_documents: 0,
             count_documents_with_pages: 0,
+            count_documents_extractable: 0,
             count_documents_without_cnb: 0,
             
             children: categories
@@ -93,8 +97,10 @@ export class CategoryNode {
             level: -1,
 
             count_pages: 0,
+            count_pages_extractable: 0,
             count_documents: 0,
             count_documents_with_pages: 0,
+            count_documents_extractable: 0,
             count_documents_without_cnb: 0,
             
             children: []
@@ -102,8 +108,10 @@ export class CategoryNode {
 
         levelRootNode.children = childNodes;
         levelRootNode.count_pages = childNodes.reduce((total, child) => total + child.count_pages, 0);
+        levelRootNode.count_pages_extractable = childNodes.reduce((total, child) => total + child.count_pages_extractable, 0);
         levelRootNode.count_documents = childNodes.reduce((total, child) => total + child.count_documents, 0);
         levelRootNode.count_documents_with_pages = childNodes.reduce((total, child) => total + child.count_documents_with_pages, 0);
+        levelRootNode.count_documents_extractable = childNodes.reduce((total, child) => total + child.count_documents_extractable, 0);
         levelRootNode.count_documents_without_cnb = childNodes.reduce((total, child) => total + child.count_documents_without_cnb, 0);
         levelRootNode.extracted_pages_count = childNodes.reduce((total, child) => total + child.extracted_pages_count, 0);
         levelRootNode.extracted_documents_count = childNodes.reduce((total, child) => total + child.extracted_documents_count, 0);
@@ -162,8 +170,10 @@ export class CategoryNode {
             level: this.category.level + 1,
 
             count_pages: 0,
+            count_pages_extractable: 0,
             count_documents: 0,
             count_documents_with_pages: 0,
+            count_documents_extractable: 0,
             count_documents_without_cnb: 0,
             
             children: []
@@ -192,10 +202,15 @@ export class CategoryNode {
 
         this.count_pages = (this.category.count_pages || 0) + (this.children.reduce((total, child) => (
             total + (child.count_pages || 0)), 0) as number);
+        this.count_pages_extractable = (this.category.count_pages_extractable || 0) + (this.children.reduce((total, child) => (
+            total + (child.count_pages_extractable || 0)), 0) as number);
+
         this.count_documents = (this.category.count_documents || 0 ) + (this.children.reduce((total, child) => (
             total + (child.count_documents || 0)), 0) as number);
         this.count_documents_with_pages = (this.category.count_documents_with_pages || 0) + (this.children.reduce((total, child) => (
             total + (child.count_documents_with_pages || 0)), 0) as number);
+        this.count_documents_extractable = (this.category.count_documents_extractable || 0) + (this.children.reduce((total, child) => (
+            total + (child.count_documents_extractable || 0)), 0) as number);
         this.count_documents_without_cnb = (this.category.count_documents_without_cnb || 0 ) + (this.children.reduce((total, child) => (
             total + (child.count_documents_without_cnb || 0)), 0) as number);
 

@@ -17,10 +17,11 @@ interface Category extends CreateCategory {
     level: number;
 
     count_pages: number;
+    count_pages_extractable: number;
     count_documents: number;
     count_documents_with_pages: number;
+    count_documents_extractable: number;
     count_documents_without_cnb: number;
-
     
     extracted_pages_count?: number;
     extracted_documents_count?: number;

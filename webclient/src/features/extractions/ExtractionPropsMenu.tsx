@@ -4,33 +4,38 @@ import { useTranslation } from "react-i18next";
 import { ExtractionProps } from "../../adapters/ApiExtractions";
 import { useExtractions } from "../../contexts/extractions/ExtractionsContext";
 import { AssignableCategoriesProvider } from "../../contexts/categories/AssignableCategoriesContext";
-import AssignableCategoriesPicker from "../../components/AssignableCategoriesPicker";
+import AssignableCategoryPicker, {
+    AssignableCategoriesPicker,
+} from "../../components/pickers/AssignableCategoryPicker";
 import { AssignableCategory, Quota } from "../../adapters/ApiCategories";
 import { QuotasProvider } from "../../contexts/categories/QuotasContext";
 import QuotaPicker from "../../components/QuotaPicker";
 import LabeledComponent from "../../components/LabeledComponent";
 import { Button } from "primereact/button";
 
-
-interface ExtractionPropsMenuProps {
-}
+interface ExtractionPropsMenuProps {}
 
 const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
     const { t } = useTranslation();
     const { defaultProps, generateExtraction } = useExtractions();
 
-    const extractionProps: ExtractionProps = JSON.parse(JSON.stringify(defaultProps));
+    const [extractionProps, setExtractionProps] = useState<ExtractionProps>(
+        JSON.parse(JSON.stringify(defaultProps))
+    );
 
-    const [selectedCategories, setSelectedCategories] = useState<AssignableCategory[]>([]);
-    const [selectedQuota, setSelectedQuota] = useState<Quota | undefined>(undefined);
+    const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+    const [selectedQuota, setSelectedQuota] = useState<Quota | undefined>(
+        undefined
+    );
     const [pagesCount, setPagesCount] = useState<number | null>(null);
 
-    const handleCategoriesChange = (categories: AssignableCategory[]) => {
-        extractionProps.include_categories = categories.map(category => category.id);
+    const handleCategoriesChange = (categories: number[]) => {
+        extractionProps.include_categories = categories;
+        setExtractionProps(extractionProps);
         setSelectedCategories(categories);
     };
 
-    const handleGenerate = () => {  
+    const handleGenerate = () => {
         if (selectedQuota) {
             generateExtraction(extractionProps, undefined, selectedQuota.id);
         } else if (pagesCount) {
@@ -39,39 +44,57 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
         }
     };
 
-    console.log(selectedQuota);
-
     return (
         <div className="flex flex-column gap-1">
-            <LabeledComponent className="justify-content-between" label={t('Target pages threshold')}>
+            <LabeledComponent
+                className="justify-content-between"
+                label={t("Target pages threshold")}
+            >
                 <InputNumber
                     autoFocus
                     className="w-8rem"
+                    localeMatcher="lookup"
                     value={extractionProps.target_pages_threshold * 100}
-                    onChange={(e) => extractionProps.target_pages_threshold = (e.value ? e.value : 0) / 100}
+                    onChange={(e) =>
+                        (extractionProps.target_pages_threshold =
+                            (e.value ? e.value : 0) / 100)
+                    }
                     min={0}
                     max={100}
                     suffix="%"
                 />
             </LabeledComponent>
-            <LabeledComponent className="justify-content-between" label={t('Whole categories threshold')}>
-                <InputNumber 
+            <LabeledComponent
+                className="justify-content-between"
+                label={t("Whole categories threshold")}
+            >
+                <InputNumber
                     className="w-8rem"
+                    localeMatcher="lookup"
                     value={extractionProps.whole_categories_threshold * 100}
-                    onChange={(e) => extractionProps.whole_categories_threshold = (e.value ? e.value : 0) / 100}
+                    onChange={(e) =>
+                        (extractionProps.whole_categories_threshold =
+                            (e.value ? e.value : 0) / 100)
+                    }
                     suffix="%"
                 />
             </LabeledComponent>
-            <LabeledComponent className="justify-content-between" label={t('Include categories')}>
+            <LabeledComponent
+                className="justify-content-between"
+                label={t("Include categories")}
+            >
                 <AssignableCategoriesProvider>
                     <AssignableCategoriesPicker
                         className="w-16rem"
-                        selectedCategories={selectedCategories}
-                        onCategoriesChange={handleCategoriesChange}
+                        categories_ids={selectedCategories}
+                        callback={handleCategoriesChange}
                     />
                 </AssignableCategoriesProvider>
             </LabeledComponent>
-            <LabeledComponent className="justify-content-between" label={t('Quota')}>
+            <LabeledComponent
+                className="justify-content-between"
+                label={t("Quota")}
+            >
                 <QuotasProvider>
                     <QuotaPicker
                         className="w-16rem"
@@ -81,21 +104,27 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
                     />
                 </QuotasProvider>
             </LabeledComponent>
-            <LabeledComponent className="justify-content-between" label={t('Pages count')}>
+            <LabeledComponent
+                className="justify-content-between"
+                label={t("Pages count")}
+            >
                 <InputNumber
                     className="w-8rem"
+                    localeMatcher="lookup"
                     value={pagesCount}
                     onChange={(e) => setPagesCount(e.value)}
-                    disabled={selectedQuota !== undefined && selectedQuota !== null}
+                    disabled={
+                        selectedQuota !== undefined && selectedQuota !== null
+                    }
                 />
             </LabeledComponent>
             <Button
-                label={t('Generate')}
+                label={t("Generate")}
                 disabled={pagesCount === null && selectedQuota === undefined}
                 onClick={handleGenerate}
             />
         </div>
     );
-}
+};
 
 export default ExtractionPropsMenu;

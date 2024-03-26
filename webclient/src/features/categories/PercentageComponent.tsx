@@ -48,6 +48,7 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
                 <div className="p-inputgroup flex-1" style={{ width: "115px" }}>
                     <InputNumber
                         ref={inputRef}
+                        localeMatcher="lookup"
                         className="input-percentage"
                         autoFocus={node === editPercentageNodes[0]}
                         onFocus={() => handleFocusPercentageNode(node)}
