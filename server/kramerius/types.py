@@ -26,6 +26,12 @@ class SolrField(Enum):
     PartNumberSort = "part.number.sort"
     PartNumberString = "part.number.str"
 
+    PublishersFacet = "publishers.facet"
+    PublicationPlacesFacet = "publication_places.facet"
+    LanguagesFacet = "languages.facet"
+
+    PagesCount = "count_page"
+
 
 class SolrConjuction(Enum):
     And = " AND "

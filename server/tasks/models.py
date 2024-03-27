@@ -9,8 +9,8 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     TIMESTAMP,
+    Text,
 )
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
 
 from services.database import Base
@@ -54,12 +54,13 @@ class TaskDocument(Base):
     __table_args__ = (PrimaryKeyConstraint("task_id", "document_id"), {})
 
 
-class TaskResult(Base):
-    __tablename__ = "task_results"
+class TaskCsvResult(Base):
+    __tablename__ = "task_csv_results"
 
-    id = Column(Integer, primary_key=True, index=True)
-    task_id = Column(Integer, ForeignKey("tasks.id"), index=True)
-    data = Column(JSONB)
+    task_id = Column(
+        Integer, ForeignKey("tasks.id"), primary_key=True, index=True
+    )
+    data = Column(Text)
 
 
 def task_view(db: Session):
@@ -86,7 +87,8 @@ def task_view(db: Session):
                 ).label("error_count")
             ),
             # func.count(TaskResult.id).label("result_lines"),
-        ).outerjoin(TaskDocument, Task.id == TaskDocument.task_id)
-        # .outerjoin(TaskResult, Task.id == TaskResult.task_id)
+        )
+        .outerjoin(TaskDocument, Task.id == TaskDocument.task_id)
+        .outerjoin(TaskCsvResult, Task.id == TaskCsvResult.task_id)
         .group_by(Task.id)
     )
