@@ -5,6 +5,8 @@ class TaskType(Enum):
     PredictVolumePages = "PredictVolumePages"
     SyncFromCatalog = "SyncFromCatalog"
     SyncFromDigitizationRegistry = "SyncFromDigitizationRegistry"
+    GenerateVolumesPagesDataset = "GenerateVolumesPagesDataset"
+    GenerateItemsPagesDataset = "GenerateItemsPagesDataset"
 
 
 class TaskState(Enum):

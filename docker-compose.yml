@@ -47,6 +47,7 @@ services:
       - BROKER_URL=redis://redis:6379/0
       - POSTGRES_HOST=postgres
       - TIMEZONE=Europe/Prague
+      - KRAMERIUS_API_URL=https://api.kramerius.mzk.cz/search
     depends_on:
       - postgres
       - redis
@@ -71,6 +72,7 @@ services:
       - KEYCLOAK_SERVER_URL=https://keycloak.osdd.mzk.cz
       - KEYCLOAK_CLIENT_SECRET_KEY=AVGFxZoFoaD61OUwyiTCc3IAAS3PJNTC
       - KEYCLOAK_ISSUER_CLIENT_ID=vera
+      - KRAMERIUS_API_URL=https://api.kramerius.mzk.cz/search
     depends_on:
       - worker
       - postgres
