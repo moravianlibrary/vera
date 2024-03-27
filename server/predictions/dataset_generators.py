@@ -71,7 +71,7 @@ class VolumesDatasetGenerator:
             )
         ]
 
-        for periodical in periodicals[:5]:
+        for periodical in periodicals:
             if periodical.title is None:
                 continue
             mods = self.api.get_mods(periodical.pid)
@@ -231,7 +231,7 @@ class ItemsDatasetGenerator:
             )
         ]
 
-        for periodical in periodicals[:5]:
+        for periodical in periodicals:
             if periodical.title is None:
                 continue
             self._generate_for_periodical(periodical)
