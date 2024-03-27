@@ -209,7 +209,7 @@ class ItemsDatasetGenerator:
             )
         ]
 
-        for periodical in periodicals[:1]:
+        for periodical in periodicals:
             if periodical.title is None:
                 continue
             self._generate_for_periodical(periodical)

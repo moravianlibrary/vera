@@ -35,6 +35,14 @@ FREQUENCIES_COLUMN_NAME = "frequencies"
 
 def create_task(
     task_type: TaskType,
+    owner: str,
+    db: Session,
+):
+    return create(db, models.Task(task_type=task_type, owner=owner))
+
+
+def create_query_task(
+    task_type: TaskType,
     documents_ids: List[int],
     owner: str,
     query: str,

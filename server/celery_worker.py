@@ -27,6 +27,8 @@ def run_task(task_id: int):
         predict_volumes_pages,
         sync_from_catalog,
         sync_from_digitization_registry,
+        generate_volumes_pages_dataset,
+        generate_items_pages_dataset,
     )
 
     import categories.models
@@ -46,6 +48,10 @@ def run_task(task_id: int):
             sync_from_catalog(task_id, task.owner, db)
         elif task.task_type == TaskType.SyncFromDigitizationRegistry:
             sync_from_digitization_registry(task_id, task.owner, db)
+        elif task.task_type == TaskType.GenerateVolumesPagesDataset:
+            generate_volumes_pages_dataset(task_id, task.owner, db)
+        elif task.task_type == TaskType.GenerateItemsPagesDataset:
+            generate_items_pages_dataset(task_id, task.owner, db)
 
         crud.set_task_finsihed(task_id, db)
         crud.update_task_state(task_id, TaskState.Finished, db)

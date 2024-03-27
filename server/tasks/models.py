@@ -29,8 +29,9 @@ class Task(Base):
     process_id = Column(Integer)
 
     task_type = Column(Enum(TaskType))
-    query = Column(String)
     owner = Column(String, index=True)
+
+    query = Column(String)
 
     task_state = Column(
         Enum(TaskState), server_default=TaskState.Planned.value

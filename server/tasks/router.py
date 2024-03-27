@@ -24,14 +24,19 @@ def create_task(
     user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    documents_ids = (
-        [row[0] for row in get_documents_ids_query_base(db, query).all()]
-        if query is not None
-        else []
-    )
-    task = crud.create_task(
-        task_type, documents_ids, user.username, query.model_dump_json(), db
-    )
+    if query is None:
+        task = crud.create_task(task_type, user.username, db)
+    else:
+        documents_ids = [
+            row[0] for row in get_documents_ids_query_base(db, query).all()
+        ]
+        task = crud.create_query_task(
+            task_type,
+            documents_ids,
+            user.username,
+            query.model_dump_json(),
+            db,
+        )
     run_task.delay(task_id=task.id)
     return crud.get_task(task.id, db)
 
@@ -63,7 +68,7 @@ def get_task_documents(
     return crud.get_task_documents(id, db)
 
 
-@router.get("/{id}/csv")
+@router.get("/{task_id}/csv")
 def get_task_result(
     task_id: int = Path(...),
     db: Session = Depends(get_db),

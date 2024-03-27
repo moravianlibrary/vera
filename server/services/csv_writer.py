@@ -12,7 +12,7 @@ class CsvWriter:
         self.lines = []
         self.task_id = task_id
 
-    def write(self, line: List[Union[str | int | float]]):
+    def write(self, line: List[Union[str, int, float]]):
         self.lines.append(line)
 
     def flush_to_db(self, db: Session):

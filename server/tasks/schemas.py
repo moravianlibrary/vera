@@ -17,7 +17,8 @@ class TaskDefinition(TaskBase):
     id: int
 
     owner: str
-    query: str
+
+    query: Optional[str]
 
     task_state: TaskState
     planned: datetime
