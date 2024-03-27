@@ -63,7 +63,6 @@ const AdvancedSearchNumberField: React.FC<AdvancedSearchNumberFieldProps> = ({
                     <div className="flex w-14rem gap-1">
                         <InputNumber
                             autoFocus
-                            localeMatcher="lookup"
                             value={value1}
                             onValueChange={handleChangeValue1}
                             min={0}
@@ -72,7 +71,6 @@ const AdvancedSearchNumberField: React.FC<AdvancedSearchNumberFieldProps> = ({
                         />
                         {option === NumberOption.Between && (
                             <InputNumber
-                                localeMatcher="lookup"
                                 value={value2}
                                 onValueChange={handleChangeValue2}
                                 min={0}
