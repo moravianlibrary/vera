@@ -12,6 +12,7 @@ import { FilterMatchMode } from "primereact/api";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { TaskType } from "../../types/TaskType";
+import config from "../../config/config";
 
 interface TasksTableProps {}
 
@@ -27,11 +28,11 @@ const TasksTable: React.FC<TasksTableProps> = (props) => {
 
     const taskOptions = [
         {
-            label: t(TaskType.GenerateVolumesPagesDataset),
+            label: t("Generate volumes pages dataset"),
             value: TaskType.GenerateVolumesPagesDataset,
         },
         {
-            label: t(TaskType.GenerateItemsPagesDataset),
+            label: t("Generate items pages dataset"),
             value: TaskType.GenerateItemsPagesDataset,
         },
     ];
@@ -133,6 +134,14 @@ const TasksTable: React.FC<TasksTableProps> = (props) => {
         );
     };
 
+    const getAdditionalData = (task: Task) => {
+        if (task.query) {
+            return <TaskDocuments task={task} />;
+        } else {
+            return <TaskCsv task={task} />;
+        }
+    }
+
     return (
         <DataTable
             className="documents-table"
@@ -143,7 +152,7 @@ const TasksTable: React.FC<TasksTableProps> = (props) => {
             expandedRows={expandedRows}
             onRowExpand={handleRowExpand}
             onRowCollapse={handleRowCollapse}
-            rowExpansionTemplate={(data: Task) => <TaskDocuments task={data} />}
+            rowExpansionTemplate={getAdditionalData}
         >
             <Column expander style={{ width: "5rem" }} />
             <Column field="id" header={t("id")} />
@@ -262,6 +271,27 @@ const TaskDocuments: React.FC<TaskDocumentsProps> = ({ task }) => {
                 body={(document) => t(document.error_message)}
             />
         </DataTable>
+    );
+};
+
+
+const TaskCsv: React.FC<TaskDocumentsProps> = ({ task }) => {
+    const { t } = useTranslation();
+    const fileUrl = `${config.apiUrl}tasks/${task.id}/csv`;
+
+    const handleDownload = () => {
+        if (fileUrl) {
+            const link = document.createElement('a');
+            link.href = fileUrl;
+            link.setAttribute('download', `${t('task')}_${task.id}_${task.task_type}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    };
+
+    return (
+        <Button label={t("Download CSV")} icon="pi pi-download" disabled={task.task_state !== TaskState.Finished} onClick={handleDownload} />
     );
 };
 

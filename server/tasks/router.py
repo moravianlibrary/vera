@@ -81,7 +81,7 @@ def get_task_result(
             temp_file.write(csv_text)
             temp_file_path = temp_file.name
 
-        return FileResponse(temp_file_path, filename=f"task_{id}.csv")
+        return FileResponse(temp_file_path, filename=f"task_{task_id}.csv")
     else:
         return Response(status_code=404)
 

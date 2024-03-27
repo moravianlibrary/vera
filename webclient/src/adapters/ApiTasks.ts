@@ -9,7 +9,7 @@ interface Task {
     task_type: TaskType;
 
     owner: string;
-    query: string;
+    query: string | null;
 
     task_state: TaskState;
     planned: Date;
@@ -31,9 +31,9 @@ interface TaskDocument {
 namespace ApiTasks {
     export function planTask(task_type: TaskType, query?: DocumentsQuery) {
         if (query) {
-            return axiosInstance.post(`/tasks?task_type=${task_type}`, query, { headers: authHeader() });
+            return axiosInstance.post(`/tasks?task_type=${task_type.toString()}}`, query, { headers: authHeader() });
         }
-        return axiosInstance.post(`/tasks?task_type=${task_type}`, { headers: authHeader() });
+        return axiosInstance.post(`/tasks?task_type=${task_type.toString()}`, null, { headers: authHeader() });
     }
 
     export function getTasks(offset: number, limit: number) {

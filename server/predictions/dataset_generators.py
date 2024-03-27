@@ -30,13 +30,13 @@ FL_VOLUME = [
     SolrField.LanguagesFacet,
 ]
 
-FL_ITEM = [SolrField.Pid, SolrField.PartNumberSort]
+FL_ITEM = [SolrField.Pid, SolrField.PartNumberSort, SolrField.PagesCount]
 
 VOLUMES_CSV_HEADER = [
     "Title",
     "Year",
     "Frequency",
-    "Publisher",
+    "Number of items" "Publisher",
     "Publication place",
     "Language",
     "Pages count",
@@ -71,7 +71,7 @@ class VolumesDatasetGenerator:
             )
         ]
 
-        for periodical in periodicals:
+        for periodical in periodicals[:5]:
             if periodical.title is None:
                 continue
             mods = self.api.get_mods(periodical.pid)
@@ -175,13 +175,35 @@ class VolumesDatasetGenerator:
 
         frequency: int = parse_frequency(str(year), frequencies)
 
-        pages_count: int = get_descendants_pages_count(self.search, volume.pid)
+        number_of_items: int = 0
+        pages_count: int = 0
+
+        def get_not_page_descendants(pid):
+            nonlocal number_of_items
+            nonlocal pages_count
+            for document in self.search.search(
+                SearchQuery(SolrField.ParentPid, pid)
+                .and_not_(SolrField.Model, KrameriusModel.Page)
+                .build(),
+                fl=[SolrField.Pid, SolrField.PagesCount, SolrField.Model],
+            ):
+                if (
+                    document.model == KrameriusModel.PeriodicalItem
+                    or document.model == KrameriusModel.Supplement
+                ):
+                    number_of_items += 1
+                if document.pages_count is not None:
+                    pages_count += document.pages_count
+                get_not_page_descendants(document.pid)
+
+        get_not_page_descendants(volume.pid)
 
         self.csv_writer.write(
             [
                 title,
                 year,
                 frequency,
+                number_of_items,
                 publisher,
                 publication_place,
                 language,
@@ -209,7 +231,7 @@ class ItemsDatasetGenerator:
             )
         ]
 
-        for periodical in periodicals:
+        for periodical in periodicals[:5]:
             if periodical.title is None:
                 continue
             self._generate_for_periodical(periodical)
@@ -309,10 +331,7 @@ class ItemsDatasetGenerator:
             fl=FL_ITEM,
         ):
             item_number: int = item.part_number_sort
-
-            pages_count: int = get_descendants_pages_count(
-                self.search, volume.pid
-            )
+            pages_count: int = item.pages_count
 
             self.csv_writer.write(
                 [
