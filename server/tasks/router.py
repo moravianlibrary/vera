@@ -24,9 +24,11 @@ def create_task(
     user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    documents_ids = [
-        row[0] for row in get_documents_ids_query_base(db, query).all()
-    ]
+    documents_ids = (
+        [row[0] for row in get_documents_ids_query_base(db, query).all()]
+        if query is not None
+        else []
+    )
     task = crud.create_task(
         task_type, documents_ids, user.username, query.model_dump_json(), db
     )

@@ -29,9 +29,11 @@ interface TaskDocument {
 }
 
 namespace ApiTasks {
-    export function planTask(task_type: TaskType, query: DocumentsQuery) {
-        const body = { task: {task_type: task_type}, query: query }
-        return axiosInstance.post(`/tasks`, body, { headers: authHeader() });
+    export function planTask(task_type: TaskType, query?: DocumentsQuery) {
+        if (query) {
+            return axiosInstance.post(`/tasks?task_type=${task_type}`, query, { headers: authHeader() });
+        }
+        return axiosInstance.post(`/tasks?task_type=${task_type}`, { headers: authHeader() });
     }
 
     export function getTasks(offset: number, limit: number) {
