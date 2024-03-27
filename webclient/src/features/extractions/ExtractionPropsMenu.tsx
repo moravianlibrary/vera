@@ -53,7 +53,6 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
                 <InputNumber
                     autoFocus
                     className="w-8rem"
-                    localeMatcher="lookup"
                     value={extractionProps.target_pages_threshold * 100}
                     onChange={(e) =>
                         (extractionProps.target_pages_threshold =
@@ -70,7 +69,6 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
             >
                 <InputNumber
                     className="w-8rem"
-                    localeMatcher="lookup"
                     value={extractionProps.whole_categories_threshold * 100}
                     onChange={(e) =>
                         (extractionProps.whole_categories_threshold =
@@ -110,7 +108,6 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
             >
                 <InputNumber
                     className="w-8rem"
-                    localeMatcher="lookup"
                     value={pagesCount}
                     onChange={(e) => setPagesCount(e.value)}
                     disabled={

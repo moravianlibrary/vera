@@ -61,6 +61,7 @@ class TestCatalogSync(TestRoutines):
         sync_from_digitization_registry(task_id, "Test User", self.db)
         document_after_sync = get_document(document_id, self.db)
 
+        # Assert
         self.assertEqual(state_before_sync, document.digitization_state)
         self.assertEqual(
             document_after_sync.digitization_state, DigitizationState.Finished

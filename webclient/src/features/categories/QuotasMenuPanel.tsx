@@ -124,7 +124,6 @@ const QuotasMenuPanel = (props) => {
                     <span className="font-bold">{t("pages_count")}:</span>
                     <InputNumber
                         className="w-10rem"
-                        localeMatcher="lookup"
                         value={pagesCount}
                         onValueChange={(e) => setPagesCount(e.target.value!)}
                     />
