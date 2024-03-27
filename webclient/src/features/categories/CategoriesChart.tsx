@@ -23,6 +23,8 @@ const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
     const { categoryNodes, handleFocusParentNode } = useCategoryNodes();
     const containerRef = useRef<HTMLDivElement>(null);
 
+    const [isMouseDown, setIsMouseDown] = useState(false);
+
     // const [scrollBy, setScrollBy] = useState<ScrollBy>({
     //     left: 0,
     //     top: 0,
@@ -42,6 +44,25 @@ const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
         } else if (node.type === NodeType.UpdateCategory) {
             return <CategoriesChartUpdate node={node} />;
         }
+    };
+
+    const handleMouseMove = (e) => {
+        if (!isMouseDown) {
+            return;
+        }
+        console.log(e.pageX, e.pageY);
+        const container = containerRef.current;
+        if (!container) {
+            return;
+        }
+        const { scrollLeft, scrollWidth } = container;
+        const x = e.pageX - container.offsetLeft;
+        container.scrollBy({
+            left: x - scrollLeft - container.clientWidth * 0.5,
+            top: 0,
+            behavior: "smooth",
+        });
+        // setScrollBy(newScrollBy);
     };
 
     const handleScrollLeft = (e) => {
@@ -144,6 +165,9 @@ const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
     return (
         <div
             ref={containerRef}
+            onMouseDown={() => setIsMouseDown(true)}
+            onMouseUp={() => setIsMouseDown(false)}
+            onMouseMove={handleMouseMove}
             className="flex flex-column align-items-center gap-3 m-2 h-full overflow-scroll"
         >
             <Button

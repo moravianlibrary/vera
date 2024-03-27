@@ -233,7 +233,7 @@ const resources = {
         "Generate extraction": "Generovat extrakci",
         "Target pages threshold": "Cílový počet stránek s rozptylem",
         "Whole categories threshold": "Celé kategorie s rozptylem",
-        "Include categories": "Vkládat kategorie",
+        "Include categories": "Zahrnout kategorie",
         "Quota": "Zaměr",
         "Select categories": "Vybrat kategorie",
         "Select quota": "Vybrat zaměr",

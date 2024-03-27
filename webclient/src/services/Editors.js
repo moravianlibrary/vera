@@ -12,7 +12,6 @@ export const textEditor = (options) => {
 
 export const numberEditor = (options) => {
     return <InputNumber 
-        localeMatcher="lookup"
         value={options.value}
         onValueChange={(e) => options.editorCallback(e.target.value)}
         min={1}
