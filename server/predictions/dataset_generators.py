@@ -7,6 +7,7 @@ from kramerius.document import KrameriusDocument
 from kramerius.search import KrameriusSearch, SearchQuery
 from kramerius.types import KrameriusModel, SolrField
 from predictions.frequency_parser import parse_frequency
+from services.csv_writer import CsvWriter
 
 
 NS_MODS = {"mods": "http://www.loc.gov/mods/v3"}
@@ -31,13 +32,35 @@ FL_VOLUME = [
 
 FL_ITEM = [SolrField.Pid, SolrField.PartNumberSort]
 
+VOLUMES_CSV_HEADER = [
+    "Title",
+    "Year",
+    "Frequency",
+    "Publisher",
+    "Publication place",
+    "Language",
+    "Pages count",
+]
+
+ITEMS_CSV_HEADER = [
+    "Title",
+    "Year",
+    "Item number",
+    "Publisher",
+    "Publication place",
+    "Language",
+    "Pages count",
+]
+
 
 class VolumesDatasetGenerator:
-    def __init__(self):
+    def __init__(self, csv_writer: CsvWriter):
+        self.csv_writer = csv_writer
         self.api = KrameriusApi()
         self.search = KrameriusSearch(self.api)
 
     def generate(self):
+        self.csv_writer.write(VOLUMES_CSV_HEADER)
         periodicals = [
             document
             for document in self.search.search(
@@ -48,7 +71,7 @@ class VolumesDatasetGenerator:
             )
         ]
 
-        for periodical in periodicals[:100]:
+        for periodical in periodicals:
             if periodical.title is None:
                 continue
             mods = self.api.get_mods(periodical.pid)
@@ -154,19 +177,28 @@ class VolumesDatasetGenerator:
 
         pages_count: int = get_descendants_pages_count(self.search, volume.pid)
 
-        print(
-            f""""{title}", {year}, "{publisher}", """
-            f""""{publication_place}", "{language}", """
-            f"{frequency}, {pages_count}"
+        self.csv_writer.write(
+            [
+                title,
+                year,
+                frequency,
+                publisher,
+                publication_place,
+                language,
+                pages_count,
+            ]
         )
 
 
 class ItemsDatasetGenerator:
-    def __init__(self):
+    def __init__(self, csv_writer: CsvWriter):
+        self.csv_writer = csv_writer
         self.api = KrameriusApi()
         self.search = KrameriusSearch(self.api)
 
     def generate(self):
+        self.csv_writer.write(ITEMS_CSV_HEADER)
+
         periodicals = [
             document
             for document in self.search.search(
@@ -177,7 +209,7 @@ class ItemsDatasetGenerator:
             )
         ]
 
-        for periodical in periodicals[:100]:
+        for periodical in periodicals[:1]:
             if periodical.title is None:
                 continue
             self._generate_for_periodical(periodical)
@@ -282,10 +314,16 @@ class ItemsDatasetGenerator:
                 self.search, volume.pid
             )
 
-            print(
-                f""""{title}", {year}, "{publisher}", """
-                f""""{publication_place}", "{language}", """
-                f"{item_number}, {pages_count}"
+            self.csv_writer.write(
+                [
+                    title,
+                    year,
+                    item_number,
+                    publisher,
+                    publication_place,
+                    language,
+                    pages_count,
+                ]
             )
 
 

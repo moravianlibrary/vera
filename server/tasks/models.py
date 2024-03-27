@@ -60,7 +60,7 @@ class TaskCsvResult(Base):
     task_id = Column(
         Integer, ForeignKey("tasks.id"), primary_key=True, index=True
     )
-    data = Column(Text)
+    data = Column(Text, nullable=False)
 
 
 def task_view(db: Session):
@@ -86,7 +86,7 @@ def task_view(db: Session):
                     case((TaskDocument.error_type.is_(None), 0), else_=1)
                 ).label("error_count")
             ),
-            # func.count(TaskResult.id).label("result_lines"),
+            func.count(TaskCsvResult.data).label("has_csv_result"),
         )
         .outerjoin(TaskDocument, Task.id == TaskDocument.task_id)
         .outerjoin(TaskCsvResult, Task.id == TaskCsvResult.task_id)

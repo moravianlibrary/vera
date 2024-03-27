@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, update
 from sqlalchemy import and_
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from services.database import create
 
@@ -10,8 +10,7 @@ from catalogs.enums import DigitizationState
 from documents.models import Document
 from documents.schemas import DocumentCreate
 from tasks import models, schemas
-from tasks.enums import TaskDocumentErrorType
-from tasks.enums import TaskState
+from tasks.enums import TaskDocumentErrorType, TaskState, TaskType
 
 
 UPDATE_COLUMN_NAMES = [
@@ -35,14 +34,14 @@ FREQUENCIES_COLUMN_NAME = "frequencies"
 
 
 def create_task(
-    task: schemas.TaskCreate,
+    task_type: TaskType,
     documents_ids: List[int],
     owner: str,
     query: str,
     db: Session,
 ):
     db_task = create(
-        db, models.Task(task_type=task.task_type, query=query, owner=owner)
+        db, models.Task(task_type=task_type, query=query, owner=owner)
     )
 
     for document_id in documents_ids:
@@ -138,19 +137,15 @@ def get_task_documents(task_id: int, db: Session):
     )
 
 
-def get_task_result(
+def get_task_csv_text(
     task_id: int,
-    offset: int,
-    limit: int,
     db: Session,
-):
+) -> Optional[str]:
     return (
-        models.task_view(db)
-        .filter(models.Task.id == task_id)
-        .offset(offset)
-        .limit(limit)
-        .all()
-    )
+        db.query(models.TaskCsvResult)
+        .filter(models.TaskCsvResult.task_id == task_id)
+        .first()
+    ).data
 
 
 def get_tasks(db: Session, offset: int = 0, limit: int = 50):
