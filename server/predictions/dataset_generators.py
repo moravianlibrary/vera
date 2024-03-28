@@ -204,7 +204,7 @@ class VolumesDatasetGenerator:
                         number_of_items += (
                             int(matcher.group(2)) - int(matcher.group(1)) + 1
                         )
-                    else:
+                    elif re.match(r"\b\d+\b", document.part_number_string):
                         number_of_items += 1
                 if document.pages_count is not None:
                     pages_count += document.pages_count
