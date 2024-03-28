@@ -36,7 +36,8 @@ VOLUMES_CSV_HEADER = [
     "Title",
     "Year",
     "Frequency",
-    "Number of items" "Publisher",
+    "Number of items",
+    "Publisher",
     "Publication place",
     "Language",
     "Pages count",
@@ -185,13 +186,26 @@ class VolumesDatasetGenerator:
                 SearchQuery(SolrField.ParentPid, pid)
                 .and_not_(SolrField.Model, KrameriusModel.Page)
                 .build(),
-                fl=[SolrField.Pid, SolrField.PagesCount, SolrField.Model],
+                fl=[
+                    SolrField.Pid,
+                    SolrField.PagesCount,
+                    SolrField.Model,
+                    SolrField.PartNumberString,
+                ],
             ):
                 if (
-                    document.model == KrameriusModel.PeriodicalItem
-                    or document.model == KrameriusModel.Supplement
+                    document.model == KrameriusModel.PeriodicalItem.value
+                    or document.model == KrameriusModel.Supplement.value
                 ):
-                    number_of_items += 1
+                    matcher = re.match(
+                        r"\b(\d+)-(\d+)\b", document.part_number_string
+                    )
+                    if matcher:
+                        number_of_items += (
+                            int(matcher.group(2)) - int(matcher.group(1)) + 1
+                        )
+                    elif re.match(r"\b\d+\b", document.part_number_string):
+                        number_of_items += 1
                 if document.pages_count is not None:
                     pages_count += document.pages_count
                 get_not_page_descendants(document.pid)
@@ -375,22 +389,3 @@ def parse_kramerius_frequencies(frequency_elements) -> List[Frequency]:
                 )
             )
     return frequencies
-
-
-def get_descendants_pages_count(search: KrameriusSearch, pid: str) -> int:
-    pages_count = 0
-
-    def get_not_page_descendants(pid):
-        nonlocal pages_count
-        for document in search.search(
-            SearchQuery(SolrField.ParentPid, pid)
-            .and_not_(SolrField.Model, KrameriusModel.Page)
-            .build(),
-            fl=[SolrField.Pid, SolrField.PagesCount],
-        ):
-            if document.pages_count is not None:
-                pages_count += document.pages_count
-            get_not_page_descendants(document.pid)
-
-    get_not_page_descendants(pid)
-    return pages_count
