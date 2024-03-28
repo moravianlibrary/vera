@@ -196,7 +196,7 @@ class VolumesDatasetGenerator:
                 if (
                     document.model == KrameriusModel.PeriodicalItem.value
                     or document.model == KrameriusModel.Supplement.value
-                ):
+                ) and document.part_number_string is not None:
                     matcher = re.match(
                         r"\b(\d+)-(\d+)\b", document.part_number_string
                     )

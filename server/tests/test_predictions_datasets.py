@@ -9,4 +9,5 @@ class TestDatasetsGenerators(unittest.TestCase):
         csv_writer = CsvWriter(1)
         generator = VolumesDatasetGenerator(csv_writer)
         generator.generate()
-        print(csv_writer.lines)
+        with open("/tmp/volumes_dataset.csv", "w") as output_file:
+            output_file.writelines(csv_writer.lines)
