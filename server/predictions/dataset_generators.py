@@ -197,14 +197,19 @@ class VolumesDatasetGenerator:
                     document.model == KrameriusModel.PeriodicalItem.value
                     or document.model == KrameriusModel.Supplement.value
                 ):
-                    matcher = re.match(
-                        r"\b(\d+)-(\d+)\b", document.part_number_string
-                    )
-                    if matcher:
-                        number_of_items += (
-                            int(matcher.group(2)) - int(matcher.group(1)) + 1
+                    if document.part_number_string is not None:
+                        matcher = re.match(
+                            r"\b(\d+)-(\d+)\b", document.part_number_string
                         )
-                    elif re.match(r"\b\d+\b", document.part_number_string):
+                        if matcher:
+                            number_of_items += (
+                                int(matcher.group(2))
+                                - int(matcher.group(1))
+                                + 1
+                            )
+                        elif re.match(r"\b\d+\b", document.part_number_string):
+                            number_of_items += 1
+                    else:
                         number_of_items += 1
                 if document.pages_count is not None:
                     pages_count += document.pages_count
