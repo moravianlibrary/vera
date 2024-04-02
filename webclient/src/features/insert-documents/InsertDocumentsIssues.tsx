@@ -10,8 +10,6 @@ import DocumentIssueCard from "./DocumentIssueCard";
 import React from "react";
 import { Issue } from "../../adapters/ApiDocuments.js";
 import { IssuanceType } from "../../types/IssuanceType";
-import { Fieldset } from "primereact/fieldset";
-import { Tag } from "primereact/tag";
 import { Chip } from "primereact/chip";
 
 interface InsertDocumentsIssuesProps {
@@ -54,10 +52,10 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
                 .sort((a, b) => {
                     let value = naturalSort(a.volume, b.volume);
                     if (value === 0) {
-                        let value = naturalSort(a.year, b.year);
+                        value = naturalSort(a.year, b.year);
                     }
                     if (value === 0) {
-                        let value = naturalSort(a.bundle, b.bundle);
+                        value = naturalSort(a.bundle, b.bundle);
                     }
                     return value;
                 })
@@ -169,7 +167,7 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
             <Chip className="m-1 p-2" template={getDocumentHeader()} />
             <div
                 className="flex flex-column overflow-auto"
-                style={{ maxHeight: "calc(100vh - 450px)" }}
+                style={{ maxHeight: "calc(100vh - 500px)" }}
             >
                 {editions &&
                     editions.length > 0 &&

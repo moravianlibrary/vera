@@ -354,6 +354,16 @@ const resources = {
         "extractable documents": "extrahovatelných dokumentů",
 
         "Download CSV": "Stáhnout CSV",
+
+        "Documents without pages count": "Dokumenty bez počtu stránek",
+        "Set pages count manually": "Nastavit počet stránek ručně",
+        "Pages count updated": "Počet stránek aktualizovan",
+        "Pages count update failed": "Aktualizace počtu stránek se nezdařila",
+        "Pages count - from catalog": "Počet stránek - z katalogu",
+        "Pages count - predicted": "Počet stránek - predikovaný",
+        "Pages count - set manually": "Počet stránek - ručně zadán", 
+        "Set pages count": "Nastavit počet stránek",
+        "Set pages count and go to next document": "Nastavit počet stránek a přejít na další dokument",
     },
   },
 };

@@ -51,14 +51,6 @@ const InsertDocumentsSettings: React.FC<InsertDocumentsSettingsProps> = (
                     category_id={category}
                     callback={setCategory}
                 />
-                {/* <Dropdown
-                    options={categories.map((category) => ({
-                        label: renderLabel(category),
-                        value: category.id,
-                    }))}
-                    value={category}
-                    onChange={(e) => setCategory(e.value)}
-                /> */}
             </div>
             <div className="flex align-items-center gap-3">
                 <span>{t("Insert another upon successful insertion")}:</span>

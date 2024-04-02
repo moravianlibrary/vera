@@ -51,6 +51,7 @@ class DocumentModel implements Document {
     department: string | null;
 
     pages_count_predicted: number | null;
+    pages_count_manual: number | null;
     dedicated_scanner: string | null;
 
     extraction_id: number | null;
@@ -97,6 +98,7 @@ class DocumentModel implements Document {
         this.department = data.department;
 
         this.pages_count_predicted = data.pages_count_predicted;
+        this.pages_count_manual = data.pages_count_manual;
         this.dedicated_scanner = data.dedicated_scanner
 
         this.extraction_id = data.extraction_id;
@@ -137,8 +139,9 @@ class DocumentModel implements Document {
             {label: "ISBN/ISSN", value: this.isbn_issn},
             {label: "Title", value: this.title},
             {label: "Digitization state", value: t(this.digitization_state), uri: DigitizationRegistry.getDocumentLink(this.barcode)},
-            {label: "Pages count", value: this.pages_count},
-            {label: "Pages count predicted", value: this.pages_count_predicted},
+            {label: "Pages count - from catalog", value: this.pages_count},
+            {label: "Pages count - predicted", value: this.pages_count_predicted},
+            {label: "Pages count - set manually", value: this.pages_count_manual},
             {label: "Size", value: this.size},
             {label: "Location URI", value: this.locationUri, uri: this.locationUri},
             {label: "Publisher", value: this.publisher},

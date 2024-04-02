@@ -137,7 +137,7 @@ class Document(DocumentCreate):
 
 
 class DocumentView(Document):
-    category_name: Optional[str]
+    category_name: Optional[str] = None
 
     extractor: Optional[str] = None
     extracted_at: Optional[datetime] = None

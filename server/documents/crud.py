@@ -149,7 +149,7 @@ def update_document(
         raise exceptions.DocumentNotFoundException(document_id)
 
     fields = (
-        new_document.model_dump(exclude_unset=True)
+        new_document.model_dump(exclude_unset=True, exclude=["frequencies"])
         if can_edit_all_fields
         else EDITABLE_FIELDS
     )

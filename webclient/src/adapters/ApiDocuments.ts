@@ -55,6 +55,7 @@ interface Document extends DocumentBase {
     category_name: string | null;
 
     pages_count_predicted: number | null;
+    pages_count_manual: number | null;
     dedicated_scanner: string | null;
 
     created_at: string;

@@ -9,6 +9,7 @@ import { ActionSeverity, Severity } from "../../types/PrimeReactTypes";
 
 export interface InsertResultDetail {
     result: DocumentCreateResult;
+    id: number | null;
     sysno?: string;
     barcode?: string | null;
     material_type?: MaterialType;
@@ -148,6 +149,7 @@ export function getResultsDetails(t: TFunction, results: DocumentCreationRespons
         const volume = result.document?.volume ?? result.catalog_document?.volume;
         const bundle = result.document?.bundle ?? result.catalog_document?.bundle;
         return {
+            id: result.document?.id ?? null,
             result: result.create_result,
             sysno: result.document?.sysno ?? result.catalog_document?.sysno,
             barcode: result.document?.barcode ?? result.catalog_document?.barcode,
