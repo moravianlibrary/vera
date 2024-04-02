@@ -112,13 +112,27 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     };
 
     const pagesCountBody = (document: DocumentModel) => {
-        return document.pages_count
-            ? document.pages_count_predicted
-                ? `${document.pages_count} (${document.pages_count_predicted})`
-                : document.pages_count
-            : document.pages_count_predicted
-            ? `(${document.pages_count_predicted})`
-            : null;
+        const counts = [
+            document.pages_count,
+            document.pages_count_predicted,
+            document.pages_count_manual,
+        ].filter((x) => x);
+        if (counts.length === 1) {
+            return counts[0];
+        } else if (counts.length === 0) {
+            return null;
+        }
+        let countsStr = "";
+        if (document.pages_count) {
+            countsStr += `${t("from catalog")}: ${document.pages_count} `;
+        }
+        if (document.pages_count_predicted) {
+            countsStr += `${t("predicted")}: ${document.pages_count} `;
+        }
+        if (document.pages_count_manual) {
+            countsStr += `${t("set manually")}: ${document.pages_count} `;
+        }
+        return countsStr;
     };
 
     const titleBody = (document: DocumentModel) => {

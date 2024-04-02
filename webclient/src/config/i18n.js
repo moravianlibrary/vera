@@ -364,6 +364,9 @@ const resources = {
         "Pages count - set manually": "Počet stránek - ručně zadán", 
         "Set pages count": "Nastavit počet stránek",
         "Set pages count and go to next document": "Nastavit počet stránek a přejít na další dokument",
+        "from catalog": "z katalogu",
+        "predicted": "predikovaný",
+        "set manually": "ručně zadán",
     },
   },
 };
