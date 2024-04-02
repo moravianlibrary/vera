@@ -39,7 +39,9 @@ def update_document(
     db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
-    return crud.update_document(id, document, user, db)
+    return crud.update_document(
+        id, document, ActionType.WriteDatatable in user.actions, db
+    )
 
 
 @router.delete("/documents/{id}", response_model=schemas.Document)

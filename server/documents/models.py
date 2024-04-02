@@ -39,6 +39,9 @@ class Document(Base):
     bundle = Column(String)
 
     pages_count = Column(Integer)
+    pages_count_predicted = Column(Integer)
+    pages_count_manual = Column(Integer)
+
     size = Column(String)
     locationUri = Column(String)
 
@@ -49,7 +52,6 @@ class Document(Base):
 
     frequencies = Column(JSON)
 
-    pages_count_predicted = Column(Integer)
     dedicated_scanner = Column(String)
 
     created_at = Column(TIMESTAMP, server_default=func.now())
