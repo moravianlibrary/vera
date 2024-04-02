@@ -352,6 +352,8 @@ const resources = {
         "Show extraction": "Zobrazit extrakci",
         "extractable pages": "extrahovatelných stránek",
         "extractable documents": "extrahovatelných dokumentů",
+
+        "Download CSV": "Stáhnout CSV",
     },
   },
 };

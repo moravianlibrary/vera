@@ -9,8 +9,8 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
     TIMESTAMP,
+    Text,
 )
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Session
 
 from services.database import Base
@@ -29,8 +29,9 @@ class Task(Base):
     process_id = Column(Integer)
 
     task_type = Column(Enum(TaskType))
-    query = Column(String)
     owner = Column(String, index=True)
+
+    query = Column(String)
 
     task_state = Column(
         Enum(TaskState), server_default=TaskState.Planned.value
@@ -54,12 +55,13 @@ class TaskDocument(Base):
     __table_args__ = (PrimaryKeyConstraint("task_id", "document_id"), {})
 
 
-class TaskResult(Base):
-    __tablename__ = "task_results"
+class TaskCsvResult(Base):
+    __tablename__ = "task_csv_results"
 
-    id = Column(Integer, primary_key=True, index=True)
-    task_id = Column(Integer, ForeignKey("tasks.id"), index=True)
-    data = Column(JSONB)
+    task_id = Column(
+        Integer, ForeignKey("tasks.id"), primary_key=True, index=True
+    )
+    data = Column(Text, nullable=False)
 
 
 def task_view(db: Session):
@@ -85,8 +87,9 @@ def task_view(db: Session):
                     case((TaskDocument.error_type.is_(None), 0), else_=1)
                 ).label("error_count")
             ),
-            # func.count(TaskResult.id).label("result_lines"),
-        ).outerjoin(TaskDocument, Task.id == TaskDocument.task_id)
-        # .outerjoin(TaskResult, Task.id == TaskResult.task_id)
+            func.count(TaskCsvResult.data).label("has_csv_result"),
+        )
+        .outerjoin(TaskDocument, Task.id == TaskDocument.task_id)
+        .outerjoin(TaskCsvResult, Task.id == TaskCsvResult.task_id)
         .group_by(Task.id)
     )

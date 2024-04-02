@@ -17,7 +17,8 @@ class TaskDefinition(TaskBase):
     id: int
 
     owner: str
-    query: str
+
+    query: Optional[str]
 
     task_state: TaskState
     planned: datetime
@@ -36,7 +37,7 @@ class Task(TaskDefinition):
     total_count: int
     error_count: int
     errors: List[TaskError] = []
-    result_lines: int = 0
+    has_csv_result: bool = False
 
 
 class TaskDocument(BaseModel):

@@ -81,6 +81,22 @@ class KrameriusDocument:
     def part_number_string(self):
         return self.get_field_value(SolrField.PartNumberString)
 
+    @property
+    def publishers_facet(self):
+        return self.get_field_value(SolrField.PublishersFacet)
+
+    @property
+    def publication_places_facet(self):
+        return self.get_field_value(SolrField.PublicationPlacesFacet)
+
+    @property
+    def languages_facet(self):
+        return self.get_field_value(SolrField.LanguagesFacet)
+
+    @property
+    def pages_count(self):
+        return self.get_field_value(SolrField.PagesCount)
+
     def __str__(self) -> str:
         return (
             f"PID: {self.pid}\n"
