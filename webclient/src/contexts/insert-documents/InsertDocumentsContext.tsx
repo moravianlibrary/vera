@@ -9,6 +9,7 @@ import { IdentifierType } from "../../types/IdentifierType";
 import { useTranslation } from "react-i18next";
 import { useAssignableCategories } from "../categories/AssignableCategoriesContext";
 import ApiDocuments, {
+    Document,
     DocumentCreationResponse,
     Identifier,
     Issue,
@@ -19,6 +20,7 @@ import { useToast } from "../toast/ToastContext";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { generateMessageForResponse } from "../../features/insert-documents/InsertDocumentsFunctions";
 import { ActionSeverity } from "../../types/PrimeReactTypes";
+import { MaterialType } from "../../types/MaterialType";
 
 export interface FileUploadValue {
     filename: string;
@@ -38,6 +40,9 @@ interface InsertDocumentsContextProps {
     insertAnother: boolean;
     setInsertAnother: (insertAnother: boolean) => void;
 
+    fillMissingDataManually: boolean;
+    setFillMissingDataManually: (fillMissingDataManually: boolean) => void;
+
     value: string;
     setValue: (value: string) => void;
     fileUploadValues: FileUploadValue[];
@@ -51,6 +56,9 @@ interface InsertDocumentsContextProps {
     createIssue: (index: number, issue: Issue) => void;
     creatingIssues: Issue[];
     createdIssues: Issue[];
+
+    withoutPagesCount: Document[];
+    handleSetPagesCount: (document: Document, pagesCount: number) => void;
 }
 
 interface InsertDocumentsProviderProps {
@@ -74,6 +82,8 @@ export const InsertDocumentsProvider: React.FC<
     );
     const [category, setCategory] = useState<number | null>(null);
     const [insertAnother, setInsertAnother] = useState<boolean>(false);
+    const [fillMissingDataManually, setFillMissingDataManually] =
+        useState<boolean>(true);
 
     // Second step variables
     const [value, setValue] = useState<string>("");
@@ -88,6 +98,9 @@ export const InsertDocumentsProvider: React.FC<
     // Third step variables
     const [creatingIssues, setCreatingIssues] = useState<Issue[]>([]);
     const [createdIssues, setCreatedIssues] = useState<Issue[]>([]);
+
+    // Fourth step variables
+    const [withoutPagesCount, setWithoutPagesCount] = useState<Document[]>([]);
 
     // Second step functions
     const handleSetValue = (value: string) => {
@@ -129,11 +142,30 @@ export const InsertDocumentsProvider: React.FC<
         setFileUploadValues([]);
     };
 
+    const addToWithoutPagesCount = (document: Document) => {
+        const isPredictable = (document: Document) => {
+            return (
+                document.material_type === MaterialType.ContinuingResource &&
+                document.frequencies &&
+                document.frequencies.length > 0 &&
+                document.publisher &&
+                document.publishing_place &&
+                document.year
+            );
+        };
+        if (document.pages_count === null && !isPredictable(document)) {
+            setWithoutPagesCount((prev) => [...prev, document]);
+        }
+    };
+
     const processCreateResponses = (response: DocumentCreationResponse) => {
         if (response.create_result === DocumentCreateResult.MultipleIssues) {
             setChooseIssuesDocuments((prev) => [...prev, response]);
         } else {
             setResults((prev) => [...prev, response]);
+            if (response.create_result === DocumentCreateResult.Success) {
+                addToWithoutPagesCount(response.document!);
+            }
         }
     };
 
@@ -165,8 +197,9 @@ export const InsertDocumentsProvider: React.FC<
     };
 
     const acceptInput = async () => {
-        setResults([]);
         setChooseIssuesDocuments([]);
+        setResults([]);
+        setWithoutPagesCount([]);
         if (value !== "") {
             await createFromValue();
         }
@@ -205,6 +238,7 @@ export const InsertDocumentsProvider: React.FC<
                     issue,
                 ]);
                 setResults((prev) => [...prev, response.data]);
+                addToWithoutPagesCount(response.data.document!);
                 const messageProps = generateMessageForResponse(response.data);
                 showToast(
                     messageProps.severity as ActionSeverity,
@@ -214,6 +248,32 @@ export const InsertDocumentsProvider: React.FC<
             })
             .catch((error) => {
                 console.error(`Error while inserting document: ${error}`);
+            });
+    };
+
+    // Fourth step functions
+    const handleSetPagesCount = (document: Document, pagesCount: number) => {
+        const updateDocument = {
+            ...document,
+            pages_count_manual: pagesCount,
+        };
+        ApiDocuments.updateDocument(updateDocument)
+            .then((response) => {
+                if (response.data.pages_count_manual === pagesCount) {
+                    showToast("success", t("Pages count updated"), "");
+                    setWithoutPagesCount((prev) =>
+                        prev.filter((d) => d.id !== document.id)
+                    );
+                } else {
+                    showToast("error", t("Pages count update failed"), "");
+                }
+            })
+            .catch((error) => {
+                showToast(
+                    "error",
+                    t("Pages count update failed"),
+                    error.message
+                );
             });
     };
 
@@ -230,6 +290,9 @@ export const InsertDocumentsProvider: React.FC<
                 insertAnother,
                 setInsertAnother,
 
+                fillMissingDataManually,
+                setFillMissingDataManually,
+
                 value,
                 setValue: handleSetValue,
                 fileUploadValues,
@@ -243,6 +306,9 @@ export const InsertDocumentsProvider: React.FC<
                 createIssue,
                 creatingIssues,
                 createdIssues,
+
+                withoutPagesCount,
+                handleSetPagesCount,
             }}
         >
             {children}

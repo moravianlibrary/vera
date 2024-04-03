@@ -37,6 +37,7 @@ class DocumentBase(BaseModel):
     bundle: Optional[str] = None
 
     pages_count: Optional[int] = None
+    pages_count_manual: Optional[int] = None
     size: Optional[str] = None
     locationUri: Optional[str] = None
 
@@ -136,7 +137,7 @@ class Document(DocumentCreate):
 
 
 class DocumentView(Document):
-    category_name: Optional[str]
+    category_name: Optional[str] = None
 
     extractor: Optional[str] = None
     extracted_at: Optional[datetime] = None

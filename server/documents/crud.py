@@ -11,6 +11,11 @@ from services import exceptions
 from tasks.crud import delete_document as delete_task_document
 
 
+EDITABLE_FIELDS = [
+    "pages_count_manual",
+]
+
+
 def document_view(db: Session):
     return (
         db.query(
@@ -30,6 +35,8 @@ def document_view(db: Session):
             models.Document.year,
             models.Document.bundle,
             models.Document.pages_count,
+            models.Document.pages_count_predicted,
+            models.Document.pages_count_manual,
             models.Document.size,
             models.Document.locationUri,
             models.Document.publisher,
@@ -37,7 +44,6 @@ def document_view(db: Session):
             models.Document.publishing_year,
             models.Document.languages,
             models.Document.frequencies,
-            models.Document.pages_count_predicted,
             models.Document.dedicated_scanner,
             models.Document.created_at,
             models.Document.creator,
@@ -74,6 +80,8 @@ def documents_view_to_dict(row):
         "year": row.year,
         "bundle": row.bundle,
         "pages_count": row.pages_count,
+        "pages_count_predicted": row.pages_count_predicted,
+        "pages_count_manual": row.pages_count_manual,
         "size": row.size,
         "locationUri": row.locationUri,
         "publisher": row.publisher,
@@ -81,7 +89,6 @@ def documents_view_to_dict(row):
         "publishing_year": row.publishing_year,
         "languages": row.languages,
         "frequencies": row.frequencies,
-        "pages_count_predicted": row.pages_count_predicted,
         "dedicated_scanner": row.dedicated_scanner,
         "created_at": row.created_at.isoformat() if row.created_at else None,
         "creator": row.creator,
@@ -134,14 +141,19 @@ def create_document(
 def update_document(
     document_id: int,
     new_document: schemas.DocumentCreate,
-    username: str,
+    can_edit_all_fields: bool,
     db: Session,
 ) -> schemas.DocumentView:
     existing_document = get_document(document_id, db)
     if not existing_document:
         raise exceptions.DocumentNotFoundException(document_id)
 
-    for field in new_document.model_dump(exclude_unset=True):
+    fields = (
+        new_document.model_dump(exclude_unset=True, exclude=["frequencies"])
+        if can_edit_all_fields
+        else EDITABLE_FIELDS
+    )
+    for field in fields:
         setattr(existing_document, field, getattr(new_document, field))
 
     db.commit()
