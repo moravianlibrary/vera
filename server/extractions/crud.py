@@ -69,38 +69,16 @@ def get_extractable_documents(category_id: int, db: Session):
                     Document.pages_count.is_not(None), Document.pages_count > 0
                 ),
                 and_(
+                    Document.pages_count_manual.is_not(None),
+                    Document.pages_count_manual > 0,
+                ),
+                and_(
                     Document.pages_count_predicted.is_not(None),
                     Document.pages_count_predicted > 0,
                 ),
             )
         )
         .filter(Document.cnb.is_not(None))
-        .all()
-    )
-
-
-def get_category_documents_count(category_id: int, db: Session):
-    return (
-        db.query(Document)
-        .filter(
-            Document.category_id == category_id,
-            Document.pages_count.is_not(None),
-            Document.pages_count_predicted.is_not(None),
-            Document.extraction_id.is_(None),
-        )
-        .count()
-    )
-
-
-def get_category_documents(category_id: int, db: Session):
-    return (
-        db.query(Document)
-        .filter(
-            Document.category_id == category_id,
-            Document.pages_count.is_not(None),
-            Document.pages_count_predicted.is_not(None),
-            Document.extraction_id.is_(None),
-        )
         .all()
     )
 
