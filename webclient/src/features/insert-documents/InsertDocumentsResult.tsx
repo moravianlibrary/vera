@@ -1,4 +1,4 @@
-import { Messages } from "primereact/messages";
+import { Messages, MessagesMessage } from "primereact/messages";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
@@ -37,19 +37,19 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
 
     useEffect(() => {
         if (messages.current) {
-            messages.current.clear();
-            messages.current.show(parseResultsToLocalizedMessages(t, results));
-        }
-
-        if (messages.current && withoutPagesCount.length > 0) {
-            messages.current.show({
-                severity: "warn",
-                summary: `${t("Documents without pages count")}: ${
-                    withoutPagesCount.length
-                }`,
-                sticky: true,
-                closable: false,
-            });
+            const displayMessages: MessagesMessage[] =
+                parseResultsToLocalizedMessages(t, results);
+            if (messages.current && withoutPagesCount.length > 0) {
+                displayMessages.push({
+                    severity: "warn",
+                    summary: `${t("Documents without pages count")}: ${
+                        withoutPagesCount.length
+                    }`,
+                    sticky: true,
+                    closable: false,
+                });
+            }
+            messages.current.replace(displayMessages);
         }
 
         if (
@@ -61,7 +61,7 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
                 setCountdown((prevCountdown) => prevCountdown - 1);
             }, 1000);
         }
-    }, [results, insertAnother]);
+    }, [results, insertAnother, withoutPagesCount]);
 
     useEffect(() => {
         if (countdown <= 0) {

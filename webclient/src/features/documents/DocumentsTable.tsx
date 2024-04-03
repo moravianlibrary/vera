@@ -122,17 +122,17 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
         } else if (counts.length === 0) {
             return null;
         }
-        let countsStr = "";
+        const countsJoined: string[] = [];
         if (document.pages_count) {
-            countsStr += `${t("from catalog")}: ${document.pages_count} `;
+            countsJoined.push(`${t("from catalog")}: ${document.pages_count}`);
         }
         if (document.pages_count_predicted) {
-            countsStr += `${t("predicted")}: ${document.pages_count} `;
+            countsJoined.push(`${t("predicted")}: ${document.pages_count}`);
         }
         if (document.pages_count_manual) {
-            countsStr += `${t("set manually")}: ${document.pages_count} `;
+            countsJoined.push(`${t("set manually")}: ${document.pages_count}`);
         }
-        return countsStr;
+        return countsJoined.join(", ");
     };
 
     const titleBody = (document: DocumentModel) => {
