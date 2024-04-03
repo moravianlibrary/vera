@@ -127,10 +127,14 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
             countsJoined.push(`${t("from catalog")}: ${document.pages_count}`);
         }
         if (document.pages_count_predicted) {
-            countsJoined.push(`${t("predicted")}: ${document.pages_count}`);
+            countsJoined.push(
+                `${t("predicted")}: ${document.pages_count_predicted}`
+            );
         }
         if (document.pages_count_manual) {
-            countsJoined.push(`${t("set manually")}: ${document.pages_count}`);
+            countsJoined.push(
+                `${t("set manually")}: ${document.pages_count_manual}`
+            );
         }
         return countsJoined.join(", ");
     };
