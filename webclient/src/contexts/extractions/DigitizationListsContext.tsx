@@ -74,6 +74,16 @@ export const DigitizationListsProvider: React.FC<
                 setDigitizationLists([transformedData, ...digitizationLists]);
             })
             .catch((error) => {
+                if (
+                    400 <= error.response.status &&
+                    error.response.status < 500
+                ) {
+                    showToast(
+                        "error",
+                        t("Digitization list creation failed"),
+                        error.response.data.detail
+                    );
+                }
                 console.error(`Could not create digitization list: ${error}`);
             });
     };
