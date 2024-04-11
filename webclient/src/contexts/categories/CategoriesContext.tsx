@@ -6,13 +6,14 @@ import React, {
     useEffect,
 } from "react";
 import ApiCategories, { Category } from "../../adapters/ApiCategories";
-import ApiExtractions from "../../adapters/ApiExtractions";
+import ApiExtractions from "../../adapters/ApiGeneratedExtractions";
 
 interface CategoriesContextProps {
     categories: Category[] | undefined;
     extractionId: number | null;
-    extractionMarked: boolean;
     setExtractionId: (extractionId: number) => void;
+    digitizationListId: number | null;
+    setDigitizationListId: (extractionId: number) => void;
 }
 
 const CategoriesContext = createContext<CategoriesContextProps | undefined>(
@@ -30,7 +31,9 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
         undefined
     );
     const [extractionId, setExtractionId] = useState<number | null>(null);
-    const [extractionMarked, setExtractionMarked] = useState<boolean>(false);
+    const [digitizationListId, setDigitizationListId] = useState<number | null>(
+        null
+    );
 
     const loadCategories = async () => {
         console.log(`Fetching categories from server.`);
@@ -50,10 +53,23 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
 
     const loadExtractionCategories = async () => {
         console.log(`Fetching extraction categories from server.`);
-        ApiExtractions.getExtraction(extractionId!).then((response) => {
-            setExtractionMarked(response.data.marked);
-        });
-        ApiCategories.getExtractionCategories(extractionId!)
+        ApiCategories.getGeneratedExtractionCategories(extractionId!)
+            .then((response) => {
+                const transformedData: Category[] = response.data.map(
+                    (category) => {
+                        return Object.assign({}, category) as Category;
+                    }
+                );
+                setCategories(transformedData!);
+            })
+            .catch((error) => {
+                console.error(`Could not receive categories: ${error}`);
+            });
+    };
+
+    const loadDigitizationListCategories = async () => {
+        console.log(`Fetching digitization list categories from server.`);
+        ApiCategories.getDigitizationExtractionCategories(digitizationListId!)
             .then((response) => {
                 const transformedData: Category[] = response.data.map(
                     (category) => {
@@ -81,11 +97,20 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
         }
     }, [extractionId]);
 
+    useEffect(() => {
+        if (digitizationListId) {
+            loadDigitizationListCategories();
+        } else {
+            loadCategories();
+        }
+    }, [digitizationListId]);
+
     const contextValue: CategoriesContextProps = {
         categories,
         extractionId,
-        extractionMarked,
         setExtractionId,
+        digitizationListId,
+        setDigitizationListId,
     };
 
     return (

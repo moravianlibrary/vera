@@ -19,7 +19,7 @@ router = APIRouter(prefix="/extractions/digitization")
 @router.post("", response_model=schemas.DigitizationExtraction)
 def create_extraction(
     query: DocumentsQuery,
-    quota_id: Optional[int] = Query(None, description="Quota ID"),
+    intention_id: Optional[int] = Query(None, description="Intention ID"),
     user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -27,7 +27,7 @@ def create_extraction(
     return crud.create_extraction(
         document_ids,
         extracted_pages,
-        quota_id,
+        intention_id,
         user.username,
         db,
     )
@@ -50,7 +50,7 @@ def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.get_extraction(id, db)
 
 
-@router.post("/{id}", response_model=schemas.DigitizationExtraction)
+@router.put("/{id}", response_model=schemas.DigitizationExtraction)
 def update_extraction(
     query: DocumentsQuery,
     id: int = Path(...),

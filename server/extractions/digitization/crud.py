@@ -20,7 +20,7 @@ def create_extraction(
             document_ids=document_ids,
             extracted_pages=extracted_pages,
             intention_id=intention_id,
-            generated_by=username,
+            extractor=username,
         ),
     )
 

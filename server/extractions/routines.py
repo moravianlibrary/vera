@@ -15,7 +15,9 @@ def get_category_subtree(
 ):
     documents: List[Document] = get_documents_query_base(
         db,
-        DocumentsQuery(ids=extraction_documents_ids, category_id=category.id),
+        DocumentsQuery(
+            id_list=extraction_documents_ids, category_id=category.id
+        ),
     ).all()
     extracted_pages_count = 0
     for document in documents:
