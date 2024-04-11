@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Dropdown } from "primereact/dropdown";
-import ApiExtractions from "../../adapters/ApiExtractions";
-import ExtractionModel from "../../contexts/extractions/ExtractionModel";
+import ApiExtractions from "../../adapters/ApiGeneratedExtractions";
+import ExtractionModel from "../../contexts/extractions/GeneratedExtractionModel";
 import { Tooltip } from "primereact/tooltip";
 
 interface ExtractionPickerProps {
@@ -35,7 +35,7 @@ const ExtractionPicker: React.FC<ExtractionPickerProps> = ({
                         return {
                             value: extractionModel.id,
                             data: extractionModel,
-                            name: `${extractionModel.extractor} ${extractionModel.extracted_at}`,
+                            name: `${extractionModel.generated_by} ${extractionModel.generated_at}`,
                         };
                     })
                 );
@@ -68,7 +68,7 @@ const ExtractionItem: React.FC<ExtractionItemProps> = ({ data }) => {
         <div>
             <Tooltip
                 target={`.item-${data.id}`}
-                content={`${data.extracted_at}, Id: ${data.id}`}
+                content={`${data.generated_at}, Id: ${data.id}`}
             />
             <ExtractionItemValue data={data} />
         </div>
@@ -82,8 +82,8 @@ const ExtractionItemValue: React.FC<ExtractionItemProps> = ({ data }) => {
 
     return (
         <div className={`flex justify-content-between item-${data.id}`}>
-            <span>{data.extractor}:</span>
-            <span>{`${data.extracted_pages}/${data.target_pages}`}</span>
+            <span>{data.generated_by}:</span>
+            <span>{`${data.selected_pages}/${data.target_pages}`}</span>
         </div>
     );
 };

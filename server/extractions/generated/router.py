@@ -2,23 +2,24 @@ from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 from typing import List
 
-from services.database import get_db
 from auth.schemas import CurrentUser
 from auth.router import get_current_user
-from extractions import crud, schemas
-from extractions.generator import ExtractionGenerator
-from extractions.routines import get_category_subtree
-from services.exceptions import EmptyExtraction
-from categories.quotas.crud import get_quota
 from categories.crud import get_root_categories
+from categories.quotas.crud import get_quota
+from extractions.generated import crud, schemas
+from extractions.generated.generator import ExtractionGenerator
+from extractions.routines import get_category_subtree
+from extractions.schemas import ExtractionCategoryNode
+from services.database import get_db
+from services.exceptions import EmptyExtraction
 
 
-router = APIRouter()
+router = APIRouter(prefix="/extractions/generated")
 
 
-@router.post("/extractions/generate", response_model=schemas.Extraction)
+@router.post("", response_model=schemas.GeneratedExtraction)
 def create_extraction(
-    props: schemas.ExtractionCreate,
+    params: schemas.GenerateExtraction,
     pages_count: int = None,
     quota_id: int = None,
     user: CurrentUser = Depends(get_current_user),
@@ -29,52 +30,46 @@ def create_extraction(
     elif pages_count is None or pages_count <= 0:
         raise EmptyExtraction
 
-    generator = ExtractionGenerator(pages_count, props, db)
+    generator = ExtractionGenerator(pages_count, params, db)
     generator.generate()
 
     extraction = crud.create_extraction(
-        user.username,
-        pages_count,
-        generator.extracted_pages_count,
         generator.extracted_documents,
+        generator.extracted_pages_count,
+        pages_count,
+        params,
+        user.username,
         db,
     )
 
-    if quota_id is not None:
-        crud.set_documents_extracted(extraction.id, db)
     return extraction
 
 
-@router.post("/extractions/{id}/mark")
-def mark_extraction(id: int = Path(...), db: Session = Depends(get_db)):
-    crud.set_documents_extracted(id, db)
-
-
-@router.post("/extractions/{id}/unmark")
-def unmark_extraction(id: int = Path(...), db: Session = Depends(get_db)):
-    crud.unset_documents_extracted(id, db)
-
-
-@router.get("/extractions", response_model=schemas.Extractions)
+@router.get("", response_model=schemas.GeneratedExtractions)
 def get_extractions(
     offset: int = Query(0, description="Pagination offset"),
     limit: int = Query(50, description="Pagination page size"),
     db: Session = Depends(get_db),
 ):
-    return schemas.Extractions(
+    return schemas.GeneratedExtractions(
         extractions=crud.get_extractions(db, offset, limit),
         num_found=crud.get_extractions_num_found(db),
     )
 
 
-@router.get("/extractions/{id}", response_model=schemas.Extraction)
+@router.delete("/{id}", response_model=schemas.GeneratedExtraction)
+def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
+    return crud.delete_extraction(id, db)
+
+
+@router.get("/{id}", response_model=schemas.GeneratedExtraction)
 def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.get_extraction(id, db)
 
 
 @router.get(
-    "/extractions/{id}/categories",
-    response_model=List[schemas.ExtractionCategoryNode],
+    "/{id}/categories",
+    response_model=List[ExtractionCategoryNode],
 )
 def get_categories(id: int = Path(...), db: Session = Depends(get_db)):
     return [

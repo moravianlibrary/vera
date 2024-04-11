@@ -22,7 +22,7 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
         focusAssignable,
         handleFocusAssignableCategories,
     } = useCategoryNodes();
-    const { extractionId, setExtractionId, extractionMarked } = useCategories();
+    const { extractionId, setExtractionId } = useCategories();
 
     const levelOptions = [0, 1, 2, 3];
 
@@ -136,7 +136,7 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
                     callback={setExtractionId}
                 />
             </div>
-            {extractionId && (
+            {/* {extractionId && (
                 <div className="mx-2 w-13rem">
                     {extractionMarked && (
                         <span className="font-bold">
@@ -153,7 +153,7 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
                         </div>
                     )}
                 </div>
-            )}
+            )} */}
         </div>
     );
 };

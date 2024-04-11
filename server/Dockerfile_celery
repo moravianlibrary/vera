@@ -22,7 +22,7 @@ COPY documents/models.py /app/documents/models.py
 COPY documents/schemas.py /app/documents/schemas.py
 COPY documents/search.py /app/documents/search.py
 # COPY extractions /app/extractions
-COPY extractions/models.py /app/extractions/models.py
+COPY extractions/generated/models.py /app/extractions/generated/models.py
 COPY kramerius /app/kramerius
 COPY predictions /app/predictions
 # COPY roles /app/roles

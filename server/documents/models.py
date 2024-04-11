@@ -57,4 +57,6 @@ class Document(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
     creator = Column(String, index=True)
 
-    extraction_id = Column(Integer, ForeignKey("extractions.id"), index=True)
+    extraction_id = Column(
+        Integer, ForeignKey("digitization_extractions.id"), index=True
+    )

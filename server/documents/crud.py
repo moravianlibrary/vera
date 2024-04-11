@@ -6,7 +6,7 @@ from services.database import create
 from categories.models import Category
 from documents import models, schemas
 from documents.search import filter_documents_query_base
-from extractions.models import Extraction
+from extractions.digitization.models import DigitizationExtraction
 from services import exceptions
 from tasks.crud import delete_document as delete_task_document
 
@@ -48,11 +48,14 @@ def document_view(db: Session):
             models.Document.created_at,
             models.Document.creator,
             models.Document.extraction_id,
-            Extraction.extractor,
-            Extraction.extracted_at,
+            DigitizationExtraction.extractor,
+            DigitizationExtraction.extracted_at,
         )
         .outerjoin(Category, models.Document.category_id == Category.id)
-        .outerjoin(Extraction, models.Document.extraction_id == Extraction.id)
+        .outerjoin(
+            DigitizationExtraction,
+            models.Document.extraction_id == DigitizationExtraction.id,
+        )
     )
 
 

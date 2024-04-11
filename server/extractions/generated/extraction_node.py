@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from categories.models import Category as CategoryModel
 from documents.models import Document as DocumentModel
-from extractions.extraction_document import ExtractionDocument
+from extractions.generated.extraction_document import ExtractionDocument
 
 
 def getExtractionRoot(children: List["ExtractionNode"]):

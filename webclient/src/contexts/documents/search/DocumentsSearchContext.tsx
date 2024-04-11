@@ -1,10 +1,17 @@
-import React, { ReactNode, createContext, useContext, useEffect, useState } from "react";
+import React, {
+    ReactNode,
+    createContext,
+    useContext,
+    useEffect,
+    useState,
+} from "react";
 import { DocumentsQuery } from "../../../adapters/ApiDocuments";
 import { SearchGroup } from "./SearchNodes";
 import { DocumentField } from "./DocumentSearchField";
 import ApiCategories, { Category } from "../../../adapters/ApiCategories";
 import { TreeNode } from "primereact/treenode";
-import ApiExtractions from "../../../adapters/ApiExtractions";
+import ApiGeneratedExtractions from "../../../adapters/ApiGeneratedExtractions";
+import ApiDigitizationExtractions from "../../../adapters/ApiDigitizationExtractions";
 
 interface TreeOption {
     id: number;
@@ -23,16 +30,25 @@ interface DocumentsSearchContextProps {
 }
 
 interface DocumentsSearchProviderProps {
-    children: ReactNode;
-    extractionId?: number | null;
     categoryIds?: number[];
+    digitizationListId?: number | null;
+    extractionId?: number | null;
+    children: ReactNode;
 }
 
-const DocumentsSearchContext = createContext<DocumentsSearchContextProps | undefined>(undefined);
+const DocumentsSearchContext = createContext<
+    DocumentsSearchContextProps | undefined
+>(undefined);
 
-export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = ({ children, extractionId, categoryIds }) => {
-    const [rootSearchNode, setRootSearchNode] = useState<SearchGroup>(SearchGroup.init());
-    const [activeQuery, setActiveQuery] = useState<DocumentsQuery | undefined>(undefined);
+export const DocumentsSearchProvider: React.FC<
+    DocumentsSearchProviderProps
+> = ({ children, digitizationListId, extractionId, categoryIds }) => {
+    const [rootSearchNode, setRootSearchNode] = useState<SearchGroup>(
+        SearchGroup.init()
+    );
+    const [activeQuery, setActiveQuery] = useState<DocumentsQuery | undefined>(
+        undefined
+    );
 
     const [categoryTree, setCategoryTree] = useState<TreeNode[]>([]);
 
@@ -45,7 +61,7 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
     };
 
     const handleSaveFilter = () => {
-        localStorage.setItem('advanced_search', JSON.stringify(rootSearchNode));
+        localStorage.setItem("advanced_search", JSON.stringify(rootSearchNode));
     };
 
     const handleClearFilter = () => {
@@ -54,16 +70,20 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
 
     const getTreeFieldOptions = (enumField: DocumentField) => {
         switch (enumField) {
-            case DocumentField.Category: return categoryTree;
-            default: return [];
+            case DocumentField.Category:
+                return categoryTree;
+            default:
+                return [];
         }
     };
 
     const getTreeFieldPlaceholder = (enumField: DocumentField) => {
         switch (enumField) {
-            case DocumentField.Category: return "Choose a category";
-            default: return "";
-        } 
+            case DocumentField.Category:
+                return "Choose a category";
+            default:
+                return "";
+        }
     };
 
     const contextValue: DocumentsSearchContextProps = {
@@ -74,7 +94,7 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
         handleSaveFilter,
         handleClearFilter,
         getTreeFieldOptions,
-        getTreeFieldPlaceholder
+        getTreeFieldPlaceholder,
     };
 
     const transformCategoryToTreeNode = (category: Category) => {
@@ -82,34 +102,58 @@ export const DocumentsSearchProvider: React.FC<DocumentsSearchProviderProps> = (
             id: category.id,
             key: category.id,
             label: category.name,
-            children: children ? category.children.map(transformCategoryToTreeNode) : []
-        }
+            children: children
+                ? category.children.map(transformCategoryToTreeNode)
+                : [],
+        };
         return node;
-    }
+    };
 
     useEffect(() => {
         ApiCategories.getCategories()
-        .then(response => {
-            setCategoryTree(response.data.map(transformCategoryToTreeNode));
-        }).catch(error => {
-            console.error(error);
-        });
-    }, [])
-    
-    useEffect(() => {
-        if (extractionId) {
-            ApiExtractions.getExtraction(extractionId)
-            .then(response => {
-                setActiveQuery({ id_list: response.data.document_ids, sort: { field: DocumentField.Category } });
-            }).catch(error => {
+            .then((response) => {
+                setCategoryTree(response.data.map(transformCategoryToTreeNode));
+            })
+            .catch((error) => {
                 console.error(error);
             });
+    }, []);
+
+    useEffect(() => {
+        if (extractionId) {
+            ApiGeneratedExtractions.getExtraction(extractionId)
+                .then((response) => {
+                    setActiveQuery({
+                        id_list: response.data.document_ids,
+                        sort: { field: DocumentField.Category },
+                    });
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
         }
     }, [extractionId]);
 
     useEffect(() => {
+        if (digitizationListId) {
+            ApiDigitizationExtractions.getExtraction(digitizationListId)
+                .then((response) => {
+                    setActiveQuery({
+                        id_list: response.data.document_ids,
+                        sort: { field: DocumentField.Category },
+                    });
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+        }
+    }, [digitizationListId]);
+
+    useEffect(() => {
         if (categoryIds && categoryIds.length > 0) {
-            setActiveQuery({ search_group: SearchGroup.createCategoryIdSearch(categoryIds) });
+            setActiveQuery({
+                search_group: SearchGroup.createCategoryIdSearch(categoryIds),
+            });
         }
     }, [categoryIds]);
 
@@ -124,7 +168,9 @@ export const useDocumentsSearch = (): DocumentsSearchContextProps => {
     const context = useContext(DocumentsSearchContext);
 
     if (!context) {
-        throw new Error('useDocumentsSearch must be used within a DocumentsSearchProvider');
+        throw new Error(
+            "useDocumentsSearch must be used within a DocumentsSearchProvider"
+        );
     }
 
     return context;

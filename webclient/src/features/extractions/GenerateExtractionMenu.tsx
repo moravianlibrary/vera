@@ -1,8 +1,8 @@
 import { InputNumber } from "primereact/inputnumber";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ExtractionProps } from "../../adapters/ApiExtractions";
-import { useExtractions } from "../../contexts/extractions/ExtractionsContext";
+import { GenerateExtraction } from "../../adapters/ApiGeneratedExtractions";
+import { useGeneratedExtractions } from "../../contexts/extractions/GeneratedExtractionsContext";
 import { AssignableCategoriesProvider } from "../../contexts/categories/AssignableCategoriesContext";
 import AssignableCategoryPicker, {
     AssignableCategoriesPicker,
@@ -17,9 +17,9 @@ interface ExtractionPropsMenuProps {}
 
 const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
     const { t } = useTranslation();
-    const { defaultProps, generateExtraction } = useExtractions();
+    const { defaultProps, generateExtraction } = useGeneratedExtractions();
 
-    const [extractionProps, setExtractionProps] = useState<ExtractionProps>(
+    const [extractionProps, setExtractionProps] = useState<GenerateExtraction>(
         JSON.parse(JSON.stringify(defaultProps))
     );
 
