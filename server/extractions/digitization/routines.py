@@ -28,8 +28,9 @@ def get_extraction_from_query(
             document.pages_count
             or document.pages_count_manual
             or document.pages_count_predicted
+            or 0
         )
-        if document.pages_count == 0:
+        if pages_count <= 0:
             raise CannotExtractDocumentWithoutPagesCount
 
         document_ids.append(document.id)

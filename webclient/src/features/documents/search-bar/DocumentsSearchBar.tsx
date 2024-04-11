@@ -15,7 +15,6 @@ const DocumentsSearchBar = () => {
     const advancedSearchRef = useRef<OverlayPanel | null>(null);
 
     const handleSearch = () => {};
-    console.log(activeQuery);
 
     return (
         <div className="flex flex-column">
