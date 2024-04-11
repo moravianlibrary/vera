@@ -6,13 +6,16 @@ from categories.crud import (
     get_root_categories,
 )
 from categories.models import Category as CategoryModel
-from extractions.crud import get_extractable_documents
-from extractions.extraction_node import ExtractionNode, getExtractionRoot
-from extractions.schemas import ExtractionCreate
+from extractions.generated.crud import get_extractable_documents
+from extractions.generated.extraction_node import (
+    ExtractionNode,
+    getExtractionRoot,
+)
+from extractions.generated.schemas import GenerateExtraction
 
 
 class ExtractionPreprocessor:
-    def __init__(self, settings: ExtractionCreate, db: Session):
+    def __init__(self, settings: GenerateExtraction, db: Session):
         self.settings = settings
         self.db = db
 

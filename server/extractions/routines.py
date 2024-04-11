@@ -1,20 +1,28 @@
 from sqlalchemy.orm import Session
+from typing import List
 
 from categories import crud
 from categories.schemas import Category
-from extractions.schemas import (
-    ExtractionCategoryNode,
-)
-
-from extractions.crud import get_extraction_documents
+from documents.crud import get_documents_query_base
+from documents.schemas import Document, DocumentsQuery
+from extractions.schemas import ExtractionCategoryNode
 
 
-def get_category_subtree(extraction_id, category: Category, db: Session):
-    documents = get_extraction_documents(extraction_id, db, category.id)
+def get_category_subtree(
+    extraction_documents_ids: List[int],
+    category: Category,
+    db: Session,
+):
+    documents: List[Document] = get_documents_query_base(
+        db,
+        DocumentsQuery(ids=extraction_documents_ids, category_id=category.id),
+    ).all()
     extracted_pages_count = 0
     for document in documents:
         extracted_pages_count += (
-            document.pages_count or document.pages_count_predicted
+            document.pages_count
+            or document.pages_count_manual
+            or document.pages_count_predicted
         )
 
     return ExtractionCategoryNode(
@@ -31,7 +39,7 @@ def get_category_subtree(extraction_id, category: Category, db: Session):
             d[0] for d in crud.get_category_departments(category.id, db)
         ],
         children=[
-            get_category_subtree(extraction_id, child, db)
+            get_category_subtree(extraction_documents_ids, child, db)
             for child in crud.get_children_categories(category.id, db)
         ],
         count_pages=crud.get_pages_count(category.id, db),

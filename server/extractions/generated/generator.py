@@ -1,14 +1,17 @@
 from sqlalchemy.orm import Session
 from typing import List, Tuple
 
-from extractions.preprocessor import ExtractionPreprocessor
-from extractions.schemas import ExtractionCreate, ExtractionDocument
-from extractions.extraction_node import ExtractionNode
+from extractions.generated.preprocessor import ExtractionPreprocessor
+from extractions.generated.schemas import (
+    ExtractionDocument,
+    GenerateExtraction,
+)
+from extractions.generated.extraction_node import ExtractionNode
 
 
 class ExtractionGenerator:
     def __init__(
-        self, target_pages: int, settings: ExtractionCreate, db: Session
+        self, target_pages: int, settings: GenerateExtraction, db: Session
     ):
         self.target_pages = target_pages
         self.lower_limit = target_pages * (1 - settings.target_pages_threshold)

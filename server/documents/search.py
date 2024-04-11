@@ -59,6 +59,10 @@ def filter_by_query(query_base: Query, query: schemas.DocumentsQuery):
         query_base = query_base.filter(
             models.Document.creator == query.username
         )
+    if query.category_id:
+        query_base = query_base.filter(
+            models.Document.category_id == query.category_id
+        )
     if query.id_list:
         return filter_by_id_list(query.id_list, query_base)
     if query.search_phrase:

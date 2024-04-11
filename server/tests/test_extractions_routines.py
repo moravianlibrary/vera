@@ -3,16 +3,16 @@ from unittest.mock import Mock, patch
 
 from categories.models import Category
 from documents.models import Document as DocumentModel
-from extractions.extraction_node import ExtractionNode
-from extractions.generator import ExtractionGenerator
-from extractions.schemas import ExtractionCreate
-from extractions.preprocessor import ExtractionPreprocessor
+from extractions.generated.extraction_node import ExtractionNode
+from extractions.generated.generator import ExtractionGenerator
+from extractions.generated.schemas import GenerateExtraction
+from extractions.generated.preprocessor import ExtractionPreprocessor
 
 
 class TestExtractionsRoutines(TestRoutines):
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extract_one_document_exact_pages_count(
         self,
         mock_get_extractable_documents: Mock,
@@ -29,7 +29,7 @@ class TestExtractionsRoutines(TestRoutines):
         ]
 
         # Act
-        generator = ExtractionGenerator(10, ExtractionCreate(), self.db)
+        generator = ExtractionGenerator(10, GenerateExtraction(), self.db)
         generator.generate()
         ids = generator.extracted_documents
         count = generator.extracted_pages_count
@@ -38,9 +38,9 @@ class TestExtractionsRoutines(TestRoutines):
         self.assertListEqual(ids, [1])
         self.assertEqual(count, 10)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extract_one_document_higher_pages_count_inside_threshold(
         self,
         mock_get_extractable_documents: Mock,
@@ -57,7 +57,7 @@ class TestExtractionsRoutines(TestRoutines):
         ]
 
         # Act
-        generator = ExtractionGenerator(10, ExtractionCreate(), self.db)
+        generator = ExtractionGenerator(10, GenerateExtraction(), self.db)
         generator.generate()
         ids = generator.extracted_documents
         count = generator.extracted_pages_count
@@ -66,9 +66,9 @@ class TestExtractionsRoutines(TestRoutines):
         self.assertListEqual(ids, [1])
         self.assertEqual(count, 10)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extract_one_document_lower_pages_count_outside_threshold(
         self,
         mock_get_extractable_documents: Mock,
@@ -87,7 +87,7 @@ class TestExtractionsRoutines(TestRoutines):
         ]
 
         # Act
-        generator = ExtractionGenerator(9, ExtractionCreate(), self.db)
+        generator = ExtractionGenerator(9, GenerateExtraction(), self.db)
         generator.generate()
         ids = generator.extracted_documents
         count = generator.extracted_pages_count
@@ -96,9 +96,9 @@ class TestExtractionsRoutines(TestRoutines):
         self.assertListEqual(ids, [])
         self.assertEqual(count, 0)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extract_one_document_lower_pages_count_inside_threshold(
         self,
         mock_get_extractable_documents: Mock,
@@ -116,7 +116,7 @@ class TestExtractionsRoutines(TestRoutines):
 
         # Act
         generator = ExtractionGenerator(
-            11, ExtractionCreate(target_pages_threshold=0.1), self.db
+            11, GenerateExtraction(target_pages_threshold=0.1), self.db
         )
         generator.generate()
         ids = generator.extracted_documents
@@ -126,9 +126,9 @@ class TestExtractionsRoutines(TestRoutines):
         self.assertListEqual(ids, [1])
         self.assertEqual(count, 10)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extract_whole_category_exact_pages_count(
         self,
         mock_get_extractable_documents: Mock,
@@ -151,7 +151,7 @@ class TestExtractionsRoutines(TestRoutines):
         ]
 
         # Act
-        generator = ExtractionGenerator(10, ExtractionCreate(), self.db)
+        generator = ExtractionGenerator(10, GenerateExtraction(), self.db)
         generator.generate()
         ids = generator.extracted_documents
         count = generator.extracted_pages_count
@@ -160,9 +160,9 @@ class TestExtractionsRoutines(TestRoutines):
         self.assertListEqual(ids, [1])
         self.assertEqual(count, 10)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extract_whole_category_lower_pages_count_inside_threshold(
         self,
         mock_get_extractable_documents: Mock,
@@ -185,7 +185,7 @@ class TestExtractionsRoutines(TestRoutines):
         ]
 
         # Act
-        generator = ExtractionGenerator(11, ExtractionCreate(), self.db)
+        generator = ExtractionGenerator(11, GenerateExtraction(), self.db)
         generator.generate()
         ids = generator.extracted_documents
         count = generator.extracted_pages_count
@@ -194,9 +194,9 @@ class TestExtractionsRoutines(TestRoutines):
         self.assertListEqual(ids, [1])
         self.assertEqual(count, 10)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extract_whole_category_lower_pages_count_outside_threshold(
         self,
         mock_get_extractable_documents: Mock,
@@ -220,7 +220,7 @@ class TestExtractionsRoutines(TestRoutines):
         ]
 
         # Act
-        generator = ExtractionGenerator(9, ExtractionCreate(), self.db)
+        generator = ExtractionGenerator(9, GenerateExtraction(), self.db)
         generator.generate()
         ids = generator.extracted_documents
         count = generator.extracted_pages_count
@@ -229,9 +229,9 @@ class TestExtractionsRoutines(TestRoutines):
         self.assertListEqual(ids, [])
         self.assertEqual(count, 0)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extract_whole_category_higher_pages_count_inside_threshold(
         self,
         mock_get_extractable_documents: Mock,
@@ -255,7 +255,7 @@ class TestExtractionsRoutines(TestRoutines):
 
         # Act
         generator = ExtractionGenerator(
-            9, ExtractionCreate(whole_categories_threshold=0.2), self.db
+            9, GenerateExtraction(whole_categories_threshold=0.2), self.db
         )
         generator.generate()
         ids = generator.extracted_documents
@@ -265,9 +265,9 @@ class TestExtractionsRoutines(TestRoutines):
         self.assertListEqual(ids, [1])
         self.assertEqual(count, 10)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extract_whole_category_higher_pages_count_outside_threshold(
         self,
         mock_get_extractable_documents: Mock,
@@ -292,7 +292,7 @@ class TestExtractionsRoutines(TestRoutines):
 
         # Act
         generator = ExtractionGenerator(
-            9, ExtractionCreate(whole_categories_threshold=0.1), self.db
+            9, GenerateExtraction(whole_categories_threshold=0.1), self.db
         )
         generator.generate()
         ids = generator.extracted_documents
@@ -304,9 +304,9 @@ class TestExtractionsRoutines(TestRoutines):
 
 
 class TestExtractionsPreparation(TestRoutines):
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extraction_tree_generator(
         self,
         mock_get_extractable_documents: Mock,
@@ -413,7 +413,7 @@ class TestExtractionsPreparation(TestRoutines):
         target_pages = [720.0, 360.0, 216.0, 144.0, 144.0, 216.0, 480.0, 480.0]
 
         # Act
-        preprocessor = ExtractionPreprocessor(ExtractionCreate(), self.db)
+        preprocessor = ExtractionPreprocessor(GenerateExtraction(), self.db)
         root: ExtractionNode = preprocessor.generate_extraction_tree()
 
         # Assert
@@ -435,9 +435,9 @@ class TestExtractionsPreparation(TestRoutines):
         for child in root.children:
             assert_nodes_order_and_target_pages(child)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extraction(
         self,
         mock_get_extractable_documents: Mock,
@@ -502,7 +502,7 @@ class TestExtractionsPreparation(TestRoutines):
 
         # Act
         generator = ExtractionGenerator(
-            1200, ExtractionCreate(target_pages_threshold=0.05), self.db
+            1200, GenerateExtraction(target_pages_threshold=0.05), self.db
         )
         generator.generate()
         ids, count = (
@@ -514,9 +514,9 @@ class TestExtractionsPreparation(TestRoutines):
         self.assertListEqual(ids, [8, 5, 6, 3, 1])
         self.assertEqual(count, 1199)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extraction_simple_tree(
         self,
         mock_get_extractable_documents: Mock,
@@ -588,7 +588,7 @@ class TestExtractionsPreparation(TestRoutines):
 
         # Act
         generator = ExtractionGenerator(
-            1000, ExtractionCreate(target_pages_threshold=0.05), self.db
+            1000, GenerateExtraction(target_pages_threshold=0.05), self.db
         )
         generator.generate()
         ids, count = (
@@ -600,9 +600,9 @@ class TestExtractionsPreparation(TestRoutines):
         self.assertListEqual(ids, [7, 5, 1, 4])
         self.assertEqual(count, 973)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extraction_complex_tree(
         self,
         mock_get_extractable_documents: Mock,
@@ -851,7 +851,7 @@ class TestExtractionsPreparation(TestRoutines):
 
         # Act
         generator = ExtractionGenerator(
-            10000, ExtractionCreate(target_pages_threshold=0.05), self.db
+            10000, GenerateExtraction(target_pages_threshold=0.05), self.db
         )
         generator.generate()
         ids, count = (
@@ -893,9 +893,9 @@ class TestExtractionsPreparation(TestRoutines):
         )
         self.assertEqual(count, 9997)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extraction_complex_tree_extract_fully(
         self,
         mock_get_extractable_documents: Mock,
@@ -1148,7 +1148,7 @@ class TestExtractionsPreparation(TestRoutines):
 
         # Act
         generator = ExtractionGenerator(
-            40000, ExtractionCreate(target_pages_threshold=0.05), self.db
+            40000, GenerateExtraction(target_pages_threshold=0.05), self.db
         )
         generator.generate()
         ids, count = (
@@ -1240,9 +1240,9 @@ class TestExtractionsPreparation(TestRoutines):
         self.assertListEqual(ids, expected_ids)
         self.assertEqual(count, 39241)
 
-    @patch("extractions.preprocessor.get_root_categories")
-    @patch("extractions.preprocessor.get_children_categories")
-    @patch("extractions.preprocessor.get_extractable_documents")
+    @patch("extractions.generated.preprocessor.get_root_categories")
+    @patch("extractions.generated.preprocessor.get_children_categories")
+    @patch("extractions.generated.preprocessor.get_extractable_documents")
     def test_extraction_complex_tree_include_category(
         self,
         mock_get_extractable_documents: Mock,
@@ -1496,7 +1496,7 @@ class TestExtractionsPreparation(TestRoutines):
         # Act
         generator = ExtractionGenerator(
             10000,
-            ExtractionCreate(
+            GenerateExtraction(
                 target_pages_threshold=0.05, include_categories=[7]
             ),
             self.db,
