@@ -6,11 +6,14 @@ import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
 import GeneratedExtractionModel from "../../contexts/extractions/GeneratedExtractionModel";
+import DeleteButton from "../../components/buttons/DeleteButton";
+import { useAccess } from "../../contexts/access/AccessContext";
 
 const ExtractionsTable: React.FC = () => {
     const { t } = useTranslation();
+    const { canDeleteExtraction } = useAccess();
 
-    const { extractions } = useGeneratedExtractions();
+    const { extractions, deleteExtraction } = useGeneratedExtractions();
 
     const documentsButton = (extraction: GeneratedExtractionModel) => {
         return (
@@ -38,6 +41,15 @@ const ExtractionsTable: React.FC = () => {
             <Column field="documents_count" header={t("Documents count")} />
             <Column body={documentsButton} />
             <Column body={categoriesButton} />
+            <Column
+                body={(extraction) => (
+                    <DeleteButton
+                        itemId={extraction.id}
+                        disabled={!canDeleteExtraction(extraction)}
+                        onDeleteItem={deleteExtraction}
+                    />
+                )}
+            />
         </DataTable>
     );
 };

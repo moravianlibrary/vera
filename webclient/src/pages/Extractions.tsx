@@ -17,8 +17,8 @@ const Extractions: React.FC = () => {
 
     const [table, setTable] = useState(1);
     const tables = [
-        { name: t("Digitization lists"), value: 1 },
-        { name: t("Generate extractions"), value: 2 },
+        { name: t("Generate extractions"), value: 1 },
+        { name: t("Digitization lists"), value: 2 },
     ];
 
     const generateExtractionMenu = (
@@ -49,11 +49,11 @@ const Extractions: React.FC = () => {
         <DigitizationListsProvider>
             <GeneratedExtractionsProvider>
                 <Toolbar
-                    start={table === 2 ? generateExtractionMenu : null}
+                    start={table === 1 ? generateExtractionMenu : null}
                     center={selectTableButton}
                 />
-                {table === 1 && <DigitizationListsTable />}
-                {table === 2 && <ExtractionsTable />}
+                {table === 1 && <ExtractionsTable />}
+                {table === 2 && <DigitizationListsTable />}
             </GeneratedExtractionsProvider>
         </DigitizationListsProvider>
     );
