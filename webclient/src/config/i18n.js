@@ -395,6 +395,8 @@ const resources = {
         "Digitization list created successfully": "Seznam digitalizace úspěšně vytvořen",
         "Task started successfully": "Ukol úspěšně spusten",
         "Category changed successfully": "Kategorie byla úspěšně změnena",
+
+        "Search": "Vyhledávaní",
     },
   },
 };

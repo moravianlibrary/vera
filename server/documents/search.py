@@ -83,12 +83,17 @@ def filter_by_id_list(id_list: List[int], query_base: Query):
 
 def filter_by_search_phrase(search_phrase: str, query_base: Query):
     return query_base.filter(
-        models.Document.sysno.startswith(search_phrase)
-        or models.Document.barcode.startswith(search_phrase)
-        or models.Document.signature.startswith(search_phrase)
-        or models.Document.title.startswith(search_phrase)
-        or Category.name.startswith(search_phrase)
-    ).outerjoin(Category, models.Document.category_id == Category.id)
+        or_(
+            models.Document.sysno.startswith(search_phrase),
+            models.Document.barcode.startswith(search_phrase),
+            models.Document.signature.startswith(search_phrase),
+            models.Document.title.startswith(search_phrase),
+            and_(
+                Category.name.isnot(None),
+                Category.name.startswith(search_phrase),
+            ),
+        )
+    )
 
 
 def filter_by_group(search_group: schemas.SearchGroup, query_base: Query):
