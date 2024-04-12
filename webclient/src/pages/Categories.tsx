@@ -2,11 +2,20 @@ import React, { useEffect } from "react";
 
 import CategoriesMenuPanel from "../features/categories/CategoriesMenuPanel";
 import QuotasMenuPanel from "../features/categories/QuotasMenuPanel";
-import { CategoriesProvider, useCategories } from "../contexts/categories/CategoriesContext";
-import { DepartmentsProvider, useDepartments } from "../contexts/departments/DepartmentsContext";
+import {
+    CategoriesProvider,
+    useCategories,
+} from "../contexts/categories/CategoriesContext";
+import {
+    DepartmentsProvider,
+    useDepartments,
+} from "../contexts/departments/DepartmentsContext";
 import { CategoryNodesProvider } from "../contexts/categories/CategoryNodesContext";
 import CategoriesChart from "../features/categories/CategoriesChart";
-import { QuotasProvider, useQuotas } from "../contexts/categories/QuotasContext";
+import {
+    QuotasProvider,
+    useQuotas,
+} from "../contexts/categories/QuotasContext";
 import { useSearchParams } from "react-router-dom";
 
 interface CategoriesProps {}
@@ -19,7 +28,7 @@ const Categories: React.FC<CategoriesProps> = () => {
             <CategoriesProvider>
                 <DepartmentsProvider>
                     <QuotasProvider>
-                        <CategoriesDiv/>
+                        <CategoriesDiv />
                     </QuotasProvider>
                 </DepartmentsProvider>
             </CategoriesProvider>
@@ -30,12 +39,22 @@ const Categories: React.FC<CategoriesProps> = () => {
 const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const { categories, extractionId, setExtractionId } = useCategories();
+    const {
+        categories,
+        extractionId,
+        setExtractionId,
+        digitizationListId,
+        setDigitizationListId,
+    } = useCategories();
     const { selectedQuota } = useQuotas();
 
     useEffect(() => {
         if (searchParams.has("extractionId")) {
             setExtractionId(parseInt(searchParams.get("extractionId")!, 10));
+        } else if (searchParams.has("digitizationListId")) {
+            setDigitizationListId(
+                parseInt(searchParams.get("digitizationListId")!, 10)
+            );
         }
     }, [searchParams, setExtractionId]);
 
@@ -43,11 +62,11 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
         <CategoryNodesProvider
             categories={categories}
             selectedQuota={selectedQuota}
-            extractedCategories={extractionId !== null}
+            extractedCategories={
+                extractionId !== null || digitizationListId !== null
+            }
         >
-            <div
-                style={{ height: "calc(100vh - 60px)" }}
-            >
+            <div style={{ height: "calc(100vh - 60px)" }}>
                 <CategoriesMenuPanel />
                 <QuotasMenuPanel />
                 <CategoriesChart />

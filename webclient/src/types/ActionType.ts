@@ -20,6 +20,7 @@ enum ActionType {
     EditAccess = 'EditAccess',
 
     Extract = 'Extract',
+    AdminExtractions = 'AdminExtractions',
 
     AdminDatabase = 'AdminDatabase',
 

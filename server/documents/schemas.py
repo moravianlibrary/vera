@@ -176,7 +176,9 @@ class DocumentsQuery(BaseModel):
     id_list: Optional[List[int]] = None
     search_phrase: Optional[str] = None
     search_group: Optional[SearchGroup] = None
+    category_id: Optional[int] = None
     department_id: Optional[int] = None
+    extracted: Optional[bool] = None
     username: Optional[str] = None
     sort: Optional[QuerySort] = None
 

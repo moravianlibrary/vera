@@ -1,57 +1,79 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from "react";
 
-import '../styles/Documents.css';
-import { Dialog } from 'primereact/dialog';
-import InsertDocuments from '../features/insert-documents/InsertDocuments';
-import DocumentsHeader from '../features/documents/DocumentsHeader';
-import DocumentsTable from '../features/documents/DocumentsTable';
-import { DocumentsProvider } from '../contexts/documents/DocumentsContext';
-import { AssignableCategoriesProvider } from '../contexts/categories/AssignableCategoriesContext';
-import { DocumentsSearchProvider, useDocumentsSearch } from '../contexts/documents/search/DocumentsSearchContext';
-import { useSearchParams } from 'react-router-dom';
-import ApiCategories, { AssignableCategory } from '../adapters/ApiCategories';
+import "../styles/Documents.css";
+import { Dialog } from "primereact/dialog";
+import InsertDocuments from "../features/insert-documents/InsertDocuments";
+import DocumentsHeader from "../features/documents/DocumentsHeader";
+import DocumentsTable from "../features/documents/DocumentsTable";
+import { DocumentsProvider } from "../contexts/documents/DocumentsContext";
+import { AssignableCategoriesProvider } from "../contexts/categories/AssignableCategoriesContext";
+import {
+    DocumentsSearchProvider,
+    useDocumentsSearch,
+} from "../contexts/documents/search/DocumentsSearchContext";
+import { useSearchParams } from "react-router-dom";
+import ApiCategories, { AssignableCategory } from "../adapters/ApiCategories";
+import { DigitizationListsProvider } from "../contexts/extractions/DigitizationListsContext";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [extractionId, setExtractionId] = useState<number | null>(null);
+    const [digitizationListId, setDigitizationListId] = useState<number | null>(
+        null
+    );
     const [categoryIds, setCategoryIds] = useState<number[]>([]);
 
     const handleSetCategoryIds = (categoryId: number) => {
         ApiCategories.getCategory(categoryId)
-        .then((response) => {
-            const flattenCategoryIds: number[] = [];
-            const traverseCategories = (category: AssignableCategory) => {
-                flattenCategoryIds.push(category.id);
-                if (category.children_categories && category.children_categories.length > 0) {
-                    category.children_categories.forEach((childCategory: any) => {
-                        traverseCategories(childCategory);
-                    });
-                }
-            }
-            traverseCategories(response.data);
-            setCategoryIds(flattenCategoryIds);
-        })
-        .catch((error) => {
-            console.error(error);
-        })
+            .then((response) => {
+                const flattenCategoryIds: number[] = [];
+                const traverseCategories = (category: AssignableCategory) => {
+                    flattenCategoryIds.push(category.id);
+                    if (
+                        category.children_categories &&
+                        category.children_categories.length > 0
+                    ) {
+                        category.children_categories.forEach(
+                            (childCategory: any) => {
+                                traverseCategories(childCategory);
+                            }
+                        );
+                    }
+                };
+                traverseCategories(response.data);
+                setCategoryIds(flattenCategoryIds);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
     };
 
     useEffect(() => {
         if (searchParams.has("extractionId")) {
             setExtractionId(parseInt(searchParams.get("extractionId")!, 10));
+        } else if (searchParams.has("digitizationListId")) {
+            setDigitizationListId(
+                parseInt(searchParams.get("digitizationListId")!, 10)
+            );
         } else if (searchParams.has("categoryId")) {
             handleSetCategoryIds(parseInt(searchParams.get("categoryId")!, 10));
         }
-        window.history.replaceState(null, '', `${window.location.pathname}`);
+        window.history.replaceState(null, "", `${window.location.pathname}`);
     }, [searchParams, setExtractionId]);
 
     return (
-        <div className="table-container" >
+        <div className="table-container">
             <AssignableCategoriesProvider>
-                <DocumentsSearchProvider extractionId={extractionId} categoryIds={categoryIds} >
-                    <DocumentsDiv />
-                </DocumentsSearchProvider>
+                <DigitizationListsProvider>
+                    <DocumentsSearchProvider
+                        extractionId={extractionId}
+                        digitizationListId={digitizationListId}
+                        categoryIds={categoryIds}
+                    >
+                        <DocumentsDiv />
+                    </DocumentsSearchProvider>
+                </DigitizationListsProvider>
             </AssignableCategoriesProvider>
         </div>
     );
@@ -69,11 +91,9 @@ const DocumentsDiv: React.FC = () => {
                 onInsert={() => setInsertMode(true)}
                 onCreate={() => setCreateMode(true)}
             />
-            <DocumentsTable  />
+            <DocumentsTable />
             <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
-                <InsertDocuments
-                    onClose={() => setInsertMode(false)}
-                />
+                <InsertDocuments onClose={() => setInsertMode(false)} />
             </Dialog>
         </DocumentsProvider>
     );

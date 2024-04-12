@@ -10,6 +10,9 @@ import { OverlayPanel } from "primereact/overlaypanel";
 import { TaskType } from "../../types/TaskType";
 import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { ConfirmDialog } from "primereact/confirmdialog";
+import { useDigitizationLists } from "../../contexts/extractions/DigitizationListsContext";
+import { useDocumentsSearch } from "../../contexts/documents/search/DocumentsSearchContext";
+import DocumentsActionsMenu from "./ActionsMenu";
 
 interface DocumentsHeaderProps {
     onInsert: () => void;
@@ -31,6 +34,8 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
         handleExportDocuments,
     } = useDocuments();
     const { categories } = useAssignableCategories();
+    const { createDigitizationList } = useDigitizationLists();
+    const { activeQuery } = useDocumentsSearch();
 
     const [advancedSearch, setAdvancedSearch] = useState(false);
     const [hasSelection, setHasSelection] = useState(false);
@@ -62,6 +67,15 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
                 label: category.getPath(),
                 command: () => handleUpdateCategory(category.id, category.name),
             })),
+        },
+        {
+            label: t("Create digitization list"),
+            command: () =>
+                createDigitizationList(
+                    selectAll
+                        ? activeQuery!
+                        : { id_list: selectedDocuments.map((d) => d.id) }
+                ),
         },
         {
             label: t("Predict volumes page counts"),
@@ -137,26 +151,8 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const endContent = (
         <React.Fragment>
             <div className="flex flex-column align-items-end">
-                <div>
-                    <TieredMenu
-                        className="w-auto"
-                        model={taskSelectorItems}
-                        popup
-                        ref={taskSelectorMenuRef}
-                        id="popup_menu_left"
-                    />
-                    <Button
-                        // icon="pi pi-th-large"
-                        icon="pi pi-list"
-                        className="p-button-rounded p-button-text"
-                        severity={hasSelection ? "help" : "secondary"}
-                        disabled={!hasSelection}
-                        onClick={toggleTaskSelectorMenu}
-                        aria-controls="popup_menu_left"
-                        aria-haspopup
-                        tooltip={t("Other options")}
-                        tooltipOptions={{ position: "top", showDelay: 500 }}
-                    />
+                <div className="flex align-items-center gap-2">
+                    <DocumentsActionsMenu />
                     <Button
                         icon="pi pi-trash"
                         className="p-button-rounded p-button-text"

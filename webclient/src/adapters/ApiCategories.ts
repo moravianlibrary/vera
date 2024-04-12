@@ -58,8 +58,12 @@ namespace ApiCategories {
         return axiosInstance.get<Category[]>("/categories", { headers: authHeader() });
     }
 
-    export function getExtractionCategories(extractionId: number) {
-        return axiosInstance.get<Category[]>(`/extractions/${extractionId}/categories`, { headers: authHeader() });
+    export function getGeneratedExtractionCategories(extractionId: number) {
+        return axiosInstance.get<Category[]>(`/extractions/generated/${extractionId}/categories`, { headers: authHeader() });
+    }
+    
+    export function getDigitizationExtractionCategories(extractionId: number) {
+        return axiosInstance.get<Category[]>(`/extractions/digitization/${extractionId}/categories`, { headers: authHeader() });
     }
 
     export function getAssignableCategories() {

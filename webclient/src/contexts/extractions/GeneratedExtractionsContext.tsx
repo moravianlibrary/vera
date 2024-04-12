@@ -5,25 +5,24 @@ import React, {
     ReactNode,
     useEffect,
 } from "react";
-import ApiExtractions, {
-    Extraction,
-    ExtractionProps,
-} from "../../adapters/ApiExtractions";
-import ExtractionModel from "./ExtractionModel";
+import ApiGeneratedExtractions, {
+    GenerateExtraction,
+    GeneratedExtraction,
+} from "../../adapters/ApiGeneratedExtractions";
+import ExtractionModel from "./GeneratedExtractionModel";
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
 
 interface ExtractionsContextProps {
-    extractions: Extraction[];
+    extractions: GeneratedExtraction[];
     numFound: number;
-    defaultProps: ExtractionProps;
+    defaultProps: GenerateExtraction;
     generateExtraction: (
-        createProps: ExtractionProps,
+        createProps: GenerateExtraction,
         pages_count?: number,
         quota_id?: number
     ) => void;
-    markExtraction: (extraction_id: number) => void;
-    unmarkExtraction: (extraction_id: number) => void;
+    deleteExtraction: (id: number) => void;
 }
 
 const ExtractionsContext = createContext<ExtractionsContextProps | undefined>(
@@ -34,27 +33,26 @@ interface ExtractionsProviderProps {
     children: ReactNode;
 }
 
-export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({
-    children,
-}) => {
+export const GeneratedExtractionsProvider: React.FC<
+    ExtractionsProviderProps
+> = ({ children }) => {
     const { t } = useTranslation();
     const showToast = useToast();
 
-    const defaultProps: ExtractionProps = {
+    const defaultProps: GenerateExtraction = {
         target_pages_threshold: 0.05,
         whole_categories_threshold: 0.05,
-        balance_total_pages: false,
         include_categories: [],
     };
     const loadAmount = 50;
     const [offset, setOffset] = useState<number>(0);
-    const [extractions, setExtractions] = useState<Extraction[]>([]);
+    const [extractions, setExtractions] = useState<GeneratedExtraction[]>([]);
     const [numFound, setNumFound] = useState<number>(0);
 
     const loadExtractions = async () => {
-        ApiExtractions.getExtractions(offset, loadAmount)
+        ApiGeneratedExtractions.getExtractions(offset, loadAmount)
             .then((response) => {
-                const transformedData: Extraction[] =
+                const transformedData: GeneratedExtraction[] =
                     response.data.extractions.map((extraction) => {
                         return new ExtractionModel(extraction);
                     });
@@ -67,12 +65,15 @@ export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({
     };
 
     const generateExtraction = async (
-        createData: ExtractionProps,
+        createData: GenerateExtraction,
         pages_count?: number,
         quota_id?: number
     ) => {
-        console.log(createData);
-        ApiExtractions.generateExtraction(createData, pages_count, quota_id)
+        ApiGeneratedExtractions.generateExtraction(
+            createData,
+            pages_count,
+            quota_id
+        )
             .then((response) => {
                 setExtractions([
                     new ExtractionModel(response.data),
@@ -95,39 +96,11 @@ export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({
             });
     };
 
-    const markExtraction = async (extraction_id: number) => {
-        ApiExtractions.markExtracted(extraction_id)
-            .then((response) => {
+    const deleteExtraction = async (id: number) => {
+        ApiGeneratedExtractions.deleteExtraction(id)
+            .then(() => {
                 setExtractions(
-                    extractions.map((extraction) => {
-                        if (extraction.id === extraction_id) {
-                            return {
-                                ...extraction,
-                                marked: true,
-                            };
-                        }
-                        return extraction;
-                    })
-                );
-            })
-            .catch((error) => {
-                console.error(error);
-            });
-    };
-
-    const unmarkExtraction = async (extraction_id: number) => {
-        ApiExtractions.unmarkExtracted(extraction_id)
-            .then((response) => {
-                setExtractions(
-                    extractions.map((extraction) => {
-                        if (extraction.id === extraction_id) {
-                            return {
-                                ...extraction,
-                                marked: false,
-                            };
-                        }
-                        return extraction;
-                    })
+                    extractions.filter((extraction) => extraction.id !== id)
                 );
             })
             .catch((error) => {
@@ -145,8 +118,7 @@ export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({
         numFound,
         defaultProps,
         generateExtraction,
-        markExtraction,
-        unmarkExtraction,
+        deleteExtraction,
     };
 
     return (
@@ -156,7 +128,7 @@ export const ExtractionsProvider: React.FC<ExtractionsProviderProps> = ({
     );
 };
 
-export const useExtractions = (): ExtractionsContextProps => {
+export const useGeneratedExtractions = (): ExtractionsContextProps => {
     const context = useContext(ExtractionsContext);
 
     if (!context) {

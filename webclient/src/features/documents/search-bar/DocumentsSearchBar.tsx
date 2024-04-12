@@ -1,6 +1,6 @@
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import AdvancedSearch from "./AdvancedSearch";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { useDocuments } from "../../../contexts/documents/DocumentsContext";
@@ -10,18 +10,30 @@ import { useDocumentsSearch } from "../../../contexts/documents/search/Documents
 const DocumentsSearchBar = () => {
     const { t } = useTranslation();
     const { numFound } = useDocuments();
-    const { activeQuery, handleCancelFilter } = useDocumentsSearch();
+    const {
+        activeQuery,
+        searchPhrase,
+        setSearchPhrase,
+        searchByPhrase,
+        handleCancelFilter,
+    } = useDocumentsSearch();
 
     const advancedSearchRef = useRef<OverlayPanel | null>(null);
-
-    const handleSearch = () => {};
-    console.log(activeQuery);
 
     return (
         <div className="flex flex-column">
             <div className="p-inputgroup flex">
-                <InputText placeholder="Search" disabled />
-                <Button icon="pi pi-search" disabled />
+                <InputText
+                    placeholder={t("Search")}
+                    value={searchPhrase}
+                    onChange={(e) => setSearchPhrase(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            searchByPhrase();
+                        }
+                    }}
+                />
+                <Button icon="pi pi-search" onClick={() => searchByPhrase()} />
                 <OverlayPanel ref={advancedSearchRef}>
                     <AdvancedSearch />
                 </OverlayPanel>

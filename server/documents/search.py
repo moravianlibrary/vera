@@ -31,6 +31,8 @@ def filter_documents_query_base(
         query_base = filter_by_query(query_base, query)
         if query.sort:
             query_base = sort_query(query_base, query.sort)
+    else:
+        query_base = query_base.filter(models.Document.extraction_id.is_(None))
 
     return query_base
 
@@ -52,15 +54,23 @@ def sort_query(query_base: Query, sort: schemas.QuerySort):
 
 
 def filter_by_query(query_base: Query, query: schemas.DocumentsQuery):
-    # if query.department_id:
-    #     pass
-    # elif query.username:
     if query.username:
         query_base = query_base.filter(
             models.Document.creator == query.username
         )
     if query.id_list:
         return filter_by_id_list(query.id_list, query_base)
+
+    if query.extracted is None or not query.extracted:
+        query_base = query_base.filter(models.Document.extraction_id.is_(None))
+    else:
+        query_base = query_base.filter(
+            models.Document.extraction_id.isnot(None)
+        )
+    if query.category_id:
+        query_base = query_base.filter(
+            models.Document.category_id == query.category_id
+        )
     if query.search_phrase:
         return filter_by_search_phrase(query.search_phrase, query_base)
     if query.search_group:
@@ -73,12 +83,17 @@ def filter_by_id_list(id_list: List[int], query_base: Query):
 
 def filter_by_search_phrase(search_phrase: str, query_base: Query):
     return query_base.filter(
-        models.Document.sysno.startswith(search_phrase)
-        or models.Document.barcode.startswith(search_phrase)
-        or models.Document.signature.startswith(search_phrase)
-        or models.Document.title.startswith(search_phrase)
-        or Category.name.startswith(search_phrase)
-    ).outerjoin(Category, models.Document.category_id == Category.id)
+        or_(
+            models.Document.sysno.startswith(search_phrase),
+            models.Document.barcode.startswith(search_phrase),
+            models.Document.signature.startswith(search_phrase),
+            models.Document.title.startswith(search_phrase),
+            and_(
+                Category.name.isnot(None),
+                Category.name.startswith(search_phrase),
+            ),
+        )
+    )
 
 
 def filter_by_group(search_group: schemas.SearchGroup, query_base: Query):
