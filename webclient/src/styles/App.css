@@ -22,3 +22,11 @@ main {
 .p-progressbar-determinate .p-progressbar-value-animate {
   transition: width 100ms ease-in-out;
 }
+
+.ui-menu-child {
+  left: -200px !important;
+}
+
+.p-tieredmenu .p-submenu-list {
+  left: -100%; /* Adjust this value as needed to position the submenu to the left */
+}

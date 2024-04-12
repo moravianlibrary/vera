@@ -12,6 +12,7 @@ import { useAssignableCategories } from "../../contexts/categories/AssignableCat
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { useDigitizationLists } from "../../contexts/extractions/DigitizationListsContext";
 import { useDocumentsSearch } from "../../contexts/documents/search/DocumentsSearchContext";
+import DocumentsActionsMenu from "./ActionsMenu";
 
 interface DocumentsHeaderProps {
     onInsert: () => void;
@@ -150,26 +151,8 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const endContent = (
         <React.Fragment>
             <div className="flex flex-column align-items-end">
-                <div>
-                    <TieredMenu
-                        className="w-auto"
-                        model={taskSelectorItems}
-                        popup
-                        ref={taskSelectorMenuRef}
-                        id="popup_menu_left"
-                    />
-                    <Button
-                        // icon="pi pi-th-large"
-                        icon="pi pi-list"
-                        className="p-button-rounded p-button-text"
-                        severity={hasSelection ? "help" : "secondary"}
-                        disabled={!hasSelection}
-                        onClick={toggleTaskSelectorMenu}
-                        aria-controls="popup_menu_left"
-                        aria-haspopup
-                        tooltip={t("Other options")}
-                        tooltipOptions={{ position: "top", showDelay: 500 }}
-                    />
+                <div className="flex align-items-center gap-2">
+                    <DocumentsActionsMenu />
                     <Button
                         icon="pi pi-trash"
                         className="p-button-rounded p-button-text"

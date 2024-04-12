@@ -72,6 +72,11 @@ export const DigitizationListsProvider: React.FC<
                 const transformedData: DigitizationExtraction =
                     new DigitizationListModel(response.data);
                 setDigitizationLists([transformedData, ...digitizationLists]);
+                showToast(
+                    "success",
+                    t("Digitization list created successfully"),
+                    ""
+                );
             })
             .catch((error) => {
                 if (
