@@ -22,6 +22,7 @@ interface ExtractionsContextProps {
         pages_count?: number,
         quota_id?: number
     ) => void;
+    deleteExtraction: (id: number) => void;
 }
 
 const ExtractionsContext = createContext<ExtractionsContextProps | undefined>(
@@ -95,6 +96,18 @@ export const GeneratedExtractionsProvider: React.FC<
             });
     };
 
+    const deleteExtraction = async (id: number) => {
+        ApiGeneratedExtractions.deleteExtraction(id)
+            .then(() => {
+                setExtractions(
+                    extractions.filter((extraction) => extraction.id !== id)
+                );
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    };
+
     useEffect(() => {
         console.log(`Fetching extractions from server.`);
         loadExtractions();
@@ -105,6 +118,7 @@ export const GeneratedExtractionsProvider: React.FC<
         numFound,
         defaultProps,
         generateExtraction,
+        deleteExtraction,
     };
 
     return (

@@ -379,6 +379,24 @@ const resources = {
         "Digitization list creation failed": "Vytvoření seznamu digitalizace se nezdařilo",
         "Documents without CNB cannot be extracted": "Dokumenty bez CNB nelze extrahovat",
         "Documents without pages count cannot be extracted": "Dokumenty bez počtu stránek nelze extrahovat",
+
+        "Start task": "Spustit úkol",
+        "Documents actions": "Akce nad dokumenty",
+
+        "Confirm action": "Potvrzení akce",
+        "Yes": "Ano",
+        "No": "Ne",
+        "Are you sure you want to change category to \"{{category}}\" for {{count}} selected documents?": "Opravdu chcete změnit kategorii na \"{{category}}\" pro {{count}} vybraných dokumentů?",
+        "Are you sure you want to predict periodical volume pages for {{count}} selected documents?": "Opravdu chcete predikovat počet stránek ročníků periodík pro {{count}} vybraných dokumentů?",
+        "Are you sure you want to sync {{count}} selected documents with digitization registry?": "Opravdu chcete synchronizovat {{count}} vybraných dokumentů s registrom digitalizace?",
+        "Are you sure you want to sync {{count}} selected documents with catalog?": "Opravdu chcete synchronizovat {{count}} vybraných dokumentů s katalogem?",
+        "Are you sure you want to process {{count}} selected documents?": "Opravdu chcete zpracovat {{count}} vybraných dokumentů?",
+        "Are you sure you want to create digitization list from {{count}} selected documents?": "Opravdu chcete vytvořit seznam digitalizace z {{count}} vybraných dokumentů?",
+        "Digitization list created successfully": "Seznam digitalizace úspěšně vytvořen",
+        "Task started successfully": "Ukol úspěšně spusten",
+        "Category changed successfully": "Kategorie byla úspěšně změnena",
+
+        "Search": "Vyhledávaní",
     },
   },
 };

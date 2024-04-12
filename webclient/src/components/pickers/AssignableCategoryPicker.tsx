@@ -24,7 +24,7 @@ export const AssignableCategoriesPicker: React.FC<
 > = ({ categories_ids, callback, className }) => {
     const { categories } = useAssignableCategories();
 
-    const categoriesOptions = buildCategoryTree(categories);
+    const categoriesOptions = buildAssignableCategoriesOptionsTree(categories);
     const [selected, setSelected] =
         useState<TreeSelectSelectionKeysType | null>(null);
 
@@ -71,7 +71,7 @@ const AssignableCategoryPicker: React.FC<AssignableCategoryPickerProps> = ({
 }) => {
     const { categories } = useAssignableCategories();
 
-    const categoriesOptions = buildCategoryTree(categories);
+    const categoriesOptions = buildAssignableCategoriesOptionsTree(categories);
     const selected = categories.find((c) => c.id === category_id);
 
     return (
@@ -110,7 +110,18 @@ const AssignableCategoryPickerValues: React.FC<
     return <span>{nodes.data}</span>;
 };
 
-function buildCategoryTree(categories: AssignableCategoryModel[]) {
+export interface CategoryOption {
+    key: number;
+    label: string;
+    data?: string;
+    children?: CategoryOption[];
+    selectable: boolean;
+}
+
+// TODO: refactor into 2 functions
+export function buildAssignableCategoriesOptionsTree(
+    categories: AssignableCategoryModel[]
+): CategoryOption[] {
     const categoryMap = new Map<number, AssignableCategoryModel>();
     const childrenMap = new Map<number, AssignableCategoryModel[]>();
     const rootCategories: AssignableCategoryModel[] = [];
@@ -136,6 +147,7 @@ function buildCategoryTree(categories: AssignableCategoryModel[]) {
                 key: category.id,
                 label: category.name,
                 data: category.getPath(),
+                selectable: true,
             };
         }
         return {

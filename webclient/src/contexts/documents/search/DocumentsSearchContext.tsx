@@ -21,6 +21,9 @@ interface TreeOption {
 interface DocumentsSearchContextProps {
     rootSearchNode: SearchGroup | undefined;
     activeQuery: DocumentsQuery | undefined;
+    searchPhrase: string;
+    setSearchPhrase: (searchPhrase: string) => void;
+    searchByPhrase: () => void;
     handleApplyFilter: () => void;
     handleCancelFilter: () => void;
     handleSaveFilter: () => void;
@@ -49,8 +52,32 @@ export const DocumentsSearchProvider: React.FC<
     const [activeQuery, setActiveQuery] = useState<DocumentsQuery | undefined>(
         undefined
     );
+    const [searchPhrase, setSearchPhrase] = useState<string>("");
+    const [triggerSearchTimer, setTriggerSearchTimer] = useState<
+        NodeJS.Timeout | undefined
+    >(undefined);
 
     const [categoryTree, setCategoryTree] = useState<TreeNode[]>([]);
+
+    const searchByPhrase = () => {
+        console.log(searchPhrase);
+        if (searchPhrase !== "") {
+            setActiveQuery({
+                search_phrase: searchPhrase,
+            });
+        } else {
+            setActiveQuery(undefined);
+        }
+    };
+
+    useEffect(() => {
+        clearTimeout(triggerSearchTimer);
+        setTriggerSearchTimer(
+            setTimeout(() => {
+                searchByPhrase();
+            }, 1000)
+        );
+    }, [searchPhrase]);
 
     const handleApplyFilter = () => {
         setActiveQuery({ search_group: rootSearchNode });
@@ -58,6 +85,7 @@ export const DocumentsSearchProvider: React.FC<
 
     const handleCancelFilter = () => {
         setActiveQuery(undefined);
+        setSearchPhrase("");
     };
 
     const handleSaveFilter = () => {
@@ -89,6 +117,9 @@ export const DocumentsSearchProvider: React.FC<
     const contextValue: DocumentsSearchContextProps = {
         rootSearchNode,
         activeQuery,
+        searchPhrase,
+        setSearchPhrase,
+        searchByPhrase,
         handleApplyFilter,
         handleCancelFilter,
         handleSaveFilter,

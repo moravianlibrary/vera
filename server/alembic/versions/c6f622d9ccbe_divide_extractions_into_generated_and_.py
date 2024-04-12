@@ -84,6 +84,15 @@ def upgrade() -> None:
         ondelete="SET NULL",
     )
 
+    op.execute(
+        """
+        ALTER SEQUENCE generated_extractions_id_seq
+        RESTART WITH (
+            SELECT last_value FROM extractions_id_seq
+        )
+    """
+    )
+
 
 def downgrade() -> None:
     op.drop_constraint(
@@ -132,4 +141,13 @@ def downgrade() -> None:
         ["extraction_id"],
         ["id"],
         ondelete="SET NULL",
+    )
+
+    op.execute(
+        """
+        ALTER SEQUENCE extractions_id_seq
+        RESTART WITH (
+            SELECT last_value FROM generated_extractions_id_seq
+        )
+    """
     )

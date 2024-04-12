@@ -32,7 +32,8 @@ def run_task(task_id: int):
     )
 
     import categories.models
-    import extractions.models
+    import extractions.digitization.models
+    import extractions.generated.models
 
     sys_path.append(path.abspath("categories/"))
     sys_path.append(path.abspath("extractions/"))
