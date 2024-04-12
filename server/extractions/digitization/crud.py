@@ -14,7 +14,7 @@ def create_extraction(
     username: str,
     db: Session,
 ):
-    return create(
+    db_digitization = create(
         db,
         DigitizationExtraction(
             document_ids=document_ids,
@@ -23,6 +23,9 @@ def create_extraction(
             extractor=username,
         ),
     )
+    for document_id in document_ids:
+        set_document_extracted(document_id, db_digitization.id, db)
+    return db_digitization
 
 
 def get_extractions(

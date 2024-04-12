@@ -31,6 +31,8 @@ def filter_documents_query_base(
         query_base = filter_by_query(query_base, query)
         if query.sort:
             query_base = sort_query(query_base, query.sort)
+    else:
+        query_base = query_base.filter(models.Document.extraction_id.is_(None))
 
     return query_base
 
@@ -52,19 +54,23 @@ def sort_query(query_base: Query, sort: schemas.QuerySort):
 
 
 def filter_by_query(query_base: Query, query: schemas.DocumentsQuery):
-    # if query.department_id:
-    #     pass
-    # elif query.username:
     if query.username:
         query_base = query_base.filter(
             models.Document.creator == query.username
+        )
+    if query.id_list:
+        return filter_by_id_list(query.id_list, query_base)
+
+    if query.extracted is None or not query.extracted:
+        query_base = query_base.filter(models.Document.extraction_id.is_(None))
+    else:
+        query_base = query_base.filter(
+            models.Document.extraction_id.isnot(None)
         )
     if query.category_id:
         query_base = query_base.filter(
             models.Document.category_id == query.category_id
         )
-    if query.id_list:
-        return filter_by_id_list(query.id_list, query_base)
     if query.search_phrase:
         return filter_by_search_phrase(query.search_phrase, query_base)
     if query.search_group:
