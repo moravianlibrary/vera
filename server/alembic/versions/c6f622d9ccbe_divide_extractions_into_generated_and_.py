@@ -84,12 +84,21 @@ def upgrade() -> None:
         ondelete="SET NULL",
     )
 
-    op.execute(
+    next_seq_id = (
+        op.get_bind()
+        .execute(
+            """
+        SELECT last_value FROM extractions_id_seq
         """
-        ALTER SEQUENCE generated_extractions_id_seq
-        RESTART WITH (
-            SELECT last_value + 1 FROM extractions_id_seq
         )
+        .fetchone()[0]
+        + 1
+    )
+
+    op.execute(
+        f"""
+        ALTER SEQUENCE generated_extractions_id_seq
+        RESTART WITH {next_seq_id}
     """
     )
 
@@ -143,11 +152,20 @@ def downgrade() -> None:
         ondelete="SET NULL",
     )
 
-    op.execute(
+    next_seq_id = (
+        op.get_bind()
+        .execute(
+            """
+        SELECT last_value FROM generated_extractions_id_seq
         """
-        ALTER SEQUENCE extractions_id_seq
-        RESTART WITH (
-            SELECT last_value + 1 FROM generated_extractions_id_seq
         )
+        .fetchone()[0]
+        + 1
+    )
+
+    op.execute(
+        f"""
+        ALTER SEQUENCE extractions_id_seq
+        RESTART WITH {next_seq_id}
     """
     )
