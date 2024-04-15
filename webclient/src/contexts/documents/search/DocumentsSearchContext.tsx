@@ -60,7 +60,6 @@ export const DocumentsSearchProvider: React.FC<
     const [categoryTree, setCategoryTree] = useState<TreeNode[]>([]);
 
     const searchByPhrase = () => {
-        console.log(searchPhrase);
         if (searchPhrase !== "") {
             setActiveQuery({
                 search_phrase: searchPhrase,
@@ -71,6 +70,9 @@ export const DocumentsSearchProvider: React.FC<
     };
 
     useEffect(() => {
+        if (searchPhrase === "" && triggerSearchTimer === undefined) {
+            return;
+        }
         clearTimeout(triggerSearchTimer);
         setTriggerSearchTimer(
             setTimeout(() => {
