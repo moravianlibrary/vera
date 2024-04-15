@@ -88,7 +88,7 @@ def upgrade() -> None:
         """
         ALTER SEQUENCE generated_extractions_id_seq
         RESTART WITH (
-            SELECT last_value FROM extractions_id_seq
+            SELECT last_value + 1 FROM extractions_id_seq
         )
     """
     )
@@ -147,7 +147,7 @@ def downgrade() -> None:
         """
         ALTER SEQUENCE extractions_id_seq
         RESTART WITH (
-            SELECT last_value FROM generated_extractions_id_seq
+            SELECT last_value + 1 FROM generated_extractions_id_seq
         )
     """
     )
