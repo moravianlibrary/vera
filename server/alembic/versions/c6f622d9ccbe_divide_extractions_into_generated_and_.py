@@ -73,16 +73,6 @@ def upgrade() -> None:
     op.drop_constraint(
         "documents_extraction_id_fkey", "documents", type_="foreignkey"
     )
-    op.drop_table("extractions")
-
-    op.create_foreign_key(
-        "documents_extraction_id_fkey",
-        "documents",
-        "digitization_extractions",
-        ["extraction_id"],
-        ["id"],
-        ondelete="SET NULL",
-    )
 
     next_seq_id = (
         op.get_bind()
@@ -93,6 +83,17 @@ def upgrade() -> None:
         )
         .fetchone()[0]
         + 1
+    )
+
+    op.drop_table("extractions")
+
+    op.create_foreign_key(
+        "documents_extraction_id_fkey",
+        "documents",
+        "digitization_extractions",
+        ["extraction_id"],
+        ["id"],
+        ondelete="SET NULL",
     )
 
     op.execute(
@@ -141,17 +142,6 @@ def downgrade() -> None:
     """
     )
 
-    op.drop_table("generated_extractions")
-
-    op.create_foreign_key(
-        "documents_extraction_id_fkey",
-        "documents",
-        "extractions",
-        ["extraction_id"],
-        ["id"],
-        ondelete="SET NULL",
-    )
-
     next_seq_id = (
         op.get_bind()
         .execute(
@@ -161,6 +151,17 @@ def downgrade() -> None:
         )
         .fetchone()[0]
         + 1
+    )
+
+    op.drop_table("generated_extractions")
+
+    op.create_foreign_key(
+        "documents_extraction_id_fkey",
+        "documents",
+        "extractions",
+        ["extraction_id"],
+        ["id"],
+        ondelete="SET NULL",
     )
 
     op.execute(
