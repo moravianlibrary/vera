@@ -8,6 +8,7 @@ Create Date: 2024-04-10 16:58:12.126534
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import text
 
 
 # revision identifiers, used by Alembic.
@@ -76,11 +77,7 @@ def upgrade() -> None:
 
     next_seq_id = (
         op.get_bind()
-        .execute(
-            """
-        SELECT last_value FROM extractions_id_seq
-        """
-        )
+        .execute(text("SELECT last_value FROM generated_extractions_id_seq"))
         .fetchone()[0]
         + 1
     )
@@ -144,11 +141,7 @@ def downgrade() -> None:
 
     next_seq_id = (
         op.get_bind()
-        .execute(
-            """
-        SELECT last_value FROM generated_extractions_id_seq
-        """
-        )
+        .execute(text("SELECT last_value FROM generated_extractions_id_seq"))
         .fetchone()[0]
         + 1
     )
