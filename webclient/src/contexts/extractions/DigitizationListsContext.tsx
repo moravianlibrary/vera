@@ -16,6 +16,7 @@ import DigitizationListModel from "./DigitizationListModel";
 interface DigitizationListsContextProps {
     digitizationLists: DigitizationExtraction[];
     numFound: number;
+    loadExtractions: (offset: number, limit: number) => void;
     createDigitizationList: (
         query: DocumentsQuery,
         intention_id?: number
@@ -46,14 +47,13 @@ export const DigitizationListsProvider: React.FC<
     const showToast = useToast();
 
     const loadAmount = 50;
-    const [offset, setOffset] = useState<number>(0);
     const [digitizationLists, setDigitizationLists] = useState<
         DigitizationExtraction[]
     >([]);
     const [numFound, setNumFound] = useState<number>(0);
 
-    const loadExtractions = async () => {
-        ApiDigitizationExtractions.getExtractions(offset, loadAmount)
+    const loadExtractions = async (offset: number, limit: number) => {
+        ApiDigitizationExtractions.getExtractions(offset, limit)
             .then((response) => {
                 const transformedData: DigitizationExtraction[] =
                     response.data.extractions.map((extraction) => {
@@ -182,12 +182,13 @@ export const DigitizationListsProvider: React.FC<
 
     useEffect(() => {
         console.log(`Fetching extractions from server.`);
-        loadExtractions();
+        loadExtractions(0, loadAmount);
     }, []);
 
     const contextValue: DigitizationListsContextProps = {
         digitizationLists,
         numFound,
+        loadExtractions,
         createDigitizationList,
         addDocumentsToDigitizationList,
         removeDocumentsFromDigitizationList,

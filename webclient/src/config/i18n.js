@@ -410,6 +410,8 @@ const resources = {
         "Digitization list update failed": "Aktualizace seznamu digitalizace se nezdařila",
         "Some documents are not in this extraction": "Nekteré dokumenty nejsou v tomto seznamu",
         "Add documents to digitization list": "Přidat dokumenty do seznamu digitalizace",
+
+        "Items per page": "Záznamů na stranu",
     },
   },
 };
