@@ -68,10 +68,12 @@ def get_extraction_documents_from_query(
         get_documents_query_base(db, query)
         .with_entities(
             func.sum(
-                DocumentModel.pages_count
-                or DocumentModel.pages_count_manual
-                or DocumentModel.pages_count_predicted
-                or 0
+                func.coalesce(
+                    DocumentModel.pages_count,
+                    DocumentModel.pages_count_manual,
+                    DocumentModel.pages_count_predicted,
+                    0,
+                )
             )
         )
         .scalar()

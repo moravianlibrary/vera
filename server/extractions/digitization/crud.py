@@ -98,7 +98,7 @@ def remove_documents_from_extraction(
     db_document_ids = db_extraction.document_ids
     db_extracted_pages = db_extraction.extracted_pages
 
-    if pages_count == db_extracted_pages:
+    if pages_count is None or pages_count == db_extracted_pages:
         raise EmptyExtraction
 
     for document_id in db_document_ids:
