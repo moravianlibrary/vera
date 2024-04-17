@@ -24,9 +24,7 @@ const RequiredValuesButton: React.FC<RequiredValuesButtonProps> = (props) => {
                         zIndex: 10,
                     }}
                 />
-                <Button {...props} disabled>
-                    {props.children}
-                </Button>
+                <Button {...props}>{props.children}</Button>
             </div>
         );
     }
