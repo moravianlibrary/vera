@@ -408,6 +408,7 @@ const resources = {
         "Some documents have already been extracted": "Nekteré dokumenty již byly extrahovány",
         "Remove documents from digitization list": "Odstranit dokumenty ze seznamu digitalizace",
         "Digitization list update failed": "Aktualizace seznamu digitalizace se nezdařila",
+        "Digitization list updated successfully": "Seznam digitalizace úspěšně aktualizovan",
         "Some documents are not in this extraction": "Nekteré dokumenty nejsou v tomto seznamu",
         "Add documents to digitization list": "Přidat dokumenty do seznamu digitalizace",
 

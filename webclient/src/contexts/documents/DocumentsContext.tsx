@@ -16,6 +16,7 @@ import ApiTasks from "../../adapters/ApiTasks";
 import { SearchGroup } from "./search/SearchNodes";
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
+import { useDocumentsSearch } from "./search/DocumentsSearchContext";
 
 interface DocumentsContextProps {
     documents: Document[];
@@ -35,6 +36,8 @@ interface DocumentsContextProps {
     handleDeleteDocuments: () => void;
     handleUpdateCategory: (category_id: number, category_name: string) => void;
     handleExportDocuments: () => void;
+    removeDocumentsFromResults: (documentIds: number[]) => void;
+    getActiveQuery: () => DocumentsQuery;
 }
 
 const DocumentsContext = createContext<DocumentsContextProps | undefined>(
@@ -49,6 +52,7 @@ interface DocumentsProviderProps {
 export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
     const { t } = useTranslation();
     const showToast = useToast();
+    const { getActiveQuery: getActiveSearchQuery } = useDocumentsSearch();
 
     const loadAmount = 50;
     const [offset, setOffset] = useState<number>(0);
@@ -280,6 +284,25 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
             });
     };
 
+    const removeDocumentsFromResults = (documentIds: number[]) => {
+        setDocuments((prevDocuments) =>
+            prevDocuments.filter((d) => !documentIds.includes(d.id))
+        );
+        setSelectedDocuments((prevDocuments) =>
+            prevDocuments.filter((d) => !documentIds.includes(d.id))
+        );
+    };
+
+    const getActiveQuery = (): DocumentsQuery => {
+        if (selectAll && getActiveSearchQuery()) {
+            return getActiveSearchQuery()!;
+        }
+        if (selectedDocuments.length > 0) {
+            return { id_list: selectedDocuments.map((d) => d.id) };
+        }
+        return {};
+    };
+
     const contextValue: DocumentsContextProps = {
         documents,
         numFound,
@@ -295,9 +318,13 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = (props) => {
         handleDeleteDocuments,
         handleUpdateCategory,
         handleExportDocuments,
+        removeDocumentsFromResults,
+        getActiveQuery,
     };
 
     useEffect(() => {
+        setOffset(0);
+        setSelectedDocuments([]);
         if (query) {
             loadQueryDocuments(0);
         } else {

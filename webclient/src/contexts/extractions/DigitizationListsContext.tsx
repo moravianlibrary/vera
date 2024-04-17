@@ -12,6 +12,8 @@ import ApiDigitizationExtractions, {
     DigitizationExtraction,
 } from "../../adapters/ApiDigitizationExtractions";
 import DigitizationListModel from "./DigitizationListModel";
+import { useDocumentsSearch } from "../documents/search/DocumentsSearchContext";
+import { useDocuments } from "../documents/DocumentsContext";
 
 interface DigitizationListsContextProps {
     digitizationLists: DigitizationExtraction[];
@@ -20,15 +22,15 @@ interface DigitizationListsContextProps {
     createDigitizationList: (
         query: DocumentsQuery,
         intention_id?: number
-    ) => void;
+    ) => Promise<DigitizationExtraction>;
     addDocumentsToDigitizationList: (
         digitization_list_id: number,
         query: DocumentsQuery
-    ) => void;
+    ) => Promise<DigitizationExtraction>;
     removeDocumentsFromDigitizationList: (
         digitization_list_id: number,
         query: DocumentsQuery
-    ) => void;
+    ) => Promise<DigitizationExtraction>;
     deleteDigitizationList: (digitization_list_id: number) => void;
 }
 
@@ -45,6 +47,7 @@ export const DigitizationListsProvider: React.FC<
 > = ({ children }) => {
     const { t } = useTranslation();
     const showToast = useToast();
+    // const { removeDocumentFromResults } = useDocuments();
 
     const loadAmount = 50;
     const [digitizationLists, setDigitizationLists] = useState<
@@ -70,99 +73,72 @@ export const DigitizationListsProvider: React.FC<
     const createDigitizationList = async (
         query: DocumentsQuery,
         intention_id?: number
-    ) => {
-        ApiDigitizationExtractions.createExtraction(query, intention_id)
-            .then((response) => {
-                const transformedData: DigitizationExtraction =
-                    new DigitizationListModel(response.data);
-                setDigitizationLists([transformedData, ...digitizationLists]);
-                showToast(
-                    "success",
-                    t("Digitization list created successfully"),
-                    ""
-                );
-            })
-            .catch((error) => {
-                if (
-                    400 <= error.response.status &&
-                    error.response.status < 500
-                ) {
-                    showToast(
-                        "error",
-                        t("Digitization list creation failed"),
-                        error.response.data.detail
-                    );
-                }
-                console.error(`Could not create digitization list: ${error}`);
-            });
+    ): Promise<DigitizationExtraction> => {
+        try {
+            const response = await ApiDigitizationExtractions.createExtraction(
+                query,
+                intention_id
+            );
+            const transformedData: DigitizationExtraction =
+                new DigitizationListModel(response.data);
+            setDigitizationLists([transformedData, ...digitizationLists]);
+            return transformedData;
+        } catch (error) {
+            console.error(`Could not create digitization list: ${error}`);
+            throw error;
+        }
     };
 
     const addDocumentsToDigitizationList = async (
         digitization_list_id: number,
         query: DocumentsQuery
-    ) => {
-        ApiDigitizationExtractions.addDocumentsToExtraction(
-            digitization_list_id,
-            query
-        )
-            .then((response) => {
-                const transformedData: DigitizationExtraction =
-                    new DigitizationListModel(response.data);
-                setDigitizationLists(
-                    digitizationLists.map((digitization_list) =>
-                        digitization_list.id === digitization_list_id
-                            ? transformedData
-                            : digitization_list
-                    )
+    ): Promise<DigitizationExtraction> => {
+        try {
+            const response =
+                await ApiDigitizationExtractions.addDocumentsToExtraction(
+                    digitization_list_id,
+                    query
                 );
-            })
-            .catch((error) => {
-                if (
-                    400 <= error.response.status &&
-                    error.response.status < 500
-                ) {
-                    showToast(
-                        "error",
-                        t("Digitization list update failed"),
-                        error.response.data.detail
-                    );
-                }
-                console.error(`Could not update digitization list: ${error}`);
-            });
+            const transformedData: DigitizationExtraction =
+                new DigitizationListModel(response.data);
+            setDigitizationLists(
+                digitizationLists.map((digitization_list) =>
+                    digitization_list.id === digitization_list_id
+                        ? transformedData
+                        : digitization_list
+                )
+            );
+            return transformedData;
+        } catch (error) {
+            console.error(`Could not create digitization list: ${error}`);
+            throw error;
+        }
     };
 
     const removeDocumentsFromDigitizationList = async (
         digitization_list_id: number,
         query: DocumentsQuery
-    ) => {
-        ApiDigitizationExtractions.removeDocumentsFromExtraction(
-            digitization_list_id,
-            query
-        )
-            .then((response) => {
-                const transformedData: DigitizationExtraction =
-                    new DigitizationListModel(response.data);
-                setDigitizationLists(
-                    digitizationLists.map((digitization_list) =>
-                        digitization_list.id === digitization_list_id
-                            ? transformedData
-                            : digitization_list
-                    )
+    ): Promise<DigitizationExtraction> => {
+        try {
+            const response =
+                await ApiDigitizationExtractions.removeDocumentsFromExtraction(
+                    digitization_list_id,
+                    query
                 );
-            })
-            .catch((error) => {
-                if (
-                    400 <= error.response.status &&
-                    error.response.status < 500
-                ) {
-                    showToast(
-                        "error",
-                        t("Digitization list update failed"),
-                        error.response.data.detail
-                    );
-                }
-                console.error(`Could not update digitization list: ${error}`);
-            });
+            const transformedData: DigitizationExtraction =
+                new DigitizationListModel(response.data);
+            setDigitizationLists(
+                digitizationLists.map((digitization_list) =>
+                    digitization_list.id === digitization_list_id
+                        ? transformedData
+                        : digitization_list
+                )
+            );
+            return transformedData;
+        } catch (error) {
+            console.error(`Could not create digitization list: ${error}`);
+            throw error;
+        }
     };
 
     const deleteDigitizationList = async (digitization_list_id: number) => {

@@ -14,6 +14,7 @@ import {
 import { useSearchParams } from "react-router-dom";
 import ApiCategories, { AssignableCategory } from "../adapters/ApiCategories";
 import { DigitizationListsProvider } from "../contexts/extractions/DigitizationListsContext";
+import { DigitizationListsManagerProvider } from "../contexts/extractions/DigitizationListsManagerContext";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -87,14 +88,19 @@ const DocumentsDiv: React.FC = () => {
 
     return (
         <DocumentsProvider query={activeQuery}>
-            <DocumentsHeader
-                onInsert={() => setInsertMode(true)}
-                onCreate={() => setCreateMode(true)}
-            />
-            <DocumentsTable />
-            <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
-                <InsertDocuments onClose={() => setInsertMode(false)} />
-            </Dialog>
+            <DigitizationListsManagerProvider>
+                <DocumentsHeader
+                    onInsert={() => setInsertMode(true)}
+                    onCreate={() => setCreateMode(true)}
+                />
+                <DocumentsTable />
+                <Dialog
+                    visible={insertMode}
+                    onHide={() => setInsertMode(false)}
+                >
+                    <InsertDocuments onClose={() => setInsertMode(false)} />
+                </Dialog>
+            </DigitizationListsManagerProvider>
         </DocumentsProvider>
     );
 };
