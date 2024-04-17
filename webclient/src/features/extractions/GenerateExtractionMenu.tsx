@@ -12,7 +12,7 @@ interface ExtractionPropsMenuProps {}
 
 const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
     const { t } = useTranslation();
-    const { defaultProps, generateExtraction, extractions } =
+    const { defaultProps, generateExtraction, generating } =
         useGeneratedExtractions();
 
     const [extractionProps, setExtractionProps] = useState<GenerateExtraction>(
@@ -21,7 +21,6 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
 
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
     const [pagesCount, setPagesCount] = useState<number | null>(null);
-    const [generating, setGenerating] = useState(false);
 
     const handleCategoriesChange = (categories: number[]) => {
         extractionProps.include_categories = categories;
@@ -34,16 +33,6 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
             generateExtraction(extractionProps, pagesCount, undefined);
         }
     };
-
-    useEffect(() => {
-        if (generating && pagesCount) {
-            generateExtraction(extractionProps, pagesCount, undefined);
-        }
-    }, [generating]);
-
-    useEffect(() => {
-        setGenerating(false);
-    }, [extractions]);
 
     return (
         <div className="flex flex-column gap-1">
@@ -106,7 +95,7 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
                 }
                 label={t("Generate")}
                 disabled={pagesCount === null || generating}
-                onClick={() => setGenerating(true)}
+                onClick={handleGenerate}
             />
         </div>
     );
