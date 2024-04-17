@@ -6,11 +6,15 @@ import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
 import { useDigitizationLists } from "../../contexts/extractions/DigitizationListsContext";
 import DigitizationListModel from "../../contexts/extractions/DigitizationListModel";
+import ActionAccessComponent from "../../components/ActionAccessComponent";
+import { ActionType } from "../../types/ActionType";
+import DeleteButton from "../../components/buttons/DeleteButton";
 
 const DigitizationListsTable: React.FC = () => {
     const { t } = useTranslation();
 
-    const { digitizationLists } = useDigitizationLists();
+    const { digitizationLists, deleteDigitizationList } =
+        useDigitizationLists();
 
     const documentsButton = (digitizationList: DigitizationListModel) => {
         return (
@@ -38,6 +42,16 @@ const DigitizationListsTable: React.FC = () => {
             <Column field="intention_id" header={t("Intention")} />
             <Column body={documentsButton} />
             <Column body={categoriesButton} />
+            <Column
+                body={(digitizationList) => (
+                    <ActionAccessComponent action={ActionType.AdminExtractions}>
+                        <DeleteButton
+                            itemId={digitizationList.id}
+                            onDeleteItem={deleteDigitizationList}
+                        />
+                    </ActionAccessComponent>
+                )}
+            />
         </DataTable>
     );
 };

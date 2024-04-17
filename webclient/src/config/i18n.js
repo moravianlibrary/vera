@@ -399,6 +399,8 @@ const resources = {
         "Search": "Vyhledávaní",
 
         "Please select a category": "Vyberte prosím kategorii",
+
+        "Administrating extractions allowed": "Povoleno spravovat extrakce",
     },
   },
 };
