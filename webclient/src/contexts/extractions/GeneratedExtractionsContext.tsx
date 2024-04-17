@@ -12,6 +12,7 @@ import ApiGeneratedExtractions, {
 import ExtractionModel from "./GeneratedExtractionModel";
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
+import { useDocumentsSearch } from "../documents/search/DocumentsSearchContext";
 
 interface ExtractionsContextProps {
     loadExtractions: (offset: number, limit: number) => void;

@@ -17,6 +17,7 @@ import {
 import { useUser } from "../../contexts/user/UserContext";
 import { ActionType } from "../../types/ActionType";
 import { MenuItem } from "primereact/menuitem";
+import { useDigitizationManager } from "../../contexts/extractions/DigitizationListsManagerContext";
 
 interface DocumentsActionsMenuProps {}
 
@@ -31,12 +32,12 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         handleStartTask,
     } = useDocuments();
     const { categories } = useAssignableCategories();
+    const { digitizationLists } = useDigitizationLists();
     const {
-        digitizationLists,
         createDigitizationList,
         addDocumentsToDigitizationList,
         removeDocumentsFromDigitizationList,
-    } = useDigitizationLists();
+    } = useDigitizationManager();
     const { activeQuery, activeDigitizationList } = useDocumentsSearch();
 
     const [hasSelection, setHasSelection] = useState(false);
@@ -95,12 +96,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
                 `Are you sure you want to create digitization list from {{count}} selected documents?`,
                 { count: selectedDocuments.length }
             ),
-            () =>
-                createDigitizationList(
-                    selectAll
-                        ? activeQuery!
-                        : { id_list: selectedDocuments.map((d) => d.id) }
-                )
+            () => createDigitizationList()
         );
     };
 
@@ -110,13 +106,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
                 `Are you sure you want to add {{count}} selected documents to digitization list {{digitizationListId}}?`,
                 { count: selectedDocuments.length, digitizationListId }
             ),
-            () =>
-                addDocumentsToDigitizationList(
-                    digitizationListId,
-                    selectAll
-                        ? activeQuery!
-                        : { id_list: selectedDocuments.map((d) => d.id) }
-                )
+            () => addDocumentsToDigitizationList(digitizationListId)
         );
     };
 
@@ -132,13 +122,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
                     digitizationListId: activeDigitizationList,
                 }
             ),
-            () =>
-                removeDocumentsFromDigitizationList(
-                    activeDigitizationList,
-                    selectAll
-                        ? activeQuery!
-                        : { id_list: selectedDocuments.map((d) => d.id) }
-                )
+            () => removeDocumentsFromDigitizationList()
         );
     };
 

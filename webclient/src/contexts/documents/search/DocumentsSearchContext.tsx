@@ -23,6 +23,7 @@ interface DocumentsSearchContextProps {
     activeQuery: DocumentsQuery | undefined;
     searchPhrase: string;
     activeDigitizationList: number | null;
+    setActiveDigitizationList: (digitizationListId: number | null) => void;
     setSearchPhrase: (searchPhrase: string) => void;
     searchByPhrase: () => void;
     handleApplyFilter: () => void;
@@ -31,6 +32,8 @@ interface DocumentsSearchContextProps {
     handleClearFilter: () => void;
     getTreeFieldOptions: (enumField: DocumentField) => TreeNode[];
     getTreeFieldPlaceholder: (enumField: DocumentField) => string;
+
+    getActiveQuery: () => DocumentsQuery | null;
 }
 
 interface DocumentsSearchProviderProps {
@@ -123,11 +126,19 @@ export const DocumentsSearchProvider: React.FC<
         }
     };
 
+    const getActiveQuery = (): DocumentsQuery | null => {
+        if (activeQuery) {
+            return activeQuery;
+        }
+        return null;
+    };
+
     const contextValue: DocumentsSearchContextProps = {
         rootSearchNode,
         activeQuery,
         searchPhrase,
         activeDigitizationList,
+        setActiveDigitizationList,
         setSearchPhrase,
         searchByPhrase,
         handleApplyFilter,
@@ -136,6 +147,7 @@ export const DocumentsSearchProvider: React.FC<
         handleClearFilter,
         getTreeFieldOptions,
         getTreeFieldPlaceholder,
+        getActiveQuery,
     };
 
     const transformCategoryToTreeNode = (category: Category) => {
@@ -176,9 +188,8 @@ export const DocumentsSearchProvider: React.FC<
     }, [extractionId]);
 
     useEffect(() => {
-        if (digitizationListId) {
-            setActiveDigitizationList(digitizationListId);
-            ApiDigitizationExtractions.getExtraction(digitizationListId)
+        if (activeDigitizationList) {
+            ApiDigitizationExtractions.getExtraction(activeDigitizationList)
                 .then((response) => {
                     setActiveQuery({
                         id_list: response.data.document_ids,
@@ -188,6 +199,14 @@ export const DocumentsSearchProvider: React.FC<
                 .catch((error) => {
                     console.error(error);
                 });
+        }
+    }, [activeDigitizationList]);
+
+    useEffect(() => {
+        if (digitizationListId) {
+            setActiveDigitizationList(digitizationListId);
+        } else {
+            setActiveDigitizationList(null);
         }
     }, [digitizationListId]);
 
