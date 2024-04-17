@@ -22,6 +22,7 @@ interface DocumentsSearchContextProps {
     rootSearchNode: SearchGroup | undefined;
     activeQuery: DocumentsQuery | undefined;
     searchPhrase: string;
+    activeDigitizationList: number | null;
     setSearchPhrase: (searchPhrase: string) => void;
     searchByPhrase: () => void;
     handleApplyFilter: () => void;
@@ -52,6 +53,9 @@ export const DocumentsSearchProvider: React.FC<
     const [activeQuery, setActiveQuery] = useState<DocumentsQuery | undefined>(
         undefined
     );
+    const [activeDigitizationList, setActiveDigitizationList] = useState<
+        number | null
+    >(null);
     const [searchPhrase, setSearchPhrase] = useState<string>("");
     const [triggerSearchTimer, setTriggerSearchTimer] = useState<
         NodeJS.Timeout | undefined
@@ -67,6 +71,7 @@ export const DocumentsSearchProvider: React.FC<
         } else {
             setActiveQuery(undefined);
         }
+        setActiveDigitizationList(null);
     };
 
     useEffect(() => {
@@ -83,11 +88,13 @@ export const DocumentsSearchProvider: React.FC<
 
     const handleApplyFilter = () => {
         setActiveQuery({ search_group: rootSearchNode });
+        setActiveDigitizationList(null);
     };
 
     const handleCancelFilter = () => {
         setActiveQuery(undefined);
         setSearchPhrase("");
+        setActiveDigitizationList(null);
     };
 
     const handleSaveFilter = () => {
@@ -120,6 +127,7 @@ export const DocumentsSearchProvider: React.FC<
         rootSearchNode,
         activeQuery,
         searchPhrase,
+        activeDigitizationList,
         setSearchPhrase,
         searchByPhrase,
         handleApplyFilter,
@@ -169,6 +177,7 @@ export const DocumentsSearchProvider: React.FC<
 
     useEffect(() => {
         if (digitizationListId) {
+            setActiveDigitizationList(digitizationListId);
             ApiDigitizationExtractions.getExtraction(digitizationListId)
                 .then((response) => {
                     setActiveQuery({

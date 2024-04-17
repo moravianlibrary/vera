@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from typing import List, Optional
 
 from services.database import create
@@ -37,6 +37,11 @@ def document_view(db: Session):
             models.Document.pages_count,
             models.Document.pages_count_predicted,
             models.Document.pages_count_manual,
+            func.coalesce(
+                models.Document.pages_count_manual,
+                models.Document.pages_count_predicted,
+                models.Document.pages_count,
+            ).label("pages_count_actual"),
             models.Document.size,
             models.Document.locationUri,
             models.Document.publisher,

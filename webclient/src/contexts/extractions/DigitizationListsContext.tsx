@@ -20,7 +20,11 @@ interface DigitizationListsContextProps {
         query: DocumentsQuery,
         intention_id?: number
     ) => void;
-    updateDigitizationList: (
+    addDocumentsToDigitizationList: (
+        digitization_list_id: number,
+        query: DocumentsQuery
+    ) => void;
+    removeDocumentsFromDigitizationList: (
         digitization_list_id: number,
         query: DocumentsQuery
     ) => void;
@@ -93,11 +97,14 @@ export const DigitizationListsProvider: React.FC<
             });
     };
 
-    const updateDigitizationList = async (
+    const addDocumentsToDigitizationList = async (
         digitization_list_id: number,
         query: DocumentsQuery
     ) => {
-        ApiDigitizationExtractions.updateExtraction(digitization_list_id, query)
+        ApiDigitizationExtractions.addDocumentsToExtraction(
+            digitization_list_id,
+            query
+        )
             .then((response) => {
                 const transformedData: DigitizationExtraction =
                     new DigitizationListModel(response.data);
@@ -110,6 +117,50 @@ export const DigitizationListsProvider: React.FC<
                 );
             })
             .catch((error) => {
+                if (
+                    400 <= error.response.status &&
+                    error.response.status < 500
+                ) {
+                    showToast(
+                        "error",
+                        t("Digitization list update failed"),
+                        error.response.data.detail
+                    );
+                }
+                console.error(`Could not update digitization list: ${error}`);
+            });
+    };
+
+    const removeDocumentsFromDigitizationList = async (
+        digitization_list_id: number,
+        query: DocumentsQuery
+    ) => {
+        ApiDigitizationExtractions.removeDocumentsFromExtraction(
+            digitization_list_id,
+            query
+        )
+            .then((response) => {
+                const transformedData: DigitizationExtraction =
+                    new DigitizationListModel(response.data);
+                setDigitizationLists(
+                    digitizationLists.map((digitization_list) =>
+                        digitization_list.id === digitization_list_id
+                            ? transformedData
+                            : digitization_list
+                    )
+                );
+            })
+            .catch((error) => {
+                if (
+                    400 <= error.response.status &&
+                    error.response.status < 500
+                ) {
+                    showToast(
+                        "error",
+                        t("Digitization list update failed"),
+                        error.response.data.detail
+                    );
+                }
                 console.error(`Could not update digitization list: ${error}`);
             });
     };
@@ -138,7 +189,8 @@ export const DigitizationListsProvider: React.FC<
         digitizationLists,
         numFound,
         createDigitizationList,
-        updateDigitizationList,
+        addDocumentsToDigitizationList,
+        removeDocumentsFromDigitizationList,
         deleteDigitizationList,
     };
 

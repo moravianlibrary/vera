@@ -7,7 +7,10 @@ from auth.router import get_current_user
 from categories.crud import get_root_categories
 from documents.schemas import DocumentsQuery
 from extractions.digitization import crud, schemas
-from extractions.digitization.routines import get_extraction_from_query
+from extractions.digitization.routines import (
+    get_extraction_from_query,
+    get_extraction_documents_from_query,
+)
 from extractions.routines import get_category_subtree
 from extractions.schemas import ExtractionCategoryNode
 from services.database import get_db
@@ -50,14 +53,34 @@ def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.get_extraction(id, db)
 
 
-@router.put("/{id}", response_model=schemas.DigitizationExtraction)
-def update_extraction(
+@router.put(
+    "/{id}/add_documents", response_model=schemas.DigitizationExtraction
+)
+def add_documents_to_extraction(
     query: DocumentsQuery,
     id: int = Path(...),
     db: Session = Depends(get_db),
 ):
     document_ids, extracted_pages = get_extraction_from_query(query, db)
-    return crud.update_extraction(id, document_ids, extracted_pages, db)
+    return crud.add_documents_to_extraction(
+        id, document_ids, extracted_pages, db
+    )
+
+
+@router.put(
+    "/{id}/remove_documents", response_model=schemas.DigitizationExtraction
+)
+def remove_documents_from_extraction(
+    query: DocumentsQuery,
+    id: int = Path(...),
+    db: Session = Depends(get_db),
+):
+    document_ids, pages_count = get_extraction_documents_from_query(
+        id, query, db
+    )
+    return crud.remove_documents_from_extraction(
+        id, document_ids, pages_count, db
+    )
 
 
 @router.delete("/{id}", response_model=schemas.DigitizationExtraction)
