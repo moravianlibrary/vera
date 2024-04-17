@@ -30,3 +30,8 @@ main {
 .p-tieredmenu .p-submenu-list {
   left: -100%; /* Adjust this value as needed to position the submenu to the left */
 }
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

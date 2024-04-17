@@ -14,6 +14,7 @@ import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
 
 interface ExtractionsContextProps {
+    loadExtractions: (offset: number, limit: number) => void;
     extractions: GeneratedExtraction[];
     numFound: number;
     defaultProps: GenerateExtraction;
@@ -45,12 +46,11 @@ export const GeneratedExtractionsProvider: React.FC<
         include_categories: [],
     };
     const loadAmount = 50;
-    const [offset, setOffset] = useState<number>(0);
     const [extractions, setExtractions] = useState<GeneratedExtraction[]>([]);
     const [numFound, setNumFound] = useState<number>(0);
 
-    const loadExtractions = async () => {
-        ApiGeneratedExtractions.getExtractions(offset, loadAmount)
+    const loadExtractions = async (offset: number, limit: number) => {
+        ApiGeneratedExtractions.getExtractions(offset, limit)
             .then((response) => {
                 const transformedData: GeneratedExtraction[] =
                     response.data.extractions.map((extraction) => {
@@ -110,10 +110,11 @@ export const GeneratedExtractionsProvider: React.FC<
 
     useEffect(() => {
         console.log(`Fetching extractions from server.`);
-        loadExtractions();
+        loadExtractions(0, loadAmount);
     }, []);
 
     const contextValue: ExtractionsContextProps = {
+        loadExtractions,
         extractions,
         numFound,
         defaultProps,

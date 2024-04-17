@@ -26,5 +26,6 @@ class ActionType(Enum):
     EditAccess = "EditAccess"
 
     Extract = "Extract"
+    AdminExtractions = "AdminExtractions"
 
     AdminDatabase = "AdminDatabase"

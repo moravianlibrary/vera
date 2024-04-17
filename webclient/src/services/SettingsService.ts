@@ -1,0 +1,6 @@
+
+class AccessService {
+    async getCurrentUser() {
+    }
+    
+};

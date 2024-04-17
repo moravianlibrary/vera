@@ -392,11 +392,26 @@ const resources = {
         "Are you sure you want to sync {{count}} selected documents with catalog?": "Opravdu chcete synchronizovat {{count}} vybraných dokumentů s katalogem?",
         "Are you sure you want to process {{count}} selected documents?": "Opravdu chcete zpracovat {{count}} vybraných dokumentů?",
         "Are you sure you want to create digitization list from {{count}} selected documents?": "Opravdu chcete vytvořit seznam digitalizace z {{count}} vybraných dokumentů?",
+        "Are you sure you want to add {{count}} selected documents to digitization list {{digitizationListId}}?": "Opravdu chcete pridat {{count}} vybraných dokumentů do seznamu digitalizace {{digitizationListId}}?",
+        "Are you sure you want to remove {{count}} selected documents from digitization list {{digitizationListId}}?": "Opravdu chcete odstranit {{count}} vybraných dokumentů ze seznamu digitalizace {{digitizationListId}}?",
         "Digitization list created successfully": "Seznam digitalizace úspěšně vytvořen",
         "Task started successfully": "Ukol úspěšně spusten",
         "Category changed successfully": "Kategorie byla úspěšně změnena",
 
         "Search": "Vyhledávaní",
+
+        "Please select a category": "Vyberte prosím kategorii",
+
+        "Administrating extractions allowed": "Povoleno spravovat extrakce",
+        "pages": "stránek",
+
+        "Some documents have already been extracted": "Nekteré dokumenty již byly extrahovány",
+        "Remove documents from digitization list": "Odstranit dokumenty ze seznamu digitalizace",
+        "Digitization list update failed": "Aktualizace seznamu digitalizace se nezdařila",
+        "Some documents are not in this extraction": "Nekteré dokumenty nejsou v tomto seznamu",
+        "Add documents to digitization list": "Přidat dokumenty do seznamu digitalizace",
+
+        "Items per page": "Záznamů na stranu",
     },
   },
 };
