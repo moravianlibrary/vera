@@ -23,6 +23,7 @@ interface ExtractionsContextProps {
         pages_count?: number,
         quota_id?: number
     ) => void;
+    generating: boolean;
     deleteExtraction: (id: number) => void;
 }
 
@@ -48,6 +49,7 @@ export const GeneratedExtractionsProvider: React.FC<
     const loadAmount = 50;
     const [extractions, setExtractions] = useState<GeneratedExtraction[]>([]);
     const [numFound, setNumFound] = useState<number>(0);
+    const [generating, setGenerating] = useState(false);
 
     const loadExtractions = async (offset: number, limit: number) => {
         ApiGeneratedExtractions.getExtractions(offset, limit)
@@ -69,31 +71,33 @@ export const GeneratedExtractionsProvider: React.FC<
         pages_count?: number,
         quota_id?: number
     ) => {
-        ApiGeneratedExtractions.generateExtraction(
-            createData,
-            pages_count,
-            quota_id
-        )
-            .then((response) => {
-                setExtractions([
-                    new ExtractionModel(response.data),
-                    ...extractions,
-                ]);
-            })
-            .catch((error) => {
-                if (
-                    error.response &&
-                    error.response.status &&
-                    error.response.status === 400
-                ) {
-                    showToast(
-                        "error",
-                        t("Extraction creation failed"),
-                        t(error.response.data.detail)
-                    );
-                }
-                console.error(error);
-            });
+        setGenerating(true);
+        try {
+            const response = await ApiGeneratedExtractions.generateExtraction(
+                createData,
+                pages_count,
+                quota_id
+            );
+            setExtractions([
+                new ExtractionModel(response.data),
+                ...extractions,
+            ]);
+        } catch (error) {
+            if (
+                error.response &&
+                error.response.status &&
+                error.response.status === 400
+            ) {
+                showToast(
+                    "error",
+                    t("Extraction creation failed"),
+                    t(error.response.data.detail)
+                );
+            }
+            console.error(error);
+        } finally {
+            setGenerating(false);
+        }
     };
 
     const deleteExtraction = async (id: number) => {
@@ -119,6 +123,7 @@ export const GeneratedExtractionsProvider: React.FC<
         numFound,
         defaultProps,
         generateExtraction,
+        generating,
         deleteExtraction,
     };
 
