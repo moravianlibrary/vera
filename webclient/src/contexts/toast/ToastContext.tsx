@@ -7,7 +7,7 @@ interface ToastContextProps {
     (
         severity: ActionSeverity,
         summary: string,
-        detail: string,
+        detail?: string,
         life?: number,
         sticky?: boolean
     ): void;
@@ -30,7 +30,7 @@ export function ToastProvider({ children }: ToastProviderProps): JSX.Element {
     const showToast = (
         severity: ActionSeverity,
         summary: string,
-        detail: string,
+        detail: string = "",
         life = 5000,
         sticky = false
     ) => {

@@ -397,6 +397,8 @@ const resources = {
         "Category changed successfully": "Kategorie byla úspěšně změnena",
 
         "Search": "Vyhledávaní",
+
+        "Please select a category": "Vyberte prosím kategorii",
     },
   },
 };
