@@ -10,8 +10,8 @@ interface DocumentsQueryContextProps {
     queryAll: () => void;
     isQueryAll: boolean;
 
-    categoryId: number | null;
-    searchByCategoryId: (categoryId: number | null) => void;
+    categoryIds: number[];
+    searchByCategoryIds: (categoryId: number[]) => void;
     taskId: number | null;
     searchByTaskId: (taskId: number | null) => void;
     extractionId: number | null;
@@ -40,7 +40,7 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
     const [query, setQuery] = useState<DocumentsQuery>({});
     const [isQueryAll, setIsQueryAll] = useState(true);
 
-    const [categoryId, setCategoryId] = useState<number | null>(null);
+    const [categoryIds, setCategoryIds] = useState<number[]>([]);
     const [taskId, setTaskId] = useState<number | null>(null);
     const [extractionId, setExtractionId] = useState<number | null>(null);
     const [digitizationListId, setDigitizationListId] = useState<number | null>(
@@ -55,7 +55,7 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
     const queryAll = () => {
         setIsQueryAll(true);
         setQuery({});
-        setCategoryId(null);
+        setCategoryIds([]);
         setTaskId(null);
         setExtractionId(null);
         setDigitizationListId(null);
@@ -63,15 +63,15 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
         setSearchGroup(null);
     };
 
-    const searchByCategoryId = (categoryId: number | null) => {
-        if (categoryId === null) {
+    const searchByCategoryIds = (categoryIds: number[]) => {
+        if (categoryIds.length === 0) {
             queryAll();
             return;
         }
-        setCategoryId(categoryId);
+        setCategoryIds(categoryIds);
         setIsQueryAll(false);
         setQuery({
-            search_group: SearchGroup.createCategoryIdSearch([categoryId]),
+            search_group: SearchGroup.createCategoryIdSearch(categoryIds),
         });
     };
 
@@ -135,8 +135,8 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
         query,
         queryAll,
         isQueryAll,
-        categoryId,
-        searchByCategoryId,
+        categoryIds,
+        searchByCategoryIds,
         taskId,
         searchByTaskId,
         extractionId,

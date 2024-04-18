@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import AssignableCategoryPicker from "../../../components/pickers/AssignableCategoryPicker";
 import { useDocumentsQuery } from "../../../contexts/documents/search/DocumentsQueryContext";
 import DigitizationListBox from "../../../components/DigitizationListBox";
+import CategoryPicker from "../../../components/pickers/CategoryPicker";
 
 const DocumentsSearchBar = () => {
     const { t } = useTranslation();
@@ -15,8 +16,8 @@ const DocumentsSearchBar = () => {
     const {
         queryAll,
         isQueryAll,
-        categoryId,
-        searchByCategoryId,
+        categoryIds,
+        searchByCategoryIds,
         digitizationListId,
         searchByDigitizationListId,
         searchPhrase,
@@ -62,7 +63,7 @@ const DocumentsSearchBar = () => {
             <div className="p-inputgroup flex">
                 <Button
                     className={
-                        categoryId
+                        categoryIds.length > 0
                             ? "bg-yellow-600 border-yellow-700"
                             : "p-button-outlined"
                     }
@@ -72,9 +73,11 @@ const DocumentsSearchBar = () => {
                     tooltipOptions={{ position: "top", showDelay: 500 }}
                 />
                 <OverlayPanel ref={categorySelectorRef}>
-                    <AssignableCategoryPicker
-                        category_id={categoryId}
-                        callback={searchByCategoryId}
+                    <CategoryPicker
+                        category_id={
+                            categoryIds.length > 0 ? categoryIds[0] : null
+                        }
+                        callbackSubcategories={searchByCategoryIds}
                     />
                 </OverlayPanel>
                 {/* <Button icon="pi pi-play-circle" outlined /> */}
