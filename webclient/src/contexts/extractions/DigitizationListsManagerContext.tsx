@@ -32,7 +32,7 @@ export const DigitizationListsManagerProvider: React.FC<
         removeDocumentsFromDigitizationList,
     } = useDigitizationLists();
     const { removeDocumentsFromResults } = useDocuments();
-    const { selectionQuery } = useDocumentsSelection();
+    const { selectionQuery, cancelSelection } = useDocumentsSelection();
     const { searchByDigitizationListId, digitizationListId } =
         useDocumentsQuery();
 
@@ -44,6 +44,7 @@ export const DigitizationListsManagerProvider: React.FC<
                     "Digitization list created successfully",
                     ""
                 );
+                cancelSelection();
                 searchByDigitizationListId(digitizationList.id);
             })
             .catch((error) => {
@@ -68,6 +69,7 @@ export const DigitizationListsManagerProvider: React.FC<
                     "Digitization list updated successfully",
                     ""
                 );
+                cancelSelection();
                 removeDocumentsFromResults(digitizationList.document_ids);
             })
             .catch((error) => {
@@ -92,7 +94,8 @@ export const DigitizationListsManagerProvider: React.FC<
                     "Digitization list updated successfully",
                     ""
                 );
-                removeDocumentsFromResults(digitizationList.document_ids);
+                cancelSelection();
+                removeDocumentsFromResults(selectionQuery.id_list!);
             })
             .catch((error) => {
                 if (

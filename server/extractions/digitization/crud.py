@@ -101,7 +101,7 @@ def remove_documents_from_extraction(
     if pages_count is None or pages_count == db_extracted_pages:
         raise EmptyExtraction
 
-    for document_id in db_document_ids:
+    for document_id in document_ids:
         unset_document_extracted(document_id, extraction_id, db)
 
     new_document_ids = [
