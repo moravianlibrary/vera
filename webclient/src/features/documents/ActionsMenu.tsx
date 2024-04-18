@@ -18,19 +18,17 @@ import { useUser } from "../../contexts/user/UserContext";
 import { ActionType } from "../../types/ActionType";
 import { MenuItem } from "primereact/menuitem";
 import { useDigitizationManager } from "../../contexts/extractions/DigitizationListsManagerContext";
+import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
+import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
 
 interface DocumentsActionsMenuProps {}
 
 const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
     const { t } = useTranslation();
     const { user } = useUser();
-    const {
-        selectedDocuments,
-        selectAll,
-        handleExportDocuments,
-        handleUpdateCategory,
-        handleStartTask,
-    } = useDocuments();
+    const { numSelected } = useDocumentsSelection();
+    const { exportDocuments, updateCategory, startTask } =
+        useDocumentsActions();
     const { categories } = useAssignableCategories();
     const { digitizationLists } = useDigitizationLists();
     const {
@@ -39,12 +37,6 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         removeDocumentsFromDigitizationList,
     } = useDigitizationManager();
     const { activeQuery, activeDigitizationList } = useDocumentsSearch();
-
-    const [hasSelection, setHasSelection] = useState(false);
-
-    useEffect(() => {
-        setHasSelection(selectedDocuments.length > 0);
-    }, [selectedDocuments]);
 
     const toggleTaskSelectorMenu = (event) => {
         if (taskSelectorMenuRef.current) {
@@ -70,9 +62,9 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         confirmAction(
             t(
                 `Are you sure you want to change category to "{{category}}" for {{count}} selected documents?`,
-                { category: category_name, count: selectedDocuments.length }
+                { category: category_name, count: numSelected }
             ),
-            () => handleUpdateCategory(category_id, category_name)
+            () => updateCategory(category_id, category_name)
         );
     };
 
@@ -85,8 +77,8 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
                 : taskType === TaskType.SyncFromCatalog
                 ? "Are you sure you want to sync {{count}} selected documents with catalog?"
                 : "Are you sure you want to process {{count}} selected documents?";
-        confirmAction(t(taskMesage, { count: selectedDocuments.length }), () =>
-            handleStartTask(taskType)
+        confirmAction(t(taskMesage, { count: numSelected }), () =>
+            startTask(taskType)
         );
     };
 
@@ -94,7 +86,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         confirmAction(
             t(
                 `Are you sure you want to create digitization list from {{count}} selected documents?`,
-                { count: selectedDocuments.length }
+                { count: numSelected }
             ),
             () => createDigitizationList()
         );
@@ -104,7 +96,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         confirmAction(
             t(
                 `Are you sure you want to add {{count}} selected documents to digitization list {{digitizationListId}}?`,
-                { count: selectedDocuments.length, digitizationListId }
+                { count: numSelected, digitizationListId }
             ),
             () => addDocumentsToDigitizationList(digitizationListId)
         );
@@ -118,7 +110,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
             t(
                 `Are you sure you want to remove {{count}} selected documents from digitization list {{digitizationListId}}?`,
                 {
-                    count: selectedDocuments.length,
+                    count: numSelected,
                     digitizationListId: activeDigitizationList,
                 }
             ),
@@ -182,7 +174,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         items: [
             {
                 label: t("Export to XSLX"),
-                command: () => handleExportDocuments(),
+                command: () => exportDocuments(),
             },
         ],
     };
@@ -293,8 +285,8 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
             <Button
                 icon="pi pi-objects-column"
                 className="p-button-rounded p-button-text"
-                severity={hasSelection ? "help" : "secondary"}
-                disabled={!hasSelection}
+                severity={numSelected > 0 ? "help" : "secondary"}
+                disabled={numSelected === 0}
                 onClick={toggleTaskSelectorMenu}
                 aria-controls="popup_menu_left"
                 aria-haspopup

@@ -178,4 +178,4 @@ namespace ApiDocuments {
 }
 
 export default ApiDocuments;
-export type { Identifier, DocumentBase, Document, Issue, CatalogDocument, DocumentCreationResponse, DocumentsQuery, Frequency };
+export type { Identifier, DocumentBase, Document, Issue, CatalogDocument, DocumentCreationResponse, DocumentsQuery, DocumentsResponse, Frequency };

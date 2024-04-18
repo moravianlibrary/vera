@@ -1,22 +1,10 @@
-import React, {
-    createContext,
-    useContext,
-    useState,
-    ReactNode,
-    useEffect,
-} from "react";
+import React, { createContext, useContext, ReactNode } from "react";
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
-import { DocumentsQuery } from "../../adapters/ApiDocuments";
-import ApiDigitizationExtractions, {
-    DigitizationExtraction,
-} from "../../adapters/ApiDigitizationExtractions";
-import DigitizationListModel from "./DigitizationListModel";
 import { useDocumentsSearch } from "../documents/search/DocumentsSearchContext";
 import { useDocuments } from "../documents/DocumentsContext";
 import { useDigitizationLists } from "./DigitizationListsContext";
-import { add } from "date-fns";
-import { getAllByAltText } from "@testing-library/react";
+import { useDocumentsQuery } from "../documents/search/DocumentsQueryContext";
 
 interface DigitizationListsManagerContextProps {
     createDigitizationList: (intention_id?: number) => void;
@@ -45,10 +33,11 @@ export const DigitizationListsManagerProvider: React.FC<
     } = useDigitizationLists();
     const { activeDigitizationList, setActiveDigitizationList } =
         useDocumentsSearch();
-    const { getActiveQuery, removeDocumentsFromResults } = useDocuments();
+    const { removeDocumentsFromResults } = useDocuments();
+    const { query } = useDocumentsQuery();
 
     const createDigiList = async (intention_id?: number) => {
-        createDigitizationList(getActiveQuery(), intention_id)
+        createDigitizationList(query, intention_id)
             .then((digitizationList) => {
                 showToast(
                     "success",
@@ -72,7 +61,7 @@ export const DigitizationListsManagerProvider: React.FC<
     };
 
     const addDocumentsToDigiList = async (digitization_list_id: number) => {
-        addDocumentsToDigitizationList(digitization_list_id, getActiveQuery())
+        addDocumentsToDigitizationList(digitization_list_id, query)
             .then((digitizationList) => {
                 showToast(
                     "success",
@@ -96,10 +85,7 @@ export const DigitizationListsManagerProvider: React.FC<
     };
 
     const removeDocumentsFromDigiList = async () => {
-        removeDocumentsFromDigitizationList(
-            activeDigitizationList!,
-            getActiveQuery()
-        )
+        removeDocumentsFromDigitizationList(activeDigitizationList!, query)
             .then((digitizationList) => {
                 showToast(
                     "success",
