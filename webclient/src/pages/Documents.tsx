@@ -11,7 +11,10 @@ import { useSearchParams } from "react-router-dom";
 import ApiCategories, { AssignableCategory } from "../adapters/ApiCategories";
 import { DigitizationListsProvider } from "../contexts/extractions/DigitizationListsContext";
 import { DigitizationListsManagerProvider } from "../contexts/extractions/DigitizationListsManagerContext";
-import { DocumentsQueryProvider } from "../contexts/documents/search/DocumentsQueryContext";
+import {
+    DocumentsQueryProvider,
+    useDocumentsQuery,
+} from "../contexts/documents/search/DocumentsQueryContext";
 import { DocumentsSelectionProvider } from "../contexts/documents/DocumentsSelectionContext";
 import { DocumentsActionsProvider } from "../contexts/documents/DocumentsActionsContext";
 import { AdvancedSearchProvider } from "../contexts/documents/search/AdvancedSearchContext";
@@ -75,7 +78,13 @@ const Documents: React.FC = () => {
                                     <DocumentsActionsProvider>
                                         <DigitizationListsManagerProvider>
                                             <AdvancedSearchProvider>
-                                                <DocumentsDiv />
+                                                <DocumentsDiv
+                                                    categoryIds={categoryIds}
+                                                    extractionId={extractionId}
+                                                    digitizationListId={
+                                                        digitizationListId
+                                                    }
+                                                />
                                             </AdvancedSearchProvider>
                                         </DigitizationListsManagerProvider>
                                     </DocumentsActionsProvider>
@@ -89,9 +98,34 @@ const Documents: React.FC = () => {
     );
 };
 
-const DocumentsDiv: React.FC = () => {
+interface DocumentsDivProps {
+    categoryIds: number[];
+    extractionId: number | null;
+    digitizationListId: number | null;
+}
+
+const DocumentsDiv: React.FC<DocumentsDivProps> = ({
+    categoryIds,
+    extractionId,
+    digitizationListId,
+}) => {
+    const {
+        searchByCategoryId,
+        searchByExtractionId,
+        searchByDigitizationListId,
+    } = useDocumentsQuery();
+
     const [insertMode, setInsertMode] = useState(false);
     const [createMode, setCreateMode] = useState(false);
+
+    useEffect(() => {
+        // searchByCategoryId(categoryIds);
+        if (extractionId !== null) {
+            searchByExtractionId(extractionId);
+        } else if (digitizationListId !== null) {
+            searchByDigitizationListId(digitizationListId);
+        }
+    }, [categoryIds, extractionId, digitizationListId]);
 
     return (
         <div>
