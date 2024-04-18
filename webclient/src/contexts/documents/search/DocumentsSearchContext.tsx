@@ -13,11 +13,6 @@ import { TreeNode } from "primereact/treenode";
 import ApiGeneratedExtractions from "../../../adapters/ApiGeneratedExtractions";
 import ApiDigitizationExtractions from "../../../adapters/ApiDigitizationExtractions";
 
-interface TreeOption {
-    id: number;
-    label: string;
-}
-
 interface DocumentsSearchContextProps {
     rootSearchNode: SearchGroup | undefined;
     activeQuery: DocumentsQuery | undefined;

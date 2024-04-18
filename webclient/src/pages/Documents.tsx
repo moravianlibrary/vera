@@ -17,8 +17,9 @@ import { DigitizationListsProvider } from "../contexts/extractions/DigitizationL
 import { DigitizationListsManagerProvider } from "../contexts/extractions/DigitizationListsManagerContext";
 import { DocumentsQueryProvider } from "../contexts/documents/search/DocumentsQueryContext";
 import { DocumentsSelectionProvider } from "../contexts/documents/DocumentsSelectionContext";
-import DocumentsActionsMenu from "../features/documents/ActionsMenu";
 import { DocumentsActionsProvider } from "../contexts/documents/DocumentsActionsContext";
+import { AdvancedSearchProvider } from "../contexts/documents/search/AdvancedSearchContext";
+import { CategoriesProvider } from "../contexts/categories/CategoriesContext";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -71,19 +72,23 @@ const Documents: React.FC = () => {
         <div className="table-container">
             <DocumentsQueryProvider>
                 <AssignableCategoriesProvider>
-                    <DigitizationListsProvider>
-                        <DocumentsSearchProvider>
-                            <DocumentsProvider>
-                                <DocumentsSelectionProvider>
-                                    <DocumentsActionsProvider>
-                                        <DigitizationListsManagerProvider>
-                                            <DocumentsDiv />
-                                        </DigitizationListsManagerProvider>
-                                    </DocumentsActionsProvider>
-                                </DocumentsSelectionProvider>
-                            </DocumentsProvider>
-                        </DocumentsSearchProvider>
-                    </DigitizationListsProvider>
+                    <CategoriesProvider>
+                        <DigitizationListsProvider>
+                            <DocumentsSearchProvider>
+                                <DocumentsProvider>
+                                    <DocumentsSelectionProvider>
+                                        <DocumentsActionsProvider>
+                                            <DigitizationListsManagerProvider>
+                                                <AdvancedSearchProvider>
+                                                    <DocumentsDiv />
+                                                </AdvancedSearchProvider>
+                                            </DigitizationListsManagerProvider>
+                                        </DocumentsActionsProvider>
+                                    </DocumentsSelectionProvider>
+                                </DocumentsProvider>
+                            </DocumentsSearchProvider>
+                        </DigitizationListsProvider>
+                    </CategoriesProvider>
                 </AssignableCategoriesProvider>
             </DocumentsQueryProvider>
         </div>

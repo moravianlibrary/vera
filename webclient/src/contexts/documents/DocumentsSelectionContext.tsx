@@ -6,8 +6,6 @@ import React, {
     useEffect,
 } from "react";
 import DocumentModel from "./DocumentModel";
-import { useTranslation } from "react-i18next";
-import { useToast } from "../toast/ToastContext";
 import { useDocumentsQuery } from "./search/DocumentsQueryContext";
 import { useDocuments } from "./DocumentsContext";
 import { DocumentsQuery } from "../../adapters/ApiDocuments";
@@ -32,8 +30,6 @@ interface DocumentsSelectionProviderProps {
 export const DocumentsSelectionProvider: React.FC<
     DocumentsSelectionProviderProps
 > = ({ children }) => {
-    const { t } = useTranslation();
-    const showToast = useToast();
     const { query } = useDocumentsQuery();
     const { documents, numFound } = useDocuments();
 
@@ -80,7 +76,7 @@ export const DocumentsSelectionProvider: React.FC<
             const selectedDocumentsIds = new Set(
                 selectedDocuments.map((document) => document.id)
             );
-            setSelectedDocuments(
+            selectDocuments(
                 documents.filter((document) =>
                     selectedDocumentsIds.has(document.id)
                 )

@@ -5,19 +5,10 @@ import React, {
     ReactNode,
     useEffect,
 } from "react";
-import ApiDocuments, {
-    Document,
-    DocumentsQuery,
-} from "../../adapters/ApiDocuments";
+import ApiDocuments from "../../adapters/ApiDocuments";
 import { VirtualScrollerLazyEvent } from "primereact/virtualscroller";
 import DocumentModel from "./DocumentModel";
-import { TaskType } from "../../types/TaskType";
-import ApiTasks from "../../adapters/ApiTasks";
-import { SearchGroup } from "./search/SearchNodes";
-import { useToast } from "../toast/ToastContext";
-import { useTranslation } from "react-i18next";
 import { useDocumentsQuery } from "./search/DocumentsQueryContext";
-import { DocumentsResponse } from "../../adapters/ApiDocuments";
 
 interface DocumentsContextProps {
     documents: DocumentModel[];
@@ -39,8 +30,6 @@ interface DocumentsProviderProps {
 export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
     children,
 }) => {
-    const { t } = useTranslation();
-    const showToast = useToast();
     const { query, isQueryAll } = useDocumentsQuery();
 
     const loadAmount = 50;
@@ -121,7 +110,7 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
 
     useEffect(() => {
         refresh();
-    }, []);
+    }, [query, isQueryAll]);
 
     const contextValue: DocumentsContextProps = {
         documents,

@@ -1,5 +1,4 @@
 import { Button } from "primereact/button";
-import { ListBox } from "primereact/listbox";
 import { Badge } from "primereact/badge";
 import { TieredMenu } from "primereact/tieredmenu";
 import React, { useEffect, useRef, useState } from "react";
@@ -20,6 +19,7 @@ import { MenuItem } from "primereact/menuitem";
 import { useDigitizationManager } from "../../contexts/extractions/DigitizationListsManagerContext";
 import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
 import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
+import DigitizationListBox from "../../components/DigitizationListBox";
 
 interface DocumentsActionsMenuProps {}
 
@@ -144,25 +144,13 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
     const createDigitizationListsTieredMenu = (): MenuItem[] => {
         return [
             {
-                template: () => {
-                    return (
-                        <ListBox
-                            className="overflow-auto"
-                            style={{ maxHeight: "calc(100vh - 70px)" }}
-                            options={digitizationLists.map((l) => ({
-                                label: `${l.id}: ${l.extractor}, ${
-                                    l.extracted_at
-                                }, ${l.extracted_pages} ${t("pages")}`,
-                                value: l.id,
-                            }))}
-                            onChange={(e) =>
-                                handleClickAddToDigitizationList(
-                                    e.value as number
-                                )
-                            }
-                        />
-                    );
-                },
+                template: () => (
+                    <DigitizationListBox
+                        callback={(digitizationId) =>
+                            handleClickAddToDigitizationList(digitizationId)
+                        }
+                    />
+                ),
             },
         ];
     };

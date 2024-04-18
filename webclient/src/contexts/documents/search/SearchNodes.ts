@@ -10,7 +10,7 @@ export interface SearchGroupParams {
 }
 
 type FieldOption = TextOption | NumberOption | TreeOption | undefined;
-type Value = string | number | [number | undefined, number | undefined] | number[] | undefined;
+type Value = string | number | [number | undefined, number | undefined] | number[] | null | undefined;
 
 interface SearchFieldParams {
     level: number;

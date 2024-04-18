@@ -1,45 +1,113 @@
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import AdvancedSearch from "./AdvancedSearch";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { useDocuments } from "../../../contexts/documents/DocumentsContext";
 import { useTranslation } from "react-i18next";
-import { useDocumentsSearch } from "../../../contexts/documents/search/DocumentsSearchContext";
+import AssignableCategoryPicker from "../../../components/pickers/AssignableCategoryPicker";
+import { useDocumentsQuery } from "../../../contexts/documents/search/DocumentsQueryContext";
+import DigitizationListBox from "../../../components/DigitizationListBox";
 
 const DocumentsSearchBar = () => {
     const { t } = useTranslation();
     const { numFound } = useDocuments();
     const {
-        activeQuery,
+        queryAll,
+        isQueryAll,
+        categoryId,
+        searchByCategoryId,
+        digitizationListId,
+        searchByDigitizationListId,
         searchPhrase,
-        setSearchPhrase,
-        searchByPhrase,
-        handleCancelFilter,
-    } = useDocumentsSearch();
+        searchBySearchPhrase,
+    } = useDocumentsQuery();
 
     const advancedSearchRef = useRef<OverlayPanel | null>(null);
+    const categorySelectorRef = useRef<OverlayPanel | null>(null);
+    const digitizationSelectorRef = useRef<OverlayPanel | null>(null);
 
+    const [searchPhrase_, setSearchPhrase_] = useState<string>(
+        searchPhrase || ""
+    );
+    const [triggerSearchTimer, setTriggerSearchTimer] = useState<
+        NodeJS.Timeout | undefined
+    >(undefined);
+
+    useEffect(() => {
+        setSearchPhrase_(searchPhrase || "");
+    }, [searchPhrase]);
+
+    const handleSearchPhraseChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        setSearchPhrase_(e.target.value);
+        if (triggerSearchTimer) {
+            clearTimeout(triggerSearchTimer);
+        }
+        const timer = setTimeout(() => {
+            searchBySearchPhrase(e.target.value);
+        }, 1000);
+        setTriggerSearchTimer(timer);
+    };
+
+    // TODO: implement search by taskId and extractionId
     return (
         <div className="flex flex-column">
             <div className="p-inputgroup flex">
+                <Button
+                    className={
+                        categoryId
+                            ? "bg-yellow-600 border-yellow-700"
+                            : "p-button-outlined"
+                    }
+                    icon="pi pi-tags"
+                    onClick={(e) => categorySelectorRef.current!.toggle(e)}
+                    tooltip={t("Filter by category")}
+                    tooltipOptions={{ position: "top", showDelay: 500 }}
+                />
+                <OverlayPanel ref={categorySelectorRef}>
+                    <AssignableCategoryPicker
+                        category_id={categoryId}
+                        callback={searchByCategoryId}
+                    />
+                </OverlayPanel>
+                {/* <Button icon="pi pi-play-circle" outlined /> */}
+                <Button
+                    className={
+                        digitizationListId
+                            ? "bg-yellow-600 border-yellow-700"
+                            : "p-button-outlined"
+                    }
+                    icon="pi pi-receipt"
+                    onClick={(e) => digitizationSelectorRef.current!.toggle(e)}
+                    tooltip={t("Filter by digitization list")}
+                    tooltipOptions={{ position: "top", showDelay: 500 }}
+                />
+                <OverlayPanel ref={digitizationSelectorRef}>
+                    <DigitizationListBox
+                        callback={searchByDigitizationListId}
+                    />
+                </OverlayPanel>
                 <InputText
                     placeholder={t("Search")}
-                    value={searchPhrase}
-                    onChange={(e) => setSearchPhrase(e.target.value)}
+                    value={searchPhrase_}
+                    onChange={handleSearchPhraseChange}
                     onKeyDown={(e) => {
                         if (e.key === "Enter") {
-                            searchByPhrase();
+                            searchBySearchPhrase(searchPhrase_);
                         }
                     }}
                 />
-                <Button icon="pi pi-search" onClick={() => searchByPhrase()} />
+                <Button
+                    icon="pi pi-search"
+                    onClick={() => searchBySearchPhrase(searchPhrase_)}
+                />
                 <OverlayPanel ref={advancedSearchRef}>
                     <AdvancedSearch />
                 </OverlayPanel>
                 <Button
                     icon="pi pi-ellipsis-v"
-                    disabled
                     outlined
                     onClick={(e) =>
                         (advancedSearchRef.current as OverlayPanel).toggle(e)
@@ -48,9 +116,9 @@ const DocumentsSearchBar = () => {
                 <Button
                     icon="pi pi-times"
                     severity="danger"
-                    disabled={activeQuery === undefined}
-                    outlined={activeQuery === undefined}
-                    onClick={handleCancelFilter}
+                    disabled={isQueryAll}
+                    outlined={isQueryAll}
+                    onClick={queryAll}
                     tooltip={t("Cancel filtering")}
                     tooltipOptions={{ position: "top", showDelay: 500 }}
                 />
@@ -59,7 +127,7 @@ const DocumentsSearchBar = () => {
                 <span className="text-gray-700">
                     {t("Number of found documents")}: {numFound}
                 </span>
-                {activeQuery && (
+                {!isQueryAll && (
                     <span className="text-yellow-700">
                         {t("Active filtering")}
                     </span>

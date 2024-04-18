@@ -3,55 +3,58 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SearchTreeField } from "../../../contexts/documents/search/SearchNodes";
 import React from "react";
-import { useDocumentsSearch } from "../../../contexts/documents/search/DocumentsSearchContext";
-import { TreeSelect, TreeSelectChangeEvent, TreeSelectSelectionKeysType } from "primereact/treeselect";
+import { TreeSelectSelectionKeysType } from "primereact/treeselect";
 import { TextOption, TreeOption } from "../../../types/SearchTypes";
+import CategoryPicker from "../../../components/pickers/CategoryPicker";
 
 interface AdvancedSearchTreeFieldProps {
     data: SearchTreeField;
 }
 
-type SelectedNodes = string | TreeSelectSelectionKeysType | TreeSelectSelectionKeysType[] | null | undefined;
-
-const AdvancedSearchTreeField: React.FC<AdvancedSearchTreeFieldProps> = ({ data }) => {
+const AdvancedSearchTreeField: React.FC<AdvancedSearchTreeFieldProps> = ({
+    data,
+}) => {
     const { t } = useTranslation();
-    const { getTreeFieldOptions, getTreeFieldPlaceholder } = useDocumentsSearch();
-
-    const rootNode = getTreeFieldOptions(data.field!)!;
-    const placeholder = getTreeFieldPlaceholder(data.field!);
 
     const [option, setOption] = useState(data.option);
-    const [selectedNodes, setSelectedNodes] = useState<SelectedNodes>([]);
+    const [categoryId, setCategoryId] = useState<number | null>(
+        data.value && Array.isArray(data.value) && data.value.length > 0
+            ? (data.value[0] as number)
+            : null
+    );
 
     const handleSelectOption = (e: DropdownChangeEvent) => {
         data.setOption(e.value);
         setOption(e.value);
     };
 
-    const handleSelectNode = (e: TreeSelectChangeEvent) => {
-        setSelectedNodes(e.value);
+    const handleSelectCategory = (categoryIds: number[]) => {
+        data.setValue(categoryIds);
+        setCategoryId(categoryIds.length > 0 ? categoryIds[0] : null);
     };
 
     return (
         <div className="flex gap-1">
-            <Dropdown className="w-12rem"
+            <Dropdown
+                className="w-12rem"
                 value={option}
                 onChange={handleSelectOption}
-                options={Object.values(TreeOption)}
-                placeholder={t('Select operation')} />
-            {option !== TextOption.IsNull && option !== TextOption.IsNotNull &&
-            <TreeSelect
-                className="w-14rem w-full"
-                placeholder={t(placeholder)}
-                selectionMode="multiple" 
-                value={selectedNodes}
-                options={rootNode} 
-                onChange={handleSelectNode}
-                metaKeySelection={false}
-            />}
+                options={Object.keys(TreeOption).map((option) => ({
+                    value: option,
+                    label: t(option),
+                }))}
+                placeholder={t("Select operation")}
+            />
+            {option !== TextOption.IsNull &&
+                option !== TextOption.IsNotNull && (
+                    <CategoryPicker
+                        className="w-14rem w-full"
+                        category_id={categoryId}
+                        callbackSubcategories={handleSelectCategory}
+                    />
+                )}
         </div>
     );
 };
 
 export default AdvancedSearchTreeField;
-

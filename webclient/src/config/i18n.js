@@ -413,6 +413,26 @@ const resources = {
         "Add documents to digitization list": "Přidat dokumenty do seznamu digitalizace",
 
         "Items per page": "Záznamů na stranu",
+
+        "Filter by category": "Filtrovat podle kategorie",
+        "Filter by digitization list": "Filtrovat podle seznamu digitalizace",
+        "Select field": "Vyber pole",
+
+        Equals: "Je rovno",
+        StartsWith: "Začína na",
+        EndsWith: "Končí na",
+        Contains: "Obsahuje",
+        NotContains: "Neobsahuje",
+        NotEquals: "Není rovno",
+        IsNull: "Není nastaveno",
+        IsNotNull: "Je nastaveno",
+        EqualTo: "Rovná se",
+        NotEqualTo: "Nerovná se",
+        LessThan: "Meně než",
+        MoreThan: "Více než",
+        Between: "Mezi",
+        IsIn: "Je v",
+        IsNotIn: "Není v",
     },
   },
 };

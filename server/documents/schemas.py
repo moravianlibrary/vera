@@ -158,7 +158,7 @@ class DocumentCreateResponse(BaseModel):
 class SearchField(BaseModel):
     field: DocumentField
     option: Union[TextOption, NumberOption, TreeOption]
-    value: Optional[Union[str, int, Tuple[int, int], List[int]]]
+    value: Optional[Union[str, int, Tuple[int, int], List[int]]] = None
 
 
 class SearchGroup(BaseModel):

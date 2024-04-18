@@ -24,15 +24,27 @@ DOCUMENT_FIELDS_MAPPING = {
 }
 
 
+def is_query_empty(query: schemas.DocumentsQuery) -> bool:
+    return query is None or (
+        query.id_list is None
+        and query.search_phrase is None
+        and query.search_group is None
+        and query.category_id is None
+        and query.department_id is None
+        and query.username is None
+    )
+
+
 def filter_documents_query_base(
     query_base: Query, query: Optional[schemas.DocumentsQuery] = None
 ):
-    if query:
+    if not is_query_empty(query):
         query_base = filter_by_query(query_base, query)
-        if query.sort:
-            query_base = sort_query(query_base, query.sort)
     else:
         query_base = query_base.filter(models.Document.extraction_id.is_(None))
+
+    if query and query.sort:
+        query_base = sort_query(query_base, query.sort)
 
     return query_base
 

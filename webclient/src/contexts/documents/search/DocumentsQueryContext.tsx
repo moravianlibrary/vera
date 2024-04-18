@@ -11,13 +11,13 @@ interface DocumentsQueryContextProps {
     isQueryAll: boolean;
 
     categoryId: number | null;
-    searchByCategoryId: (categoryId: number) => void;
+    searchByCategoryId: (categoryId: number | null) => void;
     taskId: number | null;
-    searchByTaskId: (taskId: number) => void;
+    searchByTaskId: (taskId: number | null) => void;
     extractionId: number | null;
-    searchByExtractionId: (extractionId: number) => void;
+    searchByExtractionId: (extractionId: number | null) => void;
     digitizationListId: number | null;
-    searchByDigitizationListId: (digitizationListId: number) => void;
+    searchByDigitizationListId: (digitizationListId: number | null) => void;
 
     searchPhrase: string | null;
     searchBySearchPhrase: (searchPhrase: string) => void;
@@ -52,44 +52,66 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
         null
     );
 
-    // const [triggerSearchTimer, setTriggerSearchTimer] = useState<
-    //     NodeJS.Timeout | undefined
-    // >(undefined);
-
     const queryAll = () => {
         setIsQueryAll(true);
         setQuery({});
+        setCategoryId(null);
+        setTaskId(null);
+        setExtractionId(null);
+        setDigitizationListId(null);
+        setSearchPhrase(null);
+        setSearchGroup(null);
     };
 
-    const searchByCategoryId = (categoryId: number) => {
+    const searchByCategoryId = (categoryId: number | null) => {
+        if (categoryId === null) {
+            queryAll();
+            return;
+        }
         setCategoryId(categoryId);
+        setIsQueryAll(false);
         setQuery({
             search_group: SearchGroup.createCategoryIdSearch([categoryId]),
         });
     };
 
-    const searchByTaskId = (taskId: number) => {
+    const searchByTaskId = (taskId: number | null) => {
+        if (taskId === null) {
+            queryAll();
+            return;
+        }
         ApiTasks.getTaskDocuments(taskId).then((response) => {
             setTaskId(taskId);
+            setIsQueryAll(false);
             setQuery({
                 id_list: response.data.map((d) => d.document_id),
             });
         });
     };
 
-    const searchByExtractionId = (extractionId: number) => {
+    const searchByExtractionId = (extractionId: number | null) => {
+        if (extractionId === null) {
+            queryAll();
+            return;
+        }
         ApiGeneratedExtractions.getExtraction(extractionId).then((response) => {
             setExtractionId(extractionId);
+            setIsQueryAll(false);
             setQuery({
                 id_list: response.data.document_ids,
             });
         });
     };
 
-    const searchByDigitizationListId = (digitizationListId: number) => {
+    const searchByDigitizationListId = (digitizationListId: number | null) => {
+        if (digitizationListId === null) {
+            queryAll();
+            return;
+        }
         ApiDigitizationExtractions.getExtraction(digitizationListId).then(
             (response) => {
                 setDigitizationListId(digitizationListId);
+                setIsQueryAll(false);
                 setQuery({
                     id_list: response.data.document_ids,
                 });
@@ -99,11 +121,13 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
 
     const searchBySearchPhrase = (searchPhrase: string) => {
         setSearchPhrase(searchPhrase);
+        setIsQueryAll(false);
         setQuery({ search_phrase: searchPhrase });
     };
 
     const searchBySearchGroup = (searchGroup: SearchGroupParams) => {
         setSearchGroup(searchGroup);
+        setIsQueryAll(false);
         setQuery({ search_group: searchGroup });
     };
 

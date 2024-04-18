@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useDocumentsSearch } from "../documents/search/DocumentsSearchContext";
 import { useDocuments } from "../documents/DocumentsContext";
 import { useDigitizationLists } from "./DigitizationListsContext";
-import { useDocumentsQuery } from "../documents/search/DocumentsQueryContext";
+import { useDocumentsSelection } from "../documents/DocumentsSelectionContext";
 
 interface DigitizationListsManagerContextProps {
     createDigitizationList: (intention_id?: number) => void;
@@ -31,13 +31,13 @@ export const DigitizationListsManagerProvider: React.FC<
         addDocumentsToDigitizationList,
         removeDocumentsFromDigitizationList,
     } = useDigitizationLists();
+    const { removeDocumentsFromResults } = useDocuments();
     const { activeDigitizationList, setActiveDigitizationList } =
         useDocumentsSearch();
-    const { removeDocumentsFromResults } = useDocuments();
-    const { query } = useDocumentsQuery();
+    const { selectionQuery } = useDocumentsSelection();
 
     const createDigiList = async (intention_id?: number) => {
-        createDigitizationList(query, intention_id)
+        createDigitizationList(selectionQuery, intention_id)
             .then((digitizationList) => {
                 showToast(
                     "success",
@@ -61,7 +61,7 @@ export const DigitizationListsManagerProvider: React.FC<
     };
 
     const addDocumentsToDigiList = async (digitization_list_id: number) => {
-        addDocumentsToDigitizationList(digitization_list_id, query)
+        addDocumentsToDigitizationList(digitization_list_id, selectionQuery)
             .then((digitizationList) => {
                 showToast(
                     "success",
@@ -85,7 +85,10 @@ export const DigitizationListsManagerProvider: React.FC<
     };
 
     const removeDocumentsFromDigiList = async () => {
-        removeDocumentsFromDigitizationList(activeDigitizationList!, query)
+        removeDocumentsFromDigitizationList(
+            activeDigitizationList!,
+            selectionQuery
+        )
             .then((digitizationList) => {
                 showToast(
                     "success",
