@@ -1,5 +1,4 @@
 import { Button } from "primereact/button";
-import { ListBox } from "primereact/listbox";
 import { Badge } from "primereact/badge";
 import { TieredMenu } from "primereact/tieredmenu";
 import React, { useEffect, useRef, useState } from "react";
@@ -7,8 +6,6 @@ import { useTranslation } from "react-i18next";
 import { TaskType } from "../../types/TaskType";
 import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { useDigitizationLists } from "../../contexts/extractions/DigitizationListsContext";
-import { useDocumentsSearch } from "../../contexts/documents/search/DocumentsSearchContext";
-import { useDocuments } from "../../contexts/documents/DocumentsContext";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import {
     CategoryOption,
@@ -18,19 +15,19 @@ import { useUser } from "../../contexts/user/UserContext";
 import { ActionType } from "../../types/ActionType";
 import { MenuItem } from "primereact/menuitem";
 import { useDigitizationManager } from "../../contexts/extractions/DigitizationListsManagerContext";
+import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
+import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
+import DigitizationListBox from "../../components/DigitizationListBox";
+import { useDocumentsQuery } from "../../contexts/documents/search/DocumentsQueryContext";
 
 interface DocumentsActionsMenuProps {}
 
 const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
     const { t } = useTranslation();
     const { user } = useUser();
-    const {
-        selectedDocuments,
-        selectAll,
-        handleExportDocuments,
-        handleUpdateCategory,
-        handleStartTask,
-    } = useDocuments();
+    const { numSelected } = useDocumentsSelection();
+    const { exportDocuments, updateCategory, startTask } =
+        useDocumentsActions();
     const { categories } = useAssignableCategories();
     const { digitizationLists } = useDigitizationLists();
     const {
@@ -38,13 +35,8 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         addDocumentsToDigitizationList,
         removeDocumentsFromDigitizationList,
     } = useDigitizationManager();
-    const { activeQuery, activeDigitizationList } = useDocumentsSearch();
-
-    const [hasSelection, setHasSelection] = useState(false);
-
-    useEffect(() => {
-        setHasSelection(selectedDocuments.length > 0);
-    }, [selectedDocuments]);
+    const { searchByDigitizationListId, digitizationListId } =
+        useDocumentsQuery();
 
     const toggleTaskSelectorMenu = (event) => {
         if (taskSelectorMenuRef.current) {
@@ -70,9 +62,9 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         confirmAction(
             t(
                 `Are you sure you want to change category to "{{category}}" for {{count}} selected documents?`,
-                { category: category_name, count: selectedDocuments.length }
+                { category: category_name, count: numSelected }
             ),
-            () => handleUpdateCategory(category_id, category_name)
+            () => updateCategory(category_id, category_name)
         );
     };
 
@@ -85,8 +77,8 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
                 : taskType === TaskType.SyncFromCatalog
                 ? "Are you sure you want to sync {{count}} selected documents with catalog?"
                 : "Are you sure you want to process {{count}} selected documents?";
-        confirmAction(t(taskMesage, { count: selectedDocuments.length }), () =>
-            handleStartTask(taskType)
+        confirmAction(t(taskMesage, { count: numSelected }), () =>
+            startTask(taskType)
         );
     };
 
@@ -94,7 +86,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         confirmAction(
             t(
                 `Are you sure you want to create digitization list from {{count}} selected documents?`,
-                { count: selectedDocuments.length }
+                { count: numSelected }
             ),
             () => createDigitizationList()
         );
@@ -104,22 +96,22 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         confirmAction(
             t(
                 `Are you sure you want to add {{count}} selected documents to digitization list {{digitizationListId}}?`,
-                { count: selectedDocuments.length, digitizationListId }
+                { count: numSelected, digitizationListId }
             ),
             () => addDocumentsToDigitizationList(digitizationListId)
         );
     };
 
     const handleClickRemoveFromDigitizationList = () => {
-        if (!activeDigitizationList) {
+        if (!digitizationListId) {
             return;
         }
         confirmAction(
             t(
                 `Are you sure you want to remove {{count}} selected documents from digitization list {{digitizationListId}}?`,
                 {
-                    count: selectedDocuments.length,
-                    digitizationListId: activeDigitizationList,
+                    count: numSelected,
+                    digitizationListId,
                 }
             ),
             () => removeDocumentsFromDigitizationList()
@@ -152,25 +144,13 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
     const createDigitizationListsTieredMenu = (): MenuItem[] => {
         return [
             {
-                template: () => {
-                    return (
-                        <ListBox
-                            className="overflow-auto"
-                            style={{ maxHeight: "calc(100vh - 70px)" }}
-                            options={digitizationLists.map((l) => ({
-                                label: `${l.id}: ${l.extractor}, ${
-                                    l.extracted_at
-                                }, ${l.extracted_pages} ${t("pages")}`,
-                                value: l.id,
-                            }))}
-                            onChange={(e) =>
-                                handleClickAddToDigitizationList(
-                                    e.value as number
-                                )
-                            }
-                        />
-                    );
-                },
+                template: () => (
+                    <DigitizationListBox
+                        callback={(digitizationId) =>
+                            handleClickAddToDigitizationList(digitizationId)
+                        }
+                    />
+                ),
             },
         ];
     };
@@ -182,7 +162,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         items: [
             {
                 label: t("Export to XSLX"),
-                command: () => handleExportDocuments(),
+                command: () => exportDocuments(),
             },
         ],
     };
@@ -262,14 +242,11 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         ) {
             items.push(separatorMenuItem);
         }
-        if (
-            user.actions!.includes(ActionType.Extract) &&
-            !activeDigitizationList
-        ) {
+        if (user.actions!.includes(ActionType.Extract) && !digitizationListId) {
             items.push(createDigitizationListMenuItem);
         }
         if (user.actions!.includes(ActionType.AdminExtractions)) {
-            if (activeDigitizationList) {
+            if (digitizationListId) {
                 items.push(removeDocumentsFromDigitizationListMenuItem);
             } else {
                 items.push(addDocumentsToDigitizationListMenuItem);
@@ -293,8 +270,8 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
             <Button
                 icon="pi pi-objects-column"
                 className="p-button-rounded p-button-text"
-                severity={hasSelection ? "help" : "secondary"}
-                disabled={!hasSelection}
+                severity={numSelected > 0 ? "help" : "secondary"}
+                disabled={numSelected === 0}
                 onClick={toggleTaskSelectorMenu}
                 aria-controls="popup_menu_left"
                 aria-haspopup

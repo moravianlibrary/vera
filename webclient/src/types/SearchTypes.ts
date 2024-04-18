@@ -3,6 +3,7 @@ export enum RuleType {
     Field = 'Field',
     TextField = 'TextField',
     NumberField = 'NumberField',
+    EnumField = 'EnumField',
     TreeField = 'TreeField',
 }
 
@@ -28,6 +29,13 @@ export enum NumberOption {
     LessThan = "LessThan",
     MoreThan = "MoreThan",
     Between = "Between",
+    IsNull = "IsNull",
+    IsNotNull = "IsNotNull",
+};
+
+export enum EnumOption {
+    Is = "Is",
+    IsNot = "IsNot",
     IsNull = "IsNull",
     IsNotNull = "IsNotNull",
 };

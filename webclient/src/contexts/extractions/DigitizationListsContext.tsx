@@ -12,8 +12,6 @@ import ApiDigitizationExtractions, {
     DigitizationExtraction,
 } from "../../adapters/ApiDigitizationExtractions";
 import DigitizationListModel from "./DigitizationListModel";
-import { useDocumentsSearch } from "../documents/search/DocumentsSearchContext";
-import { useDocuments } from "../documents/DocumentsContext";
 
 interface DigitizationListsContextProps {
     digitizationLists: DigitizationExtraction[];

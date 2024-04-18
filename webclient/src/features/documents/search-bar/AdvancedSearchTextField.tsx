@@ -10,7 +10,9 @@ interface AdvancedSearchTextFieldProps {
     data: SearchTextField;
 }
 
-const AdvancedSearchTextField: React.FC<AdvancedSearchTextFieldProps> = ({ data }) => {
+const AdvancedSearchTextField: React.FC<AdvancedSearchTextFieldProps> = ({
+    data,
+}) => {
     const { t } = useTranslation();
 
     const [option, setOption] = useState<TextOption>(data.option as TextOption);
@@ -32,15 +34,21 @@ const AdvancedSearchTextField: React.FC<AdvancedSearchTextFieldProps> = ({ data 
                 className="w-12rem"
                 value={option}
                 onChange={handleSelectOption}
-                options={Object.values(TextOption)}
-                // options={Object.keys(TextOption).map(option => ({ value: option, label: t(option) }))}
-                placeholder={t('Select operation')} />
-            {option !== TextOption.IsNull && option !== TextOption.IsNotNull &&
-            <InputText
-                className="w-14rem"
-                autoFocus
-                value={value}
-                onChange={handleChangeValue} />}
+                options={Object.keys(TextOption).map((option) => ({
+                    value: option,
+                    label: t(option),
+                }))}
+                placeholder={t("Select operation")}
+            />
+            {option !== TextOption.IsNull &&
+                option !== TextOption.IsNotNull && (
+                    <InputText
+                        className="w-14rem"
+                        autoFocus
+                        value={value}
+                        onChange={handleChangeValue}
+                    />
+                )}
         </div>
     );
 };

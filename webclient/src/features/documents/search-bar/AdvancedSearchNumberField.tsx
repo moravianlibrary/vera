@@ -55,7 +55,10 @@ const AdvancedSearchNumberField: React.FC<AdvancedSearchNumberFieldProps> = ({
                 className="w-12rem"
                 value={option}
                 onChange={handleSelectOption}
-                options={Object.values(NumberOption)}
+                options={Object.keys(NumberOption).map((option) => ({
+                    value: option,
+                    label: t(option),
+                }))}
                 placeholder={t("Select operation")}
             />
             {option !== NumberOption.IsNull &&

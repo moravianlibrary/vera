@@ -10,6 +10,7 @@ from sqlalchemy import (
     func,
 )
 from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from services.database import Base
 from catalogs.enums import DigitizationState, MaterialType, IssuanceType
@@ -60,3 +61,17 @@ class Document(Base):
     extraction_id = Column(
         Integer, ForeignKey("digitization_extractions.id"), index=True
     )
+
+    @hybrid_property
+    def pages_count_actual(self):
+        return (
+            self.pages_count_manual
+            or self.pages_count_predicted
+            or self.pages_count
+        )
+
+    @pages_count_actual.expression
+    def pages_count_actual(cls):
+        return func.coalesce(
+            cls.pages_count_manual, cls.pages_count_predicted, cls.pages_count
+        )

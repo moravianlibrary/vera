@@ -6,6 +6,7 @@ from documents.enums import (
     DocumentCreateResult,
     DocumentField,
     GroupOption,
+    EnumOption,
     NumberOption,
     TextOption,
     TreeOption,
@@ -157,8 +158,8 @@ class DocumentCreateResponse(BaseModel):
 
 class SearchField(BaseModel):
     field: DocumentField
-    option: Union[TextOption, NumberOption, TreeOption]
-    value: Optional[Union[str, int, Tuple[int, int], List[int]]]
+    option: Union[TextOption, NumberOption, EnumOption, TreeOption]
+    value: Optional[Union[str, int, Tuple[int, int], List[int]]] = None
 
 
 class SearchGroup(BaseModel):

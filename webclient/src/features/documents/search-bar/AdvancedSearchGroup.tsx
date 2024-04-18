@@ -8,7 +8,7 @@ import AdvancedSearchNode from "./AdvancedSearchNode";
 import React from "react";
 import { GroupOption } from "../../../types/SearchTypes";
 
-const MAX_GROUP_LEVEL = 2
+const MAX_GROUP_LEVEL = 2;
 const MAX_FIELD_LEVEL = MAX_GROUP_LEVEL + 1;
 
 interface AdvancedSearchGroupProps {
@@ -18,11 +18,18 @@ interface AdvancedSearchGroupProps {
     bgColor: string | undefined;
 }
 
-const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = ({ data, index, bgColor, onDelete }) => {
+const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = ({
+    data,
+    index,
+    bgColor,
+    onDelete,
+}) => {
     const { t } = useTranslation();
 
-    const options = Object.keys(GroupOption).map(option => (
-        { value: option, label: t(option === GroupOption.MatchAll ? "Match all" : "Match any") }));
+    const options = Object.keys(GroupOption).map((option) => ({
+        value: option,
+        label: t(option === GroupOption.MatchAll ? "Match all" : "Match any"),
+    }));
     const [option, setOption] = useState(data.option);
     const [subRules, setSubRules] = useState(data.sub_rules);
 
@@ -32,7 +39,7 @@ const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = ({ data, index, 
         data.createSubGroup();
         setSubRules(data.sub_rules);
     };
-    
+
     const handleCreateFieldRule = () => {
         data.createSubField();
         setSubRules(data.sub_rules);
@@ -45,6 +52,7 @@ const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = ({ data, index, 
 
     const handleSelectOption = (e: DropdownChangeEvent) => {
         data.setOption(e.value);
+        setOption(e.value);
     };
 
     const groupHeader = (
@@ -54,48 +62,54 @@ const AdvancedSearchGroup: React.FC<AdvancedSearchGroupProps> = ({ data, index, 
                 onChange={handleSelectOption}
                 options={options}
             />
-            {data.level > 0 && <Button
-                icon="pi pi-times"
-                text
-                severity="danger"
-                onClick={() => onDelete!(index!)}
-            />}
+            {data.level > 0 && (
+                <Button
+                    icon="pi pi-times"
+                    text
+                    severity="danger"
+                    onClick={() => onDelete!(index!)}
+                />
+            )}
         </div>
     );
 
     const groupFooter = (
         <div>
-            {data.level < MAX_FIELD_LEVEL && 
-            <div className="flex">
-                <Button
-                    label={t('Add rule')}
-                    text
-                    onClick={handleCreateFieldRule}
-                />
-                {data.level < MAX_GROUP_LEVEL && 
-                <Button
-                    label={t('Add group')}
-                    text
-                    onClick={handleCreateRuleGroup}
-                />}
-            </div>}
+            {data.level < MAX_FIELD_LEVEL && (
+                <div className="flex">
+                    <Button
+                        label={t("Add rule")}
+                        text
+                        onClick={handleCreateFieldRule}
+                    />
+                    {data.level < MAX_GROUP_LEVEL && (
+                        <Button
+                            label={t("Add rules group")}
+                            text
+                            onClick={handleCreateRuleGroup}
+                        />
+                    )}
+                </div>
+            )}
         </div>
     );
-    
+
     return (
         <Card
             style={{ background: bgColor }}
             header={groupHeader}
             footer={groupFooter}
         >
-        <div className="flex flex-column gap-1 overflow-hidden">
-            {subRules.map((rule, index) =>
-                <AdvancedSearchNode key={`rule_${Date.now()}_${index}`}
-                    data={rule}
-                    index={index}
-                    onDelete={handleDeleteSubRule} />
-            )}
-        </div>
+            <div className="flex flex-column gap-1 overflow-hidden">
+                {subRules.map((rule, index) => (
+                    <AdvancedSearchNode
+                        key={`rule_${Date.now()}_${index}`}
+                        data={rule}
+                        index={index}
+                        onDelete={handleDeleteSubRule}
+                    />
+                ))}
+            </div>
         </Card>
     );
 };

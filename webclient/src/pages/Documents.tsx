@@ -7,14 +7,15 @@ import DocumentsHeader from "../features/documents/DocumentsHeader";
 import DocumentsTable from "../features/documents/DocumentsTable";
 import { DocumentsProvider } from "../contexts/documents/DocumentsContext";
 import { AssignableCategoriesProvider } from "../contexts/categories/AssignableCategoriesContext";
-import {
-    DocumentsSearchProvider,
-    useDocumentsSearch,
-} from "../contexts/documents/search/DocumentsSearchContext";
 import { useSearchParams } from "react-router-dom";
 import ApiCategories, { AssignableCategory } from "../adapters/ApiCategories";
 import { DigitizationListsProvider } from "../contexts/extractions/DigitizationListsContext";
 import { DigitizationListsManagerProvider } from "../contexts/extractions/DigitizationListsManagerContext";
+import { DocumentsQueryProvider } from "../contexts/documents/search/DocumentsQueryContext";
+import { DocumentsSelectionProvider } from "../contexts/documents/DocumentsSelectionContext";
+import { DocumentsActionsProvider } from "../contexts/documents/DocumentsActionsContext";
+import { AdvancedSearchProvider } from "../contexts/documents/search/AdvancedSearchContext";
+import { CategoriesProvider } from "../contexts/categories/CategoriesContext";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -65,43 +66,44 @@ const Documents: React.FC = () => {
 
     return (
         <div className="table-container">
-            <AssignableCategoriesProvider>
-                <DigitizationListsProvider>
-                    <DocumentsSearchProvider
-                        extractionId={extractionId}
-                        digitizationListId={digitizationListId}
-                        categoryIds={categoryIds}
-                    >
-                        <DocumentsDiv />
-                    </DocumentsSearchProvider>
-                </DigitizationListsProvider>
-            </AssignableCategoriesProvider>
+            <DocumentsQueryProvider>
+                <AssignableCategoriesProvider>
+                    <CategoriesProvider>
+                        <DigitizationListsProvider>
+                            <DocumentsProvider>
+                                <DocumentsSelectionProvider>
+                                    <DocumentsActionsProvider>
+                                        <DigitizationListsManagerProvider>
+                                            <AdvancedSearchProvider>
+                                                <DocumentsDiv />
+                                            </AdvancedSearchProvider>
+                                        </DigitizationListsManagerProvider>
+                                    </DocumentsActionsProvider>
+                                </DocumentsSelectionProvider>
+                            </DocumentsProvider>
+                        </DigitizationListsProvider>
+                    </CategoriesProvider>
+                </AssignableCategoriesProvider>
+            </DocumentsQueryProvider>
         </div>
     );
 };
 
 const DocumentsDiv: React.FC = () => {
-    const { activeQuery } = useDocumentsSearch();
-
     const [insertMode, setInsertMode] = useState(false);
     const [createMode, setCreateMode] = useState(false);
 
     return (
-        <DocumentsProvider query={activeQuery}>
-            <DigitizationListsManagerProvider>
-                <DocumentsHeader
-                    onInsert={() => setInsertMode(true)}
-                    onCreate={() => setCreateMode(true)}
-                />
-                <DocumentsTable />
-                <Dialog
-                    visible={insertMode}
-                    onHide={() => setInsertMode(false)}
-                >
-                    <InsertDocuments onClose={() => setInsertMode(false)} />
-                </Dialog>
-            </DigitizationListsManagerProvider>
-        </DocumentsProvider>
+        <div>
+            <DocumentsHeader
+                onInsert={() => setInsertMode(true)}
+                onCreate={() => setCreateMode(true)}
+            />
+            <DocumentsTable />
+            <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
+                <InsertDocuments onClose={() => setInsertMode(false)} />
+            </Dialog>
+        </div>
     );
 };
 
