@@ -4,14 +4,26 @@ import AdvancedSearchNode from "./AdvancedSearchNode";
 import React from "react";
 import { useAdvancedSearch } from "../../../contexts/documents/search/AdvancedSearchContext";
 
-const AdvancedSearch: React.FC = () => {
+interface AdvancedSearchProps {
+    onApplyFilter?: () => void;
+}
+
+const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onApplyFilter }) => {
     const { t } = useTranslation();
     const {
         rootSearchGroup,
+        // TODO: rename, drop prefix handle
         handleApplyFilter,
         handleSaveFilter,
         handleClearFilter,
     } = useAdvancedSearch();
+
+    const handleApplyFilterClick = () => {
+        handleApplyFilter();
+        if (onApplyFilter) {
+            onApplyFilter();
+        }
+    };
 
     return (
         <div className="flex flex-column gap-1 flex-grow-0">
@@ -34,7 +46,7 @@ const AdvancedSearch: React.FC = () => {
                 <Button
                     label={t("Apply filter")}
                     outlined
-                    onClick={handleApplyFilter}
+                    onClick={handleApplyFilterClick}
                 />
             </div>
         </div>

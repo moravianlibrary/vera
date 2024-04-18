@@ -8,6 +8,7 @@ import { ConfirmDialog } from "primereact/confirmdialog";
 import DocumentsActionsMenu from "./ActionsMenu";
 import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
 import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
+import { Badge } from "primereact/badge";
 
 interface DocumentsHeaderProps {
     onInsert: () => void;
@@ -115,9 +116,12 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
                         accept={deleteDocuments}
                     />
                 </div>
-                <span className="text-sm text-gray-700">
-                    {t("Number of selected documents")}: {numSelected}
-                </span>
+                <Badge
+                    className="surface-50 text-gray-600"
+                    value={`${t(
+                        "Number of selected documents"
+                    )}: ${numSelected}`}
+                />
             </div>
         </React.Fragment>
     );
