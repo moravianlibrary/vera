@@ -9,6 +9,7 @@ import AssignableCategoryPicker from "../../../components/pickers/AssignableCate
 import { useDocumentsQuery } from "../../../contexts/documents/search/DocumentsQueryContext";
 import DigitizationListBox from "../../../components/DigitizationListBox";
 import CategoryPicker from "../../../components/pickers/CategoryPicker";
+import { Badge } from "primereact/badge";
 
 const DocumentsSearchBar = () => {
     const { t } = useTranslation();
@@ -57,6 +58,11 @@ const DocumentsSearchBar = () => {
         setTriggerSearchTimer(timer);
     };
 
+    const handleSearchByCategoryIds = (categoryIds: number[]) => {
+        searchByCategoryIds(categoryIds);
+        categorySelectorRef.current!.hide();
+    };
+
     // TODO: implement search by taskId and extractionId
     return (
         <div className="flex flex-column">
@@ -77,7 +83,7 @@ const DocumentsSearchBar = () => {
                         category_id={
                             categoryIds.length > 0 ? categoryIds[0] : null
                         }
-                        callbackSubcategories={searchByCategoryIds}
+                        callbackSubcategories={handleSearchByCategoryIds}
                     />
                 </OverlayPanel>
                 {/* <Button icon="pi pi-play-circle" outlined /> */}
@@ -113,7 +119,9 @@ const DocumentsSearchBar = () => {
                     }}
                 />
                 <OverlayPanel ref={advancedSearchRef}>
-                    <AdvancedSearch />
+                    <AdvancedSearch
+                        onApplyFilter={() => advancedSearchRef.current!.hide()}
+                    />
                 </OverlayPanel>
                 <Button
                     className={
@@ -137,13 +145,15 @@ const DocumentsSearchBar = () => {
                 />
             </div>
             <div className="flex mt-1 text-sm justify-content-between">
-                <span className="text-gray-700">
-                    {t("Number of found documents")}: {numFound}
-                </span>
+                <Badge
+                    className="surface-50 text-gray-600"
+                    value={`${t("Number of found documents")}: ${numFound}`}
+                />
                 {!isQueryAll && (
-                    <span className="text-yellow-700">
-                        {t("Active filtering")}
-                    </span>
+                    <Badge
+                        className="bg-yellow-700"
+                        value={t("Active filtering")}
+                    />
                 )}
             </div>
         </div>
