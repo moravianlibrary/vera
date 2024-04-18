@@ -110,7 +110,7 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
     digitizationListId,
 }) => {
     const {
-        searchByCategoryId,
+        searchByCategoryIds,
         searchByExtractionId,
         searchByDigitizationListId,
     } = useDocumentsQuery();
@@ -119,7 +119,7 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
     const [createMode, setCreateMode] = useState(false);
 
     useEffect(() => {
-        // searchByCategoryId(categoryIds);
+        searchByCategoryIds(categoryIds);
         if (extractionId !== null) {
             searchByExtractionId(extractionId);
         } else if (digitizationListId !== null) {
