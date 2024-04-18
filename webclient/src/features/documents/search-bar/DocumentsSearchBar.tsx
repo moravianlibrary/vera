@@ -21,6 +21,7 @@ const DocumentsSearchBar = () => {
         searchByDigitizationListId,
         searchPhrase,
         searchBySearchPhrase,
+        searchGroup,
     } = useDocumentsQuery();
 
     const advancedSearchRef = useRef<OverlayPanel | null>(null);
@@ -46,7 +47,11 @@ const DocumentsSearchBar = () => {
             clearTimeout(triggerSearchTimer);
         }
         const timer = setTimeout(() => {
-            searchBySearchPhrase(e.target.value);
+            if (e.target.value !== "") {
+                searchBySearchPhrase(e.target.value);
+            } else {
+                queryAll();
+            }
         }, 1000);
         setTriggerSearchTimer(timer);
     };
@@ -90,6 +95,11 @@ const DocumentsSearchBar = () => {
                     />
                 </OverlayPanel>
                 <InputText
+                    className={
+                        searchPhrase !== null && searchPhrase !== ""
+                            ? "border-yellow-600 border-3"
+                            : "p-button-outlined"
+                    }
                     placeholder={t("Search")}
                     value={searchPhrase_}
                     onChange={handleSearchPhraseChange}
@@ -99,16 +109,16 @@ const DocumentsSearchBar = () => {
                         }
                     }}
                 />
-                <Button
-                    icon="pi pi-search"
-                    onClick={() => searchBySearchPhrase(searchPhrase_)}
-                />
                 <OverlayPanel ref={advancedSearchRef}>
                     <AdvancedSearch />
                 </OverlayPanel>
                 <Button
+                    className={
+                        searchGroup
+                            ? "bg-yellow-600 border-yellow-700"
+                            : "p-button-outlined"
+                    }
                     icon="pi pi-ellipsis-v"
-                    outlined
                     onClick={(e) =>
                         (advancedSearchRef.current as OverlayPanel).toggle(e)
                     }

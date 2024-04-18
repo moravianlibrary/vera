@@ -7,10 +7,6 @@ import DocumentsHeader from "../features/documents/DocumentsHeader";
 import DocumentsTable from "../features/documents/DocumentsTable";
 import { DocumentsProvider } from "../contexts/documents/DocumentsContext";
 import { AssignableCategoriesProvider } from "../contexts/categories/AssignableCategoriesContext";
-import {
-    DocumentsSearchProvider,
-    useDocumentsSearch,
-} from "../contexts/documents/search/DocumentsSearchContext";
 import { useSearchParams } from "react-router-dom";
 import ApiCategories, { AssignableCategory } from "../adapters/ApiCategories";
 import { DigitizationListsProvider } from "../contexts/extractions/DigitizationListsContext";
@@ -74,19 +70,17 @@ const Documents: React.FC = () => {
                 <AssignableCategoriesProvider>
                     <CategoriesProvider>
                         <DigitizationListsProvider>
-                            <DocumentsSearchProvider>
-                                <DocumentsProvider>
-                                    <DocumentsSelectionProvider>
-                                        <DocumentsActionsProvider>
-                                            <DigitizationListsManagerProvider>
-                                                <AdvancedSearchProvider>
-                                                    <DocumentsDiv />
-                                                </AdvancedSearchProvider>
-                                            </DigitizationListsManagerProvider>
-                                        </DocumentsActionsProvider>
-                                    </DocumentsSelectionProvider>
-                                </DocumentsProvider>
-                            </DocumentsSearchProvider>
+                            <DocumentsProvider>
+                                <DocumentsSelectionProvider>
+                                    <DocumentsActionsProvider>
+                                        <DigitizationListsManagerProvider>
+                                            <AdvancedSearchProvider>
+                                                <DocumentsDiv />
+                                            </AdvancedSearchProvider>
+                                        </DigitizationListsManagerProvider>
+                                    </DocumentsActionsProvider>
+                                </DocumentsSelectionProvider>
+                            </DocumentsProvider>
                         </DigitizationListsProvider>
                     </CategoriesProvider>
                 </AssignableCategoriesProvider>
@@ -96,8 +90,6 @@ const Documents: React.FC = () => {
 };
 
 const DocumentsDiv: React.FC = () => {
-    const { activeQuery } = useDocumentsSearch();
-
     const [insertMode, setInsertMode] = useState(false);
     const [createMode, setCreateMode] = useState(false);
 

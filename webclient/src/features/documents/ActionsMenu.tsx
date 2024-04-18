@@ -6,8 +6,6 @@ import { useTranslation } from "react-i18next";
 import { TaskType } from "../../types/TaskType";
 import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { useDigitizationLists } from "../../contexts/extractions/DigitizationListsContext";
-import { useDocumentsSearch } from "../../contexts/documents/search/DocumentsSearchContext";
-import { useDocuments } from "../../contexts/documents/DocumentsContext";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import {
     CategoryOption,
@@ -20,6 +18,7 @@ import { useDigitizationManager } from "../../contexts/extractions/DigitizationL
 import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
 import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
 import DigitizationListBox from "../../components/DigitizationListBox";
+import { useDocumentsQuery } from "../../contexts/documents/search/DocumentsQueryContext";
 
 interface DocumentsActionsMenuProps {}
 
@@ -36,7 +35,8 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         addDocumentsToDigitizationList,
         removeDocumentsFromDigitizationList,
     } = useDigitizationManager();
-    const { activeQuery, activeDigitizationList } = useDocumentsSearch();
+    const { searchByDigitizationListId, digitizationListId } =
+        useDocumentsQuery();
 
     const toggleTaskSelectorMenu = (event) => {
         if (taskSelectorMenuRef.current) {
@@ -103,7 +103,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
     };
 
     const handleClickRemoveFromDigitizationList = () => {
-        if (!activeDigitizationList) {
+        if (!digitizationListId) {
             return;
         }
         confirmAction(
@@ -111,7 +111,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
                 `Are you sure you want to remove {{count}} selected documents from digitization list {{digitizationListId}}?`,
                 {
                     count: numSelected,
-                    digitizationListId: activeDigitizationList,
+                    digitizationListId,
                 }
             ),
             () => removeDocumentsFromDigitizationList()
@@ -242,14 +242,11 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         ) {
             items.push(separatorMenuItem);
         }
-        if (
-            user.actions!.includes(ActionType.Extract) &&
-            !activeDigitizationList
-        ) {
+        if (user.actions!.includes(ActionType.Extract) && !digitizationListId) {
             items.push(createDigitizationListMenuItem);
         }
         if (user.actions!.includes(ActionType.AdminExtractions)) {
-            if (activeDigitizationList) {
+            if (digitizationListId) {
                 items.push(removeDocumentsFromDigitizationListMenuItem);
             } else {
                 items.push(addDocumentsToDigitizationListMenuItem);

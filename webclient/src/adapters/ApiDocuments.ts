@@ -1,7 +1,7 @@
-import { DocumentField } from "../contexts/documents/search/DocumentSearchField";
 import { SearchGroupParams } from "../contexts/documents/search/SearchNodes";
 import { DigitizationState } from "../types/DigitizationState";
 import { DocumentCreateResult } from "../types/DocumentCreateResult";
+import { DocumentField } from "../types/DocumentSearchField";
 import { IdentifierType } from "../types/IdentifierType";
 import { IssuanceType } from "../types/IssuanceType";
 import { MaterialType } from "../types/MaterialType";

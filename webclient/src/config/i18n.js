@@ -433,6 +433,9 @@ const resources = {
         Between: "Mezi",
         IsIn: "Je v",
         IsNotIn: "Není v",
+        Is: "Je",
+        IsNot: "Není",
+        "Add rules group": "Přidat skupinu pravidel",
     },
   },
 };

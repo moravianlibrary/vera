@@ -20,10 +20,26 @@ class DocumentCreateResult(Enum):
 
 class DocumentField(Enum):
     Sysno = "Sysno"
+    MaterialType = "MaterialType"
+    IssuanceType = "IssuanceType"
     Volume = "Volume"
+    Bundle = "Bundle"
+    Year = "Year"
+
     Category = "Category"
     Title = "title"
+
+    Barcode = "Barcode"
+    Signature = "Signature"
+    Cnb = "Cnb"
+    IsbnIssn = "IsbnIssn"
+
+    DigitizationState = "DigitizationState"
+
     PagesCount = "PagesCount"
+    PagesCountCatalog = "PagesCountCatalog"
+    PagesCountManual = "PagesCountManual"
+    PagesCountPredicted = "PagesCountPredicted"
 
 
 class GroupOption(Enum):
@@ -48,6 +64,13 @@ class NumberOption(Enum):
     LessThan = "LessThan"
     MoreThan = "MoreThan"
     Between = "Between"
+    IsNull = "IsNull"
+    IsNotNull = "IsNotNull"
+
+
+class EnumOption(Enum):
+    Is = "Is"
+    IsNot = "IsNot"
     IsNull = "IsNull"
     IsNotNull = "IsNotNull"
 

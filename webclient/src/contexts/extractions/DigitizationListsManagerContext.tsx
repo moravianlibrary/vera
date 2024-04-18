@@ -1,10 +1,10 @@
 import React, { createContext, useContext, ReactNode } from "react";
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
-import { useDocumentsSearch } from "../documents/search/DocumentsSearchContext";
 import { useDocuments } from "../documents/DocumentsContext";
 import { useDigitizationLists } from "./DigitizationListsContext";
 import { useDocumentsSelection } from "../documents/DocumentsSelectionContext";
+import { useDocumentsQuery } from "../documents/search/DocumentsQueryContext";
 
 interface DigitizationListsManagerContextProps {
     createDigitizationList: (intention_id?: number) => void;
@@ -32,9 +32,9 @@ export const DigitizationListsManagerProvider: React.FC<
         removeDocumentsFromDigitizationList,
     } = useDigitizationLists();
     const { removeDocumentsFromResults } = useDocuments();
-    const { activeDigitizationList, setActiveDigitizationList } =
-        useDocumentsSearch();
     const { selectionQuery } = useDocumentsSelection();
+    const { searchByDigitizationListId, digitizationListId } =
+        useDocumentsQuery();
 
     const createDigiList = async (intention_id?: number) => {
         createDigitizationList(selectionQuery, intention_id)
@@ -44,7 +44,7 @@ export const DigitizationListsManagerProvider: React.FC<
                     "Digitization list created successfully",
                     ""
                 );
-                setActiveDigitizationList(digitizationList.id);
+                searchByDigitizationListId(digitizationList.id);
             })
             .catch((error) => {
                 if (
@@ -85,10 +85,7 @@ export const DigitizationListsManagerProvider: React.FC<
     };
 
     const removeDocumentsFromDigiList = async () => {
-        removeDocumentsFromDigitizationList(
-            activeDigitizationList!,
-            selectionQuery
-        )
+        removeDocumentsFromDigitizationList(digitizationListId!, selectionQuery)
             .then((digitizationList) => {
                 showToast(
                     "success",
