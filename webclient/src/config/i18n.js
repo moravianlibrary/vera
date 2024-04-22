@@ -436,6 +436,10 @@ const resources = {
         Is: "Je",
         IsNot: "Není",
         "Add rules group": "Přidat skupinu pravidel",
+
+        "Catalog's pages count": "Počet stránek z katalogu",
+        "Manual pages count": "Počet stránek ručně zadán",
+        "Predicted pages count": "Počet stránek predikovaný",
     },
   },
 };

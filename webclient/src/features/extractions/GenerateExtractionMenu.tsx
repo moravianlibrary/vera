@@ -90,9 +90,9 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
                 />
             </LabeledComponent>
             <Button
-                style={
-                    generating ? { animation: "spin 1s infinite linear" } : {}
-                }
+				// style={
+                //    generating ? { animation: "spin 1s infinite linear" } : {}
+                // }
                 label={t("Generate")}
                 disabled={pagesCount === null || generating}
                 onClick={handleGenerate}
