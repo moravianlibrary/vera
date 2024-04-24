@@ -98,6 +98,15 @@ export class SearchGroup extends SearchNode implements SearchGroupParams {
         this.sub_rules = updatedSubRules;
     }
 
+    filterOutEmptySubRules() {
+        this.sub_rules.filter(subRule => subRule.type === RuleType.Group)
+                .forEach(subGroup => (subGroup as SearchGroup).filterOutEmptySubRules());
+        this.sub_rules = this.sub_rules.filter(subRule =>
+            subRule.type !== RuleType.Field 
+            && !(subRule.type === RuleType.Group && (subRule as SearchGroup).isEmpty())
+        );
+    }
+
     static createCategoryIdSearch(categoryIds: number[]) {
         return new SearchGroup({ level: 0, option: DEFAULT_GROUP_OPTION, sub_rules: [SearchField.createCategoryIdField(categoryIds)] });
     }

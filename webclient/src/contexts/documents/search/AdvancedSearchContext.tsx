@@ -28,10 +28,12 @@ export const AdvancedSearchProvider: React.FC<AdvancedSearchProviderProps> = ({
 
     // TODO: validate rootSearchGroup
     const handleApplyFilter = () => {
+        rootSearchGroup.filterOutEmptySubRules();
         searchBySearchGroup(rootSearchGroup);
     };
 
     const handleSaveFilter = () => {
+        rootSearchGroup.filterOutEmptySubRules();
         localStorage.setItem(
             "advanced_search",
             JSON.stringify(rootSearchGroup)
