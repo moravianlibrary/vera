@@ -1,11 +1,18 @@
+import ast
+import csv
+import json
+from sqlalchemy import select
 from typing import Any, List, Optional
 
 from auth.schemas import CurrentUser
+from documents.schemas import Document
 
 
 TOKEN_CALL = (
     "{KEYCLOAK_HOST}/realms/{REALM_NAME}/protocol/openid-connect/token"
 )
+
+MOCK_DOCUMENTS_FILE = "tests/mock_documents.csv"
 
 
 def mockClsEnv(cls):
@@ -144,3 +151,95 @@ def get_test_user_token() -> str:
     )
 
     return response.json()["access_token"]
+
+
+def parse_str_list(data):
+    parsed_list = ast.literal_eval(data)
+    if isinstance(parsed_list, list):
+        return parsed_list
+    else:
+        raise ValueError("Input is not a valid list")
+
+
+def parse_frequency_list(data):
+    parsed_list = json.loads(data.replace("'", '"').replace("None", "null"))
+    if isinstance(parsed_list, list):
+        return parsed_list
+    else:
+        raise ValueError("Input is not a valid list")
+
+
+def get_mock_document_view_documents():
+    mock_documents = []
+    with open(MOCK_DOCUMENTS_FILE, "r", newline="") as csvfile:
+        reader = csv.DictReader(csvfile, delimiter=";")
+        for row in reader:
+            mock_document = Document(
+                id=int(row["id"]),
+                sysno=row["sysno"],
+                volume=row.get("volume"),
+                barcode=row["barcode"],
+                category_id=(
+                    int(row["category_id"]) if row.get("category_id") else None
+                ),
+                category_name=row.get("category_name"),
+                cnb=row.get("cnb"),
+                isbn_issn=row.get("isbn_issn"),
+                signature=row.get("signature"),
+                material_type=(
+                    row.get("material_type")
+                    if row.get("material_type")
+                    else None
+                ),
+                issuance_type=(
+                    row.get("issuance_type")
+                    if row.get("issuance_type")
+                    else None
+                ),
+                title=row.get("title"),
+                digitization_state=row.get("digitization_state"),
+                year=row.get("year"),
+                bundle=row.get("bundle"),
+                pages_count=(
+                    int(row.get("pages_count"))
+                    if row.get("pages_count")
+                    else None
+                ),
+                pages_count_predicted=(
+                    int(row.get("pages_count_predicted"))
+                    if row.get("pages_count_predicted")
+                    else None
+                ),
+                pages_count_manual=(
+                    int(row.get("pages_count_manual"))
+                    if row.get("pages_count_manual")
+                    else None
+                ),
+                size=row.get("size"),
+                locationUri=row.get("locationUri"),
+                publisher=row.get("publisher"),
+                publishing_place=row.get("publishing_place"),
+                publishing_year=row.get("publishing_year"),
+                languages=(
+                    parse_str_list(row.get("languages"))
+                    if row.get("languages")
+                    else None
+                ),
+                frequencies=(
+                    parse_frequency_list(row.get("frequencies"))
+                    if row.get("frequencies")
+                    else None
+                ),
+                dedicated_scanner=row.get("dedicated_scanner"),
+                created_at=row.get("created_at"),
+                creator=row.get("creator"),
+                extraction_id=(
+                    int(row.get("extraction_id"))
+                    if row.get("extraction_id")
+                    else None
+                ),
+                extractor=row.get("extractor"),
+                extracted_at=row.get("extracted_at"),
+            )
+            mock_documents.append(mock_document)
+    return select(mock_documents)

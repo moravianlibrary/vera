@@ -7,13 +7,18 @@ import DocumentsHeader from "../features/documents/DocumentsHeader";
 import DocumentsTable from "../features/documents/DocumentsTable";
 import { DocumentsProvider } from "../contexts/documents/DocumentsContext";
 import { AssignableCategoriesProvider } from "../contexts/categories/AssignableCategoriesContext";
-import {
-    DocumentsSearchProvider,
-    useDocumentsSearch,
-} from "../contexts/documents/search/DocumentsSearchContext";
 import { useSearchParams } from "react-router-dom";
 import ApiCategories, { AssignableCategory } from "../adapters/ApiCategories";
 import { DigitizationListsProvider } from "../contexts/extractions/DigitizationListsContext";
+import { DigitizationListsManagerProvider } from "../contexts/extractions/DigitizationListsManagerContext";
+import {
+    DocumentsQueryProvider,
+    useDocumentsQuery,
+} from "../contexts/documents/search/DocumentsQueryContext";
+import { DocumentsSelectionProvider } from "../contexts/documents/DocumentsSelectionContext";
+import { DocumentsActionsProvider } from "../contexts/documents/DocumentsActionsContext";
+import { AdvancedSearchProvider } from "../contexts/documents/search/AdvancedSearchContext";
+import { CategoriesProvider } from "../contexts/categories/CategoriesContext";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -64,29 +69,66 @@ const Documents: React.FC = () => {
 
     return (
         <div className="table-container">
-            <AssignableCategoriesProvider>
-                <DigitizationListsProvider>
-                    <DocumentsSearchProvider
-                        extractionId={extractionId}
-                        digitizationListId={digitizationListId}
-                        categoryIds={categoryIds}
-                    >
-                        <DocumentsDiv />
-                    </DocumentsSearchProvider>
-                </DigitizationListsProvider>
-            </AssignableCategoriesProvider>
+            <DocumentsQueryProvider>
+                <AssignableCategoriesProvider>
+                    <CategoriesProvider>
+                        <DigitizationListsProvider>
+                            <DocumentsProvider>
+                                <DocumentsSelectionProvider>
+                                    <DocumentsActionsProvider>
+                                        <DigitizationListsManagerProvider>
+                                            <AdvancedSearchProvider>
+                                                <DocumentsDiv
+                                                    categoryIds={categoryIds}
+                                                    extractionId={extractionId}
+                                                    digitizationListId={
+                                                        digitizationListId
+                                                    }
+                                                />
+                                            </AdvancedSearchProvider>
+                                        </DigitizationListsManagerProvider>
+                                    </DocumentsActionsProvider>
+                                </DocumentsSelectionProvider>
+                            </DocumentsProvider>
+                        </DigitizationListsProvider>
+                    </CategoriesProvider>
+                </AssignableCategoriesProvider>
+            </DocumentsQueryProvider>
         </div>
     );
 };
 
-const DocumentsDiv: React.FC = () => {
-    const { activeQuery } = useDocumentsSearch();
+interface DocumentsDivProps {
+    categoryIds: number[];
+    extractionId: number | null;
+    digitizationListId: number | null;
+}
+
+const DocumentsDiv: React.FC<DocumentsDivProps> = ({
+    categoryIds,
+    extractionId,
+    digitizationListId,
+}) => {
+    const {
+        searchByCategoryIds,
+        searchByExtractionId,
+        searchByDigitizationListId,
+    } = useDocumentsQuery();
 
     const [insertMode, setInsertMode] = useState(false);
     const [createMode, setCreateMode] = useState(false);
 
+    useEffect(() => {
+        searchByCategoryIds(categoryIds);
+        if (extractionId !== null) {
+            searchByExtractionId(extractionId);
+        } else if (digitizationListId !== null) {
+            searchByDigitizationListId(digitizationListId);
+        }
+    }, [categoryIds, extractionId, digitizationListId]);
+
     return (
-        <DocumentsProvider query={activeQuery}>
+        <div>
             <DocumentsHeader
                 onInsert={() => setInsertMode(true)}
                 onCreate={() => setCreateMode(true)}
@@ -95,7 +137,7 @@ const DocumentsDiv: React.FC = () => {
             <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
                 <InsertDocuments onClose={() => setInsertMode(false)} />
             </Dialog>
-        </DocumentsProvider>
+        </div>
     );
 };
 

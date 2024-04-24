@@ -32,8 +32,13 @@ namespace ApiDigitizationExtractions {
         return axiosInstance.post<DigitizationExtraction>(url, query, { headers: authHeader() });
     }
 
-    export function updateExtraction(extraction_id: number, query: DocumentsQuery) {
-        const url = `/extractions/digitization/${extraction_id}`
+    export function addDocumentsToExtraction(extraction_id: number, query: DocumentsQuery) {
+        const url = `/extractions/digitization/${extraction_id}/add_documents`;
+        return axiosInstance.put<DigitizationExtraction>(url, query, { headers: authHeader() });
+    }
+
+    export function removeDocumentsFromExtraction(extraction_id: number, query: DocumentsQuery) {
+        const url = `/extractions/digitization/${extraction_id}/remove_documents`;
         return axiosInstance.put<DigitizationExtraction>(url, query, { headers: authHeader() });
     }
 

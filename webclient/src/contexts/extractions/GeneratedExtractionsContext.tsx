@@ -14,6 +14,7 @@ import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
 
 interface ExtractionsContextProps {
+    loadExtractions: (offset: number, limit: number) => void;
     extractions: GeneratedExtraction[];
     numFound: number;
     defaultProps: GenerateExtraction;
@@ -22,6 +23,7 @@ interface ExtractionsContextProps {
         pages_count?: number,
         quota_id?: number
     ) => void;
+    generating: boolean;
     deleteExtraction: (id: number) => void;
 }
 
@@ -45,12 +47,12 @@ export const GeneratedExtractionsProvider: React.FC<
         include_categories: [],
     };
     const loadAmount = 50;
-    const [offset, setOffset] = useState<number>(0);
     const [extractions, setExtractions] = useState<GeneratedExtraction[]>([]);
     const [numFound, setNumFound] = useState<number>(0);
+    const [generating, setGenerating] = useState(false);
 
-    const loadExtractions = async () => {
-        ApiGeneratedExtractions.getExtractions(offset, loadAmount)
+    const loadExtractions = async (offset: number, limit: number) => {
+        ApiGeneratedExtractions.getExtractions(offset, limit)
             .then((response) => {
                 const transformedData: GeneratedExtraction[] =
                     response.data.extractions.map((extraction) => {
@@ -69,31 +71,33 @@ export const GeneratedExtractionsProvider: React.FC<
         pages_count?: number,
         quota_id?: number
     ) => {
-        ApiGeneratedExtractions.generateExtraction(
-            createData,
-            pages_count,
-            quota_id
-        )
-            .then((response) => {
-                setExtractions([
-                    new ExtractionModel(response.data),
-                    ...extractions,
-                ]);
-            })
-            .catch((error) => {
-                if (
-                    error.response &&
-                    error.response.status &&
-                    error.response.status === 400
-                ) {
-                    showToast(
-                        "error",
-                        t("Extraction creation failed"),
-                        t(error.response.data.detail)
-                    );
-                }
-                console.error(error);
-            });
+        setGenerating(true);
+        try {
+            const response = await ApiGeneratedExtractions.generateExtraction(
+                createData,
+                pages_count,
+                quota_id
+            );
+            setExtractions([
+                new ExtractionModel(response.data),
+                ...extractions,
+            ]);
+        } catch (error) {
+            if (
+                error.response &&
+                error.response.status &&
+                error.response.status === 400
+            ) {
+                showToast(
+                    "error",
+                    t("Extraction creation failed"),
+                    t(error.response.data.detail)
+                );
+            }
+            console.error(error);
+        } finally {
+            setGenerating(false);
+        }
     };
 
     const deleteExtraction = async (id: number) => {
@@ -110,14 +114,16 @@ export const GeneratedExtractionsProvider: React.FC<
 
     useEffect(() => {
         console.log(`Fetching extractions from server.`);
-        loadExtractions();
+        loadExtractions(0, loadAmount);
     }, []);
 
     const contextValue: ExtractionsContextProps = {
+        loadExtractions,
         extractions,
         numFound,
         defaultProps,
         generateExtraction,
+        generating,
         deleteExtraction,
     };
 

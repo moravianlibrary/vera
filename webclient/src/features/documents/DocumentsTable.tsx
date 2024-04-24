@@ -1,7 +1,5 @@
 import {
     DataTable,
-    DataTableRowEditCompleteEvent,
-    DataTableRowEditEvent,
     DataTableSelectionMultipleChangeEvent,
     DataTableValueArray,
 } from "primereact/datatable";
@@ -9,27 +7,19 @@ import {
     CategoryEditor,
     IssuanceTypeEditor,
     MaterialTypeEditor,
-    numberEditor,
     textEditor,
-    textareaEditor,
 } from "../../services/Editors.js";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
-import { accessService } from "../../services/AccessService";
-import { useUser } from "../../contexts/user/UserContext";
 import { useDocuments } from "../../contexts/documents/DocumentsContext";
-import { Document } from "../../adapters/ApiDocuments";
 import DocumentModel from "../../contexts/documents/DocumentModel.js";
-import { MaterialType } from "../../types/MaterialType.js";
-import { Tooltip } from "primereact/tooltip";
-import { OverlayPanel } from "primereact/overlaypanel";
-import { useOverlayScrollListener } from "primereact/hooks";
-import { Menu } from "primereact/menu";
-import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
+import { ConfirmDialog } from "primereact/confirmdialog";
 import { useToast } from "../../contexts/toast/ToastContext";
 import { Dialog } from "primereact/dialog";
+import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
+import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
 
 interface DocumentsTableProps {}
 
@@ -44,63 +34,16 @@ interface DocumentDetailsBodyProps {
 const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     const { t } = useTranslation();
 
-    const {
-        documents,
-        handleLazyLoad,
-        handleDeleteDocument,
-        handleUpdateDocument,
-        selectedDocuments,
-        handleSelectDocuments,
-        handleSelectAllDocuments,
-        selectAll,
-    } = useDocuments();
-    const { user } = useUser();
-    const [categories, setCategories] = useState([]);
-    const [insertMode, setInsertMode] = useState(false);
-
-    const [expandedRows, setExpandedRows] = useState<DocumentModel[]>([]);
-
-    const handleRowExpand = (e: DataTableRowEditEvent) => {
-        setExpandedRows([...expandedRows, e.data as DocumentModel]);
-    };
-
-    const handleRowCollapse = (e: DataTableRowEditEvent) => {
-        setExpandedRows(expandedRows.filter((row) => row.id !== e.data.id));
-    };
-
-    const isAllowedToEdit = (document: Document) => {
-        return accessService.isAllowedToEditDocument(user, document);
-    };
-
-    const deleteButton = (document: DocumentModel) => {
-        if (!insertMode || document.id) {
-            return (
-                <Button
-                    className="p-button-rounded p-button-text"
-                    severity={
-                        isAllowedToEdit(document) ? "danger" : "secondary"
-                    }
-                    disabled={!isAllowedToEdit(document)}
-                    icon="pi pi-trash"
-                    onClick={() => handleDeleteDocument(document)}
-                />
-            );
-        }
-    };
-
-    const handleRowEditComplete = (event: DataTableRowEditCompleteEvent) => {
-        handleUpdateDocument(event.newData as DocumentModel, event.index);
-    };
+    const { documents, lazyLoad } = useDocuments();
+    const { selectedDocuments, selectDocuments, selectAllDocuments } =
+        useDocumentsSelection();
 
     const handleSelectionChange = (
         event: DataTableSelectionMultipleChangeEvent<DataTableValueArray>
     ) => {
         if (event.type === "all") {
-            handleSelectAllDocuments();
+            selectAllDocuments(event.value.length > 0);
             return;
-        }
-        if (selectAll) {
-            handleSelectAllDocuments();
         }
 
         const selectedDocuments: DocumentModel[] = event.value.map(
@@ -108,7 +51,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
                 return selectedItem as DocumentModel;
             }
         );
-        handleSelectDocuments(selectedDocuments);
+        selectDocuments(selectedDocuments);
     };
 
     const pagesCountBody = (document: DocumentModel) => {
@@ -177,7 +120,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
             scrollHeight="calc(100vh - 160px)"
             virtualScrollerOptions={{
                 lazy: true,
-                onLazyLoad: handleLazyLoad,
+                onLazyLoad: lazyLoad,
                 itemSize: 81,
                 delay: 0,
             }}
@@ -223,7 +166,7 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({
     document: doc,
 }) => {
     const { t } = useTranslation();
-    const { handleDeleteDocument } = useDocuments();
+    const { deleteDocument } = useDocumentsActions();
 
     const [panelVisible, setPanelVisible] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState(false);
@@ -231,7 +174,7 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({
 
     const handleAcceptDelete = () => {
         setPanelVisible(false);
-        handleDeleteDocument(doc);
+        deleteDocument(doc);
     };
 
     return (

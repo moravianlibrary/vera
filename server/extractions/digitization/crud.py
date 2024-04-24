@@ -5,6 +5,7 @@ from typing import List, Optional
 from services.database import create
 from documents.models import Document
 from extractions.digitization.models import DigitizationExtraction
+from services.exceptions import EmptyExtraction
 
 
 def create_extraction(
@@ -61,27 +62,63 @@ def delete_extraction(
     return db_extraction
 
 
-def update_extraction(
+def add_documents_to_extraction(
     extraction_id: int,
     document_ids: List[int],
     extracted_pages: int,
     db: Session,
 ):
-    db_document_ids = get_extraction(extraction_id, db).document_ids
+    db_extraction = get_extraction(extraction_id, db)
+    db_document_ids = db_extraction.document_ids
+    db_extracted_pages = db_extraction.extracted_pages
 
     for document_id in document_ids:
         if document_id not in db_document_ids:
             set_document_extracted(document_id, extraction_id, db)
-    for document_id in db_document_ids:
-        if document_id not in document_ids:
-            unset_document_extracted(document_id, extraction_id, db)
 
     db.execute(
         update(DigitizationExtraction)
         .where(DigitizationExtraction.id == extraction_id)
-        .values(document_ids=document_ids, extracted_pages=extracted_pages)
+        .values(
+            document_ids=document_ids + db_document_ids,
+            extracted_pages=extracted_pages + db_extracted_pages,
+        )
     )
     db.commit()
+    return get_extraction(extraction_id, db)
+
+
+def remove_documents_from_extraction(
+    extraction_id: int,
+    document_ids: List[int],
+    pages_count: int,
+    db: Session,
+):
+    db_extraction = get_extraction(extraction_id, db)
+    db_document_ids = db_extraction.document_ids
+    db_extracted_pages = db_extraction.extracted_pages
+
+    if pages_count is None or pages_count == db_extracted_pages:
+        raise EmptyExtraction
+
+    for document_id in document_ids:
+        unset_document_extracted(document_id, extraction_id, db)
+
+    new_document_ids = [
+        document_id
+        for document_id in db_document_ids
+        if document_id not in document_ids
+    ]
+    db.execute(
+        update(DigitizationExtraction)
+        .where(DigitizationExtraction.id == extraction_id)
+        .values(
+            document_ids=new_document_ids,
+            extracted_pages=db_extracted_pages - pages_count,
+        )
+    )
+    db.commit()
+    return get_extraction(extraction_id, db)
 
 
 def set_document_extracted(document_id: int, extraction_id: int, db: Session):

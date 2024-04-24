@@ -1,38 +1,42 @@
 import { Button } from "primereact/button";
+import { Badge } from "primereact/badge";
 import { TieredMenu } from "primereact/tieredmenu";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TaskType } from "../../types/TaskType";
 import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { useDigitizationLists } from "../../contexts/extractions/DigitizationListsContext";
-import { useDocumentsSearch } from "../../contexts/documents/search/DocumentsSearchContext";
-import { useDocuments } from "../../contexts/documents/DocumentsContext";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import {
     CategoryOption,
     buildAssignableCategoriesOptionsTree,
 } from "../../components/pickers/AssignableCategoryPicker";
+import { useUser } from "../../contexts/user/UserContext";
+import { ActionType } from "../../types/ActionType";
+import { MenuItem } from "primereact/menuitem";
+import { useDigitizationManager } from "../../contexts/extractions/DigitizationListsManagerContext";
+import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
+import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
+import DigitizationListBox from "../../components/DigitizationListBox";
+import { useDocumentsQuery } from "../../contexts/documents/search/DocumentsQueryContext";
 
 interface DocumentsActionsMenuProps {}
 
 const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
     const { t } = useTranslation();
-    const {
-        selectedDocuments,
-        selectAll,
-        handleExportDocuments,
-        handleUpdateCategory,
-        handleStartTask,
-    } = useDocuments();
+    const { user } = useUser();
+    const { numSelected } = useDocumentsSelection();
+    const { exportDocuments, updateCategory, startTask } =
+        useDocumentsActions();
     const { categories } = useAssignableCategories();
-    const { createDigitizationList } = useDigitizationLists();
-    const { activeQuery } = useDocumentsSearch();
-
-    const [hasSelection, setHasSelection] = useState(false);
-
-    useEffect(() => {
-        setHasSelection(selectedDocuments.length > 0);
-    }, [selectedDocuments]);
+    const { digitizationLists } = useDigitizationLists();
+    const {
+        createDigitizationList,
+        addDocumentsToDigitizationList,
+        removeDocumentsFromDigitizationList,
+    } = useDigitizationManager();
+    const { searchByDigitizationListId, digitizationListId } =
+        useDocumentsQuery();
 
     const toggleTaskSelectorMenu = (event) => {
         if (taskSelectorMenuRef.current) {
@@ -58,9 +62,9 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         confirmAction(
             t(
                 `Are you sure you want to change category to "{{category}}" for {{count}} selected documents?`,
-                { category: category_name, count: selectedDocuments.length }
+                { category: category_name, count: numSelected }
             ),
-            () => handleUpdateCategory(category_id, category_name)
+            () => updateCategory(category_id, category_name)
         );
     };
 
@@ -73,8 +77,8 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
                 : taskType === TaskType.SyncFromCatalog
                 ? "Are you sure you want to sync {{count}} selected documents with catalog?"
                 : "Are you sure you want to process {{count}} selected documents?";
-        confirmAction(t(taskMesage, { count: selectedDocuments.length }), () =>
-            handleStartTask(taskType)
+        confirmAction(t(taskMesage, { count: numSelected }), () =>
+            startTask(taskType)
         );
     };
 
@@ -82,14 +86,35 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         confirmAction(
             t(
                 `Are you sure you want to create digitization list from {{count}} selected documents?`,
-                { count: selectedDocuments.length }
+                { count: numSelected }
             ),
-            () =>
-                createDigitizationList(
-                    selectAll
-                        ? activeQuery!
-                        : { id_list: selectedDocuments.map((d) => d.id) }
-                )
+            () => createDigitizationList()
+        );
+    };
+
+    const handleClickAddToDigitizationList = (digitizationListId: number) => {
+        confirmAction(
+            t(
+                `Are you sure you want to add {{count}} selected documents to digitization list {{digitizationListId}}?`,
+                { count: numSelected, digitizationListId }
+            ),
+            () => addDocumentsToDigitizationList(digitizationListId)
+        );
+    };
+
+    const handleClickRemoveFromDigitizationList = () => {
+        if (!digitizationListId) {
+            return;
+        }
+        confirmAction(
+            t(
+                `Are you sure you want to remove {{count}} selected documents from digitization list {{digitizationListId}}?`,
+                {
+                    count: numSelected,
+                    digitizationListId,
+                }
+            ),
+            () => removeDocumentsFromDigitizationList()
         );
     };
 
@@ -116,62 +141,126 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         );
     };
 
+    const createDigitizationListsTieredMenu = (): MenuItem[] => {
+        return [
+            {
+                template: () => (
+                    <DigitizationListBox
+                        callback={(digitizationId) =>
+                            handleClickAddToDigitizationList(digitizationId)
+                        }
+                    />
+                ),
+            },
+        ];
+    };
+
     const taskSelectorMenuRef = useRef<TieredMenu | null>(null);
-    const taskSelectorItems = [
-        {
-            label: t("Export to file"),
-            icon: "pi pi-file-export",
-            items: [
-                {
-                    label: t("Export to XSLX"),
-                    command: () => handleExportDocuments(),
-                },
-            ],
-        },
-        {
-            label: t("Change category"),
-            icon: "pi pi-pen-to-square",
-            items: createCategoriesTieredMenu(),
-        },
-        {
-            label: t("Start task"),
-            icon: "pi pi-play-circle",
-            items: [
-                {
-                    label: t("Predict volumes page counts"),
-                    command: () =>
-                        handleClickStartTask(TaskType.PredictVolumePages),
-                },
-                {
-                    label: t("Sync from catalog"),
-                    command: () =>
-                        handleClickStartTask(TaskType.SyncFromCatalog),
-                },
-                {
-                    label: t("Sync from digitization registry"),
-                    command: () =>
-                        handleClickStartTask(
-                            TaskType.SyncFromDigitizationRegistry
-                        ),
-                },
-            ],
-        },
-        {
-            separator: true,
-        },
-        {
-            label: t("Create digitization list"),
-            icon: "pi pi-receipt",
-            command: () => handleClickCreateDigitizationList(),
-        },
-    ];
+    const exportDocumentsMenuItem = {
+        label: t("Export to file"),
+        icon: "pi pi-file-export",
+        items: [
+            {
+                label: t("Export to XSLX"),
+                command: () => exportDocuments(),
+            },
+        ],
+    };
+    const changeCategoryMenuItem = {
+        label: t("Change category"),
+        icon: "pi pi-pen-to-square",
+        items: createCategoriesTieredMenu(),
+    };
+    const startTaskMenuItem = {
+        label: t("Start task"),
+        icon: "pi pi-play-circle",
+        items: [
+            {
+                label: t("Predict volumes page counts"),
+                command: () =>
+                    handleClickStartTask(TaskType.PredictVolumePages),
+            },
+            {
+                label: t("Sync from catalog"),
+                command: () => handleClickStartTask(TaskType.SyncFromCatalog),
+            },
+            {
+                label: t("Sync from digitization registry"),
+                command: () =>
+                    handleClickStartTask(TaskType.SyncFromDigitizationRegistry),
+            },
+        ],
+    };
+    const separatorMenuItem = {
+        separator: true,
+    };
+    const createDigitizationListMenuItem = {
+        label: t("Create digitization list"),
+        icon: "pi pi-receipt",
+        command: () => handleClickCreateDigitizationList(),
+    };
+    const addDocumentsToDigitizationListMenuItem = {
+        label: t("Add documents to digitization list"),
+        icon: (
+            <i className="pi pi-receipt p-overlay-badge mr-2">
+                <Badge
+                    className="bg-transparent text-green-600 text-3xl"
+                    value="+"
+                />
+            </i>
+        ),
+        items: createDigitizationListsTieredMenu(),
+    };
+    const removeDocumentsFromDigitizationListMenuItem = {
+        label: t("Remove documents from digitization list"),
+        icon: (
+            <i className="pi pi-receipt p-overlay-badge mr-2">
+                <Badge
+                    className="bg-transparent text-red-600 text-3xl"
+                    value="-"
+                />
+            </i>
+        ),
+        command: () => handleClickRemoveFromDigitizationList(),
+    };
+
+    const getActionsMenuItems = (): MenuItem[] => {
+        const items: MenuItem[] = [exportDocumentsMenuItem];
+        if (
+            user.actions!.includes(ActionType.EditDatatableOwn) ||
+            user.actions!.includes(ActionType.EditDatatableDepartment) ||
+            user.actions!.includes(ActionType.EditDatatableAll)
+        ) {
+            items.push(changeCategoryMenuItem);
+        }
+        if (user.actions!.includes(ActionType.PlanTasks)) {
+            items.push(startTaskMenuItem);
+        }
+        if (
+            user.actions!.includes(ActionType.Extract) ||
+            user.actions!.includes(ActionType.AdminExtractions)
+        ) {
+            items.push(separatorMenuItem);
+        }
+        if (user.actions!.includes(ActionType.Extract) && !digitizationListId) {
+            items.push(createDigitizationListMenuItem);
+        }
+        if (user.actions!.includes(ActionType.AdminExtractions)) {
+            if (digitizationListId) {
+                items.push(removeDocumentsFromDigitizationListMenuItem);
+            } else {
+                items.push(addDocumentsToDigitizationListMenuItem);
+            }
+        }
+        return items;
+    };
 
     return (
         <div>
             <div className="card flex justify-content-center">
                 <TieredMenu
                     className="w-auto"
-                    model={taskSelectorItems}
+                    model={getActionsMenuItems()}
                     popup
                     submenuIcon="pi pi-chevron-left"
                     ref={taskSelectorMenuRef}
@@ -181,8 +270,8 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
             <Button
                 icon="pi pi-objects-column"
                 className="p-button-rounded p-button-text"
-                severity={hasSelection ? "help" : "secondary"}
-                disabled={!hasSelection}
+                severity={numSelected > 0 ? "help" : "secondary"}
+                disabled={numSelected === 0}
                 onClick={toggleTaskSelectorMenu}
                 aria-controls="popup_menu_left"
                 aria-haspopup

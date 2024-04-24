@@ -1,18 +1,14 @@
 import { Button } from "primereact/button";
-import { TieredMenu } from "primereact/tieredmenu";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import DocumentsSearchBar from "./search-bar/DocumentsSearchBar";
 import { SelectButton } from "primereact/selectbutton";
 import { Toolbar } from "primereact/toolbar";
 import { useTranslation } from "react-i18next";
-import { useDocuments } from "../../contexts/documents/DocumentsContext";
-import { OverlayPanel } from "primereact/overlaypanel";
-import { TaskType } from "../../types/TaskType";
-import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { ConfirmDialog } from "primereact/confirmdialog";
-import { useDigitizationLists } from "../../contexts/extractions/DigitizationListsContext";
-import { useDocumentsSearch } from "../../contexts/documents/search/DocumentsSearchContext";
 import DocumentsActionsMenu from "./ActionsMenu";
+import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
+import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
+import { Badge } from "primereact/badge";
 
 interface DocumentsHeaderProps {
     onInsert: () => void;
@@ -21,24 +17,10 @@ interface DocumentsHeaderProps {
 
 const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const { t } = useTranslation();
-    const {
-        numFound,
-        selectedDocuments,
-        handleStartTask,
-        handleSelectDocuments,
-        selectAll,
-        handleSelectAllDocuments,
-        handleCancelSelection,
-        handleDeleteDocuments,
-        handleUpdateCategory,
-        handleExportDocuments,
-    } = useDocuments();
-    const { categories } = useAssignableCategories();
-    const { createDigitizationList } = useDigitizationLists();
-    const { activeQuery } = useDocumentsSearch();
+    const { numSelected, cancelSelection } = useDocumentsSelection();
+    const { deleteDocuments } = useDocumentsActions();
 
     const [advancedSearch, setAdvancedSearch] = useState(false);
-    const [hasSelection, setHasSelection] = useState(false);
     const [displayOption, setDisplayOption] = useState("datatable");
     const displayOptions = [
         { name: "Option 1", icon: "pi pi-table", value: "datatable" },
@@ -50,62 +32,11 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
         },
     ];
 
-    const taskSelectorMenuRef = useRef(null);
-    const taskSelectorItems = [
-        {
-            label: t("Export to file"),
-            items: [
-                {
-                    label: t("Export to XSLX"),
-                    command: () => handleExportDocuments(),
-                },
-            ],
-        },
-        {
-            label: t("Change category"),
-            items: categories.map((category) => ({
-                label: category.getPath(),
-                command: () => handleUpdateCategory(category.id, category.name),
-            })),
-        },
-        {
-            label: t("Create digitization list"),
-            command: () =>
-                createDigitizationList(
-                    selectAll
-                        ? activeQuery!
-                        : { id_list: selectedDocuments.map((d) => d.id) }
-                ),
-        },
-        {
-            label: t("Predict volumes page counts"),
-            command: () => handleStartTask(TaskType.PredictVolumePages),
-        },
-        {
-            label: t("Sync from catalog"),
-            command: () => handleStartTask(TaskType.SyncFromCatalog),
-        },
-        {
-            label: t("Sync from digitization registry"),
-            command: () =>
-                handleStartTask(TaskType.SyncFromDigitizationRegistry),
-        },
-    ];
     const [confirmDeletionVisible, setConfirmDeletionVisible] = useState(false);
 
     const handleSetDisplayOption = (e) => {
         if (e.value !== null) {
             setDisplayOption(e.value);
-        }
-    };
-
-    useEffect(() => {
-        setHasSelection(selectedDocuments.length > 0);
-    }, [selectedDocuments]);
-
-    const toggleTaskSelectorMenu = (event) => {
-        if (taskSelectorMenuRef.current) {
-            (taskSelectorMenuRef.current as OverlayPanel).toggle(event);
         }
     };
 
@@ -156,8 +87,8 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
                     <Button
                         icon="pi pi-trash"
                         className="p-button-rounded p-button-text"
-                        severity={hasSelection ? "danger" : "secondary"}
-                        disabled={!hasSelection}
+                        severity={numSelected > 0 ? "danger" : "secondary"}
+                        disabled={numSelected === 0}
                         onClick={() => setConfirmDeletionVisible(true)}
                         tooltip={t("Delete selected documents")}
                         tooltipOptions={{ position: "top", showDelay: 500 }}
@@ -165,9 +96,9 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
                     <Button
                         icon="pi pi-times"
                         className="p-button-rounded p-button-text"
-                        severity={hasSelection ? "info" : "secondary"}
-                        disabled={!hasSelection}
-                        onClick={handleCancelSelection}
+                        severity={numSelected > 0 ? "info" : "secondary"}
+                        disabled={numSelected === 0}
+                        onClick={cancelSelection}
                         tooltip={t("Cancel document selection")}
                         tooltipOptions={{ position: "top", showDelay: 500 }}
                     />
@@ -182,13 +113,15 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
                         acceptLabel={t("Delete")}
                         acceptClassName="p-button-danger"
                         rejectLabel={t("Cancel")}
-                        accept={handleDeleteDocuments}
+                        accept={deleteDocuments}
                     />
                 </div>
-                <span className="text-sm text-gray-700">
-                    {t("Number of selected documents")}:{" "}
-                    {selectAll ? numFound : selectedDocuments.length}
-                </span>
+                <Badge
+                    className="surface-50 text-gray-600"
+                    value={`${t(
+                        "Number of selected documents"
+                    )}: ${numSelected}`}
+                />
             </div>
         </React.Fragment>
     );

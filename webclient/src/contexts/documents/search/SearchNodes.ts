@@ -1,5 +1,5 @@
-import { GroupOption, NumberOption, RuleType, TextOption, TreeOption } from "../../../types/SearchTypes";
-import { DocumentField } from "./DocumentSearchField";
+import { EnumOption, GroupOption, NumberOption, RuleType, TextOption, TreeOption } from "../../../types/SearchTypes";
+import { DocumentField } from "../../../types/DocumentSearchField";
 
 type SubRule = SearchGroup | SearchField;
 
@@ -9,8 +9,8 @@ export interface SearchGroupParams {
     sub_rules: SubRule[];
 }
 
-type FieldOption = TextOption | NumberOption | TreeOption | undefined;
-type Value = string | number | [number | undefined, number | undefined] | number[] | undefined;
+type FieldOption = TextOption | NumberOption | EnumOption | TreeOption | undefined;
+type Value = string | number | [number | undefined, number | undefined] | number[] | null | undefined;
 
 interface SearchFieldParams {
     level: number;
@@ -23,6 +23,7 @@ const DEFAULT_GROUP_OPTION = GroupOption.MatchAll;
 const DEFAULT_FIELDS_OPTIONS: Record<RuleType, FieldOption> = {
     [RuleType.TextField]: TextOption.Equals,
     [RuleType.NumberField]: NumberOption.EqualTo,
+    [RuleType.EnumField]: EnumOption.Is,
     [RuleType.TreeField]: TreeOption.IsIn,
     [RuleType.Group]: undefined,
     [RuleType.Field]: undefined,
@@ -51,6 +52,7 @@ export class SearchGroup extends SearchNode implements SearchGroupParams {
                     case RuleType.Group: return new SearchGroup(subRule as SearchGroupParams);
                     case RuleType.TextField: return new SearchTextField(subRule as SearchFieldParams);
                     case RuleType.NumberField: return new SearchNumberField(subRule as SearchFieldParams);
+                    case RuleType.EnumField: return new SearchEnumField(subRule as SearchFieldParams);
                     case RuleType.TreeField: return new SearchTreeField(subRule as SearchFieldParams);
                     default:
                         throw new Error(`Unsupported rule type: ${subRule.type}`);
@@ -94,6 +96,15 @@ export class SearchGroup extends SearchNode implements SearchGroupParams {
             ...this.sub_rules.slice(index + 1)
         ];
         this.sub_rules = updatedSubRules;
+    }
+
+    filterOutEmptySubRules() {
+        this.sub_rules.filter(subRule => subRule.type === RuleType.Group)
+                .forEach(subGroup => (subGroup as SearchGroup).filterOutEmptySubRules());
+        this.sub_rules = this.sub_rules.filter(subRule =>
+            subRule.type !== RuleType.Field 
+            && !(subRule.type === RuleType.Group && (subRule as SearchGroup).isEmpty())
+        );
     }
 
     static createCategoryIdSearch(categoryIds: number[]) {
@@ -181,8 +192,16 @@ export class SearchNumberField extends SearchField {
     }
 }
 
+export class SearchEnumField extends SearchField {
+    constructor(params: SearchFieldParams) {
+        super(RuleType.EnumField, params);
+        console.log(params);
+    }
+}
+
 export class SearchTreeField extends SearchField {
     constructor(params: SearchFieldParams) {
         super(RuleType.TreeField, params);
     }
 }
+

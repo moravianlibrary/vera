@@ -6,6 +6,7 @@ from typing import List, Optional, Union
 from documents import models, schemas
 from categories.models import Category
 from documents.enums import (
+    EnumOption,
     GroupOption,
     NumberOption,
     TextOption,
@@ -17,22 +18,49 @@ from documents.enums import (
 
 DOCUMENT_FIELDS_MAPPING = {
     DocumentField.Sysno: "sysno",
+    DocumentField.MaterialType: "material_type",
+    DocumentField.IssuanceType: "issuance_type",
     DocumentField.Volume: "volume",
+    DocumentField.Bundle: "bundle",
+    DocumentField.Year: "year",
     DocumentField.Category: "category_id",
     DocumentField.Title: "title",
-    DocumentField.PagesCount: "pages_count",
+    DocumentField.Barcode: "barcode",
+    DocumentField.Signature: "signature",
+    DocumentField.Cnb: "cnb",
+    DocumentField.IsbnIssn: "isbn_issn",
+    DocumentField.DigitizationState: "digitization_state",
+    # TODO:
+    # DocumentField.PagesCount: "pages_count",
+    # DocumentField.PagesCountCatalog: "pages_count_catalog",
+    DocumentField.PagesCount: "pages_count_actual",
+    DocumentField.PagesCountCatalog: "pages_count",
+    DocumentField.PagesCountManual: "pages_count_manual",
+    DocumentField.PagesCountPredicted: "pages_count_predicted",
 }
+
+
+def is_query_empty(query: schemas.DocumentsQuery) -> bool:
+    return query is None or (
+        query.id_list is None
+        and query.search_phrase is None
+        and query.search_group is None
+        and query.category_id is None
+        and query.department_id is None
+        and query.username is None
+    )
 
 
 def filter_documents_query_base(
     query_base: Query, query: Optional[schemas.DocumentsQuery] = None
 ):
-    if query:
+    if not is_query_empty(query):
         query_base = filter_by_query(query_base, query)
-        if query.sort:
-            query_base = sort_query(query_base, query.sort)
     else:
         query_base = query_base.filter(models.Document.extraction_id.is_(None))
+
+    if query and query.sort:
+        query_base = sort_query(query_base, query.sort)
 
     return query_base
 
@@ -135,6 +163,10 @@ def build_field_filter(search_field: schemas.SearchField):
         return build_tree_filter(
             field, search_field.option, search_field.value
         )
+    elif search_field.option in EnumOption:
+        return build_enum_filter(
+            field, search_field.option, search_field.value
+        )
     return None
 
 
@@ -182,4 +214,15 @@ def build_tree_filter(field, option, value):
     elif option == TreeOption.IsNull:
         return field.is_(None)
     elif option == TreeOption.IsNotNull:
+        return field.isnot(None)
+
+
+def build_enum_filter(field, option, value):
+    if option == EnumOption.Is:
+        return field == value
+    elif option == EnumOption.IsNot:
+        return field != value
+    elif option == EnumOption.IsNull:
+        return field.is_(None)
+    elif option == EnumOption.IsNotNull:
         return field.isnot(None)
