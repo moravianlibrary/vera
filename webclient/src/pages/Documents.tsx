@@ -19,6 +19,7 @@ import { DocumentsSelectionProvider } from "../contexts/documents/DocumentsSelec
 import { DocumentsActionsProvider } from "../contexts/documents/DocumentsActionsContext";
 import { AdvancedSearchProvider } from "../contexts/documents/search/AdvancedSearchContext";
 import { CategoriesProvider } from "../contexts/categories/CategoriesContext";
+import { GeneratedExtractionsProvider } from "../contexts/extractions/GeneratedExtractionsContext";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -73,23 +74,29 @@ const Documents: React.FC = () => {
                 <AssignableCategoriesProvider>
                     <CategoriesProvider>
                         <DigitizationListsProvider>
-                            <DocumentsProvider>
-                                <DocumentsSelectionProvider>
-                                    <DocumentsActionsProvider>
-                                        <DigitizationListsManagerProvider>
-                                            <AdvancedSearchProvider>
-                                                <DocumentsDiv
-                                                    categoryIds={categoryIds}
-                                                    extractionId={extractionId}
-                                                    digitizationListId={
-                                                        digitizationListId
-                                                    }
-                                                />
-                                            </AdvancedSearchProvider>
-                                        </DigitizationListsManagerProvider>
-                                    </DocumentsActionsProvider>
-                                </DocumentsSelectionProvider>
-                            </DocumentsProvider>
+                            <GeneratedExtractionsProvider>
+                                <DocumentsProvider>
+                                    <DocumentsSelectionProvider>
+                                        <DocumentsActionsProvider>
+                                            <DigitizationListsManagerProvider>
+                                                <AdvancedSearchProvider>
+                                                    <DocumentsDiv
+                                                        categoryIds={
+                                                            categoryIds
+                                                        }
+                                                        extractionId={
+                                                            extractionId
+                                                        }
+                                                        digitizationListId={
+                                                            digitizationListId
+                                                        }
+                                                    />
+                                                </AdvancedSearchProvider>
+                                            </DigitizationListsManagerProvider>
+                                        </DocumentsActionsProvider>
+                                    </DocumentsSelectionProvider>
+                                </DocumentsProvider>
+                            </GeneratedExtractionsProvider>
                         </DigitizationListsProvider>
                     </CategoriesProvider>
                 </AssignableCategoriesProvider>
