@@ -10,6 +10,7 @@ import { useDocumentsQuery } from "../../../contexts/documents/search/DocumentsQ
 import DigitizationListBox from "../../../components/DigitizationListBox";
 import CategoryPicker from "../../../components/pickers/CategoryPicker";
 import { Badge } from "primereact/badge";
+import ExtractionsBox from "../../../components/ExtractionsBox";
 
 const DocumentsSearchBar = () => {
     const { t } = useTranslation();
@@ -19,6 +20,8 @@ const DocumentsSearchBar = () => {
         isQueryAll,
         categoryIds,
         searchByCategoryIds,
+        extractionId,
+        searchByExtractionId,
         digitizationListId,
         searchByDigitizationListId,
         searchPhrase,
@@ -28,6 +31,7 @@ const DocumentsSearchBar = () => {
 
     const advancedSearchRef = useRef<OverlayPanel | null>(null);
     const categorySelectorRef = useRef<OverlayPanel | null>(null);
+    const extractionSelectorRef = useRef<OverlayPanel | null>(null);
     const digitizationSelectorRef = useRef<OverlayPanel | null>(null);
 
     const [searchPhrase_, setSearchPhrase_] = useState<string>(
@@ -87,6 +91,20 @@ const DocumentsSearchBar = () => {
                     />
                 </OverlayPanel>
                 {/* <Button icon="pi pi-play-circle" outlined /> */}
+                <Button
+                    className={
+                        extractionId
+                            ? "bg-yellow-600 border-yellow-700"
+                            : "p-button-outlined"
+                    }
+                    icon="pi pi-microchip"
+                    onClick={(e) => extractionSelectorRef.current!.toggle(e)}
+                    tooltip={t("Filter by generated extraction")}
+                    tooltipOptions={{ position: "top", showDelay: 500 }}
+                />
+                <OverlayPanel ref={extractionSelectorRef}>
+                    <ExtractionsBox callback={searchByExtractionId} />
+                </OverlayPanel>
                 <Button
                     className={
                         digitizationListId

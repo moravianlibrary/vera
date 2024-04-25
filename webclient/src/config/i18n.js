@@ -416,6 +416,7 @@ const resources = {
 
         "Filter by category": "Filtrovat podle kategorie",
         "Filter by digitization list": "Filtrovat podle seznamu digitalizace",
+        "Filter by generated extraction": "Filtrovat podle generovane extrakce",
         "Select field": "Vyber pole",
 
         Equals: "Je rovno",
@@ -440,6 +441,7 @@ const resources = {
         "Catalog's pages count": "Počet stránek z katalogu",
         "Manual pages count": "Počet stránek ručně zadán",
         "Predicted pages count": "Počet stránek predikovaný",
+        "documents": "dokumentů",
     },
   },
 };
