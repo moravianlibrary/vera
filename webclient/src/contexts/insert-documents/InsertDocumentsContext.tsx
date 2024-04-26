@@ -267,7 +267,10 @@ export const InsertDocumentsProvider: React.FC<
         }
     };
 
-    const processCreateResponses = (response: DocumentCreationResponse) => {
+    const processCreateResponses = (
+        identifier: Identifier,
+        response: DocumentCreationResponse
+    ) => {
         if (response.create_result === DocumentCreateResult.MultipleIssues) {
             setChooseIssuesDocuments((prev) => [...prev, response]);
         } else {
@@ -284,7 +287,9 @@ export const InsertDocumentsProvider: React.FC<
             value: value,
         };
         ApiDocuments.insertDocument(inputIdentifier, category, false)
-            .then((response) => processCreateResponses(response.data))
+            .then((response) =>
+                processCreateResponses(inputIdentifier, response.data)
+            )
             .catch((error) => {
                 console.error(`Error while inserting document: ${error}`);
             });
@@ -298,7 +303,9 @@ export const InsertDocumentsProvider: React.FC<
             };
 
             await ApiDocuments.insertDocument(inputIdentifier, category, false)
-                .then((response) => processCreateResponses(response.data))
+                .then((response) =>
+                    processCreateResponses(inputIdentifier, response.data)
+                )
                 .catch((error) => {
                     console.error(`Error while inserting document: ${error}`);
                 });

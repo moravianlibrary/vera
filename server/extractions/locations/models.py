@@ -8,7 +8,7 @@ from extractions.locations.types import LocationState
 class Library(Base):
     __tablename__ = "libraries"
 
-    id = Column(String, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
 
     storages = relationship("Storage", back_populates="library")
@@ -19,7 +19,7 @@ class Storage(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    library_id = Column(String, ForeignKey("libraries.id"), nullable=False)
+    library_id = Column(Integer, ForeignKey("libraries.id"), nullable=False)
 
     library = relationship("Library", back_populates="storages")
     locations = relationship("Location", back_populates="storage")
