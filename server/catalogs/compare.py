@@ -1,10 +1,9 @@
 from enum import Enum
 from pymarc import Field, Record, Subfield
-from time import sleep
 from typing import List, Optional, Set
 
 import aleph_api
-from skc import api as skc_api
+from catalogs.skc import api as skc_api
 
 
 class DiffType(Enum):
@@ -198,39 +197,39 @@ def compare_mzk_with_skc(
 # diffs = compare_mzk_with_skc("MZK01-000602672", "cnb000568682", None)
 # print("\n".join([str(diff) for diff in diffs]))
 
-with open("/tmp/check_mzk_vs_skc_from_vera", "r") as f:
-    for line in f.readlines():
-        ids = line.strip().split("\t")
+# with open("/tmp/check_mzk_vs_skc_from_vera", "r") as f:
+#     for line in f.readlines():
+#         ids = line.strip().split("\t")
 
-        if len(ids) < 2:
-            print(f"Invalid input: {ids}")
-            continue
+#         if len(ids) < 2:
+#             print(f"Invalid input: {ids}")
+#             continue
 
-        diffs = []
-        mzk_marc21 = aleph_api.get_marc21_document(ids[0])
-        skc_sysno, skc_marc21 = None, None
+#         diffs = []
+#         mzk_marc21 = aleph_api.get_marc21_document(ids[0])
+#         skc_sysno, skc_marc21 = None, None
 
-        if len(ids) == 3:
-            skc_sysno, skc_marc21 = skc_api.get_sysno_marc21(ids[1], ids[2])
-        elif len(ids) == 2:
-            skc_sysno, skc_marc21 = skc_api.get_sysno_marc21(ids[1], None)
+#         if len(ids) == 3:
+#             skc_sysno, skc_marc21 = skc_api.get_sysno_marc21(ids[1], ids[2])
+#         elif len(ids) == 2:
+#             skc_sysno, skc_marc21 = skc_api.get_sysno_marc21(ids[1], None)
 
-        if mzk_marc21 is None:
-            raise ValueError(f"Document {ids[0]} not found in MZK")
-        if skc_marc21 is None:
-            with open(f"/tmp/{ids[0]}.txt", "w") as wf:
-                wf.write(f"MZK_SYSNO: {ids[0]}\n")
-                wf.write(f"CNB: {ids[1]}\n")
-                wf.write(f"ISN: {ids[2] if len(ids) == 3 else 'None'}\n")
-                wf.write("SKC_SYSNO: Not Found\n")
-            continue
+#         if mzk_marc21 is None:
+#             raise ValueError(f"Document {ids[0]} not found in MZK")
+#         if skc_marc21 is None:
+#             with open(f"/tmp/{ids[0]}.txt", "w") as wf:
+#                 wf.write(f"MZK_SYSNO: {ids[0]}\n")
+#                 wf.write(f"CNB: {ids[1]}\n")
+#                 wf.write(f"ISN: {ids[2] if len(ids) == 3 else 'None'}\n")
+#                 wf.write("SKC_SYSNO: Not Found\n")
+#             continue
 
-        diffs = compare_marc21_records(mzk_marc21, skc_marc21)
+#         diffs = compare_marc21_records(mzk_marc21, skc_marc21)
 
-        with open(f"/tmp/{ids[0]}.txt", "w") as wf:
-            wf.write(f"MZK_SYSNO: {ids[0]}\n")
-            wf.write(f"SKC_SYSNO: {skc_sysno}\n")
-            wf.write("\n".join([str(diff) for diff in diffs]))
-            wf.write("\n")
+#         with open(f"/tmp/{ids[0]}.txt", "w") as wf:
+#             wf.write(f"MZK_SYSNO: {ids[0]}\n")
+#             wf.write(f"SKC_SYSNO: {skc_sysno}\n")
+#             wf.write("\n".join([str(diff) for diff in diffs]))
+#             wf.write("\n")
 
-        sleep(2)
+#         sleep(2)

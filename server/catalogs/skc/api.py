@@ -4,8 +4,7 @@ from pymarc import Record
 from time import sleep
 from typing import Optional, Tuple
 
-# from catalogs.skc.parsers import skc_html_marc21_to_marc21
-from skc.parsers import (
+from catalogs.skc.parsers import (
     parse_skc_sysno_from_document,
     skc_html_marc21_to_marc21,
 )

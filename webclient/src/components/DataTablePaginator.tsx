@@ -37,7 +37,7 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
             rows={limit}
             totalRecords={numFound}
             onPageChange={onPageChange}
-            rightContent={refreshButton}
+            rightContent={onRefresh ? refreshButton : <></>}
             leftContent={<> </>}
             template={{
                 layout: "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown",
