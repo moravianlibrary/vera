@@ -3,7 +3,7 @@ from lxml import etree
 from pymarc import marcxml, Record
 from io import BytesIO
 
-# from catalogs.aleph_document import AlephDocument
+from catalogs.aleph_document import AlephDocument
 
 ALEPH_BASE = "https://aleph.mzk.cz"
 
@@ -78,9 +78,9 @@ def get_catalog_document(sysno: str):
     if content.find(".//ns0:error", namespaces=NS_0) is not None:
         return None
 
-    # return AlephDocument(
-    #     sysno, content.find(".//marc:record", namespaces=MARC_NS)
-    # )
+    return AlephDocument(
+        sysno, content.find(".//marc:record", namespaces=MARC_NS)
+    )
 
 
 def check_find_endpoint_availability():
