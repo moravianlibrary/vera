@@ -17,6 +17,11 @@ interface DocumentsContextProps {
     refresh: () => void;
     refreshDocumentsInResults: (documents: DocumentModel[]) => void;
     removeDocumentsFromResults: (documentIds: number[]) => void;
+
+    offset: number;
+    setOffset: (offset: number) => void;
+    limit: number;
+    setLimit: (limit: number) => void;
 }
 
 const DocumentsContext = createContext<DocumentsContextProps | undefined>(
@@ -37,12 +42,13 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
     const [documents, setDocuments] = useState<DocumentModel[]>([]);
     const [numFound, setNumFound] = useState<number>(0);
     const [offset, setOffset] = useState<number>(0);
+    const [limit, setLimit] = useState<number>(loadAmount);
 
     const fetchDocuments = async (offset: number): Promise<DocumentModel[]> => {
         try {
             const response = isQueryAll
-                ? await ApiDocuments.getDocuments(offset, loadAmount)
-                : await ApiDocuments.queryDocuments(query, offset, loadAmount);
+                ? await ApiDocuments.getDocuments(offset, limit)
+                : await ApiDocuments.queryDocuments(query, offset, limit);
 
             setNumFound(response.data.num_found);
             return response.data.documents.map((document) => {
@@ -56,15 +62,16 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
 
     const loadDocuments = async (offset: number) => {
         fetchDocuments(offset).then((fetchedDocuments) => {
-            if (offset === 0) {
-                setDocuments([...fetchedDocuments]);
-            } else {
-                const oldDocumentsIds = documents.map((d) => d.id);
-                const newDocuments = fetchedDocuments.filter(
-                    (document) => !oldDocumentsIds.includes(document.id)
-                );
-                setDocuments([...documents, ...newDocuments]);
-            }
+            setDocuments([...fetchedDocuments]);
+            // if (offset === 0) {
+            //     setDocuments([...fetchedDocuments]);
+            // } else {
+            //     const oldDocumentsIds = documents.map((d) => d.id);
+            //     const newDocuments = fetchedDocuments.filter(
+            //         (document) => !oldDocumentsIds.includes(document.id)
+            //     );
+            //     setDocuments([...documents, ...newDocuments]);
+            // }
         });
     };
 
@@ -109,6 +116,10 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
     };
 
     useEffect(() => {
+        loadDocuments(offset);
+    }, [offset, limit]);
+
+    useEffect(() => {
         refresh();
     }, [query, isQueryAll]);
 
@@ -119,6 +130,11 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
         refresh,
         refreshDocumentsInResults,
         removeDocumentsFromResults,
+
+        offset,
+        setOffset,
+        limit,
+        setLimit,
     };
 
     return (

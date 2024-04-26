@@ -446,6 +446,7 @@ const resources = {
         "File type not supported": "Týp souboru neni podporován",
         "Confirm": "Potvrz",
         "Selected cells": "Vybrané buňky",
+        "Select all documents that match the specified search criteria": "Vybrat všechny dokumenty podle zadaných kritérií vyhledávání",
         "Cell selection is possible by clicking on individual cells or by dragging across multiple cells": "Výběr buněk je možný kliknutím na jednotlivé buňky nebo tažením přes více buněk"
     },
   },

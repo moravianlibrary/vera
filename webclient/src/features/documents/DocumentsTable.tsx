@@ -9,7 +9,7 @@ import {
     MaterialTypeEditor,
     textEditor,
 } from "../../services/Editors.js";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
@@ -20,6 +20,8 @@ import { useToast } from "../../contexts/toast/ToastContext";
 import { Dialog } from "primereact/dialog";
 import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
 import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
+import DataTablePaginator from "../../components/DataTablePaginator";
+import { PaginatorPageChangeEvent } from "primereact/paginator";
 
 interface DocumentsTableProps {}
 
@@ -34,24 +36,28 @@ interface DocumentDetailsBodyProps {
 const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     const { t } = useTranslation();
 
-    const { documents, lazyLoad } = useDocuments();
-    const { selectedDocuments, selectDocuments, selectAllDocuments } =
-        useDocumentsSelection();
+    const { documents, numFound, offset, setOffset, limit, setLimit, refresh } =
+        useDocuments();
+    const { selectedDocuments, selectDocuments } = useDocumentsSelection();
 
     const handleSelectionChange = (
         event: DataTableSelectionMultipleChangeEvent<DataTableValueArray>
     ) => {
-        if (event.type === "all") {
-            selectAllDocuments(event.value.length > 0);
-            return;
-        }
-
         const selectedDocuments: DocumentModel[] = event.value.map(
             (selectedItem) => {
                 return selectedItem as DocumentModel;
             }
         );
         selectDocuments(selectedDocuments);
+    };
+
+    const handlePageChange = (e: PaginatorPageChangeEvent) => {
+        if (e.first !== offset) {
+            setOffset(e.first);
+        }
+        if (e.rows !== limit) {
+            setLimit(e.rows);
+        }
     };
 
     const pagesCountBody = (document: DocumentModel) => {
@@ -109,56 +115,59 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
     };
 
     return (
-        <DataTable
-            className="documents-table"
-            value={documents}
-            // header={tableHeader}
-            // resizableColumns
-            // columnResizeMode="fit"
-            scrollable
-            // scrollHeight="flex"
-            scrollHeight="calc(100vh - 160px)"
-            virtualScrollerOptions={{
-                lazy: true,
-                onLazyLoad: lazyLoad,
-                itemSize: 81,
-                delay: 0,
-            }}
-            onScroll={(e) => e.target}
-            selectionMode="checkbox"
-            selection={selectedDocuments}
-            onSelectionChange={handleSelectionChange}
-        >
-            <Column
-                field="details"
-                body={(document) => <DocumentDetailsBody document={document} />}
-            />
-            <Column field="sysno" header={t("sysno")} />
-            <Column field="type" header={t("Type")} body={typeBody} />
-            <Column
-                field="description"
-                header={t("Description")}
-                body={descriptionBody}
-            />
-            <Column field="category_name" header={t("category")} />
-            <Column field="title" header={t("title")} body={titleBody} />
-            <Column
-                field="pages_count"
-                body={pagesCountBody}
-                header={t("pages_count")}
-            />
-            <Column
-                className="pointer-events-none"
-                field="signature"
-                header={t("Signature")}
-            />
-            <Column field="barcode" header={t("Barcode")} />
-            <Column field="cnb" header={t("CNB")} />
-            <Column field="creator" header={t("creator")} />
-            <Column field="created_at" header={t("created_at")} />
+        <div>
+            <DataTable
+                className="documents-table"
+                value={documents}
+                scrollable
+                scrollHeight="calc(100vh - 170px)"
+                selectionMode="checkbox"
+                selection={selectedDocuments}
+                onSelectionChange={handleSelectionChange}
+            >
+                <Column
+                    field="details"
+                    body={(document) => (
+                        <DocumentDetailsBody document={document} />
+                    )}
+                />
+                <Column field="sysno" header={t("sysno")} />
+                <Column field="type" header={t("Type")} body={typeBody} />
+                <Column
+                    field="description"
+                    header={t("Description")}
+                    body={descriptionBody}
+                />
+                <Column field="category_name" header={t("category")} />
+                <Column field="title" header={t("title")} body={titleBody} />
+                <Column
+                    field="pages_count"
+                    body={pagesCountBody}
+                    header={t("pages_count")}
+                />
+                <Column
+                    className="pointer-events-none"
+                    field="signature"
+                    header={t("Signature")}
+                />
+                <Column field="barcode" header={t("Barcode")} />
+                <Column field="cnb" header={t("CNB")} />
+                <Column field="creator" header={t("creator")} />
+                <Column field="created_at" header={t("created_at")} />
 
-            <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
-        </DataTable>
+                <Column
+                    selectionMode="multiple"
+                    headerStyle={{ width: "3rem" }}
+                />
+            </DataTable>
+            <DataTablePaginator
+                offset={offset}
+                limit={limit}
+                numFound={numFound}
+                onPageChange={handlePageChange}
+                onRefresh={() => refresh()}
+            />
+        </div>
     );
 };
 
@@ -176,6 +185,10 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({
         setPanelVisible(false);
         deleteDocument(doc);
     };
+
+    useEffect(() => {
+        setPanelVisible(false);
+    }, [doc]);
 
     return (
         <div
