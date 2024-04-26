@@ -442,6 +442,11 @@ const resources = {
         "Manual pages count": "Počet stránek ručně zadán",
         "Predicted pages count": "Počet stránek predikovaný",
         "documents": "dokumentů",
+
+        "File type not supported": "Týp souboru neni podporován",
+        "Confirm": "Potvrz",
+        "Selected cells": "Vybrané buňky",
+        "Cell selection is possible by clicking on individual cells or by dragging across multiple cells": "Výběr buněk je možný kliknutím na jednotlivé buňky nebo tažením přes více buněk"
     },
   },
 };
