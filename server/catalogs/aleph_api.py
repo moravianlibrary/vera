@@ -59,6 +59,7 @@ def get_marc21_document(sysno: str) -> Record:
     return marcxml.parse_xml_to_array(marc_xml_file_like)[0]
 
 
+# TODO: Add error handling
 def get_catalog_document(sysno: str):
     response = None
     try:
@@ -75,7 +76,13 @@ def get_catalog_document(sysno: str):
 
     content = etree.fromstring(response.content)
 
+    if content is None:
+        return None
+
     if content.find(".//ns0:error", namespaces=NS_0) is not None:
+        return None
+
+    if content.find(".//marc:record", namespaces=MARC_NS) is None:
         return None
 
     return AlephDocument(
