@@ -99,7 +99,7 @@ const InsertDocumentsFiles: React.FC = () => {
                     multiple
                     maxFileSize={2000000}
                     // accept="text/plain"
-                    chooseLabel={t("Choose")}
+                    chooseLabel={`${t("Choose")} (.txt, .xlsx)`}
                     uploadLabel={t("Upload")}
                     cancelLabel={t("Cancel")}
                     itemTemplate={itemTemplate}
