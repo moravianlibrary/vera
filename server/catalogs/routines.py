@@ -8,6 +8,7 @@ from catalogs.aleph_document import AlephDocument
 from catalogs.enums import CatalogResponseStatus, IdentifierType
 from catalogs.parsers import from_aleph_document
 from catalogs.schemas import CatalogDocument, CatalogResponse, Identifier
+from catalogs.skc import api as skc_api
 
 
 SYSNO_FORMAT_1 = r"^\d{9}$"
@@ -130,3 +131,19 @@ def generate_catalog_document(identifier: Identifier):
         document=(from_aleph_document(document) if document else None),
         response_status=response_status,
     )
+
+
+def compare_mzk_with_skc(sysno: str, cnb: Optional[str], isn: Optional[str]):
+    mzk_marc21 = aleph_api.get_marc21_document(sysno)
+    skc_sysno, skc_marc21 = skc_api.find_document(cnb, isn)
+
+    if mzk_marc21 is None:
+        raise ValueError(f"Document {sysno} not found in MZK")
+    if skc_marc21 is None:
+        raise ValueError(f"Document {skc_sysno} not found in SKC")
+
+    print(mzk_marc21.as_dict())
+    print(skc_marc21.as_dict())
+
+
+compare_mzk_with_skc("MZK01-000220788", "cnb000356383", "0139-505X")

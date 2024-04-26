@@ -17,10 +17,10 @@ interface DocumentsHeaderProps {
 
 const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
     const { t } = useTranslation();
-    const { numSelected, cancelSelection } = useDocumentsSelection();
+    const { numSelected, cancelSelection, isSelectAll, selectAllDocuments } =
+        useDocumentsSelection();
     const { deleteDocuments } = useDocumentsActions();
 
-    const [advancedSearch, setAdvancedSearch] = useState(false);
     const [displayOption, setDisplayOption] = useState("datatable");
     const displayOptions = [
         { name: "Option 1", icon: "pi pi-table", value: "datatable" },
@@ -94,6 +94,17 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
                         tooltipOptions={{ position: "top", showDelay: 500 }}
                     />
                     <Button
+                        icon="pi pi-expand"
+                        className="p-button-rounded p-button-text"
+                        severity={!isSelectAll ? "info" : "secondary"}
+                        disabled={isSelectAll}
+                        onClick={() => selectAllDocuments(true)}
+                        tooltip={t(
+                            "Select all documents that match the specified search criteria"
+                        )}
+                        tooltipOptions={{ position: "top", showDelay: 500 }}
+                    />
+                    <Button
                         icon="pi pi-times"
                         className="p-button-rounded p-button-text"
                         severity={numSelected > 0 ? "info" : "secondary"}
@@ -125,16 +136,6 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
             </div>
         </React.Fragment>
     );
-
-    if (advancedSearch) {
-        return (
-            <Toolbar
-                start={startContent}
-                center={centerContent}
-                end={endContent}
-            />
-        );
-    }
 
     return (
         <Toolbar start={startContent} center={centerContent} end={endContent} />
