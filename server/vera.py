@@ -11,6 +11,7 @@ import departments.router as departments_router
 import documents.router as documents_router
 import extractions.digitization.router as digitization_extractions_router
 import extractions.generated.router as generated_extractions_router
+import extractions.locations.router as locations_router
 import roles.router as roles_router
 import tasks.router as tasks_router
 
@@ -56,6 +57,7 @@ app.include_router(departments_router.router)
 app.include_router(documents_router.router)
 app.include_router(digitization_extractions_router.router)
 app.include_router(generated_extractions_router.router)
+app.include_router(locations_router.router)
 app.include_router(roles_router.router)
 app.include_router(tasks_router.router)
 
