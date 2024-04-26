@@ -2,12 +2,14 @@ import React from "react";
 import { Paginator, PaginatorPageChangeEvent } from "primereact/paginator";
 import { Dropdown } from "primereact/dropdown";
 import { useTranslation } from "react-i18next";
+import { Button } from "primereact/button";
 
 interface DataTablePaginatorProps {
     offset: number;
     limit: number;
     numFound: number;
     onPageChange: (event: PaginatorPageChangeEvent) => void;
+    onRefresh?: () => void;
 }
 
 const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
@@ -15,8 +17,18 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
     limit,
     numFound,
     onPageChange,
+    onRefresh,
 }) => {
     const { t } = useTranslation();
+
+    const refreshButton = (
+        <Button
+            className="p-button-text"
+            icon="pi pi-refresh"
+            onClick={() => onRefresh?.()}
+        />
+    );
+
     return (
         <Paginator
             className="border-top-2 border-solid surface-50 fixed bottom-0 w-full"
@@ -25,6 +37,8 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
             rows={limit}
             totalRecords={numFound}
             onPageChange={onPageChange}
+            rightContent={onRefresh ? refreshButton : <></>}
+            leftContent={<> </>}
             template={{
                 layout: "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown",
                 PageLinks: (options) => {

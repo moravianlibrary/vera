@@ -16,6 +16,7 @@ interface DocumentsSelectionContextProps {
     numSelected: number;
     selectDocuments: (selectedDocuments: DocumentModel[]) => void;
     selectAllDocuments: (value: boolean) => void;
+    isSelectAll: boolean;
     cancelSelection: () => void;
 }
 
@@ -90,6 +91,7 @@ export const DocumentsSelectionProvider: React.FC<
         numSelected,
         selectDocuments,
         selectAllDocuments,
+        isSelectAll: selectAll,
         cancelSelection,
     };
 

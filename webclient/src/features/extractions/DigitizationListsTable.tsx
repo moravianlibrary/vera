@@ -49,7 +49,11 @@ const DigitizationListsTable: React.FC = () => {
 
     return (
         <div>
-            <DataTable value={digitizationLists}>
+            <DataTable
+                value={digitizationLists}
+                scrollable
+                scrollHeight="calc(100vh - 210px)"
+            >
                 <Column field="id" header={t("id")} />
                 <Column field="extractor" header={t("Created by")} />
                 <Column field="extracted_at" header={t("Created at")} />

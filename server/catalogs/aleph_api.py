@@ -1,5 +1,7 @@
 import requests
 from lxml import etree
+from pymarc import marcxml, Record
+from io import BytesIO
 
 from catalogs.aleph_document import AlephDocument
 
@@ -7,7 +9,7 @@ ALEPH_BASE = "https://aleph.mzk.cz"
 
 GET_RECORD_ENDPOINT = "{ALEPH_BASE}/OAI?verb=GetRecord\
     &identifier=oai:aleph.mzk.cz:{SYSNO}&metadataPrefix=marc21"
-FIND_EDNPOINT = "{ALEPH_BASE}/X?op=find"
+FIND_ENDPOINT = "{ALEPH_BASE}/X?op=find"
 FIND_BY_BARCODE_EDNPOINT = (
     "{ALEPH_BASE}/X?op=find&base={BASE}&code=BAR&request={BARCODE}"
 )
@@ -32,7 +34,7 @@ def check_catalog_availability():
         return False
 
 
-def get_catalog_document(sysno: str):
+def get_marc21_document(sysno: str) -> Record:
     response = None
     try:
         response = requests.get(
@@ -51,6 +53,38 @@ def get_catalog_document(sysno: str):
     if content.find(".//ns0:error", namespaces=NS_0) is not None:
         return None
 
+    xml_marc = content.find(".//marc:record", namespaces=MARC_NS)
+    marc_xml_bytes = etree.tostring(xml_marc)
+    marc_xml_file_like = BytesIO(marc_xml_bytes)
+    return marcxml.parse_xml_to_array(marc_xml_file_like)[0]
+
+
+# TODO: Add error handling
+def get_catalog_document(sysno: str):
+    response = None
+    try:
+        response = requests.get(
+            GET_RECORD_ENDPOINT.format(ALEPH_BASE=ALEPH_BASE, SYSNO=sysno)
+        )
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
+    if response.status_code != 200:
+        print(f"HTTP request failed with status code {response.status_code}")
+        return None
+
+    content = etree.fromstring(response.content)
+
+    if content is None:
+        return None
+
+    if content.find(".//ns0:error", namespaces=NS_0) is not None:
+        return None
+
+    if content.find(".//marc:record", namespaces=MARC_NS) is None:
+        return None
+
     return AlephDocument(
         sysno, content.find(".//marc:record", namespaces=MARC_NS)
     )
@@ -58,7 +92,7 @@ def get_catalog_document(sysno: str):
 
 def check_find_endpoint_availability():
     try:
-        response = requests.get(FIND_EDNPOINT.format(ALEPH_BASE=ALEPH_BASE))
+        response = requests.get(FIND_ENDPOINT.format(ALEPH_BASE=ALEPH_BASE))
         return response.status_code == 200
     except Exception as e:
         print(f"An error occurred: {e}")
