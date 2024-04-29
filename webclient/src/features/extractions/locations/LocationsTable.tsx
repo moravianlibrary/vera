@@ -42,7 +42,7 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
                 <Column header={t("Library")} field="library_name" />
                 <Column header={t("Storage")} field="storage_name" />
                 <Column header={t("Location")} field="name" />
-                <Column header={t("Regular expression")} field="regexp" />
+                <Column header={t("Location prefix")} field="regexp" />
                 <Column header={t("Description")} field="description" />
                 <Column
                     header={t("Additional information")}

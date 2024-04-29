@@ -34,7 +34,7 @@ const LocationPrefixForm: React.FC<LocationPrefixFormProps> = ({
                     command: () => onChangePrefix(prefix + "\\p{L}"),
                 },
                 {
-                    label: t("Any alphanumeric character"),
+                    label: t("Any letter or digit"),
                     command: () => onChangePrefix(prefix + "\\p{Alnum}"),
                 },
             ],
