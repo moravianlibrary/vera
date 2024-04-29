@@ -1,4 +1,11 @@
-from sqlalchemy import Column, ForeignKey, Enum, Integer, String
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Enum,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import relationship
 
 from services.database import Base
@@ -11,6 +18,8 @@ class Library(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
 
+    __table_args__ = (UniqueConstraint("name"),)
+
     storages = relationship("Storage", back_populates="library")
 
 
@@ -20,6 +29,8 @@ class Storage(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
     library_id = Column(Integer, ForeignKey("libraries.id"), nullable=False)
+
+    __table_args__ = (UniqueConstraint("name", "library_id"),)
 
     library = relationship("Library", back_populates="storages")
     locations = relationship("Location", back_populates="storage")
@@ -35,5 +46,7 @@ class Location(Base):
     additional_info = Column(String)
     state = Column(Enum(LocationState), nullable=False)
     storage_id = Column(Integer, ForeignKey("storages.id"), nullable=False)
+
+    __table_args__ = (UniqueConstraint("name", "storage_id"),)
 
     storage = relationship("Storage", back_populates="locations")

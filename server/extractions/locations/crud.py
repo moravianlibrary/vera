@@ -9,7 +9,7 @@ from extractions.locations import schemas
 
 # Create
 def create_library(library: schemas.LibraryCreate, db: Session):
-    return create(db, models.Library(id=library.id, name=library.name))
+    return create(db, models.Library(name=library.name))
 
 
 def create_storage(storage: schemas.StorageCreate, db: Session):

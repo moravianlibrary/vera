@@ -21,12 +21,14 @@ def upgrade() -> None:
     op.drop_table("locations")
     op.drop_table("storages")
     op.drop_table("libraries")
+    op.execute("DROP TYPE location_state_type")
 
     op.create_table(
         "libraries",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("name"),
     )
     op.create_table(
         "storages",
@@ -38,6 +40,7 @@ def upgrade() -> None:
             ["libraries.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("name", "library_id"),
     )
     op.create_table(
         "locations",
@@ -48,7 +51,7 @@ def upgrade() -> None:
         sa.Column("additional_info", sa.String(), nullable=True),
         sa.Column(
             "state",
-            sa.Enum("LocationState", name="location_state_type"),
+            sa.Enum("Active", "Closed", name="location_state_type"),
             nullable=False,
         ),
         sa.Column("storage_id", sa.Integer(), nullable=False),
@@ -57,6 +60,7 @@ def upgrade() -> None:
             ["storages.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("name", "storage_id"),
     )
 
 
@@ -64,6 +68,7 @@ def downgrade() -> None:
     op.drop_table("locations")
     op.drop_table("storages")
     op.drop_table("libraries")
+    op.execute("DROP TYPE location_state_type")
 
     op.create_table(
         "libraries",

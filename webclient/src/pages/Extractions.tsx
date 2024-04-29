@@ -9,9 +9,9 @@ import { SelectButton } from "primereact/selectbutton";
 import { Toolbar } from "primereact/toolbar";
 import { DigitizationListsProvider } from "../contexts/extractions/DigitizationListsContext";
 import DigitizationListsTable from "../features/extractions/DigitizationListsTable";
-import LocationsTable from "../features/extractions/LocationsTable";
+import LocationsTable from "../features/extractions/locations/LocationsTable";
 import { LocationsProvider } from "../contexts/extractions/locations/LocationsContext";
-import CreateLocationMenu from "../features/extractions/CreateLocationMenu";
+import CreateLocationMenu from "../features/extractions/locations/CreateLocationMenu";
 
 const Extractions: React.FC = () => {
     const { t } = useTranslation();

@@ -449,7 +449,21 @@ const resources = {
         "Select all documents that match the specified search criteria": "Vybrat všechny dokumenty podle zadaných kritérií vyhledávání",
         "Cell selection is possible by clicking on individual cells or by dragging across multiple cells": "Výběr buněk je možný kliknutím na jednotlivé buňky nebo tažením přes více buněk",
 
+        "Save": "Uložit",
+        "Edit": "Upravit",
+
         "Storage locations": "Skladové lokace",
+        "Library": "Knihovna",
+        "Storage": "Uložení",
+        "Location": "Lokace",
+        "Location name": "Jméno lokace",
+        "Location prefix": "Prefix lokace",
+        "Location state": "Stav lokace",
+        "Location active": "Doplňuje se",
+        "Location closed": "Uzavřeno",
+        "Location description": "Popis lokace",
+        "Additional information": "Dodatečné informace",
+        "Create location": "Vytvořit lokaci",
     },
   },
 };

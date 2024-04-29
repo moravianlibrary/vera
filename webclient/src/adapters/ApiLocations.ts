@@ -2,19 +2,19 @@ import { LocationState } from "../types/LocationState";
 import axiosInstance, { authHeader } from "./ApiBase";
 
 interface LibraryBase {
-    id: string;
     name: string;
 }
 
 interface LibraryCreate extends LibraryBase {}
 
 interface Library extends LibraryBase {
+    id: number;
     storages: Storage[];
 }
 
 interface StorageBase {
     name: string;
-    library_id: string;
+    library_id: number;
 }
 
 interface StorageCreate extends StorageBase {}
@@ -54,7 +54,7 @@ namespace ApiLocations {
         return axiosInstance.post<Location>("/locations/locations", location);
     }
 
-    export function updateLibrary(library_id: string, library: LibraryCreate) {
+    export function updateLibrary(library_id: number, library: LibraryCreate) {
         return axiosInstance.put(`/locations/libraries/${library_id}`, library);
     }
 
@@ -63,10 +63,10 @@ namespace ApiLocations {
     }
 
     export function updateLocation(location_id: number, location: LocationCreate) {
-        return axiosInstance.put(`/locations/${location_id}`, location);
+        return axiosInstance.put(`/locations/locations/${location_id}`, location);
     }
 
-    export function deleteLibrary(id: string) {
+    export function deleteLibrary(id: number) {
         return axiosInstance.delete(`/locations/libraries/${id}`);
     }
 
