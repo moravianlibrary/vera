@@ -6,6 +6,7 @@ from services.database import create
 from documents.models import Document
 from extractions.generated import schemas
 from extractions.generated.models import GeneratedExtraction
+from extractions.locations.models import Location
 from services.exceptions import EmptyExtraction
 
 
@@ -27,6 +28,7 @@ def create_extraction(
             selected_pages=selected_pages,
             target_pages=target_pages,
             include_categories=params.include_categories,
+            location_ids=params.location_ids,
             target_pages_threshold=params.target_pages_threshold,
             whole_categories_threshold=params.whole_categories_threshold,
             generated_by=username,
@@ -34,8 +36,10 @@ def create_extraction(
     )
 
 
-def get_extractable_documents(category_id: int, db: Session):
-    return (
+def get_extractable_documents(
+    category_id: int, location_patterns: List[str], db: Session
+):
+    query = (
         db.query(Document)
         .filter(Document.category_id == category_id)
         .filter(
@@ -55,8 +59,16 @@ def get_extractable_documents(category_id: int, db: Session):
         )
         .filter(Document.cnb.is_not(None))
         .filter(Document.extraction_id.is_(None))
-        .all()
     )
+
+    if location_patterns:
+        regex_filters = [
+            Document.signature.op("~")(pattern)
+            for pattern in location_patterns
+        ]
+        query = query.filter(or_(*regex_filters))
+
+    return query.all()
 
 
 def get_extraction_documents(
@@ -72,6 +84,16 @@ def get_extraction_documents(
     if category_id:
         query_base = query_base.filter(Document.category_id == category_id)
     return query_base.all()
+
+
+def get_location_pattern(location_id: int, db: Session):
+    location = (
+        db.query(Location.regexp).filter(Location.id == location_id).first()
+    )
+    if not location:
+        return None
+    pattern = location.regexp.replace(".", "\\.")
+    return f"^{pattern}-.*$"
 
 
 def delete_extraction(extraction_id: int, db: Session) -> GeneratedExtraction:

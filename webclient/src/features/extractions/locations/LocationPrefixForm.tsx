@@ -27,15 +27,15 @@ const LocationPrefixForm: React.FC<LocationPrefixFormProps> = ({
             items: [
                 {
                     label: t("Any digit"),
-                    command: () => onChangePrefix(prefix + "\\d"),
+                    command: () => onChangePrefix(prefix + "[[:digit:]]"),
                 },
                 {
                     label: t("Any letter"),
-                    command: () => onChangePrefix(prefix + "\\p{L}"),
+                    command: () => onChangePrefix(prefix + "[[:alpha:]]"),
                 },
                 {
                     label: t("Any letter or digit"),
-                    command: () => onChangePrefix(prefix + "\\p{Alnum}"),
+                    command: () => onChangePrefix(prefix + "[[:alnum:]]"),
                 },
             ],
         },

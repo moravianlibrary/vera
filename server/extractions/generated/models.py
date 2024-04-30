@@ -12,6 +12,7 @@ class GeneratedExtraction(Base):
     selected_pages = Column(Integer)
     target_pages = Column(Integer)
     include_categories = Column(ARRAY(Integer))
+    location_ids = Column(ARRAY(Integer))
     target_pages_threshold = Column(Float)
     whole_categories_threshold = Column(Float)
     generated_by = Column(String, index=True)

@@ -21,10 +21,7 @@ interface ExtractionsContextProps {
     generateExtraction: (
         createProps: GenerateExtraction,
         pages_count?: number,
-        quota_id?: number,
-        library_ids?: number[],
-        storage_ids?: number[],
-        location_ids?: number[]
+        quota_id?: number
     ) => void;
     generating: boolean;
     deleteExtraction: (id: number) => void;
@@ -48,6 +45,7 @@ export const GeneratedExtractionsProvider: React.FC<
         target_pages_threshold: 0.05,
         whole_categories_threshold: 0.05,
         include_categories: [],
+        location_ids: [],
     };
     const loadAmount = 50;
     const [extractions, setExtractions] = useState<GeneratedExtraction[]>([]);
@@ -72,20 +70,14 @@ export const GeneratedExtractionsProvider: React.FC<
     const generateExtraction = async (
         createData: GenerateExtraction,
         pages_count?: number,
-        quota_id?: number,
-        library_ids?: number[],
-        storage_ids?: number[],
-        location_ids?: number[]
+        quota_id?: number
     ) => {
         setGenerating(true);
         try {
             const response = await ApiGeneratedExtractions.generateExtraction(
                 createData,
                 pages_count,
-                quota_id,
-                library_ids,
-                storage_ids,
-                location_ids
+                quota_id
             );
             setExtractions([
                 new ExtractionModel(response.data),

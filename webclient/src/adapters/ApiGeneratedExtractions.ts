@@ -2,6 +2,7 @@ import axiosInstance, { authHeader } from "./ApiBase";
 
 interface GenerateExtraction {
     include_categories: number[];
+    location_ids: number[];
     target_pages_threshold: number;
     whole_categories_threshold: number;
 }
@@ -32,22 +33,13 @@ namespace ApiGeneratedExtractions {
         return axiosInstance.get<GeneratedExtraction>(`/extractions/generated/${id}`, { headers: authHeader() });
     }
 
-    export function generateExtraction(createProps: GenerateExtraction, pages_count?: number, quota_id?: number, library_ids?: number[], storage_ids?: number[], location_ids?: number[]) {
+    export function generateExtraction(createProps: GenerateExtraction, pages_count?: number, quota_id?: number) {
         const params: { [key: string]: string } = {}
         if (pages_count) {
             params['pages_count'] = String(pages_count);
         }
         if (quota_id) {
             params['quota_id'] = String(quota_id);
-        }
-        if (library_ids && library_ids.length > 0) {
-            params['library_ids'] = library_ids.join(',');
-        }
-        if (storage_ids && storage_ids.length > 0) {
-            params['storage_ids'] = storage_ids.join(',');
-        }
-        if (location_ids && location_ids.length > 0) {
-            params['location_ids'] = location_ids.join(',');
         }
         const queryParams = new URLSearchParams(params).toString();
         const url = `/extractions/generated${queryParams ? `?${queryParams}` : ''}`;

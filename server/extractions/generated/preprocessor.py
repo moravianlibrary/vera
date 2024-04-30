@@ -6,7 +6,10 @@ from categories.crud import (
     get_root_categories,
 )
 from categories.models import Category as CategoryModel
-from extractions.generated.crud import get_extractable_documents
+from extractions.generated.crud import (
+    get_extractable_documents,
+    get_location_pattern,
+)
 from extractions.generated.extraction_node import (
     ExtractionNode,
     getExtractionRoot,
@@ -18,6 +21,10 @@ class ExtractionPreprocessor:
     def __init__(self, settings: GenerateExtraction, db: Session):
         self.settings = settings
         self.db = db
+        self.location_patterns = [
+            get_location_pattern(location_id, self.db)
+            for location_id in settings.location_ids
+        ]
 
     def generate_extraction_tree(self) -> ExtractionNode:
         children_nodes: List[ExtractionNode] = []
@@ -42,7 +49,9 @@ class ExtractionPreprocessor:
                 category,
                 self.settings.include_categories
                 and category.id in self.settings.include_categories,
-                documents=get_extractable_documents(category.id, self.db),
+                documents=get_extractable_documents(
+                    category.id, self.location_patterns, self.db
+                ),
             )
             return (
                 (node, node.total_pages) if node.total_pages > 0 else (None, 0)

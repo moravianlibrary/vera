@@ -66,6 +66,7 @@ def update_library(
         .where(models.Library.id == library_id)
         .values(name=library.name)
     )
+    db.commit()
     return get_library(library_id, db)
 
 
@@ -77,6 +78,7 @@ def update_storage(
         .where(models.Storage.id == storage_id)
         .values(name=storage.name)
     )
+    db.commit()
     return get_storage(storage_id, db)
 
 
@@ -94,6 +96,7 @@ def update_location(
             state=location.state,
         )
     )
+    db.commit()
     return get_location(location_id, db)
 
 

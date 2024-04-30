@@ -11,6 +11,7 @@ import LocationPicker, {
     LocationType,
     MetaLocation,
 } from "../../components/pickers/LocationPicker";
+import { Library, Location, Storage } from "../../adapters/ApiLocations";
 
 interface ExtractionPropsMenuProps {}
 
@@ -24,9 +25,7 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
     );
 
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-    const [selectedLocations, setSelectedLocations] = useState<MetaLocation[]>(
-        []
-    );
+    const [selectedLocations, setSelectedLocations] = useState<number[]>([]);
     const [pagesCount, setPagesCount] = useState<number | null>(null);
 
     const handleCategoriesChange = (categories: number[]) => {
@@ -35,22 +34,15 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
         setSelectedCategories(categories);
     };
 
+    const handleLocationsChange = (locations: number[]) => {
+        extractionProps.location_ids = locations;
+        setExtractionProps(extractionProps);
+        setSelectedLocations(locations);
+    };
+
     const handleGenerate = () => {
         if (!generating && pagesCount) {
-            generateExtraction(
-                extractionProps,
-                pagesCount,
-                undefined,
-                selectedLocations
-                    .filter((l) => l.type === LocationType.Library)
-                    .map((l) => l.data.id),
-                selectedLocations
-                    .filter((l) => l.type === LocationType.Storage)
-                    .map((l) => l.data.id),
-                selectedLocations
-                    .filter((l) => l.type === LocationType.Location)
-                    .map((l) => l.data.id)
-            );
+            generateExtraction(extractionProps, pagesCount, undefined);
         }
     };
 
@@ -103,7 +95,7 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
                 className="justify-content-between"
                 label={t("Include only documents from these locations")}
             >
-                <LocationsPicker callback={setSelectedLocations} />
+                <LocationsPicker callback={handleLocationsChange} />
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"
@@ -128,13 +120,34 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
 };
 
 interface LocationsPickerProps {
-    callback(locations: MetaLocation[]): void;
+    callback(location_ids: number[]): void;
 }
 
 const LocationsPicker: React.FC<LocationsPickerProps> = ({ callback }) => {
     const [pickedLocations, setPickedLocations] = useState<
         (MetaLocation | null)[]
     >([null]);
+
+    const handleCallback = (locations: (MetaLocation | null)[]) => {
+        callback(
+            locations
+                .filter((l) => l !== null)
+                .map((location) => {
+                    if (location!.type === LocationType.Library) {
+                        return (location!.data as Library).storages
+                            .flatMap((s) => s.locations)
+                            .map((l) => l.id);
+                    }
+                    if (location!.type === LocationType.Storage) {
+                        return (location!.data as Storage).locations.map(
+                            (l) => l.id
+                        );
+                    }
+                    return [location!.data.id];
+                })
+                .flat()
+        );
+    };
 
     const handlePickLocation = (
         index: number,
@@ -143,17 +156,15 @@ const LocationsPicker: React.FC<LocationsPickerProps> = ({ callback }) => {
         const newPickedLocations = [...pickedLocations];
         newPickedLocations[index] = location;
         setPickedLocations(newPickedLocations);
-        callback(
-            newPickedLocations.filter((l) => l !== null) as MetaLocation[]
-        );
+        handleCallback(newPickedLocations);
     };
 
     const handleRemoveLocation = (index: number) => {
         const newPickedLocations = pickedLocations.filter(
             (_, i) => i !== index
         );
-        callback(newPickedLocations as MetaLocation[]);
         setPickedLocations(newPickedLocations);
+        handleCallback(newPickedLocations);
     };
 
     return (
