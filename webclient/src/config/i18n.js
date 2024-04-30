@@ -486,6 +486,10 @@ const resources = {
         "Storage deletion failed": "Uložení se nepodařilo smazat",
         "The location was deleted successfully": "Lokace byla úspěšně smazána",
         "Location deletion failed": "Lokaci se nepodařilo smazat",
+
+        "Include all documents from these categories": "Zahrnout všechny dokumenty z těchto kategorií",
+        "Include only documents from these locations": "Zahrnout pouze dokumenty z těchto lokací",
+        "Select location": "Vybrat lokaci",
     },
   },
 };
