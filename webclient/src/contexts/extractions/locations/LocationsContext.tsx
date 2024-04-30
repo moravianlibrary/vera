@@ -92,6 +92,9 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
                 `${t("Name")}: ${name}`
             );
             setStorages([...storages, response.data]);
+            libraries
+                .find((l) => l.id === library_id)!
+                .storages.push(response.data);
             return response.data as Storage;
         } catch (error) {
             showToast("error", t("Storage creation failed"), "");

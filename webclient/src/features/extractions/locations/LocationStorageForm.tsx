@@ -35,6 +35,7 @@ export const LocationStorageForm: React.FC<LocationStorageFormProps> = ({
 
     const handleCreateStorage = () => {
         createStorage(library?.id!, createStorageName).then((storage) => {
+            setStorageOptions([...storageOptions, storage]);
             handleChangeStorage(storage);
             setCreateMode(false);
         });

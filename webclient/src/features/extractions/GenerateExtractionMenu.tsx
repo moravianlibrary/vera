@@ -11,7 +11,7 @@ import LocationPicker, {
     LocationType,
     MetaLocation,
 } from "../../components/pickers/LocationPicker";
-import { Library, Location, Storage } from "../../adapters/ApiLocations";
+import { Library, Storage } from "../../adapters/ApiLocations";
 
 interface ExtractionPropsMenuProps {}
 

@@ -1,6 +1,6 @@
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocations } from "../../../contexts/extractions/locations/LocationsContext";
 import DeleteButton from "../../../components/buttons/DeleteButton";
@@ -14,9 +14,17 @@ import { Button } from "primereact/button";
 
 interface LocationsTableProps {}
 
+const compareLocations = (a: LocationModel, b: LocationModel): number => {
+    return (
+        a.library_name.localeCompare(b.library_name) ||
+        // a.storage_name.localeCompare(b.storage_name) ||
+        a.name.localeCompare(b.name)
+    );
+};
+
 const LocationsTable: React.FC<LocationsTableProps> = () => {
     const { t } = useTranslation();
-    const { locations, updateLocation } = useLocations();
+    const { locations } = useLocations();
 
     const [editLocation, setEditLocation] = useState<LocationModel | null>(
         null
@@ -34,11 +42,9 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
         );
     };
 
-    const handleEditLocation = (locationId: number) => {};
-
     return (
         <div>
-            <DataTable value={locations}>
+            <DataTable value={locations.sort(compareLocations)}>
                 <Column header={t("Library")} field="library_name" />
                 <Column header={t("Storage")} field="storage_name" />
                 <Column header={t("Location")} field="name" />

@@ -11,13 +11,12 @@ import { DigitizationListsProvider } from "../contexts/extractions/DigitizationL
 import DigitizationListsTable from "../features/extractions/DigitizationListsTable";
 import LocationsTable from "../features/extractions/locations/LocationsTable";
 import { LocationsProvider } from "../contexts/extractions/locations/LocationsContext";
-import CreateLocationMenu from "../features/extractions/locations/CreateLocationMenu";
+import LocationsMenuButton from "../features/extractions/locations/LocationsMenuButton";
 
 const Extractions: React.FC = () => {
     const { t } = useTranslation();
 
     const propsMenuPanel = useRef<OverlayPanel>(null);
-    const createLocationMenuPanel = useRef<OverlayPanel>(null);
 
     const [table, setTable] = useState(1);
     const tables = [
@@ -41,20 +40,7 @@ const Extractions: React.FC = () => {
         </React.Fragment>
     );
 
-    const createLocationMenu = (
-        <React.Fragment>
-            <Button
-                className="fixed"
-                icon="pi pi-angle-down"
-                label={t("Create location")}
-                outlined
-                onClick={(e) => createLocationMenuPanel.current!.toggle(e)}
-            />
-            <OverlayPanel ref={createLocationMenuPanel}>
-                <CreateLocationMenu />
-            </OverlayPanel>
-        </React.Fragment>
-    );
+    const createLocationMenu = <LocationsMenuButton />;
 
     const selectTableButton = (
         <SelectButton
