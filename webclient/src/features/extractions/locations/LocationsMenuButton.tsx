@@ -20,7 +20,9 @@ const LocationsMenuButton = () => {
 
     const [tabSeparatedInputVisible, setTabSeparatedInputVisible] =
         useState<boolean>(false);
-    const [tabSeparatedValues, setTabSeparatedValues] = useState<string[]>([]);
+    const [tabSeparatedValues, setTabSeparatedValues] = useState<
+        [key: string, value: string][]
+    >([]);
 
     const items = [
         {
@@ -33,25 +35,45 @@ const LocationsMenuButton = () => {
             icon: "pi pi-pencil",
             command: () => setStorageMenuVisible(true),
         },
-        // {
-        //     label: t("Insert using tab separated text input"),
-        //     icon: "pi pi-clipboard",
-        //     command: () => setTabSeparatedInputVisible(true),
-        // },
+        {
+            label: t("Insert using tab separated text input"),
+            icon: "pi pi-clipboard",
+            command: () => setTabSeparatedInputVisible(true),
+        },
     ];
 
     const valuesMappers = [
         {
+            key: "library",
             label: t("Library"),
-            singleColumn: true,
+            required: true,
         },
         {
+            key: "storage",
             label: t("Storage"),
-            singleColumn: true,
+            required: true,
         },
         {
+            key: "name",
             label: t("Location name"),
-            singleColumn: true,
+            required: true,
+        },
+        {
+            key: "regexp",
+            label: t("Location prefix"),
+            required: true,
+        },
+        {
+            key: "description",
+            label: t("Description"),
+        },
+        {
+            key: "additionalInfo",
+            label: t("Additional information"),
+        },
+        {
+            key: "state",
+            label: t("Location state"),
         },
     ];
 

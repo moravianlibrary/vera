@@ -10,18 +10,20 @@ import Spreadsheet, {
 import { ContextMenu } from "primereact/contextmenu";
 import { useTranslation } from "react-i18next";
 import { Chip } from "primereact/chip";
-import LabeledComponent from "./LabeledComponent";
+import { Badge } from "primereact/badge";
+import RequiredValueBadge from "./RequiredValueBadge";
 
 interface SpreadsheetValueMapper {
+    key: string;
     label: string;
-    singleColumn: boolean;
+    required?: boolean;
 }
 
 interface SpreadsheetInputProps {
     visible: boolean;
     onHide: () => void;
     valueMappers: SpreadsheetValueMapper[];
-    onSubmit: (values: string[]) => void;
+    onSubmit: (values: [key: string, value: string][]) => void;
 }
 
 const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
@@ -33,9 +35,6 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
     const { t } = useTranslation();
 
     const [columnLabels, setColumnLabels] = useState<string[]>([]);
-    const [unassignedLabels, setUnassignedLabels] = useState<string[]>(
-        valueMappers.map((mapper) => mapper.label)
-    );
     const [data, setData] = useState<CellBase[][]>([[{ value: "" }]]);
     const [selected, setSelected] = useState<Selection>(new EmptySelection());
 
@@ -53,38 +52,85 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
                     ? columnLabels[i] !== mappingColumn.label
                         ? mappingColumn.label
                         : ""
+                    : label === mappingColumn.label
+                    ? ""
                     : label
             )
         );
-        setUnassignedLabels((prev) =>
-            prev.filter((label) => label !== mappingColumn.label)
+    };
+
+    const handleDuplicateColumn = (column: number) => {
+        setData((prev) =>
+            prev.map((row) => [
+                ...row.slice(0, column + 1),
+                ...row.slice(column, column + 1),
+                ...row.slice(column + 1),
+            ])
+        );
+    };
+
+    const handleDeleteColumn = (column: number) => {
+        setData((prev) =>
+            prev.map((row) => [
+                ...row.slice(0, column),
+                ...row.slice(column + 1),
+            ])
         );
     };
 
     return (
         <Dialog visible={visible} onHide={onHide}>
-            <div className="w-full">
-                <Spreadsheet
-                    data={data}
-                    onChange={(newData) => setData(newData as CellBase[][])}
-                    selected={selected}
-                    onSelect={setSelected}
-                    ColumnIndicator={(props) => (
-                        <SpreadsheetColumn
-                            {...props}
-                            mapColumns={valueMappers}
-                            onMapToColumn={handleMapToColumn}
-                        />
-                    )}
-                    RowIndicator={SpreadsheetRow}
-                    columnLabels={columnLabels}
-                />
-                <div className="card absolute bottom-0 left-0 p-4 bg-white w-full flex gap-1">
-                    <LabeledComponent label="Column labels">
-                        {unassignedLabels.map((label) => (
-                            <Chip key={label} label={label} />
-                        ))}
-                    </LabeledComponent>
+            <div className="flex flex-column w-full gap-3">
+                <div className="flex w-full gap-2 align-items-center">
+                    <span>{t("Column labels")}:</span>
+                    {valueMappers.map((mapper) => (
+                        <div className="relative">
+                            <Chip
+                                className="p-overlay-badge"
+                                key={mapper.label}
+                                label={mapper.label}
+                            />
+                            <Badge
+                                key={mapper.label}
+                                severity={
+                                    columnLabels.filter(
+                                        (label) => label === mapper.label
+                                    ).length === 0
+                                        ? "warning"
+                                        : "success"
+                                }
+                                value={mapper.required && "Required"}
+                                style={{
+                                    position: "relative",
+                                    top: "-7px",
+                                    left: "-10px",
+                                    zIndex: 10,
+                                }}
+                            />
+                        </div>
+                    ))}
+                </div>
+                <div
+                    className="overflow-scroll"
+                    style={{ maxHeight: "calc(100vh - 320px)" }}
+                >
+                    <Spreadsheet
+                        data={data}
+                        onChange={(newData) => setData(newData as CellBase[][])}
+                        selected={selected}
+                        onSelect={setSelected}
+                        ColumnIndicator={(props) => (
+                            <SpreadsheetColumn
+                                {...props}
+                                mapColumns={valueMappers}
+                                onMapToColumn={handleMapToColumn}
+                                onDuplicateColumn={handleDuplicateColumn}
+                                onDeleteColumn={handleDeleteColumn}
+                            />
+                        )}
+                        RowIndicator={SpreadsheetRow}
+                        columnLabels={columnLabels}
+                    />
                 </div>
             </div>
         </Dialog>
@@ -97,6 +143,8 @@ interface SpreadsheetColumnProps extends ColumnIndicatorProps {
         column: number,
         mappingColumn: SpreadsheetValueMapper
     ) => void;
+    onDuplicateColumn?: (column: number) => void;
+    onDeleteColumn?: (column: number) => void;
 }
 
 function colIndexToString(colIndex: number) {
@@ -117,15 +165,31 @@ const SpreadsheetColumn: React.FC<SpreadsheetColumnProps> = ({
     onSelect,
     mapColumns,
     onMapToColumn,
+    onDuplicateColumn,
+    onDeleteColumn,
 }) => {
+    const { t } = useTranslation();
     const contextMenuRef = useRef<ContextMenu | null>(null);
 
-    const items = mapColumns
-        ? mapColumns.map((c) => ({
-              label: c.label,
-              command: () => onMapToColumn?.(column, c),
-          }))
-        : [];
+    const items = [
+        {
+            label: t("Duplicate column"),
+            command: () => onDuplicateColumn?.(column),
+        },
+        {
+            label: t("Delete column"),
+            command: () => onDeleteColumn?.(column),
+        },
+        {
+            label: t("Map to column"),
+            items: mapColumns
+                ? mapColumns.map((c) => ({
+                      label: c.label,
+                      command: () => onMapToColumn?.(column, c),
+                  }))
+                : [],
+        },
+    ];
 
     const handleSelect = () => {
         onSelect(column, true);
