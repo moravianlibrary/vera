@@ -1,6 +1,6 @@
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocations } from "../../../contexts/extractions/locations/LocationsContext";
 import DeleteButton from "../../../components/buttons/DeleteButton";
@@ -26,9 +26,17 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
     const { t } = useTranslation();
     const { locations } = useLocations();
 
+    const [values, setValues] = useState<Location[]>(
+        locations.sort(compareLocations)
+    );
     const [editLocation, setEditLocation] = useState<LocationModel | null>(
         null
     );
+
+    useEffect(() => {
+        setValues(locations.sort(compareLocations));
+        console.log(locations);
+    }, [locations]);
 
     const locationStateBody = (data: any, options: any) => {
         return (
@@ -44,7 +52,7 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
 
     return (
         <div>
-            <DataTable value={locations.sort(compareLocations)}>
+            <DataTable value={values}>
                 <Column header={t("Library")} field="library_name" />
                 <Column header={t("Storage")} field="storage_name" />
                 <Column header={t("Location")} field="name" />

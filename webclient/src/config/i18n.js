@@ -486,6 +486,15 @@ const resources = {
         "Storage deletion failed": "Uložení se nepodařilo smazat",
         "The location was deleted successfully": "Lokace byla úspěšně smazána",
         "Location deletion failed": "Lokaci se nepodařilo smazat",
+        "Manage libraries": "Správa knihoven",
+        "Manage storages": "Správa uložení",
+        "Select library": "Vybrat knihovnu",
+        "Select storage": "Vybrat uložení",
+        "Library name": "Jméno knihovny",
+        "Storage name": "Jméno uložení",
+        "The library cannot be deleted because it contains storages": "Knihovnu nelze smazat, protože obsahuje uložení",
+        "The storage cannot be deleted because it contains locations": "Uložení nelze smazat, protože obsahuje lokaci",
+
 
         "Include all documents from these categories": "Zahrnout všechny dokumenty z těchto kategorií",
         "Include only documents from these locations": "Zahrnout pouze dokumenty z těchto lokací",

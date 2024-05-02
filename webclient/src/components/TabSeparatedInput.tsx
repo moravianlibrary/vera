@@ -9,6 +9,8 @@ import Spreadsheet, {
 } from "react-spreadsheet";
 import { ContextMenu } from "primereact/contextmenu";
 import { useTranslation } from "react-i18next";
+import { Chip } from "primereact/chip";
+import LabeledComponent from "./LabeledComponent";
 
 interface SpreadsheetValueMapper {
     label: string;
@@ -28,7 +30,12 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
     valueMappers,
     onSubmit,
 }) => {
+    const { t } = useTranslation();
+
     const [columnLabels, setColumnLabels] = useState<string[]>([]);
+    const [unassignedLabels, setUnassignedLabels] = useState<string[]>(
+        valueMappers.map((mapper) => mapper.label)
+    );
     const [data, setData] = useState<CellBase[][]>([[{ value: "" }]]);
     const [selected, setSelected] = useState<Selection>(new EmptySelection());
 
@@ -48,6 +55,9 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
                         : ""
                     : label
             )
+        );
+        setUnassignedLabels((prev) =>
+            prev.filter((label) => label !== mappingColumn.label)
         );
     };
 
@@ -69,7 +79,13 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
                     RowIndicator={SpreadsheetRow}
                     columnLabels={columnLabels}
                 />
-                <div className="flex flex-column overflow-scroll"></div>
+                <div className="card absolute bottom-0 left-0 p-4 bg-white w-full flex gap-1">
+                    <LabeledComponent label="Column labels">
+                        {unassignedLabels.map((label) => (
+                            <Chip key={label} label={label} />
+                        ))}
+                    </LabeledComponent>
+                </div>
             </div>
         </Dialog>
     );

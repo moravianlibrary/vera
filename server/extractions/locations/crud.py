@@ -76,7 +76,7 @@ def update_storage(
     db.execute(
         update(models.Storage)
         .where(models.Storage.id == storage_id)
-        .values(name=storage.name)
+        .values(library_id=storage.library_id, name=storage.name)
     )
     db.commit()
     return get_storage(storage_id, db)
@@ -89,6 +89,7 @@ def update_location(
         update(models.Location)
         .where(models.Location.id == location_id)
         .values(
+            storage_id=location.storage_id,
             name=location.name,
             regexp=location.regexp,
             description=location.description,
@@ -102,21 +103,24 @@ def update_location(
 
 # Delete
 def delete_library(id: str, db: Session) -> models.Library:
-    db.delete(get_library(id, db))
+    library = get_library(id, db)
+    db.delete(library)
     db.commit()
-    return get_library(id, db)
+    return library
 
 
 def delete_storage(id: int, db: Session) -> models.Storage:
-    db.delete(get_storage(id, db))
+    storage = get_storage(id, db)
+    db.delete(storage)
     db.commit()
-    return get_storage(id, db)
+    return storage
 
 
 def delete_location(id: int, db: Session) -> models.Location:
-    db.delete(get_location(id, db))
+    location = get_location(id, db)
+    db.delete(location)
     db.commit()
-    return get_location(id, db)
+    return location
 
 
 # Select all

@@ -67,15 +67,15 @@ namespace ApiLocations {
     }
 
     export function deleteLibrary(id: number) {
-        return axiosInstance.delete(`/locations/libraries/${id}`);
+        return axiosInstance.delete<Library>(`/locations/libraries/${id}`);
     }
 
     export function deleteStorage(id: number) {
-        return axiosInstance.delete(`/locations/storages/${id}`);
+        return axiosInstance.delete<Storage>(`/locations/storages/${id}`);
     }
 
     export function deleteLocation(id: number) {
-        return axiosInstance.delete(`/locations/locations/${id}`);
+        return axiosInstance.delete<Location>(`/locations/locations/${id}`);
     }
 
     export function getLibraries() {

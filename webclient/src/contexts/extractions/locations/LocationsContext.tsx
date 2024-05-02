@@ -143,15 +143,29 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
         ApiLocations.updateLibrary(id, {
             name: name,
         })
-            .then(() => {
+            .then((response) => {
                 showToast(
                     "success",
                     t("The library was updated successfully"),
                     `${t("Name")}: ${name}`
                 );
                 setLibraries(
-                    libraries?.map((l) =>
-                        l.id === id ? { ...l, name: name } : l
+                    libraries?.map((l) => (l.id === id ? response.data : l))
+                );
+                const storage = storages.find((s) => s.library_id === id);
+                setLocations(
+                    locations?.map((l) =>
+                        l.library.id === id
+                            ? new LocationModel(
+                                  response.data!,
+                                  {
+                                      ...storage!,
+                                      library_id: id,
+                                      library: response.data,
+                                  },
+                                  l
+                              )
+                            : l
                     )
                 );
             })
@@ -170,7 +184,7 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
             name: name,
             library_id: library_id,
         })
-            .then(() => {
+            .then((response) => {
                 showToast(
                     "success",
                     t("The storage was updated successfully"),
@@ -178,7 +192,15 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
                 );
                 setStorages(
                     storages?.map((s) =>
-                        s.id === storage_id ? { ...s, name: name } : s
+                        s.id === storage_id ? response.data : s
+                    )
+                );
+                const library = libraries.find((l) => l.id === library_id);
+                setLocations(
+                    locations?.map((l) =>
+                        l.storage_id === storage_id
+                            ? new LocationModel(library!, response.data!, l)
+                            : l
                     )
                 );
             })
@@ -234,11 +256,11 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
 
     const deleteLibrary = (id: number) => {
         ApiLocations.deleteLibrary(id)
-            .then(() => {
+            .then((response) => {
                 showToast(
                     "success",
                     t("The library was deleted successfully"),
-                    `${t("Name")}: ${id}`
+                    `${t("Name")}: ${response.data.name}`
                 );
                 setLibraries(libraries?.filter((l) => l.id !== id));
             })
@@ -250,11 +272,11 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
 
     const deleteStorage = (storage_id: number) => {
         ApiLocations.deleteStorage(storage_id)
-            .then(() => {
+            .then((response) => {
                 showToast(
                     "success",
                     t("The storage was deleted successfully"),
-                    `${t("Name")}: ${storage_id}`
+                    `${t("Name")}: ${response.data.name}`
                 );
                 setStorages(storages?.filter((s) => s.id !== storage_id));
             })
@@ -266,10 +288,11 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
 
     const deleteLocation = (location_id: number) => {
         ApiLocations.deleteLocation(location_id)
-            .then(() => {
+            .then((response) => {
                 showToast(
                     "success",
-                    t("The location was deleted successfully")
+                    t("The location was deleted successfully"),
+                    `${t("Name")}: ${response.data.name}`
                 );
                 setLocations(locations?.filter((l) => l.id !== location_id));
             })
@@ -279,7 +302,7 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
             });
     };
 
-    useEffect(() => {
+    const fetchLocations = async () => {
         ApiLocations.getLibraries()
             .then((response) => {
                 setLibraries(response.data);
@@ -299,6 +322,10 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
             .catch((error) => {
                 console.error(error);
             });
+    };
+
+    useEffect(() => {
+        fetchLocations();
     }, []);
 
     const contextValue: LocationsContextProps = {

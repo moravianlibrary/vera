@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
@@ -10,11 +10,13 @@ import { useState } from "react";
 interface LocationLibraryFormProps {
     library: Library | null;
     onChangeLibrary: (library: Library | null) => void;
+    disabled?: boolean;
 }
 
 export const LocationLibraryForm: React.FC<LocationLibraryFormProps> = ({
     library,
     onChangeLibrary,
+    disabled,
 }) => {
     const { t } = useTranslation();
     const { libraries, createLibrary } = useLocations();
@@ -24,6 +26,10 @@ export const LocationLibraryForm: React.FC<LocationLibraryFormProps> = ({
     );
     const [createMode, setCreateMode] = useState(false);
     const [createLibraryName, setCreateLibraryName] = useState<string>("");
+
+    useEffect(() => {
+        setSelectedLibrary(library);
+    }, [library]);
 
     const handleChangeLibrary = (library: Library | null) => {
         setSelectedLibrary(library);
@@ -68,12 +74,14 @@ export const LocationLibraryForm: React.FC<LocationLibraryFormProps> = ({
                 options={libraries}
                 optionLabel="name"
                 onChange={(e) => handleChangeLibrary(e.value)}
+                disabled={disabled}
                 emptyMessage={t("Create new library")}
             />
             <Button
                 icon="pi pi-plus"
                 outlined
                 onClick={() => setCreateMode(true)}
+                disabled={disabled}
             />
         </div>
     );
