@@ -9,6 +9,7 @@ import {
     SearchNumberField,
     SearchTextField,
     SearchEnumField,
+    SearchLocationField,
 } from "../../../contexts/documents/search/SearchNodes";
 import AdvancedSearchTextField from "./AdvancedSearchTextField";
 import React from "react";
@@ -19,6 +20,7 @@ import AdvancedSearchTreeField from "./AdvancedSearchTreeField";
 import AdvancedSearchNumberField from "./AdvancedSearchNumberField";
 import { RuleType } from "../../../types/SearchTypes";
 import AdvancedSearchEnumField from "./AdvancedSearchEnumField";
+import AdvancedSearchLocationField from "./AdvancedSearchRegexField";
 
 interface AdvancedSearchFieldProps {
     data: SearchField;
@@ -81,6 +83,11 @@ const AdvancedSearchField: React.FC<AdvancedSearchFieldProps> = ({
                 )}
                 {type === RuleType.TreeField && (
                     <AdvancedSearchTreeField data={data as SearchTreeField} />
+                )}
+                {type === RuleType.RegexField && (
+                    <AdvancedSearchLocationField
+                        data={data as SearchLocationField}
+                    />
                 )}
             </div>
         </div>

@@ -6,7 +6,6 @@ from services.database import create
 from documents.models import Document
 from extractions.generated import schemas
 from extractions.generated.models import GeneratedExtraction
-from extractions.locations.models import Location
 from services.exceptions import EmptyExtraction
 
 
@@ -84,16 +83,6 @@ def get_extraction_documents(
     if category_id:
         query_base = query_base.filter(Document.category_id == category_id)
     return query_base.all()
-
-
-def get_location_pattern(location_id: int, db: Session):
-    location = (
-        db.query(Location.regexp).filter(Location.id == location_id).first()
-    )
-    if not location:
-        return None
-    pattern = location.regexp.replace(".", "\\.")
-    return f"^{pattern}-.*$"
 
 
 def delete_extraction(extraction_id: int, db: Session) -> GeneratedExtraction:

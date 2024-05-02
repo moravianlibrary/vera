@@ -436,6 +436,8 @@ const resources = {
         IsNotIn: "Není v",
         Is: "Je",
         IsNot: "Není",
+        Match: "Odpovídá",
+        NotMatch: "Neodpovídá",
         "Add rules group": "Přidat skupinu pravidel",
 
         "Catalog's pages count": "Počet stránek z katalogu",
@@ -499,6 +501,8 @@ const resources = {
         "Include all documents from these categories": "Zahrnout všechny dokumenty z těchto kategorií",
         "Include only documents from these locations": "Zahrnout pouze dokumenty z těchto lokací",
         "Select location": "Vybrat lokaci",
+
+        "Select operation": "Vybrat operaci",
     },
   },
 };

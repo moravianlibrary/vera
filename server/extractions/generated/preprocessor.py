@@ -8,8 +8,8 @@ from categories.crud import (
 from categories.models import Category as CategoryModel
 from extractions.generated.crud import (
     get_extractable_documents,
-    get_location_pattern,
 )
+from extractions.locations.crud import get_location_pattern
 from extractions.generated.extraction_node import (
     ExtractionNode,
     getExtractionRoot,

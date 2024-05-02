@@ -34,6 +34,8 @@ class DocumentField(Enum):
     Cnb = "Cnb"
     IsbnIssn = "IsbnIssn"
 
+    Location = "Location"
+
     DigitizationState = "DigitizationState"
 
     PagesCount = "PagesCount"
@@ -80,6 +82,11 @@ class TreeOption(Enum):
     IsNotIn = "IsNotIn"
     IsNull = "IsNull"
     IsNotNull = "IsNotNull"
+
+
+class RegexOption(Enum):
+    Match = "Match"
+    NotMatch = "NotMatch"
 
 
 class SortOrder(Enum):

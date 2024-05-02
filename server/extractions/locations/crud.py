@@ -5,6 +5,7 @@ from typing import List
 from services.database import create
 from extractions.locations import models
 from extractions.locations import schemas
+from extractions.locations.models import Location
 
 
 # Create
@@ -134,3 +135,13 @@ def get_storages(db: Session) -> List[models.Storage]:
 
 def get_locations(db: Session) -> List[models.Location]:
     return db.query(models.Location).all()
+
+
+def get_location_pattern(location_id: int, db: Session):
+    location = (
+        db.query(Location.regexp).filter(Location.id == location_id).first()
+    )
+    if not location:
+        return None
+    pattern = location.regexp.replace(".", "\\.")
+    return f"^{pattern}-.*$"

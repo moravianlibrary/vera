@@ -46,6 +46,7 @@ const AdvancedSearchNode: React.FC<AdvancedSearchNodeProps> = ({
         case RuleType.NumberField:
         case RuleType.EnumField:
         case RuleType.TreeField:
+        case RuleType.RegexField:
             return (
                 <AdvancedSearchField
                     data={data as SearchField}

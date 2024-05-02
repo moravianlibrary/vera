@@ -11,9 +11,12 @@ from documents.enums import (
     NumberOption,
     TextOption,
     TreeOption,
+    RegexOption,
     SortOrder,
     DocumentField,
 )
+from extractions.locations.crud import get_location_pattern
+from services.database import get_db
 
 
 DOCUMENT_FIELDS_MAPPING = {
@@ -37,6 +40,7 @@ DOCUMENT_FIELDS_MAPPING = {
     DocumentField.PagesCountCatalog: "pages_count",
     DocumentField.PagesCountManual: "pages_count_manual",
     DocumentField.PagesCountPredicted: "pages_count_predicted",
+    DocumentField.Location: "signature",
 }
 
 
@@ -167,6 +171,11 @@ def build_field_filter(search_field: schemas.SearchField):
         return build_enum_filter(
             field, search_field.option, search_field.value
         )
+    elif search_field.option in RegexOption:
+        if search_field.field == DocumentField.Location:
+            return build_location_filter(
+                field, search_field.option, search_field.value
+            )
     return None
 
 
@@ -226,3 +235,23 @@ def build_enum_filter(field, option, value):
         return field.is_(None)
     elif option == EnumOption.IsNotNull:
         return field.isnot(None)
+
+
+def build_location_filter(field, option, value):
+    if value is None or len(value) == 0:
+        return None
+
+    db = next(get_db())
+    filters = []
+
+    for location_id in value:
+        location_pattern = get_location_pattern(location_id, db)
+        if option == RegexOption.Match:
+            filters.append(field.op("~")(location_pattern))
+        elif option == RegexOption.NotMatch:
+            filters.append(~field.op("~")(location_pattern))
+
+    if option == RegexOption.Match:
+        return or_(*filters)
+    elif option == RegexOption.NotMatch:
+        return and_(*filters)
