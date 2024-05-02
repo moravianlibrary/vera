@@ -14,7 +14,7 @@ router = APIRouter(prefix="/locations", tags=["Locations"])
 def create_library(
     library: schemas.LibraryCreate, db: Session = Depends(get_db)
 ):
-    return crud.create_library(db, library)
+    return crud.create_library(library, db)
 
 
 @router.post("/storages", response_model=schemas.Storage)

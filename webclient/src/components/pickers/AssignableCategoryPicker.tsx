@@ -36,7 +36,6 @@ export const AssignableCategoriesPicker: React.FC<
                 .forEach((c) => {
                     newSelected[c.id.toString()] = true;
                 });
-            console.log(newSelected);
             setSelected(newSelected);
         } else {
             setSelected({});

@@ -10,6 +10,7 @@ from documents.enums import (
     NumberOption,
     TextOption,
     TreeOption,
+    RegexOption,
     SortOrder,
 )
 from catalogs.enums import (
@@ -158,7 +159,9 @@ class DocumentCreateResponse(BaseModel):
 
 class SearchField(BaseModel):
     field: DocumentField
-    option: Union[TextOption, NumberOption, EnumOption, TreeOption]
+    option: Union[
+        TextOption, NumberOption, EnumOption, TreeOption, RegexOption
+    ]
     value: Optional[Union[str, int, Tuple[int, int], List[int]]] = None
 
 

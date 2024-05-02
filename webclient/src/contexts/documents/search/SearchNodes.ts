@@ -1,4 +1,4 @@
-import { EnumOption, GroupOption, NumberOption, RuleType, TextOption, TreeOption } from "../../../types/SearchTypes";
+import { EnumOption, GroupOption, NumberOption, RegexOption, RuleType, TextOption, TreeOption } from "../../../types/SearchTypes";
 import { DocumentField } from "../../../types/DocumentSearchField";
 
 type SubRule = SearchGroup | SearchField;
@@ -9,7 +9,7 @@ export interface SearchGroupParams {
     sub_rules: SubRule[];
 }
 
-type FieldOption = TextOption | NumberOption | EnumOption | TreeOption | undefined;
+type FieldOption = TextOption | NumberOption | EnumOption | TreeOption | RegexOption | undefined;
 type Value = string | number | [number | undefined, number | undefined] | number[] | null | undefined;
 
 interface SearchFieldParams {
@@ -25,6 +25,7 @@ const DEFAULT_FIELDS_OPTIONS: Record<RuleType, FieldOption> = {
     [RuleType.NumberField]: NumberOption.EqualTo,
     [RuleType.EnumField]: EnumOption.Is,
     [RuleType.TreeField]: TreeOption.IsIn,
+    [RuleType.RegexField]: RegexOption.Match,
     [RuleType.Group]: undefined,
     [RuleType.Field]: undefined,
 };
@@ -54,6 +55,7 @@ export class SearchGroup extends SearchNode implements SearchGroupParams {
                     case RuleType.NumberField: return new SearchNumberField(subRule as SearchFieldParams);
                     case RuleType.EnumField: return new SearchEnumField(subRule as SearchFieldParams);
                     case RuleType.TreeField: return new SearchTreeField(subRule as SearchFieldParams);
+                    case RuleType.RegexField: return new SearchLocationField(subRule as SearchFieldParams);
                     default:
                         throw new Error(`Unsupported rule type: ${subRule.type}`);
                 }
@@ -202,6 +204,13 @@ export class SearchEnumField extends SearchField {
 export class SearchTreeField extends SearchField {
     constructor(params: SearchFieldParams) {
         super(RuleType.TreeField, params);
+    }
+}
+
+
+export class SearchLocationField extends SearchField {
+    constructor(params: SearchFieldParams) {
+        super(RuleType.RegexField, params);
     }
 }
 

@@ -8,6 +8,7 @@ class GeneratedExtractionModel implements GeneratedExtraction {
     selected_pages: number;
     target_pages: number;
     include_categories: number[];
+    location_ids: number[];
     target_pages_threshold: number;
     whole_categories_threshold: number;
     generated_by: string;

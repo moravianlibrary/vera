@@ -18,6 +18,7 @@ export enum DocumentField {
     Signature = "Signature",
     Cnb = "Cnb",
     IsbnIssn = "IsbnIssn",
+    Location = "Location",
 
     DigitizationState = "DigitizationState",
 
@@ -46,6 +47,7 @@ const DocumentSearchField: DocumentSearchFieldType = {
     Signature: {name: "Signature", type: RuleType.TextField},
     Cnb: {name: "CNB", type: RuleType.TextField},
     IsbnIssn: {name: "ISBN/ISSN", type: RuleType.TextField},
+    Location: {name: "Location", type: RuleType.RegexField},
 
     DigitizationState: {name: "Digitization state", type: RuleType.EnumField, enumOptions: Object.values(DigitizationState)},
 

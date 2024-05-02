@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SearchTreeField } from "../../../contexts/documents/search/SearchNodes";
 import React from "react";
-import { TreeSelectSelectionKeysType } from "primereact/treeselect";
 import { TextOption, TreeOption } from "../../../types/SearchTypes";
 import CategoryPicker from "../../../components/pickers/CategoryPicker";
 

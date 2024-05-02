@@ -45,6 +45,7 @@ export const GeneratedExtractionsProvider: React.FC<
         target_pages_threshold: 0.05,
         whole_categories_threshold: 0.05,
         include_categories: [],
+        location_ids: [],
     };
     const loadAmount = 50;
     const [extractions, setExtractions] = useState<GeneratedExtraction[]>([]);
