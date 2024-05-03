@@ -73,12 +73,6 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
         </React.Fragment>
     );
 
-    const categorySelector = (
-        <React.Fragment>
-            <DocumentsSearchBar />
-        </React.Fragment>
-    );
-
     const endContent = (
         <React.Fragment>
             <div className="flex flex-column align-items-end">
