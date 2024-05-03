@@ -11,50 +11,51 @@ import { ContextMenu } from "primereact/contextmenu";
 import { useTranslation } from "react-i18next";
 import { Chip } from "primereact/chip";
 import { Badge } from "primereact/badge";
-import RequiredValueBadge from "./RequiredValueBadge";
+import { Button } from "primereact/button";
 
-interface SpreadsheetValueMapper {
-    key: string;
-    label: string;
+export interface MapModel {
+    mapFrom: string;
+    mapTo: string;
     required?: boolean;
 }
+
+export type ModelType = { [key: string]: string };
 
 interface SpreadsheetInputProps {
     visible: boolean;
     onHide: () => void;
-    valueMappers: SpreadsheetValueMapper[];
-    onSubmit: (values: [key: string, value: string][]) => void;
+    mapModel: MapModel[];
+    onSubmit: (data: ModelType[]) => void;
 }
 
 const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
     visible,
     onHide,
-    valueMappers,
+    mapModel,
     onSubmit,
 }) => {
     const { t } = useTranslation();
 
-    const [columnLabels, setColumnLabels] = useState<string[]>([]);
-    const [data, setData] = useState<CellBase[][]>([[{ value: "" }]]);
+    const [columnMappings, setColumnMappings] = useState<(MapModel | null)[]>(
+        []
+    );
+    const [data, setData] = useState<CellBase[][]>([
+        [{ value: t("Insert table data here") }],
+    ]);
     const [selected, setSelected] = useState<Selection>(new EmptySelection());
 
     useEffect(() => {
-        setColumnLabels(Array.from({ length: data[0].length }, (_, i) => ""));
+        setColumnMappings(
+            Array.from({ length: data[0].length }, (_, i) => null)
+        );
     }, [data]);
 
-    const handleMapToColumn = (
-        column: number,
-        mappingColumn: SpreadsheetValueMapper
-    ) => {
-        setColumnLabels((prev) =>
-            prev.map((label, i) =>
-                i === column
-                    ? columnLabels[i] !== mappingColumn.label
-                        ? mappingColumn.label
-                        : ""
-                    : label === mappingColumn.label
-                    ? ""
-                    : label
+    const handleMapToColumn = (column: number, mappingColumn: MapModel) => {
+        setColumnMappings((prev) =>
+            prev.map((c, i) =>
+                i === column && prev[column] !== mappingColumn
+                    ? mappingColumn
+                    : c
             )
         );
     };
@@ -78,71 +79,124 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
         );
     };
 
-    return (
-        <Dialog visible={visible} onHide={onHide}>
-            <div className="flex flex-column w-full gap-3">
-                <div className="flex w-full gap-2 align-items-center">
-                    <span>{t("Column labels")}:</span>
-                    {valueMappers.map((mapper) => (
-                        <div className="relative">
-                            <Chip
-                                className="p-overlay-badge"
-                                key={mapper.label}
-                                label={mapper.label}
-                            />
-                            <Badge
-                                key={mapper.label}
-                                severity={
-                                    columnLabels.filter(
-                                        (label) => label === mapper.label
-                                    ).length === 0
-                                        ? "warning"
-                                        : "success"
-                                }
-                                value={mapper.required && "Required"}
-                                style={{
-                                    position: "relative",
-                                    top: "-7px",
-                                    left: "-10px",
-                                    zIndex: 10,
-                                }}
-                            />
-                        </div>
+    const handleSubmit = () => {
+        const values: ModelType[] = data.map((row) => {
+            return columnMappings.reduce((acc, mapper, i) => {
+                if (mapper && row[i] && row[i].value) {
+                    acc[mapper.mapTo] = row[i].value;
+                }
+                return acc;
+            }, {} as ModelType);
+        });
+        onSubmit(values);
+        onHide();
+    };
+
+    const dialogFooterButtons = () => {
+        return (
+            <div className="flex gap-2 align-items-end">
+                <div className="flex flex-wrap w-full gap-2 align-items-center">
+                    <span>{t("Assign column labels")}:</span>
+                    {mapModel.map((mapper) => (
+                        <ColumnLabelChip
+                            label={mapper.mapFrom}
+                            required={mapper.required}
+                            isSelected={columnMappings.includes(mapper)}
+                        />
                     ))}
                 </div>
-                <div
-                    className="overflow-scroll"
-                    style={{ maxHeight: "calc(100vh - 320px)" }}
-                >
-                    <Spreadsheet
-                        data={data}
-                        onChange={(newData) => setData(newData as CellBase[][])}
-                        selected={selected}
-                        onSelect={setSelected}
-                        ColumnIndicator={(props) => (
-                            <SpreadsheetColumn
-                                {...props}
-                                mapColumns={valueMappers}
-                                onMapToColumn={handleMapToColumn}
-                                onDuplicateColumn={handleDuplicateColumn}
-                                onDeleteColumn={handleDeleteColumn}
-                            />
-                        )}
-                        RowIndicator={SpreadsheetRow}
-                        columnLabels={columnLabels}
+                <div className="flex justify-content-end gap-2">
+                    <Button
+                        label={t("Cancel")}
+                        icon="pi pi-times"
+                        onClick={onHide}
+                    />
+                    <Button
+                        label={t("Confirm")}
+                        icon="pi pi-check"
+                        onClick={handleSubmit}
                     />
                 </div>
+            </div>
+        );
+    };
+
+    return (
+        <Dialog
+            visible={visible}
+            onHide={onHide}
+            header={t("Table data form")}
+            footer={dialogFooterButtons()}
+        >
+            <div className="flex flex-column w-full gap-3">
+                <Spreadsheet
+                    data={data}
+                    onChange={(newData) => setData(newData as CellBase[][])}
+                    selected={selected}
+                    onSelect={setSelected}
+                    ColumnIndicator={(props) => (
+                        <SpreadsheetColumn
+                            {...props}
+                            mapColumns={mapModel}
+                            onMapToColumn={handleMapToColumn}
+                            onDuplicateColumn={handleDuplicateColumn}
+                            onDeleteColumn={handleDeleteColumn}
+                        />
+                    )}
+                    RowIndicator={SpreadsheetRow}
+                    columnLabels={columnMappings.map((c) =>
+                        c ? c.mapFrom : ""
+                    )}
+                />
             </div>
         </Dialog>
     );
 };
 
+interface ColumnLabelChipProps {
+    label: string;
+    required?: boolean;
+    isSelected: boolean;
+}
+
+const ColumnLabelChip: React.FC<ColumnLabelChipProps> = ({
+    label,
+    required,
+    isSelected,
+}) => {
+    const { t } = useTranslation();
+
+    if (required || isSelected) {
+        return (
+            <div className="relative">
+                <Chip
+                    className="p-overlay-badge"
+                    key={`${label}_chip`}
+                    label={label}
+                />
+                <Badge
+                    key={`${label}_badge`}
+                    severity={isSelected ? "success" : "warning"}
+                    value={isSelected ? "" : t("Required")}
+                    style={{
+                        position: "relative",
+                        top: "-7px",
+                        left: "-10px",
+                        zIndex: 10,
+                    }}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <Chip className="p-overlay-badge" key={`${label}_chip`} label={label} />
+    );
+};
+
 interface SpreadsheetColumnProps extends ColumnIndicatorProps {
-    mapColumns?: SpreadsheetValueMapper[];
-    onMapToColumn?: (
-        column: number,
-        mappingColumn: SpreadsheetValueMapper
-    ) => void;
+    mapColumns?: MapModel[];
+    onMapToColumn?: (column: number, mappingColumn: MapModel) => void;
     onDuplicateColumn?: (column: number) => void;
     onDeleteColumn?: (column: number) => void;
 }
@@ -181,10 +235,10 @@ const SpreadsheetColumn: React.FC<SpreadsheetColumnProps> = ({
             command: () => onDeleteColumn?.(column),
         },
         {
-            label: t("Map to column"),
+            label: t("Assign label"),
             items: mapColumns
                 ? mapColumns.map((c) => ({
-                      label: c.label,
+                      label: c.mapFrom,
                       command: () => onMapToColumn?.(column, c),
                   }))
                 : [],

@@ -11,9 +11,7 @@ import { Dialog } from "primereact/dialog";
 import LocationForm from "./LocationForm";
 import { Library, Location, Storage } from "../../../adapters/ApiLocations";
 import { Button } from "primereact/button";
-import { Chip } from "primereact/chip";
 import { Avatar } from "primereact/avatar";
-import { Badge } from "primereact/badge";
 import { Tooltip } from "primereact/tooltip";
 
 interface LocationsTableProps {}
@@ -86,7 +84,6 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
         const specialCharactersRegex =
             /(\[\[:digit:\]\]|\[\[:alpha:\]\]|\[\[:alnum:\]\])/g;
         const patternTokenized = data.regexp.split(specialCharactersRegex);
-        console.log(patternTokenized);
         return (
             <div className="flex align-items-center">
                 <Tooltip

@@ -43,18 +43,18 @@ const LocationPrefixForm: React.FC<LocationPrefixFormProps> = ({
         },
     ];
 
-    const parsePrefixToPattern = (prefix: string) => {
+    const parsePrefixToPattern = (prefix) => {
         return prefix
-            .replace("[D]", "[[:digit:]]")
-            .replace("[L]", "[[:alpha:]]")
-            .replace("[X]", "[[:alnum:]]");
+            .replace(/\[D\]/g, "[[:digit:]]")
+            .replace(/\[L\]/g, "[[:alpha:]]")
+            .replace(/\[X\]/g, "[[:alnum:]]");
     };
 
-    const parsePatternToPrefix = (prefix: string) => {
+    const parsePatternToPrefix = (prefix) => {
         return prefix
-            .replace("[[:digit:]]", "[D]")
-            .replace("[[:alpha:]]", "[L]")
-            .replace("[[:alnum:]]", "[X]");
+            .replace(/\[\[:digit:\]\]/g, "[D]")
+            .replace(/\[\[:alpha:\]\]/g, "[L]")
+            .replace(/\[\[:alnum:\]\]/g, "[X]");
     };
 
     return (
