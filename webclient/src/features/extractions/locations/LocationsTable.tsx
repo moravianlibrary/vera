@@ -11,6 +11,8 @@ import { Dialog } from "primereact/dialog";
 import LocationForm from "./LocationForm";
 import { Library, Location, Storage } from "../../../adapters/ApiLocations";
 import { Button } from "primereact/button";
+import { Avatar } from "primereact/avatar";
+import { Tooltip } from "primereact/tooltip";
 
 interface LocationsTableProps {}
 
@@ -50,13 +52,71 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
         );
     };
 
+    const getSubPatternBody = (subPattern: string) => {
+        if (subPattern === "[[:digit:]]") {
+            return (
+                <div>
+                    <Avatar label="D" className="any-digit bg-green-100" />
+                </div>
+            );
+        }
+        if (subPattern === "[[:alpha:]]") {
+            return (
+                <div>
+                    <Avatar label="L" className="any-letter bg-blue-100" />
+                </div>
+            );
+        }
+        if (subPattern === "[[:alnum:]]") {
+            return (
+                <div>
+                    <Avatar
+                        label="X"
+                        className="any-letter-or-digit bg-cyan-100"
+                    />
+                </div>
+            );
+        }
+        return <p>{subPattern}</p>;
+    };
+
+    const locationPatternBody = (data: LocationModel, options: any) => {
+        const specialCharactersRegex =
+            /(\[\[:digit:\]\]|\[\[:alpha:\]\]|\[\[:alnum:\]\])/g;
+        const patternTokenized = data.regexp.split(specialCharactersRegex);
+        return (
+            <div className="flex align-items-center">
+                <Tooltip
+                    target=".any-digit"
+                    content={t("Any digit")}
+                    position="top"
+                />
+                <Tooltip
+                    target=".any-letter"
+                    content={t("Any letter")}
+                    position="top"
+                />
+                <Tooltip
+                    target=".any-letter-or-digit"
+                    content={t("Any letter or digit")}
+                    position="top"
+                />
+                {patternTokenized.map(getSubPatternBody)}
+            </div>
+        );
+    };
+
     return (
         <div>
             <DataTable value={values}>
                 <Column header={t("Library")} field="library_name" />
                 <Column header={t("Storage")} field="storage_name" />
                 <Column header={t("Location")} field="name" />
-                <Column header={t("Location prefix")} field="regexp" />
+                <Column
+                    header={t("Location prefix")}
+                    field="regexp"
+                    body={locationPatternBody}
+                />
                 <Column header={t("Description")} field="description" />
                 <Column
                     header={t("Additional information")}

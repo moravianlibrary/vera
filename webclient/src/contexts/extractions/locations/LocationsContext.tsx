@@ -15,7 +15,7 @@ interface LocationsContextProps {
         state: LocationState,
         description: string | null,
         additional_info: string | null
-    ) => void;
+    ) => Promise<LocationModel>;
     updateLibrary: (id: number, name: string) => void;
     updateStorage: (
         storage_id: number,
@@ -103,40 +103,38 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
         }
     };
 
-    const createLocation = (
+    const createLocation = async (
         storage_id: number,
         name: string,
         regexp: string,
         state: LocationState,
         description: string | null,
         additional_info: string | null
-    ) => {
-        ApiLocations.createLocation({
-            storage_id: storage_id,
-            name: name,
-            regexp: regexp,
-            state: state,
-            description: description,
-            additional_info: additional_info,
-        })
-            .then((response) => {
-                showToast(
-                    "success",
-                    t("The location was created successfully")
-                );
-                const storage = storages.find((s) => s.id === storage_id);
-                const library = libraries.find(
-                    (l) => l.id === storage!.library_id
-                );
-                setLocations([
-                    ...locations,
-                    new LocationModel(library!, storage!, response.data),
-                ]);
-            })
-            .catch((error) => {
-                showToast("error", t("Location creation failed"), "");
-                console.error(error);
+    ): Promise<LocationModel> => {
+        try {
+            const response = await ApiLocations.createLocation({
+                storage_id: storage_id,
+                name: name,
+                regexp: regexp,
+                state: state,
+                description: description,
+                additional_info: additional_info,
             });
+            showToast("success", t("The location was created successfully"));
+            const storage = storages.find((s) => s.id === storage_id);
+            const library = libraries.find((l) => l.id === storage!.library_id);
+            const location = new LocationModel(
+                library!,
+                storage!,
+                response.data
+            );
+            setLocations([...locations, location]);
+            return location;
+        } catch (error) {
+            showToast("error", t("Location creation failed"), "");
+            console.error(error);
+            throw error;
+        }
     };
 
     const updateLibrary = (id: number, name: string) => {

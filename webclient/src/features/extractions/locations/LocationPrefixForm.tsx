@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Menu } from "primereact/menu";
 import { Tooltip } from "primereact/tooltip";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { Chip } from "primereact/chip";
+import { Avatar } from "primereact/avatar";
 
 interface LocationPrefixFormProps {
     prefix: string;
@@ -41,11 +43,27 @@ const LocationPrefixForm: React.FC<LocationPrefixFormProps> = ({
         },
     ];
 
+    const parsePrefixToPattern = (prefix) => {
+        return prefix
+            .replace(/\[D\]/g, "[[:digit:]]")
+            .replace(/\[L\]/g, "[[:alpha:]]")
+            .replace(/\[X\]/g, "[[:alnum:]]");
+    };
+
+    const parsePatternToPrefix = (prefix) => {
+        return prefix
+            .replace(/\[\[:digit:\]\]/g, "[D]")
+            .replace(/\[\[:alpha:\]\]/g, "[L]")
+            .replace(/\[\[:alnum:\]\]/g, "[X]");
+    };
+
     return (
         <div className="flex p-inputgroup">
             <InputText
-                value={prefix}
-                onChange={(e) => onChangePrefix(e.target.value)}
+                value={parsePatternToPrefix(prefix)}
+                onChange={(e) =>
+                    onChangePrefix(parsePrefixToPattern(e.target.value))
+                }
                 disabled={disabled}
             />
             <Tooltip

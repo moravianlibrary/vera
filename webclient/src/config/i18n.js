@@ -503,6 +503,16 @@ const resources = {
         "Select location": "Vybrat lokaci",
 
         "Select operation": "Vybrat operaci",
+        "Insert table data here": "Zde vložte tabulkové data",
+        "Insert using table data form": "Vložit pomocí tabulkového formuláře",
+        "Table data form": "Formulář tabulkových dat",
+        "Required": "Vyžadované",
+        "Create": "Vytvořit",
+        "Assign column labels": "Přiradit označení sloupců",
+        "Duplicate column": "Duplikovat sloupec",
+        "Delete column": "Smazat sloupec",
+        "Assign label": "Přiradit označení",
+        "Ignore row": "Ignorovat řádek", 
     },
   },
 };

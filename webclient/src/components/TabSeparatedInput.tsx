@@ -10,60 +10,125 @@ import Spreadsheet, {
 import { ContextMenu } from "primereact/contextmenu";
 import { useTranslation } from "react-i18next";
 import { Chip } from "primereact/chip";
-import LabeledComponent from "./LabeledComponent";
+import { Badge } from "primereact/badge";
+import { Button } from "primereact/button";
 
-interface SpreadsheetValueMapper {
-    label: string;
-    singleColumn: boolean;
+export interface MapModel {
+    mapFrom: string;
+    mapTo: string;
+    required?: boolean;
 }
+
+export type ModelType = { [key: string]: string };
 
 interface SpreadsheetInputProps {
     visible: boolean;
     onHide: () => void;
-    valueMappers: SpreadsheetValueMapper[];
-    onSubmit: (values: string[]) => void;
+    mapModel: MapModel[];
+    onSubmit: (data: ModelType[]) => void;
 }
 
 const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
     visible,
     onHide,
-    valueMappers,
+    mapModel,
     onSubmit,
 }) => {
     const { t } = useTranslation();
 
-    const [columnLabels, setColumnLabels] = useState<string[]>([]);
-    const [unassignedLabels, setUnassignedLabels] = useState<string[]>(
-        valueMappers.map((mapper) => mapper.label)
+    const [columnMappings, setColumnMappings] = useState<(MapModel | null)[]>(
+        []
     );
-    const [data, setData] = useState<CellBase[][]>([[{ value: "" }]]);
+    const [data, setData] = useState<CellBase[][]>([
+        [{ value: t("Insert table data here") }],
+    ]);
     const [selected, setSelected] = useState<Selection>(new EmptySelection());
 
     useEffect(() => {
-        setColumnLabels(Array.from({ length: data[0].length }, (_, i) => ""));
+        setColumnMappings(
+            Array.from({ length: data[0].length }, (_, i) => null)
+        );
     }, [data]);
 
-    const handleMapToColumn = (
-        column: number,
-        mappingColumn: SpreadsheetValueMapper
-    ) => {
-        setColumnLabels((prev) =>
-            prev.map((label, i) =>
-                i === column
-                    ? columnLabels[i] !== mappingColumn.label
-                        ? mappingColumn.label
-                        : ""
-                    : label
+    const handleMapToColumn = (column: number, mappingColumn: MapModel) => {
+        setColumnMappings((prev) =>
+            prev.map((c, i) =>
+                i === column && prev[column] !== mappingColumn
+                    ? mappingColumn
+                    : c
             )
         );
-        setUnassignedLabels((prev) =>
-            prev.filter((label) => label !== mappingColumn.label)
+    };
+
+    const handleDuplicateColumn = (column: number) => {
+        setData((prev) =>
+            prev.map((row) => [
+                ...row.slice(0, column + 1),
+                ...row.slice(column, column + 1),
+                ...row.slice(column + 1),
+            ])
+        );
+    };
+
+    const handleDeleteColumn = (column: number) => {
+        setData((prev) =>
+            prev.map((row) => [
+                ...row.slice(0, column),
+                ...row.slice(column + 1),
+            ])
+        );
+    };
+
+    const handleSubmit = () => {
+        const values: ModelType[] = data.map((row) => {
+            return columnMappings.reduce((acc, mapper, i) => {
+                if (mapper && row[i] && row[i].value) {
+                    acc[mapper.mapTo] = row[i].value;
+                }
+                return acc;
+            }, {} as ModelType);
+        });
+        onSubmit(values);
+        onHide();
+    };
+
+    const dialogFooterButtons = () => {
+        return (
+            <div className="flex gap-2 align-items-end">
+                <div className="flex flex-wrap w-full gap-2 align-items-center">
+                    <span>{t("Assign column labels")}:</span>
+                    {mapModel.map((mapper) => (
+                        <ColumnLabelChip
+                            label={mapper.mapFrom}
+                            required={mapper.required}
+                            isSelected={columnMappings.includes(mapper)}
+                        />
+                    ))}
+                </div>
+                <div className="flex justify-content-end gap-2">
+                    <Button
+                        label={t("Cancel")}
+                        icon="pi pi-times"
+                        onClick={onHide}
+                    />
+                    <Button
+                        label={t("Confirm")}
+                        icon="pi pi-check"
+                        onClick={handleSubmit}
+                    />
+                </div>
+            </div>
         );
     };
 
     return (
-        <Dialog visible={visible} onHide={onHide}>
-            <div className="w-full">
+        <Dialog
+            visible={visible}
+            onHide={onHide}
+            header={t("Table data form")}
+            footer={dialogFooterButtons()}
+        >
+            <div className="flex flex-column w-full gap-3">
                 <Spreadsheet
                     data={data}
                     onChange={(newData) => setData(newData as CellBase[][])}
@@ -72,31 +137,68 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
                     ColumnIndicator={(props) => (
                         <SpreadsheetColumn
                             {...props}
-                            mapColumns={valueMappers}
+                            mapColumns={mapModel}
                             onMapToColumn={handleMapToColumn}
+                            onDuplicateColumn={handleDuplicateColumn}
+                            onDeleteColumn={handleDeleteColumn}
                         />
                     )}
                     RowIndicator={SpreadsheetRow}
-                    columnLabels={columnLabels}
+                    columnLabels={columnMappings.map((c) =>
+                        c ? c.mapFrom : ""
+                    )}
                 />
-                <div className="card absolute bottom-0 left-0 p-4 bg-white w-full flex gap-1">
-                    <LabeledComponent label="Column labels">
-                        {unassignedLabels.map((label) => (
-                            <Chip key={label} label={label} />
-                        ))}
-                    </LabeledComponent>
-                </div>
             </div>
         </Dialog>
     );
 };
 
+interface ColumnLabelChipProps {
+    label: string;
+    required?: boolean;
+    isSelected: boolean;
+}
+
+const ColumnLabelChip: React.FC<ColumnLabelChipProps> = ({
+    label,
+    required,
+    isSelected,
+}) => {
+    const { t } = useTranslation();
+
+    if (required || isSelected) {
+        return (
+            <div className="relative">
+                <Chip
+                    className="p-overlay-badge"
+                    key={`${label}_chip`}
+                    label={label}
+                />
+                <Badge
+                    key={`${label}_badge`}
+                    severity={isSelected ? "success" : "warning"}
+                    value={isSelected ? "" : t("Required")}
+                    style={{
+                        position: "relative",
+                        top: "-7px",
+                        left: "-10px",
+                        zIndex: 10,
+                    }}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <Chip className="p-overlay-badge" key={`${label}_chip`} label={label} />
+    );
+};
+
 interface SpreadsheetColumnProps extends ColumnIndicatorProps {
-    mapColumns?: SpreadsheetValueMapper[];
-    onMapToColumn?: (
-        column: number,
-        mappingColumn: SpreadsheetValueMapper
-    ) => void;
+    mapColumns?: MapModel[];
+    onMapToColumn?: (column: number, mappingColumn: MapModel) => void;
+    onDuplicateColumn?: (column: number) => void;
+    onDeleteColumn?: (column: number) => void;
 }
 
 function colIndexToString(colIndex: number) {
@@ -117,15 +219,31 @@ const SpreadsheetColumn: React.FC<SpreadsheetColumnProps> = ({
     onSelect,
     mapColumns,
     onMapToColumn,
+    onDuplicateColumn,
+    onDeleteColumn,
 }) => {
+    const { t } = useTranslation();
     const contextMenuRef = useRef<ContextMenu | null>(null);
 
-    const items = mapColumns
-        ? mapColumns.map((c) => ({
-              label: c.label,
-              command: () => onMapToColumn?.(column, c),
-          }))
-        : [];
+    const items = [
+        {
+            label: t("Duplicate column"),
+            command: () => onDuplicateColumn?.(column),
+        },
+        {
+            label: t("Delete column"),
+            command: () => onDeleteColumn?.(column),
+        },
+        {
+            label: t("Assign label"),
+            items: mapColumns
+                ? mapColumns.map((c) => ({
+                      label: c.mapFrom,
+                      command: () => onMapToColumn?.(column, c),
+                  }))
+                : [],
+        },
+    ];
 
     const handleSelect = () => {
         onSelect(column, true);
