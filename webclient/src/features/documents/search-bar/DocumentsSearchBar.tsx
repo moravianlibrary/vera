@@ -45,6 +45,10 @@ const DocumentsSearchBar = () => {
         setSearchPhrase_(searchPhrase || "");
     }, [searchPhrase]);
 
+    useEffect(() => {
+        console.log(categoryIds);
+    }, [categoryIds]);
+
     const handleSearchPhraseChange = (
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
