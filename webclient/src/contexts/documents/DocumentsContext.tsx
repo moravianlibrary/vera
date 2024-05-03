@@ -128,6 +128,10 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
     };
 
     useEffect(() => {
+        loadDocuments(offset);
+    }, [offset, limit]);
+
+    useEffect(() => {
         refresh();
     }, [query, isQueryAll]);
 
