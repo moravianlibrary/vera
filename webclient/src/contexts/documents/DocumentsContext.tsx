@@ -4,6 +4,7 @@ import React, {
     useState,
     ReactNode,
     useEffect,
+    useRef,
 } from "react";
 import ApiDocuments from "../../adapters/ApiDocuments";
 import { VirtualScrollerLazyEvent } from "primereact/virtualscroller";
@@ -43,11 +44,16 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
     const [numFound, setNumFound] = useState<number>(0);
     const [offset, setOffset] = useState<number>(0);
     const [limit, setLimit] = useState<number>(loadAmount);
+    const fetchController = useRef<AbortController | null>(null);
 
     const fetchDocuments = async (offset: number): Promise<DocumentModel[]> => {
         try {
+            const controller = new AbortController();
+            fetchController.current = controller;
+            const signal = controller.signal;
+
             const response = isQueryAll
-                ? await ApiDocuments.getDocuments(offset, limit)
+                ? await ApiDocuments.getDocuments(offset, limit, signal)
                 : await ApiDocuments.queryDocuments(query, offset, limit);
 
             setNumFound(response.data.num_found);
@@ -61,6 +67,10 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
 
     const loadDocuments = async (offset: number) => {
         try {
+            if (fetchController.current) {
+                fetchController.current.abort();
+            }
+
             const fetchedDocuments = await fetchDocuments(offset);
             setDocuments([...fetchedDocuments]);
         } catch (error) {
@@ -116,10 +126,6 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
         );
         setOffset(Math.max(0, offset - documentIds.length));
     };
-
-    useEffect(() => {
-        loadDocuments(offset);
-    }, [offset, limit]);
 
     useEffect(() => {
         refresh();

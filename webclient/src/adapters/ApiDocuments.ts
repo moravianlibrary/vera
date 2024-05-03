@@ -114,8 +114,8 @@ namespace ApiDocuments {
         );
     }
 
-    export function getDocuments(offset: number, rows: number) {
-        return axiosInstance.get<DocumentsResponse>(`/documents?offset=${offset}&limit=${rows}`, { headers: authHeader() });
+    export function getDocuments(offset: number, rows: number, signal?: AbortSignal) {
+        return axiosInstance.get<DocumentsResponse>(`/documents?offset=${offset}&limit=${rows}`, { headers: authHeader(), signal: signal });
     }
 
     export function createDocument(document: Document) {

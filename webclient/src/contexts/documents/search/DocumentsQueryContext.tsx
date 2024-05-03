@@ -38,7 +38,7 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
     children,
 }) => {
     const [query, setQuery] = useState<DocumentsQuery>({});
-    const [isQueryAll, setIsQueryAll] = useState(true);
+    const [isQueryAll, setIsQueryAll] = useState(false);
 
     const [categoryIds, setCategoryIds] = useState<number[]>([]);
     const [taskId, setTaskId] = useState<number | null>(null);
