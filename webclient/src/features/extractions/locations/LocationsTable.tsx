@@ -26,7 +26,7 @@ const compareLocations = (a: LocationModel, b: LocationModel): number => {
 
 const LocationsTable: React.FC<LocationsTableProps> = () => {
     const { t } = useTranslation();
-    const { locations } = useLocations();
+    const { locations, deleteLocation } = useLocations();
 
     const [values, setValues] = useState<Location[]>(
         locations.sort(compareLocations)
@@ -138,7 +138,12 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
                 />
                 <Column
                     header={t("Delete")}
-                    body={(data, options) => <DeleteButton itemId={data.id} />}
+                    body={(data, options) => (
+                        <DeleteButton
+                            itemId={data.id}
+                            onDelete={() => deleteLocation(data.id)}
+                        />
+                    )}
                 />
             </DataTable>
             {editLocation && (

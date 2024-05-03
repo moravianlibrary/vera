@@ -56,12 +56,10 @@ const LocationsMenuButton = () => {
         });
 
         const getLibrary = async (name: string) => {
-            if (librariesMap.has(name)) {
-                return librariesMap.get(name);
+            if (!librariesMap.has(name)) {
+                librariesMap.set(name, await createLibrary(name));
             }
-            const library = await createLibrary(name);
-            librariesMap.set(name, library);
-            return library;
+            return librariesMap.get(name);
         };
 
         const getStorage = async (libraryId: number, name: string) => {

@@ -68,7 +68,7 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
                 t("The library was created successfully"),
                 `${t("Name")}: ${name}`
             );
-            setLibraries([...libraries, response.data]);
+            setLibraries((libraries) => [...libraries, response.data]);
             return response.data as Library;
         } catch (error) {
             showToast("error", t("Library creation failed"), "");
@@ -91,7 +91,7 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
                 t("The storage was created successfully"),
                 `${t("Name")}: ${name}`
             );
-            setStorages([...storages, response.data]);
+            setStorages((storages) => [...storages, response.data]);
             libraries
                 .find((l) => l.id === library_id)!
                 .storages.push(response.data);
@@ -128,7 +128,7 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
                 storage!,
                 response.data
             );
-            setLocations([...locations, location]);
+            setLocations((locations) => [...locations, location]);
             return location;
         } catch (error) {
             showToast("error", t("Location creation failed"), "");
