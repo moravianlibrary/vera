@@ -99,7 +99,7 @@ const LocationsMenuButton = () => {
                             storage!.id,
                             row.name,
                             row.regexp,
-                            row.state === "Closed"
+                            row.state === "Uzavřeno"
                                 ? LocationState.Closed
                                 : LocationState.Active,
                             row.description ?? null,
