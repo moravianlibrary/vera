@@ -55,24 +55,26 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
                 return new DocumentModel(document);
             });
         } catch (error) {
-            console.error(`Could not fetch documents: ${error}`);
             throw error;
         }
     };
 
     const loadDocuments = async (offset: number) => {
-        fetchDocuments(offset).then((fetchedDocuments) => {
+        try {
+            const fetchedDocuments = await fetchDocuments(offset);
             setDocuments([...fetchedDocuments]);
-            // if (offset === 0) {
-            //     setDocuments([...fetchedDocuments]);
-            // } else {
-            //     const oldDocumentsIds = documents.map((d) => d.id);
-            //     const newDocuments = fetchedDocuments.filter(
-            //         (document) => !oldDocumentsIds.includes(document.id)
-            //     );
-            //     setDocuments([...documents, ...newDocuments]);
-            // }
-        });
+        } catch (error) {
+            console.error(`Could not fetch documents: ${error}`);
+        }
+        // if (offset === 0) {
+        //     setDocuments([...fetchedDocuments]);
+        // } else {
+        //     const oldDocumentsIds = documents.map((d) => d.id);
+        //     const newDocuments = fetchedDocuments.filter(
+        //         (document) => !oldDocumentsIds.includes(document.id)
+        //     );
+        //     setDocuments([...documents, ...newDocuments]);
+        // }
     };
 
     const lazyLoad = (event: VirtualScrollerLazyEvent) => {
