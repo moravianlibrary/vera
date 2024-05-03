@@ -20,6 +20,7 @@ import { DocumentsActionsProvider } from "../contexts/documents/DocumentsActions
 import { AdvancedSearchProvider } from "../contexts/documents/search/AdvancedSearchContext";
 import { CategoriesProvider } from "../contexts/categories/CategoriesContext";
 import { GeneratedExtractionsProvider } from "../contexts/extractions/GeneratedExtractionsContext";
+import { LocationsProvider } from "../contexts/extractions/locations/LocationsContext";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -74,29 +75,31 @@ const Documents: React.FC = () => {
                 <AssignableCategoriesProvider>
                     <CategoriesProvider>
                         <DigitizationListsProvider>
-                            <GeneratedExtractionsProvider>
-                                <DocumentsProvider>
-                                    <DocumentsSelectionProvider>
-                                        <DocumentsActionsProvider>
-                                            <DigitizationListsManagerProvider>
-                                                <AdvancedSearchProvider>
-                                                    <DocumentsDiv
-                                                        categoryIds={
-                                                            categoryIds
-                                                        }
-                                                        extractionId={
-                                                            extractionId
-                                                        }
-                                                        digitizationListId={
-                                                            digitizationListId
-                                                        }
-                                                    />
-                                                </AdvancedSearchProvider>
-                                            </DigitizationListsManagerProvider>
-                                        </DocumentsActionsProvider>
-                                    </DocumentsSelectionProvider>
-                                </DocumentsProvider>
-                            </GeneratedExtractionsProvider>
+                            <LocationsProvider>
+                                <GeneratedExtractionsProvider>
+                                    <DocumentsProvider>
+                                        <DocumentsSelectionProvider>
+                                            <DocumentsActionsProvider>
+                                                <DigitizationListsManagerProvider>
+                                                    <AdvancedSearchProvider>
+                                                        <DocumentsDiv
+                                                            categoryIds={
+                                                                categoryIds
+                                                            }
+                                                            extractionId={
+                                                                extractionId
+                                                            }
+                                                            digitizationListId={
+                                                                digitizationListId
+                                                            }
+                                                        />
+                                                    </AdvancedSearchProvider>
+                                                </DigitizationListsManagerProvider>
+                                            </DocumentsActionsProvider>
+                                        </DocumentsSelectionProvider>
+                                    </DocumentsProvider>
+                                </GeneratedExtractionsProvider>
+                            </LocationsProvider>
                         </DigitizationListsProvider>
                     </CategoriesProvider>
                 </AssignableCategoriesProvider>

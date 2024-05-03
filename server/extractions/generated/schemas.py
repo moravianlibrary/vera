@@ -10,6 +10,7 @@ class ExtractionDocument(BaseModel):
 
 class GenerateExtraction(BaseModel):
     include_categories: List[int] = []
+    location_ids: List[int] = []
     target_pages_threshold: float = 0.05
     whole_categories_threshold: float = 0.05
 

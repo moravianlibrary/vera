@@ -2,6 +2,7 @@ import axiosInstance, { authHeader } from "./ApiBase";
 
 interface GenerateExtraction {
     include_categories: number[];
+    location_ids: number[];
     target_pages_threshold: number;
     whole_categories_threshold: number;
 }

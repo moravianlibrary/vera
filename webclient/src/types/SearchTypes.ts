@@ -5,6 +5,7 @@ export enum RuleType {
     NumberField = 'NumberField',
     EnumField = 'EnumField',
     TreeField = 'TreeField',
+    RegexField = 'RegexField',
 }
 
 export enum GroupOption {
@@ -45,4 +46,9 @@ export enum TreeOption {
     IsNotIn = "IsNotIn",
     IsNull = "IsNull",
     IsNotNull = "IsNotNull",
+};
+
+export enum RegexOption {
+    Match = "Match",
+    NotMatch = "NotMatch",
 };

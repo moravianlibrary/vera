@@ -38,7 +38,7 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
     children,
 }) => {
     const [query, setQuery] = useState<DocumentsQuery>({});
-    const [isQueryAll, setIsQueryAll] = useState(true);
+    const [isQueryAll, setIsQueryAll] = useState(false);
 
     const [categoryIds, setCategoryIds] = useState<number[]>([]);
     const [taskId, setTaskId] = useState<number | null>(null);
@@ -52,15 +52,28 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
         null
     );
 
+    const queryBy = (options: {
+        queryAll?: boolean;
+        query?: DocumentsQuery;
+        categoryIds?: number[];
+        taskId?: number;
+        extractionId?: number;
+        digitizationListId?: number;
+        searchPhrase?: string;
+        searchGroup?: SearchGroupParams;
+    }) => {
+        setIsQueryAll(options.queryAll ?? false);
+        setQuery(options.query ?? {});
+        setCategoryIds(options.categoryIds ?? []);
+        setTaskId(options.taskId ?? null);
+        setExtractionId(options.extractionId ?? null);
+        setDigitizationListId(options.digitizationListId ?? null);
+        setSearchPhrase(options.searchPhrase ?? null);
+        setSearchGroup(options.searchGroup ?? null);
+    };
+
     const queryAll = () => {
-        setIsQueryAll(true);
-        setQuery({});
-        setCategoryIds([]);
-        setTaskId(null);
-        setExtractionId(null);
-        setDigitizationListId(null);
-        setSearchPhrase(null);
-        setSearchGroup(null);
+        queryBy({ queryAll: true });
     };
 
     const searchByCategoryIds = (categoryIds: number[]) => {
@@ -68,10 +81,11 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
             queryAll();
             return;
         }
-        setCategoryIds(categoryIds);
-        setIsQueryAll(false);
-        setQuery({
-            search_group: SearchGroup.createCategoryIdSearch(categoryIds),
+        queryBy({
+            categoryIds: categoryIds,
+            query: {
+                search_group: SearchGroup.createCategoryIdSearch(categoryIds),
+            },
         });
     };
 
@@ -81,10 +95,11 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
             return;
         }
         ApiTasks.getTaskDocuments(taskId).then((response) => {
-            setTaskId(taskId);
-            setIsQueryAll(false);
-            setQuery({
-                id_list: response.data.map((d) => d.document_id),
+            queryBy({
+                taskId: taskId,
+                query: {
+                    id_list: response.data.map((d) => d.document_id),
+                },
             });
         });
     };
@@ -95,10 +110,11 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
             return;
         }
         ApiGeneratedExtractions.getExtraction(extractionId).then((response) => {
-            setExtractionId(extractionId);
-            setIsQueryAll(false);
-            setQuery({
-                id_list: response.data.document_ids,
+            queryBy({
+                extractionId: extractionId,
+                query: {
+                    id_list: response.data.document_ids,
+                },
             });
         });
     };
@@ -110,25 +126,32 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
         }
         ApiDigitizationExtractions.getExtraction(digitizationListId).then(
             (response) => {
-                setDigitizationListId(digitizationListId);
-                setIsQueryAll(false);
-                setQuery({
-                    id_list: response.data.document_ids,
+                queryBy({
+                    digitizationListId: digitizationListId,
+                    query: {
+                        id_list: response.data.document_ids,
+                    },
                 });
             }
         );
     };
 
     const searchBySearchPhrase = (searchPhrase: string) => {
-        setSearchPhrase(searchPhrase);
-        setIsQueryAll(false);
-        setQuery({ search_phrase: searchPhrase });
+        queryBy({
+            searchPhrase: searchPhrase,
+            query: {
+                search_phrase: searchPhrase,
+            },
+        });
     };
 
     const searchBySearchGroup = (searchGroup: SearchGroupParams) => {
-        setSearchGroup(searchGroup);
-        setIsQueryAll(false);
-        setQuery({ search_group: searchGroup });
+        queryBy({
+            searchGroup: searchGroup,
+            query: {
+                search_group: searchGroup,
+            },
+        });
     };
 
     const contextValue: DocumentsQueryContextProps = {

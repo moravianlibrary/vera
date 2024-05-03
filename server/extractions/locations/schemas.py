@@ -4,7 +4,6 @@ from extractions.locations.types import LocationState
 
 
 class LibraryBase(BaseModel):
-    id: str
     name: str
 
 
@@ -13,6 +12,7 @@ class LibraryCreate(LibraryBase):
 
 
 class Library(LibraryBase):
+    id: int
     storages: List["Storage"] = []
 
     class Config:
@@ -21,7 +21,7 @@ class Library(LibraryBase):
 
 class StorageBase(BaseModel):
     name: str
-    library_id: str
+    library_id: int
 
 
 class StorageCreate(StorageBase):
