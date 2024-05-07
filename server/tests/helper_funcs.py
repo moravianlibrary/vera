@@ -32,7 +32,7 @@ def mockClsEnv(cls):
 
 def mockUser(user: CurrentUser):
     from vera import app
-    from auth.dependencies import get_current_user
+    from auth.facade import get_current_user
 
     app.dependency_overrides[get_current_user] = lambda: user
 
@@ -50,10 +50,10 @@ def createTestClient():
     return TestClient(app)
 
 
-def createTestUser(actions=[]):
+def createTestUser(actions=[], department_id=10):
     return CurrentUser(
         username="test_user",
-        department_id=10,
+        department_id=department_id,
         department_name="test_department",
         role_id=7,
         role_name="test_role",

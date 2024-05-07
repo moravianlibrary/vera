@@ -18,6 +18,7 @@ router = APIRouter(prefix="/tasks")
 
 
 @router.post("", response_model=schemas.Task)
+# @enforce_permission(ActionType.PlanTasks)
 def create_task(
     task_type: TaskType = Query(...),
     query: Optional[DocumentsQuery] = None,
@@ -42,6 +43,7 @@ def create_task(
 
 
 @router.put("/{id}", response_model=schemas.Task)
+# @enforce_permission(ActionType.AdminTasks)
 def kill_task(
     id: int = Path(...),
     user: CurrentUser = Depends(get_current_user),
@@ -51,6 +53,7 @@ def kill_task(
 
 
 @router.get("/{id}", response_model=schemas.Task)
+# @enforce_permission(ActionType.PlanTasks)
 def get_task(
     id: int = Path(...),
     user: CurrentUser = Depends(get_current_user),
@@ -60,6 +63,7 @@ def get_task(
 
 
 @router.get("/{id}/documents", response_model=List[schemas.TaskDocument])
+# @enforce_permission(ActionType.PlanTasks)
 def get_task_documents(
     id: int = Path(...),
     user: CurrentUser = Depends(get_current_user),
@@ -69,6 +73,7 @@ def get_task_documents(
 
 
 @router.get("/{task_id}/csv")
+# @enforce_permission(ActionType.PlanTasks)
 def get_task_result(
     task_id: int = Path(...),
     db: Session = Depends(get_db),
@@ -87,6 +92,7 @@ def get_task_result(
 
 
 @router.get("", response_model=List[schemas.Task])
+# @enforce_permission(ActionType.PlanTasks)
 def get_tasks(
     offset: int = Query(0, description="Pagination page offset"),
     limit: int = Query(50, description="Pagination page size"),

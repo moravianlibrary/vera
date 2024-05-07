@@ -14,12 +14,16 @@ from extractions.digitization.routines import (
 from extractions.routines import get_category_subtree
 from extractions.schemas import ExtractionCategoryNode
 from services.database import get_db
-
+from extractions.permissions import CanExtract, CanManageDigitizationList
 
 router = APIRouter(prefix="/extractions/digitization")
 
 
-@router.post("", response_model=schemas.DigitizationExtraction)
+@router.post(
+    "",
+    dependencies=[Depends(CanExtract)],
+    response_model=schemas.DigitizationExtraction,
+)
 def create_extraction(
     query: DocumentsQuery,
     intention_id: Optional[int] = Query(None, description="Intention ID"),
@@ -36,7 +40,11 @@ def create_extraction(
     )
 
 
-@router.get("", response_model=schemas.DigitizationExtractions)
+@router.get(
+    "",
+    dependencies=[Depends(CanExtract)],
+    response_model=schemas.DigitizationExtractions,
+)
 def get_extractions(
     offset: int = Query(0, description="Pagination offset"),
     limit: int = Query(50, description="Pagination page size"),
@@ -48,13 +56,19 @@ def get_extractions(
     )
 
 
-@router.get("/{id}", response_model=schemas.DigitizationExtraction)
+@router.get(
+    "/{id}",
+    dependencies=[Depends(CanExtract)],
+    response_model=schemas.DigitizationExtraction,
+)
 def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.get_extraction(id, db)
 
 
 @router.put(
-    "/{id}/add_documents", response_model=schemas.DigitizationExtraction
+    "/{id}/add_documents",
+    dependencies=[Depends(CanManageDigitizationList)],
+    response_model=schemas.DigitizationExtraction,
 )
 def add_documents_to_extraction(
     query: DocumentsQuery,
@@ -68,7 +82,9 @@ def add_documents_to_extraction(
 
 
 @router.put(
-    "/{id}/remove_documents", response_model=schemas.DigitizationExtraction
+    "/{id}/remove_documents",
+    dependencies=[Depends(CanManageDigitizationList)],
+    response_model=schemas.DigitizationExtraction,
 )
 def remove_documents_from_extraction(
     query: DocumentsQuery,
@@ -83,13 +99,18 @@ def remove_documents_from_extraction(
     )
 
 
-@router.delete("/{id}", response_model=schemas.DigitizationExtraction)
+@router.delete(
+    "/{id}",
+    dependencies=[Depends(CanManageDigitizationList)],
+    response_model=schemas.DigitizationExtraction,
+)
 def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.delete_extraction(id, db)
 
 
 @router.get(
     "/{id}/categories",
+    dependencies=[Depends(CanExtract)],
     response_model=List[ExtractionCategoryNode],
 )
 def get_categories(id: int = Path(...), db: Session = Depends(get_db)):

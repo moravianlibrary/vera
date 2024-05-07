@@ -12,12 +12,17 @@ from extractions.routines import get_category_subtree
 from extractions.schemas import ExtractionCategoryNode
 from services.database import get_db
 from services.exceptions import EmptyExtraction
+from extractions.permissions import CanExtract, CanManageExtraction
 
 
 router = APIRouter(prefix="/extractions/generated")
 
 
-@router.post("", response_model=schemas.GeneratedExtraction)
+@router.post(
+    "",
+    dependencies=[Depends(CanExtract)],
+    response_model=schemas.GeneratedExtraction,
+)
 def create_extraction(
     params: schemas.GenerateExtraction,
     pages_count: int = None,
@@ -45,7 +50,11 @@ def create_extraction(
     return extraction
 
 
-@router.get("", response_model=schemas.GeneratedExtractions)
+@router.get(
+    "",
+    dependencies=[Depends(CanExtract)],
+    response_model=schemas.GeneratedExtractions,
+)
 def get_extractions(
     offset: int = Query(0, description="Pagination offset"),
     limit: int = Query(50, description="Pagination page size"),
@@ -57,18 +66,27 @@ def get_extractions(
     )
 
 
-@router.delete("/{id}", response_model=schemas.GeneratedExtraction)
+@router.delete(
+    "/{id}",
+    dependencies=[Depends(CanManageExtraction)],
+    response_model=schemas.GeneratedExtraction,
+)
 def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.delete_extraction(id, db)
 
 
-@router.get("/{id}", response_model=schemas.GeneratedExtraction)
+@router.get(
+    "/{id}",
+    dependencies=[Depends(CanExtract)],
+    response_model=schemas.GeneratedExtraction,
+)
 def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.get_extraction(id, db)
 
 
 @router.get(
     "/{id}/categories",
+    dependencies=[Depends(CanExtract)],
     response_model=List[ExtractionCategoryNode],
 )
 def get_categories(id: int = Path(...), db: Session = Depends(get_db)):

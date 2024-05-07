@@ -29,8 +29,10 @@ def create_root_category(category: schemas.CategoryCreate, db: Session):
     return db_category
 
 
-def create_category(category: schemas.CategoryCreate, db: Session):
-    db_parent = get_category(category.parent_id, db)
+def create_category(
+    category: schemas.CategoryCreate, parent_id: int, db: Session
+):
+    db_parent = get_category(parent_id, db)
     if db_parent.level == MAX_CATEGORY_LEVEL:
         raise Exception("Maximum category level reached")
 
@@ -39,7 +41,7 @@ def create_category(category: schemas.CategoryCreate, db: Session):
         models.Category(
             name=category.name,
             description=category.description,
-            parent_id=category.parent_id,
+            parent_id=parent_id,
             level=(db_parent.level + 1),
             assignable=category.assignable,
             percentage=0,
@@ -50,7 +52,7 @@ def create_category(category: schemas.CategoryCreate, db: Session):
 
     parent_departments = [
         department.department_id
-        for department in get_category_departments(category.parent_id, db)
+        for department in get_category_departments(parent_id, db)
     ]
     if parent_departments:
         set_category_departments(db_category.id, parent_departments, db)

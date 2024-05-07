@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Optional
 from roles.types import ActionType
-from auth.types import PermissionType
 
 
 class CurrentUser(BaseModel):
@@ -15,10 +14,3 @@ class CurrentUser(BaseModel):
 
 class User(BaseModel):
     username: str
-
-
-class Permission(BaseModel):
-    type: PermissionType
-    action: Optional[ActionType] = None
-    department: Optional[int] = None
-    user: Optional[str] = None

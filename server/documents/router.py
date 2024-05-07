@@ -18,12 +18,23 @@ from documents.routines import (
 )
 from auth.schemas import CurrentUser
 from catalogs.routines import generate_catalog_document
+from documents.permissions import (
+    CanInsertDocuments,
+    CanManageDocument,
+    CanReadDocument,
+    CanReadDocuments,
+    CanManageDocuments,
+)
 
 
 router = APIRouter()
 
 
-@router.post("/documents", response_model=schemas.DocumentCreateResponse)
+@router.post(
+    "/documents",
+    dependencies=[CanInsertDocuments],
+    response_model=schemas.DocumentCreateResponse,
+)
 def create_document(
     document: schemas.DocumentCreate,
     db: Session = Depends(get_db),
@@ -32,7 +43,11 @@ def create_document(
     return create_document_routine(document, user.username, db)
 
 
-@router.put("/documents/{id}", response_model=schemas.DocumentView)
+@router.put(
+    "/documents/{id}",
+    dependencies=[CanManageDocument],
+    response_model=schemas.DocumentView,
+)
 def update_document(
     document: schemas.DocumentCreate,
     id: int = Path(...),
@@ -44,17 +59,29 @@ def update_document(
     )
 
 
-@router.delete("/documents/{id}", response_model=schemas.Document)
+@router.delete(
+    "/documents/{id}",
+    dependencies=[CanManageDocument],
+    response_model=schemas.Document,
+)
 def delete_document(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.delete_document(id, db)
 
 
-@router.get("/documents/{id}", response_model=schemas.DocumentView)
+@router.get(
+    "/documents/{id}",
+    dependencies=[CanReadDocument],
+    response_model=schemas.DocumentView,
+)
 def get_document(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.get_document(id, db)
 
 
-@router.get("/documents", response_model=schemas.DocumentsResponse)
+@router.get(
+    "/documents",
+    dependencies=[CanReadDocuments],
+    response_model=schemas.DocumentsResponse,
+)
 def get_documents(
     offset: int = Query(0, description="Pagination page offset"),
     limit: int = Query(100, description="Pagination page size"),
@@ -84,7 +111,11 @@ def get_documents(
     return schemas.DocumentsResponse(documents=documents, num_found=num_found)
 
 
-@router.post("/documents/query", response_model=schemas.DocumentsResponse)
+@router.post(
+    "/documents/query",
+    dependencies=[CanReadDocuments],
+    response_model=schemas.DocumentsResponse,
+)
 def query_documents(
     query: schemas.DocumentsQuery,
     offset: int = Query(0, description="Pagination offset"),
@@ -115,7 +146,11 @@ def query_documents(
     return schemas.DocumentsResponse(documents=documents, num_found=num_found)
 
 
-@router.post("/documents/query/export")
+@router.post(
+    "/documents/query/export",
+    dependencies=[CanReadDocuments],
+    response_model=FileResponse,
+)
 def download_documents(
     query: schemas.DocumentsQuery,
     user: CurrentUser = Depends(get_current_user),
@@ -165,7 +200,11 @@ def download_documents(
     )
 
 
-@router.put("/documents/query/category", response_model=schemas.DocumentsQuery)
+@router.put(
+    "/documents/query/category",
+    dependencies=[CanReadDocuments, CanManageDocuments],
+    response_model=schemas.DocumentsQuery,
+)
 def update_query_documents(
     query: schemas.DocumentsQuery,
     category_id: Optional[int] = None,
@@ -194,7 +233,11 @@ def update_query_documents(
     return query
 
 
-@router.post("/documents/query/delete", response_model=schemas.DocumentsQuery)
+@router.post(
+    "/documents/query/delete",
+    dependencies=[CanReadDocuments, CanManageDocuments],
+    response_model=schemas.DocumentsQuery,
+)
 def delete_query_documents(
     query: schemas.DocumentsQuery,
     user: CurrentUser = Depends(get_current_user),
@@ -224,6 +267,7 @@ def delete_query_documents(
 
 @router.get(
     "/catalogs",
+    dependencies=[CanInsertDocuments],
     response_model=CatalogResponse,
 )
 async def get_from_catalog(
@@ -237,6 +281,7 @@ async def get_from_catalog(
 
 @router.post(
     "/catalogs",
+    dependencies=[CanInsertDocuments],
     response_model=schemas.DocumentCreateResponse,
 )
 async def create_from_catalog(
@@ -258,6 +303,7 @@ async def create_from_catalog(
 
 @router.get(
     "/catalogs/list",
+    dependencies=[CanInsertDocuments],
     response_model=List[CatalogResponse],
 )
 async def get_from_catalog_file(
@@ -274,6 +320,7 @@ async def get_from_catalog_file(
 
 @router.post(
     "/catalogs/list",
+    dependencies=[CanInsertDocuments],
     response_model=List[schemas.DocumentCreateResponse],
 )
 async def create_from_catalog_file(

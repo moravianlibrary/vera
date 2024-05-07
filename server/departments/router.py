@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, Path
 from sqlalchemy.orm import Session
 from typing import List
 
-from auth.permissions import EditAccessPermission
 from services.database import get_db
 from departments import crud, schemas
+from departments.permissions import CanManageAccess
 
 
 router = APIRouter(prefix="/departments")
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/departments")
 
 @router.post(
     "",
-    dependencies=EditAccessPermission,
+    dependencies=[CanManageAccess],
     response_model=schemas.Department,
 )
 def create_department(
@@ -23,7 +23,7 @@ def create_department(
 
 @router.put(
     "/{department_id}",
-    dependencies=EditAccessPermission,
+    dependencies=[CanManageAccess],
     response_model=schemas.Department,
 )
 def update_department(
@@ -36,7 +36,7 @@ def update_department(
 
 @router.delete(
     "/{department_id}",
-    dependencies=EditAccessPermission,
+    dependencies=[CanManageAccess],
     response_model=schemas.Department,
 )
 def delete_department(
@@ -47,7 +47,7 @@ def delete_department(
 
 @router.get(
     "",
-    dependencies=EditAccessPermission,
+    dependencies=[CanManageAccess],
     response_model=List[schemas.Department],
 )
 def get_departments(db: Session = Depends(get_db)):
