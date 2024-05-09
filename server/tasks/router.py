@@ -12,13 +12,13 @@ from auth.router import get_current_user
 from documents.schemas import DocumentsQuery
 from documents.crud import get_documents_ids_query_base
 from celery_worker import run_task
+from tasks.permissions import CanPlanTask, CanManageTask
 
 
 router = APIRouter(prefix="/tasks")
 
 
-@router.post("", response_model=schemas.Task)
-# @enforce_permission(ActionType.PlanTasks)
+@router.post("", dependencies=[CanPlanTask], response_model=schemas.Task)
 def create_task(
     task_type: TaskType = Query(...),
     query: Optional[DocumentsQuery] = None,
@@ -42,8 +42,7 @@ def create_task(
     return crud.get_task(task.id, db)
 
 
-@router.put("/{id}", response_model=schemas.Task)
-# @enforce_permission(ActionType.AdminTasks)
+@router.put("/{id}", dependencies=[CanManageTask], response_model=schemas.Task)
 def kill_task(
     id: int = Path(...),
     user: CurrentUser = Depends(get_current_user),
@@ -52,8 +51,7 @@ def kill_task(
     pass
 
 
-@router.get("/{id}", response_model=schemas.Task)
-# @enforce_permission(ActionType.PlanTasks)
+@router.get("/{id}", dependencies=[CanPlanTask], response_model=schemas.Task)
 def get_task(
     id: int = Path(...),
     user: CurrentUser = Depends(get_current_user),
@@ -62,8 +60,11 @@ def get_task(
     return crud.get_task(id, db)
 
 
-@router.get("/{id}/documents", response_model=List[schemas.TaskDocument])
-# @enforce_permission(ActionType.PlanTasks)
+@router.get(
+    "/{id}/documents",
+    dependencies=[CanPlanTask],
+    response_model=List[schemas.TaskDocument],
+)
 def get_task_documents(
     id: int = Path(...),
     user: CurrentUser = Depends(get_current_user),
@@ -72,8 +73,7 @@ def get_task_documents(
     return crud.get_task_documents(id, db)
 
 
-@router.get("/{task_id}/csv")
-# @enforce_permission(ActionType.PlanTasks)
+@router.get("/{task_id}/csv", dependencies=[CanPlanTask])
 def get_task_result(
     task_id: int = Path(...),
     db: Session = Depends(get_db),
@@ -91,8 +91,7 @@ def get_task_result(
         return Response(status_code=404)
 
 
-@router.get("", response_model=List[schemas.Task])
-# @enforce_permission(ActionType.PlanTasks)
+@router.get("", dependencies=[CanPlanTask], response_model=List[schemas.Task])
 def get_tasks(
     offset: int = Query(0, description="Pagination page offset"),
     limit: int = Query(50, description="Pagination page size"),

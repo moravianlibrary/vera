@@ -21,7 +21,7 @@ router = APIRouter(prefix="/extractions/digitization")
 
 @router.post(
     "",
-    dependencies=[Depends(CanExtract)],
+    dependencies=[CanExtract],
     response_model=schemas.DigitizationExtraction,
 )
 def create_extraction(
@@ -42,7 +42,7 @@ def create_extraction(
 
 @router.get(
     "",
-    dependencies=[Depends(CanExtract)],
+    dependencies=[CanExtract],
     response_model=schemas.DigitizationExtractions,
 )
 def get_extractions(
@@ -58,7 +58,7 @@ def get_extractions(
 
 @router.get(
     "/{id}",
-    dependencies=[Depends(CanExtract)],
+    dependencies=[CanExtract],
     response_model=schemas.DigitizationExtraction,
 )
 def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
@@ -67,7 +67,7 @@ def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
 
 @router.put(
     "/{id}/add_documents",
-    dependencies=[Depends(CanManageDigitizationList)],
+    dependencies=[CanManageDigitizationList],
     response_model=schemas.DigitizationExtraction,
 )
 def add_documents_to_extraction(
@@ -83,7 +83,7 @@ def add_documents_to_extraction(
 
 @router.put(
     "/{id}/remove_documents",
-    dependencies=[Depends(CanManageDigitizationList)],
+    dependencies=[CanManageDigitizationList],
     response_model=schemas.DigitizationExtraction,
 )
 def remove_documents_from_extraction(
@@ -101,7 +101,7 @@ def remove_documents_from_extraction(
 
 @router.delete(
     "/{id}",
-    dependencies=[Depends(CanManageDigitizationList)],
+    dependencies=[CanManageDigitizationList],
     response_model=schemas.DigitizationExtraction,
 )
 def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
@@ -110,7 +110,7 @@ def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
 
 @router.get(
     "/{id}/categories",
-    dependencies=[Depends(CanExtract)],
+    dependencies=[CanExtract],
     response_model=List[ExtractionCategoryNode],
 )
 def get_categories(id: int = Path(...), db: Session = Depends(get_db)):

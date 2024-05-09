@@ -20,7 +20,7 @@ router = APIRouter(prefix="/extractions/generated")
 
 @router.post(
     "",
-    dependencies=[Depends(CanExtract)],
+    dependencies=[CanExtract],
     response_model=schemas.GeneratedExtraction,
 )
 def create_extraction(
@@ -52,7 +52,7 @@ def create_extraction(
 
 @router.get(
     "",
-    dependencies=[Depends(CanExtract)],
+    dependencies=[CanExtract],
     response_model=schemas.GeneratedExtractions,
 )
 def get_extractions(
@@ -68,7 +68,7 @@ def get_extractions(
 
 @router.delete(
     "/{id}",
-    dependencies=[Depends(CanManageExtraction)],
+    dependencies=[CanManageExtraction],
     response_model=schemas.GeneratedExtraction,
 )
 def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
@@ -77,7 +77,7 @@ def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
 
 @router.get(
     "/{id}",
-    dependencies=[Depends(CanExtract)],
+    dependencies=[CanExtract],
     response_model=schemas.GeneratedExtraction,
 )
 def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
@@ -86,7 +86,7 @@ def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
 
 @router.get(
     "/{id}/categories",
-    dependencies=[Depends(CanExtract)],
+    dependencies=[CanExtract],
     response_model=List[ExtractionCategoryNode],
 )
 def get_categories(id: int = Path(...), db: Session = Depends(get_db)):

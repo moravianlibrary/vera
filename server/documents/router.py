@@ -146,11 +146,7 @@ def query_documents(
     return schemas.DocumentsResponse(documents=documents, num_found=num_found)
 
 
-@router.post(
-    "/documents/query/export",
-    dependencies=[CanReadDocuments],
-    response_model=FileResponse,
-)
+@router.post("/documents/query/export", dependencies=[CanReadDocuments])
 def download_documents(
     query: schemas.DocumentsQuery,
     user: CurrentUser = Depends(get_current_user),
