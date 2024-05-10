@@ -2,7 +2,7 @@ from tests.test_endpoints import TestEndpoints
 from unittest.mock import Mock, patch
 
 from roles.models import Role as RoleModel
-from roles.types import ActionType
+from auth.types import ActionType
 
 
 class TestRolesEndpoints(TestEndpoints):

@@ -2,9 +2,9 @@ from fastapi import Depends, HTTPException, status
 from typing import Callable, List, Union
 
 
-from auth.facade import get_current_user
-from auth.schemas import CurrentUser
-from roles.types import ActionType
+from security.api import get_current_user
+from security.schemas import CurrentUser
+from security.types import ActionType
 
 
 class PermissionDeniedException(HTTPException):
@@ -46,9 +46,9 @@ def PermissionValidator(
     ],
     exception: HTTPException = PermissionDeniedException,
 ):
-    def permission_validator():
-        current_user: CurrentUser = get_current_user()
-
+    def permission_validator(
+        current_user: CurrentUser = Depends(get_current_user),
+    ):
         permissions_list = [
             Permission(p) if isinstance(p, ActionType) else p
             for p in (

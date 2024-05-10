@@ -4,11 +4,9 @@ from keycloak import KeycloakOpenID
 from os import environ
 
 
-from auth.crud import add_user
+from security.crud import add_user, get_role_by_name, get_user_departments
 from services import exceptions
-from roles import crud as roles_crud
-from departments.crud import get_user_departments
-from auth.schemas import CurrentUser
+from security.schemas import CurrentUser
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
@@ -57,10 +55,7 @@ def get_user_from_token(token: str, db: Session) -> CurrentUser:
         .get("roles", [])
     )
 
-    roles = [
-        roles_crud.get_role_by_name(role_name, db)
-        for role_name in keycloak_roles
-    ]
+    roles = [get_role_by_name(role_name, db) for role_name in keycloak_roles]
     roles = [role for role in roles if role is not None]
 
     if len(roles) == 0 or len(roles) > 1:
@@ -87,5 +82,5 @@ def get_user_from_token(token: str, db: Session) -> CurrentUser:
         department_name=department_name,
         role_id=roles[0].id,
         role_name=roles[0].name,
-        actions=roles_crud.get_role_actions(roles[0].id, db),
+        actions=[action.action for action in roles[0].role_actions],
     )

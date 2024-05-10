@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
 
-from auth.facade import get_current_user
-from auth.permissions import PermissionValidator, OwnershipPermission
+from security.api import get_current_user
+from security.permissions import PermissionValidator, OwnershipPermission
 from documents import crud
-from departments.crud import get_departments
-from roles.types import ActionType
+from security.crud import get_departments
+from security.types import ActionType
 
 
 def owns_department_document(

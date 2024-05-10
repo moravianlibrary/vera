@@ -1,5 +1,5 @@
-from roles.types import ActionType
-from auth.permissions import PermissionValidator
+from security.types import ActionType
+from security.permissions import PermissionValidator
 
 
 CanPlanTask = PermissionValidator(ActionType.PlanTasks)

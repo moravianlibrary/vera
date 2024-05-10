@@ -7,8 +7,9 @@ from typing import List, Optional
 from services.database import get_db
 from tasks import crud, schemas
 from tasks.enums import TaskType
-from auth.schemas import CurrentUser
-from auth.router import get_current_user
+from security.schemas import CurrentUser
+from security.api import CallerUsername
+from routing.security import get_current_user
 from documents.schemas import DocumentsQuery
 from documents.crud import get_documents_ids_query_base
 from celery_worker import run_task
@@ -22,11 +23,11 @@ router = APIRouter(prefix="/tasks")
 def create_task(
     task_type: TaskType = Query(...),
     query: Optional[DocumentsQuery] = None,
-    user: CurrentUser = Depends(get_current_user),
+    username: str = CallerUsername(),
     db: Session = Depends(get_db),
 ):
     if query is None:
-        task = crud.create_task(task_type, user.username, db)
+        task = crud.create_task(task_type, username, db)
     else:
         documents_ids = [
             row[0] for row in get_documents_ids_query_base(db, query).all()
@@ -34,7 +35,7 @@ def create_task(
         task = crud.create_query_task(
             task_type,
             documents_ids,
-            user.username,
+            username,
             query.model_dump_json(),
             db,
         )
@@ -54,7 +55,6 @@ def kill_task(
 @router.get("/{id}", dependencies=[CanPlanTask], response_model=schemas.Task)
 def get_task(
     id: int = Path(...),
-    user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     return crud.get_task(id, db)
@@ -67,7 +67,6 @@ def get_task(
 )
 def get_task_documents(
     id: int = Path(...),
-    user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     return crud.get_task_documents(id, db)
@@ -95,7 +94,6 @@ def get_task_result(
 def get_tasks(
     offset: int = Query(0, description="Pagination page offset"),
     limit: int = Query(50, description="Pagination page size"),
-    user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     return crud.get_tasks(db, offset, limit)

@@ -11,7 +11,7 @@ from sqlalchemy import (
     TIMESTAMP,
     Text,
 )
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import relationship, Session
 
 from services.database import Base
 
@@ -40,6 +40,9 @@ class Task(Base):
     started = Column(TIMESTAMP)
     finished = Column(TIMESTAMP)
 
+    documents = relationship("TaskDocument", back_populates="task")
+    csv_results = relationship("TaskCsvResult", back_populates="task")
+
 
 class TaskDocument(Base):
     __tablename__ = "task_documents"
@@ -54,6 +57,8 @@ class TaskDocument(Base):
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "document_id"), {})
 
+    task = relationship("Task", back_populates="documents")
+
 
 class TaskCsvResult(Base):
     __tablename__ = "task_csv_results"
@@ -62,6 +67,8 @@ class TaskCsvResult(Base):
         Integer, ForeignKey("tasks.id"), primary_key=True, index=True
     )
     data = Column(Text, nullable=False)
+
+    task = relationship("Task", back_populates="csv_results")
 
 
 def task_view(db: Session):

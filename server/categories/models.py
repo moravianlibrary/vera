@@ -8,6 +8,7 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
 )
+from sqlalchemy.orm import relationship
 from services.database import Base
 
 
@@ -28,6 +29,11 @@ class Category(Base):
 
     __table_args__ = (UniqueConstraint("name", "parent_id"),)
 
+    departments = relationship(
+        "CategoryDepartments", back_populates="category"
+    )
+    documents = relationship("Document", back_populates="category")
+
 
 class CategoryDepartments(Base):
     __tablename__ = "category_departments"
@@ -36,3 +42,5 @@ class CategoryDepartments(Base):
     department_id = Column(Integer, ForeignKey("departments.id"), index=True)
 
     __table_args__ = (PrimaryKeyConstraint("category_id", "department_id"), {})
+
+    category = relationship("Category", back_populates="departments")

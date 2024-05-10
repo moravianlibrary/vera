@@ -2,7 +2,7 @@ from tests.test_crud_operations import TestCrudOperations
 
 from roles import crud
 from roles.schemas import RoleCreate
-from roles.types import ActionType
+from auth.types import ActionType
 
 
 class TestRolesCrud(TestCrudOperations):

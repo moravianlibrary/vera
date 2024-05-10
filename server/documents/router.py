@@ -6,17 +6,14 @@ import tempfile
 from typing import List, Optional
 
 from services.database import get_db
-from roles.types import ActionType
+from security.types import ActionType
 from services import exceptions
-from auth.router import get_current_user
+from routing.security import get_current_user
 from documents import crud, schemas
 from catalogs.schemas import CatalogResponse, Identifier
 from catalogs.enums import IdentifierType
-from documents.routines import (
-    create_document as create_document_routine,
-    create_catalog_document,
-)
-from auth.schemas import CurrentUser
+from documents import api
+from security.schemas import CurrentUser
 from catalogs.routines import generate_catalog_document
 from documents.permissions import (
     CanInsertDocuments,
@@ -40,7 +37,7 @@ def create_document(
     db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
-    return create_document_routine(document, user.username, db)
+    return api.create_document(document, user.username, db)
 
 
 @router.put(
@@ -287,7 +284,7 @@ async def create_from_catalog(
     db: Session = Depends(get_db),
     user: CurrentUser = Depends(get_current_user),
 ):
-    return create_catalog_document(
+    return api.create_catalog_document(
         generate_catalog_document(identifier),
         identifier,
         category_id,
@@ -328,7 +325,7 @@ async def create_from_catalog_file(
     user: CurrentUser = Depends(get_current_user),
 ):
     return [
-        create_catalog_document(
+        api.create_catalog_document(
             generate_catalog_document(
                 Identifier(identifier_type=identifier_type, value=value)
             ),

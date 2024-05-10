@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 from tests.helper_funcs import createTestClient, createTestUser, mockClsEnv
 
 from categories.schemas import Category, CategoryCreate, CategoryNode
-from roles.types import ActionType
+from auth.types import ActionType
 
 
 class TestPermissions(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestPermissions(unittest.TestCase):
 
     @patch("auth.auth_client.get_user_from_token")
     def test_mock_get_user_from_token(self, mock_get_user_from_token: Mock):
-        from auth.auth_client import get_user_from_token
+        from auth.keycloak_client import get_user_from_token
 
         mock_get_user_from_token.return_value = createTestUser()
 

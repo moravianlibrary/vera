@@ -10,7 +10,7 @@ from helper_funcs import (
 
 from categories.schemas import Category
 from categories.models import CategoryDepartments
-from roles.types import ActionType
+from auth.types import ActionType
 
 
 class TestCategoriesEndpoints(TestEndpoints):

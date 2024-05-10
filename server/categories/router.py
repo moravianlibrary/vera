@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 from typing import List
 
-from auth.schemas import CurrentUser
-from roles.types import ActionType
+from security.schemas import CurrentUser
+from security.types import ActionType
 from services.database import get_db
 from categories import schemas
 from categories import facade
@@ -13,7 +13,7 @@ from categories.permissions import (
     CanReadCategories,
     CanReadCategory,
 )
-from auth.facade import get_current_user
+from security.api import get_current_user
 
 
 router = APIRouter(prefix="/categories")

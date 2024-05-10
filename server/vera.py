@@ -4,15 +4,14 @@ import logging
 from contextlib import asynccontextmanager
 from os import environ
 
-import auth.router as auth_router
+import routing
 import categories.router as categories_router
 import categories.quotas.router as quotas_router
-import departments.router as departments_router
 import documents.router as documents_router
 import extractions.digitization.router as digitization_extractions_router
 import extractions.generated.router as generated_extractions_router
 import extractions.locations.router as locations_router
-import roles.router as roles_router
+import routing.security
 import tasks.router as tasks_router
 
 
@@ -50,15 +49,13 @@ app.add_middleware(
 )
 
 
-app.include_router(auth_router.router)
+app.include_router(routing.security.router)
 app.include_router(categories_router.router)
 app.include_router(quotas_router.router)
-app.include_router(departments_router.router)
 app.include_router(documents_router.router)
 app.include_router(digitization_extractions_router.router)
 app.include_router(generated_extractions_router.router)
 app.include_router(locations_router.router)
-app.include_router(roles_router.router)
 app.include_router(tasks_router.router)
 
 

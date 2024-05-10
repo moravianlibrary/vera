@@ -32,7 +32,7 @@ def mockClsEnv(cls):
 
 def mockUser(user: CurrentUser):
     from vera import app
-    from auth.facade import get_current_user
+    from auth.api import get_current_user
 
     app.dependency_overrides[get_current_user] = lambda: user
 
@@ -62,7 +62,7 @@ def createTestUser(actions=[], department_id=10):
 
 
 def get_all_actions_except(actions):
-    from roles.types import ActionType
+    from auth.types import ActionType
 
     return [action for action in ActionType if action not in actions]
 
