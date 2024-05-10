@@ -67,6 +67,12 @@ class Document(Base):
     extraction = relationship(
         "DigitizationExtraction", back_populates="documents"
     )
+    task_documents = relationship(
+        "TaskDocument",
+        primaryjoin="TaskDocument.document_id == Document.id",
+        back_populates="document",
+        foreign_keys="TaskDocument.document_id",
+    )
 
     @hybrid_property
     def pages_count_actual(self):

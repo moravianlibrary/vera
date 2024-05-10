@@ -3,7 +3,7 @@ from typing import Callable, IO, Optional
 from catalogs.aleph_document import AlephDocument, AlephIssue
 from catalogs.enums import CatalogResponseStatus, IdentifierType, IssuanceType
 from catalogs.routines import get_document_by_identifier_type
-from kramerius.api import KrameriusApi
+from kramerius.client import KrameriusApi
 from kramerius.document import KrameriusDocument
 from kramerius.parsers import range_end_year, range_start_year
 from kramerius.search import KrameriusSearch, SearchQuery

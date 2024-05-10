@@ -2,7 +2,7 @@ from tests.test_routines import TestRoutines
 from unittest.mock import Mock, patch
 
 from catalogs.routines import get_document_by_sysno
-from kramerius.api import KrameriusApi
+from kramerius.client import KrameriusApi
 from kramerius.routines.find_missing_volumes import is_same_issue
 from kramerius.search import KrameriusSearch
 
@@ -123,14 +123,14 @@ class TestFindMissingVolumes(TestRoutines):
     def test_find_missing_volumes_volume_years_in_title(self):
         # Arrange
         # pass
-        # from kramerius.routines.find_missing_volumes import (
-        #     find_missing_periodical_volumes,
-        #     write_output,
-        # )
+        from kramerius.routines.find_missing_volumes import (
+            find_missing_periodical_volumes,
+            write_output,
+        )
 
-        # with open("/tmp/find_missing_volumes.csv", "w") as file:
+        with open("/tmp/find_missing_volumes.csv", "w") as file:
 
-        #     def write_line(periodical, catalog_document, issue):
-        #         write_output(file, periodical, catalog_document, issue)
+            def write_line(periodical, catalog_document, issue):
+                write_output(file, periodical, catalog_document, issue)
 
-        #     find_missing_periodical_volumes(write_line)
+            find_missing_periodical_volumes(write_line)

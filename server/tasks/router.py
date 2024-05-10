@@ -43,7 +43,9 @@ def create_task(
     return crud.get_task(task.id, db)
 
 
-@router.put("/{id}", dependencies=[CanManageTask], response_model=schemas.Task)
+@router.put(
+    "/{id}/kill", dependencies=[CanManageTask], response_model=schemas.Task
+)
 def kill_task(
     id: int = Path(...),
     user: CurrentUser = Depends(get_current_user),
@@ -69,10 +71,10 @@ def get_task_documents(
     id: int = Path(...),
     db: Session = Depends(get_db),
 ):
-    return crud.get_task_documents(id, db)
+    return crud.get_task(id, db).documents
 
 
-@router.get("/{task_id}/csv", dependencies=[CanPlanTask])
+@router.get("/{task_id}/dataset", dependencies=[CanPlanTask])
 def get_task_result(
     task_id: int = Path(...),
     db: Session = Depends(get_db),

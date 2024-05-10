@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional, Tuple, Union
 
-from kramerius.api import KrameriusApi
+from kramerius.client import KrameriusApi
 from kramerius.document import KrameriusDocument
 from kramerius.types import SolrConjuction, SolrField
 
