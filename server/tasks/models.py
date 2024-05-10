@@ -15,7 +15,7 @@ from sqlalchemy.orm import relationship
 
 from services.database import Base
 
-from tasks.enums import (
+from tasks.types import (
     TaskDocumentErrorType,
     TaskType,
     TaskState,

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List
 
-from tasks.enums import TaskDocumentErrorType
+from tasks.types import TaskDocumentErrorType
 from tasks import crud, models
 
 

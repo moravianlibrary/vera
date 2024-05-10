@@ -5,7 +5,7 @@ from typing import List
 from services.database import create
 
 from tasks import models, schemas
-from tasks.enums import TaskType
+from tasks.types import TaskType
 
 
 # Create

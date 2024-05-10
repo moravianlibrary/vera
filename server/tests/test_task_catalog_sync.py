@@ -4,7 +4,7 @@ from catalogs.enums import DigitizationState
 from documents.crud import create_document, get_document
 from documents.schemas import DocumentCreate
 from tasks.crud import create_query_task
-from tasks.enums import TaskType
+from tasks.types import TaskType
 from tasks.routines import sync_from_digitization_registry, sync_from_catalog
 from tasks.schemas import TaskCreate
 

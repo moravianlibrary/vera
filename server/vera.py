@@ -25,7 +25,12 @@ logger = logging.getLogger("uvicorn")
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
-    from services.database import check_connection, check_database_revision
+    from services.database import (
+        check_connection,
+        check_database_revision,
+        get_db,
+    )
+    from tasks.api import set_failed_tasks_on_start
 
     logger.info("Checking database connection.")
     if not check_connection():
@@ -33,6 +38,7 @@ async def lifespan(app_: FastAPI):
         return
     logger.info("Database connection successfully established.")
     check_database_revision()
+    set_failed_tasks_on_start(next(get_db()))
     yield
     logger.info("Shutting down.")
 

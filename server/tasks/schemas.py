@@ -2,19 +2,13 @@ from pydantic import BaseModel
 
 from typing import Dict, List, Optional
 from datetime import datetime
-from tasks.enums import TaskState, TaskType, TaskDocumentErrorType
+from tasks.types import TaskState, TaskType, TaskDocumentErrorType
 
 
-# Dataset schemas
-class DataModel(BaseModel):
+# Dataset schema
+class Dataset(BaseModel):
     header: List[str]
     items: List[Dict]
-
-
-class Dataset(BaseModel):
-    id: int
-    task_id: int
-    data: DataModel
 
 
 # Task schemas

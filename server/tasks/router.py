@@ -1,12 +1,10 @@
-from fastapi import APIRouter, Depends, Path, Response, Query
+from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
-import tempfile
-from fastapi.responses import FileResponse
 from typing import List, Optional
 
 from services.database import get_db
 from tasks import crud, schemas
-from tasks.enums import TaskType
+from tasks.types import TaskType
 from security.schemas import CurrentUser
 from security.api import CallerUsername
 from routing.security import get_current_user
@@ -74,22 +72,16 @@ def get_task_documents(
     return crud.get_task(id, db).documents
 
 
-@router.get("/{task_id}/dataset", dependencies=[CanPlanTask])
-def get_task_result(
+@router.get(
+    "/{task_id}/dataset",
+    dependencies=[CanPlanTask],
+    response_model=schemas.Dataset,
+)
+def get_task_dataset(
     task_id: int = Path(...),
     db: Session = Depends(get_db),
 ):
-    csv_text = crud.get_task_csv_text(task_id, db)
-    if csv_text:
-        with tempfile.NamedTemporaryFile(
-            mode="w+", delete=False, suffix=".csv"
-        ) as temp_file:
-            temp_file.write(csv_text)
-            temp_file_path = temp_file.name
-
-        return FileResponse(temp_file_path, filename=f"task_{task_id}.csv")
-    else:
-        return Response(status_code=404)
+    return crud.get_task(task_id, db).dataset
 
 
 @router.get("", dependencies=[CanPlanTask], response_model=List[schemas.Task])

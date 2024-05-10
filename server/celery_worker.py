@@ -3,7 +3,7 @@ from os import environ, path
 from sys import path as sys_path
 
 from services.database import DATABASE_URL, get_db
-from tasks.enums import TaskState, TaskType
+from tasks.types import TaskState, TaskType
 from tasks import api, crud
 
 
