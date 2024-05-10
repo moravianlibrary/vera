@@ -6,6 +6,7 @@ import Access from "./Access";
 import Navbar from "../components/Navbar";
 import "../config/i18n";
 import "../styles/App.css";
+import "../styles/Palette.css";
 import { ToastProvider } from "../contexts/toast/ToastContext";
 import Categories from "../pages/Categories";
 import Documents from "../pages/Documents";
@@ -17,6 +18,7 @@ import { ActionType } from "../types/ActionType";
 import Home from "./Home";
 import Extractions from "./Extractions";
 import { AccessProvider } from "../contexts/access/AccessContext";
+import NavigationMenu from "../components/NavigationMenu";
 
 function App() {
     return (
@@ -26,7 +28,8 @@ function App() {
                     <StrictMode>
                         <Router>
                             <div className="App">
-                                <Navbar />
+                                {/* <Navbar /> */}
+                                <NavigationMenu />
                                 <main>
                                     <Routes>
                                         <Route path="/" element={<Home />} />

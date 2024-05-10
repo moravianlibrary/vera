@@ -17,7 +17,7 @@ const Login = () => {
         <div>
             {isLoggedIn &&
             <Button
-                style={{color: "white"}}
+                // style={{color: "white"}}
                 text 
                 // label={`${user?.username} (${timeRemaining})`}
                 label={user?.username}
@@ -25,7 +25,7 @@ const Login = () => {
                 // onClick={isLoggedIn ? handleLogout : handleOpen}
             />}
             <Button
-                style={{color: "white"}}
+                // style={{color: "white"}}
                 text 
                 label={isLoggedIn ? t("logout") : t("login")}
                 onClick={isLoggedIn ? logout : login}

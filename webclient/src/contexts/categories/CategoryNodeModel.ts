@@ -2,6 +2,7 @@ import { Category, CreateCategory, Quota } from "../../adapters/ApiCategories";
 import { NodeType } from "./CategoryNodeType";
 
 export class CategoryNode {
+    key: number;
     type: NodeType;
     category: Category;
     quota: number;
@@ -27,6 +28,7 @@ export class CategoryNode {
     style = { borderRadius: '12px' };
 
     constructor(type: NodeType, category: Category, quota: number, extracted: boolean, parentNode?: CategoryNode) {
+        this.key = category.id;
         this.type = type;
         this.category = category;
         this.quota = quota;
@@ -120,23 +122,39 @@ export class CategoryNode {
 
     static getClassName(type: NodeType, category?: Category): string {
         if (type === NodeType.Root || type === NodeType.LevelRoot) {
+            return 'category-root';
             return 'bg-cyan-400';
         }
         if (type === NodeType.Insert) {
+            return 'category-insert';
             return 'bg-blue-100';
         }
         if (category) {
             if (category.assignable) {
-                return 'bg-yellow-500';
+                switch (category.level) {
+                    case 0: return 'category-assignable-0';
+                    case 1: return 'category-assignable-1';
+                    case 2: return 'category-assignable-2';
+                    case 3: return 'category-assignable-3';
+                    // case 0: return 'bg-yellow-500';
+                    // case 1: return 'bg-yellow-400';
+                    // case 2: return 'bg-yellow-300';
+                    // case 3: return 'bg-yellow-200';
+                }
             }
             if (category.disabled) {
+                return 'category-disabled';
                 return 'surface-300';
             }
             switch (category.level) {
-                case 0: return 'bg-teal-400';
-                case 1: return 'bg-teal-300';
-                case 2: return 'bg-teal-200';
-                case 3: return 'bg-teal-100';
+                case 0: return 'category-0';
+                case 1: return 'category-1';
+                case 2: return 'category-2';
+                case 3: return 'category-3';
+                // case 0: return 'bg-teal-400';
+                // case 1: return 'bg-teal-300';
+                // case 2: return 'bg-teal-200';
+                // case 3: return 'bg-teal-100';
             }
         }
         return '';

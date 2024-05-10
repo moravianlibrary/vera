@@ -17,6 +17,7 @@ import {
     useQuotas,
 } from "../contexts/categories/QuotasContext";
 import { useSearchParams } from "react-router-dom";
+import CategoriesTable from "../contexts/categories/CategoryTable";
 
 interface CategoriesProps {}
 
@@ -66,10 +67,11 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
                 extractionId !== null || digitizationListId !== null
             }
         >
-            <div style={{ height: "calc(100vh - 60px)" }}>
+            <div style={{ height: "calc(100vh - 65px)" }}>
                 <CategoriesMenuPanel />
-                <QuotasMenuPanel />
-                <CategoriesChart />
+                {/* <QuotasMenuPanel /> */}
+                {/* <CategoriesChart /> */}
+                <CategoriesTable />
             </div>
         </CategoryNodesProvider>
     );

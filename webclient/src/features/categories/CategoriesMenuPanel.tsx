@@ -8,6 +8,7 @@ import { useCategories } from "../../contexts/categories/CategoriesContext";
 import CategoryPicker from "../../components/pickers/CategoryPicker";
 import { NodeType } from "../../contexts/categories/CategoryNodeType";
 import ExtractionPicker from "../../components/pickers/ExtractionPicker";
+import { Toolbar } from "primereact/toolbar";
 
 interface CategoriesMenuPanelProps {}
 
@@ -63,6 +64,16 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
             />
         );
     }
+
+    return (
+        <div className="card w-screen ">
+            <Toolbar
+                className="p-2 surface-100"
+                // start={NavigationMenuStart}
+                // end={NavigationMenuEnd}
+            />
+        </div>
+    );
 
     return (
         <div
