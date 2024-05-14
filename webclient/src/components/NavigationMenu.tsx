@@ -116,6 +116,9 @@ const NavigationMenuStart = () => {
 
     return (
         <div className="card flex">
+            <Button className="p-0" text onClick={() => navigate("/")}>
+                <img src="/logo32.svg" />
+            </Button>
             <ActionAccessComponent action={ActionType.ReadDatatable}>
                 <Button
                     label={t("Documents")}
