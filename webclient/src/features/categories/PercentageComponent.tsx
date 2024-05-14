@@ -42,65 +42,6 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
         }
     }, [focusEditPercentageIndex]);
 
-    if (editPercentageNodes.includes(node)) {
-        return (
-            <div ref={containerRef} className="flex align-items-center gap-1">
-                <div className="p-inputgroup flex-1" style={{ width: "115px" }}>
-                    <InputNumber
-                        ref={inputRef}
-                        className="input-percentage"
-                        autoFocus={node === editPercentageNodes[0]}
-                        onFocus={() => handleFocusPercentageNode(node)}
-                        size={2}
-                        value={node.percentage}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                handlePercentageChange(
-                                    node,
-                                    parseFloat(
-                                        (e.target as HTMLInputElement).value
-                                    )
-                                );
-                                handleGoToNextPercentage();
-                            }
-                        }}
-                        onChange={(e) =>
-                            handlePercentageChange(node, e.value ? e.value : 0)
-                        }
-                        min={0}
-                        max={100}
-                        maxFractionDigits={2}
-                        tooltip={t(
-                            "You can move to the next category using the Enter key"
-                        )}
-                        tooltipOptions={{
-                            position: "top",
-                            showEvent: "click",
-                            hideDelay: 3000,
-                        }}
-                    />
-                    <span className="p-inputgroup-addon">%</span>
-                </div>
-                <Button
-                    className="p-1"
-                    text
-                    severity="secondary"
-                    onClick={handleUpdatePercentage}
-                >
-                    <i className="pi pi-check" />
-                </Button>
-                <Button
-                    className="p-1"
-                    text
-                    severity="secondary"
-                    onClick={handleClosePercentageEdit}
-                >
-                    <i className="pi pi-times" />
-                </Button>
-            </div>
-        );
-    }
-
     const canEditDepartmentCategory = (user: UserModel) => {
         return (node.category.level >= 1 &&
             user.actions &&

@@ -19,6 +19,7 @@ const Login = () => {
             <Button
                 // style={{color: "white"}}
                 text 
+                    className="text-gray-700"
                 // label={`${user?.username} (${timeRemaining})`}
                 label={user?.username}
                 disabled
@@ -26,6 +27,7 @@ const Login = () => {
             />}
             <Button
                 // style={{color: "white"}}
+                    className="text-gray-700"
                 text 
                 label={isLoggedIn ? t("logout") : t("login")}
                 onClick={isLoggedIn ? logout : login}

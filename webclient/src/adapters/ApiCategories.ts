@@ -92,7 +92,7 @@ namespace ApiCategories {
 
     export function updateDistribution(parent_id: number | null, distribution: CategoryPercentage[]) {
         if (parent_id) {
-            return axiosInstance.put(`/categories/distribution?parent_id=${parent_id}`, distribution, { headers: authHeader() });
+            return axiosInstance.put(`/categories/distribution/${parent_id}`, distribution, { headers: authHeader() });
         }
         return axiosInstance.put(`/categories/distribution`, distribution, { headers: authHeader() });
     }

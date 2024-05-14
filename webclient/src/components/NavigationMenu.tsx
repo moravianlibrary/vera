@@ -100,9 +100,10 @@ const NavigationMenu: React.FC<NavigationMenuProps> = () => {
     };
 
     return (
-        <div className="card w-screen ">
+        <div className="card w-screen">
             <Toolbar
-                className="p-2 surface-100"
+                className="p-2 "
+                style={{ backgroundColor: "#ebedef" }}
                 start={NavigationMenuStart}
                 end={NavigationMenuEnd}
             />
@@ -115,12 +116,13 @@ const NavigationMenuStart = () => {
     const navigate = useNavigate();
 
     return (
-        <div className="card flex">
+        <div className="card flex gap-2 flex-wrap">
             <Button className="p-0" text onClick={() => navigate("/")}>
                 <img src="/logo32.svg" />
             </Button>
             <ActionAccessComponent action={ActionType.ReadDatatable}>
                 <Button
+                    className="text-gray-700"
                     label={t("Documents")}
                     icon="pi pi-book"
                     text
@@ -129,6 +131,7 @@ const NavigationMenuStart = () => {
             </ActionAccessComponent>
             <ActionAccessComponent action={ActionType.ReadDatatable}>
                 <Button
+                    className="text-gray-700"
                     label={t("Categories")}
                     icon="pi pi-tags"
                     text
@@ -137,6 +140,7 @@ const NavigationMenuStart = () => {
             </ActionAccessComponent>
             <ActionAccessComponent action={ActionType.Extract}>
                 <Button
+                    className="text-gray-700"
                     label={t("Extractions")}
                     icon="pi pi-receipt"
                     text
@@ -145,6 +149,7 @@ const NavigationMenuStart = () => {
             </ActionAccessComponent>
             <ActionAccessComponent action={ActionType.PlanTasks}>
                 <Button
+                    className="text-gray-700"
                     label={t("Tasks")}
                     icon="pi pi-play-circle"
                     text
@@ -154,6 +159,7 @@ const NavigationMenuStart = () => {
             <ActionAccessComponent action={ActionType.EditAccess}>
                 {/* <AccessMenu /> */}
                 <Button
+                    className="text-gray-700"
                     label={t("Access management")}
                     icon="pi pi-user-edit"
                     text

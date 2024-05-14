@@ -52,6 +52,13 @@ interface CategoryNodesContextProps {
     focusEditPercentageIndex: number;
     handleGoToNextPercentage: () => void;
     handleFocusPercentageNode: (node: CategoryNode) => void;
+
+    editCategory: Category | null;
+    setEditCategory: (category: Category | null) => void;
+
+    editDistribution: CategoryNode | null;
+    setEditDistribution: (distribution: CategoryNode | null) => void;
+    saveDistribution: () => void;
 }
 
 const CategoryNodesContext = createContext<
@@ -85,6 +92,10 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
     >([]);
     const [focusEditPercentageIndex, setFocusEditPercentageIndex] =
         useState<number>(0);
+
+    const [editCategory, setEditCategory] = useState<Category | null>(null);
+    const [editDistribution, setEditDistribution] =
+        useState<CategoryNode | null>(null);
 
     const createCategoryNodes = (
         categories: Category[],
@@ -120,6 +131,7 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
     const handleEditCategoryNode = (node: CategoryNode) => {
         node.setType(NodeType.UpdateCategory);
         setCategoryNodes([...categoryNodes!]);
+        setEditCategory(node.category);
     };
 
     const handleCategoryUpdateError = (error: any) => {
@@ -298,7 +310,7 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
     };
 
     const handleEditPercentage = (node: CategoryNode) => {
-        if (editPercentageNodes.length > 0) {
+        if (editDistribution !== null) {
             return;
         }
         if (
@@ -315,7 +327,7 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
         ) {
             handleFocusNode(node.parentNode);
         }
-        setEditPercentageNodes(node.parentNode!.children);
+        setEditDistribution(node.parentNode!);
     };
 
     const handlePercentageChange = (node: CategoryNode, value: number) => {
@@ -384,6 +396,52 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
             node.setPercentage(node.category.percentage)
         );
         setEditPercentageNodes([]);
+        setEditDistribution(null);
+    };
+
+    const saveDistribution = () => {
+        console.log(editDistribution);
+
+        if (editDistribution === null) {
+            return;
+        }
+
+        const percentageSum = editDistribution.children.reduce(
+            (total, node) => total + (node.percentage || 0),
+            0
+        );
+        if (percentageSum !== 100) {
+            showToast("error", t("invalid_percentage_distribution"), "");
+            return;
+        }
+
+        if (
+            editDistribution.children.filter(
+                (node) => node.percentage !== node.category.percentage
+            ).length > 0
+        ) {
+            const newDistribution: CategoryPercentage[] =
+                editDistribution.children.map((node) => ({
+                    id: node.category.id,
+                    percentage: node.percentage ? node.percentage : 0,
+                }));
+            ApiCategories.updateDistribution(
+                editDistribution.category.id,
+                newDistribution
+            )
+                .then((response) => {
+                    editDistribution.children.forEach((node) => {
+                        node.setCategory({
+                            ...node.category,
+                            percentage: node.percentage,
+                        });
+                    });
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+        }
+        setEditDistribution(null);
     };
 
     useEffect(() => {
@@ -422,6 +480,13 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
         focusEditPercentageIndex,
         handleGoToNextPercentage,
         handleFocusPercentageNode,
+
+        editCategory,
+        setEditCategory,
+
+        editDistribution,
+        setEditDistribution,
+        saveDistribution,
     };
 
     return (

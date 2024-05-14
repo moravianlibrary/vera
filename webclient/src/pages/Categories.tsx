@@ -1,6 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
-import CategoriesMenuPanel from "../features/categories/CategoriesMenuPanel";
+import CategoriesMenuPanel, {
+    CategorySection,
+    CategoryViewType,
+} from "../features/categories/CategoriesMenuPanel";
 import QuotasMenuPanel from "../features/categories/QuotasMenuPanel";
 import {
     CategoriesProvider,
@@ -17,7 +20,9 @@ import {
     useQuotas,
 } from "../contexts/categories/QuotasContext";
 import { useSearchParams } from "react-router-dom";
-import CategoriesTable from "../contexts/categories/CategoryTable";
+import CategoriesTable from "../features/categories/CategoryTable";
+import EditCategoryMenu from "../contexts/categories/EditCategoryMenu";
+import EditDistributionMenu from "../features/categories/EditDistributionMenu";
 
 interface CategoriesProps {}
 
@@ -25,15 +30,13 @@ interface CategoriesDivProps {}
 
 const Categories: React.FC<CategoriesProps> = () => {
     return (
-        <div style={{ overflow: "auto" }}>
-            <CategoriesProvider>
-                <DepartmentsProvider>
-                    <QuotasProvider>
-                        <CategoriesDiv />
-                    </QuotasProvider>
-                </DepartmentsProvider>
-            </CategoriesProvider>
-        </div>
+        <CategoriesProvider>
+            <DepartmentsProvider>
+                <QuotasProvider>
+                    <CategoriesDiv />
+                </QuotasProvider>
+            </DepartmentsProvider>
+        </CategoriesProvider>
     );
 };
 
@@ -48,6 +51,10 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
         setDigitizationListId,
     } = useCategories();
     const { selectedQuota } = useQuotas();
+
+    const [viewType, setViewType] = useState<CategoryViewType>(
+        CategoryViewType.CategoryTable
+    );
 
     useEffect(() => {
         if (searchParams.has("extractionId")) {
@@ -67,11 +74,23 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
                 extractionId !== null || digitizationListId !== null
             }
         >
-            <div style={{ height: "calc(100vh - 65px)" }}>
-                <CategoriesMenuPanel />
-                {/* <QuotasMenuPanel /> */}
-                {/* <CategoriesChart /> */}
-                <CategoriesTable />
+            <div className="flex flex-column w-screen overflow-auto">
+                <div className="sticky top-0 right-0 z-3 gap-2 flex w-screen">
+                    <CategoriesMenuPanel
+                        categoryViewType={viewType}
+                        onCategoryViewTypeChange={setViewType}
+                    />
+                    <EditCategoryMenu />
+                    <EditDistributionMenu />
+                </div>
+                <div>
+                    {viewType === CategoryViewType.CategoryTable && (
+                        <CategoriesTable />
+                    )}
+                    {viewType === CategoryViewType.CategoryChart && (
+                        <CategoriesChart />
+                    )}
+                </div>
             </div>
         </CategoryNodesProvider>
     );

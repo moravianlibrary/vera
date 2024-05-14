@@ -19,6 +19,9 @@ import Home from "./Home";
 import Extractions from "./Extractions";
 import { AccessProvider } from "../contexts/access/AccessContext";
 import NavigationMenu from "../components/NavigationMenu";
+import CategoriesMenuPanel, {
+    CategoryViewType,
+} from "../features/categories/CategoriesMenuPanel";
 
 function App() {
     return (
@@ -27,87 +30,77 @@ function App() {
                 <AccessProvider>
                     <StrictMode>
                         <Router>
-                            <div className="App">
-                                {/* <Navbar /> */}
+                            <main className="App">
                                 <NavigationMenu />
-                                <main>
-                                    <Routes>
-                                        <Route path="/" element={<Home />} />
+                                <Routes>
+                                    <Route path="/" element={<Home />} />
+                                    <Route path="/login" element={<Login />} />
+                                    <Route
+                                        element={
+                                            <ActionAccessRoute
+                                                action={
+                                                    ActionType.ReadDatatable
+                                                }
+                                            />
+                                        }
+                                    >
                                         <Route
-                                            path="/login"
-                                            element={<Login />}
+                                            path="/documents"
+                                            element={<Documents />}
                                         />
-                                        <Route
-                                            element={
-                                                <ActionAccessRoute
-                                                    action={
-                                                        ActionType.ReadDatatable
-                                                    }
-                                                />
-                                            }
-                                        >
-                                            <Route
-                                                path="/documents"
-                                                element={<Documents />}
+                                    </Route>
+                                    <Route
+                                        element={
+                                            <ActionAccessRoute
+                                                action={
+                                                    ActionType.ReadCategories
+                                                }
                                             />
-                                        </Route>
+                                        }
+                                    >
                                         <Route
-                                            element={
-                                                <ActionAccessRoute
-                                                    action={
-                                                        ActionType.ReadCategories
-                                                    }
-                                                />
-                                            }
-                                        >
-                                            <Route
-                                                path="/categories"
-                                                element={<Categories />}
+                                            path="/categories"
+                                            element={<Categories />}
+                                        />
+                                    </Route>
+                                    <Route
+                                        element={
+                                            <ActionAccessRoute
+                                                action={ActionType.Extract}
                                             />
-                                        </Route>
+                                        }
+                                    >
                                         <Route
-                                            element={
-                                                <ActionAccessRoute
-                                                    action={ActionType.Extract}
-                                                />
-                                            }
-                                        >
-                                            <Route
-                                                path="/extractions"
-                                                element={<Extractions />}
+                                            path="/extractions"
+                                            element={<Extractions />}
+                                        />
+                                    </Route>
+                                    <Route
+                                        element={
+                                            <ActionAccessRoute
+                                                action={ActionType.PlanTasks}
                                             />
-                                        </Route>
+                                        }
+                                    >
                                         <Route
-                                            element={
-                                                <ActionAccessRoute
-                                                    action={
-                                                        ActionType.PlanTasks
-                                                    }
-                                                />
-                                            }
-                                        >
-                                            <Route
-                                                path="/tasks"
-                                                element={<Tasks />}
+                                            path="/tasks"
+                                            element={<Tasks />}
+                                        />
+                                    </Route>
+                                    <Route
+                                        element={
+                                            <ActionAccessRoute
+                                                action={ActionType.EditAccess}
                                             />
-                                        </Route>
+                                        }
+                                    >
                                         <Route
-                                            element={
-                                                <ActionAccessRoute
-                                                    action={
-                                                        ActionType.EditAccess
-                                                    }
-                                                />
-                                            }
-                                        >
-                                            <Route
-                                                path="/access"
-                                                element={<Access />}
-                                            />
-                                        </Route>
-                                    </Routes>
-                                </main>
-                            </div>
+                                            path="/access"
+                                            element={<Access />}
+                                        />
+                                    </Route>
+                                </Routes>
+                            </main>
                         </Router>
                     </StrictMode>
                 </AccessProvider>
