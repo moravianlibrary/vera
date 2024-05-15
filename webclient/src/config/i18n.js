@@ -498,7 +498,7 @@ const resources = {
         "The storage cannot be deleted because it contains locations": "Uložení nelze smazat, protože obsahuje lokaci",
 
 
-        "Include all documents from these categories": "Zahrnout všechny dokumenty z těchto kategorií",
+        "Include only documents from these categories": "Zahrnout pouze dokumenty z těchto kategorií",
         "Include only documents from these locations": "Zahrnout pouze dokumenty z těchto lokací",
         "Select location": "Vybrat lokaci",
 
