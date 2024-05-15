@@ -2,7 +2,7 @@ import re
 from typing import List
 
 from catalogs.schemas import Frequency
-from kramerius.api import KrameriusApi
+from kramerius.client import KrameriusApi
 from kramerius.document import KrameriusDocument
 from kramerius.search import KrameriusSearch, SearchQuery
 from kramerius.types import KrameriusModel, SolrField

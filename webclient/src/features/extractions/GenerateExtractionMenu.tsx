@@ -81,7 +81,7 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between flex "
-                label={t("Include all documents from these categories")}
+                label={t("Include only documents from these categories")}
             >
                 <AssignableCategoriesProvider>
                     <AssignableCategoriesPicker

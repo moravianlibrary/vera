@@ -4,7 +4,7 @@ import json
 from sqlalchemy import select
 from typing import Any, List, Optional
 
-from auth.schemas import CurrentUser
+from security.schemas import CurrentUser
 from documents.schemas import Document
 
 
@@ -32,7 +32,7 @@ def mockClsEnv(cls):
 
 def mockUser(user: CurrentUser):
     from vera import app
-    from auth.dependencies import get_current_user
+    from security.api import get_current_user
 
     app.dependency_overrides[get_current_user] = lambda: user
 
@@ -50,10 +50,10 @@ def createTestClient():
     return TestClient(app)
 
 
-def createTestUser(actions=[]):
+def createTestUser(actions=[], department_id=10):
     return CurrentUser(
         username="test_user",
-        department_id=10,
+        department_id=department_id,
         department_name="test_department",
         role_id=7,
         role_name="test_role",
@@ -62,7 +62,7 @@ def createTestUser(actions=[]):
 
 
 def get_all_actions_except(actions):
-    from roles.types import ActionType
+    from security.types import ActionType
 
     return [action for action in ActionType if action not in actions]
 

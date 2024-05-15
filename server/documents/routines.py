@@ -1,10 +1,13 @@
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, Union
 
 from documents import crud, schemas
-from catalogs.enums import IdentifierType
-from catalogs.enums import CatalogResponseStatus as Status, DigitizationState
-from catalogs.schemas import CatalogResponse, Identifier
+from catalogs.enums import (
+    CatalogResponseStatus as Status,
+    DigitizationState,
+    IdentifierType,
+)
+from catalogs.schemas import Identifier, CatalogResponse
 from documents.enums import DocumentCreateResult as Result
 
 
@@ -14,18 +17,83 @@ CATALOG_RESPONSE_MAPPING = {
     Status.InvalidIdentifier: Result.InvalidIdentifier,
     Status.InvalidSysno: Result.InvalidSysno,
     Status.InvalidSysnoBase: Result.InvalidSysnoBase,
+    Status.Success: None,
+}
+DIGITIZATION_RESULT_MAPPING = {
+    DigitizationState.Finished: Result.AlreadyDigitized,
+    DigitizationState.InProgress: Result.DigitizationInProgress,
+    DigitizationState.Planned: Result.DigitizationPlanned,
 }
 
 
-def create_document(
-    document: schemas.DocumentCreate, creator: str, db: Session
-):
-    db_document = crud.get_document_by_identifiers(
+def document_exists(document: schemas.DocumentCreate, db: Session):
+    return crud.document_exists(
         document.sysno, document.volume, document.barcode, db
     )
-    if db_document is not None:
-        return schemas.DocumentCreateResponse(
-            create_result=Result.UniqueDocumentViolation,
+
+
+def CatalogFailure(identifier: Identifier, catalog_response: CatalogResponse):
+    return schemas.DocumentCreateResponse(
+        identifier=identifier,
+        create_result=CATALOG_RESPONSE_MAPPING.get(
+            catalog_response.response_status
+        ),
+    )
+
+
+def UniqueDocumentViolation(identifier: Identifier):
+    return schemas.DocumentCreateResponse(
+        identifier=identifier,
+        create_result=Result.UniqueDocumentViolation,
+    )
+
+
+def SuccessfulyCreatedDocument(document: schemas.DocumentView):
+    return schemas.DocumentCreateResponse(
+        create_result=Result.Success,
+        document=document,
+    )
+
+
+def InvalidCatalogDocument(identifier: Identifier):
+    return schemas.DocumentCreateResponse(
+        identifier=identifier, create_result=Result.InvalidCatalogDocument
+    )
+
+
+def DigitizedDocument(
+    identifier: Identifier,
+    catalog_document: Union[schemas.CatalogDocument, schemas.CatalogIssue],
+):
+    return schemas.DocumentCreateResponse(
+        identifier=identifier,
+        create_result=DIGITIZATION_RESULT_MAPPING.get(
+            catalog_document.digitization_state
+        ),
+    )
+
+
+def MultipleIssuesDocument(
+    identifier: Identifier,
+    catalog_document: schemas.CatalogDocument,
+):
+    return schemas.DocumentCreateResponse(
+        identifier=identifier,
+        create_result=Result.MultipleIssues,
+        catalog_document=catalog_document,
+    )
+
+
+def create_document(
+    document: schemas.DocumentCreate,
+    creator: str,
+    db: Session,
+):
+    if document_exists(document, db):
+        UniqueDocumentViolation(
+            Identifier(
+                identifier_type=IdentifierType.Barcode, value=document.barcode
+            )
         )
 
     return schemas.DocumentCreateResponse(
@@ -34,130 +102,93 @@ def create_document(
     )
 
 
-def create_catalog_document(
-    catalog_response: CatalogResponse,
+def create_catalog_document_using_barcode(
+    catalog_document: schemas.CatalogDocument,
     identifier: Identifier,
     category_id: Optional[int],
     insert_digitized: bool,
     username: str,
     db: Session,
 ):
-    catalog_document = catalog_response.document
-    response_status = catalog_response.response_status
+    if not catalog_document.issues:
+        return InvalidCatalogDocument(identifier)
 
-    if response_status != Status.Success:
-        return schemas.DocumentCreateResponse(
-            create_result=CATALOG_RESPONSE_MAPPING.get(
-                response_status, Result.CatalogError
-            )
-        )
+    issue = next(
+        (
+            issue
+            for issue in catalog_document.issues
+            if issue.barcode == identifier.value
+        ),
+        None,
+    )
+    if issue is None:
+        return InvalidCatalogDocument(identifier)
 
-    document = None
+    if (
+        not insert_digitized
+        and catalog_document.digitization_state
+        != DigitizationState.NotDigitized
+    ):
+        return DigitizedDocument(identifier, catalog_document)
 
-    if identifier.identifier_type == IdentifierType.Barcode:
-        if not catalog_document.issues:
-            return schemas.DocumentCreateResponse(
-                create_result=Result.InvalidCatalogDocument
-            )
+    create_issue = schemas.DocumentCreate.from_catalog_issue(
+        catalog_document,
+        issue,
+        category_id,
+    )
+    return create_document(create_issue, username, db)
 
-        issue = next(
-            (
-                issue
-                for issue in catalog_document.issues
-                if issue.barcode == identifier.value
-            ),
-            None,
-        )
-        if issue is None:
-            return schemas.DocumentCreateResponse(
-                create_result=Result.InvalidCatalogDocument
-            )
 
-        digitization_state = issue.digitization_state
-
+def create_single_issue_catalog_document(
+    catalog_document: schemas.CatalogDocument,
+    identifier: Identifier,
+    category_id: Optional[int],
+    insert_digitized: bool,
+    username: str,
+    db: Session,
+):
+    if len(catalog_document.issues) == 1:
         if (
-            digitization_state == DigitizationState.Finished
-            and not insert_digitized
+            not insert_digitized
+            and catalog_document.issues[0].digitization_state
+            != DigitizationState.NotDigitized
         ):
-            return schemas.DocumentCreateResponse(
-                create_result=Result.AlreadyDigitized
-            )
-        if (
-            digitization_state == DigitizationState.InProgress
-            and not insert_digitized
-        ):
-            return schemas.DocumentCreateResponse(
-                create_result=Result.DigitizationInProgress
-            )
-        if (
-            digitization_state == DigitizationState.Planned
-            and not insert_digitized
-        ):
-            return schemas.DocumentCreateResponse(
-                create_result=Result.DigitizationPlanned
-            )
+            return DigitizedDocument(identifier, catalog_document)
 
         create_issue = schemas.DocumentCreate.from_catalog_issue(
             catalog_document,
-            issue,
+            catalog_document.issues[0],
             category_id,
         )
-        response = create_document(create_issue, username, db)
-        document = response.document
-        create_result = response.create_result
-    elif len(catalog_document.issues) > 1:
-        create_result = Result.MultipleIssues
-        for index, issue in enumerate(catalog_document.issues):
-            catalog_document.issues[index].already_exists = (
-                crud.get_document_by_identifiers(
-                    catalog_document.sysno, issue.volume, issue.barcode, db
-                )
-                is not None
-            )
-    else:
-        digitization_state = (
-            catalog_document.issues[0].digitization_state
-            if len(catalog_document.issues) == 1
-            else catalog_document.digitization_state
-        )
+        return create_document(create_issue, username, db)
 
-        if (
-            digitization_state == DigitizationState.Finished
-            and not insert_digitized
-        ):
-            return schemas.DocumentCreateResponse(
-                create_result=Result.AlreadyDigitized
-            )
-        if (
-            digitization_state == DigitizationState.InProgress
-            and not insert_digitized
-        ):
-            return schemas.DocumentCreateResponse(
-                create_result=Result.DigitizationInProgress
-            )
-        if (
-            digitization_state == DigitizationState.Planned
-            and not insert_digitized
-        ):
-            return schemas.DocumentCreateResponse(
-                create_result=Result.DigitizationPlanned
-            )
+    if (
+        not insert_digitized
+        and catalog_document.digitization_state
+        != DigitizationState.NotDigitized
+    ):
+        return DigitizedDocument(identifier, catalog_document)
 
-        response = create_document(
-            schemas.DocumentCreate.from_catalog_document(
-                catalog_document, category_id
-            ),
-            username,
-            db,
-        )
-        document = response.document
-        create_result = response.create_result
-
-    return schemas.DocumentCreateResponse(
-        document=document,
-        catalog_document=catalog_document,
-        create_result=create_result,
+    return create_document(
+        schemas.DocumentCreate.from_catalog_document(
+            catalog_document, category_id
+        ),
+        username,
+        db,
     )
+
+
+def generate_multiple_issues_response(
+    catalog_document: schemas.CatalogDocument, db: Session
+):
+    for index, issue in enumerate(catalog_document.issues):
+        catalog_document.issues[index].already_exists = (
+            crud.get_document_by_identifiers(
+                catalog_document.sysno, issue.volume, issue.barcode, db
+            )
+            is not None
+        )
+    return MultipleIssuesDocument(catalog_document)
 
 
 def get_documents_query():

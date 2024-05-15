@@ -3,7 +3,7 @@ from pymarc import Field, Record, Subfield
 from typing import List, Optional, Set
 
 import aleph_api
-from catalogs.skc import api as skc_api
+from catalogs.skc import skc_api as skc_api
 
 
 class DiffType(Enum):

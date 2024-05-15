@@ -1,0 +1,31 @@
+.category-root {
+    background-color: #d2f0fa;
+}
+.category-new {
+    background-color: #d4fed0;
+}
+.category-0 {
+    background-color: #c9e6ff;
+}
+.category-1 {
+    background-color: #d3eaff;
+}
+.category-2 {
+    background-color: #ddefff;
+}
+.category-3 {
+    background-color: #e6f3ff;
+}
+
+.category-assignable-0 {
+    background-color: #fff8df;
+}
+.category-assignable-1 {
+    background-color: #fff0bf;
+}
+.category-assignable-2 {
+    background-color: #ffe99f;
+}
+.category-assignable-3 {
+    background-color: #ffe27e;
+}

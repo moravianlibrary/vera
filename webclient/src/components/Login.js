@@ -17,15 +17,17 @@ const Login = () => {
         <div>
             {isLoggedIn &&
             <Button
-                style={{color: "white"}}
+                // style={{color: "white"}}
                 text 
+                    className="text-gray-700"
                 // label={`${user?.username} (${timeRemaining})`}
                 label={user?.username}
                 disabled
                 // onClick={isLoggedIn ? handleLogout : handleOpen}
             />}
             <Button
-                style={{color: "white"}}
+                // style={{color: "white"}}
+                    className="text-gray-700"
                 text 
                 label={isLoggedIn ? t("logout") : t("login")}
                 onClick={isLoggedIn ? logout : login}

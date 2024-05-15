@@ -8,7 +8,7 @@ from helper_funcs import (
 )
 
 from departments.models import Department
-from roles.types import ActionType
+from auth.types import ActionType
 
 
 class TestDepartmentsEndpoints(TestEndpoints):

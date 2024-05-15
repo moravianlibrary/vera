@@ -14,6 +14,7 @@ interface CategoriesContextProps {
     setExtractionId: (extractionId: number) => void;
     digitizationListId: number | null;
     setDigitizationListId: (extractionId: number) => void;
+    refreshCategories: () => void;
 }
 
 const CategoriesContext = createContext<CategoriesContextProps | undefined>(
@@ -83,6 +84,10 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
             });
     };
 
+    const refreshCategories = () => {
+        setCategories(categories?.map((category) => category) as Category[]);
+    };
+
     useEffect(() => {
         if (!categories) {
             loadCategories();
@@ -111,6 +116,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
         setExtractionId,
         digitizationListId,
         setDigitizationListId,
+        refreshCategories,
     };
 
     return (

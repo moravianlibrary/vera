@@ -1,19 +1,22 @@
 from pydantic import BaseModel
 
-from typing import List, Optional
+from typing import Dict, List, Optional
 from datetime import datetime
-from tasks.enums import TaskState, TaskType, TaskDocumentErrorType
+from tasks.types import TaskState, TaskType, TaskDocumentErrorType
 
 
-class TaskBase(BaseModel):
+# Dataset schema
+class Dataset(BaseModel):
+    header: List[str]
+    items: List[Dict]
+
+
+# Task schemas
+class TaskCreate(BaseModel):
     task_type: TaskType
 
 
-class TaskCreate(TaskBase):
-    pass
-
-
-class TaskDefinition(TaskBase):
+class TaskDefinition(TaskCreate):
     id: int
 
     owner: str
@@ -37,7 +40,9 @@ class Task(TaskDefinition):
     total_count: int
     error_count: int
     errors: List[TaskError] = []
-    has_csv_result: bool = False
+
+    has_dataset: bool = False
+    dataset_error: Optional[str] = None
 
 
 class TaskDocument(BaseModel):

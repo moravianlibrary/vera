@@ -1,21 +1,21 @@
 from sqlalchemy import (
     Boolean,
-    case,
     Column,
     Enum,
     func,
     ForeignKey,
     Integer,
+    JSON,
     PrimaryKeyConstraint,
     String,
     TIMESTAMP,
-    Text,
 )
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import relationship
 
 from services.database import Base
 
-from tasks.enums import (
+from tasks.types import (
     TaskDocumentErrorType,
     TaskType,
     TaskState,
@@ -40,6 +40,29 @@ class Task(Base):
     started = Column(TIMESTAMP)
     finished = Column(TIMESTAMP)
 
+    documents = relationship("TaskDocument", back_populates="task")
+    dataset = relationship("TaskDataset", back_populates="task")
+
+    @hybrid_property
+    def processed_count(self):
+        return sum(1 for document in self.documents if document.processed)
+
+    @hybrid_property
+    def total_count(self):
+        return len(self.documents)
+
+    @hybrid_property
+    def error_count(self):
+        return sum(1 for document in self.documents if document.error_type)
+
+    @hybrid_property
+    def has_dataset(self):
+        return bool(self.dataset)
+
+    @hybrid_property
+    def dataset_error(self):
+        return self.dataset.error_message if self.dataset else None
+
 
 class TaskDocument(Base):
     __tablename__ = "task_documents"
@@ -54,42 +77,22 @@ class TaskDocument(Base):
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "document_id"), {})
 
+    task = relationship("Task", back_populates="documents")
+    document = relationship(
+        "Document",
+        primaryjoin="TaskDocument.document_id == Document.id",
+        back_populates="task_documents",
+        foreign_keys=document_id,
+    )
 
-class TaskCsvResult(Base):
-    __tablename__ = "task_csv_results"
+
+class TaskDataset(Base):
+    __tablename__ = "task_datasets"
 
     task_id = Column(
         Integer, ForeignKey("tasks.id"), primary_key=True, index=True
     )
-    data = Column(Text, nullable=False)
+    data = Column(JSON)
+    error_message = Column(String)
 
-
-def task_view(db: Session):
-    return (
-        db.query(
-            Task.id,
-            Task.process_id,
-            Task.task_type,
-            Task.query,
-            Task.owner,
-            Task.task_state,
-            Task.planned,
-            Task.started,
-            Task.finished,
-            (
-                func.sum(case((TaskDocument.processed, 1), else_=0)).label(
-                    "processed_count"
-                )
-            ),
-            func.count(TaskDocument.document_id).label("total_count"),
-            (
-                func.sum(
-                    case((TaskDocument.error_type.is_(None), 0), else_=1)
-                ).label("error_count")
-            ),
-            func.count(TaskCsvResult.data).label("has_csv_result"),
-        )
-        .outerjoin(TaskDocument, Task.id == TaskDocument.task_id)
-        .outerjoin(TaskCsvResult, Task.id == TaskCsvResult.task_id)
-        .group_by(Task.id)
-    )
+    task = relationship("Task", back_populates="dataset")

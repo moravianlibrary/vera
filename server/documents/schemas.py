@@ -18,7 +18,12 @@ from catalogs.enums import (
     MaterialType,
     IssuanceType,
 )
-from catalogs.schemas import CatalogDocument, CatalogIssue, Frequency
+from catalogs.schemas import (
+    CatalogDocument,
+    CatalogIssue,
+    Frequency,
+    Identifier,
+)
 
 
 class DocumentBase(BaseModel):
@@ -152,9 +157,10 @@ class DocumentView(Document):
 
 
 class DocumentCreateResponse(BaseModel):
+    identifier: Optional[Identifier] = None
+    create_result: DocumentCreateResult
     document: Optional[DocumentView] = None
     catalog_document: Optional[CatalogDocument] = None
-    create_result: DocumentCreateResult
 
 
 class SearchField(BaseModel):

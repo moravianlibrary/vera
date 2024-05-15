@@ -45,6 +45,12 @@ class ExtractionPreprocessor:
             return (None, 0)
 
         if category.assignable:
+            if (
+                self.settings.include_categories
+                and category.id not in self.settings.include_categories
+            ):
+                return (None, 0)
+
             node = ExtractionNode(
                 category,
                 self.settings.include_categories

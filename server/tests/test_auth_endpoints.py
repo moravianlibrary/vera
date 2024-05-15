@@ -6,7 +6,7 @@ from tests.helper_funcs import (
     mockUser,
 )
 
-from roles.types import ActionType
+from auth.types import ActionType
 
 
 class TestAuthEndpoints(TestEndpoints):

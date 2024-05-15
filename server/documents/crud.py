@@ -8,7 +8,6 @@ from documents import models, schemas
 from documents.search import filter_documents_query_base
 from extractions.digitization.models import DigitizationExtraction
 from services import exceptions
-from tasks.crud import delete_document as delete_task_document
 
 
 EDITABLE_FIELDS = [
@@ -173,7 +172,8 @@ def delete_document(document_id: int, db: Session):
     db_document = get_document(document_id, db)
     if db_document is None:
         raise exceptions.DocumentNotFoundException(id)
-    delete_task_document(document_id, db)
+    for task_document in db_document.task_documents:
+        task_document.deleted = True
     db.delete(db_document)
     db.commit()
     return db_document

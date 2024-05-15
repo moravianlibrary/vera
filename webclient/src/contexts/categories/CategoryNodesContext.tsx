@@ -8,181 +8,157 @@ import React, {
 import ApiCategories, {
     Category,
     CategoryPercentage,
+    CreateCategory,
     Quota,
 } from "../../adapters/ApiCategories";
-import { Department } from "../../adapters/ApiDepartments";
-import { CategoryNode } from "./CategoryNodeModel";
+import { CategoryModel } from "./CategoryModel";
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
-import { NodeType } from "./CategoryNodeType";
+import { CategoryType } from "./CategoryType";
+import { useCategories } from "./CategoriesContext";
 
-type CategoryUpdateParams = {
-    name: string;
-    description: string;
-    assignable: boolean;
-    departments: number[];
-};
+interface CategoryModelsContextProps {
+    currentCategory: CategoryModel | undefined;
 
-interface CategoryNodesContextProps {
-    categoryNodes: CategoryNode[] | undefined;
+    addCategory: (toCategory: CategoryModel) => void;
+    createCategory: (category: CreateCategory) => void;
 
-    handleEditCategoryNode: (node: CategoryNode) => void;
-    handleUpdateCategoryNode: (
-        node: CategoryNode,
-        params: CategoryUpdateParams
-    ) => void;
-    handleCloseCategoryNodeEdit: (node: CategoryNode) => void;
-    handleDeleteCategoryNode: (node: CategoryNode) => void;
-    handleInsertChildNode: (node: CategoryNode) => void;
+    editCategory: CategoryModel | null;
+    openCategoryEdit: (category: CategoryModel) => void;
+    closeCategoryEdit: () => void;
 
-    handleFocusNode: (node: CategoryNode) => void;
-    handleFocusParentNode: () => void;
-    handleFocusRootNode: () => void;
-    focusAssignable: boolean;
-    handleFocusAssignableCategories: () => void;
-    handleFocusCategory: (category_id: number) => void;
+    updateCategory: (category: CreateCategory) => void;
+    deleteCategory: (category: CategoryModel) => void;
+
     activeLevel: number | null;
-    handleFocusLevel: (level: number) => void;
+    focusAssignable: boolean;
+    focusRootCategory: () => void;
+    focusParentCategory: () => void;
+    focusCategory: (category_id: number) => void;
+    focusLevel: (level: number) => void;
+    focusAssignableCategories: () => void;
 
-    handleEditPercentage: (node: CategoryNode) => void;
-    editPercentageNodes: CategoryNode[];
-    handlePercentageChange: (node: CategoryNode, value: number) => void;
-    handleUpdatePercentage: () => void;
-    handleClosePercentageEdit: () => void;
-    focusEditPercentageIndex: number;
-    handleGoToNextPercentage: () => void;
-    handleFocusPercentageNode: (node: CategoryNode) => void;
+    editDistribution: CategoryModel | null;
+    setEditDistribution: (distribution: CategoryModel | null) => void;
+    saveDistribution: () => void;
 }
 
-const CategoryNodesContext = createContext<
-    CategoryNodesContextProps | undefined
+const CategoryModelsContext = createContext<
+    CategoryModelsContextProps | undefined
 >(undefined);
 
-interface CategoryNodesProviderProps {
+interface CategoryModelsProviderProps {
     categories: Category[] | undefined;
     selectedQuota: Quota | undefined;
     children: ReactNode;
     extractedCategories: boolean;
 }
 
-export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
+export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
     props
 ) => {
     const { t } = useTranslation();
     const showToast = useToast();
+    const { refreshCategories } = useCategories();
 
-    const [rootNode, setRootNode] = useState<CategoryNode | undefined>(
+    const [rootNode, setRootNode] = useState<CategoryModel | undefined>(
         undefined
     );
-    const [categoryNodes, setCategoryNodes] = useState<
-        CategoryNode[] | undefined
+    const [currentCategory, setCurrentCategory] = useState<
+        CategoryModel | undefined
     >(undefined);
+
+    const [editCategory, setEditCategory] = useState<CategoryModel | null>(
+        null
+    );
+
     const [activeLevel, setActiveLevel] = useState<number | null>(0);
     const [focusAssignable, setFocusAssignable] = useState<boolean>(false);
 
-    const [editPercentageNodes, setEditPercentageNodes] = useState<
-        CategoryNode[]
-    >([]);
-    const [focusEditPercentageIndex, setFocusEditPercentageIndex] =
-        useState<number>(0);
+    const [editDistribution, setEditDistribution] =
+        useState<CategoryModel | null>(null);
 
-    const createCategoryNodes = (
+    const createCategoryModels = (
         categories: Category[],
         selectedQuota?: Quota
     ) => {
         const quotaPagesCount = selectedQuota ? selectedQuota.pages_count : 0;
-        const createdRootNode = CategoryNode.generateRootNode(
+        const createdRootNode = CategoryModel.generateRootNode(
             t("all_categories"),
             categories,
-            quotaPagesCount,
-            props.extractedCategories
+            quotaPagesCount
         );
         setRootNode(createdRootNode);
-        setCategoryNodes([createdRootNode]);
+        setCurrentCategory(createdRootNode);
     };
 
-    const updateCategoryNodes = (
-        categories: Category[],
-        selectedQuota?: Quota
-    ) => {
-        if (!rootNode) {
-            createCategoryNodes(categories, selectedQuota);
+    const addCategory = (toCategory: CategoryModel) => {
+        if (!editCategory) {
+            openCategoryEdit(toCategory.insertChildNode());
+        }
+    };
+
+    const createCategory = (category: CreateCategory) => {
+        ApiCategories.createCategory(category.parent_id, category)
+            .then((response) => {
+                editCategory?.setCategory(response.data);
+                editCategory?.setType(CategoryType.Category);
+                editCategory?.addCategory(response.data);
+                closeCategoryEdit();
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    };
+
+    const openCategoryEdit = (category: CategoryModel) => {
+        if (editCategory !== null) {
             return;
         }
-        if (selectedQuota?.pages_count === rootNode.quota) {
-            rootNode.updateChildren(categories);
+        setEditCategory(category);
+    };
+
+    const closeCategoryEdit = () => {
+        if (editCategory && editCategory.type === CategoryType.NewCategory) {
+            editCategory.parent!.deleteChild(editCategory.id);
         }
-        const quotaPagesCount = selectedQuota ? selectedQuota.pages_count : 0;
-        rootNode.aggregateStats(quotaPagesCount, 100);
-        setCategoryNodes([...categoryNodes!]);
+        setEditCategory(null);
     };
 
-    const handleEditCategoryNode = (node: CategoryNode) => {
-        node.setType(NodeType.UpdateCategory);
-        setCategoryNodes([...categoryNodes!]);
-    };
-
-    const handleCategoryUpdateError = (error: any) => {
-        if (
-            error.response &&
-            error.response.status &&
-            error.response.status == 409
-        ) {
-            showToast(
-                "error",
-                t("unique_category_name_violation"),
-                t("unique_category_name_violation_detail")
-            );
-        } else {
-            console.error(error);
+    const updateCategory = (category: CreateCategory) => {
+        if (!editCategory) {
+            return;
         }
-    };
-
-    const handleUpdateCategoryNode = (
-        node: CategoryNode,
-        params: CategoryUpdateParams
-    ) => {
-        const updatedCategory = {
-            ...node.category,
-            name: params.name,
-            description: params.description,
-            assignable: params.assignable,
-            departments: params.departments,
-            parent_id:
-                node.category.parent_id !== 0 ? node.category.parent_id : null,
-        };
-        if (node.type === NodeType.CreateCategory) {
-            ApiCategories.createCategory(updatedCategory)
-                .then((response) => {
-                    node.setCategory(response.data);
-                    node.setType(NodeType.Category);
-                    handleCloseCategoryNodeEdit(node);
-                })
-                .catch(handleCategoryUpdateError);
-        } else if (node.type === NodeType.UpdateCategory) {
-            ApiCategories.updateCategory(updatedCategory)
-                .then((response) => {
-                    node.setCategory(response.data);
-                    handleCloseCategoryNodeEdit(node);
-                })
-                .catch(handleCategoryUpdateError);
-        }
-    };
-
-    const handleCloseCategoryNodeEdit = (node: CategoryNode) => {
-        if (node.type === NodeType.CreateCategory) {
-            node.parentNode?.deleteChild(node);
-        } else if (node.type === NodeType.UpdateCategory) {
-            node.setType(NodeType.Category);
-        }
-        setCategoryNodes([...categoryNodes!]);
-    };
-
-    const handleDeleteCategoryNode = (node: CategoryNode) => {
-        ApiCategories.deleteCategory(node.category.id)
+        const categoryId = editCategory.id;
+        ApiCategories.updateCategory(categoryId, category)
             .then((response) => {
-                node.parentNode?.deleteChild(node);
-                setCategoryNodes([...categoryNodes!]);
+                if (response.status === 200) {
+                    editCategory.setCategory(response.data);
+                    closeCategoryEdit();
+                }
+            })
+            .catch((error) => {
+                if (
+                    error.response &&
+                    error.response.status &&
+                    error.response.status == 409
+                ) {
+                    showToast(
+                        "error",
+                        t("unique_category_name_violation"),
+                        t("unique_category_name_violation_detail")
+                    );
+                } else {
+                    console.error(error);
+                }
+            });
+    };
+
+    const deleteCategory = (category: CategoryModel) => {
+        ApiCategories.deleteCategory(category.id)
+            .then(() => {
+                category.parent?.deleteChild(category.id);
+                refreshCategories();
             })
             .catch((error) => {
                 if (
@@ -202,172 +178,113 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
             });
     };
 
-    const handleInsertChildNode = (node: CategoryNode) => {
-        node.insertChildNode();
-        setCategoryNodes([...categoryNodes!]);
-    };
-
-    const handleFocusNode = (node: CategoryNode) => {
-        setCategoryNodes([node]);
-        setFocusAssignable(false);
-        setActiveLevel(null);
-        if (
-            editPercentageNodes.length > 0 &&
-            editPercentageNodes[0].category.level <= node.category.level
-        ) {
-            setEditPercentageNodes([]);
-        }
-    };
-
-    const handleFocusParentNode = () => {
-        if (
-            categoryNodes &&
-            categoryNodes?.length > 0 &&
-            categoryNodes[0].parentNode
-        ) {
-            if (categoryNodes[0].parentNode.type === NodeType.Root) {
-                handleFocusRootNode();
-            } else {
-                setCategoryNodes([categoryNodes[0].parentNode]);
-            }
-        }
-    };
-
-    const handleFocusRootNode = () => {
-        setFocusAssignable(false);
-        setActiveLevel(0);
-        setCategoryNodes([rootNode!]);
-    };
-
-    const handleFocusCategory = (category_id: number) => {
-        const focusNode = rootNode!.getCategoryNodeById(category_id);
-        if (focusNode) {
-            setFocusAssignable(false);
-            setActiveLevel(null);
-            setCategoryNodes([focusNode]);
-        } else {
-            handleFocusRootNode();
-        }
-    };
-
-    const handleFocusAssignableCategories = () => {
-        const focusNodes = rootNode!.getAssignableCategoryNodes();
-        if (focusNodes.length === 0) {
+    const updateCategoryModels = (
+        categories: Category[],
+        selectedQuota?: Quota
+    ) => {
+        if (!rootNode) {
+            createCategoryModels(categories, selectedQuota);
             return;
         }
-
-        setFocusAssignable(true);
-        setActiveLevel(null);
-        setEditPercentageNodes([]);
-        setCategoryNodes([
-            CategoryNode.generateLevelRootNode(
-                t("Assignable categories"),
-                focusNodes,
-                props.extractedCategories
-            ),
-        ]);
+        if (selectedQuota?.pages_count === rootNode.quota) {
+            rootNode.updateChildren(categories);
+        }
+        const quotaPagesCount = selectedQuota ? selectedQuota.pages_count : 0;
+        rootNode.aggregateStats(quotaPagesCount, 100);
     };
 
-    const handleFocusLevel = (level: number) => {
-        if (level === 0) {
-            handleFocusRootNode();
-            return;
-        }
-
-        const focusNodes = rootNode!.getNodesByLevel(level);
-        if (focusNodes.length === 0) {
-            return;
-        }
-
-        if (
-            editPercentageNodes.length > 0 &&
-            editPercentageNodes[0].category.level <= level
-        ) {
-            setEditPercentageNodes([]);
-        }
-
-        setFocusAssignable(false);
+    const changeFocus = (
+        category: CategoryModel,
+        level: number | null,
+        assignable: boolean
+    ) => {
+        setCurrentCategory(category);
         setActiveLevel(level);
-        setCategoryNodes([
-            CategoryNode.generateLevelRootNode(
-                `${t("Categories of level")} ${level}`,
-                focusNodes,
-                props.extractedCategories
-            ),
-        ]);
+        setFocusAssignable(assignable);
     };
 
-    const handleEditPercentage = (node: CategoryNode) => {
-        if (editPercentageNodes.length > 0) {
+    const focusRootCategory = () => {
+        changeFocus(rootNode!, 0, false);
+    };
+
+    const focusParentCategory = () => {
+        if (currentCategory && currentCategory.parent) {
+            if (currentCategory.parent.type === CategoryType.Root) {
+                focusRootCategory();
+            } else {
+                changeFocus(currentCategory.parent, null, false);
+            }
+        }
+    };
+
+    const focusCategory = (category_id: number) => {
+        const focusCategory = rootNode!.getCategoryModelById(category_id);
+        if (focusCategory) {
+            changeFocus(focusCategory, null, false);
+        } else {
+            focusRootCategory();
+        }
+    };
+
+    const focusLevel = (level: number) => {
+        if (level === 0) {
+            focusRootCategory();
             return;
         }
-        if (
-            categoryNodes?.length === 1 &&
-            categoryNodes[0] === node &&
-            node.parentNode
-        ) {
-            handleFocusNode(node.parentNode);
+        changeFocus(
+            CategoryModel.generateLevelRootNode(
+                `${t("Categories of level")} ${level}`,
+                rootNode!.getNodesByLevel(level)
+            ),
+            level,
+            false
+        );
+    };
+
+    const focusAssignableCategories = () => {
+        changeFocus(
+            CategoryModel.generateLevelRootNode(
+                t("Assignable categories"),
+                rootNode!.getAssignableCategoryModels()
+            ),
+            null,
+            true
+        );
+    };
+
+    const saveDistribution = () => {
+        console.log(editDistribution);
+
+        if (editDistribution === null) {
+            return;
         }
-        if (
-            activeLevel !== null &&
-            node.parentNode &&
-            activeLevel === node.category.level
-        ) {
-            handleFocusNode(node.parentNode);
-        }
-        setEditPercentageNodes(node.parentNode!.children);
-    };
 
-    const handlePercentageChange = (node: CategoryNode, value: number) => {
-        node.setPercentage(value);
-    };
-
-    const handleGoToNextPercentage = () => {
-        if (focusEditPercentageIndex + 1 === editPercentageNodes.length) {
-            handleUpdatePercentage();
-            setFocusEditPercentageIndex(0);
-        } else {
-            setFocusEditPercentageIndex(focusEditPercentageIndex + 1);
-        }
-    };
-
-    const handleFocusPercentageNode = (node: CategoryNode) => {
-        editPercentageNodes.forEach((n, i) => {
-            if (n === node) {
-                setFocusEditPercentageIndex(i);
-            }
-        });
-    };
-
-    const handleUpdatePercentage = () => {
-        const percentageSum = editPercentageNodes.reduce(
+        const percentageSum = editDistribution.children.reduce(
             (total, node) => total + (node.percentage || 0),
             0
         );
-        console.log(percentageSum);
         if (percentageSum !== 100) {
             showToast("error", t("invalid_percentage_distribution"), "");
             return;
         }
+
         if (
-            editPercentageNodes.filter(
-                (node) => node.percentage !== node.category.percentage
+            editDistribution.children.filter(
+                (node) => node.percentage !== node.percentage
             ).length > 0
         ) {
             const newDistribution: CategoryPercentage[] =
-                editPercentageNodes.map((node) => ({
-                    id: node.category.id,
+                editDistribution.children.map((node) => ({
+                    id: node.id,
                     percentage: node.percentage ? node.percentage : 0,
                 }));
-            const parentId: number | null =
-                editPercentageNodes[0].parentNode!.category.id !== 0
-                    ? editPercentageNodes[0].parentNode!.category.id
-                    : null;
-            ApiCategories.updateDistribution(parentId, newDistribution)
+            ApiCategories.updateDistribution(
+                editDistribution.id,
+                newDistribution
+            )
                 .then((response) => {
-                    editPercentageNodes.forEach((node) => {
+                    editDistribution.children.forEach((node) => {
                         node.setCategory({
-                            ...node.category,
                             percentage: node.percentage,
                         });
                     });
@@ -376,67 +293,58 @@ export const CategoryNodesProvider: React.FC<CategoryNodesProviderProps> = (
                     console.error(error);
                 });
         }
-        setEditPercentageNodes([]);
-    };
-
-    const handleClosePercentageEdit = () => {
-        editPercentageNodes.forEach((node) =>
-            node.setPercentage(node.category.percentage)
-        );
-        setEditPercentageNodes([]);
+        setEditDistribution(null);
     };
 
     useEffect(() => {
         if (props.categories) {
             if (rootNode === undefined) {
-                createCategoryNodes(props.categories, props.selectedQuota);
+                createCategoryModels(props.categories, props.selectedQuota);
             } else {
-                updateCategoryNodes(props.categories, props.selectedQuota);
+                updateCategoryModels(props.categories, props.selectedQuota);
             }
         }
     }, [props.categories, props.selectedQuota]);
 
-    const contextValue: CategoryNodesContextProps = {
-        categoryNodes,
+    const contextValue: CategoryModelsContextProps = {
+        currentCategory,
 
-        handleEditCategoryNode,
-        handleUpdateCategoryNode,
-        handleCloseCategoryNodeEdit,
-        handleDeleteCategoryNode,
-        handleInsertChildNode,
+        addCategory,
+        createCategory,
 
-        handleFocusNode,
-        handleFocusParentNode,
-        handleFocusRootNode,
-        focusAssignable,
-        handleFocusAssignableCategories,
-        handleFocusCategory,
+        editCategory,
+        openCategoryEdit,
+        closeCategoryEdit,
+
+        updateCategory,
+        deleteCategory,
+
         activeLevel,
-        handleFocusLevel,
+        focusAssignable,
+        focusRootCategory,
+        focusParentCategory,
+        focusCategory,
+        focusLevel,
+        focusAssignableCategories,
 
-        handleEditPercentage,
-        editPercentageNodes,
-        handlePercentageChange,
-        handleUpdatePercentage,
-        handleClosePercentageEdit,
-        focusEditPercentageIndex,
-        handleGoToNextPercentage,
-        handleFocusPercentageNode,
+        editDistribution,
+        setEditDistribution,
+        saveDistribution,
     };
 
     return (
-        <CategoryNodesContext.Provider value={contextValue}>
+        <CategoryModelsContext.Provider value={contextValue}>
             {props.children}
-        </CategoryNodesContext.Provider>
+        </CategoryModelsContext.Provider>
     );
 };
 
-export const useCategoryNodes = (): CategoryNodesContextProps => {
-    const context = useContext(CategoryNodesContext);
+export const useCategoryModels = (): CategoryModelsContextProps => {
+    const context = useContext(CategoryModelsContext);
 
     if (!context) {
         throw new Error(
-            "useCategoryNodes must be used within a CategoryNodesProvider"
+            "useCategoryModels must be used within a CategoryModelsProvider"
         );
     }
 

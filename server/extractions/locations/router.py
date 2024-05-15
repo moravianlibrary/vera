@@ -5,19 +5,28 @@ from sqlalchemy.orm import Session
 
 from extractions.locations import schemas, crud
 from services.database import get_db
+from extractions.permissions import CanManageLocations
 
 router = APIRouter(prefix="/locations", tags=["Locations"])
 
 
 # Create
-@router.post("/libraries", response_model=schemas.Library)
+@router.post(
+    "/libraries",
+    dependencies=[CanManageLocations],
+    response_model=schemas.Library,
+)
 def create_library(
     library: schemas.LibraryCreate, db: Session = Depends(get_db)
 ):
     return crud.create_library(library, db)
 
 
-@router.post("/storages", response_model=schemas.Storage)
+@router.post(
+    "/storages",
+    dependencies=[CanManageLocations],
+    response_model=schemas.Storage,
+)
 def create_storage_for_library(
     storage: schemas.StorageCreate,
     db: Session = Depends(get_db),
@@ -25,7 +34,11 @@ def create_storage_for_library(
     return crud.create_storage(storage, db)
 
 
-@router.post("/locations", response_model=schemas.Location)
+@router.post(
+    "/locations",
+    dependencies=[CanManageLocations],
+    response_model=schemas.Location,
+)
 def create_location_for_storage(
     location: schemas.LocationCreate,
     db: Session = Depends(get_db),
@@ -34,7 +47,11 @@ def create_location_for_storage(
 
 
 # Update
-@router.put("/libraries/{library_id}", response_model=schemas.Library)
+@router.put(
+    "/libraries/{library_id}",
+    dependencies=[CanManageLocations],
+    response_model=schemas.Library,
+)
 def update_library(
     library_id: str,
     library: schemas.LibraryCreate,
@@ -43,7 +60,11 @@ def update_library(
     return crud.update_library(library_id, library, db)
 
 
-@router.put("/storages/{storage_id}", response_model=schemas.Storage)
+@router.put(
+    "/storages/{storage_id}",
+    dependencies=[CanManageLocations],
+    response_model=schemas.Storage,
+)
 def update_storage(
     storage_id: int,
     storage: schemas.StorageCreate,
@@ -52,7 +73,11 @@ def update_storage(
     return crud.update_storage(storage_id, storage, db)
 
 
-@router.put("/locations/{location_id}", response_model=schemas.Location)
+@router.put(
+    "/locations/{location_id}",
+    dependencies=[CanManageLocations],
+    response_model=schemas.Location,
+)
 def update_location(
     location_id: int,
     location: schemas.LocationCreate,
@@ -62,7 +87,11 @@ def update_location(
 
 
 # Delete
-@router.delete("/libraries/{library_id}", response_model=schemas.Library)
+@router.delete(
+    "/libraries/{library_id}",
+    dependencies=[CanManageLocations],
+    response_model=schemas.Library,
+)
 def delete_library(library_id: str, db: Session = Depends(get_db)):
     db_library = crud.delete_library(library_id, db)
     if db_library is None:
@@ -70,7 +99,11 @@ def delete_library(library_id: str, db: Session = Depends(get_db)):
     return db_library
 
 
-@router.delete("/storages/{storage_id}", response_model=schemas.Storage)
+@router.delete(
+    "/storages/{storage_id}",
+    dependencies=[CanManageLocations],
+    response_model=schemas.Storage,
+)
 def delete_storage(storage_id: int, db: Session = Depends(get_db)):
     db_storage = crud.delete_storage(storage_id, db)
     if db_storage is None:
@@ -78,7 +111,11 @@ def delete_storage(storage_id: int, db: Session = Depends(get_db)):
     return db_storage
 
 
-@router.delete("/locations/{location_id}", response_model=schemas.Location)
+@router.delete(
+    "/locations/{location_id}",
+    dependencies=[CanManageLocations],
+    response_model=schemas.Location,
+)
 def delete_location(location_id: int, db: Session = Depends(get_db)):
     db_location = crud.delete_location(location_id, db)
     if db_location is None:

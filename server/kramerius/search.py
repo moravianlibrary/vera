@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional, Tuple, Union
 
-from kramerius.api import KrameriusApi
+from kramerius.client import KrameriusApi
 from kramerius.document import KrameriusDocument
 from kramerius.types import SolrConjuction, SolrField
 
@@ -44,7 +44,8 @@ class KrameriusSearch:
             .with_fl(fl)
         )
         numFound = self.num_found(query)
-        if numFound <= PAGINATE_PAGE_SIZE:
+        # if numFound <= PAGINATE_PAGE_SIZE:
+        if True:
             for document in self.api.search(params.build())["response"][
                 "docs"
             ]:
