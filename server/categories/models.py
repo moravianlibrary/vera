@@ -9,6 +9,7 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
 
 
@@ -29,10 +30,14 @@ class Category(Base):
 
     __table_args__ = (UniqueConstraint("name", "parent_id"),)
 
-    departments = relationship(
+    departments_ = relationship(
         "CategoryDepartments", back_populates="category"
     )
     documents = relationship("Document", back_populates="category")
+
+    @hybrid_property
+    def departments(self):
+        return [department.department_id for department in self.departments_]
 
 
 class CategoryDepartments(Base):
@@ -43,4 +48,4 @@ class CategoryDepartments(Base):
 
     __table_args__ = (PrimaryKeyConstraint("category_id", "department_id"), {})
 
-    category = relationship("Category", back_populates="departments")
+    category = relationship("Category", back_populates="departments_")
