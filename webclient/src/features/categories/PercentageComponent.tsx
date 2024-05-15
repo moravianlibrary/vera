@@ -1,60 +1,43 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 
 import { Button } from "primereact/button";
-import { InputNumber } from "primereact/inputnumber";
-import { CategoryNode } from "../../contexts/categories/CategoryNodeModel";
-import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
+import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { ActionAccessComponent } from "../../services/AccessService";
 import { ActionType } from "../../types/ActionType";
 import { UserModel } from "../../contexts/user/UserModel";
 import { useTranslation } from "react-i18next";
-import { Tooltip } from "primereact/tooltip";
+import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 
 interface CateogryPercentageProps {
-    node: CategoryNode;
+    category: CategoryModel;
 }
 
-const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
+const CategoryPercentage: React.FC<CateogryPercentageProps> = ({
+    category,
+}) => {
     const { t } = useTranslation();
 
-    const {
-        handleEditPercentage,
-        editPercentageNodes,
-        handlePercentageChange,
-        handleUpdatePercentage,
-        handleClosePercentageEdit,
-        focusEditPercentageIndex,
-        handleGoToNextPercentage,
-        handleFocusPercentageNode,
-    } = useCategoryNodes();
-
-    const containerRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<InputNumber>(null);
-
-    useEffect(() => {
-        if (
-            editPercentageNodes[focusEditPercentageIndex] === node &&
-            containerRef.current &&
-            inputRef.current
-        ) {
-            containerRef.current.scrollIntoView();
-            inputRef.current.focus();
-        }
-    }, [focusEditPercentageIndex]);
+    const { setEditDistribution } = useCategoryModels();
 
     const canEditDepartmentCategory = (user: UserModel) => {
-        return (node.category.level >= 1 &&
+        return (category.level >= 1 &&
             user.actions &&
             user.department_id &&
             user.actions.includes(ActionType.EditCategoriesDepartment) &&
-            node.category.departments.includes(user.department_id)) as boolean;
+            category.departments.includes(user.department_id)) as boolean;
+    };
+
+    const handleEditDistribution = () => {
+        if (category.parent) {
+            setEditDistribution(category.parent);
+        }
     };
 
     return (
         <div className="flex align-items-center">
             <div>
                 <span className="font-bold">[</span>
-                <span>{node.percentage}%</span>
+                <span>{category.percentage}%</span>
                 <span className="font-bold">]</span>
             </div>
             <ActionAccessComponent
@@ -65,7 +48,7 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({ node }) => {
                     className="p-1"
                     text
                     severity="secondary"
-                    onClick={() => handleEditPercentage(node)}
+                    onClick={handleEditDistribution}
                     tooltip={t("Edit distribution")}
                     tooltipOptions={{ position: "right", showDelay: 500 }}
                 >

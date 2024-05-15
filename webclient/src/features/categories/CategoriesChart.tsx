@@ -1,36 +1,39 @@
 import React, { useEffect, useRef, useState } from "react";
 import { OrganizationChart } from "primereact/organizationchart";
-import { NodeType } from "../../contexts/categories/CategoryNodeType";
-import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
+import { CategoryType } from "../../contexts/categories/CategoryType";
+import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import CategoriesChartRoot, {
     CategoriesChartLevelRoot,
 } from "./CategoriesChartRoot";
 import CategoriesChartNode from "./CategoriesChartNode";
 import CategoriesChartUpdate from "./CategoriesChartUpdate";
-import { CategoryNode } from "../../contexts/categories/CategoryNodeModel";
+import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { Button } from "primereact/button";
+import { useCategories } from "../../contexts/categories/CategoriesContext";
 
 interface CategoriesChartProps {}
 
 const SCROLL_BY_PROPORTION = 0.8;
 
 const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
-    const { categoryNodes, handleFocusParentNode } = useCategoryNodes();
+    const { currentCategory, focusParentCategory, editCategory } =
+        useCategoryModels();
+    const { categories } = useCategories();
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const getCategoryNodeComponent = (node: CategoryNode) => {
-        if (!node) {
+    const getCategoryModelComponent = (category: CategoryModel) => {
+        if (!category) {
             return;
-        } else if (node.type === NodeType.Root) {
-            return <CategoriesChartRoot node={node} />;
-        } else if (node.type === NodeType.LevelRoot) {
-            return <CategoriesChartLevelRoot node={node} />;
-        } else if (node.type === NodeType.Category) {
-            return <CategoriesChartNode node={node} />;
-        } else if (node.type === NodeType.CreateCategory) {
-            return <CategoriesChartUpdate node={node} />;
-        } else if (node.type === NodeType.UpdateCategory) {
-            return <CategoriesChartUpdate node={node} />;
+        } else if (category.type === CategoryType.Root) {
+            return <CategoriesChartRoot category={category} />;
+        } else if (category.type === CategoryType.LevelRoot) {
+            return <CategoriesChartLevelRoot category={category} />;
+        } else if (category === editCategory) {
+            return <CategoriesChartUpdate category={category} />;
+        } else if (category.type === CategoryType.Category) {
+            return <CategoriesChartNode category={category} />;
+        } else if (category.type === CategoryType.NewCategory) {
+            return <CategoriesChartUpdate category={category} />;
         }
     };
 
@@ -62,7 +65,7 @@ const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
         });
     };
 
-    if (!categoryNodes) {
+    if (!currentCategory) {
         return <div></div>;
     }
 
@@ -71,16 +74,16 @@ const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
             <Button
                 className="relative mb-2"
                 style={{ left: "50%", transform: "translateX(-50%)" }}
-                visible={!!categoryNodes[0].parentNode}
+                visible={!!currentCategory.parent}
                 size="large"
                 rounded
                 icon="pi pi-caret-up"
-                onClick={() => handleFocusParentNode()}
+                onClick={() => focusParentCategory()}
             />
             <div className="card overflow-scroll overflow-y-auto">
                 <OrganizationChart
-                    value={categoryNodes}
-                    nodeTemplate={getCategoryNodeComponent}
+                    value={[currentCategory]}
+                    nodeTemplate={getCategoryModelComponent}
                 />
             </div>
         </div>

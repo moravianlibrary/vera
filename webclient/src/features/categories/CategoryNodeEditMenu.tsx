@@ -2,34 +2,34 @@ import React, { useRef } from "react";
 
 import { Button } from "primereact/button";
 import { Menu } from "primereact/menu";
-import { CategoryNode } from "../../contexts/categories/CategoryNodeModel";
+import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { MenuItem } from "primereact/menuitem";
-import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
-import { NodeType } from "../../contexts/categories/CategoryNodeType";
+import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
+import { CategoryType } from "../../contexts/categories/CategoryType";
 import { ActionAccessComponent } from "../../services/AccessService";
 import { ActionType } from "../../types/ActionType";
 import { UserModel } from "../../contexts/user/UserModel";
 import { useUser } from "../../contexts/user/UserContext";
 import { useTranslation } from "react-i18next";
 
-interface CategoryNodeEditMenuProps {
-    node: CategoryNode;
+interface CategoryEditMenuProps {
+    node: CategoryModel;
     allowDistributionEdit?: boolean;
 }
 
 const MAX_CATEGORY_LEVEL = 3;
 
-const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({
+const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
     node,
     allowDistributionEdit,
 }) => {
     const { t } = useTranslation();
     const {
-        handleEditCategoryNode: editCategoryNode,
-        handleInsertChildNode: insertChildNode,
-        handleDeleteCategoryNode: deleteCategoryNode,
+        addCategory,
+        openCategoryEdit,
+        deleteCategory,
         setEditDistribution,
-    } = useCategoryNodes();
+    } = useCategoryModels();
     const { user } = useUser();
     const menuRef = useRef(null);
 
@@ -39,18 +39,18 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({
         }
     };
 
-    const handleEditCategoryNode = (node: CategoryNode) => {
-        editCategoryNode(node);
+    const handleEditCategoryModel = (node: CategoryModel) => {
+        openCategoryEdit(node);
         handleToggleMenu({} as React.MouseEvent<HTMLButtonElement>);
     };
 
-    const handleInsertChildNode = (node: CategoryNode) => {
-        insertChildNode(node);
+    const handleInsertChildNode = (node: CategoryModel) => {
+        addCategory(node);
         handleToggleMenu({} as React.MouseEvent<HTMLButtonElement>);
     };
 
-    const handleDeleteCategoryNode = (node: CategoryNode) => {
-        deleteCategoryNode(node);
+    const handleDeleteCategoryModel = (node: CategoryModel) => {
+        deleteCategory(node);
         handleToggleMenu({} as React.MouseEvent<HTMLButtonElement>);
     };
 
@@ -59,7 +59,7 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({
         handleToggleMenu({} as React.MouseEvent<HTMLButtonElement>);
     };
 
-    const editDistributionButton = (node: CategoryNode) => {
+    const editDistributionButton = (node: CategoryModel) => {
         return (
             <Button
                 className="p-2"
@@ -72,7 +72,7 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({
         );
     };
 
-    const addChildCategoryButton = (node: CategoryNode) => {
+    const addChildCategoryButton = (node: CategoryModel) => {
         return (
             <Button
                 className="p-2"
@@ -85,7 +85,7 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({
         );
     };
 
-    const editCategoryButton = (node: CategoryNode) => {
+    const editCategoryButton = (node: CategoryModel) => {
         return (
             <Button
                 className="p-2"
@@ -93,12 +93,12 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({
                 icon="pi pi-pencil"
                 text
                 severity="secondary"
-                onClick={() => handleEditCategoryNode(node)}
+                onClick={() => handleEditCategoryModel(node)}
             />
         );
     };
 
-    const deleteCategoryButton = (node: CategoryNode) => {
+    const deleteCategoryButton = (node: CategoryModel) => {
         return (
             <Button
                 className="p-2"
@@ -106,7 +106,7 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({
                 icon="pi pi-trash"
                 text
                 severity="secondary"
-                onClick={() => handleDeleteCategoryNode(node)}
+                onClick={() => handleDeleteCategoryModel(node)}
             />
         );
     };
@@ -157,32 +157,30 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({
     ];
 
     const getMenuItems = () => {
-        if (node.type === NodeType.Root) {
-            return allowDistributionEdit
+        const editDistribution =
+            allowDistributionEdit && node.children.length > 0;
+        if (node.type === CategoryType.Root) {
+            return editDistribution
                 ? editDistributionItems.concat(rootItems)
                 : rootItems;
-        } else if (
-            node.category.assignable ||
-            node.category.level === MAX_CATEGORY_LEVEL
-        ) {
+        } else if (node.assignable || node.level === MAX_CATEGORY_LEVEL) {
             return leafItems;
         } else if (user.actions!.includes(ActionType.EditCategoriesAll)) {
-            return allowDistributionEdit
+            return editDistribution
                 ? editDistributionItems.concat(items)
                 : items;
         } else if (
             user.actions!.includes(ActionType.EditCategoriesDepartment)
         ) {
-            if (node.category.level >= 1) {
-                return allowDistributionEdit
+            if (node.level >= 1) {
+                return editDistribution
                     ? editDistributionItems.concat(items)
                     : items;
             } else {
-                return allowDistributionEdit
+                return editDistribution
                     ? editDistributionItems.concat(rootItems)
                     : rootItems;
             }
-            return node.category.level >= 1 ? items : rootItems;
         } else {
             return [];
         }
@@ -192,8 +190,15 @@ const CategoryNodeEditMenu: React.FC<CategoryNodeEditMenuProps> = ({
         return (user.actions &&
             user.department_id &&
             user.actions.includes(ActionType.EditCategoriesDepartment) &&
-            node.category.departments.includes(user.department_id)) as boolean;
+            node.departments.includes(user.department_id)) as boolean;
     };
+
+    if (
+        node.type !== CategoryType.Root &&
+        node.type !== CategoryType.Category
+    ) {
+        return null;
+    }
 
     return (
         <div className="flex">

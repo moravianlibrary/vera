@@ -3,10 +3,10 @@ import { Divider } from "primereact/divider";
 import { SelectButton } from "primereact/selectbutton";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
+import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { useCategories } from "../../contexts/categories/CategoriesContext";
 import CategoryPicker from "../../components/pickers/CategoryPicker";
-import { NodeType } from "../../contexts/categories/CategoryNodeType";
+import { CategoryType } from "../../contexts/categories/CategoryType";
 import ExtractionPicker from "../../components/pickers/ExtractionPicker";
 import { Toolbar } from "primereact/toolbar";
 
@@ -68,14 +68,14 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
 }) => {
     const { t } = useTranslation();
     const {
-        categoryNodes,
-        handleFocusRootNode,
+        currentCategory,
         activeLevel,
-        handleFocusLevel,
-        handleFocusCategory,
         focusAssignable,
-        handleFocusAssignableCategories,
-    } = useCategoryNodes();
+        focusRootCategory,
+        focusCategory,
+        focusLevel,
+        focusAssignableCategories,
+    } = useCategoryModels();
     const { extractionId, setExtractionId } = useCategories();
 
     const levelOptions = [0, 1, 2, 3];
@@ -85,21 +85,21 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
     );
 
     useEffect(() => {
-        if (categoryNodes && categoryNodes.length > 0) {
-            const node = categoryNodes[0];
+        if (currentCategory) {
             setSelectedCategory(
-                node.type === NodeType.Root || node.type === NodeType.LevelRoot
+                currentCategory.type === CategoryType.Root ||
+                    currentCategory.type === CategoryType.LevelRoot
                     ? null
-                    : node.category.id
+                    : currentCategory.id
             );
         }
-    }, [categoryNodes]);
+    }, [currentCategory]);
 
     const handleFocusCategory_ = (category_id: number | null) => {
         if (category_id) {
-            handleFocusCategory(category_id);
+            focusCategory(category_id);
         } else {
-            handleFocusRootNode();
+            focusRootCategory();
         }
     };
 
@@ -115,7 +115,7 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
                 icon="pi pi-eye"
                 text
                 label={t("All categories")}
-                onClick={() => handleFocusRootNode()}
+                onClick={() => focusRootCategory()}
             />
             {/* <Divider layout="vertical" /> */}
             <div className="flex gap-1 my-2 mx-1 align-items-center">
@@ -125,7 +125,7 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
                 <SelectButton
                     options={levelOptions}
                     value={activeLevel}
-                    onChange={(e) => handleFocusLevel(e.value)}
+                    onChange={(e) => focusLevel(e.value)}
                 />
             </div>
             {/* <Divider layout="vertical" /> */}
@@ -151,10 +151,10 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
                 text={!focusAssignable}
                 icon={focusAssignable ? "pi pi-star-fill" : "pi pi-star"}
                 label={t("Assignable categories")}
-                onClick={() => handleFocusAssignableCategories()}
+                onClick={() => focusAssignableCategories()}
             />
             {/* <Divider layout="vertical" /> */}
-            <div className="flex gap-1 my-2 mx-1 align-items-center">
+            {/* <div className="flex gap-1 my-2 mx-1 align-items-center">
                 <span className="p-button-label text-800">
                     {t("Show extraction")}:
                 </span>
@@ -162,7 +162,7 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
                     extraction_id={extractionId}
                     callback={setExtractionId}
                 />
-            </div>
+            </div> */}
         </div>
     );
 };
@@ -225,7 +225,7 @@ const SelectCategorySection: React.FC<SelectCategorySectionProps> = ({
             value: CategorySection.Categories,
         },
         {
-            label: t("Terms"),
+            label: t("Intentions"),
             value: CategorySection.Terms,
         },
     ];
@@ -237,7 +237,7 @@ const SelectCategorySection: React.FC<SelectCategorySectionProps> = ({
     };
 
     return (
-        <div className="flex align-items-center">
+        <div className="flex align-items-center mr-2">
             <SelectButton
                 value={section}
                 onChange={handleSectionChange}

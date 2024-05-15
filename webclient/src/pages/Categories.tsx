@@ -13,7 +13,7 @@ import {
     DepartmentsProvider,
     useDepartments,
 } from "../contexts/departments/DepartmentsContext";
-import { CategoryNodesProvider } from "../contexts/categories/CategoryNodesContext";
+import { CategoryModelsProvider } from "../contexts/categories/CategoryNodesContext";
 import CategoriesChart from "../features/categories/CategoriesChart";
 import {
     QuotasProvider,
@@ -21,7 +21,7 @@ import {
 } from "../contexts/categories/QuotasContext";
 import { useSearchParams } from "react-router-dom";
 import CategoriesTable from "../features/categories/CategoryTable";
-import EditCategoryMenu from "../contexts/categories/EditCategoryMenu";
+import EditCategoryMenu from "../features/categories/EditCategoryMenu";
 import EditDistributionMenu from "../features/categories/EditDistributionMenu";
 
 interface CategoriesProps {}
@@ -67,7 +67,7 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
     }, [searchParams, setExtractionId]);
 
     return (
-        <CategoryNodesProvider
+        <CategoryModelsProvider
             categories={categories}
             selectedQuota={selectedQuota}
             extractedCategories={
@@ -80,7 +80,6 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
                         categoryViewType={viewType}
                         onCategoryViewTypeChange={setViewType}
                     />
-                    <EditCategoryMenu />
                     <EditDistributionMenu />
                 </div>
                 <div>
@@ -92,7 +91,7 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
                     )}
                 </div>
             </div>
-        </CategoryNodesProvider>
+        </CategoryModelsProvider>
     );
 };
 

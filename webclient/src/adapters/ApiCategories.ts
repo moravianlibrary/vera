@@ -26,7 +26,7 @@ interface Category extends CreateCategory {
     extracted_pages_count?: number;
     extracted_documents_count?: number;
 
-    children: Category[];
+    sub_categories: Category[];
 }
 
 interface AssignableCategory {
@@ -78,12 +78,13 @@ namespace ApiCategories {
         return axiosInstance.get<AssignableCategory>(`/categories/descriptors/${categoryId}`, { headers: authHeader() });
     }
 
-    export function createCategory(category: CreateCategory) {
-        return axiosInstance.post<Category>("/categories/category", category, { headers: authHeader() });
+    export function createCategory(parentId: number | null, category: CreateCategory) {
+        const path = parentId ? `/categories/category/${parentId}` : "/categories/category";
+        return axiosInstance.post<Category>(path, category, { headers: authHeader() });
     }
 
-    export function updateCategory(category: Category) {
-        return axiosInstance.put<Category>(`/categories/category/${category.id}`, category, { headers: authHeader() });
+    export function updateCategory(categoryId: number, category: CreateCategory) {
+        return axiosInstance.put<Category>(`/categories/category/${categoryId}`, category, { headers: authHeader() });
     }
 
     export function deleteCategory(id: number) {

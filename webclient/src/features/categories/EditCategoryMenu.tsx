@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import { useTranslation } from "react-i18next";
-import { useCategoryNodes } from "./CategoryNodesContext";
+import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Checkbox } from "primereact/checkbox";
 import { Department } from "../../adapters/ApiDepartments";
-import { useDepartments } from "../departments/DepartmentsContext";
+import { useDepartments } from "../../contexts/departments/DepartmentsContext";
 import { MultiSelect } from "primereact/multiselect";
 import { Category } from "../../adapters/ApiCategories";
+import LabeledComponent from "../../components/LabeledComponent";
+import { Button } from "primereact/button";
+import { CategoryModel } from "../../contexts/categories/CategoryModel";
+import { CategoryType } from "../../contexts/categories/CategoryType";
 
 interface EditCategoryMenuProps {}
 
 const EditCategoryMenu: React.FC<EditCategoryMenuProps> = () => {
     const { t } = useTranslation();
-    const { editCategory, setEditCategory } = useCategoryNodes();
+    const { editCategory, closeCategoryEdit } = useCategoryModels();
 
     const [visible, setVisible] = useState(false);
 
@@ -22,41 +26,27 @@ const EditCategoryMenu: React.FC<EditCategoryMenuProps> = () => {
         setVisible(editCategory !== null);
     }, [editCategory]);
 
-    const handleCategory = (category: Category) => {
-        console.log(category);
-    };
-
     return (
         <Sidebar
             visible={visible}
-            onHide={() => setVisible(false)}
+            onHide={() => closeCategoryEdit()}
             position="bottom"
             className="h-min"
         >
-            {editCategory && (
-                <CategoryForm
-                    category={editCategory}
-                    onSave={handleCategory}
-                    onDelete={handleCategory}
-                />
-            )}
+            {editCategory && <CategoryForm category={editCategory} />}
         </Sidebar>
     );
 };
 
 interface CategoryFormProps {
-    category: Category;
-    onSave: (category: Category) => void;
-    onDelete: (category: Category) => void;
+    category: CategoryModel;
 }
 
-const CategoryForm: React.FC<CategoryFormProps> = ({
-    category,
-    onSave,
-    onDelete,
-}) => {
+const CategoryForm: React.FC<CategoryFormProps> = ({ category }) => {
     const { t } = useTranslation();
     const { departments: departmentsOptions } = useDepartments();
+    const { closeCategoryEdit, createCategory, updateCategory } =
+        useCategoryModels();
 
     const [name, setName] = useState<string>(category ? category.name : "");
     const [description, setDescription] = useState<string>(
@@ -70,6 +60,22 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             (d) => d.id && category.departments.includes(d.id)
         )
     );
+
+    const handleUpdate = () => {
+        const categoryBody = {
+            name,
+            description,
+            assignable,
+            departments: departments.map((d) => d.id!),
+            parent_id: category.parent_id,
+            disabled: category.disabled,
+        };
+        if (category.type === CategoryType.NewCategory) {
+            createCategory(categoryBody);
+        } else {
+            updateCategory(categoryBody);
+        }
+    };
 
     return (
         <div className="flex flex-column gap-2">
@@ -100,35 +106,36 @@ const CategoryForm: React.FC<CategoryFormProps> = ({
             {departmentsOptions &&
                 departmentsOptions.length > 0 &&
                 category.level === 0 && (
-                    <div className="flex flex-column gap-1">
-                        {/* <span className="text-left">{t("Predecessors departments:")}</span>
-                    <div className="card flex justify-content-left">
-                        {node.predecessors_departments.map(d_id => (
-                            <Chip key={d_id} label={departmentsOptions.find(d => d_id === d.id)?.name}/>
-                        ))}
-                    </div> */}
-                        {/* <Tooltip target=".use-category-departments"  /> */}
-                        <span
-                            className="text-left use-category-departments"
-                            data-pr-tooltip={t(
-                                "This setting is propagated downwards"
-                            )}
-                        >
-                            {t("use_category_departments")}:
-                        </span>
-                        <div className="card flex justify-content-center">
-                            <MultiSelect
-                                placeholder={t("select_departments")}
-                                value={departments}
-                                onChange={(e) => setDepartments(e.value)}
-                                options={departmentsOptions}
-                                optionLabel="name"
-                                className="w-full md:w-20rem"
-                                display="chip"
-                            />
-                        </div>
-                    </div>
+                    <LabeledComponent label={t("use_category_departments")}>
+                        <MultiSelect
+                            placeholder={t("select_departments")}
+                            value={departments}
+                            onChange={(e) => setDepartments(e.value)}
+                            options={departmentsOptions}
+                            optionLabel="name"
+                            className="w-full md:w-20rem"
+                            display="chip"
+                        />
+                    </LabeledComponent>
                 )}
+            <div className="flex gap-4">
+                <Button
+                    label={t("Save")}
+                    icon="pi pi-save"
+                    outlined
+                    severity="success"
+                    onClick={handleUpdate}
+                />
+                <Button
+                    label={t("Cancel")}
+                    icon="pi pi-times"
+                    outlined
+                    severity="danger"
+                    onClick={() => {
+                        closeCategoryEdit();
+                    }}
+                />
+            </div>
         </div>
     );
 };

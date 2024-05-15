@@ -40,13 +40,13 @@ def create_category(
 def update_category(
     category: schemas.CategoryCreate, category_id: int, db: Session
 ):
-    if not has_unique_name(category, category_id, db):
-        raise UniqueCategoryNameViolationException
     parent_id = crud.get_category(category_id, db).parent_id
-    if category.parent_id is None and parent_id is not None:
-        raise Exception("Not implemented change from child to root category")
-    elif category.parent_id is not None and parent_id is None:
-        raise Exception("Not implemented change from root to child category")
+    if not has_unique_name(category, parent_id, db, category_id):
+        raise UniqueCategoryNameViolationException
+    # if category.parent_id is None and parent_id is not None:
+    #     raise Exception("Not implemented change from child to root category")
+    # elif category.parent_id is not None and parent_id is None:
+    #     raise Exception("Not implemented change from root to child category")
     return crud.update_category(category_id, category, db)
 
 

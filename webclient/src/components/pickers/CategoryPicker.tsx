@@ -42,7 +42,7 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
             const categoryIds: number[] = [];
             const traverseCategories = (category: Category) => {
                 categoryIds.push(category.id);
-                category.children.forEach(traverseCategories);
+                category.sub_categories.forEach(traverseCategories);
             };
             traverseCategories(
                 findCategoryById(categories ? categories : [], categoryId)
@@ -96,7 +96,7 @@ function buildCategoryTree(categories: Category[]) {
             key: category.id,
             label: category.name,
             data: category.name,
-            children: buildCategoryTree(category.children),
+            children: buildCategoryTree(category.sub_categories),
         };
     });
 }
@@ -106,7 +106,7 @@ function findCategoryById(categories: Category[], id: number) {
         if (category.id === id) {
             return category;
         }
-        const foundInChildren = findCategoryById(category.children, id);
+        const foundInChildren = findCategoryById(category.sub_categories, id);
         if (foundInChildren) {
             return foundInChildren;
         }

@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import { useTranslation } from "react-i18next";
-import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
-import { CategoryNode } from "../../contexts/categories/CategoryNodeModel";
+import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import LabeledComponent from "../../components/LabeledComponent";
 import { InputNumber } from "primereact/inputnumber";
+import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
+import { Button } from "primereact/button";
 
 interface EditDistributionMenuProps {}
 
 const EditDistributionMenu: React.FC<EditDistributionMenuProps> = () => {
     const { t } = useTranslation();
-    const { editDistribution, setEditDistribution } = useCategoryNodes();
+    const { editDistribution, setEditDistribution } = useCategoryModels();
 
     const [visible, setVisible] = useState(false);
 
@@ -36,7 +37,7 @@ const EditDistributionMenu: React.FC<EditDistributionMenuProps> = () => {
 };
 
 interface DistributionFormProps {
-    category: CategoryNode;
+    category: CategoryModel;
     onHide: () => void;
 }
 
@@ -45,20 +46,20 @@ const DistributionForm: React.FC<DistributionFormProps> = ({
     onHide,
 }) => {
     const { t } = useTranslation();
-    const { saveDistribution } = useCategoryNodes();
+    const { saveDistribution } = useCategoryModels();
 
     return (
         <div className="flex flex-column gap-2">
-            <LabeledComponent label={t("distribution.category.name")}>
-                <span>{category.category.name}</span>
+            <LabeledComponent label={t("Change distribution for category")}>
+                <span className="font-bold">{category.name}</span>
             </LabeledComponent>
             {category.children.map((child, index) => (
-                <LabeledComponent key={index} label={child.category.name}>
+                <LabeledComponent key={index} label={child.name}>
                     <div className="p-inputgroup">
                         <InputNumber
                             autoFocus={index === 0}
                             size={3}
-                            value={child.category.percentage}
+                            value={child.percentage}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") {
                                     child.setPercentage(
@@ -83,6 +84,26 @@ const DistributionForm: React.FC<DistributionFormProps> = ({
                     </div>
                 </LabeledComponent>
             ))}
+            <div className="flex gap-4">
+                <Button
+                    label={t("Save")}
+                    icon="pi pi-save"
+                    outlined
+                    severity="success"
+                    onClick={() => {
+                        saveDistribution();
+                    }}
+                />
+                <Button
+                    label={t("Cancel")}
+                    icon="pi pi-times"
+                    outlined
+                    severity="danger"
+                    onClick={() => {
+                        saveDistribution();
+                    }}
+                />
+            </div>
         </div>
     );
 };

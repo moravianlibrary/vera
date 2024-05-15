@@ -22,7 +22,7 @@ class Category(CategoryCreate):
 
 
 class CategoryNode(Category):
-    children: List[SerializeAsAny[Category]]
+    sub_categories: List[SerializeAsAny[Category]]
     count_pages: int
     count_pages_extractable: int
     count_documents: int

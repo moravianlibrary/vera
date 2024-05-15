@@ -1,37 +1,35 @@
-import React from "react";
-import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
+import React, { useEffect, useState } from "react";
+import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
-import { TreeTable } from "primereact/treetable";
-import { ColumnGroup } from "primereact/columngroup";
-import EditButton from "../../components/buttons/EditButton";
-import { Row } from "primereact/row";
-import DeleteButton from "../../components/buttons/DeleteButton";
-import { CategoryNode } from "../../contexts/categories/CategoryNodeModel";
-import { NodeType } from "../../contexts/categories/CategoryNodeType";
-import { Button } from "primereact/button";
+import { TreeTable, TreeTableExpandedKeysType } from "primereact/treetable";
 import CategoryNodeEditMenu from "./CategoryNodeEditMenu";
+import EditCategoryMenu from "./EditCategoryMenu";
+import { CategoryModel } from "../../contexts/categories/CategoryModel";
+import { Button } from "primereact/button";
+import { Link } from "react-router-dom";
+import { CategoryType } from "../../contexts/categories/CategoryType";
 
 interface CategoriesTableProps {}
 
 const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
     const { t } = useTranslation();
-    const { categoryNodes, setEditCategory, handleDeleteCategoryNode } =
-        useCategoryNodes();
+    const { currentCategory } = useCategoryModels();
 
     return (
         <div>
             <TreeTable
                 className="documents-table"
-                value={categoryNodes}
+                value={currentCategory ? ([currentCategory] as any) : []}
                 scrollable
                 scrollHeight="calc(100vh - 170px)"
                 columnResizeMode="expand"
+                expandedKeys={[true] as any}
             >
                 <Column
                     field="category.name"
                     header={t("Category name")}
-                    body={(node) => node.category.name}
+                    body={(node) => node.name}
                     expander
                 />
                 <Column
@@ -64,7 +62,7 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                 />
                 <Column
                     field="count_pages"
-                    header={t("Missing pages")}
+                    header={t("Missing pages to fulfill intention")}
                     body={(node) => (
                         <DangerCountBody
                             count={Math.max(node.quota - node.count_pages, 0)}
@@ -83,14 +81,36 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                 <Column
                     field="actions"
                     header={t("Actions")}
-                    body={(node) => (
-                        <CategoryNodeEditMenu
-                            node={node}
-                            allowDistributionEdit
-                        />
-                    )}
+                    body={(node) => <ActionButtons node={node} />}
                 />
             </TreeTable>
+            <EditCategoryMenu />
+        </div>
+    );
+};
+
+interface ActionButtonsProps {
+    node: CategoryModel;
+}
+
+const ActionButtons: React.FC<ActionButtonsProps> = ({ node }) => {
+    const { t } = useTranslation();
+
+    return (
+        <div className="flex gap-2 align-items-center">
+            <CategoryNodeEditMenu node={node} allowDistributionEdit />
+            {node.type === CategoryType.Category && (
+                <Link to={`/documents?categoryId=${node.id}`}>
+                    <Button
+                        className="p-0 text-xs"
+                        icon="pi pi-external-link"
+                        severity="secondary"
+                        text
+                        tooltip={t("Show in documents")}
+                        tooltipOptions={{ position: "right", showDelay: 500 }}
+                    />
+                </Link>
+            )}
         </div>
     );
 };
@@ -101,31 +121,6 @@ interface DangerCountBodyProps {
 
 const DangerCountBody: React.FC<DangerCountBodyProps> = ({ count }) => {
     return <span className={count > 0 ? "text-red-600" : ""}>{count}</span>;
-};
-
-interface ActionButtonsProps {
-    category: CategoryNode;
-    onEditCategory: (category: CategoryNode) => void;
-    onDeleteCategory: (category: CategoryNode) => void;
-}
-
-const ActionButtons: React.FC<ActionButtonsProps> = ({
-    category,
-    onEditCategory,
-    onDeleteCategory,
-}) => {
-    if (category.type === NodeType.Root) {
-        return <Button icon="pi pi-plus" text rounded />;
-    }
-
-    return (
-        <div>
-            <Button icon="pi pi-calculator" text rounded />
-            <EditButton onEdit={() => onEditCategory(category)} />
-            <Button icon="pi pi-plus" text rounded />
-            <DeleteButton onDelete={() => onDeleteCategory(category)} />
-        </div>
-    );
 };
 
 export default CategoriesTable;
