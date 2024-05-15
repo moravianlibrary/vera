@@ -107,6 +107,7 @@ def filter_by_query(query_base: Query, query: schemas.DocumentsQuery):
         return filter_by_search_phrase(query.search_phrase, query_base)
     if query.search_group:
         return filter_by_group(query.search_group, query_base)
+    return query_base
 
 
 def filter_by_id_list(id_list: List[int], query_base: Query):

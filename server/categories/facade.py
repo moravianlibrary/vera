@@ -124,7 +124,7 @@ def get_department_categories_descriptors(
     if department_id is None:
         return []
     if assignable:
-        return get_department_assignable_categories(db)
+        return get_department_assignable_categories(department_id, db)
     return [
         generate_category_descriptor(category.id, db)
         for category in crud.get_department_root_categories(department_id, db)

@@ -69,6 +69,7 @@ const AssignableCategoryPicker: React.FC<AssignableCategoryPickerProps> = ({
     callback,
 }) => {
     const { categories } = useAssignableCategories();
+    console.log(categories);
 
     const categoriesOptions = buildAssignableCategoriesOptionsTree(categories);
     const selected = categories.find((c) => c.id === category_id);
