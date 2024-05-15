@@ -14,14 +14,13 @@ RUN pip install --no-cache-dir -r requirements_server.txt
 # Copy the entire project directory into the container
 COPY alembic.ini /app/alembic.ini
 COPY alembic /app/alembic
-COPY auth /app/auth
 COPY catalogs /app/catalogs
 COPY categories /app/categories
-COPY departments /app/departments
 COPY documents /app/documents
 COPY extractions /app/extractions
 COPY predictions /app/predictions
-COPY roles /app/roles
+COPY routing /app/routing
+COPY security /app/security
 COPY services /app/services
 COPY tasks /app/tasks
 COPY celery_worker.py /app

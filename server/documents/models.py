@@ -9,6 +9,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
+from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -60,6 +61,17 @@ class Document(Base):
 
     extraction_id = Column(
         Integer, ForeignKey("digitization_extractions.id"), index=True
+    )
+
+    category = relationship("Category", back_populates="documents")
+    extraction = relationship(
+        "DigitizationExtraction", back_populates="documents"
+    )
+    task_documents = relationship(
+        "TaskDocument",
+        primaryjoin="TaskDocument.document_id == Document.id",
+        back_populates="document",
+        foreign_keys="TaskDocument.document_id",
     )
 
     @hybrid_property

@@ -1,68 +1,40 @@
 import React, { useEffect, useRef, useState } from "react";
 import { OrganizationChart } from "primereact/organizationchart";
-import { NodeType } from "../../contexts/categories/CategoryNodeType";
-import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
+import { CategoryType } from "../../contexts/categories/CategoryType";
+import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import CategoriesChartRoot, {
     CategoriesChartLevelRoot,
 } from "./CategoriesChartRoot";
 import CategoriesChartNode from "./CategoriesChartNode";
 import CategoriesChartUpdate from "./CategoriesChartUpdate";
-import { CategoryNode } from "../../contexts/categories/CategoryNodeModel";
+import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { Button } from "primereact/button";
+import { useCategories } from "../../contexts/categories/CategoriesContext";
 
 interface CategoriesChartProps {}
-
-interface ScrollBy {
-    left: number;
-    top: number;
-}
 
 const SCROLL_BY_PROPORTION = 0.8;
 
 const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
-    const { categoryNodes, handleFocusParentNode } = useCategoryNodes();
+    const { currentCategory, focusParentCategory, editCategory } =
+        useCategoryModels();
+    const { categories } = useCategories();
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const [isMouseDown, setIsMouseDown] = useState(false);
-
-    // const [scrollBy, setScrollBy] = useState<ScrollBy>({
-    //     left: 0,
-    //     top: 0,
-    // });
-
-    const getCategoryNodeComponent = (node: CategoryNode) => {
-        if (!node) {
+    const getCategoryModelComponent = (category: CategoryModel) => {
+        if (!category) {
             return;
-        } else if (node.type === NodeType.Root) {
-            return <CategoriesChartRoot node={node} />;
-        } else if (node.type === NodeType.LevelRoot) {
-            return <CategoriesChartLevelRoot node={node} />;
-        } else if (node.type === NodeType.Category) {
-            return <CategoriesChartNode node={node} />;
-        } else if (node.type === NodeType.CreateCategory) {
-            return <CategoriesChartUpdate node={node} />;
-        } else if (node.type === NodeType.UpdateCategory) {
-            return <CategoriesChartUpdate node={node} />;
+        } else if (category.type === CategoryType.Root) {
+            return <CategoriesChartRoot category={category} />;
+        } else if (category.type === CategoryType.LevelRoot) {
+            return <CategoriesChartLevelRoot category={category} />;
+        } else if (category === editCategory) {
+            return <CategoriesChartUpdate category={category} />;
+        } else if (category.type === CategoryType.Category) {
+            return <CategoriesChartNode category={category} />;
+        } else if (category.type === CategoryType.NewCategory) {
+            return <CategoriesChartUpdate category={category} />;
         }
-    };
-
-    const handleMouseMove = (e) => {
-        if (!isMouseDown) {
-            return;
-        }
-        console.log(e.pageX, e.pageY);
-        const container = containerRef.current;
-        if (!container) {
-            return;
-        }
-        const { scrollLeft, scrollWidth } = container;
-        const x = e.pageX - container.offsetLeft;
-        container.scrollBy({
-            left: x - scrollLeft - container.clientWidth * 0.5,
-            top: 0,
-            behavior: "smooth",
-        });
-        // setScrollBy(newScrollBy);
     };
 
     const handleScrollLeft = (e) => {
@@ -93,108 +65,27 @@ const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
         });
     };
 
-    // useEffect(() => {
-    //     const container = containerRef.current;
-
-    //     if (!container) {
-    //         return;
-    //     }
-
-    //     container.scrollBy({
-    //         left: scrollBy.left,
-    //         top: scrollBy.top,
-    //         behavior: "smooth",
-    //     });
-    //     const intervalId = setInterval(() => {
-    //         console.log(`scrollBy: ${scrollBy.left}, ${scrollBy.top}`);
-    //         container.scrollBy({
-    //             left: scrollBy.left,
-    //             top: scrollBy.top,
-    //             behavior: "smooth",
-    //         });
-    //     }, 200);
-
-    //     return () => {
-    //         clearInterval(intervalId);
-    //     };
-    // }, [scrollBy]);
-
-    // useEffect(() => {
-    //     const container = containerRef.current;
-
-    //     if (!container) {
-    //         return;
-    //     }
-
-    //     const handleMouseMove = (event) => {
-    //         const { clientX, clientY } = event;
-    //         const { left, top, width, height } =
-    //             container.getBoundingClientRect();
-
-    //         // Calculate the distance from the mouse position to the edges of the container
-    //         const distanceFromLeft = clientX - left;
-    //         const distanceFromRight = width - distanceFromLeft;
-    //         const distanceFromTop = clientY - top;
-    //         const distanceFromBottom = height - distanceFromTop;
-
-    //         // Adjust scrollLeft and scrollTop based on mouse position
-    //         if (distanceFromLeft < 50) {
-    //             setScrollBy({ left: -width / 2, top: 0 });
-    //         } else if (distanceFromRight < 50) {
-    //             setScrollBy({ left: width / 2, top: 0 });
-    //         } else {
-    //             setScrollBy({ left: 0, top: 0 });
-    //         }
-
-    //         if (distanceFromTop < 50) {
-    //         } else if (distanceFromBottom < 50) {
-    //         }
-    //     };
-
-    //     container.addEventListener("mousemove", handleMouseMove);
-
-    //     return () => {
-    //         container.removeEventListener("mousemove", handleMouseMove);
-    //     };
-    // }, []);
-
-    if (!categoryNodes) {
+    if (!currentCategory) {
         return <div></div>;
     }
 
     return (
-        <div
-            ref={containerRef}
-            onMouseDown={() => setIsMouseDown(true)}
-            onMouseUp={() => setIsMouseDown(false)}
-            onMouseMove={handleMouseMove}
-            className="flex flex-column align-items-center gap-3 m-2 h-full overflow-scroll"
-        >
+        <div ref={containerRef} className="my-2">
             <Button
-                className="absolute"
-                visible={!!categoryNodes[0].parentNode}
+                className="relative mb-2"
+                style={{ left: "50%", transform: "translateX(-50%)" }}
+                visible={!!currentCategory.parent}
                 size="large"
                 rounded
                 icon="pi pi-caret-up"
-                onClick={() => handleFocusParentNode()}
+                onClick={() => focusParentCategory()}
             />
-            <OrganizationChart
-                className="mt-7 w-full"
-                value={categoryNodes}
-                nodeTemplate={getCategoryNodeComponent}
-            />
-            <Button
-                className="absolute left-0 h-full pi pi-caret-left text-300 bg-surface-100 border-surface-300"
-                style={{ boxShadow: "none" }}
-                text
-                onClick={handleScrollLeft}
-            />
-            <Button
-                className="absolute right-0 h-full pi pi-caret-right text-300 bg-surface-100 color-surface-300 border-surface-300"
-                style={{ boxShadow: "none" }}
-                text
-                onClick={handleScrollRight}
-            />
+            <div className="card overflow-scroll overflow-y-auto">
+                <OrganizationChart
+                    value={[currentCategory]}
+                    nodeTemplate={getCategoryModelComponent}
+                />
+            </div>
         </div>
     );
 };

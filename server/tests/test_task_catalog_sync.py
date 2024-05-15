@@ -3,8 +3,8 @@ from tests.test_routines import TestRoutines
 from catalogs.enums import DigitizationState
 from documents.crud import create_document, get_document
 from documents.schemas import DocumentCreate
-from tasks.crud import create_task
-from tasks.enums import TaskType
+from tasks.crud import create_query_task
+from tasks.types import TaskType
 from tasks.routines import sync_from_digitization_registry, sync_from_catalog
 from tasks.schemas import TaskCreate
 
@@ -25,7 +25,7 @@ class TestCatalogSync(TestRoutines):
         document_before_sync = get_document(document_id, self.db)
         title_before_sync = document_before_sync.title
         state_before_sync = document_before_sync.digitization_state
-        task_id = create_task(
+        task_id = create_query_task(
             task, [document_id], "Test User", f"id={document_id}", self.db
         ).id
         sync_from_catalog(task_id, "Test User", self.db)
@@ -55,7 +55,7 @@ class TestCatalogSync(TestRoutines):
         state_before_sync = get_document(
             document_id, self.db
         ).digitization_state
-        task_id = create_task(
+        task_id = create_query_task(
             task, [document_id], "Test User", f"id={document_id}", self.db
         ).id
         sync_from_digitization_registry(task_id, "Test User", self.db)

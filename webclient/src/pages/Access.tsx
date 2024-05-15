@@ -1,18 +1,22 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "primereact/button";
 import { SelectButton } from "primereact/selectbutton";
 
-import '../styles/Access.css';
+import "../styles/Access.css";
 import RolesTable from "../features/roles/RolesTable";
 import DepartmentsTable from "../features/departments/DepartmentsTable";
 import { RolesProvider, useRoles } from "../contexts/roles/RolesContext";
-import { DepartmentsProvider, useDepartments } from "../contexts/departments/DepartmentsContext";
+import {
+    DepartmentsProvider,
+    useDepartments,
+} from "../contexts/departments/DepartmentsContext";
+import { useLocation } from "react-router-dom";
 
 const TableEnum = {
-    DEPARTMENS: 'departments',
-    ROLES: 'roles'
+    DEPARTMENS: "departments",
+    ROLES: "roles",
 };
 
 const Access = () => {
@@ -22,20 +26,28 @@ const Access = () => {
                 <AccessDiv />
             </RolesProvider>
         </DepartmentsProvider>
-    )
-}
+    );
+};
 
 const AccessDiv = () => {
     const { t } = useTranslation();
     const { handleAddDepartment } = useDepartments();
     const { handleAddRole } = useRoles();
+    const location = useLocation();
 
     const [table, setTable] = useState(TableEnum.DEPARTMENS);
     const [tablesOptions] = useState([
-        { label: t('departments'), value: TableEnum.DEPARTMENS },
-        { label: t('roles'), value: TableEnum.ROLES }
+        { label: t("departments"), value: TableEnum.DEPARTMENS },
+        { label: t("roles"), value: TableEnum.ROLES },
     ]);
 
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const tableParam = searchParams.get("tab");
+        const tableFromParam =
+            tableParam === "roles" ? TableEnum.ROLES : TableEnum.DEPARTMENS;
+        setTable(tableFromParam);
+    }, [location.search]);
 
     const handleInsert = (event) => {
         if (table === TableEnum.DEPARTMENS) {
@@ -48,9 +60,19 @@ const AccessDiv = () => {
     const tableHeader = () => {
         return (
             <div className="table-header">
-                <Button className="add-button" icon="pi pi-plus" rounded onClick={handleInsert} />
+                <Button
+                    className="add-button"
+                    icon="pi pi-plus"
+                    rounded
+                    onClick={handleInsert}
+                />
                 <div className="middle-container">
-                    <SelectButton className="select-button" value={table} onChange={(e) => setTable(e.value ? e.value : table)} options={tablesOptions} />
+                    <SelectButton
+                        className="select-button"
+                        value={table}
+                        onChange={(e) => setTable(e.value ? e.value : table)}
+                        options={tablesOptions}
+                    />
                 </div>
             </div>
         );

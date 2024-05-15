@@ -1,5 +1,8 @@
-from sqlalchemy import ARRAY, Column, Float, Integer, String, TIMESTAMP
+from sqlalchemy import Column, Float, Integer, String, TIMESTAMP
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy import func
+
+# from sqlalchemy.orm import relationship
 
 from services.database import Base
 
@@ -17,3 +20,8 @@ class GeneratedExtraction(Base):
     whole_categories_threshold = Column(Float)
     generated_by = Column(String, index=True)
     generated_at = Column(TIMESTAMP, server_default=func.now())
+
+    # documents = relationship(
+    #     "Document",
+    #     primaryjoin="GeneratedExtraction.document_ids.contains(Document.id)",
+    # )

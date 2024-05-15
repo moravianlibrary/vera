@@ -3,25 +3,79 @@ import { Divider } from "primereact/divider";
 import { SelectButton } from "primereact/selectbutton";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
+import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { useCategories } from "../../contexts/categories/CategoriesContext";
 import CategoryPicker from "../../components/pickers/CategoryPicker";
-import { NodeType } from "../../contexts/categories/CategoryNodeType";
+import { CategoryType } from "../../contexts/categories/CategoryType";
 import ExtractionPicker from "../../components/pickers/ExtractionPicker";
+import { Toolbar } from "primereact/toolbar";
 
-interface CategoriesMenuPanelProps {}
+export enum CategoryViewType {
+    CategoryTable = "CategoryTable",
+    CategoryChart = "CategoryChart",
+}
+
+export enum CategorySection {
+    Categories = "Categories",
+    Terms = "Terms",
+}
+
+interface CategoriesMenuPanelProps {
+    categoryViewType: CategoryViewType;
+    onCategoryViewTypeChange: (viewType: CategoryViewType) => void;
+}
 
 const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
     const { t } = useTranslation();
+
+    const [section, setSection] = useState<CategorySection>(
+        CategorySection.Categories
+    );
+
+    const getStartContent = () => {
+        if (section === CategorySection.Categories) {
+            return (
+                <CategoryOptions
+                    categoryViewType={props.categoryViewType}
+                    onCategoryViewTypeChange={props.onCategoryViewTypeChange}
+                />
+            );
+        }
+    };
+
+    return (
+        <Toolbar
+            className="p-2 surface-100 w-full"
+            start={getStartContent()}
+            end={
+                <SelectCategorySection
+                    section={section}
+                    onSectionChange={setSection}
+                />
+            }
+        />
+    );
+};
+
+interface CategoryOptionsProps {
+    categoryViewType: CategoryViewType;
+    onCategoryViewTypeChange: (viewType: CategoryViewType) => void;
+}
+
+const CategoryOptions: React.FC<CategoryOptionsProps> = ({
+    categoryViewType,
+    onCategoryViewTypeChange,
+}) => {
+    const { t } = useTranslation();
     const {
-        categoryNodes,
-        handleFocusRootNode,
+        currentCategory,
         activeLevel,
-        handleFocusLevel,
-        handleFocusCategory,
         focusAssignable,
-        handleFocusAssignableCategories,
-    } = useCategoryNodes();
+        focusRootCategory,
+        focusCategory,
+        focusLevel,
+        focusAssignableCategories,
+    } = useCategoryModels();
     const { extractionId, setExtractionId } = useCategories();
 
     const levelOptions = [0, 1, 2, 3];
@@ -29,79 +83,53 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
     const [selectedCategory, setSelectedCategory] = useState<number | null>(
         null
     );
-    const [minimized, setMinimized] = useState(false);
 
     useEffect(() => {
-        if (categoryNodes && categoryNodes.length > 0) {
-            const node = categoryNodes[0];
+        if (currentCategory) {
             setSelectedCategory(
-                node.type === NodeType.Root || node.type === NodeType.LevelRoot
+                currentCategory.type === CategoryType.Root ||
+                    currentCategory.type === CategoryType.LevelRoot
                     ? null
-                    : node.category.id
+                    : currentCategory.id
             );
         }
-    }, [categoryNodes]);
+    }, [currentCategory]);
 
-    const floatingPanelStyle: React.CSSProperties = {
-        position: "fixed",
-        top: "70px",
-        left: "20px",
-        zIndex: "1000",
-        boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.35)",
-        margin: "0px",
-        padding: "0px",
+    const handleFocusCategory_ = (category_id: number | null) => {
+        if (category_id) {
+            focusCategory(category_id);
+        } else {
+            focusRootCategory();
+        }
     };
 
-    if (minimized) {
-        return (
-            <Button
-                style={floatingPanelStyle}
-                text
-                rounded
-                icon="pi pi-chevron-right"
-                onClick={() => setMinimized(false)}
-            />
-        );
-    }
-
     return (
-        <div
-            className="flex flex-column bg-white p-1"
-            style={floatingPanelStyle}
-        >
-            <Button
-                className="absolute"
-                style={{
-                    top: "0px",
-                    right: "0px",
-                    translate: "105% -0%",
-                    boxShadow: "0px 0px 10px 0px rgba(0,0,0,0.35)",
-                }}
-                text
-                rounded
-                icon="pi pi-chevron-left"
-                onClick={() => setMinimized(true)}
+        <div className="flex ml-2 gap-4 flex-wrap">
+            <SelectCategoryViewType
+                categoryViewType={categoryViewType}
+                onCategoryViewTypeChange={onCategoryViewTypeChange}
             />
+            {/* <Divider layout="vertical" /> */}
             <Button
                 className="m-0 text-800"
-                text
                 icon="pi pi-eye"
+                text
                 label={t("All categories")}
-                onClick={() => handleFocusRootNode()}
+                onClick={() => focusRootCategory()}
             />
-            <Divider className="m-0" />
-            <div className="flex flex-column gap-1 my-2 mx-1 align-items-center">
+            {/* <Divider layout="vertical" /> */}
+            <div className="flex gap-1 my-2 mx-1 align-items-center">
                 <span className="p-button-label text-800">
                     {t("Categories of level")}:
                 </span>
                 <SelectButton
                     options={levelOptions}
                     value={activeLevel}
-                    onChange={(e) => handleFocusLevel(e.value)}
+                    onChange={(e) => focusLevel(e.value)}
                 />
             </div>
-            <Divider className="m-0" />
-            <div className="flex flex-column gap-1 my-2 mx-1 align-items-center">
+            {/* <Divider layout="vertical" /> */}
+            <div className="flex gap-1 my-2 mx-1 align-items-center">
                 <span className="p-button-label text-800">
                     {t("Selected category")}:
                 </span>
@@ -110,10 +138,10 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
                         selectedCategory ? "border-primary border-3" : ""
                     }
                     category_id={selectedCategory}
-                    callback={handleFocusCategory}
+                    callback={handleFocusCategory_}
                 />
             </div>
-            <Divider className="m-0" />
+            {/* <Divider layout="vertical" /> */}
             <Button
                 className={
                     focusAssignable
@@ -123,11 +151,10 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
                 text={!focusAssignable}
                 icon={focusAssignable ? "pi pi-star-fill" : "pi pi-star"}
                 label={t("Assignable categories")}
-                onClick={() => handleFocusAssignableCategories()}
+                onClick={() => focusAssignableCategories()}
             />
-            <Divider className="m-0" />
-            <Divider className="m-0 pt-2" />
-            <div className="flex flex-column gap-1 my-2 mx-1 align-items-center">
+            {/* <Divider layout="vertical" /> */}
+            {/* <div className="flex gap-1 my-2 mx-1 align-items-center">
                 <span className="p-button-label text-800">
                     {t("Show extraction")}:
                 </span>
@@ -135,25 +162,87 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
                     extraction_id={extractionId}
                     callback={setExtractionId}
                 />
-            </div>
-            {/* {extractionId && (
-                <div className="mx-2 w-13rem">
-                    {extractionMarked && (
-                        <span className="font-bold">
-                            {t(
-                                "Documents are no longer included in the categories"
-                            )}
-                        </span>
-                    )}
-                    {!extractionMarked && (
-                        <div className="font-bold text-left">
-                            {t(
-                                "Documents are still included in the categories"
-                            )}
-                        </div>
-                    )}
-                </div>
-            )} */}
+            </div> */}
+        </div>
+    );
+};
+
+interface SelectCategoryViewTypeProps {
+    categoryViewType: CategoryViewType;
+    onCategoryViewTypeChange: (viewType: CategoryViewType) => void;
+}
+
+const SelectCategoryViewType: React.FC<SelectCategoryViewTypeProps> = ({
+    categoryViewType,
+    onCategoryViewTypeChange,
+}) => {
+    const { t } = useTranslation();
+
+    const displayOptions = [
+        {
+            label: t("Table"),
+            icon: "pi pi-table",
+            value: CategoryViewType.CategoryTable,
+        },
+        {
+            label: t("Chart"),
+            icon: "pi pi-chart",
+            value: CategoryViewType.CategoryChart,
+        },
+    ];
+
+    const handleCategoryViewTypeChange = (e) => {
+        if (e.value !== null) {
+            onCategoryViewTypeChange(e.value);
+        }
+    };
+
+    return (
+        <div className="flex align-items-center">
+            <SelectButton
+                value={categoryViewType}
+                onChange={handleCategoryViewTypeChange}
+                options={displayOptions}
+            />
+        </div>
+    );
+};
+
+interface SelectCategorySectionProps {
+    section: CategorySection;
+    onSectionChange: (section: CategorySection) => void;
+}
+
+const SelectCategorySection: React.FC<SelectCategorySectionProps> = ({
+    section,
+    onSectionChange,
+}) => {
+    const { t } = useTranslation();
+
+    const displayOptions = [
+        {
+            label: t("Categories"),
+            value: CategorySection.Categories,
+        },
+        {
+            label: t("Intentions"),
+            value: CategorySection.Terms,
+        },
+    ];
+
+    const handleSectionChange = (e) => {
+        if (e.value !== null) {
+            onSectionChange(e.value);
+        }
+    };
+
+    return (
+        <div className="flex align-items-center mr-2">
+            <SelectButton
+                value={section}
+                onChange={handleSectionChange}
+                options={displayOptions}
+            />
         </div>
     );
 };

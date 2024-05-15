@@ -18,7 +18,7 @@ def get_category_subtree(category: schemas.Category, db: Session):
         departments=[
             d[0] for d in crud.get_category_departments(category.id, db)
         ],
-        children=[
+        sub_categories=[
             get_category_subtree(child, db)
             for child in crud.get_children_categories(category.id, db)
         ],
@@ -82,7 +82,10 @@ def get_department_assignable_categories(department_id: int, db: Session):
 
 
 def has_unique_name(
-    category: schemas.CategoryCreate, category_id: Optional[int], db: Session
+    category: schemas.CategoryCreate,
+    parent_id: Optional[int],
+    db: Session,
+    exclude_id: Optional[int] = None,
 ):
     """
     A function that checks if a category name is unique
@@ -100,11 +103,11 @@ def has_unique_name(
     """
     categories = (
         crud.get_root_categories(db)
-        if category.parent_id is None
-        else crud.get_children_categories(category.parent_id, db)
+        if parent_id is None
+        else crud.get_children_categories(parent_id, db)
     )
     return all(
-        category.name != other.name or category_id == other.id
+        category.name != other.name or exclude_id == other.id
         for other in categories
     )
 

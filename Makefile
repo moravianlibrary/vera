@@ -18,6 +18,7 @@ stop:
 	docker-compose down
 build:
 	docker-compose build
+run: stop build start
 clean:
 	docker-compose down --volumes
 tag:

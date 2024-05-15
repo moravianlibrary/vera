@@ -498,7 +498,7 @@ const resources = {
         "The storage cannot be deleted because it contains locations": "Uložení nelze smazat, protože obsahuje lokaci",
 
 
-        "Include all documents from these categories": "Zahrnout všechny dokumenty z těchto kategorií",
+        "Include only documents from these categories": "Zahrnout pouze dokumenty z těchto kategorií",
         "Include only documents from these locations": "Zahrnout pouze dokumenty z těchto lokací",
         "Select location": "Vybrat lokaci",
 
@@ -513,6 +513,24 @@ const resources = {
         "Delete column": "Smazat sloupec",
         "Assign label": "Přiradit označení",
         "Ignore row": "Ignorovat řádek", 
+
+        "Category name": "Jméno kategorie",
+        "Percentage": "Podíl",
+        "Overall percentage": "Celkový podíl",
+        "Extractable count": "Extrahovatelní počet",
+        "Overall count": "Celkový počet",
+        "Missing pages to fulfill intention": "Chýba stran k naplňení zámeřu",
+        "Documents without CNB": "Dokumentů bez ČNB",
+        "Table": "Tabulka",
+        "Chart": "Diagram",
+        "Categories": "Kategorie",
+        "Intentions": "Zámeřy",
+        "pages in": "stránek v",
+
+        "Documents": "Dokumenty",
+        "Tasks": "Ukoly",
+        "Access management": "Správa prístupů",
+        "Change distribution for category": "Změnit distribuci pro kategorií",
     },
   },
 };

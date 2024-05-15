@@ -2,7 +2,7 @@ import { Button } from "primereact/button";
 import { Panel } from "primereact/panel";
 import React from "react";
 import { useEffect, useState } from "react";
-import { Toolbar } from 'primereact/toolbar';
+import { Toolbar } from "primereact/toolbar";
 import Markdown from "react-markdown";
 
 interface WikiProps {
@@ -18,11 +18,13 @@ export const Wiki: React.FC<WikiProps> = ({ language }) => {
     const fetchMarkdown = async () => {
         if (page) {
             try {
-                const response = await fetch(`${process.env.PUBLIC_URL}/wiki/${language}/${page}`);
+                const response = await fetch(
+                    `${process.env.PUBLIC_URL}/wiki/${language}/${page}`
+                );
                 const content = await response.text();
                 setMarkdownContent(content);
             } catch (error) {
-                console.error('Error fetching Markdown:', error);
+                console.error("Error fetching Markdown:", error);
             }
         }
     };
@@ -31,17 +33,17 @@ export const Wiki: React.FC<WikiProps> = ({ language }) => {
         setPage(page);
         setHistory([...history, page]);
         setHistoryIndex(historyIndex + 1);
-    }
+    };
 
     const handleGoBack = () => {
         setPage(history[historyIndex - 1]);
         setHistoryIndex(historyIndex - 1);
-    }
+    };
 
     const handleGoNext = () => {
         setPage(history[historyIndex + 1]);
         setHistoryIndex(historyIndex + 1);
-    }
+    };
 
     useEffect(() => {
         fetchMarkdown();
@@ -50,9 +52,10 @@ export const Wiki: React.FC<WikiProps> = ({ language }) => {
     const renderLink = (props: any) => {
         if ((props.href as string).endsWith(".md")) {
             return (
-                <Button text
+                <Button
+                    text
                     className="p-button-link"
-                    style={{ fontSize: 'inherit', padding: 0, margin: 0 }}
+                    style={{ fontSize: "inherit", padding: 0, margin: 0 }}
                     onClick={() => handleClickOnPage(props.href)}
                 >
                     {props.children}
@@ -65,32 +68,47 @@ export const Wiki: React.FC<WikiProps> = ({ language }) => {
     const renderImage = (props: any) => {
         const imageUrl = `${process.env.PUBLIC_URL}/wiki/${language}/${props.src}`;
         console.log(imageUrl);
-        return <img src={imageUrl} alt={props.alt} style={{ display: 'block' }} />;
+        return (
+            <img src={imageUrl} alt={props.alt} style={{ display: "block" }} />
+        );
     };
 
     const wikiToolbar: React.FC = () => {
         return (
             <div className="flex gap-3 align-items-center">
-                <img src="/logo48.png" />
-                <strong style={{ fontSize: '1.5em' }} >Wiki</strong>
+                <img src="/logo32.svg" />
+                <strong style={{ fontSize: "1.5em" }}>Wiki</strong>
                 <div className="p-inputgroup">
-                    <Button className="pi pi-home" outlined disabled={page === "Home.md"} onClick={() => handleClickOnPage("Home.md")} />
-                    <Button className="pi pi-chevron-left" outlined disabled={historyIndex === 0} onClick={handleGoBack} />
-                    <Button className="pi pi-chevron-right" outlined disabled={historyIndex === history.length - 1} onClick={handleGoNext} />
+                    <Button
+                        className="pi pi-home"
+                        outlined
+                        disabled={page === "Home.md"}
+                        onClick={() => handleClickOnPage("Home.md")}
+                    />
+                    <Button
+                        className="pi pi-chevron-left"
+                        outlined
+                        disabled={historyIndex === 0}
+                        onClick={handleGoBack}
+                    />
+                    <Button
+                        className="pi pi-chevron-right"
+                        outlined
+                        disabled={historyIndex === history.length - 1}
+                        onClick={handleGoNext}
+                    />
                 </div>
             </div>
         );
     };
 
     const wikiHeader: React.FC = () => {
-        return (
-            <Toolbar start={wikiToolbar} />
-        );
+        return <Toolbar start={wikiToolbar} />;
     };
-    
+
     return (
         <Panel headerTemplate={wikiHeader}>
-            <Markdown components={{ a: renderLink, img: renderImage }} >
+            <Markdown components={{ a: renderLink, img: renderImage }}>
                 {markdownContent}
             </Markdown>
         </Panel>
@@ -102,7 +120,7 @@ const Home: React.FC = () => {
         <div>
             <Wiki language="cs" />
         </div>
-    );  
+    );
 };
 
 export default Home;

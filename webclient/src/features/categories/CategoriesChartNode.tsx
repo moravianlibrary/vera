@@ -1,26 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import CategoryPercentage from "./PercentageComponent";
-import CategoryNodeEditMenu from "./CategoryNodeEditMenu";
 import { Tooltip } from "primereact/tooltip";
-import { CategoryNode } from "../../contexts/categories/CategoryNodeModel";
-import { useCategoryNodes } from "../../contexts/categories/CategoryNodesContext";
+import { CategoryModel } from "../../contexts/categories/CategoryModel";
+import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
 import { useCategories } from "../../contexts/categories/CategoriesContext";
+import CategoryNodeEditMenu from "./CategoryNodeEditMenu";
 
 interface CategoriesChartNodeProps {
-    node: CategoryNode;
+    category: CategoryModel;
 }
 
-interface CategoryNodeBodyProps extends CategoriesChartNodeProps {}
-interface CategoryNodeStatsProps extends CategoriesChartNodeProps {}
+interface CategoryModelBodyProps extends CategoriesChartNodeProps {}
+interface CategoryModelStatsProps extends CategoriesChartNodeProps {}
 
-const CategoriesChartNode: React.FC<CategoriesChartNodeProps> = ({ node }) => {
+const CategoriesChartNode: React.FC<CategoriesChartNodeProps> = ({
+    category,
+}) => {
     const { t } = useTranslation();
-    const { handleFocusNode } = useCategoryNodes();
-
-    const { category } = node;
+    const { focusCategory } = useCategoryModels();
 
     const getTooltipText = (): string | undefined => {
         if (category.description) {
@@ -31,47 +31,48 @@ const CategoriesChartNode: React.FC<CategoriesChartNodeProps> = ({ node }) => {
     return (
         <div className="flex flex-column w-max">
             <div className="flex justify-content-between align-items-baseline gap-2">
-                <CategoryNodeEditMenu node={node} />
+                <CategoryNodeEditMenu node={category} />
                 <div className="flex gap-1 justify-content-center align-items-baseline">
                     <Tooltip className="max-w-30rem" target=".category-name" />
                     <span
                         className="category-name font-bold text-lg mb-3"
-                        onClick={() => handleFocusNode(node)}
+                        onClick={() => focusCategory(category.id)}
                         style={{ cursor: "pointer" }}
                         data-pr-tooltip={getTooltipText()}
                     >
-                        {node.category.name}
+                        {category.name}
                     </span>
                 </div>
-                <CategoryPercentage node={node} />
+                <CategoryPercentage category={category} />
             </div>
-            <CategoryNodeBody node={node} />
+            <CategoryModelBody category={category} />
         </div>
     );
 };
 
-const CategoryNodeBody: React.FC<CategoryNodeBodyProps> = ({ node }) => {
+const CategoryModelBody: React.FC<CategoryModelBodyProps> = ({ category }) => {
     const { t } = useTranslation();
 
     return (
         <div className="flex w-full align-items-end gap-2 justify-content-between">
             <div className="flex flex-column align-items-start gap-2">
-                <CategoryNodeExtractionStats node={node} />
-                <CategoryNodeStats node={node} />
+                <CategoryModelExtractionStats category={category} />
+                <CategoryModelStats category={category} />
                 {/* <div className="flex flex-column"> */}
             </div>
-            <CategoryDocumentsLink node={node} />
+            <CategoryDocumentsLink category={category} />
         </div>
     );
 };
 
-const CategoryDocumentsLink: React.FC<CategoryNodeStatsProps> = ({ node }) => {
+const CategoryDocumentsLink: React.FC<CategoryModelStatsProps> = ({
+    category,
+}) => {
     const { t } = useTranslation();
 
     return (
-        <Link to={`/documents?categoryId=${node.category.id}`}>
+        <Link to={`/documents?categoryId=${category.id}`}>
             <Button
-                // className="p-0 m-0 relative text-xs align-content-center"
                 className="p-0 m-0 text-xs"
                 severity="secondary"
                 text
@@ -84,9 +85,9 @@ const CategoryDocumentsLink: React.FC<CategoryNodeStatsProps> = ({ node }) => {
     );
 };
 
-export const CategoryNodeExtractionStats: React.FC<CategoryNodeStatsProps> = ({
-    node,
-}) => {
+export const CategoryModelExtractionStats: React.FC<
+    CategoryModelStatsProps
+> = ({ category }) => {
     const { t } = useTranslation();
     const { extractionId } = useCategories();
 
@@ -97,12 +98,14 @@ export const CategoryNodeExtractionStats: React.FC<CategoryNodeStatsProps> = ({
     return (
         <div className="flex flex-column align-items-start">
             <div>
-                <span className="font-bold">{node.extracted_pages_count}</span>
+                <span className="font-bold">
+                    {category.extracted_pages_count}
+                </span>
                 {t(" extracted pages")}
             </div>
             <div>
                 <span className="font-bold">
-                    {node.extracted_documents_count}
+                    {category.extracted_documents_count}
                 </span>
                 {t(" extracted documents")}
             </div>
@@ -110,14 +113,18 @@ export const CategoryNodeExtractionStats: React.FC<CategoryNodeStatsProps> = ({
     );
 };
 
-const CategoryNodeStats: React.FC<CategoryNodeStatsProps> = ({ node }) => {
+const CategoryModelStats: React.FC<CategoryModelStatsProps> = ({
+    category,
+}) => {
     const { t } = useTranslation();
 
     const [missingPagesCount, setMissingPagesCount] = useState(0);
 
     useEffect(() => {
-        setMissingPagesCount(Math.max(node.quota - node.count_pages, 0));
-    }, [node.quota]);
+        setMissingPagesCount(
+            Math.max(category.quota - category.count_pages, 0)
+        );
+    }, [category.quota]);
 
     return (
         <div className="flex flex-column align-items-start gap-2">
@@ -128,10 +135,10 @@ const CategoryNodeStats: React.FC<CategoryNodeStatsProps> = ({ node }) => {
                         {t("category_missing_count_pages")}
                     </div>
                 )}
-                {node.count_documents_without_cnb > 0 && (
+                {category.count_documents_without_cnb > 0 && (
                     <div className="text-red-700">
                         <span className="font-bold">
-                            {node.count_documents_without_cnb}
+                            {category.count_documents_without_cnb}
                         </span>{" "}
                         {t("documents without CNB")}
                     </div>
@@ -139,12 +146,14 @@ const CategoryNodeStats: React.FC<CategoryNodeStatsProps> = ({ node }) => {
             </div>
             <div className="flex flex-column align-items-start">
                 <div>
-                    <span className="font-bold">{node.overallPercentage}%</span>{" "}
+                    <span className="font-bold">
+                        {category.overallPercentage}%
+                    </span>{" "}
                     {t("from overall percentage")}
                 </div>
                 <div className="flex gap-2">
                     <div>
-                        <span className="font-bold">{node.quota}</span>{" "}
+                        <span className="font-bold">{category.quota}</span>{" "}
                         {t("pages by intention")}
                     </div>
                     <div
@@ -186,30 +195,32 @@ const CategoryNodeStats: React.FC<CategoryNodeStatsProps> = ({ node }) => {
             <div className="flex flex-column align-items-start">
                 <div>
                     <span className="font-bold">
-                        {node.count_pages_extractable}
+                        {category.count_pages_extractable}
                     </span>{" "}
                     {t("extractable pages")}
                 </div>
                 <div>
-                    <span className="font-bold">{node.count_pages}</span>{" "}
+                    <span className="font-bold">{category.count_pages}</span>{" "}
                     {t("category_count_pages")}
                 </div>
             </div>
             <div className="flex flex-column align-items-start">
                 <div>
                     <span className="font-bold">
-                        {node.count_documents_extractable}
+                        {category.count_documents_extractable}
                     </span>{" "}
                     {t("extractable documents")}
                 </div>
                 <div>
                     <span className="font-bold">
-                        {node.count_documents_with_pages}
+                        {category.count_documents_with_pages}
                     </span>{" "}
                     {t("category_count_documents_with_pages")}
                 </div>
                 <div>
-                    <span className="font-bold">{node.count_documents}</span>{" "}
+                    <span className="font-bold">
+                        {category.count_documents}
+                    </span>{" "}
                     {t("category_count_documents")}
                 </div>
             </div>

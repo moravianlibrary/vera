@@ -8,7 +8,6 @@ class CategoryBase(BaseModel):
 
 
 class CategoryCreate(CategoryBase):
-    parent_id: Optional[int] = None
     assignable: bool = False
     percentage: float = 0
     extract_whole: bool = False
@@ -19,10 +18,11 @@ class CategoryCreate(CategoryBase):
 class Category(CategoryCreate):
     id: int
     level: int
+    parent_id: Optional[int] = None
 
 
 class CategoryNode(Category):
-    children: List[SerializeAsAny[Category]]
+    sub_categories: List[SerializeAsAny[Category]]
     count_pages: int
     count_pages_extractable: int
     count_documents: int

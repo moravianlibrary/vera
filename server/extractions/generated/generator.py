@@ -68,12 +68,13 @@ class ExtractionGenerator:
     def generate_extraction_for_node(
         self, node: ExtractionNode
     ) -> Tuple[List[ExtractionDocument], int]:
-        if (
-            self.settings.include_categories
-            and node.category_id in self.settings.include_categories
-        ):
-            return self.extract_include_category(node)
-        elif node.extract_whole:
+        # if (
+        #     self.settings.include_categories
+        #     and node.category_id in self.settings.include_categories
+        # ):
+        #     return self.extract_include_category(node)
+        # elif node.extract_whole:
+        if node.extract_whole:
             return self.extract_whole_category(node)
         return self.extract_category(node)
 
