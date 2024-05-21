@@ -15,7 +15,14 @@ DB_PORT = "5432"
 DATABASE_URL = (
     f"postgresql://{DB_USER}:{DB_PASSWORD}" f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=20,  # Adjust the pool size as needed
+    max_overflow=0,  # Adjust the overflow size as needed
+    pool_timeout=30,  # Timeout for getting a connection from the pool
+    pool_recycle=1800,  # Recycle connections after 30 minutes
+    pool_pre_ping=True,  # Enable pre-ping to check connection validit
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
