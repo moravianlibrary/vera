@@ -203,6 +203,27 @@ class TestDigitizationRegister(unittest.TestCase):
         self.assertEqual(parse_page_count("55, 1 s., 3 l. ;"), 55)
         self.assertEqual(parse_page_count("67, [2] s. :"), 67)
         self.assertEqual(parse_page_count("27 stran :"), 27)
+        self.assertEqual(parse_page_count("[52] s. :"), 52)
+        self.assertEqual(parse_page_count("14, 104 s."), 14)
+        self.assertEqual(parse_page_count("x, [196] s. :"), 196)
+        self.assertEqual(parse_page_count("[35] s. :"), 35)
+        self.assertEqual(parse_page_count("77 l. ;"), 77)
+        self.assertEqual(parse_page_count("99 l. ;"), 99)
+        self.assertEqual(
+            parse_page_count("2 sv. (759, 623 s.) :", "I. díl"), 759
+        )
+        self.assertEqual(
+            parse_page_count("2 sv. (759, 623 s.) :", "II. díl"), 623
+        )
+        self.assertEqual(
+            parse_page_count("3 sv. (383; 358; 229 s.) ;", "1. díl"), 383
+        )
+        self.assertEqual(
+            parse_page_count("3 sv. (383; 358; 229 s.) ;", "2. díl"), 358
+        )
+        self.assertEqual(
+            parse_page_count("3 sv. (383; 358; 229 s.) ;", "3. díl"), 229
+        )
         self.assertIsNone(parse_page_count("12 sv."))
         self.assertIsNone(parse_page_count("7 sv."))
 
