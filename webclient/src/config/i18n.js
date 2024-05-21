@@ -531,6 +531,9 @@ const resources = {
         "Tasks": "Ukoly",
         "Access management": "Správa prístupů",
         "Change distribution for category": "Změnit distribuci pro kategorií",
+
+        "Document updated successfully": "Dokument byl úspěšně aktualizován",
+        "Document update failed": "Aktualizace dokumentu se nezdařila",
     },
   },
 };
