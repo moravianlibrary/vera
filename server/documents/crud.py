@@ -3,7 +3,7 @@ from sqlalchemy import desc, func
 from typing import List, Optional
 
 from services.database import create
-from categories.models import Category
+from categories.categories.models import Category
 from documents import models, schemas
 from documents.search import filter_documents_query_base
 from extractions.digitization.models import DigitizationExtraction

@@ -5,14 +5,16 @@ from sqlalchemy import MetaData
 
 from services.database import Base
 
-from auth.models import User  # noqa: F401
+from security.models import Department, User, Role  # noqa: F401
 from categories.models import Category, CategoryDepartments  # noqa: F401
 from categories.quotas.models import Quota  # noqa: F401
-from departments.models import Department  # noqa: F401
 from documents.models import Document  # noqa: F401
 from documents.comments.models import Comment  # noqa: F401
-from extractions.models import Extraction  # noqa: F401
-from roles.models import Role  # noqa: F401
+from extractions.generated.models import Extraction  # noqa: F401
+from extractions.digitization.models import (  # noqa: F401
+    DigitizationExtraction,
+)  # noqa: F401
+from extractions.locations.models import Location  # noqa: F401
 from tasks.models import Task, TaskDocument  # noqa: F401
 
 # import logging

@@ -56,31 +56,6 @@ def update_category(
     return facade.update_category(category, category_id, db)
 
 
-@router.put(
-    "/distribution",
-    dependencies=[CanManageRootCategories],
-    response_model=None,
-)
-def update_root_distribution(
-    distribution: List[schemas.CategoryPercentage],
-    db: Session = Depends(get_db),
-):
-    return facade.update_distribution(distribution, db)
-
-
-@router.put(
-    "/distribution/{category_id}",
-    dependencies=[CanManageCategories],
-    response_model=None,
-)
-def update_distribution(
-    distribution: List[schemas.CategoryPercentage],
-    category_id: int = Path(...),
-    db: Session = Depends(get_db),
-):
-    return facade.update_distribution(distribution, db, category_id)
-
-
 @router.delete(
     "/category/{category_id}",
     dependencies=[CanManageCategories],

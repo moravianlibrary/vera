@@ -8,9 +8,16 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
 )
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session, Query
 from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
+from categories.categories import schemas
+from typing import List, Optional
+from documents.models import Document
+from categories.intentions.models import Intention
+
+
+MAX_CATEGORY_LEVEL = 3
 
 
 class Category(Base):
@@ -30,15 +37,236 @@ class Category(Base):
 
     __table_args__ = (UniqueConstraint("name", "parent_id"),)
 
-    distributions = relationship("Distribution", back_populates="category")
-    departments_ = relationship(
+    sub_categories: List["Category"] = relationship(
+        "Category", back_populates="parent_category"
+    )
+    parent_category: Optional["Category"] = relationship(
+        "Category", remote_side=[id]
+    )
+
+    distributions: List["Distribution"] = relationship(
+        "Distribution", back_populates="category"
+    )
+    category_departments: List["CategoryDepartments"] = relationship(
         "CategoryDepartments", back_populates="category"
     )
-    documents = relationship("Document", back_populates="category")
+    documents: List[Document] = relationship(
+        "Document", back_populates="category"
+    )
 
     @hybrid_property
     def departments(self):
-        return [department.department_id for department in self.departments_]
+        return [
+            department.department_id
+            for department in self.category_departments
+        ]
+
+    @hybrid_property
+    def total_pages(self) -> int:
+        return sum(document.pages_count for document in self.documents) + sum(
+            sub_category.total_pages for sub_category in self.sub_categories
+        )
+
+    @hybrid_property
+    def total_documents(self) -> int:
+        return len(self.documents) + sum(
+            sub_category.total_documents
+            for sub_category in self.sub_categories
+        )
+
+    @hybrid_property
+    def documents_with_pages(self) -> int:
+        return sum(
+            1 for document in self.documents if not document.pages_count
+        ) + sum(
+            sub_category.extractable_pages
+            for sub_category in self.sub_categories
+        )
+
+    @hybrid_property
+    def documents_without_cnb(self) -> int:
+        return sum(
+            1 for document in self.documents if not document.pages_count
+        ) + sum(
+            sub_category.extractable_pages
+            for sub_category in self.sub_categories
+        )
+
+    @hybrid_property
+    def extractable_pages(self) -> int:
+        return sum(
+            document.pages_count
+            for document in self.documents
+            if document.is_extractable
+        ) + sum(
+            sub_category.extractable_pages
+            for sub_category in self.sub_categories
+        )
+
+    @hybrid_property
+    def extractable_documents(self) -> int:
+        return sum(
+            1 for document in self.documents if document.is_extractable
+        ) + sum(
+            sub_category.extractable_pages
+            for sub_category in self.sub_categories
+        )
+
+    @classmethod
+    def find(cls, category_id: int, session: Session) -> Optional["Category"]:
+        return session.query(cls).filter_by(id=category_id).first()
+
+    @classmethod
+    def get(cls, category_id: int, session: Session) -> "Category":
+        category = cls.find(category_id, session)
+        if not category:
+            raise ValueError("Category not found")
+        return category
+
+    @classmethod
+    def find_by_name_and_parent_id(
+        cls, name: str, parent_id: Optional[int], session: Session
+    ) -> Optional["Category"]:
+        return (
+            session.query(cls)
+            .filter_by(name=name, parent_id=parent_id)
+            .first()
+        )
+
+    @classmethod
+    def create_root_category(
+        cls, category: schemas.CategoryCreate, session: Session
+    ) -> "Category":
+        if cls.find_by_name_and_parent_id(category.name, None, session):
+            raise ValueError("Category already exists")
+
+        db_category = cls(
+            name=category.name,
+            description=category.description,
+            parent_id=None,
+            level=0,
+            assignable=category.assignable,
+            extract_whole=category.extract_whole,
+            disabled=category.disabled,
+        )
+        session.add(db_category)
+        session.commit()
+        session.refresh(db_category)
+        return db_category
+
+    @classmethod
+    def create_sub_category(
+        cls, parent_id: int, category: schemas.CategoryCreate, session: Session
+    ) -> "Category":
+        parent_category = cls.get(parent_id, session)
+
+        if parent_category.level == MAX_CATEGORY_LEVEL:
+            raise ValueError("Maximum category level reached")
+
+        if cls.find_by_name_and_parent_id(
+            category.name, parent_category.id, session
+        ):
+            raise ValueError("Category already exists")
+
+        db_category = cls(
+            name=category.name,
+            description=category.description,
+            parent_id=parent_category.id,
+            level=parent_category.level + 1,
+            assignable=category.assignable,
+            extract_whole=category.extract_whole,
+            disabled=category.disabled,
+        )
+        session.add(db_category)
+        session.commit()
+        session.refresh(db_category)
+        return db_category
+
+    @classmethod
+    def update(
+        cls,
+        category_id: int,
+        category: schemas.CategoryCreate,
+        session: Session,
+    ) -> "Category":
+        db_category = cls.get(category_id, session)
+
+        if (
+            db_category.name != category.name
+            and cls.find_by_name_and_parent_id(
+                category.name, db_category.parent_id, session
+            )
+        ):
+            raise ValueError("Category already exists")
+
+        db_category.name = category.name
+        db_category.description = category.description
+        db_category.assignable = category.assignable
+        db_category.extract_whole = category.extract_whole
+        db_category.disabled = category.disabled
+        session.commit()
+        session.refresh(db_category)
+        return db_category
+
+    @classmethod
+    def delete(cls, category_id: int, session: Session) -> "Category":
+        category = cls.get(category_id, session)
+        session.delete(category)
+        session.commit()
+        return category
+
+    @classmethod
+    def query_all(
+        cls,
+        session: Session,
+    ) -> Query:
+        return session.query(cls)
+
+    @classmethod
+    def query_extracted(cls, extraction_id: int, session: Session) -> Query:
+        # TODO: implement
+        pass
+
+    @classmethod
+    def query_digitized(cls, digitization_id: int, session: Session):
+        # TODO: implement
+        pass
+
+    @classmethod
+    def filter_by_intention_id(cls, query: Query, intention_id: int) -> Query:
+        return (
+            query.join(Distribution).filter(
+                Distribution.intention_id == intention_id
+            )
+            if intention_id
+            else query
+        )
+
+    @classmethod
+    def filter_by_department_id(
+        cls, query: Query, department_id: int
+    ) -> Query:
+        return (
+            query.join(CategoryDepartments).filter(
+                CategoryDepartments.department_id == department_id
+            )
+            if department_id
+            else query
+        )
+
+    @classmethod
+    def get_query_result(cls, query: Query):
+        return query.order_by(cls.id).all()
+
+    @classmethod
+    def is_assigned_to_department(
+        cls, category_id: int, department_id: int, session: Session
+    ) -> bool:
+        return (
+            session.query(CategoryDepartments)
+            .filter_by(category_id=category_id, department_id=department_id)
+            .first()
+        )
 
 
 class CategoryDepartments(Base):
@@ -49,4 +277,129 @@ class CategoryDepartments(Base):
 
     __table_args__ = (PrimaryKeyConstraint("category_id", "department_id"), {})
 
-    category = relationship("Category", back_populates="departments_")
+    category = relationship("Category", back_populates="category_departments")
+
+    @classmethod
+    def find(cls, category_id: int, department_id: int, session: Session):
+        return (
+            session.query(cls)
+            .filter_by(category_id=category_id, department_id=department_id)
+            .first()
+        )
+
+    @classmethod
+    def set(cls, category_id: int, department_id: int, session: Session):
+        if cls.find(category_id, department_id, session):
+            return
+        session.add(cls(category_id=category_id, department_id=department_id))
+        session.commit()
+
+    @classmethod
+    def unset(cls, category_id: int, department_id: int, session: Session):
+        cls.find(category_id, department_id, session).delete()
+        session.commit()
+
+
+class Distribution(Base):
+    __tablename__ = "distributions"
+
+    intention_id = Column(Integer, ForeignKey("intentions.id"), index=True)
+    category_id = Column(Integer, ForeignKey("categories.id"), index=True)
+    percentage = Column(Float)
+
+    __table_args__ = (UniqueConstraint("intention_id", "category_id"),)
+
+    intention: Intention = relationship(
+        "Intention", back_populates="distributions"
+    )
+    category: Category = relationship(
+        "Category", back_populates="distributions"
+    )
+
+    @hybrid_property
+    def pages_needed_to_meet_intention(self):
+        return (
+            int(self.percentage * self.intention.target_page_count)
+            - self.category.total_pages
+        )
+
+    @classmethod
+    def find(
+        cls, intention_id: int, category_id: int, session: Session
+    ) -> "Distribution":
+        return (
+            session.query(cls)
+            .filter_by(intention_id=intention_id, category_id=category_id)
+            .first()
+        )
+
+    @classmethod
+    def get(
+        cls, intention_id: int, category_id: int, session: Session
+    ) -> "Distribution":
+        distribution = cls.find(intention_id, category_id, session)
+        if not distribution:
+            raise ValueError("Distribution not found")
+        return distribution
+
+    @classmethod
+    def set(
+        cls,
+        intention_id: int,
+        distribution: schemas.DistributionCreate,
+        session: Session,
+    ) -> "Distribution":
+        db_distribution = cls.find(
+            intention_id, distribution.category_id, session
+        )
+        if not db_distribution:
+            distribution = cls(
+                intention_id=intention_id,
+                category_id=distribution.category_id,
+                percentage=distribution.percentage,
+            )
+            session.add(distribution)
+        else:
+            db_distribution.percentage = distribution.percentage
+
+        session.commit()
+        return distribution
+
+    @classmethod
+    def set_distribution_from_list(
+        cls,
+        parent_id: Optional[int],
+        intention_id: int,
+        distribution_list: List[int],
+        session: Session,
+    ):
+        categories = (
+            session.query(Category)
+            .filter(
+                Category.id.in_(
+                    [
+                        distribution.category_id
+                        for distribution in distribution_list
+                    ]
+                )
+            )
+            .all()
+        )
+        parent_ids = set(c.parent_id for c in categories)
+        if len(parent_ids) != 1 or parent_ids.pop() != parent_id:
+            raise ValueError("All categories must have the same parent")
+
+        return [
+            Distribution.set(intention_id, None, distribution, session)
+            for distribution in distribution_list
+        ]
+
+    @classmethod
+    def delete_from_intention(
+        cls, intention_id: int, category_id: int, session: Session
+    ) -> "Distribution":
+        distribution = cls.get(intention_id, category_id, session)
+        if distribution.percentage != 0:
+            raise ValueError("Distribution must be empty")
+        session.delete(distribution)
+        session.commit()
