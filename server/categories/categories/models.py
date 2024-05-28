@@ -14,7 +14,19 @@ from services.database import Base
 from categories.categories import schemas
 from typing import List, Optional
 from documents.models import Document
-from categories.intentions.models import Intention
+from collections import deque
+
+# from categories.intentions.models import Intention
+from services.exceptions import (
+    CategoryNotFoundException,
+    CategoryInDistributionDeletionException,
+    NonEmptyCategoryDeletionException,
+    DistributionExcesiveSubcategoriesException,
+    DistributionMissingSubcategoriesException,
+    DistributionNotFoundException,
+    MaximumCategoryLevelException,
+    UniqueCategoryNameViolationException,
+)
 
 
 MAX_CATEGORY_LEVEL = 3
@@ -33,7 +45,7 @@ class Category(Base):
     assignable = Column(Boolean)
     percentage = Column(Float)
     extract_whole = Column(Boolean)
-    disabled = Column(Boolean)
+    disabled = Column(Boolean, default=False)
 
     __table_args__ = (UniqueConstraint("name", "parent_id"),)
 
@@ -120,8 +132,12 @@ class Category(Base):
     def get(cls, category_id: int, session: Session) -> "Category":
         category = cls.find(category_id, session)
         if not category:
-            raise ValueError("Category not found")
+            raise CategoryNotFoundException(category_id)
         return category
+
+    @classmethod
+    def get_root_categories(cls, session: Session) -> List["Category"]:
+        return session.query(cls).filter(cls.parent_id.is_(None)).all()
 
     @classmethod
     def find_by_name_and_parent_id(
@@ -138,7 +154,7 @@ class Category(Base):
         cls, category: schemas.CategoryCreate, session: Session
     ) -> "Category":
         if cls.find_by_name_and_parent_id(category.name, None, session):
-            raise ValueError("Category already exists")
+            raise UniqueCategoryNameViolationException()
 
         db_category = cls(
             name=category.name,
@@ -161,12 +177,12 @@ class Category(Base):
         parent_category = cls.get(parent_id, session)
 
         if parent_category.level == MAX_CATEGORY_LEVEL:
-            raise ValueError("Maximum category level reached")
+            raise MaximumCategoryLevelException()
 
         if cls.find_by_name_and_parent_id(
             category.name, parent_category.id, session
         ):
-            raise ValueError("Category already exists")
+            raise UniqueCategoryNameViolationException()
 
         db_category = cls(
             name=category.name,
@@ -197,7 +213,7 @@ class Category(Base):
                 category.name, db_category.parent_id, session
             )
         ):
-            raise ValueError("Category already exists")
+            raise UniqueCategoryNameViolationException()
 
         db_category.name = category.name
         db_category.description = category.description
@@ -211,7 +227,21 @@ class Category(Base):
     @classmethod
     def delete(cls, category_id: int, session: Session) -> "Category":
         category = cls.get(category_id, session)
-        session.delete(category)
+        if category.total_pages > 0:
+            raise NonEmptyCategoryDeletionException()
+        if category.distributions:
+            raise CategoryInDistributionDeletionException()
+
+        categories = deque([category])
+        while categories:
+            current_category = categories.popleft()
+            for department in current_category.departments:
+                CategoryDepartments.unset(
+                    current_category.id, department, session
+                )
+            categories.extend(current_category.sub_categories)
+            session.delete(current_category)
+
         session.commit()
         return category
 
@@ -220,7 +250,17 @@ class Category(Base):
         cls,
         session: Session,
     ) -> Query:
-        return session.query(cls)
+        return session.query(cls).filter_by(parent_id=None)
+
+    @classmethod
+    def query_by_department(
+        cls, department_id: int, session: Session
+    ) -> Query:
+        return (
+            session.query(Category)
+            .join(CategoryDepartments)
+            .filter(CategoryDepartments.department_id == department_id)
+        )
 
     @classmethod
     def query_extracted(cls, extraction_id: int, session: Session) -> Query:
@@ -239,18 +279,6 @@ class Category(Base):
                 Distribution.intention_id == intention_id
             )
             if intention_id
-            else query
-        )
-
-    @classmethod
-    def filter_by_department_id(
-        cls, query: Query, department_id: int
-    ) -> Query:
-        return (
-            query.join(CategoryDepartments).filter(
-                CategoryDepartments.department_id == department_id
-            )
-            if department_id
             else query
         )
 
@@ -296,8 +324,10 @@ class CategoryDepartments(Base):
 
     @classmethod
     def unset(cls, category_id: int, department_id: int, session: Session):
-        cls.find(category_id, department_id, session).delete()
-        session.commit()
+        category_department = cls.find(category_id, department_id, session)
+        if category_department:
+            session.delete(category_department)
+            session.commit()
 
 
 class Distribution(Base):
@@ -310,7 +340,8 @@ class Distribution(Base):
     __table_args__ = (UniqueConstraint("intention_id", "category_id"),)
     __table_args__ = (PrimaryKeyConstraint("intention_id", "category_id"),)
 
-    # intention: Mapped[Intention] = relationship(back_populates="distributions")
+    # intention: Mapped[Intention] =
+    # relationship(back_populates="distributions")
     category: Mapped["Category"] = relationship(back_populates="distributions")
 
     @hybrid_property
@@ -336,7 +367,7 @@ class Distribution(Base):
     ) -> "Distribution":
         distribution = cls.find(intention_id, category_id, session)
         if not distribution:
-            raise ValueError("Distribution not found")
+            raise DistributionNotFoundException(intention_id, category_id)
         return distribution
 
     @classmethod
@@ -367,27 +398,28 @@ class Distribution(Base):
         cls,
         parent_id: Optional[int],
         intention_id: int,
-        distribution_list: List[int],
+        distribution_list: List[schemas.DistributionCreate],
         session: Session,
     ):
-        categories = (
-            session.query(Category)
-            .filter(
-                Category.id.in_(
-                    [
-                        distribution.category_id
-                        for distribution in distribution_list
-                    ]
-                )
+        parent_sub_categories = {
+            category.id
+            for category in (
+                Category.get(parent_id, session).sub_categories
+                if parent_id
+                else Category.get_root_categories(session)
             )
-            .all()
-        )
-        parent_ids = set(c.parent_id for c in categories)
-        if len(parent_ids) != 1 or parent_ids.pop() != parent_id:
-            raise ValueError("All categories must have the same parent")
+        }
+        sub_categories = {
+            distribution.category_id for distribution in distribution_list
+        }
+
+        if parent_sub_categories - sub_categories:
+            raise DistributionMissingSubcategoriesException()
+        if sub_categories - parent_sub_categories:
+            raise DistributionExcesiveSubcategoriesException()
 
         return [
-            Distribution.set(intention_id, None, distribution, session)
+            Distribution.set(intention_id, distribution, session)
             for distribution in distribution_list
         ]
 

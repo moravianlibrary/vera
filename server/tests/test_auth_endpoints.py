@@ -25,7 +25,7 @@ class TestAuthEndpoints(TestEndpoints):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["username"], test_user.username)
 
-    @patch("auth.router.get_users_crud")
+    @patch("security.crud.get_users")
     def test_get_users_permitted(self, mock_get_users: Mock):
         # Arange
         mockUser(createTestUser(actions=[ActionType.EditAccess]))

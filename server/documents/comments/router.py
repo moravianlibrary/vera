@@ -4,7 +4,7 @@ from typing import List
 
 from services.database import get_db
 from routing.security import get_current_user
-from auth.schemas import CurrentUser
+from security.schemas import CurrentUser
 from . import crud, schemas
 
 

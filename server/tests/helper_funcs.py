@@ -2,6 +2,8 @@ import ast
 import csv
 import json
 from sqlalchemy import select
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from typing import Any, List, Optional
 
 from security.schemas import CurrentUser
@@ -13,6 +15,7 @@ TOKEN_CALL = (
 )
 
 MOCK_DOCUMENTS_FILE = "tests/mock_documents.csv"
+engine = None
 
 
 def mockClsEnv(cls):
@@ -35,6 +38,59 @@ def mockUser(user: CurrentUser):
     from security.api import get_current_user
 
     app.dependency_overrides[get_current_user] = lambda: user
+
+
+def mock_db(items: List[Any] = []):
+    from vera import app
+    from services.database import Base, get_db
+
+    DB_NAME = "vera-test"
+    DB_USER = "veraAdmin"
+    DB_PASSWORD = "password"
+    DB_HOST = "localhost"
+    DB_PORT = "5433"
+
+    DATABASE_URL = (
+        f"postgresql://{DB_USER}:{DB_PASSWORD}"
+        f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    )
+    engine = create_engine(
+        DATABASE_URL,
+        pool_size=20,  # Adjust the pool size as needed
+        max_overflow=0,  # Adjust the overflow size as needed
+        pool_timeout=30,  # Timeout for getting a connection from the pool
+        pool_recycle=1800,  # Recycle connections after 30 minutes
+        pool_pre_ping=True,  # Enable pre-ping to check connection validit
+    )
+
+    TestingSessionLocal = sessionmaker(
+        autocommit=False, autoflush=False, bind=engine
+    )
+
+    Base.metadata.drop_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
+
+    Session = sessionmaker(bind=engine)
+    session = Session()
+
+    if items:
+        try:
+            session.add_all(items)
+            session.commit()
+        except Exception as e:
+            print(f"Error seeding database: {e}")
+            session.rollback()
+        finally:
+            session.close()
+
+    def override_get_db():
+        try:
+            db = TestingSessionLocal()
+            yield db
+        finally:
+            db.close()
+
+    app.dependency_overrides[get_db] = override_get_db
 
 
 def cleanUpDependencyOverrides():

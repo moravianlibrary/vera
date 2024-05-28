@@ -63,3 +63,10 @@ def PermissionValidator(
             raise exception
 
     return Depends(permission_validator)
+
+
+def OwnershipValidator(
+    has_ownership: bool, exception: HTTPException = PermissionDeniedException
+):
+    if not has_ownership:
+        raise exception

@@ -3,9 +3,10 @@ from pydantic import (
     SerializeAsAny,
     field_validator,
     ValidationInfo,
-    ValidationError,
 )
 from typing import List, Optional
+
+from services.exceptions import InvalidDistributionSumException
 
 
 class CategoryBase(BaseModel):
@@ -25,7 +26,7 @@ class Category(CategoryBase):
     parent_id: Optional[int]
     level: int
     departments: List[int]
-    parent_category: Optional[SerializeAsAny["Category"]]
+    # parent_category: Optional[SerializeAsAny["Category"]]
     sub_categories: List[SerializeAsAny["Category"]]
 
     total_pages: int
@@ -74,16 +75,19 @@ class Distribution(DistributionBase):
 
 class DistributionList(BaseModel):
     intention_id: int
-    distributions: List[Distribution]
+    distributions: List[DistributionCreate]
 
     @field_validator("distributions")
     @classmethod
-    def multiply_with_context(
-        cls, distributions: List[Distribution], info: ValidationInfo
+    def validate_distribution(
+        cls, distributions: List[DistributionCreate], info: ValidationInfo
     ) -> int:
         total_percentage = sum(
             distribution.percentage for distribution in distributions
         )
         if total_percentage != 100:
-            raise ValidationError("The sum of percentages should be 100")
+            raise InvalidDistributionSumException()
         return distributions
+
+
+Distributions = List[Distribution]
