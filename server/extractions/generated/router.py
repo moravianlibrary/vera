@@ -1,17 +1,22 @@
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
-from typing import List
+
+# from typing import List
 
 from security.schemas import CurrentUser
 from routing.security import get_current_user
-from categories.crud import get_root_categories
-from categories.quotas.crud import get_quota
+
+# TODO: fix categories
+# from categories.crud import get_root_categories
+# from categories.quotas.crud import get_quota
 from extractions.generated import crud, schemas
 from extractions.generated.generator import ExtractionGenerator
-from extractions.routines import get_category_subtree
-from extractions.schemas import ExtractionCategoryNode
+
+# from extractions.routines import get_category_subtree
+# from extractions.schemas import ExtractionCategoryNode
 from services.database import get_db
-from services.exceptions import EmptyExtraction
+
+# from services.exceptions import EmptyExtraction
 from extractions.permissions import CanExtract, CanManageExtraction
 
 
@@ -30,10 +35,11 @@ def create_extraction(
     user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if quota_id is not None:
-        pages_count = get_quota(quota_id, db).pages_count
-    elif pages_count is None or pages_count <= 0:
-        raise EmptyExtraction
+    # TODO:
+    # if quota_id is not None:
+    # pages_count = get_quota(quota_id, db).pages_count
+    # elif pages_count is None or pages_count <= 0:
+    # raise EmptyExtraction
 
     generator = ExtractionGenerator(pages_count, params, db)
     generator.generate()
@@ -84,13 +90,14 @@ def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.get_extraction(id, db)
 
 
-@router.get(
-    "/{id}/categories",
-    dependencies=[CanExtract],
-    response_model=List[ExtractionCategoryNode],
-)
-def get_categories(id: int = Path(...), db: Session = Depends(get_db)):
-    return [
-        get_category_subtree(id, root_category, db)
-        for root_category in get_root_categories(db)
-    ]
+# TODO:
+# @router.get(
+#     "/{id}/categories",
+#     dependencies=[CanExtract],
+#     response_model=List[ExtractionCategoryNode],
+# )
+# def get_categories(id: int = Path(...), db: Session = Depends(get_db)):
+#     return [
+#         get_category_subtree(id, root_category, db)
+#         for root_category in get_root_categories(db)
+#     ]

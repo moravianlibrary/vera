@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
 from typing import List, Tuple
 
-from categories.crud import (
-    get_children_categories,
-    get_root_categories,
-)
-from categories.models import Category as CategoryModel
+# from categories.crud import (
+#     get_children_categories,
+#     get_root_categories,
+# )
+from categories.categories.models import Category as CategoryModel
 from extractions.generated.crud import (
     get_extractable_documents,
 )
@@ -28,10 +28,11 @@ class ExtractionPreprocessor:
 
     def generate_extraction_tree(self) -> ExtractionNode:
         children_nodes: List[ExtractionNode] = []
-        for root in get_root_categories(self.db):
-            node, pages_count = self.generate_extraction_tree_rec(root)
-            if node:
-                children_nodes.append(node)
+        # TODO: fix categories
+        # for root in get_root_categories(self.db):
+        #     node, pages_count = self.generate_extraction_tree_rec(root)
+        #     if node:
+        #         children_nodes.append(node)
         total_percentage = sum([child.percentage for child in children_nodes])
         for child in children_nodes:
             child.set_relative_ratio(child.percentage / total_percentage)
@@ -65,11 +66,12 @@ class ExtractionPreprocessor:
 
         children_nodes: List[ExtractionNode] = []
         children_pages_count = 0
-        for child in get_children_categories(category.id, self.db):
-            node, pages_count = self.generate_extraction_tree_rec(child)
-            if node:
-                children_nodes.append(node)
-                children_pages_count += pages_count
+        # TODO: fix categories
+        # for child in get_children_categories(category.id, self.db):
+        #     node, pages_count = self.generate_extraction_tree_rec(child)
+        #     if node:
+        #         children_nodes.append(node)
+        #         children_pages_count += pages_count
 
         if not children_nodes:
             return (None, 0)

@@ -8,7 +8,7 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
 )
-from sqlalchemy.orm import relationship, Session, Query
+from sqlalchemy.orm import Mapped, relationship, Session, Query
 from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
 from categories.categories import schemas
@@ -37,21 +37,21 @@ class Category(Base):
 
     __table_args__ = (UniqueConstraint("name", "parent_id"),)
 
-    sub_categories: List["Category"] = relationship(
-        "Category", back_populates="parent_category"
+    sub_categories: Mapped[List["Category"]] = relationship(
+        back_populates="parent_category"
     )
-    parent_category: Optional["Category"] = relationship(
-        "Category", remote_side=[id]
+    parent_category: Mapped[Optional["Category"]] = relationship(
+        remote_side=[id]
     )
 
-    distributions: List["Distribution"] = relationship(
-        "Distribution", back_populates="category"
+    distributions: Mapped[List["Distribution"]] = relationship(
+        back_populates="category"
     )
-    category_departments: List["CategoryDepartments"] = relationship(
-        "CategoryDepartments", back_populates="category"
+    category_departments: Mapped[List["CategoryDepartments"]] = relationship(
+        back_populates="category"
     )
-    documents: List[Document] = relationship(
-        "Document", back_populates="category"
+    documents: Mapped[List["Document"]] = relationship(
+        back_populates="category"
     )
 
     @hybrid_property
@@ -308,13 +308,10 @@ class Distribution(Base):
     percentage = Column(Float)
 
     __table_args__ = (UniqueConstraint("intention_id", "category_id"),)
+    __table_args__ = (PrimaryKeyConstraint("intention_id", "category_id"),)
 
-    intention: Intention = relationship(
-        "Intention", back_populates="distributions"
-    )
-    category: Category = relationship(
-        "Category", back_populates="distributions"
-    )
+    # intention: Mapped[Intention] = relationship(back_populates="distributions")
+    category: Mapped["Category"] = relationship(back_populates="distributions")
 
     @hybrid_property
     def pages_needed_to_meet_intention(self):

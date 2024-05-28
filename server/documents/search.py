@@ -4,7 +4,7 @@ from sqlalchemy.orm import Query
 from typing import List, Optional, Union
 
 from documents import models, schemas
-from categories.models import Category
+from categories.categories.models import Category
 from documents.enums import (
     EnumOption,
     GroupOption,

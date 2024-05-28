@@ -1,7 +1,7 @@
 from queue import PriorityQueue
 from typing import List, Optional
 
-from categories.models import Category as CategoryModel
+from categories.categories.models import Category as CategoryModel
 from documents.models import Document as DocumentModel
 from extractions.generated.extraction_document import ExtractionDocument
 

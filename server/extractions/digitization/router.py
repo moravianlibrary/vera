@@ -4,15 +4,15 @@ from typing import List, Optional
 
 from security.schemas import CurrentUser
 from routing.security import get_current_user
-from categories.crud import get_root_categories
 from documents.schemas import DocumentsQuery
 from extractions.digitization import crud, schemas
 from extractions.digitization.routines import (
     get_extraction_from_query,
     get_extraction_documents_from_query,
 )
-from extractions.routines import get_category_subtree
-from extractions.schemas import ExtractionCategoryNode
+
+# from extractions.routines import get_category_subtree
+# from extractions.schemas import ExtractionCategoryNode
 from services.database import get_db
 from extractions.permissions import CanExtract, CanManageDigitizationList
 
@@ -108,14 +108,15 @@ def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.delete_extraction(id, db)
 
 
-@router.get(
-    "/{id}/categories",
-    dependencies=[CanExtract],
-    response_model=List[ExtractionCategoryNode],
-)
-def get_categories(id: int = Path(...), db: Session = Depends(get_db)):
-    extraction = crud.get_extraction(id, db)
-    return [
-        get_category_subtree(extraction.document_ids, root_category, db)
-        for root_category in get_root_categories(db)
-    ]
+# TODO:
+# @router.get(
+#     "/{id}/categories",
+#     dependencies=[CanExtract],
+#     response_model=List[ExtractionCategoryNode],
+# )
+# def get_categories(id: int = Path(...), db: Session = Depends(get_db)):
+#     extraction = crud.get_extraction(id, db)
+#     return [
+#         get_category_subtree(extraction.document_ids, root_category, db)
+#         for root_category in get_root_categories(db)
+#     ]

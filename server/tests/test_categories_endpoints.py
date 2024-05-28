@@ -1,5 +1,6 @@
 from tests.test_endpoints import TestEndpoints
 from unittest.mock import Mock, patch
+
 from helper_funcs import (
     createTestUser,
     mockUser,
@@ -12,11 +13,15 @@ from security.types import ActionType
 
 class TestCategoriesEndpoints(TestEndpoints):
     @patch.object(Category, "find_by_name_and_parent_id")
+    @patch("services.database.get_db")
+    # @patch("categories.categories.rower.get_db")
     def test_create_root_category_permitted(
         self,
+        mock_get_db: Mock,
         mock_find_by_name_and_parent_id: Mock,
     ):
         # Arrange
+        mock_get_db.return_value = None
         mockUser(createTestUser([ActionType.EditCategoriesAll]))
 
         name = "Test Root Category Name"

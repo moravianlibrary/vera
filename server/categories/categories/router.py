@@ -19,7 +19,7 @@ CanReadDepartmentCategories = PermissionValidator(ActionType.ReadCategoriesAll)
 
 
 @router.post(
-    "",
+    "/category",
     dependencies=[CanManageRootCategories],
     response_model=schemas.Category,
 )
@@ -27,6 +27,7 @@ def create_root_category(
     category: schemas.CategoryCreate,
     db: Session = Depends(get_db),
 ):
+    # return None
     return Category.create_root_category(category, db)
 
 

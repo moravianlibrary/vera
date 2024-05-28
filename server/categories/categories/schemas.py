@@ -74,7 +74,7 @@ class Distribution(DistributionBase):
 
 class DistributionList(BaseModel):
     intention_id: int
-    distributions = List[Distribution]
+    distributions: List[Distribution]
 
     @field_validator("distributions")
     @classmethod

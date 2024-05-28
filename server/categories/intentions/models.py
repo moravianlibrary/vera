@@ -17,7 +17,7 @@ class Intention(Base):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
 
-    distributions = relationship("Distribution", back_populates="intention")
+    # distributions = relationship("Distribution", back_populates="intention")
 
     @classmethod
     def get(cls, intention_id: int, session: Session) -> "Intention":
