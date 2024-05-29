@@ -37,7 +37,9 @@ def create_catalog_document(
             db,
         )
     elif len(catalog_document.issues) > 1:
-        return routines.generate_multiple_issues_response(catalog_document, db)
+        return routines.generate_multiple_issues_response(
+            identifier, catalog_document, db
+        )
 
     return routines.create_single_issue_catalog_document(
         catalog_document,

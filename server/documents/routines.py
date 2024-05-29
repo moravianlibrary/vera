@@ -179,7 +179,9 @@ def create_single_issue_catalog_document(
 
 
 def generate_multiple_issues_response(
-    catalog_document: schemas.CatalogDocument, db: Session
+    identifier: Identifier,
+    catalog_document: schemas.CatalogDocument,
+    db: Session,
 ):
     for index, issue in enumerate(catalog_document.issues):
         catalog_document.issues[index].already_exists = (
@@ -188,7 +190,7 @@ def generate_multiple_issues_response(
             )
             is not None
         )
-    return MultipleIssuesDocument(catalog_document)
+    return MultipleIssuesDocument(identifier, catalog_document)
 
 
 def get_documents_query():
