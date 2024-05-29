@@ -1,38 +1,31 @@
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import List, Optional
 
-from security.permissions import OwnershipValidator, PermissionValidator
+from security.permissions import (
+    OwnershipValidator,
+    PermissionValidator,
+)
 from security.types import ActionType
 from services.database import get_db
 from security.api import get_current_user
 
 from categories.categories.models import (
     Category,
-    CategoryDepartments,
     Distribution,
 )
 from categories.categories import schemas
 from categories.categories.mappers import (
     map_to_category_distribution,
     map_to_category_extraction,
+    map_to_category_digitization,
 )
 from extractions.generated.models import GeneratedExtraction
+from extractions.digitization.models import DigitizationExtraction
 from security.schemas import CurrentUser
 
 
 router = APIRouter(prefix="/categories")
-
-
-def owns_category(
-    token: str, category_id: int, db: Session, *args, **kwargs
-) -> bool:
-    return (
-        CategoryDepartments.find(
-            category_id, get_current_user(token, db).department_id, db
-        )
-        is not None
-    )
 
 
 CanManageRootCategories = PermissionValidator(ActionType.EditCategoriesAll)
@@ -71,9 +64,7 @@ def create_sub_category(
     current_user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    OwnershipValidator(
-        CategoryDepartments.find(category_id, current_user.department_id, db)
-    )
+    OwnershipValidator.EnforceCategoryEdit(current_user, category_id, db)
     return Category.create_sub_category(category_id, category, db)
 
 
@@ -85,8 +76,10 @@ def create_sub_category(
 def update_category(
     category: schemas.CategoryCreate,
     category_id: int = Path(...),
+    current_user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    OwnershipValidator.EnforceCategoryEdit(current_user, category_id, db)
     return Category.update(category_id, category, db)
 
 
@@ -115,8 +108,10 @@ def update_root_distribution(
 def update_sub_distribution(
     distribution_list: schemas.DistributionList,
     category_id: int = Path(...),
+    current_user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    OwnershipValidator.EnforceCategoryEdit(current_user, category_id, db)
     return Distribution.set_distribution_from_list(
         category_id,
         distribution_list.intention_id,
@@ -126,15 +121,17 @@ def update_sub_distribution(
 
 
 @router.delete(
-    "/{category_id}/intentions/{intention_id}",
+    "/{category_id}/in_intention/{intention_id}",
     dependencies=[CanManageCategory],
     response_model=schemas.Distributions,
 )
 def delete_category_from_intention(
     category_id: int = Path(...),
     intention_id: int = Path(...),
+    current_user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    OwnershipValidator.EnforceCategoryEdit(current_user, category_id, db)
     return Distribution.delete_from_intention(intention_id, category_id, db)
 
 
@@ -144,8 +141,11 @@ def delete_category_from_intention(
     response_model=schemas.Category,
 )
 def delete_category(
-    category_id: int = Path(...), db: Session = Depends(get_db)
+    category_id: int = Path(...),
+    current_user: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
+    OwnershipValidator.EnforceCategoryEdit(current_user, category_id, db)
     return Category.delete(category_id, db)
 
 
@@ -161,7 +161,7 @@ def get_categories(
 
 
 @router.get(
-    "/intentions/{intention_id}",
+    "/in_intention/{intention_id}",
     dependencies=[CanReadCategories],
     response_model=schemas.CategoryDistributions,
 )
@@ -178,24 +178,57 @@ def get_categories_by_intention(
 
 
 @router.get(
-    "/intentions/{intention_id}/extractions/{extraction_id}",
+    "/in_intention/{intention_id}/by_extraction/{extraction_id}",
     dependencies=[CanReadCategories],
-    response_model=schemas.CategoryDistributions,
+    response_model=schemas.CategoryExtractions,
 )
 def get_categories_by_extraction(
     intention_id: int = Path(...),
     extraction_id: int = Path(...),
     db: Session = Depends(get_db),
 ):
+    extraction = GeneratedExtraction.get_extraction(extraction_id, db)
     return [
         map_to_category_extraction(
             category,
             distribution,
+            extraction,
             intention_id,
-            GeneratedExtraction.get_extraction(extraction_id, db).document_ids,
         )
         for category, distribution in Category.get_intention_categories(
-            intention_id, extraction_id, db
+            intention_id, db
+        )
+    ]
+
+
+@router.get(
+    "/in_intention/{intention_id}/by_digitizations",
+    dependencies=[CanReadCategories],
+    response_model=schemas.CategoryDigitizations,
+)
+def get_categories_by_digitization(
+    intention_id: int = Path(...),
+    digitization_ids: Optional[List[int]] = Query(
+        None, description="Digitization ID"
+    ),
+    db: Session = Depends(get_db),
+):
+    if not digitization_ids:
+        digitization_ids = [
+            digitization.id
+            for digitization in DigitizationExtraction.get_by_intention(
+                intention_id, db
+            )
+        ]
+    return [
+        map_to_category_digitization(
+            category,
+            distribution,
+            intention_id,
+            digitization_ids,
+        )
+        for category, distribution in Category.get_intention_categories(
+            intention_id, db
         )
     ]
 
@@ -207,10 +240,90 @@ def get_categories_by_extraction(
 )
 def get_department_categories(
     department_id: int = Path(...),
-    intention_id: Optional[int] = Query(None, description="Intention ID"),
     db: Session = Depends(get_db),
 ):
-    query = Category.query_by_department(department_id, db)
-    if intention_id:
-        query = Category.filter_by_intention_id(query, intention_id)
-    return Category.get_query_result(query)
+    return Category.get_department_categories(department_id, db)
+
+
+@router.get(
+    "/departments/{department_id}/in_intention/{intention_id}",
+    dependencies=[CanReadDepartmentCategories],
+    response_model=schemas.CategoryDistributions,
+)
+def get_department_categories_by_intention(
+    department_id: int = Path(...),
+    intention_id: int = Path(...),
+    db: Session = Depends(get_db),
+):
+    return [
+        map_to_category_distribution(category, distribution, intention_id)
+        for category, distribution in (
+            Category.get_department_intention_categories(
+                department_id, intention_id, db
+            )
+        )
+    ]
+
+
+@router.get(
+    "/departments/{department_id}"
+    "/in_intention/{intention_id}/by_extraction/{extraction_id}",
+    dependencies=[CanReadDepartmentCategories],
+    response_model=schemas.CategoryExtractions,
+)
+def get_department_categories_by_extraction(
+    department_id: int = Path(...),
+    intention_id: int = Path(...),
+    extraction_id: int = Path(...),
+    db: Session = Depends(get_db),
+):
+    extraction = GeneratedExtraction.get_extraction(extraction_id, db)
+    return [
+        map_to_category_extraction(
+            category,
+            distribution,
+            extraction,
+            intention_id,
+        )
+        for category, distribution in (
+            Category.get_department_intention_categories(
+                department_id, intention_id, db
+            )
+        )
+    ]
+
+
+@router.get(
+    "/departments/{department_id}"
+    "/in_intention/{intention_id}/by_digitizations",
+    dependencies=[CanReadDepartmentCategories],
+    response_model=schemas.CategoryDigitizations,
+)
+def get_department_categories_by_digitization(
+    department_id: int = Path(...),
+    intention_id: int = Path(...),
+    digitization_ids: Optional[List[int]] = Query(
+        None, description="Digitization ID"
+    ),
+    db: Session = Depends(get_db),
+):
+    if not digitization_ids:
+        digitization_ids = [
+            digitization.id
+            for digitization in DigitizationExtraction.get_by_intention(
+                intention_id, db
+            )
+        ]
+    return [
+        map_to_category_digitization(
+            category,
+            distribution,
+            intention_id,
+            digitization_ids,
+        )
+        for category, distribution in (
+            Category.get_department_intention_categories(
+                department_id, intention_id, db
+            )
+        )
+    ]

@@ -1,10 +1,12 @@
 from fastapi import Depends, HTTPException, status
+from sqlalchemy.orm import Session
 from typing import Callable, List, Union
 
 
 from security.api import get_current_user
 from security.schemas import CurrentUser
 from security.types import ActionType
+from categories.categories.models import Category
 
 
 class PermissionDeniedException(HTTPException):
@@ -37,6 +39,7 @@ class OwnershipPermission(Permission):
         self.depends = depends
 
     def has_permission(self, user: CurrentUser):
+        print(self.depends(user))
         return self.action in user.actions and self.depends(user)
 
 
@@ -65,8 +68,29 @@ def PermissionValidator(
     return Depends(permission_validator)
 
 
-def OwnershipValidator(
-    has_ownership: bool, exception: HTTPException = PermissionDeniedException
-):
-    if not has_ownership:
-        raise exception
+class OwnershipValidator:
+    def EnforceCategoryRead(
+        current_user: CurrentUser,
+        category_id: int,
+        session: Session,
+        exception: HTTPException = PermissionDeniedException,
+    ):
+        if ActionType.ReadCategoriesAll not in current_user.actions and (
+            ActionType.ReadCategoriesDepartment not in current_user.actions
+            or current_user.department_id
+            not in Category.get(category_id, session).departments
+        ):
+            raise exception
+
+    def EnforceCategoryEdit(
+        current_user: CurrentUser,
+        category_id: int,
+        session: Session,
+        exception: HTTPException = PermissionDeniedException,
+    ):
+        if ActionType.EditCategoriesAll not in current_user.actions and (
+            ActionType.EditCategoriesDepartment not in current_user.actions
+            or current_user.department_id
+            not in Category.get(category_id, session).departments
+        ):
+            raise exception

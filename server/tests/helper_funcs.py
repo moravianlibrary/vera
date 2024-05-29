@@ -93,6 +93,13 @@ def mock_db(items: List[Any] = []):
     app.dependency_overrides[get_db] = override_get_db
 
 
+def get_test_db():
+    from vera import app
+    from services.database import get_db
+
+    return next(app.dependency_overrides[get_db]())
+
+
 def cleanUpDependencyOverrides():
     from vera import app
 

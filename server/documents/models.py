@@ -80,6 +80,7 @@ class Document(Base):
             self.pages_count_manual
             or self.pages_count_catalog
             or self.pages_count_predicted
+            or 0
         )
 
     @pages_count.expression
@@ -91,5 +92,19 @@ class Document(Base):
         )
 
     @hybrid_property
-    def is_extractable(self):
-        return self.pages_count and self.cnb and self.extraction_id is None
+    def is_extractable(self) -> bool:
+        return (
+            self.pages_count is not None
+            and self.pages_count > 0
+            and self.cnb is not None
+            and self.extraction_id is None
+        )
+
+    @is_extractable.inplace.expression
+    def is_extractable(cls):
+        return (
+            cls.pages_count.is_not(None)
+            & (cls.pages_count > 0)
+            & cls.cnb.is_not(None)
+            & cls.extraction_id.is_(None)
+        )

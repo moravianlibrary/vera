@@ -42,7 +42,6 @@ class Category(Base):
     )
     level = Column(Integer)
     assignable = Column(Boolean)
-    percentage = Column(Float)
     extract_whole = Column(Boolean)
     disabled = Column(Boolean, default=False)
 
@@ -123,6 +122,38 @@ class Category(Base):
             for sub_category in self.sub_categories
         )
 
+    def generate_extraction_report(
+        self, extracted_ids: List[int]
+    ) -> Tuple[int, int]:
+        return (
+            sum(
+                document.pages_count
+                for document in self.documents
+                if document.id in extracted_ids
+            ),
+            sum(
+                1
+                for document in self.documents
+                if document.id in extracted_ids
+            ),
+        )
+
+    def generate_digitization_report(
+        self, digitization_ids: List[int]
+    ) -> Tuple[int, int]:
+        return (
+            sum(
+                document.pages_count
+                for document in self.documents
+                if document.extraction_id in digitization_ids
+            ),
+            sum(
+                1
+                for document in self.documents
+                if document.extraction_id in digitization_ids
+            ),
+        )
+
     @classmethod
     def find(cls, category_id: int, session: Session) -> Optional["Category"]:
         return session.query(cls).filter_by(id=category_id).first()
@@ -136,7 +167,7 @@ class Category(Base):
 
     @classmethod
     def get_root_categories(cls, session: Session) -> List["Category"]:
-        return session.query(cls).filter(cls.parent_id.is_(None)).all()
+        return session.query(cls).filter(cls.level == 0).all()
 
     @classmethod
     def find_by_name_and_parent_id(
@@ -245,20 +276,8 @@ class Category(Base):
         return category
 
     @classmethod
-    def query_by_department(
-        cls, department_id: int, session: Session
-    ) -> Query:
-        return (
-            session.query(Category)
-            .join(CategoryDepartments)
-            .filter(CategoryDepartments.department_id == department_id)
-        )
-
-    @classmethod
     def get_categories(cls, session: Session) -> List["Category"]:
-        return (
-            session.query(Category).filter(Category.parent_id.is_(None)).all()
-        )
+        return session.query(Category).filter(Category.level == 0).all()
 
     @classmethod
     def get_intention_categories(
@@ -273,13 +292,24 @@ class Category(Base):
         )
 
     @classmethod
-    def get_extraction_categories(
-        cls, intention_id: int, extraction_id: int, session: Session
-    ) -> List["Category"]:
+    def get_department_categories(
+        cls, department_id: int, session: Session
+    ) -> Query:
+        return (
+            session.query(Category)
+            .join(CategoryDepartments)
+            .filter(CategoryDepartments.department_id == department_id)
+        )
+
+    @classmethod
+    def get_department_intention_categories(
+        cls, department_id: int, intention_id: int, session: Session
+    ) -> List[Tuple["Category", "Distribution"]]:
         return (
             session.query(Category, Distribution)
             .join(Category.distributions)
-            .filter(Category.level == 0)
+            .join(CategoryDepartments)
+            .filter(CategoryDepartments.department_id == department_id)
             .filter(Distribution.intention_id == intention_id)
             .all()
         )
@@ -436,6 +466,8 @@ class Distribution(Base):
             categories.extend(category.sub_categories)
             distribution = cls.find(intention_id, category.id, session)
             if distribution:
+                # Prevent lazy load
+                distribution.pages_needed_to_meet_intention
                 session.delete(distribution)
                 distributions.append(distribution)
 

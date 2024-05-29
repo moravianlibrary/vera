@@ -74,6 +74,7 @@ class DistributionCreate(DistributionBase):
 
 class Distribution(DistributionBase):
     intention_id: int
+    pages_needed_to_meet_intention: int
 
 
 class DistributionList(BaseModel):

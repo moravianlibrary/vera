@@ -7,7 +7,7 @@ from tests.helper_funcs import (
 )
 
 
-class TestEndpoints(unittest.TestCase):
+class TestIntegration(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         mockClsEnv(cls)

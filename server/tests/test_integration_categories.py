@@ -1,4 +1,4 @@
-from tests.test_endpoints import TestEndpoints
+from tests.test_integration import TestIntegration
 from datetime import date, timedelta
 
 from helper_funcs import (
@@ -13,12 +13,15 @@ from categories.categories.models import (
     CategoryDepartments,
     Distribution,
 )
+from extractions.generated.models import GeneratedExtraction
+from extractions.digitization.models import DigitizationExtraction
 from categories.intentions.models import Intention
+from documents.models import Document
 from security.models import Department
 from security.types import ActionType
 
 
-class TestCategoriesEndpoints(TestEndpoints):
+class TestCategoriesEndpoints(TestIntegration):
     def test_create_root_category_permitted(self):
         # Arrange
         mock_db()
@@ -765,17 +768,52 @@ class TestCategoriesEndpoints(TestEndpoints):
                     category_id=4,
                     percentage=50.0,
                 ),
+                DigitizationExtraction(
+                    intention_id=1,
+                    document_ids=[1],
+                    extracted_pages=125,
+                    extractor="test_user",
+                ),
+                Document(
+                    sysno="test_sysno",
+                    volume="test_volume",
+                    barcode="test_barcode",
+                    category_id=4,
+                    pages_count_catalog=125,
+                    extraction_id=1,
+                ),
+                GeneratedExtraction(
+                    document_ids=[1],
+                    selected_pages=125,
+                    target_pages=500,
+                    include_categories=[],
+                    location_ids=[],
+                    target_pages_threshold=0.05,
+                    whole_categories_threshold=0.05,
+                    generated_by="test_user",
+                ),
             ]
         )
 
     def test_remove_from_intention_permitted_all(self):
         # Arrange
         self.mock_db_for_distribution_and_intention_test()
-        mockUser(createTestUser([ActionType.EditCategoriesAll]))
+        mockUser(
+            createTestUser(
+                [ActionType.EditCategoriesAll, ActionType.ReadCategoriesAll]
+            )
+        )
 
         # Act
-        response = self.client.delete(
-            "/categories/2/intentions/1",
+        response_deletion = self.client.delete(
+            "/categories/2/in_intention/1",
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+        response_get = self.client.get(
+            "/categories/in_intention/1",
             headers={
                 "Authorization": "Bearer test_token",
                 "Content-Type": "application/json",
@@ -783,10 +821,13 @@ class TestCategoriesEndpoints(TestEndpoints):
         )
 
         # Assert
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response_deletion.status_code, 200)
         self.assertListEqual(
-            [d["category_id"] for d in response.json()], [2, 3, 4]
+            [d["category_id"] for d in response_deletion.json()], [2, 3, 4]
         )
+        self.assertEqual(response_get.status_code, 200)
+        self.assertListEqual([d["id"] for d in response_get.json()], [1])
+        self.assertListEqual(response_get.json()[0]["sub_categories"], [])
 
     def test_get_root_categories_for_intention_permitted_all(self):
         # Arrange
@@ -795,7 +836,7 @@ class TestCategoriesEndpoints(TestEndpoints):
 
         # Act
         response = self.client.get(
-            "/categories/intentions/1",
+            "/categories/in_intention/1",
             headers={
                 "Authorization": "Bearer test_token",
                 "Content-Type": "application/json",
@@ -833,16 +874,14 @@ class TestCategoriesEndpoints(TestEndpoints):
             62500,
         )
 
-    def test_get_department_categories_for_intention_permitted_department(
-        self,
-    ):
+    def test_get_root_categories_for_extraction_permitted_all(self):
         # Arrange
         self.mock_db_for_distribution_and_intention_test()
-        mockUser(createTestUser([ActionType.ReadCategoriesDepartment], 1))
+        mockUser(createTestUser([ActionType.ReadCategoriesAll]))
 
         # Act
         response = self.client.get(
-            "/categories/departments/2",
+            "/categories/in_intention/1/by_extraction/1",
             headers={
                 "Authorization": "Bearer test_token",
                 "Content-Type": "application/json",
@@ -853,6 +892,195 @@ class TestCategoriesEndpoints(TestEndpoints):
         print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["id"], 1)
+        self.assertEqual(response.json()[0]["level"], 0)
+        self.assertEqual(
+            response.json()[0]["pages_needed_to_meet_intention"], 125000
+        )
+        self.assertEqual(len(response.json()[0]["sub_categories"]), 1)
+        self.assertEqual(
+            response.json()[0]["sub_categories"][0][
+                "pages_needed_to_meet_intention"
+            ],
+            125000,
+        )
+        self.assertEqual(
+            len(response.json()[0]["sub_categories"][0]["sub_categories"]), 2
+        )
+        self.assertEqual(
+            response.json()[0]["sub_categories"][0]["sub_categories"][0][
+                "pages_needed_to_meet_intention"
+            ],
+            62500,
+        )
+        self.assertEqual(
+            response.json()[0]["sub_categories"][0]["sub_categories"][1][
+                "pages_needed_to_meet_intention"
+            ],
+            62500,
+        )
+
+    def test_get_root_categories_for_digitization_permitted_all(self):
+        # Arrange
+        self.mock_db_for_distribution_and_intention_test()
+        mockUser(createTestUser([ActionType.ReadCategoriesAll]))
+
+        # Act
+        response = self.client.get(
+            "/categories/in_intention/1/by_digitizations",
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["id"], 1)
+        self.assertEqual(response.json()[0]["level"], 0)
+        self.assertEqual(
+            response.json()[0]["pages_needed_to_meet_intention"], 125000
+        )
+        self.assertEqual(response.json()[0]["digitized_pages"], 125)
+        self.assertEqual(len(response.json()[0]["sub_categories"]), 1)
+        self.assertEqual(
+            response.json()[0]["sub_categories"][0][
+                "pages_needed_to_meet_intention"
+            ],
+            125000,
+        )
+        self.assertEqual(
+            len(response.json()[0]["sub_categories"][0]["sub_categories"]), 2
+        )
+        self.assertEqual(
+            response.json()[0]["sub_categories"][0]["sub_categories"][0][
+                "pages_needed_to_meet_intention"
+            ],
+            62500,
+        )
+        category_22 = response.json()[0]["sub_categories"][0][
+            "sub_categories"
+        ][1]
+        self.assertEqual(
+            category_22["pages_needed_to_meet_intention"],
+            62500,
+        )
+        self.assertEqual(
+            category_22["digitized_pages"],
+            125,
+        )
+
+    def test_get_department_categories_for_intention_permitted_department(
+        self,
+    ):
+        # Arrange
+        self.mock_db_for_distribution_and_intention_test()
+        mockUser(createTestUser([ActionType.ReadCategoriesDepartment], 1))
+
+        # Act
+        response = self.client.get(
+            "/categories/departments/1/in_intention/1",
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
         self.assertEqual(response.json()[0]["id"], 2)
         self.assertEqual(response.json()[0]["level"], 1)
-        self.assertEqual(len(response.json()[0]["sub_categories"]), 3)
+        self.assertEqual(
+            response.json()[0]["pages_needed_to_meet_intention"], 125000
+        )
+        self.assertEqual(len(response.json()[0]["sub_categories"]), 2)
+        self.assertEqual(
+            response.json()[0]["sub_categories"][0][
+                "pages_needed_to_meet_intention"
+            ],
+            62500,
+        )
+        self.assertEqual(
+            response.json()[0]["sub_categories"][1][
+                "pages_needed_to_meet_intention"
+            ],
+            62500,
+        )
+
+    def test_get_department_categories_for_extraction_permitted_all(self):
+        # Arrange
+        self.mock_db_for_distribution_and_intention_test()
+        mockUser(createTestUser([ActionType.ReadCategoriesAll]))
+
+        # Act
+        response = self.client.get(
+            "/categories/departments/1/in_intention/1/by_extraction/1",
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["id"], 2)
+        self.assertEqual(response.json()[0]["level"], 1)
+        self.assertEqual(
+            response.json()[0]["pages_needed_to_meet_intention"], 125000
+        )
+        self.assertEqual(len(response.json()[0]["sub_categories"]), 2)
+        self.assertEqual(
+            response.json()[0]["sub_categories"][0][
+                "pages_needed_to_meet_intention"
+            ],
+            62500,
+        )
+        self.assertEqual(
+            response.json()[0]["sub_categories"][1][
+                "pages_needed_to_meet_intention"
+            ],
+            62500,
+        )
+
+    def test_get_department_categories_for_digitization_permitted_all(self):
+        # Arrange
+        self.mock_db_for_distribution_and_intention_test()
+        mockUser(createTestUser([ActionType.ReadCategoriesAll]))
+
+        # Act
+        response = self.client.get(
+            "/categories/departments/1/in_intention/1/by_digitizations",
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["id"], 2)
+        self.assertEqual(response.json()[0]["level"], 1)
+        self.assertEqual(
+            response.json()[0]["pages_needed_to_meet_intention"], 125000
+        )
+        self.assertEqual(response.json()[0]["digitized_pages"], 125)
+        self.assertEqual(len(response.json()[0]["sub_categories"]), 2)
+        self.assertEqual(
+            response.json()[0]["sub_categories"][0][
+                "pages_needed_to_meet_intention"
+            ],
+            62500,
+        )
+        category_22 = response.json()[0]["sub_categories"][1]
+        self.assertEqual(
+            category_22["pages_needed_to_meet_intention"],
+            62500,
+        )
+        self.assertEqual(
+            category_22["digitized_pages"],
+            125,
+        )
