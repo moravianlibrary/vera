@@ -13,6 +13,11 @@ from categories.categories.models import (
     Distribution,
 )
 from categories.categories import schemas
+from categories.categories.mappers import (
+    map_to_category_distribution,
+    map_to_category_extraction,
+)
+from extractions.generated.models import GeneratedExtraction
 from security.schemas import CurrentUser
 
 
@@ -38,7 +43,9 @@ CanManageCategory = PermissionValidator(
     ]
 )
 CanReadCategories = PermissionValidator(ActionType.ReadCategoriesAll)
-CanReadDepartmentCategories = PermissionValidator(ActionType.ReadCategoriesAll)
+CanReadDepartmentCategories = PermissionValidator(
+    [ActionType.ReadCategoriesAll, ActionType.ReadCategoriesDepartment]
+)
 
 
 @router.post(
@@ -121,7 +128,7 @@ def update_sub_distribution(
 @router.delete(
     "/{category_id}/intentions/{intention_id}",
     dependencies=[CanManageCategory],
-    response_model=schemas.Category,
+    response_model=schemas.Distributions,
 )
 def delete_category_from_intention(
     category_id: int = Path(...),
@@ -143,18 +150,54 @@ def delete_category(
 
 
 @router.get(
-    "/",
+    "",
     dependencies=[CanReadCategories],
     response_model=schemas.Categories,
 )
 def get_categories(
-    intention_id: Optional[int] = Query(None, description="Intention ID"),
     db: Session = Depends(get_db),
 ):
-    query = Category.query_all(db)
-    if intention_id:
-        query = Category.filter_by_intention_id(query, intention_id)
-    return Category.get_query_result(query)
+    return db.query(Category).filter_by(parent_id=None).all()
+
+
+@router.get(
+    "/intentions/{intention_id}",
+    dependencies=[CanReadCategories],
+    response_model=schemas.CategoryDistributions,
+)
+def get_categories_by_intention(
+    intention_id: int = Path(...),
+    db: Session = Depends(get_db),
+):
+    return [
+        map_to_category_distribution(category, distribution, intention_id)
+        for category, distribution in Category.get_intention_categories(
+            intention_id, db
+        )
+    ]
+
+
+@router.get(
+    "/intentions/{intention_id}/extractions/{extraction_id}",
+    dependencies=[CanReadCategories],
+    response_model=schemas.CategoryDistributions,
+)
+def get_categories_by_extraction(
+    intention_id: int = Path(...),
+    extraction_id: int = Path(...),
+    db: Session = Depends(get_db),
+):
+    return [
+        map_to_category_extraction(
+            category,
+            distribution,
+            intention_id,
+            GeneratedExtraction.get_extraction(extraction_id, db).document_ids,
+        )
+        for category, distribution in Category.get_intention_categories(
+            intention_id, extraction_id, db
+        )
+    ]
 
 
 @router.get(

@@ -12,11 +12,10 @@ from sqlalchemy.orm import Mapped, relationship, Session, Query
 from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
 from categories.categories import schemas
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from documents.models import Document
 from collections import deque
-
-# from categories.intentions.models import Intention
+from categories.intentions.models import Intention
 from services.exceptions import (
     CategoryNotFoundException,
     CategoryInDistributionDeletionException,
@@ -50,7 +49,7 @@ class Category(Base):
     __table_args__ = (UniqueConstraint("name", "parent_id"),)
 
     sub_categories: Mapped[List["Category"]] = relationship(
-        back_populates="parent_category"
+        back_populates="parent_category", lazy="joined", join_depth=3
     )
     parent_category: Mapped[Optional["Category"]] = relationship(
         remote_side=[id]
@@ -246,13 +245,6 @@ class Category(Base):
         return category
 
     @classmethod
-    def query_all(
-        cls,
-        session: Session,
-    ) -> Query:
-        return session.query(cls).filter_by(parent_id=None)
-
-    @classmethod
     def query_by_department(
         cls, department_id: int, session: Session
     ) -> Query:
@@ -263,28 +255,34 @@ class Category(Base):
         )
 
     @classmethod
-    def query_extracted(cls, extraction_id: int, session: Session) -> Query:
-        # TODO: implement
-        pass
-
-    @classmethod
-    def query_digitized(cls, digitization_id: int, session: Session):
-        # TODO: implement
-        pass
-
-    @classmethod
-    def filter_by_intention_id(cls, query: Query, intention_id: int) -> Query:
+    def get_categories(cls, session: Session) -> List["Category"]:
         return (
-            query.join(Distribution).filter(
-                Distribution.intention_id == intention_id
-            )
-            if intention_id
-            else query
+            session.query(Category).filter(Category.parent_id.is_(None)).all()
         )
 
     @classmethod
-    def get_query_result(cls, query: Query):
-        return query.order_by(cls.id).all()
+    def get_intention_categories(
+        cls, intention_id: int, session: Session
+    ) -> List[Tuple["Category", "Distribution"]]:
+        return (
+            session.query(Category, Distribution)
+            .join(Category.distributions)
+            .filter(Category.level == 0)
+            .filter(Distribution.intention_id == intention_id)
+            .all()
+        )
+
+    @classmethod
+    def get_extraction_categories(
+        cls, intention_id: int, extraction_id: int, session: Session
+    ) -> List["Category"]:
+        return (
+            session.query(Category, Distribution)
+            .join(Category.distributions)
+            .filter(Category.level == 0)
+            .filter(Distribution.intention_id == intention_id)
+            .all()
+        )
 
     @classmethod
     def is_assigned_to_department(
@@ -340,15 +338,14 @@ class Distribution(Base):
     __table_args__ = (UniqueConstraint("intention_id", "category_id"),)
     __table_args__ = (PrimaryKeyConstraint("intention_id", "category_id"),)
 
-    # intention: Mapped[Intention] =
-    # relationship(back_populates="distributions")
+    intention: Mapped[Intention] = relationship(back_populates="distributions")
     category: Mapped["Category"] = relationship(back_populates="distributions")
 
     @hybrid_property
     def pages_needed_to_meet_intention(self):
         return (
-            int(self.percentage * self.intention.target_page_count)
-            - self.category.total_pages
+            int((self.percentage * self.intention.target_page_count) / 100)
+            - self.category.extractable_pages
         )
 
     @classmethod
@@ -426,9 +423,21 @@ class Distribution(Base):
     @classmethod
     def delete_from_intention(
         cls, intention_id: int, category_id: int, session: Session
-    ) -> "Distribution":
+    ) -> List["Distribution"]:
         distribution = cls.get(intention_id, category_id, session)
-        if distribution.percentage != 0:
+        if distribution.percentage != 0 and distribution.percentage != 100:
             raise ValueError("Distribution must be empty")
-        session.delete(distribution)
+        category = Category.get(category_id, session)
+
+        categories = deque([category])
+        distributions = []
+        while categories:
+            category = categories.popleft()
+            categories.extend(category.sub_categories)
+            distribution = cls.find(intention_id, category.id, session)
+            if distribution:
+                session.delete(distribution)
+                distributions.append(distribution)
+
         session.commit()
+        return distributions

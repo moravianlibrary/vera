@@ -39,25 +39,28 @@ class Category(CategoryBase):
     extractable_documents: int
 
 
-class CategoryIntentionReport(Category):
+class CategoryDistribution(Category):
     intention_id: int
     percentage: float
     pages_needed_to_meet_intention: int
 
 
-class CategoryExtractReport(Category):
+class CategoryExtraction(CategoryDistribution):
     extraction_id: int
     extracted_pages: int
     extracted_documents: int
 
 
-class CategoryDigitizationReport(Category):
+class CategoryDigitization(CategoryDistribution):
     digitization_ids: List[int]
     digitized_pages: int
     digitized_documents: int
 
 
 Categories = List[Category]
+CategoryDistributions = List[CategoryDistribution]
+CategoryExtractions = List[CategoryExtraction]
+CategoryDigitizations = List[CategoryDigitization]
 
 
 class DistributionBase(BaseModel):

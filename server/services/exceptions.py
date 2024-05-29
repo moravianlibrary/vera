@@ -37,6 +37,14 @@ class DistributionNotFoundException(HTTPException):
         )
 
 
+class GeneratedExtractionNotFoundException(HTTPException):
+    def __init__(self, id):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Generated extraction with id {id} was not found",
+        )
+
+
 class CategoryNotFoundException(HTTPException):
     def __init__(self, id):
         super().__init__(

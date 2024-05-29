@@ -8,7 +8,11 @@ from helper_funcs import (
     get_all_actions_except,
 )
 
-from categories.categories.models import Category, CategoryDepartments
+from categories.categories.models import (
+    Category,
+    CategoryDepartments,
+    Distribution,
+)
 from categories.intentions.models import Intention
 from security.models import Department
 from security.types import ActionType
@@ -687,3 +691,168 @@ class TestCategoriesEndpoints(TestEndpoints):
 
         # Assert
         self.assertEqual(response.status_code, 403)
+
+    def mock_db_for_distribution_and_intention_test(self):
+        mock_db(
+            [
+                Category(
+                    name="Root Category",
+                    parent_id=None,
+                    level=0,
+                    assignable=False,
+                    extract_whole=False,
+                ),
+                Category(
+                    name="Category 1",
+                    parent_id=1,
+                    level=1,
+                    assignable=False,
+                    extract_whole=False,
+                ),
+                Category(
+                    name="Category 21",
+                    parent_id=2,
+                    level=2,
+                    assignable=False,
+                    extract_whole=False,
+                ),
+                Category(
+                    name="Category 22",
+                    parent_id=2,
+                    level=2,
+                    assignable=False,
+                    extract_whole=False,
+                ),
+                Category(
+                    name="Category 23",
+                    parent_id=2,
+                    level=2,
+                    assignable=False,
+                    extract_whole=False,
+                ),
+                Intention(
+                    name="Test Intention",
+                    target_page_count=125000,
+                    start_date=date.today(),
+                    end_date=date.today() + timedelta(days=30),
+                ),
+                Department(
+                    name="Test Department",
+                    abbreviation="TST",
+                    users=["test_user"],
+                ),
+                CategoryDepartments(
+                    category_id=2,
+                    department_id=1,
+                ),
+                Distribution(
+                    intention_id=1,
+                    category_id=1,
+                    percentage=100.0,
+                ),
+                Distribution(
+                    intention_id=1,
+                    category_id=2,
+                    percentage=100.0,
+                ),
+                Distribution(
+                    intention_id=1,
+                    category_id=3,
+                    percentage=50.0,
+                ),
+                Distribution(
+                    intention_id=1,
+                    category_id=4,
+                    percentage=50.0,
+                ),
+            ]
+        )
+
+    def test_remove_from_intention_permitted_all(self):
+        # Arrange
+        self.mock_db_for_distribution_and_intention_test()
+        mockUser(createTestUser([ActionType.EditCategoriesAll]))
+
+        # Act
+        response = self.client.delete(
+            "/categories/2/intentions/1",
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertListEqual(
+            [d["category_id"] for d in response.json()], [2, 3, 4]
+        )
+
+    def test_get_root_categories_for_intention_permitted_all(self):
+        # Arrange
+        self.mock_db_for_distribution_and_intention_test()
+        mockUser(createTestUser([ActionType.ReadCategoriesAll]))
+
+        # Act
+        response = self.client.get(
+            "/categories/intentions/1",
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["id"], 1)
+        self.assertEqual(response.json()[0]["level"], 0)
+        self.assertEqual(
+            response.json()[0]["pages_needed_to_meet_intention"], 125000
+        )
+        self.assertEqual(len(response.json()[0]["sub_categories"]), 1)
+        self.assertEqual(
+            response.json()[0]["sub_categories"][0][
+                "pages_needed_to_meet_intention"
+            ],
+            125000,
+        )
+        self.assertEqual(
+            len(response.json()[0]["sub_categories"][0]["sub_categories"]), 2
+        )
+        self.assertEqual(
+            response.json()[0]["sub_categories"][0]["sub_categories"][0][
+                "pages_needed_to_meet_intention"
+            ],
+            62500,
+        )
+        self.assertEqual(
+            response.json()[0]["sub_categories"][0]["sub_categories"][1][
+                "pages_needed_to_meet_intention"
+            ],
+            62500,
+        )
+
+    def test_get_department_categories_for_intention_permitted_department(
+        self,
+    ):
+        # Arrange
+        self.mock_db_for_distribution_and_intention_test()
+        mockUser(createTestUser([ActionType.ReadCategoriesDepartment], 1))
+
+        # Act
+        response = self.client.get(
+            "/categories/departments/2",
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["id"], 2)
+        self.assertEqual(response.json()[0]["level"], 1)
+        self.assertEqual(len(response.json()[0]["sub_categories"]), 3)
