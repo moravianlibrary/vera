@@ -363,7 +363,7 @@ class Distribution(Base):
 
     intention_id = Column(Integer, ForeignKey("intentions.id"), index=True)
     category_id = Column(Integer, ForeignKey("categories.id"), index=True)
-    percentage = Column(Float)
+    percentage = Column(Float, nullable=True)
 
     __table_args__ = (UniqueConstraint("intention_id", "category_id"),)
     __table_args__ = (PrimaryKeyConstraint("intention_id", "category_id"),)
@@ -473,3 +473,20 @@ class Distribution(Base):
 
         session.commit()
         return distributions
+
+    @classmethod
+    def copy_distributions(
+        cls,
+        source_intention_id: int,
+        target_intention_id: int,
+        session: Session,
+    ):
+        source_distributions = (
+            session.query(Distribution)
+            .filter_by(intention_id=source_intention_id)
+            .all()
+        )
+        return [
+            cls.set(target_intention_id, distribution, session)
+            for distribution in source_distributions
+        ]

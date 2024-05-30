@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
+from typing import Optional
 
 from security.permissions import PermissionValidator
 from security.types import ActionType
 from services.database import get_db
 
+from categories.categories.models import Distribution
 from categories.intentions.models import Intention
 from categories.intentions import schemas
 
@@ -24,9 +26,17 @@ CanReadIntentions = PermissionValidator(
 )
 def create_intention(
     intention: schemas.IntentionCreate,
+    copy_distribution_from: Optional[int] = Query(
+        None, alias="copyDistributionFrom"
+    ),
     db: Session = Depends(get_db),
 ):
-    return Intention.create(intention, db)
+    if copy_distribution_from is None:
+        return Intention.create(intention, db)
+    copy_from_intention = Intention.get(copy_distribution_from, db)
+    intention = Intention.create(intention, db)
+    Distribution.copy_distributions(copy_from_intention.id, intention.id, db)
+    return intention
 
 
 @router.put(

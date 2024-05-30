@@ -242,6 +242,7 @@ def get_department_categories(
     department_id: int = Path(...),
     db: Session = Depends(get_db),
 ):
+    OwnershipValidator.EnforceCategoryRead(department_id, db)
     return Category.get_department_categories(department_id, db)
 
 
