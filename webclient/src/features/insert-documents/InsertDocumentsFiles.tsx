@@ -26,17 +26,18 @@ import {
     getLocalizedIdentifiers,
 } from "../../types/Identifiers";
 import { IdentifierType } from "../../types/IdentifierType";
-import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
 import AssignableCategoryEditor from "../../components/editors/AssignableCategoryEditor";
 import { Dialog } from "primereact/dialog";
 import { Tooltip } from "primereact/tooltip";
 import { TabMenu } from "primereact/tabmenu";
+import { useCategories } from "../../contexts/categories/CategoriesContext";
+import { Category } from "../../adapters/ApiCategories";
 
 const InsertDocumentsFiles: React.FC = () => {
     const { t } = useTranslation();
-    const { categories } = useAssignableCategories();
+    const { categories } = useCategories();
     const {
         fileUploadValues,
         spreadsheetFileContent,
@@ -119,11 +120,21 @@ const InsertDocumentsFiles: React.FC = () => {
     }
 
     const categoryBody = (category_id: number | undefined) => {
-        if (!category_id) {
+        if (!category_id || !categories) {
             return "";
         }
-        const category = categories.find((c) => c.id === category_id);
-        return category ? category.getPath() : "";
+        const findCategory = (categories: Category[], id: number) => {
+            const found = categories.find((c) => c.id === id);
+            if (found) {
+                return found;
+            }
+            const foundInSub = categories
+                .map((c) => findCategory(c.sub_categories, id))
+                .filter((c) => c);
+            return foundInSub.length === 1 ? foundInSub[0] : undefined;
+        };
+        const category = findCategory(categories, category_id);
+        return category ? category.name : "";
     };
 
     const identifierEditor = (options: ColumnEditorOptions) => {

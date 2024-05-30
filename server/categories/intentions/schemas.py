@@ -2,6 +2,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import date
 
+from categories.intentions.types import IntentionClassification
+
 
 class IntentionBase(BaseModel):
     name: str
@@ -9,6 +11,7 @@ class IntentionBase(BaseModel):
     target_page_count: int
     start_date: date
     end_date: date
+    classification: IntentionClassification
 
 
 class IntentionCreate(IntentionBase):

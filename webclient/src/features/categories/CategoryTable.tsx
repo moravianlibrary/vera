@@ -35,28 +35,28 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                 <Column
                     field="percentage"
                     header={t("Percentage")}
-                    body={(node) => `${node.percentage}%`}
+                    body={(node) => `${node.percentage || 0}%`}
                 />
                 <Column
-                    field="overallPercentage"
+                    field="overall_percentage"
                     header={t("Overall percentage")}
-                    body={(node) => `${node.overallPercentage}%`}
+                    body={(node) => `${node.overall_percentage || 0}%`}
                 />
                 <Column
-                    field="count_documents"
+                    field="extractable"
                     header={t("Extractable count")}
                     body={(node) =>
-                        `${node.count_pages_extractable} ${t("pages in")} ${
-                            node.count_documents_extractable
+                        `${node.extractable_pages} ${t("pages in")} ${
+                            node.extractable_documents
                         } ${t("documents")}`
                     }
                 />
                 <Column
-                    field="count_pages"
+                    field="total"
                     header={t("Overall count")}
                     body={(node) =>
-                        `${node.count_pages} ${t("pages in")} ${
-                            node.count_documents
+                        `${node.total_pages} ${t("pages in")} ${
+                            node.total_documents
                         } ${t("documents")}`
                     }
                 />
@@ -65,7 +65,7 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                     header={t("Missing pages to fulfill intention")}
                     body={(node) => (
                         <DangerCountBody
-                            count={Math.max(node.quota - node.count_pages, 0)}
+                            count={node.pages_needed_to_meet_intention}
                         />
                     )}
                 />

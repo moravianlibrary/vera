@@ -1,11 +1,24 @@
+import { IntentionClassification } from "../types/IntentionClassification";
 import axiosInstance, { authHeader } from "./ApiBase";
+
+interface IntentionCreate {
+    name: string;
+    description: string | null;
+    target_page_count: number;
+    start_date: string;
+    end_date: string;
+    classification: IntentionClassification;
+}
+
+interface Intention extends IntentionCreate {
+    id: number;
+}
 
 interface CreateCategory {
     name: string;
     description: string | null;
-    parent_id: number | null;
-
     assignable: boolean;
+    extract_whole: boolean;
     disabled: boolean;
     departments: number[];
 }
@@ -13,107 +26,114 @@ interface CreateCategory {
 interface Category extends CreateCategory {
     id: number;
 
-    percentage: number;
+    parent_id: number | null;
     level: number;
 
-    count_pages: number;
-    count_pages_extractable: number;
-    count_documents: number;
-    count_documents_with_pages: number;
-    count_documents_extractable: number;
-    count_documents_without_cnb: number;
+    predecessors_departments: number[];
+
+    total_pages: number;
+    total_documents: number;
+    documents_with_pages: number;
+    documents_without_cnb: number;
+    extractable_pages: number;
+    extractable_documents: number;
+
+    intention_id?: number;
+    percentage?: number;
+    overall_percentage?: number;
+    pages_needed_to_meet_intention?: number;
     
-    extracted_pages_count?: number;
-    extracted_documents_count?: number;
+    extraction_id?: number;
+    extracted_pages?: number;
+    extracted_documents?: number;
+
+    digitization_ids?: number[];
+    digitized_pages?: number;
+    digitized_documents?: number;
 
     sub_categories: Category[];
 }
 
-interface AssignableCategory {
-    id: number;
-    name: string;
-    description: string | null;
-    parent_category?: AssignableCategory | null;
-    children_categories?: AssignableCategory[] | null;
-}
-
-interface CategoryPercentage {
-    id: number;
+interface ChildDistribution {
+    category_id: number;
     percentage: number;
 }
 
-interface CreateQuota {
-    name: string;
-    description?: string | null;
-    pages_count: number;
-    active?: boolean;
+interface ParentDistribution {
+    intention_id: number;
+    distributions: ChildDistribution[];
 }
 
-interface Quota extends CreateQuota {
-    id: number;
+interface Distribution {
+    intention_id: number;
+    category_id: number;
+    percentage: number;
+    pages_needed_to_meet_intention: number;
 }
 
 namespace ApiCategories {
-    export function getCategories() {
-        return axiosInstance.get<Category[]>("/categories", { headers: authHeader() });
+    export function getIntentions() {
+        return axiosInstance.get<Intention[]>("/categories/intentions", { headers: authHeader() });
     }
 
-    export function getGeneratedExtractionCategories(extractionId: number) {
-        return axiosInstance.get<Category[]>(`/extractions/generated/${extractionId}/categories`, { headers: authHeader() });
+    export function getCategories(departmentId: number | null = null) {
+        const url = departmentId ? `/categories/departments/${departmentId}` : "/categories";
+        return axiosInstance.get<Category[]>(url, { headers: authHeader() });
+    }
+
+    export function getCategoriesByIntention(intentionId: number, departmentId: number | null = null) {
+        const url = (departmentId ? `/categories/departments/${departmentId}` : "/categories") + `/in_intention/${intentionId}`;
+        return axiosInstance.get<Category[]>(url, { headers: authHeader() });
+    }
+
+    export function getCategoriesForExtraction(intentionId: number, extractionId: number, departmentId: number | null = null) {
+        const url = (departmentId ? `/categories/departments/${departmentId}` : "/categories") + `/in_intention/${intentionId}/by_extraction/${extractionId}`;
+        return axiosInstance.get<Category[]>(url, { headers: authHeader() });
     }
     
-    export function getDigitizationExtractionCategories(extractionId: number) {
-        return axiosInstance.get<Category[]>(`/extractions/digitization/${extractionId}/categories`, { headers: authHeader() });
+    export function getCategoriesForDigitization(intentionId: number, digitizationIds: number[] = [], departmentId: number | null = null) {
+        const url = (
+            (departmentId ? `/categories/departments/${departmentId}` : "/categories")
+            + `/in_intention/${intentionId}/by_digitizations`
+            + (digitizationIds.length > 0 ? `?digitization_ids=${digitizationIds.join(",")}` : ""));
+        return axiosInstance.get<Category[]>(url, { headers: authHeader() });
     }
 
-    export function getAssignableCategories() {
-        return axiosInstance.get<AssignableCategory[]>("/categories/descriptors?assignable=true", { headers: authHeader() });
+    export function createIntention(intention: IntentionCreate, copyDistributionFrom: number | null = null) {
+        const url = copyDistributionFrom ? `/categories/intentions?copyDistributionFrom=${copyDistributionFrom}` : "/categories/intentions";
+        return axiosInstance.post<Intention>(url, intention, { headers: authHeader() });
     }
 
-    export function getRootCategories() {
-        return axiosInstance.get<AssignableCategory[]>("/categories/descriptors?root=true", { headers: authHeader() });
+    export function updateIntention(id: number, intention: IntentionCreate) {
+        return axiosInstance.put<Intention>(`/categories/intentions/${id}`, intention, { headers: authHeader() });
     }
 
-    export function getCategory(categoryId: number) {
-        return axiosInstance.get<AssignableCategory>(`/categories/descriptors/${categoryId}`, { headers: authHeader() });
+    export function deleteIntention(id: number) {
+        return axiosInstance.delete<Intention>(`/categories/intentions/${id}`, { headers: authHeader() });
     }
 
-    export function createCategory(parentId: number | null, category: CreateCategory) {
-        const path = parentId ? `/categories/category/${parentId}` : "/categories/category";
-        return axiosInstance.post<Category>(path, category, { headers: authHeader() });
+    export function createCategory(category: CreateCategory, parentId: number | null = null) {
+        const url = parentId ? `/categories/${parentId}` : "/categories/root";
+        return axiosInstance.post<Category>(url, category, { headers: authHeader() });
     }
 
     export function updateCategory(categoryId: number, category: CreateCategory) {
-        return axiosInstance.put<Category>(`/categories/category/${categoryId}`, category, { headers: authHeader() });
+        return axiosInstance.put<Category>(`/categories/${categoryId}`, category, { headers: authHeader() });
     }
 
     export function deleteCategory(id: number) {
-        return axiosInstance.delete<Category>(`/categories/category/${id}`, { headers: authHeader() });
+        return axiosInstance.delete<Category>(`/categories/${id}`, { headers: authHeader() });
     }
 
-    export function updateDistribution(parent_id: number | null, distribution: CategoryPercentage[]) {
-        if (parent_id) {
-            return axiosInstance.put(`/categories/distribution/${parent_id}`, distribution, { headers: authHeader() });
-        }
-        return axiosInstance.put(`/categories/distribution`, distribution, { headers: authHeader() });
+    export function updateDistribution(distribution: ParentDistribution, parentId: number | null = null) {
+        const url = `/categories/${parentId ? parentId : "root"}/distribution`;
+        return axiosInstance.put<Category[]>(url, distribution, { headers: authHeader() });
     }
 
-    export function getQuotas() {
-        return axiosInstance.get<Quota[]>("/categories/quota", { headers: authHeader() });
-    }
-
-    export function createQuota(quota: CreateQuota) {
-        return axiosInstance.post<Quota>("/categories/quota", quota, { headers: authHeader() });
-    }
-
-    export function updateQuota(quota: Quota) {
-        return axiosInstance.put<Quota>(`/categories/quota/${quota.id}`, quota, { headers: authHeader() });
-    }
-
-    export function deleteQuota(id: number) {
-        return axiosInstance.delete<Quota>(`/categories/quota/${id}`, { headers: authHeader() });
+    export function removeFromIntention(categoryId: number, intentionId: number) {
+        return axiosInstance.delete<Distribution[]>(`/categories/${categoryId}/in_intention/${intentionId}`, { headers: authHeader() });
     }
 }
 
 export default ApiCategories;
-export type { CreateCategory, Category, CategoryPercentage, AssignableCategory, CreateQuota, Quota };
+export type { CreateCategory, Category, IntentionCreate, Intention, ChildDistribution };

@@ -15,6 +15,7 @@ class CategoryBase(BaseModel):
     assignable: bool = False
     extract_whole: bool = False
     disabled: bool = False
+    departments: List[int] = []
 
 
 class CategoryCreate(CategoryBase):
@@ -25,7 +26,6 @@ class Category(CategoryBase):
     id: int
     parent_id: Optional[int]
     level: int
-    departments: List[int]
     # parent_category: Optional[SerializeAsAny["Category"]]
     sub_categories: List[SerializeAsAny["Category"]]
 
@@ -38,29 +38,21 @@ class Category(CategoryBase):
     extractable_pages: int
     extractable_documents: int
 
+    intention_id: Optional[int] = None
+    percentage: Optional[float] = None
+    overall_percentage: Optional[float] = None
+    pages_needed_to_meet_intention: Optional[int] = None
 
-class CategoryDistribution(Category):
-    intention_id: int
-    percentage: float
-    pages_needed_to_meet_intention: int
+    extraction_id: Optional[int] = None
+    extracted_pages: Optional[int] = None
+    extracted_documents: Optional[int] = None
 
-
-class CategoryExtraction(CategoryDistribution):
-    extraction_id: int
-    extracted_pages: int
-    extracted_documents: int
-
-
-class CategoryDigitization(CategoryDistribution):
-    digitization_ids: List[int]
-    digitized_pages: int
-    digitized_documents: int
+    digitization_ids: Optional[List[int]] = None
+    digitized_pages: Optional[int] = None
+    digitized_documents: Optional[int] = None
 
 
 Categories = List[Category]
-CategoryDistributions = List[CategoryDistribution]
-CategoryExtractions = List[CategoryExtraction]
-CategoryDigitizations = List[CategoryDigitization]
 
 
 class DistributionBase(BaseModel):

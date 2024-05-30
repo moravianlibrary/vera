@@ -2,7 +2,6 @@ import { Dropdown } from "primereact/dropdown";
 import { InputNumber } from "primereact/inputnumber";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
-import { useAssignableCategories } from "../contexts/categories/AssignableCategoriesContext";
 import { MaterialType } from "../types/MaterialType";
 import { IssuanceType } from "../types/IssuanceType";
 
@@ -23,14 +22,17 @@ export const textareaEditor = (options) => {
 };
 
 export const CategoryEditor = (options) => {
-    const { categories } = useAssignableCategories();
     return (
-        <Dropdown
-            value={options.value}
-            options={categories.map(category => category.name)}
-            onChange={(e) => options.editorCallback(e.value)}
-        />
-    );
+        <></>
+    )
+    // const { categories } = useAssignableCategories();
+    // return (
+    //     <Dropdown
+    //         value={options.value}
+    //         options={categories.map(category => category.name)}
+    //         onChange={(e) => options.editorCallback(e.value)}
+    //     />
+    // );
 };
 
 export const MaterialTypeEditor = (options) => {

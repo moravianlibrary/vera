@@ -1,10 +1,13 @@
 from sqlalchemy import Column, Date, Integer, String
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, Session
+from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
 from typing import List, Optional
+from datetime import date
 
 from categories.intentions import schemas
+from categories.intentions.types import IntentionClassification
 
 
 class Intention(Base):
@@ -18,6 +21,14 @@ class Intention(Base):
     end_date = Column(Date, nullable=False)
 
     distributions = relationship("Distribution", back_populates="intention")
+
+    @hybrid_property
+    def classification(self):
+        if self.end_date < date.today():
+            return IntentionClassification.Previous
+        if self.start_date > date.today():
+            return IntentionClassification.Upcoming
+        return IntentionClassification.Current
 
     @classmethod
     def get(cls, intention_id: int, session: Session) -> "Intention":

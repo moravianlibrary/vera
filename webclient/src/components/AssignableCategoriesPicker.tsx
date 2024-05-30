@@ -1,20 +1,22 @@
 import { useTranslation } from "react-i18next";
-import { useAssignableCategories } from "../contexts/categories/AssignableCategoriesContext";
 import React from "react";
-import { AssignableCategory } from "../adapters/ApiCategories";
-import { MultiSelect } from 'primereact/multiselect';
+import { MultiSelect } from "primereact/multiselect";
+import { useCategories } from "../contexts/categories/CategoriesContext";
+import { Category } from "../adapters/ApiCategories";
 
 interface AssignableCategoriesPickerProps {
-    selectedCategories: AssignableCategory[];
-    onCategoriesChange: (categories: AssignableCategory[]) => void;
+    selectedCategories: Category[];
+    onCategoriesChange: (categories: Category[]) => void;
     className?: string;
 }
 
-const AssignableCategoriesPicker: React.FC<AssignableCategoriesPickerProps> = (props) => {
+const AssignableCategoriesPicker: React.FC<AssignableCategoriesPickerProps> = (
+    props
+) => {
     const { t } = useTranslation();
-    const { categories } = useAssignableCategories();
-        
-    const handleCategorySelect = (e: { value: AssignableCategory[] }) => {
+    const { categories } = useCategories();
+
+    const handleCategorySelect = (e: { value: Category[] }) => {
         props.onCategoriesChange(e.value);
     };
 
@@ -26,11 +28,11 @@ const AssignableCategoriesPicker: React.FC<AssignableCategoriesPickerProps> = (p
                 optionLabel="name"
                 optionValue="id"
                 onChange={handleCategorySelect}
-                placeholder={t('Select categories')}
+                placeholder={t("Select categories")}
                 display="chip"
             />
         </div>
     );
-}
+};
 
 export default AssignableCategoriesPicker;

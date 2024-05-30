@@ -49,7 +49,7 @@ class TestCategoriesEndpoints(TestIntegration):
         self.assertIsNone(response.json()["parent_id"])
         self.assertEqual(response.json()["level"], 0)
         self.assertFalse(response.json()["assignable"])
-        self.assertNotIn("percentage", response.json())
+        self.assertIsNone(response.json()["percentage"])
         self.assertFalse(response.json()["disabled"], False)
 
     def test_create_category_permitted_for_user_department(self):
@@ -109,7 +109,7 @@ class TestCategoriesEndpoints(TestIntegration):
         self.assertEqual(response.json()["parent_id"], 1)
         self.assertEqual(response.json()["level"], 1)
         self.assertFalse(response.json()["assignable"])
-        self.assertNotIn("percentage", response.json())
+        self.assertIsNone(response.json()["percentage"])
         self.assertFalse(response.json()["disabled"], 0)
 
     def test_create_category_permitted_for_different_department(self):
@@ -309,7 +309,7 @@ class TestCategoriesEndpoints(TestIntegration):
         self.assertEqual(response.json()["parent_id"], 1)
         self.assertEqual(response.json()["level"], 1)
         self.assertFalse(response.json()["assignable"])
-        self.assertNotIn("percentage", response.json())
+        self.assertIsNone(response.json()["percentage"])
         self.assertFalse(response.json()["disabled"], 0)
 
     def test_update_category_prohibited(self):
@@ -474,25 +474,25 @@ class TestCategoriesEndpoints(TestIntegration):
 
         response_root_json = response_root.json()
         self.assertEqual(len(response_root_json), 1)
-        self.assertEqual(response_root_json[0]["category_id"], 1)
+        self.assertEqual(response_root_json[0]["id"], 1)
         self.assertEqual(response_root_json[0]["intention_id"], 1)
         self.assertEqual(response_root_json[0]["percentage"], 100.0)
 
         response_level1_json = response_level1.json()
         self.assertEqual(len(response_level1_json), 1)
-        self.assertEqual(response_level1_json[0]["category_id"], 2)
+        self.assertEqual(response_level1_json[0]["id"], 2)
         self.assertEqual(response_level1_json[0]["intention_id"], 1)
         self.assertEqual(response_level1_json[0]["percentage"], 100.0)
 
         response_level2_json = response_level2.json()
         self.assertEqual(len(response_level2_json), 3)
-        self.assertEqual(response_level2_json[0]["category_id"], 3)
+        self.assertEqual(response_level2_json[0]["id"], 3)
         self.assertEqual(response_level2_json[0]["intention_id"], 1)
         self.assertEqual(response_level2_json[0]["percentage"], 70.0)
-        self.assertEqual(response_level2_json[1]["category_id"], 4)
+        self.assertEqual(response_level2_json[1]["id"], 4)
         self.assertEqual(response_level2_json[1]["intention_id"], 1)
         self.assertEqual(response_level2_json[1]["percentage"], 20.0)
-        self.assertEqual(response_level2_json[2]["category_id"], 5)
+        self.assertEqual(response_level2_json[2]["id"], 5)
         self.assertEqual(response_level2_json[2]["intention_id"], 1)
         self.assertEqual(response_level2_json[2]["percentage"], 10.0)
 
@@ -827,7 +827,9 @@ class TestCategoriesEndpoints(TestIntegration):
         )
         self.assertEqual(response_get.status_code, 200)
         self.assertListEqual([d["id"] for d in response_get.json()], [1])
-        self.assertListEqual(response_get.json()[0]["sub_categories"], [])
+        self.assertIsNone(
+            response_get.json()[0]["sub_categories"][0]["intention_id"]
+        )
 
     def test_get_root_categories_for_intention_permitted_all(self):
         # Arrange
@@ -859,7 +861,7 @@ class TestCategoriesEndpoints(TestIntegration):
             125000,
         )
         self.assertEqual(
-            len(response.json()[0]["sub_categories"][0]["sub_categories"]), 2
+            len(response.json()[0]["sub_categories"][0]["sub_categories"]), 3
         )
         self.assertEqual(
             response.json()[0]["sub_categories"][0]["sub_categories"][0][
@@ -872,6 +874,11 @@ class TestCategoriesEndpoints(TestIntegration):
                 "pages_needed_to_meet_intention"
             ],
             62500,
+        )
+        self.assertIsNone(
+            response.json()[0]["sub_categories"][0]["sub_categories"][2][
+                "pages_needed_to_meet_intention"
+            ]
         )
 
     def test_get_root_categories_for_extraction_permitted_all(self):
@@ -889,7 +896,6 @@ class TestCategoriesEndpoints(TestIntegration):
         )
 
         # Assert
-        print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
         self.assertEqual(response.json()[0]["id"], 1)
@@ -905,7 +911,7 @@ class TestCategoriesEndpoints(TestIntegration):
             125000,
         )
         self.assertEqual(
-            len(response.json()[0]["sub_categories"][0]["sub_categories"]), 2
+            len(response.json()[0]["sub_categories"][0]["sub_categories"]), 3
         )
         self.assertEqual(
             response.json()[0]["sub_categories"][0]["sub_categories"][0][
@@ -918,6 +924,11 @@ class TestCategoriesEndpoints(TestIntegration):
                 "pages_needed_to_meet_intention"
             ],
             62500,
+        )
+        self.assertIsNone(
+            response.json()[0]["sub_categories"][0]["sub_categories"][2][
+                "pages_needed_to_meet_intention"
+            ]
         )
 
     def test_get_root_categories_for_digitization_permitted_all(self):
@@ -951,7 +962,7 @@ class TestCategoriesEndpoints(TestIntegration):
             125000,
         )
         self.assertEqual(
-            len(response.json()[0]["sub_categories"][0]["sub_categories"]), 2
+            len(response.json()[0]["sub_categories"][0]["sub_categories"]), 3
         )
         self.assertEqual(
             response.json()[0]["sub_categories"][0]["sub_categories"][0][
@@ -995,7 +1006,7 @@ class TestCategoriesEndpoints(TestIntegration):
         self.assertEqual(
             response.json()[0]["pages_needed_to_meet_intention"], 125000
         )
-        self.assertEqual(len(response.json()[0]["sub_categories"]), 2)
+        self.assertEqual(len(response.json()[0]["sub_categories"]), 3)
         self.assertEqual(
             response.json()[0]["sub_categories"][0][
                 "pages_needed_to_meet_intention"
@@ -1007,6 +1018,11 @@ class TestCategoriesEndpoints(TestIntegration):
                 "pages_needed_to_meet_intention"
             ],
             62500,
+        )
+        self.assertIsNone(
+            response.json()[0]["sub_categories"][2][
+                "pages_needed_to_meet_intention"
+            ]
         )
 
     def test_get_department_categories_for_extraction_permitted_all(self):
@@ -1031,7 +1047,7 @@ class TestCategoriesEndpoints(TestIntegration):
         self.assertEqual(
             response.json()[0]["pages_needed_to_meet_intention"], 125000
         )
-        self.assertEqual(len(response.json()[0]["sub_categories"]), 2)
+        self.assertEqual(len(response.json()[0]["sub_categories"]), 3)
         self.assertEqual(
             response.json()[0]["sub_categories"][0][
                 "pages_needed_to_meet_intention"
@@ -1043,6 +1059,11 @@ class TestCategoriesEndpoints(TestIntegration):
                 "pages_needed_to_meet_intention"
             ],
             62500,
+        )
+        self.assertIsNone(
+            response.json()[0]["sub_categories"][2][
+                "pages_needed_to_meet_intention"
+            ]
         )
 
     def test_get_department_categories_for_digitization_permitted_all(self):
@@ -1068,7 +1089,7 @@ class TestCategoriesEndpoints(TestIntegration):
             response.json()[0]["pages_needed_to_meet_intention"], 125000
         )
         self.assertEqual(response.json()[0]["digitized_pages"], 125)
-        self.assertEqual(len(response.json()[0]["sub_categories"]), 2)
+        self.assertEqual(len(response.json()[0]["sub_categories"]), 3)
         self.assertEqual(
             response.json()[0]["sub_categories"][0][
                 "pages_needed_to_meet_intention"
@@ -1083,4 +1104,9 @@ class TestCategoriesEndpoints(TestIntegration):
         self.assertEqual(
             category_22["digitized_pages"],
             125,
+        )
+        self.assertIsNone(
+            response.json()[0]["sub_categories"][2][
+                "pages_needed_to_meet_intention"
+            ]
         )

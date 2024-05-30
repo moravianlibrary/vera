@@ -17,27 +17,30 @@ export enum CategoryViewType {
 
 export enum CategorySection {
     Categories = "Categories",
-    Terms = "Terms",
+    Intentions = "Intentions",
 }
 
 interface CategoriesMenuPanelProps {
     categoryViewType: CategoryViewType;
     onCategoryViewTypeChange: (viewType: CategoryViewType) => void;
+    categorySection: CategorySection;
+    onCategorySectionChange: (section: CategorySection) => void;
 }
 
-const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
+const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = ({
+    categoryViewType,
+    onCategoryViewTypeChange,
+    categorySection,
+    onCategorySectionChange,
+}) => {
     const { t } = useTranslation();
 
-    const [section, setSection] = useState<CategorySection>(
-        CategorySection.Categories
-    );
-
     const getStartContent = () => {
-        if (section === CategorySection.Categories) {
+        if (categorySection === CategorySection.Categories) {
             return (
                 <CategoryOptions
-                    categoryViewType={props.categoryViewType}
-                    onCategoryViewTypeChange={props.onCategoryViewTypeChange}
+                    categoryViewType={categoryViewType}
+                    onCategoryViewTypeChange={onCategoryViewTypeChange}
                 />
             );
         }
@@ -49,8 +52,8 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = (props) => {
             start={getStartContent()}
             end={
                 <SelectCategorySection
-                    section={section}
-                    onSectionChange={setSection}
+                    section={categorySection}
+                    onSectionChange={onCategorySectionChange}
                 />
             }
         />
@@ -226,7 +229,7 @@ const SelectCategorySection: React.FC<SelectCategorySectionProps> = ({
         },
         {
             label: t("Intentions"),
-            value: CategorySection.Terms,
+            value: CategorySection.Intentions,
         },
     ];
 

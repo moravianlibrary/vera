@@ -72,6 +72,15 @@ class Category(Base):
         ]
 
     @hybrid_property
+    def predecessors_departments(self):
+        if self.parent_category is None:
+            return []
+        return [
+            department.department_id
+            for department in self.parent_category.category_departments
+        ].extend(self.parent_category.departments)
+
+    @hybrid_property
     def total_pages(self) -> int:
         return sum(document.pages_count for document in self.documents) + sum(
             sub_category.total_pages for sub_category in self.sub_categories
@@ -89,7 +98,7 @@ class Category(Base):
         return sum(
             1 for document in self.documents if not document.pages_count
         ) + sum(
-            sub_category.extractable_pages
+            sub_category.documents_with_pages
             for sub_category in self.sub_categories
         )
 
@@ -98,7 +107,7 @@ class Category(Base):
         return sum(
             1 for document in self.documents if not document.pages_count
         ) + sum(
-            sub_category.extractable_pages
+            sub_category.documents_without_cnb
             for sub_category in self.sub_categories
         )
 
@@ -118,7 +127,7 @@ class Category(Base):
         return sum(
             1 for document in self.documents if document.is_extractable
         ) + sum(
-            sub_category.extractable_pages
+            sub_category.extractable_documents
             for sub_category in self.sub_categories
         )
 
@@ -153,6 +162,12 @@ class Category(Base):
                 if document.extraction_id in digitization_ids
             ),
         )
+
+    def find_distribution(self, intention_id: int) -> Optional["Distribution"]:
+        distributions = [
+            d for d in self.distributions if d.intention_id == intention_id
+        ]
+        return distributions[0] if distributions else None
 
     @classmethod
     def find(cls, category_id: int, session: Session) -> Optional["Category"]:
@@ -372,9 +387,28 @@ class Distribution(Base):
     category: Mapped["Category"] = relationship(back_populates="distributions")
 
     @hybrid_property
+    def overall_percentage(self) -> float:
+        if self.category.level == 0:
+            return self.percentage
+        distribution = self.category.parent_category.find_distribution(
+            self.intention_id
+        )
+        return round(
+            (
+                distribution.overall_percentage * (self.percentage / 100)
+                if distribution
+                else 0
+            ),
+            2,
+        )
+
+    @hybrid_property
     def pages_needed_to_meet_intention(self):
         return (
-            int((self.percentage * self.intention.target_page_count) / 100)
+            int(
+                (self.overall_percentage * self.intention.target_page_count)
+                / 100
+            )
             - self.category.extractable_pages
         )
 

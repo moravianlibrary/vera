@@ -66,12 +66,12 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category }) => {
             name,
             description,
             assignable,
+            extract_whole: false,
             departments: departments.map((d) => d.id!),
-            parent_id: category.parent_id,
             disabled: category.disabled,
         };
         if (category.type === CategoryType.NewCategory) {
-            createCategory(categoryBody);
+            createCategory(categoryBody, category.parent_id);
         } else {
             updateCategory(categoryBody);
         }

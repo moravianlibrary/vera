@@ -4,7 +4,6 @@ import { TieredMenu } from "primereact/tieredmenu";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TaskType } from "../../types/TaskType";
-import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { useDigitizationLists } from "../../contexts/extractions/DigitizationListsContext";
 import { ConfirmDialog, confirmDialog } from "primereact/confirmdialog";
 import {
@@ -19,6 +18,7 @@ import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsCo
 import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
 import DigitizationListBox from "../../components/DigitizationListBox";
 import { useDocumentsQuery } from "../../contexts/documents/search/DocumentsQueryContext";
+import { useCategories } from "../../contexts/categories/CategoriesContext";
 
 interface DocumentsActionsMenuProps {}
 
@@ -28,7 +28,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
     const { numSelected } = useDocumentsSelection();
     const { exportDocuments, updateCategory, startTask } =
         useDocumentsActions();
-    const { categories } = useAssignableCategories();
+    const { categories } = useCategories();
     const { digitizationLists } = useDigitizationLists();
     const {
         createDigitizationList,
@@ -136,9 +136,11 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
             }
         };
 
-        return buildAssignableCategoriesOptionsTree(categories).map(
-            createCategoryTieredSubMenu
-        );
+        return categories
+            ? buildAssignableCategoriesOptionsTree(categories).map(
+                  createCategoryTieredSubMenu
+              )
+            : [];
     };
 
     const createDigitizationListsTieredMenu = (): MenuItem[] => {

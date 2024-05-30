@@ -1,12 +1,12 @@
-import AssignableCategoryModel from "../../contexts/categories/AssignableCategoryModel";
 import {
     TreeSelect,
     TreeSelectProps,
     TreeSelectSelectionKeysType,
 } from "primereact/treeselect";
 import React, { useEffect, useState } from "react";
-import { useAssignableCategories } from "../../contexts/categories/AssignableCategoriesContext";
 import { TreeNode } from "primereact/treenode";
+import { useCategories } from "../../contexts/categories/CategoriesContext";
+import { Category } from "../../adapters/ApiCategories";
 
 interface AssignableCategoriesPickerProps {
     categories_ids: number[];
@@ -22,8 +22,9 @@ interface AssignableCategoryPickerProps {
 export const AssignableCategoriesPicker: React.FC<
     AssignableCategoriesPickerProps
 > = ({ categories_ids, callback, className }) => {
-    const { categories } = useAssignableCategories();
+    const { getAssignableCategoriesTrees } = useCategories();
 
+    const categories = getAssignableCategoriesTrees();
     const categoriesOptions = buildAssignableCategoriesOptionsTree(categories);
     const [selected, setSelected] =
         useState<TreeSelectSelectionKeysType | null>(null);
@@ -68,9 +69,9 @@ const AssignableCategoryPicker: React.FC<AssignableCategoryPickerProps> = ({
     category_id,
     callback,
 }) => {
-    const { categories } = useAssignableCategories();
-    console.log(categories);
+    const { getAssignableCategoriesTrees } = useCategories();
 
+    const categories = getAssignableCategoriesTrees();
     const categoriesOptions = buildAssignableCategoriesOptionsTree(categories);
     const selected = categories.find((c) => c.id === category_id);
 
@@ -118,47 +119,24 @@ export interface CategoryOption {
     selectable: boolean;
 }
 
-// TODO: refactor into 2 functions
 export function buildAssignableCategoriesOptionsTree(
-    categories: AssignableCategoryModel[]
+    categories: Category[]
 ): CategoryOption[] {
-    const categoryMap = new Map<number, AssignableCategoryModel>();
-    const childrenMap = new Map<number, AssignableCategoryModel[]>();
-    const rootCategories: AssignableCategoryModel[] = [];
-
-    const flattenCategory = (category: AssignableCategoryModel) => {
-        categoryMap.set(category.id, category);
-        if (category.parent_category) {
-            if (!childrenMap.has(category.parent_category.id)) {
-                childrenMap.set(category.parent_category.id, []);
-                flattenCategory(category.parent_category);
-            }
-            childrenMap.get(category.parent_category.id)?.push(category);
-        } else {
-            rootCategories.push(category);
-        }
-    };
-    categories.forEach((c) => flattenCategory(c));
-
-    const buildCategorySubTree = (category: AssignableCategoryModel) => {
-        const children = childrenMap.get(category.id);
-        if (!children) {
-            return {
-                key: category.id,
-                label: category.name,
-                data: category.getPath(),
-                selectable: true,
-            };
-        }
+    const buildCategorySubTree = (category: Category, path: string = "") => {
+        const currPath =
+            path === "" ? category.name : path + " > " + category.name;
         return {
             key: category.id,
             label: category.name,
-            children: children.map((c) => buildCategorySubTree(c)),
-            selectable: false,
+            data: currPath,
+            children: category.sub_categories.map((c) =>
+                buildCategorySubTree(c, currPath)
+            ),
+            selectable: category.assignable,
         };
     };
 
-    return rootCategories.map((c) => buildCategorySubTree(c));
+    return categories.map((c) => buildCategorySubTree(c));
 }
 
 export default AssignableCategoryPicker;

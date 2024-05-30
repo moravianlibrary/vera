@@ -4,24 +4,25 @@ import React, {
     useState,
     ReactNode,
     useEffect,
+    ChildContextProvider,
 } from "react";
 import ApiCategories, {
     Category,
-    CategoryPercentage,
+    ChildDistribution,
     CreateCategory,
-    Quota,
 } from "../../adapters/ApiCategories";
 import { CategoryModel } from "./CategoryModel";
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
 import { CategoryType } from "./CategoryType";
 import { useCategories } from "./CategoriesContext";
+import { useIntentions } from "./IntentionsContext";
 
 interface CategoryModelsContextProps {
     currentCategory: CategoryModel | undefined;
 
     addCategory: (toCategory: CategoryModel) => void;
-    createCategory: (category: CreateCategory) => void;
+    createCategory: (category: CreateCategory, parentId: number | null) => void;
 
     editCategory: CategoryModel | null;
     openCategoryEdit: (category: CategoryModel) => void;
@@ -48,10 +49,7 @@ const CategoryModelsContext = createContext<
 >(undefined);
 
 interface CategoryModelsProviderProps {
-    categories: Category[] | undefined;
-    selectedQuota: Quota | undefined;
     children: ReactNode;
-    extractedCategories: boolean;
 }
 
 export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
@@ -59,7 +57,8 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
 ) => {
     const { t } = useTranslation();
     const showToast = useToast();
-    const { refreshCategories } = useCategories();
+    const { categories, refreshCategories } = useCategories();
+    const { activeIntention } = useIntentions();
 
     const [rootNode, setRootNode] = useState<CategoryModel | undefined>(
         undefined
@@ -78,15 +77,11 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
     const [editDistribution, setEditDistribution] =
         useState<CategoryModel | null>(null);
 
-    const createCategoryModels = (
-        categories: Category[],
-        selectedQuota?: Quota
-    ) => {
-        const quotaPagesCount = selectedQuota ? selectedQuota.pages_count : 0;
+    const createCategoryModels = (categories: Category[]) => {
         const createdRootNode = CategoryModel.generateRootNode(
+            CategoryType.Root,
             t("all_categories"),
-            categories,
-            quotaPagesCount
+            categories
         );
         setRootNode(createdRootNode);
         setCurrentCategory(createdRootNode);
@@ -98,8 +93,11 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
         }
     };
 
-    const createCategory = (category: CreateCategory) => {
-        ApiCategories.createCategory(category.parent_id, category)
+    const createCategory = (
+        category: CreateCategory,
+        parentId: number | null
+    ) => {
+        ApiCategories.createCategory(category, parentId)
             .then((response) => {
                 editCategory?.setCategory(response.data);
                 editCategory?.setType(CategoryType.Category);
@@ -178,19 +176,11 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
             });
     };
 
-    const updateCategoryModels = (
-        categories: Category[],
-        selectedQuota?: Quota
-    ) => {
+    const updateCategoryModels = (categories: Category[]) => {
         if (!rootNode) {
-            createCategoryModels(categories, selectedQuota);
+            createCategoryModels(categories);
             return;
         }
-        if (selectedQuota?.pages_count === rootNode.quota) {
-            rootNode.updateChildren(categories);
-        }
-        const quotaPagesCount = selectedQuota ? selectedQuota.pages_count : 0;
-        rootNode.aggregateStats(quotaPagesCount, 100);
     };
 
     const changeFocus = (
@@ -232,7 +222,8 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
             return;
         }
         changeFocus(
-            CategoryModel.generateLevelRootNode(
+            CategoryModel.generateRootNode(
+                CategoryType.LevelRoot,
                 `${t("Categories of level")} ${level}`,
                 rootNode!.getNodesByLevel(level)
             ),
@@ -243,7 +234,8 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
 
     const focusAssignableCategories = () => {
         changeFocus(
-            CategoryModel.generateLevelRootNode(
+            CategoryModel.generateRootNode(
+                CategoryType.LevelRoot,
                 t("Assignable categories"),
                 rootNode!.getAssignableCategoryModels()
             ),
@@ -253,9 +245,7 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
     };
 
     const saveDistribution = () => {
-        console.log(editDistribution);
-
-        if (editDistribution === null) {
+        if (editDistribution === null || activeIntention === undefined) {
             return;
         }
 
@@ -273,14 +263,17 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
                 (node) => node.percentage !== node.percentage
             ).length > 0
         ) {
-            const newDistribution: CategoryPercentage[] =
+            const newDistribution: ChildDistribution[] =
                 editDistribution.children.map((node) => ({
-                    id: node.id,
+                    category_id: node.id,
                     percentage: node.percentage ? node.percentage : 0,
                 }));
             ApiCategories.updateDistribution(
-                editDistribution.id,
-                newDistribution
+                {
+                    intention_id: activeIntention.id,
+                    distributions: newDistribution,
+                },
+                editDistribution.id > 0 ? editDistribution.id : null
             )
                 .then((response) => {
                     editDistribution.children.forEach((node) => {
@@ -297,14 +290,10 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
     };
 
     useEffect(() => {
-        if (props.categories) {
-            if (rootNode === undefined) {
-                createCategoryModels(props.categories, props.selectedQuota);
-            } else {
-                updateCategoryModels(props.categories, props.selectedQuota);
-            }
+        if (categories) {
+            createCategoryModels(categories);
         }
-    }, [props.categories, props.selectedQuota]);
+    }, [categories]);
 
     const contextValue: CategoryModelsContextProps = {
         currentCategory,
