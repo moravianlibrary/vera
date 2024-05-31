@@ -26,6 +26,7 @@ from services.exceptions import (
     MaximumCategoryLevelException,
     UniqueCategoryNameViolationException,
 )
+from categories.intentions.types import IntentionClassification
 
 
 MAX_CATEGORY_LEVEL = 3
@@ -295,18 +296,6 @@ class Category(Base):
         return session.query(Category).filter(Category.level == 0).all()
 
     @classmethod
-    def get_intention_categories(
-        cls, intention_id: int, session: Session
-    ) -> List[Tuple["Category", "Distribution"]]:
-        return (
-            session.query(Category, Distribution)
-            .join(Category.distributions)
-            .filter(Category.level == 0)
-            .filter(Distribution.intention_id == intention_id)
-            .all()
-        )
-
-    @classmethod
     def get_department_categories(
         cls, department_id: int, session: Session
     ) -> Query:
@@ -404,12 +393,36 @@ class Distribution(Base):
 
     @hybrid_property
     def pages_needed_to_meet_intention(self):
+        if self.intention.classification == IntentionClassification.Previous:
+            return 0
+
+        pages_needed = int(
+            (self.overall_percentage * self.intention.target_page_count) / 100
+        )
+
+        if self.intention.classification == IntentionClassification.Upcoming:
+            return pages_needed + self.previous_pages_needed
+
+        return pages_needed - self.category.extractable_pages
+
+    @hybrid_property
+    def previous_pages_needed(self) -> int:
+        session = Session.object_session(self)
+        if session is None:
+            return 0
+        previous_distribution = (
+            session.query(Distribution)
+            .join(Intention)
+            .filter(Distribution.category_id == self.category_id)
+            .filter(Intention.end_date < self.intention.end_date)
+            .order_by(Intention.end_date.desc())
+            .first()
+        )
+
         return (
-            int(
-                (self.overall_percentage * self.intention.target_page_count)
-                / 100
-            )
-            - self.category.extractable_pages
+            previous_distribution.pages_needed_to_meet_intention
+            if previous_distribution
+            else -self.category.extractable_pages
         )
 
     @classmethod

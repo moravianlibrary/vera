@@ -1,8 +1,5 @@
 from typing import List
-from categories.categories.models import (
-    Category,
-    Distribution,
-)
+from categories.categories.models import Category
 from categories.categories import schemas
 from extractions.generated.models import GeneratedExtraction
 
@@ -28,51 +25,36 @@ def map_to_category(category: Category):
     )
 
 
-def map_to_category_distribution(
-    category: Category, distribution: Distribution
-):
-    sub_categories = []
-    for sub_category in category.sub_categories:
-        sub_distribution = sub_category.find_distribution(
-            distribution.intention_id
-        )
-        if sub_distribution:
-            sub_categories.append(
-                map_to_category_distribution(sub_category, sub_distribution)
-            )
-        else:
-            sub_categories.append(map_to_category(sub_category))
+def map_to_category_distribution(category: Category, intention_id: int):
+    sub_categories: List[schemas.Category] = [
+        map_to_category_distribution(sub_category, intention_id)
+        for sub_category in category.sub_categories
+    ]
 
     category_schema = map_to_category(category)
     category_schema.sub_categories = sub_categories
 
-    category_schema.intention_id = distribution.intention_id
-    category_schema.percentage = distribution.percentage
-    category_schema.overall_percentage = distribution.overall_percentage
-    category_schema.pages_needed_to_meet_intention = (
-        distribution.pages_needed_to_meet_intention
-    )
+    distribution = category.find_distribution(intention_id)
+    if distribution:
+        category_schema.intention_id = distribution.intention_id
+        category_schema.percentage = distribution.percentage
+        category_schema.overall_percentage = distribution.overall_percentage
+        category_schema.pages_needed_to_meet_intention = (
+            distribution.pages_needed_to_meet_intention
+        )
+
     return category_schema
 
 
 def map_to_category_extraction(
     category: Category,
-    distribution: Distribution,
+    intention_id: int,
     extraction: GeneratedExtraction,
 ) -> schemas.Category:
-    sub_categories: schemas.Categories = []
-    for sub_category in category.sub_categories:
-        sub_distribution = sub_category.find_distribution(
-            distribution.intention_id
-        )
-        if sub_distribution:
-            sub_categories.append(
-                map_to_category_extraction(
-                    sub_category, sub_distribution, extraction
-                )
-            )
-        else:
-            sub_categories.append(map_to_category(sub_category))
+    sub_categories: List[schemas.Category] = [
+        map_to_category_extraction(sub_category, intention_id, extraction)
+        for sub_category in category.sub_categories
+    ]
 
     extracted_pages, extracted_documents = category.generate_extraction_report(
         extraction.document_ids
@@ -91,12 +73,14 @@ def map_to_category_extraction(
     category_schema = map_to_category(category)
     category_schema.sub_categories = sub_categories
 
-    category_schema.intention_id = distribution.intention_id
-    category_schema.percentage = distribution.percentage
-    category_schema.overall_percentage = distribution.overall_percentage
-    category_schema.pages_needed_to_meet_intention = (
-        distribution.pages_needed_to_meet_intention
-    )
+    distribution = category.find_distribution(intention_id)
+    if distribution:
+        category_schema.intention_id = distribution.intention_id
+        category_schema.percentage = distribution.percentage
+        category_schema.overall_percentage = distribution.overall_percentage
+        category_schema.pages_needed_to_meet_intention = (
+            distribution.pages_needed_to_meet_intention
+        )
 
     category_schema.extraction_id = extraction.id
     category_schema.extracted_pages = extracted_pages
@@ -107,22 +91,15 @@ def map_to_category_extraction(
 
 def map_to_category_digitization(
     category: Category,
-    distribution: Distribution,
+    intention_id: int,
     digitization_ids: List[int],
 ) -> schemas.Categories:
-    sub_categories: schemas.Categories = []
-    for sub_category in category.sub_categories:
-        sub_distribution = sub_category.find_distribution(
-            distribution.intention_id
+    sub_categories: List[schemas.Category] = [
+        map_to_category_digitization(
+            sub_category, intention_id, digitization_ids
         )
-        if sub_distribution:
-            sub_categories.append(
-                map_to_category_digitization(
-                    sub_category, sub_distribution, digitization_ids
-                )
-            )
-        else:
-            sub_categories.append(map_to_category(sub_category))
+        for sub_category in category.sub_categories
+    ]
 
     digitized_pages, digitized_documents = (
         category.generate_digitization_report(digitization_ids)
@@ -141,12 +118,14 @@ def map_to_category_digitization(
     category_schema = map_to_category(category)
     category_schema.sub_categories = sub_categories
 
-    category_schema.intention_id = distribution.intention_id
-    category_schema.percentage = distribution.percentage
-    category_schema.overall_percentage = distribution.overall_percentage
-    category_schema.pages_needed_to_meet_intention = (
-        distribution.pages_needed_to_meet_intention
-    )
+    distribution = category.find_distribution(intention_id)
+    if distribution:
+        category_schema.intention_id = distribution.intention_id
+        category_schema.percentage = distribution.percentage
+        category_schema.overall_percentage = distribution.overall_percentage
+        category_schema.pages_needed_to_meet_intention = (
+            distribution.pages_needed_to_meet_intention
+        )
 
     category_schema.digitization_ids = digitization_ids
     category_schema.digitized_pages = digitized_pages

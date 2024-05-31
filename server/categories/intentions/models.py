@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, Integer, String
+from sqlalchemy import Column, Date, Integer, String, desc
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import relationship, Session
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -65,7 +65,7 @@ class Intention(Base):
             start_date=intention.start_date,
             end_date=intention.end_date,
         )
-        session.add(intention)
+        session.add(db_intention)
 
         try:
             session.commit()
@@ -121,13 +121,17 @@ class Intention(Base):
     @classmethod
     def delete(cls, intention_id: int, session: Session) -> "Intention":
         intention = cls.get(intention_id, session)
+        if intention.classification == IntentionClassification.Previous:
+            raise ValueError("Cannot delete previous intentions.")
+        if intention.classification == IntentionClassification.Current:
+            raise ValueError("Cannot delete current intention.")
         session.delete(intention)
         session.commit()
         return intention
 
     @classmethod
     def get_all(cls, session: Session) -> List["Intention"]:
-        return session.query(cls).all()
+        return session.query(cls).order_by(cls.end_date).all()
 
     @classmethod
     def find_by_start_date(
@@ -149,4 +153,26 @@ class Intention(Base):
                 cls.end_date >= Date.today(), cls.start_date <= Date.today()
             )
             .first()
+        )
+
+    @classmethod
+    def ensure_intention_for_today(cls, session: Session):
+        if cls.get_current_intention(session):
+            return
+
+        previous_intention = (
+            session.query(cls).order_by(desc(cls.end_date)).first()
+        )
+        if previous_intention:
+            previous_intention.end_date = date.today()
+            session.commit()
+            return
+
+        cls.create(
+            schemas.IntentionCreate(
+                name="Initial Intention",
+                target_page_count=100000,
+                start_date=date(2024, 1, 1),
+                end_date=date.today(),
+            )
         )

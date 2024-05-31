@@ -51,7 +51,7 @@ export class CategoryModel implements Category {
     expanded: boolean = true;
     style = { borderRadius: '12px' };
 
-    constructor(type: CategoryType, category: Category, parent?: CategoryModel) {
+    constructor(type: CategoryType, category: Category, showIntentionOnly: boolean, parent?: CategoryModel) {
         Object.assign(this, category);
 
         this.key = category.id;
@@ -60,12 +60,16 @@ export class CategoryModel implements Category {
         this.parent = parent;
         this.className = CategoryModel.getClassName(type, category);
 
-        // if (type !== CategoryType.LevelRoot) {
+        if (showIntentionOnly) {
             this.children = category.sub_categories
-            .filter((sub_category) => sub_category.intention_id)
+            .filter((sub_category) => sub_category.overall_percentage && sub_category.overall_percentage > 0)
             .map((sub_category) => (
-                new CategoryModel(CategoryType.Category, sub_category, this)));
-        // }
+                new CategoryModel(CategoryType.Category, sub_category, showIntentionOnly, this)));
+        } else {
+            this.children = category.sub_categories
+            .map((sub_category) => (
+                new CategoryModel(CategoryType.Category, sub_category, showIntentionOnly, this)));
+        }
     }
 
     static generateCategory(id: number, name: string = "", level: number = -1, categories: Category[] = []): Category{
@@ -96,7 +100,7 @@ export class CategoryModel implements Category {
         }
     }
 
-    static generateRootNode(rootType: CategoryType.Root | CategoryType.LevelRoot, name: string, categories: Category[]): CategoryModel {
+    static generateRootNode(rootType: CategoryType.Root | CategoryType.LevelRoot, name: string, categories: Category[], showIntentionOnly: boolean): CategoryModel {
         const rootCategory: Category = CategoryModel.generateCategory(0, name, -1, categories);
         if (categories.length > 0) {
             if (categories[0].intention_id) {
@@ -116,7 +120,7 @@ export class CategoryModel implements Category {
                 rootCategory.digitized_documents = categories.reduce((sum, category) => sum + category.digitized_documents!, 0);
             }
         }
-        return new CategoryModel(rootType, rootCategory);
+        return new CategoryModel(rootType, rootCategory, showIntentionOnly);
     }
 
     static getClassName(type: CategoryType, category?: Category): string {
@@ -140,7 +144,7 @@ export class CategoryModel implements Category {
 
     insertChildNode(): CategoryModel {
         const newCategory: Category = CategoryModel.generateCategory(-2, "", this.level + 1);
-        const newNode = new CategoryModel(CategoryType.NewCategory, newCategory, this);
+        const newNode = new CategoryModel(CategoryType.NewCategory, newCategory, false, this);
         this.children = [...this.children, newNode];
         return newNode;
     }
@@ -167,7 +171,7 @@ export class CategoryModel implements Category {
         this.type = type;
     }
 
-    setPercentage(percentage) {
+    setPercentage(percentage: number) {
         this.percentage = percentage;
     }
 
@@ -175,7 +179,7 @@ export class CategoryModel implements Category {
         Object.assign(this, category);
         this.className = CategoryModel.getClassName(this.type, category);
         this.children = category.sub_categories.map((sub_category) => (
-            new CategoryModel(CategoryType.Category, sub_category, this)));
+            new CategoryModel(CategoryType.Category, sub_category, false, this)));
     }
 
     setName(name: string) {

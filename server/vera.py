@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 from contextlib import asynccontextmanager
+from apscheduler.schedulers.background import BackgroundScheduler
 from os import environ
 
 import routing
@@ -23,6 +24,13 @@ logger = logging.getLogger("uvicorn")
 # TODO: add checking unique before insert and update
 
 
+def ensure_today_intention():
+    from services.database import get_db
+    from categories.intentions.models import Intention
+
+    Intention.ensure_intention_for_today(next(get_db()))
+
+
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
     from services.database import (
@@ -38,8 +46,17 @@ async def lifespan(app_: FastAPI):
         return
     logger.info("Database connection successfully established.")
     check_database_revision()
+
     set_failed_tasks_on_start(next(get_db()))
+
+    scheduler = BackgroundScheduler()
+    scheduler.start()
+
+    scheduler.add_job(ensure_today_intention, "cron", hour=0)
+
     yield
+
+    scheduler.shutdown()
     logger.info("Shutting down.")
 
 

@@ -1,7 +1,7 @@
 import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
 import { SelectButton } from "primereact/selectbutton";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { useCategories } from "../../contexts/categories/CategoriesContext";
@@ -9,6 +9,16 @@ import CategoryPicker from "../../components/pickers/CategoryPicker";
 import { CategoryType } from "../../contexts/categories/CategoryType";
 import ExtractionPicker from "../../components/pickers/ExtractionPicker";
 import { Toolbar } from "primereact/toolbar";
+import { IntentionCreate } from "../../adapters/ApiCategories";
+import { useIntentions } from "../../contexts/categories/IntentionsContext";
+import EditIntentionMenu, {
+    EditIntentionMenuRef,
+} from "./components/EditIntentionMenu";
+import { format } from "date-fns";
+import { IntentionFactory } from "../../data/factories/IntentionFactory";
+import IntentionPicker from "../../components/pickers/IntentionPicker";
+import LabeledComponent from "../../components/LabeledComponent";
+import DepartmentPicker from "../../components/pickers/DepartmentPicker";
 
 export enum CategoryViewType {
     CategoryTable = "CategoryTable",
@@ -43,6 +53,8 @@ const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = ({
                     onCategoryViewTypeChange={onCategoryViewTypeChange}
                 />
             );
+        } else if (categorySection === CategorySection.Intentions) {
+            return <IntentionsOptions />;
         }
     };
 
@@ -72,6 +84,8 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
     const { t } = useTranslation();
     const {
         currentCategory,
+        showIntentionOnly,
+        setShowIntentionOnly,
         activeLevel,
         focusAssignable,
         focusRootCategory,
@@ -79,7 +93,9 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
         focusLevel,
         focusAssignableCategories,
     } = useCategoryModels();
-    const { extractionId, setExtractionId } = useCategories();
+    const { extractionId, setExtractionId, department, setDepartment } =
+        useCategories();
+    const { activeIntention, selectIntention } = useIntentions();
 
     const levelOptions = [0, 1, 2, 3];
 
@@ -132,10 +148,10 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
                 />
             </div>
             {/* <Divider layout="vertical" /> */}
-            <div className="flex gap-1 my-2 mx-1 align-items-center">
-                <span className="p-button-label text-800">
-                    {t("Selected category")}:
-                </span>
+            <LabeledComponent
+                label={t("Selected category")}
+                className="p-button-label text-800 my-2 mx-1 align-items-center"
+            >
                 <CategoryPicker
                     className={
                         selectedCategory ? "border-primary border-3" : ""
@@ -143,7 +159,7 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
                     category_id={selectedCategory}
                     callback={handleFocusCategory_}
                 />
-            </div>
+            </LabeledComponent>
             {/* <Divider layout="vertical" /> */}
             <Button
                 className={
@@ -156,6 +172,41 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
                 label={t("Assignable categories")}
                 onClick={() => focusAssignableCategories()}
             />
+            <Button
+                className={activeIntention ? "m-0 text-800" : "m-0 bg-primary"}
+                text={activeIntention !== null}
+                label={t("Without intention")}
+                onClick={() => selectIntention(null)}
+            />
+            <LabeledComponent
+                label={t("Selected intention")}
+                className="p-button-label text-800 my-2 mx-1 align-items-center"
+            >
+                <IntentionPicker
+                    selectedIntention={activeIntention}
+                    onIntentionChange={selectIntention}
+                />
+            </LabeledComponent>
+            {activeIntention !== null && (
+                <Button
+                    className={
+                        showIntentionOnly ? "m-0 bg-primary" : "m-0 text-800"
+                    }
+                    text={!showIntentionOnly}
+                    label={t("Show only intention categories")}
+                    onClick={() => setShowIntentionOnly(!showIntentionOnly)}
+                />
+            )}
+            <LabeledComponent
+                label={t("Selected department")}
+                className="p-button-label text-800 my-2 mx-1 align-items-center"
+            >
+                <DepartmentPicker
+                    selectedDepartment={department}
+                    onDepartmentChange={setDepartment}
+                />
+            </LabeledComponent>
+
             {/* <Divider layout="vertical" /> */}
             {/* <div className="flex gap-1 my-2 mx-1 align-items-center">
                 <span className="p-button-label text-800">
@@ -245,6 +296,32 @@ const SelectCategorySection: React.FC<SelectCategorySectionProps> = ({
                 value={section}
                 onChange={handleSectionChange}
                 options={displayOptions}
+            />
+        </div>
+    );
+};
+
+interface IntentionsOptionsProps {}
+
+const IntentionsOptions: React.FC<IntentionsOptionsProps> = () => {
+    const { t } = useTranslation();
+    const { createIntention } = useIntentions();
+
+    const editIntentionRef = useRef<EditIntentionMenuRef>(null);
+
+    return (
+        <div className="flex ml-2 gap-4 flex-wrap">
+            <EditIntentionMenu
+                ref={editIntentionRef}
+                intention={IntentionFactory.createEmpty()}
+                callback={createIntention}
+            />
+            <Button
+                className="m-0 text-800"
+                icon="pi pi-plus"
+                text
+                label={t("Add intention")}
+                onClick={() => editIntentionRef.current?.toggle()}
             />
         </div>
     );

@@ -26,6 +26,7 @@ const EditButton: React.FC<EditButtonProps> = ({
         <Button
             disabled={disabled}
             className="p-button-rounded p-button-text"
+            severity={disabled ? "secondary" : undefined}
             icon="pi pi-pencil"
             onClick={handleClick}
         />

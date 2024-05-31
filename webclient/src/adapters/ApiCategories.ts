@@ -7,11 +7,11 @@ interface IntentionCreate {
     target_page_count: number;
     start_date: string;
     end_date: string;
-    classification: IntentionClassification;
 }
 
 interface Intention extends IntentionCreate {
     id: number;
+    classification: IntentionClassification;
 }
 
 interface CreateCategory {
@@ -73,7 +73,7 @@ interface Distribution {
 
 namespace ApiCategories {
     export function getIntentions() {
-        return axiosInstance.get<Intention[]>("/categories/intentions", { headers: authHeader() });
+        return axiosInstance.get<Intention[]>("/intentions", { headers: authHeader() });
     }
 
     export function getCategories(departmentId: number | null = null) {
@@ -100,16 +100,17 @@ namespace ApiCategories {
     }
 
     export function createIntention(intention: IntentionCreate, copyDistributionFrom: number | null = null) {
-        const url = copyDistributionFrom ? `/categories/intentions?copyDistributionFrom=${copyDistributionFrom}` : "/categories/intentions";
+        const url = copyDistributionFrom ? `/intentions?copyDistributionFrom=${copyDistributionFrom}` : "/intentions";
         return axiosInstance.post<Intention>(url, intention, { headers: authHeader() });
     }
 
-    export function updateIntention(id: number, intention: IntentionCreate) {
-        return axiosInstance.put<Intention>(`/categories/intentions/${id}`, intention, { headers: authHeader() });
+    export function updateIntention(id: number, intention: IntentionCreate, copyDistributionFrom: number | null = null) {
+        const url = copyDistributionFrom ? `/intentions/${id}?copyDistributionFrom=${copyDistributionFrom}` : `/intentions/${id}`;
+        return axiosInstance.put<Intention>(url, intention, { headers: authHeader() });
     }
 
     export function deleteIntention(id: number) {
-        return axiosInstance.delete<Intention>(`/categories/intentions/${id}`, { headers: authHeader() });
+        return axiosInstance.delete<Intention>(`/intentions/${id}`, { headers: authHeader() });
     }
 
     export function createCategory(category: CreateCategory, parentId: number | null = null) {
@@ -136,4 +137,4 @@ namespace ApiCategories {
 }
 
 export default ApiCategories;
-export type { CreateCategory, Category, IntentionCreate, Intention, ChildDistribution };
+export type { CreateCategory, Category, IntentionCreate, Intention, ChildDistribution, ParentDistribution };

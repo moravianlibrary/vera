@@ -93,7 +93,9 @@ def update_root_distribution(
     db: Session = Depends(get_db),
 ):
     return [
-        map_to_category_distribution(distribution.category, distribution)
+        map_to_category_distribution(
+            distribution.category, distribution.intention_id
+        )
         for distribution in Distribution.set_distribution_from_list(
             None,
             distribution_list.intention_id,
@@ -116,7 +118,9 @@ def update_sub_distribution(
 ):
     OwnershipValidator.EnforceCategoryEdit(current_user, category_id, db)
     return [
-        map_to_category_distribution(distribution.category, distribution)
+        map_to_category_distribution(
+            distribution.category, distribution.intention_id
+        )
         for distribution in Distribution.set_distribution_from_list(
             category_id,
             distribution_list.intention_id,
@@ -176,10 +180,8 @@ def get_categories_by_intention(
     db: Session = Depends(get_db),
 ):
     return [
-        map_to_category_distribution(category, distribution)
-        for category, distribution in Category.get_intention_categories(
-            intention_id, db
-        )
+        map_to_category_distribution(category, intention_id)
+        for category in Category.get_categories(db)
     ]
 
 
@@ -197,12 +199,10 @@ def get_categories_by_extraction(
     return [
         map_to_category_extraction(
             category,
-            distribution,
+            intention_id,
             extraction,
         )
-        for category, distribution in Category.get_intention_categories(
-            intention_id, db
-        )
+        for category in Category.get_categories(db)
     ]
 
 
@@ -228,12 +228,10 @@ def get_categories_by_digitization(
     return [
         map_to_category_digitization(
             category,
-            distribution,
+            intention_id,
             digitization_ids,
         )
-        for category, distribution in Category.get_intention_categories(
-            intention_id, db
-        )
+        for category in Category.get_categories(db)
     ]
 
 
@@ -262,12 +260,8 @@ def get_department_categories_by_intention(
     db: Session = Depends(get_db),
 ):
     return [
-        map_to_category_distribution(category, distribution)
-        for category, distribution in (
-            Category.get_department_intention_categories(
-                department_id, intention_id, db
-            )
-        )
+        map_to_category_distribution(category, intention_id)
+        for category in (Category.get_department_categories(department_id, db))
     ]
 
 
@@ -287,14 +281,10 @@ def get_department_categories_by_extraction(
     return [
         map_to_category_extraction(
             category,
-            distribution,
+            intention_id,
             extraction,
         )
-        for category, distribution in (
-            Category.get_department_intention_categories(
-                department_id, intention_id, db
-            )
-        )
+        for category in (Category.get_department_categories(department_id, db))
     ]
 
 
@@ -322,12 +312,8 @@ def get_department_categories_by_digitization(
     return [
         map_to_category_digitization(
             category,
-            distribution,
+            intention_id,
             digitization_ids,
         )
-        for category, distribution in (
-            Category.get_department_intention_categories(
-                department_id, intention_id, db
-            )
-        )
+        for category in (Category.get_department_categories(department_id, db))
     ]

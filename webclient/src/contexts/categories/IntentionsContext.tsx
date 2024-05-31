@@ -12,14 +12,15 @@ import ApiCategories, {
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
 import { IntentionClassification } from "../../types/IntentionClassification";
+import { IntentionValidator } from "../../data/validators/IntentionValidator";
 
 interface IntentionsContextProps {
-    intentions: Intention[] | undefined;
-    activeIntention: Intention | undefined;
-    handleSelectIntention: (intention: Intention) => void;
-    handleCreateIntention: (params: IntentionCreate) => void;
-    handleUpdateIntention: (params: IntentionCreate) => void;
-    handleDeleteIntention: () => void;
+    intentions: Intention[];
+    activeIntention: Intention | null;
+    selectIntention: (intention: Intention | null) => void;
+    createIntention: (params: IntentionCreate) => void;
+    updateIntention: (params: IntentionCreate, intentionId: number) => void;
+    deleteIntention: (intentionId: number) => void;
 }
 
 const IntentionsContext = createContext<IntentionsContextProps | undefined>(
@@ -36,12 +37,13 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
     const { t } = useTranslation();
     const showToast = useToast();
 
-    const [intentions, setIntentions] = useState<Intention[] | undefined>(
-        undefined
+    const [intentions, setIntentions] = useState<Intention[]>([]);
+    const [currentIntention, setCurrentIntention] = useState<Intention | null>(
+        null
     );
-    const [activeIntention, setActiveIntention] = useState<
-        Intention | undefined
-    >(undefined);
+    const [activeIntention, setActiveIntention] = useState<Intention | null>(
+        null
+    );
 
     const loadIntentions = async () => {
         ApiCategories.getIntentions()
@@ -51,13 +53,14 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
                         return Object.assign({}, intention) as Intention;
                     }
                 );
-                setActiveIntention(
+                const currentIntention =
                     transformedData.find(
                         (intention) =>
                             intention.classification ===
                             IntentionClassification.Current
-                    )
-                );
+                    ) || null;
+                setCurrentIntention(currentIntention);
+                setActiveIntention(currentIntention);
                 setIntentions(transformedData);
             })
             .catch((error) => {
@@ -70,11 +73,122 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
         loadIntentions();
     }, []);
 
-    const handleSelectIntention = (intention: Intention) => {
+    const selectIntention = (intention: Intention | null) => {
         setActiveIntention(intention);
     };
 
-    const handleCreateIntention = (intention: IntentionCreate) => {
+    const validateIntention = (
+        intention: IntentionCreate,
+        messageHeader: string,
+        intentionId?: number
+    ): boolean => {
+        if (intentions) {
+            if (!IntentionValidator.hasValidName(intention)) {
+                showToast(
+                    "error",
+                    messageHeader,
+                    t("Intention name must not be empty")
+                );
+                return false;
+            }
+            if (!IntentionValidator.hasValidTargetPageCount(intention)) {
+                showToast(
+                    "error",
+                    messageHeader,
+                    t("Intention target page count must be positive")
+                );
+                return false;
+            }
+
+            if (!currentIntention || intentionId !== currentIntention.id) {
+                if (!IntentionValidator.hasDateRangeAfterToday(intention)) {
+                    showToast(
+                        "error",
+                        messageHeader,
+                        t("Intention date range must start today or later")
+                    );
+                    return false;
+                }
+            } else {
+                console.log(intention);
+                console.log(currentIntention);
+                console.log(
+                    !IntentionValidator.hasSameStartDate(
+                        intention,
+                        currentIntention
+                    )
+                );
+                console.log(
+                    !IntentionValidator.hasEndDateAfterToday(intention)
+                );
+
+                if (
+                    !IntentionValidator.hasSameStartDate(
+                        intention,
+                        currentIntention
+                    )
+                ) {
+                    showToast(
+                        "error",
+                        messageHeader,
+                        t("Current intention start date must not be changed")
+                    );
+                    return false;
+                }
+                if (!IntentionValidator.hasEndDateAfterToday(intention)) {
+                    showToast(
+                        "error",
+                        messageHeader,
+                        t(
+                            "Current intention date range must end today or later"
+                        )
+                    );
+                    return false;
+                }
+            }
+
+            if (
+                !IntentionValidator.hasUniqueName(
+                    intention,
+                    intentions,
+                    intentionId
+                )
+            ) {
+                showToast(
+                    "error",
+                    messageHeader,
+                    t("Intention name must be unique")
+                );
+                return false;
+            }
+            if (
+                !IntentionValidator.hasNonOverlappingDateRange(
+                    intention,
+                    intentions,
+                    intentionId
+                )
+            ) {
+                showToast(
+                    "error",
+                    messageHeader,
+                    t("Intention date range must not overlap")
+                );
+                return false;
+            }
+        }
+        return true;
+    };
+
+    const createIntention = (intention: IntentionCreate) => {
+        if (
+            !validateIntention(
+                intention,
+
+                t("Intention creation failed")
+            )
+        ) {
+            return;
+        }
         ApiCategories.createIntention(intention)
             .then((response) => {
                 const newIntention = response.data;
@@ -107,8 +221,20 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
             });
     };
 
-    const handleUpdateIntention = (intention: IntentionCreate) => {
-        ApiCategories.updateIntention(activeIntention!.id, intention)
+    const updateIntention = (
+        intention: IntentionCreate,
+        intentionId: number
+    ) => {
+        if (
+            !validateIntention(
+                intention,
+                t("Intention update failed"),
+                intentionId
+            )
+        ) {
+            return;
+        }
+        ApiCategories.updateIntention(intentionId, intention)
             .then((response) => {
                 const updatedIntention: Intention = response.data;
                 showToast(
@@ -140,11 +266,8 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
             });
     };
 
-    const handleDeleteIntention = () => {
-        if (!activeIntention) {
-            return;
-        }
-        ApiCategories.deleteIntention(activeIntention.id)
+    const deleteIntention = (intentionId: number) => {
+        ApiCategories.deleteIntention(intentionId)
             .then((response) => {
                 showToast(
                     "success",
@@ -166,10 +289,10 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
     const contextValue: IntentionsContextProps = {
         intentions,
         activeIntention,
-        handleSelectIntention,
-        handleCreateIntention,
-        handleUpdateIntention,
-        handleDeleteIntention,
+        selectIntention,
+        createIntention,
+        updateIntention,
+        deleteIntention,
     };
 
     return (

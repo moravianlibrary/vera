@@ -8,12 +8,13 @@ import React, {
 import ApiCategories, { Category } from "../../adapters/ApiCategories";
 import { useIntentions } from "./IntentionsContext";
 import { AxiosResponse } from "axios";
+import { Department } from "../../adapters/ApiDepartments";
 
 interface CategoriesContextProps {
     categories: Category[] | undefined;
     getAssignableCategoriesTrees: () => Category[];
-    departmentId: number | null;
-    setDepartmentId: (departmentId: number) => void;
+    department: Department | null;
+    setDepartment: (department: Department | null) => void;
     extractionId: number | null;
     setExtractionId: (extractionId: number) => void;
     digitizationListId: number | null;
@@ -36,7 +37,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
     const [categories, setCategories] = useState<Category[] | undefined>(
         undefined
     );
-    const [departmentId, setDepartmentId] = useState<number | null>(null);
+    const [department, setDepartment] = useState<Department | null>(null);
     const [extractionId, setExtractionId] = useState<number | null>(null);
     const [digitizationListId, setDigitizationListId] = useState<number | null>(
         null
@@ -63,14 +64,14 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
         if (!activeIntention && !extractionId && !digitizationListId) {
             console.log(`Fetching categories from server.`);
             await fetchCategories(() =>
-                ApiCategories.getCategories(departmentId)
+                ApiCategories.getCategories(department?.id)
             );
         } else if (activeIntention && !extractionId && !digitizationListId) {
             console.log(`Fetching intention categories from server.`);
             await fetchCategories(() =>
                 ApiCategories.getCategoriesByIntention(
                     activeIntention.id,
-                    departmentId
+                    department?.id
                 )
             );
         } else if (activeIntention && extractionId && !digitizationListId) {
@@ -79,7 +80,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
                 ApiCategories.getCategoriesForExtraction(
                     activeIntention.id,
                     extractionId,
-                    departmentId
+                    department?.id
                 )
             );
         } else if (activeIntention && !extractionId && digitizationListId) {
@@ -88,7 +89,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
                 ApiCategories.getCategoriesForDigitization(
                     activeIntention.id,
                     [digitizationListId],
-                    departmentId
+                    department?.id
                 )
             );
         } else {
@@ -125,13 +126,13 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
 
     useEffect(() => {
         loadCategories();
-    }, [activeIntention, departmentId, extractionId, digitizationListId]);
+    }, [activeIntention, department?.id, extractionId, digitizationListId]);
 
     const contextValue: CategoriesContextProps = {
         categories,
         getAssignableCategoriesTrees,
-        departmentId,
-        setDepartmentId,
+        department,
+        setDepartment,
         extractionId,
         setExtractionId,
         digitizationListId,

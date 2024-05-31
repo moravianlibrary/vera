@@ -5,8 +5,8 @@ import React, { useEffect } from "react";
 import { useIntentions } from "../../contexts/categories/IntentionsContext";
 
 interface IntentionPickerProps {
-    selectedIntention: Intention | undefined;
-    onIntentionChange: (quota: Intention | undefined) => void;
+    selectedIntention: Intention | null;
+    onIntentionChange: (intention: Intention | null) => void;
     useActive?: boolean;
     disabled?: boolean;
     className?: string;
@@ -29,9 +29,8 @@ const IntentionPicker: React.FC<IntentionPickerProps> = (props) => {
                 value={props.selectedIntention}
                 options={intentions}
                 optionLabel="name"
-                optionValue="id"
                 onChange={(e) => props.onIntentionChange(e.value)}
-                placeholder={t("Select quota")}
+                placeholder={t("Select intention")}
             />
         </div>
     );

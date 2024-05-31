@@ -11,7 +11,7 @@ from categories.intentions.models import Intention
 from categories.intentions import schemas
 
 
-router = APIRouter(prefix="/categories/intentions")
+router = APIRouter(prefix="/intentions")
 
 CanManageIntentions = PermissionValidator(ActionType.EditCategoriesAll)
 CanReadIntentions = PermissionValidator(
@@ -47,13 +47,23 @@ def create_intention(
 def update_intention(
     intention: schemas.IntentionCreate,
     intention_id: int = Path(...),
+    copy_distribution_from: Optional[int] = Query(
+        None, alias="copyDistributionFrom"
+    ),
     db: Session = Depends(get_db),
 ):
     if intention.end_date < intention.start_date:
         date = intention.end_date
         intention.end_date = intention.start_date
         intention.start_date = date
-    return Intention.update(intention_id, intention, db)
+
+    if copy_distribution_from is None:
+        return Intention.update(intention_id, intention, db)
+
+    copy_from_intention = Intention.get(copy_distribution_from, db)
+    intention = Intention.update(intention_id, intention, db)
+    Distribution.copy_distributions(copy_from_intention.id, intention.id, db)
+    return intention
 
 
 @router.delete(

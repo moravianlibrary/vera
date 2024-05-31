@@ -10,6 +10,7 @@ import ApiCategories, {
     Category,
     ChildDistribution,
     CreateCategory,
+    ParentDistribution,
 } from "../../adapters/ApiCategories";
 import { CategoryModel } from "./CategoryModel";
 import { useToast } from "../toast/ToastContext";
@@ -31,6 +32,9 @@ interface CategoryModelsContextProps {
     updateCategory: (category: CreateCategory) => void;
     deleteCategory: (category: CategoryModel) => void;
 
+    showIntentionOnly: boolean;
+    setShowIntentionOnly: (filter: boolean) => void;
+
     activeLevel: number | null;
     focusAssignable: boolean;
     focusRootCategory: () => void;
@@ -41,7 +45,7 @@ interface CategoryModelsContextProps {
 
     editDistribution: CategoryModel | null;
     setEditDistribution: (distribution: CategoryModel | null) => void;
-    saveDistribution: () => void;
+    saveDistribution: (parentDistribution: ParentDistribution) => void;
 }
 
 const CategoryModelsContext = createContext<
@@ -71,6 +75,7 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
         null
     );
 
+    const [showIntentionOnly, setShowIntentionOnly] = useState<boolean>(true);
     const [activeLevel, setActiveLevel] = useState<number | null>(0);
     const [focusAssignable, setFocusAssignable] = useState<boolean>(false);
 
@@ -81,7 +86,8 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
         const createdRootNode = CategoryModel.generateRootNode(
             CategoryType.Root,
             t("all_categories"),
-            categories
+            categories,
+            showIntentionOnly && activeIntention !== null
         );
         setRootNode(createdRootNode);
         setCurrentCategory(createdRootNode);
@@ -225,7 +231,8 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
             CategoryModel.generateRootNode(
                 CategoryType.LevelRoot,
                 `${t("Categories of level")} ${level}`,
-                rootNode!.getNodesByLevel(level)
+                rootNode!.getNodesByLevel(level),
+                showIntentionOnly && activeIntention !== null
             ),
             level,
             false
@@ -237,19 +244,20 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
             CategoryModel.generateRootNode(
                 CategoryType.LevelRoot,
                 t("Assignable categories"),
-                rootNode!.getAssignableCategoryModels()
+                rootNode!.getAssignableCategoryModels(),
+                showIntentionOnly && activeIntention !== null
             ),
             null,
             true
         );
     };
 
-    const saveDistribution = () => {
-        if (editDistribution === null || activeIntention === undefined) {
+    const saveDistribution = (parentDistribution: ParentDistribution) => {
+        if (!editDistribution) {
             return;
         }
 
-        const percentageSum = editDistribution.children.reduce(
+        const percentageSum = parentDistribution.distributions.reduce(
             (total, node) => total + (node.percentage || 0),
             0
         );
@@ -258,34 +266,19 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
             return;
         }
 
-        if (
-            editDistribution.children.filter(
-                (node) => node.percentage !== node.percentage
-            ).length > 0
-        ) {
-            const newDistribution: ChildDistribution[] =
-                editDistribution.children.map((node) => ({
-                    category_id: node.id,
-                    percentage: node.percentage ? node.percentage : 0,
-                }));
-            ApiCategories.updateDistribution(
-                {
-                    intention_id: activeIntention.id,
-                    distributions: newDistribution,
-                },
-                editDistribution.id > 0 ? editDistribution.id : null
-            )
-                .then((response) => {
-                    editDistribution.children.forEach((node) => {
-                        node.setCategory({
-                            percentage: node.percentage,
-                        });
-                    });
-                })
-                .catch((error) => {
-                    console.error(error);
+        ApiCategories.updateDistribution(
+            parentDistribution,
+            editDistribution.id > 0 ? editDistribution.id : null
+        )
+            .then((response) => {
+                editDistribution.children.forEach((node) => {
+                    node.setPercentage(node.percentage ?? 0);
                 });
-        }
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+
         setEditDistribution(null);
     };
 
@@ -293,7 +286,7 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
         if (categories) {
             createCategoryModels(categories);
         }
-    }, [categories]);
+    }, [categories, showIntentionOnly]);
 
     const contextValue: CategoryModelsContextProps = {
         currentCategory,
@@ -307,6 +300,9 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
 
         updateCategory,
         deleteCategory,
+
+        showIntentionOnly,
+        setShowIntentionOnly,
 
         activeLevel,
         focusAssignable,

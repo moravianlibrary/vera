@@ -11,7 +11,6 @@ class IntentionBase(BaseModel):
     target_page_count: int
     start_date: date
     end_date: date
-    classification: IntentionClassification
 
 
 class IntentionCreate(IntentionBase):
@@ -20,6 +19,7 @@ class IntentionCreate(IntentionBase):
 
 class Intention(IntentionBase):
     id: int
+    classification: IntentionClassification
 
 
 Intentions = List[Intention]
