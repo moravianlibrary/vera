@@ -197,6 +197,14 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({
                     onClick={() => setShowIntentionOnly(!showIntentionOnly)}
                 />
             )}
+            <Button
+                className={
+                    department === null ? "m-0 bg-primary" : "m-0 text-800"
+                }
+                text={department !== null}
+                label={t("Show all categories")}
+                onClick={() => setDepartment(null)}
+            />
             <LabeledComponent
                 label={t("Selected department")}
                 className="p-button-label text-800 my-2 mx-1 align-items-center"
