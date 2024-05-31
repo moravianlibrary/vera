@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { Column, ColumnBodyOptions } from "primereact/column";
 import { useTranslation } from "react-i18next";
-import { TreeTable } from "primereact/treetable";
+import { TreeTable, TreeTableExpandedKeysType } from "primereact/treetable";
 import CategoryNodeEditMenu from "./CategoryNodeEditMenu";
 import EditCategoryMenu from "./EditCategoryMenu";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
@@ -18,6 +18,19 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
     const { activeIntention } = useIntentions();
     const { currentCategory } = useCategoryModels();
 
+    const [expandedKeys, setExpandedKeys] = useState<TreeTableExpandedKeysType>(
+        {}
+    );
+
+    const toggleApplications = () => {
+        let _expandedKeys = { ...expandedKeys };
+
+        if (_expandedKeys["0"]) delete _expandedKeys["0"];
+        else _expandedKeys["0"] = true;
+
+        setExpandedKeys(_expandedKeys);
+    };
+
     return (
         <div>
             <TreeTable
@@ -26,7 +39,8 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                 scrollable
                 scrollHeight="calc(100vh - 170px)"
                 columnResizeMode="expand"
-                expandedKeys={[true] as any}
+                expandedKeys={expandedKeys}
+                onToggle={(e) => setExpandedKeys(e.value)}
             >
                 <Column
                     field="category.name"
