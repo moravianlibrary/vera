@@ -6,10 +6,15 @@ import React, {
     useEffect,
 } from "react";
 import ApiCategories, { Category } from "../../adapters/ApiCategories";
-import ApiExtractions from "../../adapters/ApiGeneratedExtractions";
+import { useIntentions } from "./IntentionsContext";
+import { AxiosResponse } from "axios";
+import { Department } from "../../adapters/ApiDepartments";
 
 interface CategoriesContextProps {
     categories: Category[] | undefined;
+    getAssignableCategoriesTrees: () => Category[];
+    department: Department | null;
+    setDepartment: (department: Department | null) => void;
     extractionId: number | null;
     setExtractionId: (extractionId: number) => void;
     digitizationListId: number | null;
@@ -28,60 +33,91 @@ interface CategoriesProviderProps {
 export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
     children,
 }) => {
+    const { activeIntention } = useIntentions();
     const [categories, setCategories] = useState<Category[] | undefined>(
         undefined
     );
+    const [department, setDepartment] = useState<Department | null>(null);
     const [extractionId, setExtractionId] = useState<number | null>(null);
     const [digitizationListId, setDigitizationListId] = useState<number | null>(
         null
     );
 
+    const fetchCategories = async (
+        getCategoriesFunction: () => Promise<AxiosResponse<Category[], any>>
+    ) => {
+        try {
+            const response = await getCategoriesFunction();
+            const transformedData: Category[] = response.data.map(
+                (category) => {
+                    return Object.assign({}, category) as Category;
+                }
+            );
+            console.log(transformedData);
+            setCategories(transformedData);
+        } catch (error) {
+            console.error(`Could not receive categories: ${error}`);
+        }
+    };
+
     const loadCategories = async () => {
-        console.log(`Fetching categories from server.`);
-        ApiCategories.getCategories()
-            .then((response) => {
-                const transformedData: Category[] = response.data.map(
-                    (category) => {
-                        return Object.assign({}, category) as Category;
-                    }
-                );
-                setCategories(transformedData);
-            })
-            .catch((error) => {
-                console.error(`Could not receive categories: ${error}`);
-            });
+        if (!activeIntention && !extractionId && !digitizationListId) {
+            console.log(`Fetching categories from server.`);
+            await fetchCategories(() =>
+                ApiCategories.getCategories(department?.id)
+            );
+        } else if (activeIntention && !extractionId && !digitizationListId) {
+            console.log(`Fetching intention categories from server.`);
+            await fetchCategories(() =>
+                ApiCategories.getCategoriesByIntention(
+                    activeIntention.id,
+                    department?.id
+                )
+            );
+        } else if (activeIntention && extractionId && !digitizationListId) {
+            console.log(`Fetching extraction categories from server.`);
+            await fetchCategories(() =>
+                ApiCategories.getCategoriesForExtraction(
+                    activeIntention.id,
+                    extractionId,
+                    department?.id
+                )
+            );
+        } else if (activeIntention && !extractionId && digitizationListId) {
+            console.log(`Fetching digitization list categories from server.`);
+            await fetchCategories(() =>
+                ApiCategories.getCategoriesForDigitization(
+                    activeIntention.id,
+                    [digitizationListId],
+                    department?.id
+                )
+            );
+        } else {
+            console.error(
+                "Could not receive categories. Invalid state: " +
+                    `${activeIntention}, ${extractionId}, ${digitizationListId}`
+            );
+        }
     };
 
-    const loadExtractionCategories = async () => {
-        console.log(`Fetching extraction categories from server.`);
-        ApiCategories.getGeneratedExtractionCategories(extractionId!)
-            .then((response) => {
-                const transformedData: Category[] = response.data.map(
-                    (category) => {
-                        return Object.assign({}, category) as Category;
+    const getAssignableCategoriesTrees = () => {
+        const buildAssignableCategoriesTrees = (categories: Category[]) => {
+            return categories
+                .map((category) => {
+                    if (category.assignable) {
+                        return category;
                     }
-                );
-                setCategories(transformedData!);
-            })
-            .catch((error) => {
-                console.error(`Could not receive categories: ${error}`);
-            });
-    };
-
-    const loadDigitizationListCategories = async () => {
-        console.log(`Fetching digitization list categories from server.`);
-        ApiCategories.getDigitizationExtractionCategories(digitizationListId!)
-            .then((response) => {
-                const transformedData: Category[] = response.data.map(
-                    (category) => {
-                        return Object.assign({}, category) as Category;
+                    const sub_categories = buildAssignableCategoriesTrees(
+                        category.sub_categories
+                    );
+                    if (sub_categories.length > 0) {
+                        return Object.assign({}, category, { sub_categories });
                     }
-                );
-                setCategories(transformedData!);
-            })
-            .catch((error) => {
-                console.error(`Could not receive categories: ${error}`);
-            });
+                    return;
+                })
+                .filter((sub_category) => sub_category);
+        };
+        return categories ? buildAssignableCategoriesTrees(categories) : [];
     };
 
     const refreshCategories = () => {
@@ -89,29 +125,14 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
     };
 
     useEffect(() => {
-        if (!categories) {
-            loadCategories();
-        }
-    }, [categories]);
-
-    useEffect(() => {
-        if (extractionId) {
-            loadExtractionCategories();
-        } else {
-            loadCategories();
-        }
-    }, [extractionId]);
-
-    useEffect(() => {
-        if (digitizationListId) {
-            loadDigitizationListCategories();
-        } else {
-            loadCategories();
-        }
-    }, [digitizationListId]);
+        loadCategories();
+    }, [activeIntention, department?.id, extractionId, digitizationListId]);
 
     const contextValue: CategoriesContextProps = {
         categories,
+        getAssignableCategoriesTrees,
+        department,
+        setDepartment,
         extractionId,
         setExtractionId,
         digitizationListId,

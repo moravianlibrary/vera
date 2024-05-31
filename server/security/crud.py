@@ -13,7 +13,10 @@ def add_user(username: str, db: Session):
 
 
 def create_role(role: schemas.RoleCreate, db: Session) -> models.Role:
-    return create(db, models.Role(name=role.name, actions=role.actions))
+    db_role = create(db, models.Role(name=role.name))
+    for action in role.actions:
+        create(db, models.Action(role_id=db_role.id, action=action))
+    return db_role
 
 
 def create_department(
@@ -48,12 +51,16 @@ def get_department(department_id: int, db: Session):
 def update_role(
     id: int, role: schemas.RoleCreate, db: Session
 ) -> Optional[models.Role]:
-    db.execute(
-        update(models.Role)
-        .where(models.Role.id == id)
-        .values(name=role.name, actions=role.actions)
-    )
-    return get_role(id, db)
+    db_role = get_role(id, db)
+    db_role.name = role.name
+    for role_action in db_role.role_actions:
+        db.delete(role_action)
+    db.commit()
+    for action in role.actions:
+        create(db, models.Action(role_id=db_role.id, action=action))
+    db.commit()
+    db.refresh(db_role)
+    return db_role
 
 
 def update_department(
@@ -75,6 +82,8 @@ def update_department(
 # Delete
 def delete_role(id: int, db: Session) -> Optional[models.Role]:
     db_role = get_role(id, db)
+    for role_action in db_role.role_actions:
+        db.delete(role_action)
     db.delete(db_role)
     db.commit()
     return db_role

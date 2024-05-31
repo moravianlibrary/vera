@@ -1,6 +1,66 @@
 from fastapi import HTTPException, status
 
 
+class DistributionExcesiveSubcategoriesException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Percentage distribution contains categories "
+            "that do not belong to the category.",
+        )
+
+
+class DistributionMissingSubcategoriesException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Percentage distribution does not contains "
+            "all children from one parent",
+        )
+
+
+class InvalidDistributionSumException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Percentage of all categories on one "
+            "level has to sum to 100.",
+        )
+
+
+class DistributionNotFoundException(HTTPException):
+    def __init__(self, intention_id, category_id):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Distribution for intention {intention_id} and "
+            f"category {category_id} was not found",
+        )
+
+
+class GeneratedExtractionNotFoundException(HTTPException):
+    def __init__(self, id):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Generated extraction with id {id} was not found",
+        )
+
+
+class CategoryNotFoundException(HTTPException):
+    def __init__(self, id):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Category with id {id} was not found",
+        )
+
+
+class MaximumCategoryLevelException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Maximum category level reached",
+        )
+
+
 class DepartmentNotFoundException(HTTPException):
     def __init__(self, id):
         super().__init__(
@@ -25,7 +85,7 @@ class UniqueViolationException(HTTPException):
 class UniqueCategoryNameViolationException(UniqueViolationException):
     def __init__(self):
         super().__init__(
-            detail="Category does not have unique name" "amongst its siblings"
+            detail="Category does not have unique name amongst its siblings"
         )
 
 
@@ -101,7 +161,16 @@ class EmptyExtraction(HTTPException):
         )
 
 
-class CategoryIsNotEmptyException(HTTPException):
+class CategoryInDistributionDeletionException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only categories that have percentage distribution 0 "
+            "can be deleted",
+        )
+
+
+class NonEmptyCategoryDeletionException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,

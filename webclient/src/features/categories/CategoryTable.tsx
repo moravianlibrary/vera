@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
@@ -9,11 +9,13 @@ import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
 import { CategoryType } from "../../contexts/categories/CategoryType";
+import { useIntentions } from "../../contexts/categories/IntentionsContext";
 
 interface CategoriesTableProps {}
 
 const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
     const { t } = useTranslation();
+    const { activeIntention } = useIntentions();
     const { currentCategory } = useCategoryModels();
 
     return (
@@ -32,52 +34,56 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                     body={(node) => node.name}
                     expander
                 />
+                {activeIntention && (
+                    <Column
+                        field="percentage"
+                        header={t("Percentage")}
+                        body={(node) => `${node.percentage || 0}%`}
+                    />
+                )}
+                {activeIntention && (
+                    <Column
+                        field="overall_percentage"
+                        header={t("Overall percentage")}
+                        body={(node) => `${node.overall_percentage || 0}%`}
+                    />
+                )}
                 <Column
-                    field="percentage"
-                    header={t("Percentage")}
-                    body={(node) => `${node.percentage}%`}
-                />
-                <Column
-                    field="overallPercentage"
-                    header={t("Overall percentage")}
-                    body={(node) => `${node.overallPercentage}%`}
-                />
-                <Column
-                    field="count_documents"
-                    header={t("Extractable count")}
-                    body={(node) =>
-                        `${node.count_pages_extractable} ${t("pages in")} ${
-                            node.count_documents_extractable
-                        } ${t("documents")}`
-                    }
-                />
-                <Column
-                    field="count_pages"
+                    field="total"
                     header={t("Overall count")}
                     body={(node) =>
-                        `${node.count_pages} ${t("pages in")} ${
-                            node.count_documents
+                        `${node.total_pages} ${t("pages in")} ${
+                            node.total_documents
                         } ${t("documents")}`
                     }
                 />
                 <Column
-                    field="count_pages"
-                    header={t("Missing pages to fulfill intention")}
-                    body={(node) => (
-                        <DangerCountBody
-                            count={Math.max(node.quota - node.count_pages, 0)}
-                        />
-                    )}
+                    field="extractable"
+                    header={t("Extractable count")}
+                    body={(node) =>
+                        `${node.extractable_pages} ${t("pages in")} ${
+                            node.extractable_documents
+                        } ${t("documents")}`
+                    }
                 />
                 <Column
                     field="count_documents_without_cnb"
                     header={t("Documents without CNB")}
                     body={(node) => (
-                        <DangerCountBody
-                            count={node.count_documents_without_cnb}
-                        />
+                        <DangerCountBody count={node.documents_without_cnb} />
                     )}
                 />
+                {activeIntention && (
+                    <Column
+                        field="count_pages"
+                        header={t("Missing pages to fulfill intention")}
+                        body={(node) => (
+                            <DangerCountBody
+                                count={node.pages_needed_to_meet_intention}
+                            />
+                        )}
+                    />
+                )}
                 <Column
                     field="actions"
                     header={t("Actions")}

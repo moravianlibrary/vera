@@ -6,9 +6,8 @@ import InsertDocuments from "../features/insert-documents/InsertDocuments";
 import DocumentsHeader from "../features/documents/DocumentsHeader";
 import DocumentsTable from "../features/documents/DocumentsTable";
 import { DocumentsProvider } from "../contexts/documents/DocumentsContext";
-import { AssignableCategoriesProvider } from "../contexts/categories/AssignableCategoriesContext";
 import { useSearchParams } from "react-router-dom";
-import ApiCategories, { AssignableCategory } from "../adapters/ApiCategories";
+import ApiCategories, { Category } from "../adapters/ApiCategories";
 import { DigitizationListsProvider } from "../contexts/extractions/DigitizationListsContext";
 import { DigitizationListsManagerProvider } from "../contexts/extractions/DigitizationListsManagerContext";
 import {
@@ -21,6 +20,7 @@ import { AdvancedSearchProvider } from "../contexts/documents/search/AdvancedSea
 import { CategoriesProvider } from "../contexts/categories/CategoriesContext";
 import { GeneratedExtractionsProvider } from "../contexts/extractions/GeneratedExtractionsContext";
 import { LocationsProvider } from "../contexts/extractions/locations/LocationsContext";
+import { IntentionsProvider } from "../contexts/categories/IntentionsContext";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -32,23 +32,33 @@ const Documents: React.FC = () => {
     const [categoryIds, setCategoryIds] = useState<number[]>([]);
 
     const handleSetCategoryIds = (categoryId: number) => {
-        ApiCategories.getCategory(categoryId)
+        ApiCategories.getCategories()
             .then((response) => {
                 const flattenCategoryIds: number[] = [];
-                const traverseCategories = (category: AssignableCategory) => {
-                    flattenCategoryIds.push(category.id);
+                const traverseCategories = (
+                    category: Category,
+                    found = false
+                ) => {
+                    if (found) {
+                        flattenCategoryIds.push(category.id);
+                    }
                     if (
-                        category.children_categories &&
-                        category.children_categories.length > 0
+                        category.sub_categories &&
+                        category.sub_categories.length > 0
                     ) {
-                        category.children_categories.forEach(
+                        category.sub_categories.forEach(
                             (childCategory: any) => {
-                                traverseCategories(childCategory);
+                                traverseCategories(
+                                    childCategory,
+                                    found || categoryId === category.id
+                                );
                             }
                         );
                     }
                 };
-                traverseCategories(response.data);
+                response.data.forEach((category: Category) => {
+                    traverseCategories(category, category.id === categoryId);
+                });
                 setCategoryIds(flattenCategoryIds);
             })
             .catch((error) => {
@@ -72,7 +82,7 @@ const Documents: React.FC = () => {
     return (
         <div className="table-container">
             <DocumentsQueryProvider>
-                <AssignableCategoriesProvider>
+                <IntentionsProvider>
                     <CategoriesProvider>
                         <DigitizationListsProvider>
                             <LocationsProvider>
@@ -102,7 +112,7 @@ const Documents: React.FC = () => {
                             </LocationsProvider>
                         </DigitizationListsProvider>
                     </CategoriesProvider>
-                </AssignableCategoriesProvider>
+                </IntentionsProvider>
             </DocumentsQueryProvider>
         </div>
     );

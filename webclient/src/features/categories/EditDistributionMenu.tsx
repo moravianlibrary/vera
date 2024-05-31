@@ -6,18 +6,28 @@ import LabeledComponent from "../../components/LabeledComponent";
 import { InputNumber } from "primereact/inputnumber";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { Button } from "primereact/button";
+import {
+    ChildDistribution,
+    ParentDistribution,
+} from "../../adapters/ApiCategories";
+import { useIntentions } from "../../contexts/categories/IntentionsContext";
 
 interface EditDistributionMenuProps {}
 
 const EditDistributionMenu: React.FC<EditDistributionMenuProps> = () => {
     const { t } = useTranslation();
     const { editDistribution, setEditDistribution } = useCategoryModels();
+    const { activeIntention } = useIntentions();
 
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
         setVisible(editDistribution !== null);
     }, [editDistribution]);
+
+    if (!activeIntention) {
+        return null;
+    }
 
     return (
         <Sidebar
@@ -28,6 +38,7 @@ const EditDistributionMenu: React.FC<EditDistributionMenuProps> = () => {
         >
             {editDistribution && (
                 <DistributionForm
+                    intentionId={activeIntention.id}
                     category={editDistribution}
                     onHide={() => setEditDistribution(null)}
                 />
@@ -37,16 +48,42 @@ const EditDistributionMenu: React.FC<EditDistributionMenuProps> = () => {
 };
 
 interface DistributionFormProps {
+    intentionId: number;
     category: CategoryModel;
     onHide: () => void;
 }
 
 const DistributionForm: React.FC<DistributionFormProps> = ({
+    intentionId,
     category,
     onHide,
 }) => {
     const { t } = useTranslation();
-    const { saveDistribution } = useCategoryModels();
+    const { saveDistribution, setEditDistribution } = useCategoryModels();
+
+    const [distributions, setDistributions] = useState<ChildDistribution[]>(
+        category.children.map((child) => {
+            return { category_id: child.id, percentage: child.percentage ?? 0 };
+        })
+    );
+
+    const changePercentage = (index: number, percentage: number) => {
+        setDistributions(
+            distributions.map((p, i) =>
+                i === index
+                    ? { category_id: p.category_id, percentage: percentage }
+                    : p
+            )
+        );
+    };
+
+    const handleSaveDistribution = () => {
+        const parentDistribution: ParentDistribution = {
+            intention_id: intentionId,
+            distributions: distributions,
+        };
+        saveDistribution(parentDistribution);
+    };
 
     return (
         <div className="flex flex-column gap-2">
@@ -62,20 +99,17 @@ const DistributionForm: React.FC<DistributionFormProps> = ({
                             value={child.percentage}
                             onKeyDown={(e) => {
                                 if (e.key === "Enter") {
-                                    child.setPercentage(
-                                        parseFloat(
-                                            (e.target as HTMLInputElement).value
-                                        )
-                                    );
                                     if (
                                         index ===
                                         category.children.length - 1
                                     ) {
-                                        saveDistribution();
+                                        handleSaveDistribution();
                                     }
                                 }
                             }}
-                            onChange={(e) => child.setPercentage(e.value)}
+                            onChange={(e) =>
+                                changePercentage(index, e.value as number)
+                            }
                             min={0}
                             max={100}
                             maxFractionDigits={2}
@@ -90,18 +124,14 @@ const DistributionForm: React.FC<DistributionFormProps> = ({
                     icon="pi pi-save"
                     outlined
                     severity="success"
-                    onClick={() => {
-                        saveDistribution();
-                    }}
+                    onClick={handleSaveDistribution}
                 />
                 <Button
                     label={t("Cancel")}
                     icon="pi pi-times"
                     outlined
                     severity="danger"
-                    onClick={() => {
-                        saveDistribution();
-                    }}
+                    onClick={() => setEditDistribution(null)}
                 />
             </div>
         </div>

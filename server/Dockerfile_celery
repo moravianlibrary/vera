@@ -12,7 +12,8 @@ RUN pip install --no-cache-dir -r requirements_celery.txt
 # COPY auth /app/auth
 COPY catalogs /app/catalogs
 # COPY categories /app/categories
-COPY categories/models.py /app/categories/models.py
+COPY categories/categories/models.py /app/categories/categories/models.py
+COPY categories/intentions/models.py /app/categories/intentions/models.py
 # COPY departments /app/departments
 # COPY documents /app/documents
 # COPY documents/crud.py /app/documents/crud.py

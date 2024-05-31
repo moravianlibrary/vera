@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { GenerateExtraction } from "../../adapters/ApiGeneratedExtractions";
 import { useGeneratedExtractions } from "../../contexts/extractions/GeneratedExtractionsContext";
-import { AssignableCategoriesProvider } from "../../contexts/categories/AssignableCategoriesContext";
 import { AssignableCategoriesPicker } from "../../components/pickers/AssignableCategoryPicker";
 import LabeledComponent from "../../components/LabeledComponent";
 import { Button } from "primereact/button";
@@ -12,6 +11,7 @@ import LocationPicker, {
     MetaLocation,
 } from "../../components/pickers/LocationPicker";
 import { Library, Storage } from "../../adapters/ApiLocations";
+import { CategoriesProvider } from "../../contexts/categories/CategoriesContext";
 
 interface ExtractionPropsMenuProps {}
 
@@ -83,13 +83,13 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
                 className="justify-content-between flex "
                 label={t("Include only documents from these categories")}
             >
-                <AssignableCategoriesProvider>
+                <CategoriesProvider>
                     <AssignableCategoriesPicker
                         className="w-16rem"
                         categories_ids={selectedCategories}
                         callback={handleCategoriesChange}
                     />
-                </AssignableCategoriesProvider>
+                </CategoriesProvider>
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"

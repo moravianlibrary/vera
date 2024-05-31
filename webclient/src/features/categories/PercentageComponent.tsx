@@ -7,6 +7,7 @@ import { ActionType } from "../../types/ActionType";
 import { UserModel } from "../../contexts/user/UserModel";
 import { useTranslation } from "react-i18next";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
+import { useIntentions } from "../../contexts/categories/IntentionsContext";
 
 interface CateogryPercentageProps {
     category: CategoryModel;
@@ -18,6 +19,7 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({
     const { t } = useTranslation();
 
     const { setEditDistribution } = useCategoryModels();
+    const { activeIntention } = useIntentions();
 
     const canEditDepartmentCategory = (user: UserModel) => {
         return (category.level >= 1 &&
@@ -32,6 +34,10 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({
             setEditDistribution(category.parent);
         }
     };
+
+    if (!activeIntention) {
+        return <div className="px-5"></div>;
+    }
 
     return (
         <div className="flex align-items-center">

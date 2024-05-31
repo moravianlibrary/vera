@@ -1,17 +1,18 @@
-from tests.test_endpoints import TestEndpoints
-from unittest.mock import Mock, patch
+from tests.test_integration import TestIntegration
 from tests.helper_funcs import (
     createTestUser,
     get_all_actions_except,
     mockUser,
+    mock_db,
 )
 
-from auth.types import ActionType
+from security.types import ActionType
 
 
-class TestAuthEndpoints(TestEndpoints):
+class TestAuthEndpoints(TestIntegration):
     def test_current_user(self):
         # Arange
+        mock_db()
         test_user = createTestUser()
         mockUser(test_user)
 
@@ -25,11 +26,10 @@ class TestAuthEndpoints(TestEndpoints):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["username"], test_user.username)
 
-    @patch("auth.router.get_users_crud")
-    def test_get_users_permitted(self, mock_get_users: Mock):
+    def test_get_users_permitted(self):
         # Arange
+        mock_db()
         mockUser(createTestUser(actions=[ActionType.EditAccess]))
-        mock_get_users.return_value = []
 
         # Act
         response = self.client.get(
@@ -41,6 +41,7 @@ class TestAuthEndpoints(TestEndpoints):
 
     def test_get_users_prohibited(self):
         # Arange
+        mock_db()
         mockUser(
             createTestUser(get_all_actions_except([ActionType.EditAccess]))
         )

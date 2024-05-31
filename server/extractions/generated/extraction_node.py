@@ -1,9 +1,8 @@
 from queue import PriorityQueue
 from typing import List, Optional
 
-from categories.models import Category as CategoryModel
-from documents.models import Document as DocumentModel
-from extractions.generated.extraction_document import ExtractionDocument
+from categories.categories.models import Category as CategoryModel
+from documents.models import Document
 
 
 def getExtractionRoot(children: List["ExtractionNode"]):
@@ -14,12 +13,13 @@ class ExtractionNode:
     def __init__(
         self,
         category: Optional[CategoryModel] = None,
+        percentage: float = 1.0,
         include_category: bool = False,
         children: List["ExtractionNode"] = [],
-        documents: List[DocumentModel] = [],
+        documents: List[Document] = [],
     ):
         self.category_id = category.id if category else -1
-        self.percentage = category.percentage if category else 1.0
+        self.percentage = percentage
         self.assignable = category.assignable if category else False
         self.extract_whole = category.extract_whole if category else False
         self.level = category.level if category else -1
@@ -31,13 +31,9 @@ class ExtractionNode:
         for child in self.children:
             child.set_parent(self)
 
-        self._documents: List[ExtractionDocument] = [
-            ExtractionDocument(document) for document in documents
-        ]
-        self.total_pages = sum(
-            [document.pages_count for document in self._documents]
-        )
-        self.extracted_documents: List[ExtractionDocument] = []
+        self._documents: List[Document] = documents
+        self.total_pages = sum(document.pages_count for document in documents)
+        self.extracted_documents: List[Document] = []
         self.extracted_pages = 0
         self.fully_extracted_pages = 0
 
@@ -46,7 +42,7 @@ class ExtractionNode:
         return self.total_pages / self.relative_ratio
 
     @property
-    def documents(self) -> List[ExtractionDocument]:
+    def documents(self) -> List[Document]:
         if not self.extracted_documents:
             return self._documents
         return [
@@ -106,9 +102,7 @@ class ExtractionNode:
             else overall_target_pages
         )
 
-    def propagate_documents_up(
-        self, level: int
-    ) -> Optional[List[ExtractionDocument]]:
+    def propagate_documents_up(self, level: int) -> Optional[List[Document]]:
         if self.level < level - 1:
             for child in self.children:
                 child.propagate_documents_up(level)
@@ -152,7 +146,7 @@ class ExtractionNode:
         )
 
     def set_extracted(
-        self, documents: List[ExtractionDocument], extracted_pages: int
+        self, documents: List[Document], extracted_pages: int
     ) -> bool:
         self.extracted_documents.extend(documents)
         if self.parent_node:

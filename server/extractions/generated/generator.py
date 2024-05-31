@@ -11,7 +11,11 @@ from extractions.generated.extraction_node import ExtractionNode
 
 class ExtractionGenerator:
     def __init__(
-        self, target_pages: int, settings: GenerateExtraction, db: Session
+        self,
+        target_pages: int,
+        intention_id: int,
+        settings: GenerateExtraction,
+        db: Session,
     ):
         self.target_pages = target_pages
         self.lower_limit = target_pages * (1 - settings.target_pages_threshold)
@@ -19,7 +23,7 @@ class ExtractionGenerator:
         self.db = db
         self.extraction_root: ExtractionNode = ExtractionPreprocessor(
             settings, db
-        ).generate_extraction_tree()
+        ).generate_extraction_tree(intention_id)
         self.extracted_documents: List[int] = []
         self.extracted_pages_count = 0
         self.target_pages_window = 0
@@ -68,20 +72,9 @@ class ExtractionGenerator:
     def generate_extraction_for_node(
         self, node: ExtractionNode
     ) -> Tuple[List[ExtractionDocument], int]:
-        # if (
-        #     self.settings.include_categories
-        #     and node.category_id in self.settings.include_categories
-        # ):
-        #     return self.extract_include_category(node)
-        # elif node.extract_whole:
         if node.extract_whole:
             return self.extract_whole_category(node)
         return self.extract_category(node)
-
-    def extract_include_category(
-        self, node: ExtractionNode
-    ) -> Tuple[List[ExtractionDocument], int]:
-        return node.documents, node.total_pages
 
     def extract_whole_category(self, node: ExtractionNode):
         upper_limit = node.get_relative_target_pages(

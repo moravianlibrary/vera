@@ -11,6 +11,7 @@ import { ActionType } from "../../types/ActionType";
 import { UserModel } from "../../contexts/user/UserModel";
 import { useUser } from "../../contexts/user/UserContext";
 import { useTranslation } from "react-i18next";
+import { useIntentions } from "../../contexts/categories/IntentionsContext";
 
 interface CategoryEditMenuProps {
     node: CategoryModel;
@@ -30,6 +31,7 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
         deleteCategory,
         setEditDistribution,
     } = useCategoryModels();
+    const { activeIntention } = useIntentions();
     const { user } = useUser();
     const menuRef = useRef(null);
 
@@ -158,7 +160,9 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
 
     const getMenuItems = () => {
         const editDistribution =
-            allowDistributionEdit && node.children.length > 0;
+            allowDistributionEdit &&
+            node.children.length > 0 &&
+            activeIntention;
         if (node.type === CategoryType.Root) {
             return editDistribution
                 ? editDistributionItems.concat(rootItems)

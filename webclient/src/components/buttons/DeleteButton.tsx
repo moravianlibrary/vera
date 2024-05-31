@@ -24,7 +24,8 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
     return (
         <Button
             disabled={disabled}
-            className="p-button-rounded p-button-text p-button-danger"
+            className="p-button-rounded p-button-text"
+            severity={disabled ? "secondary" : "danger"}
             icon="pi pi-trash"
             onClick={handleClick}
         />
