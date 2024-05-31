@@ -1,8 +1,8 @@
 import React from "react";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
-import { Column } from "primereact/column";
+import { Column, ColumnBodyOptions } from "primereact/column";
 import { useTranslation } from "react-i18next";
-import { TreeTable, TreeTableExpandedKeysType } from "primereact/treetable";
+import { TreeTable } from "primereact/treetable";
 import CategoryNodeEditMenu from "./CategoryNodeEditMenu";
 import EditCategoryMenu from "./EditCategoryMenu";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
@@ -31,8 +31,10 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                 <Column
                     field="category.name"
                     header={t("Category name")}
-                    body={(node) => node.name}
                     expander
+                    body={(node, options) => (
+                        <CategoryNameBody node={node} options={options} />
+                    )}
                 />
                 {activeIntention && (
                     <Column
@@ -95,16 +97,32 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
     );
 };
 
-interface ActionButtonsProps {
+interface CategoryColumnBodyProps {
     node: CategoryModel;
 }
 
-const ActionButtons: React.FC<ActionButtonsProps> = ({ node }) => {
+interface CategoryNameBodyProps extends CategoryColumnBodyProps {
+    options: ColumnBodyOptions;
+}
+
+const CategoryNameBody: React.FC<CategoryNameBodyProps> = ({
+    node,
+    options,
+}) => {
     const { t } = useTranslation();
+    console.log(options.props?.metaData);
 
     return (
-        <div className="flex gap-2 align-items-center">
-            <CategoryNodeEditMenu node={node} allowDistributionEdit />
+        <div className="flex gap-0 align-items-center">
+            <Button
+                className="p-0 text-xs"
+                icon="pi pi-external-link"
+                severity="secondary"
+                text
+                tooltip={t("Show in documents")}
+                tooltipOptions={{ position: "right", showDelay: 500 }}
+            />
+            <span>{node.name}</span>
             {node.type === CategoryType.Category && (
                 <Link to={`/documents?categoryId=${node.id}`}>
                     <Button
@@ -121,12 +139,28 @@ const ActionButtons: React.FC<ActionButtonsProps> = ({ node }) => {
     );
 };
 
+const ActionButtons: React.FC<CategoryColumnBodyProps> = ({ node }) => {
+    const { t } = useTranslation();
+
+    return (
+        <div className="flex gap-2 align-items-center">
+            <CategoryNodeEditMenu node={node} allowDistributionEdit />
+        </div>
+    );
+};
+
 interface DangerCountBodyProps {
     count: number;
 }
 
 const DangerCountBody: React.FC<DangerCountBodyProps> = ({ count }) => {
-    return <span className={count > 0 ? "text-red-600" : ""}>{count}</span>;
+    if (count > 0) {
+        return <span className="text-red-600">{count}</span>;
+    }
+    if (count === 0) {
+        return <span>{count}</span>;
+    }
+    return <span>+{-count}</span>;
 };
 
 export default CategoriesTable;
