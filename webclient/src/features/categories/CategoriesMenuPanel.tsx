@@ -1,310 +1,68 @@
 import { Button } from "primereact/button";
-import { Divider } from "primereact/divider";
-import { SelectButton } from "primereact/selectbutton";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
-import { useCategories } from "../../contexts/categories/CategoriesContext";
-import CategoryPicker from "../../components/pickers/CategoryPicker";
-import { CategoryType } from "../../contexts/categories/CategoryType";
-import ExtractionPicker from "../../components/pickers/ExtractionPicker";
 import { Toolbar } from "primereact/toolbar";
-import { IntentionCreate } from "../../adapters/ApiCategories";
 import { useIntentions } from "../../contexts/categories/IntentionsContext";
 import EditIntentionMenu, {
     EditIntentionMenuRef,
 } from "./components/EditIntentionMenu";
-import { format } from "date-fns";
 import { IntentionFactory } from "../../data/factories/IntentionFactory";
-import IntentionPicker from "../../components/pickers/IntentionPicker";
-import LabeledComponent from "../../components/LabeledComponent";
-import DepartmentPicker from "../../components/pickers/DepartmentPicker";
+import CategoriesDisplayOptions from "./components/toolbar/CategoriesDisplayOptions";
+import IntentionsDisplayOptions from "./components/toolbar/IntentionDisplayOptions";
+import DepartmentsDisplayOptions from "./components/toolbar/DepartmentsDisplayOptions";
+import SelectCategoryView from "./components/toolbar/SelectCategoryView";
 
 export enum CategoryViewType {
     CategoryTable = "CategoryTable",
     CategoryChart = "CategoryChart",
-}
-
-export enum CategorySection {
-    Categories = "Categories",
     Intentions = "Intentions",
 }
 
 interface CategoriesMenuPanelProps {
-    categoryViewType: CategoryViewType;
-    onCategoryViewTypeChange: (viewType: CategoryViewType) => void;
-    categorySection: CategorySection;
-    onCategorySectionChange: (section: CategorySection) => void;
+    categoryView: CategoryViewType;
+    onCategoryViewChange: (viewType: CategoryViewType) => void;
 }
 
 const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = ({
-    categoryViewType,
-    onCategoryViewTypeChange,
-    categorySection,
-    onCategorySectionChange,
+    categoryView,
+    onCategoryViewChange,
 }) => {
-    const { t } = useTranslation();
-
-    const getStartContent = () => {
-        if (categorySection === CategorySection.Categories) {
-            return (
-                <CategoryOptions
-                    categoryViewType={categoryViewType}
-                    onCategoryViewTypeChange={onCategoryViewTypeChange}
-                />
-            );
-        } else if (categorySection === CategorySection.Intentions) {
-            return <IntentionsOptions />;
-        }
-    };
-
     return (
         <Toolbar
             className="p-2 surface-100 w-full"
-            start={getStartContent()}
+            start={
+                categoryView === CategoryViewType.Intentions ? (
+                    <IntentionsOptions />
+                ) : (
+                    <CategoryOptions />
+                )
+            }
             end={
-                <SelectCategorySection
-                    section={categorySection}
-                    onSectionChange={onCategorySectionChange}
+                <SelectCategoryView
+                    categoryView={categoryView}
+                    onCategoryViewChange={onCategoryViewChange}
                 />
             }
         />
     );
 };
 
-interface CategoryOptionsProps {
-    categoryViewType: CategoryViewType;
-    onCategoryViewTypeChange: (viewType: CategoryViewType) => void;
-}
+interface CategoryOptionsProps {}
 
-const CategoryOptions: React.FC<CategoryOptionsProps> = ({
-    categoryViewType,
-    onCategoryViewTypeChange,
-}) => {
+const CategoryOptions: React.FC<CategoryOptionsProps> = ({}) => {
     const { t } = useTranslation();
-    const {
-        currentCategory,
-        showIntentionOnly,
-        setShowIntentionOnly,
-        activeLevel,
-        focusAssignable,
-        focusRootCategory,
-        focusCategory,
-        focusLevel,
-        focusAssignableCategories,
-    } = useCategoryModels();
-    const { extractionId, setExtractionId, department, setDepartment } =
-        useCategories();
-    const { activeIntention, selectIntention } = useIntentions();
-
-    const levelOptions = [0, 1, 2, 3];
-
-    const [selectedCategory, setSelectedCategory] = useState<number | null>(
-        null
-    );
-
-    useEffect(() => {
-        if (currentCategory) {
-            setSelectedCategory(
-                currentCategory.type === CategoryType.Root ||
-                    currentCategory.type === CategoryType.LevelRoot
-                    ? null
-                    : currentCategory.id
-            );
-        }
-    }, [currentCategory]);
-
-    const handleFocusCategory_ = (category_id: number | null) => {
-        if (category_id) {
-            focusCategory(category_id);
-        } else {
-            focusRootCategory();
-        }
-    };
 
     return (
         <div className="flex ml-2 gap-4 flex-wrap">
-            <SelectCategoryViewType
-                categoryViewType={categoryViewType}
-                onCategoryViewTypeChange={onCategoryViewTypeChange}
-            />
-            {/* <Divider layout="vertical" /> */}
-            <Button
-                className="m-0 text-800"
-                icon="pi pi-eye"
-                text
-                label={t("All categories")}
-                onClick={() => focusRootCategory()}
-            />
-            {/* <Divider layout="vertical" /> */}
-            <div className="flex gap-1 my-2 mx-1 align-items-center">
-                <span className="p-button-label text-800">
-                    {t("Categories of level")}:
-                </span>
-                <SelectButton
-                    options={levelOptions}
-                    value={activeLevel}
-                    onChange={(e) => focusLevel(e.value)}
-                />
-            </div>
-            {/* <Divider layout="vertical" /> */}
-            <LabeledComponent
-                label={t("Selected category")}
-                className="p-button-label text-800 my-2 mx-1 align-items-center"
-            >
-                <CategoryPicker
-                    className={
-                        selectedCategory ? "border-primary border-3" : ""
-                    }
-                    category_id={selectedCategory}
-                    callback={handleFocusCategory_}
-                />
-            </LabeledComponent>
-            {/* <Divider layout="vertical" /> */}
-            <Button
-                className={
-                    focusAssignable
-                        ? "m-0 text-800 border-yellow-500 bg-yellow-500"
-                        : "m-0 text-800"
-                }
-                text={!focusAssignable}
-                icon={focusAssignable ? "pi pi-star-fill" : "pi pi-star"}
-                label={t("Assignable categories")}
-                onClick={() => focusAssignableCategories()}
-            />
-            <Button
-                className={activeIntention ? "m-0 text-800" : "m-0 bg-primary"}
-                text={activeIntention !== null}
-                label={t("Without intention")}
-                onClick={() => selectIntention(null)}
-            />
-            <LabeledComponent
-                label={t("Selected intention")}
-                className="p-button-label text-800 my-2 mx-1 align-items-center"
-            >
-                <IntentionPicker
-                    selectedIntention={activeIntention}
-                    onIntentionChange={selectIntention}
-                />
-            </LabeledComponent>
-            {activeIntention !== null && (
-                <Button
-                    className={
-                        showIntentionOnly ? "m-0 bg-primary" : "m-0 text-800"
-                    }
-                    text={!showIntentionOnly}
-                    label={t("Show only intention categories")}
-                    onClick={() => setShowIntentionOnly(!showIntentionOnly)}
-                />
-            )}
-            <Button
-                className={
-                    department === null ? "m-0 bg-primary" : "m-0 text-800"
-                }
-                text={department !== null}
-                label={t("Show all categories")}
-                onClick={() => setDepartment(null)}
-            />
-            <LabeledComponent
-                label={t("Selected department")}
-                className="p-button-label text-800 my-2 mx-1 align-items-center"
-            >
-                <DepartmentPicker
-                    selectedDepartment={department}
-                    onDepartmentChange={setDepartment}
-                />
-            </LabeledComponent>
-
-            {/* <Divider layout="vertical" /> */}
-            {/* <div className="flex gap-1 my-2 mx-1 align-items-center">
-                <span className="p-button-label text-800">
-                    {t("Show extraction")}:
-                </span>
-                <ExtractionPicker
-                    extraction_id={extractionId}
-                    callback={setExtractionId}
-                />
-            </div> */}
-        </div>
-    );
-};
-
-interface SelectCategoryViewTypeProps {
-    categoryViewType: CategoryViewType;
-    onCategoryViewTypeChange: (viewType: CategoryViewType) => void;
-}
-
-const SelectCategoryViewType: React.FC<SelectCategoryViewTypeProps> = ({
-    categoryViewType,
-    onCategoryViewTypeChange,
-}) => {
-    const { t } = useTranslation();
-
-    const displayOptions = [
-        {
-            label: t("Table"),
-            icon: "pi pi-table",
-            value: CategoryViewType.CategoryTable,
-        },
-        {
-            label: t("Chart"),
-            icon: "pi pi-chart",
-            value: CategoryViewType.CategoryChart,
-        },
-    ];
-
-    const handleCategoryViewTypeChange = (e) => {
-        if (e.value !== null) {
-            onCategoryViewTypeChange(e.value);
-        }
-    };
-
-    return (
-        <div className="flex align-items-center">
-            <SelectButton
-                value={categoryViewType}
-                onChange={handleCategoryViewTypeChange}
-                options={displayOptions}
-            />
-        </div>
-    );
-};
-
-interface SelectCategorySectionProps {
-    section: CategorySection;
-    onSectionChange: (section: CategorySection) => void;
-}
-
-const SelectCategorySection: React.FC<SelectCategorySectionProps> = ({
-    section,
-    onSectionChange,
-}) => {
-    const { t } = useTranslation();
-
-    const displayOptions = [
-        {
-            label: t("Categories"),
-            value: CategorySection.Categories,
-        },
-        {
-            label: t("Intentions"),
-            value: CategorySection.Intentions,
-        },
-    ];
-
-    const handleSectionChange = (e) => {
-        if (e.value !== null) {
-            onSectionChange(e.value);
-        }
-    };
-
-    return (
-        <div className="flex align-items-center mr-2">
-            <SelectButton
-                value={section}
-                onChange={handleSectionChange}
-                options={displayOptions}
-            />
+            <InplaceOptions label={t("Categories display options")}>
+                <CategoriesDisplayOptions />
+            </InplaceOptions>
+            <InplaceOptions label={t("Intentions display options")}>
+                <IntentionsDisplayOptions />
+            </InplaceOptions>
+            <InplaceOptions label={t("Departments display options")}>
+                <DepartmentsDisplayOptions />
+            </InplaceOptions>
         </div>
     );
 };
@@ -331,6 +89,41 @@ const IntentionsOptions: React.FC<IntentionsOptionsProps> = () => {
                 label={t("Add intention")}
                 onClick={() => editIntentionRef.current?.toggle()}
             />
+        </div>
+    );
+};
+
+interface InplaceOptionsProps {
+    label: string;
+    children: React.ReactNode;
+}
+
+const InplaceOptions: React.FC<InplaceOptionsProps> = ({ label, children }) => {
+    const [contentVisible, setContentVisible] = useState(false);
+
+    if (!contentVisible) {
+        return (
+            <div className="flex align-items-center">
+                <Button
+                    className="text-gray-700"
+                    icon="pi pi-angle-double-right"
+                    label={label}
+                    text
+                    onClick={() => setContentVisible(true)}
+                />
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex align-items-center border-round border-1 border-300 p-2">
+            <Button
+                className="text-gray-700"
+                icon="pi pi-angle-double-left"
+                text
+                onClick={() => setContentVisible(false)}
+            />
+            {children}
         </div>
     );
 };

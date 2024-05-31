@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 
 import CategoriesMenuPanel, {
-    CategorySection,
     CategoryViewType,
 } from "../features/categories/CategoriesMenuPanel";
 import {
@@ -47,9 +46,6 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
     const [viewType, setViewType] = useState<CategoryViewType>(
         CategoryViewType.CategoryTable
     );
-    const [section, setSection] = useState<CategorySection>(
-        CategorySection.Categories
-    );
 
     useEffect(() => {
         if (searchParams.has("extractionId")) {
@@ -62,19 +58,12 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
     }, [searchParams, setExtractionId]);
 
     const getPageContent = () => {
-        if (section === CategorySection.Intentions) {
+        if (viewType === CategoryViewType.Intentions) {
             return <IntentionsTable />;
-        } else if (
-            section === CategorySection.Categories &&
-            viewType === CategoryViewType.CategoryTable
-        ) {
-            return <CategoriesTable />;
-        } else if (
-            section === CategorySection.Categories &&
-            viewType === CategoryViewType.CategoryChart
-        ) {
+        } else if (viewType === CategoryViewType.CategoryChart) {
             return <CategoriesChart />;
         }
+        return <CategoriesTable />;
     };
 
     return (
@@ -82,10 +71,8 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
             <div className="flex flex-column w-screen overflow-auto">
                 <div className="sticky top-0 right-0 z-3 gap-2 flex w-screen">
                     <CategoriesMenuPanel
-                        categoryViewType={viewType}
-                        onCategoryViewTypeChange={setViewType}
-                        categorySection={section}
-                        onCategorySectionChange={setSection}
+                        categoryView={viewType}
+                        onCategoryViewChange={setViewType}
                     />
                     <EditDistributionMenu />
                 </div>

@@ -20,7 +20,7 @@ import { useCategories } from "./CategoriesContext";
 import { useIntentions } from "./IntentionsContext";
 
 interface CategoryModelsContextProps {
-    currentCategory: CategoryModel | undefined;
+    currentCategory: CategoryModel | null;
 
     addCategory: (toCategory: CategoryModel) => void;
     createCategory: (category: CreateCategory, parentId: number | null) => void;
@@ -39,7 +39,7 @@ interface CategoryModelsContextProps {
     focusAssignable: boolean;
     focusRootCategory: () => void;
     focusParentCategory: () => void;
-    focusCategory: (category_id: number) => void;
+    focusCategory: (category_id: number | null) => void;
     focusLevel: (level: number) => void;
     focusAssignableCategories: () => void;
 
@@ -67,9 +67,8 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
     const [rootNode, setRootNode] = useState<CategoryModel | undefined>(
         undefined
     );
-    const [currentCategory, setCurrentCategory] = useState<
-        CategoryModel | undefined
-    >(undefined);
+    const [currentCategory, setCurrentCategory] =
+        useState<CategoryModel | null>(null);
 
     const [editCategory, setEditCategory] = useState<CategoryModel | null>(
         null
@@ -213,7 +212,11 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
         }
     };
 
-    const focusCategory = (category_id: number) => {
+    const focusCategory = (category_id: number | null) => {
+        if (category_id === null) {
+            focusRootCategory();
+            return;
+        }
         const focusCategory = rootNode!.getCategoryModelById(category_id);
         if (focusCategory) {
             changeFocus(focusCategory, null, false);
