@@ -31,6 +31,11 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
         setExpandedKeys(_expandedKeys);
     };
 
+    const handleExpand = (category: CategoryModel) => {
+        console.log(category);
+        toggleApplications();
+    };
+
     return (
         <div>
             <TreeTable
@@ -47,7 +52,11 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                     header={t("Category name")}
                     expander
                     body={(node, options) => (
-                        <CategoryNameBody node={node} options={options} />
+                        <CategoryNameBody
+                            node={node}
+                            options={options}
+                            onExpand={handleExpand}
+                        />
                     )}
                 />
                 {activeIntention && (
@@ -117,39 +126,38 @@ interface CategoryColumnBodyProps {
 
 interface CategoryNameBodyProps extends CategoryColumnBodyProps {
     options: ColumnBodyOptions;
+    onExpand: (node: CategoryModel) => void;
 }
 
 const CategoryNameBody: React.FC<CategoryNameBodyProps> = ({
     node,
     options,
+    onExpand,
 }) => {
     const { t } = useTranslation();
-    console.log(options.props?.metaData);
+    console.log(options);
+
+    if (node.type !== CategoryType.Category) {
+        return <span>{node.name}</span>;
+    }
 
     return (
-        <div className="flex gap-0 align-items-center">
-            <Button
-                className="p-0 text-xs"
-                icon="pi pi-external-link"
-                severity="secondary"
-                text
-                tooltip={t("Show in documents")}
-                tooltipOptions={{ position: "right", showDelay: 500 }}
-            />
+        <>
             <span>{node.name}</span>
-            {node.type === CategoryType.Category && (
-                <Link to={`/documents?categoryId=${node.id}`}>
-                    <Button
-                        className="p-0 text-xs"
-                        icon="pi pi-external-link"
-                        severity="secondary"
-                        text
-                        tooltip={t("Show in documents")}
-                        tooltipOptions={{ position: "right", showDelay: 500 }}
-                    />
-                </Link>
-            )}
-        </div>
+            <Link to={`/documents?categoryId=${node.id}`}>
+                <Button
+                    // className="p-0 text-xs"
+                    className="p-2"
+                    icon="pi pi-external-link"
+                    iconPos="right"
+                    severity="secondary"
+                    text
+                    // label={node.name}
+                    tooltip={t("Show in documents")}
+                    tooltipOptions={{ position: "right", showDelay: 500 }}
+                />
+            </Link>
+        </>
     );
 };
 
