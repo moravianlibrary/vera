@@ -16,6 +16,7 @@ COPY categories/categories/models.py /app/categories/categories/models.py
 COPY categories/categories/schemas.py /app/categories/categories/schemas.py
 COPY categories/intentions/models.py /app/categories/intentions/models.py
 COPY categories/intentions/schemas.py /app/categories/intentions/schemas.py
+COPY categories/intentions/types.py /app/categories/intentions/types.py
 # COPY departments /app/departments
 # COPY documents /app/documents
 # COPY documents/crud.py /app/documents/crud.py
