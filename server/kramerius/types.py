@@ -32,6 +32,8 @@ class SolrField(Enum):
 
     PagesCount = "count_page"
 
+    KeywordsFacet = "keywords.facet"
+
 
 class SolrConjuction(Enum):
     And = " AND "
