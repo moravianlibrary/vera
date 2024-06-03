@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.8-slim
+FROM python:3.12-slim
 
 # Set the working directory to /app
 WORKDIR /app
@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements_celery.txt
 COPY catalogs /app/catalogs
 # COPY categories /app/categories
 COPY categories/categories/models.py /app/categories/categories/models.py
+COPY categories/categories/schemas.py /app/categories/categories/schemas.py
 COPY categories/intentions/models.py /app/categories/intentions/models.py
 # COPY departments /app/departments
 # COPY documents /app/documents
@@ -30,6 +31,7 @@ COPY predictions /app/predictions
 # COPY roles /app/roles
 COPY services/csv_writer.py /app/services/csv_writer.py
 COPY services/database.py /app/services/database.py
+COPY services/exceptions.py /app/services/exceptions.py
 # COPY tasks /app/tasks
 COPY tasks/api.py /app/tasks/api.py
 COPY tasks/crud.py /app/tasks/crud.py

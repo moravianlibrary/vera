@@ -5,7 +5,8 @@ pymarc
 numpy
 lxml
 pandas
-tensorflow==2.13.1
-typing-extensions==4.5.0
+tensorflow==2.16.1
+typing-extensions==4.8.0
+fastapi==0.103.2
 redis
 celery
