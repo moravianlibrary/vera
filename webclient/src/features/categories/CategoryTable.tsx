@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
-import { Column, ColumnBodyOptions } from "primereact/column";
+import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
-import { TreeTable, TreeTableExpandedKeysType } from "primereact/treetable";
+import { TreeTable } from "primereact/treetable";
 import CategoryNodeEditMenu from "./CategoryNodeEditMenu";
 import EditCategoryMenu from "./EditCategoryMenu";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
@@ -18,24 +18,6 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
     const { activeIntention } = useIntentions();
     const { currentCategory } = useCategoryModels();
 
-    const [expandedKeys, setExpandedKeys] = useState<TreeTableExpandedKeysType>(
-        {}
-    );
-
-    const toggleApplications = () => {
-        let _expandedKeys = { ...expandedKeys };
-
-        if (_expandedKeys["0"]) delete _expandedKeys["0"];
-        else _expandedKeys["0"] = true;
-
-        setExpandedKeys(_expandedKeys);
-    };
-
-    const handleExpand = (category: CategoryModel) => {
-        console.log(category);
-        toggleApplications();
-    };
-
     return (
         <div>
             <TreeTable
@@ -43,24 +25,19 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                 value={currentCategory ? ([currentCategory] as any) : []}
                 scrollable
                 scrollHeight="calc(100vh - 170px)"
-                columnResizeMode="expand"
-                expandedKeys={expandedKeys}
-                onToggle={(e) => setExpandedKeys(e.value)}
+                // columnResizeMode="expand"
+                // resizableColumns
             >
                 <Column
+                    style={{ width: "300px" }}
                     field="category.name"
                     header={t("Category name")}
                     expander
-                    body={(node, options) => (
-                        <CategoryNameBody
-                            node={node}
-                            options={options}
-                            onExpand={handleExpand}
-                        />
-                    )}
+                    body={(node, options) => <CategoryNameBody node={node} />}
                 />
                 {activeIntention && (
                     <Column
+                        style={{ width: "80px" }}
                         field="percentage"
                         header={t("Percentage")}
                         body={(node) => `${node.percentage || 0}%`}
@@ -68,12 +45,14 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                 )}
                 {activeIntention && (
                     <Column
+                        style={{ width: "80px" }}
                         field="overall_percentage"
                         header={t("Overall percentage")}
                         body={(node) => `${node.overall_percentage || 0}%`}
                     />
                 )}
                 <Column
+                    style={{ width: "100px" }}
                     field="total"
                     header={t("Overall count")}
                     body={(node) =>
@@ -83,6 +62,7 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                     }
                 />
                 <Column
+                    style={{ width: "120px" }}
                     field="extractable"
                     header={t("Extractable count")}
                     body={(node) =>
@@ -92,6 +72,7 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                     }
                 />
                 <Column
+                    style={{ width: "100px" }}
                     field="count_documents_without_cnb"
                     header={t("Documents without CNB")}
                     body={(node) => (
@@ -100,6 +81,7 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                 />
                 {activeIntention && (
                     <Column
+                        style={{ width: "100px" }}
                         field="count_pages"
                         header={t("Missing pages to fulfill intention")}
                         body={(node) => (
@@ -110,6 +92,7 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                     />
                 )}
                 <Column
+                    style={{ width: "80px" }}
                     field="actions"
                     header={t("Actions")}
                     body={(node) => <ActionButtons node={node} />}
@@ -124,51 +107,40 @@ interface CategoryColumnBodyProps {
     node: CategoryModel;
 }
 
-interface CategoryNameBodyProps extends CategoryColumnBodyProps {
-    options: ColumnBodyOptions;
-    onExpand: (node: CategoryModel) => void;
-}
-
-const CategoryNameBody: React.FC<CategoryNameBodyProps> = ({
-    node,
-    options,
-    onExpand,
-}) => {
+const CategoryNameBody: React.FC<CategoryColumnBodyProps> = ({ node }) => {
     const { t } = useTranslation();
-    console.log(options);
 
     if (node.type !== CategoryType.Category) {
         return <span>{node.name}</span>;
     }
 
     return (
-        <>
-            <span>{node.name}</span>
+        <span
+            style={{
+                whiteSpace: "nowrap",
+                display: "inline-flex",
+                alignItems: "center",
+                overflow: "ellipsis",
+            }}
+        >
+            {node.name}
             <Link to={`/documents?categoryId=${node.id}`}>
                 <Button
-                    // className="p-0 text-xs"
-                    className="p-2"
+                    className="p-1 text-xs"
                     icon="pi pi-external-link"
                     iconPos="right"
                     severity="secondary"
                     text
-                    // label={node.name}
                     tooltip={t("Show in documents")}
                     tooltipOptions={{ position: "right", showDelay: 500 }}
                 />
             </Link>
-        </>
+        </span>
     );
 };
 
 const ActionButtons: React.FC<CategoryColumnBodyProps> = ({ node }) => {
-    const { t } = useTranslation();
-
-    return (
-        <div className="flex gap-2 align-items-center">
-            <CategoryNodeEditMenu node={node} allowDistributionEdit />
-        </div>
-    );
+    return <CategoryNodeEditMenu node={node} allowDistributionEdit />;
 };
 
 interface DangerCountBodyProps {
