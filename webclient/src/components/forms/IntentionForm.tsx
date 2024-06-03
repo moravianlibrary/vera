@@ -3,7 +3,7 @@ import { InputText } from "primereact/inputtext";
 import { IntentionCreate } from "../../adapters/ApiCategories";
 import LabeledComponent from "../LabeledComponent";
 import { useTranslation } from "react-i18next";
-import IntentionFactory from "../../data/factories/IntentionFactory";
+import IntentionFactory from "../../contexts/categories/IntentionFactory";
 import { Button } from "primereact/button";
 import { Calendar } from "primereact/calendar";
 import { InputNumber } from "primereact/inputnumber";
