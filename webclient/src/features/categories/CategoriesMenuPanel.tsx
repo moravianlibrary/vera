@@ -6,7 +6,7 @@ import { useIntentions } from "../../contexts/categories/IntentionsContext";
 import EditIntentionMenu, {
     EditIntentionMenuRef,
 } from "./components/EditIntentionMenu";
-import { IntentionFactory } from "../../data/factories/IntentionFactory";
+import IntentionFactory from "../../data/factories/IntentionFactory";
 import CategoriesDisplayOptions from "./components/toolbar/CategoriesDisplayOptions";
 import IntentionsDisplayOptions from "./components/toolbar/IntentionDisplayOptions";
 import DepartmentsDisplayOptions from "./components/toolbar/DepartmentsDisplayOptions";

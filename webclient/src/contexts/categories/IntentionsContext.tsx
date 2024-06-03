@@ -12,7 +12,7 @@ import ApiCategories, {
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
 import { IntentionClassification } from "../../types/IntentionClassification";
-import IntentionValidator from "../../data/validators/IntentionValidator.ts";
+import IntentionValidator from "./IntentionValidator";
 
 interface IntentionsContextProps {
     intentions: Intention[];
