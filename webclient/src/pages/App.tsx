@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // import Home from './Home';
 import Access from "./Access";
-import Navbar from "../components/Navbar";
 import "../config/i18n";
 import "../styles/App.css";
 import "../styles/Palette.css";
@@ -19,9 +18,6 @@ import Home from "./Home";
 import Extractions from "./Extractions";
 import { AccessProvider } from "../contexts/access/AccessContext";
 import NavigationMenu from "../components/NavigationMenu";
-import CategoriesMenuPanel, {
-    CategoryViewType,
-} from "../features/categories/CategoriesMenuPanel";
 
 function App() {
     return (
