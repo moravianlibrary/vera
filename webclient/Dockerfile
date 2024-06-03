@@ -6,8 +6,6 @@ ARG REACT_APP_ENV
 
 # Set the working directory in the container
 WORKDIR /app
-RUN ls -la /app
-RUN rm -r /app/*
 
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
@@ -25,6 +23,7 @@ COPY src/ ./src/
 # Copy the public assets to the working directory
 COPY public/ ./public/
 RUN ls -la /app/src/pages/App.tsx
+RUN ls -la /app/src/data/factories/IntentionFactory.ts
 
 # Build the React app for production
 RUN if [ "$REACT_APP_ENV" = "main" ]; then \
