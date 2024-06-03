@@ -6,6 +6,8 @@ ARG REACT_APP_ENV
 
 # Set the working directory in the container
 WORKDIR /app
+RUN ls -la /app
+RUN rm -r /app/*
 
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
