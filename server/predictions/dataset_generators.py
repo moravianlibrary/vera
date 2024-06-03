@@ -18,6 +18,7 @@ FL_PERIODICAL = [
     SolrField.PublishersFacet,
     SolrField.PublicationPlacesFacet,
     SolrField.LanguagesFacet,
+    SolrField.KeywordsFacet,
 ]
 
 FL_VOLUME = [
@@ -28,9 +29,15 @@ FL_VOLUME = [
     SolrField.PublishersFacet,
     SolrField.PublicationPlacesFacet,
     SolrField.LanguagesFacet,
+    SolrField.KeywordsFacet,
 ]
 
-FL_ITEM = [SolrField.Pid, SolrField.PartNumberSort, SolrField.PagesCount]
+FL_ITEM = [
+    SolrField.Pid,
+    SolrField.PartNumberSort,
+    SolrField.PagesCount,
+    SolrField.KeywordsFacet,
+]
 
 VOLUMES_CSV_HEADER = [
     "Title",
@@ -40,6 +47,7 @@ VOLUMES_CSV_HEADER = [
     "Publisher",
     "Publication place",
     "Language",
+    "Keywords",
     "Pages count",
 ]
 
@@ -50,6 +58,7 @@ ITEMS_CSV_HEADER = [
     "Publisher",
     "Publication place",
     "Language",
+    "Keywords",
     "Pages count",
 ]
 
@@ -176,6 +185,10 @@ class VolumesDatasetGenerator:
 
         frequency: int = parse_frequency(str(year), frequencies)
 
+        keywords: List[str] = periodical.keywords_facet or []
+        if volume.keywords_facet is not None:
+            keywords.extend(volume.keywords_facet)
+
         number_of_items: int = 0
         pages_count: int = 0
 
@@ -191,8 +204,11 @@ class VolumesDatasetGenerator:
                     SolrField.PagesCount,
                     SolrField.Model,
                     SolrField.PartNumberString,
+                    SolrField.KeywordsFacet,
                 ],
             ):
+                if document.keywords_facet is not None:
+                    keywords.extend(document.keywords_facet)
                 if (
                     document.model == KrameriusModel.PeriodicalItem.value
                     or document.model == KrameriusModel.Supplement.value
@@ -226,6 +242,7 @@ class VolumesDatasetGenerator:
                 publisher,
                 publication_place,
                 language,
+                ",".join(set(keywords)),
                 pages_count,
             ]
         )
@@ -342,6 +359,10 @@ class ItemsDatasetGenerator:
         else:
             return
 
+        keywords: List[str] = periodical.keywords_facet or []
+        if volume.keywords_facet is not None:
+            keywords.extend(volume.keywords_facet)
+
         for item in self.search.search(
             SearchQuery(SolrField.Model, KrameriusModel.PeriodicalItem)
             .and_(SolrField.ParentPid, volume.pid)
@@ -351,6 +372,8 @@ class ItemsDatasetGenerator:
         ):
             item_number: int = item.part_number_sort
             pages_count: int = item.pages_count
+            if item.keywords_facet is not None:
+                keywords.extend(item.keywords_facet)
 
             self.csv_writer.write(
                 [
@@ -360,6 +383,7 @@ class ItemsDatasetGenerator:
                     publisher,
                     publication_place,
                     language,
+                    ",".join(set(keywords)),
                     pages_count,
                 ]
             )

@@ -97,6 +97,10 @@ class KrameriusDocument:
     def pages_count(self):
         return self.get_field_value(SolrField.PagesCount)
 
+    @property
+    def keywords_facet(self):
+        return self.get_field_value(SolrField.KeywordsFacet)
+
     def __str__(self) -> str:
         return (
             f"PID: {self.pid}\n"
