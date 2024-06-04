@@ -22,6 +22,10 @@ class KrameriusDocument:
         return self.get_field_value(SolrField.ParentPid)
 
     @property
+    def ownPidPath(self):
+        return self.get_field_value(SolrField.OwnPidPath)
+
+    @property
     def licences(self):
         return self.get_field_value(SolrField.Licences)
 

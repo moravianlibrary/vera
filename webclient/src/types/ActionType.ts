@@ -18,6 +18,7 @@ enum ActionType {
     AdminTasks = 'AdminTasks',
 
     EditAccess = 'EditAccess',
+    StopEmulatingAccess = "StopEmulatingAccess",
 
     Extract = 'Extract',
     AdminExtractions = 'AdminExtractions',
@@ -25,7 +26,9 @@ enum ActionType {
     AdminDatabase = 'AdminDatabase',
 
     ReadDatatable = 'ReadDatatable',
+    EditDatatable = 'EditDatatable',
     ReadCategories = 'ReadCategories',
+    EditCategories = 'EditCategories',
 }
 
 export { ActionType };

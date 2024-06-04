@@ -6,6 +6,7 @@ Wildcard = "*"
 class SolrField(Enum):
     Pid = "pid"
     ParentPid = "own_parent.pid"
+    OwnPidPath = "own_pid_path"
 
     Licences = "licenses"
     Model = "model"
