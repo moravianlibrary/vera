@@ -34,4 +34,5 @@ def emulate_access(username: str, actions: List[ActionType]):
 
 
 def stop_emulating_access(username: str):
-    emulated_users.pop(username)
+    if username in emulated_users:
+        emulated_users.pop(username)

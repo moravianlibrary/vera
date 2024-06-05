@@ -36,7 +36,7 @@ def get_users(db: Session = Depends(get_db)):
 
 @router.post(
     "/auth/users/emulate",
-    response_model=schemas.User,
+    response_model=schemas.CurrentUser,
 )
 def emulate_access(
     actions: schemas.ActionList,
@@ -44,18 +44,30 @@ def emulate_access(
 ):
     if not can_emulate_access(user):
         raise permissions.PermissionDeniedException
-    api.emulate_access(user.username, actions)
+    api.emulate_access(user.username, actions.actions)
+    user.actions = actions.actions + [ActionType.StopEmulatingAccess]
+    return user
 
 
 @router.delete(
     "/auth/users/emulate",
+    response_model=schemas.CurrentUser,
 )
 def end_emulation(
     user: schemas.CurrentUser = Depends(api.get_current_user),
+    db: Session = Depends(get_db),
 ):
     if not can_emulate_access(user):
         raise permissions.PermissionDeniedException
     api.stop_emulating_access(user.username)
+
+    role_actions = []
+    role = crud.get_role(user.role_id, db)
+    if role:
+        role_actions = [action.action for action in role.role_actions]
+    user.actions = role_actions
+
+    return user
 
 
 @router.post(

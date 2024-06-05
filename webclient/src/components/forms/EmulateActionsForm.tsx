@@ -3,7 +3,6 @@ import { ActionType } from "../../types/ActionType";
 import { SelectButton } from "primereact/selectbutton";
 import { useTranslation } from "react-i18next";
 import { useUser } from "../../contexts/user/UserContext";
-import RoleFactory from "../../data/factories/RoleFactory";
 import {
     OwnershipActionType,
     OwnershipType,
@@ -12,10 +11,15 @@ import {
 import { Checkbox } from "primereact/checkbox";
 import { Divider } from "primereact/divider";
 import { Button } from "primereact/button";
+import RoleFactory from "../../data/factories/RoleFactory";
 
-interface EmulateActionsFormProps {}
+interface EmulateActionsFormProps {
+    onSubmit: (actions: ActionType[]) => void;
+}
 
-const EmulateActionsForm: React.FC<EmulateActionsFormProps> = () => {
+const EmulateActionsForm: React.FC<EmulateActionsFormProps> = ({
+    onSubmit,
+}) => {
     const { t } = useTranslation();
     const { user } = useUser();
 
@@ -60,6 +64,34 @@ const EmulateActionsForm: React.FC<EmulateActionsFormProps> = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        const actions = simpleActions
+            .filter((action) => action.included)
+            .map((action) => action.action);
+        let action =
+            RoleFactory.parseReadDatatableOwnershipAction(readDatatableAction);
+        if (action !== null) {
+            actions.push(action);
+        }
+        action =
+            RoleFactory.parseEditDatatableOwnershipAction(editDatatableAction);
+        if (action !== null) {
+            actions.push(action);
+        }
+        action =
+            RoleFactory.parseReadCategoriesOwnershipAction(
+                readCategoriesAction
+            );
+        if (action !== null) {
+            actions.push(action);
+        }
+        action =
+            RoleFactory.parseEditCategoriesOwnershipAction(
+                editCategoriesAction
+            );
+        if (action !== null) {
+            actions.push(action);
+        }
+        onSubmit(actions);
     };
 
     const changeSimpleAction = (action: ActionType, included: boolean) => {
@@ -122,7 +154,11 @@ const SimpleAction: React.FC<SimpleActionProps> = ({
     const { t } = useTranslation();
 
     return (
-        <div className="flex align-items-center gap-3 justify-content-between">
+        <div
+            className="flex align-items-center gap-3 justify-content-between"
+            style={{ cursor: "pointer" }}
+            onClick={() => onChange(!included)}
+        >
             <label htmlFor="chooseActionLevel">{t(action)}</label>
             <Checkbox checked={included} onChange={() => onChange(!included)} />
         </div>

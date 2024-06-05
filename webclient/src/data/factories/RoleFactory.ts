@@ -47,6 +47,52 @@ class RoleFactory {
         }
         return null;
     }
+
+    static parseReadDatatableOwnershipAction(action: OwnershipActionType | null): ActionType | null {
+        if (action === null || action[0] !== ActionType.ReadDatatable) {
+            return null;
+        }
+        switch (action[1]) {
+            case OwnershipType.All: return ActionType.ReadDatatableAll;
+            case OwnershipType.Department: return ActionType.ReadDatatableDepartment;
+            case OwnershipType.Own: return ActionType.ReadDatatableOwn;
+            default: return null;
+        }  
+    }
+
+    static parseEditDatatableOwnershipAction(action: OwnershipActionType | null): ActionType | null {
+        if (action === null || action[0] !== ActionType.EditDatatable) {
+            return null;
+        }
+        switch (action[1]) {
+            case OwnershipType.All: return ActionType.EditDatatableAll;
+            case OwnershipType.Department: return ActionType.EditDatatableDepartment;
+            case OwnershipType.Own: return ActionType.EditDatatableOwn;
+            default: return null;
+        }  
+    }
+
+    static parseReadCategoriesOwnershipAction(action: OwnershipActionType | null): ActionType | null {
+        if (action === null || action[0] !== ActionType.ReadCategories) {
+            return null;
+        }
+        switch (action[1]) {
+            case OwnershipType.All: return ActionType.ReadCategoriesAll;
+            case OwnershipType.Department: return ActionType.ReadCategoriesDepartment;
+            default: return null;
+        }  
+    }
+
+    static parseEditCategoriesOwnershipAction(action: OwnershipActionType | null): ActionType | null {
+        if (action === null || action[0] !== ActionType.EditCategories) {
+            return null;
+        }
+        switch (action[1]) {
+            case OwnershipType.All: return ActionType.EditCategoriesAll;
+            case OwnershipType.Department: return ActionType.EditCategoriesDepartment;
+            default: return null;
+        }  
+    }
 }
 
 export default RoleFactory;

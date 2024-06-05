@@ -143,9 +143,9 @@ class VolumesDatasetGenerator:
         if title is None:
             return
         year = self.get_year(volume)
-        if year is None:
-            return
-        frequency = self.get_frequency(frequencies)
+        frequency = (
+            self.get_frequency(year, frequencies) if year is not None else None
+        )
         self.csv_writer.write(
             [
                 title,
