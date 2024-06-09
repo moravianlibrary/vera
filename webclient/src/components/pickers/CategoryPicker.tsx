@@ -80,7 +80,7 @@ const CategoryPickerValues: React.FC<CategoryPickerValuesProps> = ({
             <span>{nodes.map((n) => n.data).join(", ")}</span>
         ) : props.emptyMessage ? (
             <span className="text-overflow-ellipsis white-space-nowrap">
-                {props.emptyMessage}
+                {(props.emptyMessage || "") as string}
             </span>
         ) : (
             <span>-</span>

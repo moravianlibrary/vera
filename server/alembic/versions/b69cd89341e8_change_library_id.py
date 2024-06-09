@@ -21,7 +21,7 @@ def upgrade() -> None:
     op.drop_table("locations")
     op.drop_table("storages")
     op.drop_table("libraries")
-    op.execute("DROP TYPE location_state_type")
+    op.execute("DROP TYPE IF EXISTS location_state_type")
 
     op.create_table(
         "libraries",
@@ -42,6 +42,12 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("name", "library_id"),
     )
+
+    location_state_type = sa.Enum(
+        'Active', 'Closed', name='location_state_type'
+    )
+    location_state_type.create(op.get_bind(), checkfirst=True)
+
     op.create_table(
         "locations",
         sa.Column("id", sa.Integer(), nullable=False),
@@ -51,7 +57,7 @@ def upgrade() -> None:
         sa.Column("additional_info", sa.String(), nullable=True),
         sa.Column(
             "state",
-            sa.Enum("Active", "Closed", name="location_state_type"),
+            location_state_type,
             nullable=False,
         ),
         sa.Column("storage_id", sa.Integer(), nullable=False),

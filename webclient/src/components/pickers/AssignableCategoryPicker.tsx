@@ -103,7 +103,7 @@ const AssignableCategoryPickerValues: React.FC<
         return nodes.length > 0 ? (
             <span>{nodes.map((n) => n.data).join(", ")}</span>
         ) : props.emptyMessage ? (
-            <span>{props.emptyMessage}</span>
+            <span>{props.emptyMessage as string}</span>
         ) : (
             <span>-</span>
         );
