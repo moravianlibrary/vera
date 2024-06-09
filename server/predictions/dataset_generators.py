@@ -22,6 +22,7 @@ FL_PERIODICAL = [
 ]
 
 FL_VOLUME = [
+    SolrField.ParentPid,
     SolrField.Pid,
     SolrField.PartNumberSort,
     SolrField.DateRangeStartYear,
@@ -29,6 +30,14 @@ FL_VOLUME = [
     SolrField.PublishersFacet,
     SolrField.PublicationPlacesFacet,
     SolrField.LanguagesFacet,
+    SolrField.KeywordsFacet,
+]
+
+FL_SUB_VOLUMES = [
+    SolrField.OwnPidPath,
+    SolrField.Model,
+    SolrField.PartNumberSort,
+    SolrField.PagesCount,
     SolrField.KeywordsFacet,
 ]
 
@@ -71,17 +80,38 @@ class VolumesDatasetGenerator:
 
     def generate(self):
         self.csv_writer.write(VOLUMES_CSV_HEADER)
-        periodicals = [
-            document
-            for document in self.search.search(
-                SearchQuery(
-                    SolrField.Model, KrameriusModel.Periodical
-                ).build(),
-                fl=FL_PERIODICAL,
-            )
-        ]
 
-        for periodical in periodicals:
+        volumes = {}
+        for volume in self.search.search(
+            SearchQuery(
+                SolrField.Model, KrameriusModel.PeriodicalVolume
+            ).build(),
+            fl=FL_VOLUME,
+        ):
+            if volume.parentPid not in volumes:
+                volumes[volume.parentPid] = []
+            volumes[volume.parentPid].append(volume)
+
+        sub_volumes = {}
+        for sub_volume in self.search.search(
+            SearchQuery(SolrField.Model, KrameriusModel.PeriodicalItem)
+            .or_(SolrField.Model, KrameriusModel.Supplement)
+            .or_(SolrField.Model, KrameriusModel.Article)
+            .build(),
+            fl=FL_SUB_VOLUMES,
+        ):
+            path_split = sub_volume.ownPidPath.split("/")
+            if len(path_split) < 3:
+                continue
+            volume_pid = path_split[1]
+            if volume_pid not in sub_volumes:
+                sub_volumes[volume_pid] = []
+            sub_volumes[volume_pid].append(sub_volume)
+
+        for periodical in self.search.search(
+            SearchQuery(SolrField.Model, KrameriusModel.Periodical).build(),
+            fl=FL_PERIODICAL,
+        ):
             if periodical.title is None:
                 continue
             mods = self.api.get_mods(periodical.pid)
@@ -91,160 +121,152 @@ class VolumesDatasetGenerator:
             frequencies: List[Frequency] = parse_kramerius_frequencies(
                 frequency_elements
             )
-            self._generate_for_periodical(periodical, frequencies)
 
-    def _generate_for_periodical(
-        self, periodical: KrameriusDocument, frequencies: List[str]
-    ):
-        for volume in self.search.search(
-            SearchQuery(SolrField.Model, KrameriusModel.PeriodicalVolume)
-            .and_(SolrField.ParentPid, periodical.pid)
-            .build(),
-            fl=FL_VOLUME,
-        ):
-            self._generate_for_volume(periodical, volume, frequencies)
+            periodical_volumes = volumes.get(periodical.pid, [])
 
-    def _generate_for_volume(
+            for volume in periodical_volumes:
+                self.process_volume(
+                    volume,
+                    periodical,
+                    sub_volumes.get(volume.pid, []),
+                    frequencies,
+                )
+
+    def process_volume(
         self,
-        periodical: KrameriusDocument,
         volume: KrameriusDocument,
-        frequencies: List[str],
+        periodical: KrameriusDocument,
+        sub_volumes: List[KrameriusDocument],
+        frequencies: List[Frequency],
     ):
-        title: str = periodical.title
-
-        year: int = 0
-        if (
-            volume.date_range_start_year is not None
-            and volume.date_range_end_year is not None
-            and volume.date_range_start_year == volume.date_range_end_year
-        ):
-            year = volume.date_range_start_year
-        elif (
-            volume.part_number_sort is not None
-            and volume.part_number_sort > 1600
-        ):
-            year = volume.part_number_sort
-        else:
+        title = self.get_title(periodical)
+        if title is None:
             return
-
-        publisher: str = ""
-        if (
-            volume.publishers_facet is not None
-            and len(volume.publishers_facet) > 0
-        ):
-            publisher = volume.publishers_facet[0]
-        elif (
-            periodical.publishers_facet is not None
-            and len(periodical.publishers_facet) > 0
-        ):
-            publisher = periodical.publishers_facet[0]
-        else:
-            return
-
-        publication_place: str = ""
-        # TODO: Change for parsing city names
-        volume_publication_places = (
-            [
-                p
-                for p in volume.publication_places_facet
-                if not p.startswith("X") and not p.startswith("x")
-            ]
-            if volume.publication_places_facet is not None
-            else []
+        year = self.get_year(volume)
+        frequency = (
+            self.get_frequency(year, frequencies) if year is not None else None
         )
-        periodical_publication_places = (
-            [p for p in periodical.publication_places_facet if "X" not in p]
-            if periodical.publication_places_facet is not None
-            else []
-        )
-        if len(volume_publication_places) > 0:
-            publication_place = volume_publication_places[0]
-        elif len(periodical_publication_places) > 0:
-            publication_place = periodical_publication_places[0]
-        else:
-            return
-        publication_place = (
-            publication_place.replace("?", "")
-            .replace("[", "")
-            .replace("]", "")
-        )
-
-        language: str = ""
-        if (
-            volume.languages_facet is not None
-            and len(volume.languages_facet) > 0
-        ):
-            language = volume.languages_facet[0]
-        elif (
-            periodical.languages_facet is not None
-            and len(periodical.languages_facet) > 0
-        ):
-            language = periodical.languages_facet[0]
-        else:
-            return
-
-        frequency: int = parse_frequency(str(year), frequencies)
-
-        keywords: List[str] = periodical.keywords_facet or []
-        if volume.keywords_facet is not None:
-            keywords.extend(volume.keywords_facet)
-
-        number_of_items: int = 0
-        pages_count: int = 0
-
-        def get_not_page_descendants(pid):
-            nonlocal number_of_items
-            nonlocal pages_count
-            for document in self.search.search(
-                SearchQuery(SolrField.ParentPid, pid)
-                .and_not_(SolrField.Model, KrameriusModel.Page)
-                .build(),
-                fl=[
-                    SolrField.Pid,
-                    SolrField.PagesCount,
-                    SolrField.Model,
-                    SolrField.PartNumberString,
-                    SolrField.KeywordsFacet,
-                ],
-            ):
-                if document.keywords_facet is not None:
-                    keywords.extend(document.keywords_facet)
-                if (
-                    document.model == KrameriusModel.PeriodicalItem.value
-                    or document.model == KrameriusModel.Supplement.value
-                ):
-                    if document.part_number_string is not None:
-                        matcher = re.match(
-                            r"\b(\d+)-(\d+)\b", document.part_number_string
-                        )
-                        if matcher:
-                            number_of_items += (
-                                int(matcher.group(2))
-                                - int(matcher.group(1))
-                                + 1
-                            )
-                        elif re.match(r"\b\d+\b", document.part_number_string):
-                            number_of_items += 1
-                    else:
-                        number_of_items += 1
-                if document.pages_count is not None:
-                    pages_count += document.pages_count
-                get_not_page_descendants(document.pid)
-
-        get_not_page_descendants(volume.pid)
-
         self.csv_writer.write(
             [
                 title,
                 year,
                 frequency,
-                number_of_items,
-                publisher,
-                publication_place,
-                language,
-                ",".join(set(keywords)),
-                pages_count,
+                self.get_number_of_items(sub_volumes),
+                self.get_publisher(volume, periodical),
+                self.get_publication_place(volume, periodical),
+                self.get_language(volume, periodical),
+                ",".join(
+                    set(self.get_keywords(volume, periodical, sub_volumes))
+                ),
+                self.get_page_count(sub_volumes),
             ]
+        )
+
+    def get_title(self, periodical: KrameriusDocument):
+        return periodical.title
+
+    def get_year(self, volume: KrameriusDocument):
+        if (
+            volume.date_range_start_year is not None
+            and volume.date_range_end_year is not None
+            and volume.date_range_start_year == volume.date_range_end_year
+        ):
+            return volume.date_range_start_year
+        elif (
+            volume.part_number_sort is not None
+            and volume.part_number_sort > 1600
+        ):
+            return volume.part_number_sort
+        return None
+
+    def get_publisher(
+        self, volume: KrameriusDocument, periodical: KrameriusDocument
+    ):
+        if (
+            volume.publishers_facet is not None
+            and len(volume.publishers_facet) > 0
+        ):
+            return volume.publishers_facet[0]
+        elif (
+            periodical.publishers_facet is not None
+            and len(periodical.publishers_facet) > 0
+        ):
+            return periodical.publishers_facet[0]
+        return None
+
+    def get_publication_place(
+        self, volume: KrameriusDocument, periodical: KrameriusDocument
+    ):
+        for document in [volume, periodical]:
+            if document.publication_places_facet is not None:
+                for p in document.publication_places_facet:
+                    if not p.startswith("X") and not p.startswith("x"):
+                        return (
+                            p.replace("?", "")
+                            .replace("[", "")
+                            .replace("]", "")
+                        )
+
+        return []
+
+    def get_language(
+        self, volume: KrameriusDocument, periodical: KrameriusDocument
+    ):
+        for document in [volume, periodical]:
+            if (
+                document.languages_facet is not None
+                and len(document.languages_facet) > 0
+            ):
+                return document.languages_facet[0]
+
+        return None
+
+    def get_frequency(self, year: int, frequencies: List[Frequency]):
+        return parse_frequency(str(year), frequencies)
+
+    def get_keywords(
+        self,
+        volume: KrameriusDocument,
+        periodical: KrameriusDocument,
+        sub_volumes: List[KrameriusDocument],
+    ):
+        keywords: List[str] = periodical.keywords_facet or []
+
+        if volume.keywords_facet is not None:
+            keywords.extend(volume.keywords_facet)
+
+        for sub_volume in sub_volumes:
+            if sub_volume.keywords_facet is not None:
+                keywords.extend(sub_volume.keywords_facet)
+
+        return keywords
+
+    def get_number_of_items(self, sub_volumes: List[KrameriusDocument]):
+        number_of_items = 0
+        for sub_volume in sub_volumes:
+            if (
+                sub_volume.model == KrameriusModel.PeriodicalItem.value
+                or sub_volume.model == KrameriusModel.Supplement.value
+            ):
+                if sub_volume.part_number_string is not None:
+                    matcher = re.match(
+                        r"\b(\d+)-(\d+)\b", sub_volume.part_number_string
+                    )
+                    if matcher:
+                        number_of_items += (
+                            int(matcher.group(2)) - int(matcher.group(1)) + 1
+                        )
+                    elif re.match(r"\b\d+\b", sub_volume.part_number_string):
+                        number_of_items += 1
+                else:
+                    number_of_items += 1
+        return number_of_items
+
+    def get_page_count(self, sub_volumes: List[KrameriusDocument]):
+        return sum(
+            sub_volume.pages_count
+            for sub_volume in sub_volumes
+            if sub_volume.pages_count is not None
         )
 
 
@@ -418,3 +440,11 @@ def parse_kramerius_frequencies(frequency_elements) -> List[Frequency]:
                 )
             )
     return frequencies
+
+
+if __name__ == "__main__":
+    csv_writer = CsvWriter(1)
+    generator = VolumesDatasetGenerator(csv_writer)
+    generator.generate()
+    with open("/tmp/volumes_dataset.csv", "w") as output_file:
+        output_file.writelines(csv_writer._convert_to_csv_text())

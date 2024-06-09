@@ -18,6 +18,14 @@ namespace ApiUser {
     export function getUsers() {
         return axiosInstance.get<{ username: string }[]>(`/auth/users`, { headers: authHeader() });
     }
+
+    export function emulateAccess(actions: ActionType[]) {
+        return axiosInstance.post<User>(`/auth/users/emulate`, { actions }, { headers: authHeader() });
+    }
+
+    export function endAccessEmulation() {
+        return axiosInstance.delete<User>(`/auth/users/emulate`, { headers: authHeader() });
+    }
 }
 
 export default ApiUser;
