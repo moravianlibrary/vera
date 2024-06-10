@@ -3,18 +3,12 @@ import {
     DataTableSelectionMultipleChangeEvent,
     DataTableValueArray,
 } from "primereact/datatable";
-import {
-    CategoryEditor,
-    IssuanceTypeEditor,
-    MaterialTypeEditor,
-    textEditor,
-} from "../../services/Editors.js";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { useDocuments } from "../../contexts/documents/DocumentsContext";
-import DocumentModel from "../../contexts/documents/DocumentModel.js";
+import DocumentModel from "../../contexts/documents/DocumentModel";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import { useToast } from "../../contexts/toast/ToastContext";
 import { Dialog } from "primereact/dialog";
@@ -22,6 +16,13 @@ import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelecti
 import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
 import DataTablePaginator from "../../components/DataTablePaginator";
 import { PaginatorPageChangeEvent } from "primereact/paginator";
+import AssignableCategoryPicker from "../../components/pickers/AssignableCategoryPicker";
+import LabeledComponent from "../../components/LabeledComponent";
+import { InputNumber } from "primereact/inputnumber";
+import ApiDocuments from "../../adapters/ApiDocuments";
+import ActionAccessComponent from "../../components/ActionAccessComponent";
+import { ActionType } from "../../types/ActionType";
+import { accessService } from "../../services/AccessService";
 
 interface DocumentsTableProps {}
 
@@ -62,9 +63,9 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
 
     const pagesCountBody = (document: DocumentModel) => {
         const counts = [
-            document.pages_count,
-            document.pages_count_predicted,
+            document.pages_count_catalog,
             document.pages_count_manual,
+            document.pages_count_predicted,
         ].filter((x) => x);
         if (counts.length === 1) {
             return counts[0];
@@ -72,17 +73,19 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
             return null;
         }
         const countsJoined: string[] = [];
-        if (document.pages_count) {
-            countsJoined.push(`${t("from catalog")}: ${document.pages_count}`);
-        }
-        if (document.pages_count_predicted) {
+        if (document.pages_count_catalog) {
             countsJoined.push(
-                `${t("predicted")}: ${document.pages_count_predicted}`
+                `${t("from catalog")}: ${document.pages_count_catalog}`
             );
         }
         if (document.pages_count_manual) {
             countsJoined.push(
                 `${t("set manually")}: ${document.pages_count_manual}`
+            );
+        }
+        if (document.pages_count_predicted) {
+            countsJoined.push(
+                `${t("predicted")}: ${document.pages_count_predicted}`
             );
         }
         return countsJoined.join(", ");
@@ -128,7 +131,10 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
                 <Column
                     field="details"
                     body={(document) => (
-                        <DocumentDetailsBody document={document} />
+                        <DocumentDetailsBody
+                            key={document.id}
+                            document={document}
+                        />
                     )}
                 />
                 <Column field="sysno" header={t("sysno")} />
@@ -177,8 +183,10 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({
     const { t } = useTranslation();
     const { deleteDocument } = useDocumentsActions();
 
+    const [documentId, setDocumentId] = useState<number>(doc.id);
     const [panelVisible, setPanelVisible] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState(false);
+    const [editMode, setEditMode] = useState(false);
     const [dialogPosition, setDialogPosition] = useState({ top: 0, left: 0 });
 
     const handleAcceptDelete = () => {
@@ -187,7 +195,8 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({
     };
 
     useEffect(() => {
-        setPanelVisible(false);
+        setPanelVisible(panelVisible && documentId === doc.id);
+        setDocumentId(doc.id);
     }, [doc]);
 
     return (
@@ -208,25 +217,54 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({
                     maxWidth: "600px",
                     marginLeft: "96px",
                     marginTop: "48px",
-                    top: dialogPosition.top,
-                    left: dialogPosition.left,
+                    // top: dialogPosition.top,
+                    // left: dialogPosition.left,
                 }}
                 visible={panelVisible}
                 onHide={() => setPanelVisible(false)}
                 modal={false}
                 position="left"
-                minX={96}
+                // minX={96}
                 // minY={48}
             >
                 <div className="flex flex-column gap-3 align-items-start">
-                    <DocumentDetailsTooltip document={doc} />
-                    <Button
-                        icon="pi pi-trash"
-                        severity="danger"
-                        outlined
-                        label={t("Delete")}
-                        onClick={() => setConfirmVisible(true)}
-                    />
+                    {!editMode && (
+                        <div>
+                            {" "}
+                            <DocumentDetailsTooltip document={doc} />
+                            <div className="flex gap-3">
+                                <Button
+                                    icon="pi pi-trash"
+                                    severity="danger"
+                                    outlined
+                                    label={t("Delete")}
+                                    onClick={() => setConfirmVisible(true)}
+                                />
+                                <ActionAccessComponent
+                                    evaluate={(user) =>
+                                        accessService.isAllowedToEditDocument(
+                                            user,
+                                            doc
+                                        )
+                                    }
+                                >
+                                    <Button
+                                        icon="pi pi-pencil"
+                                        outlined
+                                        label={t("Edit")}
+                                        onClick={() => setEditMode(true)}
+                                    />
+                                </ActionAccessComponent>
+                            </div>
+                        </div>
+                    )}
+                    {editMode && (
+                        <DocumentDetailsEditor
+                            document={doc}
+                            onEditComplete={() => setEditMode(false)}
+                            onEditCancel={() => setEditMode(false)}
+                        />
+                    )}
                     <ConfirmDialog
                         // group="declarative"
                         visible={confirmVisible}
@@ -304,82 +342,94 @@ const DocumentDetailsTooltip: React.FC<DocumentDetailsProps> = ({
     );
 };
 
-const DocumentDetails: React.FC<DocumentDetailsProps> = ({ document }) => {
+interface DocumentDetailsEditorProps {
+    document: DocumentModel;
+    onEditComplete: () => void;
+    onEditCancel: () => void;
+}
+
+const DocumentDetailsEditor: React.FC<DocumentDetailsEditorProps> = ({
+    document,
+    onEditComplete,
+    onEditCancel,
+}) => {
     const { t } = useTranslation();
+    const showToast = useToast();
+    const { refreshDocumentsInResults } = useDocuments();
 
-    const data = [
-        { field: "System number", value: document.sysno },
-        {
-            field: "Material type",
-            value: document.material_type,
-            editor: MaterialTypeEditor,
-        },
-        { field: "Volume number", value: document.volume },
-        { field: "Bundle", value: document.bundle },
-        { field: "Volume year", value: document.year },
-        {
-            field: "Issuance type",
-            value: document.issuance_type,
-            editor: IssuanceTypeEditor,
-        },
-        {
-            field: "Category",
-            value: document.category_name,
-            editor: CategoryEditor,
-        },
-        { field: "Barcode", value: document.barcode },
-        { field: "CNB", value: document.cnb },
-        { field: "ISBN/ISSN", value: document.isbn_issn },
-        { field: "Signature", value: document.signature },
-        { field: "Title", value: document.title },
-        {
-            field: "Digitization state",
-            value: document.digitization_state,
-            editable: false,
-        },
-        { field: "Pages count", value: document.pages_count },
-        {
-            field: "Pages count predicted",
-            value: document.pages_count_predicted,
-        },
-        { field: "Size", value: document.size },
-        { field: "Publisher", value: document.publisher },
-        { field: "Publishing place", value: document.publishing_place },
-        { field: "Publishing year", value: document.publishing_year },
-        { field: "Languages", value: document.languages },
-        { field: "Frequencies", value: document.frequencies },
-        { field: "Creator", value: document.creator },
-        { field: "Creator department", value: document.department },
-        { field: "Created at", value: document.created_at },
-        { field: "Extraction id", value: document.extraction_id },
-        { field: "Extractor", value: document.extractor },
-        { field: "Extracted at", value: document.extracted_at },
-    ];
+    const [categoryId, setCategoryId] = useState<number | null>(
+        document.category_id
+    );
+    const [pagesCount, setPagesCount] = useState<number | null>(
+        document.pages_count_manual
+    );
 
-    const cellEditor = (options) => {
-        if (!options.rowData || options.rowData.editable === false) {
-            return;
+    const handleUpdateDocument = () => {
+        if (categoryId) {
+            const updateDocument = {
+                ...document,
+                category_id: categoryId,
+                pages_count_manual: pagesCount,
+            };
+            ApiDocuments.updateDocument(updateDocument)
+                .then((response) => {
+                    refreshDocumentsInResults([
+                        new DocumentModel(response.data),
+                    ]);
+                    showToast(
+                        "success",
+                        t("Document updated successfully"),
+                        ""
+                    );
+                })
+                .catch((error) => {
+                    showToast(
+                        "error",
+                        t("Document update failed"),
+                        error.message
+                    );
+                });
+            onEditComplete();
         }
-        return options.rowData.editor
-            ? options.rowData.editor(options)
-            : textEditor(options);
-    };
-
-    const handleCellEditComplete = (e) => {
-        console.log(e.newRowData);
     };
 
     return (
-        <DataTable value={data} editMode="cell">
-            <Column field="field" header={t("Field")} />
-            <Column
-                field="value"
-                header={t("Value")}
-                // body={row => <DocumentDetailsBody />}
-                // editor={(options) => cellEditor(options)}
-                // onCellEditComplete={handleCellEditComplete}
-            />
-        </DataTable>
+        <div className="flex flex-column gap-3">
+            <div className="flex flex-column gap-1">
+                <LabeledComponent
+                    label={t("Category")}
+                    className="justify-content-between"
+                >
+                    <AssignableCategoryPicker
+                        category_id={categoryId}
+                        callback={setCategoryId}
+                    />
+                </LabeledComponent>
+                <LabeledComponent
+                    label={t("Pages count")}
+                    className="justify-content-between"
+                >
+                    <InputNumber
+                        value={pagesCount}
+                        onChange={(e) => setPagesCount(e.value)}
+                    />
+                </LabeledComponent>
+            </div>
+            <div className="flex gap-3">
+                <Button
+                    className="p-button-success"
+                    outlined
+                    label={t("Save")}
+                    onClick={handleUpdateDocument}
+                />
+                <Button
+                    className="p-button-danger"
+                    outlined
+                    label={t("Cancel")}
+                    onClick={() => onEditCancel()}
+                />
+            </div>
+        </div>
     );
 };
 

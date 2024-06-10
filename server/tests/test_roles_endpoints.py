@@ -1,30 +1,25 @@
-from tests.test_endpoints import TestEndpoints
-from unittest.mock import Mock, patch
+from tests.test_integration import TestIntegration
 
-from roles.models import Role as RoleModel
-from auth.types import ActionType
+from security.models import Role, Action
+from security.types import ActionType
+from helper_funcs import mock_db, mockUser, createTestUser
 
 
-class TestRolesEndpoints(TestEndpoints):
+class TestRolesEndpoints(TestIntegration):
 
-    @patch("roles.crud.get_roles")
-    @patch("roles.crud.get_role_actions")
-    def test_get_roles(self, get_role_actions: Mock, get_roles: Mock):
+    def test_get_roles(self):
         # Arrange
-        get_roles.return_value = [
-            RoleModel(id=2, name="role 2"),
-            RoleModel(id=3, name="role 3"),
-            RoleModel(id=4, name="role 4"),
-        ]
-        get_role_actions.side_effect = lambda role_id, db: (
-            [ActionType.WriteDatatable]
-            if role_id == 2
-            else (
-                [ActionType.Extract]
-                if role_id == 3
-                else [ActionType.ReadDatatableAll] if role_id == 4 else []
-            )
+        mock_db(
+            [
+                Role(id=2, name="role 2"),
+                Role(id=3, name="role 3"),
+                Role(id=4, name="role 4"),
+                Action(role_id=2, action=ActionType.WriteDatatable),
+                Action(role_id=3, action=ActionType.Extract),
+                Action(role_id=4, action=ActionType.ReadDatatableAll),
+            ]
         )
+        mockUser(createTestUser([ActionType.EditAccess]))
 
         # Act
         response = self.client.get(
@@ -32,8 +27,9 @@ class TestRolesEndpoints(TestEndpoints):
         )
 
         # Assert
+        print(response.json())
         self.assertEqual(response.status_code, 200)
-        result_roles = [
+        expected_roles = [
             {
                 "id": 2,
                 "name": "role 2",
@@ -46,4 +42,10 @@ class TestRolesEndpoints(TestEndpoints):
                 "actions": [ActionType.ReadDatatableAll.value],
             },
         ]
-        self.assertEquals(result_roles, response.json())
+        response_roles = response.json()
+        for expected_role, actual_role in zip(expected_roles, response_roles):
+            self.assertEqual(expected_role["id"], actual_role["id"])
+            self.assertEqual(expected_role["name"], actual_role["name"])
+            self.assertListEqual(
+                expected_role["actions"], actual_role["actions"]
+            )

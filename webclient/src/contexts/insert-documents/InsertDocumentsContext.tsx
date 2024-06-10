@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import { IdentifierType } from "../../types/IdentifierType";
 import { useTranslation } from "react-i18next";
-import { useAssignableCategories } from "../categories/AssignableCategoriesContext";
 import ApiDocuments, {
     Document,
     DocumentCreationResponse,
@@ -15,13 +14,13 @@ import ApiDocuments, {
     Issue,
 } from "../../adapters/ApiDocuments";
 import { DocumentCreateResult } from "../../types/DocumentCreateResult";
-import { AssignableCategory } from "../../adapters/ApiCategories";
 import { useToast } from "../toast/ToastContext";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { generateMessageForResponse } from "../../features/insert-documents/InsertDocumentsFunctions";
 import { ActionSeverity } from "../../types/PrimeReactTypes";
 import { MaterialType } from "../../types/MaterialType";
 import * as XLSX from "xlsx";
+import { useCategories } from "../categories/CategoriesContext";
 
 export interface FileUploadValue {
     filename: string;
@@ -45,7 +44,6 @@ interface InsertDocumentsContextProps {
     identifier: IdentifierType;
     setIdentifier: (type: IdentifierType) => void;
 
-    categories: AssignableCategory[];
     category: number | null;
     setCategory: (category: number | null) => void;
 
@@ -88,7 +86,7 @@ export const InsertDocumentsProvider: React.FC<
 > = ({ children }) => {
     const { t } = useTranslation();
     const showToast = useToast();
-    const { categories } = useAssignableCategories();
+    const { categories } = useCategories();
 
     // First step variables
     const [identifier, setIdentifier] = useState<IdentifierType>(
@@ -262,7 +260,7 @@ export const InsertDocumentsProvider: React.FC<
                 document.year
             );
         };
-        if (document.pages_count === null && !isPredictable(document)) {
+        if (document.pages_count_catalog === null && !isPredictable(document)) {
             setWithoutPagesCount((prev) => [...prev, document]);
         }
     };
@@ -399,7 +397,6 @@ export const InsertDocumentsProvider: React.FC<
                 identifier,
                 setIdentifier,
 
-                categories,
                 category,
                 setCategory,
 

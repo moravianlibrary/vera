@@ -42,4 +42,11 @@ create-db-revision:
 	./create_postgres_revision.sh
 upgrade-db-local:
 	cd server/ && alembic upgrade head
-
+schema-generated:
+	pg_dump -h localhost -p 5433 -U veraAdmin -d vera-test -s -f generated_schema.sql
+schema-actual:
+	pg_dump -h localhost -U veraAdmin -d vera -s -f actual_schema.sql
+generate-db-backup:
+	pg_dump -h localhost -U veraAdmin -d vera > backup.sql
+load-db-from-backup:
+	pg_dump -h localhost -U veraAdmin -d vera < backup.sql

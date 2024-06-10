@@ -12,11 +12,11 @@ class TestAuthRoutines(unittest.TestCase):
     def tearDownClass(cls):
         cls.patcher.stop()
 
-    @patch("auth.auth_client.get_user_from_token")
+    @patch("security.keycloak_client.get_user_from_token")
     def test_mock_get_user_from_token(self, mock_get_user_from_token):
         mock_get_user_from_token.return_value = createTestUser()
 
-        from auth.keycloak_client import get_user_from_token
+        from security.keycloak_client import get_user_from_token
 
         self.assertEqual(
             get_user_from_token("test_token", None), createTestUser()

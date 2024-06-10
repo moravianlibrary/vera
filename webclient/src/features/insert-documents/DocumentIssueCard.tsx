@@ -154,10 +154,7 @@ const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({
                         )
                     }
                 >
-                    <i
-                        className="pi pi-external-link"
-                        onClick={() => console.log("Icon clicked")}
-                    />
+                    <i className="pi pi-external-link" />
                 </Button>
             );
         }

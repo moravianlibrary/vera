@@ -7,6 +7,8 @@ import { ActionType } from "../../types/ActionType";
 
 interface AccessContextProps {
     canDeleteExtraction: (extraction: GeneratedExtraction) => boolean;
+    hasAction: (action: ActionType) => boolean;
+    getDepartment: () => number | null;
 }
 
 const AccessContext = createContext<AccessContextProps | undefined>(undefined);
@@ -29,8 +31,20 @@ export const AccessProvider: React.FC<AccessProviderProps> = ({ children }) => {
         );
     };
 
+    const hasAction = (action: ActionType) => {
+        const userActions = user.actions || [];
+        return userActions.includes(action);
+    };
+
+    const getDepartment = () => {
+        return user.department_id || null;
+    };
+
     const contextValue: AccessContextProps = {
         canDeleteExtraction,
+
+        hasAction,
+        getDepartment,
     };
 
     return (

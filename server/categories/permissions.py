@@ -1,44 +1,44 @@
-from fastapi import Depends
-from sqlalchemy.orm import Session
+# from fastapi import Depends
+# from sqlalchemy.orm import Session
 
-from security.schemas import CurrentUser
-from services.database import get_db
-from categories import crud
-from security.types import ActionType
-from security.permissions import PermissionValidator, OwnershipPermission
-
-
-def get_category_id(category_id: int) -> int:
-    return category_id
+# from security.schemas import CurrentUser
+# from services.database import get_db
+# from categories import crud
+# from security.types import ActionType
+# from security.permissions import PermissionValidator, OwnershipPermission
 
 
-def owns_category(
-    user: CurrentUser,
-    category_id: int = Depends(get_category_id),
-    db: Session = Depends(get_db),
-) -> bool:
-    return user.department_id in crud.get_category(category_id, db).departments
+# def get_category_id(category_id: int) -> int:
+#     return category_id
 
 
-EditDepartmentCategoryPermission = OwnershipPermission(
-    ActionType.EditCategoriesDepartment,
-    owns_category,
-)
-
-ReadDepartmentCategoryPermission = OwnershipPermission(
-    ActionType.ReadCategoriesDepartment,
-    owns_category,
-)
+# def owns_category(
+#     user: CurrentUser,
+#     category_id: int = Depends(get_category_id),
+#     db: Session = Depends(get_db),
+# ) -> bool:
+#     return user.department_id in crud.get_category(category_id, db).departments
 
 
-CanManageRootCategories = PermissionValidator(ActionType.EditCategoriesAll)
-CanManageCategories = PermissionValidator(
-    [ActionType.EditCategoriesAll, EditDepartmentCategoryPermission]
-)
-CanReadCategories = PermissionValidator(
-    [ActionType.ReadCategoriesAll, ActionType.ReadCategoriesDepartment]
-)
+# EditDepartmentCategoryPermission = OwnershipPermission(
+#     ActionType.EditCategoriesDepartment,
+#     owns_category,
+# )
 
-CanReadCategory = PermissionValidator(
-    [ActionType.ReadCategoriesAll, ReadDepartmentCategoryPermission]
-)
+# ReadDepartmentCategoryPermission = OwnershipPermission(
+#     ActionType.ReadCategoriesDepartment,
+#     owns_category,
+# )
+
+
+# CanManageRootCategories = PermissionValidator(ActionType.EditCategoriesAll)
+# CanManageCategories = PermissionValidator(
+#     [ActionType.EditCategoriesAll, EditDepartmentCategoryPermission]
+# )
+# CanReadCategories = PermissionValidator(
+#     [ActionType.ReadCategoriesAll, ActionType.ReadCategoriesDepartment]
+# )
+
+# CanReadCategory = PermissionValidator(
+#     [ActionType.ReadCategoriesAll, ReadDepartmentCategoryPermission]
+# )

@@ -24,6 +24,7 @@ class ActionType(Enum):
     AdminTasks = "AdminTasks"
 
     EditAccess = "EditAccess"
+    StopEmulatingAccess = "StopEmulatingAccess"
 
     Extract = "Extract"
     AdminExtractions = "AdminExtractions"

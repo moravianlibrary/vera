@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from helper_funcs import mockClsEnv
 from sqlalchemy.orm import Session
 
-from departments import crud, schemas
+from security import crud, schemas
 
 
 class TestDepartmentsCrudOperations(unittest.TestCase):
@@ -23,7 +23,7 @@ class TestDepartmentsCrudOperations(unittest.TestCase):
 
     def test_create_department(self):
         # Arrange
-        department_data = schemas.DepartmentBase(
+        department_data = schemas.DepartmentCreate(
             name="Test Department",
             abbreviation="ABC",
             users=["Test User 1", "Test User 2"],

@@ -8,7 +8,6 @@ import { Checkbox } from "primereact/checkbox";
 import { Department } from "../../adapters/ApiDepartments";
 import { useDepartments } from "../../contexts/departments/DepartmentsContext";
 import { MultiSelect } from "primereact/multiselect";
-import { Category } from "../../adapters/ApiCategories";
 import LabeledComponent from "../../components/LabeledComponent";
 import { Button } from "primereact/button";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
@@ -17,7 +16,6 @@ import { CategoryType } from "../../contexts/categories/CategoryType";
 interface EditCategoryMenuProps {}
 
 const EditCategoryMenu: React.FC<EditCategoryMenuProps> = () => {
-    const { t } = useTranslation();
     const { editCategory, closeCategoryEdit } = useCategoryModels();
 
     const [visible, setVisible] = useState(false);
@@ -66,12 +64,12 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category }) => {
             name,
             description,
             assignable,
+            extract_whole: false,
             departments: departments.map((d) => d.id!),
-            parent_id: category.parent_id,
             disabled: category.disabled,
         };
         if (category.type === CategoryType.NewCategory) {
-            createCategory(categoryBody);
+            createCategory(categoryBody, category.parent_id);
         } else {
             updateCategory(categoryBody);
         }

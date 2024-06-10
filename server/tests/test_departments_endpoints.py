@@ -1,35 +1,27 @@
-from tests.test_endpoints import TestEndpoints
+from tests.test_integration import TestIntegration
 from unittest.mock import Mock, patch
 from helper_funcs import (
     createTestClient,
     createTestUser,
     get_all_actions_except,
     mockUser,
+    mock_db,
 )
 
-from departments.models import Department
-from auth.types import ActionType
+from security.models import Department
+from security.types import ActionType
 
 
-class TestDepartmentsEndpoints(TestEndpoints):
-    @patch("departments.crud.create_department")
-    def test_create_department_permitted(
-        self,
-        mock_create_department: Mock,
-    ):
+class TestDepartmentsIntegration(TestIntegration):
+    def test_create_department_permitted(self):
         # Arrange
+        mock_db()
         mockUser(createTestUser([ActionType.EditAccess]))
         department_json = {
             "name": "Test Department Name",
             "abbreviation": "TDN",
             "users": ["Test User 1", "Test User 2"],
         }
-        mock_create_department.return_value = Department(
-            id=1,
-            name="Test Department Name",
-            abbreviation="TDN",
-            users=["Test User 1", "Test User 2"],
-        )
 
         # Act
         client = createTestClient()
@@ -44,14 +36,10 @@ class TestDepartmentsEndpoints(TestEndpoints):
 
         # Assert
         self.assertEqual(200, response.status_code)
-        self.assertEqual(1, mock_create_department.call_count)
 
-    @patch("departments.crud.create_department")
-    def test_create_department_prohibited(
-        self,
-        mock_create_department: Mock,
-    ):
+    def test_create_department_prohibited(self):
         # Arrange
+        mock_db()
         mockUser(
             createTestUser(get_all_actions_except([ActionType.EditAccess]))
         )
@@ -60,12 +48,6 @@ class TestDepartmentsEndpoints(TestEndpoints):
             "abbreviation": "TDN",
             "users": ["Test User 1", "Test User 2"],
         }
-        mock_create_department.return_value = Department(
-            id=1,
-            name="Test Department Name",
-            abbreviation="TDN",
-            users=["Test User 1", "Test User 2"],
-        )
 
         # Act
         client = createTestClient()
@@ -80,4 +62,3 @@ class TestDepartmentsEndpoints(TestEndpoints):
 
         # Assert
         self.assertEqual(403, response.status_code)
-        self.assertEqual(0, mock_create_department.call_count)

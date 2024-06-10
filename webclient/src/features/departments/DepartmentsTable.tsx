@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Column, ColumnBodyOptions, ColumnEditorOptions } from "primereact/column";
-import { DataTable, DataTableEditingRows, DataTableRowEditEvent, DataTableValueArray } from "primereact/datatable";
+import {
+    Column,
+    ColumnBodyOptions,
+    ColumnEditorOptions,
+} from "primereact/column";
+import {
+    DataTable,
+    DataTableEditingRows,
+    DataTableRowEditEvent,
+    DataTableValueArray,
+} from "primereact/datatable";
 import { textEditor } from "../../services/Editors";
 import { Button } from "primereact/button";
 import { useDepartments } from "../../contexts/departments/DepartmentsContext";
@@ -18,8 +27,15 @@ interface DepartmentsTableProps {
 const DepartmentsTable: React.FC<DepartmentsTableProps> = (props) => {
     const { t } = useTranslation();
 
-    const { departments, editingDepartments, users, handleEditDepartment,
-        handleAcceptEdit, handleCancelEdit, handleDeleteDepartment } = useDepartments();
+    const {
+        departments,
+        editingDepartments,
+        users,
+        handleEditDepartment,
+        handleAcceptEdit,
+        handleCancelEdit,
+        handleDeleteDepartment,
+    } = useDepartments();
 
     const handleRowEditChange = (event: DataTableRowEditEvent) => {
         const changeEditDepartment = departments[event.index];
@@ -42,7 +58,10 @@ const DepartmentsTable: React.FC<DepartmentsTableProps> = (props) => {
         }
     };
 
-    const usersColumnBody = (data: DepartmentModel, option: ColumnBodyOptions) => {
+    const usersColumnBody = (
+        data: DepartmentModel,
+        option: ColumnBodyOptions
+    ) => {
         return (
             <div className="flex gap-1">
                 {data.users.map((u, index) => (
@@ -57,24 +76,33 @@ const DepartmentsTable: React.FC<DepartmentsTableProps> = (props) => {
             value={departments}
             editMode="row"
             onRowEditChange={handleRowEditChange}
-            editingRows={editingDepartments as DataTableValueArray | DataTableEditingRows || []}
-            onRowEditComplete={(e) => handleAcceptEdit(e.newData as DepartmentModel)}
+            editingRows={
+                (editingDepartments as
+                    | DataTableValueArray
+                    | DataTableEditingRows) || []
+            }
+            onRowEditComplete={(e) =>
+                handleAcceptEdit(e.newData as DepartmentModel)
+            }
             scrollable
             scrollHeight="flex"
             header={props.header}
         >
-            <Column field="name" header={t('Name')} editor={textEditor} />
-            <Column field="abbreviation" header={t('Abbreviation')} editor={textEditor} />
+            <Column field="name" header={t("Name")} editor={textEditor} />
             <Column
-                header={t('Users')}
+                field="abbreviation"
+                header={t("Abbreviation")}
+                editor={textEditor}
+            />
+            <Column
+                header={t("Users")}
                 field="users"
                 body={usersColumnBody}
                 editor={(options) => <UsersEditor options={options} />}
-                onCellEditComplete={(e) => console.log(e)}
             />
             <Column rowEditor />
             <Column body={deleteButton} />
-        </DataTable> 
+        </DataTable>
     );
 };
 
@@ -85,7 +113,9 @@ interface UsersEditorProps {
 export const UsersEditor: React.FC<UsersEditorProps> = ({ options }) => {
     const { t } = useTranslation();
     const { rowData, editorCallback } = options;
-    const [selectedUsers, setSelectedUsers] = useState<string[]>(rowData.users || []);
+    const [selectedUsers, setSelectedUsers] = useState<string[]>(
+        rowData.users || []
+    );
     const { users } = useDepartments();
 
     useEffect(() => {
@@ -103,14 +133,18 @@ export const UsersEditor: React.FC<UsersEditorProps> = ({ options }) => {
     return (
         <div>
             <Chips
-                value={selectedUsers.sort((a: string, b: string) => a.localeCompare(b))}
+                value={selectedUsers.sort((a: string, b: string) =>
+                    a.localeCompare(b)
+                )}
                 allowDuplicate={false}
                 onChange={handleChipsChange}
             />
             <Dropdown
-                disabled={users.filter(u => !selectedUsers.includes(u)).length === 0}
-                placeholder={t('Add user')}
-                options={users.filter(u => !selectedUsers.includes(u))}
+                disabled={
+                    users.filter((u) => !selectedUsers.includes(u)).length === 0
+                }
+                placeholder={t("Add user")}
+                options={users.filter((u) => !selectedUsers.includes(u))}
                 multiple
                 onChange={handleDropdownChange}
             />

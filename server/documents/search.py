@@ -4,7 +4,7 @@ from sqlalchemy.orm import Query
 from typing import List, Optional, Union
 
 from documents import models, schemas
-from categories.models import Category
+from categories.categories.models import Category
 from documents.enums import (
     EnumOption,
     GroupOption,
@@ -33,11 +33,8 @@ DOCUMENT_FIELDS_MAPPING = {
     DocumentField.Cnb: "cnb",
     DocumentField.IsbnIssn: "isbn_issn",
     DocumentField.DigitizationState: "digitization_state",
-    # TODO:
-    # DocumentField.PagesCount: "pages_count",
-    # DocumentField.PagesCountCatalog: "pages_count_catalog",
-    DocumentField.PagesCount: "pages_count_actual",
-    DocumentField.PagesCountCatalog: "pages_count",
+    DocumentField.PagesCount: "pages_count",
+    DocumentField.PagesCountCatalog: "pages_count_catalog",
     DocumentField.PagesCountManual: "pages_count_manual",
     DocumentField.PagesCountPredicted: "pages_count_predicted",
     DocumentField.Location: "signature",

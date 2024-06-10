@@ -22,6 +22,10 @@ class KrameriusDocument:
         return self.get_field_value(SolrField.ParentPid)
 
     @property
+    def ownPidPath(self):
+        return self.get_field_value(SolrField.OwnPidPath)
+
+    @property
     def licences(self):
         return self.get_field_value(SolrField.Licences)
 
@@ -96,6 +100,10 @@ class KrameriusDocument:
     @property
     def pages_count(self):
         return self.get_field_value(SolrField.PagesCount)
+
+    @property
+    def keywords_facet(self):
+        return self.get_field_value(SolrField.KeywordsFacet)
 
     def __str__(self) -> str:
         return (

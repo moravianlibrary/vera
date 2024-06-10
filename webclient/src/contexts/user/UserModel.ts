@@ -1,4 +1,7 @@
 import { User } from "../../adapters/ApiUser";
+import { OwnershipActionType } from "../../data/RoleAction";
+import RoleFactory from "../../data/factories/RoleFactory";
+import { ActionType } from "../../types/ActionType";
 import { RoleModel } from "./RoleModel";
 
 export class UserModel {
@@ -7,7 +10,9 @@ export class UserModel {
     department_name: string | undefined;
     role_id: number | undefined;
     role_name: string | undefined;
-    actions: string[] | undefined;
+    actions: ActionType[] | undefined;
+    simple_actions: ActionType[] | undefined;
+    ownership_actions: OwnershipActionType[] | undefined;
     isLoggedIn: boolean = false;
 
     static createUser(userData: User): UserModel {

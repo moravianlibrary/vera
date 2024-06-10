@@ -22,7 +22,9 @@ COPY src/ ./src/
 
 # Copy the public assets to the working directory
 COPY public/ ./public/
+RUN ls -la /app/src
 RUN ls -la /app/src/pages/App.tsx
+RUN ls -la /app/src/data/factories/IntentionFactory.ts
 
 # Build the React app for production
 RUN if [ "$REACT_APP_ENV" = "main" ]; then \

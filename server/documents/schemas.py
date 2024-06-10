@@ -43,7 +43,7 @@ class DocumentBase(BaseModel):
     year: Optional[str] = None
     bundle: Optional[str] = None
 
-    pages_count: Optional[int] = None
+    pages_count_catalog: Optional[int] = None
     pages_count_manual: Optional[int] = None
     size: Optional[str] = None
     locationUri: Optional[str] = None
@@ -80,7 +80,7 @@ class DocumentCreate(DocumentBase):
             digitization_state=catalog_document.digitization_state,
             year=catalog_document.year,
             bundle=catalog_document.bundle,
-            pages_count=catalog_document.pages_count,
+            pages_count_catalog=catalog_document.pages_count,
             size=catalog_document.size,
             locationUri=catalog_document.locationUri,
             publishers=catalog_document.publishers,
@@ -117,7 +117,7 @@ class DocumentCreate(DocumentBase):
             digitization_state=catalog_issue.digitization_state,
             year=catalog_issue.year,
             bundle=catalog_issue.bundle,
-            pages_count=catalog_document.pages_count,
+            pages_count_catalog=catalog_document.pages_count,
             size=catalog_document.size,
             locationUri=catalog_document.locationUri,
             publishers=catalog_document.publishers,
@@ -134,6 +134,7 @@ class DocumentCreate(DocumentBase):
 class Document(DocumentCreate):
     id: int
 
+    pages_count: Optional[int] = None
     pages_count_predicted: Optional[int]
     dedicated_scanner: Optional[str]
 

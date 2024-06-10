@@ -5,7 +5,6 @@ import AdvancedSearch from "./AdvancedSearch";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { useDocuments } from "../../../contexts/documents/DocumentsContext";
 import { useTranslation } from "react-i18next";
-import AssignableCategoryPicker from "../../../components/pickers/AssignableCategoryPicker";
 import { useDocumentsQuery } from "../../../contexts/documents/search/DocumentsQueryContext";
 import DigitizationListBox from "../../../components/DigitizationListBox";
 import CategoryPicker from "../../../components/pickers/CategoryPicker";
@@ -44,10 +43,6 @@ const DocumentsSearchBar = () => {
     useEffect(() => {
         setSearchPhrase_(searchPhrase || "");
     }, [searchPhrase]);
-
-    useEffect(() => {
-        console.log(categoryIds);
-    }, [categoryIds]);
 
     const handleSearchPhraseChange = (
         e: React.ChangeEvent<HTMLInputElement>

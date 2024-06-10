@@ -34,7 +34,7 @@ interface DocumentBase {
     year: string | null;
     bundle: string | null;
 
-    pages_count: number | null;
+    pages_count_manual: number | null;
     size: string | null;
     locationUri: string | null;
 
@@ -54,8 +54,8 @@ interface Document extends DocumentBase {
     category_id: number | null;
     category_name: string | null;
 
+    pages_count_catalog: number | null;
     pages_count_predicted: number | null;
-    pages_count_manual: number | null;
     dedicated_scanner: string | null;
 
     created_at: string;
@@ -131,7 +131,6 @@ namespace ApiDocuments {
     }
 
     export function insertDocument(identifier: Identifier, category_id: number | null, insert_digitized: boolean) {
-        console.log(identifier);
         const url = category_id !== null
             ? `/catalogs?category_id=${category_id}&insert_digitized=${insert_digitized}`
             : `/catalogs?insert_digitized=${insert_digitized}`;

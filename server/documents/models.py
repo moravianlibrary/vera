@@ -40,7 +40,7 @@ class Document(Base):
     year = Column(String)
     bundle = Column(String)
 
-    pages_count = Column(Integer)
+    pages_count_catalog = Column(Integer)
     pages_count_predicted = Column(Integer)
     pages_count_manual = Column(Integer)
 
@@ -75,15 +75,36 @@ class Document(Base):
     )
 
     @hybrid_property
-    def pages_count_actual(self):
+    def pages_count(self):
         return (
             self.pages_count_manual
+            or self.pages_count_catalog
             or self.pages_count_predicted
-            or self.pages_count
+            or 0
         )
 
-    @pages_count_actual.expression
-    def pages_count_actual(cls):
+    @pages_count.expression
+    def pages_count(cls):
         return func.coalesce(
-            cls.pages_count_manual, cls.pages_count_predicted, cls.pages_count
+            cls.pages_count_manual,
+            cls.pages_count_catalog,
+            cls.pages_count_predicted,
+        )
+
+    @hybrid_property
+    def is_extractable(self) -> bool:
+        return (
+            self.pages_count is not None
+            and self.pages_count > 0
+            and self.cnb is not None
+            and self.extraction_id is None
+        )
+
+    @is_extractable.inplace.expression
+    def is_extractable(cls):
+        return (
+            cls.pages_count.is_not(None)
+            & (cls.pages_count > 0)
+            & cls.cnb.is_not(None)
+            & cls.extraction_id.is_(None)
         )

@@ -41,23 +41,7 @@ def get_extractable_documents(
     query = (
         db.query(Document)
         .filter(Document.category_id == category_id)
-        .filter(
-            or_(
-                and_(
-                    Document.pages_count.is_not(None), Document.pages_count > 0
-                ),
-                and_(
-                    Document.pages_count_manual.is_not(None),
-                    Document.pages_count_manual > 0,
-                ),
-                and_(
-                    Document.pages_count_predicted.is_not(None),
-                    Document.pages_count_predicted > 0,
-                ),
-            )
-        )
-        .filter(Document.cnb.is_not(None))
-        .filter(Document.extraction_id.is_(None))
+        .filter(Document.is_extractable)
     )
 
     if location_patterns:

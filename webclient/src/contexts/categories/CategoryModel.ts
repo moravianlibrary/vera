@@ -1,133 +1,126 @@
-import { Category, CreateCategory, Quota } from "../../adapters/ApiCategories";
+import { Category } from "../../adapters/ApiCategories";
 import { CategoryType } from "./CategoryType";
 
 export class CategoryModel implements Category {
     id: number;
-    level: number;
-    sub_categories: Category[];
+
     name: string;
     description: string | null;
+
     parent_id: number | null;
+    level: number;
+
     assignable: boolean;
+    extract_whole: boolean;
     disabled: boolean;
+
+    predecessors_departments: number[] = [];
     departments: number[];
+
+    total_pages: number;
+    total_documents: number;
+
+    documents_with_pages: number;
+    documents_without_cnb: number;
+
+    extractable_pages: number;
+    extractable_documents: number;
+
+    intention_id?: number | undefined;
+    percentage?: number;
+    overall_percentage?: number;
+    pages_needed_to_meet_intention?: number | undefined;
+
+    extraction_id?: number | undefined;
+    extracted_pages?: number | undefined;
+    extracted_documents?: number | undefined;
+
+    digitization_ids?: number[] | undefined;
+    digitized_pages?: number | undefined;
+    digitized_documents?: number | undefined;
+
+    sub_categories: Category[];
 
     key: number;
     type: CategoryType;
-    quota: number;
-    percentage: number;
-    overallPercentage: number;
 
     parent: CategoryModel | undefined;
     children: CategoryModel[] = [];
-
-    extracted_pages_count: number = 0;
-    extracted_documents_count: number = 0;
-
-    predecessors_departments: number[] = [];
-    count_pages: number = 0;
-    count_pages_extractable: number = 0;
-    count_documents: number = 0;
-    count_documents_with_pages: number = 0;
-    count_documents_extractable: number = 0;
-    count_documents_without_cnb: number = 0;
 
     className = 'category';
     expanded: boolean = true;
     style = { borderRadius: '12px' };
 
-    constructor(type: CategoryType, category: Category, quota: number, parent?: CategoryModel) {
+    constructor(type: CategoryType, category: Category, showIntentionOnly: boolean, parent?: CategoryModel) {
         Object.assign(this, category);
 
         this.key = category.id;
         this.type = type;
-        this.quota = quota;
-        this.percentage = category.percentage;
-        this.overallPercentage = category.percentage;
 
         this.parent = parent;
         this.className = CategoryModel.getClassName(type, category);
 
-        if (parent && (parent.predecessors_departments.length > 0
-                || parent.departments.length > 0)) {
-            this.predecessors_departments = Array.from(new Set([
-                ...parent.predecessors_departments,
-                ...parent.departments,
-                ...this.departments
-            ])).sort();
-        }
-
-        if (type !== CategoryType.LevelRoot) {
-            const childrenQuotas = CategoryModel.getChildrenQuotas(category.sub_categories, quota);
-            this.children = category.sub_categories.map((child, index) => (
-                new CategoryModel(CategoryType.Category, child, childrenQuotas[index], this)))
-                .sort((a, b) => a.key - b.key);
-            // this.aggregateStats(quota, parent ? parent.overallPercentage : 100);
+        if (showIntentionOnly) {
+            this.children = category.sub_categories
+            .filter((sub_category) => sub_category.overall_percentage && sub_category.overall_percentage > 0)
+            .map((sub_category) => (
+                new CategoryModel(CategoryType.Category, sub_category, showIntentionOnly, this)));
+        } else {
+            this.children = category.sub_categories
+            .map((sub_category) => (
+                new CategoryModel(CategoryType.Category, sub_category, showIntentionOnly, this)));
         }
     }
 
-    static generateRootNode(name: string, categories: Category[], quota: number): CategoryModel {
-        const rootCategory: Category = {
-            id: 0,
+    static generateCategory(id: number, name: string = "", level: number = -1, categories: Category[] = [], parent_id: number | null = null): Category{
+        return {
+            id: id,
+
             name: name,
             description: null,
-            parent_id: null,
+
+            parent_id: parent_id,
+            level: level,
 
             assignable: false,
+            extract_whole: false,
             disabled: false,
+
             departments: [],
+            predecessors_departments: [],
 
-            percentage: 100,
-            level: -1,
-
-            count_pages: 0,
-            count_pages_extractable: 0,
-            count_documents: 0,
-            count_documents_with_pages: 0,
-            count_documents_extractable: 0,
-            count_documents_without_cnb: 0,
-            
+            total_pages: categories.reduce((sum, category) => sum + category.total_pages, 0),
+            total_documents: categories.reduce((sum, category) => sum + category.total_documents, 0),
+            documents_with_pages: categories.reduce((sum, category) => sum + category.documents_with_pages, 0),
+            documents_without_cnb: categories.reduce((sum, category) => sum + category.documents_without_cnb, 0),
+            extractable_pages: categories.reduce((sum, category) => sum + category.extractable_pages, 0),
+            extractable_documents: categories.reduce((sum, category) => sum + category.extractable_documents, 0),
+                    
             sub_categories: categories
         }
-        const rootNode = new CategoryModel(CategoryType.Root, rootCategory, quota);
-        rootNode.aggregateStats(quota, 100);
-        return rootNode;
     }
 
-    static generateLevelRootNode(name: string, childNodes: CategoryModel[]): CategoryModel {
-        const levelRootNode = new CategoryModel(CategoryType.LevelRoot, {
-            id: 0,
-            name: name,
-            description: null,
-            parent_id: null,
-
-            assignable: false,
-            disabled: false,
-            departments: [],
-
-            percentage: 100,
-            level: -1,
-
-            count_pages: 0,
-            count_pages_extractable: 0,
-            count_documents: 0,
-            count_documents_with_pages: 0,
-            count_documents_extractable: 0,
-            count_documents_without_cnb: 0,
-            
-            sub_categories: []
-        }, childNodes.reduce((total, child) => total + child.quota, 0));
-
-        levelRootNode.children = childNodes;
-        levelRootNode.count_pages = childNodes.reduce((total, child) => total + child.count_pages, 0);
-        levelRootNode.count_pages_extractable = childNodes.reduce((total, child) => total + child.count_pages_extractable, 0);
-        levelRootNode.count_documents = childNodes.reduce((total, child) => total + child.count_documents, 0);
-        levelRootNode.count_documents_with_pages = childNodes.reduce((total, child) => total + child.count_documents_with_pages, 0);
-        levelRootNode.count_documents_extractable = childNodes.reduce((total, child) => total + child.count_documents_extractable, 0);
-        levelRootNode.count_documents_without_cnb = childNodes.reduce((total, child) => total + child.count_documents_without_cnb, 0);
-        levelRootNode.extracted_pages_count = childNodes.reduce((total, child) => total + child.extracted_pages_count, 0);
-        levelRootNode.extracted_documents_count = childNodes.reduce((total, child) => total + child.extracted_documents_count, 0);
-        return levelRootNode;
+    static generateRootNode(rootType: CategoryType.Root | CategoryType.LevelRoot, name: string, categories: Category[], showIntentionOnly: boolean): CategoryModel {
+        const rootCategory: Category = CategoryModel.generateCategory(0, name, -1, categories);
+        if (categories.length > 0) {
+            if (categories[0].intention_id) {
+                rootCategory.intention_id = categories[0].intention_id;
+                rootCategory.percentage = 100;
+                rootCategory.overall_percentage = categories.reduce((sum, category) => sum + category.overall_percentage!, 0);
+                rootCategory.pages_needed_to_meet_intention = categories.reduce((sum, category) => sum + category.pages_needed_to_meet_intention!, 0);
+            }
+            if (categories[0].extraction_id) {
+                rootCategory.extraction_id = categories[0].extraction_id;
+                rootCategory.extracted_pages = categories.reduce((sum, category) => sum + category.extracted_pages!, 0);
+                rootCategory.extracted_documents = categories.reduce((sum, category) => sum + category.extracted_documents!, 0);
+            }
+            if (categories[0].digitization_ids) {
+                rootCategory.digitization_ids = categories[0].digitization_ids;
+                rootCategory.digitized_pages = categories.reduce((sum, category) => sum + category.digitized_pages!, 0);
+                rootCategory.digitized_documents = categories.reduce((sum, category) => sum + category.digitized_documents!, 0);
+            }
+        }
+        return new CategoryModel(rootType, rootCategory, showIntentionOnly);
     }
 
     static getClassName(type: CategoryType, category?: Category): string {
@@ -149,43 +142,9 @@ export class CategoryModel implements Category {
         return '';
     }
 
-    static getChildrenQuotas(sub_categories: Category[], quota: number) {
-        const quotas_tmp: number[] = sub_categories.map(child => {
-            return Math.floor((quota * (child.percentage || 0)) / 100);
-        });
-        const difference = quota - quotas_tmp.reduce((accumulator, quota) => accumulator + quota, 0);
-
-        return difference !== 0
-                ? quotas_tmp.reverse()
-                    .map((quota, index) => index === quotas_tmp.slice().reverse().findIndex(q => q !== 0) ? quota + difference : quota)
-                    .reverse()
-                : quotas_tmp;
-    }
-
     insertChildNode(): CategoryModel {
-        const newCategory: Category = {
-            id: this.sub_categories.reduce((total, child) => total + child.id, 0),
-            name: "",
-            description: null,
-            parent_id: this.id,
-
-            assignable: false,
-            disabled: false,
-            departments: this.departments,
-
-            percentage: 0,
-            level: this.level + 1,
-
-            count_pages: 0,
-            count_pages_extractable: 0,
-            count_documents: 0,
-            count_documents_with_pages: 0,
-            count_documents_extractable: 0,
-            count_documents_without_cnb: 0,
-            
-            sub_categories: []
-        };
-        const newNode = new CategoryModel(CategoryType.NewCategory, newCategory, 0, this);
+        const newCategory: Category = CategoryModel.generateCategory(-2, "", this.level + 1, [], this.id);
+        const newNode = new CategoryModel(CategoryType.NewCategory, newCategory, false, this);
         this.children = [...this.children, newNode];
         return newNode;
     }
@@ -208,57 +167,19 @@ export class CategoryModel implements Category {
         this.updateChildren(category.sub_categories);
     }
 
-    aggregateStats(quotaPagesCount: number, overallPercentage: number) {
-        this.quota = quotaPagesCount;
-        this.overallPercentage = overallPercentage;
-
-        if (this.assignable) {
-            return;
-        }
-
-        const childrenQuotas = CategoryModel.getChildrenQuotas(this.children, quotaPagesCount);
-        this.children.forEach((child, index) => child.aggregateStats(childrenQuotas[index], (overallPercentage * child.percentage) / 100));
-
-        this.count_pages = this.children.reduce((total, child) => (
-            total + (child.count_pages || 0)), 0) as number;
-        this.count_pages_extractable = this.children.reduce((total, child) => (
-            total + (child.count_pages_extractable || 0)), 0) as number;
-
-        this.count_documents = this.children.reduce((total, child) => (
-            total + (child.count_documents || 0)), 0) as number;
-        this.count_documents_with_pages = this.children.reduce((total, child) => (
-            total + (child.count_documents_with_pages || 0)), 0) as number;
-        this.count_documents_extractable = this.children.reduce((total, child) => (
-            total + (child.count_documents_extractable || 0)), 0) as number;
-        this.count_documents_without_cnb = this.children.reduce((total, child) => (
-            total + (child.count_documents_without_cnb || 0)), 0) as number;
-
-        this.extracted_pages_count = this.children.reduce((total, child) => (
-            total + (child.extracted_pages_count || 0)), 0) as number;
-        this.extracted_documents_count = this.children.reduce((total, child) => (
-            total + (child.extracted_documents_count || 0)), 0) as number;
-    }
-
-    propagateDepartments(departments: number[] = []) {
-        this.predecessors_departments = Array.from(new Set([...departments, ...this.departments])).sort();
-        this.children.forEach(child => child.propagateDepartments(this.predecessors_departments))
-    }
-
     setType(type) {
         this.type = type;
     }
 
-    setPercentage(percentage) {
+    setPercentage(percentage: number) {
         this.percentage = percentage;
     }
 
     setCategory(category) {
-        if (this.departments !== category.departments) {
-            this.children.forEach(child => child.propagateDepartments(category.departments));
-        }
         Object.assign(this, category);
         this.className = CategoryModel.getClassName(this.type, category);
-        
+        this.children = category.sub_categories.map((sub_category) => (
+            new CategoryModel(CategoryType.Category, sub_category, false, this)));
     }
 
     setName(name: string) {
@@ -304,11 +225,11 @@ export class CategoryModel implements Category {
         return null;
     }
 
-    getNodesByLevel(level: number): CategoryModel[] {
+    getNodesByLevel(level: number): Category[] {
         if (this.level === level) {
             return [this];
         }
-        const nodes: CategoryModel[] = [];
+        const nodes: Category[] = [];
         for (const child of this.children) {
             nodes.push(...child.getNodesByLevel(level));
         }
@@ -324,5 +245,12 @@ export class CategoryModel implements Category {
             nodes.push(...child.getAssignableCategoryModels());
         }
         return nodes;
+    }
+
+    getPath() {
+        if (this.parent) {
+            return `${this.parent.getPath()} > ${this.name}`;
+        }
+        return this.name;
     }
 }

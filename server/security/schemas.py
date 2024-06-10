@@ -53,3 +53,7 @@ class DepartmentCreate(BaseModel):
 
 class Department(DepartmentCreate):
     id: int
+
+
+class ActionList(BaseModel):
+    actions: List[ActionType]

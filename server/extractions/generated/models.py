@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Float, Integer, String, TIMESTAMP
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy import func
-
-# from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session
 
 from services.database import Base
+from services.exceptions import GeneratedExtractionNotFoundException
 
 
 class GeneratedExtraction(Base):
@@ -21,7 +21,11 @@ class GeneratedExtraction(Base):
     generated_by = Column(String, index=True)
     generated_at = Column(TIMESTAMP, server_default=func.now())
 
-    # documents = relationship(
-    #     "Document",
-    #     primaryjoin="GeneratedExtraction.document_ids.contains(Document.id)",
-    # )
+    @classmethod
+    def get_extraction(
+        cls, extraction_id: int, session: Session
+    ) -> "GeneratedExtraction":
+        extraction = session.query(cls).filter_by(id=extraction_id).first()
+        if not extraction:
+            raise GeneratedExtractionNotFoundException(extraction_id)
+        return extraction

@@ -3,7 +3,7 @@ from io import StringIO
 import csv
 from typing import List, Union
 
-from tasks.models import TaskCsvResult
+from tasks.models import TaskDataset
 from services.database import create
 
 
@@ -18,7 +18,7 @@ class CsvWriter:
     def flush_to_db(self, db: Session):
         create(
             db,
-            TaskCsvResult(
+            TaskDataset(
                 task_id=self.task_id, data=self._convert_to_csv_text()
             ),
         )

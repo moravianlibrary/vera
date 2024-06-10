@@ -3,7 +3,7 @@ from sqlalchemy import desc, func
 from typing import List, Optional
 
 from services.database import create
-from categories.models import Category
+from categories.categories.models import Category
 from documents import models, schemas
 from documents.search import filter_documents_query_base
 from extractions.digitization.models import DigitizationExtraction
@@ -126,7 +126,8 @@ def create_document(
             digitization_state=document.digitization_state,
             year=document.year,
             bundle=document.bundle,
-            pages_count=document.pages_count,
+            pages_count_catalog=document.pages_count_catalog,
+            pages_count_manual=document.pages_count_manual,
             size=document.size,
             locationUri=document.locationUri,
             publisher=document.publisher,

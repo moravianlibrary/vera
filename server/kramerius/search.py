@@ -44,8 +44,7 @@ class KrameriusSearch:
             .with_fl(fl)
         )
         numFound = self.num_found(query)
-        # if numFound <= PAGINATE_PAGE_SIZE:
-        if True:
+        if numFound <= PAGINATE_PAGE_SIZE:
             for document in self.api.search(params.build())["response"][
                 "docs"
             ]:

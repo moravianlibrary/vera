@@ -1,15 +1,19 @@
-from tests.test_routines import TestRoutines
+from tests.test_integration import TestIntegration
 
 from catalogs.enums import DigitizationState
 from documents.crud import create_document, get_document
 from documents.schemas import DocumentCreate
 from tasks.crud import create_query_task
 from tasks.types import TaskType
-from tasks.routines import sync_from_digitization_registry, sync_from_catalog
 from tasks.schemas import TaskCreate
+from tasks.tasks.sync_from_catalog import sync_from_catalog
+from tasks.tasks.sync_from_digitization_registry import (
+    sync_from_digitization_registry,
+)
+from helper_funcs import mock_db, get_test_db
 
 
-class TestCatalogSync(TestRoutines):
+class TestCatalogSync(TestIntegration):
     def test_catalog_sync(self):
         # Arrange
         document = DocumentCreate(
@@ -19,18 +23,26 @@ class TestCatalogSync(TestRoutines):
             title="Test Document",
         )
         task = TaskCreate(task_type=TaskType.SyncFromCatalog)
+        mock_db()
 
         # Act
-        document_id = create_document(document, "Test User", self.db).id
-        document_before_sync = get_document(document_id, self.db)
+        session = get_test_db()
+        document_id = create_document(document, "Test User", session).id
+        document_before_sync = get_document(document_id, session)
         title_before_sync = document_before_sync.title
         state_before_sync = document_before_sync.digitization_state
         task_id = create_query_task(
-            task, [document_id], "Test User", f"id={document_id}", self.db
+            task.task_type,
+            [document_id],
+            "Test User",
+            f"id={document_id}",
+            session,
         ).id
-        sync_from_catalog(task_id, "Test User", self.db)
-        document_after_sync = get_document(document_id, self.db)
+        sync_from_catalog(task_id, "Test User", session)
+        document_after_sync = get_document(document_id, session)
+        session.close()
 
+        # Assert
         self.assertEqual(title_before_sync, "Test Document")
         self.assertEqual(state_before_sync, None)
         self.assertEqual(
@@ -49,17 +61,24 @@ class TestCatalogSync(TestRoutines):
             digitization_state=DigitizationState.InProgress,
         )
         task = TaskCreate(task_type=TaskType.SyncFromDigitizationRegistry)
+        mock_db()
 
         # Act
-        document_id = create_document(document, "Test User", self.db).id
+        session = get_test_db()
+        document_id = create_document(document, "Test User", session).id
         state_before_sync = get_document(
-            document_id, self.db
+            document_id, session
         ).digitization_state
         task_id = create_query_task(
-            task, [document_id], "Test User", f"id={document_id}", self.db
+            task.task_type,
+            [document_id],
+            "Test User",
+            f"id={document_id}",
+            session,
         ).id
-        sync_from_digitization_registry(task_id, "Test User", self.db)
-        document_after_sync = get_document(document_id, self.db)
+        sync_from_digitization_registry(task_id, "Test User", session)
+        document_after_sync = get_document(document_id, session)
+        session.close()
 
         # Assert
         self.assertEqual(state_before_sync, document.digitization_state)

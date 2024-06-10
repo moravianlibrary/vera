@@ -1,8 +1,8 @@
 from tests.test_crud_operations import TestCrudOperations
 
-from roles import crud
-from roles.schemas import RoleCreate
-from auth.types import ActionType
+from security import crud
+from security.schemas import RoleCreate
+from security.types import ActionType
 
 
 class TestRolesCrud(TestCrudOperations):
@@ -30,9 +30,15 @@ class TestRolesCrud(TestCrudOperations):
 
         # Act
         db_role = crud.create_role(role, self.db)
-        actions = crud.get_role_actions(db_role.id, self.db)
+        actions = [
+            action.action
+            for action in crud.get_role(db_role.id, self.db).role_actions
+        ]
         db_newRole = crud.update_role(db_role.id, newRole, self.db)
-        newActions = crud.get_role_actions(db_role.id, self.db)
+        newActions = [
+            action.action
+            for action in crud.get_role(db_role.id, self.db).role_actions
+        ]
 
         self.assertIsNotNone(db_role.id)
         self.assertEqual(db_newRole.id, db_role.id)

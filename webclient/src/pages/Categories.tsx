@@ -1,28 +1,20 @@
 import React, { useEffect, useState } from "react";
 
-import CategoriesMenuPanel, {
-    CategorySection,
+import CategoriesToolbar, {
     CategoryViewType,
-} from "../features/categories/CategoriesMenuPanel";
-import QuotasMenuPanel from "../features/categories/QuotasMenuPanel";
+} from "../features/categories/CategoriesToolbar";
 import {
     CategoriesProvider,
     useCategories,
 } from "../contexts/categories/CategoriesContext";
-import {
-    DepartmentsProvider,
-    useDepartments,
-} from "../contexts/departments/DepartmentsContext";
+import { DepartmentsProvider } from "../contexts/departments/DepartmentsContext";
 import { CategoryModelsProvider } from "../contexts/categories/CategoryNodesContext";
 import CategoriesChart from "../features/categories/CategoriesChart";
-import {
-    QuotasProvider,
-    useQuotas,
-} from "../contexts/categories/QuotasContext";
 import { useSearchParams } from "react-router-dom";
 import CategoriesTable from "../features/categories/CategoryTable";
-import EditCategoryMenu from "../features/categories/EditCategoryMenu";
 import EditDistributionMenu from "../features/categories/EditDistributionMenu";
+import { IntentionsProvider } from "../contexts/categories/IntentionsContext";
+import IntentionsTable from "../features/categories/IntentionsTable";
 
 interface CategoriesProps {}
 
@@ -30,13 +22,13 @@ interface CategoriesDivProps {}
 
 const Categories: React.FC<CategoriesProps> = () => {
     return (
-        <CategoriesProvider>
-            <DepartmentsProvider>
-                <QuotasProvider>
+        <IntentionsProvider>
+            <CategoriesProvider>
+                <DepartmentsProvider>
                     <CategoriesDiv />
-                </QuotasProvider>
-            </DepartmentsProvider>
-        </CategoriesProvider>
+                </DepartmentsProvider>
+            </CategoriesProvider>
+        </IntentionsProvider>
     );
 };
 
@@ -50,7 +42,6 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
         digitizationListId,
         setDigitizationListId,
     } = useCategories();
-    const { selectedQuota } = useQuotas();
 
     const [viewType, setViewType] = useState<CategoryViewType>(
         CategoryViewType.CategoryTable
@@ -66,30 +57,26 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
         }
     }, [searchParams, setExtractionId]);
 
+    const getPageContent = () => {
+        if (viewType === CategoryViewType.Intentions) {
+            return <IntentionsTable />;
+        } else if (viewType === CategoryViewType.CategoryChart) {
+            return <CategoriesChart />;
+        }
+        return <CategoriesTable />;
+    };
+
     return (
-        <CategoryModelsProvider
-            categories={categories}
-            selectedQuota={selectedQuota}
-            extractedCategories={
-                extractionId !== null || digitizationListId !== null
-            }
-        >
+        <CategoryModelsProvider>
             <div className="flex flex-column w-screen overflow-auto">
                 <div className="sticky top-0 right-0 z-3 gap-2 flex w-screen">
-                    <CategoriesMenuPanel
-                        categoryViewType={viewType}
-                        onCategoryViewTypeChange={setViewType}
+                    <CategoriesToolbar
+                        categoryView={viewType}
+                        onCategoryViewChange={setViewType}
                     />
                     <EditDistributionMenu />
                 </div>
-                <div>
-                    {viewType === CategoryViewType.CategoryTable && (
-                        <CategoriesTable />
-                    )}
-                    {viewType === CategoryViewType.CategoryChart && (
-                        <CategoriesChart />
-                    )}
-                </div>
+                <div>{getPageContent()}</div>
             </div>
         </CategoryModelsProvider>
     );
