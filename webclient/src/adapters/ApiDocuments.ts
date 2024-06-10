@@ -34,7 +34,7 @@ interface DocumentBase {
     year: string | null;
     bundle: string | null;
 
-    pages_count: number | null;
+    pages_count_manual: number | null;
     size: string | null;
     locationUri: string | null;
 
@@ -54,8 +54,8 @@ interface Document extends DocumentBase {
     category_id: number | null;
     category_name: string | null;
 
+    pages_count_catalog: number | null;
     pages_count_predicted: number | null;
-    pages_count_manual: number | null;
     dedicated_scanner: string | null;
 
     created_at: string;

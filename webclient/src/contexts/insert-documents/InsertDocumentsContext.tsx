@@ -260,7 +260,7 @@ export const InsertDocumentsProvider: React.FC<
                 document.year
             );
         };
-        if (document.pages_count === null && !isPredictable(document)) {
+        if (document.pages_count_catalog === null && !isPredictable(document)) {
             setWithoutPagesCount((prev) => [...prev, document]);
         }
     };

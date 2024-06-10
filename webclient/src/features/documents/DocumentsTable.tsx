@@ -63,9 +63,9 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
 
     const pagesCountBody = (document: DocumentModel) => {
         const counts = [
-            document.pages_count,
-            document.pages_count_predicted,
+            document.pages_count_catalog,
             document.pages_count_manual,
+            document.pages_count_predicted,
         ].filter((x) => x);
         if (counts.length === 1) {
             return counts[0];
@@ -73,17 +73,19 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
             return null;
         }
         const countsJoined: string[] = [];
-        if (document.pages_count) {
-            countsJoined.push(`${t("from catalog")}: ${document.pages_count}`);
-        }
-        if (document.pages_count_predicted) {
+        if (document.pages_count_catalog) {
             countsJoined.push(
-                `${t("predicted")}: ${document.pages_count_predicted}`
+                `${t("from catalog")}: ${document.pages_count_catalog}`
             );
         }
         if (document.pages_count_manual) {
             countsJoined.push(
                 `${t("set manually")}: ${document.pages_count_manual}`
+            );
+        }
+        if (document.pages_count_predicted) {
+            countsJoined.push(
+                `${t("predicted")}: ${document.pages_count_predicted}`
             );
         }
         return countsJoined.join(", ");
