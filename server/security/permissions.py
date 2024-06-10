@@ -82,6 +82,17 @@ class OwnershipValidator:
         ):
             raise exception
 
+    def EnforceDepartmentRead(
+        current_user: CurrentUser,
+        department_id: int,
+        exception: HTTPException = PermissionDeniedException,
+    ):
+        if ActionType.ReadCategoriesAll not in current_user.actions and (
+            ActionType.ReadCategoriesDepartment not in current_user.actions
+            or current_user.department_id != department_id
+        ):
+            raise exception
+
     def EnforceCategoryEdit(
         current_user: CurrentUser,
         category_id: int,

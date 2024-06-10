@@ -245,7 +245,7 @@ def get_department_categories(
     current_user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    OwnershipValidator.EnforceCategoryRead(current_user, department_id, db)
+    OwnershipValidator.EnforceDepartmentRead(current_user, department_id, db)
     return Category.get_department_categories(department_id, db)
 
 

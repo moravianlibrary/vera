@@ -125,7 +125,9 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
                 return {
                     key: category.key,
                     label: category.label,
-                    items: category.children.map(createCategoryTieredSubMenu),
+                    items: category.children
+                        .map(createCategoryTieredSubMenu)
+                        .filter((item) => item),
                 };
             } else if (category.selectable) {
                 return {
@@ -137,9 +139,9 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
         };
 
         return categories
-            ? buildAssignableCategoriesOptionsTree(categories).map(
-                  createCategoryTieredSubMenu
-              )
+            ? buildAssignableCategoriesOptionsTree(categories)
+                  .map(createCategoryTieredSubMenu)
+                  .filter((item) => item)
             : [];
     };
 
@@ -254,6 +256,7 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
                 items.push(addDocumentsToDigitizationListMenuItem);
             }
         }
+
         return items;
     };
 

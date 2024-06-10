@@ -12,7 +12,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({ onApplyFilter }) => {
     const { t } = useTranslation();
     const {
         rootSearchGroup,
-        // TODO: rename, drop prefix handle
+        // TODO: rename, drop prefix "handle"
         handleApplyFilter,
         handleSaveFilter,
         handleClearFilter,
