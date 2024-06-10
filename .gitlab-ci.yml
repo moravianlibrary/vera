@@ -75,7 +75,7 @@ deploy image:
     GIT_STRATEGY: none # no need to clone
     SOURCE_BRANCH: $CI_DEFAULT_BRANCH
     DEPLOY_REPO_BRANCH: main # main, because deployment repository does not have any other branches
-    DEPLOY_STRATEGY: manual # should be manual or always
+    DEPLOY_STRATEGY: always # should be manual or always
 
   rules:
       - if: # deploy manual
