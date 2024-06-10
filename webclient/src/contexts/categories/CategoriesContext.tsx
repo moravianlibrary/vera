@@ -9,6 +9,8 @@ import ApiCategories, { Category } from "../../adapters/ApiCategories";
 import { useIntentions } from "./IntentionsContext";
 import { AxiosResponse } from "axios";
 import { Department } from "../../adapters/ApiDepartments";
+import { useAccess } from "../access/AccessContext";
+import { ActionType } from "../../types/ActionType";
 
 interface CategoriesContextProps {
     categories: Category[] | undefined;
@@ -19,7 +21,7 @@ interface CategoriesContextProps {
     setExtractionId: (extractionId: number) => void;
     digitizationListId: number | null;
     setDigitizationListId: (extractionId: number) => void;
-    refreshCategories: () => void;
+    refreshCategories: (categories?: Category[]) => void;
 }
 
 const CategoriesContext = createContext<CategoriesContextProps | undefined>(
@@ -33,6 +35,7 @@ interface CategoriesProviderProps {
 export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
     children,
 }) => {
+    const { hasAction, getDepartment } = useAccess();
     const { activeIntention } = useIntentions();
     const [categories, setCategories] = useState<Category[] | undefined>(
         undefined
@@ -53,7 +56,6 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
                     return Object.assign({}, category) as Category;
                 }
             );
-            console.log(transformedData);
             setCategories(transformedData);
         } catch (error) {
             console.error(`Could not receive categories: ${error}`);
@@ -61,17 +63,24 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
     };
 
     const loadCategories = async () => {
+        const departmentId = !hasAction(ActionType.ReadCategoriesAll)
+            ? getDepartment()
+            : department?.id;
+        if (!hasAction(ActionType.ReadCategoriesAll) && departmentId === null) {
+            return;
+        }
+
         if (!activeIntention && !extractionId && !digitizationListId) {
             console.log(`Fetching categories from server.`);
             await fetchCategories(() =>
-                ApiCategories.getCategories(department?.id)
+                ApiCategories.getCategories(departmentId)
             );
         } else if (activeIntention && !extractionId && !digitizationListId) {
             console.log(`Fetching intention categories from server.`);
             await fetchCategories(() =>
                 ApiCategories.getCategoriesByIntention(
                     activeIntention.id,
-                    department?.id
+                    departmentId
                 )
             );
         } else if (activeIntention && extractionId && !digitizationListId) {
@@ -80,7 +89,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
                 ApiCategories.getCategoriesForExtraction(
                     activeIntention.id,
                     extractionId,
-                    department?.id
+                    departmentId
                 )
             );
         } else if (activeIntention && !extractionId && digitizationListId) {
@@ -89,7 +98,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
                 ApiCategories.getCategoriesForDigitization(
                     activeIntention.id,
                     [digitizationListId],
-                    department?.id
+                    departmentId
                 )
             );
         } else {
@@ -120,8 +129,37 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
         return categories ? buildAssignableCategoriesTrees(categories) : [];
     };
 
-    const refreshCategories = () => {
-        setCategories(categories?.map((category) => category) as Category[]);
+    const refreshCategories = (refreshCategories: Category[] = []) => {
+        const categoriesMap = refreshCategories.reduce((map, category) => {
+            map[category.id] = category;
+            return map;
+        });
+
+        const updateCategories = (categories: Category[]): Category[] => {
+            return categories.map((category) => {
+                const updatedCategory = categoriesMap[category.id] || category;
+
+                if (updatedCategory.sub_categories) {
+                    updatedCategory.sub_categories = updateCategories(
+                        updatedCategory.sub_categories
+                    );
+                }
+
+                return updatedCategory;
+            });
+        };
+
+        const newCategories = updateCategories(categories!);
+        console.log(newCategories);
+
+        setCategories(
+            categories?.map((category) => {
+                if (categoriesMap[category.id]) {
+                    return categoriesMap[category.id];
+                }
+                return category;
+            }) as Category[]
+        );
     };
 
     useEffect(() => {

@@ -1,5 +1,5 @@
 import { Button } from "primereact/button";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Toolbar } from "primereact/toolbar";
 import { useIntentions } from "../../contexts/categories/IntentionsContext";
@@ -11,6 +11,8 @@ import CategoriesDisplayOptions from "./components/toolbar/CategoriesDisplayOpti
 import IntentionsDisplayOptions from "./components/toolbar/IntentionDisplayOptions";
 import DepartmentsDisplayOptions from "./components/toolbar/DepartmentsDisplayOptions";
 import SelectCategoryView from "./components/toolbar/SelectCategoryView";
+import { ActionAccessComponent } from "../../services/AccessService";
+import { ActionType } from "../../types/ActionType";
 
 export enum CategoryViewType {
     CategoryTable = "CategoryTable",
@@ -18,12 +20,12 @@ export enum CategoryViewType {
     Intentions = "Intentions",
 }
 
-interface CategoriesMenuPanelProps {
+interface CategoriesToolbarProps {
     categoryView: CategoryViewType;
     onCategoryViewChange: (viewType: CategoryViewType) => void;
 }
 
-const CategoriesMenuPanel: React.FC<CategoriesMenuPanelProps> = ({
+const CategoriesToolbar: React.FC<CategoriesToolbarProps> = ({
     categoryView,
     onCategoryViewChange,
 }) => {
@@ -60,9 +62,11 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({}) => {
             <InplaceOptions label={t("Intentions display options")}>
                 <IntentionsDisplayOptions />
             </InplaceOptions>
-            <InplaceOptions label={t("Departments display options")}>
-                <DepartmentsDisplayOptions />
-            </InplaceOptions>
+            <ActionAccessComponent action={ActionType.ReadCategoriesAll}>
+                <InplaceOptions label={t("Departments display options")}>
+                    <DepartmentsDisplayOptions />
+                </InplaceOptions>
+            </ActionAccessComponent>
         </div>
     );
 };
@@ -128,4 +132,4 @@ const InplaceOptions: React.FC<InplaceOptionsProps> = ({ label, children }) => {
     );
 };
 
-export default CategoriesMenuPanel;
+export default CategoriesToolbar;

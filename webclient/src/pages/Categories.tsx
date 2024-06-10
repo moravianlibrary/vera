@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 
-import CategoriesMenuPanel, {
+import CategoriesToolbar, {
     CategoryViewType,
-} from "../features/categories/CategoriesMenuPanel";
+} from "../features/categories/CategoriesToolbar";
 import {
     CategoriesProvider,
     useCategories,
@@ -70,7 +70,7 @@ const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
         <CategoryModelsProvider>
             <div className="flex flex-column w-screen overflow-auto">
                 <div className="sticky top-0 right-0 z-3 gap-2 flex w-screen">
-                    <CategoriesMenuPanel
+                    <CategoriesToolbar
                         categoryView={viewType}
                         onCategoryViewChange={setViewType}
                     />

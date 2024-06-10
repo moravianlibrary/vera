@@ -17,11 +17,11 @@ from documents.models import Document
 from collections import deque
 from categories.intentions.models import Intention
 from services.exceptions import (
+    EditingPreviousDistributionForbiddenException,
     CategoryNotFoundException,
     CategoryInDistributionDeletionException,
     NonEmptyCategoryDeletionException,
     DistributionExcesiveSubcategoriesException,
-    DistributionMissingSubcategoriesException,
     DistributionNotFoundException,
     MaximumCategoryLevelException,
     UniqueCategoryNameViolationException,
@@ -76,10 +76,12 @@ class Category(Base):
     def predecessors_departments(self):
         if self.parent_category is None:
             return []
-        return [
+        departments_ids = [
             department.department_id
             for department in self.parent_category.category_departments
-        ].extend(self.parent_category.departments)
+        ]
+        departments_ids.extend(self.parent_category.predecessors_departments)
+        return departments_ids
 
     @hybrid_property
     def total_pages(self) -> int:
@@ -275,7 +277,13 @@ class Category(Base):
         category = cls.get(category_id, session)
         if category.total_pages > 0:
             raise NonEmptyCategoryDeletionException()
-        if category.distributions:
+        if (
+            sum(
+                distribution.percentage
+                for distribution in category.distributions
+            )
+            > 0
+        ):
             raise CategoryInDistributionDeletionException()
 
         categories = deque([category])
@@ -455,17 +463,17 @@ class Distribution(Base):
             intention_id, distribution.category_id, session
         )
         if not db_distribution:
-            distribution = cls(
+            db_distribution = cls(
                 intention_id=intention_id,
                 category_id=distribution.category_id,
                 percentage=distribution.percentage,
             )
-            session.add(distribution)
+            session.add(db_distribution)
         else:
             db_distribution.percentage = distribution.percentage
 
         session.commit()
-        return distribution
+        return db_distribution
 
     @classmethod
     def set_distribution_from_list(
@@ -475,6 +483,12 @@ class Distribution(Base):
         distribution_list: List[schemas.DistributionCreate],
         session: Session,
     ):
+        if (
+            Intention.get(intention_id, session).classification
+            == IntentionClassification.Previous
+        ):
+            raise EditingPreviousDistributionForbiddenException()
+
         parent_sub_categories = {
             category.id
             for category in (
@@ -487,8 +501,11 @@ class Distribution(Base):
             distribution.category_id for distribution in distribution_list
         }
 
-        if parent_sub_categories - sub_categories:
-            raise DistributionMissingSubcategoriesException()
+        for category_id in parent_sub_categories - sub_categories:
+            if Distribution.find(intention_id, category_id, session):
+                Distribution.delete_from_intention(
+                    intention_id, category_id, session
+                )
         if sub_categories - parent_sub_categories:
             raise DistributionExcesiveSubcategoriesException()
 
@@ -502,6 +519,11 @@ class Distribution(Base):
         cls, intention_id: int, category_id: int, session: Session
     ) -> List["Distribution"]:
         distribution = cls.get(intention_id, category_id, session)
+        if (
+            distribution.intention.classification
+            == IntentionClassification.Previous
+        ):
+            raise EditingPreviousDistributionForbiddenException()
         if distribution.percentage != 0 and distribution.percentage != 100:
             raise ValueError("Distribution must be empty")
         category = Category.get(category_id, session)

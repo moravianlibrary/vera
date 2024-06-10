@@ -28,6 +28,7 @@ class Category(CategoryBase):
     level: int
     # parent_category: Optional[SerializeAsAny["Category"]]
     sub_categories: List[SerializeAsAny["Category"]]
+    predecessors_departments: List[int] = []
 
     total_pages: int
     total_documents: int

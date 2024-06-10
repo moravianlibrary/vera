@@ -15,6 +15,7 @@ def map_to_category(category: Category):
         extract_whole=category.extract_whole,
         disabled=category.disabled,
         departments=category.departments,
+        predecessors_departments=category.predecessors_departments,
         total_pages=category.total_pages,
         total_documents=category.total_documents,
         documents_with_pages=category.documents_with_pages,

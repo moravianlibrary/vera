@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { Tooltip } from "primereact/tooltip";
-import CategoryNodeEditMenu from "./CategoryNodeEditMenu";
+import CategoryNodeEditMenu from "./CategoryActionsMenu";
 import { CategoryModelExtractionStats } from "./CategoriesChartNode";
 
 interface CategoriesChartRootProps {

@@ -274,9 +274,7 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
             editDistribution.id > 0 ? editDistribution.id : null
         )
             .then((response) => {
-                editDistribution.children.forEach((node) => {
-                    node.setPercentage(node.percentage ?? 0);
-                });
+                refreshCategories(response.data);
             })
             .catch((error) => {
                 console.error(error);

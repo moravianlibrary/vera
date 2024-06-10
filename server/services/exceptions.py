@@ -1,6 +1,14 @@
 from fastapi import HTTPException, status
 
 
+class EditingPreviousDistributionForbiddenException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Previous distributions can not be edited in any manner",
+        )
+
+
 class DistributionExcesiveSubcategoriesException(HTTPException):
     def __init__(self):
         super().__init__(

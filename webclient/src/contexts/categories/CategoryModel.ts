@@ -52,6 +52,7 @@ export class CategoryModel implements Category {
     style = { borderRadius: '12px' };
 
     constructor(type: CategoryType, category: Category, showIntentionOnly: boolean, parent?: CategoryModel) {
+        console.log(category);
         Object.assign(this, category);
 
         this.key = category.id;
@@ -72,14 +73,14 @@ export class CategoryModel implements Category {
         }
     }
 
-    static generateCategory(id: number, name: string = "", level: number = -1, categories: Category[] = []): Category{
+    static generateCategory(id: number, name: string = "", level: number = -1, categories: Category[] = [], parent_id: number | null = null): Category{
         return {
             id: id,
 
             name: name,
             description: null,
 
-            parent_id: null,
+            parent_id: parent_id,
             level: level,
 
             assignable: false,
@@ -143,7 +144,7 @@ export class CategoryModel implements Category {
     }
 
     insertChildNode(): CategoryModel {
-        const newCategory: Category = CategoryModel.generateCategory(-2, "", this.level + 1);
+        const newCategory: Category = CategoryModel.generateCategory(-2, "", this.level + 1, [], this.id);
         const newNode = new CategoryModel(CategoryType.NewCategory, newCategory, false, this);
         this.children = [...this.children, newNode];
         return newNode;

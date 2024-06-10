@@ -62,7 +62,7 @@ const DistributionForm: React.FC<DistributionFormProps> = ({
     const { saveDistribution, setEditDistribution } = useCategoryModels();
 
     const [distributions, setDistributions] = useState<ChildDistribution[]>(
-        category.children.map((child) => {
+        category.sub_categories.map((child) => {
             return { category_id: child.id, percentage: child.percentage ?? 0 };
         })
     );
@@ -90,7 +90,7 @@ const DistributionForm: React.FC<DistributionFormProps> = ({
             <LabeledComponent label={t("Change distribution for category")}>
                 <span className="font-bold">{category.name}</span>
             </LabeledComponent>
-            {category.children.map((child, index) => (
+            {category.sub_categories.map((child, index) => (
                 <LabeledComponent key={index} label={child.name}>
                     <div className="p-inputgroup">
                         <InputNumber
@@ -101,7 +101,7 @@ const DistributionForm: React.FC<DistributionFormProps> = ({
                                 if (e.key === "Enter") {
                                     if (
                                         index ===
-                                        category.children.length - 1
+                                        category.sub_categories.length - 1
                                     ) {
                                         handleSaveDistribution();
                                     }

@@ -161,7 +161,7 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
     const getMenuItems = () => {
         const editDistribution =
             allowDistributionEdit &&
-            node.children.length > 0 &&
+            node.sub_categories.length > 0 &&
             activeIntention;
         if (node.type === CategoryType.Root) {
             return editDistribution
@@ -194,7 +194,10 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
         return (user.actions &&
             user.department_id &&
             user.actions.includes(ActionType.EditCategoriesDepartment) &&
-            node.departments.includes(user.department_id)) as boolean;
+            (node.departments.includes(user.department_id) ||
+                node.predecessors_departments.includes(
+                    user.department_id
+                ))) as boolean;
     };
 
     if (

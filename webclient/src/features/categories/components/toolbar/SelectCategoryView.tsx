@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { CategoryViewType } from "../../CategoriesMenuPanel";
+import { CategoryViewType } from "../../CategoriesToolbar";
 import { SelectButton } from "primereact/selectbutton";
 
 interface SelectCategoryViewProps {

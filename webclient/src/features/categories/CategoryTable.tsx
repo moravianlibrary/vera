@@ -3,13 +3,14 @@ import { useCategoryModels } from "../../contexts/categories/CategoryNodesContex
 import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
 import { TreeTable } from "primereact/treetable";
-import CategoryNodeEditMenu from "./CategoryNodeEditMenu";
+import CategoryNodeEditMenu from "./CategoryActionsMenu";
 import EditCategoryMenu from "./EditCategoryMenu";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
 import { CategoryType } from "../../contexts/categories/CategoryType";
 import { useIntentions } from "../../contexts/categories/IntentionsContext";
+import { IntentionClassification } from "../../types/IntentionClassification";
 
 interface CategoriesTableProps {}
 
@@ -91,12 +92,16 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                         )}
                     />
                 )}
-                <Column
-                    style={{ width: "80px" }}
-                    field="actions"
-                    header={t("Actions")}
-                    body={(node) => <ActionButtons node={node} />}
-                />
+                {(activeIntention === null ||
+                    activeIntention.classification !==
+                        IntentionClassification.Previous) && (
+                    <Column
+                        style={{ width: "80px" }}
+                        field="actions"
+                        header={t("Actions")}
+                        body={(node) => <ActionButtons node={node} />}
+                    />
+                )}
             </TreeTable>
             <EditCategoryMenu />
         </div>

@@ -7,7 +7,7 @@ import { useCategoryModels } from "../../contexts/categories/CategoryNodesContex
 import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
 import { useCategories } from "../../contexts/categories/CategoriesContext";
-import CategoryNodeEditMenu from "./CategoryNodeEditMenu";
+import CategoryNodeEditMenu from "./CategoryActionsMenu";
 
 interface CategoriesChartNodeProps {
     category: CategoryModel;
