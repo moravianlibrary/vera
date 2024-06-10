@@ -94,7 +94,9 @@ const AssignableCategoryPicker: React.FC<AssignableCategoryPickerProps> = ({
             }
             return null;
         };
-        setSelectedCategory(findCategoryById(categories, category_id));
+        setSelectedCategory(
+            category_id ? findCategoryById(categories, category_id) : null
+        );
     }, [category_id]);
 
     return (
