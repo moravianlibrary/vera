@@ -73,11 +73,33 @@ const AssignableCategoryPicker: React.FC<AssignableCategoryPickerProps> = ({
 
     const categories = getAssignableCategoriesTrees();
     const categoriesOptions = buildAssignableCategoriesOptionsTree(categories);
-    const selected = categories.find((c) => c.id === category_id);
+
+    const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+        null
+    );
+
+    useEffect(() => {
+        const findCategoryById = (categories: Category[], id: number) => {
+            for (const category of categories) {
+                if (category.id === id) {
+                    return category;
+                }
+                const foundInChildren = findCategoryById(
+                    category.sub_categories,
+                    id
+                );
+                if (foundInChildren) {
+                    return foundInChildren;
+                }
+            }
+            return null;
+        };
+        setSelectedCategory(findCategoryById(categories, category_id));
+    }, [category_id]);
 
     return (
         <TreeSelect
-            value={selected ? selected.id.toString() : null}
+            value={selectedCategory ? selectedCategory.id.toString() : null}
             valueTemplate={(nodes, props) => (
                 <AssignableCategoryPickerValues nodes={nodes} props={props} />
             )}
