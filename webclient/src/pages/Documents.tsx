@@ -39,7 +39,7 @@ const Documents: React.FC = () => {
                     category: Category,
                     found = false
                 ) => {
-                    if (found) {
+                    if (found || categoryId === category.id) {
                         flattenCategoryIds.push(category.id);
                     }
                     if (
