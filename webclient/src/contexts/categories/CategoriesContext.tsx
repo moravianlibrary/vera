@@ -149,9 +149,6 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
             });
         };
 
-        const newCategories = updateCategories(categories!);
-        console.log(newCategories);
-
         setCategories(
             categories?.map((category) => {
                 if (categoriesMap[category.id]) {

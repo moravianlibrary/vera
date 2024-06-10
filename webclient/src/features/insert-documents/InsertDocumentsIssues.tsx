@@ -61,7 +61,6 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
 
     const handleChooseIssuesForDocument = (index) => {
         const catalogDocument = chooseIssuesDocuments[index].catalog_document!;
-        console.log(catalogDocument.issues);
 
         setEditions(
             catalogDocument.issues

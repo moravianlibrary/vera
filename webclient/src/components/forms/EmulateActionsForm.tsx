@@ -301,10 +301,6 @@ const OwnershipBasedAction: React.FC<OwnershipBasedActionProps> = ({
 }) => {
     const { t } = useTranslation();
 
-    useEffect(() => {
-        console.log(action);
-    }, [action]);
-
     return (
         <div className="flex align-items-center gap-3 justify-content-between">
             <label htmlFor="chooseActionLevel">{t(actionLabel)}:</label>

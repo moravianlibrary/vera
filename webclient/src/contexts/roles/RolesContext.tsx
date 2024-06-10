@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, {
+    createContext,
+    useContext,
+    useState,
+    ReactNode,
+    useEffect,
+} from "react";
 import ApiRoles, { Role } from "../../adapters/ApiRoles";
 import { RoleModel } from "../user/RoleModel";
 
@@ -25,14 +31,15 @@ export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
 
     const loadRoles = async () => {
         ApiRoles.getRoles()
-        .then(response => {
-            const transformedData: Role[] = response.data.map(role => {
-                return Object.assign({}, role) as Role;
+            .then((response) => {
+                const transformedData: Role[] = response.data.map((role) => {
+                    return Object.assign({}, role) as Role;
+                });
+                setRolesData(transformedData);
+            })
+            .catch((error) => {
+                console.error(`Could not receive assignable roles: ${error}`);
             });
-            setRolesData(transformedData);
-        }).catch(error => {
-            console.error(`Could not receive assignable roles: ${error}`);
-        });
     };
 
     const handleAddRole = () => {
@@ -42,50 +49,57 @@ export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
         const newRole = RoleModel.createEmpty();
         setRoles([...roles, newRole]);
         handleEditRole(newRole);
-    }
+    };
 
     const handleEditRole = (role: RoleModel) => {
         if (role.name !== "Admin") {
             setEditingRoles([...editingRoles, role]);
         }
-    }
+    };
 
     const handleCancelEdit = (role: RoleModel) => {
-        setEditingRoles(editingRoles.filter(er => er !== role));
+        setEditingRoles(editingRoles.filter((er) => er !== role));
         if (role.id === undefined) {
-            setRoles(roles.filter(r => r !== role));
+            setRoles(roles.filter((r) => r !== role));
         }
-    }
-    
+    };
+
     const handleAcceptEdit = (role: RoleModel) => {
         if (role.id) {
             ApiRoles.updateRole(role)
-            .then(response => {
-                setRolesData(rolesData.map(data => data.id === role.id ? response.data : data));
-            }).catch(error => {
-                console.error(error);
-            })
+                .then((response) => {
+                    setRolesData(
+                        rolesData.map((data) =>
+                            data.id === role.id ? response.data : data
+                        )
+                    );
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
         } else {
             ApiRoles.createRole(role)
-            .then(response => {
-                setRolesData([...rolesData, response.data]);
-            }).catch(error => {
-                console.error(error);
-            })
+                .then((response) => {
+                    setRolesData([...rolesData, response.data]);
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
         }
-    }
-    
+    };
+
     const handleDeleteRole = (role: RoleModel) => {
         ApiRoles.deleteRole(role.id!)
-        .then(response => {
-            setRolesData(rolesData.filter(data => data.id !== role.id));
-        }).catch(error => {
-            console.error(error);
-        })
-    }
-    
+            .then((response) => {
+                setRolesData(rolesData.filter((data) => data.id !== role.id));
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    };
+
     useEffect(() => {
-        setRoles(rolesData.map(data => new RoleModel(data)));
+        setRoles(rolesData.map((data) => new RoleModel(data)));
     }, [rolesData]);
 
     useEffect(() => {
@@ -100,7 +114,7 @@ export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
         handleEditRole,
         handleCancelEdit,
         handleAcceptEdit,
-        handleDeleteRole
+        handleDeleteRole,
     };
 
     return (
@@ -114,7 +128,7 @@ export const useRoles = (): RolesContextProps => {
     const context = useContext(RolesContext);
 
     if (!context) {
-        throw new Error('useRoles must be used within a RolesProvider');
+        throw new Error("useRoles must be used within a RolesProvider");
     }
 
     return context;

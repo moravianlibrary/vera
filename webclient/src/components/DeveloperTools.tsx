@@ -54,8 +54,6 @@ const DeveloperAccessEmulation: React.FC<
 
     const handleSubmitEmulate = (actions: ActionType[]) => {
         ApiUser.emulateAccess(actions).then((response) => {
-            console.log(response.data);
-
             setUserData(response.data);
         });
     };

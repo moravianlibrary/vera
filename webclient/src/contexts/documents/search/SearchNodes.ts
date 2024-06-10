@@ -87,8 +87,6 @@ export class SearchGroup extends SearchNode implements SearchGroupParams {
             subRule,
             ...this.sub_rules.slice(index + 1)
         ];
-        console.log(this.sub_rules);
-        console.log(updatedSubRules);
         this.sub_rules = updatedSubRules;
     }
 
@@ -197,7 +195,6 @@ export class SearchNumberField extends SearchField {
 export class SearchEnumField extends SearchField {
     constructor(params: SearchFieldParams) {
         super(RuleType.EnumField, params);
-        console.log(params);
     }
 }
 
