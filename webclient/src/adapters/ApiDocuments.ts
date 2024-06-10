@@ -131,7 +131,6 @@ namespace ApiDocuments {
     }
 
     export function insertDocument(identifier: Identifier, category_id: number | null, insert_digitized: boolean) {
-        console.log(identifier);
         const url = category_id !== null
             ? `/catalogs?category_id=${category_id}&insert_digitized=${insert_digitized}`
             : `/catalogs?insert_digitized=${insert_digitized}`;

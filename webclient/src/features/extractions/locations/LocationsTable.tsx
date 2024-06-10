@@ -37,7 +37,6 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
 
     useEffect(() => {
         setValues(locations.sort(compareLocations));
-        console.log(locations);
     }, [locations]);
 
     const locationStateBody = (data: any, options: any) => {

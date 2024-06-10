@@ -12,12 +12,16 @@ import EditButton from "../../components/buttons/EditButton";
 import EditIntentionMenu, {
     EditIntentionMenuRef,
 } from "./components/EditIntentionMenu";
+import ActionAccessComponent from "../../components/ActionAccessComponent";
+import { ActionType } from "../../types/ActionType";
+import { useAccess } from "../../contexts/access/AccessContext";
 
 interface IntentionsTableProps {}
 
 const IntentionsTable: React.FC<IntentionsTableProps> = (props) => {
     const { t } = useTranslation();
     const { intentions } = useIntentions();
+    const { hasAction } = useAccess();
 
     return (
         <div>
@@ -45,11 +49,13 @@ const IntentionsTable: React.FC<IntentionsTableProps> = (props) => {
                         <IntentionClassificationBody intention={intention} />
                     )}
                 />
-                <Column
-                    body={(intention) => (
-                        <ActionButtonsBody intention={intention} />
-                    )}
-                />
+                {hasAction(ActionType.EditCategoriesAll) && (
+                    <Column
+                        body={(intention) => (
+                            <ActionButtonsBody intention={intention} />
+                        )}
+                    />
+                )}
             </DataTable>
         </div>
     );

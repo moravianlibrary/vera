@@ -52,7 +52,6 @@ export class CategoryModel implements Category {
     style = { borderRadius: '12px' };
 
     constructor(type: CategoryType, category: Category, showIntentionOnly: boolean, parent?: CategoryModel) {
-        console.log(category);
         Object.assign(this, category);
 
         this.key = category.id;

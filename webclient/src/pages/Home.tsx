@@ -67,7 +67,6 @@ export const Wiki: React.FC<WikiProps> = ({ language }) => {
 
     const renderImage = (props: any) => {
         const imageUrl = `${process.env.PUBLIC_URL}/wiki/${language}/${props.src}`;
-        console.log(imageUrl);
         return (
             <img src={imageUrl} alt={props.alt} style={{ display: "block" }} />
         );

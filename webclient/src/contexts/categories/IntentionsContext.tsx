@@ -110,18 +110,6 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
                     return false;
                 }
             } else {
-                console.log(intention);
-                console.log(currentIntention);
-                console.log(
-                    !IntentionValidator.hasSameStartDate(
-                        intention,
-                        currentIntention
-                    )
-                );
-                console.log(
-                    !IntentionValidator.hasEndDateAfterToday(intention)
-                );
-
                 if (
                     !IntentionValidator.hasSameStartDate(
                         intention,
