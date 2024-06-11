@@ -81,6 +81,7 @@ interface Issue {
     bundle?: string | null;
     digitization_state: DigitizationState | null;
     already_exists: boolean;
+    can_digitize: boolean;
 }
 
 interface CatalogDocument extends DocumentBase {

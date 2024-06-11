@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 
 
 DEFAULT_DOCUMENT_LANGUAGE = "cze"
+CAN_NOT_BE_DIGITIZED_FLAG = "nelze digi"
 
 
 def encode(text: Optional[str]) -> Optional[str]:
@@ -52,6 +53,11 @@ class AlephIssue:
     def bundle(self) -> Optional[str]:
         return self.get_code_value("i")
 
+    @property
+    def can_digitize(self) -> bool:
+        p = self.get_code_value("p")
+        return CAN_NOT_BE_DIGITIZED_FLAG not in p if p else True
+
     def __str__(self):
         properties = [
             f"type: {self.type}",
@@ -60,6 +66,7 @@ class AlephIssue:
             f"year: {self.year}",
             f"volume: {self.volume}",
             f"bundle: {self.bundle}",
+            f"can_digitize: {self.can_digitize}",
         ]
         return "\n".join(properties)
 
