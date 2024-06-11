@@ -30,7 +30,7 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
     const { insertAnother, results, withoutPagesCount } = useInsertDocuments();
 
     const messages = useRef<Messages>(null);
-    const [countdown, setCountdown] = useState(3);
+    const [countdown, setCountdown] = useState(2);
     const [detailsVisible, setDetailsVisible] = useState(false);
     const [withoutPagesCountVisible, setWithoutPagesCountVisible] =
         useState(false);

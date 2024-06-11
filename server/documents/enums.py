@@ -14,6 +14,7 @@ class DocumentCreateResult(Enum):
     AlreadyDigitized = "AlreadyDigitized"
     DigitizationInProgress = "DigitizationInProgress"
     DigitizationPlanned = "DigitizationPlanned"
+    DigitizationForbidden = "DigitizationForbidden"
     MultipleIssues = "MultipleIssues"
     Success = "Success"
 

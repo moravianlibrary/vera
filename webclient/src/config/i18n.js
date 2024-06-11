@@ -571,6 +571,8 @@ const resources = {
         "Intention creation failed": "Vytvoření zámeřu se nezdařilo",
         "Intention update failed": "Aktualizace zámeřu se nezdařila",
         "Intention deletion failed": "Odstraneni zámeřu se nezdařilo",
+
+        "Digitization forbidden": "Nelze digitalizovat",
     },
   },
 };

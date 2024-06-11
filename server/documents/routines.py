@@ -61,6 +61,12 @@ def InvalidCatalogDocument(identifier: Identifier):
     )
 
 
+def DigitizationForbidden(identifier: Identifier):
+    return schemas.DocumentCreateResponse(
+        identifier=identifier, create_result=Result.DigitizationForbidden
+    )
+
+
 def DigitizedDocument(
     identifier: Identifier,
     catalog_document: Union[schemas.CatalogDocument, schemas.CatalogIssue],
@@ -124,6 +130,8 @@ def create_catalog_document_using_barcode(
     if issue is None:
         return InvalidCatalogDocument(identifier)
 
+    if not catalog_document.issues[0].can_digitize:
+        return DigitizationForbidden(identifier)
     if (
         not insert_digitized
         and catalog_document.digitization_state
@@ -148,6 +156,8 @@ def create_single_issue_catalog_document(
     db: Session,
 ):
     if len(catalog_document.issues) == 1:
+        if not catalog_document.issues[0].can_digitize:
+            return DigitizationForbidden(identifier)
         if (
             not insert_digitized
             and catalog_document.issues[0].digitization_state

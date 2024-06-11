@@ -97,6 +97,7 @@ def from_aleph_issue(
         volume=aleph_issue.volume,
         bundle=aleph_issue.bundle,
         digitization_state=digitization_state,
+        can_digitize=aleph_issue.can_digitize,
     )
 
 

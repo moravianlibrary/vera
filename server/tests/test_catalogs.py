@@ -99,6 +99,18 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(document.issues[0].volume, "2012")
         self.assertEqual(document.issues[0].bundle, "1")
 
+    def test_parse_can_not_be_digitized(self):
+        identifier = Identifier(
+            identifier_type=IdentifierType.Signature, value="4-1144.857"
+        )
+        catalog_response = generate_catalog_document(identifier)
+        document = catalog_response.document
+        response_status = catalog_response.response_status
+
+        self.assertEqual(response_status, CatalogResponseStatus.Success)
+
+        self.assertFalse(document.issues[0].can_digitize)
+
     def test_find_document_by_barcode(self):
         identifier = Identifier(
             identifier_type=IdentifierType.Barcode, value="2610629074"
