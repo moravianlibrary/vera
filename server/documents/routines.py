@@ -90,7 +90,7 @@ def create_document(
     db: Session,
 ):
     if document_exists(document, db):
-        UniqueDocumentViolation(
+        return UniqueDocumentViolation(
             Identifier(
                 identifier_type=IdentifierType.Barcode, value=document.barcode
             )

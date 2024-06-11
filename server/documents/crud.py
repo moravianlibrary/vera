@@ -112,6 +112,12 @@ def documents_view_to_dict(row):
 def create_document(
     document: schemas.DocumentCreate, creator: str, db: Session
 ) -> schemas.DocumentView:
+    if document_exists(document.sysno, document.volume, document.barcode, db):
+        raise exceptions.UniqueViolationException(
+            f"Document with sysno {document.sysno}, "
+            f"volume {document.volume} "
+            f"and barcode {document.barcode} already exists"
+        )
     db_document = create(
         db,
         models.Document(
