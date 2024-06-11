@@ -34,6 +34,7 @@ def document_view(db: Session):
             models.Document.year,
             models.Document.bundle,
             models.Document.pages_count,
+            models.Document.pages_count_catalog,
             models.Document.pages_count_predicted,
             models.Document.pages_count_manual,
             func.coalesce(
@@ -87,6 +88,7 @@ def documents_view_to_dict(row):
         "year": row.year,
         "bundle": row.bundle,
         "pages_count": row.pages_count,
+        "pages_count_catalog": row.pages_count_catalog,
         "pages_count_predicted": row.pages_count_predicted,
         "pages_count_manual": row.pages_count_manual,
         "size": row.size,

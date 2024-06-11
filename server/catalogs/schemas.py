@@ -24,6 +24,7 @@ class CatalogIssue(BaseModel):
     bundle: Optional[str] = None
     digitization_state: DigitizationState = DigitizationState.NotDigitized
     already_exists: bool = False
+    can_digitize: bool = True
 
 
 class Frequency(BaseModel):

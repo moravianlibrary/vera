@@ -73,6 +73,7 @@ export function getResultSummary(result: DocumentCreateResult): string {
         case DocumentCreateResult.InvalidSysnoBase: return "Invalid system number base";
         case DocumentCreateResult.Success: return "Document successfuly created";
         case DocumentCreateResult.UniqueDocumentViolation: return "Unique document violation";
+        case DocumentCreateResult.DigitizationForbidden: return "Digitization forbidden";
         default: return "";
     }
 }
