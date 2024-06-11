@@ -109,7 +109,7 @@ class TestAlephCatalog(unittest.TestCase):
 
         self.assertEqual(response_status, CatalogResponseStatus.Success)
 
-        self.assertTrue(document.issues[0].can_digitize)
+        self.assertFalse(document.issues[0].can_digitize)
 
     def test_find_document_by_barcode(self):
         identifier = Identifier(
