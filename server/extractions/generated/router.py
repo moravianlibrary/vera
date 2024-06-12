@@ -9,6 +9,7 @@ from routing.security import get_current_user
 # TODO: fix categories
 # from categories.crud import get_root_categories
 # from categories.quotas.crud import get_quota
+from categories.intentions.models import Intention
 from extractions.generated import crud, schemas
 from extractions.generated.generator import ExtractionGenerator
 
@@ -41,7 +42,9 @@ def create_extraction(
     # elif pages_count is None or pages_count <= 0:
     # raise EmptyExtraction
 
-    generator = ExtractionGenerator(pages_count, params, db)
+    generator = ExtractionGenerator(
+        pages_count, Intention.get_current_intention(db).id, params, db
+    )
     generator.generate()
 
     extraction = crud.create_extraction(
