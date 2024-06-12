@@ -150,7 +150,7 @@ class Intention(Base):
         return (
             session.query(cls)
             .filter(
-                cls.end_date >= Date.today(), cls.start_date <= Date.today()
+                cls.end_date >= date.today(), cls.start_date <= date.today()
             )
             .first()
         )
