@@ -12,6 +12,7 @@ import LocationPicker, {
 } from "../../components/pickers/LocationPicker";
 import { Library, Storage } from "../../adapters/ApiLocations";
 import { CategoriesProvider } from "../../contexts/categories/CategoriesContext";
+import { IntentionsProvider } from "../../contexts/categories/IntentionsContext";
 
 interface ExtractionPropsMenuProps {}
 
@@ -83,13 +84,15 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
                 className="justify-content-between flex "
                 label={t("Include only documents from these categories")}
             >
-                <CategoriesProvider>
-                    <AssignableCategoriesPicker
-                        className="w-16rem"
-                        categories_ids={selectedCategories}
-                        callback={handleCategoriesChange}
-                    />
-                </CategoriesProvider>
+                <IntentionsProvider>
+                    <CategoriesProvider>
+                        <AssignableCategoriesPicker
+                            className="w-16rem"
+                            categories_ids={selectedCategories}
+                            callback={handleCategoriesChange}
+                        />
+                    </CategoriesProvider>
+                </IntentionsProvider>
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"
