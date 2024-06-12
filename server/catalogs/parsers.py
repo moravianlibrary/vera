@@ -2,7 +2,9 @@ import re
 from typing import Optional
 
 from catalogs.aleph_document import AlephDocument, AlephIssue
-from catalogs.digitization_registry import get_digitization_state
+from catalogs.digitization_registry.digitization_registry import (
+    DigitizationRegistry,
+)
 from catalogs.enums import (
     DigitizationState,
     MaterialType,
@@ -119,8 +121,10 @@ def from_aleph_document(
             aleph_document.material_type, MaterialType.Other
         ),
         title=aleph_document.title,
-        digitization_state=get_digitization_state(
-            issue.barcode if one_issue else None, aleph_document.cnb
+        digitization_state=DigitizationRegistry(
+            issue.barcode if one_issue else None,
+            aleph_document.cnb,
+            aleph_document.isbn_issn,
         ),
         year=issue.year if one_issue else None,
         bundle=issue.bundle if one_issue else None,
@@ -137,7 +141,7 @@ def from_aleph_document(
         issues=[
             from_aleph_issue(
                 aleph_issue,
-                get_digitization_state(aleph_issue.barcode, None),
+                DigitizationRegistry(aleph_issue.barcode, None),
             )
             for aleph_issue in aleph_document.issues
         ],
