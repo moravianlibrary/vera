@@ -549,12 +549,12 @@ class TestCategoriesEndpoints(TestIntegration):
         )
 
         # Assert
-        self.assertEqual(422, response.status_code)
-        self.assertEqual(
-            "Percentage distribution does not contains "
-            "all children from one parent",
-            response.json()["detail"],
-        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(response.json()[0]["id"], 3)
+        self.assertEqual(response.json()[0]["percentage"], 70)
+        self.assertEqual(response.json()[1]["id"], 4)
+        self.assertEqual(response.json()[1]["percentage"], 30)
 
     def test_update_distribution_permitted_excessive_category(self):
         # Arrange
