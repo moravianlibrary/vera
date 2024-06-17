@@ -176,7 +176,8 @@ def delete_document(document_id: int, db: Session):
     if db_document is None:
         raise exceptions.DocumentNotFoundException(id)
     for task_document in db_document.task_documents:
-        task_document.deleted = True
+        # task_document.deleted = True
+        db.delete(task_document)
     db.delete(db_document)
     db.commit()
     return db_document

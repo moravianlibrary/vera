@@ -208,6 +208,10 @@ class TestDigitizationRegister(unittest.TestCase):
             ),
             DigitizationState.NotDigitized,
         )
+        self.assertEqual(
+            DigitizationRegistry(cnb="cnb000280880"),
+            DigitizationState.Finished,
+        )
 
     # def test_state_after_creating_document(self):
     #     from catalogs.enums import IdentifierType

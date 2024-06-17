@@ -125,6 +125,9 @@ def from_aleph_document(
             issue.barcode if one_issue else None,
             aleph_document.cnb,
             aleph_document.isbn_issn,
+            issue.year if one_issue else None,
+            issue.volume if one_issue else None,
+            issue.bundle if one_issue else None,
         ),
         year=issue.year if one_issue else None,
         bundle=issue.bundle if one_issue else None,
@@ -141,7 +144,14 @@ def from_aleph_document(
         issues=[
             from_aleph_issue(
                 aleph_issue,
-                DigitizationRegistry(aleph_issue.barcode, None),
+                DigitizationRegistry(
+                    aleph_issue.barcode,
+                    aleph_document.cnb,
+                    aleph_document.isbn_issn,
+                    aleph_issue.year,
+                    aleph_issue.volume,
+                    aleph_issue.bundle,
+                ),
             )
             for aleph_issue in aleph_document.issues
         ],
