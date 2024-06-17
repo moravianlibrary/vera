@@ -8,7 +8,7 @@ import DocumentsActionsMenu from "./ActionsMenu";
 import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
 import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
 import { Badge } from "primereact/badge";
-import { Dropdown } from "primereact/dropdown";
+import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 
 export enum TableViewType {
     DatatableVisual,
@@ -55,9 +55,13 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({
 
     const [confirmDeletionVisible, setConfirmDeletionVisible] = useState(false);
 
-    const handleSetTableViewType = (e) => {
+    const handleSetTableViewType = (e: DropdownChangeEvent) => {
         if (e.value !== null) {
-            onTableViewTypeChange(e.value as TableViewType);
+            if (e.value.value) {
+                onTableViewTypeChange(e.value.value as TableViewType);
+            } else {
+                onTableViewTypeChange(e.value as TableViewType);
+            }
         }
     };
 
