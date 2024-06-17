@@ -22,6 +22,7 @@ interface CategoriesContextProps {
     digitizationListId: number | null;
     setDigitizationListId: (extractionId: number) => void;
     refreshCategories: (categories?: Category[]) => void;
+    findCategoryById: (id: number) => Category | null;
 }
 
 const CategoriesContext = createContext<CategoriesContextProps | undefined>(
@@ -129,6 +130,23 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
         return categories ? buildAssignableCategoriesTrees(categories) : [];
     };
 
+    const findCategoryById = (id: number): Category | null => {
+        const traverse = (categories: Category[]) => {
+            for (const category of categories) {
+                if (category.id === id) {
+                    return category;
+                }
+                if (category.sub_categories) {
+                    const found = traverse(category.sub_categories);
+                    if (found) {
+                        return found;
+                    }
+                }
+            }
+        };
+        return categories ? traverse(categories) : null;
+    };
+
     const refreshCategories = (refreshCategories: Category[] = []) => {
         const categoriesMap = refreshCategories.reduce((map, category) => {
             map[category.id] = category;
@@ -173,6 +191,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
         digitizationListId,
         setDigitizationListId,
         refreshCategories,
+        findCategoryById,
     };
 
     return (
