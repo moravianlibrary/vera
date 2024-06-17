@@ -3,7 +3,9 @@ import React, { useEffect, useState } from "react";
 import "../styles/Documents.css";
 import { Dialog } from "primereact/dialog";
 import InsertDocuments from "../features/insert-documents/InsertDocuments";
-import DocumentsHeader from "../features/documents/DocumentsHeader";
+import DocumentsHeader, {
+    TableViewType,
+} from "../features/documents/DocumentsHeader";
 import DocumentsTable from "../features/documents/DocumentsTable";
 import { DocumentsProvider } from "../contexts/documents/DocumentsContext";
 import { useSearchParams } from "react-router-dom";
@@ -137,6 +139,9 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
 
     const [insertMode, setInsertMode] = useState(false);
     const [createMode, setCreateMode] = useState(false);
+    const [tableViewType, setTableViewType] = useState<TableViewType>(
+        TableViewType.DatatableVisual
+    );
 
     useEffect(() => {
         searchByCategoryIds(categoryIds);
@@ -152,8 +157,10 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
             <DocumentsHeader
                 onInsert={() => setInsertMode(true)}
                 onCreate={() => setCreateMode(true)}
+                tableViewType={tableViewType}
+                onTableViewTypeChange={setTableViewType}
             />
-            <DocumentsTable />
+            <DocumentsTable tableViewType={tableViewType} />
             <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
                 <InsertDocuments onClose={() => setInsertMode(false)} />
             </Dialog>

@@ -121,13 +121,17 @@ def from_aleph_document(
             aleph_document.material_type, MaterialType.Other
         ),
         title=aleph_document.title,
-        digitization_state=DigitizationRegistry(
-            issue.barcode if one_issue else None,
-            aleph_document.cnb,
-            aleph_document.isbn_issn,
-            issue.year if one_issue else None,
-            issue.volume if one_issue else None,
-            issue.bundle if one_issue else None,
+        digitization_state=(
+            DigitizationRegistry(
+                issue.barcode if one_issue else None,
+                aleph_document.cnb,
+                aleph_document.isbn_issn,
+                issue.year if one_issue else None,
+                issue.volume if one_issue else None,
+                issue.bundle if one_issue else None,
+            )
+            if one_issue
+            else DigitizationState.NotDigitized
         ),
         year=issue.year if one_issue else None,
         bundle=issue.bundle if one_issue else None,

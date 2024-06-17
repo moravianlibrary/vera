@@ -186,6 +186,15 @@ class TestDigitizationRegister(unittest.TestCase):
 
         self.assertEqual(
             DigitizationRegistry(
+                barcode="2610312769",
+                cnb="cnb001723088",
+                isxn="9788073580742",
+                volume="1, učebnice",
+            ),
+            DigitizationState.NotDigitized,
+        )
+        self.assertEqual(
+            DigitizationRegistry(
                 isxn="0139-505X", year="2021", volume="106", bundle="1-37"
             ),
             DigitizationState.Finished,

@@ -62,6 +62,7 @@ interface Document extends DocumentBase {
     creator: string;
     department: string | null;
 
+    is_extractable: boolean;
     extraction_id: number | null;
     extractor: string | null;
     extracted_at: string | null;

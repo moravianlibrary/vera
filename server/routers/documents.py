@@ -50,7 +50,7 @@ def create_document(
 )
 async def create_from_catalog(
     document_identifier: Identifier,
-    category_document_id: Optional[int] = Query(None),
+    category_id: Optional[int] = Query(None),
     insert_digitized: bool = Query(False),
     username: str = DependsOnCallerUsername,
     session: Session = DependsOnDbSession,
@@ -58,7 +58,7 @@ async def create_from_catalog(
     return catalog_crud.create_catalog_document(
         generate_catalog_document(document_identifier),
         document_identifier,
-        category_document_id,
+        category_id,
         insert_digitized,
         username,
         session,

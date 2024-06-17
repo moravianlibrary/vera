@@ -1,7 +1,6 @@
 import { Button } from "primereact/button";
 import React, { useState } from "react";
 import DocumentsSearchBar from "./search-bar/DocumentsSearchBar";
-import { SelectButton } from "primereact/selectbutton";
 import { Toolbar } from "primereact/toolbar";
 import { useTranslation } from "react-i18next";
 import { ConfirmDialog } from "primereact/confirmdialog";
@@ -9,44 +8,57 @@ import DocumentsActionsMenu from "./ActionsMenu";
 import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
 import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
 import { Badge } from "primereact/badge";
+import { Dropdown } from "primereact/dropdown";
+
+export enum TableViewType {
+    DatatableVisual,
+    DatatableData,
+    DataChart,
+}
 
 interface DocumentsHeaderProps {
     onInsert: () => void;
     onCreate: () => void;
+    tableViewType: TableViewType;
+    onTableViewTypeChange: (option: TableViewType) => void;
 }
 
-const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
+const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({
+    onInsert,
+    onCreate,
+    tableViewType,
+    onTableViewTypeChange,
+}) => {
     const { t } = useTranslation();
     const { numSelected, cancelSelection, isSelectAll, selectAllDocuments } =
         useDocumentsSelection();
     const { deleteDocuments } = useDocumentsActions();
 
-    const [displayOption, setDisplayOption] = useState("datatable");
-    const displayOptions = [
-        { name: "Option 1", icon: "pi pi-table", value: "datatable" },
+    const tableViewTypes = [
         {
-            name: "Option 2",
-            icon: "pi pi-chart-bar",
-            value: "graph",
+            icon: "table",
+            label: t("documents.datatable-visual"),
+            value: TableViewType.DatatableVisual,
+        },
+        {
+            icon: "pi-table",
+            label: t("documents.datatable-data"),
+            value: TableViewType.DatatableData,
+        },
+        {
+            icon: "pi-chart-bar",
+            label: t("documents.chart"),
+            value: TableViewType.DataChart,
             disabled: true,
         },
     ];
 
     const [confirmDeletionVisible, setConfirmDeletionVisible] = useState(false);
 
-    const handleSetDisplayOption = (e) => {
+    const handleSetTableViewType = (e) => {
         if (e.value !== null) {
-            setDisplayOption(e.value);
+            onTableViewTypeChange(e.value);
         }
-    };
-
-    const displayOptionTemplate = (option) => {
-        return (
-            <div>
-                <i className={option.icon}></i>
-                {/* <span>{option.name}</span> */}
-            </div>
-        );
     };
 
     const startContent = (
@@ -55,14 +67,13 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = (props) => {
                 label={t("insert_document")}
                 icon="pi pi-plus"
                 outlined
-                onClick={props.onInsert}
+                onClick={onInsert}
             />
             <i className="pi pi-bars p-toolbar-separator m-1" />
-            <SelectButton
-                value={displayOption}
-                onChange={handleSetDisplayOption}
-                itemTemplate={displayOptionTemplate}
-                options={displayOptions}
+            <Dropdown
+                value={tableViewType}
+                onChange={handleSetTableViewType}
+                options={tableViewTypes}
             />
         </React.Fragment>
     );

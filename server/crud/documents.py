@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session, Query
+from sqlalchemy.orm import Session, Query, joinedload
 from sqlalchemy import desc
 from typing import List, Optional
 
@@ -91,6 +91,7 @@ def delete_document(document_id: int, db: Session):
 def get_document(document_id: int, db: Session):
     document = (
         db.query(models.Document)
+        .options(joinedload(models.Document.category))
         .filter(models.Document.id == document_id)
         .first()
     )

@@ -573,6 +573,26 @@ const resources = {
         "Intention deletion failed": "Odstraneni zámeřu se nezdařilo",
 
         "Digitization forbidden": "Nelze digitalizovat",
+
+        "Is extractable": "Může být extrahovaný",
+        "Yes": "Ano",
+        "No": "Ne",
+
+        "digitizationState.Finished": "Dokončeno",
+        "digitizationState.InProgress": "Probiha",
+        "digitizationState.Planned": "Naplánováno",
+        "digitizationState.NotDigitized": "Nedigitalizováno",
+
+        "documents.table.extraction": "Extrakce",
+        "document.extractable.isExtractable": "Může být extrahovaný",
+        "document.extractable.extracted": "Již extrahovaný",
+        "document.extractable.missingCnb": "Chybí ČNB",
+        "document.extractable.missingPages": "Chybí počet stran",
+        "document.extractable.notExtractable": "Nemůže být extrahovaný",
+
+        "documents.datatable-visual": "Tabulka",
+        "documents.datatable-data": "Tabulka - rozšířená",
+        "documents.chart": "Graf",
     },
   },
 };

@@ -10,6 +10,7 @@ interface DataTablePaginatorProps {
     numFound: number;
     onPageChange: (event: PaginatorPageChangeEvent) => void;
     onRefresh?: () => void;
+    leftContent?: React.ReactNode;
 }
 
 const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
@@ -18,6 +19,7 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
     numFound,
     onPageChange,
     onRefresh,
+    leftContent,
 }) => {
     const { t } = useTranslation();
 
@@ -38,7 +40,7 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
             totalRecords={numFound}
             onPageChange={onPageChange}
             rightContent={onRefresh ? refreshButton : <></>}
-            leftContent={<> </>}
+            leftContent={leftContent || <> </>}
             template={{
                 layout: "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown",
                 PageLinks: (options) => {
