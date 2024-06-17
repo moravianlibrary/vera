@@ -57,11 +57,7 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({
 
     const handleSetTableViewType = (e: DropdownChangeEvent) => {
         if (e.value !== null) {
-            if (e.value.value) {
-                onTableViewTypeChange(e.value.value as TableViewType);
-            } else {
-                onTableViewTypeChange(e.value as TableViewType);
-            }
+            onTableViewTypeChange(e.value as TableViewType);
         }
     };
 

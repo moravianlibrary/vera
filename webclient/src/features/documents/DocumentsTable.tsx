@@ -49,8 +49,13 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
 
     useEffect(() => {
         console.log("tableViewType", tableViewType);
-
-        setTableViewTypeLocal(tableViewType);
+        if (typeof tableViewType === "object") {
+            setTableViewTypeLocal(
+                (tableViewType as any).value as TableViewType
+            );
+        } else {
+            setTableViewTypeLocal(tableViewType);
+        }
     }, [tableViewType]);
 
     const handleSelectionChange = (
