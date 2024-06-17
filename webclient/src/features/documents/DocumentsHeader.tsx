@@ -57,7 +57,7 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({
 
     const handleSetTableViewType = (e) => {
         if (e.value !== null) {
-            onTableViewTypeChange(e.value);
+            onTableViewTypeChange(e.value as TableViewType);
         }
     };
 
