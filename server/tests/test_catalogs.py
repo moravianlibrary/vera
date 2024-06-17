@@ -155,23 +155,61 @@ class TestDigitizationRegister(unittest.TestCase):
         cls.patcher.stop()
 
     def test_get_state_by_barcode(self):
-        from catalogs.digitization_registry import get_state_by_identifier
+        from catalogs.digitization_registry.digitization_registry import (
+            DigitizationRegistry,
+        )
 
         self.assertEqual(
-            get_state_by_identifier(
-                Identifier(
-                    identifier_type=IdentifierType.Barcode, value="2619213824"
-                )
-            ),
+            DigitizationRegistry(barcode="2619213824"),
             DigitizationState.Finished,
         )
 
         self.assertEqual(
-            get_state_by_identifier(
-                Identifier(
-                    identifier_type=IdentifierType.Barcode, value="2610280747"
-                )
+            DigitizationRegistry(barcode="2610280747"),
+            DigitizationState.Finished,
+        )
+
+    def test_get_state_for_volume_by_cnb_1(self):
+        from catalogs.digitization_registry.digitization_registry import (
+            DigitizationRegistry,
+        )
+
+        self.assertEqual(
+            DigitizationRegistry(cnb="cnb002603627", volume="1"),
+            DigitizationState.Finished,
+        )
+
+    def test_get_state_for_volume_by_isxn_periodical(self):
+        from catalogs.digitization_registry.digitization_registry import (
+            DigitizationRegistry,
+        )
+
+        self.assertEqual(
+            DigitizationRegistry(
+                isxn="0139-505X", year="2021", volume="106", bundle="1-37"
             ),
+            DigitizationState.Finished,
+        )
+        self.assertEqual(
+            DigitizationRegistry(
+                isxn="0139-505X", year="2022", volume="107", bundle="33"
+            ),
+            DigitizationState.NotDigitized,
+        )
+        self.assertEqual(
+            DigitizationRegistry(
+                isxn="0139-505X", year="2021", volume="107", bundle="33"
+            ),
+            DigitizationState.NotDigitized,
+        )
+        self.assertEqual(
+            DigitizationRegistry(
+                isxn="0139-505X", year="2021", volume="106", bundle="33"
+            ),
+            DigitizationState.NotDigitized,
+        )
+        self.assertEqual(
+            DigitizationRegistry(cnb="cnb000280880"),
             DigitizationState.Finished,
         )
 

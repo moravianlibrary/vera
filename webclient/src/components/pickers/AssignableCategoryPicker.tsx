@@ -22,7 +22,7 @@ interface AssignableCategoryPickerProps {
 export const AssignableCategoriesPicker: React.FC<
     AssignableCategoriesPickerProps
 > = ({ categories_ids, callback, className }) => {
-    const { getAssignableCategoriesTrees } = useCategories();
+    const { getAssignableCategoriesTrees, findCategoryById } = useCategories();
 
     const categories = getAssignableCategoriesTrees();
     const categoriesOptions = buildAssignableCategoriesOptionsTree(categories);
@@ -32,10 +32,11 @@ export const AssignableCategoriesPicker: React.FC<
     useEffect(() => {
         if (categories_ids && categories_ids.length > 0) {
             const newSelected = {};
-            categories
-                .filter((c) => categories_ids.includes(c.id))
-                .forEach((c) => {
-                    newSelected[c.id.toString()] = true;
+            categories_ids
+                .map((categoryId) => findCategoryById(categoryId))
+                .filter((category) => category)
+                .forEach((category) => {
+                    newSelected[category!.id.toString()] = true;
                 });
             setSelected(newSelected);
         } else {
