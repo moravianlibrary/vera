@@ -48,6 +48,8 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
         useState<TableViewType>(tableViewType);
 
     useEffect(() => {
+        console.log("tableViewType", tableViewType);
+
         setTableViewTypeLocal(tableViewType);
     }, [tableViewType]);
 

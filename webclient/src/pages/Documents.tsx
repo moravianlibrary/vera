@@ -158,7 +158,7 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
                 onInsert={() => setInsertMode(true)}
                 onCreate={() => setCreateMode(true)}
                 tableViewType={tableViewType}
-                onTableViewTypeChange={setTableViewType}
+                onTableViewTypeChange={(value) => setTableViewType(value)}
             />
             <DocumentsTable tableViewType={tableViewType} />
             <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
