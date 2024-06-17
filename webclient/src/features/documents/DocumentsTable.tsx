@@ -44,6 +44,12 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
     const { documents, numFound, offset, setOffset, limit, setLimit, refresh } =
         useDocuments();
     const { selectedDocuments, selectDocuments } = useDocumentsSelection();
+    const [tableViewTypeLocal, setTableViewTypeLocal] =
+        useState<TableViewType>(tableViewType);
+
+    useEffect(() => {
+        setTableViewTypeLocal(tableViewType);
+    }, [tableViewType]);
 
     const handleSelectionChange = (
         event: DataTableSelectionMultipleChangeEvent<DataTableValueArray>
@@ -125,7 +131,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
         return <DigitizationStateTag state={document.digitization_state} />;
     };
 
-    if (tableViewType === TableViewType.DatatableVisual) {
+    if (tableViewTypeLocal === TableViewType.DatatableVisual) {
         return (
             <div>
                 <DataTable
