@@ -3,9 +3,9 @@ from sqlalchemy.sql import text
 from sqlalchemy.orm import Query
 from typing import List, Optional, Union
 
-from documents import models, schemas
-from categories.categories.models import Category
-from documents.enums import (
+import models.documents as models
+import schemas.documents_query as schemas
+from schemas.types.query_types import (
     EnumOption,
     GroupOption,
     NumberOption,
@@ -17,6 +17,7 @@ from documents.enums import (
 )
 from extractions.locations.crud import get_location_pattern
 from services.database import get_db
+from categories.categories.models import Category
 
 
 DOCUMENT_FIELDS_MAPPING = {
@@ -112,14 +113,14 @@ def filter_by_id_list(id_list: List[int], query_base: Query):
 
 
 def filter_by_search_phrase(search_phrase: str, query_base: Query):
-    return query_base.filter(
+    return query_base.join(Category).filter(
         or_(
             models.Document.sysno.startswith(search_phrase),
             models.Document.barcode.startswith(search_phrase),
             models.Document.signature.startswith(search_phrase),
             models.Document.title.startswith(search_phrase),
             and_(
-                Category.name.isnot(None),
+                models.Document.category_id.isnot(None),
                 Category.name.startswith(search_phrase),
             ),
         )

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 # from typing import List
 
 from security.schemas import CurrentUser
-from routing.security import get_current_user
+from routers.security import get_current_user
 
 # TODO: fix categories
 # from categories.crud import get_root_categories

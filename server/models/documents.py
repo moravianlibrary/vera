@@ -12,6 +12,8 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.hybrid import hybrid_property
+from typing import Optional
+from datetime import datetime
 
 from services.database import Base
 from catalogs.enums import DigitizationState, MaterialType, IssuanceType
@@ -75,7 +77,7 @@ class Document(Base):
     )
 
     @hybrid_property
-    def pages_count(self):
+    def pages_count(self) -> int:
         return (
             self.pages_count_manual
             or self.pages_count_catalog
@@ -108,3 +110,19 @@ class Document(Base):
             & cls.cnb.is_not(None)
             & cls.extraction_id.is_(None)
         )
+
+    @hybrid_property
+    def category_name(self) -> Optional[str]:
+        return self.category.name if self.category else None
+
+    @hybrid_property
+    def extractor(self) -> Optional[str]:
+        return self.extraction.extractor if self.extraction else None
+
+    @hybrid_property
+    def extracted_at(self) -> Optional[datetime]:
+        return self.extraction.extracted_at if self.extraction else None
+
+    @hybrid_property
+    def comments_count(self) -> int:
+        return 0

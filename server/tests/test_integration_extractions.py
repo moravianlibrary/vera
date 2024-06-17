@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 from categories.categories.models import Category, Distribution
 from categories.intentions.models import Intention
-from documents.models import Document
+from models.documents import Document
 from extractions.generated.extraction_node import ExtractionNode
 from extractions.generated.generator import ExtractionGenerator
 from extractions.generated.schemas import GenerateExtraction

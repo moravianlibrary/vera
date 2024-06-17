@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from documents.models import Document
+from models.documents import Document
 from tasks.tasks.documents_processing import run_task
 
 

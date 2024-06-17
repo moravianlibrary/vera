@@ -1,18 +1,7 @@
-from __future__ import annotations
 from pydantic import BaseModel
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional
 from datetime import datetime
-from documents.enums import (
-    DocumentCreateResult,
-    DocumentField,
-    GroupOption,
-    EnumOption,
-    NumberOption,
-    TextOption,
-    TreeOption,
-    RegexOption,
-    SortOrder,
-)
+from schemas.types.document_create_result import DocumentCreateResult
 from catalogs.enums import (
     DigitizationState,
     MaterialType,
@@ -134,6 +123,8 @@ class DocumentCreate(DocumentBase):
 class Document(DocumentCreate):
     id: int
 
+    category_name: Optional[str] = None
+
     pages_count: Optional[int] = None
     pages_count_predicted: Optional[int]
     dedicated_scanner: Optional[str]
@@ -141,12 +132,8 @@ class Document(DocumentCreate):
     creator: str
     created_at: datetime
 
+    is_extractable: bool
     extraction_id: Optional[int] = None
-
-
-class DocumentView(Document):
-    category_name: Optional[str] = None
-
     extractor: Optional[str] = None
     extracted_at: Optional[datetime] = None
 
@@ -160,40 +147,10 @@ class DocumentView(Document):
 class DocumentCreateResponse(BaseModel):
     identifier: Optional[Identifier] = None
     create_result: DocumentCreateResult
-    document: Optional[DocumentView] = None
+    document: Optional[Document] = None
     catalog_document: Optional[CatalogDocument] = None
 
 
-class SearchField(BaseModel):
-    field: DocumentField
-    option: Union[
-        TextOption, NumberOption, EnumOption, TreeOption, RegexOption
-    ]
-    value: Optional[Union[str, int, Tuple[int, int], List[int]]] = None
-
-
-class SearchGroup(BaseModel):
-    option: GroupOption
-    sub_rules: List[Union[SearchGroup, SearchField]]
-
-
-class QuerySort(BaseModel):
-    field: DocumentField
-    order: SortOrder = SortOrder.Descending
-    and_then: Optional[QuerySort] = None
-
-
-class DocumentsQuery(BaseModel):
-    id_list: Optional[List[int]] = None
-    search_phrase: Optional[str] = None
-    search_group: Optional[SearchGroup] = None
-    category_id: Optional[int] = None
-    department_id: Optional[int] = None
-    extracted: Optional[bool] = None
-    username: Optional[str] = None
-    sort: Optional[QuerySort] = None
-
-
 class DocumentsResponse(BaseModel):
-    documents: List[DocumentView]
+    documents: List[Document]
     num_found: int

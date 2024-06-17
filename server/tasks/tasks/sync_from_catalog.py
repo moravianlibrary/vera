@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from documents.models import Document
-from documents.schemas import DocumentCreate
+from models.documents import Document
+from schemas.documents import DocumentCreate
 from tasks.tasks.documents_processing import run_task
 
 
@@ -52,7 +52,7 @@ def sync_from_catalog(task_id: int, owner: str, db: Session):
     from catalogs.enums import IdentifierType
     from catalogs.routines import generate_catalog_document
     from catalogs.schemas import Identifier
-    from documents.schemas import DocumentCreate
+    from schemas.documents import DocumentCreate
 
     def update_document_from_catalog(document: Document):
         identifier = (

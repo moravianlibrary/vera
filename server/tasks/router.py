@@ -7,9 +7,9 @@ from tasks import crud, schemas
 from tasks.types import TaskType
 from security.schemas import CurrentUser
 from security.api import CallerUsername
-from routing.security import get_current_user
-from documents.schemas import DocumentsQuery
-from documents.crud import get_documents_ids_query_base
+from routers.security import get_current_user
+from schemas.documents_query import DocumentsQuery
+from crud.documents import get_documents_ids_query_base
 from celery_worker import run_task
 from tasks.permissions import CanPlanTask, CanManageTask
 

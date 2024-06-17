@@ -5,14 +5,14 @@ from contextlib import asynccontextmanager
 from apscheduler.schedulers.background import BackgroundScheduler
 from os import environ
 
-import routing
+import routers
 import categories.categories.router as categories_router
 import categories.intentions.router as intentions_router
-import documents.router as documents_router
+import routers.documents as documents_router
 import extractions.digitization.router as digitization_extractions_router
 import extractions.generated.router as generated_extractions_router
 import extractions.locations.router as locations_router
-import routing.security
+import routers.security
 import tasks.router as tasks_router
 
 
@@ -72,7 +72,7 @@ app.add_middleware(
 )
 
 
-app.include_router(routing.security.router)
+app.include_router(routers.security.router)
 app.include_router(categories_router.router)
 app.include_router(intentions_router.router)
 app.include_router(documents_router.router)

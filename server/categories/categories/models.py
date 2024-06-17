@@ -13,7 +13,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
 from categories.categories import schemas
 from typing import List, Optional, Tuple
-from documents.models import Document
+from models.documents import Document
 from collections import deque
 from categories.intentions.models import Intention
 from services.exceptions import (

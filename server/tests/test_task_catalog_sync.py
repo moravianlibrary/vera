@@ -1,8 +1,8 @@
 from tests.test_integration import TestIntegration
 
 from catalogs.enums import DigitizationState
-from documents.crud import create_document, get_document
-from documents.schemas import DocumentCreate
+from crud.documents import create_document, get_document
+from schemas.documents import DocumentCreate
 from tasks.crud import create_query_task
 from tasks.types import TaskType
 from tasks.schemas import TaskCreate

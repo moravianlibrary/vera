@@ -1,23 +1,21 @@
 import unittest
-from unittest.mock import MagicMock, Mock, patch
-from helper_funcs import get_mock_document_view_documents, mockClsEnv
+from unittest.mock import MagicMock
+from helper_funcs import mockClsEnv
 from sqlalchemy.orm import Session
 
-from documents import crud
-from documents.enums import (
+import models.documents as models
+from schemas.types.query_types import (
     TextOption,
     NumberOption,
-    TreeOption,
     DocumentField,
     GroupOption,
 )
-from documents.schemas import (
+from schemas.documents_query import (
     DocumentsQuery,
     SearchField,
     SearchGroup,
-    SortOrder,
 )
-from documents.search import filter_documents_query_base
+from providers.documents_search import filter_documents_query_base
 
 
 class TestDocumentsSearch(unittest.TestCase):
@@ -55,7 +53,7 @@ class TestDocumentsSearch(unittest.TestCase):
         )
 
         documents = filter_documents_query_base(
-            crud.document_view(self.db), query
+            self.db.query(models.Document), query
         ).all()
 
         print(documents)
