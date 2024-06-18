@@ -77,6 +77,7 @@ def update_document(
         setattr(existing_document, field, getattr(new_document, field))
 
     db.commit()
+    db.refresh(existing_document)
 
     return existing_document
 

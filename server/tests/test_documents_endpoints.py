@@ -9,6 +9,8 @@ from helper_funcs import (
 
 from schemas.types.document_create_result import DocumentCreateResult
 from security.types import ActionType
+from models.documents import Document
+from catalogs.enums import CatalogResponseStatus, DigitizationState
 
 
 class TestDocumentsEndpoints(TestIntegration):
@@ -36,11 +38,12 @@ class TestDocumentsEndpoints(TestIntegration):
                 "Content-Type": "application/json",
             },
         )
+
         # Assert - create
         self.assertEqual(response_create.status_code, 200)
-        self.assertNotEqual(
+        self.assertEqual(
             response_create.json()["create_result"],
-            DocumentCreateResult.Success,
+            DocumentCreateResult.Success.value,
         )
 
         document = response_create.json()["document"]
@@ -51,7 +54,7 @@ class TestDocumentsEndpoints(TestIntegration):
 
         # Act - delete
         response_delete = client.delete(
-            f"/documents/{document['id']}",
+            "/documents/1",
             headers={
                 "Authorization": "Bearer test_token",
                 "Content-Type": "application/json",
@@ -81,11 +84,12 @@ class TestDocumentsEndpoints(TestIntegration):
                 "Content-Type": "application/json",
             },
         )
+
         # Assert - create
         self.assertEqual(response_create.status_code, 200)
-        self.assertNotEqual(
+        self.assertEqual(
             response_create.json()["create_result"],
-            DocumentCreateResult.Success,
+            DocumentCreateResult.Success.value,
         )
 
         document = response_create.json()["document"]
@@ -96,7 +100,7 @@ class TestDocumentsEndpoints(TestIntegration):
 
         # Act - delete
         response_delete = client.delete(
-            f"/documents/{document['id']}",
+            "/documents/1",
             headers={
                 "Authorization": "Bearer test_token",
                 "Content-Type": "application/json",
@@ -106,188 +110,165 @@ class TestDocumentsEndpoints(TestIntegration):
         # Assert - delete
         self.assertEqual(response_delete.status_code, 403)
 
-    # def test_update_document(self):
-    #     from documents.enums import DocumentCreateResult
+    def test_update_document_with_write_permission(self):
+        # Arrange
+        mock_db(
+            [
+                Document(
+                    sysno="TEST-SYSNO",
+                    volume="1, test",
+                    title="Test Document",
+                    creator="test_user",
+                )
+            ]
+        )
+        mockUser(
+            createTestUser(
+                [ActionType.EditDatatableOwn, ActionType.WriteDatatable]
+            )
+        )
+        document_json = {
+            "sysno": "TEST-SYSNO",
+            "volume": "1, test - updated",
+            "title": "Test Document Updated",
+        }
 
-    #     response = self.create_test_document()
-    #     self.assertEqual(
-    #         response.json()["create_result"],
-    #         DocumentCreateResult.Success.value,
-    #     )
+        # Act
+        client = createTestClient()
+        response_create = client.put(
+            "/documents/1",
+            json=document_json,
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
 
-    #     document = response.json()["document"]
-    #     document["title"] = "Test Document Updated"
+        # Assert
+        self.assertEqual(response_create.status_code, 200)
+        document = response_create.json()
+        self.assertTrue(1, document["id"])
+        self.assertEqual("TEST-SYSNO", document["sysno"])
+        self.assertEqual("1, test - updated", document["volume"])
+        self.assertEqual("Test Document Updated", document["title"])
 
-    #     response = self.client.put(
-    #         f"/documents/{document['id']}", json=document, headers=self.headers
-    #     )
+    def test_update_document_without_write_permission(self):
+        # Arrange
+        mock_db(
+            [
+                Document(
+                    sysno="TEST-SYSNO",
+                    volume="1, test",
+                    title="Test Document",
+                    creator="test_user",
+                )
+            ]
+        )
+        mockUser(createTestUser([ActionType.EditDatatableOwn]))
+        document_json = {
+            "sysno": "TEST-SYSNO",
+            "volume": "1, test - updated",
+            "title": "Test Document Updated",
+            "pages_count_manual": 10,
+        }
 
-    #     self.assertEqual(response.status_code, 200)
-    #     document = response.json()
-    #     self.assertTrue("id" in document)
-    #     self.assertEqual(self.test_sysno, document["sysno"])
-    #     self.assertEqual(self.test_volume, document["volume"])
-    #     self.assertEqual("Test Document Updated", document["title"])
+        # Act
+        client = createTestClient()
+        response_create = client.put(
+            "/documents/1",
+            json=document_json,
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
 
-    #     self.client.delete(f"/documents/{response.json()['id']}")
+        # Assert
+        self.assertEqual(response_create.status_code, 200)
+        document = response_create.json()
+        self.assertTrue(1, document["id"])
+        self.assertEqual("TEST-SYSNO", document["sysno"])
+        self.assertEqual("1, test", document["volume"])
+        self.assertEqual("Test Document", document["title"])
+        self.assertEqual(10, document["pages_count_manual"])
 
-    # def test_get_from_catalog(self):
-    #     from catalogs.enums import CatalogResponseStatus, DigitizationState
+    def test_create_from_catalog(self):
+        # Arrange
+        mock_db()
+        mockUser(createTestUser([ActionType.InsertDatatable]))
+        identifier_json = {
+            "identifier_type": "Sysno",
+            "value": "mzk03001066272",
+        }
 
-    #     response = self.client.get(
-    #         "/catalogs",
-    #         params={"identifier_type": ["Sysno"], "value": ["mzk03001066272"]},
-    #     )
+        # Act
+        client = createTestClient()
+        response = client.post(
+            "/documents/from_catalog",
+            json=identifier_json,
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
 
-    #     self.assertEqual(response.status_code, 200)
-    #     catalog_response = response.json()
-    #     document = catalog_response["document"]
-    #     response_status = catalog_response["response_status"]
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["create_result"],
+            DocumentCreateResult.Success.value,
+        )
+        document = response.json()["document"]
+        self.assertEqual("2610417932", document["barcode"])
+        self.assertEqual(
+            DigitizationState.NotDigitized.value,
+            document["digitization_state"],
+        )
 
-    #     self.assertEqual(response_status, CatalogResponseStatus.Success.value)
-    #     self.assertEqual("2610417932", document["barcode"])
-    #     self.assertEqual(
-    #         DigitizationState.NotDigitized.value,
-    #         document["digitization_state"],
-    #     )
+    def test_insert_by_sysno_with_some_issues_already_existing(self):
+        # Arrange
+        mock_db(
+            [
+                Document(
+                    sysno="MZK01-000165329", volume="39", barcode="2619868037"
+                )
+            ]
+        )
+        mockUser(createTestUser([ActionType.InsertDatatable]))
+        identifier_json = {
+            "identifier_type": "Sysno",
+            "value": "MZK01-000165329",
+        }
 
-    # def test_get_from_catalog_from_file(self):
-    #     from catalogs.enums import CatalogResponseStatus, DigitizationState
+        # Act
+        client = createTestClient()
+        response = client.post(
+            "/documents/from_catalog",
+            json=identifier_json,
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
 
-    #     test_file_path = "tests/sysnos_test_file.txt"
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["create_result"],
+            DocumentCreateResult.MultipleIssues.value,
+        )
 
-    #     with open(test_file_path, "rb") as file:
-    #         values = [
-    #             line
-    #             for line in file.read().decode("utf-8").split("\n")
-    #             if line
-    #         ]
+        catalog_document = response.json()["catalog_document"]
+        for issue in catalog_document["issues"]:
+            self.assertEqual(
+                issue["barcode"] == "2619868037", issue["already_exists"]
+            )
 
-    #     response = self.client.get(
-    #         "/catalogs/list",
-    #         params={"identifier_type": "Sysno", "values": values},
-    #     )
-
-    #     self.assertEqual(response.status_code, 200)
-    #     catalog_response = response.json()
-    #     print(catalog_response)
-    #     self.assertEqual(
-    #         "2610417932", catalog_response[0]["document"]["barcode"]
-    #     )
-    #     self.assertEqual(
-    #         DigitizationState.NotDigitized.value,
-    #         catalog_response[0]["document"]["digitization_state"],
-    #     )
-    #     self.assertEqual(
-    #         "2619088071", catalog_response[1]["document"]["barcode"]
-    #     )
-    #     self.assertEqual(
-    #         DigitizationState.Finished.value,
-    #         catalog_response[1]["document"]["digitization_state"],
-    #     )
-    #     self.assertIsNone(catalog_response[2]["document"])
-    #     self.assertEqual(
-    #         CatalogResponseStatus.InvalidSysno.value,
-    #         catalog_response[2]["response_status"],
-    #     )
-    #     self.assertIsNone(catalog_response[3]["document"])
-    #     self.assertEqual(
-    #         CatalogResponseStatus.InvalidSysnoBase.value,
-    #         catalog_response[3]["response_status"],
-    #     )
-    #     self.assertIsNone(catalog_response[4]["document"])
-    #     self.assertEqual(
-    #         (CatalogResponseStatus.DocumentNotFound.value),
-    #         catalog_response[4]["response_status"],
-    #     )
-
-    # def test_create_from_catalog_from_file(self):
-    #     from catalogs.enums import DigitizationState
-    #     from documents.enums import DocumentCreateResult
-
-    #     self.delete_document("MZK03-001066272", None, None)
-    #     self.delete_document("MZK01-001479397", None, None)
-
-    #     test_file_path = "tests/sysnos_test_file.txt"
-
-    #     with open(test_file_path, "rb") as file:
-    #         values = [
-    #             line
-    #             for line in file.read().decode("utf-8").split("\n")
-    #             if line
-    #         ]
-
-    #     response = self.client.post(
-    #         "/catalogs/list",
-    #         params={"identifier_type": "Sysno", "values": values},
-    #     )
-
-    #     self.assertEqual(response.status_code, 200)
-    #     create_response = response.json()
-    #     self.assertEqual(
-    #         "2610417932", create_response[0]["document"]["barcode"]
-    #     )
-    #     (create_response[0]["document"]["id"], self.db)
-    #     self.assertEqual(
-    #         DigitizationState.NotDigitized.value,
-    #         create_response[0]["document"]["digitization_state"],
-    #     )
-    #     self.assertEqual(
-    #         "2619088071", create_response[1]["document"]["barcode"]
-    #     )
-    #     self.assertEqual(
-    #         DigitizationState.Finished.value,
-    #         create_response[1]["document"]["digitization_state"],
-    #     )
-    #     self.assertIsNone(create_response[2]["document"])
-    #     self.assertEqual(
-    #         DocumentCreateResult.InvalidSysno.value,
-    #         create_response[2]["create_result"],
-    #     )
-    #     self.assertIsNone(create_response[3]["document"])
-    #     self.assertEqual(
-    #         DocumentCreateResult.InvalidSysnoBase.value,
-    #         create_response[3]["create_result"],
-    #     )
-    #     self.assertIsNone(create_response[4]["document"])
-    #     self.assertEqual(
-    #         DocumentCreateResult.DocumentNotFoundInCatalog.value,
-    #         create_response[4]["create_result"],
-    #     )
-
-    # def test_insert_by_sysno_with_some_issues_already_existing(self):
-    #     sysno = "MZK01-000165329"
-    #     volume = "39"
-    #     barcode = "2619868037"
-
-    #     self.delete_document(sysno, volume, barcode)
-
-    #     response = self.client.post(
-    #         "/catalogs",
-    #         params={"insert_digitized": ["true"]},
-    #         json={"identifier_type": "Barcode", "value": barcode},
-    #     )
-    #     self.assertEqual(response.status_code, 200)
-    #     create_response = response.json()
-    #     document = create_response["document"]
-    #     self.assertEqual("39", document["volume"])
-
-    #     response = self.client.post(
-    #         "/catalogs",
-    #         json={"identifier_type": "Sysno", "value": sysno},
-    #     )
-    #     self.assertEqual(response.status_code, 200)
-    #     create_response = response.json()
-    #     for issue in create_response["catalog_document"]["issues"]:
-    #         self.assertEqual(
-    #             issue["barcode"] == barcode, issue["already_exists"]
-    #         )
-
-    #     self.assertEqual(
-    #         document["locationUri"],
-    #         "http://www.digitalniknihovna.cz/mzk/"
-    #         "uuid/uuid:3e68f1f0-9d7f-11e4-a2db-005056825209",
-    #     )
+        self.assertEqual(
+            catalog_document["locationUri"],
+            "http://www.digitalniknihovna.cz/mzk/"
+            "uuid/uuid:3e68f1f0-9d7f-11e4-a2db-005056825209",
+        )
 
     # def test_insert_with_frequencies(self):
     #     sysno1 = "MZK01-000165329"
