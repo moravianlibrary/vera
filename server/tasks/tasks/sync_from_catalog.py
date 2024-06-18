@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
-from documents.models import Document
-from documents.schemas import DocumentCreate
+from models.documents import Document
+from schemas.documents import DocumentCreate
 from tasks.tasks.documents_processing import run_task
 
 
@@ -14,7 +14,7 @@ UPDATE_COLUMN_NAMES = [
     "title",
     "year",
     "bundle",
-    "pages_count",
+    "pages_count_catalog",
     "size",
     "publisher",
     "publishing_place",
@@ -52,17 +52,13 @@ def sync_from_catalog(task_id: int, owner: str, db: Session):
     from catalogs.enums import IdentifierType
     from catalogs.routines import generate_catalog_document
     from catalogs.schemas import Identifier
-    from documents.schemas import DocumentCreate
+    from schemas.documents import DocumentCreate
 
     def update_document_from_catalog(document: Document):
         identifier = (
-            Identifier(
-                identifier_type=IdentifierType.Barcode, value=document.barcode
-            )
+            Identifier(identifier_type=IdentifierType.Barcode, value=document.barcode)
             if document.barcode
-            else Identifier(
-                identifier_type=IdentifierType.Sysno, value=document.sysno
-            )
+            else Identifier(identifier_type=IdentifierType.Sysno, value=document.sysno)
         )
 
         catalog_response = generate_catalog_document(identifier)

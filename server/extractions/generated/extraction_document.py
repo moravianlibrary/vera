@@ -1,4 +1,4 @@
-from documents.models import Document
+from models.documents import Document
 
 
 class ExtractionDocument:

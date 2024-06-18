@@ -1,14 +1,15 @@
 from sqlalchemy.orm import Session
 from typing import Optional, Union
 
-from documents import crud, schemas
+import crud.documents as crud
+import schemas.documents as schemas
 from catalogs.enums import (
     CatalogResponseStatus as Status,
     DigitizationState,
     IdentifierType,
 )
 from catalogs.schemas import Identifier, CatalogResponse
-from documents.enums import DocumentCreateResult as Result
+from schemas.types.document_create_result import DocumentCreateResult as Result
 
 
 CATALOG_RESPONSE_MAPPING = {
@@ -48,7 +49,7 @@ def UniqueDocumentViolation(identifier: Identifier):
     )
 
 
-def SuccessfulyCreatedDocument(document: schemas.DocumentView):
+def SuccessfulyCreatedDocument(document: schemas.Document):
     return schemas.DocumentCreateResponse(
         create_result=Result.Success,
         document=document,
@@ -203,5 +204,39 @@ def generate_multiple_issues_response(
     return MultipleIssuesDocument(identifier, catalog_document)
 
 
-def get_documents_query():
-    pass
+def create_catalog_document(
+    catalog_response: CatalogResponse,
+    identifier: Identifier,
+    category_id: Optional[int],
+    insert_digitized: bool,
+    username: str,
+    db: Session,
+):
+    catalog_document = catalog_response.document
+    catalog_response_status = catalog_response.response_status
+
+    if catalog_response_status != Status.Success:
+        return CatalogFailure(identifier, catalog_response)
+
+    if identifier.identifier_type == IdentifierType.Barcode:
+        return create_catalog_document_using_barcode(
+            catalog_document,
+            identifier,
+            category_id,
+            insert_digitized,
+            username,
+            db,
+        )
+    elif len(catalog_document.issues) > 1:
+        return generate_multiple_issues_response(
+            identifier, catalog_document, db
+        )
+
+    return create_single_issue_catalog_document(
+        catalog_document,
+        identifier,
+        category_id,
+        insert_digitized,
+        username,
+        db,
+    )

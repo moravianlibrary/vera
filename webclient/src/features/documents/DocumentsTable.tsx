@@ -21,10 +21,15 @@ import LabeledComponent from "../../components/LabeledComponent";
 import { InputNumber } from "primereact/inputnumber";
 import ApiDocuments from "../../adapters/ApiDocuments";
 import ActionAccessComponent from "../../components/ActionAccessComponent";
-import { ActionType } from "../../types/ActionType";
 import { accessService } from "../../services/AccessService";
+import DigitizationStateTag from "../../components/tags/DigitizationStateTag";
+import ExtractableTag from "../../components/tags/ExtractableTag";
+import { TableViewType } from "./DocumentsHeader";
+import DocumentTypeTag from "../../components/tags/DocumentTypeTag";
 
-interface DocumentsTableProps {}
+interface DocumentsTableProps {
+    tableViewType: TableViewType;
+}
 
 interface DocumentDetailsProps {
     document: DocumentModel;
@@ -34,7 +39,7 @@ interface DocumentDetailsBodyProps {
     document: DocumentModel;
 }
 
-const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
+const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
     const { t } = useTranslation();
 
     const { documents, numFound, offset, setOffset, limit, setLimit, refresh } =
@@ -117,6 +122,85 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
             .join(" ");
     };
 
+    const digitizationStateBody = (document: DocumentModel) => {
+        return <DigitizationStateTag state={document.digitization_state} />;
+    };
+
+    if (tableViewType === TableViewType.DatatableVisual) {
+        return (
+            <div>
+                <DataTable
+                    className="documents-table"
+                    value={documents}
+                    scrollable
+                    scrollHeight="calc(100vh - 170px)"
+                    selectionMode="checkbox"
+                    selection={selectedDocuments}
+                    onSelectionChange={handleSelectionChange}
+                >
+                    <Column
+                        field="details"
+                        body={(document) => (
+                            <DocumentDetailsBody
+                                key={document.id}
+                                document={document}
+                            />
+                        )}
+                    />
+
+                    <Column field="category_name" header={t("category")} />
+                    <Column
+                        field="type"
+                        header={t("Type")}
+                        body={(document) => (
+                            <DocumentTypeTag document={document} />
+                        )}
+                    />
+                    <Column
+                        field="title"
+                        header={t("title")}
+                        body={titleBody}
+                    />
+                    <Column
+                        field="description"
+                        header={t("Description")}
+                        body={descriptionBody}
+                    />
+                    <Column
+                        field="pages_count"
+                        body={pagesCountBody}
+                        header={t("pages_count")}
+                    />
+                    <Column
+                        field="digitization_state"
+                        header={t("Digitization state")}
+                        body={digitizationStateBody}
+                    />
+                    <Column
+                        field="extractable"
+                        header={t("documents.table.extraction")}
+                        body={(document) => (
+                            <ExtractableTag document={document} />
+                        )}
+                    />
+                    <Column field="creator" header={t("creator")} />
+
+                    <Column
+                        selectionMode="multiple"
+                        headerStyle={{ width: "3rem" }}
+                    />
+                </DataTable>
+                <DataTablePaginator
+                    offset={offset}
+                    limit={limit}
+                    numFound={numFound}
+                    onPageChange={handlePageChange}
+                    onRefresh={() => refresh()}
+                />
+            </div>
+        );
+    }
+
     return (
         <div>
             <DataTable
@@ -137,6 +221,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = (props) => {
                         />
                     )}
                 />
+
                 <Column field="sysno" header={t("sysno")} />
                 <Column field="type" header={t("Type")} body={typeBody} />
                 <Column

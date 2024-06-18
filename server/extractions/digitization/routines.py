@@ -2,9 +2,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Tuple
 
-from documents.crud import get_documents_query_base
-from documents.schemas import Document, DocumentsQuery
-from documents.models import Document as DocumentModel
+from crud.documents import get_documents_query_base
+from schemas.documents import Document
+from schemas.documents_query import DocumentsQuery
+from models.documents import Document as DocumentModel
 from services.exceptions import (
     CannotExtractDocumentWithoutCNB,
     CannotExtractDocumentWithoutPagesCount,

@@ -20,11 +20,7 @@ COPY categories/intentions/types.py /app/categories/intentions/types.py
 # COPY departments /app/departments
 # COPY documents /app/documents
 # COPY documents/crud.py /app/documents/crud.py
-COPY documents/enums.py /app/documents/enums.py
-COPY documents/models.py /app/documents/models.py
 # COPY documents/routines.py /app/documents/routines.py
-COPY documents/schemas.py /app/documents/schemas.py
-COPY documents/search.py /app/documents/search.py
 # COPY extractions /app/extractions
 COPY extractions/digitization/models.py /app/extractions/digitization/models.py
 COPY extractions/generated/models.py /app/extractions/generated/models.py
@@ -43,6 +39,11 @@ COPY tasks/schemas.py /app/tasks/schemas.py
 COPY tasks/types.py /app/tasks/types.py
 COPY tasks/tasks/ /app/tasks/tasks/
 COPY celery_worker.py /app
+
+COPY crud /app/crud
+COPY models /app/models
+COPY providers /app/providers
+COPY schemas /app/schemas
 
 # Define environment variable
 

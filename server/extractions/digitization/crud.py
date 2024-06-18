@@ -3,7 +3,7 @@ from sqlalchemy import desc, update
 from typing import List, Optional
 
 from services.database import create
-from documents.models import Document
+from models.documents import Document
 from extractions.digitization.models import DigitizationExtraction
 from services.exceptions import EmptyExtraction
 

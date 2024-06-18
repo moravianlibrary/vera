@@ -62,6 +62,7 @@ interface Document extends DocumentBase {
     creator: string;
     department: string | null;
 
+    is_extractable: boolean;
     extraction_id: number | null;
     extractor: string | null;
     extracted_at: string | null;
@@ -120,7 +121,7 @@ namespace ApiDocuments {
     }
 
     export function createDocument(document: Document) {
-        return axiosInstance.post<DocumentCreationResponse>("/documents", document, { headers: authHeader() });
+        return axiosInstance.post<DocumentCreationResponse>("/documents/new", document, { headers: authHeader() });
     }
 
     export function updateDocument(document: Document) {
@@ -133,8 +134,8 @@ namespace ApiDocuments {
 
     export function insertDocument(identifier: Identifier, category_id: number | null, insert_digitized: boolean) {
         const url = category_id !== null
-            ? `/catalogs?category_id=${category_id}&insert_digitized=${insert_digitized}`
-            : `/catalogs?insert_digitized=${insert_digitized}`;
+            ? `/documents/from_catalog?category_id=${category_id}&insert_digitized=${insert_digitized}`
+            : `/documents/from_catalog?insert_digitized=${insert_digitized}`;
             // : `/catalogs?insert_digitized=${insert_digitized}`;
 
         return axiosInstance.post<DocumentCreationResponse>(url, identifier, { headers: authHeader() });
@@ -162,7 +163,7 @@ namespace ApiDocuments {
 
     export function updateCategory(query: DocumentsQuery, category_id: number) {
         return axiosInstance.put<DocumentsQuery>(
-            `/documents/query/category?category_id=${category_id}`,
+            `/documents/query/change_category?category_id=${category_id}`,
             query,
             { headers: authHeader("application/json") }
         );

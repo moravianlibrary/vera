@@ -6,9 +6,12 @@ import { Issue } from "../../adapters/ApiDocuments";
 import { DigitizationState } from "../../types/DigitizationState";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import { DigitizationRegistry } from "../../services/DigitizationRegistry";
+import DigitizationStateTag from "../../components/tags/DigitizationStateTag";
+import { Tag } from "primereact/tag";
 
 enum IssueStates {
     AlreadyExists,
+    DigitizationForbidden,
     Creating,
     Created,
 }
@@ -120,21 +123,27 @@ const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({
         );
     }
 
-    const getMessage = () => {
-        switch (state) {
-            case IssueStates.AlreadyExists:
-                return "Document already exists";
-            case IssueStates.Created:
-                return "Document already exists";
-            case DigitizationState.Finished:
-                return "Document already digitized";
-            case DigitizationState.InProgress:
-                return "Document digitization in progress";
-            case DigitizationState.InProgress:
-                return "Document digitization planned";
-            default:
-                return "";
+    const getTag = () => {
+        if (
+            state === IssueStates.AlreadyExists ||
+            state === IssueStates.Created
+        ) {
+            return (
+                <Tag
+                    value={t("Document already exists")}
+                    className="document-already-exists"
+                />
+            );
         }
+        if (state === IssueStates.DigitizationForbidden) {
+            return (
+                <Tag
+                    value={t("Digitization forbidden")}
+                    className="digitization-forbidden"
+                />
+            );
+        }
+        return <DigitizationStateTag state={state} />;
     };
 
     const getLinkButton = () => {
@@ -162,7 +171,7 @@ const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({
 
     return (
         <div className="flex align-items-baseline">
-            <span className="font-bold text-lg">{t(getMessage())}</span>
+            <div className="mb-2">{getTag()}</div>
             {getLinkButton()}
         </div>
     );

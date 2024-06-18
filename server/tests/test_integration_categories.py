@@ -16,7 +16,7 @@ from categories.categories.models import (
 from extractions.generated.models import GeneratedExtraction
 from extractions.digitization.models import DigitizationExtraction
 from categories.intentions.models import Intention
-from documents.models import Document
+from models.documents import Document
 from security.models import Department
 from security.types import ActionType
 

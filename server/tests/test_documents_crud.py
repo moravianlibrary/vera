@@ -1,8 +1,8 @@
 from tests.test_crud_operations import TestCrudOperations
 
-from documents import crud
-from documents.schemas import DocumentCreate
-from documents.models import Document
+import crud.documents as crud
+from schemas.documents import DocumentCreate
+from models.documents import Document
 
 
 class TestDocumentsCrud(TestCrudOperations):

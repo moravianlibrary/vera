@@ -29,3 +29,65 @@
 .category-assignable-3 {
     background-color: #ffe27e;
 }
+
+.digitization-state-finished {
+    background-color: #66bb6a;
+}
+.digitization-state-in-progress {
+    background-color: #ffab40;
+}
+.digitization-state-planned {
+    background-color: #880e4f;
+}
+.digitization-state-not-digitized {
+    background-color: #757575;
+}
+
+.extractable-is-extractable {
+    background-color: #007bff;
+}
+.extractable-extracted {
+    background-color: #6c757d;
+}
+.extractable-missing-cnb {
+    background-color: #dc3545;
+}
+.extractable-missing-pages {
+    background-color: #dc3545;
+}
+.extractable-not-extractable {
+    background-color: #fd7e14;
+}
+
+.document-already-exists {
+    background-color: #007bff;
+}
+
+.digitization-forbidden {
+    background-color: #dc3545;
+}
+
+.periodical-volume-tag {
+    background-color: #167a1b;
+}
+.periodical-bundle-tag {
+    background-color: #7c9b2c;
+}
+.periodical-tag {
+    background-color: #007443;
+}
+.monograph-unit-tag {
+    background-color: #c73565;
+}
+.monograph-tag {
+    background-color: #a5407f;
+}
+.map-tag {
+    background-color: #735f32;
+}
+.music-tag {
+    background-color: #af580b;
+}
+.document-type-other-tag {
+    background-color: #3f4e4f;
+}

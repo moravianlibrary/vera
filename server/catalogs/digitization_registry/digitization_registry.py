@@ -86,9 +86,12 @@ class DigitizationRegistryClient:
             if state != DigitizationState.NotDigitized:
                 return state
 
-        return self.get_state_for_volume(
-            (f'isxn:"{isxn}"'), year, volume, bundle
-        )
+        if isxn:
+            return self.get_state_for_volume(
+                (f'isxn:"{isxn}"'), year, volume, bundle
+            )
+
+        return DigitizationState.NotDigitized
 
 
 digitization_registry = DigitizationRegistryClient()

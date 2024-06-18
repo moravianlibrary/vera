@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from typing import Any, List, Optional
 
 from security.schemas import CurrentUser
-from documents.schemas import Document
+from schemas.documents import Document
 
 
 TOKEN_CALL = (
@@ -149,9 +149,9 @@ def createTestCategoryNode(
     count_documents_without_cnb: int = 0,
     count_documents: int = 0,
 ):
-    from categories.schemas import CategoryNode
+    from categories.categories.schemas import Category
 
-    return CategoryNode(
+    return Category(
         id=id,
         name=name,
         description=description,

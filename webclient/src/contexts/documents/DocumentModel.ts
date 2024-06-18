@@ -52,8 +52,10 @@ class DocumentModel implements Document {
     pages_count_manual: number | null;
     pages_count_catalog: number | null;
     pages_count_predicted: number | null;
+    page_count: number;
     dedicated_scanner: string | null;
 
+    is_extractable: boolean;
     extraction_id: number | null;
     extractor: string | null;
     extracted_at: string | null;
@@ -99,8 +101,10 @@ class DocumentModel implements Document {
         this.pages_count_manual = data.pages_count_manual;
         this.pages_count_catalog = data.pages_count_catalog;
         this.pages_count_predicted = data.pages_count_predicted;
+        this.page_count = data.pages_count_manual || data.pages_count_catalog || data.pages_count_predicted || 0;
         this.dedicated_scanner = data.dedicated_scanner
 
+        this.is_extractable = data.is_extractable;
         this.extraction_id = data.extraction_id;
         this.extractor = data.extractor;
         this.extracted_at = DocumentModel.formatDatetime(data.extracted_at);
@@ -152,6 +156,7 @@ class DocumentModel implements Document {
             {label: "Creator", value: this.creator},
             {label: "Creator department", value: this.department},
             {label: "Created at", value: this.created_at},
+            {label: "Is extractable", value: this.is_extractable ? t("Yes") : t("No")},
             {label: "Extraction id", value: this.extraction_id},
             {label: "Extractor", value: this.extractor},
             {label: "Extracted at", value: this.extracted_at},

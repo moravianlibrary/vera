@@ -19,12 +19,17 @@ COPY categories /app/categories
 COPY documents /app/documents
 COPY extractions /app/extractions
 COPY predictions /app/predictions
-COPY routing /app/routing
 COPY security /app/security
 COPY services /app/services
 COPY tasks /app/tasks
 COPY celery_worker.py /app
 COPY vera.py /app
+
+COPY crud /app/crud
+COPY models /app/models
+COPY providers /app/providers
+COPY routers /app/routers
+COPY schemas /app/schemas
 
 
 # Expose port 8000 for the FastAPI application

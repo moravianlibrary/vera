@@ -3,7 +3,7 @@ from sqlalchemy import and_, desc, or_
 from typing import List, Optional
 
 from services.database import create
-from documents.models import Document
+from models.documents import Document
 from extractions.generated import schemas
 from extractions.generated.models import GeneratedExtraction
 from services.exceptions import EmptyExtraction

@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Optional
 
 from security.schemas import CurrentUser
-from routing.security import get_current_user
-from documents.schemas import DocumentsQuery
+from routers.security import get_current_user
+from schemas.documents_query import DocumentsQuery
 from extractions.digitization import crud, schemas
 from extractions.digitization.routines import (
     get_extraction_from_query,

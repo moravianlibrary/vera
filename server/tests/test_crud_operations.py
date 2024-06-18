@@ -12,7 +12,7 @@ from categories.categories.models import (  # noqa: F401
     Distribution,
 )  # noqa: F401
 from categories.intentions.models import Intention  # noqa: F401
-from documents.models import Document  # noqa: F401
+from models.documents import Document  # noqa: F401
 from documents.comments.models import Comment  # noqa: F401
 from extractions.generated.models import GeneratedExtraction  # noqa: F401
 from extractions.digitization.models import (  # noqa: F401
