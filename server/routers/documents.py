@@ -19,6 +19,7 @@ from routers.utils.permissions import (
     CanReadDocument,
     CanReadDocuments,
     CanManageDocuments,
+    OwnershipValidator,
 )
 from routers.utils.dependencies import (
     DependsOnCurrentUser,
@@ -40,7 +41,7 @@ def create_document(
     username: str = DependsOnCallerUsername,
     session: Session = DependsOnDbSession,
 ):
-    return crud.create_document(document, username, session)
+    return catalog_crud.create_document(document, username, session)
 
 
 @router.post(
@@ -76,6 +77,7 @@ def update_document(
     user: CurrentUser = DependsOnCurrentUser,
     session: Session = DependsOnDbSession,
 ):
+    OwnershipValidator.EnforceDocumentEdit(user, document_id, session)
     return crud.update_document(
         document_id,
         document,
@@ -90,8 +92,11 @@ def update_document(
     response_model=schemas.Document,
 )
 def delete_document(
-    document_id: int = Path(...), session: Session = DependsOnDbSession
+    document_id: int = Path(...),
+    user: CurrentUser = DependsOnCurrentUser,
+    session: Session = DependsOnDbSession,
 ):
+    OwnershipValidator.EnforceDocumentEdit(user, document_id, session)
     return crud.delete_document(document_id, session)
 
 
@@ -101,8 +106,11 @@ def delete_document(
     response_model=schemas.Document,
 )
 def get_document(
-    document_id: int = Path(...), session: Session = DependsOnDbSession
+    document_id: int = Path(...),
+    user: CurrentUser = DependsOnCurrentUser,
+    session: Session = DependsOnDbSession,
 ):
+    OwnershipValidator.EnforceDocumentRead(user, document_id, session)
     return crud.get_document(document_id, session)
 
 

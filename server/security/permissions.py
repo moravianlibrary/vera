@@ -39,7 +39,6 @@ class OwnershipPermission(Permission):
         self.depends = depends
 
     def has_permission(self, user: CurrentUser):
-        print(self.depends(user))
         return self.action in user.actions and self.depends(user)
 
 

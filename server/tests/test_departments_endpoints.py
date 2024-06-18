@@ -1,5 +1,4 @@
 from tests.test_integration import TestIntegration
-from unittest.mock import Mock, patch
 from helper_funcs import (
     createTestClient,
     createTestUser,
@@ -8,7 +7,6 @@ from helper_funcs import (
     mock_db,
 )
 
-from security.models import Department
 from security.types import ActionType
 
 

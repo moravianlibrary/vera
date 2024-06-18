@@ -90,6 +90,14 @@ class UniqueViolationException(HTTPException):
         super().__init__(status_code=status.HTTP_409_CONFLICT, detail=detail)
 
 
+class UniqueDocumentViolationException(UniqueViolationException):
+    def __init__(self, sysno, volume, barcode):
+        super().__init__(
+            detail=f"Document with sysno {sysno}, volume {volume} "
+            f"and barcode {barcode} already exists"
+        )
+
+
 class UniqueCategoryNameViolationException(UniqueViolationException):
     def __init__(self):
         super().__init__(

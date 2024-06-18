@@ -18,6 +18,11 @@ EDITABLE_FIELDS = [
 def create_document(
     document: schemas.DocumentCreate, creator: str, db: Session
 ) -> schemas.Document:
+    if document_exists(document.sysno, document.volume, document.barcode, db):
+        raise exceptions.UniqueDocumentViolationException(
+            document.sysno, document.volume, document.barcode
+        )
+
     return create(
         db,
         models.Document(
