@@ -66,3 +66,28 @@
 .digitization-forbidden {
     background-color: #dc3545;
 }
+
+.periodical-volume-tag {
+    background-color: #167a1b;
+}
+.periodical-bundle-tag {
+    background-color: #7c9b2c;
+}
+.periodical-tag {
+    background-color: #007443;
+}
+.monograph-unit-tag {
+    background-color: #c73565;
+}
+.monograph-tag {
+    background-color: #a5407f;
+}
+.map-tag {
+    background-color: #735f32;
+}
+.music-tag {
+    background-color: #af580b;
+}
+.document-type-other-tag {
+    background-color: #3f4e4f;
+}

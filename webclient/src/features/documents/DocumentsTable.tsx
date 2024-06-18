@@ -25,6 +25,7 @@ import { accessService } from "../../services/AccessService";
 import DigitizationStateTag from "../../components/tags/DigitizationStateTag";
 import ExtractableTag from "../../components/tags/ExtractableTag";
 import { TableViewType } from "./DocumentsHeader";
+import DocumentTypeTag from "../../components/tags/DocumentTypeTag";
 
 interface DocumentsTableProps {
     tableViewType: TableViewType;
@@ -44,19 +45,6 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
     const { documents, numFound, offset, setOffset, limit, setLimit, refresh } =
         useDocuments();
     const { selectedDocuments, selectDocuments } = useDocumentsSelection();
-    const [tableViewTypeLocal, setTableViewTypeLocal] =
-        useState<TableViewType>(tableViewType);
-
-    useEffect(() => {
-        console.log("tableViewType", tableViewType);
-        if (typeof tableViewType === "object") {
-            setTableViewTypeLocal(
-                (tableViewType as any).value as TableViewType
-            );
-        } else {
-            setTableViewTypeLocal(tableViewType);
-        }
-    }, [tableViewType]);
 
     const handleSelectionChange = (
         event: DataTableSelectionMultipleChangeEvent<DataTableValueArray>
@@ -138,7 +126,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
         return <DigitizationStateTag state={document.digitization_state} />;
     };
 
-    if (tableViewTypeLocal === TableViewType.DatatableVisual) {
+    if (tableViewType === TableViewType.DatatableVisual) {
         return (
             <div>
                 <DataTable
@@ -161,7 +149,13 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
                     />
 
                     <Column field="category_name" header={t("category")} />
-                    <Column field="type" header={t("Type")} body={typeBody} />
+                    <Column
+                        field="type"
+                        header={t("Type")}
+                        body={(document) => (
+                            <DocumentTypeTag document={document} />
+                        )}
+                    />
                     <Column
                         field="title"
                         header={t("title")}

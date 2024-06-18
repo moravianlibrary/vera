@@ -590,9 +590,18 @@ const resources = {
         "document.extractable.missingPages": "Chybí počet stran",
         "document.extractable.notExtractable": "Nemůže být extrahovaný",
 
-        "documents.datatable-visual": "Tabulka",
-        "documents.datatable-data": "Tabulka - rozšířená",
+        "documents.datatable-visual": "Tabulka - příznaky",
+        "documents.datatable-data": "Tabulka - data",
         "documents.chart": "Graf",
+
+        "document.periodical": "Periodikum",
+        "document.periodical-volume": "Ročník periodika",
+        "document.periodical-bundle": "Svazek čísel periodika",
+        "document.monograph": "Monografie",
+        "document.monograph-unit": "Jednotka monografie",
+        "document.map": "Mapa",
+        "document.music": "Zvuk",
+        "document.type-other": "Ostatní",
     },
   },
 };

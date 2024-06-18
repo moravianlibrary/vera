@@ -74,6 +74,8 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({
                 value={tableViewType}
                 onChange={handleSetTableViewType}
                 options={tableViewTypes}
+                optionLabel="label"
+                optionValue="value"
             />
         </React.Fragment>
     );
