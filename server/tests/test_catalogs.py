@@ -185,6 +185,10 @@ class TestDigitizationRegister(unittest.TestCase):
         )
 
         self.assertEqual(
+            DigitizationRegistry(barcode="2610172122"),
+            DigitizationState.Finished,
+        )
+        self.assertEqual(
             DigitizationRegistry(
                 barcode="2610312769",
                 cnb="cnb001723088",
