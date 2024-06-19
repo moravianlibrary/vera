@@ -74,7 +74,7 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
         null
     );
 
-    const [showIntentionOnly, setShowIntentionOnly] = useState<boolean>(true);
+    const [showIntentionOnly, setShowIntentionOnly] = useState<boolean>(false);
     const [activeLevel, setActiveLevel] = useState<number | null>(0);
     const [focusAssignable, setFocusAssignable] = useState<boolean>(false);
 
