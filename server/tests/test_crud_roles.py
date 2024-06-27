@@ -1,4 +1,4 @@
-from tests.test_crud_operations import TestCrudOperations
+from tests.test_crud import TestCrudOperations
 
 from security import crud
 from security.schemas import RoleCreate

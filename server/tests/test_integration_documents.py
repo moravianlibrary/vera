@@ -2,7 +2,6 @@ from tests.test_integration import TestIntegration
 from helper_funcs import (
     createTestClient,
     createTestUser,
-    get_all_actions_except,
     mockUser,
     mock_db,
 )
@@ -10,10 +9,10 @@ from helper_funcs import (
 from schemas.types.document_create_result import DocumentCreateResult
 from security.types import ActionType
 from models.documents import Document
-from catalogs.enums import CatalogResponseStatus, DigitizationState
+from catalogs.enums import DigitizationState
 
 
-class TestDocumentsEndpoints(TestIntegration):
+class TestDocumentsIntegration(TestIntegration):
     def test_create_delete_document(self):
         # Arrange
         mock_db()

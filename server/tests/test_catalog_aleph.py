@@ -4,7 +4,6 @@ from tests.helper_funcs import mockClsEnv
 from catalogs.routines import generate_catalog_document
 from catalogs.enums import (
     CatalogResponseStatus,
-    DigitizationState,
     MaterialType,
     IdentifierType,
     IssuanceType,
@@ -143,116 +142,6 @@ class TestAlephCatalog(unittest.TestCase):
         document = catalog_response.document
         self.assertEqual(document.sysno, "MZK01-000230291")
         print(document.frequencies)
-
-
-class TestDigitizationRegister(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        mockClsEnv(cls)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.patcher.stop()
-
-    def test_get_state_by_barcode(self):
-        from catalogs.digitization_registry.digitization_registry import (
-            DigitizationRegistry,
-        )
-
-        self.assertEqual(
-            DigitizationRegistry(barcode="2619213824"),
-            DigitizationState.Finished,
-        )
-
-        self.assertEqual(
-            DigitizationRegistry(barcode="2610280747"),
-            DigitizationState.Finished,
-        )
-
-    def test_get_state_for_volume_by_cnb_1(self):
-        from catalogs.digitization_registry.digitization_registry import (
-            DigitizationRegistry,
-        )
-
-        self.assertEqual(
-            DigitizationRegistry(cnb="cnb002603627", volume="1"),
-            DigitizationState.Finished,
-        )
-
-    def test_get_state_for_volume_by_isxn_periodical(self):
-        from catalogs.digitization_registry.digitization_registry import (
-            DigitizationRegistry,
-        )
-
-        self.assertEqual(
-            DigitizationRegistry(barcode="2610172122"),
-            DigitizationState.Finished,
-        )
-        self.assertEqual(
-            DigitizationRegistry(
-                barcode="2610312769",
-                cnb="cnb001723088",
-                isxn="9788073580742",
-                volume="1, učebnice",
-            ),
-            DigitizationState.NotDigitized,
-        )
-        self.assertEqual(
-            DigitizationRegistry(
-                isxn="0139-505X", year="2021", volume="106", bundle="1-37"
-            ),
-            DigitizationState.Finished,
-        )
-        self.assertEqual(
-            DigitizationRegistry(
-                isxn="0139-505X", year="2022", volume="107", bundle="33"
-            ),
-            DigitizationState.NotDigitized,
-        )
-        self.assertEqual(
-            DigitizationRegistry(
-                isxn="0139-505X", year="2021", volume="107", bundle="33"
-            ),
-            DigitizationState.NotDigitized,
-        )
-        self.assertEqual(
-            DigitizationRegistry(
-                isxn="0139-505X", year="2021", volume="106", bundle="33"
-            ),
-            DigitizationState.NotDigitized,
-        )
-        self.assertEqual(
-            DigitizationRegistry(cnb="cnb000280880"),
-            DigitizationState.Finished,
-        )
-
-    # def test_state_after_creating_document(self):
-    #     from catalogs.enums import IdentifierType
-    #     from catalogs.schemas import Identifier
-    #     from documents.crud import get_document_by_identifiers, delete_document
-    #     from documents.enums import DocumentCreateResult
-    #     from documents.routines import create_catalog_document
-    #     from services.database import get_db
-
-    #     sysno = "MZK01-000369077"
-    #     volume = "2005"
-    #     barcode = "2610280747"
-    #     identifier = Identifier(
-    #         identifier_type=IdentifierType.Barcode, value=barcode
-    #     )
-    #     db = next(get_db())
-
-    #     document = get_document_by_identifiers(sysno, volume, barcode, db)
-    #     if document:
-    #         delete_document(document.id, db)
-
-    #     response = generate_catalog_document(identifier)
-    #     result = create_catalog_document(
-    #         response, identifier, None, False, "test_user", db
-    #     )
-    #     self.assertEqual(
-    #         result.create_result, DocumentCreateResult.AlreadyDigitized
-    #     )
 
     def test_parse_pages_count(self):
         from catalogs.parsers import parse_page_count

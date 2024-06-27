@@ -1,4 +1,4 @@
-from tests.test_crud_operations import TestCrudOperations
+from tests.test_crud import TestCrudOperations
 
 import crud.documents as crud
 from schemas.documents import DocumentCreate
