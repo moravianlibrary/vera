@@ -127,6 +127,7 @@ const resources = {
         "Error while connecting to catalog": "Chyba při připojování katalogu",
         "Document digitization in progress": "Digitalizace dokumentu probíhá",
         "Document digitization planned": "Digitalizace dokumentu naplánována",
+        "Document is in revision": "Dokument se revizuje",
         "Document not found in catalog": "Dokument nenalezen v katalogu",
         "Invalid catalog document": "Neplatný dokument v katalogu",
         "Invalid document identifier": "Neplatný identifikátor dokumentu",

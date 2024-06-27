@@ -13,6 +13,7 @@ class DigitizationState(Enum):
     InProgress = "InProgress"
     Planned = "Planned"
     NotDigitized = "NotDigitized"
+    Revision = "Revision"
 
 
 class CatalogResponseStatus(Enum):

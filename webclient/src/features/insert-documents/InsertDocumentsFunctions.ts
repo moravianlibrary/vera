@@ -66,6 +66,7 @@ export function getResultSummary(result: DocumentCreateResult): string {
         case DocumentCreateResult.CatalogError: return "Error while connecting to catalog";
         case DocumentCreateResult.DigitizationInProgress: return "Document digitization in progress";
         case DocumentCreateResult.DigitizationPlanned: return "Document digitization planned";
+        case DocumentCreateResult.DigitizationRevision: return "Document is in revision";
         case DocumentCreateResult.DocumentNotFoundInCatalog: return "Document not found in catalog";
         case DocumentCreateResult.InvalidCatalogDocument: return "Invalid catalog document";
         case DocumentCreateResult.InvalidIdentifier: return "Invalid document identifier";

@@ -24,6 +24,7 @@ DIGITIZATION_RESULT_MAPPING = {
     DigitizationState.Finished: Result.AlreadyDigitized,
     DigitizationState.InProgress: Result.DigitizationInProgress,
     DigitizationState.Planned: Result.DigitizationPlanned,
+    DigitizationState.Revision: Result.DigitizationRevision,
 }
 
 

@@ -31,6 +31,8 @@ class RegistryDocument:
             return DigitizationState.InProgress
         elif state == "plánováno":
             return DigitizationState.Planned
+        elif state == "revize":
+            return DigitizationState.Revision
         raise Exception(f"Unknown digitization state: {state}")
 
     def __str__(self):

@@ -11,6 +11,7 @@ enum DocumentCreateResult {
     AlreadyDigitized = "AlreadyDigitized",
     DigitizationInProgress = "DigitizationInProgress",
     DigitizationPlanned = "DigitizationPlanned",
+    DigitizationRevision = "DigitizationRevision",
     DigitizationForbidden = "DigitizationForbidden",
     MultipleIssues = "MultipleIssues",
     Success = "Success"
