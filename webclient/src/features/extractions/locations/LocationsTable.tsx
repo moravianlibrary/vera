@@ -107,7 +107,11 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
 
     return (
         <div>
-            <DataTable value={values}>
+            <DataTable
+                value={values}
+                scrollable
+                scrollHeight="calc(100vh - 170px)"
+            >
                 <Column header={t("Library")} field="library_name" />
                 <Column header={t("Storage")} field="storage_name" />
                 <Column header={t("Location")} field="name" />
