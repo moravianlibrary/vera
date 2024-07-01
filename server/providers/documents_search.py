@@ -16,7 +16,6 @@ from schemas.types.query_types import (
     DocumentField,
 )
 from extractions.locations.crud import get_location_pattern
-from services.database import get_db
 from categories.categories.models import Category
 
 
@@ -39,6 +38,11 @@ DOCUMENT_FIELDS_MAPPING = {
     DocumentField.PagesCountManual: "pages_count_manual",
     DocumentField.PagesCountPredicted: "pages_count_predicted",
     DocumentField.Location: "signature",
+    DocumentField.Publisher: "publisher",
+    DocumentField.PublishingPlace: "publishing_place",
+    DocumentField.PublishingYear: "publishing_year",
+    DocumentField.Creator: "creator",
+    DocumentField.Extractor: "extractor",
 }
 
 
@@ -47,17 +51,17 @@ def is_query_empty(query: schemas.DocumentsQuery) -> bool:
         query.id_list is None
         and query.search_phrase is None
         and query.search_group is None
-        and query.category_id is None
         and query.department_id is None
         and query.username is None
+        and query.extracted is None
     )
 
 
 def filter_documents_query_base(
-    query_base: Query, query: Optional[schemas.DocumentsQuery] = None
+    query_base: Query, query: Optional[schemas.DocumentsQuery], db
 ):
     if not is_query_empty(query):
-        query_base = filter_by_query(query_base, query)
+        query_base = filter_by_query(query_base, query, db)
     else:
         query_base = query_base.filter(models.Document.extraction_id.is_(None))
 
@@ -83,7 +87,7 @@ def sort_query(query_base: Query, sort: schemas.QuerySort):
     return query_base
 
 
-def filter_by_query(query_base: Query, query: schemas.DocumentsQuery):
+def filter_by_query(query_base: Query, query: schemas.DocumentsQuery, db):
     if query.username:
         query_base = query_base.filter(
             models.Document.creator == query.username
@@ -91,20 +95,17 @@ def filter_by_query(query_base: Query, query: schemas.DocumentsQuery):
     if query.id_list:
         return filter_by_id_list(query.id_list, query_base)
 
+    print("query.extracted", query.extracted)
     if query.extracted is None or not query.extracted:
         query_base = query_base.filter(models.Document.extraction_id.is_(None))
     else:
         query_base = query_base.filter(
             models.Document.extraction_id.isnot(None)
         )
-    if query.category_id:
-        query_base = query_base.filter(
-            models.Document.category_id == query.category_id
-        )
     if query.search_phrase:
         return filter_by_search_phrase(query.search_phrase, query_base)
     if query.search_group:
-        return filter_by_group(query.search_group, query_base)
+        return filter_by_group(query.search_group, query_base, db)
     return query_base
 
 
@@ -113,7 +114,7 @@ def filter_by_id_list(id_list: List[int], query_base: Query):
 
 
 def filter_by_search_phrase(search_phrase: str, query_base: Query):
-    return query_base.join(Category).filter(
+    return query_base.outerjoin(Category).filter(
         or_(
             models.Document.sysno.startswith(search_phrase),
             models.Document.barcode.startswith(search_phrase),
@@ -127,22 +128,25 @@ def filter_by_search_phrase(search_phrase: str, query_base: Query):
     )
 
 
-def filter_by_group(search_group: schemas.SearchGroup, query_base: Query):
-    return query_base.filter(build_filter(search_group, text("")))
+def filter_by_group(search_group: schemas.SearchGroup, query_base: Query, db):
+    return query_base.filter(build_filter(search_group, text(""), db))
 
 
 def build_filter(
     search_rule: Union[schemas.SearchGroup, schemas.SearchField],
     query_base: Query,
+    db,
 ):
     if isinstance(search_rule, schemas.SearchGroup):
-        return build_group_filter(search_rule, query_base)
-    return build_field_filter(search_rule)
+        return build_group_filter(search_rule, query_base, db)
+    return build_field_filter(search_rule, db)
 
 
-def build_group_filter(search_group: schemas.SearchGroup, query_base: Query):
+def build_group_filter(
+    search_group: schemas.SearchGroup, query_base: Query, db
+):
     sub_filters = [
-        build_filter(sub_rule, query_base)
+        build_filter(sub_rule, query_base, db)
         for sub_rule in search_group.sub_rules
     ]
     if search_group.option == GroupOption.MatchAll:
@@ -151,10 +155,14 @@ def build_group_filter(search_group: schemas.SearchGroup, query_base: Query):
         return or_(*sub_filters)
 
 
-def build_field_filter(search_field: schemas.SearchField):
+def build_field_filter(search_field: schemas.SearchField, db):
     field_name = DOCUMENT_FIELDS_MAPPING[search_field.field]
     field = getattr(models.Document, field_name)
-    if search_field.option in TextOption:
+    if search_field.option.value == "IsNull":
+        return field.is_(None)
+    elif search_field.option.value == "IsNotNull":
+        return field.isnot(None)
+    elif search_field.option in TextOption:
         return build_text_filter(
             field, search_field.option, search_field.value
         )
@@ -173,9 +181,8 @@ def build_field_filter(search_field: schemas.SearchField):
     elif search_field.option in RegexOption:
         if search_field.field == DocumentField.Location:
             return build_location_filter(
-                field, search_field.option, search_field.value
+                field, search_field.option, search_field.value, db
             )
-    return None
 
 
 def build_text_filter(field, option, value):
@@ -191,10 +198,6 @@ def build_text_filter(field, option, value):
         return ~field.contains(value)
     elif option == TextOption.NotEquals:
         return field != value
-    elif option == TextOption.IsNull:
-        return field.is_(None)
-    elif option == TextOption.IsNotNull:
-        return field.isnot(None)
 
 
 def build_number_filter(field, option, value):
@@ -208,10 +211,6 @@ def build_number_filter(field, option, value):
         return field > value
     elif option == NumberOption.Between:
         return and_(field >= value[0], field <= value[1])
-    elif option == NumberOption.IsNull:
-        return field.is_(None)
-    elif option == NumberOption.IsNotNull:
-        return field.isnot(None)
 
 
 def build_tree_filter(field, option, value):
@@ -219,10 +218,6 @@ def build_tree_filter(field, option, value):
         return field.in_(value)
     elif option == TreeOption.IsNotIn:
         return ~field.in_(value)
-    elif option == TreeOption.IsNull:
-        return field.is_(None)
-    elif option == TreeOption.IsNotNull:
-        return field.isnot(None)
 
 
 def build_enum_filter(field, option, value):
@@ -230,17 +225,12 @@ def build_enum_filter(field, option, value):
         return field == value
     elif option == EnumOption.IsNot:
         return field != value
-    elif option == EnumOption.IsNull:
-        return field.is_(None)
-    elif option == EnumOption.IsNotNull:
-        return field.isnot(None)
 
 
-def build_location_filter(field, option, value):
+def build_location_filter(field, option, value, db):
     if value is None or len(value) == 0:
         return None
 
-    db = next(get_db())
     filters = []
 
     for location_id in value:

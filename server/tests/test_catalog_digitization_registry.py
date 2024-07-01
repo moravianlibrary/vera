@@ -35,7 +35,7 @@ class TestDigitizationRegister(unittest.TestCase):
 
         self.assertEqual(
             DigitizationRegistry(cnb="cnb002603627", volume="1"),
-            DigitizationState.Finished,
+            DigitizationState.Revision,
         )
 
     def test_get_state_for_periodical_issues(self):

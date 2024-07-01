@@ -10,7 +10,7 @@ class DocumentField(Enum):
     Year = "Year"
 
     Category = "Category"
-    Title = "title"
+    Title = "Title"
 
     Barcode = "Barcode"
     Signature = "Signature"
@@ -25,6 +25,13 @@ class DocumentField(Enum):
     PagesCountCatalog = "PagesCountCatalog"
     PagesCountManual = "PagesCountManual"
     PagesCountPredicted = "PagesCountPredicted"
+
+    Publisher = "Publisher"
+    PublishingPlace = "PublishingPlace"
+    PublishingYear = "PublishingYear"
+
+    Creator = "Creator"
+    Extractor = "Extractor"
 
 
 class GroupOption(Enum):

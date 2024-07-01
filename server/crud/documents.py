@@ -134,7 +134,7 @@ def document_exists(
 def get_documents_query_base(
     db: Session, query: Optional[query_schemas.DocumentsQuery] = None
 ):
-    return filter_documents_query_base(db.query(models.Document), query)
+    return filter_documents_query_base(db.query(models.Document), query, db)
 
 
 def get_documents_ids_query_base(
