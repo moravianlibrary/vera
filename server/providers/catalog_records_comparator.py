@@ -2,9 +2,6 @@ from enum import Enum
 from pymarc import Field, Record, Subfield
 from typing import List, Optional, Set
 
-import aleph_api
-from catalogs.skc import skc_api as skc_api
-
 
 class DiffType(Enum):
     MissingField = "MissingField"
@@ -177,18 +174,58 @@ def compare_marc21_records(
     return diffs
 
 
-def compare_mzk_with_skc(
-    sysno: str, cnb: Optional[str], isn: Optional[str]
-) -> List[Marc21Diff]:
-    mzk_marc21 = aleph_api.get_marc21_document(sysno)
-    skc_sysno, skc_marc21 = skc_api.get_sysno_marc21(cnb, isn)
+EVALUATE_SIMILARITY_FOR_FIELDS = [
+    "041",
+    "245",
+    "250",
+    "260",
+    "264",
+    "300",
+    "310",
+    "321",
+]
 
-    if mzk_marc21 is None:
-        raise ValueError(f"Document {sysno} not found in MZK")
-    if skc_marc21 is None:
-        raise ValueError(f"Document {skc_sysno} not found in SKC")
 
-    return compare_marc21_records(mzk_marc21, skc_marc21)
+def calculate_records_similarity(record1: Record, record2: Record) -> float:
+    from sklearn.feature_extraction.text import TfidfVectorizer  # type: ignore
+    from sklearn.metrics.pairwise import cosine_similarity  # type: ignore
+
+    def calculate_similarity(text1: str, text2: str):
+        vectorizer = TfidfVectorizer().fit_transform([text1, text2])
+        vectors = vectorizer.toarray()
+        cosine_sim = cosine_similarity(vectors)
+        return cosine_sim[0, 1]
+
+    similarity = 0.0
+    n = 0
+
+    for field_code in EVALUATE_SIMILARITY_FOR_FIELDS:
+        fields1 = record1.get_fields(field_code)
+        fields2 = record2.get_fields(field_code)
+        if len(fields1) > 0 and len(fields2) > 0:
+            text1 = "".join([f.value() for f in fields1])
+            text2 = "".join([f.value() for f in fields2])
+            similarity += calculate_similarity(
+                text1,
+                text2,
+            )
+            n += 1
+
+    return similarity / n
+
+
+# def compare_mzk_with_skc(
+#     sysno: str, cnb: Optional[str], isn: Optional[str]
+# ) -> List[Marc21Diff]:
+#     mzk_marc21 = aleph_api.get_marc21_document(sysno)
+#     skc_sysno, skc_marc21 = skc_api.get_sysno_marc21(cnb, isn)
+
+#     if mzk_marc21 is None:
+#         raise ValueError(f"Document {sysno} not found in MZK")
+#     if skc_marc21 is None:
+#         raise ValueError(f"Document {skc_sysno} not found in SKC")
+
+#     return compare_marc21_records(mzk_marc21, skc_marc21)
 
 
 # diffs = compare_mzk_with_skc("MZK01-000033633", "cnb003367815", None)

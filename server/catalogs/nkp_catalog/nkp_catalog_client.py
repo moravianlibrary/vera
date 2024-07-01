@@ -4,36 +4,57 @@ from pymarc import Record
 from time import sleep
 from typing import Optional, Tuple
 
-from catalogs.skc.parsers import (
+from catalogs.nkp_catalog.parsers import (
     parse_skc_sysno_from_document,
     skc_html_marc21_to_marc21,
 )
 
-SKC_BASE = "https://aleph.nkp.cz"
-FIND_BY_CNB = (
-    "{SKC_BASE}/F/?func=find-b&local_base=skc&find_code=CNB&request={CNB}"
-)
-FIND_BY_ISN = (
-    "{SKC_BASE}/F/?func=find-b&local_base=skc&find_code=ISN&request={ISN}"
+NKP_BASE = "https://aleph.nkp.cz"
+
+SKC_LOCAL_BASE = "skc"
+CNB_LOCAL_BASE = "cnb"
+
+FIND_CNB_CODE = "CNB"
+FIND_ISN_CODE = "ISN"
+
+FIND_BY_CODE_AND_VALUE = (
+    "{NKP_BASE}/F/?func=find-b&local_base={LOCAL_BASE}"
+    "&find_code={FIND_CODE}&request={FIND_VALUE}"
 )
 GET_MARC21 = (
-    "{SKC_BASE}/F/?func=direct&doc_number={SYSNO}&local_base=SKC&format=001"
+    "{NKP_BASE}/F/?func=direct&doc_number="
+    "{SYSNO}&local_base={LOCAL_BASE}&format=001"
 )
 
 ISBN13_PATTERN = r"\b(?:\d{3}-\d{1,5}-\d{1,7}-\d{1,8}-\d{1}|\d{13})\b"
 ISBN_PATTERN = r"\b(?:\d{3}-\d{1,5}-\d{1,7}-\d{1,8}-\d{1}|\d{13}|\d{9}[\dX])\b"
 
 
-def find_document_by_cnb(cnb: str):
-    response = requests.get(FIND_BY_CNB.format(SKC_BASE=SKC_BASE, CNB=cnb))
+def find_document_by_cnb(cnb: str, local_base: str = SKC_LOCAL_BASE):
+    response = requests.get(
+        FIND_BY_CODE_AND_VALUE.format(
+            NKP_BASE=NKP_BASE,
+            LOCAL_BASE=local_base,
+            FIND_CODE=FIND_CNB_CODE,
+            FIND_VALUE=cnb,
+        )
+    )
 
     if response.status_code != 200:
         return None
     return BeautifulSoup(response.content, "html.parser")
 
 
-def find_document_by_isn(isn: str):
-    response = requests.get(FIND_BY_ISN.format(SKC_BASE=SKC_BASE, ISN=isn))
+def find_document_by_isn(isn: str, local_base: str = SKC_LOCAL_BASE):
+    response = requests.get(
+        FIND_BY_CODE_AND_VALUE.format(
+            NKP_BASE=NKP_BASE,
+            LOCAL_BASE=local_base,
+            FIND_CODE=FIND_ISN_CODE,
+            FIND_VALUE=isn,
+        )
+    )
+
     if response.status_code != 200:
         print(response)
         return None
@@ -64,10 +85,13 @@ def parse_multiple_results(results: BeautifulSoup):
 
 
 def find_skc_sysno(
-    cnb: Optional[str], isn: Optional[str], retry: int = 0
+    cnb: Optional[str],
+    isn: Optional[str],
+    local_base: str = SKC_LOCAL_BASE,
+    retry: int = 0,
 ) -> Optional[str]:
-    document = (cnb and find_document_by_cnb(cnb)) or (
-        isn and find_document_by_isn(isn)
+    document = (cnb and find_document_by_cnb(cnb, local_base)) or (
+        isn and find_document_by_isn(isn, local_base)
     )
     if document is None:
         return None
@@ -78,20 +102,25 @@ def find_skc_sysno(
     skc_sysno = parse_skc_sysno_from_document(document)
     if skc_sysno is None:
         if retry < 3:
-            return find_skc_sysno(cnb, isn, retry + 1)
+            return find_skc_sysno(cnb, isn, local_base, retry + 1)
         sleep(10)
         return None
     return skc_sysno
 
 
 def get_sysno_marc21(
-    cnb: Optional[str], isn: Optional[str]
+    cnb: Optional[str], isn: Optional[str], local_base: str = SKC_LOCAL_BASE
 ) -> Tuple[Optional[str], Optional[Record]]:
-    sysno = find_skc_sysno(cnb, isn)
+    sysno = find_skc_sysno(cnb, isn, local_base)
+    print(sysno)
     if sysno is None:
         return None, None
 
-    response = requests.get(GET_MARC21.format(SKC_BASE=SKC_BASE, SYSNO=sysno))
+    response = requests.get(
+        GET_MARC21.format(
+            NKP_BASE=NKP_BASE, LOCAL_BASE=local_base, SYSNO=sysno
+        )
+    )
     if response.status_code != 200:
         return None, None
 
