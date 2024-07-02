@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    CheckConstraint,
     Column,
     Enum,
     ForeignKey,
@@ -25,12 +26,30 @@ class Document(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     sysno = Column(String, index=True, nullable=False)
-    volume = Column(String)
     barcode = Column(String)
+    volume = Column(String)
 
     category_id = Column(Integer, ForeignKey("categories.id"), index=True)
 
+    alternative_ids = Column(ARRAY(String))
     cnb = Column(String)
+
+    pages_count_catalog = Column(Integer)
+    pages_count_predicted = Column(Integer)
+    pages_count_manual = Column(Integer)
+
+    extraction_priority = Column(
+        Integer,
+        CheckConstraint(
+            "extraction_priority >= 1 AND extraction_priority <= 5"
+        ),
+        nullable=False,
+        default=3,
+    )
+    extraction_id = Column(
+        Integer, ForeignKey("digitization_extractions.id"), index=True
+    )
+
     isbn_issn = Column(String)
     signature = Column(String)
 
@@ -41,10 +60,6 @@ class Document(Base):
 
     year = Column(String)
     bundle = Column(String)
-
-    pages_count_catalog = Column(Integer)
-    pages_count_predicted = Column(Integer)
-    pages_count_manual = Column(Integer)
 
     size = Column(String)
     locationUri = Column(String)
@@ -60,10 +75,6 @@ class Document(Base):
 
     created_at = Column(TIMESTAMP, server_default=func.now())
     creator = Column(String, index=True)
-
-    extraction_id = Column(
-        Integer, ForeignKey("digitization_extractions.id"), index=True
-    )
 
     category = relationship("Category", back_populates="documents")
     extraction = relationship(
