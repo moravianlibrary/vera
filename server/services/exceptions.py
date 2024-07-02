@@ -1,6 +1,14 @@
 from fastapi import HTTPException, status
 
 
+class CatalogRecordNotFoundException(HTTPException):
+    def __init__(self, sysno):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Catalog record with system number {sysno} was not found",
+        )
+
+
 class EditingPreviousDistributionForbiddenException(HTTPException):
     def __init__(self):
         super().__init__(

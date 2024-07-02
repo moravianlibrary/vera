@@ -25,10 +25,24 @@ class TestCatalogRecordsValidator(unittest.TestCase):
             validator.has_valid_cnb("MZK01-000919673", "cnb000566660")
         )
 
+    def test_mzk_skc_record_comparison_without_connection_in_knihovny_cz(self):
+        # Arrange
+        validator = CatalogRecordsValidator()
+        mzk_sysno = "MZK01-000001709"
+
+        # Act
+        mzk_document = get_marc21_document(mzk_sysno)
+        record_diff = validator.get_record_diff_against_skc(
+            mzk_sysno, mzk_document
+        )
+
+        # Assert
+        self.assertIsNone(record_diff)
+
     def test_mzk_skc_record_comparison(self):
         # Arrange
         validator = CatalogRecordsValidator()
-        mzk_sysno = "MZK01-000771703"
+        mzk_sysno = "MZK01-000009721"
 
         # Act
         mzk_document = get_marc21_document(mzk_sysno)
@@ -49,4 +63,18 @@ class TestCatalogRecordsValidator(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(similarity)
-        print(similarity)
+        self.assertIsInstance(similarity, float)
+
+    def test_mzk_cnb_record_comparison(self):
+        # Arrange
+        validator = CatalogRecordsValidator()
+        mzk_sysno = "MZK01-000771703"
+
+        # Act
+        mzk_document = get_marc21_document(mzk_sysno)
+        record_diff = validator.get_record_diff_against_cnb(
+            mzk_sysno, mzk_document
+        )
+
+        # Assert
+        self.assertIsNotNone(record_diff)

@@ -1,52 +1,6 @@
-from enum import Enum
 from pymarc import Field, Record, Subfield
+from schemas.marc21_diff import Marc21DiffType, Marc21Diff, Marc21DiffRecord
 from typing import List, Optional, Set
-
-
-class DiffType(Enum):
-    MissingField = "MissingField"
-    ExtraField = "ExtraField"
-    DifferentValue = "DifferentValue"
-
-
-class Marc21Diff:
-    def __init__(
-        self,
-        type: DiffType,
-        tag: Optional[str] = None,
-        field: Optional[Field] = None,
-        value: Optional[str] = None,
-    ):
-        self.type = type
-        self.tag = tag
-        self.field = field
-        self.value = value
-
-    def format_subfields(self) -> str:
-        return " ".join(
-            [
-                f"|{subfield.code} {subfield.value.strip()}"
-                for subfield in self.field.subfields
-            ]
-        )
-
-    def format_field(self) -> str:
-        if self.field.is_control_field():
-            return f"{self.field.tag} CTL |  {self.field.data.strip()}"
-        return (
-            f"{self.field.tag} "
-            f"{self.field.indicator1} "
-            f"{self.field.indicator2} "
-            f"{self.format_subfields()}"
-        )
-
-    def __repr__(self) -> str:
-        if self.type == DiffType.MissingField:
-            return f"- {self.format_field()}"
-        if self.type == DiffType.ExtraField:
-            return f"+ {self.format_field()}"
-        if self.type == DiffType.DifferentValue:
-            return f"~ {self.format_field()} !! {self.value}"
 
 
 def compare_field_values(field1: Field, field2: Field) -> bool:
@@ -107,12 +61,13 @@ def get_control_field_diff(
 ) -> Optional[Marc21Diff]:
     found = find_control_field(find_in, field.tag)
     if found is None:
-        return Marc21Diff(field, DiffType.ExtraField)
+        return Marc21Diff.from_marc21_field(Marc21DiffType.ExtraField, field)
     if not compare_field_values(field, found):
         find_in.remove(found)
-        return Marc21Diff(
-            DiffType.DifferentValue, field=field, value=found.data
+        return Marc21Diff.from_marc21_field(
+            Marc21DiffType.DifferentValue, field, found.data
         )
+    find_in.remove(found)
     return None
 
 
@@ -123,12 +78,12 @@ def get_data_field_diff(
         find_in, field.tag, field.indicator1, field.indicator2
     )
     if len(found) == 0:
-        return Marc21Diff(DiffType.ExtraField, field=field)
+        return Marc21Diff.from_marc21_field(Marc21DiffType.ExtraField, field)
     for found_field in found:
         if are_subfields_equal(field, found_field):
             find_in.remove(found_field)
             return None
-    return Marc21Diff(DiffType.ExtraField, field=field)
+    return Marc21Diff.from_marc21_field(Marc21DiffType.ExtraField, field)
 
 
 def get_field_diff(field: Field, find_in: List[Field]) -> Optional[Marc21Diff]:
@@ -138,8 +93,8 @@ def get_field_diff(field: Field, find_in: List[Field]) -> Optional[Marc21Diff]:
 
 
 def compare_marc21_records(
-    record1: Record, record2: Record
-) -> List[Marc21Diff]:
+    sysno1: str, record1: Record, sysno2: str, record2: Record
+) -> Marc21DiffRecord:
     all_tags = sorted(
         set([field.tag for field in record1.fields]).union(
             set([field.tag for field in record2.fields])
@@ -155,23 +110,39 @@ def compare_marc21_records(
         if len(mzk_fields) == 0 and len(skc_fields) > 0:
             for skc_field in skc_fields:
                 diffs.append(
-                    Marc21Diff(DiffType.MissingField, field=skc_field)
+                    Marc21Diff.from_marc21_field(
+                        Marc21DiffType.MissingField, skc_field
+                    )
                 )
             continue
         elif len(mzk_fields) > 0 and len(skc_fields) == 0:
             for mzk_field in mzk_fields:
-                diffs.append(Marc21Diff(DiffType.ExtraField, field=mzk_field))
+                diffs.append(
+                    Marc21Diff.from_marc21_field(
+                        Marc21DiffType.ExtraField, mzk_field
+                    )
+                )
             continue
 
         for mzk_field in mzk_fields:
             diff = get_field_diff(mzk_field, skc_fields)
             if diff:
                 diffs.append(diff)
+            else:
+                diffs.append(
+                    Marc21Diff.from_marc21_field(
+                        Marc21DiffType.Equal, mzk_field
+                    )
+                )
 
         for skc_field in skc_fields:
-            diffs.append(Marc21Diff(DiffType.MissingField, field=skc_field))
+            diffs.append(
+                Marc21Diff.from_marc21_field(
+                    Marc21DiffType.MissingField, skc_field
+                )
+            )
 
-    return diffs
+    return Marc21DiffRecord(sysno1=sysno1, sysno2=sysno2, diffs=diffs)
 
 
 EVALUATE_SIMILARITY_FOR_FIELDS = [

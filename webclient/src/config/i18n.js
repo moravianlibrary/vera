@@ -603,6 +603,16 @@ const resources = {
         "document.map": "Mapa",
         "document.music": "Zvuk",
         "document.type-other": "Ostatní",
+
+        "document.record.diff-mzk-skc": "Zobrazit rozdíl mezi MZK a SKC katalogem",
+        "document.record.diff-mzk-cnb": "Zobrazit rozdíl mezi MZK a ČNB katalogem",
+
+        "catalog.record.mzk": "MZK katalog záznam",
+        "catalog.record.cnb": "ČNB katalog záznam",
+        "catalog.record.skc": "SKC katalog záznam",
+        "catalog.record.value-differs": "<- rozdílna hodnota ->",
+        "catalog.record.cnb-not-found": "Záznam v ČNB katalogu nenalezen",
+        "catalog.record.skc-not-found": "Záznam v SKC katalogu nenalezen",
     },
   },
 };

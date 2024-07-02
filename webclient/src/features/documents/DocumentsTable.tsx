@@ -26,6 +26,8 @@ import DigitizationStateTag from "../../components/tags/DigitizationStateTag";
 import ExtractableTag from "../../components/tags/ExtractableTag";
 import { TableViewType } from "./DocumentsHeader";
 import DocumentTypeTag from "../../components/tags/DocumentTypeTag";
+import ApiCatalogs, { Marc21DiffRecord } from "../../adapters/ApiCatalogs";
+import MarcRecordsDiffView from "../../components/views/MarcRecordsDiffView";
 
 interface DocumentsTableProps {
     tableViewType: TableViewType;
@@ -314,9 +316,10 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({
             >
                 <div className="flex flex-column gap-3 align-items-start">
                     {!editMode && (
-                        <div>
+                        <div className="flex flex-column gap-3">
                             {" "}
                             <DocumentDetailsTooltip document={doc} />
+                            <CatalogsFunctionality document={doc} />
                             <div className="flex gap-3">
                                 <Button
                                     icon="pi pi-trash"
@@ -423,6 +426,70 @@ const DocumentDetailsTooltip: React.FC<DocumentDetailsProps> = ({
                     </div>
                 );
             })}
+        </div>
+    );
+};
+
+const CatalogsFunctionality: React.FC<DocumentDetailsProps> = ({
+    document,
+}) => {
+    const { t } = useTranslation();
+    const showToast = useToast();
+
+    const [diffRecord, setDiffRecord] = useState<Marc21DiffRecord | null>(null);
+    const [record2Name, setRecord2Name] = useState<string>(
+        t("catalog.record.skc")
+    );
+
+    const loadMzkSkcDiffRecord = () => {
+        ApiCatalogs.getMzkSkcDiff(document.sysno)
+            .then((response) => {
+                setDiffRecord(response.data);
+                setRecord2Name(t("catalog.record.skc"));
+            })
+            .catch((error) => {
+                if (error.response.status === 404) {
+                    showToast("warn", t("catalog.record.skc-not-found"), "");
+                }
+                console.error(error);
+            });
+    };
+
+    const loadMzkCnbDiffRecord = () => {
+        ApiCatalogs.getMzkCnbDiff(document.sysno)
+            .then((response) => {
+                setDiffRecord(response.data);
+                setRecord2Name(t("catalog.record.cnb"));
+            })
+            .catch((error) => {
+                if (error.response.status === 404) {
+                    showToast("warn", t("catalog.record.cnb-not-found"), "");
+                }
+                console.error(error);
+            });
+    };
+
+    return (
+        <div className="flex flex-column gap-1">
+            <Dialog visible={!!diffRecord} onHide={() => setDiffRecord(null)}>
+                <MarcRecordsDiffView
+                    record1Label={t("catalog.record.mzk")}
+                    record2Label={record2Name}
+                    diffRecord={diffRecord}
+                />
+            </Dialog>
+            <Button
+                severity="info"
+                outlined
+                label={t("document.record.diff-mzk-skc")}
+                onClick={loadMzkSkcDiffRecord}
+            />
+            <Button
+                severity="info"
+                outlined
+                label={t("document.record.diff-mzk-cnb")}
+                onClick={loadMzkCnbDiffRecord}
+            />
         </div>
     );
 };

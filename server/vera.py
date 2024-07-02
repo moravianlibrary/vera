@@ -8,10 +8,11 @@ from os import environ
 import routers
 import categories.categories.router as categories_router
 import categories.intentions.router as intentions_router
-import routers.documents as documents_router
 import extractions.digitization.router as digitization_extractions_router
 import extractions.generated.router as generated_extractions_router
 import extractions.locations.router as locations_router
+import routers.catalogs
+import routers.documents
 import routers.security
 import tasks.router as tasks_router
 
@@ -72,10 +73,11 @@ app.add_middleware(
 )
 
 
+app.include_router(routers.catalogs.router)
+app.include_router(routers.documents.router)
 app.include_router(routers.security.router)
 app.include_router(categories_router.router)
 app.include_router(intentions_router.router)
-app.include_router(documents_router.router)
 app.include_router(digitization_extractions_router.router)
 app.include_router(generated_extractions_router.router)
 app.include_router(locations_router.router)

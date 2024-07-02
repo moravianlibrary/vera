@@ -108,23 +108,24 @@ def find_skc_sysno(
     return skc_sysno
 
 
-def get_sysno_marc21(
-    cnb: Optional[str], isn: Optional[str], local_base: str = SKC_LOCAL_BASE
-) -> Tuple[Optional[str], Optional[Record]]:
-    sysno = find_skc_sysno(cnb, isn, local_base)
-    print(sysno)
-    if sysno is None:
-        return None, None
-
+def get_marc21(sysno: str, local_base: str = SKC_LOCAL_BASE):
     response = requests.get(
         GET_MARC21.format(
             NKP_BASE=NKP_BASE, LOCAL_BASE=local_base, SYSNO=sysno
         )
     )
     if response.status_code != 200:
-        return None, None
+        return None
 
     html_marc21 = BeautifulSoup(response.content, "html.parser")
-    return (
-        skc_html_marc21_to_marc21(html_marc21) if html_marc21 else (None, None)
-    )
+    return skc_html_marc21_to_marc21(html_marc21)[1] if html_marc21 else None
+
+
+def get_sysno_marc21(
+    cnb: Optional[str], isn: Optional[str], local_base: str = SKC_LOCAL_BASE
+) -> Tuple[Optional[str], Optional[Record]]:
+    sysno = find_skc_sysno(cnb, isn, local_base)
+    if sysno is None:
+        return None, None
+
+    return sysno, get_marc21(sysno, local_base)
