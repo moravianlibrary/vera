@@ -450,8 +450,9 @@ const CatalogsFunctionality: React.FC<DocumentDetailsProps> = ({
             .catch((error) => {
                 if (error.response.status === 404) {
                     showToast("warn", t("catalog.record.skc-not-found"), "");
+                } else {
+                    console.error(error);
                 }
-                console.error(error);
             });
     };
 
@@ -464,8 +465,9 @@ const CatalogsFunctionality: React.FC<DocumentDetailsProps> = ({
             .catch((error) => {
                 if (error.response.status === 404) {
                     showToast("warn", t("catalog.record.cnb-not-found"), "");
+                } else {
+                    console.error(error);
                 }
-                console.error(error);
             });
     };
 
