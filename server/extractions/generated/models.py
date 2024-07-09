@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Float, Integer, String, TIMESTAMP
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy import Column, Float, Integer, String, TIMESTAMP, JSON
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -11,11 +10,11 @@ class GeneratedExtraction(Base):
     __tablename__ = "generated_extractions"
 
     id = Column(Integer, primary_key=True, index=True)
-    document_ids = Column(ARRAY(Integer))
+    document_ids = Column(JSON(Integer))
     selected_pages = Column(Integer)
     target_pages = Column(Integer)
-    include_categories = Column(ARRAY(Integer))
-    location_ids = Column(ARRAY(Integer))
+    include_categories = Column(JSON(Integer))
+    location_ids = Column(JSON(Integer))
     target_pages_threshold = Column(Float)
     whole_categories_threshold = Column(Float)
     generated_by = Column(String, index=True)

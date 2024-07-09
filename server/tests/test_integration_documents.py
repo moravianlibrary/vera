@@ -6,10 +6,10 @@ from helper_funcs import (
     mock_db,
 )
 
-from schemas.types.document_create_result import DocumentCreateResult
 from security.types import ActionType
 from models.documents import Document
-from catalogs.enums import DigitizationState
+from services.external.digitization_registry.types import DigitizationState
+from schemas.types.documents_types import AddDocumentResponseStatus
 
 
 class TestDocumentsIntegration(TestIntegration):
@@ -42,7 +42,7 @@ class TestDocumentsIntegration(TestIntegration):
         self.assertEqual(response_create.status_code, 200)
         self.assertEqual(
             response_create.json()["create_result"],
-            DocumentCreateResult.Success.value,
+            AddDocumentResponseStatus.Success.value,
         )
 
         document = response_create.json()["document"]
@@ -88,7 +88,7 @@ class TestDocumentsIntegration(TestIntegration):
         self.assertEqual(response_create.status_code, 200)
         self.assertEqual(
             response_create.json()["create_result"],
-            DocumentCreateResult.Success.value,
+            AddDocumentResponseStatus.Success.value,
         )
 
         document = response_create.json()["document"]
@@ -215,7 +215,7 @@ class TestDocumentsIntegration(TestIntegration):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.json()["create_result"],
-            DocumentCreateResult.Success.value,
+            AddDocumentResponseStatus.Success.value,
         )
         document = response.json()["document"]
         self.assertEqual("2610417932", document["barcode"])
@@ -254,7 +254,7 @@ class TestDocumentsIntegration(TestIntegration):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.json()["create_result"],
-            DocumentCreateResult.MultipleIssues.value,
+            AddDocumentResponseStatus.MultipleIssues.value,
         )
 
         catalog_document = response.json()["catalog_document"]

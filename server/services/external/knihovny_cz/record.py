@@ -3,7 +3,7 @@ from io import BytesIO
 from typing import Dict, List, Optional
 
 
-class KnihovnyCzDocument:
+class KnihovnyCzRecord:
     def __init__(self, sysno, data):
         self._sysno: str = sysno
         self.data: Dict = data

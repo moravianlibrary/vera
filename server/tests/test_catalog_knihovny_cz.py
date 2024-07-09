@@ -1,7 +1,7 @@
 import unittest
 from tests.helper_funcs import mockClsEnv
-from catalogs.knihovny_cz.knihovny_cz_client import KnihovnyCzClient
-from catalogs.knihovny_cz.knihovny_cz_types import KnihovnyCzField
+from services.external.knihovny_cz.client import KnihovnyCzClient
+from services.external.knihovny_cz.types import KnihovnyCzField
 
 
 class TestKnihovnyCz(unittest.TestCase):

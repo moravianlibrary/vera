@@ -1,5 +1,5 @@
 from typing import Dict
-from catalogs.enums import DigitizationState
+from .types import DigitizationState, UnknownDigitizationStateException
 
 
 class DigitizationRegistryRecord:
@@ -36,9 +36,7 @@ class DigitizationRegistryRecord:
             return DigitizationState.InProgress
         elif state == "plánováno":
             return DigitizationState.Planned
-        elif state == "revize":
-            return DigitizationState.Revision
-        raise Exception(f"Unknown digitization state: {state}")
+        raise UnknownDigitizationStateException(state)
 
     def __str__(self):
         properties = [

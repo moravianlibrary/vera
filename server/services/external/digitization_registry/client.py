@@ -1,9 +1,7 @@
 import requests
 from typing import Generator, List, Optional
 
-from catalogs.digitization_registry.registry_record import (
-    DigitizationRegistryRecord,
-)
+from .record import DigitizationRegistryRecord
 
 
 PAGINATE_PAGE_SIZE = 10
@@ -25,10 +23,7 @@ class DigitizationRegistryClient:
                 )
             )
 
-            if response.status_code != 200:
-                raise Exception(
-                    f"Request failed with status code {response.status_code}"
-                )
+            response.raise_for_status()
 
             response_data = response.json()["response"]
             num_found = response_data["numFound"]
@@ -104,9 +99,3 @@ class DigitizationRegistryClient:
             )
 
         return None
-
-
-client = DigitizationRegistryClient()
-
-GetDigitizationRegistryRecord = client.get_record
-GetDigitizationRegistryRecordById = client.get_record_by_id

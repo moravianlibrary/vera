@@ -1,8 +1,7 @@
-from urllib.parse import quote
-
-from pymarc import Field, Record
-from catalogs.enums import IssuanceType
 from typing import List, Optional
+from urllib.parse import quote
+from pymarc import Field, Record
+from .types import IssuanceType
 
 
 DEFAULT_DOCUMENT_LANGUAGE = "cze"
@@ -26,7 +25,7 @@ class AlephIssue:
         return values[0] if values else None
 
     @property
-    def type(self) -> IssuanceType:
+    def issuance_type(self) -> IssuanceType:
         if self.field.get_subfields("i"):
             return IssuanceType.Bundle
         if self.field.get_subfields("y"):
@@ -49,7 +48,7 @@ class AlephIssue:
     def volume(self) -> Optional[str]:
         return (
             self.get_code_value("d")
-            if self.type == IssuanceType.Unit
+            if self.issuance_type == IssuanceType.Unit
             else self.get_code_value("v")
         )
 
@@ -64,7 +63,7 @@ class AlephIssue:
 
     def __str__(self):
         properties = [
-            f"type: {self.type}",
+            f"issuance_type: {self.issuance_type}",
             f"barcode: {self.barcode}",
             f"signature: {self.signature}",
             f"year: {self.year}",

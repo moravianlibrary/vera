@@ -1,5 +1,4 @@
 from sqlalchemy import (
-    ARRAY,
     Column,
     Enum,
     ForeignKey,
@@ -17,6 +16,9 @@ class User(Base):
     __tablename__ = "users"
 
     username = Column(String, primary_key=True, index=True)
+    department_id = Column(Integer, ForeignKey("departments.id"))
+
+    department = relationship("Department", back_populates="users")
 
 
 class Role(Base):
@@ -45,7 +47,8 @@ class Department(Base):
     id = Column(Integer, primary_key=True, index=True)
     abbreviation = Column(String, unique=True)
     name = Column(String, unique=True)
-    users = Column(ARRAY(String), default=[])
+
+    users = relationship("User", back_populates="department")
 
     @classmethod
     def create_from_schema(

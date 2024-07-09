@@ -1,6 +1,6 @@
 import re
 from typing import Optional
-from catalogs.enums import MaterialType
+from .types import MaterialType
 
 MATERIAL_TYPE_MAPPING = {
     "BK": MaterialType.Book,

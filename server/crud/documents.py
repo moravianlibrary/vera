@@ -5,48 +5,48 @@ from services.database import create
 import models.documents as models
 import schemas.documents as schemas
 from services import exceptions
-from catalogs.aleph_catalog.aleph_record import AlephRecord
-from catalogs.aleph_catalog.aleph_issue import AlephIssue
-from catalogs.digitization_registry.digitization_registry_record import (
-    DigitizationRegistryRecord,
-)
-from catalogs.parsers import parse_page_count
+from schemas.catalog_records import CatalogIssue
+from services.external.aleph.record import AlephRecord
 
 
 def create_document(
     session: Session,
     main_aleph_record: AlephRecord,
-    issue: AlephIssue,
+    catalog_issue: CatalogIssue,
     added_by: str,
     category_id: int,
-    digitization_registry_record: DigitizationRegistryRecord,
     pages_count_manual: Optional[int] = None,
     extraction_priority: Optional[int] = None,
 ) -> schemas.Document:
     if document_exists(
-        session, main_aleph_record.sysno, issue.barcode, issue.volume
+        session,
+        main_aleph_record.sysno,
+        catalog_issue.barcode,
+        catalog_issue.volume,
     ):
         raise exceptions.UniqueDocumentViolationException(
-            main_aleph_record.sysno, issue.barcode, issue.volume
+            main_aleph_record.sysno,
+            catalog_issue.barcode,
+            catalog_issue.volume,
         )
 
     return create(
         session,
         models.Document(
             sysno=main_aleph_record.sysno,
-            barcode=issue.barcode,
-            volume=issue.volume,
-            volume_year=issue.volume,
-            bundle=issue.bundle,
+            barcode=catalog_issue.barcode,
+            volume=catalog_issue.volume,
+            volume_year=catalog_issue.volume,
+            bundle=catalog_issue.bundle,
             cnb=main_aleph_record.cnb,
-            signature=main_aleph_record.signature,
+            signature=catalog_issue.signature or main_aleph_record.signature,
             isxn=main_aleph_record.isxn,
             added_by=added_by,
             category_id=category_id,
-            digitization_registry_id=digitization_registry_record.id,
-            digitization_state=digitization_registry_record.digitization_state,
-            pages_count_catalog=parse_page_count(
-                main_aleph_record.extent, issue.volume
+            digitization_registry_id=catalog_issue.digitization_registry_id,
+            digitization_state=catalog_issue.digitization_state,
+            pages_count_catalog=main_aleph_record.parse_page_count(
+                catalog_issue.volume
             ),
             pages_count_manual=pages_count_manual,
             extraction_priority=extraction_priority,
@@ -71,10 +71,10 @@ def get_document_by_identifiers(
 
 
 def document_exists(
+    session: Session,
     sysno: str,
     barcode: Optional[str],
     volume: Optional[str],
-    session: Session,
 ) -> bool:
     return (
         get_document_by_identifiers(sysno, barcode, volume, session)

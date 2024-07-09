@@ -2,18 +2,14 @@ from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 
-from security.types import ActionType
 import crud.documents as crud
-import crud.catalog_documents as catalog_crud
 import schemas.documents as schemas
 import schemas.documents_query as query_schemas
 from catalogs.schemas import Identifier
 from security.schemas import CurrentUser
-from catalogs.routines import generate_catalog_document
 
 import providers.documents as documents_provider
 from routers.utils.permissions import (
-    CanCreateDocument,
     CanInsertDocument,
     CanManageDocument,
     CanReadDocument,
@@ -26,43 +22,35 @@ from routers.utils.dependencies import (
     DependsOnDbSession,
     DependsOnCallerUsername,
 )
+from procedures.add_document import add_document
 
 
 router = APIRouter(prefix="/documents")
 
 
 @router.post(
-    "/new",
-    dependencies=[CanCreateDocument],
-    response_model=schemas.DocumentCreateResponse,
-)
-def create_document(
-    document: schemas.DocumentCreate,
-    username: str = DependsOnCallerUsername,
-    session: Session = DependsOnDbSession,
-):
-    return catalog_crud.create_document(document, username, session)
-
-
-@router.post(
-    "/from_catalog",
+    "/add_document_from_catalog",
     dependencies=[CanInsertDocument],
-    response_model=schemas.DocumentCreateResponse,
+    response_model=schemas.AddDocumentResponse,
 )
-async def create_from_catalog(
-    document_identifier: Identifier,
-    category_id: Optional[int] = Query(None),
-    insert_digitized: bool = Query(False),
+async def add_document_from_catalog(
+    identifier: Identifier,
+    category_id: int = Query(),
+    pages_count_manual: Optional[int] = None,
+    extraction_priority: Optional[int] = None,
     username: str = DependsOnCallerUsername,
     session: Session = DependsOnDbSession,
 ):
-    return catalog_crud.create_catalog_document(
-        generate_catalog_document(document_identifier),
-        document_identifier,
-        category_id,
-        insert_digitized,
-        username,
+    catalog_document, status = add_document(
         session,
+        identifier,
+        username,
+        category_id,
+        pages_count_manual,
+        extraction_priority,
+    )
+    return schemas.AddDocumentResponse(
+        identifier=identifier, status=status, document=catalog_document
     )
 
 
@@ -72,17 +60,20 @@ async def create_from_catalog(
     response_model=schemas.Document,
 )
 def update_document(
-    document: schemas.DocumentCreate,
     document_id: int = Path(...),
+    category_id: Optional[int] = Query(None),
+    pages_count_manual: Optional[int] = Query(None),
+    extraction_priority: Optional[int] = Query(None),
     user: CurrentUser = DependsOnCurrentUser,
     session: Session = DependsOnDbSession,
 ):
     OwnershipValidator.EnforceDocumentEdit(user, document_id, session)
-    return crud.update_document(
-        document_id,
-        document,
-        ActionType.WriteDatatable in user.actions,
+    return crud.update_document_properties(
         session,
+        document_id,
+        category_id,
+        pages_count_manual,
+        extraction_priority,
     )
 
 

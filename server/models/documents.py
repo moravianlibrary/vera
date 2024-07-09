@@ -15,7 +15,8 @@ from sqlalchemy import (
 )
 
 from services.database import Base
-from catalogs.enums import DigitizationState
+from services.external.aleph.types import IssuanceType
+from services.external.digitization_registry.types import DigitizationState
 
 
 class Document(Base):
@@ -28,11 +29,12 @@ class Document(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    sysno = Column(String, index=True, nullable=False)
+    sysno = Column(String, ForeignKey("catalog_records.sysno"), index=True)
     barcode = Column(String)
     volume = Column(String)
     volume_year = Column(String)
     bundle = Column(String)
+    issuance_type = Column(Enum(IssuanceType))
 
     cnb = Column(String)
     signature = Column(String)
@@ -88,6 +90,10 @@ class Document(Base):
         back_populates="document",
         foreign_keys="TaskDocument.document_id",
     )
+
+    @hybrid_property
+    def title(self) -> str:
+        return self.catalog_record.title if self.catalog_record else ""
 
     @hybrid_property
     def pages_count(self) -> int:

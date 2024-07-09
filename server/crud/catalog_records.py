@@ -1,9 +1,13 @@
-from catalogs.aleph_catalog.aleph_record import AlephRecord
-from models.catalog_records import CatalogRecord
 from pymarc import Record
 from datetime import datetime
-from config import VeraConfig
 from typing import Optional
+from config import VeraConfig
+from services.external.aleph.record import AlephRecord
+from services.external.aleph.issue import AlephIssue
+from models.catalog_records import CatalogRecord, CatalogRecordIdentifier
+from schemas.catalog_records import Identifier
+from schemas.types.catalog_types import IdentifierType
+from sqlalchemy import and_
 
 
 def create_catalog_record(
@@ -26,7 +30,53 @@ def create_catalog_record(
     )
     session.add(new_record)
     session.commit()
+
+    save_catalog_record_identifiers(session, aleph_record)
+
     return new_record
+
+
+def save_catalog_record_identifiers(session, aleph_record: AlephRecord):
+    session.query(CatalogRecordIdentifier).filter_by(
+        sysno=aleph_record.sysno
+    ).delete()
+
+    if aleph_record.cnb:
+        session.add(
+            CatalogRecordIdentifier(
+                catalog_record_sysno=aleph_record.sysno,
+                identifier=IdentifierType.Cnb,
+                value=aleph_record.cnb,
+            )
+        )
+    if aleph_record.isxn:
+        session.add(
+            CatalogRecordIdentifier(
+                catalog_record_sysno=aleph_record.sysno,
+                identifier=IdentifierType.Isxn,
+                value=aleph_record.isxn,
+            )
+        )
+    if aleph_record.signature:
+        session.add(
+            CatalogRecordIdentifier(
+                catalog_record_sysno=aleph_record.sysno,
+                identifier=IdentifierType.Signature,
+                value=aleph_record.signature,
+            )
+        )
+
+    for issue in AlephIssue.from_record(aleph_record):
+        if issue.barcode:
+            session.add(
+                CatalogRecordIdentifier(
+                    catalog_record_sysno=aleph_record.sysno,
+                    identifier=IdentifierType.Barcode,
+                    value=issue.barcode,
+                )
+            )
+
+    session.commit()
 
 
 def find_catalog_record(session, sysno) -> Optional[CatalogRecord]:
@@ -58,6 +108,9 @@ def update_catalog_record(
     record.cnb_confidence = cnb_confidence
     record.last_updated = datetime.now(VeraConfig.TimeZone)
     session.commit()
+
+    save_catalog_record_identifiers(session, aleph_record)
+
     return record
 
 
@@ -66,6 +119,25 @@ def delete_catalog_record(session, sysno):
     session.delete(record)
     session.commit()
     return record
+
+
+def find_catalog_record_by_identifier(
+    session, identifier: Identifier
+) -> Optional[CatalogRecord]:
+    if identifier.identifier_type == IdentifierType.Sysno:
+        return find_catalog_record(session, identifier.value)
+    return (
+        session.query(CatalogRecord)
+        .join(CatalogRecordIdentifier)
+        .filter(
+            and_(
+                CatalogRecordIdentifier.identifier
+                == identifier.identifier_type,
+                CatalogRecordIdentifier.value == identifier.value,
+            )
+        )
+        .first()
+    )
 
 
 def get_main_aleph_record_by_sysno(session, sysno: str) -> AlephRecord:

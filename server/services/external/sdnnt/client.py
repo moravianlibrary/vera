@@ -10,7 +10,7 @@ SDNNT_LIBRARY = "mzk"
 LIST_DNNTO_ENDPOINT = "/lists/added/dnnto"
 
 
-class SdnntApi:
+class SdnntClient:
     def __init__(self):
         self.session = requests.Session()
 
@@ -47,7 +47,7 @@ class SdnntApi:
 
 
 if __name__ == "__main__":
-    sdnnt_api = SdnntApi()
+    sdnnt_api = SdnntClient()
     for document in sdnnt_api.list_added_dnnto(
         digital_library=None,
         format="BK",

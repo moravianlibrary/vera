@@ -5,6 +5,12 @@ from sqlalchemy import MetaData
 
 from services.database import Base
 
+from models.catalog_records import (  # noqa: F401
+    CatalogRecord,
+    CatalogRecordIdentifier,
+)  # noqa: F401
+from models.documents import Document  # noqa: F401
+
 from security.models import Department, User, Role  # noqa: F401
 from categories.categories.models import (  # noqa: F401
     Category,
@@ -12,7 +18,6 @@ from categories.categories.models import (  # noqa: F401
     Distribution,
 )  # noqa: F401
 from categories.intentions.models import Intention  # noqa: F401
-from models.documents import Document  # noqa: F401
 from documents.comments.models import Comment  # noqa: F401
 from extractions.generated.models import GeneratedExtraction  # noqa: F401
 from extractions.digitization.models import (  # noqa: F401
@@ -26,9 +31,10 @@ from tasks.models import Task, TaskDocument  # noqa: F401
 # logging.basicConfig()
 # logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
-test_engine = create_engine(
-    "postgresql://veraAdmin:password@localhost:5433/vera-test",
-)
+# test_engine = create_engine(
+#     "postgresql://veraAdmin:password@localhost:5433/vera-test",
+# )
+test_engine = create_engine("sqlite:///:memory:")
 TestSessionLocal = sessionmaker(
     autocommit=False, autoflush=False, bind=test_engine
 )

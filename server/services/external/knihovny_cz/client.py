@@ -1,7 +1,7 @@
 import requests
 from typing import List, Optional
-from catalogs.knihovny_cz.knihovny_cz_document import KnihovnyCzDocument
-from catalogs.knihovny_cz.knihovny_cz_types import KnihovnyCzField
+from .record import KnihovnyCzRecord
+from .types import KnihovnyCzField
 
 
 KNIHOVNY_CZ_URL = "https://www.knihovny.cz/api/v1"
@@ -23,7 +23,7 @@ class KnihovnyCzClient:
 
     def get_knihovny_cz_document(
         self, sysno: str, fields: List[KnihovnyCzField] = []
-    ) -> Optional[KnihovnyCzDocument]:
+    ) -> Optional[KnihovnyCzRecord]:
         url = GET_RECORD_ENDPOINT.format(
             KNIHOVNY_CZ_URL=KNIHOVNY_CZ_URL, SYSNO=sysno
         )
@@ -40,4 +40,4 @@ class KnihovnyCzClient:
             raise ValueError(f"Record with sysno {sysno} found more than once")
 
         record = records[0]
-        return KnihovnyCzDocument(sysno, record)
+        return KnihovnyCzRecord(sysno, record)
