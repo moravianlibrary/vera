@@ -99,7 +99,7 @@ class UniqueViolationException(HTTPException):
 
 
 class UniqueDocumentViolationException(UniqueViolationException):
-    def __init__(self, sysno, volume, barcode):
+    def __init__(self, sysno, barcode, volume):
         super().__init__(
             detail=f"Document with sysno {sysno}, volume {volume} "
             f"and barcode {barcode} already exists"

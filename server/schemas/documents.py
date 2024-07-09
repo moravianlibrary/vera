@@ -9,31 +9,84 @@ from catalogs.enums import (
 )
 from catalogs.schemas import (
     CatalogDocument,
-    CatalogIssue,
     Frequency,
     Identifier,
 )
 
 
-class DocumentBase(BaseModel):
-    sysno: Optional[str] = None
-    volume: Optional[str] = None
-    barcode: Optional[str] = None
+class CatalogIssue(BaseModel):
+    title: Optional[str] = None
 
-    cnb: Optional[str] = None
-    isbn_issn: Optional[str] = None
+    issuance_type: IssuanceType
+    barcode: Optional[str]
+    volume: Optional[str] = None
+    volume_year: Optional[str] = None
+    bundle: Optional[str] = None
+
     signature: Optional[str] = None
+    digitization_registry_id: Optional[int] = None
+    digitization_state: DigitizationState = DigitizationState.NotDigitized
+
+    already_exists: bool = False
+    can_digitize: bool = True
+
+
+class Document(BaseModel):
+    id: int
+
+    sysno: str
+    barcode: Optional[str]
+    volume: Optional[str]
+    volume_year: Optional[str]
+    bundle: Optional[str]
+
+    cnb: Optional[str]
+    signature: Optional[str]
+    isxn: Optional[str]
+
+    added_by: str
+    added_at: datetime
+    category_id: int
+    category_name: str
+
+    digitization_registry_id: Optional[int]
+    digitization_state: DigitizationState
+
+    pages_count: Optional[int]
+    pages_count_catalog: Optional[int]
+    pages_count_manual: Optional[int]
+    pages_count_predicted: Optional[int]
+
+    dedicated_scanner: Optional[str]
+    extraction_priority: int
+
+    is_extractable: bool
+    extraction_id: Optional[int]
+    extractor: Optional[str]
+    extracted_at: Optional[datetime]
+
+    comments_count: int = 0
+
+    class Config:
+        arbitrary_types_allowed = True
+        from_attributes = True
+
+
+class AddDocumentResponse(BaseModel):
+    identifier: Identifier
+    create_result: DocumentCreateResult
+    document: Optional[Document] = None
+
+
+class DocumentBase(BaseModel):
 
     material_type: Optional[MaterialType] = None
     issuance_type: Optional[IssuanceType] = None
     title: Optional[str] = None
-    digitization_state: Optional[DigitizationState] = None
 
     year: Optional[str] = None
     bundle: Optional[str] = None
 
-    pages_count_catalog: Optional[int] = None
-    pages_count_manual: Optional[int] = None
     size: Optional[str] = None
     locationUri: Optional[str] = None
 
@@ -49,7 +102,6 @@ class DocumentBase(BaseModel):
 
 
 class DocumentCreate(DocumentBase):
-    category_id: Optional[int] = None
 
     @classmethod
     def from_catalog_document(
@@ -118,39 +170,3 @@ class DocumentCreate(DocumentBase):
             frequencies=catalog_document.frequencies,
             category_id=category_id,
         )
-
-
-class Document(DocumentCreate):
-    id: int
-
-    category_name: Optional[str] = None
-
-    pages_count: Optional[int] = None
-    pages_count_predicted: Optional[int]
-    dedicated_scanner: Optional[str]
-
-    creator: str
-    created_at: datetime
-
-    is_extractable: bool
-    extraction_id: Optional[int] = None
-    extractor: Optional[str] = None
-    extracted_at: Optional[datetime] = None
-
-    comments_count: int = 0
-
-    class Config:
-        arbitrary_types_allowed = True
-        from_attributes = True
-
-
-class DocumentCreateResponse(BaseModel):
-    identifier: Optional[Identifier] = None
-    create_result: DocumentCreateResult
-    document: Optional[Document] = None
-    catalog_document: Optional[CatalogDocument] = None
-
-
-class DocumentsResponse(BaseModel):
-    documents: List[Document]
-    num_found: int

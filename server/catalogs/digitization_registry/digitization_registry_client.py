@@ -1,8 +1,9 @@
 import requests
 from typing import Generator, List, Optional
 
-from catalogs.enums import DigitizationState
-from catalogs.digitization_registry.registry_document import RegistryDocument
+from catalogs.digitization_registry.registry_record import (
+    DigitizationRegistryRecord,
+)
 
 
 PAGINATE_PAGE_SIZE = 10
@@ -13,9 +14,9 @@ REGISTER_SEARCH_ENDPOINT = (
 
 
 class DigitizationRegistryClient:
-    def get_query_documents(
+    def get_query_records(
         self, query: str
-    ) -> Generator[RegistryDocument, None, None]:
+    ) -> Generator[DigitizationRegistryRecord, None, None]:
         start = 0
         while True:
             response = requests.get(
@@ -34,37 +35,49 @@ class DigitizationRegistryClient:
             documents = response_data["docs"]
 
             for document in documents:
-                yield RegistryDocument(document)
+                yield DigitizationRegistryRecord(document)
 
             start += PAGINATE_PAGE_SIZE
             if start >= num_found:
                 break
 
-    def get_state_for_volume(
+    def get_record_by_id(
+        self, record_id: str
+    ) -> Optional[DigitizationRegistryRecord]:
+        documents: List[DigitizationRegistryRecord] = list(
+            self.get_query_records(f'id:"{record_id}"')
+        )
+        if len(documents) != 1:
+            return None
+        return documents[0]
+
+    def get_record_by_barcode(
+        self, barcode: str
+    ) -> Optional[DigitizationRegistryRecord]:
+        documents: List[DigitizationRegistryRecord] = list(
+            self.get_query_records(f'carkod:"{barcode}"')
+        )
+        if len(documents) != 1:
+            return None
+        return documents[0]
+
+    def get_record_by_volume(
         self,
         query: str,
         year: Optional[str],
         volume: Optional[str],
         bundle: Optional[str],
-    ) -> DigitizationState:
-        for document in self.get_query_documents(query):
+    ) -> Optional[DigitizationRegistryRecord]:
+        for document in self.get_query_records(query):
             if (
                 (year is None or year == document.year)
                 and (volume is None or volume == document.volume)
                 and (bundle is None or bundle == document.bundle)
             ):
-                return document.digitization_state
-        return DigitizationState.NotDigitized
+                return document
+        return None
 
-    def get_state_for_document(self, barcode: str) -> DigitizationState:
-        documents: List[RegistryDocument] = list(
-            self.get_query_documents(f'carkod:"{barcode}"')
-        )
-        if len(documents) != 1:
-            return DigitizationState.NotDigitized
-        return documents[0].digitization_state
-
-    def get_digitization_state(
+    def get_record(
         self,
         barcode: Optional[str] = None,
         cnb: Optional[str] = None,
@@ -72,28 +85,28 @@ class DigitizationRegistryClient:
         year: Optional[str] = None,
         volume: Optional[str] = None,
         bundle: Optional[str] = None,
-    ) -> DigitizationState:
-        state = DigitizationState.NotDigitized
+    ) -> Optional[DigitizationRegistryRecord]:
         if barcode:
-            state = self.get_state_for_document(barcode)
-            if state != DigitizationState.NotDigitized:
-                return state
+            document = self.get_record_by_barcode(barcode)
+            if document:
+                return document
 
         if cnb:
-            state = self.get_state_for_volume(
+            document = self.get_record_by_volume(
                 (f'ccnb:"{cnb}"'), year, volume, bundle
             )
-            if state != DigitizationState.NotDigitized:
-                return state
+            if document:
+                return document
 
         if isxn:
-            return self.get_state_for_volume(
+            return self.get_record_by_volume(
                 (f'isxn:"{isxn}"'), year, volume, bundle
             )
 
-        return DigitizationState.NotDigitized
+        return None
 
 
-digitization_registry = DigitizationRegistryClient()
+client = DigitizationRegistryClient()
 
-DigitizationRegistry = digitization_registry.get_digitization_state
+GetDigitizationRegistryRecord = client.get_record
+GetDigitizationRegistryRecordById = client.get_record_by_id

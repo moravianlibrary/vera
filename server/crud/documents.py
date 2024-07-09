@@ -1,174 +1,142 @@
-from sqlalchemy.orm import Session, Query, joinedload
-from sqlalchemy import desc
-from typing import List, Optional
+from sqlalchemy.orm import Session, joinedload
+from typing import Optional
 
 from services.database import create
 import models.documents as models
 import schemas.documents as schemas
-import schemas.documents_query as query_schemas
-from providers.documents_search import filter_documents_query_base
 from services import exceptions
-
-
-EDITABLE_FIELDS = [
-    "pages_count_manual",
-]
+from catalogs.aleph_catalog.aleph_record import AlephRecord
+from catalogs.aleph_catalog.aleph_issue import AlephIssue
+from catalogs.digitization_registry.digitization_registry_record import (
+    DigitizationRegistryRecord,
+)
+from catalogs.parsers import parse_page_count
 
 
 def create_document(
-    document: schemas.DocumentCreate, creator: str, db: Session
+    session: Session,
+    main_aleph_record: AlephRecord,
+    issue: AlephIssue,
+    added_by: str,
+    category_id: int,
+    digitization_registry_record: DigitizationRegistryRecord,
+    pages_count_manual: Optional[int] = None,
+    extraction_priority: Optional[int] = None,
 ) -> schemas.Document:
-    if document_exists(document.sysno, document.volume, document.barcode, db):
+    if document_exists(
+        session, main_aleph_record.sysno, issue.barcode, issue.volume
+    ):
         raise exceptions.UniqueDocumentViolationException(
-            document.sysno, document.volume, document.barcode
+            main_aleph_record.sysno, issue.barcode, issue.volume
         )
 
     return create(
-        db,
+        session,
         models.Document(
-            sysno=document.sysno,
-            volume=document.volume,
-            barcode=document.barcode,
-            category_id=document.category_id,
-            cnb=document.cnb,
-            isbn_issn=document.isbn_issn,
-            signature=document.signature,
-            material_type=document.material_type,
-            issuance_type=document.issuance_type,
-            title=document.title,
-            digitization_state=document.digitization_state,
-            year=document.year,
-            bundle=document.bundle,
-            pages_count_catalog=document.pages_count_catalog,
-            pages_count_manual=document.pages_count_manual,
-            size=document.size,
-            locationUri=document.locationUri,
-            publisher=document.publisher,
-            publishing_place=document.publishing_place,
-            publishing_year=document.publishing_year,
-            languages=document.languages,
-            # frequencies=document.frequencies,
-            frequencies=(
-                [frequency.model_dump() for frequency in document.frequencies]
-                if document.frequencies
-                else []
+            sysno=main_aleph_record.sysno,
+            barcode=issue.barcode,
+            volume=issue.volume,
+            volume_year=issue.volume,
+            bundle=issue.bundle,
+            cnb=main_aleph_record.cnb,
+            signature=main_aleph_record.signature,
+            isxn=main_aleph_record.isxn,
+            added_by=added_by,
+            category_id=category_id,
+            digitization_registry_id=digitization_registry_record.id,
+            digitization_state=digitization_registry_record.digitization_state,
+            pages_count_catalog=parse_page_count(
+                main_aleph_record.extent, issue.volume
             ),
-            creator=creator,
+            pages_count_manual=pages_count_manual,
+            extraction_priority=extraction_priority,
         ),
     )
 
 
-def update_document(
-    document_id: int,
-    new_document: schemas.DocumentCreate,
-    can_edit_all_fields: bool,
-    db: Session,
-) -> schemas.Document:
-    existing_document = get_document(document_id, db)
-    if not existing_document:
-        raise exceptions.DocumentNotFoundException(document_id)
-
-    fields = (
-        new_document.model_dump(exclude_unset=True, exclude=["frequencies"])
-        if can_edit_all_fields
-        else EDITABLE_FIELDS
-    )
-    for field in fields:
-        setattr(existing_document, field, getattr(new_document, field))
-
-    db.commit()
-    db.refresh(existing_document)
-
-    return existing_document
-
-
-def delete_document(document_id: int, db: Session):
-    db_document = get_document(document_id, db)
-    if db_document is None:
-        raise exceptions.DocumentNotFoundException(id)
-    for task_document in db_document.task_documents:
-        # task_document.deleted = True
-        db.delete(task_document)
-    db.delete(db_document)
-    db.commit()
-    return db_document
-
-
-def get_document(document_id: int, db: Session):
-    document = (
-        db.query(models.Document)
-        .options(joinedload(models.Document.category))
-        .filter(models.Document.id == document_id)
-        .first()
-    )
-    if document is None:
-        raise exceptions.DocumentNotFoundException(id)
-    return document
-
-
 def get_document_by_identifiers(
     sysno: str,
-    volume: Optional[str],
     barcode: Optional[str],
-    db: Session,
+    volume: Optional[str],
+    session: Session,
 ):
-    query_base = db.query(models.Document).filter(
+    query_base = session.query(models.Document).filter(
         models.Document.sysno == sysno
     )
+    if barcode:
+        return query_base.filter(models.Document.barcode == barcode).first()
     if volume:
         query_base = query_base.filter(models.Document.volume == volume)
-    if barcode:
-        query_base = query_base.filter(models.Document.barcode == barcode)
     return query_base.first()
 
 
 def document_exists(
     sysno: str,
-    volume: Optional[str],
     barcode: Optional[str],
-    db: Session,
+    volume: Optional[str],
+    session: Session,
 ) -> bool:
-    return get_document_by_identifiers(sysno, volume, barcode, db) is not None
-
-
-def get_documents_query_base(
-    db: Session, query: Optional[query_schemas.DocumentsQuery] = None
-):
-    return filter_documents_query_base(db.query(models.Document), query, db)
-
-
-def get_documents_ids_query_base(
-    db: Session, query: Optional[query_schemas.DocumentsQuery] = None
-):
-    return filter_documents_query_base(db.query(models.Document.id), query)
-
-
-def get_documents(
-    query_base: Query, offset: int = 0, limit: int = 100
-) -> List[schemas.Document]:
     return (
-        query_base.order_by(desc(models.Document.created_at))
-        .offset(offset)
-        .limit(limit)
-        .all()
+        get_document_by_identifiers(sysno, barcode, volume, session)
+        is not None
     )
 
 
-def get_documents_num_found(query_base: Query):
-    return query_base.count()
+def get_document(session: Session, document_id: int) -> models.Document:
+    document = (
+        Session.query(models.Document)
+        .options(joinedload(models.Document.category))
+        .filter(models.Document.id == document_id)
+        .first()
+    )
+    if document is None:
+        raise exceptions.DocumentNotFoundException(document_id)
+    return document
 
 
-def update_documents(query_base: Query, field_name: str, value, db: Session):
-    for document in query_base.all():
-        db.query(models.Document).filter(
-            models.Document.id == document.id
-        ).update({field_name: value})
-    db.commit()
+def update_document_properties(
+    session: Session,
+    document_id: int,
+    category_id: Optional[int] = None,
+    pages_count_manual: Optional[int] = None,
+    extraction_priority: Optional[int] = None,
+) -> schemas.Document:
+    document = get_document(session, document_id)
+
+    if category_id is not None:
+        document.category_id = category_id
+    if pages_count_manual is not None:
+        document.pages_count_manual = pages_count_manual
+    if extraction_priority is not None:
+        document.extraction_priority = extraction_priority
+
+    session.commit()
+    session.refresh(document)
+
+    return document
 
 
-def delete_documents(query_base: Session, db: Session):
-    for document in query_base.all():
-        db.query(models.Document).filter(
-            models.Document.id == document.id
-        ).delete()
-    db.commit()
+def update_document_identifiers(
+    session: Session, document_id: int, main_aleph_record: AlephRecord
+):
+    document = get_document(session, document_id)
+
+    document.cnb = main_aleph_record.cnb
+    document.signature = main_aleph_record.signature
+    document.isxn = main_aleph_record.isxn
+
+    session.commit()
+    session.refresh(document)
+
+    return document
+
+
+def delete_document(session: Session, document_id: int):
+    document = get_document(session, document_id)
+
+    for task_document in document.task_documents:
+        session.delete(task_document)
+
+    session.delete(document)
+    session.commit()
+    return document

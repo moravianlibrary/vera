@@ -2,9 +2,14 @@ from typing import Dict
 from catalogs.enums import DigitizationState
 
 
-class RegistryDocument:
+class DigitizationRegistryRecord:
     def __init__(self, data):
+        print(data)
         self.data: Dict = data
+
+    @property
+    def id(self) -> str:
+        return self.data.get("id")
 
     @property
     def title(self) -> str:
@@ -37,6 +42,7 @@ class RegistryDocument:
 
     def __str__(self):
         properties = [
+            f"id: {self.id}",
             f"title: {self.title}",
             f"year: {self.year}",
             f"volume: {self.volume}",

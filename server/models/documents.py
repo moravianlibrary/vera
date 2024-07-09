@@ -1,43 +1,55 @@
+from datetime import datetime
+from typing import Optional
+from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import (
     CheckConstraint,
     Column,
     Enum,
     ForeignKey,
     Integer,
-    JSON,
     String,
     TIMESTAMP,
     UniqueConstraint,
     func,
 )
-from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.ext.hybrid import hybrid_property
-from typing import Optional
-from datetime import datetime
 
 from services.database import Base
-from catalogs.enums import DigitizationState, MaterialType, IssuanceType
+from catalogs.enums import DigitizationState
 
 
 class Document(Base):
     __tablename__ = "documents"
-    __table_args__ = (UniqueConstraint("sysno", "volume", "barcode"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "sysno", "barcode", "volume", "volume_year", "bundle"
+        ),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
+
     sysno = Column(String, index=True, nullable=False)
     barcode = Column(String)
     volume = Column(String)
+    volume_year = Column(String)
+    bundle = Column(String)
 
+    cnb = Column(String)
+    signature = Column(String)
+    isxn = Column(String)
+
+    added_at = Column(TIMESTAMP, server_default=func.now())
+    added_by = Column(String, index=True)
     category_id = Column(Integer, ForeignKey("categories.id"), index=True)
 
-    alternative_ids = Column(ARRAY(String))
-    cnb = Column(String)
+    digitization_registry_id = Column(Integer)
+    digitization_state = Column(Enum(DigitizationState))
 
     pages_count_catalog = Column(Integer)
     pages_count_predicted = Column(Integer)
     pages_count_manual = Column(Integer)
 
+    dedicated_scanner = Column(String)
     extraction_priority = Column(
         Integer,
         CheckConstraint(
@@ -50,32 +62,22 @@ class Document(Base):
         Integer, ForeignKey("digitization_extractions.id"), index=True
     )
 
-    isbn_issn = Column(String)
-    signature = Column(String)
+    # TODO: only indexed attributes
+    # material_type = Column(Enum(MaterialType))
+    # issuance_type = Column(Enum(IssuanceType))
+    # title = Column(String)
 
-    material_type = Column(Enum(MaterialType))
-    issuance_type = Column(Enum(IssuanceType))
-    title = Column(String)
-    digitization_state = Column(Enum(DigitizationState))
+    # size = Column(String)
+    # locationUri = Column(String)
 
-    year = Column(String)
-    bundle = Column(String)
+    # publisher = Column(String)
+    # publishing_place = Column(String)
+    # publishing_year = Column(String)
+    # languages = Column(ARRAY(String))
 
-    size = Column(String)
-    locationUri = Column(String)
+    # frequencies = Column(JSON)
 
-    publisher = Column(String)
-    publishing_place = Column(String)
-    publishing_year = Column(String)
-    languages = Column(ARRAY(String))
-
-    frequencies = Column(JSON)
-
-    dedicated_scanner = Column(String)
-
-    created_at = Column(TIMESTAMP, server_default=func.now())
-    creator = Column(String, index=True)
-
+    catalog_record = relationship("CatalogRecord", back_populates="documents")
     category = relationship("Category", back_populates="documents")
     extraction = relationship(
         "DigitizationExtraction", back_populates="documents"
