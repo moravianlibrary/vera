@@ -126,3 +126,11 @@ class CatalogDocument(BaseModel):
             cnb_sysno=catalog_record.cnb_sysno,
             cnb_confidence=catalog_record.cnb_confidence,
         )
+
+
+class Frequency(BaseModel):
+    frequency: str
+    date: Optional[str] = None
+
+    class Config:
+        arbitrary_types_allowed = True

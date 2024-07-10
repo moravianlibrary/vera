@@ -50,7 +50,7 @@ class AlephClient:
             print(f"An error occurred: {e}")
             return False
 
-    def get_catalog_record(
+    def get_record(
         self, sysno: str
     ) -> Tuple[Optional[AlephRecord], AlephResponseStatus]:
         response = None
@@ -108,7 +108,11 @@ class AlephClient:
                 if find.find(".//error") is not None:
                     return None, AlephResponseStatus.RecordNotFound
 
-                records_count = int(find.find(".//no_records").text)
+                no_records_tag = find.find(".//no_records")
+                if no_records_tag is None:
+                    return None, AlephResponseStatus.RecordNotFound
+
+                records_count = int(no_records_tag.text)
 
                 if records_count == 0:
                     return None, AlephResponseStatus.RecordNotFound
@@ -136,28 +140,34 @@ class AlephClient:
             except Exception as e:
                 print(f"An error occurred: {e}")
 
-    def get_record(
+    def find_record(
         self, field: AlephField, value: str
     ) -> Tuple[Optional[AlephRecord], AlephResponseStatus]:
         if field == AlephField.Sysno:
             if re.match(SYSNO_FORMAT_1, value):
-                sysno = self.find_sysno(AlephField.Sysno, value.zfill(9))
+                sysno, status = self.find_sysno(
+                    AlephField.Sysno, value.zfill(9)
+                )
             elif re.match(SYSNO_FORMAT_2, value):
                 sysno = re.sub(SYSNO_FORMAT_2, r"MZK\1-\2", value)
                 base = sysno.split("-")[0]
                 if base not in SYSNO_BASES:
                     return None, AlephResponseStatus.InvalidSysnoBase
+                status = AlephResponseStatus.Success
             else:
                 return None, AlephResponseStatus.InvalidSysno
         elif field == AlephField.ISXN:
             for isxn_field in ISXN_FIELDS:
-                sysno = self.find_sysno(isxn_field, value)
-                if sysno:
+                sysno, status = self.find_sysno(isxn_field, value)
+                if sysno is not None and status == AlephResponseStatus.Success:
                     break
         else:
-            sysno = self.find_sysno(field, value)
+            sysno, status = self.find_sysno(field, value)
+
+        if status != AlephResponseStatus.Success:
+            return None, status
 
         if sysno is None:
             return None, AlephResponseStatus.RecordNotFound
 
-        return self.get_catalog_record(sysno), AlephResponseStatus.Success
+        return self.get_record(sysno)

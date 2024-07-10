@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Dict, Optional
 
 import crud.documents as crud
 import schemas.documents as schemas
 import schemas.documents_query as query_schemas
 from catalogs.schemas import Identifier
-from security.schemas import CurrentUser
+from schemas.security import CurrentUser
+from schemas.types.action_type import ActionType
 
 import providers.documents as documents_provider
 from routers.utils.permissions import (
@@ -23,6 +24,7 @@ from routers.utils.dependencies import (
     DependsOnCallerUsername,
 )
 from procedures.add_document import add_document
+from services.documents_index import DocumentsIndex
 
 
 router = APIRouter(prefix="/documents")
@@ -108,18 +110,23 @@ def get_document(
 @router.post(
     "/query",
     dependencies=[CanReadDocuments],
-    response_model=schemas.DocumentsResponse,
 )
 def query_documents(
-    query: query_schemas.DocumentsQuery,
-    offset: int = Query(0, description="Pagination offset"),
-    limit: int = Query(100, description="Pagination size"),
+    query_params: Dict[str, any],
     user: CurrentUser = DependsOnCurrentUser,
     session: Session = DependsOnDbSession,
 ):
-    return documents_provider.query_documents(
-        user, session, query, offset, limit
-    )
+    index_handler = DocumentsIndex()
+
+    if user.has_action(ActionType.ReadDatatableAll):
+        return index_handler.search(query_params)
+
+    if user.has_action(ActionType.ReadDatatableDepartment):
+        return index_handler.search_for_categories(
+            query_params, user.department_categories_ids
+        )
+
+    return index_handler.search_for_user(user.username, query_params)
 
 
 @router.get(
@@ -128,14 +135,11 @@ def query_documents(
     response_model=schemas.DocumentsResponse,
 )
 def get_documents(
-    offset: int = Query(0, description="Pagination page offset"),
-    limit: int = Query(100, description="Pagination page size"),
+    query_params: Dict[str, any] = Query(),
     user: CurrentUser = DependsOnCurrentUser,
     session: Session = DependsOnDbSession,
 ):
-    return documents_provider.query_documents(
-        user, session, offset=offset, limit=limit
-    )
+    return query_documents(query_params, user, session)
 
 
 @router.post("/query/export", dependencies=[CanReadDocuments])

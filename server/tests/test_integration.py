@@ -6,6 +6,8 @@ from tests.helper_funcs import (
     cleanUpDependencyOverrides,
 )
 
+# from elasticmock import elasticmock
+
 
 class TestIntegration(unittest.TestCase):
     @classmethod
@@ -16,6 +18,7 @@ class TestIntegration(unittest.TestCase):
     def tearDownClass(cls):
         cls.patcher.stop()
 
+    # @elasticmock
     def setUp(self):
         self.client = createTestClient()
 

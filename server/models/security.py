@@ -7,8 +7,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from security.types import ActionType
-from security.schemas import DepartmentCreate, Department
+from schemas.types.action_type import ActionType
+from schemas.security import DepartmentCreate, Department
 from services.database import Base
 
 

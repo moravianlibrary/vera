@@ -3,6 +3,7 @@ apscheduler
 bs4
 cachetools
 celery
+elasticmock
 elasticsearch
 fastapi==0.103.2
 lxml

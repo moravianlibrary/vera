@@ -1,8 +1,8 @@
 from tests.test_crud import TestCrudOperations
 
 from security import crud
-from security.schemas import RoleCreate
-from security.types import ActionType
+from schemas.security import RoleCreate
+from schemas.types.action_type import ActionType
 
 
 class TestRolesCrud(TestCrudOperations):

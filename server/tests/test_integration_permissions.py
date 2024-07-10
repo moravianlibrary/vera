@@ -10,11 +10,11 @@ from tests.helper_funcs import (
 )
 
 from categories.categories.models import Category, CategoryDepartments
-from security.models import Department
+from models.security import Department
 from categories.categories.schemas import (
     CategoryCreate,
 )
-from security.types import ActionType
+from schemas.types.action_type import ActionType
 
 
 class TestPermissions(TestIntegration):

@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from typing import Any, List, Optional
 
-from security.schemas import CurrentUser
+from schemas.security import CurrentUser
 from schemas.documents import Document
 
 

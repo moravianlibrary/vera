@@ -41,16 +41,16 @@ class AlephIssue:
         return self.get_code_value("c")
 
     @property
-    def year(self) -> Optional[str]:
-        return self.get_code_value("y")
-
-    @property
     def volume(self) -> Optional[str]:
         return (
             self.get_code_value("d")
             if self.issuance_type == IssuanceType.Unit
             else self.get_code_value("v")
         )
+
+    @property
+    def volume_year(self) -> Optional[str]:
+        return self.get_code_value("y")
 
     @property
     def bundle(self) -> Optional[str]:
@@ -66,8 +66,8 @@ class AlephIssue:
             f"issuance_type: {self.issuance_type}",
             f"barcode: {self.barcode}",
             f"signature: {self.signature}",
-            f"year: {self.year}",
             f"volume: {self.volume}",
+            f"volume_year: {self.volume_year}",
             f"bundle: {self.bundle}",
             f"can_digitize: {self.can_digitize}",
         ]

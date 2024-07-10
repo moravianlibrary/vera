@@ -3,7 +3,8 @@ from sqlalchemy import update
 from typing import List, Optional
 
 from services.database import create
-from security import models, schemas
+import models.security as models
+import schemas.security as schemas
 
 
 # Create

@@ -10,7 +10,7 @@ from tests.documents_bank import (
     get_test_documents_with_locations,
 )
 
-from security.types import ActionType
+from schemas.types.action_type import ActionType
 
 
 class TestDocumentsSearch(TestIntegration):

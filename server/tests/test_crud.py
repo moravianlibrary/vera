@@ -10,8 +10,8 @@ from models.catalog_records import (  # noqa: F401
     CatalogRecordIdentifier,
 )  # noqa: F401
 from models.documents import Document  # noqa: F401
+from models.security import Department, User, Role  # noqa: F401
 
-from security.models import Department, User, Role  # noqa: F401
 from categories.categories.models import (  # noqa: F401
     Category,
     CategoryDepartments,

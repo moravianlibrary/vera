@@ -6,7 +6,7 @@ from helper_funcs import (
     mock_db,
 )
 
-from security.types import ActionType
+from schemas.types.action_type import ActionType
 from models.documents import Document
 from services.external.digitization_registry.types import DigitizationState
 from schemas.types.documents_types import AddDocumentResponseStatus

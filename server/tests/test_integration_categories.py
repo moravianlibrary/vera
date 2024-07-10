@@ -17,8 +17,8 @@ from extractions.generated.models import GeneratedExtraction
 from extractions.digitization.models import DigitizationExtraction
 from categories.intentions.models import Intention
 from models.documents import Document
-from security.models import Department
-from security.types import ActionType
+from models.security import Department
+from schemas.types.action_type import ActionType
 
 
 class TestCategoriesEndpoints(TestIntegration):

@@ -1,4 +1,4 @@
-from typing import Dict, Generator
+from typing import Dict, Generator, List
 from elasticsearch import Elasticsearch
 from schemas.catalog_records import CatalogRecord
 from schemas.documents import Document
@@ -24,7 +24,10 @@ INDEX_SCHEMA = {
             "added_at": {"type": "date"},
             "added_by": {"type": "keyword"},
             "category_id": {"type": "integer"},
-            "category_path": {"type": "keyword"},  # Hierarchical path
+            "category_path": {
+                "analyzer": "path_tree_analyzer",
+                "type": "text",
+            },
             # Alternate identifiers and derived properties
             "skc_sysno": {"type": "keyword"},
             "skc_confidence": {"type": "float"},
@@ -53,7 +56,23 @@ INDEX_SCHEMA = {
             "languages": {"type": "keyword"},
             "frequencies": {"type": "nested"},  # JSON type
         }
-    }
+    },
+    "settings": {
+        "analysis": {
+            "analyzer": {
+                "path_tree_analyzer": {
+                    "tokenizer": "path_tree_tokenizer",
+                    "type": "custom",
+                }
+            },
+            "tokenizer": {
+                "path_tree_tokenizer": {
+                    "delimiter": "/",
+                    "type": "path_hierarchy",
+                }
+            },
+        }
+    },
 }
 
 
@@ -108,10 +127,32 @@ class DocumentsIndex:
     def delete(self, document_id: int):
         self.es.delete(index=INDEX_NAME, id=document_id)
 
-    def search(self, query: str) -> Generator[Dict, None, None]:
+    def search(
+        self, query_params: Dict[str, any]
+    ) -> Generator[Dict, None, None]:
         res = self.es.search(
             index=INDEX_NAME,
-            body=query,
+            body=query_params,
         )
         for hit in res["hits"]["hits"]:
             yield Document(**hit["_source"])
+
+    def search_for_user(
+        self, username: str, query_params: Dict[str, any]
+    ) -> Generator[Dict, None, None]:
+        pass
+
+    def search_for_categories(
+        self, category_ids: List[int], query_params: Dict[str, any]
+    ) -> Generator[Dict, None, None]:
+        query_params["query"]["bool"]["must"].append(
+            {
+                "nested": {
+                    "path": "category_path",
+                    "query": {
+                        "terms": {"category_path.category_id": category_ids}
+                    },
+                }
+            }
+        )
+        return self.search(query_params)

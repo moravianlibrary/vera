@@ -8,7 +8,7 @@ from helper_funcs import (
 )
 from tests.documents_bank import get_test_documents_with_extraction
 
-from security.types import ActionType
+from schemas.types.action_type import ActionType
 
 
 class TestDigitizationListsIntegration(TestIntegration):

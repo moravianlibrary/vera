@@ -1,6 +1,6 @@
 from security.types import ActionType
 from security.schemas import CurrentUser
-from security.permissions import PermissionValidator
+from services.permissions import PermissionValidator
 
 # from security.permissions import OwnershipPermission
 # from routers.utils.ownership import owns_document, owns_department_document
