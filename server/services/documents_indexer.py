@@ -76,7 +76,7 @@ INDEX_SCHEMA = {
 }
 
 
-class DocumentsIndex:
+class DocumentsIndexer:
     def __init__(self, url):
         self.es = Elasticsearch("http://localhost:9200")
         if not self.es.indices.exists(index=INDEX_NAME):

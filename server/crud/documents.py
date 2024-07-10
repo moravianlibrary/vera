@@ -7,6 +7,7 @@ import schemas.documents as schemas
 from services import exceptions
 from schemas.catalog_records import CatalogIssue
 from services.external.aleph.record import AlephRecord
+from services.external.aleph.issue import AlephIssue
 
 
 def create_document(
@@ -38,9 +39,7 @@ def create_document(
             volume=catalog_issue.volume,
             volume_year=catalog_issue.volume,
             bundle=catalog_issue.bundle,
-            cnb=main_aleph_record.cnb,
-            signature=catalog_issue.signature or main_aleph_record.signature,
-            isxn=main_aleph_record.isxn,
+            document_signature=catalog_issue.signature,
             added_by=added_by,
             category_id=category_id,
             digitization_registry_id=catalog_issue.digitization_registry_id,
@@ -117,13 +116,21 @@ def update_document_properties(
 
 
 def update_document_identifiers(
-    session: Session, document_id: int, main_aleph_record: AlephRecord
-):
+    session: Session,
+    document_id: int,
+    main_aleph_record: AlephRecord,
+    aleph_issue: AlephIssue,
+) -> models.Document:
     document = get_document(session, document_id)
 
-    document.cnb = main_aleph_record.cnb
-    document.signature = main_aleph_record.signature
-    document.isxn = main_aleph_record.isxn
+    document.barcode = aleph_issue.barcode
+    document.volume = aleph_issue.volume
+    document.volume_year = aleph_issue.volume
+    document.bundle = aleph_issue.bundle
+    document.document_signature = aleph_issue.signature
+    document.pages_count_aleph = (
+        main_aleph_record.parse_page_count(aleph_issue.volume),
+    )
 
     session.commit()
     session.refresh(document)

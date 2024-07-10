@@ -2,7 +2,6 @@ from sqlalchemy.orm import relationship
 from sqlalchemy import (
     CheckConstraint,
     Column,
-    Enum,
     ForeignKey,
     Integer,
     LargeBinary,
@@ -11,8 +10,6 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
-
-from schemas.types.catalog_types import IdentifierType
 from services.database import Base
 
 
@@ -21,6 +18,10 @@ class CatalogRecord(Base):
 
     sysno = Column(String, primary_key=True)
     marc = Column(LargeBinary)
+
+    cnb = Column(String)
+    signature = Column(String)
+    isxn = Column(String)
 
     skc_sysno = Column(String)  # skc = authority catalog
     skc_marc = Column(LargeBinary)
@@ -38,28 +39,27 @@ class CatalogRecord(Base):
 
     last_updated = Column(TIMESTAMP, server_default=func.now())
 
-    identifiers = relationship(
+    record_barcodes = relationship(
         "CatalogRecordIdentifier", back_populates="catalog_record"
     )
     documents = relationship("Document", back_populates="catalog_record")
 
 
-class CatalogRecordIdentifier(Base):
-    __tablename__ = "catalog_record_identifiers"
+class CatalogRecordBarcode(Base):
+    __tablename__ = "catalog_record_barcode"
     __table_args__ = (
         UniqueConstraint(
             "sysno",
-            "identifier",
-            "value",
-            name="unique_catalog_record_identifier",
+            "barcode",
+            name="unique_catalog_record_barcode",
         ),
     )
 
-    id = Column(Integer, primary_key=True)
-    sysno = Column(String, ForeignKey("catalog_records.sysno"), index=True)
-    identifier = Column(Enum(IdentifierType))
-    value = Column(String)
+    sysno = Column(
+        String, ForeignKey("catalog_records.sysno"), primary_key=True
+    )
+    barcode = Column(String, primary_key=True)
 
     catalog_record = relationship(
-        "CatalogRecord", back_populates="identifiers"
+        "CatalogRecord", back_populates="record_barcodes"
     )

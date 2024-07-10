@@ -1,11 +1,7 @@
 from typing import Optional, Tuple
 from datetime import datetime, timedelta
 from config import VeraConfig
-from crud.catalog_records import (
-    find_catalog_record_by_identifier,
-    create_catalog_record,
-    update_catalog_record,
-)
+from crud.catalog_records import find_catalog_record_by_identifier
 from sqlalchemy.orm import Session
 from crud.documents import create_document
 from crud.documents import document_exists
@@ -13,17 +9,20 @@ from schemas.types.catalog_types import IdentifierType
 from services.external.digitization_registry.types import DigitizationState
 from schemas.catalog_records import Identifier
 from services.external.aleph.client import AlephClient
-from services.external.nkp_catalog.client import NkpAlephClient
 from services.external.digitization_registry.client import (
     DigitizationRegistryClient,
 )
 from schemas.catalog_records import CatalogDocument, CatalogIssue
 from schemas.types.documents_types import (
     AddDocumentResponseStatus,
-    IDENTIFIER_TO_ALEPH_FIELD,
+    ALEPH_TO_ADD_DOCUMENT_RESPONSE_STATUS,
     DIGITIZATION_STATE_TO_RESPONSE_STATUS,
+    IDENTIFIER_TO_ALEPH_FIELD,
 )
 from services import exceptions
+from services.documents_indexer import DocumentsIndexer
+from update_catalog_record import update_catalog_record
+from services.external.aleph.types import AlephResponseStatus
 
 
 def add_document(
@@ -39,44 +38,28 @@ def add_document(
     if not catalog_record or (
         datetime.now() - catalog_record.last_updated
     ) > timedelta(seconds=VeraConfig.CatalogRecordsValidFor):
-        main_aleph_record, aleph_response_status = AlephClient().get_record(
+        sysno, aleph_response_status = AlephClient().find_sysno(
             IDENTIFIER_TO_ALEPH_FIELD[identifier.identifier_type],
             identifier.value,
         )
 
-        if aleph_response_status != AddDocumentResponseStatus.Success:
-            return None, aleph_response_status
-
-        skc_aleph_record = NkpAlephClient().get_skc_record(
-            main_aleph_record.cnb, main_aleph_record.isxn
-        )
-        cnb_aleph_record = NkpAlephClient().get_cnb_record(
-            main_aleph_record.cnb, main_aleph_record.isxn
-        )
-
-        skc_confidence = 0
-        cnb_confidence = 0
-
-        if not catalog_record:
-            catalog_record = create_catalog_record(
-                session,
-                main_aleph_record,
-                skc_aleph_record,
-                skc_confidence,
-                cnb_aleph_record,
-                cnb_confidence,
+        if aleph_response_status != AlephResponseStatus.Success:
+            return (
+                None,
+                ALEPH_TO_ADD_DOCUMENT_RESPONSE_STATUS[aleph_response_status],
             )
-        else:
-            catalog_record = update_catalog_record(
-                session,
-                main_aleph_record,
-                skc_aleph_record,
-                skc_confidence,
-                cnb_aleph_record,
-                cnb_confidence,
+
+        catalog_record, aleph_response_status = update_catalog_record(
+            session, sysno
+        )
+
+        if aleph_response_status != AlephResponseStatus.Success:
+            return (
+                None,
+                ALEPH_TO_ADD_DOCUMENT_RESPONSE_STATUS[aleph_response_status],
             )
-    else:
-        main_aleph_record = catalog_record.aleph_record
+
+    main_aleph_record = catalog_record.aleph_record
 
     catalog_issues = [
         CatalogIssue.from_records(
@@ -170,5 +153,8 @@ def add_document(
             return None, AddDocumentResponseStatus.UnknownError
     except exceptions.UniqueDocumentViolationException:
         return None, AddDocumentResponseStatus.UniqueViolation
+
+    # TODO: handle exceptions
+    DocumentsIndexer().index(catalog_record, document)
 
     return catalog_document, AddDocumentResponseStatus.Success

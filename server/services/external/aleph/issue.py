@@ -20,6 +20,18 @@ class AlephIssue:
     def from_record(record: Record) -> List["AlephIssue"]:
         return [AlephIssue(field) for field in record.get_fields("996")]
 
+    @staticmethod
+    def specific_issue_from_record(
+        record: Record, barcode: Optional[str], volume: Optional[str]
+    ) -> Optional["AlephIssue"]:
+        for field in record.get_fields("996"):
+            issue = AlephIssue(field)
+            if barcode is None and volume == issue.volume:
+                return issue
+            if barcode == issue.barcode:
+                return issue
+        return None
+
     def get_code_value(self, code) -> Optional[str]:
         values = self.field.get_subfields(code)
         return values[0] if values else None

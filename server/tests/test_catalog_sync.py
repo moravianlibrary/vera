@@ -1,10 +1,9 @@
 from tests.test_integration import TestIntegration
 from helper_funcs import mock_db, get_test_db
 from crud.documents import create_document, get_document
-from schemas.documents import DocumentCreate
-from tasks.crud import create_query_task
 from tasks.types import TaskType
-from tasks.schemas import TaskCreate
+from crud.tasks import create_query_task
+from schemas.tasks import TaskCreate
 from tasks.tasks.sync_from_catalog import sync_from_catalog
 from tasks.tasks.sync_from_digitization_registry import (
     sync_from_digitization_registry,

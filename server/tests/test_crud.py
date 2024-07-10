@@ -7,7 +7,7 @@ from services.database import Base
 
 from models.catalog_records import (  # noqa: F401
     CatalogRecord,
-    CatalogRecordIdentifier,
+    CatalogRecordBarcode,
 )  # noqa: F401
 from models.documents import Document  # noqa: F401
 from models.security import Department, User, Role  # noqa: F401

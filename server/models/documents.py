@@ -35,10 +35,7 @@ class Document(Base):
     volume_year = Column(String)
     bundle = Column(String)
     issuance_type = Column(Enum(IssuanceType))
-
-    cnb = Column(String)
-    signature = Column(String)
-    isxn = Column(String)
+    document_signature = Column(String)
 
     added_at = Column(TIMESTAMP, server_default=func.now())
     added_by = Column(String, index=True)
@@ -64,21 +61,6 @@ class Document(Base):
         Integer, ForeignKey("digitization_extractions.id"), index=True
     )
 
-    # TODO: only indexed attributes
-    # material_type = Column(Enum(MaterialType))
-    # issuance_type = Column(Enum(IssuanceType))
-    # title = Column(String)
-
-    # size = Column(String)
-    # locationUri = Column(String)
-
-    # publisher = Column(String)
-    # publishing_place = Column(String)
-    # publishing_year = Column(String)
-    # languages = Column(ARRAY(String))
-
-    # frequencies = Column(JSON)
-
     catalog_record = relationship("CatalogRecord", back_populates="documents")
     category = relationship("Category", back_populates="documents")
     extraction = relationship(
@@ -93,7 +75,23 @@ class Document(Base):
 
     @hybrid_property
     def title(self) -> str:
-        return self.catalog_record.title if self.catalog_record else ""
+        return self.catalog_record.title if self.catalog_record.title else ""
+
+    @hybrid_property
+    def cnb(self) -> Optional[str]:
+        return self.catalog_record.cnb
+
+    @hybrid_property
+    def signature(self) -> Optional[str]:
+        return (
+            self.document_signature
+            if self.document_signature
+            else self.catalog_record.signature
+        )
+
+    @hybrid_property
+    def isxn(self) -> Optional[str]:
+        return self.catalog_record.isxn
 
     @hybrid_property
     def pages_count(self) -> int:
