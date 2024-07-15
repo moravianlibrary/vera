@@ -4,8 +4,8 @@ from typing import Callable, List, Union
 
 
 from security.api import get_current_user
-from security.schemas import CurrentUser
-from security.types import ActionType
+from schemas.security import CurrentUser
+from schemas.types.action_type import ActionType
 from categories.categories.models import Category
 
 

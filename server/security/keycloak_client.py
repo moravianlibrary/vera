@@ -6,7 +6,7 @@ from os import environ
 
 from security.crud import add_user, get_role_by_name, get_user_departments
 from services import exceptions
-from security.schemas import CurrentUser
+from schemas.security import CurrentUser
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 

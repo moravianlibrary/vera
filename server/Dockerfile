@@ -14,7 +14,6 @@ RUN pip install --no-cache-dir -r requirements_server.txt
 # Copy the entire project directory into the container
 COPY alembic.ini /app/alembic.ini
 COPY alembic /app/alembic
-COPY catalogs /app/catalogs
 COPY categories /app/categories
 COPY documents /app/documents
 COPY extractions /app/extractions
@@ -27,7 +26,7 @@ COPY vera.py /app
 
 COPY crud /app/crud
 COPY models /app/models
-COPY providers /app/providers
+COPY procedures /app/procedures
 COPY routers /app/routers
 COPY schemas /app/schemas
 

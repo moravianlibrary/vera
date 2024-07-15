@@ -1,5 +1,5 @@
-from security.types import ActionType
-from security.permissions import PermissionValidator
+from schemas.types.action_type import ActionType
+from routers.utils.permissions import PermissionValidator
 
 
 CanExtract = PermissionValidator(ActionType.Extract)

@@ -11,6 +11,7 @@ from models.catalog_records import (  # noqa: F401
 )  # noqa: F401
 from models.documents import Document  # noqa: F401
 from models.security import Department, User, Role  # noqa: F401
+from models.tasks import Task, TaskDocument  # noqa: F401
 
 from categories.categories.models import (  # noqa: F401
     Category,
@@ -24,7 +25,6 @@ from extractions.digitization.models import (  # noqa: F401
     DigitizationExtraction,
 )  # noqa: F401
 from extractions.locations.models import Location  # noqa: F401
-from tasks.models import Task, TaskDocument  # noqa: F401
 
 # import logging
 

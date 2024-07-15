@@ -17,11 +17,36 @@ from extractions.generated.models import GeneratedExtraction
 from extractions.digitization.models import DigitizationExtraction
 from categories.intentions.models import Intention
 from models.documents import Document
-from models.security import Department
+from models.catalog_records import CatalogRecord
+from models.security import Department, User
 from schemas.types.action_type import ActionType
 
 
 class TestCategoriesEndpoints(TestIntegration):
+    def get_testing_models(self):
+        return [
+            Category(
+                name="Test Root Category Name",
+                description="Test Root Category Description",
+                parent_id=None,
+                level=0,
+                assignable=False,
+                extract_whole=False,
+            ),
+            Department(
+                name="Test Department",
+                abbreviation="TST",
+            ),
+            User(
+                username="test_user",
+                department_id=1,
+            ),
+            CategoryDepartments(
+                category_id=1,
+                department_id=1,
+            ),
+        ]
+
     def test_create_root_category_permitted(self):
         # Arrange
         mock_db()
@@ -54,29 +79,7 @@ class TestCategoriesEndpoints(TestIntegration):
 
     def test_create_category_permitted_for_user_department(self):
         # Arrange
-        mock_db(
-            [
-                Category(
-                    # id=1,
-                    name="Test Root Category Name",
-                    description="Test Root Category Description",
-                    parent_id=None,
-                    level=0,
-                    assignable=False,
-                    extract_whole=False,
-                ),
-                Department(
-                    id=1,
-                    name="Test Department",
-                    abbreviation="TST",
-                    users=["test_user"],
-                ),
-                CategoryDepartments(
-                    category_id=1,
-                    department_id=1,
-                ),
-            ]
-        )
+        mock_db(self.get_testing_models())
         test_user = createTestUser(
             [ActionType.EditCategoriesDepartment], department_id=1
         )
@@ -114,29 +117,7 @@ class TestCategoriesEndpoints(TestIntegration):
 
     def test_create_category_permitted_for_different_department(self):
         # Arrange
-        mock_db(
-            [
-                Category(
-                    # id=1,
-                    name="Test Root Category Name",
-                    description="Test Root Category Description",
-                    parent_id=None,
-                    level=0,
-                    assignable=False,
-                    extract_whole=False,
-                ),
-                Department(
-                    id=1,
-                    name="Test Department",
-                    abbreviation="TST",
-                    users=["test_user"],
-                ),
-                CategoryDepartments(
-                    category_id=1,
-                    department_id=1,
-                ),
-            ]
-        )
+        mock_db(self.get_testing_models())
         test_user = createTestUser([ActionType.EditCategoriesDepartment])
         mockUser(test_user)
 
@@ -164,29 +145,7 @@ class TestCategoriesEndpoints(TestIntegration):
 
     def test_create_category_prohibited_but_with_user_department(self):
         # Arrange
-        mock_db(
-            [
-                Category(
-                    # id=1,
-                    name="Test Root Category Name",
-                    description="Test Root Category Description",
-                    parent_id=None,
-                    level=0,
-                    assignable=False,
-                    extract_whole=False,
-                ),
-                Department(
-                    id=1,
-                    name="Test Department",
-                    abbreviation="TST",
-                    users=["test_user"],
-                ),
-                CategoryDepartments(
-                    category_id=1,
-                    department_id=1,
-                ),
-            ]
-        )
+        mock_db(self.get_testing_models())
         test_user = createTestUser(
             get_all_actions_except(
                 [
@@ -224,7 +183,6 @@ class TestCategoriesEndpoints(TestIntegration):
         mock_db(
             [
                 Category(
-                    # id=1,
                     name="Test Root Category Name",
                     description="Test Root Category Description",
                     parent_id=None,
@@ -407,7 +365,10 @@ class TestCategoriesEndpoints(TestIntegration):
                 Department(
                     name="Test Department",
                     abbreviation="TST",
-                    users=["test_user"],
+                ),
+                User(
+                    username="test_user",
+                    department_id=1,
                 ),
                 CategoryDepartments(
                     category_id=2,
@@ -742,8 +703,8 @@ class TestCategoriesEndpoints(TestIntegration):
                 Department(
                     name="Test Department",
                     abbreviation="TST",
-                    users=["test_user"],
                 ),
+                User(username="test_user", department_id=1),
                 CategoryDepartments(
                     category_id=2,
                     department_id=1,
@@ -770,10 +731,9 @@ class TestCategoriesEndpoints(TestIntegration):
                 ),
                 DigitizationExtraction(
                     intention_id=1,
-                    document_ids=[1],
-                    extracted_pages=125,
                     extractor="test_user",
                 ),
+                CatalogRecord(sysno="test_sysno"),
                 Document(
                     sysno="test_sysno",
                     volume="test_volume",
@@ -821,6 +781,7 @@ class TestCategoriesEndpoints(TestIntegration):
         )
 
         # Assert
+        print(response_deletion.json)
         self.assertEqual(response_deletion.status_code, 200)
         self.assertListEqual(
             [d["category_id"] for d in response_deletion.json()], [2, 3, 4]

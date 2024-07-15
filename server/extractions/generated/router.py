@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 # from typing import List
 
-from security.schemas import CurrentUser
+from schemas.security import CurrentUser
 from routers.security import get_current_user
 
 # TODO: fix categories

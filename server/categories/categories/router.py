@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
-from security.permissions import (
+from routers.utils.permissions import (
     OwnershipValidator,
     PermissionValidator,
 )
-from security.types import ActionType
+from schemas.types.action_type import ActionType
 from services.database import get_db
 from security.api import get_current_user
 
@@ -22,7 +22,7 @@ from categories.categories.mappers import (
 )
 from extractions.generated.models import GeneratedExtraction
 from extractions.digitization.models import DigitizationExtraction
-from security.schemas import CurrentUser
+from schemas.security import CurrentUser
 
 
 router = APIRouter(prefix="/categories")
@@ -245,7 +245,7 @@ def get_department_categories(
     current_user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    OwnershipValidator.EnforceDepartmentRead(current_user, department_id, db)
+    OwnershipValidator.EnforceCategoryRead(current_user, department_id, db)
     return Category.get_department_categories(department_id, db)
 
 

@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 
-from security.permissions import PermissionValidator
-from security.types import ActionType
+from routers.utils.permissions import PermissionValidator
+from schemas.types.action_type import ActionType
 from services.database import get_db
 
 from categories.categories.models import Distribution

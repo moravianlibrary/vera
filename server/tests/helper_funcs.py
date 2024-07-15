@@ -125,7 +125,7 @@ def createTestUser(actions=[], department_id=10):
 
 
 def get_all_actions_except(actions):
-    from security.types import ActionType
+    from schemas.types.action_type import ActionType
 
     return [action for action in ActionType if action not in actions]
 

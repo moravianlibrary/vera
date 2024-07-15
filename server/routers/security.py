@@ -2,10 +2,12 @@ from fastapi import APIRouter, Path
 from sqlalchemy.orm import Session
 from typing import List
 
-from security import api, crud, schemas, permissions
+from security import api, crud
+import schemas.security as schemas
+from routers.utils import permissions
 from routers.utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
 from routers.utils.permissions import CanManageAccess
-from security.types import ActionType
+from schemas.types.action_type import ActionType
 
 
 router = APIRouter()

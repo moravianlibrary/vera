@@ -1,11 +1,11 @@
 # from fastapi import Depends
 # from sqlalchemy.orm import Session
 
-# from security.schemas import CurrentUser
+# from schemas.security import CurrentUser
 # from services.database import get_db
 # from categories import crud
-# from security.types import ActionType
-# from security.permissions import PermissionValidator, OwnershipPermission
+# from schemas.types.action_type import ActionType
+# from routers.utils.permissions import PermissionValidator, OwnershipPermission
 
 
 # def get_category_id(category_id: int) -> int:

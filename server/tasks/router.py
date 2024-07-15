@@ -3,13 +3,13 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from services.database import get_db
-from tasks import crud, schemas
+import crud.tasks as crud
+import schemas.tasks as schemas
 from tasks.types import TaskType
-from security.schemas import CurrentUser
+from schemas.security import CurrentUser
 from security.api import CallerUsername
 from routers.security import get_current_user
 from schemas.documents_query import DocumentsQuery
-from crud.documents import get_documents_ids_query_base
 from celery_worker import run_task
 from tasks.permissions import CanPlanTask, CanManageTask
 
@@ -27,9 +27,11 @@ def create_task(
     if query is None:
         task = crud.create_task(task_type, username, db)
     else:
-        documents_ids = [
-            row[0] for row in get_documents_ids_query_base(db, query).all()
-        ]
+        # TODO: fix
+        documents_ids = []
+        # documents_ids = [
+        #     row[0] for row in get_documents_ids_query_base(db, query).all()
+        # ]
         task = crud.create_query_task(
             task_type,
             documents_ids,

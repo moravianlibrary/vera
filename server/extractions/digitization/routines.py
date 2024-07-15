@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List, Tuple
 
-from crud.documents import get_documents_query_base
 from schemas.documents import Document
 from schemas.documents_query import DocumentsQuery
 from models.documents import Document as DocumentModel

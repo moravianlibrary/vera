@@ -3,7 +3,7 @@ from sqlalchemy import update, or_
 from datetime import datetime
 import pytz
 
-from tasks import models
+import models.tasks as models
 from tasks.types import TaskState
 
 

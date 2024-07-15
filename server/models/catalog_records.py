@@ -1,3 +1,5 @@
+from typing import Optional
+from pymarc import Record, MARCReader
 from sqlalchemy.orm import relationship
 from sqlalchemy import (
     CheckConstraint,
@@ -10,6 +12,7 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
 )
+from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
 
 
@@ -40,9 +43,48 @@ class CatalogRecord(Base):
     last_updated = Column(TIMESTAMP, server_default=func.now())
 
     record_barcodes = relationship(
-        "CatalogRecordIdentifier", back_populates="catalog_record"
+        "CatalogRecordBarcode", back_populates="catalog_record"
     )
     documents = relationship("Document", back_populates="catalog_record")
+
+    @hybrid_property
+    def record(self) -> Optional[Record]:
+        if self.marc is None:
+            return None
+        reader = MARCReader(self.marc)
+        try:
+            for record in reader:
+                return record
+        except Exception:
+            return None
+        finally:
+            reader.close()
+
+    @hybrid_property
+    def skc_record(self) -> Optional[Record]:
+        if self.skc_marc is None:
+            return None
+        reader = MARCReader(self.skc_marc)
+        try:
+            for record in reader:
+                return record
+        except Exception:
+            return None
+        finally:
+            reader.close()
+
+    @hybrid_property
+    def cnb_record(self) -> Optional[Record]:
+        if self.cnb_marc is None:
+            return None
+        reader = MARCReader(self.cnb_marc)
+        try:
+            for record in reader:
+                return record
+        except Exception:
+            return None
+        finally:
+            reader.close()
 
 
 class CatalogRecordBarcode(Base):

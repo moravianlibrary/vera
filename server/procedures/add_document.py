@@ -21,7 +21,7 @@ from schemas.types.documents_types import (
 )
 from services import exceptions
 from services.documents_indexer import DocumentsIndexer
-from update_catalog_record import update_catalog_record
+from procedures.update_catalog_record import update_catalog_record
 from services.external.aleph.types import AlephResponseStatus
 
 

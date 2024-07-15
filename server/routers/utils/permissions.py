@@ -1,12 +1,13 @@
-from security.types import ActionType
-from security.schemas import CurrentUser
+from schemas.types.action_type import ActionType
+from schemas.security import CurrentUser
 from services.permissions import PermissionValidator
 
-# from security.permissions import OwnershipPermission
+# from routers.utils.permissions import OwnershipPermission
 # from routers.utils.ownership import owns_document, owns_department_document
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from crud.documents import get_document
+from categories.categories.models import CategoryDepartments
 from security.crud import get_user_departments
 
 
@@ -117,6 +118,46 @@ class OwnershipValidator:
         if (
             ActionType.EditDatatableOwn in current_user.actions
             and current_user.username == document.creator
+        ):
+            return
+
+        raise exception
+
+    def EnforceCategoryRead(
+        current_user: CurrentUser,
+        category_id: int,
+        session: Session,
+        exception: HTTPException = PermissionDeniedException,
+    ):
+        if ActionType.ReadCategoriesAll in current_user.actions:
+            return
+
+        if (
+            ActionType.ReadCategoriesDepartment in current_user.actions
+            and CategoryDepartments.find(
+                category_id, current_user.department_id, session
+            )
+            is not None
+        ):
+            return
+
+        raise exception
+
+    def EnforceCategoryEdit(
+        current_user: CurrentUser,
+        category_id: int,
+        session: Session,
+        exception: HTTPException = PermissionDeniedException,
+    ):
+        if ActionType.EditCategoriesAll in current_user.actions:
+            return
+
+        if (
+            ActionType.EditCategoriesDepartment in current_user.actions
+            and CategoryDepartments.find(
+                category_id, current_user.department_id, session
+            )
+            is not None
         ):
             return
 

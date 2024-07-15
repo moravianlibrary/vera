@@ -5,11 +5,12 @@ from typing import Dict, Optional
 import crud.documents as crud
 import schemas.documents as schemas
 import schemas.documents_query as query_schemas
-from catalogs.schemas import Identifier
+
+from schemas.catalog_records import Identifier
 from schemas.security import CurrentUser
 from schemas.types.action_type import ActionType
 
-import providers.documents as documents_provider
+import procedures.documents as documents_provider
 from routers.utils.permissions import (
     CanInsertDocument,
     CanManageDocument,
@@ -24,7 +25,7 @@ from routers.utils.dependencies import (
     DependsOnCallerUsername,
 )
 from procedures.add_document import add_document
-from services.documents_index import DocumentsIndex
+from services.documents_indexer import DocumentsIndexer
 
 
 router = APIRouter(prefix="/documents")
@@ -107,39 +108,37 @@ def get_document(
     return crud.get_document(document_id, session)
 
 
-@router.post(
-    "/query",
-    dependencies=[CanReadDocuments],
-)
+@router.post("/query", dependencies=[CanReadDocuments], response_model=None)
 def query_documents(
-    query_params: Dict[str, any],
+    # query_params: Dict[str, any],
     user: CurrentUser = DependsOnCurrentUser,
     session: Session = DependsOnDbSession,
 ):
-    index_handler = DocumentsIndex()
+    # index_handler = DocumentsIndexer()
 
-    if user.has_action(ActionType.ReadDatatableAll):
-        return index_handler.search(query_params)
+    return None
 
-    if user.has_action(ActionType.ReadDatatableDepartment):
-        return index_handler.search_for_categories(
-            query_params, user.department_categories_ids
-        )
+    # if user.has_action(ActionType.ReadDatatableAll):
+    #     return index_handler.search(query_params)
 
-    return index_handler.search_for_user(user.username, query_params)
+    # if user.has_action(ActionType.ReadDatatableDepartment):
+    #     return index_handler.search_for_categories(
+    #         query_params, user.department_categories_ids
+    #     )
+
+    # return index_handler.search_for_user(user.username, query_params)
 
 
-@router.get(
-    "",
-    dependencies=[CanReadDocuments],
-    response_model=schemas.DocumentsResponse,
-)
-def get_documents(
-    query_params: Dict[str, any] = Query(),
-    user: CurrentUser = DependsOnCurrentUser,
-    session: Session = DependsOnDbSession,
-):
-    return query_documents(query_params, user, session)
+# @router.get(
+#     "",
+#     dependencies=[CanReadDocuments],
+# )
+# def get_documents(
+#     query_params: Dict[str, any] = Query(),
+#     user: CurrentUser = DependsOnCurrentUser,
+#     session: Session = DependsOnDbSession,
+# ):
+#     return query_documents(query_params, user, session)
 
 
 @router.post("/query/export", dependencies=[CanReadDocuments])

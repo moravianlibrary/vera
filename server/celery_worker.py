@@ -4,7 +4,8 @@ from sys import path as sys_path
 
 from services.database import DATABASE_URL, get_db
 from tasks.types import TaskState, TaskType
-from tasks import api, crud
+from tasks import api
+import crud.tasks as crud
 
 
 sys_path.append(path.abspath("/app"))

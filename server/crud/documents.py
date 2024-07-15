@@ -83,7 +83,7 @@ def document_exists(
 
 def get_document(session: Session, document_id: int) -> models.Document:
     document = (
-        Session.query(models.Document)
+        session.query(models.Document)
         .options(joinedload(models.Document.category))
         .filter(models.Document.id == document_id)
         .first()

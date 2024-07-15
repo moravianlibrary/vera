@@ -1,5 +1,5 @@
 from typing import Dict, Generator, List
-from elasticsearch import Elasticsearch
+import elasticsearch
 from schemas.catalog_records import CatalogRecord
 from schemas.documents import Document
 from services.external.aleph.record import AlephRecord
@@ -78,7 +78,7 @@ INDEX_SCHEMA = {
 
 class DocumentsIndexer:
     def __init__(self, url):
-        self.es = Elasticsearch("http://localhost:9200")
+        self.es = elasticsearch.Elasticsearch("http://localhost:9200")
         if not self.es.indices.exists(index=INDEX_NAME):
             self.es.indices.create(index=INDEX_NAME, body=INDEX_SCHEMA)
 
@@ -123,6 +123,9 @@ class DocumentsIndexer:
             "frequencies": aleph_record.frequencies,
         }
         self.es.index(index=INDEX_NAME, id=document.id, body=doc)
+
+    def get(self, document_id: int):
+        return self.es.get(index=INDEX_NAME, id=document_id)["__source"]
 
     def delete(self, document_id: int):
         self.es.delete(index=INDEX_NAME, id=document_id)

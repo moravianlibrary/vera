@@ -4,7 +4,7 @@ from typing import List
 
 from services.database import get_db
 from routers.security import get_current_user
-from security.schemas import CurrentUser
+from schemas.security import CurrentUser
 from . import crud, schemas
 
 

@@ -4,7 +4,8 @@ from typing import List
 
 from services.database import create
 
-from tasks import models, schemas
+import models.tasks as models
+import schemas.tasks as schemas
 from tasks.types import TaskType
 
 

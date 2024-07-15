@@ -2,12 +2,13 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from tasks.types import TaskDocumentErrorType
-from tasks import crud, models
+from crud.tasks import get_task
+from models.tasks import Task, TaskDocument
 
 
 def run_task(task_id: int, func: callable, db: Session):
-    task: models.Task = crud.get_task(task_id, db)
-    task_documents: List[models.TaskDocument] = task.documents
+    task: Task = get_task(task_id, db)
+    task_documents: List[TaskDocument] = task.documents
 
     for task_document in task_documents:
         print(f"Processing document with id {task_document.document_id}")

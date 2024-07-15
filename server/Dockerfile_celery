@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir -r requirements_celery.txt
 
 # Copy the current directory contents into the container at /app
 # COPY auth /app/auth
-COPY catalogs /app/catalogs
+# COPY catalogs /app/catalogs
 # COPY categories /app/categories
 COPY categories/categories/models.py /app/categories/categories/models.py
 COPY categories/categories/schemas.py /app/categories/categories/schemas.py
@@ -32,17 +32,14 @@ COPY services/database.py /app/services/database.py
 COPY services/exceptions.py /app/services/exceptions.py
 # COPY tasks /app/tasks
 COPY tasks/api.py /app/tasks/api.py
-COPY tasks/crud.py /app/tasks/crud.py
-COPY tasks/models.py /app/tasks/models.py
 COPY tasks/routines.py /app/tasks/routines.py
-COPY tasks/schemas.py /app/tasks/schemas.py
 COPY tasks/types.py /app/tasks/types.py
 COPY tasks/tasks/ /app/tasks/tasks/
 COPY celery_worker.py /app
 
 COPY crud /app/crud
 COPY models /app/models
-COPY providers /app/providers
+COPY procedures /app/procedures
 COPY schemas /app/schemas
 
 # Define environment variable

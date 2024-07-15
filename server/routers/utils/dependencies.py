@@ -1,5 +1,5 @@
 from fastapi import Depends
-from security.schemas import CurrentUser
+from schemas.security import CurrentUser
 from services.database import get_db
 from security.api import get_current_user
 

@@ -1,9 +1,9 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from security.keycloak_client import get_user_from_token, oauth2_scheme
-from security.schemas import CurrentUser
+from schemas.security import CurrentUser
+from schemas.types.action_type import ActionType
 from services.database import get_db
-from security.types import ActionType
 from typing import Dict, List
 
 
