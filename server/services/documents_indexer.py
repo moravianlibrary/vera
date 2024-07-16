@@ -1,13 +1,15 @@
 from typing import Dict, Generator, List
 import elasticsearch
-from schemas.catalog_records import CatalogRecord
-from schemas.documents import Document
+from models.documents import Document
 from services.external.aleph.record import AlephRecord
+from config import VeraConfig
+from functools import wraps
 
 
 INDEX_NAME = "documents"
 INDEX_SCHEMA = {
     "mappings": {
+        "_meta": {"index.version": "init"},
         "properties": {
             "id": {"type": "integer"},
             # Main identifiers
@@ -25,8 +27,11 @@ INDEX_SCHEMA = {
             "added_by": {"type": "keyword"},
             "category_id": {"type": "integer"},
             "category_path": {
-                "analyzer": "path_tree_analyzer",
-                "type": "text",
+                "type": "nested",
+                "properties": {
+                    "category_id": {"type": "integer"},
+                    "category_name": {"type": "keyword"},
+                },
             },
             # Alternate identifiers and derived properties
             "skc_sysno": {"type": "keyword"},
@@ -55,35 +60,67 @@ INDEX_SCHEMA = {
             "publishing_year": {"type": "keyword"},
             "languages": {"type": "keyword"},
             "frequencies": {"type": "nested"},  # JSON type
-        }
+        },
     },
-    "settings": {
-        "analysis": {
-            "analyzer": {
-                "path_tree_analyzer": {
-                    "tokenizer": "path_tree_tokenizer",
-                    "type": "custom",
-                }
-            },
-            "tokenizer": {
-                "path_tree_tokenizer": {
-                    "delimiter": "/",
-                    "type": "path_hierarchy",
-                }
-            },
-        }
-    },
+    # "settings": {
+    #     "analysis": {
+    #         "analyzer": {
+    #             "path_tree_analyzer": {
+    #                 "tokenizer": "path_tree_tokenizer",
+    #                 "type": "custom",
+    #             }
+    #         },
+    #         "tokenizer": {
+    #             "path_tree_tokenizer": {
+    #                 "delimiter": "/",
+    #                 "type": "path_hierarchy",
+    #             }
+    #         },
+    #     }
+    # },
 }
 
 
 class DocumentsIndexer:
-    def __init__(self, url):
-        self.es = elasticsearch.Elasticsearch("http://localhost:9200")
+    def __init__(self, url, username, password):
+        self.es = elasticsearch.Elasticsearch(
+            url, http_auth=(username, password)
+        )
         if not self.es.indices.exists(index=INDEX_NAME):
             self.es.indices.create(index=INDEX_NAME, body=INDEX_SCHEMA)
 
-    def index(self, catalog_record: CatalogRecord, document: Document):
-        aleph_record = AlephRecord(catalog_record.sysno, catalog_record.marc)
+    def close(self):
+        self.es.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def has_current_version_schema(self):
+        current_mapping = self.es.indices.get_mapping(index=INDEX_NAME).get(
+            INDEX_NAME, {}
+        )
+
+        if not current_mapping:
+            return False
+
+        return (
+            current_mapping.get("mappings", {})
+            .get("_meta", {})
+            .get("index.version", None)
+            == INDEX_SCHEMA["mappings"]["_meta"]["index.version"]
+        )
+
+    def recreate_index(self):
+        self.es.indices.delete(index=INDEX_NAME)
+        self.es.indices.create(index=INDEX_NAME, body=INDEX_SCHEMA)
+
+    def index(self, document: Document):
+        aleph_record = AlephRecord(
+            document.catalog_record.sysno, document.catalog_record.record
+        )
 
         doc = {
             "id": document.id,
@@ -99,10 +136,10 @@ class DocumentsIndexer:
             "added_by": document.added_by,
             "category_id": document.category_id,
             "category_path": document.category_path,
-            "skc_sysno": catalog_record.skc_sysno,
-            "skc_confidence": catalog_record.skc_confidence,
-            "cnb_sysno": catalog_record.cnb_sysno,
-            "cnb_confidence": catalog_record.cnb_confidence,
+            "skc_sysno": document.catalog_record.skc_sysno,
+            "skc_confidence": document.catalog_record.skc_confidence,
+            "cnb_sysno": document.catalog_record.cnb_sysno,
+            "cnb_confidence": document.catalog_record.cnb_confidence,
             "digitization_registry_id": document.digitization_registry_id,
             "digitization_state": document.digitization_state.value,
             "page_count_catalog": document.pages_count_catalog,
@@ -122,10 +159,11 @@ class DocumentsIndexer:
             "languages": aleph_record.languages,
             "frequencies": aleph_record.frequencies,
         }
+
         self.es.index(index=INDEX_NAME, id=document.id, body=doc)
 
     def get(self, document_id: int):
-        return self.es.get(index=INDEX_NAME, id=document_id)["__source"]
+        return self.es.get(index=INDEX_NAME, id=document_id)["_source"]
 
     def delete(self, document_id: int):
         self.es.delete(index=INDEX_NAME, id=document_id)
@@ -138,24 +176,99 @@ class DocumentsIndexer:
             body=query_params,
         )
         for hit in res["hits"]["hits"]:
-            yield Document(**hit["_source"])
+            yield hit["_source"]
 
-    def search_for_user(
+    def restricted_search(
+        self, query_params: Dict[str, any], restriction_clause: Dict[str, any]
+    ):
+        if "match_all" in query_params["query"]:
+            query_params["query"] = {"bool": {"must": [restriction_clause]}}
+        elif "match" in query_params["query"]:
+            # match and bool are mutually exclusive, so it is guaranteed that
+            # valid query params would not contain both
+            match_clause = query_params["query"].pop("match")
+            query_params["query"]["bool"] = {
+                "must": [
+                    restriction_clause,
+                    {"term": match_clause},
+                ]
+            }
+        elif "bool" in query_params["query"]:
+            if "must" in query_params["query"]["bool"]:
+                if isinstance(query_params["query"]["bool"]["must"], list):
+                    query_params["query"]["bool"]["must"].append(
+                        restriction_clause
+                    )
+                else:
+                    must_term = query_params["query"]["bool"]["must"]
+                    query_params["query"]["bool"] = {
+                        "must": [restriction_clause, must_term]
+                    }
+            else:
+                query_params["query"]["bool"]["must"] = [restriction_clause]
+
+        return self.search(query_params)
+
+    def search_restricted_for_username(
         self, username: str, query_params: Dict[str, any]
     ) -> Generator[Dict, None, None]:
-        pass
+        return self.restricted_search(
+            query_params, restriction_clause={"term": {"added_by": username}}
+        )
+        if "match_all" in query_params["query"]:
+            query_params["query"] = {"match": {"added_by": username}}
+        elif "match" in query_params["query"] and query_params["query"][
+            "match"
+        ] != {"add_by": username}:
+            match_clause = query_params["query"].pop("match")
+            query_params["query"]["bool"] = {
+                "must": [
+                    {"term": {"added_by": username}},
+                    {"term": match_clause},
+                ]
+            }
+        elif "bool" in query_params["query"]:
+            if "must" in query_params["query"]["bool"]:
+                if isinstance(query_params["query"]["bool"]["must"], list):
+                    query_params["query"]["bool"]["must"].append(
+                        {"term": {"added_by": username}}
+                    )
+                else:
+                    must_term = query_params["query"]["bool"]["must"]
+                    query_params["query"]["bool"] = {
+                        "must": [must_term, {"term": {"added_by": username}}]
+                    }
+            else:
+                query_params["query"]["bool"]["must"] = [
+                    {"term": {"added_by": username}}
+                ]
+
+        return self.search(query_params)
 
     def search_for_categories(
         self, category_ids: List[int], query_params: Dict[str, any]
     ) -> Generator[Dict, None, None]:
-        query_params["query"]["bool"]["must"].append(
-            {
+        return self.restricted_search(
+            query_params,
+            restriction_clause={
                 "nested": {
                     "path": "category_path",
                     "query": {
                         "terms": {"category_path.category_id": category_ids}
                     },
                 }
-            }
+            },
         )
-        return self.search(query_params)
+
+
+def with_documents_indexer(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        with DocumentsIndexer(
+            VeraConfig.ElasticsearchUrl,
+            VeraConfig.ElasticsearchUsername,
+            VeraConfig.ElasticsearchPassword,
+        ) as indexer:
+            return func(self, indexer, *args, **kwargs)
+
+    return wrapper

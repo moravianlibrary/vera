@@ -54,10 +54,10 @@ def create_document(
 
 
 def get_document_by_identifiers(
+    session: Session,
     sysno: str,
     barcode: Optional[str],
     volume: Optional[str],
-    session: Session,
 ):
     query_base = session.query(models.Document).filter(
         models.Document.sysno == sysno

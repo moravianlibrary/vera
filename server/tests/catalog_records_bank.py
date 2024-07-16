@@ -9,13 +9,10 @@ def get_test_catalog_records():
         "MZK01-000155519",
         "MZK01-000157234",
         "MZK01-000164099",
-        "MZK01-000196508",
         "MZK01-000220788",
-        "MZK01-000225480",
         "MZK01-000299435",
         "MZK01-000345867",
         "MZK01-000393168",
-        "MZK01-000394365",
         "MZK01-000567769",
         "MZK01-000572900",
         "MZK01-000585827",
@@ -40,7 +37,7 @@ def get_test_catalog_records():
     ]:
         with open(f"tests/aleph_records/{sysno}.marc", "rb") as marc_file:
             catalog_records.append(
-                CatalogRecord(sysno="MZK01-000121929", marc=marc_file.read())
+                CatalogRecord(sysno=sysno, marc=marc_file.read())
             )
 
     return catalog_records

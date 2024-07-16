@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 import logging
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.background import BackgroundScheduler
-from os import environ
 
 import routers
 import categories.categories.router as categories_router
@@ -15,6 +14,7 @@ import routers.catalogs
 import routers.documents
 import routers.security
 import tasks.router as tasks_router
+from config import VeraConfig
 
 
 logger = logging.getLogger("uvicorn")
@@ -66,7 +66,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=(environ.get("ALLOW_ORIGINS").split(",")),
+    allow_origins=(VeraConfig.AllowCorsOrigins),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

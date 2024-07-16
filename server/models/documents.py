@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Dict
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import (
@@ -131,6 +131,23 @@ class Document(Base):
     @hybrid_property
     def category_name(self) -> Optional[str]:
         return self.category.name if self.category else None
+
+    @hybrid_property
+    def category_path(self) -> Optional[List[Dict[int, str]]]:
+        curr_category = self.category
+        category_path = []
+
+        while curr_category:
+            category_path.insert(
+                0,
+                {
+                    "category_id": curr_category.id,
+                    "category_name": curr_category.name,
+                },
+            )
+            curr_category = curr_category.parent_category
+
+        return category_path if category_path else None
 
     @hybrid_property
     def extractor(self) -> Optional[str]:
