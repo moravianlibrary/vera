@@ -31,6 +31,7 @@ class ExtractionPreprocessor:
             )
             if node:
                 children_nodes.append(node)
+        print(children_nodes)
         total_percentage = sum([child.percentage for child in children_nodes])
         for child in children_nodes:
             child.set_relative_ratio(child.percentage / total_percentage)

@@ -20,7 +20,7 @@ from categories.categories.mappers import (
     map_to_category_extraction,
     map_to_category_digitization,
 )
-from extractions.generated.models import GeneratedExtraction
+from models.extractions import GeneratedExtraction
 from extractions.digitization.models import DigitizationExtraction
 from schemas.security import CurrentUser
 

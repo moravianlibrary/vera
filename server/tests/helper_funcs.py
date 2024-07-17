@@ -8,6 +8,7 @@ from typing import Any, List, Optional
 
 from schemas.security import CurrentUser
 from schemas.documents import Document
+from tests import test_crud  # noqa: F401
 
 
 TOKEN_CALL = (

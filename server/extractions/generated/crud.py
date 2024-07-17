@@ -5,7 +5,7 @@ from typing import List, Optional
 from services.database import create
 from models.documents import Document
 from extractions.generated import schemas
-from extractions.generated.models import GeneratedExtraction
+from models.extractions import GeneratedExtraction
 from services.exceptions import EmptyExtraction
 
 

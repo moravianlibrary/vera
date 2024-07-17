@@ -9,6 +9,7 @@ from models.catalog_records import (  # noqa: F401
     CatalogRecord,
     CatalogRecordBarcode,
 )  # noqa: F401
+from models.extractions import GeneratedExtraction  # noqa: F401
 from models.documents import Document  # noqa: F401
 from models.security import Department, User, Role  # noqa: F401
 from models.tasks import Task, TaskDocument  # noqa: F401
@@ -20,7 +21,6 @@ from categories.categories.models import (  # noqa: F401
 )  # noqa: F401
 from categories.intentions.models import Intention  # noqa: F401
 from documents.comments.models import Comment  # noqa: F401
-from extractions.generated.models import GeneratedExtraction  # noqa: F401
 from extractions.digitization.models import (  # noqa: F401
     DigitizationExtraction,
 )  # noqa: F401

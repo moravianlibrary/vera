@@ -17,6 +17,7 @@ from sqlalchemy import (
 from services.database import Base
 from services.external.aleph.types import IssuanceType
 from services.external.digitization_registry.types import DigitizationState
+from models.catalog_records import CatalogRecord
 
 
 class Document(Base):
@@ -89,6 +90,12 @@ class Document(Base):
             else self.catalog_record.signature
         )
 
+    @signature.expression
+    def signature(cls):
+        return func.coalesce(
+            cls.document_signature, cls.catalog_record.signature
+        )
+
     @hybrid_property
     def isxn(self) -> Optional[str]:
         return self.catalog_record.isxn
@@ -114,16 +121,18 @@ class Document(Base):
         return (
             self.pages_count is not None
             and self.pages_count > 0
-            and self.cnb is not None
+            and self.catalog_record.cnb is not None
             and self.extraction_id is None
         )
 
-    @is_extractable.inplace.expression
+    # @is_extractable.inplace.expression
+    @is_extractable.expression
     def is_extractable(cls):
         return (
             cls.pages_count.is_not(None)
             & (cls.pages_count > 0)
-            & cls.cnb.is_not(None)
+            # & cls.cnb.is_not(None)
+            & cls.catalog_record.has(CatalogRecord.cnb.isnot(None))
             & cls.extraction_id.is_(None)
         )
 

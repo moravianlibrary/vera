@@ -1,7 +1,7 @@
 from typing import List
 from categories.categories.models import Category
 from categories.categories import schemas
-from extractions.generated.models import GeneratedExtraction
+from models.extractions import GeneratedExtraction
 
 
 def map_to_category(category: Category):

@@ -4,6 +4,7 @@ from typing import List, Tuple
 from categories.categories.models import Category, Distribution
 from categories.intentions.models import Intention
 from models.documents import Document
+from models.catalog_records import CatalogRecord
 from extractions.generated.extraction_node import ExtractionNode
 from extractions.generated.generator import ExtractionGenerator
 from extractions.generated.schemas import GenerateExtraction
@@ -77,12 +78,17 @@ def generate_extractable_documents(
     document_triplets: List[Tuple[int, int, int]]
 ):
     return [
+        CatalogRecord(
+            sysno=f"MZK01-001{str(document_id)}",
+            cnb=f"CNB{str(document_id)}",
+        )
+        for document_id, _, _ in document_triplets
+    ] + [
         Document(
             id=document_id,
             sysno=f"MZK01-001{str(document_id)}",
             pages_count_catalog=page_count_catalog,
             category_id=category_id,
-            cnb=f"CCNB{str(document_id)}",
         )
         for document_id, category_id, page_count_catalog in document_triplets
     ]
@@ -737,10 +743,15 @@ class TestExtractionsPreparation(TestIntegration):
             )
         )
         items.append(
+            CatalogRecord(
+                sysno="MZK01-001100",
+                cnb="CCNB100",
+            )
+        )
+        items.append(
             Document(
                 id=100,
                 sysno="MZK01-001100",
-                cnb="CCNB100",
                 pages_count_catalog=500,
                 pages_count_predicted=300,
             ),
@@ -756,7 +767,6 @@ class TestExtractionsPreparation(TestIntegration):
             session,
         )
         generator.generate()
-        # ids, count = (
         _, count = (
             generator.extracted_documents,
             generator.extracted_pages_count,
@@ -980,10 +990,15 @@ class TestExtractionsPreparation(TestIntegration):
             )
         )
         items.append(
+            CatalogRecord(
+                sysno="MZK01-001100",
+                cnb="CCNB100",
+            )
+        )
+        items.append(
             Document(
                 id=100,
                 sysno="MZK01-001100",
-                cnb="CCNB100",
                 pages_count_catalog=500,
                 pages_count_predicted=300,
             ),

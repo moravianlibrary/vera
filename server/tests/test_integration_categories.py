@@ -13,7 +13,7 @@ from categories.categories.models import (
     CategoryDepartments,
     Distribution,
 )
-from extractions.generated.models import GeneratedExtraction
+from models.extractions import GeneratedExtraction
 from extractions.digitization.models import DigitizationExtraction
 from categories.intentions.models import Intention
 from models.documents import Document
@@ -781,7 +781,6 @@ class TestCategoriesEndpoints(TestIntegration):
         )
 
         # Assert
-        print(response_deletion.json)
         self.assertEqual(response_deletion.status_code, 200)
         self.assertListEqual(
             [d["category_id"] for d in response_deletion.json()], [2, 3, 4]

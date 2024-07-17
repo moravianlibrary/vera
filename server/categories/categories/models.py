@@ -49,20 +49,23 @@ class Category(Base):
     __table_args__ = (UniqueConstraint("name", "parent_id"),)
 
     sub_categories: Mapped[List["Category"]] = relationship(
-        back_populates="parent_category", lazy="joined", join_depth=3
+        "Category",
+        back_populates="parent_category",
+        lazy="joined",
+        join_depth=3,
     )
     parent_category: Mapped[Optional["Category"]] = relationship(
-        remote_side=[id]
+        "Category", remote_side=[id]
     )
 
     distributions: Mapped[List["Distribution"]] = relationship(
-        back_populates="category"
+        "Distribution", back_populates="category"
     )
     category_departments: Mapped[List["CategoryDepartments"]] = relationship(
-        back_populates="category"
+        "CategoryDepartments", back_populates="category"
     )
     documents: Mapped[List["Document"]] = relationship(
-        back_populates="category"
+        "Document", back_populates="category"
     )
 
     @hybrid_property
@@ -380,8 +383,12 @@ class Distribution(Base):
     __table_args__ = (UniqueConstraint("intention_id", "category_id"),)
     __table_args__ = (PrimaryKeyConstraint("intention_id", "category_id"),)
 
-    intention: Mapped[Intention] = relationship(back_populates="distributions")
-    category: Mapped["Category"] = relationship(back_populates="distributions")
+    intention: Mapped[Intention] = relationship(
+        "Intention", back_populates="distributions"
+    )
+    category: Mapped["Category"] = relationship(
+        "Category", back_populates="distributions"
+    )
 
     @hybrid_property
     def overall_percentage(self) -> float:

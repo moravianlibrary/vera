@@ -167,7 +167,6 @@ class TestAlephCatalog(unittest.TestCase):
         # Assert
         self.assertEqual(status, AlephResponseStatus.Success)
         self.assertEqual(aleph_record.sysno, "MZK01-000230291")
-        print(aleph_record.frequencies)
 
     def test_parse_pages_count(self):
         from services.external.aleph.parsers import parse_page_count

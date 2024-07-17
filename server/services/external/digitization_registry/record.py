@@ -4,7 +4,6 @@ from .types import DigitizationState, UnknownDigitizationStateException
 
 class DigitizationRegistryRecord:
     def __init__(self, data):
-        print(data)
         self.data: Dict = data
 
     @property

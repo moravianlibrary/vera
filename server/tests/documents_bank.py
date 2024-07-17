@@ -1,8 +1,11 @@
 from categories.categories.models import Category
 from models.documents import Document
 from services.external.digitization_registry.types import DigitizationState
-from services.external.aleph.types import IssuanceType
+from services.external.aleph.types import IssuanceType, MaterialType
 from tests.catalog_records_bank import get_test_catalog_records
+from extractions.digitization.models import DigitizationExtraction
+from categories.intentions.models import Intention
+from datetime import date, timedelta
 
 
 def get_test_documents():
@@ -479,6 +482,50 @@ def get_test_documents():
                 digitization_state=DigitizationState.NotDigitized,
                 pages_count_catalog=71,
                 added_by="test_user",
+            ),
+        ]
+    )
+    return models
+
+
+def get_test_documents_with_extraction():
+    models = get_test_documents()
+    models.extend(
+        [
+            Intention(
+                id=1,
+                name="Intention 1",
+                target_page_count=12000,
+                start_date=date.today(),
+                end_date=date.today() + timedelta(days=30),
+            ),
+            DigitizationExtraction(
+                intention_id=1,
+                document_ids=[1001],
+                extracted_pages=192,
+                extractor="test_user",
+            ),
+            Document(
+                sysno="MZK01-000225480",
+                barcode="2620008612",
+                cnb="cnb002519107",
+                isbn_issn="8090239706",
+                signature="TK-0261.970,1",
+                material_type=MaterialType.Book,
+                issuance_type=IssuanceType.Unit,
+                title="Nové stavební tabulky.",
+                digitization_state=DigitizationState.NotDigitized,
+                pages_count_catalog=192,
+                size="20 cm",
+                publisher="Ehrman & Forster,",
+                publishing_place="Praha :",
+                publishing_year="1997",
+                languages=["cze"],
+                frequencies=[],
+                id=1001,
+                creator="randiak",
+                created_at="2024-04-26 17:28:23",
+                extraction_id=1,
             ),
         ]
     )

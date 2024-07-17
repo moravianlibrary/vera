@@ -5,7 +5,6 @@ from tests.helper_funcs import (
     mockUser,
     mock_db,
 )
-from tests import test_crud
 
 from schemas.types.action_type import ActionType
 
