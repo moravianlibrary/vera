@@ -1,10 +1,5 @@
 from categories.categories.models import Category
 from models.documents import Document
-from extractions.digitization.models import DigitizationExtraction
-from categories.intentions.models import Intention
-from extractions.locations.models import Library, Location, Storage
-from extractions.locations.types import LocationState
-from datetime import date, timedelta
 from services.external.digitization_registry.types import DigitizationState
 from services.external.aleph.types import IssuanceType
 from tests.catalog_records_bank import get_test_catalog_records
@@ -484,51 +479,6 @@ def get_test_documents():
                 digitization_state=DigitizationState.NotDigitized,
                 pages_count_catalog=71,
                 added_by="test_user",
-            ),
-        ]
-    )
-    return models
-
-
-def get_test_documents_with_extraction():
-    models = get_test_documents()
-    models.extend(
-        [
-            Intention(
-                id=1,
-                name="Intention 1",
-                target_page_count=12000,
-                start_date=date.today(),
-                end_date=date.today() + timedelta(days=30),
-            ),
-            DigitizationExtraction(
-                intention_id=1,
-                document_ids=[1001],
-                extracted_pages=192,
-                extractor="test_user",
-            ),
-        ]
-    )
-    return models
-
-
-def get_test_documents_with_locations():
-    models = get_test_documents()
-    models.extend(
-        [
-            Library(id=1, name="MZK"),
-            Storage(id=1, name="MZK-01", library_id=1),
-            Location(
-                name="06xxx",
-                regexp="06[X][X][X]",
-                storage_id=1,
-                state=LocationState.Active,
-            ),
-            Location(
-                name="2",
-                regexp="2",
-                storage_id=1,
-                state=LocationState.Active,
             ),
         ]
     )

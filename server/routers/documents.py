@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
-from typing import Dict, Optional
+from typing import Any, AnyStr, Dict, Optional
 
 import crud.documents as crud
 import schemas.documents as schemas
@@ -23,6 +23,7 @@ from routers.utils.dependencies import (
     DependsOnCurrentUser,
     DependsOnDbSession,
     DependsOnCallerUsername,
+    DependsOnDocumentsIndexer,
 )
 from procedures.add_document import add_document
 from services.documents_indexer import DocumentsIndexer
@@ -110,23 +111,20 @@ def get_document(
 
 @router.post("/query", dependencies=[CanReadDocuments], response_model=None)
 def query_documents(
-    # query_params: Dict[str, any],
+    query_params: Dict[AnyStr, Any],
     user: CurrentUser = DependsOnCurrentUser,
+    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
     session: Session = DependsOnDbSession,
 ):
-    # index_handler = DocumentsIndexer()
+    if user.has_action(ActionType.ReadDatatableAll):
+        return indexer.search(query_params)
 
-    return None
+    if user.has_action(ActionType.ReadDatatableDepartment):
+        return indexer.search_for_categories(
+            query_params, user.department_categories_ids
+        )
 
-    # if user.has_action(ActionType.ReadDatatableAll):
-    #     return index_handler.search(query_params)
-
-    # if user.has_action(ActionType.ReadDatatableDepartment):
-    #     return index_handler.search_for_categories(
-    #         query_params, user.department_categories_ids
-    #     )
-
-    # return index_handler.search_for_user(user.username, query_params)
+    return indexer.search_for_user(user.username, query_params)
 
 
 # @router.get(

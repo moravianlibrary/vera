@@ -18,7 +18,6 @@ class TestIntegration(unittest.TestCase):
     def tearDownClass(cls):
         cls.patcher.stop()
 
-    # @elasticmock
     def setUp(self):
         self.client = createTestClient()
 

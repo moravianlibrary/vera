@@ -3,7 +3,6 @@ import elasticsearch
 from models.documents import Document
 from services.external.aleph.record import AlephRecord
 from config import VeraConfig
-from functools import wraps
 
 
 INDEX_NAME = "documents"
@@ -41,6 +40,7 @@ INDEX_SCHEMA = {
             "digitization_registry_id": {"type": "integer"},
             "digitization_state": {"type": "keyword"},  # Enum type
             # Page count
+            "page_count": {"type": "integer"},
             "page_count_catalog": {"type": "integer"},
             "page_count_predicted": {"type": "integer"},
             "page_count_manual": {"type": "integer"},
@@ -51,7 +51,7 @@ INDEX_SCHEMA = {
             # Other properties
             "material_type": {"type": "keyword"},  # Enum type
             "issuance_type": {"type": "keyword"},  # Enum type
-            "title": {"type": "text"},
+            "title": {"type": "keyword"},
             "size": {"type": "keyword"},
             "locationUri": {"type": "keyword"},
             # Publication properties
@@ -62,22 +62,6 @@ INDEX_SCHEMA = {
             "frequencies": {"type": "nested"},  # JSON type
         },
     },
-    # "settings": {
-    #     "analysis": {
-    #         "analyzer": {
-    #             "path_tree_analyzer": {
-    #                 "tokenizer": "path_tree_tokenizer",
-    #                 "type": "custom",
-    #             }
-    #         },
-    #         "tokenizer": {
-    #             "path_tree_tokenizer": {
-    #                 "delimiter": "/",
-    #                 "type": "path_hierarchy",
-    #             }
-    #         },
-    #     }
-    # },
 }
 
 
@@ -91,12 +75,6 @@ class DocumentsIndexer:
 
     def close(self):
         self.es.close()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
 
     def has_current_version_schema(self):
         current_mapping = self.es.indices.get_mapping(index=INDEX_NAME).get(
@@ -122,6 +100,8 @@ class DocumentsIndexer:
             document.catalog_record.sysno, document.catalog_record.record
         )
 
+        print(document.pages_count)
+
         doc = {
             "id": document.id,
             "sysno": document.sysno,
@@ -141,15 +121,28 @@ class DocumentsIndexer:
             "cnb_sysno": document.catalog_record.cnb_sysno,
             "cnb_confidence": document.catalog_record.cnb_confidence,
             "digitization_registry_id": document.digitization_registry_id,
-            "digitization_state": document.digitization_state.value,
+            "digitization_state": (
+                document.digitization_state.value
+                if document.digitization_state
+                else None
+            ),
+            "page_count": document.pages_count,
             "page_count_catalog": document.pages_count_catalog,
             "page_count_predicted": document.pages_count_predicted,
             "page_count_manual": document.pages_count_manual,
             "dedicated_scanner": document.dedicated_scanner,
             "extraction_priority": document.extraction_priority,
             "extraction_id": document.extraction_id,
-            "material_type": aleph_record.material_type.value,
-            "issuance_type": document.issuance_type.value,
+            "material_type": (
+                aleph_record.material_type.value
+                if aleph_record.material_type
+                else None
+            ),
+            "issuance_type": (
+                document.issuance_type.value
+                if document.issuance_type
+                else None
+            ),
             "title": aleph_record.title,
             "size": aleph_record.size,
             "locationUri": aleph_record.locationUri,
@@ -171,12 +164,10 @@ class DocumentsIndexer:
     def search(
         self, query_params: Dict[str, any]
     ) -> Generator[Dict, None, None]:
-        res = self.es.search(
+        return self.es.search(
             index=INDEX_NAME,
             body=query_params,
         )
-        for hit in res["hits"]["hits"]:
-            yield hit["_source"]
 
     def restricted_search(
         self, query_params: Dict[str, any], restriction_clause: Dict[str, any]
@@ -261,14 +252,13 @@ class DocumentsIndexer:
         )
 
 
-def with_documents_indexer(func):
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        with DocumentsIndexer(
-            VeraConfig.ElasticsearchUrl,
-            VeraConfig.ElasticsearchUsername,
-            VeraConfig.ElasticsearchPassword,
-        ) as indexer:
-            return func(self, indexer, *args, **kwargs)
-
-    return wrapper
+def get_indexer():
+    indexer = DocumentsIndexer(
+        VeraConfig.ElasticsearchUrl,
+        VeraConfig.ElasticsearchUsername,
+        VeraConfig.ElasticsearchPassword,
+    )
+    try:
+        yield indexer
+    finally:
+        indexer.close()

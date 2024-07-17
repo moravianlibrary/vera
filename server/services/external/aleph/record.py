@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 from urllib.parse import quote
 from pymarc import Record
 from .types import MaterialType
@@ -105,7 +105,8 @@ class AlephRecord:
 
     @property
     def publisher(self) -> Optional[str]:
-        return self.record.publisher
+        publisher = self.record.publisher
+        return publisher.strip(" ,") if publisher else None
 
     @property
     def publishing_place(self) -> Optional[str]:
@@ -140,8 +141,14 @@ class AlephRecord:
         return values[0] if values else None
 
     @property
-    def frequencies(self) -> List[Frequency]:
-        frequencies_list: List[Frequency] = []
+    def frequencies(self) -> List[Dict[str, Optional[str]]]:
+        """Returns a list of dictionaries containing
+        frequency and date information.
+
+        Returns: List[Dict[str, str]]: List of dictionaries with keys
+        "frequency" and "date"
+        """
+        frequencies_list = []
         for field in self.record.get_fields("310", "321"):
             subfields = field.subfields
             i = 0
@@ -152,11 +159,14 @@ class AlephRecord:
                         i + 1 < len(subfields) and subfields[i + 1].code == "b"
                     ):
                         frequencies_list.append(
-                            Frequency(frequency, subfields[i + 1].value)
+                            {
+                                "frequency": frequency,
+                                "date": subfields[i + 1].value,
+                            }
                         )
                         i += 1
                 else:
-                    frequencies_list.append(Frequency(frequency))
+                    frequencies_list.append({"frequency": frequency})
                 i += 1
         return frequencies_list
 

@@ -1,6 +1,6 @@
 from unittest import skipIf
 from tests.test_crud import TestCrudOperations
-from services.documents_indexer import DocumentsIndexer
+from services.documents_indexer import DocumentsIndexer, INDEX_NAME
 from tests.documents_bank import get_test_documents
 from tests.helper_funcs import mock_db, get_test_db
 from crud.documents import get_document
@@ -28,6 +28,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             VeraConfig.ElasticsearchUsername,
             VeraConfig.ElasticsearchPassword,
         )
+        self.indexer.recreate_index()
         mock_db(get_test_documents())
         self.db = get_test_db()
 
@@ -76,8 +77,12 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc for doc in self.indexer.search({"query": {"match_all": {}}})
+            hit["_source"]
+            for hit in self.indexer.search({"query": {"match_all": {}}})[
+                "hits"
+            ]["hits"]
         ]
 
         # Assert
@@ -95,15 +100,16 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search(
+            hit["_source"]
+            for hit in self.indexer.search(
                 {
                     "query": {
                         "bool": {"must": {"term": {"added_by": "test_user"}}},
                     }
                 }
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -121,11 +127,12 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_restricted_for_username(
+            hit["_source"]
+            for hit in self.indexer.search_restricted_for_username(
                 "test_user", {"query": {"match_all": {}}}
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -143,11 +150,12 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_restricted_for_username(
+            hit["_source"]
+            for hit in self.indexer.search_restricted_for_username(
                 "test_user_2", {"query": {"match_all": {}}}
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -160,11 +168,12 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_restricted_for_username(
+            hit["_source"]
+            for hit in self.indexer.search_restricted_for_username(
                 "test_user", {"query": {"match": {"barcode": "2610568734"}}}
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -182,12 +191,13 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_restricted_for_username(
+            hit["_source"]
+            for hit in self.indexer.search_restricted_for_username(
                 "other_test_user",
                 {"query": {"match": {"barcode": "2610568734"}}},
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -200,16 +210,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_restricted_for_username(
+            hit["_source"]
+            for hit in self.indexer.search_restricted_for_username(
                 "test_user",
                 {
                     "query": {
                         "bool": {"must": [{"term": {"barcode": "2610568734"}}]}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -227,16 +238,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_restricted_for_username(
+            hit["_source"]
+            for hit in self.indexer.search_restricted_for_username(
                 "other_test_user",
                 {
                     "query": {
                         "bool": {"must": [{"term": {"barcode": "2610568734"}}]}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -249,16 +261,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_restricted_for_username(
+            hit["_source"]
+            for hit in self.indexer.search_restricted_for_username(
                 "test_user",
                 {
                     "query": {
                         "bool": {"must": {"term": {"barcode": "2610568734"}}}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -276,16 +289,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_restricted_for_username(
+            hit["_source"]
+            for hit in self.indexer.search_restricted_for_username(
                 "other_test_user",
                 {
                     "query": {
                         "bool": {"must": {"term": {"barcode": "2610568734"}}}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -298,16 +312,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_restricted_for_username(
+            hit["_source"]
+            for hit in self.indexer.search_restricted_for_username(
                 "test_user",
                 {
                     "query": {
                         "bool": {"should": {"term": {"barcode": "2610568734"}}}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -327,16 +342,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_restricted_for_username(
+            hit["_source"]
+            for hit in self.indexer.search_restricted_for_username(
                 "other_test_user",
                 {
                     "query": {
                         "bool": {"should": {"term": {"barcode": "2610568734"}}}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -349,11 +365,12 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [5], {"query": {"match_all": {}}}
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -372,11 +389,12 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [3], {"query": {"match_all": {}}}
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -395,11 +413,12 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [1], {"query": {"match_all": {}}}
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -418,11 +437,12 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [4], {"query": {"match_all": {}}}
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -438,11 +458,12 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [5], {"query": {"match": {"barcode": document.barcode}}}
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -463,11 +484,12 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [4], {"query": {"match": {"barcode": document.barcode}}}
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -483,16 +505,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [5],
                 {
                     "query": {
                         "bool": {"must": [{"term": {"barcode": "2610568734"}}]}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -513,16 +536,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [4],
                 {
                     "query": {
                         "bool": {"must": [{"term": {"barcode": "2610568734"}}]}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -538,16 +562,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [5],
                 {
                     "query": {
                         "bool": {"must": {"term": {"barcode": "2610568734"}}}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -568,16 +593,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [4],
                 {
                     "query": {
                         "bool": {"must": {"term": {"barcode": "2610568734"}}}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -593,16 +619,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [5],
                 {
                     "query": {
                         "bool": {"should": {"term": {"barcode": "2610568734"}}}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert
@@ -621,16 +648,17 @@ class TestDocumentsIndexer(TestCrudOperations):
 
         # Act
         self.indexer.index(document)
+        self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
-            doc
-            for doc in self.indexer.search_for_categories(
+            hit["_source"]
+            for hit in self.indexer.search_for_categories(
                 [4],
                 {
                     "query": {
                         "bool": {"should": {"term": {"barcode": "2610568734"}}}
                     }
                 },
-            )
+            )["hits"]["hits"]
         ]
 
         # Assert

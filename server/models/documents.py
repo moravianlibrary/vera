@@ -94,12 +94,11 @@ class Document(Base):
         return self.catalog_record.isxn
 
     @hybrid_property
-    def pages_count(self) -> int:
+    def pages_count(self) -> Optional[int]:
         return (
             self.pages_count_manual
             or self.pages_count_catalog
             or self.pages_count_predicted
-            or 0
         )
 
     @pages_count.expression

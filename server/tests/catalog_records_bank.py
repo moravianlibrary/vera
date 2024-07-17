@@ -1,4 +1,6 @@
 from models.catalog_records import CatalogRecord
+from pymarc import MARCReader
+from services.external.aleph.record import AlephRecord
 
 
 def get_test_catalog_records():
@@ -36,8 +38,18 @@ def get_test_catalog_records():
         "MZK03-001186452",
     ]:
         with open(f"tests/aleph_records/{sysno}.marc", "rb") as marc_file:
+            marc = marc_file.read()
+            aleph_record = AlephRecord(
+                sysno=sysno, record=next(MARCReader(marc))
+            )
             catalog_records.append(
-                CatalogRecord(sysno=sysno, marc=marc_file.read())
+                CatalogRecord(
+                    sysno=sysno,
+                    marc=marc,
+                    cnb=aleph_record.cnb,
+                    isxn=aleph_record.isxn,
+                    signature=aleph_record.signature,
+                )
             )
 
     return catalog_records
