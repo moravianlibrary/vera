@@ -3,26 +3,25 @@ from sqlalchemy import update
 from typing import List
 
 from services.database import create
-from extractions.locations import models
 from extractions.locations import schemas
-from extractions.locations.models import Location
+from models import Location, Library, Storage
 
 
 # Create
 def create_library(library: schemas.LibraryCreate, db: Session):
-    return create(db, models.Library(name=library.name))
+    return create(db, Library(name=library.name))
 
 
 def create_storage(storage: schemas.StorageCreate, db: Session):
     return create(
-        db, models.Storage(library_id=storage.library_id, name=storage.name)
+        db, Storage(library_id=storage.library_id, name=storage.name)
     )
 
 
 def create_location(location: schemas.LocationCreate, db: Session):
     return create(
         db,
-        models.Location(
+        Location(
             storage_id=location.storage_id,
             name=location.name,
             regexp=location.regexp,
@@ -34,37 +33,25 @@ def create_location(location: schemas.LocationCreate, db: Session):
 
 
 # Select
-def get_library(library_id: str, db: Session) -> models.Library:
-    return (
-        db.query(models.Library)
-        .filter(models.Library.id == library_id)
-        .first()
-    )
+def get_library(library_id: str, db: Session) -> Library:
+    return db.query(Library).filter(Library.id == library_id).first()
 
 
-def get_storage(storage_id: int, db: Session) -> models.Storage:
-    return (
-        db.query(models.Storage)
-        .filter(models.Storage.id == storage_id)
-        .first()
-    )
+def get_storage(storage_id: int, db: Session) -> Storage:
+    return db.query(Storage).filter(Storage.id == storage_id).first()
 
 
-def get_location(location_id: int, db: Session) -> models.Location:
-    return (
-        db.query(models.Location)
-        .filter(models.Location.id == location_id)
-        .first()
-    )
+def get_location(location_id: int, db: Session) -> Location:
+    return db.query(Location).filter(Location.id == location_id).first()
 
 
 # Update
 def update_library(
     library_id: str, library: schemas.LibraryCreate, db: Session
-) -> models.Library:
+) -> Library:
     db.execute(
-        update(models.Library)
-        .where(models.Library.id == library_id)
+        update(Library)
+        .where(Library.id == library_id)
         .values(name=library.name)
     )
     db.commit()
@@ -73,10 +60,10 @@ def update_library(
 
 def update_storage(
     storage_id: int, storage: schemas.StorageCreate, db: Session
-) -> models.Storage:
+) -> Storage:
     db.execute(
-        update(models.Storage)
-        .where(models.Storage.id == storage_id)
+        update(Storage)
+        .where(Storage.id == storage_id)
         .values(library_id=storage.library_id, name=storage.name)
     )
     db.commit()
@@ -85,10 +72,10 @@ def update_storage(
 
 def update_location(
     location_id: int, location: schemas.LocationCreate, db: Session
-) -> models.Location:
+) -> Location:
     db.execute(
-        update(models.Location)
-        .where(models.Location.id == location_id)
+        update(Location)
+        .where(Location.id == location_id)
         .values(
             storage_id=location.storage_id,
             name=location.name,
@@ -103,21 +90,21 @@ def update_location(
 
 
 # Delete
-def delete_library(id: str, db: Session) -> models.Library:
+def delete_library(id: str, db: Session) -> Library:
     library = get_library(id, db)
     db.delete(library)
     db.commit()
     return library
 
 
-def delete_storage(id: int, db: Session) -> models.Storage:
+def delete_storage(id: int, db: Session) -> Storage:
     storage = get_storage(id, db)
     db.delete(storage)
     db.commit()
     return storage
 
 
-def delete_location(id: int, db: Session) -> models.Location:
+def delete_location(id: int, db: Session) -> Location:
     location = get_location(id, db)
     db.delete(location)
     db.commit()
@@ -125,16 +112,16 @@ def delete_location(id: int, db: Session) -> models.Location:
 
 
 # Select all
-def get_libraries(db: Session) -> List[models.Library]:
-    return db.query(models.Library).all()
+def get_libraries(db: Session) -> List[Library]:
+    return db.query(Library).all()
 
 
-def get_storages(db: Session) -> List[models.Storage]:
-    return db.query(models.Storage).all()
+def get_storages(db: Session) -> List[Storage]:
+    return db.query(Storage).all()
 
 
-def get_locations(db: Session) -> List[models.Location]:
-    return db.query(models.Location).all()
+def get_locations(db: Session) -> List[Location]:
+    return db.query(Location).all()
 
 
 def get_location_pattern(location_id: int, db: Session):

@@ -27,7 +27,7 @@ logger = logging.getLogger("uvicorn")
 
 def ensure_today_intention():
     from services.database import get_db
-    from categories.intentions.models import Intention
+    from models import Intention
 
     Intention.ensure_intention_for_today(next(get_db()))
 

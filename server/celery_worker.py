@@ -35,9 +35,7 @@ def run_task(task_id: int):
         generate_items_pages_dataset,
     )
 
-    import categories.categories.models
-    import extractions.digitization.models
-    import extractions.generated.models
+    import models
 
     sys_path.append(path.abspath("categories/"))
     sys_path.append(path.abspath("extractions/"))

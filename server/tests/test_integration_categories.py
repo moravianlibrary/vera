@@ -8,17 +8,18 @@ from helper_funcs import (
     get_all_actions_except,
 )
 
-from categories.categories.models import (
+from models import (
     Category,
     CategoryDepartments,
     Distribution,
+    DigitizationList,
+    Intention,
+    Extraction,
+    Document,
+    CatalogRecord,
+    Department,
+    User,
 )
-from models.extractions import GeneratedExtraction
-from extractions.digitization.models import DigitizationExtraction
-from categories.intentions.models import Intention
-from models.documents import Document
-from models.catalog_records import CatalogRecord
-from models.security import Department, User
 from schemas.types.action_type import ActionType
 
 
@@ -729,7 +730,7 @@ class TestCategoriesEndpoints(TestIntegration):
                     category_id=4,
                     percentage=50.0,
                 ),
-                DigitizationExtraction(
+                DigitizationList(
                     intention_id=1,
                     extractor="test_user",
                 ),
@@ -742,7 +743,7 @@ class TestCategoriesEndpoints(TestIntegration):
                     pages_count_catalog=125,
                     extraction_id=1,
                 ),
-                GeneratedExtraction(
+                Extraction(
                     document_ids=[1],
                     selected_pages=125,
                     target_pages=500,

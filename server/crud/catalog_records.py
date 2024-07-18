@@ -2,7 +2,7 @@ from pymarc import Record
 from typing import Optional
 from services.external.aleph.record import AlephRecord
 from services.external.aleph.issue import AlephIssue
-from models.catalog_records import CatalogRecord, CatalogRecordBarcode
+from models import CatalogRecord, CatalogRecordBarcode
 from schemas.catalog_records import Identifier
 from schemas.types.catalog_types import IdentifierType
 

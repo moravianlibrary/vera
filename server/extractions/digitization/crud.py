@@ -3,8 +3,7 @@ from sqlalchemy import desc, update
 from typing import List, Optional
 
 from services.database import create
-from models.documents import Document
-from extractions.digitization.models import DigitizationExtraction
+from models import Document, DigitizationList
 from services.exceptions import EmptyExtraction
 
 
@@ -17,7 +16,7 @@ def create_extraction(
 ):
     db_digitization = create(
         db,
-        DigitizationExtraction(
+        DigitizationList(
             document_ids=document_ids,
             extracted_pages=extracted_pages,
             intention_id=intention_id,
@@ -31,10 +30,10 @@ def create_extraction(
 
 def get_extractions(
     db: Session, offset: int = 0, limit: int = 50
-) -> List[DigitizationExtraction]:
+) -> List[DigitizationList]:
     return (
-        db.query(DigitizationExtraction)
-        .order_by(desc(DigitizationExtraction.id))
+        db.query(DigitizationList)
+        .order_by(desc(DigitizationList.id))
         .offset(offset)
         .limit(limit)
         .all()
@@ -42,20 +41,18 @@ def get_extractions(
 
 
 def get_extractions_num_found(db: Session) -> int:
-    return db.query(DigitizationExtraction).count()
+    return db.query(DigitizationList).count()
 
 
-def get_extraction(extraction_id: int, db: Session) -> DigitizationExtraction:
+def get_extraction(extraction_id: int, db: Session) -> DigitizationList:
     return (
-        db.query(DigitizationExtraction)
-        .filter(DigitizationExtraction.id == extraction_id)
+        db.query(DigitizationList)
+        .filter(DigitizationList.id == extraction_id)
         .first()
     )
 
 
-def delete_extraction(
-    extraction_id: int, db: Session
-) -> DigitizationExtraction:
+def delete_extraction(extraction_id: int, db: Session) -> DigitizationList:
     db_extraction = get_extraction(extraction_id, db)
     db.delete(db_extraction)
     db.commit()
@@ -77,8 +74,8 @@ def add_documents_to_extraction(
             set_document_extracted(document_id, extraction_id, db)
 
     db.execute(
-        update(DigitizationExtraction)
-        .where(DigitizationExtraction.id == extraction_id)
+        update(DigitizationList)
+        .where(DigitizationList.id == extraction_id)
         .values(
             document_ids=document_ids + db_document_ids,
             extracted_pages=extracted_pages + db_extracted_pages,
@@ -110,8 +107,8 @@ def remove_documents_from_extraction(
         if document_id not in document_ids
     ]
     db.execute(
-        update(DigitizationExtraction)
-        .where(DigitizationExtraction.id == extraction_id)
+        update(DigitizationList)
+        .where(DigitizationList.id == extraction_id)
         .values(
             document_ids=new_document_ids,
             extracted_pages=db_extracted_pages - pages_count,

@@ -3,9 +3,8 @@ from sqlalchemy import and_, desc, or_
 from typing import List, Optional
 
 from services.database import create
-from models.documents import Document
 from extractions.generated import schemas
-from models.extractions import GeneratedExtraction
+from models import Extraction, Document
 from services.exceptions import EmptyExtraction
 
 
@@ -22,7 +21,7 @@ def create_extraction(
 
     return create(
         db,
-        GeneratedExtraction(
+        Extraction(
             document_ids=document_ids,
             selected_pages=selected_pages,
             target_pages=target_pages,
@@ -58,10 +57,10 @@ def get_extraction_documents(
     extraction_id: int, db: Session, category_id: Optional[int] = None
 ) -> List[Document]:
     query_base = db.query(Document).join(
-        GeneratedExtraction,
+        Extraction,
         and_(
-            GeneratedExtraction.id == extraction_id,
-            GeneratedExtraction.document_ids.any(Document.id),
+            Extraction.id == extraction_id,
+            Extraction.document_ids.any(Document.id),
         ),
     )
     if category_id:
@@ -69,27 +68,23 @@ def get_extraction_documents(
     return query_base.all()
 
 
-def delete_extraction(extraction_id: int, db: Session) -> GeneratedExtraction:
+def delete_extraction(extraction_id: int, db: Session) -> Extraction:
     db_extraction = get_extraction(extraction_id, db)
     db.delete(db_extraction)
     db.commit()
     return db_extraction
 
 
-def get_extraction(extraction_id: int, db: Session) -> GeneratedExtraction:
-    return (
-        db.query(GeneratedExtraction)
-        .filter(GeneratedExtraction.id == extraction_id)
-        .first()
-    )
+def get_extraction(extraction_id: int, db: Session) -> Extraction:
+    return db.query(Extraction).filter(Extraction.id == extraction_id).first()
 
 
 def get_extractions(
     db: Session, offset: int = 0, limit: int = 50
-) -> List[GeneratedExtraction]:
+) -> List[Extraction]:
     return (
-        db.query(GeneratedExtraction)
-        .order_by(desc(GeneratedExtraction.id))
+        db.query(Extraction)
+        .order_by(desc(Extraction.id))
         .offset(offset)
         .limit(limit)
         .all()
@@ -97,4 +92,4 @@ def get_extractions(
 
 
 def get_extractions_num_found(db: Session) -> int:
-    return db.query(GeneratedExtraction).count()
+    return db.query(Extraction).count()

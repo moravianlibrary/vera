@@ -4,8 +4,8 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
-    UniqueConstraint,
     PrimaryKeyConstraint,
+    UniqueConstraint,
     String,
 )
 from sqlalchemy.orm import Mapped, relationship, Session, Query
@@ -13,20 +13,20 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
 from categories.categories import schemas
 from typing import List, Optional, Tuple
-from models.documents import Document
 from collections import deque
-from categories.intentions.models import Intention
 from services.exceptions import (
-    EditingPreviousDistributionForbiddenException,
     CategoryNotFoundException,
     CategoryInDistributionDeletionException,
     NonEmptyCategoryDeletionException,
-    DistributionExcesiveSubcategoriesException,
-    DistributionNotFoundException,
     MaximumCategoryLevelException,
     UniqueCategoryNameViolationException,
+    EditingPreviousDistributionForbiddenException,
+    DistributionExcesiveSubcategoriesException,
+    DistributionNotFoundException,
 )
 from categories.intentions.types import IntentionClassification
+from .documents import Document
+from .intentions import Intention
 
 
 MAX_CATEGORY_LEVEL = 3
@@ -491,7 +491,7 @@ class Distribution(Base):
         session: Session,
     ):
         if (
-            Intention.get(intention_id, session).classification
+            Intention.get(session, intention_id).classification
             == IntentionClassification.Previous
         ):
             raise EditingPreviousDistributionForbiddenException()

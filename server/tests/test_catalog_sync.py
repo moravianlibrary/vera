@@ -7,10 +7,7 @@ from tasks.tasks.sync_from_digitization_registry import (
     sync_from_digitization_registry,
 )
 from services.external.digitization_registry.types import DigitizationState
-from categories.categories.models import Category
-from models.catalog_records import CatalogRecord
-from models.documents import Document
-from models.tasks import Task, TaskDocument
+from models import CatalogRecord, Document, Task, TaskDocument, Category
 from services.external.aleph.record import AlephRecord
 
 

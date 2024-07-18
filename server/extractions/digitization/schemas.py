@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 
-class DigitizationExtraction(BaseModel):
+class DigitizationList(BaseModel):
     id: int
     document_ids: List[int]
     extracted_pages: int
@@ -16,6 +16,6 @@ class DigitizationExtraction(BaseModel):
         from_attributes = True
 
 
-class DigitizationExtractions(BaseModel):
-    extractions: List[DigitizationExtraction]
+class DigitizationLists(BaseModel):
+    extractions: List[DigitizationList]
     num_found: int

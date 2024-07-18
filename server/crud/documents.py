@@ -2,12 +2,12 @@ from sqlalchemy.orm import Session, joinedload
 from typing import Optional
 
 from services.database import create
-import models.documents as models
 import schemas.documents as schemas
 from services import exceptions
 from schemas.catalog_records import CatalogIssue
 from services.external.aleph.record import AlephRecord
 from services.external.aleph.issue import AlephIssue
+from models import Document
 
 
 def create_document(
@@ -33,7 +33,7 @@ def create_document(
 
     return create(
         session,
-        models.Document(
+        Document(
             sysno=main_aleph_record.sysno,
             barcode=catalog_issue.barcode,
             volume=catalog_issue.volume,
@@ -59,13 +59,11 @@ def get_document_by_identifiers(
     barcode: Optional[str],
     volume: Optional[str],
 ):
-    query_base = session.query(models.Document).filter(
-        models.Document.sysno == sysno
-    )
+    query_base = session.query(Document).filter(Document.sysno == sysno)
     if barcode:
-        return query_base.filter(models.Document.barcode == barcode).first()
+        return query_base.filter(Document.barcode == barcode).first()
     if volume:
-        query_base = query_base.filter(models.Document.volume == volume)
+        query_base = query_base.filter(Document.volume == volume)
     return query_base.first()
 
 
@@ -81,11 +79,11 @@ def document_exists(
     )
 
 
-def get_document(session: Session, document_id: int) -> models.Document:
+def get_document(session: Session, document_id: int) -> Document:
     document = (
-        session.query(models.Document)
-        .options(joinedload(models.Document.category))
-        .filter(models.Document.id == document_id)
+        session.query(Document)
+        .options(joinedload(Document.category))
+        .filter(Document.id == document_id)
         .first()
     )
     if document is None:
@@ -120,7 +118,7 @@ def update_document_identifiers(
     document_id: int,
     main_aleph_record: AlephRecord,
     aleph_issue: AlephIssue,
-) -> models.Document:
+) -> Document:
     document = get_document(session, document_id)
 
     document.barcode = aleph_issue.barcode

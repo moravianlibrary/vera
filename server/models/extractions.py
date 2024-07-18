@@ -1,12 +1,13 @@
+from typing import Optional
 from sqlalchemy import Column, Float, Integer, String, TIMESTAMP, JSON
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from services.database import Base
-from services.exceptions import GeneratedExtractionNotFoundException
+from services.exceptions import ExtractionNotFoundException
 
 
-class GeneratedExtraction(Base):
+class Extraction(Base):
     __tablename__ = "generated_extractions"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -23,8 +24,36 @@ class GeneratedExtraction(Base):
     @classmethod
     def get_extraction(
         cls, extraction_id: int, session: Session
-    ) -> "GeneratedExtraction":
+    ) -> "Extraction":
         extraction = session.query(cls).filter_by(id=extraction_id).first()
         if not extraction:
-            raise GeneratedExtractionNotFoundException(extraction_id)
+            raise ExtractionNotFoundException(extraction_id)
         return extraction
+
+    @classmethod
+    def find(
+        cls, session: Session, extraction_id: int
+    ) -> Optional["Extraction"]:
+        return session.query(cls).filter_by(id=extraction_id).first()
+
+    @classmethod
+    def get(cls, session: Session, extraction_id: int) -> "Extraction":
+        extraction = cls.find(session, extraction_id)
+        if not extraction:
+            raise ValueError(f"Extraction with id {extraction_id} not found")
+        return extraction
+
+    @classmethod
+    def all(cls, session, page=1, page_size=50):
+        offset = (page - 1) * page_size
+        return session.query(cls).offset(offset).limit(page_size).all()
+
+    def save(self, session: Session) -> None:
+        if self.id is None:
+            session.add(self)
+        session.commit()
+        session.refresh(self)
+
+    def delete(self, session: Session) -> None:
+        session.delete(self)
+        session.commit()

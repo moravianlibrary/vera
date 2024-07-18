@@ -9,8 +9,7 @@ from tests.helper_funcs import (
     mock_db,
 )
 
-from categories.categories.models import Category, CategoryDepartments
-from models.security import Department
+from models import Department, Category, CategoryDepartments
 from categories.categories.schemas import (
     CategoryCreate,
 )

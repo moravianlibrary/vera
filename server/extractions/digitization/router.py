@@ -22,7 +22,7 @@ router = APIRouter(prefix="/extractions/digitization")
 @router.post(
     "",
     dependencies=[CanExtract],
-    response_model=schemas.DigitizationExtraction,
+    response_model=schemas.DigitizationList,
 )
 def create_extraction(
     query: DocumentsQuery,
@@ -43,14 +43,14 @@ def create_extraction(
 @router.get(
     "",
     dependencies=[CanExtract],
-    response_model=schemas.DigitizationExtractions,
+    response_model=schemas.DigitizationLists,
 )
 def get_extractions(
     offset: int = Query(0, description="Pagination offset"),
     limit: int = Query(50, description="Pagination page size"),
     db: Session = Depends(get_db),
 ):
-    return schemas.DigitizationExtractions(
+    return schemas.DigitizationLists(
         extractions=crud.get_extractions(db, offset, limit),
         num_found=crud.get_extractions_num_found(db),
     )
@@ -59,7 +59,7 @@ def get_extractions(
 @router.get(
     "/{id}",
     dependencies=[CanExtract],
-    response_model=schemas.DigitizationExtraction,
+    response_model=schemas.DigitizationList,
 )
 def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.get_extraction(id, db)
@@ -68,7 +68,7 @@ def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
 @router.put(
     "/{id}/add_documents",
     dependencies=[CanManageDigitizationList],
-    response_model=schemas.DigitizationExtraction,
+    response_model=schemas.DigitizationList,
 )
 def add_documents_to_extraction(
     query: DocumentsQuery,
@@ -84,7 +84,7 @@ def add_documents_to_extraction(
 @router.put(
     "/{id}/remove_documents",
     dependencies=[CanManageDigitizationList],
-    response_model=schemas.DigitizationExtraction,
+    response_model=schemas.DigitizationList,
 )
 def remove_documents_from_extraction(
     query: DocumentsQuery,
@@ -102,7 +102,7 @@ def remove_documents_from_extraction(
 @router.delete(
     "/{id}",
     dependencies=[CanManageDigitizationList],
-    response_model=schemas.DigitizationExtraction,
+    response_model=schemas.DigitizationList,
 )
 def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.delete_extraction(id, db)

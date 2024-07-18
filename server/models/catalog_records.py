@@ -1,6 +1,6 @@
 from typing import Optional
 from pymarc import Record, MARCReader
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy import (
     CheckConstraint,
     Column,
@@ -86,6 +86,32 @@ class CatalogRecord(Base):
         finally:
             reader.close()
 
+    @classmethod
+    def find(cls, session: Session, sysno: str) -> Optional["CatalogRecord"]:
+        return session.query(cls).filter_by(sysno=sysno).first()
+
+    @classmethod
+    def get(cls, session: Session, sysno: str) -> "CatalogRecord":
+        record = cls.find(session, sysno)
+        if record is None:
+            raise ValueError(f"Record with sysno {sysno} not found")
+        return record
+
+    @classmethod
+    def all(cls, session, page=1, page_size=50):
+        offset = (page - 1) * page_size
+        return session.query(cls).offset(offset).limit(page_size).all()
+
+    def save(self, session: Session) -> None:
+        if CatalogRecord.find(session, self.sysno) is None:
+            session.add(self)
+        session.commit()
+        session.refresh(self)
+
+    def delete(self, session: Session) -> None:
+        session.delete(self)
+        session.commit()
+
 
 class CatalogRecordBarcode(Base):
     __tablename__ = "catalog_record_barcode"
@@ -105,3 +131,10 @@ class CatalogRecordBarcode(Base):
     catalog_record = relationship(
         "CatalogRecord", back_populates="record_barcodes"
     )
+
+    def save(self, session: Session) -> None:
+        session.commit()
+
+    def delete(self, session: Session) -> None:
+        session.delete(self)
+        session.commit()

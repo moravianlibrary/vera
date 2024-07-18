@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models.documents import Document
+from models import Document
 from tasks.tasks.documents_processing import run_task
 from crud.catalog_records import get_catalog_record_by_sysno
 from crud.documents import update_document_identifiers

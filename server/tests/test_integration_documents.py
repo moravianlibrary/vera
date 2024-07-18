@@ -7,7 +7,7 @@ from helper_funcs import (
 )
 
 from schemas.types.action_type import ActionType
-from models.documents import Document
+from models import Document
 from services.external.digitization_registry.types import DigitizationState
 from schemas.types.documents_types import AddDocumentResponseStatus
 

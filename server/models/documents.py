@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List, Dict
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import (
     CheckConstraint,
@@ -9,6 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    Text,
     TIMESTAMP,
     UniqueConstraint,
     func,
@@ -17,7 +18,7 @@ from sqlalchemy import (
 from services.database import Base
 from services.external.aleph.types import IssuanceType
 from services.external.digitization_registry.types import DigitizationState
-from models.catalog_records import CatalogRecord
+from .catalog_records import CatalogRecord
 
 
 class Document(Base):
@@ -64,9 +65,7 @@ class Document(Base):
 
     catalog_record = relationship("CatalogRecord", back_populates="documents")
     category = relationship("Category", back_populates="documents")
-    extraction = relationship(
-        "DigitizationExtraction", back_populates="documents"
-    )
+    extraction = relationship("DigitizationList", back_populates="documents")
     task_documents = relationship(
         "TaskDocument",
         primaryjoin="TaskDocument.document_id == Document.id",
@@ -168,3 +167,42 @@ class Document(Base):
     @hybrid_property
     def comments_count(self) -> int:
         return 0
+
+    @classmethod
+    def find(cls, session: Session, document_id: int) -> Optional["Document"]:
+        return session.query(cls).filter_by(id=document_id).first()
+
+    @classmethod
+    def get(cls, session: Session, document_id: int) -> "Document":
+        document = cls.find(session, document_id)
+        if not document:
+            raise ValueError(f"Document with id {document_id} not found")
+        return document
+
+    @classmethod
+    def all(cls, session, page=1, page_size=50):
+        offset = (page - 1) * page_size
+        return session.query(cls).offset(offset).limit(page_size).all()
+
+    def save(self, session: Session) -> None:
+        if self.id is None:
+            session.add(self)
+        session.commit()
+        session.refresh(self)
+
+    def delete(self, session: Session) -> None:
+        session.delete(self)
+        session.commit()
+
+
+class DocumentComment(Base):
+    __tablename__ = "comments"
+
+    id = Column(Integer, primary_key=True, index=True)
+    document_id = Column(
+        Integer, ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    )
+    username = Column(String, index=True)
+    text = Column(Text)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    edited_at = Column(TIMESTAMP)

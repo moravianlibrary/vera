@@ -1,8 +1,7 @@
 from queue import PriorityQueue
 from typing import List, Optional
 
-from categories.categories.models import Category as CategoryModel
-from models.documents import Document
+from models import Category as CategoryModel, Document
 
 
 def getExtractionRoot(children: List["ExtractionNode"]):

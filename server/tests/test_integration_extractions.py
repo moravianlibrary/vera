@@ -1,10 +1,7 @@
 from tests.test_integration import TestIntegration
 from typing import List, Tuple
 
-from categories.categories.models import Category, Distribution
-from categories.intentions.models import Intention
-from models.documents import Document
-from models.catalog_records import CatalogRecord
+from models import Category, Distribution, Intention, Document, CatalogRecord
 from extractions.generated.extraction_node import ExtractionNode
 from extractions.generated.generator import ExtractionGenerator
 from extractions.generated.schemas import GenerateExtraction

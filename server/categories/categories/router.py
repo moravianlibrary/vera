@@ -10,18 +10,18 @@ from schemas.types.action_type import ActionType
 from services.database import get_db
 from security.api import get_current_user
 
-from categories.categories.models import (
-    Category,
-    Distribution,
-)
 from categories.categories import schemas
 from categories.categories.mappers import (
     map_to_category_distribution,
     map_to_category_extraction,
     map_to_category_digitization,
 )
-from models.extractions import GeneratedExtraction
-from extractions.digitization.models import DigitizationExtraction
+from models import (
+    Extraction,
+    DigitizationList,
+    Category,
+    Distribution,
+)
 from schemas.security import CurrentUser
 
 
@@ -195,7 +195,7 @@ def get_categories_by_extraction(
     extraction_id: int = Path(...),
     db: Session = Depends(get_db),
 ):
-    extraction = GeneratedExtraction.get_extraction(extraction_id, db)
+    extraction = Extraction.get_extraction(extraction_id, db)
     return [
         map_to_category_extraction(
             category,
@@ -221,7 +221,7 @@ def get_categories_by_digitization(
     if not digitization_ids:
         digitization_ids = [
             digitization.id
-            for digitization in DigitizationExtraction.get_by_intention(
+            for digitization in DigitizationList.get_by_intention(
                 intention_id, db
             )
         ]
@@ -277,7 +277,7 @@ def get_department_categories_by_extraction(
     extraction_id: int = Path(...),
     db: Session = Depends(get_db),
 ):
-    extraction = GeneratedExtraction.get_extraction(extraction_id, db)
+    extraction = Extraction.get_extraction(extraction_id, db)
     return [
         map_to_category_extraction(
             category,
@@ -305,7 +305,7 @@ def get_department_categories_by_digitization(
     if not digitization_ids:
         digitization_ids = [
             digitization.id
-            for digitization in DigitizationExtraction.get_by_intention(
+            for digitization in DigitizationList.get_by_intention(
                 intention_id, db
             )
         ]

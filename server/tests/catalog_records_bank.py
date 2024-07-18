@@ -1,4 +1,4 @@
-from models.catalog_records import CatalogRecord
+from models import CatalogRecord
 from pymarc import MARCReader
 from services.external.aleph.record import AlephRecord
 

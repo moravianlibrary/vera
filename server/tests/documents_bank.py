@@ -1,10 +1,7 @@
-from categories.categories.models import Category
-from models.documents import Document
+from models import Category, Document, DigitizationList, Intention
 from services.external.digitization_registry.types import DigitizationState
 from services.external.aleph.types import IssuanceType, MaterialType
 from tests.catalog_records_bank import get_test_catalog_records
-from extractions.digitization.models import DigitizationExtraction
-from categories.intentions.models import Intention
 from datetime import date, timedelta
 
 
@@ -499,7 +496,7 @@ def get_test_documents_with_extraction():
                 start_date=date.today(),
                 end_date=date.today() + timedelta(days=30),
             ),
-            DigitizationExtraction(
+            DigitizationList(
                 intention_id=1,
                 document_ids=[1001],
                 extracted_pages=192,

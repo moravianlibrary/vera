@@ -9,7 +9,7 @@ from routers.security import get_current_user
 # TODO: fix categories
 # from categories.crud import get_root_categories
 # from categories.quotas.crud import get_quota
-from categories.intentions.models import Intention
+from models import Intention
 from extractions.generated import crud, schemas
 from extractions.generated.generator import ExtractionGenerator
 
@@ -27,7 +27,7 @@ router = APIRouter(prefix="/extractions/generated")
 @router.post(
     "",
     dependencies=[CanExtract],
-    response_model=schemas.GeneratedExtraction,
+    response_model=schemas.Extraction,
 )
 def create_extraction(
     params: schemas.GenerateExtraction,
@@ -62,14 +62,14 @@ def create_extraction(
 @router.get(
     "",
     dependencies=[CanExtract],
-    response_model=schemas.GeneratedExtractions,
+    response_model=schemas.Extractions,
 )
 def get_extractions(
     offset: int = Query(0, description="Pagination offset"),
     limit: int = Query(50, description="Pagination page size"),
     db: Session = Depends(get_db),
 ):
-    return schemas.GeneratedExtractions(
+    return schemas.Extractions(
         extractions=crud.get_extractions(db, offset, limit),
         num_found=crud.get_extractions_num_found(db),
     )
@@ -78,7 +78,7 @@ def get_extractions(
 @router.delete(
     "/{id}",
     dependencies=[CanManageExtraction],
-    response_model=schemas.GeneratedExtraction,
+    response_model=schemas.Extraction,
 )
 def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.delete_extraction(id, db)
@@ -87,7 +87,7 @@ def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
 @router.get(
     "/{id}",
     dependencies=[CanExtract],
-    response_model=schemas.GeneratedExtraction,
+    response_model=schemas.Extraction,
 )
 def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return crud.get_extraction(id, db)

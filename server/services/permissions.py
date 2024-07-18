@@ -6,7 +6,7 @@ from typing import Callable, List, Union
 from security.api import get_current_user
 from schemas.security import CurrentUser
 from schemas.types.action_type import ActionType
-from categories.categories.models import Category
+from models import Category
 
 
 class PermissionDeniedException(HTTPException):

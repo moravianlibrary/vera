@@ -1,6 +1,6 @@
 from typing import Dict, Generator, List
 import elasticsearch
-from models.documents import Document
+from models import Document
 from services.external.aleph.record import AlephRecord
 from config import VeraConfig
 

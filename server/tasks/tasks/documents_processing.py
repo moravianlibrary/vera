@@ -3,7 +3,7 @@ from typing import List
 
 from tasks.types import TaskDocumentErrorType
 from crud.tasks import get_task
-from models.tasks import Task, TaskDocument
+from models import Task, TaskDocument
 
 
 def run_task(task_id: int, func: callable, db: Session):

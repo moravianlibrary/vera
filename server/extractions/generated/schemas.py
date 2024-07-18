@@ -15,7 +15,7 @@ class GenerateExtraction(BaseModel):
     whole_categories_threshold: float = 0.05
 
 
-class GeneratedExtraction(GenerateExtraction):
+class Extraction(GenerateExtraction):
     id: int
     document_ids: List[int]
     selected_pages: int
@@ -28,6 +28,6 @@ class GeneratedExtraction(GenerateExtraction):
         from_attributes = True
 
 
-class GeneratedExtractions(BaseModel):
-    extractions: List[GeneratedExtraction]
+class Extractions(BaseModel):
+    extractions: List[Extraction]
     num_found: int

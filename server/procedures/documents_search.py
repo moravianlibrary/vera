@@ -3,7 +3,7 @@ from sqlalchemy.sql import text
 from sqlalchemy.orm import Query
 from typing import List, Optional, Union
 
-import models.documents as models
+from models import Document, Category
 import schemas.documents_query as schemas
 from schemas.types.query_types import (
     EnumOption,
@@ -16,7 +16,6 @@ from schemas.types.query_types import (
     DocumentField,
 )
 from extractions.locations.crud import get_location_pattern
-from categories.categories.models import Category
 
 
 DOCUMENT_FIELDS_MAPPING = {
@@ -63,7 +62,7 @@ def filter_documents_query_base(
     if not is_query_empty(query):
         query_base = filter_by_query(query_base, query, db)
     else:
-        query_base = query_base.filter(models.Document.extraction_id.is_(None))
+        query_base = query_base.filter(Document.extraction_id.is_(None))
 
     if query and query.sort:
         query_base = sort_query(query_base, query.sort)
@@ -77,11 +76,11 @@ def sort_query(query_base: Query, sort: schemas.QuerySort):
         field_name = DOCUMENT_FIELDS_MAPPING.get(curr_sort.field)
         if curr_sort.order == SortOrder.Ascending:
             query_base = query_base.order_by(
-                getattr(models.Document, field_name).asc()
+                getattr(Document, field_name).asc()
             )
         else:
             query_base = query_base.order_by(
-                getattr(models.Document, field_name).desc()
+                getattr(Document, field_name).desc()
             )
         curr_sort = curr_sort.and_then
     return query_base
@@ -89,19 +88,15 @@ def sort_query(query_base: Query, sort: schemas.QuerySort):
 
 def filter_by_query(query_base: Query, query: schemas.DocumentsQuery, db):
     if query.username:
-        query_base = query_base.filter(
-            models.Document.creator == query.username
-        )
+        query_base = query_base.filter(Document.creator == query.username)
     if query.id_list:
         return filter_by_id_list(query.id_list, query_base)
 
     print("query.extracted", query.extracted)
     if query.extracted is None or not query.extracted:
-        query_base = query_base.filter(models.Document.extraction_id.is_(None))
+        query_base = query_base.filter(Document.extraction_id.is_(None))
     else:
-        query_base = query_base.filter(
-            models.Document.extraction_id.isnot(None)
-        )
+        query_base = query_base.filter(Document.extraction_id.isnot(None))
     if query.search_phrase:
         return filter_by_search_phrase(query.search_phrase, query_base)
     if query.search_group:
@@ -110,18 +105,18 @@ def filter_by_query(query_base: Query, query: schemas.DocumentsQuery, db):
 
 
 def filter_by_id_list(id_list: List[int], query_base: Query):
-    return query_base.filter(models.Document.id.in_(id_list))
+    return query_base.filter(Document.id.in_(id_list))
 
 
 def filter_by_search_phrase(search_phrase: str, query_base: Query):
     return query_base.outerjoin(Category).filter(
         or_(
-            models.Document.sysno.startswith(search_phrase),
-            models.Document.barcode.startswith(search_phrase),
-            models.Document.signature.startswith(search_phrase),
-            models.Document.title.startswith(search_phrase),
+            Document.sysno.startswith(search_phrase),
+            Document.barcode.startswith(search_phrase),
+            Document.signature.startswith(search_phrase),
+            Document.title.startswith(search_phrase),
             and_(
-                models.Document.category_id.isnot(None),
+                Document.category_id.isnot(None),
                 Category.name.startswith(search_phrase),
             ),
         )
@@ -157,7 +152,7 @@ def build_group_filter(
 
 def build_field_filter(search_field: schemas.SearchField, db):
     field_name = DOCUMENT_FIELDS_MAPPING[search_field.field]
-    field = getattr(models.Document, field_name)
+    field = getattr(Document, field_name)
     if search_field.option.value == "IsNull":
         return field.is_(None)
     elif search_field.option.value == "IsNotNull":

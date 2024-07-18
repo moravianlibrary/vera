@@ -4,7 +4,7 @@ from typing import List
 
 from services.database import create
 
-import models.tasks as models
+from models import Task, TaskDataset, TaskDocument
 import schemas.tasks as schemas
 from tasks.types import TaskType
 
@@ -15,7 +15,7 @@ def create_task(
     owner: str,
     db: Session,
 ):
-    return create(db, models.Task(task_type=task_type, owner=owner))
+    return create(db, Task(task_type=task_type, owner=owner))
 
 
 def create_query_task(
@@ -25,30 +25,28 @@ def create_query_task(
     query: str,
     db: Session,
 ):
-    db_task = create(
-        db, models.Task(task_type=task_type, query=query, owner=owner)
-    )
+    db_task = create(db, Task(task_type=task_type, query=query, owner=owner))
 
     for document_id in documents_ids:
         create(
             db,
-            models.TaskDocument(task_id=db_task.id, document_id=document_id),
+            TaskDocument(task_id=db_task.id, document_id=document_id),
         )
 
     return db_task
 
 
 # Select by id
-def get_task(task_id: int, db: Session) -> models.Task:
-    return db.query(models.Task).filter(models.Task.id == task_id).first()
+def get_task(task_id: int, db: Session) -> Task:
+    return db.query(Task).filter(Task.id == task_id).first()
 
 
 def get_task_document(task_id: int, document_id: int, db: Session):
     return (
-        db.query(models.TaskDocument)
+        db.query(TaskDocument)
         .filter(
-            models.TaskDocument.task_id == task_id
-            and models.TaskDocument.document_id == document_id
+            TaskDocument.task_id == task_id
+            and TaskDocument.document_id == document_id
         )
         .first()
     )
@@ -57,8 +55,8 @@ def get_task_document(task_id: int, document_id: int, db: Session):
 # Update
 def update_task(task_id: int, task: schemas.TaskDefinition, db: Session):
     db.execute(
-        update(models.Task)
-        .where(models.Task.id == id)
+        update(Task)
+        .where(Task.id == id)
         .values(
             task_state=task.task_state,
             started=task.started,
@@ -75,10 +73,10 @@ def update_task_document(
     db: Session,
 ):
     db.execute(
-        update(models.TaskDocument)
+        update(TaskDocument)
         .where(
-            models.TaskDocument.task_id == task_id
-            and models.TaskDocument.document_id == task_document.document_id
+            TaskDocument.task_id == task_id
+            and TaskDocument.document_id == task_document.document_id
         )
         .values(
             deleted=task_document.deleted,
@@ -94,23 +92,19 @@ def update_task_document(
 # Delete
 def delete_task(task_id: int, db: Session):
     db_task_documents = (
-        db.query(models.TaskDocument)
-        .where(models.TaskDocument.task_id == task_id)
-        .all()
+        db.query(TaskDocument).where(TaskDocument.task_id == task_id).all()
     )
     for db_task_document in db_task_documents:
         db.delete(db_task_document)
 
     db_task_dataset = (
-        db.query(models.TaskDataset)
-        .where(models.TaskDataset.task_id == task_id)
-        .first()
+        db.query(TaskDataset).where(TaskDataset.task_id == task_id).first()
     )
     if db_task_dataset:
         db.delete(db_task_dataset)
         db.commit()
 
-    db_task = db.query(models.Task).where(models.Task.id == task_id).first()
+    db_task = db.query(Task).where(Task.id == task_id).first()
     db.delete(db_task)
 
     db.commit()
@@ -120,8 +114,8 @@ def delete_task(task_id: int, db: Session):
 # Select
 def get_tasks(db: Session, offset: int = 0, limit: int = 50):
     return (
-        db.query(models.Task)
-        .order_by(desc(models.Task.planned))
+        db.query(Task)
+        .order_by(desc(Task.planned))
         .offset(offset)
         .limit(limit)
         .all()
@@ -129,4 +123,4 @@ def get_tasks(db: Session, offset: int = 0, limit: int = 50):
 
 
 def get_tasks_num_found(db: Session):
-    return db.query(models.Task).count()
+    return db.query(Task).count()

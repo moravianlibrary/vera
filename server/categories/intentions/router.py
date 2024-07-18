@@ -6,8 +6,7 @@ from routers.utils.permissions import PermissionValidator
 from schemas.types.action_type import ActionType
 from services.database import get_db
 
-from categories.categories.models import Distribution
-from categories.intentions.models import Intention
+from models import Distribution, Intention
 from categories.intentions import schemas
 
 

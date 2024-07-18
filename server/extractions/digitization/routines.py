@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 from schemas.documents import Document
 from schemas.documents_query import DocumentsQuery
-from models.documents import Document as DocumentModel
+from models import Document as DocumentModel
 from services.exceptions import (
     CannotExtractDocumentWithoutCNB,
     CannotExtractDocumentWithoutPagesCount,

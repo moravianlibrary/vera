@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List, Tuple
 
-from categories.categories.models import Category as CategoryModel
+from models import Category as CategoryModel
 from categories.categories.schemas import Distribution
 from extractions.generated.crud import (
     get_extractable_documents,

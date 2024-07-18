@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from models.documents import Document
+from models import Document
 from services.external.digitization_registry.types import DigitizationState
 from tasks.tasks.documents_processing import run_task
 from services.external.digitization_registry.client import (

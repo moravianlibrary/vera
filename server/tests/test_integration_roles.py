@@ -1,6 +1,6 @@
 from tests.test_integration import TestIntegration
 
-from models.security import Role, Action
+from models import Role, RoleAction
 from schemas.types.action_type import ActionType
 from helper_funcs import mock_db, mockUser, createTestUser
 
@@ -14,9 +14,9 @@ class TestRolesEndpoints(TestIntegration):
                 Role(id=2, name="role 2"),
                 Role(id=3, name="role 3"),
                 Role(id=4, name="role 4"),
-                Action(role_id=2, action=ActionType.WriteDatatable),
-                Action(role_id=3, action=ActionType.Extract),
-                Action(role_id=4, action=ActionType.ReadDatatableAll),
+                RoleAction(role_id=2, action=ActionType.WriteDatatable),
+                RoleAction(role_id=3, action=ActionType.Extract),
+                RoleAction(role_id=4, action=ActionType.ReadDatatableAll),
             ]
         )
         mockUser(createTestUser([ActionType.EditAccess]))

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 
 from catalogs.schemas import Frequency
-from models.documents import Document
+from models import Document
 from tasks.tasks.documents_processing import run_task
 
 

@@ -4,7 +4,7 @@
 
 # import crud.documents as crud
 # from schemas.documents import DocumentCreate
-# from models.documents import Document
+# from models import Document
 
 
 # class TestDocumentsCrud(TestCrudOperations):

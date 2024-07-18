@@ -53,7 +53,7 @@ class DistributionNotFoundException(HTTPException):
         )
 
 
-class GeneratedExtractionNotFoundException(HTTPException):
+class ExtractionNotFoundException(HTTPException):
     def __init__(self, id):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,

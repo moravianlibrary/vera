@@ -7,7 +7,7 @@ from services.permissions import PermissionValidator
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from crud.documents import get_document
-from categories.categories.models import CategoryDepartments
+from models import CategoryDepartments
 from security.crud import get_user_departments
 
 

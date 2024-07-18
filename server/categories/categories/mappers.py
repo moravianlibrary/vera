@@ -1,7 +1,6 @@
 from typing import List
-from categories.categories.models import Category
 from categories.categories import schemas
-from models.extractions import GeneratedExtraction
+from models import Extraction, Category
 
 
 def map_to_category(category: Category):
@@ -50,7 +49,7 @@ def map_to_category_distribution(category: Category, intention_id: int):
 def map_to_category_extraction(
     category: Category,
     intention_id: int,
-    extraction: GeneratedExtraction,
+    extraction: Extraction,
 ) -> schemas.Category:
     sub_categories: List[schemas.Category] = [
         map_to_category_extraction(sub_category, intention_id, extraction)
