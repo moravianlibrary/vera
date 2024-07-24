@@ -11,22 +11,20 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, relationship, Session, Query
 from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
-from categories.categories import schemas
 from typing import List, Optional, Tuple
-from collections import deque
 from services.exceptions import (
+    ObjectNotFoundException,
     CategoryNotFoundException,
     CategoryInDistributionDeletionException,
     NonEmptyCategoryDeletionException,
+    EditingPreviousDistributionForbiddenException,
     MaximumCategoryLevelException,
     UniqueCategoryNameViolationException,
-    EditingPreviousDistributionForbiddenException,
-    DistributionExcesiveSubcategoriesException,
-    DistributionNotFoundException,
 )
-from categories.intentions.types import IntentionClassification
+from datatypes import IntentionClassification
 from .documents import Document
 from .intentions import Intention
+from .base import BaseMixin
 
 
 MAX_CATEGORY_LEVEL = 3
@@ -53,16 +51,21 @@ class Category(Base):
         back_populates="parent_category",
         lazy="joined",
         join_depth=3,
+        cascade="all,delete",
     )
     parent_category: Mapped[Optional["Category"]] = relationship(
         "Category", remote_side=[id]
     )
 
     distributions: Mapped[List["Distribution"]] = relationship(
-        "Distribution", back_populates="category"
+        "Distribution",
+        back_populates="category",
+        cascade="all,delete",
     )
     category_departments: Mapped[List["CategoryDepartments"]] = relationship(
-        "CategoryDepartments", back_populates="category"
+        "CategoryDepartments",
+        back_populates="category",
+        cascade="all,delete",
     )
     documents: Mapped[List["Document"]] = relationship(
         "Document", back_populates="category"
@@ -176,12 +179,12 @@ class Category(Base):
         return distributions[0] if distributions else None
 
     @classmethod
-    def find(cls, category_id: int, session: Session) -> Optional["Category"]:
+    def find(cls, session: Session, category_id: int) -> Optional["Category"]:
         return session.query(cls).filter_by(id=category_id).first()
 
     @classmethod
-    def get(cls, category_id: int, session: Session) -> "Category":
-        category = cls.find(category_id, session)
+    def get(cls, session: Session, category_id: int) -> "Category":
+        category = cls.find(session, category_id)
         if not category:
             raise CategoryNotFoundException(category_id)
         return category
@@ -192,7 +195,7 @@ class Category(Base):
 
     @classmethod
     def find_by_name_and_parent_id(
-        cls, name: str, parent_id: Optional[int], session: Session
+        cls, session: Session, name: str, parent_id: Optional[int]
     ) -> Optional["Category"]:
         return (
             session.query(cls)
@@ -200,107 +203,37 @@ class Category(Base):
             .first()
         )
 
-    @classmethod
-    def create_root_category(
-        cls, category: schemas.CategoryCreate, session: Session
-    ) -> "Category":
-        if cls.find_by_name_and_parent_id(category.name, None, session):
-            raise UniqueCategoryNameViolationException()
+    def save(self, session: Session) -> "Category":
+        if self.parent_id:
+            level = Category.get(session, self.parent_id).level + 1
+            if level > MAX_CATEGORY_LEVEL:
+                raise MaximumCategoryLevelException()
+            self.level = level
+        else:
+            self.level = 0
 
-        db_category = cls(
-            name=category.name,
-            description=category.description,
-            parent_id=None,
-            level=0,
-            assignable=category.assignable,
-            extract_whole=category.extract_whole,
-            disabled=category.disabled,
-        )
-        session.add(db_category)
-        session.commit()
-        session.refresh(db_category)
-        return db_category
-
-    @classmethod
-    def create_sub_category(
-        cls, parent_id: int, category: schemas.CategoryCreate, session: Session
-    ) -> "Category":
-        parent_category = cls.get(parent_id, session)
-
-        if parent_category.level == MAX_CATEGORY_LEVEL:
-            raise MaximumCategoryLevelException()
-
-        if cls.find_by_name_and_parent_id(
-            category.name, parent_category.id, session
+        if Category.find_by_name_and_parent_id(
+            session, self.name, self.parent_id
         ):
             raise UniqueCategoryNameViolationException()
 
-        db_category = cls(
-            name=category.name,
-            description=category.description,
-            parent_id=parent_category.id,
-            level=parent_category.level + 1,
-            assignable=category.assignable,
-            extract_whole=category.extract_whole,
-            disabled=category.disabled,
-        )
-        session.add(db_category)
+        session.add(self)
         session.commit()
-        session.refresh(db_category)
-        return db_category
+        session.refresh(self)
+        return self
 
-    @classmethod
-    def update(
-        cls,
-        category_id: int,
-        category: schemas.CategoryCreate,
-        session: Session,
-    ) -> "Category":
-        db_category = cls.get(category_id, session)
-
-        if (
-            db_category.name != category.name
-            and cls.find_by_name_and_parent_id(
-                category.name, db_category.parent_id, session
-            )
-        ):
-            raise UniqueCategoryNameViolationException()
-
-        db_category.name = category.name
-        db_category.description = category.description
-        db_category.assignable = category.assignable
-        db_category.extract_whole = category.extract_whole
-        db_category.disabled = category.disabled
-        session.commit()
-        session.refresh(db_category)
-        return db_category
-
-    @classmethod
-    def delete(cls, category_id: int, session: Session) -> "Category":
-        category = cls.get(category_id, session)
-        if category.total_pages > 0:
+    def delete(self, session: Session) -> "Category":
+        if self.total_pages > 0:
             raise NonEmptyCategoryDeletionException()
         if (
-            sum(
-                distribution.percentage
-                for distribution in category.distributions
-            )
+            sum(distribution.percentage for distribution in self.distributions)
             > 0
         ):
             raise CategoryInDistributionDeletionException()
 
-        categories = deque([category])
-        while categories:
-            current_category = categories.popleft()
-            for department in current_category.departments:
-                CategoryDepartments.unset(
-                    current_category.id, department, session
-                )
-            categories.extend(current_category.sub_categories)
-            session.delete(current_category)
-
+        session.delete(self)
         session.commit()
-        return category
+        return self
 
     @classmethod
     def get_categories(cls, session: Session) -> List["Category"]:
@@ -339,8 +272,16 @@ class Category(Base):
             .first()
         )
 
+    def save_departments(self, session: Session, department_ids: List[int]):
+        for category_department in self.departments:
+            category_department.delete(session)
+        for department_id in department_ids:
+            CategoryDepartments(
+                category_id=self.id, department_id=department_id
+            ).save(session)
 
-class CategoryDepartments(Base):
+
+class CategoryDepartments(Base, BaseMixin):
     __tablename__ = "category_departments"
 
     category_id = Column(Integer, ForeignKey("categories.id"), index=True)
@@ -351,26 +292,14 @@ class CategoryDepartments(Base):
     category = relationship("Category", back_populates="category_departments")
 
     @classmethod
-    def find(cls, category_id: int, department_id: int, session: Session):
+    def find(
+        cls, session: Session, category_id: int, department_id: int
+    ) -> Optional["Category"]:
         return (
             session.query(cls)
             .filter_by(category_id=category_id, department_id=department_id)
             .first()
         )
-
-    @classmethod
-    def set(cls, category_id: int, department_id: int, session: Session):
-        if cls.find(category_id, department_id, session):
-            return
-        session.add(cls(category_id=category_id, department_id=department_id))
-        session.commit()
-
-    @classmethod
-    def unset(cls, category_id: int, department_id: int, session: Session):
-        category_department = cls.find(category_id, department_id, session)
-        if category_department:
-            session.delete(category_department)
-            session.commit()
 
 
 class Distribution(Base):
@@ -389,6 +318,13 @@ class Distribution(Base):
     category: Mapped["Category"] = relationship(
         "Category", back_populates="distributions"
     )
+    # sub_distributions = relationship(
+    #     "Distribution",
+    #     secondary="categories",
+    #     primaryjoin="Distribution.category_id == Category.id",
+    #     secondaryjoin="Category.parent_id == Distribution.category_id",
+    #     cascade="all,delete",
+    # )
 
     @hybrid_property
     def overall_percentage(self) -> float:
@@ -442,7 +378,7 @@ class Distribution(Base):
 
     @classmethod
     def find(
-        cls, intention_id: int, category_id: int, session: Session
+        cls, session: Session, intention_id: int, category_id: int
     ) -> "Distribution":
         return (
             session.query(cls)
@@ -452,103 +388,30 @@ class Distribution(Base):
 
     @classmethod
     def get(
-        cls, intention_id: int, category_id: int, session: Session
+        cls, session: Session, intention_id: int, category_id: int
     ) -> "Distribution":
-        distribution = cls.find(intention_id, category_id, session)
-        if not distribution:
-            raise DistributionNotFoundException(intention_id, category_id)
+        distribution = cls.find(session, intention_id, category_id)
+        if distribution is None:
+            raise ObjectNotFoundException(
+                cls.__name__, (intention_id, category_id)
+            )
         return distribution
 
-    @classmethod
-    def set(
-        cls,
-        intention_id: int,
-        distribution: schemas.DistributionCreate,
-        session: Session,
-    ) -> "Distribution":
-        db_distribution = cls.find(
-            intention_id, distribution.category_id, session
-        )
-        if not db_distribution:
-            db_distribution = cls(
-                intention_id=intention_id,
-                category_id=distribution.category_id,
-                percentage=distribution.percentage,
-            )
-            session.add(db_distribution)
-        else:
-            db_distribution.percentage = distribution.percentage
-
+    def save(self, session: Session) -> "Distribution":
+        merged_instance = session.merge(self)
         session.commit()
-        return db_distribution
+        session.refresh(merged_instance)
+        return merged_instance
 
-    @classmethod
-    def set_distribution_from_list(
-        cls,
-        parent_id: Optional[int],
-        intention_id: int,
-        distribution_list: List[schemas.DistributionCreate],
-        session: Session,
-    ):
-        if (
-            Intention.get(session, intention_id).classification
-            == IntentionClassification.Previous
-        ):
+    def delete(self, session: Session) -> "Distribution":
+        if self.intention.classification == IntentionClassification.Previous:
             raise EditingPreviousDistributionForbiddenException()
-
-        parent_sub_categories = {
-            category.id
-            for category in (
-                Category.get(parent_id, session).sub_categories
-                if parent_id
-                else Category.get_root_categories(session)
-            )
-        }
-        sub_categories = {
-            distribution.category_id for distribution in distribution_list
-        }
-
-        for category_id in parent_sub_categories - sub_categories:
-            if Distribution.find(intention_id, category_id, session):
-                Distribution.delete_from_intention(
-                    intention_id, category_id, session
-                )
-        if sub_categories - parent_sub_categories:
-            raise DistributionExcesiveSubcategoriesException()
-
-        return [
-            Distribution.set(intention_id, distribution, session)
-            for distribution in distribution_list
-        ]
-
-    @classmethod
-    def delete_from_intention(
-        cls, intention_id: int, category_id: int, session: Session
-    ) -> List["Distribution"]:
-        distribution = cls.get(intention_id, category_id, session)
-        if (
-            distribution.intention.classification
-            == IntentionClassification.Previous
-        ):
-            raise EditingPreviousDistributionForbiddenException()
-        if distribution.percentage != 0 and distribution.percentage != 100:
+        if self.percentage != 0 and self.percentage != 100:
             raise ValueError("Distribution must be empty")
-        category = Category.get(category_id, session)
 
-        categories = deque([category])
-        distributions = []
-        while categories:
-            category = categories.popleft()
-            categories.extend(category.sub_categories)
-            distribution = cls.find(intention_id, category.id, session)
-            if distribution:
-                # Prevent lazy load
-                distribution.pages_needed_to_meet_intention
-                session.delete(distribution)
-                distributions.append(distribution)
-
+        session.delete(self)
         session.commit()
-        return distributions
+        return self
 
     @classmethod
     def copy_distributions(

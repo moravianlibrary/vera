@@ -1,22 +1,19 @@
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
-from typing import Any, AnyStr, Dict, Optional
-
-import crud.documents as crud
-import schemas.documents as schemas
-import schemas.documents_query as query_schemas
-
-from schemas.catalog_records import Identifier
-from schemas.security import CurrentUser
-from schemas.types.action_type import ActionType
-
-import procedures.documents as documents_provider
+from typing import Optional
+from schemas import (
+    CurrentUser,
+    AddDocumentResponse,
+    Identifier,
+    DocumentResponse,
+)
+from datatypes import ActionType, ElasticsearchParams
+from models import Document
 from routers.utils.permissions import (
     CanInsertDocument,
     CanManageDocument,
     CanReadDocument,
     CanReadDocuments,
-    CanManageDocuments,
     OwnershipValidator,
 )
 from routers.utils.dependencies import (
@@ -27,15 +24,23 @@ from routers.utils.dependencies import (
 )
 from procedures.add_document import add_document
 from services.documents_indexer import DocumentsIndexer
+from starlette.responses import FileResponse
+import pandas as pd
+import tempfile
+from datetime import datetime
 
+
+XLSX_MIMETYPE = (
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
 
 router = APIRouter(prefix="/documents")
 
 
 @router.post(
-    "/add_document_from_catalog",
+    "/from_catalog",
     dependencies=[CanInsertDocument],
-    response_model=schemas.AddDocumentResponse,
+    response_model=AddDocumentResponse,
 )
 async def add_document_from_catalog(
     identifier: Identifier,
@@ -43,17 +48,19 @@ async def add_document_from_catalog(
     pages_count_manual: Optional[int] = None,
     extraction_priority: Optional[int] = None,
     username: str = DependsOnCallerUsername,
+    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
     session: Session = DependsOnDbSession,
 ):
     catalog_document, status = add_document(
         session,
+        indexer,
         identifier,
         username,
         category_id,
         pages_count_manual,
         extraction_priority,
     )
-    return schemas.AddDocumentResponse(
+    return AddDocumentResponse(
         identifier=identifier, status=status, document=catalog_document
     )
 
@@ -61,7 +68,7 @@ async def add_document_from_catalog(
 @router.put(
     "/{document_id}",
     dependencies=[CanManageDocument],
-    response_model=schemas.Document,
+    response_model=DocumentResponse,
 )
 def update_document(
     document_id: int = Path(...),
@@ -72,19 +79,20 @@ def update_document(
     session: Session = DependsOnDbSession,
 ):
     OwnershipValidator.EnforceDocumentEdit(user, document_id, session)
-    return crud.update_document_properties(
-        session,
-        document_id,
-        category_id,
-        pages_count_manual,
-        extraction_priority,
-    )
+    document = Document.get(session, document_id)
+    if category_id:
+        document.category_id = category_id
+    if pages_count_manual:
+        document.pages_count_manual = pages_count_manual
+    if extraction_priority:
+        document.extraction_priority = extraction_priority
+    return document.save(session)
 
 
 @router.delete(
     "/{document_id}",
     dependencies=[CanManageDocument],
-    response_model=schemas.Document,
+    response_model=DocumentResponse,
 )
 def delete_document(
     document_id: int = Path(...),
@@ -92,13 +100,13 @@ def delete_document(
     session: Session = DependsOnDbSession,
 ):
     OwnershipValidator.EnforceDocumentEdit(user, document_id, session)
-    return crud.delete_document(document_id, session)
+    return Document.get(session, document_id).delete(session)
 
 
 @router.get(
     "/{document_id}",
     dependencies=[CanReadDocument],
-    response_model=schemas.Document,
+    response_model=DocumentResponse,
 )
 def get_document(
     document_id: int = Path(...),
@@ -106,12 +114,12 @@ def get_document(
     session: Session = DependsOnDbSession,
 ):
     OwnershipValidator.EnforceDocumentRead(user, document_id, session)
-    return crud.get_document(document_id, session)
+    return Document.get(session, document_id)
 
 
 @router.post("/query", dependencies=[CanReadDocuments], response_model=None)
 def query_documents(
-    query_params: Dict[AnyStr, Any],
+    query_params: ElasticsearchParams,
     user: CurrentUser = DependsOnCurrentUser,
     indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
     session: Session = DependsOnDbSession,
@@ -124,66 +132,119 @@ def query_documents(
             query_params, user.department_categories_ids
         )
 
-    return indexer.search_for_user(user.username, query_params)
-
-
-# @router.get(
-#     "",
-#     dependencies=[CanReadDocuments],
-# )
-# def get_documents(
-#     query_params: Dict[str, any] = Query(),
-#     user: CurrentUser = DependsOnCurrentUser,
-#     session: Session = DependsOnDbSession,
-# ):
-#     return query_documents(query_params, user, session)
+    return indexer.search_restricted_for_username(user.username, query_params)
 
 
 @router.post("/query/export", dependencies=[CanReadDocuments])
 def export_query_documents(
-    query: query_schemas.DocumentsQuery,
+    query_params: ElasticsearchParams,
     user: CurrentUser = DependsOnCurrentUser,
+    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
     session: Session = DependsOnDbSession,
 ):
-    return documents_provider.export_query_documents(user, session, query)
-
-
-@router.put(
-    "/query/change_category",
-    dependencies=[CanReadDocuments, CanManageDocuments],
-    response_model=query_schemas.DocumentsQuery,
-)
-def update_query_documents(
-    query: query_schemas.DocumentsQuery,
-    category_id: Optional[int] = None,
-    user: CurrentUser = DependsOnCurrentUser,
-    session: Session = DependsOnDbSession,
-):
-    query_base = crud.get_documents_query_base(
-        session,
-        documents_provider.filter_documents_query_by_user_permissions(
-            user, query
-        ),
+    df = pd.DataFrame(
+        hit["_source"]
+        for hit in query_documents(query_params, user, indexer, session)[
+            "hits"
+        ]["hits"]
     )
-    crud.update_documents(query_base, "category_id", category_id, session)
-    return query
 
+    with tempfile.NamedTemporaryFile(
+        suffix=".xlsx", delete=False
+    ) as temp_excel:
+        df.to_excel(temp_excel.name, index=False)
+        temp_filename = temp_excel.name
 
-@router.post(
-    "/query/delete",
-    dependencies=[CanReadDocuments, CanManageDocuments],
-    response_model=query_schemas.DocumentsQuery,
-)
-def delete_query_documents(
-    query: query_schemas.DocumentsQuery,
-    user: CurrentUser = DependsOnCurrentUser,
-    session: Session = DependsOnDbSession,
-):
-    query_base = crud.get_documents_query_base(
-        session,
-        documents_provider.filter_documents_query_by_user_permissions(
-            user, query
-        ),
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    export_filename = f"vera-documents_{timestamp}.xlsx"
+
+    return FileResponse(
+        temp_filename,
+        media_type=XLSX_MIMETYPE,
+        filename=export_filename,
+        headers={"Content-Disposition": "attachment"},
     )
-    crud.delete_documents(query_base, session)
-    return query
+
+
+# @router.put(
+#     "/query/change_category",
+#     dependencies=[CanReadDocuments, CanManageDocuments],
+#     response_model=query_DocumentsQuery,
+# )
+# def update_query_documents(
+#     query: query_DocumentsQuery,
+#     category_id: Optional[int] = None,
+#     user: CurrentUser = DependsOnCurrentUser,
+#     session: Session = DependsOnDbSession,
+# ):
+#     query_base = crud.get_documents_query_base(
+#         session,
+#         documents_provider.filter_documents_query_by_user_permissions(
+#             user, query
+#         ),
+#     )
+#     crud.update_documents(query_base, "category_id", category_id, session)
+#     return query
+
+
+# @router.post(
+#     "/query/delete",
+#     dependencies=[CanReadDocuments, CanManageDocuments],
+#     response_model=query_DocumentsQuery,
+# )
+# def delete_query_documents(
+#     query: query_DocumentsQuery,
+#     user: CurrentUser = DependsOnCurrentUser,
+#     session: Session = DependsOnDbSession,
+# ):
+#     query_base = crud.get_documents_query_base(
+#         session,
+#         documents_provider.filter_documents_query_by_user_permissions(
+#             user, query
+#         ),
+#     )
+#     crud.delete_documents(query_base, session)
+#     return query
+
+
+# @router.post("/documents/{id}/comments", response_model=Comment)
+# def create_comment(
+#     comment: CommentCreate,
+#     id: int = Path(...),
+#     user: CurrentUser = Depends(get_current_user),
+#     db: Session = Depends(get_db),
+# ):
+#     return crud.create_comment(comment, id, user.id, db)
+
+
+# @router.put(
+#     "/documents/{document_id}/comments/{comment_id}",
+#     response_model=Comment,
+# )
+# def update_comment(
+#     comment: Comment,
+#     document_id: int = Path(...),
+#     user: CurrentUser = Depends(get_current_user),
+#     db: Session = Depends(get_db),
+# ):
+#     return crud.update_comment(comment, db)
+
+
+# @router.delete(
+#     "/documents/{document_id}/comments/{comment_id}",
+#     response_model=Comment,
+# )
+# def delete_comment(
+#     document_id: int = Path(...),
+#     comment_id: int = Path(...),
+#     user: CurrentUser = Depends(get_current_user),
+#     db: Session = Depends(get_db),
+# ):
+#     return crud.delete_comment(comment_id, db)
+
+
+# @router.get(
+#     "/documents/{document_id}/comments", response_model=List[Comment]
+# )
+# def get_note(document_id: int = Path(...), db: Session = Depends(get_db)):
+#     return crud.get_comments_for_document(document_id, db)

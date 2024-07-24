@@ -6,7 +6,7 @@ from tests.helper_funcs import (
     mock_db,
 )
 
-from schemas.types.action_type import ActionType
+from datatypes import ActionType
 
 
 class TestAuthEndpoints(TestIntegration):

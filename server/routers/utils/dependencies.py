@@ -1,8 +1,20 @@
 from fastapi import Depends
-from schemas.security import CurrentUser
+from sqlalchemy.orm import Session
+from schemas import CurrentUser
 from services.database import get_db
-from security.api import get_current_user
 from services.documents_indexer import get_indexer
+from services.keycloak_client import get_user_from_token, oauth2_scheme
+from .access_emulation import emulated_users
+
+
+def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db),
+) -> CurrentUser:
+    user = get_user_from_token(token, db)
+    if user.username in emulated_users:
+        user.actions = emulated_users[user.username]
+    return user
 
 
 def get_caller_username(

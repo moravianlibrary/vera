@@ -8,6 +8,7 @@ MATERIAL_TYPE_MAPPING = {
     "SE": MaterialType.ContinuingResource,
     "MP": MaterialType.Map,
     "MU": MaterialType.Music,
+    "GP": MaterialType.Graphic,
 }
 
 PAGE_COUNT_FORMAT = (
@@ -79,5 +80,5 @@ def parse_page_count(
 
 def parse_material_type(
     material_type: Optional[str],
-) -> Optional[MaterialType]:
-    return MATERIAL_TYPE_MAPPING.get(material_type)
+) -> MaterialType:
+    return MATERIAL_TYPE_MAPPING.get(material_type, MaterialType.Other)

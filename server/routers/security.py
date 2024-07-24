@@ -1,28 +1,35 @@
 from fastapi import APIRouter, Path
 from sqlalchemy.orm import Session
 from typing import List
-
-from security import api, crud
-import schemas.security as schemas
-from routers.utils import permissions
-from routers.utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
-from routers.utils.permissions import CanManageAccess
-from schemas.types.action_type import ActionType
-
+from .utils import access_emulation
+from .utils import permissions
+from .utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
+from .utils.permissions import CanManageAccess
+from datatypes import ActionType
+from schemas import (
+    CurrentUser,
+    ActionList,
+    RoleCreate,
+    UserResponse,
+    RoleResponse,
+    DepartmentCreate,
+    DepartmentResponse,
+)
+from models import Role, User, Department
 
 router = APIRouter()
 
 
-def can_emulate_access(user: schemas.CurrentUser):
+def can_emulate_access(user: CurrentUser):
     return (
         ActionType.EditAccess in user.actions
-        or user.username in api.emulated_users
+        or user.username in access_emulation.emulated_users
     )
 
 
-@router.get("/auth/current_user", response_model=schemas.CurrentUser)
+@router.get("/auth/current_user", response_model=CurrentUser)
 def get_current_user(
-    user: schemas.CurrentUser = DependsOnCurrentUser,
+    user: CurrentUser = DependsOnCurrentUser,
 ):
     return user
 
@@ -30,41 +37,41 @@ def get_current_user(
 @router.get(
     "/auth/users",
     dependencies=[CanManageAccess],
-    response_model=List[schemas.User],
+    response_model=List[UserResponse],
 )
 def get_users(db: Session = DependsOnDbSession):
-    return crud.get_users(db)
+    return User.all(db)
 
 
 @router.post(
     "/auth/users/emulate",
-    response_model=schemas.CurrentUser,
+    response_model=CurrentUser,
 )
 def emulate_access(
-    actions: schemas.ActionList,
-    user: schemas.CurrentUser = DependsOnCurrentUser,
+    actions: ActionList,
+    user: CurrentUser = DependsOnCurrentUser,
 ):
     if not can_emulate_access(user):
         raise permissions.PermissionDeniedException
-    api.emulate_access(user.username, actions.actions)
+    access_emulation.emulate_access(user.username, actions.actions)
     user.actions = actions.actions + [ActionType.StopEmulatingAccess]
     return user
 
 
 @router.delete(
     "/auth/users/emulate",
-    response_model=schemas.CurrentUser,
+    response_model=CurrentUser,
 )
 def end_emulation(
-    user: schemas.CurrentUser = DependsOnCurrentUser,
+    user: CurrentUser = DependsOnCurrentUser,
     db: Session = DependsOnDbSession,
 ):
     if not can_emulate_access(user):
         raise permissions.PermissionDeniedException
-    api.stop_emulating_access(user.username)
+    access_emulation.stop_emulating_access(user.username)
 
     role_actions = []
-    role = crud.get_role(user.role_id, db)
+    role = Role.get(db, user.role_id)
     if role:
         role_actions = [action.action for action in role.role_actions]
     user.actions = role_actions
@@ -73,83 +80,97 @@ def end_emulation(
 
 
 @router.post(
-    "/roles", dependencies=[CanManageAccess], response_model=schemas.Role
+    "/roles", dependencies=[CanManageAccess], response_model=RoleResponse
 )
-def create_role(role: schemas.RoleCreate, db: Session = DependsOnDbSession):
-    return crud.create_role(role, db)
+def create_role(role: RoleCreate, db: Session = DependsOnDbSession):
+    return (
+        role.load_to_model(db, Role()).save(db).save_actions(db, role.actions)
+    )
 
 
 @router.put(
-    "/roles/{id}", dependencies=[CanManageAccess], response_model=schemas.Role
+    "/roles/{role_id}",
+    dependencies=[CanManageAccess],
+    response_model=RoleResponse,
 )
 def update_role(
-    role: schemas.RoleCreate,
-    id: int = Path(...),
+    role: RoleCreate,
+    role_id: int = Path(...),
     db: Session = DependsOnDbSession,
 ):
-    return crud.update_role(id, role, db)
+    return (
+        role.load_to_model(db, Role.get(db, role_id))
+        .save(db)
+        .save_actions(db, role.actions)
+    )
 
 
 @router.delete(
-    "/roles/{id}", dependencies=[CanManageAccess], response_model=schemas.Role
+    "/roles/{id}", dependencies=[CanManageAccess], response_model=RoleResponse
 )
 def delete_role(id: int = Path(...), db: Session = DependsOnDbSession):
-    return crud.delete_role(id, db)
+    return Role.get(db, id).delete(db)
 
 
 @router.get(
-    "/roles/{id}", dependencies=[CanManageAccess], response_model=schemas.Role
+    "/roles/{id}", dependencies=[CanManageAccess], response_model=RoleResponse
 )
 def get_role(id: int = Path(...), db: Session = DependsOnDbSession):
-    return crud.get_role(id, db)
+    return Role.get(db, id)
 
 
 @router.get(
-    "/roles", dependencies=[CanManageAccess], response_model=List[schemas.Role]
+    "/roles", dependencies=[CanManageAccess], response_model=List[RoleResponse]
 )
 def get_roles(db: Session = DependsOnDbSession):
-    return crud.get_roles(db)
+    return Role.all(db)
 
 
 @router.post(
     "/departments",
     dependencies=[CanManageAccess],
-    response_model=schemas.Department,
+    response_model=DepartmentResponse,
 )
 def create_department(
-    department: schemas.DepartmentCreate, db: Session = DependsOnDbSession
+    department: DepartmentCreate, db: Session = DependsOnDbSession
 ):
-    return crud.create_department(department, db)
+    created_department = department.load_to_model(Department()).save(db)
+    created_department.save_users(db, department.users)
+    return created_department
 
 
 @router.put(
     "/departments/{department_id}",
     dependencies=[CanManageAccess],
-    response_model=schemas.Department,
+    response_model=DepartmentResponse,
 )
 def update_department(
-    department: schemas.DepartmentCreate,
+    department: DepartmentCreate,
     department_id: int = Path(...),
     db: Session = DependsOnDbSession,
 ):
-    return crud.update_department(department_id, department, db)
+    updated_department = department.load_to_model(
+        db, Department.get(db, department_id)
+    ).save(db)
+    updated_department.save_users(db, department.users)
+    return updated_department
 
 
 @router.delete(
     "/departments/{department_id}",
     dependencies=[CanManageAccess],
-    response_model=schemas.Department,
+    response_model=DepartmentResponse,
 )
 def delete_department(
     department_id: int = Path(...), db: Session = DependsOnDbSession
 ):
-    return crud.delete_department(department_id, db)
+    return Department.get(db, department_id).delete(db)
 
 
 @router.get(
     "/departments",
     dependencies=[CanManageAccess],
-    response_model=List[schemas.Department],
+    response_model=List[DepartmentResponse],
 )
 def get_departments(db: Session = DependsOnDbSession):
-    return crud.get_departments(db)
+    return Department.all(db)

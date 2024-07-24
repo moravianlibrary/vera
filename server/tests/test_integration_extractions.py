@@ -2,10 +2,10 @@ from tests.test_integration import TestIntegration
 from typing import List, Tuple
 
 from models import Category, Distribution, Intention, Document, CatalogRecord
-from extractions.generated.extraction_node import ExtractionNode
-from extractions.generated.generator import ExtractionGenerator
-from extractions.generated.schemas import GenerateExtraction
-from extractions.generated.preprocessor import ExtractionPreprocessor
+from schemas import GenerateExtraction
+from services.extractions_generator.extraction_node import ExtractionNode
+from services.extractions_generator.generator import ExtractionGenerator
+from services.extractions_generator.preprocessor import ExtractionPreprocessor
 from datetime import date, timedelta
 from helper_funcs import get_test_db, mock_db
 

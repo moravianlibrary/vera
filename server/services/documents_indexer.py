@@ -34,9 +34,9 @@ INDEX_SCHEMA = {
             },
             # Alternate identifiers and derived properties
             "skc_sysno": {"type": "keyword"},
-            "skc_confidence": {"type": "float"},
+            "skc_score": {"type": "float"},
             "cnb_sysno": {"type": "keyword"},
-            "cnb_confidence": {"type": "float"},
+            "cnb_score": {"type": "float"},
             "digitization_registry_id": {"type": "integer"},
             "digitization_state": {"type": "keyword"},  # Enum type
             # Page count
@@ -97,10 +97,8 @@ class DocumentsIndexer:
 
     def index(self, document: Document):
         aleph_record = AlephRecord(
-            document.catalog_record.sysno, document.catalog_record.record
+            document.catalog_record.sysno, document.catalog_record.main_record
         )
-
-        print(document.pages_count)
 
         doc = {
             "id": document.id,
@@ -117,9 +115,9 @@ class DocumentsIndexer:
             "category_id": document.category_id,
             "category_path": document.category_path,
             "skc_sysno": document.catalog_record.skc_sysno,
-            "skc_confidence": document.catalog_record.skc_confidence,
+            "skc_score": document.catalog_record.skc_score,
             "cnb_sysno": document.catalog_record.cnb_sysno,
-            "cnb_confidence": document.catalog_record.cnb_confidence,
+            "cnb_score": document.catalog_record.cnb_score,
             "digitization_registry_id": document.digitization_registry_id,
             "digitization_state": (
                 document.digitization_state.value
@@ -250,6 +248,33 @@ class DocumentsIndexer:
                 }
             },
         )
+
+    def get_document_ids(self, query_params: Dict[str, any]) -> List[int]:
+        document_ids = []
+        scroll_id = None
+
+        while True:
+            query_params["_source"] = "id"
+
+            if scroll_id:
+                response = self.es.scroll(scroll_id=scroll_id, scroll="1m")
+            else:
+                response = self.es.search(
+                    index=INDEX_NAME, body=query_params, scroll="1m"
+                )
+
+            hits = response["hits"]["hits"]
+            current_ids = [hit["_source"]["id"] for hit in hits]
+
+            document_ids.extend(current_ids)
+
+            scroll_id = response.get("_scroll_id")
+            if not scroll_id or len(hits) == 0:
+                break
+
+        self.es.clear_scroll(scroll_id=scroll_id)
+
+        return document_ids
 
 
 def get_indexer():

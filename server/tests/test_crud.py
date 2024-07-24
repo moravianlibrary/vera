@@ -46,7 +46,6 @@ class TestCrudOperations(unittest.TestCase):
         self.db = TestSessionLocal()
 
     def tearDown(self) -> None:
-        self.db.reset()
         meta = MetaData()
         meta.reflect(bind=test_engine)
         meta.drop_all(bind=test_engine)

@@ -1,15 +1,15 @@
 from sqlalchemy import Column, Date, Integer, String, desc
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import relationship, Session, Query
 from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
-from typing import List, Optional
+from typing import Optional
 from datetime import date
 
-from categories.intentions import schemas
-from categories.intentions.types import IntentionClassification
+from datatypes import IntentionClassification
+from .base import BaseMixin
 
 
-class Intention(Base):
+class Intention(Base, BaseMixin):
     __tablename__ = "intentions"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -30,30 +30,10 @@ class Intention(Base):
         return IntentionClassification.Current
 
     @classmethod
-    def find(
-        cls, session: Session, intention_id: int
-    ) -> Optional["Intention"]:
-        return session.query(cls).filter_by(id=intention_id).first()
+    def query_base(cls, session) -> Query:
+        return session.query(cls).order_by(cls.end_date)
 
-    @classmethod
-    def get(cls, session: Session, intention_id: int) -> "Intention":
-        intention = cls.find(session, intention_id)
-        if not intention:
-            raise ValueError(f"Intention with id {intention_id} not found")
-        return intention
-
-    @classmethod
-    def all(cls, session, page=1, page_size=50) -> List["Intention"]:
-        offset = (page - 1) * page_size
-        return (
-            session.query(cls)
-            .order_by(cls.end_date)
-            .offset(offset)
-            .limit(page_size)
-            .all()
-        )
-
-    def save(self, session: Session) -> None:
+    def validate_before_save(self, session: Session) -> None:
         def has_conflicting_intentions() -> bool:
             query = session.query(Intention).filter(
                 Intention.start_date <= self.end_date,
@@ -67,17 +47,12 @@ class Intention(Base):
             raise ValueError(
                 "The time period conflicts with existing intentions."
             )
-        if self.id is None:
-            session.add(self)
-        session.commit()
 
-    def delete(self, session: Session) -> None:
+    def validate_before_delete(self, session: Session) -> None:
         if self.classification == IntentionClassification.Previous:
             raise ValueError("Cannot delete previous intentions.")
         if self.classification == IntentionClassification.Current:
             raise ValueError("Cannot delete current intention.")
-        session.delete(self)
-        session.commit()
 
     @classmethod
     def find_by_start_date(
@@ -114,11 +89,9 @@ class Intention(Base):
             session.commit()
             return
 
-        cls.create(
-            schemas.IntentionCreate(
-                name="Initial Intention",
-                target_page_count=100000,
-                start_date=date(2024, 1, 1),
-                end_date=date.today(),
-            )
-        )
+        Intention(
+            name="Initial Intention",
+            target_page_count=100000,
+            start_date=date(2024, 1, 1),
+            end_date=date.today(),
+        ).save()

@@ -20,7 +20,7 @@ from models import (
     Department,
     User,
 )
-from schemas.types.action_type import ActionType
+from datatypes import ActionType
 
 
 class TestCategoriesEndpoints(TestIntegration):
@@ -512,11 +512,13 @@ class TestCategoriesEndpoints(TestIntegration):
 
         # Assert
         self.assertEqual(200, response.status_code)
-        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(len(response.json()), 3)
         self.assertEqual(response.json()[0]["id"], 3)
         self.assertEqual(response.json()[0]["percentage"], 70)
         self.assertEqual(response.json()[1]["id"], 4)
         self.assertEqual(response.json()[1]["percentage"], 30)
+        self.assertEqual(response.json()[2]["id"], 5)
+        self.assertEqual(response.json()[2]["percentage"], 0)
 
     def test_update_distribution_permitted_excessive_category(self):
         # Arrange
@@ -696,6 +698,7 @@ class TestCategoriesEndpoints(TestIntegration):
                     extract_whole=False,
                 ),
                 Intention(
+                    id=1,
                     name="Test Intention",
                     target_page_count=125000,
                     start_date=date.today(),
@@ -783,9 +786,8 @@ class TestCategoriesEndpoints(TestIntegration):
 
         # Assert
         self.assertEqual(response_deletion.status_code, 200)
-        self.assertListEqual(
-            [d["category_id"] for d in response_deletion.json()], [2, 3, 4]
-        )
+        self.assertEqual(response_deletion.json()["category_id"], 2)
+        self.assertEqual(response_deletion.json()["percentage"], 100.0)
         self.assertEqual(response_get.status_code, 200)
         self.assertListEqual([d["id"] for d in response_get.json()], [1])
         self.assertIsNone(

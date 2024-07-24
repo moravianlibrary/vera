@@ -6,176 +6,45 @@ from helper_funcs import (
     mock_db,
 )
 
-from schemas.types.action_type import ActionType
-from models import Document
+from datatypes import ActionType
 from services.external.digitization_registry.types import DigitizationState
-from schemas.types.documents_types import AddDocumentResponseStatus
+from services.external.aleph.client import AlephClient
+from models import Category, CatalogRecord, Document
+from datatypes import AddDocumentResponseStatus
 
 
 class TestDocumentsIntegration(TestIntegration):
-    def test_create_delete_document(self):
+    def document_update_data(self):
+        return [
+            Category(
+                id=1,
+                name="Test Category",
+            ),
+            Category(
+                id=2,
+                name="Test Category 2",
+            ),
+            CatalogRecord(
+                sysno="TEST-SYSNO",
+            ),
+            Document(
+                sysno="TEST-SYSNO",
+                volume="1, test",
+                added_by="test_user",
+                digitization_state=DigitizationState.NotDigitized,
+                category_id=1,
+            ),
+        ]
+
+    def test_update_document_page_count_manual_permitted(self):
         # Arrange
-        mock_db()
-        mockUser(
-            createTestUser(
-                [ActionType.WriteDatatable, ActionType.EditDatatableOwn]
-            )
-        )
-        document_json = {
-            "sysno": "TEST-SYSNO",
-            "volume": "1, test",
-            "title": "Test Document",
-        }
-
-        # Act - create
-        client = createTestClient()
-        response_create = client.post(
-            "/documents/new",
-            json=document_json,
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
-        )
-
-        # Assert - create
-        self.assertEqual(response_create.status_code, 200)
-        self.assertEqual(
-            response_create.json()["create_result"],
-            AddDocumentResponseStatus.Success.value,
-        )
-
-        document = response_create.json()["document"]
-        self.assertTrue(1, document["id"])
-        self.assertEqual("TEST-SYSNO", document["sysno"])
-        self.assertEqual("1, test", document["volume"])
-        self.assertEqual("Test Document", document["title"])
-
-        # Act - delete
-        response_delete = client.delete(
-            "/documents/1",
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
-        )
-
-        # Assert - delete
-        self.assertEqual(response_delete.status_code, 200)
-
-    def test_create_delete_document_delete_prohibited(self):
-        # Arrange
-        mock_db()
-        mockUser(createTestUser([ActionType.WriteDatatable]))
-        document_json = {
-            "sysno": "TEST-SYSNO",
-            "volume": "1, test",
-            "title": "Test Document",
-        }
-
-        # Act - create
-        client = createTestClient()
-        response_create = client.post(
-            "/documents/new",
-            json=document_json,
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
-        )
-
-        # Assert - create
-        self.assertEqual(response_create.status_code, 200)
-        self.assertEqual(
-            response_create.json()["create_result"],
-            AddDocumentResponseStatus.Success.value,
-        )
-
-        document = response_create.json()["document"]
-        self.assertTrue(1, document["id"])
-        self.assertEqual("TEST-SYSNO", document["sysno"])
-        self.assertEqual("1, test", document["volume"])
-        self.assertEqual("Test Document", document["title"])
-
-        # Act - delete
-        response_delete = client.delete(
-            "/documents/1",
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
-        )
-
-        # Assert - delete
-        self.assertEqual(response_delete.status_code, 403)
-
-    def test_update_document_with_write_permission(self):
-        # Arrange
-        mock_db(
-            [
-                Document(
-                    sysno="TEST-SYSNO",
-                    volume="1, test",
-                    title="Test Document",
-                    creator="test_user",
-                )
-            ]
-        )
-        mockUser(
-            createTestUser(
-                [ActionType.EditDatatableOwn, ActionType.WriteDatatable]
-            )
-        )
-        document_json = {
-            "sysno": "TEST-SYSNO",
-            "volume": "1, test - updated",
-            "title": "Test Document Updated",
-        }
-
-        # Act
-        client = createTestClient()
-        response_create = client.put(
-            "/documents/1",
-            json=document_json,
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
-        )
-
-        # Assert
-        self.assertEqual(response_create.status_code, 200)
-        document = response_create.json()
-        self.assertTrue(1, document["id"])
-        self.assertEqual("TEST-SYSNO", document["sysno"])
-        self.assertEqual("1, test - updated", document["volume"])
-        self.assertEqual("Test Document Updated", document["title"])
-
-    def test_update_document_without_write_permission(self):
-        # Arrange
-        mock_db(
-            [
-                Document(
-                    sysno="TEST-SYSNO",
-                    volume="1, test",
-                    title="Test Document",
-                    creator="test_user",
-                )
-            ]
-        )
+        mock_db(self.document_update_data())
         mockUser(createTestUser([ActionType.EditDatatableOwn]))
-        document_json = {
-            "sysno": "TEST-SYSNO",
-            "volume": "1, test - updated",
-            "title": "Test Document Updated",
-            "pages_count_manual": 10,
-        }
 
         # Act
         client = createTestClient()
         response_create = client.put(
-            "/documents/1",
-            json=document_json,
+            "/documents/1?pages_count_manual=10",
             headers={
                 "Authorization": "Bearer test_token",
                 "Content-Type": "application/json",
@@ -185,15 +54,75 @@ class TestDocumentsIntegration(TestIntegration):
         # Assert
         self.assertEqual(response_create.status_code, 200)
         document = response_create.json()
-        self.assertTrue(1, document["id"])
+
         self.assertEqual("TEST-SYSNO", document["sysno"])
         self.assertEqual("1, test", document["volume"])
-        self.assertEqual("Test Document", document["title"])
+
         self.assertEqual(10, document["pages_count_manual"])
+        self.assertEqual(3, document["extraction_priority"])
+        self.assertEqual(1, document["category_id"])
+
+    def test_update_document_extraction_priority_permitted(self):
+        # Arrange
+        mock_db(self.document_update_data())
+        mockUser(createTestUser([ActionType.EditDatatableOwn]))
+
+        # Act
+        client = createTestClient()
+        response_create = client.put(
+            "/documents/1?extraction_priority=5",
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response_create.status_code, 200)
+        document = response_create.json()
+
+        self.assertEqual("TEST-SYSNO", document["sysno"])
+        self.assertEqual("1, test", document["volume"])
+
+        self.assertIsNone(document["pages_count_manual"])
+        self.assertEqual(5, document["extraction_priority"])
+        self.assertEqual(1, document["category_id"])
+
+    def test_update_document_category_permitted(self):
+        # Arrange
+        mock_db(self.document_update_data())
+        mockUser(createTestUser([ActionType.EditDatatableOwn]))
+
+        # Act
+        client = createTestClient()
+        response_create = client.put(
+            "/documents/1?category_id=2",
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response_create.status_code, 200)
+        document = response_create.json()
+
+        self.assertEqual("TEST-SYSNO", document["sysno"])
+        self.assertEqual("1, test", document["volume"])
+
+        self.assertIsNone(document["pages_count_manual"])
+        self.assertEqual(3, document["extraction_priority"])
+        self.assertEqual(2, document["category_id"])
 
     def test_create_from_catalog(self):
         # Arrange
-        mock_db()
+        mock_db(
+            [
+                Category(
+                    name="Test Category",
+                )
+            ]
+        )
         mockUser(createTestUser([ActionType.InsertDatatable]))
         identifier_json = {
             "identifier_type": "Sysno",
@@ -203,7 +132,7 @@ class TestDocumentsIntegration(TestIntegration):
         # Act
         client = createTestClient()
         response = client.post(
-            "/documents/from_catalog",
+            "/documents/from_catalog?category_id=1",
             json=identifier_json,
             headers={
                 "Authorization": "Bearer test_token",
@@ -214,35 +143,46 @@ class TestDocumentsIntegration(TestIntegration):
         # Assert
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response.json()["create_result"],
+            response.json()["status"],
             AddDocumentResponseStatus.Success.value,
         )
+
         document = response.json()["document"]
-        self.assertEqual("2610417932", document["barcode"])
+
+        self.assertEqual("2610417932", document["issues"][0]["barcode"])
         self.assertEqual(
             DigitizationState.NotDigitized.value,
-            document["digitization_state"],
+            document["issues"][0]["digitization_state"],
         )
 
     def test_insert_by_sysno_with_some_issues_already_existing(self):
         # Arrange
         mock_db(
             [
+                Category(
+                    name="Test Category",
+                ),
+                CatalogRecord(
+                    sysno="MZK01-001731132",
+                    marc=AlephClient()
+                    .get_record("MZK01-001731132")[0]
+                    .record.as_marc(),
+                ),
                 Document(
-                    sysno="MZK01-000165329", volume="39", barcode="2619868037"
-                )
+                    sysno="MZK01-001731132", volume="39", barcode="2619868037"
+                ),
             ]
         )
         mockUser(createTestUser([ActionType.InsertDatatable]))
         identifier_json = {
             "identifier_type": "Sysno",
-            "value": "MZK01-000165329",
+            "value": "MZK01-001731132",
         }
 
         # Act
         client = createTestClient()
         response = client.post(
-            "/documents/from_catalog",
+            "/documents/from_catalog?category_id=1",
             json=identifier_json,
             headers={
                 "Authorization": "Bearer test_token",
@@ -253,21 +193,15 @@ class TestDocumentsIntegration(TestIntegration):
         # Assert
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response.json()["create_result"],
+            response.json()["status"],
             AddDocumentResponseStatus.MultipleIssues.value,
         )
 
-        catalog_document = response.json()["catalog_document"]
-        for issue in catalog_document["issues"]:
+        document = response.json()["document"]
+        for issue in document["issues"]:
             self.assertEqual(
-                issue["barcode"] == "2619868037", issue["already_exists"]
+                issue["barcode"] == "2619868037", issue["already_added"]
             )
-
-        self.assertEqual(
-            catalog_document["locationUri"],
-            "http://www.digitalniknihovna.cz/mzk/"
-            "uuid/uuid:3e68f1f0-9d7f-11e4-a2db-005056825209",
-        )
 
     # def test_insert_with_frequencies(self):
     #     sysno1 = "MZK01-000165329"
@@ -298,7 +232,7 @@ class TestDocumentsIntegration(TestIntegration):
     #     )
 
     # def test_serialize_frequency(self):
-    #     from catalogs.schemas import Frequency
+    #     from schemas import Frequency
     #     from documents.crud import get_document
 
     #     sysno = "MZK01-000165329"
@@ -316,7 +250,6 @@ class TestDocumentsIntegration(TestIntegration):
     #     id = response.json()["document"]["id"]
 
     #     document = get_document(id, self.db)
-    #     print([Frequency(**freq) for freq in document.frequencies])
 
     # def test_search_query(self):
     #     from documents.crud import (
@@ -326,7 +259,7 @@ class TestDocumentsIntegration(TestIntegration):
     #         get_documents,
     #         get_documents_num_found,
     #     )
-    #     from documents.schemas import (
+    #     from schemas import (
     #         DocumentCreate,
     #         DocumentsQuery,
     #         SearchGroup,
@@ -364,7 +297,7 @@ class TestDocumentsIntegration(TestIntegration):
 
     # def test_update_category_by_query(self):
     #     from categories.crud import create_root_category, delete_category
-    #     from categories.schemas import CategoryCreate
+    #     from schemas import CategoryCreate
     #     from documents.crud import (
     #         create_document,
     #         delete_document,
@@ -373,7 +306,7 @@ class TestDocumentsIntegration(TestIntegration):
     #         get_documents_num_found,
     #         update_documents,
     #     )
-    #     from documents.schemas import (
+    #     from schemas import (
     #         DocumentCreate,
     #         DocumentsQuery,
     #     )
@@ -425,7 +358,7 @@ class TestDocumentsIntegration(TestIntegration):
     #         get_documents_num_found,
     #         delete_documents,
     #     )
-    #     from documents.schemas import (
+    #     from schemas import (
     #         DocumentCreate,
     #         DocumentsQuery,
     #     )

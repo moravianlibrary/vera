@@ -3,12 +3,16 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import func
 from sqlalchemy.orm import relationship, Session
 from sqlalchemy.ext.hybrid import hybrid_property
-from typing import List, Optional
+from typing import List
 
 from services.database import Base
+from .base import BaseMixin
+from .documents import Document
+
+# TODO: rename extract- props
 
 
-class DigitizationList(Base):
+class DigitizationList(Base, BaseMixin):
     __tablename__ = "digitization_extractions"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -28,7 +32,7 @@ class DigitizationList(Base):
 
     @classmethod
     def get_by_intention(
-        cls, intention_id: int, session: Session
+        cls, session: Session, intention_id: int
     ) -> List["DigitizationList"]:
         return (
             session.query(DigitizationList)
@@ -36,34 +40,24 @@ class DigitizationList(Base):
             .all()
         )
 
-    @classmethod
-    def find(
-        cls, session: Session, digitization_list_id: int
-    ) -> Optional["DigitizationList"]:
-        return session.query(cls).filter_by(id=digitization_list_id).first()
-
-    @classmethod
-    def get(
-        cls, session: Session, digitization_list_id: int
+    def add_documents(
+        self, session: Session, document_ids: List[int]
     ) -> "DigitizationList":
-        digitization_list = cls.find(session, digitization_list_id)
-        if digitization_list is None:
-            raise ValueError(
-                f"Digitization list with id {digitization_list_id} not found"
-            )
-        return digitization_list
-
-    @classmethod
-    def all(cls, session, page=1, page_size=50):
-        offset = (page - 1) * page_size
-        return session.query(cls).offset(offset).limit(page_size).all()
-
-    def save(self, session: Session) -> None:
-        if self.id is None:
-            session.add(self)
-        session.commit()
+        for document_id in document_ids:
+            document = Document.get(session, document_id)
+            document.raise_for_extractibility()
+            document.extraction_id = self.id
+            document.save(session)
         session.refresh(self)
+        return self
 
-    def delete(self, session: Session) -> None:
-        session.delete(self)
-        session.commit()
+    def remove_documents(
+        self, session: Session, document_ids: List[int]
+    ) -> "DigitizationList":
+        for document_id in document_ids:
+            document = Document.get(session, document_id)
+            if document.extraction_id == self.id:
+                document.extraction_id = None
+                document.save(session)
+        session.refresh(self)
+        return self

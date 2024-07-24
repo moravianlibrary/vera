@@ -1,6 +1,6 @@
 from models import Category, Document, DigitizationList, Intention
 from services.external.digitization_registry.types import DigitizationState
-from services.external.aleph.types import IssuanceType, MaterialType
+from services.external.aleph.types import IssuanceType
 from tests.catalog_records_bank import get_test_catalog_records
 from datetime import date, timedelta
 
@@ -61,7 +61,7 @@ def get_test_documents():
             ),
             Document(
                 sysno="MZK01-000899949",
-                barcode="2619253549",
+                barcode="2619253547",
                 category_id=5,
                 issuance_type=IssuanceType.Unit,
                 digitization_state=DigitizationState.Finished,
@@ -498,31 +498,18 @@ def get_test_documents_with_extraction():
             ),
             DigitizationList(
                 intention_id=1,
-                document_ids=[1001],
-                extracted_pages=192,
                 extractor="test_user",
             ),
             Document(
-                sysno="MZK01-000225480",
-                barcode="2620008612",
-                cnb="cnb002519107",
-                isbn_issn="8090239706",
-                signature="TK-0261.970,1",
-                material_type=MaterialType.Book,
-                issuance_type=IssuanceType.Unit,
-                title="Nové stavební tabulky.",
-                digitization_state=DigitizationState.NotDigitized,
-                pages_count_catalog=192,
-                size="20 cm",
-                publisher="Ehrman & Forster,",
-                publishing_place="Praha :",
-                publishing_year="1997",
-                languages=["cze"],
-                frequencies=[],
                 id=1001,
-                creator="randiak",
-                created_at="2024-04-26 17:28:23",
+                sysno="MZK01-000345867",
+                barcode="3119806027",
+                added_by="randiak",
+                added_at="2024-04-26 17:28:23",
+                pages_count_manual=1000,
                 extraction_id=1,
+                category_id=1,
+                digitization_state=DigitizationState.Finished,
             ),
         ]
     )

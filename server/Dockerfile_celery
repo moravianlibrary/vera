@@ -9,41 +9,20 @@ COPY requirements_celery.txt /app/
 RUN pip install --no-cache-dir -r requirements_celery.txt
 
 # Copy the current directory contents into the container at /app
-# COPY auth /app/auth
-# COPY catalogs /app/catalogs
-# COPY categories /app/categories
-COPY categories/categories/models.py /app/categories/categories/models.py
-COPY categories/categories/schemas.py /app/categories/categories/schemas.py
-COPY categories/intentions/models.py /app/categories/intentions/models.py
-COPY categories/intentions/schemas.py /app/categories/intentions/schemas.py
-COPY categories/intentions/types.py /app/categories/intentions/types.py
-# COPY departments /app/departments
-# COPY documents /app/documents
-# COPY documents/crud.py /app/documents/crud.py
-# COPY documents/routines.py /app/documents/routines.py
-# COPY extractions /app/extractions
-COPY extractions/digitization/models.py /app/extractions/digitization/models.py
-COPY extractions/generated/models.py /app/extractions/generated/models.py
-COPY kramerius /app/kramerius
-COPY predictions /app/predictions
-# COPY roles /app/roles
-COPY services/csv_writer.py /app/services/csv_writer.py
-COPY services/database.py /app/services/database.py
-COPY services/exceptions.py /app/services/exceptions.py
-# COPY tasks /app/tasks
-COPY tasks/api.py /app/tasks/api.py
-COPY tasks/routines.py /app/tasks/routines.py
-COPY tasks/types.py /app/tasks/types.py
-COPY tasks/tasks/ /app/tasks/tasks/
-COPY celery_worker.py /app
-
-COPY crud /app/crud
 COPY models /app/models
 COPY procedures /app/procedures
 COPY schemas /app/schemas
+COPY services/csv_writer.py /app/services/csv_writer.py
+COPY services/database.py /app/services/database.py
+COPY services/exceptions.py /app/services/exceptions.py
+COPY services/extractions_generator /app/services/extractions_generator
+COPY services/predictions /app/services/predictions
+COPY tasks /app/tasks
+COPY worker.py /app
+
 
 # Define environment variable
 
 # Run app.py when the container launches
-CMD ["celery", "-A", "celery_worker", "worker", "--loglevel=info", "--uid=nobody"]
+CMD ["celery", "-A", "worker", "worker", "--loglevel=info", "--uid=nobody"]
 

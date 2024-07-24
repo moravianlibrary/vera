@@ -14,9 +14,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
+from datatypes import IdentifierType
+from .base import BaseMixin
 
 
-class CatalogRecord(Base):
+class CatalogRecord(Base, BaseMixin):
     __tablename__ = "catalog_records"
 
     sysno = Column(String, primary_key=True)
@@ -28,16 +30,16 @@ class CatalogRecord(Base):
 
     skc_sysno = Column(String)  # skc = authority catalog
     skc_marc = Column(LargeBinary)
-    skc_confidence = Column(
+    skc_score = Column(
         Integer,
-        CheckConstraint("skc_confidence >= 0 AND skc_confidence <= 10"),
+        CheckConstraint("skc_score >= 0 AND skc_score <= 10"),
     )
 
     cnb_sysno = Column(String)
     cnb_marc = Column(LargeBinary)
-    cnb_confidence = Column(
+    cnb_score = Column(
         Integer,
-        CheckConstraint("cnb_confidence >= 0 AND cnb_confidence <= 10"),
+        CheckConstraint("cnb_score >= 0 AND cnb_score <= 10"),
     )
 
     last_updated = Column(TIMESTAMP, server_default=func.now())
@@ -48,7 +50,7 @@ class CatalogRecord(Base):
     documents = relationship("Document", back_populates="catalog_record")
 
     @hybrid_property
-    def record(self) -> Optional[Record]:
+    def main_record(self) -> Optional[Record]:
         if self.marc is None:
             return None
         reader = MARCReader(self.marc)
@@ -90,27 +92,31 @@ class CatalogRecord(Base):
     def find(cls, session: Session, sysno: str) -> Optional["CatalogRecord"]:
         return session.query(cls).filter_by(sysno=sysno).first()
 
-    @classmethod
-    def get(cls, session: Session, sysno: str) -> "CatalogRecord":
-        record = cls.find(session, sysno)
-        if record is None:
-            raise ValueError(f"Record with sysno {sysno} not found")
-        return record
-
-    @classmethod
-    def all(cls, session, page=1, page_size=50):
-        offset = (page - 1) * page_size
-        return session.query(cls).offset(offset).limit(page_size).all()
-
-    def save(self, session: Session) -> None:
-        if CatalogRecord.find(session, self.sysno) is None:
+    def save(self, session: Session) -> "CatalogRecord":
+        if self.find(session, self.sysno) is None:
             session.add(self)
         session.commit()
         session.refresh(self)
+        return self
 
-    def delete(self, session: Session) -> None:
-        session.delete(self)
-        session.commit()
+    @classmethod
+    def find_by_identifier(
+        cls, session, identifier_type: IdentifierType, value: str
+    ) -> Optional["CatalogRecord"]:
+        if identifier_type == IdentifierType.Sysno:
+            return cls.find(session, value)
+        if identifier_type == IdentifierType.Cnb:
+            return session.query(cls).filter_by(cnb=value).first()
+        if identifier_type == IdentifierType.Signature:
+            return session.query(cls).filter_by(signature=value).first()
+        if identifier_type == IdentifierType.Isxn:
+            return session.query(cls).filter_by(isxn=value).first()
+        return (
+            session.query(cls)
+            .join(CatalogRecordBarcode)
+            .filter(CatalogRecordBarcode.barcode == value)
+            .first()
+        )
 
 
 class CatalogRecordBarcode(Base):

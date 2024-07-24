@@ -1,7 +1,7 @@
 from tests.test_integration import TestIntegration
 
 from models import Role, RoleAction
-from schemas.types.action_type import ActionType
+from datatypes import ActionType
 from helper_funcs import mock_db, mockUser, createTestUser
 
 

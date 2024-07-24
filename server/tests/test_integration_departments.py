@@ -7,7 +7,7 @@ from helper_funcs import (
     mock_db,
 )
 
-from schemas.types.action_type import ActionType
+from datatypes import ActionType
 
 
 class TestDepartmentsIntegration(TestIntegration):

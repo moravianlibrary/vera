@@ -4,16 +4,17 @@ import logging
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.background import BackgroundScheduler
 
-import routers
-import categories.categories.router as categories_router
-import categories.intentions.router as intentions_router
-import extractions.digitization.router as digitization_extractions_router
-import extractions.generated.router as generated_extractions_router
-import extractions.locations.router as locations_router
-import routers.catalogs
-import routers.documents
-import routers.security
-import tasks.router as tasks_router
+from routers import (
+    locations_router,
+    intentions_router,
+    extractions_router,
+    documents_router,
+    security_router,
+    tasks_router,
+    digitization_lists_router,
+    catalogs_router,
+    categories_router,
+)
 from config import VeraConfig
 
 
@@ -73,15 +74,15 @@ app.add_middleware(
 )
 
 
-app.include_router(routers.catalogs.router)
-app.include_router(routers.documents.router)
-app.include_router(routers.security.router)
-app.include_router(categories_router.router)
-app.include_router(intentions_router.router)
-app.include_router(digitization_extractions_router.router)
-app.include_router(generated_extractions_router.router)
-app.include_router(locations_router.router)
-app.include_router(tasks_router.router)
+app.include_router(locations_router)
+app.include_router(intentions_router)
+app.include_router(extractions_router)
+app.include_router(documents_router)
+app.include_router(security_router)
+app.include_router(tasks_router)
+app.include_router(digitization_lists_router)
+app.include_router(catalogs_router)
+app.include_router(categories_router)
 
 
 if __name__ == "__main__":

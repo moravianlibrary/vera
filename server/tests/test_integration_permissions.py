@@ -10,10 +10,8 @@ from tests.helper_funcs import (
 )
 
 from models import Department, Category, CategoryDepartments
-from categories.categories.schemas import (
-    CategoryCreate,
-)
-from schemas.types.action_type import ActionType
+from schemas import CategoryCreate
+from datatypes import ActionType
 
 
 class TestPermissions(TestIntegration):
@@ -28,9 +26,9 @@ class TestPermissions(TestIntegration):
     def setUp(self):
         self.client = createTestClient()
 
-    @patch("security.keycloak_client.get_user_from_token")
+    @patch("services.keycloak_client.get_user_from_token")
     def test_mock_get_user_from_token(self, mock_get_user_from_token: Mock):
-        from security.keycloak_client import get_user_from_token
+        from services.keycloak_client import get_user_from_token
 
         mock_get_user_from_token.return_value = createTestUser()
 

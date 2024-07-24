@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 from typing import Dict, List, Optional
 from datetime import datetime
-from tasks.types import TaskState, TaskType, TaskDocumentErrorType
+from datatypes import TaskState, TaskType, TaskDocumentErrorType
 
 
 # Dataset schema
@@ -12,12 +12,9 @@ class Dataset(BaseModel):
 
 
 # Task schemas
-class TaskCreate(BaseModel):
-    task_type: TaskType
-
-
-class TaskDefinition(TaskCreate):
+class TaskDefinition(BaseModel):
     id: int
+    task_type: TaskType
 
     owner: str
 
@@ -35,7 +32,7 @@ class TaskError(BaseModel):
     count: int
 
 
-class Task(TaskDefinition):
+class TaskOverview(TaskDefinition):
     processed_count: int
     total_count: int
     error_count: int
@@ -45,7 +42,7 @@ class Task(TaskDefinition):
     dataset_error: Optional[str] = None
 
 
-class TaskDocument(BaseModel):
+class TaskDocumentResponse(BaseModel):
     document_id: int
     deleted: bool
 

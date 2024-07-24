@@ -11,13 +11,13 @@ from sqlalchemy import (
     TIMESTAMP,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import relationship
 from services.database import Base
-from tasks.types import TaskType, TaskState, TaskDocumentErrorType
-from typing import List, Optional
+from datatypes import TaskType, TaskState, TaskDocumentErrorType
+from .base import BaseMixin
 
 
-class Task(Base):
+class Task(Base, BaseMixin):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -26,7 +26,7 @@ class Task(Base):
     task_type = Column(Enum(TaskType))
     owner = Column(String, index=True)
 
-    query = Column(String)
+    query = Column(JSON)
 
     task_state = Column(
         Enum(TaskState), server_default=TaskState.Planned.value
@@ -58,34 +58,8 @@ class Task(Base):
     def dataset_error(self):
         return self.dataset.error_message if self.dataset else None
 
-    @classmethod
-    def find(cls, session: Session, task_id: int) -> Optional["Task"]:
-        return session.query(cls).filter_by(id=task_id).first()
 
-    @classmethod
-    def get(cls, session: Session, task_id: int) -> "Task":
-        task = cls.find(session, task_id)
-        if task is None:
-            raise ValueError(f"Task with id {task_id} not found")
-        return task
-
-    @classmethod
-    def all(cls, session, page=1, page_size=50) -> List["Task"]:
-        offset = (page - 1) * page_size
-        return session.query(cls).offset(offset).limit(page_size).all()
-
-    def save(self, session: Session) -> None:
-        if self.id is None:
-            session.add(self)
-        session.commit()
-        session.refresh(self)
-
-    def delete(self, session: Session) -> None:
-        session.delete(self)
-        session.commit()
-
-
-class TaskDocument(Base):
+class TaskDocument(Base, BaseMixin):
     __tablename__ = "task_documents"
 
     task_id = Column(Integer, ForeignKey("tasks.id"), index=True)
@@ -107,7 +81,7 @@ class TaskDocument(Base):
     )
 
 
-class TaskDataset(Base):
+class TaskDataset(Base, BaseMixin):
     __tablename__ = "task_datasets"
 
     task_id = Column(

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Path
 
 from routers.utils.dependencies import DependsOnCurrentUser
 from schemas.marc21_diff import Marc21DiffRecord
-from schemas.security import CurrentUser
+from schemas import CurrentUser
 from services.exceptions import CatalogRecordNotFoundException
 
 

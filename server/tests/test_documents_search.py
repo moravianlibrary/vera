@@ -9,11 +9,10 @@ from tests.helper_funcs import (
     createTestClient,
 )
 from tests.documents_bank import get_test_documents
-
-from schemas.types.action_type import ActionType
+from models import Document
+from datatypes import ActionType
 from services.documents_indexer import DocumentsIndexer, INDEX_NAME
 from config import VeraConfig
-from crud.documents import get_document
 from tests import test_crud
 
 
@@ -39,7 +38,7 @@ class TestDocumentsSearch(unittest.TestCase):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
 
         for document in range(1, 47):
-            self.indexer.index(get_document(self.db, document))
+            self.indexer.index(Document.get(self.db, document))
 
         self.indexer.es.indices.refresh(index=INDEX_NAME)
 
@@ -48,7 +47,6 @@ class TestDocumentsSearch(unittest.TestCase):
     def tearDown(self) -> None:
         cleanUpDependencyOverrides()
         self.indexer.close()
-        self.db.reset()
         meta = test_crud.MetaData()
         meta.reflect(bind=test_crud.test_engine)
         meta.drop_all(bind=test_crud.test_engine)

@@ -88,7 +88,7 @@ class AlephRecord:
         return self.get_value("990", "a")
 
     @property
-    def material_type(self) -> Optional[MaterialType]:
+    def material_type(self) -> MaterialType:
         return parse_material_type(self.material_type_str)
 
     @property

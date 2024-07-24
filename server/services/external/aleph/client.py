@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, Tuple
 from io import BytesIO
 import re
@@ -6,6 +7,10 @@ from lxml import etree
 from pymarc import marcxml
 from .record import AlephRecord
 from .types import AlephField, AlephResponseStatus, ISXN_FIELDS
+
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 ALEPH_BASE = "https://aleph.mzk.cz"
 
@@ -23,7 +28,7 @@ SYSNO_BASES = ["MZK01", "MZK03", "MZK04"]
 NS_0 = {"ns0": "http://www.openarchives.org/OAI/2.0/"}
 MARC_NS = {"marc": "http://www.loc.gov/MARC21/slim"}
 
-SYSNO_FORMAT_1 = r"^\d{1-9}$"
+SYSNO_FORMAT_1 = r"^\d{1,9}$"
 SYSNO_FORMAT_2 = r"^(?:MZK|mzk)(\d{2})-?(\d{9})$"
 
 
@@ -36,7 +41,7 @@ class AlephClient:
             response = requests.get(ALEPH_BASE, timeout=self.timeout)
             return response.status_code == 200
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.warning(f"An error occurred: {e}")
             return False
 
     def check_find_endpoint_availability(self):
@@ -47,7 +52,7 @@ class AlephClient:
             )
             return response.status_code == 200
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.warning(f"An error occurred: {e}")
             return False
 
     def get_record(
@@ -60,11 +65,11 @@ class AlephClient:
                 timeout=self.timeout,
             )
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.warning(f"An error occurred: {e}")
             return None, AlephResponseStatus.AlephRequestFailed
 
         if response.status_code != 200:
-            print(
+            logger.warning(
                 f"HTTP request failed with status code {response.status_code}"
             )
             if response.status_code == 404:
@@ -89,63 +94,67 @@ class AlephClient:
 
         return AlephRecord(sysno, record), AlephResponseStatus.Success
 
-    def find_sysno(
+    def parse_sysno_request(
+        self, request_url: str
+    ) -> Tuple[Optional[str], AlephResponseStatus]:
+        response = requests.get(request_url, timeout=self.timeout)
+        if response.status_code != 200:
+            if response.status_code == 404:
+                return None, AlephResponseStatus.AlephNotAvailable
+            return None, AlephResponseStatus.AlephRequestFailed
+
+        find = etree.fromstring(response.content)
+        if find.find(".//error") is not None:
+            return None, AlephResponseStatus.RecordNotFound
+
+        no_records_tag = find.find(".//no_records")
+        if no_records_tag is None:
+            return None, AlephResponseStatus.RecordNotFound
+
+        records_count = int(no_records_tag.text)
+
+        if records_count == 0:
+            return None, AlephResponseStatus.RecordNotFound
+        if records_count > 1:
+            return None, AlephResponseStatus.MultipleRecordsFound
+
+        set_number = find.find(".//set_number").text
+
+        response = requests.get(
+            FIND_RECORDS_ENDPOINT.format(
+                ALEPH_BASE=ALEPH_BASE,
+                SET_NUMBER=set_number,
+                SET_ENTRY="1",
+            ),
+            timeout=self.timeout,
+        )
+        if response.status_code != 200:
+            return None, AlephResponseStatus.AlephRequestFailed
+
+        result = etree.fromstring(response.content)
+        return (
+            result.find(".//doc_number").text,
+            AlephResponseStatus.Success,
+        )
+
+    def search_in_all_bases(
         self, field: AlephField, value: str
     ) -> Tuple[Optional[str], AlephResponseStatus]:
         for base in SYSNO_BASES:
             request_url = FIND_RESULT_SET_ENDPOINT.format(
                 ALEPH_BASE=ALEPH_BASE, BASE=base, CODE=field.value, VALUE=value
             )
-
             try:
-                response = requests.get(request_url, timeout=self.timeout)
-                if response.status_code != 200:
-                    if response.status_code == 404:
-                        return None, AlephResponseStatus.AlephNotAvailable
-                    return None, AlephResponseStatus.AlephRequestFailed
-
-                find = etree.fromstring(response.content)
-                if find.find(".//error") is not None:
-                    return None, AlephResponseStatus.RecordNotFound
-
-                no_records_tag = find.find(".//no_records")
-                if no_records_tag is None:
-                    return None, AlephResponseStatus.RecordNotFound
-
-                records_count = int(no_records_tag.text)
-
-                if records_count == 0:
-                    return None, AlephResponseStatus.RecordNotFound
-                if records_count > 1:
-                    return None, AlephResponseStatus.MultipleRecordsFound
-
-                set_number = find.find(".//set_number").text
-
-                response = requests.get(
-                    FIND_RECORDS_ENDPOINT.format(
-                        ALEPH_BASE=ALEPH_BASE,
-                        SET_NUMBER=set_number,
-                        SET_ENTRY="1",
-                    ),
-                    timeout=self.timeout,
-                )
-                if response.status_code != 200:
-                    return None, AlephResponseStatus.AlephRequestFailed
-
-                result = etree.fromstring(response.content)
-                return (
-                    result.find(".//doc_number").text,
-                    AlephResponseStatus.Success,
-                )
+                return self.parse_sysno_request(request_url)
             except Exception as e:
-                print(f"An error occurred: {e}")
+                logger.warning(f"An error occurred: {e}")
 
-    def find_record(
+    def find_sysno(
         self, field: AlephField, value: str
-    ) -> Tuple[Optional[AlephRecord], AlephResponseStatus]:
+    ) -> Tuple[Optional[str], AlephResponseStatus]:
         if field == AlephField.Sysno:
             if re.match(SYSNO_FORMAT_1, value):
-                sysno, status = self.find_sysno(
+                return self.search_in_all_bases(
                     AlephField.Sysno, value.zfill(9)
                 )
             elif re.match(SYSNO_FORMAT_2, value):
@@ -153,16 +162,22 @@ class AlephClient:
                 base = sysno.split("-")[0]
                 if base not in SYSNO_BASES:
                     return None, AlephResponseStatus.InvalidSysnoBase
-                status = AlephResponseStatus.Success
+                return sysno, AlephResponseStatus.Success
             else:
                 return None, AlephResponseStatus.InvalidSysno
         elif field == AlephField.ISXN:
             for isxn_field in ISXN_FIELDS:
-                sysno, status = self.find_sysno(isxn_field, value)
+                sysno, status = self.search_in_all_bases(isxn_field, value)
                 if sysno is not None and status == AlephResponseStatus.Success:
-                    break
+                    return sysno, status
         else:
-            sysno, status = self.find_sysno(field, value)
+            return self.search_in_all_bases(field, value)
+        return None, AlephResponseStatus.RecordNotFound
+
+    def find_record(
+        self, field: AlephField, value: str
+    ) -> Tuple[Optional[AlephRecord], AlephResponseStatus]:
+        sysno, status = self.find_sysno(field, value)
 
         if status != AlephResponseStatus.Success:
             return None, status

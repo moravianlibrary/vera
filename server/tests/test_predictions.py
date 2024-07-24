@@ -3,7 +3,9 @@ import unittest
 
 class TestPredictions(unittest.TestCase):
     def test_predict_volume_pages(self):
-        from predictions.volumes_pages_predictor import VolumesPagesPredictor
+        from services.predictions.volumes_pages_predictor import (
+            VolumesPagesPredictor,
+        )
 
         predictor = VolumesPagesPredictor()
         predicted = predictor.predict(
@@ -18,9 +20,14 @@ class TestPredictions(unittest.TestCase):
         self.assertIsInstance(predicted, float)
 
     def test_predict_volume_pages_2(self):
-        from catalogs.schemas import Frequency
-        from predictions.frequency_parser import parse_frequency, parse_year
-        from predictions.volumes_pages_predictor import VolumesPagesPredictor
+        from schemas import Frequency
+        from services.predictions.frequency_parser import (
+            parse_frequency,
+            parse_year,
+        )
+        from services.predictions.volumes_pages_predictor import (
+            VolumesPagesPredictor,
+        )
 
         title = "Svobodné slovo : list Československé strany socialistické."
         year = "1952"
@@ -45,9 +52,14 @@ class TestPredictions(unittest.TestCase):
         self.assertIsInstance(predicted, float)
 
     def test_predict_volume_pages_3(self):
-        from catalogs.schemas import Frequency
-        from predictions.frequency_parser import parse_frequency, parse_year
-        from predictions.volumes_pages_predictor import VolumesPagesPredictor
+        from schemas import Frequency
+        from services.predictions.frequency_parser import (
+            parse_frequency,
+            parse_year,
+        )
+        from services.predictions.volumes_pages_predictor import (
+            VolumesPagesPredictor,
+        )
 
         title = "Bílé Karpaty : časopis moravsko-slovenského pomezí"
         year = "2021"

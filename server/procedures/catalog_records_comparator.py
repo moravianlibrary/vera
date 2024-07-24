@@ -200,17 +200,14 @@ def calculate_records_similarity(record1: Record, record2: Record) -> float:
 
 
 # diffs = compare_mzk_with_skc("MZK01-000033633", "cnb003367815", None)
-# print("\n".join([str(diff) for diff in diffs]))
 
 # diffs = compare_mzk_with_skc("MZK01-000602672", "cnb000568682", None)
-# print("\n".join([str(diff) for diff in diffs]))
 
 # with open("/tmp/check_mzk_vs_skc_from_vera", "r") as f:
 #     for line in f.readlines():
 #         ids = line.strip().split("\t")
 
 #         if len(ids) < 2:
-#             print(f"Invalid input: {ids}")
 #             continue
 
 #         diffs = []

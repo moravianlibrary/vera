@@ -1,7 +1,7 @@
 from pydantic import BaseModel, validator
 from typing import List, Optional
 from pymarc import Record, MARCReader
-from schemas.types.catalog_types import IdentifierType
+from datatypes import IdentifierType
 from services.external.aleph.record import AlephRecord
 from services.external.aleph.issue import AlephIssue
 from services.external.aleph.types import MaterialType, IssuanceType
@@ -9,6 +9,7 @@ from services.external.digitization_registry.record import (
     DigitizationRegistryRecord,
 )
 from services.external.digitization_registry.types import DigitizationState
+from models import CatalogRecord
 
 
 class Identifier(BaseModel):
@@ -16,7 +17,7 @@ class Identifier(BaseModel):
     value: str
 
 
-class CatalogIssue(BaseModel):
+class CatalogIssueResponse(BaseModel):
     issuance_type: Optional[IssuanceType] = None
     barcode: Optional[str] = None
     volume: Optional[str] = None
@@ -37,7 +38,7 @@ class CatalogIssue(BaseModel):
         aleph_issue: AlephIssue,
         digitization_registry_record: DigitizationRegistryRecord,
         already_added: bool,
-    ) -> "CatalogIssue":
+    ) -> "CatalogIssueResponse":
         return cls(
             issuance_type=aleph_issue.issuance_type,
             barcode=aleph_issue.barcode,
@@ -45,8 +46,16 @@ class CatalogIssue(BaseModel):
             volume_year=aleph_issue.volume_year,
             bundle=aleph_issue.bundle,
             signature=aleph_issue.signature or aleph_record.signature,
-            digitization_registry_id=digitization_registry_record.id,
-            digitization_state=digitization_registry_record.state,
+            digitization_registry_id=(
+                digitization_registry_record.id
+                if digitization_registry_record
+                else None
+            ),
+            digitization_state=(
+                digitization_registry_record.digitization_state
+                if digitization_registry_record
+                else DigitizationState.NotDigitized
+            ),
             can_digitize=aleph_issue.can_digitize,
             already_added=already_added,
         )
@@ -57,26 +66,34 @@ class CatalogIssue(BaseModel):
         aleph_record: AlephRecord,
         digitization_registry_record: DigitizationRegistryRecord,
         already_added: bool,
-    ) -> "CatalogIssue":
+    ) -> "CatalogIssueResponse":
         return cls(
             signature=aleph_record.signature,
-            digitization_registry_id=digitization_registry_record.id,
-            digitization_state=digitization_registry_record.state,
+            digitization_registry_id=(
+                digitization_registry_record.id
+                if digitization_registry_record
+                else None
+            ),
+            digitization_state=(
+                digitization_registry_record.digitization_state
+                if digitization_registry_record
+                else DigitizationState.NotDigitized
+            ),
             already_added=already_added,
         )
 
 
-class CatalogRecord(BaseModel):
+class CatalogRecordResponse(BaseModel):
     sysno: str
     marc: Record
 
     skc_sysno: Optional[str]
     skc_marc: Optional[Record]
-    skc_confidence: Optional[int]
+    skc_score: Optional[int]
 
     cnb_sysno: Optional[str]
     cnb_marc: Optional[Record]
-    cnb_confidence: Optional[int]
+    cnb_score: Optional[int]
 
     last_updated: Optional[str]
 
@@ -95,36 +112,36 @@ class CatalogRecord(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-        orm_mode = True
+        from_attributes = True
 
 
-class CatalogDocument(BaseModel):
+class CatalogDocumentResponse(BaseModel):
     sysno: str
     title: str
     material_type: MaterialType
-    issues: List[CatalogIssue]
+    issues: List[CatalogIssueResponse]
 
     skc_sysno: Optional[str] = None
-    skc_confidence: float = 0
+    skc_score: Optional[float] = None
     cnb_sysno: Optional[str] = None
-    cnb_confidence: float = 0
+    cnb_score: Optional[float] = None
 
     @classmethod
     def from_records(
         cls,
         aleph_record: AlephRecord,
-        catalog_issues: List[CatalogIssue],
+        catalog_issues: List[CatalogIssueResponse],
         catalog_record: CatalogRecord,
-    ) -> "CatalogDocument":
+    ) -> "CatalogDocumentResponse":
         return cls(
             sysno=aleph_record.sysno,
             title=aleph_record.title,
             material_type=aleph_record.material_type,
             issues=catalog_issues,
             skc_sysno=catalog_record.skc_sysno,
-            skc_confidence=catalog_record.skc_confidence,
+            skc_score=catalog_record.skc_score,
             cnb_sysno=catalog_record.cnb_sysno,
-            cnb_confidence=catalog_record.cnb_confidence,
+            cnb_score=catalog_record.cnb_score,
         )
 
 

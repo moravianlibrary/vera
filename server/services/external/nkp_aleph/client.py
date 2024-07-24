@@ -62,7 +62,6 @@ class NkpAlephClient:
         )
 
         if response.status_code != 200:
-            print(response)
             return None
         return BeautifulSoup(response.content, "html.parser")
 

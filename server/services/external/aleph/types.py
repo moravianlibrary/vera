@@ -38,6 +38,7 @@ class IssuanceType(Enum):
 class MaterialType(Enum):
     Book = "Book"
     ContinuingResource = "ContinuingResource"
+    Graphic = "Graphic"
     Map = "Map"
     Music = "Music"
     Other = "Other"

@@ -2,6 +2,7 @@ from os import environ
 from datetime import tzinfo
 import pytz
 from typing import List
+from datetime import datetime
 
 
 class staticproperty(property):
@@ -13,6 +14,10 @@ class VeraConfig:
     @staticproperty
     def TimeZone() -> tzinfo:
         return pytz.timezone("UTC")
+
+    @staticproperty
+    def Timestamp() -> datetime:
+        return datetime.now(tz=VeraConfig.TimeZone)
 
     @staticproperty
     def RequestTimeout() -> int:

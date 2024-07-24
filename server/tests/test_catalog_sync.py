@@ -1,9 +1,8 @@
 from tests.test_integration import TestIntegration
 from helper_funcs import mock_db, get_test_db
-from crud.documents import get_document
-from tasks.types import TaskType
-from tasks.tasks.sync_from_catalog import sync_from_catalog
-from tasks.tasks.sync_from_digitization_registry import (
+from datatypes import TaskType
+from tasks.sync_from_catalog import sync_from_catalog
+from tasks.sync_from_digitization_registry import (
     sync_from_digitization_registry,
 )
 from services.external.digitization_registry.types import DigitizationState
@@ -41,19 +40,21 @@ class TestCatalogSync(TestIntegration):
         # Arrange
         mock_db(self.get_testing_models())
         session = get_test_db()
-        document = get_document(session, 1)
+        document = Document.get(session, 1)
         self.assertIsNone(document.catalog_record.marc)
         self.assertEqual(document.digitization_registry_id, None)
 
         # Act
         sync_from_catalog(1, "Test User", session)
-        document = get_document(session, 1)
+        document = Document.get(session, 1)
 
         # Assert
-        self.assertIsNotNone(document.catalog_record.record)
+        self.assertIsNotNone(document.catalog_record.marc)
+        self.assertIsNotNone(document.catalog_record.main_record)
         self.assertEqual(
             AlephRecord(
-                document.catalog_record.sysno, document.catalog_record.record
+                document.catalog_record.sysno,
+                document.catalog_record.main_record,
             ).title,
             "Lidé a země : zeměpisný a cestopisný měsíčník",
         )
@@ -66,15 +67,15 @@ class TestCatalogSync(TestIntegration):
         session = get_test_db()
 
         # Act
-        registry_id_before_sync = get_document(
+        registry_id_before_sync = Document.get(
             session, 1
         ).digitization_registry_id
-        state_before_sync = get_document(session, 1).digitization_state
+        state_before_sync = Document.get(session, 1).digitization_state
         sync_from_digitization_registry(1, "Test User", session)
-        registry_id_after_sync = get_document(
+        registry_id_after_sync = Document.get(
             session, 1
         ).digitization_registry_id
-        state_after_sync = get_document(session, 1).digitization_state
+        state_after_sync = Document.get(session, 1).digitization_state
         session.close()
 
         # Assert

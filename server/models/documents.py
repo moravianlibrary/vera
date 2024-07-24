@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List, Dict
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import relationship, Session, joinedload
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import (
     CheckConstraint,
@@ -13,15 +13,22 @@ from sqlalchemy import (
     TIMESTAMP,
     UniqueConstraint,
     func,
+    or_,
 )
 
 from services.database import Base
 from services.external.aleph.types import IssuanceType
 from services.external.digitization_registry.types import DigitizationState
+from services.exceptions import (
+    CannotExtractDocumentWithoutPagesCount,
+    CannotExtractDocumentWithoutCNB,
+    DocumentAlreadyExtractedException,
+)
 from .catalog_records import CatalogRecord
+from .base import BaseMixin
 
 
-class Document(Base):
+class Document(Base, BaseMixin):
     __tablename__ = "documents"
     __table_args__ = (
         UniqueConstraint(
@@ -65,6 +72,10 @@ class Document(Base):
 
     catalog_record = relationship("CatalogRecord", back_populates="documents")
     category = relationship("Category", back_populates="documents")
+    # TODO: settle on extractions naming
+    # digitization_list = relationship(
+    #     "DigitizationList", back_populates="documents"
+    # )
     extraction = relationship("DigitizationList", back_populates="documents")
     task_documents = relationship(
         "TaskDocument",
@@ -135,6 +146,16 @@ class Document(Base):
             & cls.extraction_id.is_(None)
         )
 
+    def raise_for_extractibility(self) -> None:
+        if self.is_extractable:
+            return
+        if self.pages_count is None or self.pages_count == 0:
+            raise CannotExtractDocumentWithoutPagesCount()
+        if self.catalog_record.cnb is None:
+            raise CannotExtractDocumentWithoutCNB()
+        if self.extraction_id is not None:
+            raise DocumentAlreadyExtractedException()
+
     @hybrid_property
     def category_name(self) -> Optional[str]:
         return self.category.name if self.category else None
@@ -170,29 +191,86 @@ class Document(Base):
 
     @classmethod
     def find(cls, session: Session, document_id: int) -> Optional["Document"]:
-        return session.query(cls).filter_by(id=document_id).first()
+        return (
+            session.query(cls)
+            .options(joinedload(Document.category))
+            .filter_by(id=document_id)
+            .first()
+        )
+
+    def validate_before_save(self, session: Session) -> None:
+        if self.barcode:
+            other = (
+                session.query(Document).filter_by(barcode=self.barcode).first()
+            )
+        elif self.volume or self.volume_year or self.bundle:
+            other = (
+                session.query(Document)
+                .filter_by(
+                    volume=self.volume,
+                    volume_year=self.volume_year,
+                    bundle=self.bundle,
+                )
+                .first()
+            )
+        else:
+            other = session.query(Document).filter_by(sysno=self.sysno).first()
+
+        if other is not None and (self.id is None or self.id != other.id):
+            raise ValueError(
+                f"Document with sysno {self.sysno}, barcode {self.barcode} "
+                f"and issue {self.volume} {self.volume_year} {self.bundle} "
+                "already exists"
+            )
 
     @classmethod
-    def get(cls, session: Session, document_id: int) -> "Document":
-        document = cls.find(session, document_id)
-        if not document:
-            raise ValueError(f"Document with id {document_id} not found")
-        return document
+    def exists(
+        cls,
+        session: Session,
+        sysno: str,
+        barcode: Optional[str] = None,
+        volume: Optional[str] = None,
+        volume_year: Optional[str] = None,
+        bundle: Optional[str] = None,
+    ) -> bool:
+        if barcode:
+            return (
+                session.query(cls)
+                .filter_by(sysno=sysno, barcode=barcode)
+                .count()
+                > 0
+            )
+        if volume or volume_year or bundle:
+            return (
+                session.query(cls)
+                .filter_by(
+                    sysno=sysno,
+                    volume=volume,
+                    volume_year=volume_year,
+                    bundle=bundle,
+                )
+                .count()
+                > 0
+            )
+        return session.query(cls).filter_by(sysno=sysno).count() > 0
 
     @classmethod
-    def all(cls, session, page=1, page_size=50):
-        offset = (page - 1) * page_size
-        return session.query(cls).offset(offset).limit(page_size).all()
+    def get_extractable_documents(
+        cls, session: Session, category_id: int, location_patterns: List[str]
+    ) -> List["Document"]:
+        query = (
+            session.query(cls)
+            .filter_by(category_id=category_id)
+            .filter(cls.is_extractable)
+        )
 
-    def save(self, session: Session) -> None:
-        if self.id is None:
-            session.add(self)
-        session.commit()
-        session.refresh(self)
+        if location_patterns:
+            regex_filters = [
+                cls.signature.op("~")(pattern) for pattern in location_patterns
+            ]
+            query = query.filter(or_(*regex_filters))
 
-    def delete(self, session: Session) -> None:
-        session.delete(self)
-        session.commit()
+        return query.all()
 
 
 class DocumentComment(Base):

@@ -14,21 +14,15 @@ RUN pip install --no-cache-dir -r requirements_server.txt
 # Copy the entire project directory into the container
 COPY alembic.ini /app/alembic.ini
 COPY alembic /app/alembic
-COPY categories /app/categories
-COPY documents /app/documents
-COPY extractions /app/extractions
-COPY predictions /app/predictions
-COPY security /app/security
-COPY services /app/services
-COPY tasks /app/tasks
-COPY celery_worker.py /app
-COPY vera.py /app
-
-COPY crud /app/crud
 COPY models /app/models
 COPY procedures /app/procedures
 COPY routers /app/routers
 COPY schemas /app/schemas
+COPY services /app/services
+COPY tasks /app/tasks
+COPY worker.py /app
+COPY vera.py /app
+COPY config.py /app
 
 
 # Expose port 8000 for the FastAPI application

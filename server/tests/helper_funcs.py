@@ -6,9 +6,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from typing import Any, List, Optional
 
-from schemas.security import CurrentUser
-from schemas.documents import Document
+from schemas import CurrentUser, DocumentResponse
 from tests import test_crud  # noqa: F401
+from models import Document
 
 
 TOKEN_CALL = (
@@ -36,7 +36,7 @@ def mockClsEnv(cls):
 
 def mockUser(user: CurrentUser):
     from vera import app
-    from security.api import get_current_user
+    from routers.utils.dependencies import get_current_user
 
     app.dependency_overrides[get_current_user] = lambda: user
 
@@ -74,13 +74,13 @@ def mock_db(items: List[Any] = []):
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    if items:
+    for item in items:
         try:
-            session.add_all(items)
+            session.add(item)
             session.commit()
         except Exception as e:
-            print(f"Error seeding database: {e}")
             session.rollback()
+            raise Exception(f"Error seeding database: {e}")
         finally:
             session.close()
 
@@ -92,6 +92,11 @@ def mock_db(items: List[Any] = []):
             db.close()
 
     app.dependency_overrides[get_db] = override_get_db
+
+
+def mock_index(session, indexer):
+    for document in Document.all(session):
+        indexer.index(document)
 
 
 def get_test_db():
@@ -126,7 +131,7 @@ def createTestUser(actions=[], department_id=10):
 
 
 def get_all_actions_except(actions):
-    from schemas.types.action_type import ActionType
+    from datatypes import ActionType
 
     return [action for action in ActionType if action not in actions]
 
@@ -150,9 +155,9 @@ def createTestCategoryNode(
     count_documents_without_cnb: int = 0,
     count_documents: int = 0,
 ):
-    from categories.categories.schemas import Category
+    from schemas import CategoryResponse
 
-    return Category(
+    return CategoryResponse(
         id=id,
         name=name,
         description=description,
@@ -238,7 +243,7 @@ def get_mock_document_view_documents():
     with open(MOCK_DOCUMENTS_FILE, "r", newline="") as csvfile:
         reader = csv.DictReader(csvfile, delimiter=";")
         for row in reader:
-            mock_document = Document(
+            mock_document = DocumentResponse(
                 id=int(row["id"]),
                 sysno=row["sysno"],
                 volume=row.get("volume"),

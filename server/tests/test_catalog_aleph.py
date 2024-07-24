@@ -3,7 +3,6 @@ from tests.helper_funcs import mockClsEnv
 
 from services.external.aleph.client import AlephClient
 from services.external.aleph.issue import AlephIssue
-from services.external.aleph.record import Frequency
 from services.external.aleph.types import (
     AlephField,
     AlephResponseStatus,
@@ -21,7 +20,7 @@ class TestAlephCatalog(unittest.TestCase):
     def tearDownClass(cls):
         cls.patcher.stop()
 
-    def test_print_document(self):
+    def test_find_record(self):
         # Arrange
         field = AlephField.Sysno
         # value="MZK01-000229421",
@@ -32,10 +31,44 @@ class TestAlephCatalog(unittest.TestCase):
         aleph_record, status = AlephClient().find_record(field, value)
 
         # Assert
-        # print(aleph_record)
-        # print(status)
         self.assertIsNotNone(aleph_record)
         self.assertIsNotNone(status)
+
+    def test_get_using_dashless_prefixed_sysno(self):
+        # Arrange
+        field = AlephField.Sysno
+        value = "mzk01000724903"
+
+        # Act
+        aleph_record, status = AlephClient().find_record(field, value)
+
+        # Assert
+        self.assertEqual(status, AlephResponseStatus.Success)
+        self.assertEqual(aleph_record.sysno, "MZK01-000724903")
+
+    def test_get_using_sysno_without_prefix(self):
+        # Arrange
+        field = AlephField.Sysno
+        value = "000724903"
+
+        # Act
+        aleph_record, status = AlephClient().find_record(field, value)
+
+        # Assert
+        self.assertEqual(status, AlephResponseStatus.Success)
+        self.assertEqual(aleph_record.sysno, "MZK01-000724903")
+
+    def test_get_using_sysno_without_prefix_and_with_omitted_zeros(self):
+        # Arrange
+        field = AlephField.Sysno
+        value = "724903"
+
+        # Act
+        aleph_record, status = AlephClient().find_record(field, value)
+
+        # Assert
+        self.assertEqual(status, AlephResponseStatus.Success)
+        self.assertEqual(aleph_record.sysno, "MZK01-000724903")
 
     def test_get_one_edition_document(self):
         # Arrange
@@ -89,10 +122,15 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(
             aleph_record.frequencies,
             [
-                Frequency("3x ročně", "2016-"),
-                Frequency("2x ročně,", "2015"),
-                Frequency("1x ročně,", "2012-2014"),
+                {"frequency": "3x ročně", "date": "2016-"},
+                {"frequency": "2x ročně,", "date": "2015"},
+                {"frequency": "1x ročně,", "date": "2012-2014"},
             ],
+            # [
+            #     Frequency("3x ročně", "2016-"),
+            #     Frequency("2x ročně,", "2015"),
+            #     Frequency("1x ročně,", "2012-2014"),
+            # ],
         )
         self.assertEqual(aleph_record.publishing_year, "2012-")
 

@@ -2,10 +2,10 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 from schemas.catalog_records import (
-    CatalogDocument,
+    CatalogDocumentResponse,
     Identifier,
 )
-from schemas.types.documents_types import AddDocumentResponseStatus
+from datatypes import AddDocumentResponseStatus
 from services.external.aleph.types import IssuanceType
 from services.external.digitization_registry.types import DigitizationState
 
@@ -13,10 +13,10 @@ from services.external.digitization_registry.types import DigitizationState
 class AddDocumentResponse(BaseModel):
     identifier: Identifier
     status: AddDocumentResponseStatus
-    document: Optional[CatalogDocument] = None
+    document: Optional[CatalogDocumentResponse] = None
 
 
-class Document(BaseModel):
+class DocumentResponse(BaseModel):
     id: int
 
     sysno: str
@@ -34,7 +34,6 @@ class Document(BaseModel):
     added_at: datetime
     category_id: int
     category_name: str
-    category_path: str
 
     digitization_registry_id: Optional[int]
     digitization_state: DigitizationState
@@ -53,6 +52,22 @@ class Document(BaseModel):
     extracted_at: Optional[datetime]
 
     comments_count: int = 0
+
+    class Config:
+        arbitrary_types_allowed = True
+        from_attributes = True
+
+
+class CommentCreate(BaseModel):
+    text: str
+
+
+class Comment(CommentCreate):
+    id: int
+    document_id: int
+    user_id: int
+    created_at: datetime
+    edited_at: Optional[datetime] = None
 
     class Config:
         arbitrary_types_allowed = True

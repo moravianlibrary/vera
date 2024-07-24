@@ -6,10 +6,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship, Session
 from services.database import Base
-from typing import List, Optional
+from typing import Optional, List
+from .base import BaseMixin
 
 
-class User(Base):
+class User(Base, BaseMixin):
     __tablename__ = "users"
 
     username = Column(String, primary_key=True, index=True)
@@ -18,27 +19,16 @@ class User(Base):
     department = relationship("Department", back_populates="department_users")
 
     @classmethod
-    def find(cls, session: Session, user_id: int) -> Optional["User"]:
-        return session.query(cls).filter_by(id=user_id).first()
+    def find_by_name(cls, session: Session, username: str) -> Optional["User"]:
+        return session.query(cls).filter_by(username=username).first()
 
     @classmethod
-    def get(cls, session: Session, user_id: int) -> "User":
-        user = cls.find(session, user_id)
-        if user is None:
-            raise ValueError(f"User with id {user_id} not found")
-        return user
-
-    @classmethod
-    def all(cls, session, page=1, page_size=50) -> List["User"]:
-        offset = (page - 1) * page_size
-        return session.query(cls).offset(offset).limit(page_size).all()
-
-    def save(self, session: Session) -> None:
-        if self.id is None:
-            session.add(self)
-        session.commit()
-        session.refresh(self)
-
-    def delete(self, session: Session) -> None:
-        session.delete(self)
-        session.commit()
+    def add_users_to_department(
+        cls, session: Session, department_id: int, users: List[str]
+    ):
+        for username in users:
+            user = cls.find_by_name(session, username)
+            if user is None:
+                user = cls(username=username)
+            user.department_id = department_id
+            session.add(user)
