@@ -5,9 +5,9 @@ from tasks.sync_from_catalog import sync_from_catalog
 from tasks.sync_from_digitization_registry import (
     sync_from_digitization_registry,
 )
-from services.external.digitization_registry.types import DigitizationState
+from services.external.digitization_registry import DigitizationState
 from models import CatalogRecord, Document, Task, TaskDocument, Category
-from services.external.aleph.record import AlephRecord
+from services.external.aleph import AlephRecord
 
 
 class TestCatalogSync(TestIntegration):

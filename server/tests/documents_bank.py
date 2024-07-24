@@ -1,6 +1,6 @@
 from models import Category, Document, DigitizationList, Intention
-from services.external.digitization_registry.types import DigitizationState
-from services.external.aleph.types import IssuanceType
+from services.external.digitization_registry import DigitizationState
+from services.external.aleph import IssuanceType
 from tests.catalog_records_bank import get_test_catalog_records
 from datetime import date, timedelta
 

@@ -1,7 +1,7 @@
 from typing import Optional, Tuple
 from sqlalchemy.orm import Session
-from services.external.aleph.client import AlephClient
-from services.external.aleph.types import AlephResponseStatus
+from services.external.aleph import AlephClient
+from services.external.aleph import AlephResponseStatus
 from services.external.nkp_aleph.client import NkpAlephClient
 from models import CatalogRecord
 

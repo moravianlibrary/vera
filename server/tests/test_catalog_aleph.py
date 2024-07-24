@@ -1,9 +1,9 @@
 import unittest
 from tests.helper_funcs import mockClsEnv
 
-from services.external.aleph.client import AlephClient
-from services.external.aleph.issue import AlephIssue
-from services.external.aleph.types import (
+from services.external.aleph import AlephClient
+from services.external.aleph import AlephIssue
+from services.external.aleph import (
     AlephField,
     AlephResponseStatus,
     MaterialType,
@@ -207,7 +207,7 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(aleph_record.sysno, "MZK01-000230291")
 
     def test_parse_pages_count(self):
-        from services.external.aleph.parsers import parse_page_count
+        from services.external.aleph import parse_page_count
 
         self.assertEqual(parse_page_count("66 s."), 66)
         self.assertEqual(parse_page_count("17 s. :"), 17)

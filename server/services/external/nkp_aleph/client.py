@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 from time import sleep
 import requests
 from bs4 import BeautifulSoup
-from services.external.aleph.record import AlephRecord
+from services.external.aleph import AlephRecord
 
 NKP_BASE = "https://aleph.nkp.cz"
 CONN_TIMEOUT = 10

@@ -2,9 +2,9 @@ from sqlalchemy.orm import Session
 from models import CatalogRecord, Document
 from tasks.documents_processing import run_task
 from procedures.update_catalog_record import update_catalog_record
-from services.external.aleph.record import AlephRecord
-from services.external.aleph.issue import AlephIssue
-from services.external.aleph.types import AlephResponseStatus
+from services.external.aleph import AlephRecord
+from services.external.aleph import AlephIssue
+from services.external.aleph import AlephResponseStatus
 from services.documents_indexer import DocumentsIndexer
 
 

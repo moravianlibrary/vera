@@ -6,8 +6,8 @@ from schemas.catalog_records import (
     Identifier,
 )
 from datatypes import AddDocumentResponseStatus
-from services.external.aleph.types import IssuanceType
-from services.external.digitization_registry.types import DigitizationState
+from services.external.aleph import IssuanceType
+from services.external.digitization_registry import DigitizationState
 
 
 class AddDocumentResponse(BaseModel):

@@ -2,13 +2,13 @@ from pydantic import BaseModel, validator
 from typing import List, Optional
 from pymarc import Record, MARCReader
 from datatypes import IdentifierType
-from services.external.aleph.record import AlephRecord
-from services.external.aleph.issue import AlephIssue
-from services.external.aleph.types import MaterialType, IssuanceType
-from services.external.digitization_registry.record import (
+from services.external.aleph import AlephRecord
+from services.external.aleph import AlephIssue
+from services.external.aleph import MaterialType, IssuanceType
+from services.external.digitization_registry import (
     DigitizationRegistryRecord,
 )
-from services.external.digitization_registry.types import DigitizationState
+from services.external.digitization_registry import DigitizationState
 from models import CatalogRecord
 
 

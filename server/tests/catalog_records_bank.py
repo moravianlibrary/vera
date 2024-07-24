@@ -1,6 +1,6 @@
 from models import CatalogRecord
 from pymarc import MARCReader
-from services.external.aleph.record import AlephRecord
+from services.external.aleph import AlephRecord
 
 
 def get_test_catalog_records():

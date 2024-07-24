@@ -17,8 +17,8 @@ from sqlalchemy import (
 )
 
 from services.database import Base
-from services.external.aleph.types import IssuanceType
-from services.external.digitization_registry.types import DigitizationState
+from services.external.aleph import IssuanceType
+from services.external.digitization_registry import DigitizationState
 from services.exceptions import (
     CannotExtractDocumentWithoutPagesCount,
     CannotExtractDocumentWithoutCNB,

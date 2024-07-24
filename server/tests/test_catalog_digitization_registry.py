@@ -1,9 +1,9 @@
 import unittest
 from tests.helper_funcs import mockClsEnv
-from services.external.digitization_registry.client import (
+from services.external.digitization_registry import (
     DigitizationRegistryClient,
 )
-from services.external.digitization_registry.types import DigitizationState
+from services.external.digitization_registry import DigitizationState
 
 
 class TestDigitizationRegister(unittest.TestCase):

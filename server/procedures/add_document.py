@@ -2,10 +2,10 @@ from typing import Optional, Tuple
 from datetime import datetime, timedelta
 from config import VeraConfig
 from sqlalchemy.orm import Session
-from services.external.digitization_registry.types import DigitizationState
+from services.external.digitization_registry import DigitizationState
 from schemas.catalog_records import Identifier
-from services.external.aleph.client import AlephClient
-from services.external.digitization_registry.client import (
+from services.external.aleph import AlephClient
+from services.external.digitization_registry import (
     DigitizationRegistryClient,
 )
 from schemas import (
@@ -22,9 +22,9 @@ from datatypes import (
 from services import exceptions
 from services.documents_indexer import DocumentsIndexer
 from procedures.update_catalog_record import update_catalog_record
-from services.external.aleph.record import AlephRecord
-from services.external.aleph.issue import AlephIssue
-from services.external.aleph.types import AlephResponseStatus
+from services.external.aleph import AlephRecord
+from services.external.aleph import AlephIssue
+from services.external.aleph import AlephResponseStatus
 from models import CatalogRecord, Document
 
 

@@ -7,8 +7,8 @@ from helper_funcs import (
 )
 
 from datatypes import ActionType
-from services.external.digitization_registry.types import DigitizationState
-from services.external.aleph.client import AlephClient
+from services.external.digitization_registry import DigitizationState
+from services.external.aleph import AlephClient
 from models import Category, CatalogRecord, Document
 from datatypes import AddDocumentResponseStatus
 
