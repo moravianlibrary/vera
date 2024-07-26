@@ -14,6 +14,7 @@ from routers.utils.permissions import (
     CanManageDocument,
     CanReadDocument,
     CanReadDocuments,
+    CanManageDocuments,
     OwnershipValidator,
 )
 from routers.utils.dependencies import (
@@ -35,6 +36,22 @@ XLSX_MIMETYPE = (
 )
 
 router = APIRouter(prefix="/documents")
+
+
+def restrict_editing_query_params(
+    query_params: ElasticsearchParams, user: CurrentUser
+) -> ElasticsearchParams:
+    if user.has_action(ActionType.EditDatatableAll):
+        return query_params
+    if user.has_action(ActionType.EditDatatableDepartment):
+        return DocumentsIndexer.restrict_query_params_for_categories(
+            query_params, user.department_categories_ids
+        )
+    if user.has_action(ActionType.EditDatatableOwn):
+        return DocumentsIndexer.restrict_query_params_for_username(
+            query_params, user.username
+        )
+    raise Exception("User without edit permission trying to edit documents")
 
 
 @router.post(
@@ -126,13 +143,19 @@ def query_documents(
 ):
     if user.has_action(ActionType.ReadDatatableAll):
         return indexer.search(query_params)
-
     if user.has_action(ActionType.ReadDatatableDepartment):
-        return indexer.search_for_categories(
-            query_params, user.department_categories_ids
+        return indexer.search(
+            DocumentsIndexer.restrict_query_params_for_categories(
+                query_params, user.department_categories_ids
+            )
         )
-
-    return indexer.search_restricted_for_username(user.username, query_params)
+    if user.has_action(ActionType.ReadDatatableOwn):
+        return indexer.search(
+            DocumentsIndexer.restrict_query_params_for_username(
+                query_params, user.username
+            )
+        )
+    raise Exception("User without edit permission trying to edit documents")
 
 
 @router.post("/query/export", dependencies=[CanReadDocuments])
@@ -166,45 +189,39 @@ def export_query_documents(
     )
 
 
-# @router.put(
-#     "/query/change_category",
-#     dependencies=[CanReadDocuments, CanManageDocuments],
-#     response_model=query_DocumentsQuery,
-# )
-# def update_query_documents(
-#     query: query_DocumentsQuery,
-#     category_id: Optional[int] = None,
-#     user: CurrentUser = DependsOnCurrentUser,
-#     session: Session = DependsOnDbSession,
-# ):
-#     query_base = crud.get_documents_query_base(
-#         session,
-#         documents_provider.filter_documents_query_by_user_permissions(
-#             user, query
-#         ),
-#     )
-#     crud.update_documents(query_base, "category_id", category_id, session)
-#     return query
+@router.put(
+    "/query/change_category",
+    dependencies=[CanManageDocuments],
+)
+def update_query_documents(
+    query_params: ElasticsearchParams,
+    category_id: Optional[int] = None,
+    user: CurrentUser = DependsOnCurrentUser,
+    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
+    session: Session = DependsOnDbSession,
+):
+    for document_id in indexer.get_document_ids(
+        restrict_editing_query_params(query_params, user)
+    ):
+        document = Document.get(session, document_id)
+        document.category_id = category_id
+        document.save(session)
 
 
-# @router.post(
-#     "/query/delete",
-#     dependencies=[CanReadDocuments, CanManageDocuments],
-#     response_model=query_DocumentsQuery,
-# )
-# def delete_query_documents(
-#     query: query_DocumentsQuery,
-#     user: CurrentUser = DependsOnCurrentUser,
-#     session: Session = DependsOnDbSession,
-# ):
-#     query_base = crud.get_documents_query_base(
-#         session,
-#         documents_provider.filter_documents_query_by_user_permissions(
-#             user, query
-#         ),
-#     )
-#     crud.delete_documents(query_base, session)
-#     return query
+@router.post(
+    "/query/delete",
+    dependencies=[CanManageDocuments],
+)
+def delete_query_documents(
+    query_params: ElasticsearchParams,
+    user: CurrentUser = DependsOnCurrentUser,
+    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
+    session: Session = DependsOnDbSession,
+):
+    for document_id in indexer.get_document_ids(
+        restrict_editing_query_params(query_params, user)
+    ):
+        Document.get(session, document_id).delete(session)
 
 
 # @router.post("/documents/{id}/comments", response_model=Comment)

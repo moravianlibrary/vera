@@ -51,9 +51,5 @@ generate-db-backup:
 load-db-from-backup:
 	pg_dump -h localhost -U veraAdmin -d vera < backup.sql
 
-test-with-coverage:
-	cd server/ && coverage run -m unittest discover -s tests/
-test-coverage-report:
-	cd server/ && coverage report
-test-coverage-html-report:
-	cd server/ && coverage html
+test:
+	cd server/ && coverage run -m unittest discover -s tests/ && coverage html && coverage report

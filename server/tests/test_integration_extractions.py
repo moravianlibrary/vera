@@ -21,12 +21,6 @@ def generate_categories_tree(tree, assignable=[]):
     ):
         index = 1
         for category_id, subtree in tree.items():
-            generate_categories_tree_rec(
-                subtree,
-                category_id,
-                level + 1,
-                parent_prefix + str(index) + ".",
-            )
             categories.append(
                 Category(
                     id=category_id,
@@ -35,6 +29,12 @@ def generate_categories_tree(tree, assignable=[]):
                     level=level,
                     assignable=category_id in assignable,
                 )
+            )
+            generate_categories_tree_rec(
+                subtree,
+                category_id,
+                level + 1,
+                parent_prefix + str(index) + ".",
             )
             index += 1
 

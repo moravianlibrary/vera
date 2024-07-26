@@ -114,15 +114,9 @@ class TestDocumentsIntegration(TestIntegration):
         self.assertEqual(3, document["extraction_priority"])
         self.assertEqual(2, document["category_id"])
 
-    def test_create_from_catalog(self):
+    def test_add_document(self):
         # Arrange
-        mock_db(
-            [
-                Category(
-                    name="Test Category",
-                )
-            ]
-        )
+        mock_db([Category(name="Test Category")])
         mockUser(createTestUser([ActionType.InsertDatatable]))
         identifier_json = {
             "identifier_type": "Sysno",
@@ -202,6 +196,37 @@ class TestDocumentsIntegration(TestIntegration):
             self.assertEqual(
                 issue["barcode"] == "2619868037", issue["already_added"]
             )
+
+    def test_catalog_records_similarities(self):
+        # Arrange
+        mock_db([Category(name="Test Category")])
+        mockUser(createTestUser([ActionType.InsertDatatable]))
+        identifier_json = {
+            "identifier_type": "Sysno",
+            "value": "MZK01-000033633",
+        }
+
+        # Act
+        client = createTestClient()
+        response = client.post(
+            "/documents/from_catalog?category_id=1",
+            json=identifier_json,
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["status"],
+            AddDocumentResponseStatus.MultipleIssues.value,
+        )
+
+        document = response.json()["document"]
+
+        print(document)
 
     # def test_insert_with_frequencies(self):
     #     sysno1 = "MZK01-000165329"

@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy import (
     CheckConstraint,
     Column,
+    Float,
     ForeignKey,
-    Integer,
     LargeBinary,
     String,
     TIMESTAMP,
@@ -31,15 +31,15 @@ class CatalogRecord(Base, BaseMixin):
     skc_sysno = Column(String)  # skc = authority catalog
     skc_marc = Column(LargeBinary)
     skc_score = Column(
-        Integer,
-        CheckConstraint("skc_score >= 0 AND skc_score <= 10"),
+        Float,
+        CheckConstraint("skc_score >= 0 AND skc_score <= 1"),
     )
 
     cnb_sysno = Column(String)
     cnb_marc = Column(LargeBinary)
     cnb_score = Column(
-        Integer,
-        CheckConstraint("cnb_score >= 0 AND cnb_score <= 10"),
+        Float,
+        CheckConstraint("cnb_score >= 0 AND cnb_score <= 1"),
     )
 
     last_updated = Column(TIMESTAMP, server_default=func.now())

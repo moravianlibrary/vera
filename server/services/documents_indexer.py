@@ -167,8 +167,36 @@ class DocumentsIndexer:
             body=query_params,
         )
 
-    def restricted_search(
-        self, query_params: Dict[str, any], restriction_clause: Dict[str, any]
+    def get_document_ids(self, query_params: Dict[str, any]) -> List[int]:
+        document_ids = []
+        scroll_id = None
+
+        while True:
+            query_params["_source"] = "id"
+
+            if scroll_id:
+                response = self.es.scroll(scroll_id=scroll_id, scroll="1m")
+            else:
+                response = self.es.search(
+                    index=INDEX_NAME, body=query_params, scroll="1m"
+                )
+
+            hits = response["hits"]["hits"]
+            current_ids = [hit["_source"]["id"] for hit in hits]
+
+            document_ids.extend(current_ids)
+
+            scroll_id = response.get("_scroll_id")
+            if not scroll_id or len(hits) == 0:
+                break
+
+        self.es.clear_scroll(scroll_id=scroll_id)
+
+        return document_ids
+
+    @staticmethod
+    def restrict_query_params(
+        query_params: Dict[str, any], restriction_clause: Dict[str, any]
     ):
         if "match_all" in query_params["query"]:
             query_params["query"] = {"bool": {"must": [restriction_clause]}}
@@ -196,48 +224,23 @@ class DocumentsIndexer:
             else:
                 query_params["query"]["bool"]["must"] = [restriction_clause]
 
-        return self.search(query_params)
+        return query_params
 
-    def search_restricted_for_username(
-        self, username: str, query_params: Dict[str, any]
+    @staticmethod
+    def restrict_query_params_for_username(
+        query_params: Dict[str, any],
+        username: str,
     ) -> Generator[Dict, None, None]:
-        return self.restricted_search(
+        return DocumentsIndexer.restrict_query_params(
             query_params, restriction_clause={"term": {"added_by": username}}
         )
-        if "match_all" in query_params["query"]:
-            query_params["query"] = {"match": {"added_by": username}}
-        elif "match" in query_params["query"] and query_params["query"][
-            "match"
-        ] != {"add_by": username}:
-            match_clause = query_params["query"].pop("match")
-            query_params["query"]["bool"] = {
-                "must": [
-                    {"term": {"added_by": username}},
-                    {"term": match_clause},
-                ]
-            }
-        elif "bool" in query_params["query"]:
-            if "must" in query_params["query"]["bool"]:
-                if isinstance(query_params["query"]["bool"]["must"], list):
-                    query_params["query"]["bool"]["must"].append(
-                        {"term": {"added_by": username}}
-                    )
-                else:
-                    must_term = query_params["query"]["bool"]["must"]
-                    query_params["query"]["bool"] = {
-                        "must": [must_term, {"term": {"added_by": username}}]
-                    }
-            else:
-                query_params["query"]["bool"]["must"] = [
-                    {"term": {"added_by": username}}
-                ]
 
-        return self.search(query_params)
-
-    def search_for_categories(
-        self, category_ids: List[int], query_params: Dict[str, any]
+    @staticmethod
+    def restrict_query_params_for_categories(
+        query_params: Dict[str, any],
+        category_ids: List[int],
     ) -> Generator[Dict, None, None]:
-        return self.restricted_search(
+        return DocumentsIndexer.restrict_query_params(
             query_params,
             restriction_clause={
                 "nested": {
@@ -248,33 +251,6 @@ class DocumentsIndexer:
                 }
             },
         )
-
-    def get_document_ids(self, query_params: Dict[str, any]) -> List[int]:
-        document_ids = []
-        scroll_id = None
-
-        while True:
-            query_params["_source"] = "id"
-
-            if scroll_id:
-                response = self.es.scroll(scroll_id=scroll_id, scroll="1m")
-            else:
-                response = self.es.search(
-                    index=INDEX_NAME, body=query_params, scroll="1m"
-                )
-
-            hits = response["hits"]["hits"]
-            current_ids = [hit["_source"]["id"] for hit in hits]
-
-            document_ids.extend(current_ids)
-
-            scroll_id = response.get("_scroll_id")
-            if not scroll_id or len(hits) == 0:
-                break
-
-        self.es.clear_scroll(scroll_id=scroll_id)
-
-        return document_ids
 
 
 def get_indexer():

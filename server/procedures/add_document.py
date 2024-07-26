@@ -69,7 +69,7 @@ def add_document(
         session, identifier.identifier_type, identifier.value
     )
 
-    if not catalog_record or (
+    if catalog_record is None or (
         datetime.now() - catalog_record.last_updated
     ) > timedelta(seconds=VeraConfig.CatalogRecordsValidFor):
         sysno, aleph_response_status = AlephClient().find_sysno(

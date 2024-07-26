@@ -56,3 +56,16 @@ class TestRolesCrud(TestCrudOperations):
         self.assertEqual(db_role.name, role.name)
         self.assertNotIn(db_role.id, roles_after_delete)
         self.assertEqual(actions, [])
+
+    def test_find_by_name(self):
+        # Arrange
+        role = Role(name="Test Role")
+        actions = [ActionType.WriteDatatable]
+
+        # Act
+        db_role = role.save(self.db).save_actions(self.db, actions)
+        found_role = Role.find_by_name(self.db, role.name)
+
+        # Assert
+        self.assertIsNotNone(db_role.id)
+        self.assertEqual(db_role.name, found_role.name)

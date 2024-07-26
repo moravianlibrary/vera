@@ -130,8 +130,10 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_restricted_for_username(
-                "test_user", {"query": {"match_all": {}}}
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_username(
+                    {"query": {"match_all": {}}}, "test_user"
+                )
             )["hits"]["hits"]
         ]
 
@@ -153,8 +155,10 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_restricted_for_username(
-                "test_user_2", {"query": {"match_all": {}}}
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_username(
+                    {"query": {"match_all": {}}}, "test_user_2"
+                )
             )["hits"]["hits"]
         ]
 
@@ -171,8 +175,11 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_restricted_for_username(
-                "test_user", {"query": {"match": {"barcode": "2610568734"}}}
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_username(
+                    {"query": {"match": {"barcode": "2610568734"}}},
+                    "test_user",
+                )
             )["hits"]["hits"]
         ]
 
@@ -194,9 +201,11 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_restricted_for_username(
-                "other_test_user",
-                {"query": {"match": {"barcode": "2610568734"}}},
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_username(
+                    {"query": {"match": {"barcode": "2610568734"}}},
+                    "other_test_user",
+                )
             )["hits"]["hits"]
         ]
 
@@ -213,13 +222,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_restricted_for_username(
-                "test_user",
-                {
-                    "query": {
-                        "bool": {"must": [{"term": {"barcode": "2610568734"}}]}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_username(
+                    {
+                        "query": {
+                            "bool": {
+                                "must": [{"term": {"barcode": "2610568734"}}]
+                            }
+                        }
+                    },
+                    "test_user",
+                )
             )["hits"]["hits"]
         ]
 
@@ -241,13 +254,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_restricted_for_username(
-                "other_test_user",
-                {
-                    "query": {
-                        "bool": {"must": [{"term": {"barcode": "2610568734"}}]}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_username(
+                    {
+                        "query": {
+                            "bool": {
+                                "must": [{"term": {"barcode": "2610568734"}}]
+                            }
+                        }
+                    },
+                    "other_test_user",
+                )
             )["hits"]["hits"]
         ]
 
@@ -264,13 +281,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_restricted_for_username(
-                "test_user",
-                {
-                    "query": {
-                        "bool": {"must": {"term": {"barcode": "2610568734"}}}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_username(
+                    {
+                        "query": {
+                            "bool": {
+                                "must": {"term": {"barcode": "2610568734"}}
+                            }
+                        }
+                    },
+                    "test_user",
+                )
             )["hits"]["hits"]
         ]
 
@@ -292,13 +313,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_restricted_for_username(
-                "other_test_user",
-                {
-                    "query": {
-                        "bool": {"must": {"term": {"barcode": "2610568734"}}}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_username(
+                    {
+                        "query": {
+                            "bool": {
+                                "must": {"term": {"barcode": "2610568734"}}
+                            }
+                        }
+                    },
+                    "other_test_user",
+                )
             )["hits"]["hits"]
         ]
 
@@ -315,13 +340,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_restricted_for_username(
-                "test_user",
-                {
-                    "query": {
-                        "bool": {"should": {"term": {"barcode": "2610568734"}}}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_username(
+                    {
+                        "query": {
+                            "bool": {
+                                "should": {"term": {"barcode": "2610568734"}}
+                            }
+                        }
+                    },
+                    "test_user",
+                )
             )["hits"]["hits"]
         ]
 
@@ -345,13 +374,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_restricted_for_username(
-                "other_test_user",
-                {
-                    "query": {
-                        "bool": {"should": {"term": {"barcode": "2610568734"}}}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_username(
+                    {
+                        "query": {
+                            "bool": {
+                                "should": {"term": {"barcode": "2610568734"}}
+                            }
+                        }
+                    },
+                    "other_test_user",
+                )
             )["hits"]["hits"]
         ]
 
@@ -368,8 +401,10 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [5], {"query": {"match_all": {}}}
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {"query": {"match_all": {}}}, [5]
+                )
             )["hits"]["hits"]
         ]
 
@@ -392,8 +427,10 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [3], {"query": {"match_all": {}}}
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {"query": {"match_all": {}}}, [3]
+                )
             )["hits"]["hits"]
         ]
 
@@ -416,8 +453,10 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [1], {"query": {"match_all": {}}}
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {"query": {"match_all": {}}}, [1]
+                )
             )["hits"]["hits"]
         ]
 
@@ -440,8 +479,10 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [4], {"query": {"match_all": {}}}
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {"query": {"match_all": {}}}, [4]
+                )
             )["hits"]["hits"]
         ]
 
@@ -461,8 +502,10 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [5], {"query": {"match": {"barcode": document.barcode}}}
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {"query": {"match": {"barcode": document.barcode}}}, [5]
+                )
             )["hits"]["hits"]
         ]
 
@@ -487,8 +530,10 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [4], {"query": {"match": {"barcode": document.barcode}}}
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {"query": {"match": {"barcode": document.barcode}}}, [4]
+                )
             )["hits"]["hits"]
         ]
 
@@ -508,13 +553,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [5],
-                {
-                    "query": {
-                        "bool": {"must": [{"term": {"barcode": "2610568734"}}]}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {
+                        "query": {
+                            "bool": {
+                                "must": [{"term": {"barcode": "2610568734"}}]
+                            }
+                        }
+                    },
+                    [5],
+                )
             )["hits"]["hits"]
         ]
 
@@ -539,13 +588,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [4],
-                {
-                    "query": {
-                        "bool": {"must": [{"term": {"barcode": "2610568734"}}]}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {
+                        "query": {
+                            "bool": {
+                                "must": [{"term": {"barcode": "2610568734"}}]
+                            }
+                        }
+                    },
+                    [4],
+                )
             )["hits"]["hits"]
         ]
 
@@ -565,13 +618,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [5],
-                {
-                    "query": {
-                        "bool": {"must": {"term": {"barcode": "2610568734"}}}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {
+                        "query": {
+                            "bool": {
+                                "must": {"term": {"barcode": "2610568734"}}
+                            }
+                        }
+                    },
+                    [5],
+                )
             )["hits"]["hits"]
         ]
 
@@ -596,13 +653,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [4],
-                {
-                    "query": {
-                        "bool": {"must": {"term": {"barcode": "2610568734"}}}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {
+                        "query": {
+                            "bool": {
+                                "must": {"term": {"barcode": "2610568734"}}
+                            }
+                        }
+                    },
+                    [4],
+                )
             )["hits"]["hits"]
         ]
 
@@ -622,13 +683,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [5],
-                {
-                    "query": {
-                        "bool": {"should": {"term": {"barcode": "2610568734"}}}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {
+                        "query": {
+                            "bool": {
+                                "should": {"term": {"barcode": "2610568734"}}
+                            }
+                        }
+                    },
+                    [5],
+                )
             )["hits"]["hits"]
         ]
 
@@ -651,13 +716,17 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.es.indices.refresh(index=INDEX_NAME)
         indexed_documents = [
             hit["_source"]
-            for hit in self.indexer.search_for_categories(
-                [4],
-                {
-                    "query": {
-                        "bool": {"should": {"term": {"barcode": "2610568734"}}}
-                    }
-                },
+            for hit in self.indexer.search(
+                DocumentsIndexer.restrict_query_params_for_categories(
+                    {
+                        "query": {
+                            "bool": {
+                                "should": {"term": {"barcode": "2610568734"}}
+                            }
+                        }
+                    },
+                    [4],
+                )
             )["hits"]["hits"]
         ]
 
