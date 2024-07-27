@@ -11,10 +11,11 @@ from sqlalchemy import (
     TIMESTAMP,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Session
 from services.database import Base
 from datatypes import TaskType, TaskState, TaskDocumentErrorType
 from .base import BaseMixin
+from typing import Optional
 
 
 class Task(Base, BaseMixin):
@@ -79,6 +80,21 @@ class TaskDocument(Base, BaseMixin):
         back_populates="task_documents",
         foreign_keys=document_id,
     )
+
+    @classmethod
+    def find(
+        cls, session: Session, task_id: int, document_id: int
+    ) -> Optional["TaskDocument"]:
+        return (
+            session.query(cls)
+            .filter_by(task_id=task_id, document_id=document_id)
+            .first()
+        )
+
+    def save(self, session: Session) -> "TaskDocument":
+        session.commit()
+        session.refresh(self)
+        return self
 
 
 class TaskDataset(Base, BaseMixin):

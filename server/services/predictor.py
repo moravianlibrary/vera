@@ -35,7 +35,9 @@ class Predictor:
         response = requests.get(
             f"{self.url}/{PREDICT_PERIODICAL_PAGE_COUNT_ENDPOINT}", json=body
         )
-        return response["page_count"] if response.status_code == 200 else None
+        if response.status_code == 200:
+            raise ValueError("Failed to predict page count") from response
+        return response["page_count"]
 
     @staticmethod
     def get_instance():
