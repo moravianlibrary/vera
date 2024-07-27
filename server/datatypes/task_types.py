@@ -2,8 +2,9 @@ from enum import Enum
 
 
 class TaskType(Enum):
-    PredictVolumePages = "PredictVolumePages"
-    SyncFromCatalog = "SyncFromCatalog"
+    PredictPeriodicalPageCount = "PredictPeriodicalPageCount"
+    Reindex = "Reindex"
+    SyncFromCatalogs = "SyncFromCatalogs"
     SyncFromDigitizationRegistry = "SyncFromDigitizationRegistry"
     GenerateVolumesPagesDataset = "GenerateVolumesPagesDataset"
     GenerateItemsPagesDataset = "GenerateItemsPagesDataset"

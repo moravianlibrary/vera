@@ -8,6 +8,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import update, or_
 from config import VeraConfig
 from models import Task
+from tasks import (
+    PredictPeriodicalPageCount,
+    Reindex,
+    SyncFromCatalogs,
+    SyncFromDigitizationRegistry,
+)
 
 
 sys_path.append(path.abspath("/app"))
@@ -27,8 +33,8 @@ celery_worker = Celery(
 )
 
 
-def set_failed_tasks_on_start(db: Session):
-    db.execute(
+def set_failed_tasks_on_start(session: Session):
+    session.execute(
         update(Task)
         .where(
             or_(
@@ -38,51 +44,41 @@ def set_failed_tasks_on_start(db: Session):
         )
         .values(task_state=TaskState.Failed, finished=VeraConfig.Timestamp)
     )
-    db.commit()
+    session.commit()
+
+
+TASK_TYPE_TO_TASK_FUNCTION = {
+    TaskType.PredictPeriodicalPageCount: PredictPeriodicalPageCount,
+    TaskType.Reindex: Reindex,
+    TaskType.SyncFromCatalogs: SyncFromCatalogs,
+    TaskType.SyncFromDigitizationRegistry: SyncFromDigitizationRegistry,
+}
 
 
 @celery_worker.task
 def run_task(task_id: int):
-    from tasks.tasks.predict_periodicals_pages import predict_periodicals_pages
-    from tasks.tasks.sync_from_catalog import sync_from_catalog
-    from tasks.tasks.sync_from_digitization_registry import (
-        sync_from_digitization_registry,
-    )
-
-    from tasks.routines import (
-        generate_volumes_pages_dataset,
-        generate_items_pages_dataset,
-    )
-
     # import models
+    # sys_path.append(path.abspath("categories/"))
+    # sys_path.append(path.abspath("extractions/"))
 
-    sys_path.append(path.abspath("categories/"))
-    sys_path.append(path.abspath("extractions/"))
-
-    db = next(get_db())
-    task = Task.get(db, task_id)
+    session = next(get_db())
+    task = Task.get(session, task_id)
 
     task.started = VeraConfig.Timestamp
     task.task_state = TaskState.Running
-    task.save()
+    task.save(session)
 
     try:
-        if task.task_type == TaskType.PredictVolumePages:
-            predict_periodicals_pages(task_id, db)
-        elif task.task_type == TaskType.SyncFromCatalog:
-            sync_from_catalog(task_id, task.owner, db)
-        elif task.task_type == TaskType.SyncFromDigitizationRegistry:
-            sync_from_digitization_registry(task_id, task.owner, db)
-        elif task.task_type == TaskType.GenerateVolumesPagesDataset:
-            generate_volumes_pages_dataset(task_id, task.owner, db)
-        elif task.task_type == TaskType.GenerateItemsPagesDataset:
-            generate_items_pages_dataset(task_id, task.owner, db)
+        task_function = TASK_TYPE_TO_TASK_FUNCTION.get(task.task_type)
+        if task_function is None:
+            raise ValueError(f"Unknown task type: {task.task_type}")
+        task_function(session, task_id)
 
         task.finished = VeraConfig.Timestamp
         task.task_state = TaskState.Finished
-        task.save()
+        task.save(session)
     except Exception as e:
         logging.warning(f"Task with id {task_id} failed: {e}")
         task.finished = VeraConfig.Timestamp
         task.task_state = TaskState.Failed
-        task.save()
+        task.save(session)

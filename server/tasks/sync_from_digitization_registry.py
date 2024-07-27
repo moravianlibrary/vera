@@ -1,16 +1,16 @@
 from sqlalchemy.orm import Session
-
 from models import Document
 from services.external.digitization_registry import DigitizationState
 from tasks.documents_processing import run_task
 from services.external.digitization_registry import (
     DigitizationRegistryClient,
 )
+from services.documents_indexer import DocumentsIndexer
 
 
-def sync_from_digitization_registry(
-    task_id: int, owner: str, session: Session
-):
+def SyncFromDigitizationRegistry(session: Session, task_id: int):
+    indexer = DocumentsIndexer.get_instance()
+
     def update_document_from_digitization_registry(document: Document):
         record = DigitizationRegistryClient().get_record(
             document.barcode,
@@ -28,6 +28,8 @@ def sync_from_digitization_registry(
             document.digitization_registry_id = record.id
             document.digitization_state = record.digitization_state
 
-        session.commit()
+        document.save(session)
 
-    run_task(task_id, update_document_from_digitization_registry, session)
+        indexer.index(document)
+
+    run_task(session, task_id, update_document_from_digitization_registry)

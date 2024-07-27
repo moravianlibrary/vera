@@ -29,7 +29,8 @@ class TestDocumentsIndexer(TestCrudOperations):
             VeraConfig.ElasticsearchPassword,
         )
         self.indexer.recreate_index()
-        mock_db(get_test_documents())
+        # mock_db(get_test_documents())
+        mock_db()
         self.db = get_test_db()
 
     def tearDown(self) -> None:

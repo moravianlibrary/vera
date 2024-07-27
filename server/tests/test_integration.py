@@ -6,8 +6,6 @@ from tests.helper_funcs import (
     cleanUpDependencyOverrides,
 )
 
-# from elasticmock import elasticmock
-
 
 class TestIntegration(unittest.TestCase):
     @classmethod

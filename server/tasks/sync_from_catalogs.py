@@ -8,7 +8,8 @@ from services.external.aleph import AlephResponseStatus
 from services.documents_indexer import DocumentsIndexer
 
 
-def sync_from_catalog(task_id: int, owner: str, session: Session):
+def SyncFromCatalogs(session: Session, task_id: int):
+    indexer = DocumentsIndexer.get_instance()
     updated_records_sysno = set()
 
     def update_document_from_catalog(document: Document):
@@ -51,6 +52,6 @@ def sync_from_catalog(task_id: int, owner: str, session: Session):
 
         document.save(session)
 
-        DocumentsIndexer().index(catalog_record, document)
+        indexer.index(document)
 
-    run_task(task_id, update_document_from_catalog, session)
+    run_task(session, task_id, update_document_from_catalog)

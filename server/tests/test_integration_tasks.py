@@ -1,16 +1,13 @@
 from tests.test_integration import TestIntegration
 from helper_funcs import mock_db, get_test_db
 from datatypes import TaskType
-from tasks.sync_from_catalog import sync_from_catalog
-from tasks.sync_from_digitization_registry import (
-    sync_from_digitization_registry,
-)
+from tasks import SyncFromCatalogs, SyncFromDigitizationRegistry
 from services.external.digitization_registry import DigitizationState
 from models import CatalogRecord, Document, Task, TaskDocument, Category
 from services.external.aleph import AlephRecord
 
 
-class TestCatalogSync(TestIntegration):
+class TestTasksIntegration(TestIntegration):
     def get_testing_models(self):
         return [
             Category(
@@ -27,7 +24,7 @@ class TestCatalogSync(TestIntegration):
                 category_id=1,
             ),
             Task(
-                task_type=TaskType.SyncFromCatalog,
+                task_type=TaskType.SyncFromCatalogs,
                 owner="Test User",
             ),
             TaskDocument(
@@ -45,7 +42,7 @@ class TestCatalogSync(TestIntegration):
         self.assertEqual(document.digitization_registry_id, None)
 
         # Act
-        sync_from_catalog(1, "Test User", session)
+        SyncFromCatalogs(session, 1)
         document = Document.get(session, 1)
 
         # Assert
@@ -71,7 +68,7 @@ class TestCatalogSync(TestIntegration):
             session, 1
         ).digitization_registry_id
         state_before_sync = Document.get(session, 1).digitization_state
-        sync_from_digitization_registry(1, "Test User", session)
+        SyncFromDigitizationRegistry(session, 1)
         registry_id_after_sync = Document.get(
             session, 1
         ).digitization_registry_id

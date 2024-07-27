@@ -252,14 +252,14 @@ class DocumentsIndexer:
             },
         )
 
-
-def get_indexer():
-    indexer = DocumentsIndexer(
-        VeraConfig.ElasticsearchUrl,
-        VeraConfig.ElasticsearchUsername,
-        VeraConfig.ElasticsearchPassword,
-    )
-    try:
-        yield indexer
-    finally:
-        indexer.close()
+    @staticmethod
+    def get_instance():
+        indexer = DocumentsIndexer(
+            VeraConfig.ElasticsearchUrl,
+            VeraConfig.ElasticsearchUsername,
+            VeraConfig.ElasticsearchPassword,
+        )
+        try:
+            yield indexer
+        finally:
+            indexer.close()

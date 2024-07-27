@@ -16,7 +16,7 @@ COPY services/csv_writer.py /app/services/csv_writer.py
 COPY services/database.py /app/services/database.py
 COPY services/exceptions.py /app/services/exceptions.py
 COPY services/extractions_generator /app/services/extractions_generator
-COPY services/predictions /app/services/predictions
+COPY services/parsers /app/services/parsers
 COPY tasks /app/tasks
 COPY worker.py /app
 

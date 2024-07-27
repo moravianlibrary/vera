@@ -46,3 +46,7 @@ class VeraConfig:
     @staticproperty
     def ElasticsearchPassword() -> str:
         return environ.get("ELASTICSEARCH_PASSWORD", "veraIndex")
+
+    @staticproperty
+    def PredictorUrl() -> str:
+        return environ.get("PREDICTOR_URL", "http://localhost:5000")
