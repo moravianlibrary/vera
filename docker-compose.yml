@@ -72,7 +72,7 @@ services:
     container_name: vera-server
     build:
       context: ./server
-        #dockerfile: Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:

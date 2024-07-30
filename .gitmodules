@@ -1,0 +1,3 @@
+[submodule "vera_ai"]
+	path = vera_ai
+	url = git@gitlab.mzk.cz:osdd/vera_ai.git
