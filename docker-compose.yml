@@ -51,6 +51,18 @@ services:
     networks:
       - vera
 
+  ai:
+    container_name: vera-ai
+    build:
+      context: ./vera_ai
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+    environment:
+      - TIMEZONE=Europe/Prague
+    networks:
+      - vera
+
   worker:
     container_name: vera-worker
     build:
@@ -88,6 +100,7 @@ services:
       - KEYCLOAK_ISSUER_CLIENT_ID=vera
       - KRAMERIUS_API_URL=https://api.kramerius.mzk.cz/search
     depends_on:
+      - ai
       - worker
       - postgres
     networks:

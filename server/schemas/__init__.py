@@ -53,6 +53,7 @@ from .categories import (
     Distributions,
     DistributionList,
 )
+from .predictor import PredictPeriodicalPageCount
 
 __all__ = [
     "RoleCreate",
@@ -102,4 +103,5 @@ __all__ = [
     "Distributions",
     "DistributionList",
     "Page",
+    "PredictPeriodicalPageCount",
 ]

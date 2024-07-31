@@ -1,84 +1,68 @@
-# import unittest
-# from services.predictor import Predictor
-# from models import Document
+import unittest
+from unittest.mock import patch, Mock
+from services.predictor import Predictor
+from pymarc import MARCReader, Record
+from services.predictor import PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD
 
 
-# class TestPredictions(unittest.TestCase):
-#     def test_predict_volume_pages(self):
-#         # Arrange
-#         predictor = Predictor()
+def load_aleph_record(sysno: str) -> Record:
+    with open(f"tests/aleph_records/{sysno}.marc", "rb") as f:
+        return list(MARCReader(f))[0]
 
-#         # Act
-#         predicted = predictor.predict_periodical_page_count(
-#             "test name",
-#             1996,
-#             365,
-#             "Moravska zemska knihovna",
-#             "Brno",
-#             "cze",
-#         )
 
-#         # Assert
-#         self.assertIsNotNone(predicted)
-#         self.assertIsInstance(predicted, int)
+class TestPredictions(unittest.TestCase):
+    @patch("requests.get")
+    def test_predict_periodical_page_count_success(self, mock_get):
+        # Arrange
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {
+            PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD: 100
+        }
+        mock_get.return_value = mock_response
 
-#     def test_predict_volume_pages_2(self):
-#         from schemas import Frequency
-#         from services.predictions.frequency_parser import (
-#             parse_frequency,
-#             parse_year,
-#         )
-#         from services.predictions.volumes_pages_predictor import (
-#             VolumesPagesPredictor,
-#         )
+        mock_document = Mock()
+        mock_document.sysno = "123"
+        mock_document.volume_year = "2024"
+        mock_document.volume = None
+        mock_document.catalog_record = Mock()
+        mock_document.catalog_record.main_record = load_aleph_record(
+            "MZK01-000121929"
+        )
 
-#         title = "Svobodné slovo : list Československé strany socialistické."
-#         year = "1952"
-#         publisher = "Československá strana socialistická,"
-#         publishing_place = "Praha :"
-#         language = "cze"
-#         frequencies = [{"frequency": "Deník"}]
+        predictor = Predictor(url="http://testurl.com")
 
-#         predictor = VolumesPagesPredictor()
-#         predicted = predictor.predict(
-#             name=title,
-#             year=parse_year(year),
-#             publisher=publisher,
-#             origin=publishing_place,
-#             language=language,
-#             frequency=parse_frequency(
-#                 year,
-#                 [Frequency(**freq) for freq in frequencies],
-#             ),
-#         )
-#         self.assertIsNotNone(predicted)
-#         self.assertIsInstance(predicted, float)
+        # Act
+        page_count = predictor.predict_periodical_page_count(mock_document)
 
-#     def test_predict_volume_pages_3(self):
-#         title = "Bílé Karpaty : časopis moravsko-slovenského pomezí"
-#         year = "2021"
-#         publisher = (
-#             "Společnost pro trvale udržitelný život, regionální "
-#             "pobočka Bílé Karpaty ;"
-#         )
-#         publishing_place = "Uherské Hradiště :"
-#         language = "cze"
-#         frequencies = [
-#             {"frequency": "2x ročně", "date": "2006-"},
-#             {"frequency": "4x ročně", "date": "1994-2005"},
-#         ]
+        # Assert
+        self.assertEqual(page_count, 100)
 
-#         predictor = VolumesPagesPredictor()
-#         predicted = predictor.predict(
-#             name=title,
-#             year=parse_year(year),
-#             publisher=publisher,
-#             origin=publishing_place,
-#             language=language,
-#             frequency=parse_frequency(
-#                 year,
-#                 [Frequency(**freq) for freq in frequencies],
-#             ),
-#         )
-#         self.assertIsNotNone(predicted)
-#         self.assertIsInstance(predicted, float)
+    @patch("requests.get")
+    def test_predict_periodical_page_count_failure(self, mock_get):
+        # Arrange
+        mock_response = Mock()
+        mock_response.status_code = 500
+        mock_response.json.return_value = {"error": "Internal Server Error"}
+        mock_get.return_value = mock_response
+
+        mock_document = Mock()
+        mock_document.sysno = "123"
+        mock_document.volume_year = "2024"
+        mock_document.volume = None
+        mock_document.catalog_record = Mock()
+        mock_document.catalog_record.main_record = load_aleph_record(
+            "MZK01-000121929"
+        )
+
+        predictor = Predictor(url="http://testurl.com")
+
+        # Assert
+        with self.assertRaises(ValueError):
+            predictor.predict_periodical_page_count(mock_document)
+
+    def test_get_instance(self):
+        with patch("config.VeraConfig.PredictorUrl", "http://testurl.com"):
+            predictor = Predictor.get_instance()
+            self.assertIsInstance(predictor, Predictor)
+            self.assertEqual(predictor.url, "http://testurl.com")
