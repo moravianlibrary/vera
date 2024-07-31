@@ -145,7 +145,8 @@ class AlephClient:
                 ALEPH_BASE=ALEPH_BASE, BASE=base, CODE=field.value, VALUE=value
             )
             try:
-                return self.parse_sysno_request(request_url)
+                value, status = self.parse_sysno_request(request_url)
+                return f"{base}-{value}", status
             except Exception as e:
                 logger.warning(f"An error occurred: {e}")
 
