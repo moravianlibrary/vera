@@ -9,7 +9,7 @@ from services.documents_indexer import DocumentsIndexer
 
 
 def SyncFromCatalogs(session: Session, task_id: int):
-    indexer = DocumentsIndexer.get_instance()
+    indexer = next(DocumentsIndexer.get_instance())
     updated_records_sysno = set()
 
     def update_document_from_catalog(document: Document):
@@ -30,11 +30,11 @@ def SyncFromCatalogs(session: Session, task_id: int):
 
         aleph_record = AlephRecord(
             catalog_record.sysno,
-            CatalogRecord.convert_to_record(catalog_record.marc),
+            catalog_record.main_record,
         )
 
         aleph_issue = AlephIssue.specific_issue_from_record(
-            aleph_record, catalog_record.barcode, catalog_record.volume
+            aleph_record, document.barcode, document.volume
         )
         if aleph_issue is None:
             raise ValueError(
@@ -46,7 +46,7 @@ def SyncFromCatalogs(session: Session, task_id: int):
         document.volume_year = aleph_issue.volume
         document.bundle = aleph_issue.bundle
         document.document_signature = aleph_issue.signature
-        document.pages_count_aleph = aleph_record.parse_page_count(
+        document.pages_count_catalog = aleph_record.parse_page_count(
             aleph_issue.volume
         )
 

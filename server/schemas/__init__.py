@@ -33,6 +33,7 @@ from .tasks import (
     TaskOverview,
     TaskError,
     TaskDocumentResponse,
+    PeriodicTaskResponse,
 )
 from .users import CurrentUser, UserResponse
 from .digitization_lists import DigitizationList, DigitizationLists
@@ -104,4 +105,5 @@ __all__ = [
     "DistributionList",
     "Page",
     "PredictPeriodicalPageCount",
+    "PeriodicTaskResponse",
 ]

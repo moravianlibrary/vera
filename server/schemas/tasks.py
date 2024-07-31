@@ -2,7 +2,12 @@ from pydantic import BaseModel
 
 from typing import Dict, List, Optional
 from datetime import datetime
-from datatypes import TaskState, TaskType, TaskDocumentErrorType
+from datatypes import (
+    TaskState,
+    TaskType,
+    TaskDocumentErrorType,
+    ElasticsearchParams,
+)
 
 
 # Dataset schema
@@ -18,7 +23,7 @@ class TaskDefinition(BaseModel):
 
     owner: str
 
-    query: Optional[str]
+    query: Optional[ElasticsearchParams]
 
     task_state: TaskState
     planned: datetime
@@ -49,3 +54,13 @@ class TaskDocumentResponse(BaseModel):
     processed: bool
     error_type: Optional[TaskDocumentErrorType]
     error_message: Optional[str]
+
+
+class PeriodicTaskResponse(BaseModel):
+    id: int
+    task_type: TaskType
+    query_params: ElasticsearchParams
+    minute: int
+    hour: Optional[int]
+    day_of_week: Optional[int]
+    day_of_month: Optional[int]

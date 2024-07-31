@@ -50,3 +50,7 @@ class VeraConfig:
     @staticproperty
     def PredictorUrl() -> str:
         return environ.get("PREDICTOR_URL", "http://localhost:5000")
+
+    @staticproperty
+    def BotName() -> str:
+        return environ.get("BOT_NAME", "VeraBot")

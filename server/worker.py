@@ -1,5 +1,6 @@
 import logging
 from celery import Celery
+from celery.schedules import crontab
 from os import environ, path
 from sys import path as sys_path
 from services.database import DATABASE_URL, get_db
@@ -7,7 +8,7 @@ from datatypes import TaskState, TaskType
 from sqlalchemy.orm import Session
 from sqlalchemy import update, or_
 from config import VeraConfig
-from models import Task
+from models import Task, PeriodicTask
 from tasks import (
     PredictPeriodicalPageCount,
     Reindex,
@@ -47,12 +48,45 @@ def set_failed_tasks_on_start(session: Session):
     session.commit()
 
 
+def setup_periodic_tasks_on_start(session: Session):
+    for periodic_task in PeriodicTask.all():
+        setup_periodic_task(session, periodic_task)
+
+
 TASK_TYPE_TO_TASK_FUNCTION = {
     TaskType.PredictPeriodicalPageCount: PredictPeriodicalPageCount,
     TaskType.Reindex: Reindex,
     TaskType.SyncFromCatalogs: SyncFromCatalogs,
     TaskType.SyncFromDigitizationRegistry: SyncFromDigitizationRegistry,
 }
+
+
+def setup_periodic_task(periodic_task: PeriodicTask):
+    celery_worker.add_periodic_task(
+        crontab(
+            minute=periodic_task.minute_str,
+            hour=periodic_task.hour_str,
+            day_of_week=periodic_task.day_of_week_str,
+            day_of_month=periodic_task.day_of_month_str,
+        ),
+        run_periodic_task_instance.s(periodic_task.id),
+    )
+
+
+@celery_worker.task
+def run_periodic_task_instance(periodic_task_id: int):
+    session = next(get_db())
+    periodic_task = PeriodicTask.find(session, periodic_task_id)
+    if periodic_task is None:
+        return
+
+    task = Task(
+        task_type=periodic_task.task_type,
+        owner=VeraConfig.BotName,
+        query=periodic_task.query,
+    ).save(session)
+
+    run_task.delay(task_id=task.id)
 
 
 @celery_worker.task

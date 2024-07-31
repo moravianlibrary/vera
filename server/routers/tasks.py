@@ -11,7 +11,7 @@ from .utils.dependencies import (
     DependsOnDocumentsIndexer,
 )
 from services.documents_indexer import DocumentsIndexer
-from models import Task, TaskDocument
+from models import Task, TaskDocument, PeriodicTask
 from schemas import (
     CurrentUser,
     TaskDefinition,
@@ -19,6 +19,7 @@ from schemas import (
     TaskDocumentResponse,
     Dataset,
     Page,
+    PeriodicTaskResponse,
 )
 
 router = APIRouter(prefix="/tasks")
@@ -86,7 +87,7 @@ def get_task_dataset(
     task_id: int = Path(...),
     db: Session = DependsOnDbSession,
 ):
-    return Task.get(db, id).dataset
+    return Task.get(db, task_id).dataset
 
 
 @router.get("", dependencies=[CanPlanTask], response_model=Page[TaskOverview])
@@ -96,3 +97,98 @@ def get_tasks(
     db: Session = DependsOnDbSession,
 ):
     return Task.get_page(db, page, page_size)
+
+
+@router.post(
+    "/periodic",
+    dependencies=[CanManageTask],
+    response_model=PeriodicTaskResponse,
+)
+def create_periodic_task(
+    task_type: TaskType = Query(...),
+    minute: int = Query(...),
+    hour: Optional[int] = Query(...),
+    day_of_week: Optional[int] = Query(...),
+    day_of_month: Optional[int] = Query(...),
+    query_params: Optional[ElasticsearchParams] = None,
+    session: Session = DependsOnDbSession,
+):
+    return PeriodicTask(
+        task_type=task_type,
+        query=query_params,
+        minute=minute,
+        hour=hour,
+        day_of_week=day_of_week,
+        day_of_month=day_of_month,
+    ).save(session)
+
+
+@router.put(
+    "/periodic/{id}/query",
+    dependencies=[CanManageTask],
+    response_model=PeriodicTaskResponse,
+)
+def update_periodic_task_query(
+    id: int = Path(...),
+    query_params: Optional[ElasticsearchParams] = None,
+    session: Session = DependsOnDbSession,
+):
+    periodic_task = PeriodicTask.get(session, id)
+    periodic_task.query_params = query_params
+    return periodic_task.save(session)
+
+
+@router.put(
+    "/periodic/{id}/schedule",
+    dependencies=[CanManageTask],
+    response_model=PeriodicTaskResponse,
+)
+def update_periodic_task_schedule(
+    id: int = Path(...),
+    minute: int = Query(...),
+    hour: Optional[int] = Query(...),
+    day_of_week: Optional[int] = Query(...),
+    day_of_month: Optional[int] = Query(...),
+    session: Session = DependsOnDbSession,
+):
+    periodic_task = PeriodicTask.get(session, id)
+    periodic_task.minute = minute
+    periodic_task.hour = hour
+    periodic_task.day_of_week = day_of_week
+    periodic_task.day_of_month = day_of_month
+    return periodic_task.save(session)
+
+
+@router.delete(
+    "/periodic/{id}",
+    dependencies=[CanManageTask],
+    response_model=PeriodicTaskResponse,
+)
+def delete_periodic_task(
+    id: int = Path(...), session: Session = DependsOnDbSession
+):
+    return PeriodicTask.get(session, id).delete(session)
+
+
+@router.get(
+    "/periodic/{id}",
+    dependencies=[CanPlanTask],
+    response_model=PeriodicTaskResponse,
+)
+def get_periodic_task(
+    id: int = Path(...), session: Session = DependsOnDbSession
+):
+    return PeriodicTask.get(session, id)
+
+
+@router.get(
+    "/periodic",
+    dependencies=[CanPlanTask],
+    response_model=Page[PeriodicTaskResponse],
+)
+def get_periodic_tasks(
+    page: int = Query(1, description="Page number"),
+    page_size: int = Query(50, description="Page size"),
+    session: Session = DependsOnDbSession,
+):
+    return PeriodicTask.get_page(session, page, page_size)

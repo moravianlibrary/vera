@@ -7,7 +7,7 @@ from .extractions import Extraction
 from .intentions import Intention
 from .locations import Location, Library, Storage
 from .roles import Role, RoleAction
-from .tasks import Task, TaskDataset, TaskDocument
+from .tasks import Task, TaskDataset, TaskDocument, PeriodicTask
 from .users import User
 
 __all__ = [
@@ -30,5 +30,6 @@ __all__ = [
     "Task",
     "TaskDataset",
     "TaskDocument",
+    "PeriodicTask",
     "User",
 ]

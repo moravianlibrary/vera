@@ -30,6 +30,8 @@ class Frequency:
 
 class AlephRecord:
     def __init__(self, sysno: str, record: Record):
+        if record is None:
+            raise ValueError("Record must not be None")
         self.record = record
         self._sysno = sysno
 

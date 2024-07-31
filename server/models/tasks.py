@@ -107,3 +107,32 @@ class TaskDataset(Base, BaseMixin):
     error_message = Column(String)
 
     task = relationship("Task", back_populates="dataset")
+
+
+class PeriodicTask(Base, BaseMixin):
+    __tablename__ = "periodic_tasks"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    task_type = Column(Enum(TaskType))
+    query_params = Column(JSON)
+    minute = Column(Integer)
+    hour = Column(Integer)
+    day_of_week = Column(Integer)
+    day_of_month = Column(Integer)
+
+    @hybrid_property
+    def minute_str(self) -> str:
+        return str(self.minute)
+
+    @hybrid_property
+    def hour_str(self) -> str:
+        return str(self.hour) if self.hour else "*"
+
+    @hybrid_property
+    def day_of_week_str(self) -> str:
+        return str(self.day_of_week) if self.day_of_week else "*"
+
+    @hybrid_property
+    def day_of_month_str(self) -> str:
+        return str(self.day_of_month) if self.day_of_month else "*"

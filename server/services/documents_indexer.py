@@ -253,7 +253,7 @@ class DocumentsIndexer:
         )
 
     @staticmethod
-    def get_instance():
+    def get_instance() -> Generator["DocumentsIndexer", None, None]:
         indexer = DocumentsIndexer(
             VeraConfig.ElasticsearchUrl,
             VeraConfig.ElasticsearchUsername,
@@ -263,3 +263,16 @@ class DocumentsIndexer:
             yield indexer
         finally:
             indexer.close()
+
+    @staticmethod
+    def is_indexer_available() -> bool:
+        try:
+            return elasticsearch.Elasticsearch(
+                VeraConfig.ElasticsearchUrl,
+                http_auth=(
+                    VeraConfig.ElasticsearchUsername,
+                    VeraConfig.ElasticsearchPassword,
+                ),
+            ).ping()
+        except Exception:
+            return False
