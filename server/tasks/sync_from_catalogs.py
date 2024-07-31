@@ -9,7 +9,7 @@ from services.documents_indexer import DocumentsIndexer
 
 
 def SyncFromCatalogs(session: Session, task_id: int):
-    indexer = next(DocumentsIndexer.get_instance())
+    indexer = DocumentsIndexer.get_instance()
     updated_records_sysno = set()
 
     def update_document_from_catalog(document: Document):

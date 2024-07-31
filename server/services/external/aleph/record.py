@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import List, Optional
 from urllib.parse import quote
 from pymarc import Record
 from .types import MaterialType
@@ -25,6 +25,13 @@ class Frequency:
             f'Frequency(frequency="{self.frequency}", date="{self.date})"'
             if self.date
             else f'Frequency(frequency="{self.frequency}")'
+        )
+
+    def to_dict(self):
+        return (
+            {"frequency": self.frequency, "date": self.date}
+            if self.date
+            else {"frequency": self.frequency}
         )
 
 
@@ -143,13 +150,7 @@ class AlephRecord:
         return values[0] if values else None
 
     @property
-    def frequencies(self) -> List[Dict[str, Optional[str]]]:
-        """Returns a list of dictionaries containing
-        frequency and date information.
-
-        Returns: List[Dict[str, str]]: List of dictionaries with keys
-        "frequency" and "date"
-        """
+    def frequencies(self) -> List[Frequency]:
         frequencies_list = []
         for field in self.record.get_fields("310", "321"):
             subfields = field.subfields
@@ -161,14 +162,14 @@ class AlephRecord:
                         i + 1 < len(subfields) and subfields[i + 1].code == "b"
                     ):
                         frequencies_list.append(
-                            {
-                                "frequency": frequency,
-                                "date": subfields[i + 1].value,
-                            }
+                            Frequency(
+                                frequency=frequency,
+                                date=subfields[i + 1].value,
+                            )
                         )
                         i += 1
                 else:
-                    frequencies_list.append({"frequency": frequency})
+                    frequencies_list.append(Frequency(frequency=frequency))
                 i += 1
         return frequencies_list
 

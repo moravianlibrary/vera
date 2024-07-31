@@ -148,10 +148,15 @@ class DocumentsIndexer:
             "publishing_place": aleph_record.publishing_place,
             "publishing_year": aleph_record.publishing_year,
             "languages": aleph_record.languages,
-            "frequencies": aleph_record.frequencies,
+            "frequencies": [
+                frequency.to_dict() for frequency in aleph_record.frequencies
+            ],
         }
 
         self.es.index(index=INDEX_NAME, id=document.id, body=doc)
+
+    def refresh(self):
+        self.es.indices.refresh(index=INDEX_NAME)
 
     def get(self, document_id: int):
         return self.es.get(index=INDEX_NAME, id=document_id)["_source"]
@@ -253,16 +258,12 @@ class DocumentsIndexer:
         )
 
     @staticmethod
-    def get_instance() -> Generator["DocumentsIndexer", None, None]:
-        indexer = DocumentsIndexer(
+    def get_instance() -> "DocumentsIndexer":
+        return DocumentsIndexer(
             VeraConfig.ElasticsearchUrl,
             VeraConfig.ElasticsearchUsername,
             VeraConfig.ElasticsearchPassword,
         )
-        try:
-            yield indexer
-        finally:
-            indexer.close()
 
     @staticmethod
     def is_indexer_available() -> bool:

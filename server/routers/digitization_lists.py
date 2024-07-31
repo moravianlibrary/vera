@@ -48,9 +48,7 @@ def get_extractions(
     page_size: int = Query(50, description="Page size"),
     session: Session = DependsOnDbSession,
 ):
-    return Page[DigitizationListSchema].from_tuple(
-        DigitizationList.get_page(session, page, page_size)
-    )
+    return DigitizationList.get_page(session, page, page_size)
 
 
 @router.get(

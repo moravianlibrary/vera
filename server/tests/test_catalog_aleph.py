@@ -6,6 +6,7 @@ from services.external.aleph import AlephIssue
 from services.external.aleph import (
     AlephField,
     AlephResponseStatus,
+    Frequency,
     MaterialType,
     IssuanceType,
 )
@@ -122,15 +123,10 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(
             aleph_record.frequencies,
             [
-                {"frequency": "3x ročně", "date": "2016-"},
-                {"frequency": "2x ročně,", "date": "2015"},
-                {"frequency": "1x ročně,", "date": "2012-2014"},
+                Frequency("3x ročně", "2016-"),
+                Frequency("2x ročně,", "2015"),
+                Frequency("1x ročně,", "2012-2014"),
             ],
-            # [
-            #     Frequency("3x ročně", "2016-"),
-            #     Frequency("2x ročně,", "2015"),
-            #     Frequency("1x ročně,", "2012-2014"),
-            # ],
         )
         self.assertEqual(aleph_record.publishing_year, "2012-")
 

@@ -1,4 +1,5 @@
-from unittest import skipIf
+from unittest import skipIf, TestCase
+from unittest.mock import patch, MagicMock
 from tests.test_crud import TestCrudOperations
 from services.documents_indexer import DocumentsIndexer, INDEX_NAME
 from tests.documents_bank import get_test_documents
@@ -8,17 +9,36 @@ from models import Document
 import elasticsearch
 
 
-def is_indexer_available() -> bool:
-    try:
-        return elasticsearch.Elasticsearch(
-            VeraConfig.ElasticsearchUrl,
-            http_auth=(
-                VeraConfig.ElasticsearchUsername,
-                VeraConfig.ElasticsearchPassword,
-            ),
-        ).ping()
-    except Exception:
-        return False
+def skipIfIndexerUnavailable(test_func):
+    """
+    Decorator to skip a test if Elasticsearch is not available.
+    """
+    return skipIf(
+        not DocumentsIndexer.is_indexer_available(),
+        "Elasticsearch is not available",
+    )(test_func)
+
+
+class TestDocumentsIndexerAvailability(TestCase):
+    @patch("elasticsearch.Elasticsearch")
+    def test_indexer_available(self, MockElasticsearch):
+        # Arrange
+        mock_es = MagicMock()
+        mock_es.ping.return_value = True
+        MockElasticsearch.return_value = mock_es
+
+        # Act and Assert
+        self.assertTrue(DocumentsIndexer.is_indexer_available())
+
+    @patch("elasticsearch.Elasticsearch")
+    def test_indexer_not_available(self, MockElasticsearch):
+        # Arrange
+        mock_es = MagicMock()
+        mock_es.ping.side_effect = Exception("Connection error")
+        MockElasticsearch.return_value = mock_es
+
+        # Act and Assert
+        self.assertFalse(DocumentsIndexer.is_indexer_available())
 
 
 class TestDocumentsIndexer(TestCrudOperations):
@@ -36,7 +56,7 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.indexer.close()
         return self.db.close()
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_index_document(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -52,7 +72,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_document["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_delete_indexed_document(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -70,7 +90,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_document["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -93,7 +113,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_by_username(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -120,7 +140,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_all_restricted_for_username_permitted(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -145,7 +165,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_all_restricted_for_username_prohibited(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -165,7 +185,7 @@ class TestDocumentsIndexer(TestCrudOperations):
         # Assert
         self.assertEqual(len(indexed_documents), 0)
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_match_restricted_for_username_permitted(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -191,7 +211,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_match_restricted_for_username_prohibited(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -212,7 +232,7 @@ class TestDocumentsIndexer(TestCrudOperations):
         # Assert
         self.assertEqual(len(indexed_documents), 0)
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_must_array_restricted_for_username_permitted(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -244,7 +264,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_must_array_restricted_for_username_prohibited(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -271,7 +291,7 @@ class TestDocumentsIndexer(TestCrudOperations):
         # Assert
         self.assertEqual(len(indexed_documents), 0)
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_must_object_restricted_for_username_permitted(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -303,7 +323,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_must_object_restricted_for_username_prohibited(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -330,7 +350,7 @@ class TestDocumentsIndexer(TestCrudOperations):
         # Assert
         self.assertEqual(len(indexed_documents), 0)
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_should_restricted_for_username_permitted(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -362,7 +382,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_should_object_restricted_for_username_prohibited(
         self,
     ):
@@ -391,7 +411,7 @@ class TestDocumentsIndexer(TestCrudOperations):
         # Assert
         self.assertEqual(len(indexed_documents), 0)
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_match_all_restricted_for_categories_actual_category(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -417,7 +437,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_match_all_restricted_for_categories_parent_category(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -443,7 +463,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_match_all_restricted_for_categories_root_category(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -469,7 +489,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_match_all_restricted_for_categories_other_category(self):
         # Arrange
         document = Document.get(self.db, 1)
@@ -490,7 +510,7 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.assertEqual(document.category_id, 5)
         self.assertEqual(len(indexed_documents), 0)
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_match_object_restricted_for_categories_actual_category(
         self,
     ):
@@ -518,7 +538,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_match_object_restricted_for_categories_other_category(
         self,
     ):
@@ -541,7 +561,7 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.assertEqual(document.category_id, 5)
         self.assertEqual(len(indexed_documents), 0)
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_must_array_restricted_for_categories_actual_category(
         self,
     ):
@@ -576,7 +596,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_must_array_restricted_for_categories_other_category(
         self,
     ):
@@ -606,7 +626,7 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.assertEqual(document.category_id, 5)
         self.assertEqual(len(indexed_documents), 0)
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_must_object_restricted_for_categories_actual_category(
         self,
     ):
@@ -641,7 +661,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_must_object_restricted_for_categories_other_category(
         self,
     ):
@@ -671,7 +691,7 @@ class TestDocumentsIndexer(TestCrudOperations):
         self.assertEqual(document.category_id, 5)
         self.assertEqual(len(indexed_documents), 0)
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_should_restricted_for_categories_actual_category(
         self,
     ):
@@ -706,7 +726,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             indexed_documents[0]["category_path"], document.category_path
         )
 
-    @skipIf(not is_indexer_available(), "Elasticsearch is not available")
+    @skipIfIndexerUnavailable
     def test_search_bool_should_restricted_for_categories_other_category(self):
         # Arrange
         document = Document.get(self.db, 1)

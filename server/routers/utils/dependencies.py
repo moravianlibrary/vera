@@ -5,6 +5,7 @@ from services.database import get_db
 from services.documents_indexer import DocumentsIndexer
 from services.keycloak_client import get_user_from_token, oauth2_scheme
 from .access_emulation import emulated_users
+from typing import Generator
 
 
 def get_current_user(
@@ -23,7 +24,15 @@ def get_caller_username(
     return current_user.username
 
 
+def get_documents_indexer() -> Generator["DocumentsIndexer", None, None]:
+    indexer = DocumentsIndexer.get_instance()
+    try:
+        yield indexer
+    finally:
+        indexer.close()
+
+
 DependsOnCurrentUser = Depends(get_current_user)
 DependsOnCallerUsername = Depends(get_caller_username)
 DependsOnDbSession = Depends(get_db)
-DependsOnDocumentsIndexer = Depends(DocumentsIndexer.get_instance)
+DependsOnDocumentsIndexer = Depends(get_documents_indexer)
