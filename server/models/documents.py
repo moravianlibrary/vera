@@ -262,6 +262,7 @@ class Document(Base, BaseMixin):
             session.query(cls)
             .filter_by(category_id=category_id)
             .filter(cls.is_extractable)
+            .order_by(cls.extraction_priority.desc(), cls.added_at)
         )
 
         if location_patterns:

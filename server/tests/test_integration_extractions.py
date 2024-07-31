@@ -91,6 +91,32 @@ def generate_extractable_documents(
     ]
 
 
+def generate_extractable_documents_with_priorities(
+    document_triplets: List[Tuple[int, int, int, int]]
+):
+    return [
+        CatalogRecord(
+            sysno=f"MZK01-001{str(document_id)}",
+            cnb=f"CNB{str(document_id)}",
+        )
+        for document_id, _, _, _ in document_triplets
+    ] + [
+        Document(
+            id=document_id,
+            sysno=f"MZK01-001{str(document_id)}",
+            pages_count_catalog=page_count_catalog,
+            category_id=category_id,
+            extraction_priority=extraction_priority,
+        )
+        for (
+            document_id,
+            category_id,
+            page_count_catalog,
+            extraction_priority,
+        ) in document_triplets
+    ]
+
+
 class TestExtractionsIntegration(TestIntegration):
     def test_extract_one_document_exact_pages_count(self):
         # Arrange
@@ -387,6 +413,47 @@ class TestExtractionsPreparation(TestIntegration):
         # Assert
         self.assertEqual(count, 1199)
         self.assertSetEqual(set(ids), set([8, 5, 6, 3, 1]))
+
+    def test_extraction_with_priorities(self):
+        # Arrange
+        items = generate_categories_tree(
+            {1: {}, 2: {}, 3: {}},
+            [1, 2, 3],
+        )
+        items.append(generate_intention())
+        items.extend(generate_distribution(1, enumerate([50, 30, 20], 1)))
+        items.extend(
+            generate_extractable_documents_with_priorities(
+                [
+                    (1, 1, 200, 1),
+                    (2, 1, 200, 2),
+                    (3, 1, 200, 3),
+                    (4, 2, 200, 5),
+                    (5, 2, 200, 4),
+                    (6, 2, 200, 3),
+                    (7, 3, 200, 2),
+                    (8, 3, 200, 1),
+                    (9, 3, 200, 5),
+                ]
+            )
+        )
+        mock_db(items)
+
+        # Act
+        session = get_test_db()
+        generator = ExtractionGenerator(
+            1200, 1, GenerateExtraction(target_pages_threshold=0.01), session
+        )
+        generator.generate()
+        ids, count = (
+            generator.extracted_documents,
+            generator.extracted_pages_count,
+        )
+        session.close()
+
+        # Assert
+        self.assertEqual(count, 1200)
+        self.assertEqual(ids, [3, 2, 1, 4, 9, 5])
 
     def test_extraction_simple_tree(self):
         # Arrange
