@@ -102,9 +102,7 @@ class Document(Base, BaseMixin):
 
     @signature.expression
     def signature(cls):
-        return func.coalesce(
-            cls.document_signature, cls.catalog_record.signature
-        )
+        return func.coalesce(cls.document_signature, CatalogRecord.signature)
 
     @hybrid_property
     def isxn(self) -> Optional[str]:
@@ -260,7 +258,8 @@ class Document(Base, BaseMixin):
     ) -> List["Document"]:
         query = (
             session.query(cls)
-            .filter_by(category_id=category_id)
+            .join(CatalogRecord)
+            .filter(cls.category_id == category_id)
             .filter(cls.is_extractable)
             .order_by(cls.extraction_priority.desc(), cls.added_at)
         )

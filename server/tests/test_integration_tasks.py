@@ -1,4 +1,5 @@
 from tests.test_integration import TestIntegration
+from unittest.mock import patch, Mock
 from helper_funcs import mock_db, get_test_db
 from datatypes import TaskType
 from tasks import (
@@ -7,8 +8,9 @@ from tasks import (
     Reindex,
     PredictPeriodicalPageCount,
 )
-from unittest.mock import patch, Mock
+from services.external.aleph import AlephResponseStatus
 from services.external.digitization_registry import DigitizationState
+from datatypes import TaskDocumentErrorType
 from models import CatalogRecord, Document, Task, TaskDocument, Category
 from services.external.aleph import AlephRecord
 from services.documents_indexer import DocumentsIndexer
@@ -74,6 +76,33 @@ class TestTasksIntegration(TestIntegration):
         self.assertEqual(document.digitization_state, None)
         session.close()
 
+    @patch("services.external.aleph.AlephClient.get_record")
+    def test_catalog_sync_with_invalid_sysno(self, mock_get_record: Mock):
+        # Arrange
+        mock_db(self.get_testing_models())
+        session = get_test_db()
+        mock_get_record.return_value = None, AlephResponseStatus.InvalidSysno
+        catalog_record = CatalogRecord.get(session, "MZK01-000165329")
+        catalog_record.marc = None
+        catalog_record.save(session)
+
+        # Act
+        SyncFromCatalogs(session, 1)
+        document = Document.get(session, 1)
+
+        # Assert
+        self.assertEqual(
+            document.task_documents[0].error_type,
+            TaskDocumentErrorType.UnknownError,
+        )
+        self.assertEqual(
+            document.task_documents[0].error_message,
+            "Record with sysno MZK01-000165329 is not available from Aleph. "
+            "Status: AlephResponseStatus.InvalidSysno.",
+        )
+        self.assertIsNone(document.catalog_record.main_record)
+        session.close()
+
     def test_registry_sync(self):
         # Arrange
         mock_db(self.get_testing_models())
@@ -135,3 +164,30 @@ class TestTasksIntegration(TestIntegration):
 
         # Assert
         self.assertEqual(document.pages_count_predicted, 100)
+
+    @patch("services.predictor.requests.get")
+    def test_predict_periodical_page_count_failure(self, mock_get):
+        # Arrange
+        mock_db(self.get_testing_models())
+        session = get_test_db()
+
+        mock_response = Mock()
+        mock_response.status_code = 500
+        mock_response.json.return_value = {"error": "Internal Server Error"}
+        mock_get.return_value = mock_response
+
+        # Act
+        PredictPeriodicalPageCount(session, 1)
+        document = Document.get(session, 1)
+        session.close()
+
+        # Assert
+        self.assertIsNone(document.pages_count_predicted)
+        self.assertEqual(
+            TaskDocument.find(session, 1, 1).error_type.value,
+            "UnknownError",
+        )
+        self.assertEqual(
+            TaskDocument.find(session, 1, 1).error_message,
+            "Failed to predict page count",
+        )

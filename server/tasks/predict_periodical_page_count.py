@@ -12,7 +12,7 @@ def PredictPeriodicalPageCount(session: Session, task_id: int):
     def predict_volume_pages(document: Document) -> None:
         page_count = predictor.predict_periodical_page_count(document)
         if page_count is None:
-            raise ValueError("Failed to predict page count")
+            raise Exception("Failed to predict page count")
 
         document.pages_count_predicted = page_count
         document.save(session)

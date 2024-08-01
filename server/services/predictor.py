@@ -38,7 +38,7 @@ class Predictor:
             f"{self.url}/{PREDICT_PERIODICAL_PAGE_COUNT_ENDPOINT}", json=body
         )
         if response.status_code != 200:
-            raise ValueError("Failed to predict page count")
+            raise Exception("Failed to predict page count")
         return response.json()[PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD]
 
     @staticmethod

@@ -1,13 +1,24 @@
 from tests.test_integration import TestIntegration
 from typing import List, Tuple
 
-from models import Category, Distribution, Intention, Document, CatalogRecord
+from models import (
+    Category,
+    Distribution,
+    Intention,
+    Document,
+    CatalogRecord,
+    Library,
+    Storage,
+    Location,
+)
+from datatypes import LocationState
 from schemas import GenerateExtraction
 from services.extractions_generator.extraction_node import ExtractionNode
 from services.extractions_generator.generator import ExtractionGenerator
 from services.extractions_generator.preprocessor import ExtractionPreprocessor
 from datetime import date, timedelta
 from helper_funcs import get_test_db, mock_db
+from records_generators import generate_documents
 
 
 LEVEL_NAME = ["Root", "Child", "Grandchild", "Great Grandchild"]
@@ -496,6 +507,55 @@ class TestExtractionsPreparation(TestIntegration):
         # Assert
         self.assertListEqual(ids, [7, 5, 1, 4])
         self.assertEqual(count, 973)
+
+    def test_extraction_simple_tree_for_location(self):
+        # Arrange
+        items = generate_categories_tree(
+            {1: {}, 2: {}, 3: {4: {}}},
+            [1, 2, 4],
+        )
+        items.append(generate_intention())
+        items.extend(generate_distribution(1, enumerate([5, 5, 90, 100], 1)))
+        items.extend(
+            generate_documents(
+                {
+                    "category_id": [1, 1, 1, 2, 2, 2, 4],
+                    "pages_count_manual": [176, 151, 446, 270, 27, 316, 500],
+                    "document_signature": [f"2-{i}" for i in range(4)],
+                    "cnb": [f"CNB{str(i)}" for i in range(1, 8)],
+                }
+            )
+        )
+        items.append(Library(name="MZK"))
+        items.append(Storage(library_id=1, name="MZK Storage"))
+        items.append(
+            Location(
+                storage_id=1,
+                name="Test Location",
+                regexp="2",
+                state=LocationState.Active,
+            )
+        )
+        mock_db(items)
+
+        # Act
+        session = get_test_db()
+        generator = ExtractionGenerator(
+            1000,
+            1,
+            GenerateExtraction(target_pages_threshold=0.05, location_ids=[1]),
+            session,
+        )
+        generator.generate()
+        ids, count = (
+            generator.extracted_documents,
+            generator.extracted_pages_count,
+        )
+        session.close()
+
+        # Assert
+        self.assertListEqual(ids, [4, 1, 3])
+        self.assertEqual(count, 892)
 
     def test_extraction_complex_tree(self):
         # Arrange
