@@ -21,36 +21,37 @@ class TestDocumentsSearch(unittest.TestCase):
     def setUpClass(cls):
         mockClsEnv(cls)
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.patcher.stop()
-
-    def setUp(self):
         mock_db(get_test_documents())
-        self.db = get_test_db()
+        cls.db = get_test_db()
 
-        self.indexer = DocumentsIndexer(
+        cls.indexer = DocumentsIndexer(
             VeraConfig.ElasticsearchUrl,
             VeraConfig.ElasticsearchUsername,
             VeraConfig.ElasticsearchPassword,
         )
-        self.indexer.recreate_index()
-        self.indexer.es.indices.refresh(index=INDEX_NAME)
+        cls.indexer.recreate_index()
+        cls.indexer.es.indices.refresh(index=INDEX_NAME)
 
         for document in range(1, 47):
-            self.indexer.index(Document.get(self.db, document))
+            cls.indexer.index(Document.get(cls.db, document))
 
-        self.indexer.es.indices.refresh(index=INDEX_NAME)
+        cls.indexer.es.indices.refresh(index=INDEX_NAME)
 
-        self.client = createTestClient()
+        cls.client = createTestClient()
 
-    def tearDown(self) -> None:
+    @classmethod
+    def tearDownClass(cls):
+        cls.patcher.stop()
         cleanUpDependencyOverrides()
-        self.indexer.close()
+        cls.indexer.close()
         meta = test_crud.MetaData()
         meta.reflect(bind=test_crud.test_engine)
         meta.drop_all(bind=test_crud.test_engine)
-        return self.db.close()
+        cls.db.close()
+
+    def setUp(self):
+        self.db = TestDocumentsSearch.db
+        self.indexer = TestDocumentsSearch.indexer
 
     def test_sort_by_barcode(self):
         # Arange

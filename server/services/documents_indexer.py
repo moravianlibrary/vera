@@ -68,7 +68,7 @@ INDEX_SCHEMA = {
 class DocumentsIndexer:
     def __init__(self, url, username, password):
         self.es = elasticsearch.Elasticsearch(
-            url, http_auth=(username, password)
+            url, basic_auth=(username, password)
         )
         if not self.es.indices.exists(index=INDEX_NAME):
             self.es.indices.create(index=INDEX_NAME, body=INDEX_SCHEMA)
@@ -270,7 +270,7 @@ class DocumentsIndexer:
         try:
             return elasticsearch.Elasticsearch(
                 VeraConfig.ElasticsearchUrl,
-                http_auth=(
+                basic_auth=(
                     VeraConfig.ElasticsearchUsername,
                     VeraConfig.ElasticsearchPassword,
                 ),

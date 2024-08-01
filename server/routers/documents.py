@@ -6,6 +6,7 @@ from schemas import (
     AddDocumentResponse,
     Identifier,
     DocumentResponse,
+    Marc21DiffRecord,
 )
 from datatypes import ActionType, ElasticsearchParams
 from models import Document
@@ -29,6 +30,7 @@ from starlette.responses import FileResponse
 import pandas as pd
 import tempfile
 from datetime import datetime
+from procedures.catalog_records_comparator import compare_marc21_records
 
 
 XLSX_MIMETYPE = (
@@ -222,6 +224,56 @@ def delete_query_documents(
         restrict_editing_query_params(query_params, user)
     ):
         Document.get(session, document_id).delete(session)
+
+
+@router.get(
+    "/{document_id}/mzk_skc_diff",
+    dependencies=[CanReadDocument],
+    response_model=Marc21DiffRecord,
+)
+def get_catalog_record_mzk_skc_diff(
+    document_id: int = Path(...),
+    user: CurrentUser = DependsOnCurrentUser,
+    session: Session = DependsOnDbSession,
+):
+    OwnershipValidator.EnforceDocumentRead(user, document_id, session)
+    catalog_record = Document.get(session, document_id).catalog_record
+    if catalog_record.skc_record is None:
+        return Marc21DiffRecord(
+            sysno1=catalog_record.sysno,
+            sysno2=catalog_record.skc_sysno,
+        )
+    return compare_marc21_records(
+        catalog_record.sysno,
+        catalog_record.main_record,
+        catalog_record.skc_sysno,
+        catalog_record.skc_record,
+    )
+
+
+@router.get(
+    "/{document_id}/mzk_cnb_diff",
+    dependencies=[CanReadDocument],
+    response_model=Marc21DiffRecord,
+)
+def get_catalog_record_mzk_cnb_diff(
+    document_id: int = Path(...),
+    user: CurrentUser = DependsOnCurrentUser,
+    session: Session = DependsOnDbSession,
+):
+    OwnershipValidator.EnforceDocumentRead(user, document_id, session)
+    catalog_record = Document.get(session, document_id).catalog_record
+    if catalog_record.cnb_record is None:
+        return Marc21DiffRecord(
+            sysno1=catalog_record.sysno,
+            sysno2=catalog_record.cnb_sysno,
+        )
+    return compare_marc21_records(
+        catalog_record.sysno,
+        catalog_record.main_record,
+        catalog_record.cnb_sysno,
+        catalog_record.cnb_record,
+    )
 
 
 # @router.post("/documents/{id}/comments", response_model=Comment)

@@ -5,7 +5,6 @@ from .documents import router as documents_router
 from .security import router as security_router
 from .tasks import router as tasks_router
 from .digitization_lists import router as digitization_lists_router
-from .catalogs import router as catalogs_router
 from .categories import router as categories_router
 
 __all__ = [
@@ -16,6 +15,5 @@ __all__ = [
     "security_router",
     "tasks_router",
     "digitization_lists_router",
-    "catalogs_router",
     "categories_router",
 ]

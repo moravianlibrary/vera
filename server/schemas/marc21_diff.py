@@ -91,7 +91,7 @@ class Marc21Diff(BaseModel):
 
 
 class Marc21DiffRecord(BaseModel):
-    diffs: List[Marc21Diff]
+    diffs: List[Marc21Diff] = []
 
     sysno1: Optional[str] = None
     sysno2: Optional[str] = None

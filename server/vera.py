@@ -12,7 +12,6 @@ from routers import (
     security_router,
     tasks_router,
     digitization_lists_router,
-    catalogs_router,
     categories_router,
 )
 from config import VeraConfig
@@ -40,7 +39,7 @@ async def lifespan(app_: FastAPI):
         check_database_revision,
         get_db,
     )
-    from tasks.api import set_failed_tasks_on_start
+    from worker import set_failed_tasks_on_start
 
     logger.info("Checking database connection.")
     if not check_connection():
@@ -81,7 +80,6 @@ app.include_router(documents_router)
 app.include_router(security_router)
 app.include_router(tasks_router)
 app.include_router(digitization_lists_router)
-app.include_router(catalogs_router)
 app.include_router(categories_router)
 
 

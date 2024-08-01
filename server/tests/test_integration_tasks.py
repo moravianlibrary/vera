@@ -18,7 +18,7 @@ from elasticsearch import NotFoundError
 from services.predictor import PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD
 
 
-class TestTasksIntegration(TestIntegration):
+class TestCatalogSyncIntegration(TestIntegration):
     def get_testing_models(self):
         with open("tests/aleph_records/MZK01-000165329.marc", "rb") as f:
             return [
@@ -103,6 +103,37 @@ class TestTasksIntegration(TestIntegration):
         self.assertIsNone(document.catalog_record.main_record)
         session.close()
 
+
+class TestDigitizationRegistrySyncIntegration(TestIntegration):
+    def get_testing_models(self):
+        with open("tests/aleph_records/MZK01-000165329.marc", "rb") as f:
+            return [
+                Category(
+                    name="Test Category",
+                ),
+                CatalogRecord(
+                    sysno="MZK01-000165329",
+                    marc=f.read(),
+                ),
+                Document(
+                    id=1,
+                    sysno="MZK01-000165329",
+                    barcode="2619868037",
+                    volume="39",
+                    volume_year="1939",
+                    added_by="Test User",
+                    category_id=1,
+                ),
+                Task(
+                    task_type=TaskType.SyncFromCatalogs,
+                    owner="Test User",
+                ),
+                TaskDocument(
+                    task_id=1,
+                    document_id=1,
+                ),
+            ]
+
     def test_registry_sync(self):
         # Arrange
         mock_db(self.get_testing_models())
@@ -152,6 +183,37 @@ class TestTasksIntegration(TestIntegration):
         self.assertIsNone(registry_id_after_sync)
         self.assertEqual(state_after_sync, DigitizationState.NotDigitized)
 
+
+class TestReindexIntegration(TestIntegration):
+    def get_testing_models(self):
+        with open("tests/aleph_records/MZK01-000165329.marc", "rb") as f:
+            return [
+                Category(
+                    name="Test Category",
+                ),
+                CatalogRecord(
+                    sysno="MZK01-000165329",
+                    marc=f.read(),
+                ),
+                Document(
+                    id=1,
+                    sysno="MZK01-000165329",
+                    barcode="2619868037",
+                    volume="39",
+                    volume_year="1939",
+                    added_by="Test User",
+                    category_id=1,
+                ),
+                Task(
+                    task_type=TaskType.SyncFromCatalogs,
+                    owner="Test User",
+                ),
+                TaskDocument(
+                    task_id=1,
+                    document_id=1,
+                ),
+            ]
+
     def test_reindex(self):
         # Arrange
         mock_db(self.get_testing_models())
@@ -170,6 +232,37 @@ class TestTasksIntegration(TestIntegration):
         # Assert
         self.assertEqual(document["sysno"], "MZK01-000165329")
 
+
+class TestPredictPeriodicalPageCountIntegration(TestIntegration):
+    def get_testing_models(self):
+        with open("tests/aleph_records/MZK01-000165329.marc", "rb") as f:
+            return [
+                Category(
+                    name="Test Category",
+                ),
+                CatalogRecord(
+                    sysno="MZK01-000165329",
+                    marc=f.read(),
+                ),
+                Document(
+                    id=1,
+                    sysno="MZK01-000165329",
+                    barcode="2619868037",
+                    volume="39",
+                    volume_year="1939",
+                    added_by="Test User",
+                    category_id=1,
+                ),
+                Task(
+                    task_type=TaskType.SyncFromCatalogs,
+                    owner="Test User",
+                ),
+                TaskDocument(
+                    task_id=1,
+                    document_id=1,
+                ),
+            ]
+
     @patch("services.predictor.requests.get")
     def test_predict_periodical_page_count(self, mock_get):
         # Arrange
@@ -186,10 +279,10 @@ class TestTasksIntegration(TestIntegration):
         # Act
         PredictPeriodicalPageCount(session, 1)
         document = Document.get(session, 1)
-        session.close()
 
         # Assert
         self.assertEqual(document.pages_count_predicted, 100)
+        session.close()
 
     @patch("services.predictor.requests.get")
     def test_predict_periodical_page_count_failure(self, mock_get):
@@ -205,7 +298,6 @@ class TestTasksIntegration(TestIntegration):
         # Act
         PredictPeriodicalPageCount(session, 1)
         document = Document.get(session, 1)
-        session.close()
 
         # Assert
         self.assertIsNone(document.pages_count_predicted)
@@ -217,3 +309,4 @@ class TestTasksIntegration(TestIntegration):
             TaskDocument.find(session, 1, 1).error_message,
             "Failed to predict page count",
         )
+        session.close()

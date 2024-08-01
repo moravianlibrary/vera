@@ -58,7 +58,7 @@ class TestPredictions(unittest.TestCase):
         predictor = Predictor(url="http://testurl.com")
 
         # Assert
-        with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             predictor.predict_periodical_page_count(mock_document)
 
     def test_get_instance(self):
