@@ -244,15 +244,26 @@ class DocumentsIndexer:
     def restrict_query_params_for_categories(
         query_params: Dict[str, any],
         category_ids: List[int],
+        username: str,
     ) -> Generator[Dict, None, None]:
+        categories_restriction = {
+            "nested": {
+                "path": "category_path",
+                "query": {
+                    "terms": {"category_path.category_id": category_ids}
+                },
+            }
+        }
+        username_restriction = {"term": {"added_by": username}}
         return DocumentsIndexer.restrict_query_params(
             query_params,
             restriction_clause={
-                "nested": {
-                    "path": "category_path",
-                    "query": {
-                        "terms": {"category_path.category_id": category_ids}
-                    },
+                "bool": {
+                    "should": [
+                        categories_restriction,
+                        username_restriction,
+                    ],
+                    "minimum_should_match": 1,
                 }
             },
         )

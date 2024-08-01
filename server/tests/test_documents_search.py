@@ -1010,3 +1010,62 @@ class TestDocumentsSearch(unittest.TestCase):
 
         self.assertEqual(len(documents), 1)
         self.assertEqual(documents[0]["id"], 21)
+
+    def test_search_restricted_by_department(self):
+        from models import Department, CategoryDepartments
+
+        # Arange
+        session = get_test_db()
+        Department(abbreviation="IT", name="IT").save(session).save_users(
+            session, ["test_user"]
+        )
+        CategoryDepartments(category_id=1, department_id=1).save(session)
+        test_user = createTestUser([ActionType.ReadDatatableDepartment], 1)
+        test_user.department_categories_ids = [1]
+        mockUser(test_user)
+
+        query = {"query": {"match_all": {}}}
+
+        # Act
+        response = self.client.post(
+            "/documents/query",
+            headers={"Authorization": "Bearer test_token"},
+            json=query,
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+
+        documents = [hit["_source"] for hit in response.json()["hits"]["hits"]]
+
+        self.assertEqual(len(documents), 10)
+        self.assertEqual(
+            [document["id"] for document in documents],
+            [i for i in range(1, 11)],
+        )
+        session.close()
+
+    def test_search_restricted_by_user(self):
+        # Arange
+        test_user = createTestUser([ActionType.ReadDatatableOwn])
+        mockUser(test_user)
+
+        query = {"query": {"match_all": {}}}
+
+        # Act
+        response = self.client.post(
+            "/documents/query",
+            headers={"Authorization": "Bearer test_token"},
+            json=query,
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+
+        documents = [hit["_source"] for hit in response.json()["hits"]["hits"]]
+
+        self.assertEqual(len(documents), 10)
+        self.assertEqual(
+            [document["id"] for document in documents],
+            [i for i in range(1, 11)],
+        )

@@ -301,6 +301,18 @@ class CategoryDepartments(Base, BaseMixin):
             .first()
         )
 
+    def save(self, session: Session) -> "CategoryDepartments":
+        if (
+            CategoryDepartments.find(
+                session, self.category_id, self.department_id
+            )
+            is None
+        ):
+            session.add(self)
+        session.commit()
+        session.refresh(self)
+        return self
+
 
 class Distribution(Base):
     __tablename__ = "distributions"

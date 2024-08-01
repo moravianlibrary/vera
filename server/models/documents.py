@@ -192,6 +192,7 @@ class Document(Base, BaseMixin):
         return (
             session.query(cls)
             .options(joinedload(Document.category))
+            .options(joinedload(Document.catalog_record))
             .filter_by(id=document_id)
             .first()
         )

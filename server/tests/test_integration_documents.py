@@ -4,6 +4,7 @@ from helper_funcs import (
     createTestUser,
     mockUser,
     mock_db,
+    get_test_db,
 )
 
 from datatypes import ActionType
@@ -11,6 +12,8 @@ from services.external.digitization_registry import DigitizationState
 from services.external.aleph import AlephClient
 from models import Category, CatalogRecord, Document
 from datatypes import AddDocumentResponseStatus
+from records_generators import generate_documents
+from services.exceptions import ObjectNotFoundException
 
 
 class TestDocumentsIntegration(TestIntegration):
@@ -35,6 +38,89 @@ class TestDocumentsIntegration(TestIntegration):
                 category_id=1,
             ),
         ]
+
+    def test_add_document(self):
+        # Arrange
+        mock_db([Category(name="Test Category")])
+        mockUser(createTestUser([ActionType.InsertDatatable]))
+        identifier_json = {
+            "identifier_type": "Sysno",
+            "value": "mzk03001066272",
+        }
+
+        # Act
+        client = createTestClient()
+        response = client.post(
+            "/documents/from_catalog?category_id=1",
+            json=identifier_json,
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["status"],
+            AddDocumentResponseStatus.Success.value,
+        )
+
+        document = response.json()["document"]
+
+        self.assertEqual("2610417932", document["issues"][0]["barcode"])
+        self.assertEqual(
+            DigitizationState.NotDigitized.value,
+            document["issues"][0]["digitization_state"],
+        )
+
+    def test_add_document_by_sysno_with_some_issues_already_existing(self):
+        # Arrange
+        mock_db(
+            [
+                Category(
+                    name="Test Category",
+                ),
+                CatalogRecord(
+                    sysno="MZK01-001731132",
+                    marc=AlephClient()
+                    .get_record("MZK01-001731132")[0]
+                    .record.as_marc(),
+                ),
+                Document(
+                    sysno="MZK01-001731132", volume="39", barcode="2619868037"
+                ),
+            ]
+        )
+        mockUser(createTestUser([ActionType.InsertDatatable]))
+        identifier_json = {
+            "identifier_type": "Sysno",
+            "value": "MZK01-001731132",
+        }
+
+        # Act
+        client = createTestClient()
+        response = client.post(
+            "/documents/from_catalog?category_id=1",
+            json=identifier_json,
+            headers={
+                "Authorization": "Bearer test_token",
+                "Content-Type": "application/json",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["status"],
+            AddDocumentResponseStatus.MultipleIssues.value,
+        )
+
+        document = response.json()["document"]
+        for issue in document["issues"]:
+            self.assertEqual(
+                issue["barcode"] == "2619868037", issue["already_added"]
+            )
 
     def test_update_document_page_count_manual_permitted(self):
         # Arrange
@@ -114,20 +200,18 @@ class TestDocumentsIntegration(TestIntegration):
         self.assertEqual(3, document["extraction_priority"])
         self.assertEqual(2, document["category_id"])
 
-    def test_add_document(self):
+    def test_delete_document_permitted(self):
         # Arrange
-        mock_db([Category(name="Test Category")])
-        mockUser(createTestUser([ActionType.InsertDatatable]))
-        identifier_json = {
-            "identifier_type": "Sysno",
-            "value": "mzk03001066272",
-        }
+        items = [Category(name="Test Category")]
+        items.extend(generate_documents({"category_id": [1]}))
+        mock_db(items)
+        mockUser(createTestUser([ActionType.EditDatatableAll]))
+        session = get_test_db()
 
         # Act
         client = createTestClient()
-        response = client.post(
-            "/documents/from_catalog?category_id=1",
-            json=identifier_json,
+        response = client.delete(
+            "/documents/1",
             headers={
                 "Authorization": "Bearer test_token",
                 "Content-Type": "application/json",
@@ -136,66 +220,9 @@ class TestDocumentsIntegration(TestIntegration):
 
         # Assert
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.json()["status"],
-            AddDocumentResponseStatus.Success.value,
-        )
-
-        document = response.json()["document"]
-
-        self.assertEqual("2610417932", document["issues"][0]["barcode"])
-        self.assertEqual(
-            DigitizationState.NotDigitized.value,
-            document["issues"][0]["digitization_state"],
-        )
-
-    def test_insert_by_sysno_with_some_issues_already_existing(self):
-        # Arrange
-        mock_db(
-            [
-                Category(
-                    name="Test Category",
-                ),
-                CatalogRecord(
-                    sysno="MZK01-001731132",
-                    marc=AlephClient()
-                    .get_record("MZK01-001731132")[0]
-                    .record.as_marc(),
-                ),
-                Document(
-                    sysno="MZK01-001731132", volume="39", barcode="2619868037"
-                ),
-            ]
-        )
-        mockUser(createTestUser([ActionType.InsertDatatable]))
-        identifier_json = {
-            "identifier_type": "Sysno",
-            "value": "MZK01-001731132",
-        }
-
-        # Act
-        client = createTestClient()
-        response = client.post(
-            "/documents/from_catalog?category_id=1",
-            json=identifier_json,
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
-        )
-
-        # Assert
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.json()["status"],
-            AddDocumentResponseStatus.MultipleIssues.value,
-        )
-
-        document = response.json()["document"]
-        for issue in document["issues"]:
-            self.assertEqual(
-                issue["barcode"] == "2619868037", issue["already_added"]
-            )
+        with self.assertRaises(ObjectNotFoundException):
+            Document.get(session, 1)
+        session.close()
 
     def test_catalog_records_similarities(self):
         # Arrange

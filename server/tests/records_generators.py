@@ -1,5 +1,6 @@
 from typing import Any, Dict, List, Union
 from models import CatalogRecord, Document, Location
+from services.external.digitization_registry import DigitizationState
 
 
 def generate_documents(
@@ -16,7 +17,14 @@ def generate_documents(
 
     sysnos = set()
     items = []
-    ignored_keys = ["sysno", "marc_path", "cnb", "signature"]
+    ignored_keys = [
+        "sysno",
+        "added_by",
+        "digitization_state",
+        "marc_path",
+        "cnb",
+        "signature",
+    ]
 
     for i in range(max_length):
         sysno = data["sysno"][i] or f"MZK00-{str(i + 1).zfill(9)}"
@@ -45,6 +53,16 @@ def generate_documents(
         items.append(
             Document(
                 sysno=sysno,
+                added_by=(
+                    data["added_by"][i]
+                    if "added_by" in all_keys
+                    else "test_user"
+                ),
+                digitization_state=(
+                    data["digitization_state"][i]
+                    if "digitization_state" in all_keys
+                    else DigitizationState.NotDigitized
+                ),
                 **{
                     key: value
                     for key, value in document_data.items()

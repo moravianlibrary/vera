@@ -148,16 +148,14 @@ def query_documents(
     if user.has_action(ActionType.ReadDatatableDepartment):
         return indexer.search(
             DocumentsIndexer.restrict_query_params_for_categories(
-                query_params, user.department_categories_ids
+                query_params, user.department_categories_ids, user.username
             )
         )
-    if user.has_action(ActionType.ReadDatatableOwn):
-        return indexer.search(
-            DocumentsIndexer.restrict_query_params_for_username(
-                query_params, user.username
-            )
+    return indexer.search(
+        DocumentsIndexer.restrict_query_params_for_username(
+            query_params, user.username
         )
-    raise Exception("User without edit permission trying to edit documents")
+    )
 
 
 @router.post("/query/export", dependencies=[CanReadDocuments])

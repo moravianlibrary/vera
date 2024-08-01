@@ -423,7 +423,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             hit["_source"]
             for hit in self.indexer.search(
                 DocumentsIndexer.restrict_query_params_for_categories(
-                    {"query": {"match_all": {}}}, [5]
+                    {"query": {"match_all": {}}}, [5], "other_test_user"
                 )
             )["hits"]["hits"]
         ]
@@ -449,7 +449,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             hit["_source"]
             for hit in self.indexer.search(
                 DocumentsIndexer.restrict_query_params_for_categories(
-                    {"query": {"match_all": {}}}, [3]
+                    {"query": {"match_all": {}}}, [3], "other_test_user"
                 )
             )["hits"]["hits"]
         ]
@@ -475,7 +475,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             hit["_source"]
             for hit in self.indexer.search(
                 DocumentsIndexer.restrict_query_params_for_categories(
-                    {"query": {"match_all": {}}}, [1]
+                    {"query": {"match_all": {}}}, [1], "other_test_user"
                 )
             )["hits"]["hits"]
         ]
@@ -501,7 +501,7 @@ class TestDocumentsIndexer(TestCrudOperations):
             hit["_source"]
             for hit in self.indexer.search(
                 DocumentsIndexer.restrict_query_params_for_categories(
-                    {"query": {"match_all": {}}}, [4]
+                    {"query": {"match_all": {}}}, [4], "other_test_user"
                 )
             )["hits"]["hits"]
         ]
@@ -524,7 +524,9 @@ class TestDocumentsIndexer(TestCrudOperations):
             hit["_source"]
             for hit in self.indexer.search(
                 DocumentsIndexer.restrict_query_params_for_categories(
-                    {"query": {"match": {"barcode": document.barcode}}}, [5]
+                    {"query": {"match": {"barcode": document.barcode}}},
+                    [5],
+                    "other_test_user",
                 )
             )["hits"]["hits"]
         ]
@@ -552,7 +554,9 @@ class TestDocumentsIndexer(TestCrudOperations):
             hit["_source"]
             for hit in self.indexer.search(
                 DocumentsIndexer.restrict_query_params_for_categories(
-                    {"query": {"match": {"barcode": document.barcode}}}, [4]
+                    {"query": {"match": {"barcode": document.barcode}}},
+                    [4],
+                    "other_test_user",
                 )
             )["hits"]["hits"]
         ]
@@ -583,6 +587,7 @@ class TestDocumentsIndexer(TestCrudOperations):
                         }
                     },
                     [5],
+                    "other_test_user",
                 )
             )["hits"]["hits"]
         ]
@@ -618,6 +623,7 @@ class TestDocumentsIndexer(TestCrudOperations):
                         }
                     },
                     [4],
+                    "other_test_user",
                 )
             )["hits"]["hits"]
         ]
@@ -648,6 +654,7 @@ class TestDocumentsIndexer(TestCrudOperations):
                         }
                     },
                     [5],
+                    "other_test_user",
                 )
             )["hits"]["hits"]
         ]
@@ -683,6 +690,7 @@ class TestDocumentsIndexer(TestCrudOperations):
                         }
                     },
                     [4],
+                    "other_test_user",
                 )
             )["hits"]["hits"]
         ]
@@ -713,6 +721,7 @@ class TestDocumentsIndexer(TestCrudOperations):
                         }
                     },
                     [5],
+                    "other_test_user",
                 )
             )["hits"]["hits"]
         ]
@@ -746,6 +755,7 @@ class TestDocumentsIndexer(TestCrudOperations):
                         }
                     },
                     [4],
+                    "other_test_user",
                 )
             )["hits"]["hits"]
         ]

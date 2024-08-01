@@ -28,7 +28,7 @@ class CatalogRecord(Base, BaseMixin):
     signature = Column(String)
     isxn = Column(String)
 
-    skc_sysno = Column(String)  # skc = authority catalog
+    skc_sysno = Column(String)
     skc_marc = Column(LargeBinary)
     skc_score = Column(
         Float,
