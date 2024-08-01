@@ -83,9 +83,7 @@ def end_emulation(
     "/roles", dependencies=[CanManageAccess], response_model=RoleResponse
 )
 def create_role(role: RoleCreate, db: Session = DependsOnDbSession):
-    return (
-        role.load_to_model(db, Role()).save(db).save_actions(db, role.actions)
-    )
+    return role.load_to_model(Role()).save(db).save_actions(db, role.actions)
 
 
 @router.put(

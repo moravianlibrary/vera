@@ -19,6 +19,8 @@ from services.extractions_generator.preprocessor import ExtractionPreprocessor
 from datetime import date, timedelta
 from helper_funcs import get_test_db, mock_db
 from records_generators import generate_documents
+from services.exceptions import EmptyExtractionException
+from models import Extraction
 
 
 LEVEL_NAME = ["Root", "Child", "Grandchild", "Great Grandchild"]
@@ -424,6 +426,16 @@ class TestExtractionsPreparation(TestIntegration):
         # Assert
         self.assertEqual(count, 1199)
         self.assertSetEqual(set(ids), set([8, 5, 6, 3, 1]))
+
+    def test_extraction_raise_exception_on_empty_extraction(self):
+        # Arrange
+        mock_db()
+
+        # Act and Assert
+        session = get_test_db()
+        with self.assertRaises(EmptyExtractionException):
+            Extraction(document_ids=[]).save(session)
+        session.close()
 
     def test_extraction_with_priorities(self):
         # Arrange

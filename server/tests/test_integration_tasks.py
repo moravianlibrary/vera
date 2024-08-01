@@ -121,10 +121,36 @@ class TestTasksIntegration(TestIntegration):
         session.close()
 
         # Assert
-        self.assertEqual(registry_id_before_sync, None)
-        self.assertEqual(state_before_sync, None)
+        self.assertIsNone(registry_id_before_sync)
+        self.assertIsNone(state_before_sync)
         self.assertEqual(registry_id_after_sync, 306978)
         self.assertEqual(state_after_sync, DigitizationState.Finished)
+
+    @patch(
+        "services.external.digitization_registry"
+        ".DigitizationRegistryClient.get_record"
+    )
+    def test_registry_sync_with_not_found_record(self, mock_get_record: Mock):
+        # Arrange
+        mock_db(self.get_testing_models())
+        session = get_test_db()
+        document = Document.get(session, 1)
+        document.digitization_registry_id = 306978
+        document.digitization_state = DigitizationState.Finished
+        document.save(session)
+        mock_get_record.return_value = None
+
+        # Act
+        SyncFromDigitizationRegistry(session, 1)
+        registry_id_after_sync = Document.get(
+            session, 1
+        ).digitization_registry_id
+        state_after_sync = Document.get(session, 1).digitization_state
+        session.close()
+
+        # Assert
+        self.assertIsNone(registry_id_after_sync)
+        self.assertEqual(state_after_sync, DigitizationState.NotDigitized)
 
     def test_reindex(self):
         # Arrange

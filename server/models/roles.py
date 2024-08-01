@@ -11,7 +11,7 @@ class Role(Base, BaseMixin):
     __tablename__ = "roles"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
+    name = Column(String, unique=True, nullable=False)
 
     role_actions = relationship(
         "RoleAction", back_populates="role", cascade="all,delete"

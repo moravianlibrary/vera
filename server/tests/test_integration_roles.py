@@ -6,6 +6,24 @@ from helper_funcs import mock_db, mockUser, createTestUser
 
 
 class TestRolesEndpoints(TestIntegration):
+    def test_create_role(self):
+        # Arrange
+        mock_db()
+        mockUser(createTestUser([ActionType.EditAccess]))
+        role = {
+            "name": "Test Role",
+            "actions": [ActionType.WriteDatatable.value],
+        }
+
+        # Act
+        response = self.client.post(
+            "/roles", json=role, headers={"Authorization": "Bearer test_token"}
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["name"], role["name"])
+        self.assertEqual(response.json()["actions"], role["actions"])
 
     def test_get_roles(self):
         # Arrange

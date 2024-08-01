@@ -38,6 +38,13 @@ class TestDigitizationRegister(unittest.TestCase):
             DigitizationState.Finished,
         )
 
+    def test_get_state_for_invalid_cnb(self):
+        self.assertIsNone(
+            DigitizationRegistryClient().get_record(
+                cnb="cnb-invalid", volume="1"
+            )
+        )
+
     def test_get_state_for_periodical_issues(self):
         self.assertEqual(
             DigitizationRegistryClient()
