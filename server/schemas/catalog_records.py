@@ -10,6 +10,7 @@ from services.external.digitization_registry import (
 )
 from services.external.digitization_registry import DigitizationState
 from models import CatalogRecord
+from services.marc_records_comparator.schemas import MarcFieldDifference
 
 
 class Identifier(BaseModel):
@@ -151,3 +152,10 @@ class Frequency(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+
+class MarcDifferenceRecord(BaseModel):
+    differences: List[MarcFieldDifference] = []
+
+    sysno1: Optional[str] = None
+    sysno2: Optional[str] = None
