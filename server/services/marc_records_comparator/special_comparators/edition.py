@@ -22,7 +22,8 @@ EDITION_TERMS = {
     "": "",
 }
 EDITION_TERMS_EXPR = (
-    "(edition,any_number|any_number,edition),other_than(edition,any_number)*"
+    "edition,any_number,other_than(edition,any_number)*|"
+    "any_number,edition,other_than(edition,any_number)*"
 )
 
 
