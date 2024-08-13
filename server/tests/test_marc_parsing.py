@@ -1,61 +1,133 @@
 from unittest import TestCase
-from services.marc_records_comparator.special_comparators.text_analyzer import TextAnalyzer
+from services.marc_records_comparator.special_comparators.text_data_comparator import (
+    NormalizedTextDataComparator,
+)
+from services.marc_records_comparator.special_comparators.edition import (
+    EditionFieldComparator,
+)
 
 
-class TestTextAnalyzer(TestCase):
-    def test_tokenization_with_simple_vocabulary_exact_match(self):
+class TestNormalizedTextDataComparator(TestCase):
+    def test_tokenization_with_simple_synonyms_exact_match(self):
         # Arrange
-        vocabulary = {
+        synonym_dict = {
             "vydání": "edition",
             "vydanie": "edition",
             "první": "1.",
             "druhé": "2.",
         }
-        analyzer = TextAnalyzer(vocabulary)
+        valid_form_pattern = r"^(\d+)\. edition"
+        analyzer = NormalizedTextDataComparator(
+            synonym_dict, valid_form_pattern
+        )
         text = "první vydání"
-        
+
         # Act
         tokens = analyzer._tokenize(text)
 
         # Assert
-        self.assertEqual(tokens, ['první', 'vydání'])
-        
-    def test_classification_with_simple_vocabulary_exact_match(self):
+        self.assertEqual(tokens, ["první", "vydání"])
+
+    def test_normalization_with_simple_synonyms_exact_match(self):
         # Arrange
-        vocabulary = {
+        synonym_dict = {
             "vydání": "edition",
             "vydanie": "edition",
             "první": "1.",
             "druhé": "2.",
         }
-        analyzer = TextAnalyzer(vocabulary)
+        valid_form_pattern = r"^(\d+)\. edition"
+        analyzer = NormalizedTextDataComparator(
+            synonym_dict, valid_form_pattern
+        )
         text = "první vydání"
-        
+
         # Act
-        classification = analyzer._classify(text)
+        classification = analyzer._normalize_text(text)
 
         # Assert
-        self.assertEqual(classification, ['1.', 'edition'])
-        
-    def test_compare_using_expression_with_simple_vocabulary_exact_match(self):
+        self.assertEqual(classification, "1. edition")
+
+    def test_normalization_with_simple_synonyms_reformat_match(self):
         # Arrange
-        vocabulary = {
+        synonym_dict = {
             "vydání": "edition",
             "vydanie": "edition",
             "první": "1.",
             "druhé": "2.",
         }
-        analyzer = TextAnalyzer(vocabulary)
+        valid_form_pattern = r"^(\d+)\. edition"
+        reformat_patterns = [
+            (
+                r"edition (\d+)\.",
+                r"\1. edition",
+            )
+        ]
+        analyzer = NormalizedTextDataComparator(
+            synonym_dict, valid_form_pattern, reformat_patterns
+        )
+        text = "vydání 2."
+
+        # Act
+        classification = analyzer._normalize_text(text)
+
+        # Assert
+        self.assertEqual(classification, "2. edition")
+
+    def test_normalization_with_simple_synonyms_reformat_match_2(self):
+        # Arrange
+        synonym_dict = {
+            "vydání": "edition",
+            "vydanie": "edition",
+            "první": "1.",
+            "druhé": "2.",
+        }
+        valid_form_pattern = r"^(\d+)\. edition"
+        reformat_patterns = [(r"edition (\d+)", r"\1. edition")]
+        analyzer = NormalizedTextDataComparator(
+            synonym_dict, valid_form_pattern, reformat_patterns
+        )
+        text = "vydání 1"
+
+        # Act
+        classification = analyzer._normalize_text(text)
+
+        # Assert
+        self.assertEqual(classification, "1. edition")
+
+    def test_compare_using_expression_with_simple_synonyms_exact_match(self):
+        # Arrange
+        synonym_dict = {
+            "vydání": "edition",
+            "vydanie": "edition",
+            "první": "1.",
+            "druhé": "2.",
+        }
+        valid_form_pattern = r"^(\d+)\. edition"
+        reformat_patterns = [(r"edition (\d+)\.", r"\1. edition")]
+        analyzer = NormalizedTextDataComparator(
+            synonym_dict, valid_form_pattern, reformat_patterns
+        )
+
         text1 = "první vydání"
         text2 = "vydání 1."
-        editions_terms_expr = (
-            "edition,any_number,other_than(edition,any_number)*|"
-            "any_number,edition,other_than(edition,any_number)*"
-        )
-        
+
         # Act
-        are_same = analyzer.compare_using_expression(text1, text2, editions_terms_expr)
+        are_same = analyzer.compare_texts(text1, text2)
 
         # Assert
         self.assertTrue(are_same)
-        
+
+    def test_edition_field_comparator(self):
+        # Arrange
+        comparator = EditionFieldComparator()
+        values = [
+            ("Vyd. 2., v češ. 1.", "Vyd. 2., v češtině 1."),
+            ("3. dopl. a přeprac. vyd.", "3., dopl. a přeprac. vyd."),
+            ("2. vyd.", "2. vyd"),
+            ("2. přeprac. vyd.", "2., přeprac. vyd."),
+        ]
+
+        # Act and Assert
+        for value1, value2 in values:
+            self.assertTrue(comparator.is_same_value(value1, value2))
