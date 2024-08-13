@@ -123,9 +123,9 @@ class CatalogDocumentResponse(BaseModel):
     issues: List[CatalogIssueResponse]
 
     skc_sysno: Optional[str] = None
-    skc_score: Optional[float] = None
+    skc_diff: Optional[MarcFieldDifference] = None
     cnb_sysno: Optional[str] = None
-    cnb_score: Optional[float] = None
+    cnb_diff: Optional[MarcFieldDifference] = None
 
     @classmethod
     def from_records(
@@ -140,9 +140,9 @@ class CatalogDocumentResponse(BaseModel):
             material_type=aleph_record.material_type,
             issues=catalog_issues,
             skc_sysno=catalog_record.skc_sysno,
-            skc_score=catalog_record.skc_score,
+            skc_diff=catalog_record.skc_diff,
             cnb_sysno=catalog_record.cnb_sysno,
-            cnb_score=catalog_record.cnb_score,
+            cnb_diff=catalog_record.cnb_diff,
         )
 
 

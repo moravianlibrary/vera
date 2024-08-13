@@ -2,14 +2,13 @@ from typing import Optional
 from pymarc import Record, MARCReader
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy import (
-    CheckConstraint,
     Column,
-    Float,
     ForeignKey,
     LargeBinary,
     String,
     TIMESTAMP,
     UniqueConstraint,
+    JSON,
     func,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -30,17 +29,11 @@ class CatalogRecord(Base, BaseMixin):
 
     skc_sysno = Column(String)
     skc_marc = Column(LargeBinary)
-    skc_score = Column(
-        Float,
-        CheckConstraint("skc_score >= 0 AND skc_score <= 1"),
-    )
+    skc_diff = Column(JSON)
 
     cnb_sysno = Column(String)
     cnb_marc = Column(LargeBinary)
-    cnb_score = Column(
-        Float,
-        CheckConstraint("cnb_score >= 0 AND cnb_score <= 1"),
-    )
+    cnb_diff = Column(JSON)
 
     last_updated = Column(TIMESTAMP, server_default=func.now())
 
