@@ -5,12 +5,8 @@ from typing import Dict, List, Optional
 
 class KnihovnyCzRecord:
     def __init__(self, sysno, data):
-        self._sysno: str = sysno
+        self.sysno: str = sysno
         self.data: Dict = data
-
-    @property
-    def sysno(self) -> str:
-        return self._sysno
 
     @property
     def per_library_ids(self) -> Optional[List[str]]:

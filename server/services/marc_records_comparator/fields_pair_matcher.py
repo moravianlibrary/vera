@@ -40,12 +40,6 @@ class MarcFieldsPairMatcher:
                 )
                 paired_items1.add(i)
                 paired_items2.add(j)
-            else:
-                print(
-                    f"Error: i={i}, j={j}, "
-                    f"len(items1)={len(items1)}, "
-                    f"len(items2)={len(items2)}"
-                )
 
         for i in range(len(items1)):
             if i not in paired_items1:

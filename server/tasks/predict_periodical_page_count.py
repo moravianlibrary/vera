@@ -10,11 +10,9 @@ def PredictPeriodicalPageCount(session: Session, task_id: int):
     indexer = DocumentsIndexer.get_instance()
 
     def predict_volume_pages(document: Document) -> None:
-        page_count = predictor.predict_periodical_page_count(document)
-        if page_count is None:
-            raise Exception("Failed to predict page count")
-
-        document.pages_count_predicted = page_count
+        document.pages_count_predicted = (
+            predictor.predict_periodical_page_count(document)
+        )
         document.save(session)
 
         indexer.index(document)
