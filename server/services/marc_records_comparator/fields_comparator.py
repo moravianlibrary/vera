@@ -1,7 +1,7 @@
 from typing import List, Optional, Callable
 from pymarc import Record, Field
 from .score_functions import extended_needleman_wunsch
-from .types import MarcFieldDifferenceResult
+from .types import MarcFieldDifferenceType
 from .schemas import MarcFieldDifference, MarcSubfieldDifference
 from .fields_pair_matcher import MarcFieldsPairMatcher
 
@@ -43,7 +43,7 @@ class MarcFieldsComparator:
         if field1 is not None:
             differences.append(
                 MarcFieldDifference.from_marc_field(
-                    MarcFieldDifferenceResult.ExtraField,
+                    MarcFieldDifferenceType.ExtraField,
                     field1,
                     [
                         MarcSubfieldDifference(
@@ -56,7 +56,7 @@ class MarcFieldsComparator:
         if field2 is not None:
             differences.append(
                 MarcFieldDifference.from_marc_field(
-                    MarcFieldDifferenceResult.MissingField,
+                    MarcFieldDifferenceType.MissingField,
                     field2,
                     [
                         MarcSubfieldDifference(
@@ -78,14 +78,14 @@ class MarcFieldsComparator:
         if subfields_differ:
             return [
                 MarcFieldDifference.from_marc_field(
-                    MarcFieldDifferenceResult.DifferentValue,
+                    MarcFieldDifferenceType.DifferentValue,
                     field1,
                     subfields_differences,
                 )
             ]
         return [
             MarcFieldDifference.from_marc_field(
-                MarcFieldDifferenceResult.Equal,
+                MarcFieldDifferenceType.Equal,
                 field1,
                 subfields_differences,
             )

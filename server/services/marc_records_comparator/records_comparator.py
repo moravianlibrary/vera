@@ -11,7 +11,10 @@ class MarcRecordsComparator:
         self.tracked_fields_comparators = tracked_fields_comparators
 
     def evaluate(
-        self, record1: Record, record2: Record
+        self,
+        record1: Record,
+        record2: Record,
+        only_tracked_fields: bool = False,
     ) -> List[MarcFieldDifference]:
         all_tags = set(f.tag for f in record1.get_fields()).union(
             set(f.tag for f in record2.get_fields())
@@ -26,7 +29,7 @@ class MarcRecordsComparator:
                         record1, record2
                     )
                 )
-            else:
+            elif not only_tracked_fields:
                 differences.extend(
                     MarcFieldsComparator(tag).evaluate(record1, record2)
                 )

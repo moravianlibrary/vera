@@ -2,7 +2,7 @@ import re
 from typing import Optional, List, TypeVar
 from pymarc import Field
 from pydantic import BaseModel
-from .types import MarcFieldDifferenceResult
+from .types import MarcFieldDifferenceType
 
 
 T = TypeVar("T")
@@ -36,12 +36,15 @@ class MarcSubfieldDifference(BaseModel):
 
 
 class MarcFieldDifference(BaseModel):
-    result: MarcFieldDifferenceResult
+    result: MarcFieldDifferenceType
     tag: str
     indicator1: Optional[str] = None
     indicator2: Optional[str] = None
     subfields_differences: List[MarcSubfieldDifference] = []
     control_field: bool = False
+
+    class Config:
+        use_enum_values = True
 
     def __lt__(self, other: "MarcFieldDifference"):
         tag_num = int(self.tag)
@@ -55,7 +58,7 @@ class MarcFieldDifference(BaseModel):
     @classmethod
     def from_marc_field(
         cls,
-        result: MarcFieldDifferenceResult,
+        result: MarcFieldDifferenceType,
         field: Field,
         subfield_differences: List[MarcSubfieldDifference],
     ) -> "MarcFieldDifference":
@@ -100,11 +103,11 @@ class MarcFieldDifference(BaseModel):
             )
             return f"{self.tag} {indicators} {subfields_repr}"
 
-        if self.result == MarcFieldDifferenceResult.ExtraField:
+        if self.result == MarcFieldDifferenceType.ExtraField:
             return f"+ {field_str(subfields_values_str())}"
-        if self.result == MarcFieldDifferenceResult.MissingField:
+        if self.result == MarcFieldDifferenceType.MissingField:
             return f"- {field_str(subfields_different_to_str())}"
-        if self.result == MarcFieldDifferenceResult.DifferentValue:
+        if self.result == MarcFieldDifferenceType.DifferentValue:
             return (
                 f"┌ {field_str(subfields_values_str())}\n"
                 f"└ {field_str(subfields_different_to_str())}"

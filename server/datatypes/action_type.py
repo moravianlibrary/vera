@@ -15,6 +15,9 @@ class ActionType(Enum):
     WriteDatatable = "WriteDatatable"
     CommentOnDatatable = "CommentOnDatatable"
 
+    ReadCatalogRecords = "ReadCatalogRecords"
+    ReviewCatalogRecords = "ReviewCatalogRecords"
+
     ReadCategoriesAll = "ReadCategoriesAll"
     ReadCategoriesDepartment = "ReadCategoriesDepartment"
     EditCategoriesAll = "EditCategoriesAll"

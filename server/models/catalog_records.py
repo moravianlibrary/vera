@@ -3,6 +3,7 @@ from pymarc import Record, MARCReader
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy import (
     Column,
+    Enum,
     ForeignKey,
     LargeBinary,
     String,
@@ -15,6 +16,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
 from datatypes import IdentifierType
 from .base import BaseMixin
+from services.marc_records_comparator import MarcFieldDifferenceType
 
 
 class CatalogRecord(Base, BaseMixin):
@@ -137,3 +139,22 @@ class CatalogRecordBarcode(Base):
     def delete(self, session: Session) -> None:
         session.delete(self)
         session.commit()
+
+
+class CatalogRecordFieldDifference(Base):
+    __tablename__ = "catalog_record_field_differences"
+
+    sysno = Column(
+        String, ForeignKey("catalog_records.sysno"), primary_key=True
+    )
+    tag = Column(String, primary_key=True, nullable=False)
+    indicator1 = Column(String, primary_key=True)
+    indicator2 = Column(String, primary_key=True)
+    difference_type = Column(Enum(MarcFieldDifferenceType))
+
+    approved_by = Column(String)
+    approved_at = Column(TIMESTAMP)
+
+    catalog_record = relationship(
+        "CatalogRecord", back_populates="field_issues"
+    )

@@ -32,11 +32,42 @@ INDEX_SCHEMA = {
                     "category_name": {"type": "keyword"},
                 },
             },
-            # Alternate identifiers and derived properties
             "skc_sysno": {"type": "keyword"},
-            "skc_score": {"type": "float"},
+            "skc_diff": {
+                "type": "nested",
+                "properties": {
+                    "result": {"type": "keyword"},
+                    "tag": {"type": "keyword"},
+                    "indicator1": {"type": "keyword"},
+                    "indicator2": {"type": "keyword"},
+                    "subfields_differences": {
+                        "type": "nested",
+                        "properties": {
+                            "code": {"type": "keyword"},
+                            "value": {"type": "keyword"},
+                            "different_to": {"type": "keyword"},
+                        },
+                    },
+                },
+            },
             "cnb_sysno": {"type": "keyword"},
-            "cnb_score": {"type": "float"},
+            "cnb_diff": {
+                "type": "nested",
+                "properties": {
+                    "result": {"type": "keyword"},
+                    "tag": {"type": "keyword"},
+                    "indicator1": {"type": "keyword"},
+                    "indicator2": {"type": "keyword"},
+                    "subfields_differences": {
+                        "type": "nested",
+                        "properties": {
+                            "code": {"type": "keyword"},
+                            "value": {"type": "keyword"},
+                            "different_to": {"type": "keyword"},
+                        },
+                    },
+                },
+            },
             "digitization_registry_id": {"type": "integer"},
             "digitization_state": {"type": "keyword"},  # Enum type
             # Page count
@@ -115,9 +146,9 @@ class DocumentsIndexer:
             "category_id": document.category_id,
             "category_path": document.category_path,
             "skc_sysno": document.catalog_record.skc_sysno,
-            "skc_score": document.catalog_record.skc_score,
+            "skc_diff": document.catalog_record.skc_diff,
             "cnb_sysno": document.catalog_record.cnb_sysno,
-            "cnb_score": document.catalog_record.cnb_score,
+            "cnb_diff": document.catalog_record.cnb_diff,
             "digitization_registry_id": document.digitization_registry_id,
             "digitization_state": (
                 document.digitization_state.value

@@ -4,7 +4,33 @@ from services.external.aleph import AlephClient
 from services.external.aleph import AlephResponseStatus
 from services.external.nkp_aleph.client import NkpAlephClient
 from models import CatalogRecord
-from procedures.catalog_records_comparator import compare_marc21_records
+from services.marc_records_comparator import (
+    MarcRecordsComparator,
+    MarcFieldsComparator,
+    EditionFieldComparator,
+    GeneralInformationComparator,
+)
+
+
+MzkSkcRecordsComparator = MarcRecordsComparator(
+    {
+        "008": GeneralInformationComparator(),
+        "015": MarcFieldsComparator("015", subfield_codes=["a"]),
+        "020": MarcFieldsComparator("020", subfield_codes=["a"]),
+        "250": EditionFieldComparator(),
+        "260": MarcFieldsComparator("260", subfield_codes=["a", "b", "c"]),
+        "264": MarcFieldsComparator("264", subfield_codes=["a", "b", "c"]),
+        "300": MarcFieldsComparator("300", subfield_codes=["a", "b", "c"]),
+        "362": MarcFieldsComparator({"a": "Mzk Skc"}),
+    }
+)
+MzkCnbRecordsComparator = MarcRecordsComparator(
+    {
+        "008": GeneralInformationComparator(),
+        "015": MarcFieldsComparator("015", subfield_codes=["a"]),
+        "020": MarcFieldsComparator("020", subfield_codes=["a"]),
+    }
+)
 
 
 def update_catalog_record(
@@ -30,9 +56,12 @@ def update_catalog_record(
     if skc_aleph_record:
         catalog_record.skc_sysno = skc_aleph_record.sysno
         catalog_record.skc_marc = skc_aleph_record.record.as_marc()
-        catalog_record.skc_diff = compare_marc21_records(
-            main_aleph_record.record, skc_aleph_record.record
-        )
+        catalog_record.skc_diff = [
+            diff.model_dump()
+            for diff in MzkSkcRecordsComparator.evaluate(
+                main_aleph_record.record, skc_aleph_record.record, True
+            )
+        ]
 
     cnb_aleph_record = NkpAlephClient().get_cnb_record(
         main_aleph_record.cnb, main_aleph_record.isxn
@@ -40,8 +69,11 @@ def update_catalog_record(
     if cnb_aleph_record:
         catalog_record.cnb_sysno = cnb_aleph_record.sysno
         catalog_record.cnb_marc = cnb_aleph_record.record.as_marc()
-        catalog_record.cnb_score = calculate_records_similarity(
-            main_aleph_record.record, cnb_aleph_record.record
-        )
+        catalog_record.cnb_diff = [
+            diff.model_dump()
+            for diff in MzkCnbRecordsComparator.evaluate(
+                main_aleph_record.record, cnb_aleph_record.record, True
+            )
+        ]
 
     return catalog_record.save(session), AlephResponseStatus.Success

@@ -90,11 +90,11 @@ class CatalogRecordResponse(BaseModel):
 
     skc_sysno: Optional[str]
     skc_marc: Optional[Record]
-    skc_score: Optional[int]
+    skc_diff: Optional[List[MarcFieldDifference]] = None
 
     cnb_sysno: Optional[str]
     cnb_marc: Optional[Record]
-    cnb_score: Optional[int]
+    cnb_diff: Optional[List[MarcFieldDifference]] = None
 
     last_updated: Optional[str]
 
@@ -123,9 +123,9 @@ class CatalogDocumentResponse(BaseModel):
     issues: List[CatalogIssueResponse]
 
     skc_sysno: Optional[str] = None
-    skc_diff: Optional[MarcFieldDifference] = None
+    skc_diff: Optional[List[MarcFieldDifference]] = None
     cnb_sysno: Optional[str] = None
-    cnb_diff: Optional[MarcFieldDifference] = None
+    cnb_diff: Optional[List[MarcFieldDifference]] = None
 
     @classmethod
     def from_records(
