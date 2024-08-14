@@ -258,3 +258,5 @@ CanManageIntentions = PermissionValidator(ActionType.EditCategoriesAll)
 CanReadIntentions = PermissionValidator(
     [ActionType.ReadCategoriesAll, ActionType.ReadCategoriesDepartment]
 )
+CanReadCatalogRecords = PermissionValidator(ActionType.ReadCatalogRecords)
+CanReviewCatalogRecords = PermissionValidator(ActionType.ReviewCatalogRecords)

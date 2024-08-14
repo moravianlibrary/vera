@@ -6,7 +6,7 @@ from services.exceptions import ObjectNotFoundException
 Base = declarative_base()
 
 T = TypeVar("T", bound=Base)
-IdType = Union[str, int]
+IdType = Union[str, int, Tuple[int, int]]
 
 
 class BaseMixin:

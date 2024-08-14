@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Optional, List
 from pymarc import Record, MARCReader
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy import (
     Column,
     Enum,
     ForeignKey,
+    Integer,
     LargeBinary,
     String,
     TIMESTAMP,
@@ -83,16 +84,13 @@ class CatalogRecord(Base, BaseMixin):
         finally:
             reader.close()
 
+    @hybrid_property
+    def document_ids(self) -> List[int]:
+        return [d.id for d in self.documents]
+
     @classmethod
     def find(cls, session: Session, sysno: str) -> Optional["CatalogRecord"]:
         return session.query(cls).filter_by(sysno=sysno).first()
-
-    def save(self, session: Session) -> "CatalogRecord":
-        if self.find(session, self.sysno) is None:
-            session.add(self)
-        session.commit()
-        session.refresh(self)
-        return self
 
     @classmethod
     def find_by_identifier(
@@ -112,6 +110,18 @@ class CatalogRecord(Base, BaseMixin):
             .filter(CatalogRecordBarcode.barcode == value)
             .first()
         )
+
+    def save(self, session: Session) -> "CatalogRecord":
+        if self.find(session, self.sysno) is None:
+            session.add(self)
+        session.commit()
+        session.refresh(self)
+        return self
+
+    def approve_difference(
+        self, session: Session, difference_id: int, approved_by: str
+    ) -> "CatalogRecord":
+        pass
 
 
 class CatalogRecordBarcode(Base):
@@ -144,17 +154,18 @@ class CatalogRecordBarcode(Base):
 class CatalogRecordFieldDifference(Base):
     __tablename__ = "catalog_record_field_differences"
 
-    sysno = Column(
-        String, ForeignKey("catalog_records.sysno"), primary_key=True
-    )
-    tag = Column(String, primary_key=True, nullable=False)
-    indicator1 = Column(String, primary_key=True)
-    indicator2 = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True)
+    sysno = Column(String, ForeignKey("catalog_records.sysno"), index=True)
+    tag = Column(String, index=True, nullable=False)
+    indicator1 = Column(String, index=True)
+    indicator2 = Column(String, index=True)
     difference_type = Column(Enum(MarcFieldDifferenceType))
+    value = Column(String)
+    different_to = Column(String)
 
     approved_by = Column(String)
     approved_at = Column(TIMESTAMP)
 
     catalog_record = relationship(
-        "CatalogRecord", back_populates="field_issues"
+        "CatalogRecord", back_populates="field_differences"
     )
