@@ -45,6 +45,9 @@ class CatalogRecord(Base, BaseMixin):
     record_barcodes = relationship(
         "CatalogRecordBarcode", back_populates="catalog_record"
     )
+    field_differences = relationship(
+        "CatalogRecordFieldDifference", back_populates="catalog_record"
+    )
     documents = relationship("Document", back_populates="catalog_record")
 
     @hybrid_property
