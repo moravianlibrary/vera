@@ -8,9 +8,7 @@ from .utils.permissions import CanReadCatalogRecords, CanReviewCatalogRecords
 from .utils.dependencies import (
     DependsOnDbSession,
     DependsOnCallerUsername,
-    DependsOnDocumentsIndexer,
 )
-from services.documents_indexer import DocumentsIndexer
 
 
 router = APIRouter(prefix="/catalog_records")
@@ -51,7 +49,6 @@ def approve_catalog_record_difference(
     difference_id: int = Path(...),
     approved_by: str = DependsOnCallerUsername,
     session: Session = DependsOnDbSession,
-    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
 ):
     catalog_record = CatalogRecord.get(session, sysno).approve_difference(
         session, difference_id, approved_by

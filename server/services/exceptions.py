@@ -249,3 +249,12 @@ class MissingArgumentException(HTTPException):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST, detail=detail
         )
+
+
+class CatalogRecordFieldDifferenceWrongSysnoException(HTTPException):
+    def __init__(self, sysno: str, difference_id: int):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Catalog record with sysno {sysno} "
+            f"does not have a difference with id {difference_id}",
+        )

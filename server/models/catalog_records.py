@@ -1,5 +1,5 @@
 from typing import Optional, List
-from pymarc import Record, MARCReader
+from pymarc import Record
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy import (
     Column,
@@ -18,6 +18,8 @@ from services.database import Base
 from datatypes import IdentifierType
 from .base import BaseMixin
 from services.marc_records_comparator import MarcFieldDifferenceType
+from .utils.parsers import marc_binary_to_record
+from services.exceptions import CatalogRecordFieldDifferenceWrongSysnoException
 
 
 class CatalogRecord(Base, BaseMixin):
@@ -47,42 +49,15 @@ class CatalogRecord(Base, BaseMixin):
 
     @hybrid_property
     def main_record(self) -> Optional[Record]:
-        if self.marc is None:
-            return None
-        reader = MARCReader(self.marc)
-        try:
-            for record in reader:
-                return record
-        except Exception:
-            return None
-        finally:
-            reader.close()
+        return marc_binary_to_record(self.marc)
 
     @hybrid_property
     def skc_record(self) -> Optional[Record]:
-        if self.skc_marc is None:
-            return None
-        reader = MARCReader(self.skc_marc)
-        try:
-            for record in reader:
-                return record
-        except Exception:
-            return None
-        finally:
-            reader.close()
+        return marc_binary_to_record(self.skc_marc)
 
     @hybrid_property
     def cnb_record(self) -> Optional[Record]:
-        if self.cnb_marc is None:
-            return None
-        reader = MARCReader(self.cnb_marc)
-        try:
-            for record in reader:
-                return record
-        except Exception:
-            return None
-        finally:
-            reader.close()
+        return marc_binary_to_record(self.cnb_marc)
 
     @hybrid_property
     def document_ids(self) -> List[int]:
@@ -121,7 +96,17 @@ class CatalogRecord(Base, BaseMixin):
     def approve_difference(
         self, session: Session, difference_id: int, approved_by: str
     ) -> "CatalogRecord":
-        pass
+        difference = CatalogRecordFieldDifference.get(session, difference_id)
+        if difference.sysno != self.sysno:
+            raise CatalogRecordFieldDifferenceWrongSysnoException(
+                self.sysno, difference_id
+            )
+
+        difference.approved_by = approved_by
+        difference.approved_at = func.now()
+        session.commit()
+        session.refresh(self)
+        return self
 
 
 class CatalogRecordBarcode(Base):
@@ -151,7 +136,7 @@ class CatalogRecordBarcode(Base):
         session.commit()
 
 
-class CatalogRecordFieldDifference(Base):
+class CatalogRecordFieldDifference(Base, BaseMixin):
     __tablename__ = "catalog_record_field_differences"
 
     id = Column(Integer, primary_key=True)
