@@ -1,11 +1,9 @@
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import logging
-from contextlib import asynccontextmanager
-from apscheduler.schedulers.background import BackgroundScheduler
-
 import routers
 from config import VeraConfig
+from vera_lifespan import lifespan
 
 
 logger = logging.getLogger("uvicorn")
@@ -14,42 +12,6 @@ logger = logging.getLogger("uvicorn")
 # TODO: fix logging.
 # TODO: add support to logger editing of documents
 # TODO: add checking unique before insert and update
-
-
-def ensure_today_intention():
-    from services.database import get_db
-    from models import Intention
-
-    Intention.ensure_intention_for_today(next(get_db()))
-
-
-@asynccontextmanager
-async def lifespan(app_: FastAPI):
-    from services.database import (
-        check_connection,
-        check_database_revision,
-        get_db,
-    )
-    from worker import set_failed_tasks_on_start
-
-    logger.info("Checking database connection.")
-    if not check_connection():
-        logger.info("Database connection failed. Exiting.")
-        return
-    logger.info("Database connection successfully established.")
-    check_database_revision()
-
-    set_failed_tasks_on_start(next(get_db()))
-
-    scheduler = BackgroundScheduler()
-    scheduler.start()
-
-    scheduler.add_job(ensure_today_intention, "cron", hour=0)
-
-    yield
-
-    scheduler.shutdown()
-    logger.info("Shutting down.")
 
 
 app = FastAPI(lifespan=lifespan)
@@ -82,7 +44,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         app,
-        host="127.0.0.1",
-        port=8000,
-        log_level="fine",
+        host=VeraConfig.VeraUrl,
+        port=VeraConfig.VeraPort,
+        log_level=VeraConfig.LogLevel,
     )

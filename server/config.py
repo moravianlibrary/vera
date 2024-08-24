@@ -12,6 +12,18 @@ class staticproperty(property):
 
 class VeraConfig:
     @staticproperty
+    def VeraUrl() -> str:
+        return environ.get("VERA_URL", "127.0.0.1")
+    
+    @staticproperty
+    def VeraPort() -> int:
+        return int(environ.get("VERA_PORT", "8000"))
+    
+    @staticproperty
+    def LogLevel() -> str:
+        return environ.get("LOG_LEVEL", "fine")
+    
+    @staticproperty
     def TimeZone() -> tzinfo:
         return pytz.timezone("UTC")
 
