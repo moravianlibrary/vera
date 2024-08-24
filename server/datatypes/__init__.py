@@ -9,7 +9,7 @@ from .documents_types import (
 from .intention_classification import IntentionClassification
 from .location_state import LocationState
 from .task_types import TaskType, TaskState, TaskDocumentErrorType
-from .typing import IdType, ElasticsearchParams
+from .typing import IdType, JsonBase, ElasticsearchParams
 
 
 __all__ = [
@@ -26,5 +26,6 @@ __all__ = [
     "TaskState",
     "TaskDocumentErrorType",
     "IdType",
+    "JsonBase",
     "ElasticsearchParams",
 ]

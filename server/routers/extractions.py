@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 from schemas import CurrentUser, Page, ExtractionResponse, GenerateExtraction
-from routers.security import get_current_user
+from routers.authorization import get_current_user
 from models import Intention, Extraction
 from services.extractions_generator.generator import ExtractionGenerator
 from services.database import get_db

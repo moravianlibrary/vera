@@ -1,4 +1,5 @@
 from typing import Any, AnyStr, Dict, Union
 
+JsonBase = Dict[AnyStr, Any]
 IdType = Union[str, int]
-ElasticsearchParams = Dict[AnyStr, Any]
+ElasticsearchParams = JsonBase

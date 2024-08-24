@@ -4,16 +4,7 @@ import logging
 from contextlib import asynccontextmanager
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from routers import (
-    locations_router,
-    intentions_router,
-    extractions_router,
-    documents_router,
-    security_router,
-    tasks_router,
-    digitization_lists_router,
-    categories_router,
-)
+import routers
 from config import VeraConfig
 
 
@@ -73,14 +64,17 @@ app.add_middleware(
 )
 
 
-app.include_router(locations_router)
-app.include_router(intentions_router)
-app.include_router(extractions_router)
-app.include_router(documents_router)
-app.include_router(security_router)
-app.include_router(tasks_router)
-app.include_router(digitization_lists_router)
-app.include_router(categories_router)
+app.include_router(routers.catalog_records_router)
+app.include_router(routers.categories_router)
+app.include_router(routers.departments_router)
+app.include_router(routers.digitization_lists_router)
+app.include_router(routers.documents_router)
+app.include_router(routers.extractions_router)
+app.include_router(routers.intentions_router)
+app.include_router(routers.locations_router)
+app.include_router(routers.roles_router)
+app.include_router(routers.tasks_router)
+app.include_router(routers.users_router)
 
 
 if __name__ == "__main__":

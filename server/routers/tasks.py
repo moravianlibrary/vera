@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datatypes import TaskType, ElasticsearchParams
-from routers.security import get_current_user
+from routers.authorization import get_current_user
 from worker import run_task
 from .utils.permissions import CanPlanTask, CanManageTask
 from .utils.dependencies import (
