@@ -62,12 +62,15 @@ TASK_TYPE_TO_TASK_FUNCTION = {
 
 
 def setup_periodic_task(periodic_task: PeriodicTask):
+    def parse_cron_value(value: Optional[str]) -> str:
+        return value if value else "*"
+
     celery_worker.add_periodic_task(
         crontab(
             minute=periodic_task.minute_str,
-            hour=periodic_task.hour_str,
-            day_of_week=periodic_task.day_of_week_str,
-            day_of_month=periodic_task.day_of_month_str,
+            hour=parse_cron_value(periodic_task.hour_str),
+            day_of_week=parse_cron_value(periodic_task.day_of_week_str),
+            day_of_month=parse_cron_value(periodic_task.day_of_month_str),
         ),
         run_periodic_task_instance.s(periodic_task.id),
     )

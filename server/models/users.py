@@ -3,6 +3,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    JSON,
 )
 from sqlalchemy.orm import relationship, Session
 from services.database import Base
@@ -14,6 +15,7 @@ class User(Base, BaseMixin):
     __tablename__ = "users"
 
     username = Column(String, primary_key=True, index=True)
+    settings = Column(JSON)
     department_id = Column(Integer, ForeignKey("departments.id"))
 
     department = relationship("Department", back_populates="department_users")

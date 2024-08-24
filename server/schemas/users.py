@@ -5,14 +5,14 @@ from datatypes import ActionType, JsonBase
 
 class CurrentUser(BaseModel):
     username: str
-    settings: JsonBase
+    settings: JsonBase = {}
 
     role_id: int
     role_name: str
     actions: List[ActionType]
 
-    department_id: Optional[int]
-    department_name: Optional[str]
+    department_id: Optional[int] = None
+    department_name: Optional[str] = None
     department_categories_ids: List[int] = []
 
     def has_action(self, action: ActionType) -> bool:
