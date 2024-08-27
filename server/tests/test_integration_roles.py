@@ -2,7 +2,50 @@ from tests.test_integration import TestIntegration
 
 from models import Role, RoleAction
 from datatypes import ActionType
-from helper_funcs import mock_db, mockUser, createTestUser
+from helper_funcs import (
+    mock_db,
+    mockUser,
+    createTestUser,
+    get_all_actions_except,
+)
+
+
+class TestRolesEndpointsPermissions(TestIntegration):
+    def test_create_role_permitted(self):
+        # Arrange
+        mock_db()
+        mockUser(createTestUser([ActionType.EditAccess]))
+        role = {
+            "name": "Test Role",
+            "actions": [ActionType.WriteDatatable.value],
+        }
+
+        # Act
+        response = self.client.post(
+            "/roles", json=role, headers={"Authorization": "Bearer test_token"}
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+
+    def test_create_role_prohibited(self):
+        # Arrange
+        mock_db()
+        mockUser(
+            createTestUser(get_all_actions_except([ActionType.EditAccess]))
+        )
+        role = {
+            "name": "Test Role",
+            "actions": [ActionType.WriteDatatable.value],
+        }
+
+        # Act
+        response = self.client.post(
+            "/roles", json=role, headers={"Authorization": "Bearer test_token"}
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 403)
 
 
 class TestRolesEndpoints(TestIntegration):

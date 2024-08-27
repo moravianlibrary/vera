@@ -1,12 +1,189 @@
 from unittest import TestCase
-from services.marc_records_comparator.special_comparators.text_data_comparator import (
+from services.marc_comparator.special_comparators.text_data_comparator import (
     NormalizedTextDataComparator,
 )
-from services.marc_records_comparator.special_comparators.edition import (
+from services.marc_comparator.score_functions import extended_needleman_wunsch
+from services.marc_comparator.special_comparators.edition import (
     EditionFieldComparator,
 )
+from services.marc_comparator.special_comparators.general_information import (
+    GeneralInformationComparator,
+    Marc008Field,
+)
+from services.marc_comparator import (
+    MarcFieldDifference,
+    MarcFieldDifferenceType,
+    MarcSubfieldDifference,
+)
+from pymarc import Field, Record, Subfield
+from typing import Optional
 
 
+class TestMarcComparatorScoringFunctions(TestCase):
+    def test_extended_needleman_wunsch_with_none(self):
+        self.assertEqual(extended_needleman_wunsch(None, None), 1)
+        self.assertEqual(extended_needleman_wunsch(None, "text"), -1)
+        self.assertEqual(extended_needleman_wunsch("text", None), -1)
+
+    def test_extended_needleman_wunsch_equal_values(self):
+        self.assertEqual(extended_needleman_wunsch("text", "text"), 4)
+
+    def test_extended_needleman_wunsch_different_values(self):
+        self.assertEqual(extended_needleman_wunsch("teXxt", "text2"), 2)
+
+
+class TestMarcComparatorEditionFieldComparator(TestCase):
+    def setUp(self) -> None:
+        self.comparator = EditionFieldComparator()
+
+    def create_test_record(self, value: Optional[str] = None) -> Record:
+        if value is None:
+            return Record()
+        record = Record()
+        record.add_field(
+            Field(tag="250", subfields=[Subfield(code="a", value=value)])
+        )
+        return record
+
+    def test_comparator_with_none(self):
+        self.assertTrue(self.comparator.is_same_value(None, None))
+        self.assertFalse(self.comparator.is_same_value(None, "text"))
+        self.assertFalse(self.comparator.is_same_value("text", None))
+        self.assertTrue(self.comparator.is_same_value(" text", "text "))
+
+        self.assertEqual(
+            self.comparator.evaluate(
+                self.create_test_record(), self.create_test_record()
+            ),
+            [],
+        )
+        self.assertEqual(
+            self.comparator.evaluate(
+                self.create_test_record("text"), self.create_test_record()
+            ),
+            [
+                MarcFieldDifference(
+                    result=MarcFieldDifferenceType.ExtraField,
+                    tag="250",
+                    subfields_differences=[
+                        MarcSubfieldDifference(code="a", value="text")
+                    ],
+                )
+            ],
+        )
+        self.assertEqual(
+            self.comparator.evaluate(
+                self.create_test_record(), self.create_test_record("text")
+            ),
+            [
+                MarcFieldDifference(
+                    result=MarcFieldDifferenceType.MissingField,
+                    tag="250",
+                    subfields_differences=[
+                        MarcSubfieldDifference(code="a", different_to="text")
+                    ],
+                )
+            ],
+        )
+
+    def test_comparator_with_equal_values(self):
+        self.assertEqual(
+            self.comparator.evaluate(
+                self.create_test_record("text"),
+                self.create_test_record("text"),
+            ),
+            [
+                MarcFieldDifference(
+                    result=MarcFieldDifferenceType.Equal,
+                    tag="250",
+                    subfields_differences=[
+                        MarcSubfieldDifference(
+                            code="a", value="text", different_to="text"
+                        )
+                    ],
+                )
+            ],
+        )
+
+
+class TestMarcComparatorGeneralInformationFieldComparator(TestCase):
+    def setUp(self) -> None:
+        self.comparator = GeneralInformationComparator()
+
+    def create_test_record(self, value: str) -> Record:
+        record = Record()
+        record.add_field(Field(tag="008", data=value))
+        return record
+
+    def test_general_information_field_parsing(self):
+        field = Marc008Field("960815s1996    xr ab  e          1acze d")
+        self.assertEqual(field.date_entered, "960815")
+        self.assertEqual(field.date1, "1996")
+        self.assertEqual(field.date2, "    ")
+        self.assertEqual(field.place_of_publication, "xr ")
+        self.assertEqual(field.language, "cze")
+
+    def test_is_same_general_information_value_with_none_values(self):
+        self.assertTrue(self.comparator.is_same_value(None, None))
+        self.assertFalse(self.comparator.is_same_value(None, "text"))
+        self.assertFalse(self.comparator.is_same_value("text", None))
+        self.assertTrue(
+            self.comparator.is_same_value(
+                "960815s1996 -  xr ab- e          1acze d",
+                "960815s1996  - xr cd- e          1acze d",
+            )
+        )
+
+    def test_general_information_field_comparator_evaluation_equal_values(
+        self,
+    ):
+        value1 = "960815s1996 -  xr ab- e          1acze d"
+        value2 = "960815s1996  - xr cd- e          1acze d"
+        self.assertEqual(
+            self.comparator.evaluate(
+                self.create_test_record(value1),
+                self.create_test_record(value2),
+            ),
+            [
+                MarcFieldDifference(
+                    result=MarcFieldDifferenceType.Equal,
+                    tag="008",
+                    subfields_differences=[
+                        MarcSubfieldDifference(
+                            code=None, value=value1, different_to=value2
+                        )
+                    ],
+                    control_field=True,
+                )
+            ],
+        )
+
+    def test_general_information_field_comparator_evaluation_different_values(
+        self,
+    ):
+        value1 = "960815s1996 -  xr ab- e          1acze d"
+        value2 = "960815s1996  - xr cd- e          1aeng d"
+        self.assertEqual(
+            self.comparator.evaluate(
+                self.create_test_record(value1),
+                self.create_test_record(value2),
+            ),
+            [
+                MarcFieldDifference(
+                    result=MarcFieldDifferenceType.DifferentValue,
+                    tag="008",
+                    subfields_differences=[
+                        MarcSubfieldDifference(
+                            code=None, value=value1, different_to=value2
+                        )
+                    ],
+                    control_field=True,
+                )
+            ],
+        )
+
+
+# TODO: Refactor - reorganize to specific test cases
 class TestNormalizedTextDataComparator(TestCase):
     def test_tokenization_with_simple_synonyms_exact_match(self):
         # Arrange

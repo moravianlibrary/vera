@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datatypes import TaskType, ElasticsearchParams
-from routers.authorization import get_current_user
 from worker import run_task
 from .utils.permissions import CanPlanTask, CanManageTask
 from .utils.dependencies import (
@@ -13,7 +12,6 @@ from .utils.dependencies import (
 from services.documents_indexer import DocumentsIndexer
 from models import Task, TaskDocument, PeriodicTask
 from schemas import (
-    CurrentUser,
     TaskDefinition,
     TaskOverview,
     TaskDocumentResponse,
@@ -52,7 +50,7 @@ def create_task(
 )
 def kill_task(
     id: int = Path(...),
-    user: CurrentUser = Depends(get_current_user),
+    owner: str = DependsOnCallerUsername,
     db: Session = DependsOnDbSession,
 ):
     pass

@@ -1,5 +1,5 @@
 import logging
-from fastapi.authorization import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from keycloak import KeycloakOpenID
 from os import environ

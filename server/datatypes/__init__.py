@@ -6,6 +6,7 @@ from .documents_types import (
     DigitizationStateToResponseStatusConverter,
     IdentifierToAlephFieldConverted,
 )
+from .catalog_types import CatalogSource
 from .intention_classification import IntentionClassification
 from .location_state import LocationState
 from .task_types import TaskType, TaskState, TaskDocumentErrorType
@@ -28,4 +29,5 @@ __all__ = [
     "IdType",
     "JsonBase",
     "ElasticsearchParams",
+    "CatalogSource",
 ]

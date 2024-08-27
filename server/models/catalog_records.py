@@ -15,9 +15,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
-from datatypes import IdentifierType
+from datatypes import IdentifierType, CatalogSource
 from .base import BaseMixin
-from services.marc_records_comparator import MarcFieldDifferenceType
+from services.marc_comparator import MarcFieldDifferenceType
 from .utils.parsers import marc_binary_to_record
 from services.exceptions import CatalogRecordFieldDifferenceWrongSysnoException
 
@@ -34,11 +34,9 @@ class CatalogRecord(Base, BaseMixin):
 
     skc_sysno = Column(String)
     skc_marc = Column(LargeBinary)
-    skc_diff = Column(JSON)
 
     cnb_sysno = Column(String)
     cnb_marc = Column(LargeBinary)
-    cnb_diff = Column(JSON)
 
     last_updated = Column(TIMESTAMP, server_default=func.now())
 
@@ -46,12 +44,12 @@ class CatalogRecord(Base, BaseMixin):
         "CatalogRecordBarcode", back_populates="catalog_record"
     )
     field_differences = relationship(
-        "CatalogRecordFieldDifference", back_populates="catalog_record"
+        "CatalogRecordSubfieldDifference", back_populates="catalog_record"
     )
     documents = relationship("Document", back_populates="catalog_record")
 
     @hybrid_property
-    def main_record(self) -> Optional[Record]:
+    def main_record(self) -> Record:
         return marc_binary_to_record(self.marc)
 
     @hybrid_property
@@ -59,8 +57,16 @@ class CatalogRecord(Base, BaseMixin):
         return marc_binary_to_record(self.skc_marc)
 
     @hybrid_property
+    def skc_difference(self) -> Optional[Record]:
+        return  # implement
+
+    @hybrid_property
     def cnb_record(self) -> Optional[Record]:
         return marc_binary_to_record(self.cnb_marc)
+
+    @hybrid_property
+    def cnb_difference(self) -> Optional[Record]:
+        return  # implement
 
     @hybrid_property
     def document_ids(self) -> List[int]:
@@ -99,7 +105,9 @@ class CatalogRecord(Base, BaseMixin):
     def approve_difference(
         self, session: Session, difference_id: int, approved_by: str
     ) -> "CatalogRecord":
-        difference = CatalogRecordFieldDifference.get(session, difference_id)
+        difference = CatalogRecordSubfieldDifference.get(
+            session, difference_id
+        )
         if difference.sysno != self.sysno:
             raise CatalogRecordFieldDifferenceWrongSysnoException(
                 self.sysno, difference_id
@@ -114,13 +122,6 @@ class CatalogRecord(Base, BaseMixin):
 
 class CatalogRecordBarcode(Base):
     __tablename__ = "catalog_record_barcode"
-    __table_args__ = (
-        UniqueConstraint(
-            "sysno",
-            "barcode",
-            name="unique_catalog_record_barcode",
-        ),
-    )
 
     sysno = Column(
         String, ForeignKey("catalog_records.sysno"), primary_key=True
@@ -131,23 +132,31 @@ class CatalogRecordBarcode(Base):
         "CatalogRecord", back_populates="record_barcodes"
     )
 
-    def save(self, session: Session) -> None:
+    def save(self, session: Session) -> "CatalogRecordBarcode":
+        merged_instance = session.merge(self)
         session.commit()
+        session.refresh(merged_instance)
+        return merged_instance
 
     def delete(self, session: Session) -> None:
         session.delete(self)
         session.commit()
 
 
-class CatalogRecordFieldDifference(Base, BaseMixin):
-    __tablename__ = "catalog_record_field_differences"
+class CatalogRecordSubfieldDifference(Base, BaseMixin):
+    __tablename__ = "catalog_record_subfield_differences"
 
     id = Column(Integer, primary_key=True)
+
     sysno = Column(String, ForeignKey("catalog_records.sysno"), index=True)
+    source = Column(Enum(CatalogSource), index=True, nullable=False)
     tag = Column(String, index=True, nullable=False)
     indicator1 = Column(String, index=True)
     indicator2 = Column(String, index=True)
+    code = Column(String, index=True)
+
     difference_type = Column(Enum(MarcFieldDifferenceType))
+
     value = Column(String)
     different_to = Column(String)
 
@@ -157,3 +166,11 @@ class CatalogRecordFieldDifference(Base, BaseMixin):
     catalog_record = relationship(
         "CatalogRecord", back_populates="field_differences"
     )
+
+    @hybrid_property
+    def is_skc_difference(self) -> bool:
+        return self.source == CatalogSource.SKC
+
+    @hybrid_property
+    def is_cnb_difference(self) -> bool:
+        return self.source == CatalogSource.CNB

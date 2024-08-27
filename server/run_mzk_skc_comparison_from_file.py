@@ -1,9 +1,9 @@
 from time import sleep
 from pymarc import MARCReader
-from services.marc_records_comparator.records_comparator import (
+from services.marc_comparator.records_comparator import (
     MarcRecordsComparator,
 )
-from services.marc_records_comparator.special_comparators.edition import (
+from services.marc_comparator.special_comparators.edition import (
     EditionFieldComparator,
 )
 from sys import argv

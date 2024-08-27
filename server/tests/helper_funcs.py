@@ -119,14 +119,15 @@ def createTestClient():
     return TestClient(app)
 
 
-def createTestUser(actions=[], department_id=10):
+def createTestUser(actions=[], department_id=10, settings={}):
     return CurrentUser(
         username="test_user",
         department_id=department_id,
         department_name="test_department",
-        role_id=7,
+        role_id=1,
         role_name="test_role",
         actions=actions,
+        settings=settings,
     )
 
 

@@ -36,6 +36,9 @@ class TestFrequencyParser(unittest.TestCase):
         self.assertEqual(parse_frequency("2025", self.frequencies), 0)
 
     def test_parse_yearly_frequency(self):
+        self.assertEqual(parse_frequency("2020", self.frequencies), 1)
+
+    def test_parse_yearly_frequency_for_range(self):
         self.assertEqual(parse_frequency("2020-2021", self.frequencies), 1)
 
     def test_parse_monthly_frequency(self):

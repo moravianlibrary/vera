@@ -1,4 +1,5 @@
 from datatypes import ActionType
+from schemas import CurrentUser
 from typing import Dict, List
 
 
@@ -12,8 +13,10 @@ def can_emulate_access(user: CurrentUser):
     )
 
 
-def emulate_access(username: str, actions: List[ActionType]) -> List[ActionType]:
-    emulated_actions = actions + [ActionType.StopEmulatingAccess]
+def emulate_access(
+    username: str, actions: List[ActionType]
+) -> List[ActionType]:
+    emulated_actions = actions + [ActionType.EmulateAccess]
     emulated_users[username] = emulated_actions
     return emulated_actions
 

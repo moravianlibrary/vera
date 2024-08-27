@@ -1,21 +1,13 @@
 from fastapi import APIRouter, Path
 from sqlalchemy.orm import Session
 from typing import List
-from .utils import access_emulation
-from .utils import permissions
-from .utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
+from .utils.dependencies import DependsOnDbSession
 from .utils.permissions import CanManageAccess
-from datatypes import ActionType, JsonBase
 from schemas import (
-    CurrentUser,
-    ActionList,
-    RoleCreate,
-    UserResponse,
-    RoleResponse,
     DepartmentCreate,
     DepartmentResponse,
 )
-from models import Role, User, Department
+from models import Department
 
 
 router = APIRouter(prefix="/departments")

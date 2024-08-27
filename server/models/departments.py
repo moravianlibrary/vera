@@ -22,7 +22,7 @@ class Department(Base, BaseMixin):
 
     def save_users(self, db: Session, usernames: List[str]):
         for username in usernames:
-            user = User.find_by_name(db, username)
+            user = User.find(db, username)
             if user is None:
                 user = User(username=username)
             user.department_id = self.id

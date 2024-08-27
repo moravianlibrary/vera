@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
 from schemas import CurrentUser, Page, ExtractionResponse, GenerateExtraction
-from routers.authorization import get_current_user
 from models import Intention, Extraction
 from services.extractions_generator.generator import ExtractionGenerator
 from services.database import get_db
 from .utils.permissions import CanExtract, CanManageExtraction
+from .utils.dependencies import DependsOnCurrentUser
 
 
 router = APIRouter(prefix="/extractions/generated")
@@ -20,7 +20,7 @@ def create_extraction(
     params: GenerateExtraction,
     pages_count: int = None,
     quota_id: int = None,
-    user: CurrentUser = Depends(get_current_user),
+    user: CurrentUser = DependsOnCurrentUser,
     db: Session = Depends(get_db),
 ):
     # TODO:

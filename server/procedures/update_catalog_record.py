@@ -4,7 +4,7 @@ from services.external.aleph import AlephClient
 from services.external.aleph import AlephResponseStatus
 from services.external.nkp_aleph.client import NkpAlephClient
 from models import CatalogRecord
-from services.marc_records_comparator import (
+from services.marc_comparator import (
     MarcRecordsComparator,
     MarcFieldsComparator,
     EditionFieldComparator,

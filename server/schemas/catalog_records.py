@@ -1,7 +1,7 @@
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from typing import List, Optional
-from pymarc import Record, MARCReader
-from datatypes import IdentifierType
+from pymarc import Record
+from datatypes import IdentifierType, JsonBase
 from services.external.aleph import AlephRecord
 from services.external.aleph import AlephIssue
 from services.external.aleph import MaterialType, IssuanceType
@@ -10,7 +10,8 @@ from services.external.digitization_registry import (
 )
 from services.external.digitization_registry import DigitizationState
 from models import CatalogRecord
-from services.marc_records_comparator.schemas import MarcFieldDifference
+from services.marc_comparator.schemas import MarcFieldDifference
+from datetime import datetime
 
 
 class Identifier(BaseModel):
@@ -86,30 +87,21 @@ class CatalogIssueResponse(BaseModel):
 
 class CatalogRecordResponse(BaseModel):
     sysno: str
-    marc: Record
+    main_record: JsonBase
 
     skc_sysno: Optional[str]
-    skc_marc: Optional[Record]
+    skc_record: Optional[JsonBase]
     skc_diff: Optional[List[MarcFieldDifference]] = None
 
     cnb_sysno: Optional[str]
-    cnb_marc: Optional[Record]
+    cnb_record: Optional[JsonBase]
     cnb_diff: Optional[List[MarcFieldDifference]] = None
 
-    last_updated: Optional[str]
+    last_updated: Optional[datetime]
 
-    @validator("marc", "skc_marc", "cnb_marc", pre=True)
-    def parse_marc(cls, value):
-        if value:
-            return cls.convert_to_record(value)
-        return None
-
-    @staticmethod
-    def convert_to_record(data: bytes) -> Optional[Record]:
-        with MARCReader(data) as reader:
-            for record in reader:
-                return record
-        return None
+    @field_validator("main_record", "skc_record", "cnb_record", mode="before")
+    def parse_marc(cls, record: Optional[Record]):
+        return record.as_dict() if record is not None else None
 
     class Config:
         arbitrary_types_allowed = True

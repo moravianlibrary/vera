@@ -18,6 +18,7 @@ class MarcSubfieldDifference(BaseModel):
     code: Optional[str] = None
     value: Optional[str] = None
     different_to: Optional[str] = None
+    differs: bool = True
 
     def __lt__(self, other: "MarcSubfieldDifference"):
         if self.code is None:
@@ -66,10 +67,14 @@ class MarcFieldDifference(BaseModel):
             result=result,
             tag=field.tag,
             indicator1=(
-                field.indicator1 if not field.is_control_field() else None
+                field.indicator1
+                if not field.is_control_field() and field.indicators
+                else None
             ),
             indicator2=(
-                field.indicator2 if not field.is_control_field() else None
+                field.indicator2
+                if not field.is_control_field() and field.indicators
+                else None
             ),
             subfields_differences=subfield_differences,
             control_field=field.is_control_field(),

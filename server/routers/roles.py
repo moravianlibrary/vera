@@ -1,29 +1,19 @@
 from fastapi import APIRouter, Path
 from sqlalchemy.orm import Session
 from typing import List
-from .utils import access_emulation
-from .utils import permissions
-from .utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
+from .utils.dependencies import DependsOnDbSession
 from .utils.permissions import CanManageAccess
-from datatypes import ActionType, JsonBase
 from schemas import (
-    CurrentUser,
-    ActionList,
     RoleCreate,
-    UserResponse,
     RoleResponse,
-    DepartmentCreate,
-    DepartmentResponse,
 )
-from models import Role, User, Department
+from models import Role
 
 
 router = APIRouter(prefix="/roles")
 
 
-@router.post(
-    "", dependencies=[CanManageAccess], response_model=RoleResponse
-)
+@router.post("", dependencies=[CanManageAccess], response_model=RoleResponse)
 def create_role(role: RoleCreate, db: Session = DependsOnDbSession):
     return role.load_to_model(Role()).save(db).save_actions(db, role.actions)
 

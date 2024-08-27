@@ -3,6 +3,7 @@ from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
 from models import CatalogRecord, Task, TaskDocument
 from datatypes import TaskType
+from exceptions import ObjectMissingRequiredFieldException
 from schemas import CatalogRecordResponse, Page
 from worker import run_task
 from .utils.permissions import CanReadCatalogRecords, CanReviewCatalogRecords
@@ -10,7 +11,7 @@ from .utils.dependencies import (
     DependsOnDbSession,
     DependsOnCallerUsername,
 )
-from services.marc_records_comparator import (
+from services.marc_comparator import (
     MarcFieldDifference,
     MarcRecordsComparator,
 )
@@ -55,8 +56,10 @@ def get_catalog_record_mzk_skc_diff(
 ):
     catalog_record = CatalogRecord.get(session, sysno)
     if catalog_record.skc_record is None:
-        raise Exception("SKC record not found")
-    return MarcRecordsComparator.evaluate(
+        raise ObjectMissingRequiredFieldException(
+            "Catalog record", sysno, "SKC record"
+        )
+    return MarcRecordsComparator().evaluate(
         catalog_record.main_record,
         catalog_record.skc_record,
     )
@@ -73,8 +76,10 @@ def get_catalog_record_mzk_cnb_diff(
 ):
     catalog_record = CatalogRecord.get(session, sysno)
     if catalog_record.cnb_record is None:
-        raise Exception("CNB record not found")
-    return MarcRecordsComparator.evaluate(
+        raise ObjectMissingRequiredFieldException(
+            "Catalog record", sysno, "CNB record"
+        )
+    return MarcRecordsComparator().evaluate(
         catalog_record.main_record,
         catalog_record.cnb_record,
     )

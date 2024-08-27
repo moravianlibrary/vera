@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from models import CategoryDepartments, Document, User
 from typing import Callable, List, Union
 from .dependencies import DependsOnCurrentUser
+from .access_emulation import can_emulate_access
 
 
 class PermissionDeniedException(HTTPException):
@@ -260,3 +261,13 @@ CanReadIntentions = PermissionValidator(
 )
 CanReadCatalogRecords = PermissionValidator(ActionType.ReadCatalogRecords)
 CanReviewCatalogRecords = PermissionValidator(ActionType.ReviewCatalogRecords)
+
+
+def can_emulate_access_validator(
+    current_user: CurrentUser = DependsOnCurrentUser,
+):
+    if not can_emulate_access(current_user):
+        raise PermissionDeniedException()
+
+
+CanEmulateAccess = Depends(can_emulate_access_validator)

@@ -1,27 +1,22 @@
-from fastapi import APIRouter, Path
+from fastapi import APIRouter
 from sqlalchemy.orm import Session
 from typing import List
 from .utils import access_emulation
-from .utils import permissions
 from .utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
-from .utils.permissions import CanManageAccess
-from datatypes import ActionType, JsonBase
+from .utils.permissions import CanManageAccess, CanEmulateAccess
+from datatypes import JsonBase
 from schemas import (
     CurrentUser,
     ActionList,
-    RoleCreate,
     UserResponse,
-    RoleResponse,
-    DepartmentCreate,
-    DepartmentResponse,
 )
-from models import Role, User, Department
+from models import Role, User
 
 
 router = APIRouter(prefix="/users")
 
 
-@router.get("/authorize", response_model=CurrentUser)
+@router.get("/current", response_model=CurrentUser)
 def authorize_user(
     user: CurrentUser = DependsOnCurrentUser,
 ):
@@ -41,37 +36,39 @@ def get_users(db: Session = DependsOnDbSession):
 def set_user_settings(
     settings: JsonBase,
     user: CurrentUser = DependsOnCurrentUser,
-    db: Session = DependsOnDbSession
+    db: Session = DependsOnDbSession,
 ):
-    user.settings = settings
-    user.save(db)
+    user_model = User.get(db, user.username)
+    user_model.settings = settings
+    user_model.save(db)
+    user.settings = user_model.settings
     return user
 
 
 @router.post(
     "/current/emulate",
+    dependencies=[CanEmulateAccess],
     response_model=CurrentUser,
 )
 def emulate_access(
     actions: ActionList,
     user: CurrentUser = DependsOnCurrentUser,
 ):
-    if not can_emulate_access(user):
-        raise permissions.PermissionDeniedException()
-    user.actions = access_emulation.emulate_access(user.username, actions.actions)
+    user.actions = access_emulation.emulate_access(
+        user.username, actions.actions
+    )
     return user
 
 
 @router.delete(
     "/current/emulate",
+    dependencies=[CanEmulateAccess],
     response_model=CurrentUser,
 )
-def end_emulation(
+def stop_access_emulation(
     user: CurrentUser = DependsOnCurrentUser,
     db: Session = DependsOnDbSession,
 ):
-    if not access_emulation.can_emulate_access(user):
-        raise permissions.PermissionDeniedException()
     access_emulation.stop_emulating_access(user.username)
     user.actions = Role.get(db, user.role_id).actions
     return user

@@ -21,15 +21,22 @@ class User(Base, BaseMixin):
     department = relationship("Department", back_populates="department_users")
 
     @classmethod
-    def find_by_name(cls, session: Session, username: str) -> Optional["User"]:
+    def find(cls, session: Session, username: str) -> Optional["User"]:
         return session.query(cls).filter_by(username=username).first()
+
+    def save(self, session: Session) -> "User":
+        if User.find(session, self.username) is None:
+            session.add(self)
+        session.commit()
+        session.refresh(self)
+        return self
 
     @classmethod
     def add_users_to_department(
         cls, session: Session, department_id: int, users: List[str]
     ):
         for username in users:
-            user = cls.find_by_name(session, username)
+            user = cls.find(session, username)
             if user is None:
                 user = cls(username=username)
             user.department_id = department_id
