@@ -302,9 +302,9 @@ def get_mock_document_view_documents():
                 dedicated_scanner=row.get("dedicated_scanner"),
                 created_at=row.get("created_at"),
                 creator=row.get("creator"),
-                extraction_id=(
-                    int(row.get("extraction_id"))
-                    if row.get("extraction_id")
+                digitization_list_id=(
+                    int(row.get("digitization_list_id"))
+                    if row.get("digitization_list_id")
                     else None
                 ),
                 extractor=row.get("extractor"),

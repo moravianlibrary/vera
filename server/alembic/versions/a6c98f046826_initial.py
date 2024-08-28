@@ -296,7 +296,10 @@ def upgrade() -> None:
         ),
         sa.Column("creator", sa.VARCHAR(), autoincrement=False, nullable=True),
         sa.Column(
-            "extraction_id", sa.INTEGER(), autoincrement=False, nullable=True
+            "digitization_list_id",
+            sa.INTEGER(),
+            autoincrement=False,
+            nullable=True,
         ),
         sa.ForeignKeyConstraint(
             ["category_id"],
@@ -304,9 +307,9 @@ def upgrade() -> None:
             name="documents_category_id_fkey",
         ),
         sa.ForeignKeyConstraint(
-            ["extraction_id"],
+            ["digitization_list_id"],
             ["extractions.id"],
-            name="documents_extraction_id_fkey",
+            name="documents_digitization_list_id_fkey",
         ),
         sa.PrimaryKeyConstraint("id", name="documents_pkey"),
         sa.UniqueConstraint(
@@ -320,9 +323,9 @@ def upgrade() -> None:
     op.create_index("ix_documents_sysno", "documents", ["sysno"], unique=False)
     op.create_index("ix_documents_id", "documents", ["id"], unique=False)
     op.create_index(
-        "ix_documents_extraction_id",
+        "ix_documents_digitization_list_id",
         "documents",
-        ["extraction_id"],
+        ["digitization_list_id"],
         unique=False,
     )
     op.create_index(
@@ -476,7 +479,7 @@ def downgrade() -> None:
     op.drop_table("actions")
     op.drop_index("ix_documents_category_id", table_name="documents")
     op.drop_index("ix_documents_creator", table_name="documents")
-    op.drop_index("ix_documents_extraction_id", table_name="documents")
+    op.drop_index("ix_documents_digitization_list_id", table_name="documents")
     op.drop_index("ix_documents_id", table_name="documents")
     op.drop_index("ix_documents_sysno", table_name="documents")
     op.drop_table("documents")

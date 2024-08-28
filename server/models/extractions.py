@@ -22,4 +22,4 @@ class Extraction(Base, BaseMixin):
 
     def validate_before_save(self, session):
         if not self.document_ids:
-            raise EmptyExtractionException
+            raise EmptyExtractionException()

@@ -78,7 +78,7 @@ INDEX_SCHEMA = {
             # Extraction properties
             "dedicated_scanner": {"type": "keyword"},
             "extraction_priority": {"type": "integer"},
-            "extraction_id": {"type": "integer"},
+            "digitization_list_id": {"type": "integer"},
             # Other properties
             "material_type": {"type": "keyword"},  # Enum type
             "issuance_type": {"type": "keyword"},  # Enum type
@@ -162,7 +162,7 @@ class DocumentsIndexer:
             "page_count_manual": document.pages_count_manual,
             "dedicated_scanner": document.dedicated_scanner,
             "extraction_priority": document.extraction_priority,
-            "extraction_id": document.extraction_id,
+            "digitization_list_id": document.digitization_list_id,
             "material_type": (
                 aleph_record.material_type.value
                 if aleph_record.material_type

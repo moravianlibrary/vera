@@ -47,7 +47,7 @@ class DocumentResponse(BaseModel):
     extraction_priority: int
 
     is_extractable: bool
-    extraction_id: Optional[int]
+    digitization_list_id: Optional[int]
     extractor: Optional[str]
     extracted_at: Optional[datetime]
 

@@ -205,16 +205,16 @@ def get_categories_by_intention(
 
 
 @router.get(
-    "/in_intention/{intention_id}/by_extraction/{extraction_id}",
+    "/in_intention/{intention_id}/by_extraction/{digitization_list_id}",
     dependencies=[CanReadCategories],
     response_model=Categories,
 )
 def get_categories_by_extraction(
     intention_id: int = Path(...),
-    extraction_id: int = Path(...),
+    digitization_list_id: int = Path(...),
     db: Session = DependsOnDbSession,
 ):
-    extraction = Extraction.get(db, extraction_id)
+    extraction = Extraction.get(db, digitization_list_id)
     return [
         map_to_category_extraction(
             category,
@@ -286,17 +286,17 @@ def get_department_categories_by_intention(
 
 @router.get(
     "/departments/{department_id}"
-    "/in_intention/{intention_id}/by_extraction/{extraction_id}",
+    "/in_intention/{intention_id}/by_extraction/{digitization_list_id}",
     dependencies=[CanReadDepartmentCategories],
     response_model=Categories,
 )
 def get_department_categories_by_extraction(
     department_id: int = Path(...),
     intention_id: int = Path(...),
-    extraction_id: int = Path(...),
+    digitization_list_id: int = Path(...),
     db: Session = DependsOnDbSession,
 ):
-    extraction = Extraction.get(db, extraction_id)
+    extraction = Extraction.get(db, digitization_list_id)
     return [
         map_to_category_extraction(
             category,

@@ -56,7 +56,7 @@ class CategoryResponse(CategoryCreate):
     overall_percentage: Optional[float] = None
     pages_needed_to_meet_intention: Optional[int] = None
 
-    extraction_id: Optional[int] = None
+    digitization_list_id: Optional[int] = None
     extracted_pages: Optional[int] = None
     extracted_documents: Optional[int] = None
 

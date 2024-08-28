@@ -72,7 +72,7 @@ def upgrade() -> None:
     )
 
     op.drop_constraint(
-        "documents_extraction_id_fkey", "documents", type_="foreignkey"
+        "documents_digitization_list_id_fkey", "documents", type_="foreignkey"
     )
 
     next_seq_id = (
@@ -85,10 +85,10 @@ def upgrade() -> None:
     op.drop_table("extractions")
 
     op.create_foreign_key(
-        "documents_extraction_id_fkey",
+        "documents_digitization_list_id_fkey",
         "documents",
         "digitization_extractions",
-        ["extraction_id"],
+        ["digitization_list_id"],
         ["id"],
         ondelete="SET NULL",
     )
@@ -103,7 +103,7 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_constraint(
-        "documents_extraction_id_fkey", "documents", type_="foreignkey"
+        "documents_digitization_list_id_fkey", "documents", type_="foreignkey"
     )
 
     op.drop_table("digitization_extractions")
@@ -149,10 +149,10 @@ def downgrade() -> None:
     op.drop_table("generated_extractions")
 
     op.create_foreign_key(
-        "documents_extraction_id_fkey",
+        "documents_digitization_list_id_fkey",
         "documents",
         "extractions",
-        ["extraction_id"],
+        ["digitization_list_id"],
         ["id"],
         ondelete="SET NULL",
     )

@@ -507,7 +507,7 @@ def get_test_documents_with_extraction():
                 added_by="randiak",
                 added_at="2024-04-26 17:28:23",
                 pages_count_manual=1000,
-                extraction_id=1,
+                digitization_list_id=1,
                 category_id=1,
                 digitization_state=DigitizationState.Finished,
             ),

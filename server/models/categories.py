@@ -163,12 +163,12 @@ class Category(Base):
             sum(
                 document.pages_count
                 for document in self.documents
-                if document.extraction_id in digitization_ids
+                if document.digitization_list_id in digitization_ids
             ),
             sum(
                 1
                 for document in self.documents
-                if document.extraction_id in digitization_ids
+                if document.digitization_list_id in digitization_ids
             ),
         )
 

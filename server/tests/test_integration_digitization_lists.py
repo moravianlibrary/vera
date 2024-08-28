@@ -352,4 +352,4 @@ class TestDigitizationListsIntegration(TestCrudOperations):
 
         # Assert
         self.assertEqual(200, response.status_code)
-        self.assertIsNone(response_document.json()["extraction_id"])
+        self.assertIsNone(response_document.json()["digitization_list_id"])

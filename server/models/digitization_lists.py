@@ -13,21 +13,21 @@ from .documents import Document
 
 
 class DigitizationList(Base, BaseMixin):
-    __tablename__ = "digitization_extractions"
+    __tablename__ = "digitization_lists"
 
     id = Column(Integer, primary_key=True, index=True)
-    intention_id = Column(Integer, ForeignKey("intentions.id"))
-    extractor = Column(String, index=True)
-    extracted_at = Column(TIMESTAMP, server_default=func.now())
+    intention_id = Column(Integer, ForeignKey("intentions.id"), nullable=False)
+    created_by = Column(String, index=True)
+    created_at = Column(TIMESTAMP, server_default=func.now())
 
-    documents = relationship("Document", back_populates="extraction")
+    documents = relationship("Document", back_populates="digitization_list")
 
     @hybrid_property
     def document_ids(self) -> List[int]:
         return [d.id for d in self.documents]
 
     @hybrid_property
-    def extracted_pages(self) -> int:
+    def page_count(self) -> int:
         return sum(d.pages_count for d in self.documents)
 
     @classmethod
@@ -46,7 +46,7 @@ class DigitizationList(Base, BaseMixin):
         for document_id in document_ids:
             document = Document.get(session, document_id)
             document.raise_for_extractibility()
-            document.extraction_id = self.id
+            document.digitization_list_id = self.id
             document.save(session)
         session.refresh(self)
         return self
@@ -56,8 +56,8 @@ class DigitizationList(Base, BaseMixin):
     ) -> "DigitizationList":
         for document_id in document_ids:
             document = Document.get(session, document_id)
-            if document.extraction_id == self.id:
-                document.extraction_id = None
+            if document.digitization_list_id == self.id:
+                document.digitization_list_id = None
                 document.save(session)
         session.refresh(self)
         return self

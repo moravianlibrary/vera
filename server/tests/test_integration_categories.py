@@ -746,7 +746,7 @@ class TestCategoriesEndpoints(TestIntegration):
                     barcode="test_barcode",
                     category_id=4,
                     pages_count_catalog=125,
-                    extraction_id=1,
+                    digitization_list_id=1,
                 ),
                 Extraction(
                     document_ids=[1],

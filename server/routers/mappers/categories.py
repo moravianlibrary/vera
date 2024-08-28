@@ -84,7 +84,7 @@ def map_to_category_extraction(
             distribution.pages_needed_to_meet_intention
         )
 
-    category_schema.extraction_id = extraction.id
+    category_schema.digitization_list_id = extraction.id
     category_schema.extracted_pages = extracted_pages
     category_schema.extracted_documents = extracted_documents
 

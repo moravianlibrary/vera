@@ -19,7 +19,7 @@ from sqlalchemy import (
 from services.database import Base
 from services.external.aleph import IssuanceType
 from services.external.digitization_registry import DigitizationState
-from services.exceptions import (
+from exceptions import (
     CannotExtractDocumentWithoutPagesCount,
     CannotExtractDocumentWithoutCNB,
     DocumentAlreadyExtractedException,
@@ -66,17 +66,17 @@ class Document(Base, BaseMixin):
         nullable=False,
         default=3,
     )
-    extraction_id = Column(
-        Integer, ForeignKey("digitization_extractions.id"), index=True
+    digitization_list_id = Column(
+        Integer, ForeignKey("digitization_lists.id"), index=True
     )
 
     catalog_record = relationship("CatalogRecord", back_populates="documents")
     category = relationship("Category", back_populates="documents")
     # TODO: settle on extractions naming
-    # digitization_list = relationship(
-    #     "DigitizationList", back_populates="documents"
-    # )
-    extraction = relationship("DigitizationList", back_populates="documents")
+    digitization_list = relationship(
+        "DigitizationList", back_populates="documents"
+    )
+    # extraction = relationship("DigitizationList", back_populates="documents")
     task_documents = relationship(
         "TaskDocument",
         primaryjoin="TaskDocument.document_id == Document.id",
@@ -130,7 +130,7 @@ class Document(Base, BaseMixin):
             self.pages_count is not None
             and self.pages_count > 0
             and self.catalog_record.cnb is not None
-            and self.extraction_id is None
+            and self.digitization_list_id is None
         )
 
     # @is_extractable.inplace.expression
@@ -141,7 +141,7 @@ class Document(Base, BaseMixin):
             & (cls.pages_count > 0)
             # & cls.cnb.is_not(None)
             & cls.catalog_record.has(CatalogRecord.cnb.isnot(None))
-            & cls.extraction_id.is_(None)
+            & cls.digitization_list_id.is_(None)
         )
 
     def raise_for_extractibility(self) -> None:
@@ -151,7 +151,7 @@ class Document(Base, BaseMixin):
             raise CannotExtractDocumentWithoutPagesCount()
         if self.catalog_record.cnb is None:
             raise CannotExtractDocumentWithoutCNB()
-        if self.extraction_id is not None:
+        if self.digitization_list_id is not None:
             raise DocumentAlreadyExtractedException()
 
     @hybrid_property
