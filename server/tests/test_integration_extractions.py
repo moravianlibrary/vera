@@ -24,6 +24,7 @@ from models import Extraction
 
 
 LEVEL_NAME = ["Root", "Child", "Grandchild", "Great Grandchild"]
+TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
 
 
 def generate_categories_tree(tree, assignable=[]):
@@ -91,6 +92,7 @@ def generate_extractable_documents(
         CatalogRecord(
             sysno=f"MZK01-001{str(document_id)}",
             cnb=f"CNB{str(document_id)}",
+            marc=TEST_MARC_BYTES,
         )
         for document_id, _, _ in document_triplets
     ] + [
@@ -111,6 +113,7 @@ def generate_extractable_documents_with_priorities(
         CatalogRecord(
             sysno=f"MZK01-001{str(document_id)}",
             cnb=f"CNB{str(document_id)}",
+            marc=TEST_MARC_BYTES,
         )
         for document_id, _, _, _ in document_triplets
     ] + [
@@ -1244,6 +1247,7 @@ class TestExtractionsPreparation(TestIntegration):
             CatalogRecord(
                 sysno="MZK01-001100",
                 cnb="CCNB100",
+                marc=TEST_MARC_BYTES,
             )
         )
         items.append(
@@ -1491,6 +1495,7 @@ class TestExtractionsPreparation(TestIntegration):
             CatalogRecord(
                 sysno="MZK01-001100",
                 cnb="CCNB100",
+                marc=TEST_MARC_BYTES,
             )
         )
         items.append(

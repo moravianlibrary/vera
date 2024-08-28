@@ -6,7 +6,7 @@ from services.external.digitization_registry import (
 from services.external.digitization_registry import DigitizationState
 
 
-class TestDigitizationRegister(unittest.TestCase):
+class TestDigitizationRegistry(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         mockClsEnv(cls)

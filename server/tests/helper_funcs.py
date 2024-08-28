@@ -7,7 +7,6 @@ from sqlalchemy.orm import sessionmaker
 from typing import Any, List, Optional
 
 from schemas import CurrentUser, DocumentResponse
-from tests import test_crud  # noqa: F401
 from models import Document
 
 

@@ -1,6 +1,6 @@
 from unittest import skipIf, TestCase
 from unittest.mock import patch, MagicMock
-from tests.test_crud import TestCrudOperations
+from tests.test_models.test_crud import TestCrudOperations
 from services.documents_indexer import DocumentsIndexer, INDEX_NAME
 from tests.documents_bank import get_test_documents
 from tests.helper_funcs import mock_db, get_test_db

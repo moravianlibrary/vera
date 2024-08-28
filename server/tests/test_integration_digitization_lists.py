@@ -1,4 +1,4 @@
-from tests.test_crud import TestCrudOperations
+from tests.test_models.test_crud import TestCrudOperations
 from helper_funcs import (
     createTestClient,
     createTestUser,

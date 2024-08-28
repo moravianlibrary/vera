@@ -25,7 +25,7 @@ class CatalogRecord(Base, BaseMixin):
     __tablename__ = "catalog_records"
 
     sysno = Column(String, primary_key=True)
-    marc = Column(LargeBinary)
+    marc = Column(LargeBinary, nullable=False)
 
     cnb = Column(String)
     language = Column(String, nullable=False, default=CZECH_LANGUAGE)
@@ -86,7 +86,7 @@ class CatalogRecord(Base, BaseMixin):
 
     @hybrid_property
     def has_valid_main_record(self) -> bool:
-        return all(
+        return self.skc_record is not None and all(
             difference.approved_by is not None
             for difference in self.skc_difference
         )
@@ -173,11 +173,11 @@ class CatalogRecordFieldDifference(Base, BaseMixin):
     indicator1 = Column(String, index=True)
     indicator2 = Column(String, index=True)
 
-    difference_type = Column(Enum(MarcFieldDifferenceType))
+    difference_type = Column(Enum(MarcFieldDifferenceType), nullable=False)
 
     approved_by = Column(String)
     approved_at = Column(TIMESTAMP)
-    deleted = Column(Boolean, server_default="false")
+    deleted = Column(Boolean, server_default="false", nullable=False)
 
     catalog_record = relationship(
         "CatalogRecord", back_populates="field_differences"

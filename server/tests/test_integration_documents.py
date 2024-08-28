@@ -15,6 +15,8 @@ from datatypes import AddDocumentResponseStatus
 from records_generators import generate_documents
 from services.exceptions import ObjectNotFoundException
 
+TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
+
 
 class TestDocumentsIntegration(TestIntegration):
     def document_update_data(self):
@@ -29,6 +31,7 @@ class TestDocumentsIntegration(TestIntegration):
             ),
             CatalogRecord(
                 sysno="TEST-SYSNO",
+                marc=TEST_MARC_BYTES,
             ),
             Document(
                 sysno="TEST-SYSNO",

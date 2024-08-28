@@ -116,7 +116,7 @@ class TestCatalogRecordsIntegration(TestIntegration):
         self.assertEqual(
             record1["main_record"]["fields"], [{"001": "000121929"}]
         )
-        self.assertTrue(record1["has_valid_main_record"])
+        self.assertFalse(record1["has_valid_main_record"])
         self.assertFalse(record1["has_valid_cnb"])
 
         record2 = response.json()["items"][1]
@@ -124,7 +124,7 @@ class TestCatalogRecordsIntegration(TestIntegration):
         self.assertEqual(
             record2["main_record"]["fields"], [{"001": "000121929"}]
         )
-        self.assertTrue(record1["has_valid_main_record"])
+        self.assertFalse(record1["has_valid_main_record"])
         self.assertFalse(record1["has_valid_cnb"])
 
     def test_get_catalog_record_by_sysno(self):

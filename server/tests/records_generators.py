@@ -2,6 +2,8 @@ from typing import Any, Dict, List, Union
 from models import CatalogRecord, Document, Location
 from services.external.digitization_registry import DigitizationState
 
+TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
+
 
 def generate_documents(
     data: Dict[str, List[Any]]
@@ -34,7 +36,7 @@ def generate_documents(
                 with open(data["marc_path"][i], "rb") as f:
                     marc = f.read()
             else:
-                marc = None
+                marc = TEST_MARC_BYTES
             items.append(
                 CatalogRecord(
                     sysno=sysno,

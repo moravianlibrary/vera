@@ -13,7 +13,7 @@ from models import Document
 from datatypes import ActionType
 from services.documents_indexer import DocumentsIndexer, INDEX_NAME
 from config import VeraConfig
-from tests import test_crud
+from tests.test_models import test_crud
 
 
 class TestDocumentsSearch(unittest.TestCase):

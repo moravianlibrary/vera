@@ -22,6 +22,8 @@ from models import (
 )
 from datatypes import ActionType
 
+TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
+
 
 class TestCategoriesEndpoints(TestIntegration):
     def get_testing_models(self):
@@ -737,7 +739,7 @@ class TestCategoriesEndpoints(TestIntegration):
                     intention_id=1,
                     extractor="test_user",
                 ),
-                CatalogRecord(sysno="test_sysno"),
+                CatalogRecord(sysno="test_sysno", marc=TEST_MARC_BYTES),
                 Document(
                     sysno="test_sysno",
                     volume="test_volume",

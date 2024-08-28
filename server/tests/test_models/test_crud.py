@@ -41,6 +41,7 @@ TestSessionLocal = sessionmaker(
 
 
 class TestCrudOperations(unittest.TestCase):
+
     def setUp(self):
         Base.metadata.create_all(test_engine)
         self.db = TestSessionLocal()

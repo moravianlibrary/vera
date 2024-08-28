@@ -18,6 +18,9 @@ from elasticsearch import NotFoundError
 from services.predictor import PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD
 
 
+TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
+
+
 class TestCatalogSyncIntegration(TestIntegration):
     def get_testing_models(self):
         with open("tests/aleph_records/MZK01-000165329.marc", "rb") as f:
@@ -53,10 +56,10 @@ class TestCatalogSyncIntegration(TestIntegration):
         mock_db(self.get_testing_models())
         session = get_test_db()
         catalog_record = CatalogRecord.get(session, "MZK01-000165329")
-        catalog_record.marc = None
+        catalog_record.marc = TEST_MARC_BYTES
         catalog_record.save(session)
         document = Document.get(session, 1)
-        self.assertIsNone(document.catalog_record.marc)
+        self.assertEqual(document.catalog_record.marc, TEST_MARC_BYTES)
         self.assertEqual(document.digitization_registry_id, None)
 
         # Act
@@ -83,7 +86,7 @@ class TestCatalogSyncIntegration(TestIntegration):
         session = get_test_db()
         mock_get_record.return_value = None, AlephResponseStatus.InvalidSysno
         catalog_record = CatalogRecord.get(session, "MZK01-000165329")
-        catalog_record.marc = None
+        catalog_record.marc = TEST_MARC_BYTES
         catalog_record.save(session)
 
         # Act
@@ -100,7 +103,7 @@ class TestCatalogSyncIntegration(TestIntegration):
             "Record with sysno MZK01-000165329 is not available from Aleph. "
             "Status: AlephResponseStatus.InvalidSysno.",
         )
-        self.assertIsNone(document.catalog_record.main_record)
+        self.assertEqual(document.catalog_record.marc, TEST_MARC_BYTES)
         session.close()
 
 
