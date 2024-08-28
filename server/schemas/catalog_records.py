@@ -89,13 +89,20 @@ class CatalogRecordResponse(BaseModel):
     sysno: str
     main_record: JsonBase
 
+    cnb: Optional[str]
+    language: str
+    signature: Optional[str]
+    isxn: Optional[str]
+
     skc_sysno: Optional[str]
     skc_record: Optional[JsonBase]
-    skc_diff: Optional[List[MarcFieldDifference]] = None
+    skc_difference: Optional[List[MarcFieldDifference]] = None
+    has_valid_main_record: bool
 
     cnb_sysno: Optional[str]
     cnb_record: Optional[JsonBase]
-    cnb_diff: Optional[List[MarcFieldDifference]] = None
+    cnb_difference: Optional[List[MarcFieldDifference]] = None
+    has_valid_cnb: bool
 
     last_updated: Optional[datetime]
 
@@ -114,10 +121,10 @@ class CatalogDocumentResponse(BaseModel):
     material_type: MaterialType
     issues: List[CatalogIssueResponse]
 
-    skc_sysno: Optional[str] = None
-    skc_diff: Optional[List[MarcFieldDifference]] = None
-    cnb_sysno: Optional[str] = None
-    cnb_diff: Optional[List[MarcFieldDifference]] = None
+    skc_sysno: Optional[str]
+    has_valid_main_record: bool
+    cnb_sysno: Optional[str]
+    has_valid_cnb: bool
 
     @classmethod
     def from_records(
@@ -132,9 +139,9 @@ class CatalogDocumentResponse(BaseModel):
             material_type=aleph_record.material_type,
             issues=catalog_issues,
             skc_sysno=catalog_record.skc_sysno,
-            skc_diff=catalog_record.skc_diff,
+            has_valid_main_record=catalog_record.has_valid_main_record,
             cnb_sysno=catalog_record.cnb_sysno,
-            cnb_diff=catalog_record.cnb_diff,
+            has_valid_cnb=catalog_record.has_valid_cnb,
         )
 
 
@@ -144,10 +151,3 @@ class Frequency(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-
-
-class MarcDifferenceRecord(BaseModel):
-    differences: List[MarcFieldDifference] = []
-
-    sysno1: Optional[str] = None
-    sysno2: Optional[str] = None

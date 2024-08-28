@@ -72,7 +72,7 @@ class MarcFieldsComparator:
     def generate_same_fields_result(
         self,
         field1: Field,
-        subfields_differences: List[MarcSubfieldDifference],
+        subfield_differences: List[MarcSubfieldDifference],
         subfields_differ: bool,
     ) -> List[MarcFieldDifference]:
         if subfields_differ:
@@ -80,14 +80,14 @@ class MarcFieldsComparator:
                 MarcFieldDifference.from_marc_field(
                     MarcFieldDifferenceType.DifferentValue,
                     field1,
-                    subfields_differences,
+                    subfield_differences,
                 )
             ]
         return [
             MarcFieldDifference.from_marc_field(
                 MarcFieldDifferenceType.Equal,
                 field1,
-                subfields_differences,
+                subfield_differences,
             )
         ]
 
@@ -111,7 +111,7 @@ class MarcFieldsComparator:
         if field1.indicators != field2.indicators:
             return self.generate_different_fields_result(field1, field2)
 
-        subfields_differences: List[MarcSubfieldDifference] = []
+        subfield_differences: List[MarcSubfieldDifference] = []
         subfields_differ = False
 
         subfield_codes = (
@@ -129,7 +129,7 @@ class MarcFieldsComparator:
             value2 = self.parse_value(field2, subfield_code)
 
             differs = not self.is_same_value(value1, value2)
-            subfields_differences.append(
+            subfield_differences.append(
                 MarcSubfieldDifference(
                     code=subfield_code,
                     value=value1,
@@ -142,7 +142,7 @@ class MarcFieldsComparator:
                 subfields_differ = True
 
         return self.generate_same_fields_result(
-            field1, subfields_differences, subfields_differ
+            field1, subfield_differences, subfields_differ
         )
 
     def evaluate_multiple_fields(

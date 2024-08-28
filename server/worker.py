@@ -1,3 +1,4 @@
+from typing import Optional
 import logging
 from celery import Celery
 from celery.schedules import crontab
@@ -67,10 +68,10 @@ def setup_periodic_task(periodic_task: PeriodicTask):
 
     celery_worker.add_periodic_task(
         crontab(
-            minute=periodic_task.minute_str,
-            hour=parse_cron_value(periodic_task.hour_str),
-            day_of_week=parse_cron_value(periodic_task.day_of_week_str),
-            day_of_month=parse_cron_value(periodic_task.day_of_month_str),
+            minute=periodic_task.minute,
+            hour=parse_cron_value(periodic_task.hour),
+            day_of_week=parse_cron_value(periodic_task.day_of_week),
+            day_of_month=parse_cron_value(periodic_task.day_of_month),
         ),
         run_periodic_task_instance.s(periodic_task.id),
     )

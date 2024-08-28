@@ -64,6 +64,11 @@ class AlephRecord:
         return self.get_value("015", "a")
 
     @property
+    def language(self) -> Optional[str]:
+        fields = self.record.get_fields("008")
+        return fields[0].data[35:38] if fields else None
+
+    @property
     def isxn(self) -> Optional[str]:
         return self.record.isbn if self.record.isbn else self.record.issn
 

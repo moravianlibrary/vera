@@ -40,7 +40,7 @@ INDEX_SCHEMA = {
                     "tag": {"type": "keyword"},
                     "indicator1": {"type": "keyword"},
                     "indicator2": {"type": "keyword"},
-                    "subfields_differences": {
+                    "subfield_differences": {
                         "type": "nested",
                         "properties": {
                             "code": {"type": "keyword"},
@@ -58,7 +58,7 @@ INDEX_SCHEMA = {
                     "tag": {"type": "keyword"},
                     "indicator1": {"type": "keyword"},
                     "indicator2": {"type": "keyword"},
-                    "subfields_differences": {
+                    "subfield_differences": {
                         "type": "nested",
                         "properties": {
                             "code": {"type": "keyword"},
@@ -145,10 +145,11 @@ class DocumentsIndexer:
             "added_by": document.added_by,
             "category_id": document.category_id,
             "category_path": document.category_path,
+            # Catalog properties
             "skc_sysno": document.catalog_record.skc_sysno,
-            "skc_diff": document.catalog_record.skc_diff,
+            "has_valid_main_record": document.catalog_record.has_valid_main_record,
             "cnb_sysno": document.catalog_record.cnb_sysno,
-            "cnb_diff": document.catalog_record.cnb_diff,
+            "has_valid_cnb": document.catalog_record.has_valid_cnb,
             "digitization_registry_id": document.digitization_registry_id,
             "digitization_state": (
                 document.digitization_state.value

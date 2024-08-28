@@ -20,6 +20,17 @@ class MarcSubfieldDifference(BaseModel):
     different_to: Optional[str] = None
     differs: bool = True
 
+    def __hash__(self):
+        return hash((self.code, self.value, self.different_to, self.differs))
+
+    def __eq__(self, other: "MarcSubfieldDifference"):
+        return (
+            self.code == other.code
+            and self.value == other.value
+            and self.different_to == other.different_to
+            and self.differs == other.differs
+        )
+
     def __lt__(self, other: "MarcSubfieldDifference"):
         if self.code is None:
             return False
@@ -37,15 +48,37 @@ class MarcSubfieldDifference(BaseModel):
 
 
 class MarcFieldDifference(BaseModel):
-    result: MarcFieldDifferenceType
     tag: str
     indicator1: Optional[str] = None
     indicator2: Optional[str] = None
-    subfields_differences: List[MarcSubfieldDifference] = []
     control_field: bool = False
+    difference_type: MarcFieldDifferenceType
+    subfield_differences: List[MarcSubfieldDifference] = []
 
     class Config:
         use_enum_values = True
+
+    def __hash__(self):
+        return hash(
+            (
+                self.tag,
+                self.indicator1,
+                self.indicator2,
+                self.control_field,
+                self.difference_type,
+                tuple(self.subfield_differences),
+            )
+        )
+
+    def __eq__(self, other: "MarcFieldDifference"):
+        return (
+            self.tag == other.tag
+            and self.indicator1 == other.indicator1
+            and self.indicator2 == other.indicator2
+            and self.control_field == other.control_field
+            and self.difference_type == other.difference_type
+            and self.subfield_differences == other.subfield_differences
+        )
 
     def __lt__(self, other: "MarcFieldDifference"):
         tag_num = int(self.tag)
@@ -53,18 +86,18 @@ class MarcFieldDifference(BaseModel):
         return (
             tag_num < other_tag_num
             or tag_num == other_tag_num
-            and self.result < other.result
+            and self.difference_type < other.difference_type
         )
 
     @classmethod
     def from_marc_field(
         cls,
-        result: MarcFieldDifferenceType,
+        difference_type: MarcFieldDifferenceType,
         field: Field,
         subfield_differences: List[MarcSubfieldDifference],
     ) -> "MarcFieldDifference":
         return cls(
-            result=result,
+            difference_type=difference_type,
             tag=field.tag,
             indicator1=(
                 field.indicator1
@@ -76,9 +109,8 @@ class MarcFieldDifference(BaseModel):
                 if not field.is_control_field() and field.indicators
                 else None
             ),
-            subfields_differences=subfield_differences,
+            subfield_differences=sorted(subfield_differences),
             control_field=field.is_control_field(),
-            data=field.data if field.is_control_field() else None,
         )
 
     def __str__(self) -> str:
@@ -86,7 +118,7 @@ class MarcFieldDifference(BaseModel):
             return " ".join(
                 [
                     f"|{subfield.code or " "} {subfield.value.strip()}"
-                    for subfield in sorted(self.subfields_differences)
+                    for subfield in self.subfield_differences
                     if subfield.value is not None
                 ]
             )
@@ -95,7 +127,7 @@ class MarcFieldDifference(BaseModel):
             return " ".join(
                 [
                     f"|{subfield.code or " "} {subfield.different_to.strip()}"
-                    for subfield in sorted(self.subfields_differences)
+                    for subfield in self.subfield_differences
                     if subfield.different_to is not None
                 ]
             )
@@ -108,11 +140,11 @@ class MarcFieldDifference(BaseModel):
             )
             return f"{self.tag} {indicators} {subfields_repr}"
 
-        if self.result == MarcFieldDifferenceType.ExtraField:
+        if self.difference_type == MarcFieldDifferenceType.ExtraField:
             return f"+ {field_str(subfields_values_str())}"
-        if self.result == MarcFieldDifferenceType.MissingField:
+        if self.difference_type == MarcFieldDifferenceType.MissingField:
             return f"- {field_str(subfields_different_to_str())}"
-        if self.result == MarcFieldDifferenceType.DifferentValue:
+        if self.difference_type == MarcFieldDifferenceType.DifferentValue:
             return (
                 f"┌ {field_str(subfields_values_str())}\n"
                 f"└ {field_str(subfields_different_to_str())}"

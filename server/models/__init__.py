@@ -1,4 +1,9 @@
-from .catalog_records import CatalogRecord, CatalogRecordBarcode
+from .catalog_records import (
+    CatalogRecord,
+    CatalogRecordBarcode,
+    CatalogRecordFieldDifference,
+    CatalogRecordSubfieldDifference,
+)
 from .categories import Category, CategoryDepartments, Distribution
 from .departments import Department
 from .digitization_lists import DigitizationList
@@ -13,6 +18,8 @@ from .users import User
 __all__ = [
     "CatalogRecord",
     "CatalogRecordBarcode",
+    "CatalogRecordFieldDifference",
+    "CatalogRecordSubfieldDifference",
     "Category",
     "CategoryDepartments",
     "Distribution",

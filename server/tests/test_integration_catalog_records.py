@@ -49,7 +49,7 @@ class TestCatalogRecordsEndpointsPermissions(TestIntegration):
 
         # Act
         response = self.client.patch(
-            "/catalog_records/MZK-123456789/approve_difference/1",
+            "/catalog_records/differences/1/approve",
             headers={"Authorization": "Bearer test_token"},
         )
 
@@ -57,7 +57,7 @@ class TestCatalogRecordsEndpointsPermissions(TestIntegration):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(
             response.json()["detail"],
-            "CatalogRecord with id MZK-123456789 not found",
+            "CatalogRecordFieldDifference with id 1 not found",
         )
 
     def test_approve_catalog_record_difference_prohibited(self):
@@ -73,7 +73,7 @@ class TestCatalogRecordsEndpointsPermissions(TestIntegration):
 
         # Act
         response = self.client.patch(
-            "/catalog_records/MZK-123456789/approve_difference/1",
+            "/catalog_records/differences/1/approve",
             headers={"Authorization": "Bearer test_token"},
         )
 
@@ -116,12 +116,16 @@ class TestCatalogRecordsIntegration(TestIntegration):
         self.assertEqual(
             record1["main_record"]["fields"], [{"001": "000121929"}]
         )
+        self.assertTrue(record1["has_valid_main_record"])
+        self.assertFalse(record1["has_valid_cnb"])
 
         record2 = response.json()["items"][1]
         self.assertEqual(record2["sysno"], "MZK01-987654321")
         self.assertEqual(
             record2["main_record"]["fields"], [{"001": "000121929"}]
         )
+        self.assertTrue(record1["has_valid_main_record"])
+        self.assertFalse(record1["has_valid_cnb"])
 
     def test_get_catalog_record_by_sysno(self):
         # Arrange
@@ -186,7 +190,7 @@ class TestCatalogRecordsIntegration(TestIntegration):
         # Act
         client = createTestClient()
         response = client.get(
-            "/catalog_records/MZK01-123456789/skc_difference",
+            "/catalog_records/MZK01-123456789/differences/SKC",
             headers={
                 "Authorization": "Bearer test_token",
             },
@@ -198,15 +202,16 @@ class TestCatalogRecordsIntegration(TestIntegration):
             response.json(),
             [
                 {
-                    "result": "Equal",
                     "tag": "001",
                     "indicator1": None,
                     "indicator2": None,
-                    "subfields_differences": [
+                    "difference_type": "Equal",
+                    "subfield_differences": [
                         {
                             "code": None,
                             "value": "000121929",
                             "different_to": "000121929",
+                            "differs": False,
                         }
                     ],
                     "control_field": True,
@@ -226,7 +231,7 @@ class TestCatalogRecordsIntegration(TestIntegration):
         # Act
         client = createTestClient()
         response = client.get(
-            "/catalog_records/MZK01-123456789/skc_difference",
+            "/catalog_records/MZK01-123456789/differences/SKC",
             headers={
                 "Authorization": "Bearer test_token",
             },
@@ -251,7 +256,7 @@ class TestCatalogRecordsIntegration(TestIntegration):
         # Act
         client = createTestClient()
         response = client.get(
-            "/catalog_records/MZK01-123456789/cnb_difference",
+            "/catalog_records/MZK01-123456789/differences/CNB",
             headers={
                 "Authorization": "Bearer test_token",
             },
@@ -263,15 +268,16 @@ class TestCatalogRecordsIntegration(TestIntegration):
             response.json(),
             [
                 {
-                    "result": "Equal",
                     "tag": "001",
                     "indicator1": None,
                     "indicator2": None,
-                    "subfields_differences": [
+                    "difference_type": "Equal",
+                    "subfield_differences": [
                         {
                             "code": None,
                             "value": "000121929",
                             "different_to": "000121929",
+                            "differs": False,
                         }
                     ],
                     "control_field": True,
@@ -291,7 +297,7 @@ class TestCatalogRecordsIntegration(TestIntegration):
         # Act
         client = createTestClient()
         response = client.get(
-            "/catalog_records/MZK01-123456789/cnb_difference",
+            "/catalog_records/MZK01-123456789/differences/CNB",
             headers={
                 "Authorization": "Bearer test_token",
             },

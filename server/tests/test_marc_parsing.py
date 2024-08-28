@@ -63,9 +63,9 @@ class TestMarcComparatorEditionFieldComparator(TestCase):
             ),
             [
                 MarcFieldDifference(
-                    result=MarcFieldDifferenceType.ExtraField,
+                    difference_type=MarcFieldDifferenceType.ExtraField,
                     tag="250",
-                    subfields_differences=[
+                    subfield_differences=[
                         MarcSubfieldDifference(code="a", value="text")
                     ],
                 )
@@ -77,9 +77,9 @@ class TestMarcComparatorEditionFieldComparator(TestCase):
             ),
             [
                 MarcFieldDifference(
-                    result=MarcFieldDifferenceType.MissingField,
+                    difference_type=MarcFieldDifferenceType.MissingField,
                     tag="250",
-                    subfields_differences=[
+                    subfield_differences=[
                         MarcSubfieldDifference(code="a", different_to="text")
                     ],
                 )
@@ -94,11 +94,14 @@ class TestMarcComparatorEditionFieldComparator(TestCase):
             ),
             [
                 MarcFieldDifference(
-                    result=MarcFieldDifferenceType.Equal,
+                    difference_type=MarcFieldDifferenceType.Equal,
                     tag="250",
-                    subfields_differences=[
+                    subfield_differences=[
                         MarcSubfieldDifference(
-                            code="a", value="text", different_to="text"
+                            code="a",
+                            value="text",
+                            different_to="text",
+                            differs=False,
                         )
                     ],
                 )
@@ -146,11 +149,14 @@ class TestMarcComparatorGeneralInformationFieldComparator(TestCase):
             ),
             [
                 MarcFieldDifference(
-                    result=MarcFieldDifferenceType.Equal,
+                    difference_type=MarcFieldDifferenceType.Equal,
                     tag="008",
-                    subfields_differences=[
+                    subfield_differences=[
                         MarcSubfieldDifference(
-                            code=None, value=value1, different_to=value2
+                            code=None,
+                            value=value1,
+                            different_to=value2,
+                            differs=False,
                         )
                     ],
                     control_field=True,
@@ -170,9 +176,9 @@ class TestMarcComparatorGeneralInformationFieldComparator(TestCase):
             ),
             [
                 MarcFieldDifference(
-                    result=MarcFieldDifferenceType.DifferentValue,
+                    difference_type=MarcFieldDifferenceType.DifferentValue,
                     tag="008",
-                    subfields_differences=[
+                    subfield_differences=[
                         MarcSubfieldDifference(
                             code=None, value=value1, different_to=value2
                         )

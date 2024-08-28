@@ -23,7 +23,7 @@ from routers.utils.dependencies import (
     DependsOnCallerUsername,
     DependsOnDocumentsIndexer,
 )
-from procedures.add_document import add_document
+from logic.add_document import add_document
 from services.documents_indexer import DocumentsIndexer
 from starlette.responses import FileResponse
 import pandas as pd
