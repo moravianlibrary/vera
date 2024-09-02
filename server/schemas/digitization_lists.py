@@ -6,10 +6,10 @@ from typing import List, Optional
 class DigitizationList(BaseModel):
     id: int
     document_ids: List[int]
-    extracted_pages: int
+    page_count: int
     intention_id: Optional[int]
-    extractor: str
-    extracted_at: datetime
+    created_by: str
+    created_at: datetime
 
     class Config:
         arbitrary_types_allowed = True

@@ -30,5 +30,5 @@ class DocumentAlreadyExtractedException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Document have been already extracted",
+            detail="Document has been already extracted",
         )

@@ -12,6 +12,9 @@ from .location_state import LocationState
 from .task_types import TaskType, TaskState, TaskDocumentErrorType
 from .typing import IdType, JsonBase, ElasticsearchParams
 
+from services.external.aleph import IssuanceType, MaterialType
+from services.external.digitization_registry import DigitizationState
+
 
 __all__ = [
     "ActionType",
@@ -31,4 +34,7 @@ __all__ = [
     "ElasticsearchParams",
     "CatalogSource",
     "CZECH_LANGUAGE",
+    "IssuanceType",
+    "MaterialType",
+    "DigitizationState",
 ]

@@ -498,7 +498,7 @@ def get_test_documents_with_extraction():
             ),
             DigitizationList(
                 intention_id=1,
-                extractor="test_user",
+                created_by="test_user",
             ),
             Document(
                 id=1001,

@@ -24,7 +24,7 @@ router = APIRouter(prefix="/extractions/digitization")
 def create_extraction(
     query_params: ElasticsearchParams,
     intention_id: Optional[int] = Query(None, description="Intention ID"),
-    extractor: str = DependsOnCallerUsername,
+    created_by: str = DependsOnCallerUsername,
     session: Session = DependsOnDbSession,
     indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
 ):
@@ -32,7 +32,7 @@ def create_extraction(
     if not document_ids:
         raise EmptyExtractionException()
     return (
-        DigitizationList(intention_id=intention_id, extractor=extractor)
+        DigitizationList(intention_id=intention_id, created_by=created_by)
         .save(session)
         .add_documents(session, document_ids)
     )

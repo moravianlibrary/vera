@@ -4,7 +4,7 @@ from datatypes import ActionType
 from models import CatalogRecord
 
 
-class TestCatalogRecordsIntegration(TestEndpointsBase):
+class TestCatalogRecordsEndpoints(TestEndpointsBase):
     def setUp(self):
         super().setUp()
         self.marc_bytes = (
@@ -23,7 +23,7 @@ class TestCatalogRecordsIntegration(TestEndpointsBase):
         self.mockTestUser([ActionType.ReadCatalogRecords])
 
         # Act
-        response = self.self.client.get(
+        response = self.client.get(
             "/catalog_records",
             headers={
                 "Authorization": "Bearer test_token",

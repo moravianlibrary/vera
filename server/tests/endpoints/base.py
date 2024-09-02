@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from vera import app
 from schemas import CurrentUser
 from datatypes import ActionType
-from routers.utils.dependencies import get_current_user
+from routers.utils.dependencies import get_current_user, get_documents_indexer
 
 
 from services.database import Base, get_db
@@ -74,3 +74,8 @@ class TestEndpointsBase(unittest.TestCase):
             department_id=department_id,
             settings=settings,
         )
+
+    def mockIndexerGetDocumentIds(self, document_ids):
+        mock_indexer = unittest.mock.MagicMock()
+        mock_indexer.get_document_ids.return_value = document_ids
+        app.dependency_overrides[get_documents_indexer] = lambda: mock_indexer

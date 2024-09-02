@@ -17,7 +17,7 @@ class DigitizationList(Base, BaseMixin):
 
     id = Column(Integer, primary_key=True, index=True)
     intention_id = Column(Integer, ForeignKey("intentions.id"), nullable=False)
-    created_by = Column(String, index=True)
+    created_by = Column(String, index=True, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
 
     documents = relationship("Document", back_populates="digitization_list")
