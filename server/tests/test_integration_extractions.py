@@ -19,7 +19,7 @@ from services.extractions_generator.preprocessor import ExtractionPreprocessor
 from datetime import date, timedelta
 from helper_funcs import get_test_db, mock_db
 from records_generators import generate_documents
-from services.exceptions import EmptyExtractionException
+from exceptions import EmptyExtractionException
 from models import Extraction
 
 

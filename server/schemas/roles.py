@@ -10,6 +10,7 @@ class RoleCreate(BaseModel):
 
     def load_to_model(self, model: Role) -> Role:
         model.name = self.name
+        model.actions = self.actions
         return model
 
 

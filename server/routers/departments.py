@@ -22,7 +22,7 @@ def create_department(
     department: DepartmentCreate, db: Session = DependsOnDbSession
 ):
     created_department = department.load_to_model(Department()).save(db)
-    created_department.save_users(db, department.users)
+    created_department.save_users(db, department.usernames)
     return created_department
 
 

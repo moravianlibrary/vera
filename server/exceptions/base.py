@@ -1,5 +1,6 @@
 from fastapi import HTTPException, status
 from datatypes import IdType
+from config import VeraConfig
 
 
 class ObjectNotFoundException(HTTPException):
@@ -59,4 +60,13 @@ class ObjectMissingRequiredFieldException(HTTPException):
         )
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST, detail=self.message
+        )
+
+
+class IndexIsNotAvailableException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Elasticsearch index is not available "
+            f"({VeraConfig.ElasticsearchUrl})",
         )

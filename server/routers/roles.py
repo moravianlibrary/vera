@@ -14,8 +14,8 @@ router = APIRouter(prefix="/roles")
 
 
 @router.post("", dependencies=[CanManageAccess], response_model=RoleResponse)
-def create_role(role: RoleCreate, db: Session = DependsOnDbSession):
-    return role.load_to_model(Role()).save(db).save_actions(db, role.actions)
+def create_role(role: RoleCreate, session: Session = DependsOnDbSession):
+    return role.load_to_model(Role()).save(session)
 
 
 @router.put(
@@ -26,31 +26,29 @@ def create_role(role: RoleCreate, db: Session = DependsOnDbSession):
 def update_role(
     role: RoleCreate,
     role_id: int = Path(...),
-    db: Session = DependsOnDbSession,
+    session: Session = DependsOnDbSession,
 ):
-    return (
-        role.load_to_model(db, Role.get(db, role_id))
-        .save(db)
-        .save_actions(db, role.actions)
-    )
+    return role.load_to_model(Role.get(session, role_id)).save(session)
 
 
 @router.delete(
     "/{role_id}", dependencies=[CanManageAccess], response_model=RoleResponse
 )
-def delete_role(role_id: int = Path(...), db: Session = DependsOnDbSession):
-    return Role.get(db, role_id).delete(db)
+def delete_role(
+    role_id: int = Path(...), session: Session = DependsOnDbSession
+):
+    return Role.get(session, role_id).delete(session)
 
 
 @router.get(
     "/{role_id}", dependencies=[CanManageAccess], response_model=RoleResponse
 )
-def get_role(role_id: int = Path(...), db: Session = DependsOnDbSession):
-    return Role.get(db, role_id)
+def get_role(role_id: int = Path(...), session: Session = DependsOnDbSession):
+    return Role.get(session, role_id)
 
 
 @router.get(
     "", dependencies=[CanManageAccess], response_model=List[RoleResponse]
 )
-def get_roles(db: Session = DependsOnDbSession):
-    return Role.all(db)
+def get_roles(session: Session = DependsOnDbSession):
+    return Role.all(session)

@@ -6,7 +6,7 @@ from models import Department
 class DepartmentCreate(BaseModel):
     abbreviation: str
     name: str
-    users: List[str] = []
+    usernames: List[str] = []
 
     def load_to_model(self, model: Department) -> Department:
         model.abbreviation = self.abbreviation
