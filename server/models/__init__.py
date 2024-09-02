@@ -11,7 +11,7 @@ from .documents import Document, DocumentComment
 from .extractions import Extraction
 from .intentions import Intention
 from .locations import Location, Library, Storage
-from .roles import Role, RoleAction
+from .roles import Role
 from .tasks import Task, TaskDataset, TaskDocument, PeriodicTask
 from .users import User
 
@@ -33,7 +33,6 @@ __all__ = [
     "Storage",
     "Location",
     "Role",
-    "RoleAction",
     "Task",
     "TaskDataset",
     "TaskDocument",
