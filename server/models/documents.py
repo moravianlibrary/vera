@@ -20,8 +20,9 @@ from services.database import Base
 from services.external.aleph import IssuanceType
 from services.external.digitization_registry import DigitizationState
 from exceptions import (
-    CannotExtractDocumentWithoutPagesCount,
-    CannotExtractDocumentWithoutCNB,
+    CannotExtractDocumentWithInvalidCnb,
+    CannotExtractDocumentWithInvalidMainRecord,
+    CannotExtractDocumentWithoutPageCount,
     DocumentAlreadyExtractedException,
 )
 from .catalog_records import CatalogRecord
@@ -72,21 +73,15 @@ class Document(Base, BaseMixin):
 
     catalog_record = relationship("CatalogRecord", back_populates="documents")
     category = relationship("Category", back_populates="documents")
-    # TODO: settle on extractions naming
     digitization_list = relationship(
         "DigitizationList", back_populates="documents"
     )
-    # extraction = relationship("DigitizationList", back_populates="documents")
     task_documents = relationship(
         "TaskDocument",
         primaryjoin="TaskDocument.document_id == Document.id",
         back_populates="document",
         foreign_keys="TaskDocument.document_id",
     )
-
-    @hybrid_property
-    def title(self) -> str:
-        return self.catalog_record.title if self.catalog_record.title else ""
 
     @hybrid_property
     def cnb(self) -> Optional[str]:
@@ -129,28 +124,30 @@ class Document(Base, BaseMixin):
         return (
             self.pages_count is not None
             and self.pages_count > 0
-            and self.catalog_record.cnb is not None
+            and self.catalog_record.has_valid_main_record
+            and self.catalog_record.has_valid_cnb
             and self.digitization_list_id is None
         )
 
-    # @is_extractable.inplace.expression
     @is_extractable.expression
     def is_extractable(cls):
         return (
             cls.pages_count.is_not(None)
             & (cls.pages_count > 0)
-            # & cls.cnb.is_not(None)
-            & cls.catalog_record.has(CatalogRecord.cnb.isnot(None))
+            & cls.catalog_record.has(CatalogRecord.has_valid_main_record)
+            & cls.catalog_record.has(CatalogRecord.has_valid_cnb)
             & cls.digitization_list_id.is_(None)
         )
 
     def raise_for_extractibility(self) -> None:
         if self.is_extractable:
             return
+        if not self.catalog_record.has_valid_main_record:
+            raise CannotExtractDocumentWithInvalidMainRecord()
+        if not self.catalog_record.has_valid_cnb:
+            raise CannotExtractDocumentWithInvalidCnb()
         if self.pages_count is None or self.pages_count == 0:
-            raise CannotExtractDocumentWithoutPagesCount()
-        if self.catalog_record.cnb is None:
-            raise CannotExtractDocumentWithoutCNB()
+            raise CannotExtractDocumentWithoutPageCount()
         if self.digitization_list_id is not None:
             raise DocumentAlreadyExtractedException()
 
@@ -176,12 +173,20 @@ class Document(Base, BaseMixin):
         return category_path if category_path else None
 
     @hybrid_property
-    def extractor(self) -> Optional[str]:
-        return self.extraction.extractor if self.extraction else None
+    def digitization_list_created_by(self) -> Optional[str]:
+        return (
+            self.digitization_list.created_by
+            if self.digitization_list
+            else None
+        )
 
     @hybrid_property
-    def extracted_at(self) -> Optional[datetime]:
-        return self.extraction.extracted_at if self.extraction else None
+    def digitization_list_created_at(self) -> Optional[datetime]:
+        return (
+            self.digitization_list.created_at
+            if self.digitization_list
+            else None
+        )
 
     @hybrid_property
     def comments_count(self) -> int:
@@ -267,7 +272,8 @@ class Document(Base, BaseMixin):
 
         if location_patterns:
             regex_filters = [
-                cls.signature.op("~")(pattern) for pattern in location_patterns
+                cls.signature.regexp_match(pattern)
+                for pattern in location_patterns
             ]
             query = query.filter(or_(*regex_filters))
 

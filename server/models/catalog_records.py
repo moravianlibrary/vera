@@ -11,6 +11,9 @@ from sqlalchemy import (
     String,
     TIMESTAMP,
     func,
+    and_,
+    or_,
+    exists,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from services.database import Base
@@ -78,30 +81,62 @@ class CatalogRecord(Base, BaseMixin):
 
     @hybrid_property
     def skc_record(self) -> Optional[Record]:
-        return marc_binary_to_record(self.skc_marc)
+        return marc_binary_to_record(self.skc_marc) if self.skc_marc else None
 
     @hybrid_property
     def cnb_record(self) -> Optional[Record]:
-        return marc_binary_to_record(self.cnb_marc)
+        return marc_binary_to_record(self.cnb_marc) if self.cnb_marc else None
 
     @hybrid_property
     def has_valid_main_record(self) -> bool:
-        return self.skc_record is not None and all(
+        return self.skc_marc is not None and all(
             difference.approved_by is not None
             for difference in self.skc_difference
+        )
+
+    @has_valid_main_record.expression
+    def has_valid_main_record(cls):
+        return and_(
+            cls.skc_marc.is_not(None),
+            ~exists().where(
+                CatalogRecordFieldDifference.sysno == cls.sysno,
+                CatalogRecordFieldDifference.source == CatalogSource.SKC,
+                CatalogRecordFieldDifference.approved_by.is_(None),
+            ),
         )
 
     @hybrid_property
     def has_valid_cnb(self) -> bool:
         return (
             self.language == CZECH_LANGUAGE
-            and self.cnb_record is not None
+            and self.cnb_marc is not None
             and all(
                 difference.approved_by is not None
                 for difference in self.cnb_difference
             )
         ) or (
             self.language != CZECH_LANGUAGE and len(self.cnb_difference) == 0
+        )
+
+    @has_valid_cnb.expression
+    def has_valid_cnb(cls):
+        return or_(
+            and_(
+                cls.language == CZECH_LANGUAGE,
+                cls.cnb_marc.is_not(None),
+                ~exists().where(
+                    CatalogRecordFieldDifference.sysno == cls.sysno,
+                    CatalogRecordFieldDifference.source == CatalogSource.CNB,
+                    CatalogRecordFieldDifference.approved_by.is_(None),
+                ),
+            ),
+            and_(
+                cls.language != CZECH_LANGUAGE,
+                ~exists().where(
+                    CatalogRecordFieldDifference.sysno == cls.sysno,
+                    CatalogRecordFieldDifference.source == CatalogSource.CNB,
+                ),
+            ),
         )
 
     @hybrid_property

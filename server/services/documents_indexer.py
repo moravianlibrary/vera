@@ -147,7 +147,9 @@ class DocumentsIndexer:
             "category_path": document.category_path,
             # Catalog properties
             "skc_sysno": document.catalog_record.skc_sysno,
-            "has_valid_main_record": document.catalog_record.has_valid_main_record,
+            "has_valid_main_record": (
+                document.catalog_record.has_valid_main_record
+            ),
             "cnb_sysno": document.catalog_record.cnb_sysno,
             "has_valid_cnb": document.catalog_record.has_valid_cnb,
             "digitization_registry_id": document.digitization_registry_id,

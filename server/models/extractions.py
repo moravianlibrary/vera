@@ -2,7 +2,7 @@ from sqlalchemy import Column, Float, Integer, String, TIMESTAMP, JSON
 from sqlalchemy import func
 
 from services.database import Base
-from services.exceptions import EmptyExtractionException
+from exceptions import EmptyExtractionException
 from .base import BaseMixin
 
 

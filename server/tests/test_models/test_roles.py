@@ -10,8 +10,9 @@ class TestRolesModel(TestModelBase):
         actions = [ActionType.WriteDatatable]
 
         # Act
+        role.role_actions = actions
         db_role = role.save(self.session)
-        db_role.save_actions(self.session, actions)
+        # db_role.save_actions(self.session, actions)
 
         # Assert
         self.assertIsNotNone(db_role.id)

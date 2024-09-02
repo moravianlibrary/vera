@@ -1,17 +1,21 @@
 from .base import ObjectNotFoundException, ObjectMissingRequiredFieldException
 from .catalog_records import FieldDifferenceAlreadyApprovedException
 from .documents import (
-    CannotExtractDocumentWithoutCNB,
-    CannotExtractDocumentWithoutPagesCount,
+    CannotExtractDocumentWithInvalidCnb,
+    CannotExtractDocumentWithInvalidMainRecord,
+    CannotExtractDocumentWithoutPageCount,
     DocumentAlreadyExtractedException,
 )
+from .extractions import EmptyExtractionException
 
 
 __all__ = [
     "ObjectNotFoundException",
     "ObjectMissingRequiredFieldException",
     "FieldDifferenceAlreadyApprovedException",
-    "CannotExtractDocumentWithoutCNB",
-    "CannotExtractDocumentWithoutPagesCount",
+    "CannotExtractDocumentWithInvalidCnb",
+    "CannotExtractDocumentWithInvalidMainRecord",
+    "CannotExtractDocumentWithoutPageCount",
     "DocumentAlreadyExtractedException",
+    "EmptyExtractionException",
 ]
