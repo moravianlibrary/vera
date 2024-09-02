@@ -24,20 +24,20 @@ class Task(Base, BaseMixin):
     id = Column(Integer, primary_key=True, index=True)
     process_id = Column(Integer)
 
-    task_type = Column(Enum(TaskType))
-    owner = Column(String, index=True)
+    task_type = Column(Enum(TaskType), nullable=False, index=True)
+    owner = Column(String, nullable=False, index=True)
 
     query = Column(JSON)
 
     task_state = Column(
-        Enum(TaskState), server_default=TaskState.Planned.value
+        Enum(TaskState), nullable=False, server_default=TaskState.Planned.value
     )
     planned = Column(TIMESTAMP, server_default=func.now())
     started = Column(TIMESTAMP)
     finished = Column(TIMESTAMP)
 
     documents = relationship("TaskDocument", back_populates="task")
-    dataset = relationship("TaskDataset", back_populates="task")
+    dataset = relationship("TaskDataset", back_populates="task", uselist=False)
 
     @hybrid_property
     def processed_count(self):
