@@ -2,8 +2,9 @@ from .base import TestModelBase
 from models import CatalogRecord, DigitizationList, Document, Intention
 from datetime import date, timedelta, datetime
 from exceptions import (
-    CannotExtractDocumentWithoutCNB,
-    CannotExtractDocumentWithoutPagesCount,
+    CannotExtractDocumentWithInvalidCnb,
+    CannotExtractDocumentWithInvalidMainRecord,
+    CannotExtractDocumentWithoutPageCount,
     DocumentAlreadyExtractedException,
 )
 
@@ -31,7 +32,12 @@ class TestDepartmentsModel(TestModelBase):
                     created_at=datetime.now(),
                 ),
                 CatalogRecord(
-                    sysno="test_sysno", cnb="test_cnb", marc=TEST_MARC_BYTES
+                    sysno="test_sysno",
+                    cnb="test_cnb",
+                    marc=TEST_MARC_BYTES,
+                    skc_marc=TEST_MARC_BYTES,
+                    cnb_marc=TEST_MARC_BYTES,
+                    language="cze",
                 ),
                 Document(
                     sysno="test_sysno",
@@ -124,11 +130,11 @@ class TestDepartmentsModel(TestModelBase):
             DigitizationList.get(self.session, 1).document_ids, [1, 2, 3, 4, 6]
         )
 
-    def test_add_documents_fail_while_adding_document_without_cnb(
+    def test_add_documents_fail_while_adding_document_with_invalid_main_record(
         self,
     ):
         # Arrange
-        CatalogRecord.get(self.session, "test_sysno").cnb = None
+        CatalogRecord.get(self.session, "test_sysno").skc_marc = None
         self.session.add(
             Document(
                 sysno="test_sysno",
@@ -137,7 +143,25 @@ class TestDepartmentsModel(TestModelBase):
             )
         )
         # Act and Assert
-        with self.assertRaises(CannotExtractDocumentWithoutCNB):
+        with self.assertRaises(CannotExtractDocumentWithInvalidMainRecord):
+            DigitizationList.get(self.session, 1).add_documents(
+                self.session, [4]
+            )
+
+    def test_add_documents_fail_while_adding_document_without_cnb(
+        self,
+    ):
+        # Arrange
+        CatalogRecord.get(self.session, "test_sysno").cnb_marc = None
+        self.session.add(
+            Document(
+                sysno="test_sysno",
+                barcode="test_barcode_3",
+                pages_count_manual=12,
+            )
+        )
+        # Act and Assert
+        with self.assertRaises(CannotExtractDocumentWithInvalidCnb):
             DigitizationList.get(self.session, 1).add_documents(
                 self.session, [4]
             )
@@ -153,7 +177,7 @@ class TestDepartmentsModel(TestModelBase):
             )
         )
         # Act and Assert
-        with self.assertRaises(CannotExtractDocumentWithoutPagesCount):
+        with self.assertRaises(CannotExtractDocumentWithoutPageCount):
             DigitizationList.get(self.session, 1).add_documents(
                 self.session, [4]
             )

@@ -10,7 +10,6 @@ RUN pip install --no-cache-dir -r requirements_celery.txt
 
 # Copy the current directory contents into the container at /app
 COPY models /app/models
-COPY procedures /app/procedures
 COPY schemas /app/schemas
 COPY services/csv_writer.py /app/services/csv_writer.py
 COPY services/database.py /app/services/database.py

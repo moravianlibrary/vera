@@ -15,7 +15,6 @@ RUN pip install --no-cache-dir -r requirements_server.txt
 COPY alembic.ini /app/alembic.ini
 COPY alembic /app/alembic
 COPY models /app/models
-COPY procedures /app/procedures
 COPY routers /app/routers
 COPY schemas /app/schemas
 COPY services /app/services

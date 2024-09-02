@@ -9,7 +9,7 @@ from .utils.dependencies import (
     DependsOnCallerUsername,
     DependsOnDocumentsIndexer,
 )
-from services.exceptions import EmptyExtractionException
+from exceptions import EmptyExtractionException
 from services.documents_indexer import DocumentsIndexer
 from datatypes import ElasticsearchParams
 
