@@ -1,32 +1,12 @@
-from ..base import TestEndpointsBase
+from .base import TestEndpointsPermissionsBase
 from datatypes import ActionType
 
 
-class TestDepartmentsEndpointsPermissions(TestEndpointsBase):
-    def test_create_department_permitted(self):
-        # Arrange
-        self.mockTestUser([ActionType.EditAccess])
-        # Act
-        response = self.client.post(
+class TestDepartmentsEndpointsPermissions(TestEndpointsPermissionsBase):
+    def test_create_department_permission(self):
+        self.assertEndpointPermission(
+            "POST",
             "/departments",
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
+            ActionType.EditAccess,
+            success_status_code=422,
         )
-        # Assert
-        self.assertEqual(422, response.status_code)
-
-    def test_create_department_prohibited(self):
-        # Arrange
-        self.mockTestAntiUser([ActionType.EditAccess])
-        # Act
-        response = self.client.post(
-            "/departments",
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
-        )
-        # Assert
-        self.assertEqual(403, response.status_code)

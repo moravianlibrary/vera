@@ -2,6 +2,7 @@ from .base import (
     ObjectNotFoundException,
     ObjectMissingRequiredFieldException,
     IndexIsNotAvailableException,
+    PermissionDeniedException,
 )
 from .catalog_records import FieldDifferenceAlreadyApprovedException
 from .documents import (
@@ -9,6 +10,7 @@ from .documents import (
     CannotExtractDocumentWithInvalidMainRecord,
     CannotExtractDocumentWithoutPageCount,
     DocumentAlreadyExtractedException,
+    ExtractingDocumentsWithDigitizationStateDisabled,
 )
 from .extractions import EmptyExtractionException
 
@@ -23,4 +25,6 @@ __all__ = [
     "DocumentAlreadyExtractedException",
     "EmptyExtractionException",
     "IndexIsNotAvailableException",
+    "ExtractingDocumentsWithDigitizationStateDisabled",
+    "PermissionDeniedException",
 ]

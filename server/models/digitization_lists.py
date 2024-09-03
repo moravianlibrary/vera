@@ -3,11 +3,12 @@ from sqlalchemy import ForeignKey
 from sqlalchemy import func
 from sqlalchemy.orm import relationship, Session
 from sqlalchemy.ext.hybrid import hybrid_property
-from typing import List
+from typing import List, Set
 
 from services.database import Base
 from .base import BaseMixin
 from .documents import Document
+from datatypes import DigitizationState
 
 # TODO: rename extract- props
 
@@ -41,11 +42,14 @@ class DigitizationList(Base, BaseMixin):
         )
 
     def add_documents(
-        self, session: Session, document_ids: List[int]
+        self,
+        session: Session,
+        document_ids: List[int],
+        ignore_digitization_states: Set[DigitizationState],
     ) -> "DigitizationList":
         for document_id in document_ids:
             document = Document.get(session, document_id)
-            document.raise_for_extractibility()
+            document.raise_for_extractibility(ignore_digitization_states)
             document.digitization_list_id = self.id
             document.save(session)
         session.refresh(self)

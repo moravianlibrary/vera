@@ -26,6 +26,15 @@ class CannotExtractDocumentWithoutPageCount(HTTPException):
         )
 
 
+class ExtractingDocumentsWithDigitizationStateDisabled(HTTPException):
+    def __init__(self, digitization_state_str: str):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Extarcting documents with digitization state "
+            f"'{digitization_state_str}' is disabled for this request",
+        )
+
+
 class DocumentAlreadyExtractedException(HTTPException):
     def __init__(self):
         super().__init__(

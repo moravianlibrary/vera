@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Set
 from sqlalchemy.orm import relationship, Session, joinedload
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import (
@@ -24,6 +24,7 @@ from exceptions import (
     CannotExtractDocumentWithInvalidMainRecord,
     CannotExtractDocumentWithoutPageCount,
     DocumentAlreadyExtractedException,
+    ExtractingDocumentsWithDigitizationStateDisabled,
 )
 from .catalog_records import CatalogRecord
 from .base import BaseMixin
@@ -139,8 +140,17 @@ class Document(Base, BaseMixin):
             & cls.digitization_list_id.is_(None)
         )
 
-    def raise_for_extractibility(self) -> None:
+    def raise_for_extractibility(
+        self, ignore_digitization_states: Set[DigitizationState]
+    ) -> None:
         if self.is_extractable:
+            if (
+                self.digitization_state != DigitizationState.NotDigitized
+                and self.digitization_state not in ignore_digitization_states
+            ):
+                raise ExtractingDocumentsWithDigitizationStateDisabled(
+                    self.digitization_state.value
+                )
             return
         if not self.catalog_record.has_valid_main_record:
             raise CannotExtractDocumentWithInvalidMainRecord()
@@ -260,7 +270,11 @@ class Document(Base, BaseMixin):
 
     @classmethod
     def get_extractable_documents(
-        cls, session: Session, category_id: int, location_patterns: List[str]
+        cls,
+        session: Session,
+        category_id: int,
+        location_patterns: List[str],
+        ignore_digitization_states: Set[DigitizationState],
     ) -> List["Document"]:
         query = (
             session.query(cls)
@@ -276,6 +290,11 @@ class Document(Base, BaseMixin):
                 for pattern in location_patterns
             ]
             query = query.filter(or_(*regex_filters))
+
+        ignore_digitization_states.add(DigitizationState.NotDigitized)
+        query = query.filter(
+            cls.digitization_state.in_(ignore_digitization_states)
+        )
 
         return query.all()
 

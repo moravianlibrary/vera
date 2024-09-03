@@ -20,13 +20,6 @@ class BadCredentialsException(HTTPException):
         )
 
 
-class PermissionDeniedException(HTTPException):
-    def __init__(self):
-        super().__init__(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied"
-        )
-
-
 class RequiresAuthenticationException(HTTPException):
     def __init__(self):
         super().__init__(
@@ -69,4 +62,13 @@ class IndexIsNotAvailableException(HTTPException):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Elasticsearch index is not available "
             f"({VeraConfig.ElasticsearchUrl})",
+        )
+
+
+class PermissionDeniedException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions",
+            headers={"WWW-Authenticate": "Bearer"},
         )

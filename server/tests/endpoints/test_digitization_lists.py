@@ -39,11 +39,18 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
                     pages_count_catalog=394,
                     added_by="test_user",
                 ),
+                Document(
+                    sysno="MZK01-000899949",
+                    barcode="2619253549_2",
+                    issuance_type=IssuanceType.Unit,
+                    digitization_state=DigitizationState.NotDigitized,
+                    pages_count_catalog=451,
+                    added_by="test_user",
+                ),
             ]
         )
         self.session.add(
             Intention(
-                id=1,
                 name="Intention 1",
                 target_page_count=12000,
                 start_date=date.today(),
@@ -59,7 +66,8 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
 
         # Act
         response = self.client.post(
-            "/extractions/digitization?intention_id=1",
+            "/extractions/digitization?intention_id=1"
+            "&ignore_digitization_states=Finished",
             json={},
             headers=self.json_headers,
         )
@@ -162,128 +170,127 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
             response.json()["detail"],
         )
 
-    # TODO: fix tests from this one to the bottom
+    def setUpTestDigitizationList(self):
+        self.setUpTestDocuments()
+        self.session.add(
+            DigitizationList(intention_id=1, created_by="test_user")
+        )
+        document = Document.get(self.session, 1)
+        document.digitization_list_id = 1
+        document.save(self.session)
+
     def test_get_extractions(self):
+        # Arrange
+        self.setUpTestDigitizationList()
+
         # Act
         response = self.client.get(
-            "/extractions/digitization",
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
+            "/extractions/digitization", headers=self.json_headers
         )
 
         # Assert
         self.assertEqual(200, response.status_code)
         extractions = response.json()["items"]
         self.assertEqual(len(extractions), 1)
-        self.assertEqual(extractions[0]["document_ids"], [1001])
-        self.assertEqual(extractions[0]["extracted_pages"], 1000)
+        self.assertEqual(extractions[0]["document_ids"], [1])
+        self.assertEqual(extractions[0]["page_count"], 357)
 
     def test_get_extraction(self):
+        # Arrange
+        self.setUpTestDigitizationList()
+
         # Act
         response = self.client.get(
-            "/extractions/digitization/1",
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
+            "/extractions/digitization/1", headers=self.json_headers
         )
 
         # Assert
         self.assertEqual(200, response.status_code)
         extraction = response.json()
-        self.assertEqual(extraction["document_ids"], [1001])
-        self.assertEqual(extraction["extracted_pages"], 1000)
+        self.assertEqual(extraction["document_ids"], [1])
+        self.assertEqual(extraction["page_count"], 357)
+
+    def test_add_documents_to_extraction_fail_on_already_digitized(self):
+        # Arrange
+        self.setUpTestDigitizationList()
+        self.mockIndexerGetDocumentIds([3, 2])
+
+        # Act
+        response = self.client.put(
+            "/extractions/digitization/1/add_documents",
+            json={},
+            headers=self.json_headers,
+        )
+
+        # Assert
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            response.json()["detail"],
+            "Extarcting documents with digitization state 'Finished' "
+            "is disabled for this request",
+        )
 
     def test_add_documents_to_extraction(self):
         # Arrange
-        query = {
-            "query": {
-                "bool": {"must": {"terms": {"id": [1, 2]}}},
-            },
-            "size": 5,
-        }
+        self.setUpTestDigitizationList()
+        self.mockIndexerGetDocumentIds([3, 2])
 
         # Act
         response = self.client.put(
-            "/extractions/digitization/1/add_documents",
-            json=query,
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
+            "/extractions/digitization/1/add_documents?"
+            "ignore_digitization_states=Finished"
+            "&ignore_digitization_states=Planned",
+            json={},
+            headers=self.json_headers,
         )
 
         # Assert
         self.assertEqual(200, response.status_code)
         extraction = response.json()
-        self.assertEqual(extraction["document_ids"], [1001, 1, 2])
-        self.assertEqual(extraction["extracted_pages"], 1751)
+        self.assertEqual(extraction["document_ids"], [1, 2, 3])
+        self.assertEqual(extraction["page_count"], 1202)
 
     def test_remove_document_to_extraction(self):
         # Arrange
-        query_add = {
-            "query": {
-                "bool": {"must": {"terms": {"id": [1, 2]}}},
-            },
-            "size": 5,
-        }
-        query_remove = {
-            "query": {
-                "bool": {"must": {"terms": {"id": [1001]}}},
-            },
-            "size": 5,
-        }
-
-        # Act
-        response_add = self.client.put(
-            "/extractions/digitization/1/add_documents",
-            json=query_add,
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
-        )
-        response_remove = self.client.put(
-            "/extractions/digitization/1/remove_documents",
-            json=query_remove,
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
-        )
-
-        # Assert
-        self.assertEqual(200, response_add.status_code)
-        self.assertEqual(200, response_remove.status_code)
-        extraction = response_remove.json()
-        self.assertEqual(extraction["document_ids"], [1, 2])
-        self.assertEqual(extraction["extracted_pages"], 751)
-
-    def test_remove_document_to_extraction_run_on_empty_list(self):
-        # Arrange
-        query = {
-            "query": {
-                "bool": {"must": {"terms": {"id": [1002]}}},
-            },
-            "size": 5,
-        }
+        self.setUpTestDigitizationList()
+        for document_id in [1, 2, 3]:
+            document = Document.get(self.session, document_id)
+            document.digitization_list_id = 1
+            document.save(self.session)
+        self.mockIndexerGetDocumentIds([2])
 
         # Act
         response = self.client.put(
             "/extractions/digitization/1/remove_documents",
-            json=query,
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
+            json={},
+            headers=self.json_headers,
+        )
+
+        # Assert
+        self.assertEqual(200, response.status_code)
+        extraction = response.json()
+        self.assertEqual(extraction["document_ids"], [1, 3])
+        self.assertEqual(extraction["page_count"], 808)
+
+    def test_remove_document_to_extraction_run_on_empty_list(self):
+        # Arrange
+        self.setUpTestDigitizationList()
+        self.mockIndexerGetDocumentIds([])
+
+        # Act
+        response = self.client.put(
+            "/extractions/digitization/1/remove_documents",
+            json={},
+            headers=self.json_headers,
         )
 
         # Assert
         self.assertEqual(200, response.status_code)
 
     def test_delete_extraction(self):
+        # Arrange
+        self.setUpTestDigitizationList()
+
         # Act
         response = self.client.delete(
             "/extractions/digitization/1",
@@ -292,14 +299,7 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
                 "Content-Type": "application/json",
             },
         )
-        response_document = self.client.get(
-            "/documents/1001",
-            headers={
-                "Authorization": "Bearer test_token",
-                "Content-Type": "application/json",
-            },
-        )
 
         # Assert
         self.assertEqual(200, response.status_code)
-        self.assertIsNone(response_document.json()["digitization_list_id"])
+        self.assertEqual(DigitizationList.all(self.session), [])

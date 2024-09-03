@@ -1,20 +1,9 @@
-from ..base import TestEndpointsBase
+from .base import TestEndpointsPermissionsBase
 from datatypes import ActionType
 
 
-class TestRolesEndpointsPermissions(TestEndpointsBase):
-    def test_create_role_permitted(self):
-        # Arrange
-        self.mockTestUser([ActionType.EditAccess])
-        # Act
-        response = self.client.post("/roles", headers=self.headers)
-        # Assert
-        self.assertEqual(response.status_code, 422)
-
-    def test_create_role_prohibited(self):
-        # Arrange
-        self.mockTestAntiUser([ActionType.EditAccess])
-        # Act
-        response = self.client.post("/roles", headers=self.headers)
-        # Assert
-        self.assertEqual(response.status_code, 403)
+class TestRolesEndpointsPermissions(TestEndpointsPermissionsBase):
+    def test_create_role_permission(self):
+        self.assertEndpointPermission(
+            "POST", "/roles", ActionType.EditAccess, success_status_code=422
+        )

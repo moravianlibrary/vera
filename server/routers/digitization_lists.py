@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 from models import DigitizationList
 from schemas import DigitizationList as DigitizationListSchema, Page
 from .utils.permissions import CanExtract, CanManageDigitizationList
@@ -11,7 +11,7 @@ from .utils.dependencies import (
 )
 from exceptions import EmptyExtractionException
 from services.documents_indexer import DocumentsIndexer
-from datatypes import ElasticsearchParams
+from datatypes import ElasticsearchParams, DigitizationState
 
 router = APIRouter(prefix="/extractions/digitization")
 
@@ -24,6 +24,7 @@ router = APIRouter(prefix="/extractions/digitization")
 def create_extraction(
     query_params: ElasticsearchParams,
     intention_id: Optional[int] = Query(None, description="Intention ID"),
+    ignore_digitization_states: List[DigitizationState] = Query([]),
     created_by: str = DependsOnCallerUsername,
     session: Session = DependsOnDbSession,
     indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
@@ -34,7 +35,7 @@ def create_extraction(
     return (
         DigitizationList(intention_id=intention_id, created_by=created_by)
         .save(session)
-        .add_documents(session, document_ids)
+        .add_documents(session, document_ids, ignore_digitization_states)
     )
 
 
@@ -71,13 +72,16 @@ def get_extraction(
 def add_documents_to_extraction(
     query_params: ElasticsearchParams,
     digitization_list_id: int = Path(...),
+    ignore_digitization_states: List[DigitizationState] = Query([]),
     session: Session = DependsOnDbSession,
     indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
 ):
     document_ids = indexer.get_document_ids(query_params)
 
     digitization_list = DigitizationList.get(session, digitization_list_id)
-    digitization_list.add_documents(session, document_ids)
+    digitization_list.add_documents(
+        session, document_ids, set(ignore_digitization_states)
+    )
 
     return digitization_list
 

@@ -1,45 +1,17 @@
-from ..base import TestEndpointsBase
+from .base import TestEndpointsPermissionsBase
 from datatypes import ActionType
 
 
-class TestCatalogRecordsEndpointsPermissions(TestEndpointsBase):
-    def test_get_catalog_records_permitted(self):
-        # Arange
-        self.mockTestUser([ActionType.ReadCatalogRecords])
-        # Act
-        response = self.client.get("/catalog_records", headers=self.headers)
-        # Assert
-        self.assertEqual(response.status_code, 200)
-
-    def test_get_catalog_records_prohibited(self):
-        # Arange
-        self.mockTestAntiUser([ActionType.ReadCatalogRecords])
-        # Act
-        response = self.client.get("/catalog_records", headers=self.headers)
-        # Assert
-        self.assertEqual(response.status_code, 403)
-
-    def test_approve_catalog_record_difference_permitted(self):
-        # Arange
-        self.mockTestUser([ActionType.ReviewCatalogRecords])
-        # Act
-        response = self.client.patch(
-            "/catalog_records/differences/1/approve", headers=self.headers
-        )
-        # Assert
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(
-            response.json()["detail"],
-            "CatalogRecordFieldDifference with id 1 not found",
+class TestCatalogRecordsEndpointsPermissions(TestEndpointsPermissionsBase):
+    def test_get_catalog_records_permission(self):
+        self.assertEndpointPermission(
+            "GET", "/catalog_records", ActionType.ReadCatalogRecords
         )
 
-    def test_approve_catalog_record_difference_prohibited(self):
-        # Arange
-        self.mockTestAntiUser([ActionType.ReviewCatalogRecords])
-        # Act
-        response = self.client.patch(
+    def test_approve_catalog_record_difference_permission(self):
+        self.assertEndpointPermission(
+            "PATCH",
             "/catalog_records/differences/1/approve",
-            headers={"Authorization": "Bearer test_token"},
+            ActionType.ReviewCatalogRecords,
+            success_status_code=404,
         )
-        # Assert
-        self.assertEqual(response.status_code, 403)

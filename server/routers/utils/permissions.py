@@ -1,20 +1,12 @@
 from datatypes import ActionType
 from schemas import CurrentUser
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from models import CategoryDepartments, Document, User
 from typing import Callable, List, Union
 from .dependencies import DependsOnCurrentUser
 from .access_emulation import can_emulate_access
-
-
-class PermissionDeniedException(HTTPException):
-    def __init__(self):
-        super().__init__(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+from exceptions import PermissionDeniedException
 
 
 class OwnershipValidator:
