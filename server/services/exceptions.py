@@ -57,7 +57,7 @@ class DistributionExcesiveSubcategoriesException(HTTPException):
         super().__init__(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Percentage distribution contains categories "
-            "that do not belong to the category.",
+            "that do not belong to the parent category.",
         )
 
 

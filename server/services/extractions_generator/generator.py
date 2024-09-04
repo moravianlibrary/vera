@@ -12,14 +12,15 @@ from .extraction_node import ExtractionNode
 class ExtractionGenerator:
     def __init__(
         self,
-        target_pages: int,
         intention_id: int,
         settings: GenerateExtraction,
         db: Session,
     ):
-        self.target_pages = target_pages
-        self.lower_limit = target_pages * (1 - settings.target_pages_threshold)
         self.settings = settings
+        self.target_pages = settings.target_pages
+        self.lower_limit = settings.target_pages * (
+            1 - settings.target_pages_threshold
+        )
         self.db = db
         self.extraction_root: ExtractionNode = ExtractionPreprocessor(
             settings, db

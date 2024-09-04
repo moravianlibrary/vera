@@ -53,7 +53,11 @@ class Document(Base, BaseMixin):
     category_id = Column(Integer, ForeignKey("categories.id"), index=True)
 
     digitization_registry_id = Column(Integer)
-    digitization_state = Column(Enum(DigitizationState))
+    digitization_state = Column(
+        Enum(DigitizationState),
+        nullable=False,
+        default=DigitizationState.NotDigitized,
+    )
 
     pages_count_catalog = Column(Integer)
     pages_count_predicted = Column(Integer)

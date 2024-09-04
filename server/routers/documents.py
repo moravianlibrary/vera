@@ -139,7 +139,6 @@ def query_documents(
     query_params: ElasticsearchParams,
     user: CurrentUser = DependsOnCurrentUser,
     indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
-    session: Session = DependsOnDbSession,
 ):
     if user.has_action(ActionType.ReadDatatableAll):
         return indexer.search(query_params)

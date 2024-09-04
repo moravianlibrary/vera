@@ -1,6 +1,5 @@
-import unittest
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
+from tests.test_database_base import TestDatabaseBase
+from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 from vera import app
 from schemas import CurrentUser
@@ -8,31 +7,9 @@ from datatypes import ActionType
 from routers.utils.dependencies import get_current_user, get_documents_indexer
 
 
-from services.database import Base, get_db
-
-test_engine = create_engine(
-    "sqlite:///:memory:", connect_args={"check_same_thread": False}
-)
-TestSessionLocal = sessionmaker(
-    autocommit=False, autoflush=True, bind=test_engine
-)
-
-
-class TestEndpointsBase(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        Base.metadata.create_all(test_engine)
-
+class TestEndpointsBase(TestDatabaseBase):
     def setUp(self):
-        self.connection = test_engine.connect()
-        self.transaction = self.connection.begin()
-        self.session = TestSessionLocal(bind=self.connection)
-        self.session.execute(text("PRAGMA foreign_keys=ON;"))
-
-        app.dependency_overrides[get_db] = lambda: TestSessionLocal(
-            bind=self.connection
-        )
-
+        super().setUp()
         self.client = TestClient(app)
         self.headers = {"Authorization": "Bearer test_token"}
         self.json_headers = {
@@ -40,15 +17,6 @@ class TestEndpointsBase(unittest.TestCase):
             "Content-Type": "application/json",
         }
         self.mockTestSuperUser()
-
-    def tearDown(self):
-        self.transaction.rollback()
-        self.session.close()
-        self.connection.close()
-
-    @classmethod
-    def tearDownClass(cls):
-        Base.metadata.drop_all(test_engine)
 
     def mockTestUser(self, actions=[], department_id=1, settings={}):
         app.dependency_overrides[get_current_user] = lambda: CurrentUser(
@@ -75,7 +43,10 @@ class TestEndpointsBase(unittest.TestCase):
             settings=settings,
         )
 
+    def mockIndexer(self):
+        app.dependency_overrides[get_documents_indexer] = lambda: MagicMock()
+
     def mockIndexerGetDocumentIds(self, document_ids):
-        mock_indexer = unittest.mock.MagicMock()
+        mock_indexer = MagicMock()
         mock_indexer.get_document_ids.return_value = document_ids
         app.dependency_overrides[get_documents_indexer] = lambda: mock_indexer

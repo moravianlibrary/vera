@@ -383,7 +383,7 @@ class TestDocumentModelExtractionPropertiesParsing(TestModelBase):
         mock_has_valid_cnb.return_value = True
         # Act and Assert
         with self.assertRaises(CannotExtractDocumentWithoutPageCount):
-            Document.get(self.session, 1).raise_for_extractibility()
+            Document.get(self.session, 1).raise_for_extractibility(set())
 
     @patch("models.catalog_records.CatalogRecord.has_valid_main_record")
     @patch("models.catalog_records.CatalogRecord.has_valid_cnb")
@@ -407,7 +407,7 @@ class TestDocumentModelExtractionPropertiesParsing(TestModelBase):
         mock_has_valid_cnb.return_value = True
         # Act and Assert
         with self.assertRaises(CannotExtractDocumentWithoutPageCount):
-            Document.get(self.session, 1).raise_for_extractibility()
+            Document.get(self.session, 1).raise_for_extractibility(set())
 
     def test_raise_exception_when_main_record_is_invalid(self):
         # Arrange
@@ -424,7 +424,7 @@ class TestDocumentModelExtractionPropertiesParsing(TestModelBase):
         )
         # Act and Assert
         with self.assertRaises(CannotExtractDocumentWithInvalidMainRecord):
-            Document.get(self.session, 1).raise_for_extractibility()
+            Document.get(self.session, 1).raise_for_extractibility(set())
 
     @patch("models.catalog_records.CatalogRecord.has_valid_main_record")
     def test_raise_exception_when_cnb_is_invalid(
@@ -445,7 +445,7 @@ class TestDocumentModelExtractionPropertiesParsing(TestModelBase):
         mock_has_valid_main_record.return_value = True
         # Act and Assert
         with self.assertRaises(CannotExtractDocumentWithInvalidCnb):
-            Document.get(self.session, 1).raise_for_extractibility()
+            Document.get(self.session, 1).raise_for_extractibility(set())
 
     @patch("models.catalog_records.CatalogRecord.has_valid_main_record")
     @patch("models.catalog_records.CatalogRecord.has_valid_cnb")
@@ -483,7 +483,7 @@ class TestDocumentModelExtractionPropertiesParsing(TestModelBase):
         mock_has_valid_cnb.return_value = True
         # Act and Assert
         with self.assertRaises(DocumentAlreadyExtractedException):
-            Document.get(self.session, 1).raise_for_extractibility()
+            Document.get(self.session, 1).raise_for_extractibility(set())
 
     @patch("models.catalog_records.CatalogRecord.has_valid_main_record")
     @patch("models.catalog_records.CatalogRecord.has_valid_cnb")
@@ -507,7 +507,7 @@ class TestDocumentModelExtractionPropertiesParsing(TestModelBase):
         mock_has_valid_cnb.return_value = True
         # Act and Assert
         self.assertIsNone(
-            Document.get(self.session, 1).raise_for_extractibility()
+            Document.get(self.session, 1).raise_for_extractibility(set())
         )
 
 
@@ -833,7 +833,7 @@ class TestDocumentModelOperations(TestModelBase):
             [
                 d.id
                 for d in Document.get_extractable_documents(
-                    self.session, None, []
+                    self.session, None, [], set()
                 )
             ],
             [3, 4, 2, 5, 1],
@@ -891,8 +891,47 @@ class TestDocumentModelOperations(TestModelBase):
             [
                 d.id
                 for d in Document.get_extractable_documents(
-                    self.session, None, ["^1-", "^2-"]
+                    self.session, None, ["^1-.*$", "^2-.*$"], set()
                 )
             ],
             [4, 5, 1],
+        )
+
+    def test_get_extractable_documents_based_on_record_location(self):
+        # Arrange
+        self.session.add_all(
+            [
+                CatalogRecord(
+                    sysno="test_sysno_1",
+                    marc=TEST_MARC_BYTES,
+                    skc_marc=TEST_MARC_BYTES,
+                    cnb_marc=TEST_MARC_BYTES,
+                    signature="1-1",
+                ),
+                CatalogRecord(
+                    sysno="test_sysno_2",
+                    marc=TEST_MARC_BYTES,
+                    skc_marc=TEST_MARC_BYTES,
+                    cnb_marc=TEST_MARC_BYTES,
+                    signature="2-1",
+                ),
+                Document(
+                    sysno="test_sysno_1",
+                    pages_count_catalog=10,
+                ),
+                Document(
+                    sysno="test_sysno_2",
+                    pages_count_catalog=10,
+                ),
+            ]
+        )
+        # Act and Assert
+        self.assertEqual(
+            [
+                d.id
+                for d in Document.get_extractable_documents(
+                    self.session, None, ["^1-.*$"], set()
+                )
+            ],
+            [1],
         )

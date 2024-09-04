@@ -1,18 +1,9 @@
 import unittest
-from tests.helper_funcs import mockClsEnv
 from services.external.knihovny_cz.client import KnihovnyCzClient
 from services.external.knihovny_cz.types import KnihovnyCzField
 
 
 class TestKnihovnyCz(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        mockClsEnv(cls)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.patcher.stop()
-
     def test_get_record_marc(self):
         client = KnihovnyCzClient()
         document = client.get_knihovny_cz_document(

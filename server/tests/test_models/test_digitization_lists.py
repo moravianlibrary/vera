@@ -123,7 +123,7 @@ class TestDepartmentsModel(TestModelBase):
         )
         # Act
         DigitizationList.get(self.session, 1).add_documents(
-            self.session, [4, 6]
+            self.session, [4, 6], set()
         )
         # Assert
         self.assertEqual(
@@ -145,7 +145,7 @@ class TestDepartmentsModel(TestModelBase):
         # Act and Assert
         with self.assertRaises(CannotExtractDocumentWithInvalidMainRecord):
             DigitizationList.get(self.session, 1).add_documents(
-                self.session, [4]
+                self.session, [4], set()
             )
 
     def test_add_documents_fail_while_adding_document_without_cnb(
@@ -163,7 +163,7 @@ class TestDepartmentsModel(TestModelBase):
         # Act and Assert
         with self.assertRaises(CannotExtractDocumentWithInvalidCnb):
             DigitizationList.get(self.session, 1).add_documents(
-                self.session, [4]
+                self.session, [4], set()
             )
 
     def test_add_documents_fail_while_adding_document_without_page_count(
@@ -179,7 +179,7 @@ class TestDepartmentsModel(TestModelBase):
         # Act and Assert
         with self.assertRaises(CannotExtractDocumentWithoutPageCount):
             DigitizationList.get(self.session, 1).add_documents(
-                self.session, [4]
+                self.session, [4], set()
             )
 
     def test_add_documents_fail_while_adding_document_that_is_already_listed(
@@ -208,7 +208,7 @@ class TestDepartmentsModel(TestModelBase):
         # Act and Assert
         with self.assertRaises(DocumentAlreadyExtractedException):
             DigitizationList.get(self.session, 1).add_documents(
-                self.session, [1]
+                self.session, [1], set()
             )
 
     def test_remove_documents_successfully(self):

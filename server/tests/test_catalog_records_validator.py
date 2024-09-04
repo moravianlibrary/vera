@@ -1,20 +1,11 @@
 # TODO: fix tests
 
 # import unittest
-# from tests.helper_funcs import mockClsEnv
 # from providers.catalog_records_validator import CatalogRecordsValidator
 # from catalogs.aleph_api import get_marc21_document
 
 
 # class TestCatalogRecordsValidator(unittest.TestCase):
-#     @classmethod
-#     def setUpClass(cls):
-#         mockClsEnv(cls)
-
-#     @classmethod
-#     def tearDownClass(cls):
-#         cls.patcher.stop()
-
 #     def test_cnb_validity_with_valid_cnb(self):
 #         validator = CatalogRecordsValidator()
 #         self.assertTrue(

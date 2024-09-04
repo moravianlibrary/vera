@@ -17,31 +17,23 @@ router = APIRouter(prefix="/extractions/generated")
     response_model=ExtractionResponse,
 )
 def create_extraction(
-    params: GenerateExtraction,
-    pages_count: int = None,
-    quota_id: int = None,
+    settings: GenerateExtraction,
     user: CurrentUser = DependsOnCurrentUser,
     db: Session = Depends(get_db),
 ):
-    # TODO:
-    # if quota_id is not None:
-    # pages_count = get_quota(quota_id, db).pages_count
-    # elif pages_count is None or pages_count <= 0:
-    # raise EmptyExtraction
-
     generator = ExtractionGenerator(
-        pages_count, Intention.get_current_intention(db).id, params, db
+        Intention.get_current_intention(db).id, settings, db
     )
     generator.generate()
 
     return Extraction(
         document_ids=generator.extracted_documents,
         selected_pages=generator.extracted_pages_count,
-        target_pages=pages_count,
-        include_categories=params.include_categories,
-        location_ids=params.location_ids,
-        target_pages_threshold=params.target_pages_threshold,
-        whole_categories_threshold=params.whole_categories_threshold,
+        target_pages=settings.target_pages,
+        include_categories=settings.include_categories,
+        location_ids=settings.location_ids,
+        target_pages_threshold=settings.target_pages_threshold,
+        whole_categories_threshold=settings.whole_categories_threshold,
         generated_by=user.username,
     ).save(db)
 
@@ -75,16 +67,3 @@ def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
 )
 def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     return Extraction.get(db, id)
-
-
-# TODO:
-# @router.get(
-#     "/{id}/categories",
-#     dependencies=[CanExtract],
-#     response_model=List[ExtractionCategoryNode],
-# )
-# def get_categories(id: int = Path(...), db: Session = Depends(get_db)):
-#     return [
-#         get_category_subtree(id, root_category, db)
-#         for root_category in get_root_categories(db)
-#     ]

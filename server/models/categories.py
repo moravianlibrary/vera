@@ -212,9 +212,10 @@ class Category(Base):
         else:
             self.level = 0
 
-        if Category.find_by_name_and_parent_id(
+        same_category = Category.find_by_name_and_parent_id(
             session, self.name, self.parent_id
-        ):
+        )
+        if same_category is not None and same_category.id != self.id:
             raise UniqueCategoryNameViolationException()
 
         session.add(self)

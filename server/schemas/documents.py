@@ -48,8 +48,8 @@ class DocumentResponse(BaseModel):
 
     is_extractable: bool
     digitization_list_id: Optional[int]
-    extractor: Optional[str]
-    extracted_at: Optional[datetime]
+    digitization_list_created_by: Optional[str]
+    digitization_list_created_at: Optional[datetime]
 
     comments_count: int = 0
 

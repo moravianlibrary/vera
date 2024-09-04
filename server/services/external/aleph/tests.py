@@ -1,5 +1,4 @@
 import unittest
-from tests.helper_funcs import mockClsEnv
 
 from services.external.aleph import AlephClient
 from services.external.aleph import AlephIssue
@@ -13,14 +12,6 @@ from services.external.aleph import (
 
 
 class TestAlephCatalog(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        mockClsEnv(cls)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.patcher.stop()
-
     def test_find_record(self):
         # Arrange
         field = AlephField.Sysno

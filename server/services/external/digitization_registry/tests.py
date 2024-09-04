@@ -1,5 +1,4 @@
 import unittest
-from tests.helper_funcs import mockClsEnv
 from services.external.digitization_registry import (
     DigitizationRegistryClient,
 )
@@ -7,14 +6,6 @@ from services.external.digitization_registry import DigitizationState
 
 
 class TestDigitizationRegistry(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        mockClsEnv(cls)
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.patcher.stop()
-
     def test_get_state_by_barcode(self):
         self.assertEqual(
             DigitizationRegistryClient()

@@ -1,4 +1,4 @@
-import unittest
+from unittest import TestCase
 from unittest.mock import patch, Mock
 from services.predictor import Predictor
 from pymarc import MARCReader, Record
@@ -10,7 +10,7 @@ def load_aleph_record(sysno: str) -> Record:
         return list(MARCReader(f))[0]
 
 
-class TestPredictions(unittest.TestCase):
+class TestPredictions(TestCase):
     @patch("requests.get")
     def test_predict_periodical_page_count_success(self, mock_get):
         # Arrange

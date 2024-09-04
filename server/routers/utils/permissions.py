@@ -22,15 +22,15 @@ class OwnershipValidator:
         document = Document.get(session, document_id)
 
         if ActionType.ReadDatatableDepartment in current_user.actions and (
-            current_user.username == document.creator
+            current_user.username == document.added_by
             or current_user.department_id
-            == User.get(document.creator, session).department.id
+            == User.get(session, document.added_by).department.id
         ):
             return
 
         if (
             ActionType.ReadDatatableOwn in current_user.actions
-            and current_user.username == document.creator
+            and current_user.username == document.added_by
         ):
             return
 
@@ -48,9 +48,9 @@ class OwnershipValidator:
         document = Document.get(session, document_id)
 
         if ActionType.EditDatatableDepartment in current_user.actions and (
-            current_user.username == document.creator
+            current_user.username == document.added_by
             or current_user.department_id
-            == User.get(document.creator, session).department.id
+            == User.get(session, document.added_by).department.id
         ):
             return
 

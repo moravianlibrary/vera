@@ -57,7 +57,10 @@ class ExtractionPreprocessor:
                 self.settings.include_categories
                 and category.id in self.settings.include_categories,
                 documents=Document.get_extractable_documents(
-                    self.db, category.id, self.location_patterns
+                    self.db,
+                    category.id,
+                    self.location_patterns,
+                    self.settings.ignore_digitization_states,
                 ),
             )
             return (
