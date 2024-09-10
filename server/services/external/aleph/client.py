@@ -36,19 +36,21 @@ class AlephClient:
     def __init__(self, timeout: int = 30):
         self.timeout = timeout
 
-    def check_catalog_availability(self):
+    @staticmethod
+    def check_catalog_availability(timeout: int = 30) -> bool:
         try:
-            response = requests.get(ALEPH_BASE, timeout=self.timeout)
+            response = requests.get(ALEPH_BASE, timeout=timeout)
             return response.status_code == 200
         except Exception as e:
             logger.warning(f"An error occurred: {e}")
             return False
 
-    def check_find_endpoint_availability(self):
+    @staticmethod
+    def check_find_endpoint_availability(timeout: int = 30) -> bool:
         try:
             response = requests.get(
                 FIND_ENDPOINT.format(ALEPH_BASE=ALEPH_BASE),
-                timeout=self.timeout,
+                timeout=timeout,
             )
             return response.status_code == 200
         except Exception as e:

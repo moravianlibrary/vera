@@ -1,4 +1,4 @@
-import unittest
+from unittest import skipIf, TestCase
 
 from services.external.aleph import AlephClient
 from services.external.aleph import AlephIssue
@@ -11,7 +11,14 @@ from services.external.aleph import (
 )
 
 
-class TestAlephCatalog(unittest.TestCase):
+def skipIfFindEndpointUnavailable(test_func):
+    return skipIf(
+        AlephClient.check_find_endpoint_availability(),
+        "Aleph find endpoint is not available",
+    )(test_func)
+
+
+class TestAlephCatalog(TestCase):
     def test_find_record(self):
         # Arrange
         field = AlephField.Sysno
@@ -38,6 +45,7 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(status, AlephResponseStatus.Success)
         self.assertEqual(aleph_record.sysno, "MZK01-000724903")
 
+    @skipIfFindEndpointUnavailable
     def test_get_using_sysno_without_prefix(self):
         # Arrange
         field = AlephField.Sysno
@@ -50,6 +58,7 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(status, AlephResponseStatus.Success)
         self.assertEqual(aleph_record.sysno, "MZK01-000724903")
 
+    @skipIfFindEndpointUnavailable
     def test_get_using_sysno_without_prefix_and_with_omitted_zeros(self):
         # Arrange
         field = AlephField.Sysno
@@ -131,6 +140,7 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(issues[0].bundle, "1")
         self.assertIsNone(aleph_record.parse_page_count(issues[0].volume))
 
+    @skipIfFindEndpointUnavailable
     def test_parse_can_not_be_digitized(self):
         # Arrange
         field = AlephField.Signature
@@ -145,6 +155,7 @@ class TestAlephCatalog(unittest.TestCase):
         issues = AlephIssue.from_record(aleph_record.record)
         self.assertFalse(issues[0].can_digitize)
 
+    @skipIfFindEndpointUnavailable
     def test_find_document_by_barcode(self):
         # Arrange
         field = AlephField.Barcode
@@ -157,6 +168,7 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(status, AlephResponseStatus.Success)
         self.assertEqual(aleph_record.sysno, "MZK01-001449649")
 
+    @skipIfFindEndpointUnavailable
     def test_find_document_by_signature(self):
         # Arrange
         field = AlephField.Signature
@@ -169,6 +181,7 @@ class TestAlephCatalog(unittest.TestCase):
         self.assertEqual(status, AlephResponseStatus.Success)
         self.assertEqual(aleph_record.sysno, "MZK01-001091763")
 
+    @skipIfFindEndpointUnavailable
     def test_find_document_by_signature_2(self):
         # Arrange
         field = AlephField.Signature
