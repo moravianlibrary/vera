@@ -1,4 +1,5 @@
 from tests.test_database_base import TestDatabaseBase
+from tests.test_base_client import TestClientBase
 from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 from vera import app
@@ -7,15 +8,10 @@ from datatypes import ActionType
 from routers.utils.dependencies import get_current_user, get_documents_indexer
 
 
-class TestEndpointsBase(TestDatabaseBase):
+class TestEndpointsBase(TestDatabaseBase, TestClientBase):
     def setUp(self):
-        super().setUp()
-        self.client = TestClient(app)
-        self.headers = {"Authorization": "Bearer test_token"}
-        self.json_headers = {
-            "Authorization": "Bearer test_token",
-            "Content-Type": "application/json",
-        }
+        TestDatabaseBase.setUp(self)
+        TestClientBase.setUp(self)
         self.mockTestSuperUser()
 
     def mockTestUser(self, actions=[], department_id=1, settings={}):

@@ -20,12 +20,17 @@ class TestRolesEndpoints(TestEndpointsBase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["name"], role["name"])
         self.assertEqual(response.json()["actions"], role["actions"])
-    
+
     def test_update_role(self):
         # Arrange
-        self.session.add(Role(id=1, name="role 1", actions=[ActionType.WriteDatatable]))
+        self.session.add(
+            Role(id=1, name="role 1", actions=[ActionType.WriteDatatable])
+        )
         self.session.flush()
-        role_update = {"name": "updated role 1", "actions": [ActionType.InsertDatatable.value]}
+        role_update = {
+            "name": "updated role 1",
+            "actions": [ActionType.InsertDatatable.value],
+        }
 
         # Act
         response = self.client.put(
@@ -36,16 +41,16 @@ class TestRolesEndpoints(TestEndpointsBase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["name"], role_update["name"])
         self.assertEqual(response.json()["actions"], role_update["actions"])
-    
+
     def test_delete_role(self):
         # Arrange
-        self.session.add(Role(id=1, name="role 1", actions=[ActionType.WriteDatatable]))
+        self.session.add(
+            Role(id=1, name="role 1", actions=[ActionType.WriteDatatable])
+        )
         self.session.flush()
 
         # Act
-        response = self.client.delete(
-            f"/roles/1", headers=self.json_headers
-        )
+        response = self.client.delete(f"/roles/1", headers=self.json_headers)
 
         # Assert
         self.assertEqual(response.status_code, 200)
@@ -53,18 +58,20 @@ class TestRolesEndpoints(TestEndpointsBase):
 
     def test_get_role(self):
         # Arrange
-        self.session.add(Role(id=1, name="role 1", actions=[ActionType.WriteDatatable]))
+        self.session.add(
+            Role(id=1, name="role 1", actions=[ActionType.WriteDatatable])
+        )
         self.session.flush()
 
         # Act
-        response = self.client.get(
-            f"/roles/1", headers=self.json_headers
-        )
+        response = self.client.get(f"/roles/1", headers=self.json_headers)
 
         # Assert
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["name"], "role 1")
-        self.assertEqual(response.json()["actions"], [ActionType.WriteDatatable.value])
+        self.assertEqual(
+            response.json()["actions"], [ActionType.WriteDatatable.value]
+        )
 
     def test_get_roles(self):
         # Arrange

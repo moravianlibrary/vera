@@ -50,7 +50,7 @@ class TestDocumentsIndexer(TestDatabaseBase):
             VeraConfig.ElasticsearchPassword,
         )
         self.indexer.recreate_index()
-        
+
         for item in get_test_documents():
             self.session.add(item)
             self.session.flush()

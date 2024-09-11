@@ -44,7 +44,7 @@ def upgrade() -> None:
     )
 
     location_state_type = sa.Enum(
-        'Active', 'Closed', name='location_state_type'
+        "Active", "Closed", name="location_state_type"
     )
     location_state_type.create(op.get_bind(), checkfirst=True)
 

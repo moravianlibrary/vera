@@ -15,7 +15,11 @@ class TestExtractionsEndpoints(TestEndpointsBase):
                     start_date=date.today(),
                     end_date=date.today() + timedelta(days=1),
                 ),
-                CatalogRecord(sysno="Test Sysno", marc=b"Test MARC"),
+                CatalogRecord(
+                    sysno="Test Sysno",
+                    marc=b"Test MARC",
+                    skc_marc=b"Test SKC MARC",
+                ),
             ]
         )
         self.session.flush()
@@ -28,8 +32,6 @@ class TestExtractionsEndpoints(TestEndpointsBase):
         )
 
         # Assert
-        print(response.json())
-        self.assertEqual(response.status_code, 200)
+        self.assertResponseStatusCode(response, 200)
         self.assertEqual(response.json()["name"], role["name"])
         self.assertEqual(response.json()["actions"], role["actions"])
-    
