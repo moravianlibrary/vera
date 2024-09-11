@@ -277,8 +277,8 @@ class Document(Base, BaseMixin):
         cls,
         session: Session,
         category_id: int,
-        location_patterns: List[str],
-        ignore_digitization_states: Set[DigitizationState],
+        location_patterns: List[str] = [],
+        ignore_digitization_states: Set[DigitizationState] = set(),
     ) -> List["Document"]:
         query = (
             session.query(cls)

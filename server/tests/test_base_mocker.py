@@ -25,7 +25,7 @@ class TestBaseMocker(TestCase):
                 data[key].extend([None] * (max_length - len(data[key])))
         if "sysno" not in data:
             data["sysno"] = [None] * max_length
-        
+
         created_sysnos = set()
 
         for i in range(max_length):
@@ -57,7 +57,7 @@ class TestBaseMocker(TestCase):
                 )
             )
             created_sysnos.add(sysno)
-        
+
         self.session.flush()
 
         for i in range(max_length):

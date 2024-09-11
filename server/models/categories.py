@@ -34,13 +34,13 @@ class Category(Base):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
+    name = Column(String, nullable=False)
     description = Column(String)
     parent_id = Column(
         Integer, ForeignKey("categories.id"), index=True, nullable=True
     )
-    level = Column(Integer)
-    assignable = Column(Boolean)
+    level = Column(Integer, default=0, nullable=False)
+    assignable = Column(Boolean, default=False, nullable=False)
     extract_whole = Column(Boolean)
     disabled = Column(Boolean, default=False)
 
