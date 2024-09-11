@@ -1,4 +1,4 @@
-from tests.test_database_base import TestDatabaseBase
+from tests.test_database_base import TestBaseDatabase
 from unittest.mock import patch, Mock, MagicMock
 from datatypes import TaskType
 from tasks import (
@@ -18,7 +18,7 @@ from services.predictor import PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD
 TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
 
 
-class TestTasksBase(TestDatabaseBase):
+class TestTasksBase(TestBaseDatabase):
     def setUp(self):
         super().setUp()
 

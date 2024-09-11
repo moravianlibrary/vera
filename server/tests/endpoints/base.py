@@ -1,5 +1,6 @@
-from tests.test_database_base import TestDatabaseBase
-from tests.test_base_client import TestClientBase
+from tests.test_database_base import TestBaseDatabase
+from tests.test_base_client import TestBaseClient
+from tests.test_base_mocker import TestBaseMocker
 from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 from vera import app
@@ -8,10 +9,11 @@ from datatypes import ActionType
 from routers.utils.dependencies import get_current_user, get_documents_indexer
 
 
-class TestEndpointsBase(TestDatabaseBase, TestClientBase):
+class TestEndpointsBase(TestBaseDatabase, TestBaseClient, TestBaseMocker):
     def setUp(self):
-        TestDatabaseBase.setUp(self)
-        TestClientBase.setUp(self)
+        TestBaseDatabase.setUp(self)
+        TestBaseClient.setUp(self)
+        TestBaseMocker.setUp(self)
         self.mockTestSuperUser()
 
     def mockTestUser(self, actions=[], department_id=1, settings={}):

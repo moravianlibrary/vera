@@ -1,4 +1,4 @@
-from tests.test_database_base import TestDatabaseBase
+from tests.test_database_base import TestBaseDatabase
 from unittest.mock import MagicMock
 from fastapi.testclient import TestClient
 from vera import app
@@ -8,7 +8,7 @@ from routers.utils.dependencies import get_current_user, get_documents_indexer
 from typing import List
 
 
-class TestEndpointsPermissionsBase(TestDatabaseBase):
+class TestEndpointsPermissionsBase(TestBaseDatabase):
     def setUp(self):
         super().setUp()
 

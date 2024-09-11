@@ -1,10 +1,10 @@
 from unittest import TestCase
-from tests.test_database_base import TestDatabaseBase
+from tests.test_database_base import TestBaseDatabase
 from fastapi.testclient import TestClient
 from vera import app
 
 
-class TestClientBase(TestCase):
+class TestBaseClient(TestCase):
     def setUp(self):
         super().setUp()
         self.client = TestClient(app)

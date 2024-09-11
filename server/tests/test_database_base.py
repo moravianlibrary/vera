@@ -14,7 +14,7 @@ TestSessionLocal = sessionmaker(
 )
 
 
-class TestDatabaseBase(unittest.TestCase):
+class TestBaseDatabase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         Base.metadata.create_all(test_engine)

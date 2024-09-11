@@ -15,15 +15,9 @@ class TestExtractionsEndpoints(TestEndpointsBase):
                     start_date=date.today(),
                     end_date=date.today() + timedelta(days=1),
                 ),
-                CatalogRecord(
-                    sysno="Test Sysno",
-                    marc=b"Test MARC",
-                    skc_marc=b"Test SKC MARC",
-                ),
             ]
         )
-        self.session.flush()
-        self.session.add(Document(sysno="Test Sysno", pages_count_catalog=10))
+        self.mockDocuments({"pages_count_catalog": [10]})
         settings = {"target_pages": 10}
 
         # Act

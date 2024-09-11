@@ -1,4 +1,4 @@
-from tests.test_database_base import TestDatabaseBase
+from tests.test_database_base import TestBaseDatabase
 from typing import List, Tuple, Union
 
 from models import (
@@ -26,7 +26,7 @@ LEVEL_NAME = ["Root", "Child", "Grandchild", "Great Grandchild"]
 TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
 
 
-class TestExtractionsBase(TestDatabaseBase):
+class TestExtractionsBase(TestBaseDatabase):
     def mockCategoriesTree(self, tree, assignable=[]):
         def mockCategoriesTreeRec(
             tree, parent_id=None, level=0, parent_prefix=""
