@@ -92,6 +92,7 @@ class TaskDocument(Base, BaseMixin):
         )
 
     def save(self, session: Session) -> "TaskDocument":
+        session.add(self)
         session.commit()
         session.refresh(self)
         return self

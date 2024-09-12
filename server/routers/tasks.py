@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datatypes import TaskType, ElasticsearchParams
+from datatypes import TaskType, ElasticsearchParams, JsonBase
 from worker import run_task
 from .utils.permissions import CanPlanTask, CanManageTask
 from .utils.dependencies import (
@@ -15,7 +15,6 @@ from schemas import (
     TaskDefinition,
     TaskOverview,
     TaskDocumentResponse,
-    Dataset,
     Page,
     PeriodicTaskResponse,
 )
@@ -79,13 +78,13 @@ def get_task_documents(
 @router.get(
     "/{task_id}/dataset",
     dependencies=[CanPlanTask],
-    response_model=Dataset,
+    response_model=JsonBase,
 )
 def get_task_dataset(
     task_id: int = Path(...),
     db: Session = DependsOnDbSession,
 ):
-    return Task.get(db, task_id).dataset
+    return Task.get(db, task_id).dataset.data
 
 
 @router.get("", dependencies=[CanPlanTask], response_model=Page[TaskOverview])
@@ -113,7 +112,7 @@ def create_periodic_task(
 ):
     return PeriodicTask(
         task_type=task_type,
-        query=query_params,
+        query_params=query_params,
         minute=minute,
         hour=hour,
         day_of_week=day_of_week,
@@ -180,7 +179,7 @@ def get_periodic_task(
 
 
 @router.get(
-    "/periodic",
+    "/search/periodic",
     dependencies=[CanPlanTask],
     response_model=Page[PeriodicTaskResponse],
 )

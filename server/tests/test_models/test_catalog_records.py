@@ -277,6 +277,18 @@ class TestCatalogRecordBarcodesModelBasicOperations(TestModelBase):
                 barcode="test_barcode",
             ).save(self.session)
 
+    def test_delete_successfully_when_deleting_catalog_record(self):
+        # Arrange
+        self.session.add(
+            CatalogRecord(sysno="test_sysno", marc=TEST_MARC_BYTES),
+            CatalogRecordBarcode(sysno="test_sysno", barcode="test_barcode"),
+        )
+        # Act
+        catalog_record = CatalogRecord.get(self.session, "test_sysno")
+        catalog_record.delete(self.session)
+        # Assert
+        self.assertIsNone(self.session.query(CatalogRecordBarcode).first())
+
 
 class TestCatalogRecordFieldDifferencesModel(TestModelBase):
     def setUp(self):

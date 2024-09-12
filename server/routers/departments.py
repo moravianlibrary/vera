@@ -37,9 +37,9 @@ def update_department(
     db: Session = DependsOnDbSession,
 ):
     updated_department = department.load_to_model(
-        db, Department.get(db, department_id)
+        Department.get(db, department_id)
     ).save(db)
-    updated_department.save_users(db, department.users)
+    updated_department.save_users(db, department.usernames)
     return updated_department
 
 

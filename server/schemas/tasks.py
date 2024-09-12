@@ -46,6 +46,10 @@ class TaskOverview(TaskDefinition):
     has_dataset: bool = False
     dataset_error: Optional[str] = None
 
+    class Config:
+        arbitrary_types_allowed = True
+        from_attributes = True
+
 
 class TaskDocumentResponse(BaseModel):
     document_id: int
@@ -59,8 +63,13 @@ class TaskDocumentResponse(BaseModel):
 class PeriodicTaskResponse(BaseModel):
     id: int
     task_type: TaskType
-    query_params: ElasticsearchParams
+    query_params: Optional[ElasticsearchParams]
     minute: int
     hour: Optional[int]
     day_of_week: Optional[int]
     day_of_month: Optional[int]
+
+    # TODO: extended BaseModel for response schemas
+    class Config:
+        arbitrary_types_allowed = True
+        from_attributes = True

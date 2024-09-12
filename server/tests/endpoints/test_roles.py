@@ -34,7 +34,7 @@ class TestRolesEndpoints(TestEndpointsBase):
 
         # Act
         response = self.client.put(
-            f"/roles/1", json=role_update, headers=self.json_headers
+            "/roles/1", json=role_update, headers=self.json_headers
         )
 
         # Assert
@@ -50,7 +50,7 @@ class TestRolesEndpoints(TestEndpointsBase):
         self.session.flush()
 
         # Act
-        response = self.client.delete(f"/roles/1", headers=self.json_headers)
+        response = self.client.delete("/roles/1", headers=self.json_headers)
 
         # Assert
         self.assertEqual(response.status_code, 200)
@@ -64,7 +64,7 @@ class TestRolesEndpoints(TestEndpointsBase):
         self.session.flush()
 
         # Act
-        response = self.client.get(f"/roles/1", headers=self.json_headers)
+        response = self.client.get("/roles/1", headers=self.json_headers)
 
         # Assert
         self.assertEqual(response.status_code, 200)
@@ -84,14 +84,7 @@ class TestRolesEndpoints(TestEndpointsBase):
                 ),
             ]
         )
-
-        # Act
-        response = self.client.get(
-            "/roles", headers={"Authorization": "Bearer test_token"}
-        )
-
-        # Assert
-        self.assertEqual(response.status_code, 200)
+        self.session.flush()
         expected_roles = [
             {
                 "id": 2,
@@ -105,8 +98,17 @@ class TestRolesEndpoints(TestEndpointsBase):
                 "actions": [ActionType.ReadDatatableAll.value],
             },
         ]
-        response_roles = response.json()
-        for expected_role, actual_role in zip(expected_roles, response_roles):
+
+        # Act
+        response = self.client.get(
+            "/roles", headers={"Authorization": "Bearer test_token"}
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(len(expected_roles), len(body))
+        for expected_role, actual_role in zip(expected_roles, body):
             self.assertEqual(expected_role["id"], actual_role["id"])
             self.assertEqual(expected_role["name"], actual_role["name"])
             self.assertListEqual(

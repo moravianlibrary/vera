@@ -2,7 +2,6 @@ from tests.test_database_base import TestBaseDatabase
 from tests.test_base_client import TestBaseClient
 from tests.test_base_mocker import TestBaseMocker
 from unittest.mock import MagicMock
-from fastapi.testclient import TestClient
 from vera import app
 from schemas import CurrentUser
 from datatypes import ActionType
