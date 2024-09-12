@@ -3,6 +3,7 @@ from .issue import AlephIssue
 from .parsers import parse_page_count
 from .record import AlephRecord, Frequency
 from .types import AlephField, AlephResponseStatus, MaterialType, IssuanceType
+from .mock import MockAlephClient
 
 __all__ = [
     "AlephClient",
@@ -14,4 +15,5 @@ __all__ = [
     "AlephResponseStatus",
     "MaterialType",
     "IssuanceType",
+    "MockAlephClient",
 ]

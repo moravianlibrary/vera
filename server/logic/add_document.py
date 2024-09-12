@@ -4,7 +4,6 @@ from config import VeraConfig
 from sqlalchemy.orm import Session
 from services.external.digitization_registry import DigitizationState
 from schemas.catalog_records import Identifier
-from services.external.aleph import AlephClient
 from services.external.digitization_registry import (
     DigitizationRegistryClient,
 )
@@ -22,9 +21,12 @@ from datatypes import (
 from services import exceptions
 from services.documents_indexer import DocumentsIndexer
 from logic.update_catalog_record import update_catalog_record
-from services.external.aleph import AlephRecord
-from services.external.aleph import AlephIssue
-from services.external.aleph import AlephResponseStatus
+from services.external.aleph import (
+    AlephClient,
+    AlephRecord,
+    AlephIssue,
+    AlephResponseStatus,
+)
 from models import CatalogRecord, Document
 
 

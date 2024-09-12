@@ -1,4 +1,4 @@
-import unittest
+from unittest import TestCase
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from vera import app
@@ -14,7 +14,7 @@ TestSessionLocal = sessionmaker(
 )
 
 
-class TestBaseDatabase(unittest.TestCase):
+class TestBaseDatabase(TestCase):
     @classmethod
     def setUpClass(cls):
         Base.metadata.create_all(test_engine)
