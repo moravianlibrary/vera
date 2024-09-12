@@ -7,7 +7,6 @@ from tests.patch_resources import (
     MockAlephClient,
     MockDigitizationRegistryClient,
 )
-from services.external.digitization_registry import DigitizationRegistryRecord
 from logic.add_document import add_document
 from datatypes import (
     AlephResponseStatus,
@@ -50,8 +49,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             self.session,
             self.getMockIndexer(),
             Identifier(
-                identifier_type=IdentifierType.Sysno,
-                value="123456789",
+                identifier_type=IdentifierType.Sysno, value="123456789"
             ),
             "test_user",
             1,
@@ -419,3 +417,34 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 has_valid_cnb=False,
             ),
         )
+
+    @patch_digitization_registry_client(
+        "logic.add_document.DigitizationRegistryClient"
+    )
+    def test_patch_digitization_registry_client(
+        self,
+        mock_digitization_registry_client: MockDigitizationRegistryClient,
+    ):
+
+        from logic.add_document import DigitizationRegistryClient
+
+        mock_digitization_registry_client.set_record_response(None)
+        self.assertIsNone(DigitizationRegistryClient().get_record("12345"))
+
+    @patch_digitization_registry_client(
+        "logic.add_document.DigitizationRegistryClient"
+    )
+    def test_mock_digitization_registry_client(
+        self,
+        mock_digitization_registry_client: MockDigitizationRegistryClient,
+    ):
+        from unittest.mock import MagicMock
+
+        mock_digitization_registry_client = MockDigitizationRegistryClient()
+        mock_digitization_registry_class = MagicMock()
+        mock_digitization_registry_class.return_value = (
+            mock_digitization_registry_client
+        )
+        mock_digitization_registry_client.set_record_response(None)
+
+        self.assertIsNone(mock_digitization_registry_client.get_record())
