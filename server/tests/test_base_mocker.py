@@ -1,8 +1,6 @@
 from unittest import TestCase
-from sqlalchemy.orm import Session
-from typing import Any, Dict, List, Union
-from models import CatalogRecord, Document, Location
-from services.external.digitization_registry import DigitizationState
+from typing import Any, Dict, List
+from models import CatalogRecord, Document
 
 TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
 

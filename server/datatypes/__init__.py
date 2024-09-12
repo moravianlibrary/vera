@@ -12,7 +12,11 @@ from .location_state import LocationState
 from .task_types import TaskType, TaskState, TaskDocumentErrorType
 from .typing import IdType, JsonBase, ElasticsearchParams
 
-from services.external.aleph import IssuanceType, MaterialType
+from services.external.aleph import (
+    IssuanceType,
+    MaterialType,
+    AlephResponseStatus,
+)
 from services.external.digitization_registry import DigitizationState
 
 
@@ -37,4 +41,5 @@ __all__ = [
     "IssuanceType",
     "MaterialType",
     "DigitizationState",
+    "AlephResponseStatus",
 ]

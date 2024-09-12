@@ -1,6 +1,6 @@
 from unittest import skipIf, TestCase
 from unittest.mock import patch, MagicMock
-from tests.test_database_base import TestBaseDatabase
+from tests.test_base_database import TestBaseDatabase
 from services.documents_indexer import DocumentsIndexer, INDEX_NAME
 from tests.documents_bank import get_test_documents
 from config import VeraConfig
