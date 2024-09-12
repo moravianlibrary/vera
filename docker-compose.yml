@@ -1,18 +1,4 @@
 services:
-  postgres-test:
-    image: postgres:latest
-    container_name: vera-postgres-test
-    environment:
-      POSTGRES_USER: veraAdmin
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: vera-test
-    ports:
-      - "5433:5432"
-    volumes:
-      - data:/var/lib/postgresql/data-test
-    networks:
-      - vera
-
   postgres:
     image: postgres:latest
     container_name: vera-postgres
@@ -24,14 +10,6 @@ services:
       - "5432:5432"
     volumes:
       - data:/var/lib/postgresql/data
-    networks:
-      - vera
-
-  redis:
-    container_name: vera-redis
-    image: redis:latest
-    ports:
-      - "6379:6379"
     networks:
       - vera
 
@@ -77,6 +55,14 @@ services:
     depends_on:
       - postgres
       - redis
+    networks:
+      - vera
+
+  redis:
+    container_name: vera-redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
     networks:
       - vera
 

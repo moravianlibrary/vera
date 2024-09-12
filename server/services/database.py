@@ -90,10 +90,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-def create(db: Session, db_item: Any):
-    db.add(db_item)
-    db.commit()
-    db.refresh(db_item)
-    return db_item

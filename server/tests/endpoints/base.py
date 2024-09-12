@@ -26,13 +26,6 @@ class TestEndpointsBase(TestBaseDatabase, TestBaseClient, TestBaseMocker):
             settings=settings,
         )
 
-    def mockTestAntiUser(self, actions=[], department_id=1, settings={}):
-        return self.mockTestUser(
-            actions=[action for action in ActionType if action not in actions],
-            department_id=department_id,
-            settings=settings,
-        )
-
     def mockTestSuperUser(self, department_id=1, settings={}):
         return self.mockTestUser(
             actions=[action for action in ActionType],

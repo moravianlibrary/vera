@@ -19,6 +19,14 @@ from pymarc import Field, Record, Subfield
 from typing import Optional
 
 
+class TestMarcFieldDifferenceType(TestCase):
+    def test_ordering(self):
+        self.assertLess(
+            MarcFieldDifferenceType.DifferentValue,
+            MarcFieldDifferenceType.Equal,
+        )
+
+
 class TestMarcComparatorScoringFunctions(TestCase):
     def test_extended_needleman_wunsch_with_none(self):
         self.assertEqual(extended_needleman_wunsch(None, None), 1)
@@ -230,6 +238,26 @@ class TestNormalizedTextDataComparator(TestCase):
 
         # Assert
         self.assertEqual(classification, "1. edition")
+
+    def test_normalization_with_simple_synonyms_no_match(self):
+        # Arrange
+        synonym_dict = {
+            "vydání": "edition",
+            "vydanie": "edition",
+            "první": "1.",
+            "druhé": "2.",
+        }
+        valid_form_pattern = r"^(\d+)\. edition"
+        analyzer = NormalizedTextDataComparator(
+            synonym_dict, valid_form_pattern
+        )
+        text = "prví vydání"
+
+        # Act
+        classification = analyzer._normalize_text(text)
+
+        # Assert
+        self.assertIsNone(classification)
 
     def test_normalization_with_simple_synonyms_reformat_match(self):
         # Arrange
