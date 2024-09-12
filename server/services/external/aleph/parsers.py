@@ -1,6 +1,6 @@
 import re
 from typing import Optional
-from .types import MaterialType
+from .datatypes import MaterialType
 
 MATERIAL_TYPE_MAPPING = {
     "BK": MaterialType.Book,

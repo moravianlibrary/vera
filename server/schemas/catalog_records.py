@@ -31,7 +31,7 @@ class CatalogIssueResponse(BaseModel):
     digitization_state: DigitizationState = DigitizationState.NotDigitized
 
     can_digitize: bool = True
-    already_added: bool = False
+    already_added: bool
 
     @classmethod
     def from_aleph_issue(
@@ -63,14 +63,12 @@ class CatalogIssueResponse(BaseModel):
         )
 
     @classmethod
-    def from_aleph_record(
+    def from_digitization_registry(
         cls,
-        aleph_record: AlephRecord,
         digitization_registry_record: DigitizationRegistryRecord,
         already_added: bool,
     ) -> "CatalogIssueResponse":
         return cls(
-            signature=aleph_record.signature,
             digitization_registry_id=(
                 digitization_registry_record.id
                 if digitization_registry_record

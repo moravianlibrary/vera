@@ -3,6 +3,8 @@ import elasticsearch
 from models import Document
 from services.external.aleph import AlephRecord
 from config import VeraConfig
+import requests
+from requests.exceptions import RequestException
 
 
 INDEX_NAME = "documents"
@@ -312,6 +314,12 @@ class DocumentsIndexer:
 
     @staticmethod
     def is_indexer_available() -> bool:
+        try:
+            response = requests.get(VeraConfig.ElasticsearchUrl)
+            if response.status_code != 200:
+                return False
+        except RequestException:
+            return False
         try:
             return elasticsearch.Elasticsearch(
                 VeraConfig.ElasticsearchUrl,

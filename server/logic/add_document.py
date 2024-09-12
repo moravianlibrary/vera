@@ -128,12 +128,14 @@ def add_document(
         )
     ]
 
-    num_of_all_issues = len(catalog_issues)
-    num_of_active_issues = sum(
-        1
+    active_issues = [
+        catalog_issue
         for catalog_issue in catalog_issues
         if catalog_issue.can_digitize and not catalog_issue.already_added
-    )
+    ]
+
+    num_of_all_issues = len(catalog_issues)
+    num_of_active_issues = len(active_issues)
 
     if (
         num_of_active_issues > 1
@@ -148,8 +150,7 @@ def add_document(
         )
 
     if num_of_active_issues == 0 and num_of_all_issues == 0:
-        add_issue = CatalogIssueResponse.from_aleph_record(
-            main_aleph_record,
+        add_issue = CatalogIssueResponse.from_digitization_registry(
             DigitizationRegistryClient().get_record(
                 cnb=main_aleph_record.cnb,
                 isxn=main_aleph_record.isxn,
@@ -157,7 +158,7 @@ def add_document(
             Document.exists(session, main_aleph_record.sysno),
         )
     else:
-        add_issue = catalog_issues[0]
+        add_issue = active_issues[0]
 
     catalog_document = CatalogDocumentResponse.from_records(
         main_aleph_record, [add_issue], catalog_record
@@ -192,6 +193,7 @@ def add_document(
         )
         if document is None:
             return None, AddDocumentResponseStatus.UnknownError
+        add_issue.already_added = True
     except exceptions.UniqueDocumentViolationException:
         return None, AddDocumentResponseStatus.UniqueViolation
 

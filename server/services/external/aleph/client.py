@@ -6,7 +6,7 @@ import requests
 from lxml import etree
 from pymarc import marcxml
 from .record import AlephRecord
-from .types import AlephField, AlephResponseStatus, ISXN_FIELDS
+from .datatypes import AlephField, AlephResponseStatus, ISXN_FIELDS
 
 
 logging.basicConfig(level=logging.INFO)

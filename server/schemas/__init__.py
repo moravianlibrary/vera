@@ -55,6 +55,10 @@ from .categories import (
     DistributionList,
 )
 from .predictor import PredictPeriodicalPageCount
+from services.external.aleph import (
+    AlephRecord,
+    AlephIssue,
+)
 
 __all__ = [
     "RoleCreate",
@@ -106,4 +110,6 @@ __all__ = [
     "Page",
     "PredictPeriodicalPageCount",
     "PeriodicTaskResponse",
+    "AlephRecord",
+    "AlephIssue",
 ]
