@@ -1,12 +1,11 @@
 from sqlalchemy import Column, Integer, String, JSON
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from services.database import Base
 from datatypes import ActionType
-from .base import BaseMixin, ModelBaseYaml
+from models.base import BaseModel
 
 
-class Role(Base, BaseMixin, ModelBaseYaml):
+class Role(BaseModel):
     __tablename__ = "roles"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -28,3 +27,11 @@ class Role(Base, BaseMixin, ModelBaseYaml):
     @classmethod
     def find_by_name(cls, session: Session, name: str) -> Optional["Role"]:
         return session.query(cls).filter_by(name=name).first()
+
+    @classmethod
+    def from_dict(cls, dict_):
+        return cls(
+            id=dict_.get("id"),
+            name=dict_.get("name"),
+            _actions=dict_.get("actions"),
+        )

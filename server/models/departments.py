@@ -2,12 +2,11 @@ from typing import Dict, List
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship, Session
 from sqlalchemy.ext.hybrid import hybrid_property
-from services.database import Base
-from .base import BaseMixin
+from .base import BaseModel
 from .users import User
 
 
-class Department(Base, BaseMixin):
+class Department(BaseModel):
     __tablename__ = "departments"
 
     id = Column(Integer, primary_key=True, index=True)

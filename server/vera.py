@@ -35,6 +35,7 @@ app.include_router(routers.extractions_router)
 app.include_router(routers.intentions_router)
 app.include_router(routers.locations_router)
 app.include_router(routers.roles_router)
+app.include_router(routers.system_router)
 app.include_router(routers.tasks_router)
 app.include_router(routers.users_router)
 

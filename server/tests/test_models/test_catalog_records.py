@@ -279,10 +279,15 @@ class TestCatalogRecordBarcodesModelBasicOperations(TestModelBase):
 
     def test_delete_successfully_when_deleting_catalog_record(self):
         # Arrange
-        self.session.add(
-            CatalogRecord(sysno="test_sysno", marc=TEST_MARC_BYTES),
-            CatalogRecordBarcode(sysno="test_sysno", barcode="test_barcode"),
+        self.session.add_all(
+            [
+                CatalogRecord(sysno="test_sysno", marc=TEST_MARC_BYTES),
+                CatalogRecordBarcode(
+                    sysno="test_sysno", barcode="test_barcode"
+                ),
+            ]
         )
+        self.session.flush()
         # Act
         catalog_record = CatalogRecord.get(self.session, "test_sysno")
         catalog_record.delete(self.session)

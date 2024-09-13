@@ -10,11 +10,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, relationship, Session, Query
 from sqlalchemy.ext.hybrid import hybrid_property
-from services.database import Base
 from typing import List, Optional, Tuple
 from services.exceptions import (
-    ObjectNotFoundException,
-    CategoryNotFoundException,
     CategoryInDistributionDeletionException,
     NonEmptyCategoryDeletionException,
     EditingPreviousDistributionForbiddenException,
@@ -24,13 +21,13 @@ from services.exceptions import (
 from datatypes import IntentionClassification
 from .documents import Document
 from .intentions import Intention
-from .base import BaseMixin
+from .base import BaseModel
 
 
 MAX_CATEGORY_LEVEL = 3
 
 
-class Category(Base):
+class Category(BaseModel):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -179,17 +176,6 @@ class Category(Base):
         return distributions[0] if distributions else None
 
     @classmethod
-    def find(cls, session: Session, category_id: int) -> Optional["Category"]:
-        return session.query(cls).filter_by(id=category_id).first()
-
-    @classmethod
-    def get(cls, session: Session, category_id: int) -> "Category":
-        category = cls.find(session, category_id)
-        if not category:
-            raise CategoryNotFoundException(category_id)
-        return category
-
-    @classmethod
     def get_root_categories(cls, session: Session) -> List["Category"]:
         return session.query(cls).filter(cls.level == 0).all()
 
@@ -203,7 +189,7 @@ class Category(Base):
             .first()
         )
 
-    def save(self, session: Session) -> "Category":
+    def validate_before_save(self, session: Session) -> "Category":
         if self.parent_id:
             level = Category.get(session, self.parent_id).level + 1
             if level > MAX_CATEGORY_LEVEL:
@@ -218,12 +204,7 @@ class Category(Base):
         if same_category is not None and same_category.id != self.id:
             raise UniqueCategoryNameViolationException()
 
-        session.add(self)
-        session.commit()
-        session.refresh(self)
-        return self
-
-    def delete(self, session: Session) -> "Category":
+    def validate_before_delete(self, session: Session) -> "Category":
         if self.total_pages > 0:
             raise NonEmptyCategoryDeletionException()
         if (
@@ -231,10 +212,6 @@ class Category(Base):
             > 0
         ):
             raise CategoryInDistributionDeletionException()
-
-        session.delete(self)
-        session.commit()
-        return self
 
     @classmethod
     def get_categories(cls, session: Session) -> List["Category"]:
@@ -282,7 +259,7 @@ class Category(Base):
             ).save(session)
 
 
-class CategoryDepartments(Base, BaseMixin):
+class CategoryDepartments(BaseModel):
     __tablename__ = "category_departments"
 
     category_id = Column(Integer, ForeignKey("categories.id"), index=True)
@@ -302,20 +279,16 @@ class CategoryDepartments(Base, BaseMixin):
             .first()
         )
 
-    def save(self, session: Session) -> "CategoryDepartments":
-        if (
+    def is_persisted(self, session: Session) -> bool:
+        return (
             CategoryDepartments.find(
                 session, self.category_id, self.department_id
             )
-            is None
-        ):
-            session.add(self)
-        session.commit()
-        session.refresh(self)
-        return self
+            is not None
+        )
 
 
-class Distribution(Base):
+class Distribution(BaseModel):
     __tablename__ = "distributions"
 
     intention_id = Column(Integer, ForeignKey("intentions.id"), index=True)
@@ -391,24 +364,16 @@ class Distribution(Base):
 
     @classmethod
     def find(
-        cls, session: Session, intention_id: int, category_id: int
+        cls, session: Session, intention_category_id: Tuple[int, int]
     ) -> "Distribution":
         return (
             session.query(cls)
-            .filter_by(intention_id=intention_id, category_id=category_id)
+            .filter_by(
+                intention_id=intention_category_id[0],
+                category_id=intention_category_id[1],
+            )
             .first()
         )
-
-    @classmethod
-    def get(
-        cls, session: Session, intention_id: int, category_id: int
-    ) -> "Distribution":
-        distribution = cls.find(session, intention_id, category_id)
-        if distribution is None:
-            raise ObjectNotFoundException(
-                cls.__name__, (intention_id, category_id)
-            )
-        return distribution
 
     def save(self, session: Session) -> "Distribution":
         merged_instance = session.merge(self)
@@ -416,15 +381,11 @@ class Distribution(Base):
         session.refresh(merged_instance)
         return merged_instance
 
-    def delete(self, session: Session) -> "Distribution":
+    def validate_before_delete(self, session: Session) -> "Distribution":
         if self.intention.classification == IntentionClassification.Previous:
             raise EditingPreviousDistributionForbiddenException()
         if self.percentage != 0 and self.percentage != 100:
             raise ValueError("Distribution must be empty")
-
-        session.delete(self)
-        session.commit()
-        return self
 
     @classmethod
     def copy_distributions(

@@ -480,7 +480,7 @@ class TestCategoriesDistributionEndpoints(TestEndpointsBase):
         self.assertEqual(response.json()["category_id"], 2)
         self.assertEqual(response.json()["percentage"], 100.0)
         self.assertIsNone(
-            Distribution.find(self.session, intention_id=1, category_id=2)
+            Distribution.find(self.session, intention_category_id=(1, 2))
         )
 
     def test_get_root_categories_for_intention(self):

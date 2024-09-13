@@ -6,12 +6,11 @@ from sqlalchemy import (
     JSON,
 )
 from sqlalchemy.orm import relationship, Session
-from services.database import Base
 from typing import Optional
-from .base import BaseMixin
+from .base import BaseModel
 
 
-class User(Base, BaseMixin):
+class User(BaseModel):
     __tablename__ = "users"
 
     username = Column(String, primary_key=True, index=True)
@@ -24,9 +23,5 @@ class User(Base, BaseMixin):
     def find(cls, session: Session, username: str) -> Optional["User"]:
         return session.query(cls).filter_by(username=username).first()
 
-    def save(self, session: Session) -> "User":
-        if User.find(session, self.username) is None:
-            session.add(self)
-        session.commit()
-        session.refresh(self)
-        return self
+    def is_persisted(self, session: Session) -> bool:
+        return User.find(session, self.username) is not None

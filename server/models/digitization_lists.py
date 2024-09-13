@@ -4,16 +4,12 @@ from sqlalchemy import func
 from sqlalchemy.orm import relationship, Session
 from sqlalchemy.ext.hybrid import hybrid_property
 from typing import List, Set
-
-from services.database import Base
-from .base import BaseMixin
+from .base import BaseModel
 from .documents import Document
 from datatypes import DigitizationState
 
-# TODO: rename extract- props
 
-
-class DigitizationList(Base, BaseMixin):
+class DigitizationList(BaseModel):
     __tablename__ = "digitization_lists"
 
     id = Column(Integer, primary_key=True, index=True)

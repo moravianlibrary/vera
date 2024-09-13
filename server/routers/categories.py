@@ -161,7 +161,7 @@ def delete_category_from_intention(
     db: Session = DependsOnDbSession,
 ):
     OwnershipValidator.EnforceCategoryEdit(current_user, category_id, db)
-    return Distribution.get(db, intention_id, category_id).delete(db)
+    return Distribution.get(db, (intention_id, category_id)).delete(db)
 
 
 @router.delete(

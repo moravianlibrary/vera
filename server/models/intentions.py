@@ -1,15 +1,13 @@
 from sqlalchemy import Column, Date, Integer, String, desc
 from sqlalchemy.orm import relationship, Session, Query
 from sqlalchemy.ext.hybrid import hybrid_property
-from services.database import Base
 from typing import Optional
 from datetime import date
-
 from datatypes import IntentionClassification
-from .base import BaseMixin
+from .base import BaseModel
 
 
-class Intention(Base, BaseMixin):
+class Intention(BaseModel):
     __tablename__ = "intentions"
 
     id = Column(Integer, primary_key=True, index=True)

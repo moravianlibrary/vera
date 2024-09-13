@@ -7,6 +7,7 @@ from .extractions import router as extractions_router
 from .intentions import router as intentions_router
 from .locations import router as locations_router
 from .roles import router as roles_router
+from .system import router as system_router
 from .tasks import router as tasks_router
 from .users import router as users_router
 
@@ -20,6 +21,7 @@ __all__ = [
     "intentions_router",
     "locations_router",
     "roles_router",
+    "system_router",
     "tasks_router",
     "users_router",
 ]

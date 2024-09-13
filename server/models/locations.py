@@ -8,12 +8,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.hybrid import hybrid_property
-from services.database import Base
 from datatypes import LocationState
-from .base import BaseMixin
+from .base import BaseModel
 
 
-class Library(Base, BaseMixin):
+class Library(BaseModel):
     __tablename__ = "libraries"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -24,7 +23,7 @@ class Library(Base, BaseMixin):
     storages = relationship("Storage", back_populates="library")
 
 
-class Storage(Base, BaseMixin):
+class Storage(BaseModel):
     __tablename__ = "storages"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -37,7 +36,7 @@ class Storage(Base, BaseMixin):
     locations = relationship("Location", back_populates="storage")
 
 
-class Location(Base, BaseMixin):
+class Location(BaseModel):
     __tablename__ = "locations"
 
     id = Column(Integer, primary_key=True, index=True)

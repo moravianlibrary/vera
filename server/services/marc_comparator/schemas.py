@@ -101,12 +101,20 @@ class MarcFieldDifference(BaseModel):
             tag=field.tag,
             indicator1=(
                 field.indicator1
-                if not field.is_control_field() and field.indicators
+                if (
+                    not field.is_control_field()
+                    and field.indicators
+                    and field.indicator1 != " "
+                )
                 else None
             ),
             indicator2=(
                 field.indicator2
-                if not field.is_control_field() and field.indicators
+                if (
+                    not field.is_control_field()
+                    and field.indicators
+                    and field.indicator2 != " "
+                )
                 else None
             ),
             subfield_differences=sorted(subfield_differences),

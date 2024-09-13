@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, Session
 import logging
 from os import environ
 import time
-from typing import Any
+import yaml
 
 DB_NAME = "vera"
 DB_USER = "veraAdmin"
@@ -90,3 +90,32 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def get_all_models():
+    return [mapper.class_ for mapper in Base.registry.mappers]
+
+
+def get_model_by_tablename(tablename: str):
+    models = get_all_models()
+    for model in models:
+        if model.__tablename__ == tablename:
+            return model
+    raise Exception(f"Table with name {tablename} does not exists")
+
+
+def export_to_yaml(session: Session, model) -> str:
+    # TODO: use ModelBase all
+    instances = session.query(model).all()
+    tablename = model.__tablename__
+    return yaml.dump(
+        {tablename: [instance.to_dict() for instance in instances]},
+        default_flow_style=False,
+        sort_keys=False,
+    )
+
+
+def import_to_yaml(session: Session, yaml_string: str):
+    for tablename, data in yaml.safe_load(yaml_string):
+        model = get_model_by_tablename(tablename)
+        model.from_dict(data)

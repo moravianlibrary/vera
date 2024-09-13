@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 from pymarc import Record
 from sqlalchemy.orm import Session, relationship
 from sqlalchemy import (
@@ -16,15 +16,14 @@ from sqlalchemy import (
     exists,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
-from services.database import Base
 from datatypes import IdentifierType, CatalogSource, CZECH_LANGUAGE
-from .base import BaseMixin
 from services.marc_comparator import MarcFieldDifferenceType
 from .utils.parsers import marc_binary_to_record
 from exceptions import FieldDifferenceAlreadyApprovedException
+from .base import BaseModel
 
 
-class CatalogRecord(Base, BaseMixin):
+class CatalogRecord(BaseModel):
     __tablename__ = "catalog_records"
 
     sysno = Column(String, primary_key=True)
@@ -44,7 +43,9 @@ class CatalogRecord(Base, BaseMixin):
     last_updated = Column(TIMESTAMP, server_default=func.now())
 
     record_barcodes = relationship(
-        "CatalogRecordBarcode", back_populates="catalog_record"
+        "CatalogRecordBarcode",
+        back_populates="catalog_record",
+        cascade="all, delete-orphan",
     )
     field_differences = relationship(
         "CatalogRecordFieldDifference", back_populates="catalog_record"
@@ -166,15 +167,11 @@ class CatalogRecord(Base, BaseMixin):
             .first()
         )
 
-    def save(self, session: Session) -> "CatalogRecord":
-        if self.find(session, self.sysno) is None:
-            session.add(self)
-        session.commit()
-        session.refresh(self)
-        return self
+    def is_persisted(self, session: Session) -> bool:
+        return CatalogRecordBarcode.find(session, self.sysno) is not None
 
 
-class CatalogRecordBarcode(Base):
+class CatalogRecordBarcode(BaseModel):
     __tablename__ = "catalog_record_barcode"
 
     sysno = Column(
@@ -186,18 +183,24 @@ class CatalogRecordBarcode(Base):
         "CatalogRecord", back_populates="record_barcodes"
     )
 
+    @classmethod
+    def find(
+        cls, session: Session, sysno_barcode_id: Tuple[str, str]
+    ) -> Optional["CatalogRecordBarcode"]:
+        return (
+            session.query(cls)
+            .filter_by(sysno=sysno_barcode_id[0], barcode=sysno_barcode_id[1])
+            .first()
+        )
+
     def save(self, session: Session) -> "CatalogRecordBarcode":
         merged_instance = session.merge(self)
         session.commit()
         session.refresh(merged_instance)
         return merged_instance
 
-    def delete(self, session: Session) -> None:
-        session.delete(self)
-        session.commit()
 
-
-class CatalogRecordFieldDifference(Base, BaseMixin):
+class CatalogRecordFieldDifference(BaseModel):
     __tablename__ = "catalog_record_field_differences"
 
     id = Column(Integer, primary_key=True)
@@ -259,7 +262,7 @@ class CatalogRecordFieldDifference(Base, BaseMixin):
         return self
 
 
-class CatalogRecordSubfieldDifference(Base, BaseMixin):
+class CatalogRecordSubfieldDifference(BaseModel):
     __tablename__ = "catalog_record_subfield_differences"
 
     id = Column(Integer, primary_key=True)

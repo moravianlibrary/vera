@@ -1,3 +1,4 @@
+# pragma: no cover
 import logging
 from fastapi import FastAPI
 from contextlib import asynccontextmanager

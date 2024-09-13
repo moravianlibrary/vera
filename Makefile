@@ -52,4 +52,7 @@ load-db-from-backup:
 	pg_dump -h localhost -U veraAdmin -d vera < backup.sql
 
 test:
-	cd server/ && coverage run -m unittest discover -s tests/ && coverage html && coverage report
+	cd server/ \
+		&& .venv/bin/python -m coverage run -m unittest discover -s tests/ \
+		&& coverage html \
+		&& coverage report

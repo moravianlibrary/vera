@@ -1,17 +1,17 @@
 from typing import List, Tuple, Optional, TypeVar, Type, Union
 from sqlalchemy.orm import Session, Query
-from sqlalchemy.ext.declarative import declarative_base
 from services.exceptions import ObjectNotFoundException
 from enum import Enum
+from services.database import Base
 import yaml
-
-Base = declarative_base()
 
 T = TypeVar("T", bound=Base)
 IdType = Union[str, int, Tuple[int, int]]
 
 
-class BaseMixin:
+class ModelOperationsMixin:
+    __abstract__ = True
+
     @classmethod
     def find(cls: Type[T], session: Session, item_id: IdType) -> Optional[T]:
         return session.query(cls).filter_by(id=item_id).first()
@@ -41,13 +41,16 @@ class BaseMixin:
     def all(cls: Type[T], session: Session) -> List[T]:
         return cls.query_base(session).all()
 
+    def is_persisted(self: T, session: Session) -> bool:
+        return self.id is not None
+
     def save(self: T, session: Session) -> T:
         if hasattr(self, "validate_before_save") and callable(
             getattr(self, "validate_before_save")
         ):
             self.validate_before_save(session)
 
-        if self.id is None:
+        if not self.is_persisted(session):
             session.add(self)
         session.commit()
         session.refresh(self)
@@ -64,7 +67,7 @@ class BaseMixin:
         return self
 
 
-class ModelBaseDict:
+class ModelParsingMixin:
     def to_dict(self):
         dict_ = {}
         for column in self.__table__.columns:
@@ -83,15 +86,9 @@ class ModelBaseDict:
         return dict_
 
     @classmethod
-    def from_dict(cls, dict):
-        columns = cls.__table__.columns
-        for name, value in dict.items():
-            if name in columns:
-                setattr(cls, name, value)
-        return cls(**dict)
+    def from_dict(cls, dict_):
+        return cls(**dict_)
 
-
-class ModelBaseYaml(ModelBaseDict):
     def to_yaml(self):
         return yaml.dump(
             self.to_dict(), default_flow_style=False, sort_keys=False
@@ -103,15 +100,17 @@ class ModelBaseYaml(ModelBaseDict):
 
     @classmethod
     def export_to_yaml(cls, session: Session) -> str:
-        # TODO: use ModelBase all
-        instances = session.query(cls).all()
-        tablename = cls.__tablename__
         return yaml.dump(
-            {tablename: [instance.to_dict() for instance in instances]},
+            {cls.__tablename__: [item.to_dict() for item in cls.all(session)]},
             default_flow_style=False,
             sort_keys=False,
         )
 
-    @classmethod
-    def import_from_yaml(cls, session: Session, yaml_string: str):
-        pass
+
+class BaseMixin(ModelOperationsMixin, ModelParsingMixin):
+    pass
+
+
+class BaseModel(Base, ModelOperationsMixin, ModelParsingMixin):
+    __abstract__ = True
+    pass

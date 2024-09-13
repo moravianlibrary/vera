@@ -18,3 +18,5 @@ sqlalchemy
 typing-extensions==4.8.0
 uvicorn
 scipy
+pyyaml
+elasticsearch

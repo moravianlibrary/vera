@@ -13,7 +13,7 @@ from schemas import (
     CatalogIssueResponse,
     DigitizationRegistryRecord,
 )
-from models import CatalogRecord, Category, Document
+from models import CatalogRecord, CatalogRecordBarcode, Category, Document
 from typing import Any
 from pydantic import BaseModel
 from datatypes import MaterialType, IssuanceType, DigitizationState
@@ -267,7 +267,9 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 ),
             ]
         )
-        self.session.flush()
+        self.session.add(
+            CatalogRecordBarcode(sysno=sysno, barcode="2619937640")
+        )
         self.session.add(Document(sysno=sysno, barcode="2619937640"))
         self.session.flush()
 

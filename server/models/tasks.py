@@ -12,13 +12,12 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, Session
-from services.database import Base
 from datatypes import TaskType, TaskState, TaskDocumentErrorType
-from .base import BaseMixin
+from .base import BaseModel
 from typing import Optional
 
 
-class Task(Base, BaseMixin):
+class Task(BaseModel):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -60,7 +59,7 @@ class Task(Base, BaseMixin):
         return self.dataset.error_message if self.dataset else None
 
 
-class TaskDocument(Base, BaseMixin):
+class TaskDocument(BaseModel):
     __tablename__ = "task_documents"
 
     task_id = Column(Integer, ForeignKey("tasks.id"), index=True)
@@ -91,14 +90,11 @@ class TaskDocument(Base, BaseMixin):
             .first()
         )
 
-    def save(self, session: Session) -> "TaskDocument":
-        session.add(self)
-        session.commit()
-        session.refresh(self)
-        return self
+    def is_persisted(self, session: Session) -> bool:
+        return self.find(session, self.task_id, self.document_id) is not None
 
 
-class TaskDataset(Base, BaseMixin):
+class TaskDataset(BaseModel):
     __tablename__ = "task_datasets"
 
     task_id = Column(
@@ -110,7 +106,7 @@ class TaskDataset(Base, BaseMixin):
     task = relationship("Task", back_populates="dataset")
 
 
-class PeriodicTask(Base, BaseMixin):
+class PeriodicTask(BaseModel):
     __tablename__ = "periodic_tasks"
 
     id = Column(Integer, primary_key=True, index=True)

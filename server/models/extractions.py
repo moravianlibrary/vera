@@ -1,12 +1,10 @@
 from sqlalchemy import Column, Float, Integer, String, TIMESTAMP, JSON
 from sqlalchemy import func
-
-from services.database import Base
+from .base import BaseModel
 from exceptions import EmptyExtractionException
-from .base import BaseMixin
 
 
-class Extraction(Base, BaseMixin):
+class Extraction(BaseModel):
     __tablename__ = "generated_extractions"
 
     id = Column(Integer, primary_key=True, index=True)
