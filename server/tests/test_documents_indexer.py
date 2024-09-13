@@ -6,6 +6,7 @@ from tests.documents_bank import get_test_documents
 from config import VeraConfig
 from models import Document
 import elasticsearch
+from requests.exceptions import RequestException
 
 
 def skipIfIndexerUnavailable(test_func):
@@ -19,9 +20,16 @@ def skipIfIndexerUnavailable(test_func):
 
 
 class TestDocumentsIndexerAvailability(TestCase):
+    @patch("requests.get")
     @patch("elasticsearch.Elasticsearch")
-    def test_indexer_available(self, MockElasticsearch):
+    def test_indexer_available(self, MockElasticsearch, MockRequestsGet):
         # Arrange
+        # Mock requests.get to return a response with status code 200
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        MockRequestsGet.return_value = mock_response
+
+        # Mock Elasticsearch ping to return True
         mock_es = MagicMock()
         mock_es.ping.return_value = True
         MockElasticsearch.return_value = mock_es
@@ -29,11 +37,65 @@ class TestDocumentsIndexerAvailability(TestCase):
         # Act and Assert
         self.assertTrue(DocumentsIndexer.is_indexer_available())
 
+    @patch("requests.get")
     @patch("elasticsearch.Elasticsearch")
-    def test_indexer_not_available(self, MockElasticsearch):
+    def test_indexer_not_available_due_to_requests_failure(
+        self, MockElasticsearch, MockRequestsGet
+    ):
         # Arrange
+        # Mock requests.get to raise a RequestException
+        MockRequestsGet.side_effect = RequestException()
+
+        # Act and Assert
+        self.assertFalse(DocumentsIndexer.is_indexer_available())
+
+    @patch("requests.get")
+    @patch("elasticsearch.Elasticsearch")
+    def test_indexer_not_available_due_to_non_200_status_code(
+        self, MockElasticsearch, MockRequestsGet
+    ):
+        # Arrange
+        # Mock requests.get to return a response with status code 500
+        mock_response = MagicMock()
+        mock_response.status_code = 500
+        MockRequestsGet.return_value = mock_response
+
+        # Act and Assert
+        self.assertFalse(DocumentsIndexer.is_indexer_available())
+
+    @patch("requests.get")
+    @patch("elasticsearch.Elasticsearch")
+    def test_indexer_not_available_due_to_elasticsearch_ping_failure(
+        self, MockElasticsearch, MockRequestsGet
+    ):
+        # Arrange
+        # Mock requests.get to return a response with status code 200
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        MockRequestsGet.return_value = mock_response
+
+        # Mock Elasticsearch ping to raise an exception
         mock_es = MagicMock()
-        mock_es.ping.side_effect = Exception("Connection error")
+        mock_es.ping.side_effect = Exception("Ping failure")
+        MockElasticsearch.return_value = mock_es
+
+        # Act and Assert
+        self.assertFalse(DocumentsIndexer.is_indexer_available())
+
+    @patch("requests.get")
+    @patch("elasticsearch.Elasticsearch")
+    def test_indexer_not_available_due_to_ping_returning_false(
+        self, MockElasticsearch, MockRequestsGet
+    ):
+        # Arrange
+        # Mock requests.get to return a response with status code 200
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        MockRequestsGet.return_value = mock_response
+
+        # Mock Elasticsearch ping to return False
+        mock_es = MagicMock()
+        mock_es.ping.return_value = False
         MockElasticsearch.return_value = mock_es
 
         # Act and Assert

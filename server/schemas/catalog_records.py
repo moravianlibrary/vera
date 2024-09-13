@@ -31,7 +31,8 @@ class CatalogIssueResponse(BaseModel):
     digitization_state: DigitizationState = DigitizationState.NotDigitized
 
     can_digitize: bool = True
-    already_added: bool
+    already_added: bool = False
+    newly_added: bool = False
 
     @classmethod
     def from_aleph_issue(
@@ -119,10 +120,10 @@ class CatalogDocumentResponse(BaseModel):
     material_type: MaterialType
     issues: List[CatalogIssueResponse]
 
-    skc_sysno: Optional[str]
-    has_valid_main_record: bool
-    cnb_sysno: Optional[str]
-    has_valid_cnb: bool
+    skc_sysno: Optional[str] = None
+    has_valid_main_record: bool = False
+    cnb_sysno: Optional[str] = None
+    has_valid_cnb: bool = False
 
     @classmethod
     def from_records(

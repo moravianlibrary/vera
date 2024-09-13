@@ -10,11 +10,10 @@ def patch_aleph_client(target):
     def decorator(func):
         @wraps(func)
         def wrapper(self, *args, **kwargs):
-            mock_client = MockAlephClient()
             mock_class = MagicMock()
-            mock_class.return_value = mock_client
+            mock_class.return_value = MockAlephClient()
             with patch(target=target, return_value=mock_class):
-                return func(self, mock_client, *args, **kwargs)
+                return func(self, mock_class.return_value, *args, **kwargs)
 
         return wrapper
 

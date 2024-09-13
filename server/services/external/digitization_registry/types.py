@@ -6,6 +6,7 @@ class DigitizationState(Enum):
     InProgress = "InProgress"
     Planned = "Planned"
     NotDigitized = "NotDigitized"
+    Unknown = "Unknown"
 
 
 class UnknownDigitizationStateException(Exception):

@@ -28,6 +28,7 @@ class AddDocumentResponseStatus(Enum):
     AlreadyDigitized = "AlreadyDigitized"
     DigitizationInProgress = "DigitizationInProgress"
     DigitizationPlanned = "DigitizationPlanned"
+    AllIssuesProcessed = "AllIssuesProcessed"
     UnknownError = "UnknownError"
 
 

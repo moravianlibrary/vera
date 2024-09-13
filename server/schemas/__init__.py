@@ -59,6 +59,7 @@ from services.external.aleph import (
     AlephRecord,
     AlephIssue,
 )
+from services.external.digitization_registry import DigitizationRegistryRecord
 
 __all__ = [
     "RoleCreate",
@@ -112,4 +113,5 @@ __all__ = [
     "PeriodicTaskResponse",
     "AlephRecord",
     "AlephIssue",
+    "DigitizationRegistryRecord",
 ]

@@ -1,5 +1,5 @@
 from typing import Dict
-from .types import DigitizationState, UnknownDigitizationStateException
+from .types import DigitizationState
 
 
 class DigitizationRegistryRecord:
@@ -35,7 +35,7 @@ class DigitizationRegistryRecord:
             return DigitizationState.InProgress
         elif state == "plánováno":
             return DigitizationState.Planned
-        raise UnknownDigitizationStateException(state)
+        return DigitizationState.Unknown
 
     def __str__(self):
         properties = [

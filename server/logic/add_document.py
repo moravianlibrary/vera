@@ -30,32 +30,196 @@ from services.external.aleph import (
 from models import CatalogRecord, Document
 
 
-def create_document(
-    session: Session,
-    main_aleph_record: AlephRecord,
-    catalog_issue: CatalogIssueResponse,
-    added_by: str,
-    category_id: int,
-    pages_count_manual: Optional[int] = None,
-    extraction_priority: Optional[int] = None,
-) -> Document:
-    return Document(
-        sysno=main_aleph_record.sysno,
-        barcode=catalog_issue.barcode,
-        volume=catalog_issue.volume,
-        volume_year=catalog_issue.volume,
-        bundle=catalog_issue.bundle,
-        document_signature=catalog_issue.signature,
-        added_by=added_by,
-        category_id=category_id,
-        digitization_registry_id=catalog_issue.digitization_registry_id,
-        digitization_state=catalog_issue.digitization_state,
-        pages_count_catalog=main_aleph_record.parse_page_count(
-            catalog_issue.volume
-        ),
-        pages_count_manual=pages_count_manual,
-        extraction_priority=extraction_priority,
-    ).save(session)
+class AddDocumentPreprocessor:
+    def __init__(
+        self,
+        session: Session,
+        indexer: DocumentsIndexer,
+        identifier: Identifier,
+        added_by: str,
+        category_id: int,
+        pages_count_manual: Optional[int] = None,
+        extraction_priority: Optional[int] = None,
+    ):
+        self.session = session
+        self.indexer = indexer
+        self.identifier = identifier
+        self.added_by = added_by
+        self.category_id = category_id
+        self.pages_count_manual = pages_count_manual
+        self.extraction_priority = extraction_priority
+
+    def __call__(
+        self,
+    ) -> Tuple[Optional[CatalogDocumentResponse], AddDocumentResponseStatus]:
+        catalog_record, status = self.get_catalog_record()
+
+        if catalog_record is None:
+            return None, status
+
+        main_aleph_record = AlephRecord(
+            catalog_record.sysno, catalog_record.main_record
+        )
+        catalog_issues = self.get_catalog_issues(
+            self.session, main_aleph_record
+        )
+        catalog_document = CatalogDocumentResponse.from_records(
+            main_aleph_record, catalog_issues, catalog_record
+        )
+        active_issues = [
+            catalog_issue
+            for catalog_issue in catalog_issues
+            if catalog_issue.can_digitize and not catalog_issue.already_added
+        ]
+
+        if self.identifier.identifier_type == IdentifierType.Barcode:
+            find_catalog_issues = [
+                catalog_issue
+                for catalog_issue in catalog_issues
+                if catalog_issue.barcode == self.identifier.value
+            ]
+            if len(find_catalog_issues) != 1:
+                return catalog_document, AddDocumentResponseStatus.UnknownError
+            add_issue = find_catalog_issues[0]
+        elif len(active_issues) > 1:
+            return (
+                catalog_document,
+                AddDocumentResponseStatus.MultipleIssues,
+            )
+        elif len(active_issues) == 0:
+            return (
+                catalog_document,
+                AddDocumentResponseStatus.AllIssuesProcessed,
+            )
+        else:
+            add_issue = active_issues[0]
+
+        if add_issue.already_added:
+            return catalog_document, AddDocumentResponseStatus.UniqueViolation
+        if add_issue.digitization_state == DigitizationState.Unknown:
+            return (
+                catalog_document,
+                AddDocumentResponseStatus.InvalidDigitizationState,
+            )
+        if add_issue.digitization_state != DigitizationState.NotDigitized:
+            return (
+                catalog_document,
+                DigitizationStateToResponseStatusConverter[
+                    add_issue.digitization_state
+                ],
+            )
+
+        try:
+            document = self.create_document(
+                main_aleph_record,
+                add_issue,
+            )
+            if document is None:
+                return catalog_document, AddDocumentResponseStatus.UnknownError
+            add_issue.newly_added = True
+        except exceptions.UniqueDocumentViolationException:
+            return catalog_document, AddDocumentResponseStatus.UniqueViolation
+
+        # TODO: handle exceptions
+        self.indexer.index(document)
+
+        return catalog_document, AddDocumentResponseStatus.Success
+
+    def get_catalog_issues(
+        self, session: Session, main_aleph_record: AlephRecord
+    ):
+        catalog_issues = [
+            CatalogIssueResponse.from_aleph_issue(
+                main_aleph_record,
+                aleph_issue,
+                DigitizationRegistryClient().get_record(
+                    aleph_issue.barcode,
+                    main_aleph_record.cnb,
+                    main_aleph_record.isxn,
+                    aleph_issue.volume_year,
+                    aleph_issue.volume,
+                    aleph_issue.bundle,
+                ),
+                Document.exists(
+                    session,
+                    main_aleph_record.sysno,
+                    aleph_issue.barcode,
+                    aleph_issue.volume,
+                    aleph_issue.volume_year,
+                    aleph_issue.bundle,
+                ),
+            )
+            for aleph_issue in AlephIssue.from_record(main_aleph_record.record)
+        ]
+
+        return (
+            catalog_issues
+            if catalog_issues
+            else [
+                CatalogIssueResponse.from_digitization_registry(
+                    DigitizationRegistryClient().get_record(
+                        cnb=main_aleph_record.cnb,
+                        isxn=main_aleph_record.isxn,
+                    ),
+                    Document.exists(session, main_aleph_record.sysno),
+                )
+            ]
+        )
+
+    def get_catalog_record(
+        self,
+    ) -> Tuple[Optional[CatalogRecord], AddDocumentResponseStatus]:
+        catalog_record = CatalogRecord.find_by_identifier(
+            self.session,
+            self.identifier.identifier_type,
+            self.identifier.value,
+        )
+
+        if catalog_record is not None and (
+            datetime.now() - catalog_record.last_updated
+        ) <= timedelta(seconds=VeraConfig.CatalogRecordsValidFor):
+            return catalog_record, AddDocumentResponseStatus.Success
+
+        sysno, aleph_response_status = AlephClient().find_sysno(
+            IdentifierToAlephFieldConverted[self.identifier.identifier_type],
+            self.identifier.value,
+        )
+
+        if aleph_response_status != AlephResponseStatus.Success:
+            return (
+                None,
+                AlephToResponseStatusConverter[aleph_response_status],
+            )
+
+        catalog_record, aleph_response_status = update_catalog_record(
+            self.session, sysno
+        )
+        return catalog_record, AlephToResponseStatusConverter.get(
+            aleph_response_status
+        )
+
+    def create_document(
+        self,
+        main_aleph_record: AlephRecord,
+        catalog_issue: CatalogIssueResponse,
+    ) -> Document:
+        return Document(
+            sysno=main_aleph_record.sysno,
+            barcode=catalog_issue.barcode,
+            volume=catalog_issue.volume,
+            volume_year=catalog_issue.volume,
+            bundle=catalog_issue.bundle,
+            document_signature=catalog_issue.signature,
+            added_by=self.added_by,
+            category_id=self.category_id,
+            digitization_registry_id=catalog_issue.digitization_registry_id,
+            digitization_state=catalog_issue.digitization_state,
+            pages_count_catalog=main_aleph_record.parse_page_count(
+                catalog_issue.volume
+            ),
+            pages_count_manual=self.pages_count_manual,
+            extraction_priority=self.extraction_priority,
+        ).save(self.session)
 
 
 def add_document(
@@ -67,137 +231,12 @@ def add_document(
     pages_count_manual: Optional[int] = None,
     extraction_priority: Optional[int] = None,
 ) -> Tuple[Optional[CatalogDocumentResponse], AddDocumentResponseStatus]:
-    catalog_record = CatalogRecord.find_by_identifier(
-        session, identifier.identifier_type, identifier.value
-    )
-
-    if catalog_record is None or (
-        datetime.now() - catalog_record.last_updated
-    ) > timedelta(seconds=VeraConfig.CatalogRecordsValidFor):
-        sysno, aleph_response_status = AlephClient().find_sysno(
-            IdentifierToAlephFieldConverted[identifier.identifier_type],
-            identifier.value,
-        )
-
-        if aleph_response_status != AlephResponseStatus.Success:
-            return (
-                None,
-                AlephToResponseStatusConverter[aleph_response_status],
-            )
-
-        catalog_record, aleph_response_status = update_catalog_record(
-            session, sysno
-        )
-
-        if aleph_response_status != AlephResponseStatus.Success:
-            return (
-                None,
-                AlephToResponseStatusConverter[aleph_response_status],
-            )
-
-    main_aleph_record = AlephRecord(
-        catalog_record.sysno, catalog_record.main_record
-    )
-    aleph_issues = AlephIssue.from_record(catalog_record.main_record)
-
-    catalog_issues = [
-        CatalogIssueResponse.from_aleph_issue(
-            main_aleph_record,
-            aleph_issue,
-            DigitizationRegistryClient().get_record(
-                aleph_issue.barcode,
-                main_aleph_record.cnb,
-                main_aleph_record.isxn,
-                aleph_issue.volume_year,
-                aleph_issue.volume,
-                aleph_issue.bundle,
-            ),
-            Document.exists(
-                session,
-                main_aleph_record.sysno,
-                aleph_issue.barcode,
-                aleph_issue.volume,
-                aleph_issue.volume_year,
-                aleph_issue.bundle,
-            ),
-        )
-        for aleph_issue in aleph_issues
-        if (
-            identifier.identifier_type != IdentifierType.Barcode
-            or aleph_issue.barcode == identifier.value
-        )
-    ]
-
-    active_issues = [
-        catalog_issue
-        for catalog_issue in catalog_issues
-        if catalog_issue.can_digitize and not catalog_issue.already_added
-    ]
-
-    num_of_all_issues = len(catalog_issues)
-    num_of_active_issues = len(active_issues)
-
-    if (
-        num_of_active_issues > 1
-        or num_of_active_issues == 0
-        and num_of_all_issues > 0
-    ):
-        return (
-            CatalogDocumentResponse.from_records(
-                main_aleph_record, catalog_issues, catalog_record
-            ),
-            AddDocumentResponseStatus.MultipleIssues,
-        )
-
-    if num_of_active_issues == 0 and num_of_all_issues == 0:
-        add_issue = CatalogIssueResponse.from_digitization_registry(
-            DigitizationRegistryClient().get_record(
-                cnb=main_aleph_record.cnb,
-                isxn=main_aleph_record.isxn,
-            ),
-            Document.exists(session, main_aleph_record.sysno),
-        )
-    else:
-        add_issue = active_issues[0]
-
-    catalog_document = CatalogDocumentResponse.from_records(
-        main_aleph_record, [add_issue], catalog_record
-    )
-
-    if add_issue.already_added:
-        return catalog_document, AddDocumentResponseStatus.UniqueViolation
-
-    if add_issue.digitization_state is None:
-        return (
-            catalog_document,
-            AddDocumentResponseStatus.InvalidDigitizationState,
-        )
-
-    if add_issue.digitization_state != DigitizationState.NotDigitized:
-        return (
-            None,
-            DigitizationStateToResponseStatusConverter[
-                add_issue.digitization_state
-            ],
-        )
-
-    try:
-        document = create_document(
-            session,
-            main_aleph_record,
-            add_issue,
-            added_by,
-            category_id,
-            pages_count_manual,
-            extraction_priority,
-        )
-        if document is None:
-            return None, AddDocumentResponseStatus.UnknownError
-        add_issue.already_added = True
-    except exceptions.UniqueDocumentViolationException:
-        return None, AddDocumentResponseStatus.UniqueViolation
-
-    # TODO: handle exceptions
-    indexer.index(document)
-
-    return catalog_document, AddDocumentResponseStatus.Success
+    return AddDocumentPreprocessor(
+        session,
+        indexer,
+        identifier,
+        added_by,
+        category_id,
+        pages_count_manual,
+        extraction_priority,
+    )()
