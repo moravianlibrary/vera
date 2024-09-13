@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from services.database import Base
 from datatypes import ActionType
-from .base import BaseMixin
+from .base import BaseMixin, ModelBaseYaml
 
 
-class Role(Base, BaseMixin):
+class Role(Base, BaseMixin, ModelBaseYaml):
     __tablename__ = "roles"
 
     id = Column(Integer, primary_key=True, index=True)

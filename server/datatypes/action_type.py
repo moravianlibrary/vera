@@ -32,4 +32,4 @@ class ActionType(Enum):
     Extract = "Extract"
     AdminExtractions = "AdminExtractions"
 
-    AdminDatabase = "AdminDatabase"
+    ManageSystem = "ManageSystem"

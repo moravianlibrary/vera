@@ -2,6 +2,8 @@ from typing import List, Tuple, Optional, TypeVar, Type, Union
 from sqlalchemy.orm import Session, Query
 from sqlalchemy.ext.declarative import declarative_base
 from services.exceptions import ObjectNotFoundException
+from enum import Enum
+import yaml
 
 Base = declarative_base()
 
@@ -60,3 +62,56 @@ class BaseMixin:
         session.delete(self)
         session.commit()
         return self
+
+
+class ModelBaseDict:
+    def to_dict(self):
+        dict_ = {}
+        for column in self.__table__.columns:
+            name = str(column.name)
+            value = getattr(self, name)
+            if not value:
+                continue
+            if isinstance(value, Enum):
+                value = str(value.name)
+            elif isinstance(value, list):
+                value = [
+                    str(item.name) if isinstance(item, Enum) else item
+                    for item in value
+                ]
+            dict_[name] = value
+        return dict_
+
+    @classmethod
+    def from_dict(cls, dict):
+        columns = cls.__table__.columns
+        for name, value in dict.items():
+            if name in columns:
+                setattr(cls, name, value)
+        return cls(**dict)
+
+
+class ModelBaseYaml(ModelBaseDict):
+    def to_yaml(self):
+        return yaml.dump(
+            self.to_dict(), default_flow_style=False, sort_keys=False
+        )
+
+    @classmethod
+    def from_yaml(cls, yaml_string):
+        return cls.from_dict(yaml.safe_load(yaml_string))
+
+    @classmethod
+    def export_to_yaml(cls, session: Session) -> str:
+        # TODO: use ModelBase all
+        instances = session.query(cls).all()
+        tablename = cls.__tablename__
+        return yaml.dump(
+            {tablename: [instance.to_dict() for instance in instances]},
+            default_flow_style=False,
+            sort_keys=False,
+        )
+
+    @classmethod
+    def import_from_yaml(cls, session: Session, yaml_string: str):
+        pass

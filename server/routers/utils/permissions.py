@@ -253,6 +253,7 @@ CanReadIntentions = PermissionValidator(
 )
 CanReadCatalogRecords = PermissionValidator(ActionType.ReadCatalogRecords)
 CanReviewCatalogRecords = PermissionValidator(ActionType.ReviewCatalogRecords)
+CanManageSystem = PermissionValidator(ActionType.ManageSystem)
 
 
 def can_emulate_access_validator(
