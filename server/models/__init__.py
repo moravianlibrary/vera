@@ -1,3 +1,4 @@
+from .base_engine import Base, DatabaseUrl, Engine
 from .catalog_records import (
     CatalogRecord,
     CatalogRecordBarcode,
@@ -16,6 +17,9 @@ from .tasks import Task, TaskDataset, TaskDocument, PeriodicTask
 from .users import User
 
 __all__ = [
+    "Base",
+    "DatabaseUrl",
+    "Engine",
     "CatalogRecord",
     "CatalogRecordBarcode",
     "CatalogRecordFieldDifference",

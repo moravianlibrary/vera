@@ -1,3 +1,4 @@
+# pragma: no cover
 from os import environ
 from datetime import tzinfo
 import pytz
@@ -66,3 +67,40 @@ class VeraConfig:
     @staticproperty
     def BotName() -> str:
         return environ.get("BOT_NAME", "VeraBot")
+
+    class Postgres:
+        @staticproperty
+        def User() -> str:
+            return environ.get("POSTGRES_USER", "veraAdmin")
+
+        @staticproperty
+        def Password() -> str:
+            return environ.get("POSTGRES_PASSWORD", "password")
+
+        @staticproperty
+        def Host() -> str:
+            return environ.get("POSTGRES_HOST", "localhost")
+
+        @staticproperty
+        def Port() -> str:
+            return int(environ.get("POSTGRES_PORT", "5432"))
+
+        @staticproperty
+        def DatabaseName() -> str:
+            return environ.get("POSTGRES_NAME", "vera")
+
+        @staticproperty
+        def PoolSize() -> int:
+            return int(environ.get("POSTGRES_POOL_SIZE", "20"))
+
+        @staticproperty
+        def MaxOverflow() -> int:
+            return int(environ.get("POSTGRES_MAX_OVERFLOW", "0"))
+
+        @staticproperty
+        def PoolTimeout() -> int:
+            return int(environ.get("POSTGRES_POOL_TIMEOUT", "30"))
+
+        @staticproperty
+        def PoolRecycle() -> int:
+            return int(environ.get("POSTGRES_POOL_RECYCLE", "1800"))

@@ -2,9 +2,8 @@ from unittest import TestCase
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from vera import app
+from models.base_engine import Base, get_session
 
-
-from services.database import Base, get_db
 
 test_engine = create_engine(
     "sqlite:///:memory:", connect_args={"check_same_thread": False}
@@ -25,7 +24,7 @@ class TestBaseDatabase(TestCase):
         self.session = TestSessionLocal(bind=self.connection)
         self.session.execute(text("PRAGMA foreign_keys=ON;"))
 
-        app.dependency_overrides[get_db] = lambda: TestSessionLocal(
+        app.dependency_overrides[get_session] = lambda: TestSessionLocal(
             bind=self.connection
         )
 

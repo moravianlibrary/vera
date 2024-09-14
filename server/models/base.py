@@ -2,7 +2,7 @@ from typing import List, Tuple, Optional, TypeVar, Type, Union
 from sqlalchemy.orm import Session, Query
 from services.exceptions import ObjectNotFoundException
 from enum import Enum
-from services.database import Base
+from .base_engine import Base
 import yaml
 
 T = TypeVar("T", bound=Base)

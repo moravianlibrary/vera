@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Depends, Path, Query
+from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
 from schemas import CurrentUser, Page, ExtractionResponse, GenerateExtraction
 from models import Intention, Extraction
 from services.extractions_generator.generator import ExtractionGenerator
-from services.database import get_db
 from .utils.permissions import CanExtract, CanManageExtraction
-from .utils.dependencies import DependsOnCurrentUser
+from .utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
 
 
 router = APIRouter(prefix="/extractions/generated")
@@ -19,7 +18,7 @@ router = APIRouter(prefix="/extractions/generated")
 def create_extraction(
     settings: GenerateExtraction,
     user: CurrentUser = DependsOnCurrentUser,
-    db: Session = Depends(get_db),
+    db: Session = DependsOnDbSession,
 ):
     generator = ExtractionGenerator(
         Intention.get_current_intention(db).id, settings, db
@@ -46,7 +45,7 @@ def create_extraction(
 def get_extractions(
     page: int = Query(1, description="Page number"),
     page_size: int = Query(50, description="Page size"),
-    db: Session = Depends(get_db),
+    db: Session = DependsOnDbSession,
 ):
     return Extraction.get_page(db, page, page_size)
 
@@ -56,7 +55,7 @@ def get_extractions(
     dependencies=[CanManageExtraction],
     response_model=ExtractionResponse,
 )
-def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
+def delete_extraction(id: int = Path(...), db: Session = DependsOnDbSession):
     return Extraction.get(db, id).delete(db)
 
 
@@ -65,5 +64,5 @@ def delete_extraction(id: int = Path(...), db: Session = Depends(get_db)):
     dependencies=[CanExtract],
     response_model=ExtractionResponse,
 )
-def get_extraction(id: int = Path(...), db: Session = Depends(get_db)):
+def get_extraction(id: int = Path(...), db: Session = DependsOnDbSession):
     return Extraction.get(db, id)

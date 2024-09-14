@@ -4,7 +4,6 @@ import csv
 from typing import List, Union
 
 from models import TaskDataset
-from services.database import create
 
 
 class CsvWriter:
@@ -15,13 +14,10 @@ class CsvWriter:
     def write(self, line: List[Union[str, int, float]]):
         self.lines.append(line)
 
-    def flush_to_db(self, db: Session):
-        create(
-            db,
-            TaskDataset(
-                task_id=self.task_id, data=self._convert_to_csv_text()
-            ),
-        )
+    def flush_to_db(self, session: Session):
+        TaskDataset(
+            task_id=self.task_id, data=self._convert_to_csv_text()
+        ).save(session),
 
     def _convert_to_csv_text(self) -> str:
         output = StringIO()

@@ -226,7 +226,7 @@ def delete_query_documents(
 #     comment: CommentCreate,
 #     id: int = Path(...),
 #     user: CurrentUser = Depends(get_current_user),
-#     db: Session = Depends(get_db),
+#     db: Session = Depends(get_session),
 # ):
 #     return crud.create_comment(comment, id, user.id, db)
 
@@ -239,7 +239,7 @@ def delete_query_documents(
 #     comment: Comment,
 #     document_id: int = Path(...),
 #     user: CurrentUser = Depends(get_current_user),
-#     db: Session = Depends(get_db),
+#     db: Session = Depends(get_session),
 # ):
 #     return crud.update_comment(comment, db)
 
@@ -252,7 +252,7 @@ def delete_query_documents(
 #     document_id: int = Path(...),
 #     comment_id: int = Path(...),
 #     user: CurrentUser = Depends(get_current_user),
-#     db: Session = Depends(get_db),
+#     db: Session = Depends(get_session),
 # ):
 #     return crud.delete_comment(comment_id, db)
 
@@ -260,5 +260,5 @@ def delete_query_documents(
 # @router.get(
 #     "/documents/{document_id}/comments", response_model=List[Comment]
 # )
-# def get_note(document_id: int = Path(...), db: Session = Depends(get_db)):
+# def get_note(document_id: int = Path(...), db: Session = Depends(get_session)):
 #     return crud.get_comments_for_document(document_id, db)

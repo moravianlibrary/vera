@@ -2,7 +2,7 @@ from fastapi import APIRouter, Query
 from sqlalchemy.orm import Session
 from .utils.dependencies import DependsOnDbSession
 from .utils.permissions import CanManageSystem
-from services.database import get_all_models, get_model_by_tablename
+from models.base_engine import get_all_models, get_model_by_tablename
 from typing import List
 from tempfile import NamedTemporaryFile
 from datetime import datetime

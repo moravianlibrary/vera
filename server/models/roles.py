@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, JSON
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datatypes import ActionType
-from models.base import BaseModel
+from models import BaseModel
 
 
 class Role(BaseModel):

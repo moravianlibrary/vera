@@ -4,7 +4,7 @@ from celery import Celery
 from celery.schedules import crontab
 from os import environ, path
 from sys import path as sys_path
-from services.database import DATABASE_URL, get_db
+from models.base_engine import DatabaseUrl, get_session
 from datatypes import TaskState, TaskType
 from sqlalchemy.orm import Session
 from sqlalchemy import update, or_
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 celery_worker = Celery(
     "tasks",
     broker=environ.get("BROKER_URL"),
-    result_backend=f"db+{DATABASE_URL}",
+    result_backend=f"db+{DatabaseUrl}",
     database_table_names={
         "task": "celery_tasks",
         "group": "celery_groups",
@@ -79,7 +79,7 @@ def setup_periodic_task(periodic_task: PeriodicTask):
 
 @celery_worker.task
 def run_periodic_task_instance(periodic_task_id: int):
-    session = next(get_db())
+    session = next(get_session())
     periodic_task = PeriodicTask.find(session, periodic_task_id)
     if periodic_task is None:
         return
@@ -99,7 +99,7 @@ def run_task(task_id: int):
     # sys_path.append(path.abspath("categories/"))
     # sys_path.append(path.abspath("extractions/"))
 
-    session = next(get_db())
+    session = next(get_session())
     task = Task.get(session, task_id)
 
     task.started = VeraConfig.Timestamp

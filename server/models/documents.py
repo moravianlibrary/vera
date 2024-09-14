@@ -16,7 +16,6 @@ from sqlalchemy import (
     or_,
 )
 
-from services.database import Base
 from services.external.aleph import IssuanceType
 from services.external.digitization_registry import DigitizationState
 from exceptions import (
@@ -27,10 +26,10 @@ from exceptions import (
     ExtractingDocumentsWithDigitizationStateDisabled,
 )
 from .catalog_records import CatalogRecord
-from .base import BaseMixin
+from .base import BaseModel
 
 
-class Document(Base, BaseMixin):
+class Document(BaseModel):
     __tablename__ = "documents"
     __table_args__ = (
         UniqueConstraint(
@@ -303,7 +302,7 @@ class Document(Base, BaseMixin):
         return query.all()
 
 
-class DocumentComment(Base):
+class DocumentComment(BaseModel):
     __tablename__ = "comments"
 
     id = Column(Integer, primary_key=True, index=True)
