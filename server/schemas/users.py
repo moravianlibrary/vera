@@ -13,7 +13,7 @@ class CurrentUser(BaseModel):
 
     department_id: Optional[int] = None
     department_name: Optional[str] = None
-    department_categories_ids: List[int] = []
+    department_categories_ids: Optional[List[int]] = None
 
     def has_action(self, action: ActionType) -> bool:
         return action in self.actions

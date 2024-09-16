@@ -268,6 +268,7 @@ class CategoryDepartments(BaseModel):
     __table_args__ = (PrimaryKeyConstraint("category_id", "department_id"), {})
 
     category = relationship("Category", back_populates="category_departments")
+    department = relationship("Department", back_populates="categories")
 
     @classmethod
     def find(

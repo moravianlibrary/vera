@@ -70,25 +70,19 @@ def get_user_from_token(token: str, db: Session) -> CurrentUser:
         raise exceptions.CredentialsException(
             "User has more than one assigned role"
         )
+    role = roles[0]
 
-    user = User.find_by_name(db, user_info[USER_FIELD])
+    user = User.find(db, user_info[USER_FIELD])
     if user is None:
         user = User(name=user_info[USER_FIELD])
         user.save(db)
 
-    departments = [User.find_by_name(db, user_info[USER_FIELD]).department]
-
-    department_id, department_name = (
-        (departments[0].id, departments[0].name)
-        if len(departments) == 1
-        else (None, None)
-    )
-
     return CurrentUser(
-        username=user_info[USER_FIELD],
-        department_id=department_id,
-        department_name=department_name,
-        role_id=roles[0].id,
-        role_name=roles[0].name,
-        actions=[action.action for action in roles[0].role_actions],
+        username=user.username,
+        role_id=role.id,
+        role_name=role.name,
+        actions=role.actions,
+        department_id=user.department_id,
+        department_name=user.department_name,
+        department_categories_ids=user.department_categories_ids,
     )

@@ -14,6 +14,9 @@ class Department(BaseModel):
     name = Column(String, unique=True, nullable=False)
 
     users = relationship("User", back_populates="department")
+    categories = relationship(
+        "CategoryDepartments", back_populates="department"
+    )
 
     @hybrid_property
     def usernames(self) -> List[str]:

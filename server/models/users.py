@@ -6,7 +6,7 @@ from sqlalchemy import (
     JSON,
 )
 from sqlalchemy.orm import relationship, Session
-from typing import Optional
+from typing import Optional, List
 from .base import BaseModel
 
 
@@ -18,6 +18,18 @@ class User(BaseModel):
     department_id = Column(Integer, ForeignKey("departments.id"))
 
     department = relationship("Department", back_populates="users")
+
+    @property
+    def department_name(self) -> Optional[str]:
+        return self.department.name if self.department is not None else None
+
+    @property
+    def department_categories_ids(self) -> Optional[List[int]]:
+        return (
+            [category.id for category in self.department.categories]
+            if self.department is not None
+            else None
+        )
 
     @classmethod
     def find(cls, session: Session, username: str) -> Optional["User"]:
