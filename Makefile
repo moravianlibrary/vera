@@ -8,17 +8,22 @@ TARGET_SERVER_IMAGE_TEMPLATE_NAME := mzk.cz/vera-server
 TARGET_WORKER_IMAGE_TEMPLATE_NAME := mzk.cz/vera-worker
 TARGET_CLIENT_IMAGE_TEMPLATE_NAME := mzk.cz/vera-client
 
-server:
-	docker-compose down server
-	docker-compose build server
-	docker-compose up -d server
 start:
-	docker-compose up -d
+	docker-compose up -d server worker client
 stop:
-	docker-compose down
+	docker-compose down server worker client
 build:
-	docker-compose build
+	docker-compose build server worker client
 run: stop build start
+
+start-ai:
+	docker-compose up -d ai
+stop-ai:
+	docker-compose down ai
+build-ai:
+	docker-compose build ai
+run-ai: stop build start
+
 clean:
 	docker-compose down --volumes
 tag:

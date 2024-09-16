@@ -72,11 +72,7 @@ def ensure_today_intention():
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
-    from models.base_engine import (
-        check_connection,
-        check_database_revision,
-        get_session,
-    )
+    from models.base_engine import get_session
     from worker import set_failed_tasks_on_start
 
     logger.info("Checking database connection.")
