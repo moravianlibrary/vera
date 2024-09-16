@@ -21,7 +21,7 @@ class Role(BaseModel):
         )
 
     @actions.setter
-    def actions(self, values: List[ActionType]):
+    def set_actions(self, values: List[ActionType]):
         self._actions = [item.value for item in values] if values else []
 
     @classmethod

@@ -26,7 +26,7 @@ from .base import BaseModel
 class CatalogRecord(BaseModel):
     __tablename__ = "catalog_records"
 
-    sysno = Column(String, primary_key=True)
+    sysno = Column(String, primary_key=True, index=True)
     marc = Column(LargeBinary, nullable=False)
 
     cnb = Column(String)
