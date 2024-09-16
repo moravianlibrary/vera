@@ -56,6 +56,12 @@ class ModelOperationsMixin:
         session.refresh(self)
         return self
 
+    def merge(self: T, session: Session) -> T:
+        merged_instance = session.merge(self)
+        session.commit()
+        session.refresh(merged_instance)
+        return merged_instance
+
     def delete(self: T, session: Session) -> T:
         if hasattr(self, "validate_before_delete") and callable(
             getattr(self, "validate_before_delete")

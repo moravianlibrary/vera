@@ -1,4 +1,4 @@
-# pragma: no cover
+# pragma: exclude file
 import logging
 from fastapi import FastAPI
 from contextlib import asynccontextmanager

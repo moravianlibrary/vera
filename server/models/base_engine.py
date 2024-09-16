@@ -46,6 +46,11 @@ def get_model_by_tablename(tablename: str):
 
 
 def import_from_yaml(session: Session, yaml_string: str):
-    for tablename, data in yaml.safe_load(yaml_string):
+    for tablename, items in yaml.safe_load(yaml_string).items():
         model = get_model_by_tablename(tablename)
-        model.from_dict(data)
+        for item in items:
+            db_item = model.from_dict(item)
+            if db_item.is_persisted(session):
+                continue
+            db_item.merge(session)
+        print(model.all(session))

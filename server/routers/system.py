@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from .utils.dependencies import DependsOnDbSession
 from .utils.permissions import CanManageSystem
@@ -9,6 +9,7 @@ from datetime import datetime
 from starlette.background import BackgroundTask
 from starlette.responses import FileResponse
 from os import remove
+from models.base_engine import import_from_yaml
 
 
 router = APIRouter(prefix="/system")
@@ -52,9 +53,19 @@ def export_from_database(
         raise e
 
 
-@router.put(
-    "/database/export",
+@router.post(
+    "/database/import",
     dependencies=[CanManageSystem],
 )
-def import_to_database(data: str, session: Session = DependsOnDbSession):
-    pass
+async def import_to_database(
+    file: UploadFile = File(...), session: Session = DependsOnDbSession
+):
+    try:
+        contents = await file.read()
+        yaml_content = contents.decode("utf-8")
+        import_from_yaml(session, yaml_content)
+        # return {"status": "success", "message": "Data imported successfully"}
+
+    except Exception as e:
+        session.rollback()
+        raise e

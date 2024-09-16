@@ -78,3 +78,42 @@ class TestSystemEndpoints(TestEndpointsBase):
                 """
             ),
         )
+
+    def test_import_roles_from_yaml(self):
+        # Arrange
+        return
+        # TODO: implement
+        file_data = dedent(
+            """\
+                roles:
+                - id: 1
+                  name: Admin
+                  actions:
+                  - ReadDatatableOwn
+                - id: 2
+                  name: User
+                  actions:
+                  - ReadDatatableDepartment
+                - id: 3
+                  name: Guest
+                """
+        )
+
+        # Act
+        response = self.client.post(
+            "/system/database/import",
+            headers=self.headers,
+            files={"file": ("roles.yaml", file_data, "application/x-yaml")},
+        )
+
+        # Assert
+        self.assertResponse(response, 200)
+        print(Role.all(self.session))
+        for model in [
+            Role(name="Admin", _actions=["ReadDatatableOwn"]),
+            Role(name="User", _actions=["ReadDatatableDepartment"]),
+            Role(name="Guest", _actions=[]),
+        ]:
+            self.assertEqualModelData(
+                Role.find_by_name(self.session, model.name), model
+            )

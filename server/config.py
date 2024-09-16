@@ -1,4 +1,4 @@
-# pragma: no cover
+# pragma: exclude file
 from os import environ
 from datetime import tzinfo
 import pytz
