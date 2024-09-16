@@ -28,7 +28,7 @@ class Extraction(BaseModel):
         )
 
     @document_ids.setter
-    def set_document_ids(self, values: List[int]):
+    def document_ids(self, values: List[int]):
         self._document_ids = values
 
     @property
@@ -40,7 +40,7 @@ class Extraction(BaseModel):
         )
 
     @include_categories.setter
-    def set_include_categories(self, values: List[int]):
+    def include_categories(self, values: List[int]):
         self._include_categories = values
 
     @property
@@ -52,7 +52,7 @@ class Extraction(BaseModel):
         )
 
     @location_ids.setter
-    def set_location_ids(self, values: List[int]):
+    def location_ids(self, values: List[int]):
         self._location_ids = values
 
     def validate_before_save(self, session):

@@ -35,7 +35,7 @@ def create_task(
     else:
         task = Task(
             task_type=task_type,
-            query=query_params,
+            query_params=query_params,
             owner=owner,
         ).save(db)
         for document_id in indexer.get_document_ids(query_params):
