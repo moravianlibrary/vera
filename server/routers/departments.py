@@ -10,7 +10,7 @@ from schemas import (
 from models import Department
 
 
-router = APIRouter(prefix="/departments")
+router = APIRouter(prefix="/departments", tags=["Departments"])
 
 
 @router.post(

@@ -7,7 +7,9 @@ from .utils.permissions import CanExtract, CanManageExtraction
 from .utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
 
 
-router = APIRouter(prefix="/extractions/generated")
+router = APIRouter(
+    prefix="/extractions/generated", tags=["Generated extractions"]
+)
 
 
 @router.post(

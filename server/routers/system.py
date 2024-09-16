@@ -12,7 +12,7 @@ from os import remove
 from models.base_engine import import_from_yaml
 
 
-router = APIRouter(prefix="/system")
+router = APIRouter(prefix="/system", tags=["System"])
 
 YAML_MIMETYPE = "application/x-yaml"
 

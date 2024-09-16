@@ -13,7 +13,9 @@ from exceptions import EmptyExtractionException
 from services.documents_indexer import DocumentsIndexer
 from datatypes import ElasticsearchParams, DigitizationState
 
-router = APIRouter(prefix="/extractions/digitization")
+router = APIRouter(
+    prefix="/extractions/digitization", tags=["Digitization lists"]
+)
 
 
 @router.post(

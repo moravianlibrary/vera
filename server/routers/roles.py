@@ -10,7 +10,7 @@ from schemas import (
 from models import Role
 
 
-router = APIRouter(prefix="/roles")
+router = APIRouter(prefix="/roles", tags=["Roles"])
 
 
 @router.post("", dependencies=[CanManageAccess], response_model=RoleResponse)

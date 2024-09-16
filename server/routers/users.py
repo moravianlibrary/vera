@@ -13,7 +13,7 @@ from schemas import (
 from models import Role, User
 
 
-router = APIRouter(prefix="/users")
+router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("/current", response_model=CurrentUser)

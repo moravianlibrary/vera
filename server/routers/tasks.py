@@ -19,7 +19,7 @@ from schemas import (
     PeriodicTaskResponse,
 )
 
-router = APIRouter(prefix="/tasks")
+router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
 
 @router.post("", dependencies=[CanPlanTask], response_model=TaskDefinition)

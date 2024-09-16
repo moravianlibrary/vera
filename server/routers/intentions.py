@@ -7,7 +7,7 @@ from models import Distribution, Intention
 from schemas import IntentionCreate, IntentionResponse
 from typing import List
 
-router = APIRouter(prefix="/intentions")
+router = APIRouter(prefix="/intentions", tags=["Intentions"])
 
 
 @router.post(

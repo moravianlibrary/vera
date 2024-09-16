@@ -35,7 +35,7 @@ XLSX_MIMETYPE = (
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
 
-router = APIRouter(prefix="/documents")
+router = APIRouter(prefix="/documents", tags=["Documents"])
 
 
 def restrict_editing_query_params(

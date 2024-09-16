@@ -24,7 +24,7 @@ from logic import update_catalog_record as update_catalog_record_logic
 from services.external.aleph import AlephResponseStatus
 
 
-router = APIRouter(prefix="/catalog_records")
+router = APIRouter(prefix="/catalog_records", tags=["Catalog records"])
 
 
 @router.get(

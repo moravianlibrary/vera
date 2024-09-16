@@ -30,7 +30,7 @@ from schemas import (
 )
 
 
-router = APIRouter(prefix="/categories")
+router = APIRouter(prefix="/categories", tags=["Categories"])
 
 
 CanManageRootCategories = PermissionValidator(ActionType.EditCategoriesAll)
