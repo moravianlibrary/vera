@@ -88,7 +88,11 @@ class Category(BaseModel):
 
     @hybrid_property
     def total_pages(self) -> int:
-        return sum(document.pages_count for document in self.documents) + sum(
+        return sum(
+            document.pages_count
+            for document in self.documents
+            if document.pages_count is not None
+        ) + sum(
             sub_category.total_pages for sub_category in self.sub_categories
         )
 
