@@ -13,7 +13,7 @@ from .base import BaseModel
 class User(BaseModel):
     __tablename__ = "users"
 
-    username = Column(String, primary_key=True, index=True)
+    username = Column(String, primary_key=True, index=True, unique=True)
     settings = Column(JSON)
     department_id = Column(Integer, ForeignKey("departments.id"))
 

@@ -8,7 +8,7 @@ from typing import List
 class Extraction(BaseModel):
     __tablename__ = "generated_extractions"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
     _document_ids = Column("document_ids", JSON)
     selected_pages = Column(Integer)
     target_pages = Column(Integer)

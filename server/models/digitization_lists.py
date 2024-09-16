@@ -12,7 +12,7 @@ from datatypes import DigitizationState
 class DigitizationList(BaseModel):
     __tablename__ = "digitization_lists"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
     intention_id = Column(Integer, ForeignKey("intentions.id"), nullable=False)
     created_by = Column(String, index=True, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())

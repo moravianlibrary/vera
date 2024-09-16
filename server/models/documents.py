@@ -37,7 +37,7 @@ class Document(BaseModel):
         ),
     )
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
 
     sysno = Column(String, ForeignKey("catalog_records.sysno"), index=True)
     barcode = Column(String)

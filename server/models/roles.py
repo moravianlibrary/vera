@@ -8,7 +8,7 @@ from .base import BaseModel
 class Role(BaseModel):
     __tablename__ = "roles"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
     name = Column(String, unique=True, nullable=False)
     _actions = Column("actions", JSON)
 

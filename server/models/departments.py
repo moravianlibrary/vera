@@ -9,7 +9,7 @@ from .users import User
 class Department(BaseModel):
     __tablename__ = "departments"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
     abbreviation = Column(String, unique=True, nullable=False)
     name = Column(String, unique=True, nullable=False)
 

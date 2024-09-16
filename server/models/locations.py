@@ -15,7 +15,7 @@ from .base import BaseModel
 class Library(BaseModel):
     __tablename__ = "libraries"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
     name = Column(String, nullable=False)
 
     __table_args__ = (UniqueConstraint("name"),)
@@ -26,7 +26,7 @@ class Library(BaseModel):
 class Storage(BaseModel):
     __tablename__ = "storages"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
     name = Column(String, nullable=False)
     library_id = Column(Integer, ForeignKey("libraries.id"), nullable=False)
 
@@ -39,7 +39,7 @@ class Storage(BaseModel):
 class Location(BaseModel):
     __tablename__ = "locations"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
     name = Column(String, nullable=False)
     regexp = Column(String, nullable=False)
     description = Column(String)

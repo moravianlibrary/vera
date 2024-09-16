@@ -12,7 +12,7 @@ interface User {
 
 namespace ApiUser {
     export function getCurrentUser() {
-        return axiosInstance.get<User>(`/auth/current_user`, { headers: authHeader() });
+        return axiosInstance.get<User>(`/users/current`, { headers: authHeader() });
     }
 
     export function getUsers() {

@@ -10,7 +10,7 @@ from .base import BaseModel
 class Intention(BaseModel):
     __tablename__ = "intentions"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
     name = Column(String, nullable=False)
     description = Column(String)
     target_page_count = Column(Integer, nullable=False)

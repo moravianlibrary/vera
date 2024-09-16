@@ -20,13 +20,13 @@ from typing import Optional
 class Task(BaseModel):
     __tablename__ = "tasks"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
     process_id = Column(Integer)
 
     task_type = Column(Enum(TaskType), nullable=False, index=True)
     owner = Column(String, nullable=False, index=True)
 
-    query = Column(JSON)
+    query_params = Column(JSON)
 
     task_state = Column(
         Enum(TaskState), nullable=False, server_default=TaskState.Planned.value
@@ -98,7 +98,10 @@ class TaskDataset(BaseModel):
     __tablename__ = "task_datasets"
 
     task_id = Column(
-        Integer, ForeignKey("tasks.id"), primary_key=True, index=True
+        Integer,
+        ForeignKey("tasks.id"),
+        primary_key=True,
+        index=True,
     )
     data = Column(JSON)
     error_message = Column(String)
@@ -109,7 +112,7 @@ class TaskDataset(BaseModel):
 class PeriodicTask(BaseModel):
     __tablename__ = "periodic_tasks"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
 
     task_type = Column(Enum(TaskType), nullable=False)
     query_params = Column(JSON)

@@ -30,7 +30,7 @@ MAX_CATEGORY_LEVEL = 3
 class Category(BaseModel):
     __tablename__ = "categories"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, unique=True)
     name = Column(String, nullable=False)
     description = Column(String)
     parent_id = Column(

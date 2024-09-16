@@ -23,7 +23,7 @@ class TaskDefinition(BaseModel):
 
     owner: str
 
-    query: Optional[ElasticsearchParams]
+    query_params: Optional[ElasticsearchParams]
 
     task_state: TaskState
     planned: datetime
