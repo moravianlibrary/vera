@@ -527,6 +527,27 @@ def upgrade_roles() -> None:
     )
     op.create_unique_constraint(None, "roles", ["name"])
 
+    op.execute(
+        sa.text(
+            """
+            UPDATE roles
+            SET actions = subquery.actions
+            FROM (
+                SELECT role_id, json_agg(CASE
+                    WHEN action = 'AdminDatabase' THEN 'ManageSystem'
+                    ELSE action::text
+                END) AS actions
+                FROM actions
+                GROUP BY role_id
+            ) AS subquery
+            WHERE roles.id = subquery.role_id
+            """
+        )
+    )
+
+    op.drop_index("ix_actions_role_id", table_name="actions")
+    op.drop_table("actions")
+
 
 def upgrade_users() -> None:
     op.add_column("users", sa.Column("settings", sa.JSON(), nullable=True))
@@ -567,8 +588,6 @@ def upgrade() -> None:
     upgrade_roles()
     upgrade_users()
 
-    op.drop_index("ix_actions_role_id", table_name="actions")
-    op.drop_table("actions")
     op.create_index(
         op.f("ix_intentions_id"), "intentions", ["id"], unique=False
     )
