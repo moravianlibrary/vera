@@ -72,3 +72,19 @@ class PermissionDeniedException(HTTPException):
             detail="Insufficient permissions",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+class InvalidPageNumberException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Page number should be positive number >= 1",
+        )
+
+
+class InvalidPageSizeException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Page size should be positive number >= 1",
+        )

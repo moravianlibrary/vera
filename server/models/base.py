@@ -1,6 +1,10 @@
 from typing import List, Tuple, Optional, TypeVar, Type, Union
 from sqlalchemy.orm import Session, Query
-from services.exceptions import ObjectNotFoundException
+from exceptions import (
+    ObjectNotFoundException,
+    InvalidPageNumberException,
+    InvalidPageSizeException,
+)
 from enum import Enum
 from .base_engine import Base
 import yaml
@@ -31,6 +35,11 @@ class ModelOperationsMixin:
     def get_page(
         cls: Type[T], session: Session, page=1, page_size=50
     ) -> Tuple[List[T], int]:
+        if page < 1:
+            raise InvalidPageNumberException()
+        if page_size < 1:
+            raise InvalidPageSizeException()
+
         offset = (page - 1) * page_size
         return (
             cls.query_base(session).offset(offset).limit(page_size).all(),

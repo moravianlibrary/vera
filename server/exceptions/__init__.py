@@ -3,6 +3,8 @@ from .base import (
     ObjectMissingRequiredFieldException,
     IndexIsNotAvailableException,
     PermissionDeniedException,
+    InvalidPageNumberException,
+    InvalidPageSizeException,
 )
 from .catalog_records import FieldDifferenceAlreadyApprovedException
 from .documents import (
@@ -27,4 +29,6 @@ __all__ = [
     "IndexIsNotAvailableException",
     "ExtractingDocumentsWithDigitizationStateDisabled",
     "PermissionDeniedException",
+    "InvalidPageNumberException",
+    "InvalidPageSizeException",
 ]
