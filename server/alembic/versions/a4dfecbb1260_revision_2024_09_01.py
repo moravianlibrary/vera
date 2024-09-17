@@ -372,12 +372,55 @@ def upgrade_periodic_tasks() -> None:
 
 
 def upgrade_tasks() -> None:
+    # TASKS - changing enum values
+    op.execute(
+        """
+        CREATE TYPE public.new_tasktype AS ENUM (
+            'PredictPeriodicalPageCount',
+            'Reindex',
+            'SyncFromCatalogs',
+            'SyncFromDigitizationRegistry',
+            'GenerateVolumesPagesDataset',
+            'GenerateItemsPagesDataset'
+        );
+    """
+    )
+    op.add_column(
+        "tasks",
+        sa.Column(
+            "new_task_type",
+            type_=sa.Enum("new_tasktype", name="new_tasktype"),
+            nullable=True,
+        ),
+    )
+    op.execute(
+        """
+        UPDATE tasks
+        SET new_task_type = CASE
+            WHEN task_type = 'PredictVolumePages'
+                THEN 'PredictPeriodicalPageCount'::new_tasktype
+            WHEN task_type = 'SyncFromCatalog'
+                THEN 'SyncFromCatalogs'::new_tasktype
+            WHEN task_type = 'SyncFromDigitizationRegistry'
+                THEN 'SyncFromDigitizationRegistry'::new_tasktype
+            WHEN task_type = 'GenerateVolumesPagesDataset'
+                THEN 'GenerateVolumesPagesDataset'::new_tasktype
+            WHEN task_type = 'GenerateItemsPagesDataset'
+                THEN 'GenerateItemsPagesDataset'::new_tasktype
+        END;
+    """
+    )
+    op.execute("ALTER TABLE tasks DROP COLUMN task_type;")
+    op.execute("ALTER TABLE tasks RENAME COLUMN new_task_type TO task_type;")
+    op.execute("DROP TYPE IF EXISTS tasktype;")
+    op.execute("ALTER TYPE new_tasktype RENAME TO tasktype;")
     op.alter_column(
         "tasks",
         "task_type",
         existing_type=postgresql.ENUM(
-            "PredictVolumePages",
-            "SyncFromCatalog",
+            "PredictPeriodicalPageCount",
+            "Reindex",
+            "SyncFromCatalogs",
             "SyncFromDigitizationRegistry",
             "GenerateVolumesPagesDataset",
             "GenerateItemsPagesDataset",
@@ -385,6 +428,7 @@ def upgrade_tasks() -> None:
         ),
         nullable=False,
     )
+    # TASKS - other changes
     op.alter_column(
         "tasks", "owner", existing_type=sa.VARCHAR(), nullable=False
     )
@@ -583,8 +627,8 @@ def upgrade() -> None:
     upgrade_departments()
     upgrade_generated_extractions()
     upgrade_locations()
-    upgrade_periodic_tasks()
     upgrade_tasks()
+    upgrade_periodic_tasks()
     upgrade_roles()
     upgrade_users()
 
