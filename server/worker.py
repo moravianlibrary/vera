@@ -35,6 +35,7 @@ celery_worker = Celery(
 )
 
 
+# TODO: move to lifespan
 def set_failed_tasks_on_start(session: Session):
     session.execute(
         update(Task)
@@ -49,6 +50,7 @@ def set_failed_tasks_on_start(session: Session):
     session.commit()
 
 
+# TODO: move to lifespan
 def setup_periodic_tasks_on_start(session: Session):
     for periodic_task in PeriodicTask.all():
         setup_periodic_task(session, periodic_task)
