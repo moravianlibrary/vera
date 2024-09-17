@@ -27,7 +27,7 @@ def get_caller_username(
 
 def get_documents_indexer() -> Generator["DocumentsIndexer", None, None]:
     if not DocumentsIndexer.is_indexer_available():
-        raise IndexIsNotAvailableException
+        raise IndexIsNotAvailableException()
     indexer = DocumentsIndexer.get_instance()
     try:
         yield indexer

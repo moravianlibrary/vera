@@ -314,9 +314,10 @@ class DocumentsIndexer:
 
     @staticmethod
     def is_indexer_available() -> bool:
+        # TODO: rework
         try:
             response = requests.get(VeraConfig.ElasticsearchUrl)
-            if response.status_code != 200:
+            if response.status_code not in [200, 401]:
                 return False
         except RequestException:
             return False

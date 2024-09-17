@@ -13,6 +13,7 @@ from datatypes import TaskDocumentErrorType
 from models import CatalogRecord, Document, Task, TaskDocument, Category
 from services.external.aleph import AlephRecord
 from services.predictor import PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD
+from pymarc import MARCReader
 
 
 TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
@@ -79,6 +80,61 @@ class TestCatalogSyncIntegration(TestTasksBase):
             ).title,
             "Lidé a země : zeměpisný a cestopisný měsíčník",
         )
+
+    # TODO: move to specific class
+    def getTestAlephRecord(self):
+        reader = MARCReader(
+            open("tests/aleph_records/MZK01-000165329.marc", "rb")
+        )
+        for record in reader:
+            return AlephRecord("MZK01-000165329", record)
+
+    @patch("services.external.aleph.AlephClient.get_record")
+    @patch("services.documents_indexer.DocumentsIndexer.get_instance")
+    def test_catalog_sync_calls_aleph_once_per_sysno(
+        self, mock_get_instance: Mock, mock_get_record: Mock
+    ):
+        # Arrange
+        mock_get_instance.return_value = MagicMock()
+        mock_get_record.return_value = (
+            self.getTestAlephRecord(),
+            AlephResponseStatus.Success,
+        )
+
+        self.session.add(
+            Document(
+                sysno="MZK01-000165329",
+                barcode="2619868037",
+                volume="40",
+                volume_year="1940",
+                added_by="Test User",
+                category_id=1,
+            )
+        )
+        self.session.flush()
+        self.session.add(
+            TaskDocument(
+                task_id=1,
+                document_id=2,
+            )
+        )
+        self.session.flush()
+
+        # Act
+        SyncFromCatalogs(self.session, 1)
+        document = Document.get(self.session, 1)
+
+        # Assert
+        self.assertIsNotNone(document.catalog_record.marc)
+        self.assertIsNotNone(document.catalog_record.main_record)
+        self.assertEqual(
+            AlephRecord(
+                document.catalog_record.sysno,
+                document.catalog_record.main_record,
+            ).title,
+            "Lidé a země : zeměpisný a cestopisný měsíčník",
+        )
+        mock_get_record.assert_called_once()
 
     @patch("services.external.aleph.AlephClient.get_record")
     @patch("services.documents_indexer.DocumentsIndexer.get_instance")

@@ -34,7 +34,7 @@ def SyncFromCatalogs(session: Session, task_id: int):
         )
 
         aleph_issue = AlephIssue.specific_issue_from_record(
-            aleph_record, document.barcode, document.volume
+            aleph_record.record, document.barcode, document.volume
         )
         if aleph_issue is None:
             raise ValueError(
