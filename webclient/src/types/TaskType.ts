@@ -1,6 +1,7 @@
 enum TaskType {
-    PredictVolumePages = 'PredictVolumePages',
-    SyncFromCatalog = 'SyncFromCatalog',
+    PredictPeriodicalPageCount = 'PredictPeriodicalPageCount',
+    Reindex = 'Reindex',
+    SyncFromCatalogs = 'SyncFromCatalogs',
     SyncFromDigitizationRegistry = 'SyncFromDigitizationRegistry',
     GenerateVolumesPagesDataset = "GenerateVolumesPagesDataset",
     GenerateItemsPagesDataset = "GenerateItemsPagesDataset"

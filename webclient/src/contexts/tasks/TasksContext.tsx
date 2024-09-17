@@ -3,6 +3,7 @@ import ApiTasks, { Task } from "../../adapters/ApiTasks";
 
 interface TasksContextProps {
     tasks: Task[] | undefined;
+    numFound: number;
 }
 
 const TasksContext = createContext<TasksContextProps | undefined>(undefined);
@@ -15,14 +16,18 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     const [offset, setOffset] = useState<number>(0);
     const [limit, setLimit] = useState<number>(50);
     const [tasks, setTasks] = useState<Task[] | undefined>();
+    const [numFound, setNumFound] = useState<number>(0);
 
     const loadTasks = async () => {
-        ApiTasks.getTasks(offset, limit)
+        ApiTasks.getTasks(offset + 1, limit)
         .then(response => {
-            const transformedData: Task[] = response.data.map(task => {
+            console.log(response.data);
+            
+            const transformedData: Task[] = response.data.items.map(task => {
                 return Object.assign({}, task) as Task;
             });
             setTasks(transformedData);
+            setNumFound(response.data.num_found);
         }).catch(error => {
             console.error(`Could not receive tasks: ${error}`);
         });
@@ -30,6 +35,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
 
     const contextValue: TasksContextProps = {
         tasks,
+        numFound,
     };
 
     useEffect(() => {

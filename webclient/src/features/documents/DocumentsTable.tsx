@@ -44,8 +44,16 @@ interface DocumentDetailsBodyProps {
 const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
     const { t } = useTranslation();
 
-    const { documents, numFound, offset, setOffset, limit, setLimit, refresh } =
-        useDocuments();
+    const {
+        documents,
+        numFound,
+        offset,
+        setOffset,
+        limit,
+        setLimit,
+        refresh,
+        indexDocuments,
+    } = useDocuments();
     const { selectedDocuments, selectDocuments } = useDocumentsSelection();
 
     const handleSelectionChange = (
@@ -133,7 +141,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
             <div>
                 <DataTable
                     className="documents-table"
-                    value={documents}
+                    value={indexDocuments}
                     scrollable
                     scrollHeight="calc(100vh - 170px)"
                     selectionMode="checkbox"
@@ -206,7 +214,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
     return (
         <div>
             <DataTable
-                className="documents-table"
+                className="documents-table flex-grow"
                 value={documents}
                 scrollable
                 scrollHeight="calc(100vh - 170px)"

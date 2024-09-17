@@ -135,7 +135,7 @@ const TasksTable: React.FC<TasksTableProps> = (props) => {
     };
 
     const getAdditionalData = (task: Task) => {
-        if (task.query) {
+        if (task.query_params) {
             return <TaskDocuments task={task} />;
         } else {
             return <TaskCsv task={task} />;

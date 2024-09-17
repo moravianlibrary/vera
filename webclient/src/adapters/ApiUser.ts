@@ -16,7 +16,11 @@ namespace ApiUser {
     }
 
     export function getUsers() {
-        return axiosInstance.get<{ username: string }[]>(`/auth/users`, { headers: authHeader() });
+        return axiosInstance.get<{ username: string }[]>(`/users`, { headers: authHeader() });
+    }
+
+    export function setUserSettings(settings: JSON) {
+        return axiosInstance.post<User>(`/users/current/settings`, settings, { headers: authHeader() });
     }
 
     export function emulateAccess(actions: ActionType[]) {

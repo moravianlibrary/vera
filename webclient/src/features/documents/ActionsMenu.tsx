@@ -70,11 +70,11 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
 
     const handleClickStartTask = (taskType: TaskType) => {
         const taskMesage =
-            taskType === TaskType.PredictVolumePages
+            taskType === TaskType.PredictPeriodicalPageCount
                 ? "Are you sure you want to predict periodical volume pages for {{count}} selected documents?"
                 : taskType === TaskType.SyncFromDigitizationRegistry
                 ? "Are you sure you want to sync {{count}} selected documents with digitization registry?"
-                : taskType === TaskType.SyncFromCatalog
+                : taskType === TaskType.SyncFromCatalogs
                 ? "Are you sure you want to sync {{count}} selected documents with catalog?"
                 : "Are you sure you want to process {{count}} selected documents?";
         confirmAction(t(taskMesage, { count: numSelected }), () =>
@@ -182,11 +182,11 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
             {
                 label: t("Predict volumes page counts"),
                 command: () =>
-                    handleClickStartTask(TaskType.PredictVolumePages),
+                    handleClickStartTask(TaskType.PredictPeriodicalPageCount),
             },
             {
                 label: t("Sync from catalog"),
-                command: () => handleClickStartTask(TaskType.SyncFromCatalog),
+                command: () => handleClickStartTask(TaskType.SyncFromCatalogs),
             },
             {
                 label: t("Sync from digitization registry"),

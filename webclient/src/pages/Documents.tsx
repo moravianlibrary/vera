@@ -23,6 +23,7 @@ import { CategoriesProvider } from "../contexts/categories/CategoriesContext";
 import { GeneratedExtractionsProvider } from "../contexts/extractions/GeneratedExtractionsContext";
 import { LocationsProvider } from "../contexts/extractions/locations/LocationsContext";
 import { IntentionsProvider } from "../contexts/categories/IntentionsContext";
+import ElasticsearchSidebar from "../features/documents/elasticsearch/ElasticsearchSidebar";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -160,7 +161,10 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
                 tableViewType={tableViewType}
                 onTableViewTypeChange={(value) => setTableViewType(value)}
             />
-            <DocumentsTable tableViewType={tableViewType} />
+            <div className="flex">
+                <ElasticsearchSidebar />
+                <DocumentsTable tableViewType={tableViewType} />
+            </div>
             <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
                 <InsertDocuments onClose={() => setInsertMode(false)} />
             </Dialog>

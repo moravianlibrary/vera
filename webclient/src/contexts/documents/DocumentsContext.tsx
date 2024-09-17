@@ -6,12 +6,14 @@ import React, {
     useEffect,
     useRef,
 } from "react";
-import ApiDocuments from "../../adapters/ApiDocuments";
+import ApiDocuments, { IndexDocument } from "../../adapters/ApiDocuments";
 import { VirtualScrollerLazyEvent } from "primereact/virtualscroller";
 import DocumentModel from "./DocumentModel";
 import { useDocumentsQuery } from "./search/DocumentsQueryContext";
 
 interface DocumentsContextProps {
+    indexDocuments: IndexDocument[];
+    setIndexDocuments: (indexDocuments: IndexDocument[]) => void;
     documents: DocumentModel[];
     numFound: number;
     lazyLoad: (event: VirtualScrollerLazyEvent) => void;
@@ -46,6 +48,8 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
     const [limit, setLimit] = useState<number>(loadAmount);
     const fetchController = useRef<AbortController | null>(null);
 
+    const [indexDocuments, setIndexDocuments] = useState<IndexDocument[]>([]);
+
     const fetchDocuments = async (offset: number): Promise<DocumentModel[]> => {
         try {
             const controller = new AbortController();
@@ -53,8 +57,8 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
             const signal = controller.signal;
 
             const response = isQueryAll
-                ? await ApiDocuments.getDocuments(offset, limit, signal)
-                : await ApiDocuments.queryDocuments(query, offset, limit);
+                ? await ApiDocuments.queryDocuments({})
+                : await ApiDocuments.queryDocuments(query);
 
             setNumFound(response.data.num_found);
             return response.data.documents.map((document) => {
@@ -128,11 +132,11 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
     };
 
     useEffect(() => {
-        loadDocuments(offset);
+        // loadDocuments(offset);
     }, [offset, limit]);
 
     useEffect(() => {
-        refresh();
+        // refresh();
     }, [query, isQueryAll]);
 
     const contextValue: DocumentsContextProps = {
@@ -147,6 +151,9 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
         setOffset,
         limit,
         setLimit,
+
+        indexDocuments,
+        setIndexDocuments,
     };
 
     return (

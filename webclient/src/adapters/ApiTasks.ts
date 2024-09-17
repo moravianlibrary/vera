@@ -3,13 +3,14 @@ import { ActionType } from "../types/ActionType";
 import { TaskType } from "../types/TaskType";
 import { TaskState } from "../types/TaskState";
 import { DocumentsQuery } from "./ApiDocuments";
+import Page from "./Page";
 
 interface Task {
     id: number;
     task_type: TaskType;
 
     owner: string;
-    query: string | null;
+    query_params: string | null;
 
     task_state: TaskState;
     planned: Date;
@@ -36,8 +37,8 @@ namespace ApiTasks {
         return axiosInstance.post(`/tasks?task_type=${task_type.toString()}`, null, { headers: authHeader() });
     }
 
-    export function getTasks(offset: number, limit: number) {
-        return axiosInstance.get<Task[]>(`/tasks?offset=${offset}&limit=${limit}`, { headers: authHeader() });
+    export function getTasks(page: number, page_size: number) {
+        return axiosInstance.get<Page<Task>>(`/tasks?page=${page}&page_size=${page_size}`, { headers: authHeader() });
     }
 
     export function getTaskDocuments(task_id: number) {

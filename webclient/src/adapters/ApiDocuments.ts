@@ -68,6 +68,53 @@ interface Document extends DocumentBase {
     extracted_at: string | null;
 }
 
+interface IndexDocument {
+    id: number;
+    // Main identifiers
+    sysno: string;
+    barcode: string | null;
+    volume: string | null;
+    volume_year: string | null;
+    bundle: string | null;
+    // Librarian identifiers
+    cnb: string | null;
+    signature: string | null;
+    isxn: string | null;
+    // VERA properties
+    added_at: string;
+    added_by: string;
+    category_id: number | null;
+    category_path: any;
+    // Catalog properties
+    skc_sysno: string | null;
+    skc_diff: any;
+    cnb_sysno: string | null;
+    cnb_diff: any;
+    digitization_registry_id: number | null;
+    digitization_state: DigitizationState;
+    // Page count
+    page_count: number | null;
+    page_count_catalog: number | null;
+    page_count_manual: number | null;
+    page_count_predicted: number | null;
+    // Extraction properties
+    dedicated_scanner: string | null;
+    extraction_priority: number | null;
+    digitization_list_id: number | null;
+    // Other properties
+    material_type: MaterialType;
+    issuance_type: IssuanceType;
+    title: string;
+    size: string | null;
+    locationUri: string | null;
+    // Publication properties
+    publisher: string | null;
+    publishing_place: string | null;
+    publishing_year: string | null;
+    languages: string[] | null;
+    frequencies: any;
+}
+
 interface DocumentsResponse {
     documents: Document[];
     num_found: number;
@@ -108,10 +155,10 @@ interface DocumentsQuery {
 }
 
 namespace ApiDocuments {
-    export function queryDocuments(query: DocumentsQuery, offset: number, rows: number) {
-        return axiosInstance.post<DocumentsResponse>(
-            `/documents/query?offset=${offset}&limit=${rows}`,
-            query,
+    export function queryDocuments(query_params: Object) {
+        return axiosInstance.post(
+            `/documents/query`,
+            query_params,
             { headers: authHeader("application/json") }
         );
     }
@@ -179,4 +226,4 @@ namespace ApiDocuments {
 }
 
 export default ApiDocuments;
-export type { Identifier, DocumentBase, Document, Issue, CatalogDocument, DocumentCreationResponse, DocumentsQuery, DocumentsResponse, Frequency };
+export type { Identifier, DocumentBase, Document, Issue, CatalogDocument, DocumentCreationResponse, DocumentsQuery, DocumentsResponse, Frequency, IndexDocument };
