@@ -155,6 +155,15 @@ def query_documents(
     )
 
 
+@router.post("/_search", dependencies=[CanReadDocuments], response_model=None)
+def search_documents(
+    query_params: ElasticsearchParams,
+    user: CurrentUser = DependsOnCurrentUser,
+    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
+):
+    return query_documents(query_params, user, indexer)
+
+
 @router.post("/query/export", dependencies=[CanReadDocuments])
 def export_query_documents(
     query_params: ElasticsearchParams,

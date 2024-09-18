@@ -28,6 +28,7 @@ import { TableViewType } from "./DocumentsHeader";
 import DocumentTypeTag from "../../components/tags/DocumentTypeTag";
 import ApiCatalogs, { Marc21DiffRecord } from "../../adapters/ApiCatalogs";
 import MarcRecordsDiffView from "../../components/views/MarcRecordsDiffView";
+import { Tooltip } from "primereact/tooltip";
 
 interface DocumentsTableProps {
     tableViewType: TableViewType;
@@ -53,6 +54,10 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
         setLimit,
         refresh,
         indexDocuments,
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
     } = useDocuments();
     const { selectedDocuments, selectDocuments } = useDocumentsSelection();
 
@@ -126,6 +131,27 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
             : t(document.material_type);
     };
 
+    const categoryBody = (document) => {
+        console.log(document.category_path[document.category_path.length - 1]);
+        const categoryPath = document.category_path
+            .map((category) => category.category_name)
+            .join(" > ");
+        const categoryName =
+            document.category_path[document.category_path.length - 1]
+                .category_name;
+        return (
+            <div>
+                <Tooltip target=".documents-table-category" position="top" />
+                <span
+                    className="documents-table-category"
+                    data-pr-tooltip={categoryPath}
+                >
+                    {categoryName}
+                </span>
+            </div>
+        );
+    };
+
     const descriptionBody = (document: DocumentModel) => {
         return [document.year, document.volume, document.bundle]
             .filter((x) => x)
@@ -158,7 +184,11 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
                         )}
                     />
 
-                    <Column field="category_name" header={t("category")} />
+                    <Column
+                        field="category_path"
+                        header={t("category")}
+                        body={categoryBody}
+                    />
                     <Column
                         field="type"
                         header={t("Type")}
@@ -201,10 +231,11 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
                     />
                 </DataTable>
                 <DataTablePaginator
-                    offset={offset}
-                    limit={limit}
                     numFound={numFound}
-                    onPageChange={handlePageChange}
+                    page={page}
+                    pageSize={pageSize}
+                    onPageChangeNew={setPage}
+                    onPageSizeChange={setPageSize}
                     onRefresh={() => refresh()}
                 />
             </div>

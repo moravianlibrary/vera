@@ -14,8 +14,14 @@ import { useDocumentsQuery } from "./search/DocumentsQueryContext";
 interface DocumentsContextProps {
     indexDocuments: IndexDocument[];
     setIndexDocuments: (indexDocuments: IndexDocument[]) => void;
-    documents: DocumentModel[];
     numFound: number;
+    setNumFound: (numFound: number) => void;
+    page: number;
+    setPage: (page: number) => void;
+    pageSize: number;
+    setPageSize: (pageSize: number) => void;
+
+    documents: DocumentModel[];
     lazyLoad: (event: VirtualScrollerLazyEvent) => void;
     refresh: () => void;
     refreshDocumentsInResults: (documents: DocumentModel[]) => void;
@@ -49,6 +55,8 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
     const fetchController = useRef<AbortController | null>(null);
 
     const [indexDocuments, setIndexDocuments] = useState<IndexDocument[]>([]);
+    const [page, setPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(20);
 
     const fetchDocuments = async (offset: number): Promise<DocumentModel[]> => {
         try {
@@ -141,7 +149,6 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
 
     const contextValue: DocumentsContextProps = {
         documents,
-        numFound,
         lazyLoad,
         refresh,
         refreshDocumentsInResults,
@@ -154,6 +161,12 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
 
         indexDocuments,
         setIndexDocuments,
+        numFound,
+        setNumFound,
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
     };
 
     return (

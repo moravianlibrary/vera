@@ -24,6 +24,8 @@ import { GeneratedExtractionsProvider } from "../contexts/extractions/GeneratedE
 import { LocationsProvider } from "../contexts/extractions/locations/LocationsContext";
 import { IntentionsProvider } from "../contexts/categories/IntentionsContext";
 import ElasticsearchSidebar from "../features/documents/elasticsearch/ElasticsearchSidebar";
+import { Splitter, SplitterPanel } from "primereact/splitter";
+import { Button } from "primereact/button";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -161,10 +163,14 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
                 tableViewType={tableViewType}
                 onTableViewTypeChange={(value) => setTableViewType(value)}
             />
-            <div className="flex">
-                <ElasticsearchSidebar />
-                <DocumentsTable tableViewType={tableViewType} />
-            </div>
+            <Splitter>
+                <SplitterPanel minSize={5} size={10}>
+                    <ElasticsearchSidebar />
+                </SplitterPanel>
+                <SplitterPanel minSize={50} size={90}>
+                    <DocumentsTable tableViewType={tableViewType} />
+                </SplitterPanel>
+            </Splitter>
             <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
                 <InsertDocuments onClose={() => setInsertMode(false)} />
             </Dialog>

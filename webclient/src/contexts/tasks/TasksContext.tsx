@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import React, {
+    createContext,
+    useContext,
+    useState,
+    ReactNode,
+    useEffect,
+} from "react";
 import ApiTasks, { Task } from "../../adapters/ApiTasks";
 
 interface TasksContextProps {
@@ -20,17 +26,18 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
 
     const loadTasks = async () => {
         ApiTasks.getTasks(offset + 1, limit)
-        .then(response => {
-            console.log(response.data);
-            
-            const transformedData: Task[] = response.data.items.map(task => {
-                return Object.assign({}, task) as Task;
+            .then((response) => {
+                const transformedData: Task[] = response.data.items.map(
+                    (task) => {
+                        return Object.assign({}, task) as Task;
+                    }
+                );
+                setTasks(transformedData);
+                setNumFound(response.data.num_found);
+            })
+            .catch((error) => {
+                console.error(`Could not receive tasks: ${error}`);
             });
-            setTasks(transformedData);
-            setNumFound(response.data.num_found);
-        }).catch(error => {
-            console.error(`Could not receive tasks: ${error}`);
-        });
     };
 
     const contextValue: TasksContextProps = {
@@ -53,7 +60,7 @@ export const useTasks = (): TasksContextProps => {
     const context = useContext(TasksContext);
 
     if (!context) {
-        throw new Error('useTasks must be used within a TasksProvider');
+        throw new Error("useTasks must be used within a TasksProvider");
     }
 
     return context;

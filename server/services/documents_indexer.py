@@ -5,6 +5,11 @@ from services.external.aleph import AlephRecord
 from config import VeraConfig
 import requests
 from requests.exceptions import RequestException
+from .parsers.volume_parser import (
+    parse_volume,
+    parse_volume_year,
+    parse_bundle,
+)
 
 
 INDEX_NAME = "documents"
@@ -17,8 +22,11 @@ INDEX_SCHEMA = {
             "sysno": {"type": "keyword"},
             "barcode": {"type": "keyword"},
             "volume": {"type": "keyword"},
+            "volume_number": {"type": "integer"},
             "volume_year": {"type": "keyword"},
+            "volume_year_number": {"type": "integer"},
             "bundle": {"type": "keyword"},
+            "bundle_number": {"type": "integer"},
             # Librarian identifiers
             "cnb": {"type": "keyword"},
             "signature": {"type": "keyword"},
@@ -86,7 +94,7 @@ INDEX_SCHEMA = {
             "issuance_type": {"type": "keyword"},  # Enum type
             "title": {"type": "keyword"},
             "size": {"type": "keyword"},
-            "locationUri": {"type": "keyword"},
+            "location_uri": {"type": "keyword"},
             # Publication properties
             "publisher": {"type": "keyword"},
             "publishing_place": {"type": "keyword"},
@@ -138,8 +146,11 @@ class DocumentsIndexer:
             "sysno": document.sysno,
             "barcode": document.barcode,
             "volume": document.volume,
+            "volume_number": parse_volume(document.volume),
             "volume_year": document.volume_year,
+            "volume_year_number": parse_volume_year(document.volume_year),
             "bundle": document.bundle,
+            "bundle_number": parse_bundle(document.bundle),
             "cnb": document.cnb,
             "signature": document.signature,
             "isxn": document.isxn,
@@ -179,7 +190,7 @@ class DocumentsIndexer:
             ),
             "title": aleph_record.title,
             "size": aleph_record.size,
-            "locationUri": aleph_record.locationUri,
+            "location_uri": aleph_record.locationUri,
             "publisher": aleph_record.publisher,
             "publishing_place": aleph_record.publishing_place,
             "publishing_year": aleph_record.publishing_year,

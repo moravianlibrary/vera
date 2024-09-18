@@ -43,7 +43,7 @@ def get_actual_revision():
         return None
 
 
-def ensure_last_database_revision(after_upgrade):
+def ensure_last_database_revision():
     from alembic.command import upgrade
     from alembic.config import Config
     from alembic.script import ScriptDirectory
@@ -57,7 +57,6 @@ def ensure_last_database_revision(after_upgrade):
 
     if get_actual_revision() != latest_revision:
         upgrade(alembic_cfg, "head")
-        after_upgrade()
 
     logger.info(
         f"Using database revision {latest_revision}.",
@@ -89,6 +88,27 @@ def sync_all_from_catalogs():
     run_task.delay(task_id=task.id)
 
 
+def recreate_index():
+    from config import VeraConfig
+    from datatypes import TaskType
+    from models.base_engine import get_session
+    from models import Document, Task, TaskDocument
+    from worker import run_task
+    from services.documents_indexer import DocumentsIndexer
+
+    DocumentsIndexer.get_instance().recreate_index()
+
+    session = next(get_session())
+    task = Task(
+        task_type=TaskType.Reindex,
+        owner=VeraConfig.BotName,
+    ).save(session)
+    for document in Document.all(session):
+        TaskDocument(task_id=task.id, document_id=document.id).save(session)
+
+    run_task.delay(task_id=task.id)
+
+
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
     from models.base_engine import get_session
@@ -99,7 +119,10 @@ async def lifespan(app_: FastAPI):
         logger.info("Database connection failed. Exiting.")
         return
     logger.info("Database connection successfully established.")
-    ensure_last_database_revision(sync_all_from_catalogs)
+    ensure_last_database_revision()
+    # TODO: check on startup table
+    # sync_all_from_catalogs()
+    recreate_index()
 
     set_failed_tasks_on_start(next(get_session()))
 

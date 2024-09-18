@@ -1,14 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Paginator, PaginatorPageChangeEvent } from "primereact/paginator";
 import { Dropdown } from "primereact/dropdown";
 import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
 
 interface DataTablePaginatorProps {
-    offset: number;
-    limit: number;
+    offset?: number;
+    limit?: number;
     numFound: number;
-    onPageChange: (event: PaginatorPageChangeEvent) => void;
+    page?: number;
+    pageSize?: number;
+    onPageChange?: (e: PaginatorPageChangeEvent) => void;
+    onPageChangeNew?: (newPage: number) => void;
+    onPageSizeChange?: (newPageSize: number) => void;
     onRefresh?: () => void;
     leftContent?: React.ReactNode;
 }
@@ -17,11 +21,28 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
     offset,
     limit,
     numFound,
+    page,
+    pageSize,
     onPageChange,
+    onPageChangeNew,
+    onPageSizeChange,
     onRefresh,
     leftContent,
 }) => {
     const { t } = useTranslation();
+
+    const handlePageChange = (event: PaginatorPageChangeEvent) => {
+        if (onPageChange) {
+            onPageChange(event);
+        }
+
+        if (onPageChangeNew && event.page + 1 !== page) {
+            onPageChangeNew(event.page + 1);
+        }
+        if (onPageSizeChange && event.rows !== pageSize) {
+            onPageSizeChange(event.rows);
+        }
+    };
 
     const refreshButton = (
         <Button
@@ -31,14 +52,34 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
         />
     );
 
+    const getFirst = () => {
+        if (offset) {
+            return offset;
+        }
+        if (page && pageSize) {
+            return pageSize * (page - 1) + 1;
+        }
+        return 0;
+    };
+
+    const getRows = () => {
+        if (limit) {
+            return limit;
+        }
+        if (pageSize) {
+            return pageSize;
+        }
+        return 10;
+    };
+
     return (
         <Paginator
             className="border-top-2 border-solid surface-50 fixed bottom-0 w-full"
-            first={offset}
+            first={getFirst()}
             rowsPerPageOptions={[10, 15, 20, 25, 50]}
-            rows={limit}
+            rows={getRows()}
             totalRecords={numFound}
-            onPageChange={onPageChange}
+            onPageChange={handlePageChange}
             rightContent={onRefresh ? refreshButton : <></>}
             leftContent={leftContent || <> </>}
             template={{

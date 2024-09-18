@@ -74,10 +74,14 @@ interface IndexDocument {
     sysno: string;
     barcode: string | null;
     volume: string | null;
+    volume_number: number | null;
     volume_year: string | null;
+    volume_year_number: number | null;
     bundle: string | null;
+    bundle_number: number | null;
     // Librarian identifiers
     cnb: string | null;
+    language: string | null;
     signature: string | null;
     isxn: string | null;
     // VERA properties
@@ -88,8 +92,10 @@ interface IndexDocument {
     // Catalog properties
     skc_sysno: string | null;
     skc_diff: any;
+    has_valid_main_record: boolean;
     cnb_sysno: string | null;
     cnb_diff: any;
+    has_valid_cnb: boolean;
     digitization_registry_id: number | null;
     digitization_state: DigitizationState;
     // Page count
@@ -106,7 +112,7 @@ interface IndexDocument {
     issuance_type: IssuanceType;
     title: string;
     size: string | null;
-    locationUri: string | null;
+    location_uri: string | null;
     // Publication properties
     publisher: string | null;
     publishing_place: string | null;

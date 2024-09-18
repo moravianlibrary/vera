@@ -91,3 +91,41 @@
 .document-type-other-tag {
     background-color: #3f4e4f;
 }
+
+.es-facet-view-fieldset .p-fieldset-legend a {
+    font-size: 1rem !important;
+    padding: 0.5rem;
+}
+
+.es-facet-view-fieldset .p-fieldset-legend {
+    border-width: 1px;
+}
+
+.es-facet-view-fieldset .p-fieldset-content {
+    margin: 0px;
+    padding: 0px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.es-facet-view-fieldset .p-fieldset {
+    margin: 1px;
+    padding: 1px;
+}
+
+.es-facet-value {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.es-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.es-active-facet-value {
+    font-weight: bold;
+}
