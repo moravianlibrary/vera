@@ -18,10 +18,26 @@ def main():
         help="Value to search for in the Aleph based on the Aleph field",
     )
     argparser.add_argument(
+        "--find-by-prefix",
+        help="Find records by prefix in the Aleph based on the Aleph field",
+    )
+    argparser.add_argument(
+        "--base",
+        help="Base to search in the Aleph based on the Aleph field",
+        default="MZK01",
+    )
+    argparser.add_argument(
         "--output", help="Output file to print the parsed record to"
     )
 
     args = argparser.parse_args()
+
+    if args.find_by_prefix is not None:
+        for sysno in AlephClient().find_all_sysnos(
+            args.base, args.field, args.find_by_prefix
+        ):
+            print(sysno)
+        exit(0)
 
     if args.file is None and args.value is None:
         print("Nothing to do here. Exiting.")

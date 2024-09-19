@@ -30,6 +30,10 @@ interface DigitizationListsContextProps {
         query: DocumentsQuery
     ) => Promise<DigitizationExtraction>;
     deleteDigitizationList: (digitization_list_id: number) => void;
+
+    findDigitizationList: (
+        digitization_list_id: number
+    ) => Promise<DigitizationExtraction>;
 }
 
 const DigitizationListsContext = createContext<
@@ -154,6 +158,12 @@ export const DigitizationListsProvider: React.FC<
             });
     };
 
+    const findDigitizationList = async (digitization_list_id: number) => {
+        return (
+            await ApiDigitizationExtractions.getExtraction(digitization_list_id)
+        ).data;
+    };
+
     useEffect(() => {
         console.log(`Fetching extractions from server.`);
         loadExtractions(0, loadAmount);
@@ -167,6 +177,8 @@ export const DigitizationListsProvider: React.FC<
         addDocumentsToDigitizationList,
         removeDocumentsFromDigitizationList,
         deleteDigitizationList,
+
+        findDigitizationList,
     };
 
     return (

@@ -10,6 +10,13 @@ import ApiDocuments, { IndexDocument } from "../../adapters/ApiDocuments";
 import { VirtualScrollerLazyEvent } from "primereact/virtualscroller";
 import DocumentModel from "./DocumentModel";
 import { useDocumentsQuery } from "./search/DocumentsQueryContext";
+import {
+    ErrorBoundary,
+    SearchProvider,
+    WithSearch,
+} from "@elastic/react-search-ui";
+import { esConfig } from "../../features/documents/elasticsearch/ElasticsearchConfig";
+import { ResponseState } from "@elastic/search-ui";
 
 interface DocumentsContextProps {
     indexDocuments: IndexDocument[];
@@ -140,12 +147,24 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
     };
 
     useEffect(() => {
-        // loadDocuments(offset);
-    }, [offset, limit]);
+        esConfig.apiConnector.onSearch(
+            {
+                ...esConfig.apiConnector.state,
+                current: page,
+                resultsPerPage: pageSize,
+            },
+            esConfig.searchQuery
+        );
+    }, [page, pageSize]);
 
     useEffect(() => {
-        // refresh();
-    }, [query, isQueryAll]);
+        esConfig.apiConnector.afterSearch = (response: ResponseState) => {
+            setIndexDocuments(
+                response.results.map((r) => r._meta.rawHit._source)
+            );
+            setNumFound(response.totalResults);
+        };
+    }, []);
 
     const contextValue: DocumentsContextProps = {
         documents,
@@ -170,9 +189,20 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
     };
 
     return (
-        <DocumentsContext.Provider value={contextValue}>
-            {children}
-        </DocumentsContext.Provider>
+        <SearchProvider config={esConfig}>
+            <DocumentsContext.Provider value={contextValue}>
+                {children}
+                {/* <WithSearch
+                    mapContextToProps={({ wasSearched }) => ({
+                        wasSearched,
+                    })}
+                >
+                    {({ wasSearched }) => {
+                        return <ErrorBoundary>{children}</ErrorBoundary>;
+                    }}
+                </WithSearch> */}
+            </DocumentsContext.Provider>
+        </SearchProvider>
     );
 };
 

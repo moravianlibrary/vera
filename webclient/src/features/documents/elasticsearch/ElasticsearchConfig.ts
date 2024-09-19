@@ -1,132 +1,84 @@
-import VeraIndexConnector from "./VeraIndexConnector";
-import { DigitizationState } from "../../../types/DigitizationState";
 import { MaterialType } from "../../../types/MaterialType";
 import { IssuanceType } from "../../../types/IssuanceType";
-import ElasticsearchAPIConnector, { SearchRequest } from "@elastic/search-ui-elasticsearch-connector";
-import { QueryConfig, RequestState } from "@elastic/search-ui";
 import { authHeader } from "../../../adapters/ApiBase";
+import VeraIndexConnector from "./VeraIndexConnector";
 
-const connector = new VeraIndexConnector();
-
-class MyApiConnector extends ElasticsearchAPIConnector {
-    constructor(config: any) {
-        super(config);
-    }   
-}
-
-const handlePostProcess = (requestBody: SearchRequest, requestState: RequestState, queryConfig: QueryConfig) => {
-    console.log("requestBody", requestBody);
-    console.log("requestState", requestState);
-    console.log("queryConfig", queryConfig);
-    return requestBody;
-    }
 
 const esConfig = {
     // debug: true,
     alwaysSearchOnInitialLoad: true,
-    apiConnector: new ElasticsearchAPIConnector(
+    apiConnector: new VeraIndexConnector(
         {
             host: "http://localhost:8000",
             index: "documents",
             connectionOptions: {
                 headers: authHeader() as Record<string, string>,
             }
-        },
-        handlePostProcess
+        }
     ),
     searchQuery: {
-        result_fields: {
-            id: { raw: {} },
-            visitors: { raw: {} },
-            world_heritage_site: { raw: {} },
-            location: { raw: {} },
-            acres: { raw: {} },
-            square_km: { raw: {} },
-            title: {
-                snippet: {
-                size: 100,
-                fallback: true
-                }
-            },
-            nps_link: { raw: {} },
-            states: { raw: {} },
-            date_established: { raw: {} },
-            image_url: { raw: {} },
-            description: {
-                snippet: {
-                size: 100,
-                fallback: true
-            }
-        }
-    },
-    disjunctiveFacets: ["has_valid_main_record", "has_valid_cnb", "material_type", "issuance_type", "digitization_state"],
+        result_fields: {},
+        //     id: { raw: {} },
+        //     visitors: { raw: {} },
+        //     world_heritage_site: { raw: {} },
+        //     location: { raw: {} },
+        //     acres: { raw: {} },
+        //     square_km: { raw: {} },
+        //     title: {
+        //         snippet: {
+        //         size: 100,
+        //         fallback: true
+        //         }
+        //     },
+        //     nps_link: { raw: {} },
+        //     states: { raw: {} },
+        //     date_established: { raw: {} },
+        //     image_url: { raw: {} },
+        //     description: {
+        //         snippet: {
+        //         size: 100,
+        //         fallback: true
+        //     }
+        // }
+    // },
+    // disjunctiveFacets: ["material_type", "issuance_type", "digitization_state"],
+    disjunctiveFacets: ["has_valid_main_record", "has_valid_cnb", "material_type", "issuance_type", "digitization_state", "added_by"],
     facets: {
+        is_extractable: {
+            type: "boolean",
+            size: 2
+        },
         has_valid_main_record: {
-            type: "value",
+            type: "boolean",
             size: 2,
-            label: "Has Valid Main Record",
-            // transform: (value) => value ? "Yes" : "No"
         },
         has_valid_cnb: {
-            type: "value",
+            type: "boolean",
             size: 2,
-            label: "Has Valid CNB",
-            options: [
-                { value: true, label: "Yes" },
-                { value: false, label: "No" }
-            ]
         },
         material_type: {
             type: "value",
             size: Object.values(MaterialType).length,
-            label: "Material Type",
-            options: Object.values(MaterialType).map((value) => ({
-                value,
-                label: value
-            }))
         },
         issuance_type: {
             type: "value",
             size: Object.values(IssuanceType).length,
-            label: "Issuance Type",
-            options: Object.values(IssuanceType).map((value) => ({
-                value,
-                label: value
-            }))
         },
         digitization_state: {
             type: "value",
             size: 5,
-            label: "Digitization State",
-            options: [
-                { value: DigitizationState.NotDigitized, label: "Not digitized" },
-                { value: DigitizationState.InProgress, label: "In progress" },
-                { value: DigitizationState.Planned, label: "Planned" },
-                { value: DigitizationState.Finished, label: "Finished" },
-                { value: DigitizationState.Revision, label: "Revision" }
-            ]
         },
         added_by: {
             type: "value",
             size: 25,
-            label: "Added By",
         },
         volume_number: {
             type: "value",
             size: 100,
-            label: "Volume",
         },
-        is_in_digitization_list: {
+        digitization_list_id: {
             type: "value",
-            size: 2,
-            label: "Is in Digitization List",
-            options: [
-                { value: true, label: "Yes" },
-                { value: false, label: "No" }
-            ],
-            terms: {
-
-            }
+            size: 10,
         }
     //   world_heritage_site: { type: "value" },
     //   states: { type: "value", size: 30 },

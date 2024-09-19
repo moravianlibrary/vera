@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 from io import BytesIO
 import re
 import requests
@@ -95,6 +95,45 @@ class AlephClient:
         record = marcxml.parse_xml_to_array(marc_xml_file_like)[0]
 
         return AlephRecord(sysno, record), AlephResponseStatus.Success
+
+    def find_all_sysnos(
+        self, base: str, field: AlephField, value: str
+    ) -> List[str]:
+        response = requests.get(
+            FIND_RESULT_SET_ENDPOINT.format(
+                ALEPH_BASE=ALEPH_BASE, BASE=base, CODE=field.value, VALUE=value
+            ),
+            timeout=self.timeout,
+        )
+        response.raise_for_status()
+
+        find = etree.fromstring(response.content)
+        if find.find(".//error") is not None:
+            raise Exception(find.find(".//error").text)
+
+        no_records_tag = find.find(".//no_records")
+        if no_records_tag is None:
+            return []
+
+        set_number = find.find(".//set_number").text
+
+        sysnos = []
+        for set_entry in range(1, int(no_records_tag.text) + 1):
+            response = requests.get(
+                FIND_RECORDS_ENDPOINT.format(
+                    ALEPH_BASE=ALEPH_BASE,
+                    SET_NUMBER=set_number,
+                    SET_ENTRY=str(set_entry),
+                ),
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+
+            result = etree.fromstring(response.content)
+            sysnos.extend(
+                [doc.text for doc in result.findall(".//doc_number")]
+            )
+        return sysnos
 
     def parse_sysno_request(
         self, request_url: str

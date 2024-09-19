@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Paginator, PaginatorPageChangeEvent } from "primereact/paginator";
 import { Dropdown } from "primereact/dropdown";
 import { useTranslation } from "react-i18next";
@@ -78,7 +78,7 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
             first={getFirst()}
             rowsPerPageOptions={[10, 15, 20, 25, 50]}
             rows={getRows()}
-            totalRecords={numFound}
+            totalRecords={numFound || 1}
             onPageChange={handlePageChange}
             rightContent={onRefresh ? refreshButton : <></>}
             leftContent={leftContent || <> </>}

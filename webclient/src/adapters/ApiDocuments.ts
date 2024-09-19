@@ -106,6 +106,7 @@ interface IndexDocument {
     // Extraction properties
     dedicated_scanner: string | null;
     extraction_priority: number | null;
+    is_extractable: boolean;
     digitization_list_id: number | null;
     // Other properties
     material_type: MaterialType;

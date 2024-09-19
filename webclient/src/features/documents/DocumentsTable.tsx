@@ -132,7 +132,6 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
     };
 
     const categoryBody = (document) => {
-        console.log(document.category_path[document.category_path.length - 1]);
         const categoryPath = document.category_path
             .map((category) => category.category_name)
             .join(" > ");
