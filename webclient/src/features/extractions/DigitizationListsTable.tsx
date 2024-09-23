@@ -5,12 +5,12 @@ import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
 import { useDigitizationLists } from "../../contexts/extractions/DigitizationListsContext";
-import DigitizationListModel from "../../contexts/extractions/DigitizationListModel";
-import ActionAccessComponent from "../../components/ActionAccessComponent";
+import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 import { ActionType } from "../../types/ActionType";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import { PaginatorPageChangeEvent } from "primereact/paginator";
 import DataTablePaginator from "../../components/DataTablePaginator";
+import { DigitizationExtraction } from "../../adapters/ApiDigitizationExtractions";
 
 const DigitizationListsTable: React.FC = () => {
     const { t } = useTranslation();
@@ -25,7 +25,7 @@ const DigitizationListsTable: React.FC = () => {
     const [offset, setOffset] = useState<number>(0);
     const [limit, setLimit] = useState<number>(25);
 
-    const documentsButton = (digitizationList: DigitizationListModel) => {
+    const documentsButton = (digitizationList: DigitizationExtraction) => {
         return (
             <Link to={`/documents?digitizationListId=${digitizationList.id}`}>
                 <Button outlined label={t("Show in documents")} />
@@ -33,7 +33,7 @@ const DigitizationListsTable: React.FC = () => {
         );
     };
 
-    const categoriesButton = (digitizationList: DigitizationListModel) => {
+    const categoriesButton = (digitizationList: DigitizationExtraction) => {
         return (
             <Link to={`/categories?digitizationListId=${digitizationList.id}`}>
                 <Button outlined label={t("Show in categories")} />

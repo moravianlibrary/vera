@@ -12,13 +12,13 @@ import { ColumnGroup } from "primereact/columngroup";
 import { Row } from "primereact/row";
 import { textEditor } from "../../services/Editors.js";
 import { Button } from "primereact/button";
-import { RoleModel } from "../../contexts/user/RoleModel";
 import ActionGroupColumn, {
     ActionGroupColumnEditor,
 } from "./ActionGroupColumn";
 import { ActionType } from "../../types/ActionType";
 import ActionColumn, { ActionColumnEditor } from "./ActionColumn";
 import { useRoles } from "../../contexts/roles/RolesContext";
+import { Role } from "../../adapters/ApiRoles.js";
 
 export interface LabeledAction {
     action: ActionType;
@@ -49,7 +49,7 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
         }
     };
 
-    const deleteButton = (role: RoleModel) => {
+    const deleteButton = (role: Role) => {
         if (role.id) {
             return (
                 <Button
@@ -146,7 +146,7 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
         label: "Administrating database allowed",
     };
 
-    const actionsColumn = (role: RoleModel) => {
+    const actionsColumn = (role: Role) => {
         return (
             <div className="flex flex-wrap gap-3 align-items-center">
                 <ActionGroupColumn
@@ -251,7 +251,7 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
                 (editingRoles as DataTableValueArray | DataTableEditingRows) ||
                 []
             }
-            onRowEditComplete={(e) => handleAcceptEdit(e.newData as RoleModel)}
+            onRowEditComplete={(e) => handleAcceptEdit(e.newData as Role)}
             headerColumnGroup={headerColumnGroup}
             scrollable
             scrollHeight="flex"

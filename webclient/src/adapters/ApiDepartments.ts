@@ -1,27 +1,17 @@
-import axiosInstance, { authHeader } from "./ApiBase";
+import { ApiBase, ApiOptions } from "./ApiBase";
 
 interface Department {
-    id?: number;
+    id: number;
     name: string;
     abbreviation: string;
-    users: string[];
+    usernames: string[];
 }
 
-namespace ApiDepartments {
-    export function getDepartments() {
-        return axiosInstance.get<Department[]>("/departments", { headers: authHeader() });
-    }
-
-    export function createDepartment(department: Department) {
-        return axiosInstance.post("/departments", department, { headers: authHeader() });
-    }
-
-    export function updateDepartment(department: Department) {
-        return axiosInstance.put(`/departments/${department.id}`, department, { headers: authHeader() });
-    }
-
-    export function deleteDepartment(id: number) {
-        return axiosInstance.delete(`/departments/${id}`, { headers: authHeader() });
+class ApiDepartments extends ApiBase<Department> {
+    constructor() {
+        super("/departments", {
+            disableGet: true,
+        } as ApiOptions);
     }
 }
 

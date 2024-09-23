@@ -10,97 +10,87 @@ import { ToastProvider } from "../contexts/toast/ToastContext";
 import Categories from "../pages/Categories";
 import Documents from "../pages/Documents";
 import Login from "../components/Login";
-import { ActionAccessRoute } from "../services/AccessService";
-import { UserProvider } from "../contexts/user/UserContext";
 import Tasks from "./Tasks";
 import { ActionType } from "../types/ActionType";
 import Home from "./Home";
 import Extractions from "./Extractions";
-import { AccessProvider } from "../contexts/access/AccessContext";
+import { AccessProvider } from "../contexts/AccessContext";
 import NavigationMenu from "../components/NavigationMenu";
+import ActionAccessRoute from "../components/access/ActionAccessRoute";
 
 function App() {
     return (
         <ToastProvider>
-            <UserProvider>
-                <AccessProvider>
-                    <StrictMode>
-                        <Router>
-                            <main className="App">
-                                <NavigationMenu />
-                                <Routes>
-                                    <Route path="/" element={<Home />} />
-                                    <Route path="/login" element={<Login />} />
-                                    <Route
-                                        element={
-                                            <ActionAccessRoute
-                                                action={
-                                                    ActionType.ReadDatatable
-                                                }
-                                            />
-                                        }
-                                    >
-                                        <Route
-                                            path="/documents"
-                                            element={<Documents />}
+            <AccessProvider>
+                <StrictMode>
+                    <Router>
+                        <main className="App">
+                            <NavigationMenu />
+                            <Routes>
+                                <Route path="/" element={<Home />} />
+                                <Route path="/login" element={<Login />} />
+                                <Route
+                                    element={
+                                        <ActionAccessRoute
+                                            action={ActionType.ReadDatatable}
                                         />
-                                    </Route>
+                                    }
+                                >
                                     <Route
-                                        element={
-                                            <ActionAccessRoute
-                                                action={
-                                                    ActionType.ReadCategories
-                                                }
-                                            />
-                                        }
-                                    >
-                                        <Route
-                                            path="/categories"
-                                            element={<Categories />}
+                                        path="/documents"
+                                        element={<Documents />}
+                                    />
+                                </Route>
+                                <Route
+                                    element={
+                                        <ActionAccessRoute
+                                            action={ActionType.ReadCategories}
                                         />
-                                    </Route>
+                                    }
+                                >
                                     <Route
-                                        element={
-                                            <ActionAccessRoute
-                                                action={ActionType.Extract}
-                                            />
-                                        }
-                                    >
-                                        <Route
-                                            path="/extractions"
-                                            element={<Extractions />}
+                                        path="/categories"
+                                        element={<Categories />}
+                                    />
+                                </Route>
+                                <Route
+                                    element={
+                                        <ActionAccessRoute
+                                            action={ActionType.Extract}
                                         />
-                                    </Route>
+                                    }
+                                >
                                     <Route
-                                        element={
-                                            <ActionAccessRoute
-                                                action={ActionType.PlanTasks}
-                                            />
-                                        }
-                                    >
-                                        <Route
-                                            path="/tasks"
-                                            element={<Tasks />}
+                                        path="/extractions"
+                                        element={<Extractions />}
+                                    />
+                                </Route>
+                                <Route
+                                    element={
+                                        <ActionAccessRoute
+                                            action={ActionType.PlanTasks}
                                         />
-                                    </Route>
+                                    }
+                                >
+                                    <Route path="/tasks" element={<Tasks />} />
+                                </Route>
+                                <Route
+                                    element={
+                                        <ActionAccessRoute
+                                            action={ActionType.EditAccess}
+                                        />
+                                    }
+                                >
                                     <Route
-                                        element={
-                                            <ActionAccessRoute
-                                                action={ActionType.EditAccess}
-                                            />
-                                        }
-                                    >
-                                        <Route
-                                            path="/access"
-                                            element={<Access />}
-                                        />
-                                    </Route>
-                                </Routes>
-                            </main>
-                        </Router>
-                    </StrictMode>
-                </AccessProvider>
-            </UserProvider>
+                                        path="/access"
+                                        element={<Access />}
+                                    />
+                                </Route>
+                            </Routes>
+                        </main>
+                    </Router>
+                </StrictMode>
+            </AccessProvider>
         </ToastProvider>
     );
 }

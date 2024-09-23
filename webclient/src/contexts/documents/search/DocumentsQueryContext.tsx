@@ -124,16 +124,16 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
             queryAll();
             return;
         }
-        ApiDigitizationExtractions.getExtraction(digitizationListId).then(
-            (response) => {
-                queryBy({
-                    digitizationListId: digitizationListId,
-                    query: {
-                        id_list: response.data.document_ids,
-                    },
-                });
-            }
-        );
+        // ApiDigitizationExtractions.getExtraction(digitizationListId).then(
+        //     (response) => {
+        //         queryBy({
+        //             digitizationListId: digitizationListId,
+        //             query: {
+        //                 id_list: response.data.document_ids,
+        //             },
+        //         });
+        //     }
+        // );
     };
 
     const searchBySearchPhrase = (searchPhrase: string) => {

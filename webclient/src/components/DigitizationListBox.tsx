@@ -17,8 +17,8 @@ const DigitizationListBox: React.FC<DigitizationListBoxProps> = ({
             className="overflow-auto"
             style={{ maxHeight: "calc(100vh - 200px)" }}
             options={digitizationLists.map((l) => ({
-                label: `${l.id}: ${l.extractor}, ${l.extracted_at}, ${
-                    l.extracted_pages
+                label: `${l.id}: ${l.created_by}, ${l.created_at}, ${
+                    l.page_count
                 } ${t("pages")}`,
                 value: l.id,
             }))}

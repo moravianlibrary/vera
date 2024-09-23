@@ -1,20 +1,20 @@
 import React, { useRef } from "react";
 import { Menubar } from "primereact/menubar";
-import { useUser } from "../contexts/user/UserContext";
+import { useAccess } from "../contexts/AccessContext";
 import { useTranslation } from "react-i18next";
 import { ActionType } from "../types/ActionType";
 import Login from "./Login";
 import { useNavigate } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
-import { ActionAccessComponent } from "../services/AccessService";
 import { Menu } from "primereact/menu";
+import ActionAccessComponent from "./access/ActionAccessComponent";
 
 interface NavigationMenuProps {}
 
 const NavigationMenu: React.FC<NavigationMenuProps> = () => {
     const { t } = useTranslation();
-    const { user } = useUser();
+    const { currentUser } = useAccess();
     const navigate = useNavigate();
 
     const items = [
@@ -55,40 +55,40 @@ const NavigationMenu: React.FC<NavigationMenuProps> = () => {
         },
     ];
     const getMenuItems = () => {
-        if (!user || !user.actions) {
+        if (!currentUser || !currentUser.actions) {
             return [];
         }
         const items: any = [];
 
-        if (user.actions.includes(ActionType.ReadDatatable)) {
+        if (currentUser.actions.includes(ActionType.ReadDatatable)) {
             items.push({
                 label: t("Documents"),
                 icon: "pi pi-book",
                 command: () => navigate("/documents"),
             });
         }
-        if (user.actions.includes(ActionType.ReadCategories)) {
+        if (currentUser.actions.includes(ActionType.ReadCategories)) {
             items.push({
                 label: t("Categories"),
                 icon: "pi pi-tags",
                 command: () => navigate("/categories"),
             });
         }
-        if (user.actions.includes(ActionType.Extract)) {
+        if (currentUser.actions.includes(ActionType.Extract)) {
             items.push({
                 label: t("Extractions"),
                 icon: "pi pi-receipt",
                 command: () => navigate("/extractions"),
             });
         }
-        if (user.actions.includes(ActionType.PlanTasks)) {
+        if (currentUser.actions.includes(ActionType.PlanTasks)) {
             items.push({
                 label: t("Tasks"),
                 icon: "pi pi-receipt",
                 command: () => navigate("/tasks"),
             });
         }
-        if (user.actions.includes(ActionType.EditAccess)) {
+        if (currentUser.actions.includes(ActionType.EditAccess)) {
             items.push({
                 label: t("Access"),
                 icon: "pi pi-receipt",

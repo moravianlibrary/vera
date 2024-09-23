@@ -11,8 +11,8 @@ import CategoriesDisplayOptions from "./components/toolbar/CategoriesDisplayOpti
 import IntentionsDisplayOptions from "./components/toolbar/IntentionDisplayOptions";
 import DepartmentsDisplayOptions from "./components/toolbar/DepartmentsDisplayOptions";
 import SelectCategoryView from "./components/toolbar/SelectCategoryView";
-import { ActionAccessComponent } from "../../services/AccessService";
 import { ActionType } from "../../types/ActionType";
+import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 
 export enum CategoryViewType {
     CategoryTable = "CategoryTable",

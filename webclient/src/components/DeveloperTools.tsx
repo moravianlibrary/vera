@@ -2,10 +2,10 @@ import { Sidebar } from "primereact/sidebar";
 import React, { forwardRef, useImperativeHandle, useState } from "react";
 import EmulateActionsForm from "./forms/EmulateActionsForm";
 import { ActionType } from "../types/ActionType";
-import ApiUser from "../adapters/ApiUser";
+import ApiUsers from "../adapters/ApiUsers";
 import { Button } from "primereact/button";
 import { useTranslation } from "react-i18next";
-import { useUser } from "../contexts/user/UserContext";
+import { useAccess } from "../contexts/AccessContext";
 
 interface DeveloperToolsProps {}
 
@@ -49,19 +49,17 @@ interface DeveloperAccessEmulationProps {}
 const DeveloperAccessEmulation: React.FC<
     DeveloperAccessEmulationProps
 > = () => {
+    const api = new ApiUsers();
+
     const { t } = useTranslation();
-    const { user, setUserData } = useUser();
+    const { fetchCurrentUser, hasPermission } = useAccess();
 
     const handleSubmitEmulate = (actions: ActionType[]) => {
-        ApiUser.emulateAccess(actions).then((response) => {
-            setUserData(response.data);
-        });
+        api.emulateAccess(actions).then((response) => fetchCurrentUser());
     };
 
     const handleStopAccessEmulation = () => {
-        ApiUser.endAccessEmulation().then((response) =>
-            setUserData(response.data)
-        );
+        api.endAccessEmulation().then((response) => fetchCurrentUser());
     };
 
     return (
@@ -72,9 +70,7 @@ const DeveloperAccessEmulation: React.FC<
             <EmulateActionsForm onSubmit={handleSubmitEmulate} />
             <Button
                 label={t("Stop access emulation")}
-                disabled={
-                    !user.actions?.includes(ActionType.StopEmulatingAccess)
-                }
+                disabled={hasPermission(ActionType.StopEmulatingAccess)}
                 onClick={handleStopAccessEmulation}
             />
         </div>

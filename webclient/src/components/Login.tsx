@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "primereact/button";
 import { useTranslation } from "react-i18next";
-import { useUser } from "../contexts/user/UserContext";
+import { useAccess } from "../contexts/AccessContext";
 import { ActionType } from "../types/ActionType";
 import DeveloperTools, { DeveloperToolsRef } from "./DeveloperTools";
 
@@ -9,14 +9,27 @@ interface LoginProps {}
 
 const Login: React.FC<LoginProps> = () => {
     const { t } = useTranslation();
-    const { user, login, logout } = useUser();
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const { currentUser, login, logout } = useAccess();
+    // const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const developerToolsRef = useRef<DeveloperToolsRef | null>(null);
 
-    useEffect(() => {
-        setIsLoggedIn(user.isLoggedIn);
-    }, [user.isLoggedIn]);
+    // useEffect(() => {
+    //     setIsLoggedIn(currentUser.isLoggedIn);
+    // }, [currentUser.isLoggedIn]);
+
+    if (!currentUser) {
+        return (
+            <div>
+                <Button
+                    className="text-gray-700"
+                    text
+                    label={t("login")}
+                    onClick={login}
+                />
+            </div>
+        );
+    }
 
     const logoutButton = (
         <Button
@@ -29,15 +42,14 @@ const Login: React.FC<LoginProps> = () => {
 
     const usernameElement = (
         <span className="text-gray-400 font-bold align-content-center">
-            {user.username}
+            {currentUser.username}
         </span>
     );
 
     if (
-        isLoggedIn &&
-        user.actions &&
-        (user.actions.includes(ActionType.EditAccess) ||
-            user.actions.includes(ActionType.StopEmulatingAccess))
+        currentUser.actions &&
+        (currentUser.actions.includes(ActionType.EditAccess) ||
+            currentUser.actions.includes(ActionType.StopEmulatingAccess))
     ) {
         return (
             <div className="flex gap-2">
@@ -57,23 +69,10 @@ const Login: React.FC<LoginProps> = () => {
         );
     }
 
-    if (isLoggedIn) {
-        return (
-            <div className="flex">
-                {usernameElement}
-                {logoutButton}
-            </div>
-        );
-    }
-
     return (
-        <div>
-            <Button
-                className="text-gray-700"
-                text
-                label={t("login")}
-                onClick={login}
-            />
+        <div className="flex">
+            {usernameElement}
+            {logoutButton}
         </div>
     );
 };

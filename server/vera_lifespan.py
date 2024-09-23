@@ -88,6 +88,24 @@ def sync_all_from_catalogs():
     run_task.delay(task_id=task.id)
 
 
+def reindex_all():
+    from config import VeraConfig
+    from datatypes import TaskType
+    from models.base_engine import get_session
+    from models import Document, Task, TaskDocument
+    from worker import run_task
+
+    session = next(get_session())
+    task = Task(
+        task_type=TaskType.Reindex,
+        owner=VeraConfig.BotName,
+    ).save(session)
+    for document in Document.all(session):
+        TaskDocument(task_id=task.id, document_id=document.id).save(session)
+
+    run_task.delay(task_id=task.id)
+
+
 def recreate_index():
     from config import VeraConfig
     from datatypes import TaskType
@@ -122,7 +140,8 @@ async def lifespan(app_: FastAPI):
     ensure_last_database_revision()
     # TODO: check on startup table
     # sync_all_from_catalogs()
-    recreate_index()
+    # recreate_index()
+    # reindex_all()
 
     set_failed_tasks_on_start(next(get_session()))
 

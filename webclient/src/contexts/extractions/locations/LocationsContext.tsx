@@ -1,9 +1,15 @@
 import React, { createContext, useContext, ReactNode, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { LocationState } from "../../../types/LocationState";
-import ApiLocations, { Library, Storage } from "../../../adapters/ApiLocations";
+import {
+    Library,
+    Storage,
+    Location,
+    ApiLibraries,
+    ApiStorages,
+    ApiLocations,
+} from "../../../adapters/ApiLocations";
 import { useToast } from "../../toast/ToastContext";
-import LocationModel from "./LocationModel";
 
 interface LocationsContextProps {
     createLibrary: (name: string) => Promise<Library>;
@@ -15,7 +21,7 @@ interface LocationsContextProps {
         state: LocationState,
         description: string | null,
         additional_info: string | null
-    ) => Promise<LocationModel>;
+    ) => Promise<Location>;
     updateLibrary: (id: number, name: string) => void;
     updateStorage: (
         storage_id: number,
@@ -36,7 +42,7 @@ interface LocationsContextProps {
     deleteLocation: (location_id: number) => void;
     libraries: Library[];
     storages: Storage[];
-    locations: LocationModel[];
+    locations: Location[];
 }
 
 const LocationsContext = createContext<LocationsContextProps | undefined>(
@@ -50,16 +56,20 @@ interface LocationsProviderProps {
 export const LocationsProvider: React.FC<LocationsProviderProps> = ({
     children,
 }) => {
+    const apiLibraries = new ApiLibraries();
+    const apiStorages = new ApiStorages();
+    const apiLocations = new ApiLocations();
+
     const { t } = useTranslation();
     const showToast = useToast();
 
     const [libraries, setLibraries] = React.useState<Library[]>([]);
     const [storages, setStorages] = React.useState<Storage[]>([]);
-    const [locations, setLocations] = React.useState<LocationModel[]>([]);
+    const [locations, setLocations] = React.useState<Location[]>([]);
 
     const createLibrary = async (name: string): Promise<Library> => {
         try {
-            const response = await ApiLocations.createLibrary({
+            const response = await apiLibraries.create({
                 name: name,
             });
 
@@ -82,7 +92,7 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
         name: string
     ): Promise<Storage> => {
         try {
-            const response = await ApiLocations.createStorage({
+            const response = await apiStorages.create({
                 library_id: library_id,
                 name: name,
             });
@@ -110,9 +120,9 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
         state: LocationState,
         description: string | null,
         additional_info: string | null
-    ): Promise<LocationModel> => {
+    ): Promise<Location> => {
         try {
-            const response = await ApiLocations.createLocation({
+            const response = await apiLocations.create({
                 storage_id: storage_id,
                 name: name,
                 regexp: regexp,
@@ -121,13 +131,7 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
                 additional_info: additional_info,
             });
             showToast("success", t("The location was created successfully"));
-            const storage = storages.find((s) => s.id === storage_id);
-            const library = libraries.find((l) => l.id === storage!.library_id);
-            const location = new LocationModel(
-                library!,
-                storage!,
-                response.data
-            );
+            const location = response.data;
             setLocations((locations) => [...locations, location]);
             return location;
         } catch (error) {
@@ -138,9 +142,10 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
     };
 
     const updateLibrary = (id: number, name: string) => {
-        ApiLocations.updateLibrary(id, {
-            name: name,
-        })
+        apiLibraries
+            .update(id, {
+                name: name,
+            })
             .then((response) => {
                 showToast(
                     "success",
@@ -151,21 +156,6 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
                     libraries?.map((l) => (l.id === id ? response.data : l))
                 );
                 const storage = storages.find((s) => s.library_id === id);
-                setLocations(
-                    locations?.map((l) =>
-                        l.library.id === id
-                            ? new LocationModel(
-                                  response.data!,
-                                  {
-                                      ...storage!,
-                                      library_id: id,
-                                      library: response.data,
-                                  },
-                                  l
-                              )
-                            : l
-                    )
-                );
             })
             .catch((error) => {
                 showToast("error", t("Library update failed"), "");
@@ -178,10 +168,11 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
         name: string,
         library_id: number
     ) => {
-        ApiLocations.updateStorage(storage_id, {
-            name: name,
-            library_id: library_id,
-        })
+        apiStorages
+            .update(storage_id, {
+                name: name,
+                library_id: library_id,
+            })
             .then((response) => {
                 showToast(
                     "success",
@@ -194,13 +185,6 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
                     )
                 );
                 const library = libraries.find((l) => l.id === library_id);
-                setLocations(
-                    locations?.map((l) =>
-                        l.storage_id === storage_id
-                            ? new LocationModel(library!, response.data!, l)
-                            : l
-                    )
-                );
             })
             .catch((error) => {
                 showToast("error", t("Storage update failed"), "");
@@ -217,32 +201,23 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
         description: string | null,
         additional_info: string | null
     ) => {
-        ApiLocations.updateLocation(location_id, {
-            storage_id: storage_id,
-            name: name,
-            regexp: regexp,
-            state: state,
-            description: description,
-            additional_info: additional_info,
-        })
+        apiLocations
+            .update(location_id, {
+                storage_id: storage_id,
+                name: name,
+                regexp: regexp,
+                state: state,
+                description: description,
+                additional_info: additional_info,
+            })
             .then((response) => {
                 showToast(
                     "success",
                     t("The location was updated successfully")
                 );
-                const storage = storages.find((s) => s.id === storage_id);
-                const library = libraries.find(
-                    (l) => l.id === storage!.library_id
-                );
                 setLocations(
                     locations?.map((l) =>
-                        l.id === location_id
-                            ? new LocationModel(
-                                  library!,
-                                  storage!,
-                                  response.data
-                              )
-                            : l
+                        l.id === location_id ? response.data : l
                     )
                 );
             })
@@ -253,7 +228,8 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
     };
 
     const deleteLibrary = (id: number) => {
-        ApiLocations.deleteLibrary(id)
+        apiLibraries
+            .delete(id)
             .then((response) => {
                 showToast(
                     "success",
@@ -269,7 +245,8 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
     };
 
     const deleteStorage = (storage_id: number) => {
-        ApiLocations.deleteStorage(storage_id)
+        apiStorages
+            .delete(storage_id)
             .then((response) => {
                 showToast(
                     "success",
@@ -285,7 +262,8 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
     };
 
     const deleteLocation = (location_id: number) => {
-        ApiLocations.deleteLocation(location_id)
+        apiLocations
+            .delete(location_id)
             .then((response) => {
                 showToast(
                     "success",
@@ -301,20 +279,21 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
     };
 
     const fetchLocations = async () => {
-        ApiLocations.getLibraries()
+        apiLibraries
+            .getPage(1, 50)
             .then((response) => {
-                setLibraries(response.data);
-                setStorages(
-                    response.data.map((l) => l.storages).flatMap((s) => s)
-                );
-                const locations = response.data.flatMap((library) =>
-                    library.storages.flatMap((storage) =>
-                        storage.locations.map(
-                            (location) =>
-                                new LocationModel(library, storage, location)
-                        )
-                    )
-                );
+                // setLibraries(response.data);
+                // setStorages(
+                //     response.data.map((l) => l.storages).flatMap((s) => s)
+                // );
+                // const locations = response.data.flatMap((library) =>
+                //     library.storages.flatMap((storage) =>
+                //         storage.locations.map(
+                //             (location) =>
+                //                 new Location(library, storage, location)
+                //         )
+                //     )
+                // );
                 setLocations(locations);
             })
             .catch((error) => {

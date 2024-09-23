@@ -22,7 +22,7 @@ class VeraConfig:
 
     @staticproperty
     def LogLevel() -> str:
-        return environ.get("LOG_LEVEL", "fine")
+        return environ.get("LOG_LEVEL", "info")
 
     @staticproperty
     def TimeZone() -> tzinfo:

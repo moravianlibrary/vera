@@ -24,7 +24,7 @@ import { GeneratedExtractionsProvider } from "../contexts/extractions/GeneratedE
 import { LocationsProvider } from "../contexts/extractions/locations/LocationsContext";
 import { IntentionsProvider } from "../contexts/categories/IntentionsContext";
 import { Splitter, SplitterPanel } from "primereact/splitter";
-import EsFiltersView from "../features/documents/elasticsearch/EsFiltersView";
+import DocumentsFiltersView from "../features/documents/elasticsearch/DocumentsFiltersView";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -164,7 +164,7 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
             />
             <Splitter>
                 <SplitterPanel minSize={5} size={10}>
-                    <EsFiltersView />
+                    <DocumentsFiltersView />
                 </SplitterPanel>
                 <SplitterPanel minSize={50} size={90}>
                     <DocumentsTable tableViewType={tableViewType} />

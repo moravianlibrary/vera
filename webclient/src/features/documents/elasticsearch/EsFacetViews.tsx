@@ -7,6 +7,9 @@ import DigitizationStateTag from "../../../components/tags/DigitizationStateTag"
 import { DigitizationState } from "../../../types/DigitizationState";
 import { EsFilterView } from "./EsFilterView";
 import { useDigitizationLists } from "../../../contexts/extractions/DigitizationListsContext";
+import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
+import { DigitizationExtraction } from "../../../adapters/ApiDigitizationExtractions";
+import { SelectItemOptionsType } from "primereact/selectitem";
 
 interface CustomFacetViewProps extends FacetViewProps {
     onDisplayValue: (value: FieldValue) => React.ReactNode;
@@ -131,7 +134,7 @@ const DigitizationListCheckboxLabel: React.FC<
         const fetchLabel = async () => {
             try {
                 const list = await findDigitizationList(value as number);
-                setValueLabel(`${value}: ${list?.extractor}`);
+                setValueLabel(`${value}: ${list?.created_by}`);
             } catch (error) {
                 setValueLabel(`${value}: [Error fetching list]`);
             }
@@ -144,6 +147,15 @@ const DigitizationListCheckboxLabel: React.FC<
         <label htmlFor={`es-${label}-${value}-checkbox`}>{valueLabel}</label>
     );
 };
+
+function transformToMultiSelectOptions(
+    digitizationLists: DigitizationExtraction[]
+): SelectItemOptionsType {
+    return digitizationLists.map((list) => ({
+        label: `${list.id}: ${list.created_by}, ${list.created_at}, ${list.page_count} pages`,
+        value: list.id,
+    }));
+}
 
 const DigitizationListFacetView: React.FC<FacetViewProps> = (props) => {
     return (

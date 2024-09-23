@@ -2,12 +2,12 @@ import React from "react";
 
 import { Button } from "primereact/button";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
-import { ActionAccessComponent } from "../../services/AccessService";
 import { ActionType } from "../../types/ActionType";
-import { UserModel } from "../../contexts/user/UserModel";
 import { useTranslation } from "react-i18next";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { useIntentions } from "../../contexts/categories/IntentionsContext";
+import { CurrentUser } from "../../adapters/ApiUsers";
+import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 
 interface CateogryPercentageProps {
     category: CategoryModel;
@@ -21,7 +21,7 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({
     const { setEditDistribution } = useCategoryModels();
     const { activeIntention } = useIntentions();
 
-    const canEditDepartmentCategory = (user: UserModel) => {
+    const canEditDepartmentCategory = (user: CurrentUser) => {
         return (category.level >= 1 &&
             user.actions &&
             user.department_id &&

@@ -6,12 +6,12 @@ import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { MenuItem } from "primereact/menuitem";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { CategoryType } from "../../contexts/categories/CategoryType";
-import { ActionAccessComponent } from "../../services/AccessService";
 import { ActionType } from "../../types/ActionType";
-import { UserModel } from "../../contexts/user/UserModel";
-import { useUser } from "../../contexts/user/UserContext";
+import { useAccess } from "../../contexts/AccessContext";
 import { useTranslation } from "react-i18next";
 import { useIntentions } from "../../contexts/categories/IntentionsContext";
+import { CurrentUser, User } from "../../adapters/ApiUsers";
+import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 
 interface CategoryEditMenuProps {
     node: CategoryModel;
@@ -32,7 +32,7 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
         setEditDistribution,
     } = useCategoryModels();
     const { activeIntention } = useIntentions();
-    const { user } = useUser();
+    const { currentUser } = useAccess();
     const menuRef = useRef(null);
 
     const handleToggleMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -169,12 +169,14 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
                 : rootItems;
         } else if (node.assignable || node.level === MAX_CATEGORY_LEVEL) {
             return leafItems;
-        } else if (user.actions!.includes(ActionType.EditCategoriesAll)) {
+        } else if (
+            currentUser?.actions!.includes(ActionType.EditCategoriesAll)
+        ) {
             return editDistribution
                 ? editDistributionItems.concat(items)
                 : items;
         } else if (
-            user.actions!.includes(ActionType.EditCategoriesDepartment)
+            currentUser?.actions!.includes(ActionType.EditCategoriesDepartment)
         ) {
             if (node.level >= 1) {
                 return editDistribution
@@ -190,7 +192,7 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
         }
     };
 
-    const canEditDepartmentCategory = (user: UserModel) => {
+    const canEditDepartmentCategory = (user: CurrentUser) => {
         return (user.actions &&
             user.department_id &&
             user.actions.includes(ActionType.EditCategoriesDepartment) &&

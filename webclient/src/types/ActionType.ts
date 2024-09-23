@@ -1,34 +1,41 @@
 enum ActionType {
-    ReadDatatableOwn = 'ReadDatatableOwn',
-    ReadDatatableDepartment = 'ReadDatatableDepartment',
-    ReadDatatableAll = 'ReadDatatableAll',
-    EditDatatableOwn = 'EditDatatableOwn',
-    EditDatatableDepartment = 'EditDatatableDepartment',
-    EditDatatableAll = 'EditDatatableAll',
-    WriteDatatable = 'WriteDatatable',
-    InsertDatatable = 'InsertDatatable',
-    CommentOnDatatable = 'CommentOnDatatable',
+    ReadDatatableOwn = "ReadDatatableOwn",
+    ReadDatatableDepartment = "ReadDatatableDepartment",
+    ReadDatatableAll = "ReadDatatableAll",
+    EditDatatableOwn = "EditDatatableOwn",
+    EditDatatableDepartment = "EditDatatableDepartment",
+    EditDatatableAll = "EditDatatableAll",
+    WriteDatatable = "WriteDatatable",
+    InsertDatatable = "InsertDatatable",
+    CommentOnDatatable = "CommentOnDatatable",
 
-    ReadCategoriesAll = 'ReadCategoriesAll',
-    ReadCategoriesDepartment = 'ReadCategoriesDepartment',
-    EditCategoriesAll = 'EditCategoriesAll',
-    EditCategoriesDepartment = 'EditCategoriesDepartment',
+    ReadCategoriesAll = "ReadCategoriesAll",
+    ReadCategoriesDepartment = "ReadCategoriesDepartment",
+    EditCategoriesAll = "EditCategoriesAll",
+    EditCategoriesDepartment = "EditCategoriesDepartment",
 
-    PlanTasks = 'PlanTasks',
-    AdminTasks = 'AdminTasks',
+    PlanTasks = "PlanTasks",
+    AdminTasks = "AdminTasks",
 
-    EditAccess = 'EditAccess',
+    EditAccess = "EditAccess",
     StopEmulatingAccess = "StopEmulatingAccess",
 
-    Extract = 'Extract',
-    AdminExtractions = 'AdminExtractions',
+    Extract = "Extract",
+    AdminExtractions = "AdminExtractions",
 
-    AdminDatabase = 'AdminDatabase',
+    AdminDatabase = "AdminDatabase",
 
-    ReadDatatable = 'ReadDatatable',
-    EditDatatable = 'EditDatatable',
-    ReadCategories = 'ReadCategories',
-    EditCategories = 'EditCategories',
+    ReadDatatable = "ReadDatatable",
+    EditDatatable = "EditDatatable",
+    ReadCategories = "ReadCategories",
+    EditCategories = "EditCategories",
 }
 
-export { ActionType };
+enum ActionScope {
+    WithoutScope = "WithoutScope",
+    All = "All",
+    Department = "Department",
+    Own = "Own",
+}
+
+export { ActionType, ActionScope };

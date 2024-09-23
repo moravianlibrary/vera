@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ActionType } from "../../types/ActionType";
 import { SelectButton } from "primereact/selectbutton";
 import { useTranslation } from "react-i18next";
-import { useUser } from "../../contexts/user/UserContext";
+import { useAccess } from "../../contexts/AccessContext";
 import {
     OwnershipActionType,
     OwnershipType,
@@ -21,7 +21,7 @@ const EmulateActionsForm: React.FC<EmulateActionsFormProps> = ({
     onSubmit,
 }) => {
     const { t } = useTranslation();
-    const { user } = useUser();
+    const { currentUser } = useAccess();
 
     const [readDatatableAction, setReadDatatableAction] =
         useState<OwnershipActionType | null>(null);
@@ -36,7 +36,10 @@ const EmulateActionsForm: React.FC<EmulateActionsFormProps> = ({
     >([]);
 
     useEffect(() => {
-        const roleActions = new RoleActions(user.actions || []);
+        if (!currentUser) return;
+
+        // const roleActions = new RoleActions(currentUser?.actions || []);
+        const roleActions = new RoleActions([]);
         setReadDatatableAction(roleActions.readDatatable);
         setEditDatatableAction(roleActions.editDatatable);
         setReadCategoriesAction(roleActions.readCategories);
@@ -56,11 +59,13 @@ const EmulateActionsForm: React.FC<EmulateActionsFormProps> = ({
             ].map((action) => {
                 return {
                     action: action,
-                    included: user.actions && user.actions.includes(action),
+                    included:
+                        currentUser.actions &&
+                        currentUser.actions.includes(action),
                 };
             }) as { action: ActionType; included: boolean }[]
         );
-    }, [user]);
+    }, [currentUser]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

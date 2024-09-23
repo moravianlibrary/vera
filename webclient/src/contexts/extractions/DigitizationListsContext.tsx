@@ -8,10 +8,8 @@ import React, {
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
 import { DocumentsQuery } from "../../adapters/ApiDocuments";
-import ApiDigitizationExtractions, {
-    DigitizationExtraction,
-} from "../../adapters/ApiDigitizationExtractions";
-import DigitizationListModel from "./DigitizationListModel";
+import { DigitizationExtraction } from "../../adapters/ApiDigitizationExtractions";
+import ApiDigitizationLists from "../../adapters/ApiDigitizationExtractions";
 
 interface DigitizationListsContextProps {
     digitizationLists: DigitizationExtraction[];
@@ -47,6 +45,8 @@ interface DigitizationListsProviderProps {
 export const DigitizationListsProvider: React.FC<
     DigitizationListsProviderProps
 > = ({ children }) => {
+    const api = new ApiDigitizationLists();
+
     const { t } = useTranslation();
     const showToast = useToast();
     // const { removeDocumentFromResults } = useDocuments();
@@ -58,13 +58,11 @@ export const DigitizationListsProvider: React.FC<
     const [numFound, setNumFound] = useState<number>(0);
 
     const loadExtractions = async (offset: number, limit: number) => {
-        ApiDigitizationExtractions.getExtractions(offset, limit)
+        const page = offset / loadAmount + 1;
+        const pageSize = loadAmount;
+        api.getPage(page, pageSize)
             .then((response) => {
-                const transformedData: DigitizationExtraction[] =
-                    response.data.extractions.map((extraction) => {
-                        return new DigitizationListModel(extraction);
-                    });
-                setDigitizationLists(transformedData);
+                setDigitizationLists(response.data.items);
                 setNumFound(response.data.num_found);
             })
             .catch((error) => {
@@ -77,14 +75,9 @@ export const DigitizationListsProvider: React.FC<
         intention_id?: number
     ): Promise<DigitizationExtraction> => {
         try {
-            const response = await ApiDigitizationExtractions.createExtraction(
-                query,
-                intention_id
-            );
-            const transformedData: DigitizationExtraction =
-                new DigitizationListModel(response.data);
-            setDigitizationLists([transformedData, ...digitizationLists]);
-            return transformedData;
+            const response = await api.createFromQuery(query, intention_id);
+            setDigitizationLists([response.data, ...digitizationLists]);
+            return response.data;
         } catch (error) {
             console.error(`Could not create digitization list: ${error}`);
             throw error;
@@ -96,21 +89,18 @@ export const DigitizationListsProvider: React.FC<
         query: DocumentsQuery
     ): Promise<DigitizationExtraction> => {
         try {
-            const response =
-                await ApiDigitizationExtractions.addDocumentsToExtraction(
-                    digitization_list_id,
-                    query
-                );
-            const transformedData: DigitizationExtraction =
-                new DigitizationListModel(response.data);
+            const response = await api.addDocumentsToExtraction(
+                digitization_list_id,
+                query
+            );
             setDigitizationLists(
                 digitizationLists.map((digitization_list) =>
                     digitization_list.id === digitization_list_id
-                        ? transformedData
+                        ? response.data
                         : digitization_list
                 )
             );
-            return transformedData;
+            return response.data;
         } catch (error) {
             console.error(`Could not create digitization list: ${error}`);
             throw error;
@@ -122,21 +112,18 @@ export const DigitizationListsProvider: React.FC<
         query: DocumentsQuery
     ): Promise<DigitizationExtraction> => {
         try {
-            const response =
-                await ApiDigitizationExtractions.removeDocumentsFromExtraction(
-                    digitization_list_id,
-                    query
-                );
-            const transformedData: DigitizationExtraction =
-                new DigitizationListModel(response.data);
+            const response = await api.removeDocumentsFromExtraction(
+                digitization_list_id,
+                query
+            );
             setDigitizationLists(
                 digitizationLists.map((digitization_list) =>
                     digitization_list.id === digitization_list_id
-                        ? transformedData
+                        ? response.data
                         : digitization_list
                 )
             );
-            return transformedData;
+            return response.data;
         } catch (error) {
             console.error(`Could not create digitization list: ${error}`);
             throw error;
@@ -144,7 +131,7 @@ export const DigitizationListsProvider: React.FC<
     };
 
     const deleteDigitizationList = async (digitization_list_id: number) => {
-        ApiDigitizationExtractions.deleteExtraction(digitization_list_id)
+        api.delete(digitization_list_id)
             .then((response) => {
                 setDigitizationLists(
                     digitizationLists.filter(
@@ -159,9 +146,7 @@ export const DigitizationListsProvider: React.FC<
     };
 
     const findDigitizationList = async (digitization_list_id: number) => {
-        return (
-            await ApiDigitizationExtractions.getExtraction(digitization_list_id)
-        ).data;
+        return (await api.get(digitization_list_id)).data;
     };
 
     useEffect(() => {

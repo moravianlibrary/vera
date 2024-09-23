@@ -6,16 +6,15 @@ import React, {
     useEffect,
 } from "react";
 import ApiRoles, { Role } from "../../adapters/ApiRoles";
-import { RoleModel } from "../user/RoleModel";
 
 interface RolesContextProps {
-    roles: RoleModel[];
-    editingRoles: RoleModel[];
+    roles: Role[];
+    editingRoles: Role[];
     handleAddRole: () => void;
-    handleEditRole: (role: RoleModel) => void;
-    handleCancelEdit: (role: RoleModel) => void;
-    handleAcceptEdit: (role: RoleModel) => void;
-    handleDeleteRole: (role: RoleModel) => void;
+    handleEditRole: (role: Role) => void;
+    handleCancelEdit: (role: Role) => void;
+    handleAcceptEdit: (role: Role) => void;
+    handleDeleteRole: (role: Role) => void;
 }
 
 const RolesContext = createContext<RolesContextProps | undefined>(undefined);
@@ -25,17 +24,16 @@ interface RolesProviderProps {
 }
 
 export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
+    const api = new ApiRoles();
+
     const [rolesData, setRolesData] = useState<Role[]>([]);
-    const [roles, setRoles] = useState<RoleModel[]>([]);
-    const [editingRoles, setEditingRoles] = useState<RoleModel[]>([]);
+    const [roles, setRoles] = useState<Role[]>([]);
+    const [editingRoles, setEditingRoles] = useState<Role[]>([]);
 
     const loadRoles = async () => {
-        ApiRoles.getRoles()
+        api.getPage(1, 50)
             .then((response) => {
-                const transformedData: Role[] = response.data.map((role) => {
-                    return Object.assign({}, role) as Role;
-                });
-                setRolesData(transformedData);
+                setRolesData(response.data.items);
             })
             .catch((error) => {
                 console.error(`Could not receive assignable roles: ${error}`);
@@ -46,27 +44,29 @@ export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
         if (roles[roles.length - 1].id === undefined) {
             return;
         }
-        const newRole = RoleModel.createEmpty();
-        setRoles([...roles, newRole]);
-        handleEditRole(newRole);
+        // TODO: Implement role creation
+        // const newRole = Role.createEmpty();
+        // const newRole = {};
+        // setRoles([...roles, newRole]);
+        // handleEditRole(newRole);
     };
 
-    const handleEditRole = (role: RoleModel) => {
+    const handleEditRole = (role: Role) => {
         if (role.name !== "Admin") {
             setEditingRoles([...editingRoles, role]);
         }
     };
 
-    const handleCancelEdit = (role: RoleModel) => {
+    const handleCancelEdit = (role: Role) => {
         setEditingRoles(editingRoles.filter((er) => er !== role));
         if (role.id === undefined) {
             setRoles(roles.filter((r) => r !== role));
         }
     };
 
-    const handleAcceptEdit = (role: RoleModel) => {
+    const handleAcceptEdit = (role: Role) => {
         if (role.id) {
-            ApiRoles.updateRole(role)
+            api.update(role.id, role)
                 .then((response) => {
                     setRolesData(
                         rolesData.map((data) =>
@@ -78,7 +78,7 @@ export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
                     console.error(error);
                 });
         } else {
-            ApiRoles.createRole(role)
+            api.create(role)
                 .then((response) => {
                     setRolesData([...rolesData, response.data]);
                 })
@@ -88,8 +88,8 @@ export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
         }
     };
 
-    const handleDeleteRole = (role: RoleModel) => {
-        ApiRoles.deleteRole(role.id!)
+    const handleDeleteRole = (role: Role) => {
+        api.delete(role.id!)
             .then((response) => {
                 setRolesData(rolesData.filter((data) => data.id !== role.id));
             })
@@ -99,7 +99,7 @@ export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
     };
 
     useEffect(() => {
-        setRoles(rolesData.map((data) => new RoleModel(data)));
+        setRoles(rolesData);
     }, [rolesData]);
 
     useEffect(() => {

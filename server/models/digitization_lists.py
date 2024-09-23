@@ -25,7 +25,7 @@ class DigitizationList(BaseModel):
 
     @hybrid_property
     def page_count(self) -> int:
-        return sum(d.pages_count for d in self.documents)
+        return sum(d.pages_count for d in self.documents if d.pages_count)
 
     @classmethod
     def get_by_intention(

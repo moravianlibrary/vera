@@ -15,7 +15,7 @@ import {
     SearchProvider,
     WithSearch,
 } from "@elastic/react-search-ui";
-import { esConfig } from "../../features/documents/elasticsearch/ElasticsearchConfig";
+import { esConfig } from "../../features/documents/elasticsearch/EsDocumentsConfig";
 import { ResponseState } from "@elastic/search-ui";
 
 interface DocumentsContextProps {

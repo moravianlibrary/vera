@@ -10,7 +10,7 @@ import {
     CategoryOption,
     buildAssignableCategoriesOptionsTree,
 } from "../../components/pickers/AssignableCategoryPicker";
-import { useUser } from "../../contexts/user/UserContext";
+import { useAccess } from "../../contexts/AccessContext";
 import { ActionType } from "../../types/ActionType";
 import { MenuItem } from "primereact/menuitem";
 import { useDigitizationManager } from "../../contexts/extractions/DigitizationListsManagerContext";
@@ -24,7 +24,7 @@ interface DocumentsActionsMenuProps {}
 
 const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
     const { t } = useTranslation();
-    const { user } = useUser();
+    const { currentUser } = useAccess();
     const { numSelected } = useDocumentsSelection();
     const { exportDocuments, updateCategory, startTask } =
         useDocumentsActions();
@@ -231,25 +231,30 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
     const getActionsMenuItems = (): MenuItem[] => {
         const items: MenuItem[] = [exportDocumentsMenuItem];
         if (
-            user.actions!.includes(ActionType.EditDatatableOwn) ||
-            user.actions!.includes(ActionType.EditDatatableDepartment) ||
-            user.actions!.includes(ActionType.EditDatatableAll)
+            currentUser?.actions!.includes(ActionType.EditDatatableOwn) ||
+            currentUser?.actions!.includes(
+                ActionType.EditDatatableDepartment
+            ) ||
+            currentUser?.actions!.includes(ActionType.EditDatatableAll)
         ) {
             items.push(changeCategoryMenuItem);
         }
-        if (user.actions!.includes(ActionType.PlanTasks)) {
+        if (currentUser?.actions!.includes(ActionType.PlanTasks)) {
             items.push(startTaskMenuItem);
         }
         if (
-            user.actions!.includes(ActionType.Extract) ||
-            user.actions!.includes(ActionType.AdminExtractions)
+            currentUser?.actions!.includes(ActionType.Extract) ||
+            currentUser?.actions!.includes(ActionType.AdminExtractions)
         ) {
             items.push(separatorMenuItem);
         }
-        if (user.actions!.includes(ActionType.Extract) && !digitizationListId) {
+        if (
+            currentUser?.actions!.includes(ActionType.Extract) &&
+            !digitizationListId
+        ) {
             items.push(createDigitizationListMenuItem);
         }
-        if (user.actions!.includes(ActionType.AdminExtractions)) {
+        if (currentUser?.actions!.includes(ActionType.AdminExtractions)) {
             if (digitizationListId) {
                 items.push(removeDocumentsFromDigitizationListMenuItem);
             } else {

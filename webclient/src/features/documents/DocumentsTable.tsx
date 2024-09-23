@@ -20,8 +20,7 @@ import AssignableCategoryPicker from "../../components/pickers/AssignableCategor
 import LabeledComponent from "../../components/LabeledComponent";
 import { InputNumber } from "primereact/inputnumber";
 import ApiDocuments from "../../adapters/ApiDocuments";
-import ActionAccessComponent from "../../components/ActionAccessComponent";
-import { accessService } from "../../services/AccessService";
+import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 import DigitizationStateTag from "../../components/tags/DigitizationStateTag";
 import ExtractableTag from "../../components/tags/ExtractableTag";
 import { TableViewType } from "./DocumentsHeader";
@@ -29,6 +28,20 @@ import DocumentTypeTag from "../../components/tags/DocumentTypeTag";
 import ApiCatalogs, { Marc21DiffRecord } from "../../adapters/ApiCatalogs";
 import MarcRecordsDiffView from "../../components/views/MarcRecordsDiffView";
 import { Tooltip } from "primereact/tooltip";
+import { ActionType } from "../../types/ActionType";
+
+// TODO: move
+function isAllowedToEditDocument(user, document) {
+    return (
+        user &&
+        user.actions &&
+        (user.actions.includes(ActionType.EditDatatableAll) ||
+            (user.actions.includes(ActionType.EditDatatableDepartment) &&
+                user.department_id === document.creator_department_id) ||
+            (user.actions.includes(ActionType.EditDatatableOwn) &&
+                user.id === document.creator_id))
+    );
+}
 
 interface DocumentsTableProps {
     tableViewType: TableViewType;
@@ -368,10 +381,7 @@ const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({
                                 />
                                 <ActionAccessComponent
                                     evaluate={(user) =>
-                                        accessService.isAllowedToEditDocument(
-                                            user,
-                                            doc
-                                        )
+                                        isAllowedToEditDocument(user, doc)
                                     }
                                 >
                                     <Button

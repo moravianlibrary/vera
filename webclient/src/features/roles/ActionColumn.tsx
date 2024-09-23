@@ -2,11 +2,11 @@ import React from "react";
 import { LabeledAction } from "./RolesTable";
 import { useTranslation } from "react-i18next";
 import { Checkbox, CheckboxChangeEvent } from "primereact/checkbox";
-import { RoleModel } from "../../contexts/user/RoleModel";
 import { ColumnEditorOptions } from "primereact/column";
+import { Role } from "../../adapters/ApiRoles";
 
 interface ActionColumnProps {
-    role: RoleModel;
+    role: Role;
     action: LabeledAction;
 }
 
@@ -20,24 +20,25 @@ const ActionColumn: React.FC<ActionColumnProps> = ({ role, action }) => {
 
     return (
         <div>
-            <Checkbox
-                disabled
-                checked={role.actions.includes(action.action)}
-            />
+            <Checkbox disabled checked={role.actions.includes(action.action)} />
             <label className="ml-2">{t(action.label)}</label>
         </div>
     );
 };
 
-export const ActionColumnEditor: React.FC<ActionColumnEditorProps> = ({ options, action }) => {
+export const ActionColumnEditor: React.FC<ActionColumnEditorProps> = ({
+    options,
+    action,
+}) => {
     const { t } = useTranslation();
-
 
     const handleChangeAction = (event: CheckboxChangeEvent) => {
         if (event.checked) {
             options.editorCallback!([...options.value, event.value]);
         } else {
-            options.editorCallback!(options.value.filter(action => action !== event.value));
+            options.editorCallback!(
+                options.value.filter((action) => action !== event.value)
+            );
         }
     };
 

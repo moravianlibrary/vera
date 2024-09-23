@@ -1,17 +1,17 @@
 import React from "react";
 import { Facet, Sorting } from "@elastic/react-search-ui";
-import { SORT_OPTIONS } from "./ElasticsearchConfig";
+import { SORT_OPTIONS } from "./EsDocumentsConfig";
 import {
     BooleanFacetView,
     DigitizationListFacetView,
     DigitizationStateFacetView,
     ListFacetView,
 } from "./EsFacetViews";
-import { setFilter } from "@elastic/search-ui/lib/esm/actions";
+import { EsFilterByDigitizationList } from "./EsFilterView";
 
-interface EsFiltersViewProps {}
+interface DocumentsFiltersViewProps {}
 
-export const EsFiltersView: React.FC<EsFiltersViewProps> = () => {
+export const DocumentsFiltersView: React.FC<DocumentsFiltersViewProps> = () => {
     return (
         <div
             className="surface-50 border-right-1 border-200"
@@ -58,11 +58,10 @@ export const EsFiltersView: React.FC<EsFiltersViewProps> = () => {
             <Facet
                 field="digitization_list_id"
                 label="Digitization List"
-                filterType="all"
                 view={DigitizationListFacetView}
             />
         </div>
     );
 };
 
-export default EsFiltersView;
+export default DocumentsFiltersView;

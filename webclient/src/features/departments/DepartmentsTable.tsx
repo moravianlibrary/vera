@@ -15,10 +15,10 @@ import { textEditor } from "../../services/Editors";
 import { Button } from "primereact/button";
 import { useDepartments } from "../../contexts/departments/DepartmentsContext";
 import React from "react";
-import { DepartmentModel } from "../../contexts/departments/DepartmentModel";
 import { Chips, ChipsChangeEvent } from "primereact/chips";
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { Chip } from "primereact/chip";
+import { Department } from "../../adapters/ApiDepartments";
 
 interface DepartmentsTableProps {
     header: () => React.JSX.Element;
@@ -46,7 +46,7 @@ const DepartmentsTable: React.FC<DepartmentsTableProps> = (props) => {
         }
     };
 
-    const deleteButton = (department: DepartmentModel) => {
+    const deleteButton = (department: Department) => {
         if (department.id) {
             return (
                 <Button
@@ -58,13 +58,10 @@ const DepartmentsTable: React.FC<DepartmentsTableProps> = (props) => {
         }
     };
 
-    const usersColumnBody = (
-        data: DepartmentModel,
-        option: ColumnBodyOptions
-    ) => {
+    const usersColumnBody = (data: Department, option: ColumnBodyOptions) => {
         return (
             <div className="flex gap-1">
-                {data.users.map((u, index) => (
+                {data.usernames.map((u, index) => (
                     <Chip key={index} label={u} />
                 ))}
             </div>
@@ -81,9 +78,7 @@ const DepartmentsTable: React.FC<DepartmentsTableProps> = (props) => {
                     | DataTableValueArray
                     | DataTableEditingRows) || []
             }
-            onRowEditComplete={(e) =>
-                handleAcceptEdit(e.newData as DepartmentModel)
-            }
+            onRowEditComplete={(e) => handleAcceptEdit(e.newData as Department)}
             scrollable
             scrollHeight="flex"
             header={props.header}

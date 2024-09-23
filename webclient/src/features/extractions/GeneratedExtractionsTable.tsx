@@ -7,19 +7,30 @@ import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
 import GeneratedExtractionModel from "../../contexts/extractions/GeneratedExtractionModel";
 import DeleteButton from "../../components/buttons/DeleteButton";
-import { useAccess } from "../../contexts/access/AccessContext";
+import { useAccess } from "../../contexts/AccessContext";
 import { PaginatorPageChangeEvent } from "primereact/paginator";
 import DataTablePaginator from "../../components/DataTablePaginator";
+import { GeneratedExtraction } from "../../adapters/ApiGeneratedExtractions";
+import { ActionType } from "../../types/ActionType";
 
 const ExtractionsTable: React.FC = () => {
     const { t } = useTranslation();
-    const { canDeleteExtraction } = useAccess();
+    const { currentUser } = useAccess();
 
     const { loadExtractions, extractions, numFound, deleteExtraction } =
         useGeneratedExtractions();
 
     const [offset, setOffset] = useState<number>(0);
     const [limit, setLimit] = useState<number>(25);
+
+    const canDeleteExtraction = (extraction: GeneratedExtraction) => {
+        const userActions = currentUser?.actions || [];
+        return (
+            (extraction.generated_by === currentUser?.username &&
+                userActions.includes(ActionType.Extract)) ||
+            userActions.includes(ActionType.AdminExtractions)
+        );
+    };
 
     const documentsButton = (extraction: GeneratedExtractionModel) => {
         return (

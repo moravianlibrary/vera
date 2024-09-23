@@ -9,7 +9,7 @@ import ApiCategories, { Category } from "../../adapters/ApiCategories";
 import { useIntentions } from "./IntentionsContext";
 import { AxiosResponse } from "axios";
 import { Department } from "../../adapters/ApiDepartments";
-import { useAccess } from "../access/AccessContext";
+import { useAccess } from "../AccessContext";
 import { ActionType } from "../../types/ActionType";
 
 interface CategoriesContextProps {
@@ -36,7 +36,7 @@ interface CategoriesProviderProps {
 export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
     children,
 }) => {
-    const { hasAction, getDepartment } = useAccess();
+    const { currentUser, hasPermission } = useAccess();
     const { activeIntention } = useIntentions();
     const [categories, setCategories] = useState<Category[] | undefined>(
         undefined
@@ -64,10 +64,13 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
     };
 
     const loadCategories = async () => {
-        const departmentId = !hasAction(ActionType.ReadCategoriesAll)
-            ? getDepartment()
+        const departmentId = !hasPermission(ActionType.ReadCategoriesAll)
+            ? currentUser?.department_id
             : department?.id;
-        if (!hasAction(ActionType.ReadCategoriesAll) && departmentId === null) {
+        if (
+            !hasPermission(ActionType.ReadCategoriesAll) &&
+            departmentId === null
+        ) {
             return;
         }
 

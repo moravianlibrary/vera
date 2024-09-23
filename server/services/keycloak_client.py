@@ -74,7 +74,7 @@ def get_user_from_token(token: str, db: Session) -> CurrentUser:
 
     user = User.find(db, user_info[USER_FIELD])
     if user is None:
-        user = User(name=user_info[USER_FIELD])
+        user = User(username=user_info[USER_FIELD])
         user.save(db)
 
     return CurrentUser(
