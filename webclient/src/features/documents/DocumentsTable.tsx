@@ -19,7 +19,7 @@ import { PaginatorPageChangeEvent } from "primereact/paginator";
 import AssignableCategoryPicker from "../../components/pickers/AssignableCategoryPicker";
 import LabeledComponent from "../../components/LabeledComponent";
 import { InputNumber } from "primereact/inputnumber";
-import ApiDocuments from "../../adapters/ApiDocuments";
+import ApiDocuments, { IndexDocument } from "../../adapters/ApiDocuments";
 import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 import DigitizationStateTag from "../../components/tags/DigitizationStateTag";
 import ExtractableTag from "../../components/tags/ExtractableTag";
@@ -144,7 +144,10 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
             : t(document.material_type);
     };
 
-    const categoryBody = (document) => {
+    const categoryBody = (document: IndexDocument) => {
+        if (!document.category_path) {
+            return t("documents.table.no-category");
+        }
         const categoryPath = document.category_path
             .map((category) => category.category_name)
             .join(" > ");

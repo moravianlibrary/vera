@@ -613,6 +613,8 @@ const resources = {
         "catalog.record.value-differs": "<- rozdílna hodnota ->",
         "catalog.record.cnb-not-found": "Záznam v ČNB katalogu nenalezen",
         "catalog.record.skc-not-found": "Záznam v SKC katalogu nenalezen",
+
+        "documents.table.no-category": "Bez kategorie",
     },
   },
 };

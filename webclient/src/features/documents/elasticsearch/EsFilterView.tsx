@@ -6,6 +6,12 @@ import { useDigitizationLists } from "../../../contexts/extractions/Digitization
 import { DigitizationExtraction } from "../../../adapters/ApiDigitizationExtractions";
 import { SelectItemOptionsType } from "primereact/selectitem";
 import { SearchContext } from "@elastic/react-search-ui";
+import { Slider } from "primereact/slider";
+import { InputNumber } from "primereact/inputnumber";
+
+function useSearchContext() {
+    return useContext(SearchContext);
+}
 
 interface EsFilterViewProps {
     label: string;
@@ -81,9 +87,6 @@ const DigitizationListFacetView: React.FC<FacetViewProps> = ({
     if (numFound === 0) return null;
 
     const handleSelectChange = (event: MultiSelectChangeEvent) => {
-        console.log(values);
-        console.log(options);
-
         const selectedValues = event.value as number[];
         selectedValues
             .filter((v) => !selectedDigitizationLists.includes(v))
@@ -107,8 +110,51 @@ const DigitizationListFacetView: React.FC<FacetViewProps> = ({
     );
 };
 
+interface EsRangeFilterViewProps {
+    field: [string, string];
+    label: string;
+}
+
+const VolumeNumberFilterView: React.FC<EsRangeFilterViewProps> = ({
+    field,
+    label,
+}) => {
+    const { driver } = useSearchContext();
+
+    const [value, setValue] = React.useState<[number, number]>();
+
+    console.log(driver.state);
+
+    return (
+        <EsFilterView label={label}>
+            <div className="flex gap-1">
+                <InputNumber
+                    value={value ? value[0] : undefined}
+                    onChange={(e) =>
+                        e.value && value && setValue([e.value, value[1]])
+                    }
+                />
+                <InputNumber
+                    value={value ? value[1] : undefined}
+                    onChange={(e) =>
+                        e.value && value && setValue([value[0], e.value])
+                    }
+                />
+            </div>
+            <Slider
+                className="m-2"
+                value={value}
+                // min={min}
+                // max={max}
+                range
+                onChange={(e) => setValue(e.value as [number, number])}
+            />
+        </EsFilterView>
+    );
+};
+
 // const EsFilterView: React.FC<EsFilterViewProps> = () => {
 //     return <></>;
 // };
 
-export { EsFilterView, EsFilterByDigitizationList };
+export { EsFilterView, EsFilterByDigitizationList, VolumeNumberFilterView };

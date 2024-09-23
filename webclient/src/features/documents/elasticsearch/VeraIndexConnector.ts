@@ -1,4 +1,9 @@
-import { QueryConfig, RequestState, ResponseState } from "@elastic/search-ui";
+import {
+    FacetConfiguration,
+    QueryConfig,
+    RequestState,
+    ResponseState,
+} from "@elastic/search-ui";
 import ElasticsearchAPIConnector, {
     SearchRequest,
 } from "@elastic/search-ui-elasticsearch-connector";
@@ -8,27 +13,46 @@ function postProcessRequestBody(
     requestState: RequestState,
     queryConfig: QueryConfig
 ): SearchRequest {
-    if (queryConfig && queryConfig.facets && requestBody.aggs) {
-        const queryConfigFacets = queryConfig.facets;
-
-        Object.keys(requestBody.aggs).forEach((facetKey) => {
-            const facet = requestBody.aggs![facetKey];
-            const configFacet = queryConfigFacets[facetKey];
-            if (configFacet && (configFacet as any).sort_order) {
-                const orderKey =
-                    requestBody.aggs[facetKey].terms.order?.keys[0];
-                console.log("Changind order", orderKey);
-
-                requestBody.aggs[facetKey].terms.order = {
-                    orderKey: (facet as any).sort_order,
-                };
-            }
-        });
+    function changeSortOrder(
+        facetConfiguration: FacetConfiguration,
+        aggregations: any
+    ) {
+        if (
+            facetConfiguration &&
+            (facetConfiguration as any).sort_order &&
+            aggregations.terms &&
+            aggregations.terms.order
+        ) {
+            aggregations.terms.order = {
+                _key: (facetConfiguration as any).sort_order,
+            };
+        }
     }
 
-    console.log(requestBody);
-    console.log(requestState);
-    console.log(queryConfig);
+    if (queryConfig && queryConfig.facets && requestBody.aggs) {
+        Object.values(requestBody.aggs)
+            .filter((facetBucket) => facetBucket.aggs)
+            .forEach((facetBucket) =>
+                Object.keys(facetBucket.aggs!).forEach((facetKey) =>
+                    changeSortOrder(
+                        queryConfig.facets![facetKey],
+                        facetBucket.aggs![facetKey]
+                    )
+                )
+            );
+    }
+    if (
+        queryConfig &&
+        (queryConfig as any).aggregations &&
+        requestBody.aggs &&
+        requestBody.aggs.facet_bucket_all &&
+        requestBody.aggs.facet_bucket_all.aggs
+    ) {
+        requestBody.aggs.facet_bucket_all.aggs = {
+            ...requestBody.aggs.facet_bucket_all.aggs,
+            ...(queryConfig as any).aggregations,
+        };
+    }
 
     return requestBody;
 }

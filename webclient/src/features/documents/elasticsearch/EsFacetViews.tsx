@@ -10,6 +10,16 @@ import { useDigitizationLists } from "../../../contexts/extractions/Digitization
 import { MultiSelect, MultiSelectChangeEvent } from "primereact/multiselect";
 import { DigitizationExtraction } from "../../../adapters/ApiDigitizationExtractions";
 import { SelectItemOptionsType } from "primereact/selectitem";
+import { useCategories } from "../../../contexts/categories/CategoriesContext";
+import { Category } from "../../../adapters/ApiCategories";
+import { useTranslation } from "react-i18next";
+import {
+    TreeSelect,
+    TreeSelectChangeEvent,
+    TreeSelectSelectionKeysType,
+} from "primereact/treeselect";
+import { CategoryOption } from "../../../components/pickers/AssignableCategoryPicker";
+import { TreeNode } from "primereact/treenode";
 
 interface CustomFacetViewProps extends FacetViewProps {
     onDisplayValue: (value: FieldValue) => React.ReactNode;
@@ -118,6 +128,92 @@ const DigitizationStateFacetView: React.FC<FacetViewProps> = (props) => {
     );
 };
 
+interface CategoryFacetOption extends CategoryOption {
+    count?: number;
+}
+
+const CategoryFacetView: React.FC<FacetViewProps> = (props) => {
+    const { t } = useTranslation();
+    const { getAssignableCategoriesTrees } = useCategories();
+    const [selectedCategories, setSelectedCategories] =
+        useState<TreeSelectSelectionKeysType>({});
+    function buildAssignableCategoriesOptionsTree(
+        categories: Category[]
+    ): CategoryFacetOption[] {
+        const buildCategorySubTree = (
+            category: Category,
+            path: string = ""
+        ) => {
+            const currPath =
+                path === "" ? category.name : path + " > " + category.name;
+            const children = category.sub_categories.map((c) =>
+                buildCategorySubTree(c, currPath)
+            );
+            const categoryFacet = props.options.find(
+                (o) => o.value === category.id
+            );
+            return {
+                key: category.id,
+                label: category.name,
+                data: currPath,
+                count:
+                    (categoryFacet ? categoryFacet.count : 0) +
+                    children.reduce(
+                        (sum, child) => sum + (child.count || 0),
+                        0
+                    ),
+                children: children,
+                selectable: category.assignable,
+            };
+        };
+
+        return categories.map((c) => buildCategorySubTree(c));
+    }
+
+    const handleCategoryChange = (e: TreeSelectChangeEvent) => {
+        if (!e.value) {
+            Object.keys(selectedCategories).forEach((category_id) => {
+                props.onRemove(Number(category_id));
+            });
+            setSelectedCategories({});
+        } else {
+            Object.keys(e.value as TreeSelectSelectionKeysType).forEach(
+                (category_id) => props.onSelect(Number(category_id))
+            );
+            setSelectedCategories(e.value as TreeSelectSelectionKeysType);
+        }
+    };
+
+    const nodeView = (node: TreeNode) => {
+        return (
+            <div className="es-tree-select-facet">
+                <div className="es-facet-value">
+                    <span>{node.label} </span>
+                    <span>{(node as CategoryFacetOption).count}</span>
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <EsFilterView label={props.label}>
+            <TreeSelect
+                value={selectedCategories}
+                display="chip"
+                selectionMode="multiple"
+                metaKeySelection={false}
+                options={buildAssignableCategoriesOptionsTree(
+                    getAssignableCategoriesTrees()
+                )}
+                onChange={handleCategoryChange}
+                nodeTemplate={nodeView}
+                filter
+                showClear
+            />
+        </EsFilterView>
+    );
+};
+
 interface DigitizationListCheckboxLabelProps {
     label: string;
     value: FieldValue;
@@ -175,5 +271,6 @@ export {
     ListFacetView,
     BooleanFacetView,
     DigitizationStateFacetView,
+    CategoryFacetView,
     DigitizationListFacetView,
 };

@@ -3,11 +3,15 @@ import { Facet, Sorting } from "@elastic/react-search-ui";
 import { SORT_OPTIONS } from "./EsDocumentsConfig";
 import {
     BooleanFacetView,
+    CategoryFacetView,
     DigitizationListFacetView,
     DigitizationStateFacetView,
     ListFacetView,
 } from "./EsFacetViews";
-import { EsFilterByDigitizationList } from "./EsFilterView";
+import {
+    EsFilterByDigitizationList,
+    VolumeNumberFilterView,
+} from "./EsFilterView";
 
 interface DocumentsFiltersViewProps {}
 
@@ -56,9 +60,24 @@ export const DocumentsFiltersView: React.FC<DocumentsFiltersViewProps> = () => {
             <Facet field="added_by" label="Added By" view={ListFacetView} />
             {/* <Facet field="volume_number" label="Volume" view={ListFacetView} /> */}
             <Facet
+                field="category_id"
+                label="Category"
+                show={100}
+                view={CategoryFacetView}
+            />
+            <Facet
+                field="category_path"
+                label="Category"
+                view={ListFacetView}
+            />
+            <Facet
                 field="digitization_list_id"
                 label="Digitization List"
                 view={DigitizationListFacetView}
+            />
+            <VolumeNumberFilterView
+                field={["min_volume", "max_volume"]}
+                label="Volume"
             />
         </div>
     );

@@ -120,6 +120,10 @@
     align-items: center;
 }
 
+.es-tree-select-facet {
+    width: 100%;
+}
+
 .es-checkbox {
     display: flex;
     align-items: center;
