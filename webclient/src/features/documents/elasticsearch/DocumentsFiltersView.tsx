@@ -13,9 +13,50 @@ import {
     VolumeNumberFilterView,
 } from "./EsFilterView";
 
+import Searchkit from "searchkit";
+import Client from "@searchkit/instantsearch-client";
+import {
+    InstantSearch,
+    SearchBox,
+    Hits,
+    RefinementList,
+    Pagination,
+    RangeInput,
+} from "react-instantsearch";
+import ApiDocuments from "../../../adapters/ApiDocuments";
+import { SearchRequest } from "@elastic/search-ui-elasticsearch-connector";
+
+const sk = new Searchkit({
+    connection: {
+        // host: "http://localhost:8000",
+        // withCredentials: false,
+        msearch: (requests) => {
+            return Promise.all(
+                requests.map((request) => {
+                    return ApiDocuments.queryDocuments(request.body).then(
+                        (response) => {
+                            return response.data;
+                        }
+                    );
+                })
+            );
+        },
+    },
+    search_settings: {
+        search_attributes: [{ field: "title", weight: 3 }, "actors", "plot"],
+        result_attributes: ["title", "actors", "poster", "plot"],
+        highlight_attributes: ["title"],
+        facet_attributes: [
+            { attribute: "actors", field: "actors.keyword", type: "string" },
+            { attribute: "imdbrating", type: "numeric", field: "imdbrating" },
+        ],
+    },
+});
+
 interface DocumentsFiltersViewProps {}
 
 export const DocumentsFiltersView: React.FC<DocumentsFiltersViewProps> = () => {
+    const searchClient = Client(sk);
     return (
         <div
             className="surface-50 border-right-1 border-200"
@@ -79,6 +120,22 @@ export const DocumentsFiltersView: React.FC<DocumentsFiltersViewProps> = () => {
                 field={["min_volume", "max_volume"]}
                 label="Volume"
             />
+
+            <InstantSearch indexName="imdb_movies" searchClient={searchClient}>
+                <SearchBox />
+                <div className="left-panel">
+                    <RefinementList
+                        attribute="actors"
+                        searchable={true}
+                        limit={10}
+                    />
+                    <RangeInput attribute="imdbrating" />
+                </div>
+                <div className="right-panel">
+                    <Hits />
+                    <Pagination />
+                </div>
+            </InstantSearch>
         </div>
     );
 };
