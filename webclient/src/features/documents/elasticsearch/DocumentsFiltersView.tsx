@@ -23,13 +23,10 @@ import {
     Pagination,
     RangeInput,
 } from "react-instantsearch";
-import ApiDocuments from "../../../adapters/ApiDocuments";
-import { SearchRequest } from "@elastic/search-ui-elasticsearch-connector";
+import ApiDocuments, { IndexDocument } from "../../../adapters/ApiDocuments";
 
 const sk = new Searchkit({
     connection: {
-        // host: "http://localhost:8000",
-        // withCredentials: false,
         msearch: (requests) => {
             return Promise.all(
                 requests.map((request) => {
@@ -44,11 +41,29 @@ const sk = new Searchkit({
     },
     search_settings: {
         search_attributes: [{ field: "title", weight: 3 }, "actors", "plot"],
-        result_attributes: ["title", "actors", "poster", "plot"],
+        result_attributes: [
+            "id",
+            "sysno",
+            "barcode",
+            "volume",
+            "volume_number",
+            "volume_year",
+            "volume_year_number",
+            "bundle",
+            "bundle_number",
+        ],
         highlight_attributes: ["title"],
         facet_attributes: [
-            { attribute: "actors", field: "actors.keyword", type: "string" },
-            { attribute: "imdbrating", type: "numeric", field: "imdbrating" },
+            {
+                attribute: "volume_number",
+                field: "volume_number",
+                type: "numeric",
+            },
+            {
+                attribute: "is_extractable",
+                field: "is_extractable",
+                type: "numeric",
+            },
         ],
     },
 });
@@ -122,18 +137,17 @@ export const DocumentsFiltersView: React.FC<DocumentsFiltersViewProps> = () => {
             />
 
             <InstantSearch indexName="imdb_movies" searchClient={searchClient}>
-                <SearchBox />
+                {/* <SearchBox /> */}
                 <div className="left-panel">
                     <RefinementList
                         attribute="actors"
                         searchable={true}
                         limit={10}
                     />
-                    <RangeInput attribute="imdbrating" />
+                    <RangeInput attribute="volume_number" />
                 </div>
                 <div className="right-panel">
                     <Hits />
-                    <Pagination />
                 </div>
             </InstantSearch>
         </div>
