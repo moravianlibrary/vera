@@ -1,5 +1,5 @@
-import React, { createContext, useContext, ReactNode } from "react";
-import ApiDocuments from "../../adapters/ApiDocuments";
+import React, { createContext, useContext, ReactNode, useState } from "react";
+import ApiDocuments, { IndexDocument } from "../../adapters/ApiDocuments";
 import DocumentModel from "./DocumentModel";
 import { TaskType } from "../../types/TaskType";
 import ApiTasks from "../../adapters/ApiTasks";
@@ -9,6 +9,10 @@ import { useDocuments } from "./DocumentsContext";
 import { useDocumentsSelection } from "./DocumentsSelectionContext";
 
 interface DocumentsActionsContextProps {
+    detailsDocuments: IndexDocument[];
+    showDocumentDetails: (document: IndexDocument) => void;
+    closeDocumentDetails: (documentId: number) => void;
+
     updateDocument: (document: DocumentModel) => void;
     deleteDocument: (document: DocumentModel) => void;
 
@@ -39,6 +43,20 @@ export const DocumentsActionsProvider: React.FC<
         removeDocumentsFromResults,
     } = useDocuments();
     const { selectionQuery } = useDocumentsSelection();
+
+    const [detailsDocuments, setDetailsDocuments] = useState<IndexDocument[]>(
+        []
+    );
+
+    const showDocumentDetails = (document: IndexDocument) => {
+        setDetailsDocuments([...detailsDocuments, document]);
+    };
+
+    const closeDocumentDetails = (documentId: number) => {
+        setDetailsDocuments(
+            detailsDocuments.filter((document) => document.id !== documentId)
+        );
+    };
 
     const updateDocument = async (document: DocumentModel) => {
         ApiDocuments.updateDocument(document).then((response) => {
@@ -126,6 +144,10 @@ export const DocumentsActionsProvider: React.FC<
     };
 
     const contextValue: DocumentsActionsContextProps = {
+        detailsDocuments,
+        showDocumentDetails,
+        closeDocumentDetails,
+
         updateDocument,
         deleteDocument,
         exportDocuments,

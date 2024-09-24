@@ -15,20 +15,30 @@ import { Dialog } from "primereact/dialog";
 import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
 import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
 import DataTablePaginator from "../../components/DataTablePaginator";
-import { PaginatorPageChangeEvent } from "primereact/paginator";
 import AssignableCategoryPicker from "../../components/pickers/AssignableCategoryPicker";
 import LabeledComponent from "../../components/LabeledComponent";
 import { InputNumber } from "primereact/inputnumber";
 import ApiDocuments, { IndexDocument } from "../../adapters/ApiDocuments";
 import ActionAccessComponent from "../../components/access/ActionAccessComponent";
-import DigitizationStateTag from "../../components/tags/DigitizationStateTag";
 import ExtractableTag from "../../components/tags/ExtractableTag";
 import { TableViewType } from "./DocumentsHeader";
-import DocumentTypeTag from "../../components/tags/DocumentTypeTag";
 import ApiCatalogs, { Marc21DiffRecord } from "../../adapters/ApiCatalogs";
 import MarcRecordsDiffView from "../../components/views/MarcRecordsDiffView";
-import { Tooltip } from "primereact/tooltip";
 import { ActionType } from "../../types/ActionType";
+import {
+    useHitsPerPage,
+    useInstantSearch,
+    usePagination,
+} from "react-instantsearch";
+import DigitizationStateColumnBody from "./table_columns/DigitizationStateColumnBody";
+import DescriptionColumnBody from "./table_columns/DescriptionColumnBody";
+import PageCountColumnBody from "./table_columns/PageCountColumnBody";
+import TitleColumnBody from "./table_columns/TitleColumnBody";
+import DocumentTypeColumnBody from "./table_columns/DocumentTypeColumnBody";
+import CategoryColumnBody from "./table_columns/CategoryColumnBody";
+import DocumentDetails from "./DocumentDetailsDialog";
+import DocumentDetailsColumnBody from "./table_columns/DocumentDetailsColumnBody";
+import DocumentStateColumnBody from "./table_columns/DocumentStateColumnBody";
 
 // TODO: move
 function isAllowedToEditDocument(user, document) {
@@ -47,10 +57,6 @@ interface DocumentsTableProps {
     tableViewType: TableViewType;
 }
 
-interface DocumentDetailsProps {
-    document: DocumentModel;
-}
-
 interface DocumentDetailsBodyProps {
     document: DocumentModel;
 }
@@ -58,20 +64,19 @@ interface DocumentDetailsBodyProps {
 const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
     const { t } = useTranslation();
 
-    const {
-        documents,
-        numFound,
-        offset,
-        setOffset,
-        limit,
-        setLimit,
-        refresh,
-        indexDocuments,
-        page,
-        setPage,
-        pageSize,
-        setPageSize,
-    } = useDocuments();
+    const { results, refresh } = useInstantSearch();
+    const { currentRefinement, nbHits, refine: setPage } = usePagination();
+    const { items: pageSizeOptions, refine: setPageSize } = useHitsPerPage({
+        items: [
+            { value: 10, label: "10" },
+            { value: 15, label: "15" },
+            { value: 20, label: "20", default: true },
+            { value: 25, label: "25" },
+            { value: 50, label: "50" },
+            { value: 100, label: "100" },
+        ],
+    });
+
     const { selectedDocuments, selectDocuments } = useDocumentsSelection();
 
     const handleSelectionChange = (
@@ -85,160 +90,56 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
         selectDocuments(selectedDocuments);
     };
 
-    const handlePageChange = (e: PaginatorPageChangeEvent) => {
-        if (e.first !== offset) {
-            setOffset(e.first);
-        }
-        if (e.rows !== limit) {
-            setLimit(e.rows);
-        }
-    };
-
-    const pagesCountBody = (document: DocumentModel) => {
-        const counts = [
-            document.pages_count_catalog,
-            document.pages_count_manual,
-            document.pages_count_predicted,
-        ].filter((x) => x);
-        if (counts.length === 1) {
-            return counts[0];
-        } else if (counts.length === 0) {
-            return null;
-        }
-        const countsJoined: string[] = [];
-        if (document.pages_count_catalog) {
-            countsJoined.push(
-                `${t("from catalog")}: ${document.pages_count_catalog}`
-            );
-        }
-        if (document.pages_count_manual) {
-            countsJoined.push(
-                `${t("set manually")}: ${document.pages_count_manual}`
-            );
-        }
-        if (document.pages_count_predicted) {
-            countsJoined.push(
-                `${t("predicted")}: ${document.pages_count_predicted}`
-            );
-        }
-        return countsJoined.join(", ");
-    };
-
-    const titleBody = (document: DocumentModel) => {
-        const titleStyle: any = {
-            display: "-webkit-box",
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: 2,
-            overflow: "hidden",
-        };
-        return (
-            <span style={titleStyle} className="overflow-ellipsis">
-                {document.title}
-            </span>
-        );
-    };
-
-    const typeBody = (document: DocumentModel) => {
-        return document.issuance_type
-            ? `${t(document.material_type)} - ${t(document.issuance_type)}`
-            : t(document.material_type);
-    };
-
-    const categoryBody = (document: IndexDocument) => {
-        if (!document.category_path) {
-            return t("documents.table.no-category");
-        }
-        const categoryPath = document.category_path
-            .map((category) => category.category_name)
-            .join(" > ");
-        const categoryName =
-            document.category_path[document.category_path.length - 1]
-                .category_name;
-        return (
-            <div>
-                <Tooltip target=".documents-table-category" position="top" />
-                <span
-                    className="documents-table-category"
-                    data-pr-tooltip={categoryPath}
-                >
-                    {categoryName}
-                </span>
-            </div>
-        );
-    };
-
-    const descriptionBody = (document: DocumentModel) => {
-        return [document.year, document.volume, document.bundle]
-            .filter((x) => x)
-            .join(" ");
-    };
-
-    const digitizationStateBody = (document: DocumentModel) => {
-        return <DigitizationStateTag state={document.digitization_state} />;
-    };
-
     if (tableViewType === TableViewType.DatatableVisual) {
         return (
             <div>
                 <DataTable
                     className="documents-table"
-                    value={indexDocuments}
+                    value={results.hits}
                     scrollable
                     scrollHeight="calc(100vh - 170px)"
                     selectionMode="checkbox"
                     selection={selectedDocuments}
                     onSelectionChange={handleSelectionChange}
                 >
-                    <Column
-                        field="details"
-                        body={(document) => (
-                            <DocumentDetailsBody
-                                key={document.id}
-                                document={document}
-                            />
-                        )}
-                    />
+                    <Column field="details" body={DocumentDetailsColumnBody} />
 
                     <Column
                         field="category_path"
                         header={t("category")}
-                        body={categoryBody}
+                        body={CategoryColumnBody}
                     />
                     <Column
                         field="type"
                         header={t("Type")}
-                        body={(document) => (
-                            <DocumentTypeTag document={document} />
-                        )}
+                        body={DocumentTypeColumnBody}
                     />
                     <Column
                         field="title"
                         header={t("title")}
-                        body={titleBody}
+                        body={TitleColumnBody}
                     />
                     <Column
                         field="description"
                         header={t("Description")}
-                        body={descriptionBody}
+                        body={DescriptionColumnBody}
                     />
                     <Column
                         field="pages_count"
-                        body={pagesCountBody}
+                        body={PageCountColumnBody}
                         header={t("pages_count")}
                     />
                     <Column
                         field="digitization_state"
                         header={t("Digitization state")}
-                        body={digitizationStateBody}
+                        body={DigitizationStateColumnBody}
                     />
                     <Column
                         field="extractable"
                         header={t("documents.table.extraction")}
-                        body={(document) => (
-                            <ExtractableTag document={document} />
-                        )}
+                        body={DocumentStateColumnBody}
                     />
-                    <Column field="creator" header={t("creator")} />
+                    <Column field="added_by" header={t("creator")} />
 
                     <Column
                         selectionMode="multiple"
@@ -246,10 +147,10 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
                     />
                 </DataTable>
                 <DataTablePaginator
-                    numFound={numFound}
-                    page={page}
-                    pageSize={pageSize}
-                    onPageChangeNew={setPage}
+                    numFound={nbHits}
+                    page={currentRefinement + 1}
+                    pageSize={results.hitsPerPage}
+                    onPageChangeNew={(page) => setPage(page - 1)}
                     onPageSizeChange={setPageSize}
                     onRefresh={() => refresh()}
                 />
@@ -261,14 +162,14 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
         <div>
             <DataTable
                 className="documents-table flex-grow"
-                value={documents}
+                value={results.hits}
                 scrollable
                 scrollHeight="calc(100vh - 170px)"
                 selectionMode="checkbox"
                 selection={selectedDocuments}
                 onSelectionChange={handleSelectionChange}
             >
-                <Column
+                {/* <Column
                     field="details"
                     body={(document) => (
                         <DocumentDetailsBody
@@ -276,20 +177,28 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
                             document={document}
                         />
                     )}
-                />
+                /> */}
 
                 <Column field="sysno" header={t("sysno")} />
-                <Column field="type" header={t("Type")} body={typeBody} />
+                <Column
+                    field="type"
+                    header={t("Type")}
+                    body={DocumentTypeColumnBody}
+                />
                 <Column
                     field="description"
                     header={t("Description")}
-                    body={descriptionBody}
+                    body={DescriptionColumnBody}
                 />
                 <Column field="category_name" header={t("category")} />
-                <Column field="title" header={t("title")} body={titleBody} />
+                <Column
+                    field="title"
+                    header={t("title")}
+                    body={TitleColumnBody}
+                />
                 <Column
                     field="pages_count"
-                    body={pagesCountBody}
+                    body={PageCountColumnBody}
                     header={t("pages_count")}
                 />
                 <Column
@@ -308,123 +217,18 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
                 />
             </DataTable>
             <DataTablePaginator
-                offset={offset}
-                limit={limit}
-                numFound={numFound}
-                onPageChange={handlePageChange}
+                numFound={nbHits}
+                page={currentRefinement + 1}
+                pageSize={results.hitsPerPage}
+                onPageChangeNew={(page) => setPage(page - 1)}
+                onPageSizeChange={setPageSize}
                 onRefresh={() => refresh()}
             />
         </div>
     );
 };
 
-const DocumentDetailsBody: React.FC<DocumentDetailsBodyProps> = ({
-    document: doc,
-}) => {
-    const { t } = useTranslation();
-    const { deleteDocument } = useDocumentsActions();
-
-    const [documentId, setDocumentId] = useState<number>(doc.id);
-    const [panelVisible, setPanelVisible] = useState(false);
-    const [confirmVisible, setConfirmVisible] = useState(false);
-    const [editMode, setEditMode] = useState(false);
-    const [dialogPosition, setDialogPosition] = useState({ top: 0, left: 0 });
-
-    const handleAcceptDelete = () => {
-        setPanelVisible(false);
-        deleteDocument(doc);
-    };
-
-    useEffect(() => {
-        setPanelVisible(panelVisible && documentId === doc.id);
-        setDocumentId(doc.id);
-    }, [doc]);
-
-    return (
-        <div
-            className="document-details-body flex"
-            style={{ position: "relative" }}
-        >
-            <Button
-                className="details-button"
-                text={!panelVisible}
-                onClick={() => setPanelVisible(!panelVisible)}
-            >
-                <i className="pi pi-book" />
-            </Button>
-            <Dialog
-                id={`document-details-${doc.id}`}
-                style={{
-                    maxWidth: "600px",
-                    marginLeft: "96px",
-                    marginTop: "48px",
-                    // top: dialogPosition.top,
-                    // left: dialogPosition.left,
-                }}
-                visible={panelVisible}
-                onHide={() => setPanelVisible(false)}
-                modal={false}
-                position="left"
-                // minX={96}
-                // minY={48}
-            >
-                <div className="flex flex-column gap-3 align-items-start">
-                    {!editMode && (
-                        <div className="flex flex-column gap-3">
-                            {" "}
-                            <DocumentDetailsTooltip document={doc} />
-                            <CatalogsFunctionality document={doc} />
-                            <div className="flex gap-3">
-                                <Button
-                                    icon="pi pi-trash"
-                                    severity="danger"
-                                    outlined
-                                    label={t("Delete")}
-                                    onClick={() => setConfirmVisible(true)}
-                                />
-                                <ActionAccessComponent
-                                    evaluate={(user) =>
-                                        isAllowedToEditDocument(user, doc)
-                                    }
-                                >
-                                    <Button
-                                        icon="pi pi-pencil"
-                                        outlined
-                                        label={t("Edit")}
-                                        onClick={() => setEditMode(true)}
-                                    />
-                                </ActionAccessComponent>
-                            </div>
-                        </div>
-                    )}
-                    {editMode && (
-                        <DocumentDetailsEditor
-                            document={doc}
-                            onEditComplete={() => setEditMode(false)}
-                            onEditCancel={() => setEditMode(false)}
-                        />
-                    )}
-                    <ConfirmDialog
-                        // group="declarative"
-                        visible={confirmVisible}
-                        onHide={() => setConfirmVisible(false)}
-                        header={t("Delete document")}
-                        message={t(
-                            "Are you sure you want to delete this document?"
-                        )}
-                        icon="pi pi-exclamation-triangle"
-                        acceptLabel={t("Delete")}
-                        acceptClassName="p-button-danger"
-                        rejectLabel={t("Cancel")}
-                        accept={handleAcceptDelete}
-                    />
-                </div>
-            </Dialog>
-        </div>
-    );
-};
-
-const DocumentDetailsTooltip: React.FC<DocumentDetailsProps> = ({
+const DocumentDetailsTooltip: React.FC<DocumentDetailsBodyProps> = ({
     document,
 }) => {
     const { t } = useTranslation();
@@ -481,7 +285,7 @@ const DocumentDetailsTooltip: React.FC<DocumentDetailsProps> = ({
     );
 };
 
-const CatalogsFunctionality: React.FC<DocumentDetailsProps> = ({
+const CatalogsFunctionality: React.FC<DocumentDetailsBodyProps> = ({
     document,
 }) => {
     const { t } = useTranslation();

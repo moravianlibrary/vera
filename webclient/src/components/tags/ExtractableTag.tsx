@@ -2,9 +2,10 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Tag } from "primereact/tag";
 import DocumentModel from "../../contexts/documents/DocumentModel";
+import { IndexDocument } from "../../adapters/ApiDocuments";
 
 interface ExtractableTagProps {
-    document: DocumentModel;
+    document: IndexDocument;
 }
 
 const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
@@ -18,7 +19,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
             />
         );
     }
-    if (document.extraction_id) {
+    if (document.digitization_list_id) {
         return (
             <Tag
                 value={t(`document.extractable.extracted`)}

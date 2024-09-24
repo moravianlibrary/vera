@@ -10,12 +10,6 @@ import ApiDocuments, { IndexDocument } from "../../adapters/ApiDocuments";
 import { VirtualScrollerLazyEvent } from "primereact/virtualscroller";
 import DocumentModel from "./DocumentModel";
 import { useDocumentsQuery } from "./search/DocumentsQueryContext";
-import {
-    ErrorBoundary,
-    SearchProvider,
-    WithSearch,
-} from "@elastic/react-search-ui";
-import { esConfig } from "../../features/documents/elasticsearch/EsDocumentsConfig";
 import { ResponseState } from "@elastic/search-ui";
 
 interface DocumentsContextProps {
@@ -146,26 +140,6 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
         setOffset(Math.max(0, offset - documentIds.length));
     };
 
-    useEffect(() => {
-        esConfig.apiConnector.onSearch(
-            {
-                ...esConfig.apiConnector.state,
-                current: page,
-                resultsPerPage: pageSize,
-            },
-            esConfig.searchQuery
-        );
-    }, [page, pageSize]);
-
-    useEffect(() => {
-        esConfig.apiConnector.afterSearch = (response: ResponseState) => {
-            setIndexDocuments(
-                response.results.map((r) => r._meta.rawHit._source)
-            );
-            setNumFound(response.totalResults);
-        };
-    }, []);
-
     const contextValue: DocumentsContextProps = {
         documents,
         lazyLoad,
@@ -189,20 +163,9 @@ export const DocumentsProvider: React.FC<DocumentsProviderProps> = ({
     };
 
     return (
-        <SearchProvider config={esConfig}>
-            <DocumentsContext.Provider value={contextValue}>
-                {children}
-                {/* <WithSearch
-                    mapContextToProps={({ wasSearched }) => ({
-                        wasSearched,
-                    })}
-                >
-                    {({ wasSearched }) => {
-                        return <ErrorBoundary>{children}</ErrorBoundary>;
-                    }}
-                </WithSearch> */}
-            </DocumentsContext.Provider>
-        </SearchProvider>
+        <DocumentsContext.Provider value={contextValue}>
+            {children}
+        </DocumentsContext.Provider>
     );
 };
 

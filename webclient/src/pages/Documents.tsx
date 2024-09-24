@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Client from "@searchkit/instantsearch-client";
 
 import "../styles/Documents.css";
 import { Dialog } from "primereact/dialog";
@@ -17,14 +18,21 @@ import {
     useDocumentsQuery,
 } from "../contexts/documents/search/DocumentsQueryContext";
 import { DocumentsSelectionProvider } from "../contexts/documents/DocumentsSelectionContext";
-import { DocumentsActionsProvider } from "../contexts/documents/DocumentsActionsContext";
+import {
+    DocumentsActionsProvider,
+    useDocumentsActions,
+} from "../contexts/documents/DocumentsActionsContext";
 import { AdvancedSearchProvider } from "../contexts/documents/search/AdvancedSearchContext";
 import { CategoriesProvider } from "../contexts/categories/CategoriesContext";
 import { GeneratedExtractionsProvider } from "../contexts/extractions/GeneratedExtractionsContext";
 import { LocationsProvider } from "../contexts/extractions/locations/LocationsContext";
 import { IntentionsProvider } from "../contexts/categories/IntentionsContext";
 import { Splitter, SplitterPanel } from "primereact/splitter";
-import DocumentsFiltersView from "../features/documents/elasticsearch/DocumentsFiltersView";
+import DocumentsFiltersView from "../features/documents/DocumentsFiltersView";
+import documentsIndex from "../adapters/IndexDocuments";
+import { Hits, InstantSearch } from "react-instantsearch";
+import DocumentDetails from "../features/documents/DocumentDetailsDialog";
+import DocumentDetailsDialog from "../features/documents/DocumentDetailsDialog";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -133,11 +141,13 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
     extractionId,
     digitizationListId,
 }) => {
+    const searchClient = Client(documentsIndex);
     const {
         searchByCategoryIds,
         searchByExtractionId,
         searchByDigitizationListId,
     } = useDocumentsQuery();
+    const { detailsDocuments } = useDocumentsActions();
 
     const [insertMode, setInsertMode] = useState(false);
     const [createMode, setCreateMode] = useState(false);
@@ -156,23 +166,34 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
 
     return (
         <div>
-            <DocumentsHeader
-                onInsert={() => setInsertMode(true)}
-                onCreate={() => setCreateMode(true)}
-                tableViewType={tableViewType}
-                onTableViewTypeChange={(value) => setTableViewType(value)}
-            />
-            <Splitter>
-                <SplitterPanel minSize={5} size={10}>
-                    <DocumentsFiltersView />
-                </SplitterPanel>
-                <SplitterPanel minSize={50} size={90}>
-                    <DocumentsTable tableViewType={tableViewType} />
-                </SplitterPanel>
-            </Splitter>
-            <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
-                <InsertDocuments onClose={() => setInsertMode(false)} />
-            </Dialog>
+            <InstantSearch indexName="documents" searchClient={searchClient}>
+                <DocumentsHeader
+                    onInsert={() => setInsertMode(true)}
+                    onCreate={() => setCreateMode(true)}
+                    tableViewType={tableViewType}
+                    onTableViewTypeChange={(value) => setTableViewType(value)}
+                />
+                <Splitter>
+                    <SplitterPanel minSize={5} size={10}>
+                        <DocumentsFiltersView />
+                    </SplitterPanel>
+                    <SplitterPanel minSize={50} size={90}>
+                        <DocumentsTable tableViewType={tableViewType} />
+                    </SplitterPanel>
+                </Splitter>
+                {detailsDocuments.map((document) => (
+                    <DocumentDetailsDialog
+                        key={document.id}
+                        document={document}
+                    />
+                ))}
+                <Dialog
+                    visible={insertMode}
+                    onHide={() => setInsertMode(false)}
+                >
+                    <InsertDocuments onClose={() => setInsertMode(false)} />
+                </Dialog>
+            </InstantSearch>
         </div>
     );
 };

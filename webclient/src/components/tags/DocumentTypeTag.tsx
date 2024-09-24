@@ -1,12 +1,12 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Tag } from "primereact/tag";
-import DocumentModel from "../../contexts/documents/DocumentModel";
 import { MaterialType } from "../../types/MaterialType";
 import { IssuanceType } from "../../types/IssuanceType";
+import { IndexDocument } from "../../adapters/ApiDocuments";
 
 interface DocumentTypeTagProps {
-    document: DocumentModel;
+    document: IndexDocument;
 }
 
 const DocumentTypeTag: React.FC<DocumentTypeTagProps> = ({ document }) => {
