@@ -29,14 +29,18 @@ MzkSkcRecordsComparator = MarcRecordsComparator(
         "264": MarcFieldsComparator("264", subfield_codes=["a", "b", "c"]),
         "300": MarcFieldsComparator("300", subfield_codes=["a", "b", "c"]),
         "362": MarcFieldsComparator("362", subfield_codes=["a"]),
-    }
+    },
+    True,
+    True,
 )
 MzkCnbRecordsComparator = MarcRecordsComparator(
     {
         "008": GeneralInformationComparator(),
         "015": MarcFieldsComparator("015", subfield_codes=["a"]),
         "020": MarcFieldsComparator("020", subfield_codes=["a"]),
-    }
+    },
+    True,
+    True,
 )
 
 
@@ -47,6 +51,7 @@ def update_catalog_record_difference(
     source: CatalogSource,
     other_record: Record,
     actual_differences: Iterable[CatalogRecordFieldDifference],
+    comparator: MarcRecordsComparator,
 ) -> CatalogRecord:
     actual_difference_models_map: Dict[
         MarcFieldDifference, CatalogRecordFieldDifference
@@ -58,9 +63,7 @@ def update_catalog_record_difference(
         actual_difference_models_map[difference] = difference_model
         old_differences.add(difference)
 
-    new_differences = set(
-        MarcRecordsComparator().evaluate(main_record, other_record)
-    )
+    new_differences = set(comparator.evaluate(main_record, other_record))
 
     for difference in old_differences - new_differences:
         actual_difference_models_map[difference].delete(session)
@@ -82,7 +85,7 @@ def update_catalog_record_difference(
                 value=subfield.value,
                 different_to=subfield.different_to,
                 differs=subfield.differs,
-            )
+            ).save(session)
 
 
 def update_catalog_record_differences(
@@ -96,6 +99,7 @@ def update_catalog_record_differences(
             CatalogSource.SKC,
             catalog_record.skc_record,
             catalog_record.skc_difference,
+            MzkSkcRecordsComparator,
         )
     if catalog_record.cnb_record is not None:
         update_catalog_record_difference(
@@ -105,6 +109,7 @@ def update_catalog_record_differences(
             CatalogSource.CNB,
             catalog_record.cnb_record,
             catalog_record.cnb_difference,
+            MzkCnbRecordsComparator,
         )
 
 

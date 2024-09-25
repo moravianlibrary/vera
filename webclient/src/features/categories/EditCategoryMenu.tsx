@@ -6,7 +6,7 @@ import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { Checkbox } from "primereact/checkbox";
 import { Department } from "../../adapters/ApiDepartments";
-import { useDepartments } from "../../contexts/departments/DepartmentsContext";
+import { useDepartments } from "../../contexts/DepartmentsContext";
 import { MultiSelect } from "primereact/multiselect";
 import LabeledComponent from "../../components/LabeledComponent";
 import { Button } from "primereact/button";

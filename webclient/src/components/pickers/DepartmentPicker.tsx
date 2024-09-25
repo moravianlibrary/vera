@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Dropdown } from "primereact/dropdown";
 import React from "react";
-import { useDepartments } from "../../contexts/departments/DepartmentsContext";
+import { useDepartments } from "../../contexts/DepartmentsContext";
 import { Department } from "../../adapters/ApiDepartments";
 
 interface DepartmentPickerProps {

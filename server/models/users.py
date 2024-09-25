@@ -5,7 +5,7 @@ from sqlalchemy import (
     String,
     JSON,
 )
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import relationship, Session, Query
 from typing import Optional, List
 from .base import BaseModel
 
@@ -34,6 +34,10 @@ class User(BaseModel):
     @classmethod
     def find(cls, session: Session, username: str) -> Optional["User"]:
         return session.query(cls).filter_by(username=username).first()
+
+    @classmethod
+    def query_base(cls, session: Session) -> Query:
+        return session.query(cls).order_by(cls.username)
 
     def is_persisted(self, session: Session) -> bool:
         return User.find(session, self.username) is not None

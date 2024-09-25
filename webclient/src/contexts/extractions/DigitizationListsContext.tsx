@@ -8,30 +8,30 @@ import React, {
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
 import { DocumentsQuery } from "../../adapters/ApiDocuments";
-import { DigitizationExtraction } from "../../adapters/ApiDigitizationExtractions";
-import ApiDigitizationLists from "../../adapters/ApiDigitizationExtractions";
+import { DigitizationList } from "../../adapters/ApiDigitizationLists";
+import ApiDigitizationLists from "../../adapters/ApiDigitizationLists";
 
 interface DigitizationListsContextProps {
-    digitizationLists: DigitizationExtraction[];
+    digitizationLists: DigitizationList[];
     numFound: number;
     loadExtractions: (offset: number, limit: number) => void;
     createDigitizationList: (
         query: DocumentsQuery,
         intention_id?: number
-    ) => Promise<DigitizationExtraction>;
+    ) => Promise<DigitizationList>;
     addDocumentsToDigitizationList: (
         digitization_list_id: number,
         query: DocumentsQuery
-    ) => Promise<DigitizationExtraction>;
+    ) => Promise<DigitizationList>;
     removeDocumentsFromDigitizationList: (
         digitization_list_id: number,
         query: DocumentsQuery
-    ) => Promise<DigitizationExtraction>;
+    ) => Promise<DigitizationList>;
     deleteDigitizationList: (digitization_list_id: number) => void;
 
     findDigitizationList: (
         digitization_list_id: number
-    ) => Promise<DigitizationExtraction>;
+    ) => Promise<DigitizationList>;
 }
 
 const DigitizationListsContext = createContext<
@@ -53,7 +53,7 @@ export const DigitizationListsProvider: React.FC<
 
     const loadAmount = 50;
     const [digitizationLists, setDigitizationLists] = useState<
-        DigitizationExtraction[]
+        DigitizationList[]
     >([]);
     const [numFound, setNumFound] = useState<number>(0);
 
@@ -73,7 +73,7 @@ export const DigitizationListsProvider: React.FC<
     const createDigitizationList = async (
         query: DocumentsQuery,
         intention_id?: number
-    ): Promise<DigitizationExtraction> => {
+    ): Promise<DigitizationList> => {
         try {
             const response = await api.createFromQuery(query, intention_id);
             setDigitizationLists([response.data, ...digitizationLists]);
@@ -87,7 +87,7 @@ export const DigitizationListsProvider: React.FC<
     const addDocumentsToDigitizationList = async (
         digitization_list_id: number,
         query: DocumentsQuery
-    ): Promise<DigitizationExtraction> => {
+    ): Promise<DigitizationList> => {
         try {
             const response = await api.addDocumentsToExtraction(
                 digitization_list_id,
@@ -110,7 +110,7 @@ export const DigitizationListsProvider: React.FC<
     const removeDocumentsFromDigitizationList = async (
         digitization_list_id: number,
         query: DocumentsQuery
-    ): Promise<DigitizationExtraction> => {
+    ): Promise<DigitizationList> => {
         try {
             const response = await api.removeDocumentsFromExtraction(
                 digitization_list_id,

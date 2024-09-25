@@ -92,6 +92,32 @@
     background-color: #3f4e4f;
 }
 
+.tag-not-found {
+    background-color: #dc3545;
+}
+.tag-validity-true {
+    background-color: #66bb6a;
+}
+.tag-validity-false {
+    background-color: #dc3545;
+}
+
+.tag-marc-difference-equal {
+    background-color: #66bb6a;
+}
+.tag-marc-difference-missingfield {
+    background-color: #fd7e14;
+}
+.tag-marc-difference-extrafield {
+    background-color: #fd7e14;
+}
+.tag-marc-difference-differentvalue {
+    background-color: #fd7e14;
+}
+.tag-catalog-record-without-cnb {
+    background-color: #66bb6a;
+}
+
 .es-filter-view-fieldset .p-fieldset-legend a {
     font-size: 1rem !important;
     padding: 0.5rem;

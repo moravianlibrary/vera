@@ -20,6 +20,9 @@ class MarcSubfieldDifference(BaseModel):
     different_to: Optional[str] = None
     differs: bool = True
 
+    class Config:
+        from_attributes = True
+
     def __hash__(self):
         return hash((self.code, self.value, self.different_to, self.differs))
 
@@ -57,6 +60,7 @@ class MarcFieldDifference(BaseModel):
 
     class Config:
         use_enum_values = True
+        from_attributes = True
 
     def __hash__(self):
         return hash(

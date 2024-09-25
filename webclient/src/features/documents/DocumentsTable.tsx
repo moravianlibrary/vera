@@ -9,20 +9,18 @@ import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { useDocuments } from "../../contexts/documents/DocumentsContext";
 import DocumentModel from "../../contexts/documents/DocumentModel";
-import { ConfirmDialog } from "primereact/confirmdialog";
 import { useToast } from "../../contexts/toast/ToastContext";
 import { Dialog } from "primereact/dialog";
 import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
-import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
 import DataTablePaginator from "../../components/DataTablePaginator";
 import AssignableCategoryPicker from "../../components/pickers/AssignableCategoryPicker";
 import LabeledComponent from "../../components/LabeledComponent";
 import { InputNumber } from "primereact/inputnumber";
 import ApiDocuments, { IndexDocument } from "../../adapters/ApiDocuments";
-import ActionAccessComponent from "../../components/access/ActionAccessComponent";
-import ExtractableTag from "../../components/tags/ExtractableTag";
 import { TableViewType } from "./DocumentsHeader";
-import ApiCatalogs, { Marc21DiffRecord } from "../../adapters/ApiCatalogs";
+import ApiCatalogRecords, {
+    Marc21DiffRecord,
+} from "../../adapters/ApiCatalogRecords";
 import MarcRecordsDiffView from "../../components/views/MarcRecordsDiffView";
 import { ActionType } from "../../types/ActionType";
 import {
@@ -39,6 +37,7 @@ import CategoryColumnBody from "./table_columns/CategoryColumnBody";
 import DocumentDetails from "./DocumentDetailsDialog";
 import DocumentDetailsColumnBody from "./table_columns/DocumentDetailsColumnBody";
 import DocumentStateColumnBody from "./table_columns/DocumentStateColumnBody";
+import ExtractionPriorityColumnBody from "./table_columns/ExtractionPriorityColumnBody";
 
 // TODO: move
 function isAllowedToEditDocument(user, document) {
@@ -133,6 +132,11 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
                         field="digitization_state"
                         header={t("Digitization state")}
                         body={DigitizationStateColumnBody}
+                    />
+                    <Column
+                        field="extraction_priority"
+                        header={t("Extraction priority")}
+                        body={ExtractionPriorityColumnBody}
                     />
                     <Column
                         field="extractable"
@@ -297,33 +301,33 @@ const CatalogsFunctionality: React.FC<DocumentDetailsBodyProps> = ({
     );
 
     const loadMzkSkcDiffRecord = () => {
-        ApiCatalogs.getMzkSkcDiff(document.sysno)
-            .then((response) => {
-                setDiffRecord(response.data);
-                setRecord2Name(t("catalog.record.skc"));
-            })
-            .catch((error) => {
-                if (error.response.status === 404) {
-                    showToast("warn", t("catalog.record.skc-not-found"), "");
-                } else {
-                    console.error(error);
-                }
-            });
+        // ApiCatalogRecords.getMzkSkcDiff(document.sysno)
+        //     .then((response) => {
+        //         setDiffRecord(response.data);
+        //         setRecord2Name(t("catalog.record.skc"));
+        //     })
+        //     .catch((error) => {
+        //         if (error.response.status === 404) {
+        //             showToast("warn", t("catalog.record.skc-not-found"), "");
+        //         } else {
+        //             console.error(error);
+        //         }
+        //     });
     };
 
     const loadMzkCnbDiffRecord = () => {
-        ApiCatalogs.getMzkCnbDiff(document.sysno)
-            .then((response) => {
-                setDiffRecord(response.data);
-                setRecord2Name(t("catalog.record.cnb"));
-            })
-            .catch((error) => {
-                if (error.response.status === 404) {
-                    showToast("warn", t("catalog.record.cnb-not-found"), "");
-                } else {
-                    console.error(error);
-                }
-            });
+        // ApiCatalogRecords.getMzkCnbDiff(document.sysno)
+        //     .then((response) => {
+        //         setDiffRecord(response.data);
+        //         setRecord2Name(t("catalog.record.cnb"));
+        //     })
+        //     .catch((error) => {
+        //         if (error.response.status === 404) {
+        //             showToast("warn", t("catalog.record.cnb-not-found"), "");
+        //         } else {
+        //             console.error(error);
+        //         }
+        //     });
     };
 
     return (

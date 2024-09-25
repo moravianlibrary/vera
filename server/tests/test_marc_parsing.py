@@ -17,6 +17,7 @@ from services.marc_comparator import (
 )
 from pymarc import Field, Record, Subfield
 from typing import Optional
+from logic.update_catalog_record import MzkSkcRecordsComparator
 
 
 class TestMarcFieldDifferenceType(TestCase):
@@ -342,3 +343,48 @@ class TestNormalizedTextDataComparator(TestCase):
         # Act and Assert
         for value1, value2 in values:
             self.assertTrue(comparator.is_same_value(value1, value2))
+
+    def test_skc_record_comparator(self):
+        # Arrange
+        record1 = Record()
+        record1.add_field(
+            Field(tag="300", subfields=[Subfield(code="a", value="52 svazků")])
+        )
+        record2 = Record()
+        record2.add_field(
+            Field(tag="300", subfields=[Subfield(code="a", value="  sv. ;")])
+        )
+
+        # Act and Assert
+        self.assertEqual(
+            MzkSkcRecordsComparator.evaluate(record1, record2),
+            [
+                MarcFieldDifference(
+                    tag="300",
+                    indicator1=None,
+                    indicator2=None,
+                    control_field=False,
+                    difference_type="DifferentValue",
+                    subfield_differences=[
+                        MarcSubfieldDifference(
+                            code="a",
+                            value="52 svazků",
+                            different_to="  sv. ;",
+                            differs=True,
+                        ),
+                    ],
+                )
+            ],
+        )
+
+    def test_skc_record_comparator_for_control_field(self):
+        # Arrange
+        record1 = Record()
+        record1.add_field(Field(tag="008", data="same_value"))
+        record2 = Record()
+        record2.add_field(Field(tag="008", data="same_value"))
+
+        # Act and Assert
+        self.assertEqual(
+            MzkSkcRecordsComparator.evaluate(record1, record2), []
+        )

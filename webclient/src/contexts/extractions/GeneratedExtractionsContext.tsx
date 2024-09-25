@@ -5,24 +5,19 @@ import React, {
     ReactNode,
     useEffect,
 } from "react";
-import ApiGeneratedExtractions, {
-    GenerateExtraction,
-    GeneratedExtraction,
-} from "../../adapters/ApiGeneratedExtractions";
-import ExtractionModel from "./GeneratedExtractionModel";
+import ApiExtractions, { Extraction } from "../../adapters/ApiExtractions";
 import { useToast } from "../toast/ToastContext";
 import { useTranslation } from "react-i18next";
 
 interface ExtractionsContextProps {
-    loadExtractions: (offset: number, limit: number) => void;
-    extractions: GeneratedExtraction[];
+    extractions: Extraction[];
     numFound: number;
-    defaultProps: GenerateExtraction;
-    generateExtraction: (
-        createProps: GenerateExtraction,
-        pages_count?: number,
-        quota_id?: number
-    ) => void;
+    page: number;
+    setPage: (page: number) => void;
+    pageSize: number;
+    setPageSize: (pageSize: number) => void;
+    defaultProps: Partial<Extraction>;
+    generateExtraction: (createProps: Partial<Extraction>) => void;
     generating: boolean;
     deleteExtraction: (id: number) => void;
 }
@@ -38,28 +33,27 @@ interface ExtractionsProviderProps {
 export const GeneratedExtractionsProvider: React.FC<
     ExtractionsProviderProps
 > = ({ children }) => {
+    const api = new ApiExtractions();
+
     const { t } = useTranslation();
     const showToast = useToast();
 
-    const defaultProps: GenerateExtraction = {
-        target_pages_threshold: 0.05,
-        whole_categories_threshold: 0.05,
+    const defaultProps: Partial<Extraction> = {
         include_categories: [],
         location_ids: [],
+        target_pages_threshold: 0.05,
+        whole_categories_threshold: 0.05,
     };
-    const loadAmount = 50;
-    const [extractions, setExtractions] = useState<GeneratedExtraction[]>([]);
+    const [extractions, setExtractions] = useState<Extraction[]>([]);
     const [numFound, setNumFound] = useState<number>(0);
+    const [page, setPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(20);
     const [generating, setGenerating] = useState(false);
 
     const loadExtractions = async (offset: number, limit: number) => {
-        ApiGeneratedExtractions.getExtractions(offset, limit)
+        api.getPage(offset, limit)
             .then((response) => {
-                const transformedData: GeneratedExtraction[] =
-                    response.data.extractions.map((extraction) => {
-                        return new ExtractionModel(extraction);
-                    });
-                setExtractions(transformedData);
+                setExtractions(response.data.items);
                 setNumFound(response.data.num_found);
             })
             .catch((error) => {
@@ -68,21 +62,12 @@ export const GeneratedExtractionsProvider: React.FC<
     };
 
     const generateExtraction = async (
-        createData: GenerateExtraction,
-        pages_count?: number,
-        quota_id?: number
+        extractionParams: Partial<Extraction>
     ) => {
         setGenerating(true);
         try {
-            const response = await ApiGeneratedExtractions.generateExtraction(
-                createData,
-                pages_count,
-                quota_id
-            );
-            setExtractions([
-                new ExtractionModel(response.data),
-                ...extractions,
-            ]);
+            const response = await api.create(extractionParams);
+            setExtractions([response.data, ...extractions]);
         } catch (error) {
             if (
                 error.response &&
@@ -101,11 +86,13 @@ export const GeneratedExtractionsProvider: React.FC<
         }
     };
 
-    const deleteExtraction = async (id: number) => {
-        ApiGeneratedExtractions.deleteExtraction(id)
+    const deleteExtraction = async (extraction_id: number) => {
+        api.delete(extraction_id)
             .then(() => {
                 setExtractions(
-                    extractions.filter((extraction) => extraction.id !== id)
+                    extractions.filter(
+                        (extraction) => extraction.id !== extraction_id
+                    )
                 );
             })
             .catch((error) => {
@@ -115,13 +102,16 @@ export const GeneratedExtractionsProvider: React.FC<
 
     useEffect(() => {
         console.log(`Fetching extractions from server.`);
-        loadExtractions(0, loadAmount);
-    }, []);
+        loadExtractions(page, pageSize);
+    }, [page, pageSize]);
 
     const contextValue: ExtractionsContextProps = {
-        loadExtractions,
         extractions,
         numFound,
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
         defaultProps,
         generateExtraction,
         generating,
@@ -135,7 +125,7 @@ export const GeneratedExtractionsProvider: React.FC<
     );
 };
 
-export const useGeneratedExtractions = (): ExtractionsContextProps => {
+export const useExtractions = (): ExtractionsContextProps => {
     const context = useContext(ExtractionsContext);
 
     if (!context) {

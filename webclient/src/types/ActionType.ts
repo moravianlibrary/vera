@@ -14,6 +14,9 @@ enum ActionType {
     EditCategoriesAll = "EditCategoriesAll",
     EditCategoriesDepartment = "EditCategoriesDepartment",
 
+    ReadCatalogRecords = "ReadCatalogRecords",
+    ReviewCatalogRecords = "ReviewCatalogRecords",
+
     PlanTasks = "PlanTasks",
     AdminTasks = "AdminTasks",
 

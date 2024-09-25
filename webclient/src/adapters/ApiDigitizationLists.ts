@@ -1,7 +1,7 @@
 import { ApiBase, ApiOptions, authHeader } from "./ApiBase";
 import { DocumentsQuery } from "./ApiDocuments";
 
-interface DigitizationExtraction {
+interface DigitizationList {
     id: number;
     document_ids: number[];
     page_count: number;
@@ -10,7 +10,7 @@ interface DigitizationExtraction {
     created_at: string;
 }
 
-class ApiDigitizationLists extends ApiBase<DigitizationExtraction> {
+class ApiDigitizationLists extends ApiBase<DigitizationList> {
     constructor() {
         super("/extractions/digitization", {
             disableCreate: true,
@@ -22,14 +22,14 @@ class ApiDigitizationLists extends ApiBase<DigitizationExtraction> {
         const url = intention_id
             ? `${this.endpoint}?intention_id=${intention_id}`
             : this.endpoint;
-        return ApiBase.axiosInstance.post<DigitizationExtraction>(url, query, {
+        return ApiBase.axiosInstance.post<DigitizationList>(url, query, {
             headers: authHeader(),
         });
     }
 
     addDocumentsToExtraction(extraction_id: number, query: DocumentsQuery) {
         const url = `${this.endpoint}/${extraction_id}/add_documents`;
-        return ApiBase.axiosInstance.put<DigitizationExtraction>(url, query, {
+        return ApiBase.axiosInstance.put<DigitizationList>(url, query, {
             headers: authHeader(),
         });
     }
@@ -39,11 +39,11 @@ class ApiDigitizationLists extends ApiBase<DigitizationExtraction> {
         query: DocumentsQuery
     ) {
         const url = `${this.endpoint}/${extraction_id}/remove_documents`;
-        return ApiBase.axiosInstance.put<DigitizationExtraction>(url, query, {
+        return ApiBase.axiosInstance.put<DigitizationList>(url, query, {
             headers: authHeader(),
         });
     }
 }
 
 export default ApiDigitizationLists;
-export type { DigitizationExtraction };
+export type { DigitizationList };

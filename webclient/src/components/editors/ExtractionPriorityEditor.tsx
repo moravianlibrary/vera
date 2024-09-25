@@ -14,14 +14,15 @@ const ExtractionPriorityEditor: React.FC<EditorProps<number>> = ({
             cancelCallback();
         }
     };
+
     return (
         <Rating
             value={value}
             stars={5}
             cancel={true}
             cancelIcon="pi pi-times"
-            onIcon="pi pi-circle-fill"
-            offIcon="pi pi-circle"
+            onIcon={<i className={`extraction-priority-${value}-icon`} />}
+            offIcon={<i className="extraction-priority-empty-icon" />}
             onChange={handleChange}
         />
     );

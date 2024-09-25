@@ -9,7 +9,7 @@ import { InputTextarea } from "primereact/inputtextarea";
 import { MultiSelect } from "primereact/multiselect";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { CategoryType } from "../../contexts/categories/CategoryType";
-import { useDepartments } from "../../contexts/departments/DepartmentsContext";
+import { useDepartments } from "../../contexts/DepartmentsContext";
 import { Tooltip } from "primereact/tooltip";
 import { Department } from "../../adapters/ApiDepartments";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";

@@ -5,8 +5,8 @@ import React, {
     ReactNode,
     useEffect,
 } from "react";
-import ApiDepartments, { Department } from "../../adapters/ApiDepartments";
-import ApiUsers from "../../adapters/ApiUsers";
+import ApiDepartments, { Department } from "../adapters/ApiDepartments";
+import ApiUsers from "../adapters/ApiUsers";
 
 interface DepartmentsContextProps {
     departments: Department[];

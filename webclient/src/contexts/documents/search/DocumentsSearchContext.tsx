@@ -10,8 +10,8 @@
 // import { DocumentField } from "./DocumentSearchField";
 // import ApiCategories, { Category } from "../../../adapters/ApiCategories";
 // import { TreeNode } from "primereact/treenode";
-// import ApiGeneratedExtractions from "../../../adapters/ApiGeneratedExtractions";
-// import ApiDigitizationExtractions from "../../../adapters/ApiDigitizationExtractions";
+// import ApiExtractions from "../../../adapters/ApiExtractions";
+// import ApiDigitizationLists from "../../../adapters/ApiDigitizationLists";
 
 // interface DocumentsSearchContextProps {
 //     rootSearchNode: SearchGroup | undefined;
@@ -169,7 +169,7 @@
 
 //     useEffect(() => {
 //         if (extractionId) {
-//             ApiGeneratedExtractions.getExtraction(extractionId)
+//             ApiExtractions.getExtraction(extractionId)
 //                 .then((response) => {
 //                     setActiveQuery({
 //                         id_list: response.data.document_ids,
@@ -184,7 +184,7 @@
 
 //     useEffect(() => {
 //         if (activeDigitizationList) {
-//             ApiDigitizationExtractions.getExtraction(activeDigitizationList)
+//             ApiDigitizationLists.getExtraction(activeDigitizationList)
 //                 .then((response) => {
 //                     setActiveQuery({
 //                         id_list: response.data.document_ids,

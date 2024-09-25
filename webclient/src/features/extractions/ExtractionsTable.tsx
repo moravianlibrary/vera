@@ -1,29 +1,31 @@
 import { DataTable } from "primereact/datatable";
-import React, { useState } from "react";
-import { useGeneratedExtractions } from "../../contexts/extractions/GeneratedExtractionsContext";
+import React from "react";
+import { useExtractions } from "../../contexts/extractions/GeneratedExtractionsContext";
 import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
-import GeneratedExtractionModel from "../../contexts/extractions/GeneratedExtractionModel";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import { useAccess } from "../../contexts/AccessContext";
-import { PaginatorPageChangeEvent } from "primereact/paginator";
 import DataTablePaginator from "../../components/DataTablePaginator";
-import { GeneratedExtraction } from "../../adapters/ApiGeneratedExtractions";
+import { Extraction } from "../../adapters/ApiExtractions";
 import { ActionType } from "../../types/ActionType";
 
 const ExtractionsTable: React.FC = () => {
     const { t } = useTranslation();
     const { currentUser } = useAccess();
 
-    const { loadExtractions, extractions, numFound, deleteExtraction } =
-        useGeneratedExtractions();
+    const {
+        extractions,
+        numFound,
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
+        deleteExtraction,
+    } = useExtractions();
 
-    const [offset, setOffset] = useState<number>(0);
-    const [limit, setLimit] = useState<number>(25);
-
-    const canDeleteExtraction = (extraction: GeneratedExtraction) => {
+    const canDeleteExtraction = (extraction: Extraction) => {
         const userActions = currentUser?.actions || [];
         return (
             (extraction.generated_by === currentUser?.username &&
@@ -32,7 +34,7 @@ const ExtractionsTable: React.FC = () => {
         );
     };
 
-    const documentsButton = (extraction: GeneratedExtractionModel) => {
+    const documentsButton = (extraction: Extraction) => {
         return (
             <Link to={`/documents?extractionId=${extraction.id}`}>
                 <Button outlined label={t("Show in documents")} />
@@ -40,18 +42,12 @@ const ExtractionsTable: React.FC = () => {
         );
     };
 
-    const categoriesButton = (extraction: GeneratedExtractionModel) => {
+    const categoriesButton = (extraction: Extraction) => {
         return (
             <Link to={`/categories?extractionId=${extraction.id}`}>
                 <Button outlined label={t("Show in categories")} />
             </Link>
         );
-    };
-
-    const handlePageChange = (e: PaginatorPageChangeEvent) => {
-        setOffset(e.first);
-        setLimit(e.rows);
-        loadExtractions(e.first, e.rows);
     };
 
     return (
@@ -83,10 +79,11 @@ const ExtractionsTable: React.FC = () => {
                 />
             </DataTable>
             <DataTablePaginator
-                offset={offset}
-                limit={limit}
                 numFound={numFound}
-                onPageChange={handlePageChange}
+                page={page}
+                onPageChangeNew={setPage}
+                pageSize={pageSize}
+                onPageSizeChange={setPageSize}
             />
         </div>
     );

@@ -1,4 +1,5 @@
 from typing import List, Tuple, Optional, TypeVar, Type, Union
+from sqlalchemy import desc
 from sqlalchemy.orm import Session, Query
 from exceptions import (
     ObjectNotFoundException,
@@ -29,7 +30,7 @@ class ModelOperationsMixin:
 
     @classmethod
     def query_base(cls: Type[T], session: Session) -> Query:
-        return session.query(cls)
+        return session.query(cls).order_by(desc(cls.id))
 
     @classmethod
     def get_page(

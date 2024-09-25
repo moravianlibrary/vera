@@ -3,7 +3,7 @@ import {
     Marc21Diff,
     Marc21DiffRecord,
     Marc21DiffType,
-} from "../../adapters/ApiCatalogs";
+} from "../../adapters/ApiCatalogRecords";
 import { Button } from "primereact/button";
 import { useTranslation } from "react-i18next";
 

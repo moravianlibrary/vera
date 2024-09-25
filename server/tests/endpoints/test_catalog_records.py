@@ -1,7 +1,11 @@
 from .base import TestEndpointsBase
 
-from datatypes import ActionType
-from models import CatalogRecord
+from datatypes import ActionType, CatalogSource, MarcFieldDifferenceType
+from models import (
+    CatalogRecord,
+    CatalogRecordFieldDifference,
+    CatalogRecordSubfieldDifference,
+)
 
 
 class TestCatalogRecordsEndpoints(TestEndpointsBase):
@@ -162,6 +166,182 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
 
         # Assert
         self.assertEqual(response.status_code, 400)
+
+    def test_get_record_with_cnb_difference(self):
+        # Arrange
+        self.session.add(
+            CatalogRecord(
+                sysno="MZK01-123456789",
+                marc=self.marc_bytes,
+                cnb_marc=self.marc_bytes,
+            )
+        )
+        self.session.flush()
+        self.session.add(
+            CatalogRecordFieldDifference(
+                sysno="MZK01-123456789",
+                source=CatalogSource.CNB,
+                tag="001",
+                difference_type=MarcFieldDifferenceType.Equal,
+                deleted=False,
+            )
+        )
+        self.session.flush()
+        self.session.add(
+            CatalogRecordSubfieldDifference(
+                field_difference_id=1,
+                value="000121929",
+                different_to="000121929",
+                differs=False,
+            )
+        )
+        self.session.flush()
+        self.mockTestUser([ActionType.ReadCatalogRecords])
+        self.maxDiff = None
+
+        # Act
+        response = self.client.get(
+            "/catalog_records/MZK01-123456789",
+            headers={
+                "Authorization": "Bearer test_token",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {
+                "cnb": None,
+                "cnb_difference": [
+                    {
+                        "tag": "001",
+                        "indicator1": None,
+                        "indicator2": None,
+                        "difference_type": "Equal",
+                        "subfield_differences": [
+                            {
+                                "code": None,
+                                "value": "000121929",
+                                "different_to": "000121929",
+                                "differs": False,
+                            }
+                        ],
+                        "control_field": True,
+                    }
+                ],
+                "cnb_record": {
+                    "fields": [{"001": "000121929"}],
+                    "leader": "00048    a2200037   4500",
+                },
+                "cnb_sysno": None,
+                "has_valid_cnb": False,
+                "has_valid_main_record": False,
+                "isxn": None,
+                "language": "cze",
+                "last_updated": response.json()["last_updated"],
+                "main_record": {
+                    "fields": [{"001": "000121929"}],
+                    "leader": "00048    a2200037   4500",
+                },
+                "signature": None,
+                "skc_difference": [],
+                "skc_record": None,
+                "skc_sysno": None,
+                "sysno": "MZK01-123456789",
+            },
+        )
+
+    def test_get_records_page_with_cnb_difference(self):
+        # Arrange
+        self.session.add(
+            CatalogRecord(
+                sysno="MZK01-123456789",
+                marc=self.marc_bytes,
+                cnb_marc=self.marc_bytes,
+            )
+        )
+        self.session.flush()
+        self.session.add(
+            CatalogRecordFieldDifference(
+                sysno="MZK01-123456789",
+                source=CatalogSource.CNB,
+                tag="001",
+                difference_type=MarcFieldDifferenceType.Equal,
+                deleted=False,
+            )
+        )
+        self.session.flush()
+        self.session.add(
+            CatalogRecordSubfieldDifference(
+                field_difference_id=1,
+                value="000121929",
+                different_to="000121929",
+                differs=False,
+            )
+        )
+        self.session.flush()
+        self.mockTestUser([ActionType.ReadCatalogRecords])
+
+        # Act
+        response = self.client.get(
+            "/catalog_records",
+            headers={
+                "Authorization": "Bearer test_token",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json(),
+            {
+                "items": [
+                    {
+                        "cnb": None,
+                        "cnb_difference": [
+                            {
+                                "tag": "001",
+                                "indicator1": None,
+                                "indicator2": None,
+                                "difference_type": "Equal",
+                                "subfield_differences": [
+                                    {
+                                        "code": None,
+                                        "value": "000121929",
+                                        "different_to": "000121929",
+                                        "differs": False,
+                                    }
+                                ],
+                                "control_field": True,
+                            }
+                        ],
+                        "cnb_record": {
+                            "fields": [{"001": "000121929"}],
+                            "leader": "00048    a2200037   4500",
+                        },
+                        "cnb_sysno": None,
+                        "has_valid_cnb": False,
+                        "has_valid_main_record": False,
+                        "isxn": None,
+                        "language": "cze",
+                        "last_updated": response.json()["items"][0][
+                            "last_updated"
+                        ],
+                        "main_record": {
+                            "fields": [{"001": "000121929"}],
+                            "leader": "00048    a2200037   4500",
+                        },
+                        "signature": None,
+                        "skc_difference": [],
+                        "skc_record": None,
+                        "skc_sysno": None,
+                        "sysno": "MZK01-123456789",
+                    }
+                ],
+                "num_found": 1,
+            },
+        )
 
     def test_get_cnb_difference(self):
         # Arrange

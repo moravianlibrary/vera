@@ -13,7 +13,7 @@ import {
 } from "primereact/datatable";
 import { textEditor } from "../../services/Editors";
 import { Button } from "primereact/button";
-import { useDepartments } from "../../contexts/departments/DepartmentsContext";
+import { useDepartments } from "../../contexts/DepartmentsContext";
 import React from "react";
 import { Chips, ChipsChangeEvent } from "primereact/chips";
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";

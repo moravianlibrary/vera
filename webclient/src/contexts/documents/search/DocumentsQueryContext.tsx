@@ -1,8 +1,6 @@
 import React, { ReactNode, createContext, useContext, useState } from "react";
 import { DocumentsQuery } from "../../../adapters/ApiDocuments";
 import { SearchGroup, SearchGroupParams } from "./SearchNodes";
-import ApiGeneratedExtractions from "../../../adapters/ApiGeneratedExtractions";
-import ApiDigitizationExtractions from "../../../adapters/ApiDigitizationExtractions";
 import ApiTasks from "../../../adapters/ApiTasks";
 
 interface DocumentsQueryContextProps {
@@ -109,14 +107,6 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
             queryAll();
             return;
         }
-        ApiGeneratedExtractions.getExtraction(extractionId).then((response) => {
-            queryBy({
-                extractionId: extractionId,
-                query: {
-                    id_list: response.data.document_ids,
-                },
-            });
-        });
     };
 
     const searchByDigitizationListId = (digitizationListId: number | null) => {
@@ -124,7 +114,7 @@ export const DocumentsQueryProvider: React.FC<DocumentsQueryProviderProps> = ({
             queryAll();
             return;
         }
-        // ApiDigitizationExtractions.getExtraction(digitizationListId).then(
+        // ApiDigitizationLists.getExtraction(digitizationListId).then(
         //     (response) => {
         //         queryBy({
         //             digitizationListId: digitizationListId,

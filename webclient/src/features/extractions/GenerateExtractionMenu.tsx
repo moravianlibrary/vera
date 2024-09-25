@@ -1,8 +1,8 @@
 import { InputNumber } from "primereact/inputnumber";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { GenerateExtraction } from "../../adapters/ApiGeneratedExtractions";
-import { useGeneratedExtractions } from "../../contexts/extractions/GeneratedExtractionsContext";
+import { Extraction } from "../../adapters/ApiExtractions";
+import { useExtractions } from "../../contexts/extractions/GeneratedExtractionsContext";
 import { AssignableCategoriesPicker } from "../../components/pickers/AssignableCategoryPicker";
 import LabeledComponent from "../../components/LabeledComponent";
 import { Button } from "primereact/button";
@@ -18,10 +18,9 @@ interface ExtractionPropsMenuProps {}
 
 const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
     const { t } = useTranslation();
-    const { defaultProps, generateExtraction, generating } =
-        useGeneratedExtractions();
+    const { defaultProps, generateExtraction, generating } = useExtractions();
 
-    const [extractionProps, setExtractionProps] = useState<GenerateExtraction>(
+    const [extractionProps, setExtractionProps] = useState<Extraction>(
         JSON.parse(JSON.stringify(defaultProps))
     );
 
@@ -43,7 +42,7 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
 
     const handleGenerate = () => {
         if (!generating && pagesCount) {
-            generateExtraction(extractionProps, pagesCount, undefined);
+            generateExtraction(extractionProps);
         }
     };
 

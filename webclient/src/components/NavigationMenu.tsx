@@ -67,6 +67,13 @@ const NavigationMenu: React.FC<NavigationMenuProps> = () => {
                 command: () => navigate("/documents"),
             });
         }
+        if (currentUser.actions.includes(ActionType.ReadCatalogRecords)) {
+            items.push({
+                label: t("Catalog records"),
+                icon: "pi pi-server",
+                command: () => navigate("/catalog-records"),
+            });
+        }
         if (currentUser.actions.includes(ActionType.ReadCategories)) {
             items.push({
                 label: t("Categories"),
@@ -127,6 +134,15 @@ const NavigationMenuStart = () => {
                     icon="pi pi-book"
                     text
                     onClick={() => navigate("/documents")}
+                />
+            </ActionAccessComponent>
+            <ActionAccessComponent action={ActionType.ReadCatalogRecords}>
+                <Button
+                    className="text-gray-700"
+                    label={t("Catalog records")}
+                    icon="pi pi-server"
+                    text
+                    onClick={() => navigate("/catalog-records")}
                 />
             </ActionAccessComponent>
             <ActionAccessComponent action={ActionType.ReadDatatable}>

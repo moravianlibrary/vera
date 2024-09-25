@@ -3,6 +3,7 @@ import { Paginator, PaginatorPageChangeEvent } from "primereact/paginator";
 import { Dropdown } from "primereact/dropdown";
 import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
+import { Badge } from "primereact/badge";
 
 interface DataTablePaginatorProps {
     offset?: number;
@@ -13,8 +14,10 @@ interface DataTablePaginatorProps {
     onPageChange?: (e: PaginatorPageChangeEvent) => void;
     onPageChangeNew?: (newPage: number) => void;
     onPageSizeChange?: (newPageSize: number) => void;
+    rightContent?: React.ReactNode;
     onRefresh?: () => void;
     leftContent?: React.ReactNode;
+    numFoundText?: string;
 }
 
 const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
@@ -26,8 +29,10 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
     onPageChange,
     onPageChangeNew,
     onPageSizeChange,
+    rightContent,
     onRefresh,
     leftContent,
+    numFoundText,
 }) => {
     const { t } = useTranslation();
 
@@ -72,6 +77,18 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
         return 10;
     };
 
+    const numFoundLabel = () => {
+        if (!numFoundText) {
+            return null;
+        }
+        return (
+            <Badge
+                className="surface-50 text-gray-600"
+                value={`${t(numFoundText)}: ${numFound}`}
+            />
+        );
+    };
+
     return (
         <Paginator
             className="border-top-2 border-solid surface-50 fixed bottom-0 w-full"
@@ -80,8 +97,8 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
             rows={getRows()}
             totalRecords={numFound || 1}
             onPageChange={handlePageChange}
-            rightContent={onRefresh ? refreshButton : <></>}
-            leftContent={leftContent || <> </>}
+            rightContent={rightContent || onRefresh ? refreshButton : <></>}
+            leftContent={leftContent || numFoundLabel() || <> </>}
             template={{
                 layout: "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown",
                 PageLinks: (options) => {

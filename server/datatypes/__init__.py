@@ -18,6 +18,7 @@ from services.external.aleph import (
     AlephResponseStatus,
 )
 from services.external.digitization_registry import DigitizationState
+from services.marc_comparator import MarcFieldDifferenceType
 
 
 __all__ = [
@@ -42,4 +43,5 @@ __all__ = [
     "MaterialType",
     "DigitizationState",
     "AlephResponseStatus",
+    "MarcFieldDifferenceType",
 ]

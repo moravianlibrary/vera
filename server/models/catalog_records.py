@@ -1,6 +1,6 @@
 from typing import Optional, List, Tuple
 from pymarc import Record
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import Session, relationship, Query
 from sqlalchemy import (
     Boolean,
     Column,
@@ -166,6 +166,10 @@ class CatalogRecord(BaseModel):
             .filter(CatalogRecordBarcode.barcode == value)
             .first()
         )
+
+    @classmethod
+    def query_base(cls, session: Session) -> Query:
+        return session.query(cls)
 
     def is_persisted(self, session: Session) -> bool:
         return CatalogRecordBarcode.find(session, self.sysno) is not None

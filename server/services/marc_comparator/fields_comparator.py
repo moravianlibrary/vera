@@ -14,12 +14,14 @@ class MarcFieldsComparator:
         ind2: Optional[str] = None,
         subfield_codes: List[str] = [],
         values_score_function: Callable = extended_needleman_wunsch,
+        ignore_equals: bool = False,
     ):
         self.field_tag = field_tag
         self.ind1 = ind1
         self.ind2 = ind2
         self.subfield_codes = set(subfield_codes)
         self.fields_pair_matcher = MarcFieldsPairMatcher(values_score_function)
+        self.ignore_equals = ignore_equals
 
     def parse_value(
         self, field: Field, subfield_code: Optional[str] = None
@@ -96,6 +98,8 @@ class MarcFieldsComparator:
     ) -> List[MarcFieldDifference]:
         if field1.is_control_field():
             differs = not self.is_same_value(field1.data, field2.data)
+            if self.ignore_equals and not differs:
+                return []
             return self.generate_same_fields_result(
                 field1,
                 [
@@ -129,6 +133,9 @@ class MarcFieldsComparator:
             value2 = self.parse_value(field2, subfield_code)
 
             differs = not self.is_same_value(value1, value2)
+            if self.ignore_equals and not differs:
+                continue
+
             subfield_differences.append(
                 MarcSubfieldDifference(
                     code=subfield_code,
@@ -141,8 +148,12 @@ class MarcFieldsComparator:
             if differs:
                 subfields_differ = True
 
-        return self.generate_same_fields_result(
-            field1, subfield_differences, subfields_differ
+        return (
+            self.generate_same_fields_result(
+                field1, subfield_differences, subfields_differ
+            )
+            if not self.ignore_equals or subfields_differ
+            else []
         )
 
     def evaluate_multiple_fields(

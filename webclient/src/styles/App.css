@@ -36,3 +36,12 @@ main {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+.layout-datatable-section {
+  max-height: calc(100vh - 150px);
+}
+
+.layout-datatable {
+  display: grid;
+  grid-template-columns: '1fr 3fr';
+}

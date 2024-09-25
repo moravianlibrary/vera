@@ -11,7 +11,7 @@ import { RolesProvider, useRoles } from "../contexts/roles/RolesContext";
 import {
     DepartmentsProvider,
     useDepartments,
-} from "../contexts/departments/DepartmentsContext";
+} from "../contexts/DepartmentsContext";
 import { useLocation } from "react-router-dom";
 
 const TableEnum = {

@@ -615,6 +615,35 @@ const resources = {
         "catalog.record.skc-not-found": "Záznam v SKC katalogu nenalezen",
 
         "documents.table.no-category": "Bez kategorie",
+        
+        "catalog-records": {
+          "table": {
+            "difference": {
+              "Equal": "Shoda",
+              "DifferentValue": "Rozdílna hodnota",
+              "MissingField": "Chybí pole",
+              "ExtraField": "Extra pole",
+            },
+            "tags": {
+              "valid-main-record": "Záznam je validný",
+              "not-found-in-skc": "Záznam nenalezen v SKC katalogu",
+              "valid-cnb": "ČNB je validné",
+              "should-not-have-cnb": "Nemá mít ČNB",
+              "not-found-in-cnb": "Záznam nenalezen v ČNB katalogu",
+            }
+          }
+        },
+
+        "document": {
+          "extraction-priority": {
+            "5": "Najvyšší",
+            "4": "Vysoká",
+            "3": "Strední",
+            "2": "Nizká",
+            "1": "Najnižší",
+            "?": "Neznámá",
+          }
+        }
     },
   },
 };

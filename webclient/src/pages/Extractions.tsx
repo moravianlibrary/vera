@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { GeneratedExtractionsProvider } from "../contexts/extractions/GeneratedExtractionsContext";
-import ExtractionsTable from "../features/extractions/GeneratedExtractionsTable";
+import ExtractionsTable from "../features/extractions/ExtractionsTable";
 import { useTranslation } from "react-i18next";
 import { OverlayPanel } from "primereact/overlaypanel";
 import { Button } from "primereact/button";

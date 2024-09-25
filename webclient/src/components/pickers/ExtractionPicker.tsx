@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Dropdown } from "primereact/dropdown";
-import ApiExtractions from "../../adapters/ApiGeneratedExtractions";
-import ExtractionModel from "../../contexts/extractions/GeneratedExtractionModel";
+import ApiExtractions, { Extraction } from "../../adapters/ApiExtractions";
 import { Tooltip } from "primereact/tooltip";
 
 interface ExtractionPickerProps {
@@ -12,7 +11,7 @@ interface ExtractionPickerProps {
 
 interface ExtractionOption {
     value: number;
-    data: ExtractionModel;
+    data: Extraction;
 }
 
 const ExtractionPicker: React.FC<ExtractionPickerProps> = ({
@@ -22,20 +21,20 @@ const ExtractionPicker: React.FC<ExtractionPickerProps> = ({
 }) => {
     // TODO: create context, virtual scroll
     // const { extractions } = useExtractions();
+    const api = new ApiExtractions();
     const [extractions, setExtractions] = useState<ExtractionOption[]>([]);
     const [loaded, setLoaded] = useState(false);
 
     useEffect(() => {
         if (!loaded) {
             setLoaded(true);
-            ApiExtractions.getExtractions(0, 20).then((response) => {
+            api.getPage(0, 20).then((response) => {
                 setExtractions(
-                    response.data.extractions.map((extraction) => {
-                        const extractionModel = new ExtractionModel(extraction);
+                    response.data.items.map((extraction) => {
                         return {
-                            value: extractionModel.id,
-                            data: extractionModel,
-                            name: `${extractionModel.generated_by} ${extractionModel.generated_at}`,
+                            value: extraction.id,
+                            data: extraction,
+                            name: `${extraction.generated_by} ${extraction.generated_at}`,
                         };
                     })
                 );
@@ -60,7 +59,7 @@ const ExtractionPicker: React.FC<ExtractionPickerProps> = ({
 };
 
 interface ExtractionItemProps {
-    data: ExtractionModel;
+    data: Extraction;
 }
 
 const ExtractionItem: React.FC<ExtractionItemProps> = ({ data }) => {

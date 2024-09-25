@@ -7,7 +7,7 @@ import {
     CategoriesProvider,
     useCategories,
 } from "../contexts/categories/CategoriesContext";
-import { DepartmentsProvider } from "../contexts/departments/DepartmentsContext";
+import { DepartmentsProvider } from "../contexts/DepartmentsContext";
 import { CategoryModelsProvider } from "../contexts/categories/CategoryNodesContext";
 import CategoriesChart from "../features/categories/CategoriesChart";
 import { useSearchParams } from "react-router-dom";
@@ -15,24 +15,25 @@ import CategoriesTable from "../features/categories/CategoryTable";
 import EditDistributionMenu from "../features/categories/EditDistributionMenu";
 import { IntentionsProvider } from "../contexts/categories/IntentionsContext";
 import IntentionsTable from "../features/categories/IntentionsTable";
+import WithProviders from "../components/wrappers/WithProviders";
 
 interface CategoriesProps {}
 
-interface CategoriesDivProps {}
-
-const Categories: React.FC<CategoriesProps> = () => {
+const Categories: React.FC<CategoriesProps> = (props) => {
     return (
-        <IntentionsProvider>
-            <CategoriesProvider>
-                <DepartmentsProvider>
-                    <CategoriesDiv />
-                </DepartmentsProvider>
-            </CategoriesProvider>
-        </IntentionsProvider>
+        <WithProviders
+            providers={[
+                CategoriesProvider,
+                IntentionsProvider,
+                DepartmentsProvider,
+            ]}
+        >
+            <CategoriesContent {...props} />
+        </WithProviders>
     );
 };
 
-const CategoriesDiv: React.FC<CategoriesDivProps> = (props) => {
+const CategoriesContent: React.FC<CategoriesProps> = (props) => {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const {

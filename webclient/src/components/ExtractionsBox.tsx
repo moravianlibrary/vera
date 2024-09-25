@@ -1,7 +1,7 @@
 import React from "react";
 import { ListBox } from "primereact/listbox";
 import { useTranslation } from "react-i18next";
-import { useGeneratedExtractions } from "../contexts/extractions/GeneratedExtractionsContext";
+import { useExtractions } from "../contexts/extractions/GeneratedExtractionsContext";
 
 interface ExtractionsBoxProps {
     callback: (digitizationId: number) => void;
@@ -9,7 +9,7 @@ interface ExtractionsBoxProps {
 
 const ExtractionsBox: React.FC<ExtractionsBoxProps> = ({ callback }) => {
     const { t } = useTranslation();
-    const { extractions } = useGeneratedExtractions();
+    const { extractions } = useExtractions();
     return (
         <ListBox
             className="overflow-auto"

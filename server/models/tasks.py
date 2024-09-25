@@ -11,7 +11,7 @@ from sqlalchemy import (
     TIMESTAMP,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import relationship, Session, Query
 from datatypes import TaskType, TaskState, TaskDocumentErrorType
 from .base import BaseModel
 from typing import Optional
@@ -89,6 +89,10 @@ class TaskDocument(BaseModel):
             .filter_by(task_id=task_id, document_id=document_id)
             .first()
         )
+
+    @classmethod
+    def query_base(cls, session) -> Query:
+        return session.query(cls)
 
     def is_persisted(self, session: Session) -> bool:
         return self.find(session, self.task_id, self.document_id) is not None
