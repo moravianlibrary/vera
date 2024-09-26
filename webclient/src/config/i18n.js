@@ -579,6 +579,8 @@ const resources = {
         "Yes": "Ano",
         "No": "Ne",
 
+        "Catalog records": "Katalogové záznamy",
+
         "digitizationState.Finished": "Dokončeno",
         "digitizationState.InProgress": "Probiha",
         "digitizationState.Planned": "Naplánováno",
@@ -615,8 +617,27 @@ const resources = {
         "catalog.record.skc-not-found": "Záznam v SKC katalogu nenalezen",
 
         "documents.table.no-category": "Bez kategorie",
+
+        "common": {
+          "yes": "Ano",
+          "no": "Ne",
+        },
         
         "catalog-records": {
+          "numFound": "Počet nalezených záznamů",
+          "mzk-sysno": "MZK systémové číslo",
+          "skc-sysno": "SKC systémové číslo",
+          "cnb-sysno": "ČNB systémové číslo",
+          "cnb": "ČNB",
+          "language": "Jazyk",
+          "signature": "Signatura",
+          "isxn": "ISXN",
+          "has-valid-main-record": "Záznam je validný",
+          "has-valid-cnb": "ČNB je validné",
+          "skc-validity": "Validita vůči SKC katalogu",
+          "cnb-validity": "Validita ČNB",
+          "last-updated": "Poslední aktualizace",
+          "action-approve-difference": "Schválit rozdíl",
           "table": {
             "difference": {
               "Equal": "Shoda",
@@ -631,6 +652,11 @@ const resources = {
               "should-not-have-cnb": "Nemá mít ČNB",
               "not-found-in-cnb": "Záznam nenalezen v ČNB katalogu",
             }
+          },
+          "details": {
+            "data": "Detailní informace",
+            "skc-difference": "Rozdíly mezi MZK a SKC katalogem",
+            "cnb-difference": "Rozdíly mezi MZK a ČNB katalogem",
           }
         },
 
