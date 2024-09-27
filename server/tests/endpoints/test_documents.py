@@ -2,7 +2,7 @@ from .base import TestEndpointsBase
 from services.external.digitization_registry import DigitizationState
 from models import Category, CatalogRecord, Document
 from datatypes import AddDocumentResponseStatus
-from services.exceptions import ObjectNotFoundException
+from exceptions import ObjectNotFoundException
 
 TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
 

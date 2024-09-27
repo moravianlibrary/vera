@@ -45,11 +45,11 @@ class BaseIndexer:
         self.es.indices.delete(index=self.index_name)
         self.es.indices.create(index=self.index_name, body=self.index_schema)
 
+    def refresh_index(self):
+        self.es.indices.refresh(index=self.index_name)
+
     def index(self, source_id: str, source: Dict[str, any]):
         self.es.index(index=self.index_name, id=source_id, body=source)
-
-    def refresh(self):
-        self.es.indices.refresh(index=self.index_name)
 
     def get(self, source_id: int):
         return self.es.get(index=self.index_name, id=source_id)["_source"]
@@ -65,7 +65,7 @@ class BaseIndexer:
             body=query_params,
         )
 
-    def get_source_ids(self, query_params: Dict[str, any]) -> List[int]:
+    def get_source_ids(self, query_params: Dict[str, any]) -> List[str]:
         source_ids = []
         scroll_id = None
 

@@ -61,10 +61,10 @@ class TestTasksBase(TestBaseDatabase):
 
 
 class TestCatalogSyncIntegration(TestTasksBase):
-    @patch("services.documents_indexer.DocumentsIndexer.get_instance")
-    def test_catalog_sync(self, mock_get_instance: Mock):
+    @patch("schemas.index_document.IndexDocument.get_indexer_instance")
+    def test_catalog_sync(self, mock_get_indexer_instance: Mock):
         # Arrange
-        mock_get_instance.return_value = MagicMock()
+        mock_get_indexer_instance.return_value = MagicMock()
 
         # Act
         SyncFromCatalogs(self.session, 1)
@@ -90,12 +90,12 @@ class TestCatalogSyncIntegration(TestTasksBase):
             return AlephRecord("MZK01-000165329", record)
 
     @patch("services.external.aleph.AlephClient.get_record")
-    @patch("services.documents_indexer.DocumentsIndexer.get_instance")
+    @patch("schemas.index_document.IndexDocument.get_indexer_instance")
     def test_catalog_sync_calls_aleph_once_per_sysno(
-        self, mock_get_instance: Mock, mock_get_record: Mock
+        self, mock_get_indexer_instance: Mock, mock_get_record: Mock
     ):
         # Arrange
-        mock_get_instance.return_value = MagicMock()
+        mock_get_indexer_instance.return_value = MagicMock()
         mock_get_record.return_value = (
             self.getTestAlephRecord(),
             AlephResponseStatus.Success,
@@ -137,12 +137,12 @@ class TestCatalogSyncIntegration(TestTasksBase):
         mock_get_record.assert_called_once()
 
     @patch("services.external.aleph.AlephClient.get_record")
-    @patch("services.documents_indexer.DocumentsIndexer.get_instance")
+    @patch("schemas.index_document.IndexDocument.get_indexer_instance")
     def test_catalog_sync_with_invalid_sysno(
-        self, mock_get_instance: Mock, mock_get_record: Mock
+        self, mock_get_indexer_instance: Mock, mock_get_record: Mock
     ):
         # Arrange
-        mock_get_instance.return_value = MagicMock()
+        mock_get_indexer_instance.return_value = MagicMock()
         mock_get_record.return_value = None, AlephResponseStatus.InvalidSysno
 
         # Act
@@ -163,10 +163,10 @@ class TestCatalogSyncIntegration(TestTasksBase):
 
 
 class TestDigitizationRegistrySyncIntegration(TestTasksBase):
-    @patch("services.documents_indexer.DocumentsIndexer.get_instance")
-    def test_registry_sync(self, mock_get_instance: Mock):
+    @patch("schemas.index_document.IndexDocument.get_indexer_instance")
+    def test_registry_sync(self, mock_get_indexer_instance: Mock):
         # Arrange
-        mock_get_instance.return_value = MagicMock()
+        mock_get_indexer_instance.return_value = MagicMock()
 
         # Act
         registry_id_before_sync = Document.get(
@@ -190,12 +190,12 @@ class TestDigitizationRegistrySyncIntegration(TestTasksBase):
         "services.external.digitization_registry"
         ".DigitizationRegistryClient.get_record"
     )
-    @patch("services.documents_indexer.DocumentsIndexer.get_instance")
+    @patch("schemas.index_document.IndexDocument.get_indexer_instance")
     def test_registry_sync_with_not_found_record(
-        self, mock_get_instance: Mock, mock_get_record: Mock
+        self, mock_get_indexer_instance: Mock, mock_get_record: Mock
     ):
         # Arrange
-        mock_get_instance.return_value = MagicMock()
+        mock_get_indexer_instance.return_value = MagicMock()
         mock_get_record.return_value = None
 
         # Act
@@ -212,11 +212,11 @@ class TestDigitizationRegistrySyncIntegration(TestTasksBase):
 
 
 class TestReindexIntegration(TestTasksBase):
-    @patch("services.documents_indexer.DocumentsIndexer.get_instance")
-    def test_reindex(self, mock_get_instance: Mock):
+    @patch("schemas.index_document.IndexDocument.get_indexer_instance")
+    def test_reindex(self, mock_get_indexer_instance: Mock):
         # Arrange
         mock_indexer = MagicMock()
-        mock_get_instance.return_value = mock_indexer
+        mock_get_indexer_instance.return_value = mock_indexer
 
         # Act
         Reindex(self.session, 1)
@@ -229,12 +229,12 @@ class TestReindexIntegration(TestTasksBase):
 
 class TestPredictPeriodicalPageCountIntegration(TestTasksBase):
     @patch("services.predictor.requests.get")
-    @patch("services.documents_indexer.DocumentsIndexer.get_instance")
+    @patch("schemas.index_document.IndexDocument.get_indexer_instance")
     def test_predict_periodical_page_count(
-        self, mock_get_instance: Mock, mock_get: Mock
+        self, mock_get_indexer_instance: Mock, mock_get: Mock
     ):
         # Arrange
-        mock_get_instance.return_value = MagicMock()
+        mock_get_indexer_instance.return_value = MagicMock()
 
         mock_response = Mock()
         mock_response.status_code = 200
@@ -252,12 +252,12 @@ class TestPredictPeriodicalPageCountIntegration(TestTasksBase):
         self.session.close()
 
     @patch("services.predictor.requests.get")
-    @patch("services.documents_indexer.DocumentsIndexer.get_instance")
+    @patch("schemas.index_document.IndexDocument.get_indexer_instance")
     def test_predict_periodical_page_count_failure(
-        self, mock_get_instance: Mock, mock_get: Mock
+        self, mock_get_indexer_instance: Mock, mock_get: Mock
     ):
         # Arrange
-        mock_get_instance.return_value = MagicMock()
+        mock_get_indexer_instance.return_value = MagicMock()
 
         mock_response = Mock()
         mock_response.status_code = 500

@@ -1,13 +1,13 @@
 from sqlalchemy.orm import Session
 from models import Document
 from tasks.documents_processing import run_task
-from services.documents_indexer import DocumentsIndexer
+from schemas import IndexDocument
 from services.predictor import Predictor
 
 
 def PredictPeriodicalPageCount(session: Session, task_id: int):
     predictor = Predictor.get_instance()
-    indexer = DocumentsIndexer.get_instance()
+    indexer = IndexDocument.get_indexer_instance()
 
     def predict_volume_pages(document: Document) -> None:
         document.pages_count_predicted = (

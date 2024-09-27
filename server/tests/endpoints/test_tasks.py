@@ -135,11 +135,11 @@ class TestTasksEndpoints(TestEndpointsBase):
         self.assertResponse(response, 200)
         body = response.json()
         self.assertEqual(body["num_found"], 2)
-        self.assertEqual(body["items"][0]["task_type"], TaskType.Reindex.value)
         self.assertEqual(
-            body["items"][1]["task_type"],
+            body["items"][0]["task_type"],
             TaskType.GenerateItemsPagesDataset.value,
         )
+        self.assertEqual(body["items"][1]["task_type"], TaskType.Reindex.value)
 
 
 class TestPeriodicTasksEndpoints(TestTasksEndpoints):
@@ -278,8 +278,8 @@ class TestPeriodicTasksEndpoints(TestTasksEndpoints):
         self.assertResponse(response, 200)
         body = response.json()
         self.assertEqual(body["num_found"], 2)
-        self.assertEqual(body["items"][0]["task_type"], TaskType.Reindex.value)
         self.assertEqual(
-            body["items"][1]["task_type"],
+            body["items"][0]["task_type"],
             TaskType.GenerateItemsPagesDataset.value,
         )
+        self.assertEqual(body["items"][1]["task_type"], TaskType.Reindex.value)

@@ -7,7 +7,7 @@ from schemas import (
     Identifier,
     DocumentResponse,
 )
-from datatypes import ActionType, ElasticsearchParams
+from datatypes import ElasticsearchParams
 from models import Document
 from routers.utils.permissions import (
     CanInsertDocument,
@@ -24,11 +24,15 @@ from routers.utils.dependencies import (
     DependsOnDocumentsIndexer,
 )
 from logic.add_document import add_document
-from services.documents_indexer import DocumentsIndexer
+from schemas import DocumentsIndexer
 from starlette.responses import FileResponse
 import pandas as pd
 import tempfile
 from datetime import datetime
+from .utils.query_restrictions import (
+    restrict_read_query_params,
+    restrict_edit_query_params,
+)
 
 
 XLSX_MIMETYPE = (
@@ -36,22 +40,6 @@ XLSX_MIMETYPE = (
 )
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
-
-
-def restrict_editing_query_params(
-    query_params: ElasticsearchParams, user: CurrentUser
-) -> ElasticsearchParams:
-    if user.has_action(ActionType.EditDatatableAll):
-        return query_params
-    if user.has_action(ActionType.EditDatatableDepartment):
-        return DocumentsIndexer.restrict_query_params_for_categories(
-            query_params, user.department_categories_ids
-        )
-    if user.has_action(ActionType.EditDatatableOwn):
-        return DocumentsIndexer.restrict_query_params_for_username(
-            query_params, user.username
-        )
-    raise Exception("User without edit permission trying to edit documents")
 
 
 @router.post(
@@ -140,28 +128,7 @@ def query_documents(
     user: CurrentUser = DependsOnCurrentUser,
     indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
 ):
-    if user.has_action(ActionType.ReadDatatableAll):
-        return indexer.search(query_params)
-    if user.has_action(ActionType.ReadDatatableDepartment):
-        return indexer.search(
-            DocumentsIndexer.restrict_query_params_for_categories(
-                query_params, user.department_categories_ids, user.username
-            )
-        )
-    return indexer.search(
-        DocumentsIndexer.restrict_query_params_for_username(
-            query_params, user.username
-        )
-    )
-
-
-@router.post("/_search", dependencies=[CanReadDocuments], response_model=None)
-def search_documents(
-    query_params: ElasticsearchParams,
-    user: CurrentUser = DependsOnCurrentUser,
-    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
-):
-    return query_documents(query_params, user, indexer)
+    return indexer.search(restrict_read_query_params(query_params, user))
 
 
 @router.post("/query/export", dependencies=[CanReadDocuments])
@@ -206,8 +173,8 @@ def update_query_documents(
     indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
     session: Session = DependsOnDbSession,
 ):
-    for document_id in indexer.get_document_ids(
-        restrict_editing_query_params(query_params, user)
+    for document_id in indexer.get_source_ids(
+        restrict_edit_query_params(query_params, user)
     ):
         document = Document.get(session, document_id)
         document.category_id = category_id
@@ -224,8 +191,8 @@ def delete_query_documents(
     indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
     session: Session = DependsOnDbSession,
 ):
-    for document_id in indexer.get_document_ids(
-        restrict_editing_query_params(query_params, user)
+    for document_id in indexer.get_source_ids(
+        restrict_edit_query_params(query_params, user)
     ):
         Document.get(session, document_id).delete(session)
 

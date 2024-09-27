@@ -126,10 +126,10 @@ class TestDepartmentsEndpoints(TestEndpointsBase):
 
         expected_departments = [
             {
-                "id": 1,
-                "name": "Test Department 1",
-                "abbreviation": "TST-1",
-                "usernames": [],
+                "id": 3,
+                "name": "Test Department 3",
+                "abbreviation": "TST-3",
+                "usernames": ["Test User 2", "Test User 3"],
             },
             {
                 "id": 2,
@@ -138,10 +138,10 @@ class TestDepartmentsEndpoints(TestEndpointsBase):
                 "usernames": ["Test User 1"],
             },
             {
-                "id": 3,
-                "name": "Test Department 3",
-                "abbreviation": "TST-3",
-                "usernames": ["Test User 2", "Test User 3"],
+                "id": 1,
+                "name": "Test Department 1",
+                "abbreviation": "TST-1",
+                "usernames": [],
             },
         ]
 

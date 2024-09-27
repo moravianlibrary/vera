@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
 from models import Document
 from tasks.documents_processing import run_task
-from services.documents_indexer import DocumentsIndexer
+from schemas import IndexDocument
 
 
 def Reindex(session: Session, task_id: int):
-    indexer = DocumentsIndexer.get_instance()
+    indexer = IndexDocument.get_indexer_instance()
 
     def reindex_document(document: Document):
         indexer.index(document)

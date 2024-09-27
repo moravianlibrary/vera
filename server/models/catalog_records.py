@@ -142,6 +142,10 @@ class CatalogRecord(BaseModel):
         )
 
     @hybrid_property
+    def barcodes(self) -> List[str]:
+        return [barcode.barcode for barcode in self.record_barcodes]
+
+    @hybrid_property
     def document_ids(self) -> List[int]:
         return [d.id for d in self.documents]
 

@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Path, Query
+from fastapi import APIRouter, Path
 from sqlalchemy.orm import Session
 from models import (
     CatalogRecord,
@@ -9,12 +9,13 @@ from models import (
 )
 from datatypes import TaskType, CatalogSource
 from exceptions import ObjectMissingRequiredFieldException
-from schemas import CatalogRecordResponse, Page
+from schemas import CatalogRecordResponse, CatalogRecordsIndexer
 from worker import run_task
 from .utils.permissions import CanReadCatalogRecords, CanReviewCatalogRecords
 from .utils.dependencies import (
     DependsOnDbSession,
     DependsOnCallerUsername,
+    DependsOnCatalogRecordsIndexer,
 )
 from services.marc_comparator import (
     MarcFieldDifference,
@@ -22,22 +23,22 @@ from services.marc_comparator import (
 )
 from logic import update_catalog_record as update_catalog_record_logic
 from services.external.aleph import AlephResponseStatus
+from datatypes import ElasticsearchParams
 
 
 router = APIRouter(prefix="/catalog_records", tags=["Catalog records"])
 
 
 @router.get(
-    "",
+    "/search",
     dependencies=[CanReadCatalogRecords],
-    response_model=Page[CatalogRecordResponse],
+    response_model=None,
 )
 def get_catalog_records(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
-    session: Session = DependsOnDbSession,
+    query_params: ElasticsearchParams,
+    indexer: CatalogRecordsIndexer = DependsOnCatalogRecordsIndexer,
 ):
-    return CatalogRecord.get_page(session, page, page_size)
+    return indexer.search(query_params)
 
 
 @router.get(
@@ -86,17 +87,6 @@ def update_catalog_record_differences(
 
 
 # TODO: Implement differences getter with filtering
-@router.get(
-    "/differences",
-    dependencies=[CanReadCatalogRecords],
-    response_model=Page[MarcFieldDifference],
-)
-def get_catalog_record_differences(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
-    session: Session = DependsOnDbSession,
-):
-    pass
 
 
 @router.patch(

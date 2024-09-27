@@ -1,12 +1,15 @@
 from unittest import skipIf, TestCase
 from unittest.mock import patch, MagicMock
 from tests.test_base_database import TestBaseDatabase
-from services.documents_indexer import DocumentsIndexer, INDEX_NAME
+from schemas import DocumentsIndexer
 from tests.documents_bank import get_test_documents
 from config import VeraConfig
 from models import Document
 import elasticsearch
 from requests.exceptions import RequestException
+
+
+INDEX_NAME = "documents"
 
 
 def skipIfIndexerUnavailable(test_func):

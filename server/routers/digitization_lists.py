@@ -10,7 +10,7 @@ from .utils.dependencies import (
     DependsOnDocumentsIndexer,
 )
 from exceptions import EmptyExtractionException
-from services.documents_indexer import DocumentsIndexer
+from schemas import DocumentsIndexer
 from datatypes import ElasticsearchParams, DigitizationState
 
 router = APIRouter(

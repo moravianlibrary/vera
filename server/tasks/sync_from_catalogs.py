@@ -5,11 +5,11 @@ from logic.update_catalog_record import update_catalog_record
 from services.external.aleph import AlephRecord
 from services.external.aleph import AlephIssue
 from services.external.aleph import AlephResponseStatus
-from services.documents_indexer import DocumentsIndexer
+from schemas import IndexDocument
 
 
 def SyncFromCatalogs(session: Session, task_id: int):
-    indexer = DocumentsIndexer.get_instance()
+    indexer = IndexDocument.get_indexer_instance()
     updated_records_sysno = set()
 
     def update_document_from_catalog(document: Document):

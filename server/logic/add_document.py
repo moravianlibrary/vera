@@ -3,13 +3,14 @@ from datetime import datetime, timedelta
 from config import VeraConfig
 from sqlalchemy.orm import Session
 from services.external.digitization_registry import DigitizationState
-from schemas.catalog_records import Identifier
 from services.external.digitization_registry import (
     DigitizationRegistryClient,
 )
 from schemas import (
     CatalogDocumentResponse,
     CatalogIssueResponse,
+    Identifier,
+    DocumentsIndexer,
 )
 from datatypes import (
     IdentifierType,
@@ -19,7 +20,6 @@ from datatypes import (
     IdentifierToAlephFieldConverted,
 )
 from services import exceptions
-from services.documents_indexer import DocumentsIndexer
 from logic.update_catalog_record import update_catalog_record
 from services.external.aleph import (
     AlephClient,
@@ -176,7 +176,7 @@ class AddDocumentPreprocessor:
         )
 
         if catalog_record is not None and (
-            datetime.now() - catalog_record.last_updated
+            datetime.now() - catalog_record.updated_at
         ) <= timedelta(seconds=VeraConfig.CatalogRecordsValidFor):
             return catalog_record, AddDocumentResponseStatus.Success
 

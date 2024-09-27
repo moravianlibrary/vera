@@ -112,9 +112,9 @@ def recreate_index():
     from models.base_engine import get_session
     from models import Document, Task, TaskDocument
     from worker import run_task
-    from services.documents_indexer import DocumentsIndexer
+    from schemas import DocumentsIndexer
 
-    DocumentsIndexer.get_instance().recreate_index()
+    IndexDocument.get_indexer_instance().recreate_index()
 
     session = next(get_session())
     task = Task(

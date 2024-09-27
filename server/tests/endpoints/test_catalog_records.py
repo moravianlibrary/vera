@@ -1,5 +1,5 @@
 from .base import TestEndpointsBase
-
+from unittest.mock import Mock, patch, MagicMock
 from datatypes import ActionType, CatalogSource, MarcFieldDifferenceType
 from models import (
     CatalogRecord,
@@ -15,8 +15,12 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
             b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
         )
 
-    def test_get_catalog_records(self):
+    @patch(
+        "schemas.index_catalog_record.IndexCatalogRecord.get_indexer_instance"
+    )
+    def test_get_catalog_records(self, mock_get_indexer_instance: Mock):
         # Arrange
+        mock_get_indexer_instance.return_value = MagicMock()
         self.session.add_all(
             [
                 CatalogRecord(sysno="MZK01-123456789", marc=self.marc_bytes),
@@ -28,7 +32,7 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
 
         # Act
         response = self.client.get(
-            "/catalog_records",
+            "/catalog_records/search",
             headers={
                 "Authorization": "Bearer test_token",
             },

@@ -87,15 +87,15 @@ class TestRolesEndpoints(TestEndpointsBase):
         self.session.flush()
         expected_roles = [
             {
-                "id": 2,
-                "name": "role 2",
-                "actions": [ActionType.WriteDatatable.value],
-            },
-            {"id": 3, "name": "role 3", "actions": [ActionType.Extract.value]},
-            {
                 "id": 4,
                 "name": "role 4",
                 "actions": [ActionType.ReadDatatableAll.value],
+            },
+            {"id": 3, "name": "role 3", "actions": [ActionType.Extract.value]},
+            {
+                "id": 2,
+                "name": "role 2",
+                "actions": [ActionType.WriteDatatable.value],
             },
         ]
 

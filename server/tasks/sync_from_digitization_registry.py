@@ -5,11 +5,11 @@ from tasks.documents_processing import run_task
 from services.external.digitization_registry import (
     DigitizationRegistryClient,
 )
-from services.documents_indexer import DocumentsIndexer
+from schemas import IndexDocument
 
 
 def SyncFromDigitizationRegistry(session: Session, task_id: int):
-    indexer = DocumentsIndexer.get_instance()
+    indexer = IndexDocument.get_indexer_instance()
 
     def update_document_from_digitization_registry(document: Document):
         record = DigitizationRegistryClient().get_record(

@@ -20,13 +20,6 @@ from .documents import (
     CommentCreate,
     Comment,
 )
-from .marc21_diff import (
-    Marc21DiffType,
-    Marc21Subfield,
-    Marc21Field,
-    Marc21Diff,
-    Marc21DiffRecord,
-)
 from .tasks import (
     Dataset,
     TaskDefinition,
@@ -54,7 +47,10 @@ from .categories import (
     Distributions,
     DistributionList,
 )
+from .index_document import IndexDocument, DocumentsIndexer
 from .predictor import PredictPeriodicalPageCount
+from .base_indexer import BaseIndexer
+from .index_catalog_record import IndexCatalogRecord, CatalogRecordsIndexer
 from services.external.aleph import (
     AlephRecord,
     AlephIssue,
@@ -82,11 +78,6 @@ __all__ = [
     "DocumentResponse",
     "CommentCreate",
     "Comment",
-    "Marc21DiffType",
-    "Marc21Subfield",
-    "Marc21Field",
-    "Marc21Diff",
-    "Marc21DiffRecord",
     "Dataset",
     "TaskDefinition",
     "TaskError",
@@ -114,4 +105,9 @@ __all__ = [
     "AlephRecord",
     "AlephIssue",
     "DigitizationRegistryRecord",
+    "IndexDocument",
+    "DocumentsIndexer",
+    "BaseIndexer",
+    "IndexCatalogRecord",
+    "CatalogRecordsIndexer",
 ]

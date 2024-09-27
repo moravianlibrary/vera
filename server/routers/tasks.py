@@ -9,7 +9,7 @@ from .utils.dependencies import (
     DependsOnDbSession,
     DependsOnDocumentsIndexer,
 )
-from services.documents_indexer import DocumentsIndexer
+from schemas import DocumentsIndexer
 from models import Task, TaskDocument, PeriodicTask
 from schemas import (
     TaskDefinition,
