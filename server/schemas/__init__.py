@@ -47,10 +47,10 @@ from .categories import (
     Distributions,
     DistributionList,
 )
-from .index_document import IndexDocument, DocumentsIndexer
+from .base_es_model import EsSession
+from .index_document import IndexDocument
+from .index_catalog_record import IndexCatalogRecord
 from .predictor import PredictPeriodicalPageCount
-from .base_indexer import BaseIndexer
-from .index_catalog_record import IndexCatalogRecord, CatalogRecordsIndexer
 from services.external.aleph import (
     AlephRecord,
     AlephIssue,
@@ -106,8 +106,6 @@ __all__ = [
     "AlephIssue",
     "DigitizationRegistryRecord",
     "IndexDocument",
-    "DocumentsIndexer",
-    "BaseIndexer",
     "IndexCatalogRecord",
-    "CatalogRecordsIndexer",
+    "EsSession",
 ]

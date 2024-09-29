@@ -68,6 +68,19 @@ class VeraConfig:
     def BotName() -> str:
         return environ.get("BOT_NAME", "VeraBot")
 
+    class Elasticsearch:
+        @staticproperty
+        def Url() -> str:
+            return environ.get("ELASTICSEARCH_URL", "http://localhost:9200")
+
+        @staticproperty
+        def Username() -> str:
+            return environ.get("ELASTICSEARCH_USERNAME", "elastic")
+
+        @staticproperty
+        def Password() -> str:
+            return environ.get("ELASTICSEARCH_PASSWORD", "veraIndex")
+
     class Postgres:
         @staticproperty
         def User() -> str:

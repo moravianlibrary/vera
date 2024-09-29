@@ -6,7 +6,8 @@ from services.keycloak_client import get_user_from_token, oauth2_scheme
 from .access_emulation import emulated_users
 from typing import Generator
 from exceptions import IndexIsNotAvailableException
-from schemas import DocumentsIndexer, IndexDocument
+from elasticsearch import Elasticsearch
+from config import VeraConfig
 
 
 def get_current_user(
@@ -25,28 +26,21 @@ def get_caller_username(
     return current_user.username
 
 
-def get_documents_indexer() -> Generator["DocumentsIndexer", None, None]:
-    if not DocumentsIndexer.is_indexer_available():
-        raise IndexIsNotAvailableException()
-    indexer = IndexDocument.get_indexer_instance()
+def get_es_session() -> Generator["Elasticsearch", None, None]:
+    session = Elasticsearch(
+        VeraConfig.Elasticsearch.Url,
+        basic_auth=(
+            VeraConfig.Elasticsearch.Username,
+            VeraConfig.Elasticsearch.Password,
+        ),
+    )
     try:
-        yield indexer
+        yield session
     finally:
-        indexer.close()
-
-
-def get_catalog_records_indexer() -> Generator["DocumentsIndexer", None, None]:
-    if not DocumentsIndexer.is_indexer_available():
-        raise IndexIsNotAvailableException()
-    indexer = IndexDocument.get_indexer_instance()
-    try:
-        yield indexer
-    finally:
-        indexer.close()
+        session.close()
 
 
 DependsOnCurrentUser = Depends(get_current_user)
 DependsOnCallerUsername = Depends(get_caller_username)
 DependsOnDbSession = Depends(get_session)
-DependsOnDocumentsIndexer = Depends(get_documents_indexer)
-DependsOnCatalogRecordsIndexer = Depends(get_catalog_records_indexer)
+DependsOnEsSession = Depends(get_es_session)

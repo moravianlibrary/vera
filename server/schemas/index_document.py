@@ -1,12 +1,11 @@
-from .base_index_model import (
-    BaseIndexModel,
+from .base_es_model import (
+    BaseEsModel,
     Integer,
     Keyword,
     Date,
     Boolean,
     Nested,
 )
-from .base_indexer import BaseIndexer
 from pydantic import model_validator
 from typing import Any
 from models import Document
@@ -18,17 +17,17 @@ from .parsers.volume_parser import (
 )
 
 
-class CategoryPath(BaseIndexModel):
+class CategoryPath(BaseEsModel):
     category_id: Integer
     category_name: Keyword
 
 
-class IndexFrequency(BaseIndexModel):
+class IndexFrequency(BaseEsModel):
     frequency: Keyword
     date: Keyword
 
 
-class IndexDocument(BaseIndexModel):
+class IndexDocument(BaseEsModel):
     __index_name__ = "documents"
     __index_version__ = "v2024.09-1"
 
@@ -145,7 +144,3 @@ class IndexDocument(BaseIndexModel):
                 frequency.to_dict() for frequency in aleph_record.frequencies
             ],
         )
-
-
-class DocumentsIndexer(BaseIndexer):
-    pass

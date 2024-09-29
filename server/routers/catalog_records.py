@@ -9,13 +9,13 @@ from models import (
 )
 from datatypes import TaskType, CatalogSource
 from exceptions import ObjectMissingRequiredFieldException
-from schemas import CatalogRecordResponse, CatalogRecordsIndexer
+from schemas import CatalogRecordResponse, EsSession, IndexCatalogRecord
 from worker import run_task
 from .utils.permissions import CanReadCatalogRecords, CanReviewCatalogRecords
 from .utils.dependencies import (
     DependsOnDbSession,
     DependsOnCallerUsername,
-    DependsOnCatalogRecordsIndexer,
+    DependsOnEsSession,
 )
 from services.marc_comparator import (
     MarcFieldDifference,
@@ -36,9 +36,9 @@ router = APIRouter(prefix="/catalog_records", tags=["Catalog records"])
 )
 def get_catalog_records(
     query_params: ElasticsearchParams,
-    indexer: CatalogRecordsIndexer = DependsOnCatalogRecordsIndexer,
+    es_session: EsSession = DependsOnEsSession,
 ):
-    return indexer.search(query_params)
+    return IndexCatalogRecord.search(es_session, query_params)
 
 
 @router.get(

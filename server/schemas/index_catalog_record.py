@@ -1,11 +1,10 @@
-from .base_index_model import (
-    BaseIndexModel,
+from .base_es_model import (
+    BaseEsModel,
     Keyword,
     Date,
     Boolean,
     Nested,
 )
-from .base_indexer import BaseIndexer
 from pydantic import model_validator
 from typing import Any
 from services.external.aleph import AlephRecord
@@ -13,12 +12,12 @@ from .index_document import IndexFrequency
 from models import CatalogRecord
 
 
-class MarcSubfield(BaseIndexModel):
+class MarcSubfield(BaseEsModel):
     code: Keyword
     value: Keyword
 
 
-class MarcFieldBase(BaseIndexModel):
+class MarcFieldBase(BaseEsModel):
     tag: Keyword
     ind1: Keyword
     ind2: Keyword
@@ -30,7 +29,7 @@ class MarcField(MarcFieldBase):
     subfields: Nested[MarcSubfield]
 
 
-class MarcRecord(BaseIndexModel):
+class MarcRecord(BaseEsModel):
     leader: Keyword
     fields: Nested[MarcField]
 
@@ -45,7 +44,7 @@ class MarcFieldDifference(MarcFieldBase):
     subfield_differences: Nested[MarcSubfieldDifference]
 
 
-class IndexCatalogRecord(BaseIndexModel):
+class IndexCatalogRecord(BaseEsModel):
     __index_name__ = "catalog_records"
     __index_version__ = "v2024.09-1"
 
@@ -125,7 +124,3 @@ class IndexCatalogRecord(BaseIndexModel):
                 for frequency in aleph_record.frequencies
             ],
         )
-
-
-class CatalogRecordsIndexer(BaseIndexer):
-    pass
