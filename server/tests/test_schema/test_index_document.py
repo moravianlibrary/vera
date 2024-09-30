@@ -6,7 +6,7 @@ class TestIndexDocument(TestSchemaBase):
     def test_get_es_schema(self):
         self.maxDiff = None
         self.assertDictEqual(
-            IndexDocument.es_schema(),
+            IndexDocument._es_schema(),
             {
                 "mappings": {
                     "_meta": {"index.version": "v2024.09-1"},

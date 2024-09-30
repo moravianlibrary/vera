@@ -1,98 +1,143 @@
 from .base import TestSchemaBase
-from schemas import IndexDocument
+from schemas import IndexCatalogRecord
 
 
 class TestIndexCatalogRecord(TestSchemaBase):
     def test_get_es_schema(self):
         self.maxDiff = None
         self.assertDictEqual(
-            IndexDocument.get_es_schema(),
+            IndexCatalogRecord._es_schema(),
             {
                 "mappings": {
                     "_meta": {"index.version": "v2024.09-1"},
                     "properties": {
-                        "id": {"type": "integer"},
-                        # Main identifiers
-                        "sysno": {"type": "keyword"},
-                        "barcode": {"type": "keyword"},
-                        "volume": {"type": "keyword"},
-                        "volume_number": {"type": "integer"},
-                        "volume_year": {"type": "keyword"},
-                        "volume_year_number": {"type": "integer"},
-                        "bundle": {"type": "keyword"},
-                        "bundle_number": {"type": "integer"},
-                        # Librarian identifiers
+                        "id": {"type": "keyword"},  # sysno
+                        "main_record": {
+                            "properties": {
+                                "fields": {
+                                    "properties": {
+                                        "control_field": {"type": "boolean"},
+                                        "data": {"type": "keyword"},
+                                        "ind1": {"type": "keyword"},
+                                        "ind2": {"type": "keyword"},
+                                        "subfields": {
+                                            "properties": {
+                                                "code": {"type": "keyword"},
+                                                "value": {"type": "keyword"},
+                                            },
+                                            "type": "nested",
+                                        },
+                                        "tag": {"type": "keyword"},
+                                    },
+                                    "type": "nested",
+                                },
+                                "leader": {"type": "keyword"},
+                            },
+                            "type": "nested",
+                        },
                         "cnb": {"type": "keyword"},
+                        "language": {"type": "keyword"},
                         "signature": {"type": "keyword"},
                         "isxn": {"type": "keyword"},
-                        # VERA properties
-                        "added_at": {"type": "date"},
-                        "added_by": {"type": "keyword"},
-                        "category_id": {"type": "integer"},
-                        "category_path": {
-                            "type": "nested",
-                            "properties": {
-                                "category_id": {"type": "integer"},
-                                "category_name": {"type": "keyword"},
-                            },
-                        },
+                        "barcodes": {"type": "keyword"},
                         "skc_sysno": {"type": "keyword"},
-                        "skc_diff": {
-                            "type": "nested",
+                        "skc_record": {
                             "properties": {
-                                "result": {"type": "keyword"},
-                                "tag": {"type": "keyword"},
-                                "indicator1": {"type": "keyword"},
-                                "indicator2": {"type": "keyword"},
-                                "subfield_differences": {
-                                    "type": "nested",
+                                "fields": {
                                     "properties": {
+                                        "control_field": {"type": "boolean"},
+                                        "data": {"type": "keyword"},
+                                        "ind1": {"type": "keyword"},
+                                        "ind2": {"type": "keyword"},
+                                        "subfields": {
+                                            "properties": {
+                                                "code": {"type": "keyword"},
+                                                "value": {"type": "keyword"},
+                                            },
+                                            "type": "nested",
+                                        },
+                                        "tag": {"type": "keyword"},
+                                    },
+                                    "type": "nested",
+                                },
+                                "leader": {"type": "keyword"},
+                            },
+                            "type": "nested",
+                        },
+                        "skc_difference": {
+                            "properties": {
+                                "id": {"type": "integer"},
+                                "tag": {"type": "keyword"},
+                                "ind1": {"type": "keyword"},
+                                "ind2": {"type": "keyword"},
+                                "control_field": {"type": "boolean"},
+                                "difference_type": {"type": "keyword"},
+                                "subfield_differences": {
+                                    "properties": {
+                                        "id": {"type": "integer"},
                                         "code": {"type": "keyword"},
                                         "value": {"type": "keyword"},
                                         "different_to": {"type": "keyword"},
+                                        "differs": {"type": "boolean"},
                                     },
+                                    "type": "nested",
                                 },
                             },
+                            "type": "nested",
                         },
                         "has_valid_main_record": {"type": "boolean"},
                         "cnb_sysno": {"type": "keyword"},
-                        "cnb_diff": {
-                            "type": "nested",
+                        "cnb_record": {
                             "properties": {
-                                "result": {"type": "keyword"},
-                                "tag": {"type": "keyword"},
-                                "indicator1": {"type": "keyword"},
-                                "indicator2": {"type": "keyword"},
-                                "subfield_differences": {
-                                    "type": "nested",
+                                "fields": {
                                     "properties": {
+                                        "control_field": {"type": "boolean"},
+                                        "data": {"type": "keyword"},
+                                        "ind1": {"type": "keyword"},
+                                        "ind2": {"type": "keyword"},
+                                        "subfields": {
+                                            "properties": {
+                                                "code": {"type": "keyword"},
+                                                "value": {"type": "keyword"},
+                                            },
+                                            "type": "nested",
+                                        },
+                                        "tag": {"type": "keyword"},
+                                    },
+                                    "type": "nested",
+                                },
+                                "leader": {"type": "keyword"},
+                            },
+                            "type": "nested",
+                        },
+                        "cnb_difference": {
+                            "properties": {
+                                "id": {"type": "integer"},
+                                "tag": {"type": "keyword"},
+                                "ind1": {"type": "keyword"},
+                                "ind2": {"type": "keyword"},
+                                "control_field": {"type": "boolean"},
+                                "difference_type": {"type": "keyword"},
+                                "subfield_differences": {
+                                    "properties": {
+                                        "id": {"type": "integer"},
                                         "code": {"type": "keyword"},
                                         "value": {"type": "keyword"},
                                         "different_to": {"type": "keyword"},
+                                        "differs": {"type": "boolean"},
                                     },
+                                    "type": "nested",
                                 },
                             },
+                            "type": "nested",
                         },
                         "has_valid_cnb": {"type": "boolean"},
-                        "digitization_registry_id": {"type": "integer"},
-                        "digitization_state": {"type": "keyword"},
-                        # Page count
-                        "page_count": {"type": "integer"},
-                        "page_count_catalog": {"type": "integer"},
-                        "page_count_predicted": {"type": "integer"},
-                        "page_count_manual": {"type": "integer"},
-                        # Extraction properties
-                        "dedicated_scanner": {"type": "keyword"},
-                        "extraction_priority": {"type": "integer"},
-                        "is_extractable": {"type": "boolean"},
-                        "digitization_list_id": {"type": "integer"},
-                        # Other properties
+                        "added_at": {"type": "date"},
+                        "updated_at": {"type": "date"},
                         "material_type": {"type": "keyword"},
-                        "issuance_type": {"type": "keyword"},
                         "title": {"type": "keyword"},
                         "size": {"type": "keyword"},
                         "location_uri": {"type": "keyword"},
-                        # Publication properties
                         "publisher": {"type": "keyword"},
                         "publishing_place": {"type": "keyword"},
                         "publishing_year": {"type": "keyword"},

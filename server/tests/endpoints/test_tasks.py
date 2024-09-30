@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 from .base import TestEndpointsBase
 from models import Task, TaskDocument, TaskDataset, PeriodicTask
 from datatypes import TaskType
@@ -35,10 +35,12 @@ class TestTasksEndpoints(TestEndpointsBase):
         # TODO: make it work
         # self.run_task_mock.delay.assert_called_once()
 
-    def test_create_task_with_query(self):
+    @patch("schemas.IndexDocument.search_source_ids")
+    def test_create_task_with_query(self, mock_search_source_ids: Mock):
         # Arrange
         self.mockRunTask()
-        self.mockIndexerGetDocumentIds([1])
+        self.mockIndexer()
+        mock_search_source_ids.return_value = [1]
         task_type = TaskType.GenerateItemsPagesDataset
 
         # Act

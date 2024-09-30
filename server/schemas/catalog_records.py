@@ -103,7 +103,8 @@ class CatalogRecordResponse(BaseModel):
     cnb_difference: Optional[List[MarcFieldDifference]] = None
     has_valid_cnb: bool
 
-    last_updated: Optional[datetime]
+    added_at: datetime
+    updated_at: datetime
 
     @field_validator("main_record", "skc_record", "cnb_record", mode="before")
     def parse_marc(cls, record: Optional[Record]):

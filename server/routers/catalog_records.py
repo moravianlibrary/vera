@@ -29,12 +29,12 @@ from datatypes import ElasticsearchParams
 router = APIRouter(prefix="/catalog_records", tags=["Catalog records"])
 
 
-@router.get(
+@router.post(
     "/search",
     dependencies=[CanReadCatalogRecords],
     response_model=None,
 )
-def get_catalog_records(
+def search_catalog_records(
     query_params: ElasticsearchParams,
     es_session: EsSession = DependsOnEsSession,
 ):
@@ -60,10 +60,11 @@ def get_catalog_record(
 )
 def update_catalog_record(
     sysno: str = Path(...),
+    es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
     catalog_record, status = update_catalog_record_logic.update_catalog_record(
-        session, sysno
+        session, es_session, sysno
     )
     if status != AlephResponseStatus.Success:
         raise Exception(f"Failed to update catalog record {sysno}: {status}")
@@ -77,12 +78,14 @@ def update_catalog_record(
 )
 def update_catalog_record_differences(
     sysno: str = Path(...),
+    es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
     catalog_record = CatalogRecord.get(session, sysno)
     update_catalog_record_logic.update_catalog_record_differences(
         session, catalog_record
     )
+    IndexCatalogRecord.model_validate(catalog_record).save(es_session)
     return catalog_record
 
 
@@ -97,12 +100,15 @@ def update_catalog_record_differences(
 def approve_catalog_record_difference(
     difference_id: int = Path(...),
     approved_by: str = DependsOnCallerUsername,
+    es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
     difference = CatalogRecordFieldDifference.get(
         session, difference_id
     ).approve(session, approved_by)
     catalog_record: CatalogRecord = difference.catalog_record
+
+    IndexCatalogRecord.model_validate(catalog_record).save(es_session)
 
     # Catalog record validity was not changed, no need to reindex documents
     if (

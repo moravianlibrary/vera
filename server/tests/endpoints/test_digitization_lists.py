@@ -2,6 +2,7 @@ from .base import TestEndpointsBase
 from models import CatalogRecord, Document, Intention, DigitizationList
 from datatypes import DigitizationState, IssuanceType
 from datetime import date, timedelta
+from unittest.mock import patch, Mock
 
 
 TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
@@ -59,16 +60,18 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
         )
         self.session.flush()
 
-    def test_create_extraction(self):
+    @patch("schemas.IndexDocument.search_source_ids")
+    def test_create_extraction(self, mock_search_source_ids: Mock):
         # Arrange
         self.setUpTestDocuments()
-        self.mockIndexerGetDocumentIds([1, 2])
+        self.mockIndexer()
+        mock_search_source_ids.return_value = [1, 2]
 
         # Act
         response = self.client.post(
             "/extractions/digitization?intention_id=1"
             "&ignore_digitization_states=Finished",
-            json={},
+            json={"query": {"match_all": {}}},
             headers=self.json_headers,
         )
 
@@ -96,14 +99,18 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
             "Empty extraction can not be created", response.json()["detail"]
         )
 
-    def test_create_extraction_fail_on_document_without_cnb(self):
+    @patch("schemas.IndexDocument.search_source_ids")
+    def test_create_extraction_fail_on_document_without_cnb(
+        self, mock_search_source_ids: Mock
+    ):
         # Arrange
         self.setUpTestDocuments()
         catalog_record = CatalogRecord.get(self.session, "MZK01-000899949")
         catalog_record.language = "cze"
         catalog_record.save(self.session)
         self.session.flush()
-        self.mockIndexerGetDocumentIds([1, 2])
+        self.mockIndexer()
+        mock_search_source_ids.return_value = [1, 2]
 
         # Act
         response = self.client.post(
@@ -119,7 +126,10 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
             response.json()["detail"],
         )
 
-    def test_create_extraction_fail_on_already_extracted(self):
+    @patch("schemas.IndexDocument.search_source_ids")
+    def test_create_extraction_fail_on_already_extracted(
+        self, mock_search_source_ids: Mock
+    ):
         # Arrange
         self.setUpTestDocuments()
         self.session.add(
@@ -129,7 +139,8 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
         document.digitization_list_id = 1
         document.save(self.session)
         self.session.flush()
-        self.mockIndexerGetDocumentIds([1, 2])
+        self.mockIndexer()
+        mock_search_source_ids.return_value = [1, 2]
 
         # Act
         response = self.client.post(
@@ -145,8 +156,9 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
             response.json()["detail"],
         )
 
+    @patch("schemas.IndexDocument.search_source_ids")
     def test_create_extraction_fail_on_document_without_page_count(
-        self,
+        self, mock_search_source_ids: Mock
     ):
         # Arrange
         self.setUpTestDocuments()
@@ -154,7 +166,8 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
         document.pages_count_catalog = 0
         document.save(self.session)
         self.session.flush()
-        self.mockIndexerGetDocumentIds([1, 2])
+        self.mockIndexer()
+        mock_search_source_ids.return_value = [1, 2]
 
         # Act
         response = self.client.post(
@@ -210,10 +223,14 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
         self.assertEqual(extraction["document_ids"], [1])
         self.assertEqual(extraction["page_count"], 357)
 
-    def test_add_documents_to_extraction_fail_on_already_digitized(self):
+    @patch("schemas.IndexDocument.search_source_ids")
+    def test_add_documents_to_extraction_fail_on_already_digitized(
+        self, mock_search_source_ids: Mock
+    ):
         # Arrange
         self.setUpTestDigitizationList()
-        self.mockIndexerGetDocumentIds([3, 2])
+        self.mockIndexer()
+        mock_search_source_ids.return_value = [3, 2]
 
         # Act
         response = self.client.put(
@@ -230,10 +247,12 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
             "is disabled for this request",
         )
 
-    def test_add_documents_to_extraction(self):
+    @patch("schemas.IndexDocument.search_source_ids")
+    def test_add_documents_to_extraction(self, mock_search_source_ids: Mock):
         # Arrange
         self.setUpTestDigitizationList()
-        self.mockIndexerGetDocumentIds([3, 2])
+        self.mockIndexer()
+        mock_search_source_ids.return_value = [3, 2]
 
         # Act
         response = self.client.put(
@@ -250,14 +269,16 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
         self.assertEqual(extraction["document_ids"], [1, 2, 3])
         self.assertEqual(extraction["page_count"], 1202)
 
-    def test_remove_document_to_extraction(self):
+    @patch("schemas.IndexDocument.search_source_ids")
+    def test_remove_document_to_extraction(self, mock_search_source_ids: Mock):
         # Arrange
         self.setUpTestDigitizationList()
         for document_id in [1, 2, 3]:
             document = Document.get(self.session, document_id)
             document.digitization_list_id = 1
             document.save(self.session)
-        self.mockIndexerGetDocumentIds([2])
+        self.mockIndexer()
+        mock_search_source_ids.return_value = [2]
 
         # Act
         response = self.client.put(

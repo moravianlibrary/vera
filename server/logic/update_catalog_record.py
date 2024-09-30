@@ -15,6 +15,7 @@ from services.marc_comparator import (
     GeneralInformationComparator,
     MarcFieldDifference,
 )
+from schemas import IndexCatalogRecord, EsSession
 from pymarc import Record
 from datatypes import CatalogSource
 
@@ -114,7 +115,7 @@ def update_catalog_record_differences(
 
 
 def update_catalog_record(
-    session: Session, sysno: str
+    session: Session, es_session: EsSession, sysno: str
 ) -> Tuple[Optional[CatalogRecord], AlephResponseStatus]:
     main_aleph_record, aleph_response_status = AlephClient().get_record(sysno)
 
@@ -154,5 +155,7 @@ def update_catalog_record(
     catalog_record.save(session)
 
     update_catalog_record_differences(session, catalog_record)
+
+    IndexCatalogRecord.model_validate(catalog_record).save(es_session)
 
     return catalog_record, AlephResponseStatus.Success

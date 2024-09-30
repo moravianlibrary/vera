@@ -10,7 +10,8 @@ from schemas import (
     CatalogDocumentResponse,
     CatalogIssueResponse,
     Identifier,
-    DocumentsIndexer,
+    EsSession,
+    IndexDocument,
 )
 from datatypes import (
     IdentifierType,
@@ -34,7 +35,7 @@ class AddDocumentPreprocessor:
     def __init__(
         self,
         session: Session,
-        indexer: DocumentsIndexer,
+        es_session: EsSession,
         identifier: Identifier,
         added_by: str,
         category_id: int,
@@ -42,7 +43,7 @@ class AddDocumentPreprocessor:
         extraction_priority: Optional[int] = None,
     ):
         self.session = session
-        self.indexer = indexer
+        self.es_session = es_session
         self.identifier = identifier
         self.added_by = added_by
         self.category_id = category_id
@@ -121,7 +122,7 @@ class AddDocumentPreprocessor:
             return catalog_document, AddDocumentResponseStatus.UniqueViolation
 
         # TODO: handle exceptions
-        self.indexer.index(document)
+        IndexDocument.model_validate(document).save(self.es_session)
 
         return catalog_document, AddDocumentResponseStatus.Success
 
@@ -192,7 +193,7 @@ class AddDocumentPreprocessor:
             )
 
         catalog_record, aleph_response_status = update_catalog_record(
-            self.session, sysno
+            self.session, self.es_session, sysno
         )
         return catalog_record, AlephToResponseStatusConverter.get(
             aleph_response_status
@@ -224,7 +225,7 @@ class AddDocumentPreprocessor:
 
 def add_document(
     session: Session,
-    indexer: DocumentsIndexer,
+    es_session: EsSession,
     identifier: Identifier,
     added_by: str,
     category_id: int,
@@ -233,7 +234,7 @@ def add_document(
 ) -> Tuple[Optional[CatalogDocumentResponse], AddDocumentResponseStatus]:
     return AddDocumentPreprocessor(
         session,
-        indexer,
+        es_session,
         identifier,
         added_by,
         category_id,

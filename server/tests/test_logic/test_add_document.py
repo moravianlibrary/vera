@@ -62,7 +62,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         # Act
         response, status = add_document(
             self.session,
-            self.getMockIndexer(),
+            self.getMockEsSession(),
             Identifier(
                 identifier_type=IdentifierType.Sysno, value="123456789"
             ),
@@ -101,7 +101,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         # Act
         response, status = add_document(
             self.session,
-            self.getMockIndexer(),
+            self.getMockEsSession(),
             Identifier(
                 identifier_type=IdentifierType.Sysno,
                 value="123456789",
@@ -148,7 +148,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         # Act
         response, status = add_document(
             self.session,
-            self.getMockIndexer(),
+            self.getMockEsSession(),
             Identifier(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
@@ -212,7 +212,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         # Act
         response, status = add_document(
             self.session,
-            self.getMockIndexer(),
+            self.getMockEsSession(),
             Identifier(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
@@ -278,7 +278,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         # Act
         response, status = add_document(
             self.session,
-            self.getMockIndexer(),
+            self.getMockEsSession(),
             Identifier(
                 identifier_type=IdentifierType.Barcode,
                 value="2619937640",
@@ -343,7 +343,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         # Act
         response, status = add_document(
             self.session,
-            self.getMockIndexer(),
+            self.getMockEsSession(),
             Identifier(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
@@ -409,7 +409,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         # Act
         response, status = add_document(
             self.session,
-            self.getMockIndexer(),
+            self.getMockEsSession(),
             Identifier(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
@@ -479,7 +479,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         # Act
         response, status = add_document(
             self.session,
-            self.getMockIndexer(),
+            self.getMockEsSession(),
             Identifier(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
@@ -554,7 +554,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         # Act
         response, status = add_document(
             self.session,
-            self.getMockIndexer(),
+            self.getMockEsSession(),
             Identifier(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
@@ -622,7 +622,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         # Act
         response, status = add_document(
             self.session,
-            self.getMockIndexer(),
+            self.getMockEsSession(),
             Identifier(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,

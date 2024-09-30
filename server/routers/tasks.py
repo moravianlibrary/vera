@@ -7,9 +7,9 @@ from .utils.permissions import CanPlanTask, CanManageTask
 from .utils.dependencies import (
     DependsOnCallerUsername,
     DependsOnDbSession,
-    DependsOnDocumentsIndexer,
+    DependsOnEsSession,
 )
-from schemas import DocumentsIndexer
+from schemas import IndexDocument, EsSession
 from models import Task, TaskDocument, PeriodicTask
 from schemas import (
     TaskDefinition,
@@ -27,8 +27,8 @@ def create_task(
     task_type: TaskType = Query(...),
     query_params: Optional[ElasticsearchParams] = None,
     owner: str = DependsOnCallerUsername,
+    es_session: EsSession = DependsOnEsSession,
     db: Session = DependsOnDbSession,
-    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
 ):
     if query_params is None:
         task = Task(task_type=task_type, owner=owner).save(db)
@@ -38,7 +38,9 @@ def create_task(
             query_params=query_params,
             owner=owner,
         ).save(db)
-        for document_id in indexer.get_document_ids(query_params):
+        for document_id in IndexDocument.search_source_ids(
+            es_session, query_params
+        ):
             TaskDocument(task_id=task.id, document_id=document_id).save(db)
     run_task.delay(task_id=task.id)
     return task

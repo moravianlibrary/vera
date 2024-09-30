@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional, TypeVar, List, Dict, Generator
+from pydantic import BaseModel
+from typing import List, Dict, Generator, get_type_hints
 from elasticsearch import Elasticsearch
 
 
@@ -9,9 +9,6 @@ type Keyword = str
 type Integer = int
 type Boolean = bool
 type Date = str
-
-T = TypeVar("T")
-Nested = List[T]
 
 
 class BaseEsModel(BaseModel):
@@ -25,45 +22,54 @@ class BaseEsModel(BaseModel):
     __id_field__: str = "id"
     __index_version__: str = "init"
 
-    id: Optional[int] = Field(None, description="Source ID")
+    @classmethod
+    def __es_schema_properties__(cls) -> dict:
+        properties = {}
+
+        for field_name, field_info in get_type_hints(cls).items():
+            if field_name.startswith("_"):
+                continue
+            if hasattr(field_info, "_name") and field_info._name == "Optional":
+                field_info = field_info.__args__[0]
+            if (
+                hasattr(field_info, "__origin__")
+                and field_info.__origin__ == list
+            ):
+                item_type = field_info.__args__[0]
+                if isinstance(item_type, type) and issubclass(
+                    item_type, BaseModel
+                ):
+                    properties[field_name] = {
+                        "type": "nested",
+                        "properties": item_type.__es_schema_properties__(),
+                    }
+                else:
+                    properties[field_name] = {
+                        "type": item_type.__name__.lower()
+                    }
+            elif isinstance(field_info, type) and issubclass(
+                field_info, BaseEsModel
+            ):
+                properties[field_name] = {
+                    "type": "nested",
+                    "properties": field_info.__es_schema_properties__(),
+                }
+            else:
+                properties[field_name] = {"type": field_info.__name__.lower()}
+
+        return properties
 
     @classmethod
     def _es_schema(cls) -> dict:
         """
         Converts Pydantic model to Elasticsearch schema (mappings).
         """
-        es_schema = {
+        return {
             "mappings": {
                 "_meta": {"index.version": cls.__index_version__},
-                "properties": {},
+                "properties": cls.__es_schema_properties__(),
             }
         }
-        properties = es_schema["mappings"]["properties"]
-
-        for field_name, field_info in cls.__annotations__.items():
-            if (
-                hasattr(field_info, "__origin__")
-                and field_info.__origin__ == list
-            ):
-                item_type = field_info.__args__[0]
-                if issubclass(item_type, BaseModel):
-                    properties[field_name] = {
-                        "type": "nested",
-                        "properties": item_type.get_es_schema()["mappings"][
-                            "properties"
-                        ],
-                    }
-            else:
-                properties[field_name] = {"type": field_info.__name__.lower()}
-
-        return es_schema
-        es_schema = {"mappings": {"properties": {}}}
-        properties = es_schema["mappings"]["properties"]
-
-        for field_name, field_info in cls.__annotations__.items():
-            properties[field_name] = {"type": field_info.__name__.lower()}
-
-        return es_schema
 
     @classmethod
     def has_current_version_schema(cls, session: EsSession):
@@ -131,12 +137,13 @@ class BaseEsModel(BaseModel):
     def get(cls, session: EsSession, source_id: str):
         return session.get(index=cls.__index_name__, id=source_id)["_source"]
 
+    @classmethod
+    def delete(cls, session: EsSession, source_id: str):
+        session.delete(index=cls.__index_name__, id=source_id)
+
     def save(self, session: EsSession):
         session.index(
             index=self.__index_name__,
             id=self.id,
-            body=self.dict(exclude_unset=True),
+            document=self.model_dump(exclude_none=True),
         )
-
-    def delete(self, session: EsSession):
-        session.delete(index=self.__index_name__, id=self.id)

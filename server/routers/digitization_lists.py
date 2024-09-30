@@ -7,10 +7,10 @@ from .utils.permissions import CanExtract, CanManageDigitizationList
 from .utils.dependencies import (
     DependsOnDbSession,
     DependsOnCallerUsername,
-    DependsOnDocumentsIndexer,
+    DependsOnEsSession,
 )
 from exceptions import EmptyExtractionException
-from schemas import DocumentsIndexer
+from schemas import IndexDocument, EsSession
 from datatypes import ElasticsearchParams, DigitizationState
 
 router = APIRouter(
@@ -29,9 +29,9 @@ def create_extraction(
     ignore_digitization_states: List[DigitizationState] = Query([]),
     created_by: str = DependsOnCallerUsername,
     session: Session = DependsOnDbSession,
-    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
+    es_session: EsSession = DependsOnEsSession,
 ):
-    document_ids = indexer.get_document_ids(query_params)
+    document_ids = IndexDocument.search_source_ids(es_session, query_params)
     if not document_ids:
         raise EmptyExtractionException()
     return (
@@ -76,9 +76,9 @@ def add_documents_to_extraction(
     digitization_list_id: int = Path(...),
     ignore_digitization_states: List[DigitizationState] = Query([]),
     session: Session = DependsOnDbSession,
-    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
+    es_session: EsSession = DependsOnEsSession,
 ):
-    document_ids = indexer.get_document_ids(query_params)
+    document_ids = IndexDocument.search_source_ids(es_session, query_params)
 
     digitization_list = DigitizationList.get(session, digitization_list_id)
     digitization_list.add_documents(
@@ -97,9 +97,9 @@ def remove_documents_from_extraction(
     query_params: ElasticsearchParams,
     digitization_list_id: int = Path(...),
     session: Session = DependsOnDbSession,
-    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
+    es_session: EsSession = DependsOnEsSession,
 ):
-    document_ids = indexer.get_document_ids(query_params)
+    document_ids = IndexDocument.search_source_ids(es_session, query_params)
 
     digitization_list = DigitizationList.get(session, digitization_list_id)
     digitization_list.remove_documents(session, document_ids)

@@ -148,7 +148,7 @@ class AlephRecord:
         return self.get_value("300", "c")
 
     @property
-    def locationUri(self) -> Optional[str]:
+    def location_uri(self) -> Optional[str]:
         values = self.get_values("856", "u", ind1="4", ind2="1")
         return values[0] if values else None
 

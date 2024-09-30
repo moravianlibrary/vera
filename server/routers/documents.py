@@ -21,10 +21,10 @@ from routers.utils.dependencies import (
     DependsOnCurrentUser,
     DependsOnDbSession,
     DependsOnCallerUsername,
-    DependsOnDocumentsIndexer,
+    DependsOnEsSession,
 )
 from logic.add_document import add_document
-from schemas import DocumentsIndexer
+from schemas import IndexDocument, EsSession
 from starlette.responses import FileResponse
 import pandas as pd
 import tempfile
@@ -53,12 +53,12 @@ async def add_document_from_catalog(
     pages_count_manual: Optional[int] = None,
     extraction_priority: Optional[int] = None,
     username: str = DependsOnCallerUsername,
-    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
+    es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
     catalog_document, status = add_document(
         session,
-        indexer,
+        es_session,
         identifier,
         username,
         category_id,
@@ -126,23 +126,24 @@ def get_document(
 def query_documents(
     query_params: ElasticsearchParams,
     user: CurrentUser = DependsOnCurrentUser,
-    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
+    es_session: EsSession = DependsOnEsSession,
 ):
-    return indexer.search(restrict_read_query_params(query_params, user))
+    return IndexDocument.search(
+        es_session, restrict_read_query_params(query_params, user)
+    )
 
 
 @router.post("/query/export", dependencies=[CanReadDocuments])
 def export_query_documents(
     query_params: ElasticsearchParams,
     user: CurrentUser = DependsOnCurrentUser,
-    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
-    session: Session = DependsOnDbSession,
+    es_session: EsSession = DependsOnEsSession,
 ):
     df = pd.DataFrame(
         hit["_source"]
-        for hit in query_documents(query_params, user, indexer, session)[
+        for hit in query_documents(query_params, user, es_session)["hits"][
             "hits"
-        ]["hits"]
+        ]
     )
 
     with tempfile.NamedTemporaryFile(
@@ -170,15 +171,16 @@ def update_query_documents(
     query_params: ElasticsearchParams,
     category_id: Optional[int] = None,
     user: CurrentUser = DependsOnCurrentUser,
-    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
+    es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
-    for document_id in indexer.get_source_ids(
-        restrict_edit_query_params(query_params, user)
+    for document_id in IndexDocument.search_source_ids(
+        es_session, restrict_edit_query_params(query_params, user)
     ):
         document = Document.get(session, document_id)
         document.category_id = category_id
         document.save(session)
+        IndexDocument(document).save(es_session)
 
 
 @router.post(
@@ -188,13 +190,14 @@ def update_query_documents(
 def delete_query_documents(
     query_params: ElasticsearchParams,
     user: CurrentUser = DependsOnCurrentUser,
-    indexer: DocumentsIndexer = DependsOnDocumentsIndexer,
+    es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
-    for document_id in indexer.get_source_ids(
-        restrict_edit_query_params(query_params, user)
+    for document_id in IndexDocument.search_source_ids(
+        es_session, restrict_edit_query_params(query_params, user)
     ):
         Document.get(session, document_id).delete(session)
+        IndexDocument.delete(es_session, document_id)
 
 
 # @router.post("/documents/{id}/comments", response_model=Comment)

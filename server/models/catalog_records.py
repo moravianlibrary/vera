@@ -40,8 +40,13 @@ class CatalogRecord(BaseModel):
     cnb_sysno = Column(String)
     cnb_marc = Column(LargeBinary)
 
-    added_at = Column(TIMESTAMP, server_default=func.now())
-    updated_at = Column(TIMESTAMP, server_default=func.now())
+    added_at = Column(TIMESTAMP, server_default=func.now(), nullable=False)
+    updated_at = Column(
+        TIMESTAMP,
+        server_default=func.now(),
+        nullable=False,
+        onupdate=func.now(),
+    )
 
     record_barcodes = relationship(
         "CatalogRecordBarcode",

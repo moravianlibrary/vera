@@ -4,10 +4,7 @@ from schemas import CurrentUser
 from models.base_engine import get_session
 from services.keycloak_client import get_user_from_token, oauth2_scheme
 from .access_emulation import emulated_users
-from typing import Generator
-from exceptions import IndexIsNotAvailableException
-from elasticsearch import Elasticsearch
-from config import VeraConfig
+from services.elasticsearch import get_es_session
 
 
 def get_current_user(
@@ -24,20 +21,6 @@ def get_caller_username(
     current_user: CurrentUser = Depends(get_current_user),
 ) -> str:
     return current_user.username
-
-
-def get_es_session() -> Generator["Elasticsearch", None, None]:
-    session = Elasticsearch(
-        VeraConfig.Elasticsearch.Url,
-        basic_auth=(
-            VeraConfig.Elasticsearch.Username,
-            VeraConfig.Elasticsearch.Password,
-        ),
-    )
-    try:
-        yield session
-    finally:
-        session.close()
 
 
 DependsOnCurrentUser = Depends(get_current_user)

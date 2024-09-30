@@ -6,10 +6,11 @@ from services.external.digitization_registry import (
     DigitizationRegistryClient,
 )
 from schemas import IndexDocument
+from services.elasticsearch import get_es_session
 
 
 def SyncFromDigitizationRegistry(session: Session, task_id: int):
-    indexer = IndexDocument.get_indexer_instance()
+    es_session = next(get_es_session())
 
     def update_document_from_digitization_registry(document: Document):
         record = DigitizationRegistryClient().get_record(
@@ -29,7 +30,6 @@ def SyncFromDigitizationRegistry(session: Session, task_id: int):
             document.digitization_state = record.digitization_state
 
         document.save(session)
-
-        indexer.index(document)
+        IndexDocument.model_validate(document).save(es_session)
 
     run_task(session, task_id, update_document_from_digitization_registry)

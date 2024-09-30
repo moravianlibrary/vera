@@ -1,5 +1,5 @@
 from .base import TestEndpointsBase
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from datatypes import ActionType, CatalogSource, MarcFieldDifferenceType
 from models import (
     CatalogRecord,
@@ -16,11 +16,28 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
         )
 
     @patch(
-        "schemas.index_catalog_record.IndexCatalogRecord.get_indexer_instance"
+        "schemas.index_catalog_record.IndexCatalogRecord.search",
     )
-    def test_get_catalog_records(self, mock_get_indexer_instance: Mock):
+    def test_get_catalog_records(self, mock_search: Mock):
         # Arrange
-        mock_get_indexer_instance.return_value = MagicMock()
+        self.mockIndexer()
+        mock_search.return_value = {
+            "num_found": 2,
+            "items": [
+                {
+                    "sysno": "MZK01-123456789",
+                    "main_record": {"fields": [{"001": "000121929"}]},
+                    "has_valid_main_record": False,
+                    "has_valid_cnb": False,
+                },
+                {
+                    "sysno": "MZK01-987654321",
+                    "main_record": {"fields": [{"001": "000121929"}]},
+                    "has_valid_main_record": False,
+                    "has_valid_cnb": False,
+                },
+            ],
+        }
         self.session.add_all(
             [
                 CatalogRecord(sysno="MZK01-123456789", marc=self.marc_bytes),
@@ -31,8 +48,9 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
         self.mockTestUser([ActionType.ReadCatalogRecords])
 
         # Act
-        response = self.client.get(
+        response = self.client.post(
             "/catalog_records/search",
+            json={"query": {"match_all": {}}},
             headers={
                 "Authorization": "Bearer test_token",
             },
@@ -243,7 +261,8 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
                 "has_valid_main_record": False,
                 "isxn": None,
                 "language": "cze",
-                "last_updated": response.json()["last_updated"],
+                "added_at": response.json()["added_at"],
+                "updated_at": response.json()["updated_at"],
                 "main_record": {
                     "fields": [{"001": "000121929"}],
                     "leader": "00048    a2200037   4500",
@@ -256,6 +275,7 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
             },
         )
 
+    # TODO: fix this test so it tests the CNB difference for search result
     def test_get_records_page_with_cnb_difference(self):
         # Arrange
         self.session.add(
@@ -289,7 +309,7 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
 
         # Act
         response = self.client.get(
-            "/catalog_records",
+            "/catalog_records/MZK01-123456789",
             headers={
                 "Authorization": "Bearer test_token",
             },
@@ -300,50 +320,44 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
         self.assertEqual(
             response.json(),
             {
-                "items": [
+                "cnb": None,
+                "cnb_difference": [
                     {
-                        "cnb": None,
-                        "cnb_difference": [
+                        "tag": "001",
+                        "indicator1": None,
+                        "indicator2": None,
+                        "difference_type": "Equal",
+                        "subfield_differences": [
                             {
-                                "tag": "001",
-                                "indicator1": None,
-                                "indicator2": None,
-                                "difference_type": "Equal",
-                                "subfield_differences": [
-                                    {
-                                        "code": None,
-                                        "value": "000121929",
-                                        "different_to": "000121929",
-                                        "differs": False,
-                                    }
-                                ],
-                                "control_field": True,
+                                "code": None,
+                                "value": "000121929",
+                                "different_to": "000121929",
+                                "differs": False,
                             }
                         ],
-                        "cnb_record": {
-                            "fields": [{"001": "000121929"}],
-                            "leader": "00048    a2200037   4500",
-                        },
-                        "cnb_sysno": None,
-                        "has_valid_cnb": False,
-                        "has_valid_main_record": False,
-                        "isxn": None,
-                        "language": "cze",
-                        "last_updated": response.json()["items"][0][
-                            "last_updated"
-                        ],
-                        "main_record": {
-                            "fields": [{"001": "000121929"}],
-                            "leader": "00048    a2200037   4500",
-                        },
-                        "signature": None,
-                        "skc_difference": [],
-                        "skc_record": None,
-                        "skc_sysno": None,
-                        "sysno": "MZK01-123456789",
+                        "control_field": True,
                     }
                 ],
-                "num_found": 1,
+                "cnb_record": {
+                    "fields": [{"001": "000121929"}],
+                    "leader": "00048    a2200037   4500",
+                },
+                "cnb_sysno": None,
+                "has_valid_cnb": False,
+                "has_valid_main_record": False,
+                "isxn": None,
+                "language": "cze",
+                "added_at": response.json()["added_at"],
+                "updated_at": response.json()["updated_at"],
+                "main_record": {
+                    "fields": [{"001": "000121929"}],
+                    "leader": "00048    a2200037   4500",
+                },
+                "signature": None,
+                "skc_difference": [],
+                "skc_record": None,
+                "skc_sysno": None,
+                "sysno": "MZK01-123456789",
             },
         )
 

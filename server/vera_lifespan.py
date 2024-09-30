@@ -106,23 +106,29 @@ def reindex_all():
     run_task.delay(task_id=task.id)
 
 
-def recreate_index():
+def recreate_documents_index():
     from config import VeraConfig
     from datatypes import TaskType
     from models.base_engine import get_session
     from models import Document, Task, TaskDocument
     from worker import run_task
-    from schemas import DocumentsIndexer
+    from services.elasticsearch import with_es_session
+    from schemas import IndexCatalogRecord, IndexDocument
 
-    IndexDocument.get_indexer_instance().recreate_index()
+    @with_es_session
+    def recreate_indexes(es_session):
+        IndexCatalogRecord.recreate_index(es_session)
+        IndexDocument.recreate_index(es_session)
 
-    session = next(get_session())
+    recreate_indexes()
+    db_session = next(get_session())
+
     task = Task(
         task_type=TaskType.Reindex,
         owner=VeraConfig.BotName,
-    ).save(session)
-    for document in Document.all(session):
-        TaskDocument(task_id=task.id, document_id=document.id).save(session)
+    ).save(db_session)
+    for document in Document.all(db_session):
+        TaskDocument(task_id=task.id, document_id=document.id).save(db_session)
 
     run_task.delay(task_id=task.id)
 
@@ -140,7 +146,7 @@ async def lifespan(app_: FastAPI):
     ensure_last_database_revision()
     # TODO: check on startup table
     # sync_all_from_catalogs()
-    # recreate_index()
+    recreate_documents_index()
     # reindex_all()
 
     set_failed_tasks_on_start(next(get_session()))

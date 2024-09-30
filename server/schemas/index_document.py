@@ -1,13 +1,6 @@
-from .base_es_model import (
-    BaseEsModel,
-    Integer,
-    Keyword,
-    Date,
-    Boolean,
-    Nested,
-)
+from .base_es_model import BaseEsModel, Integer, Keyword, Date, Boolean, List
 from pydantic import model_validator
-from typing import Any
+from typing import Any, Optional
 from models import Document
 from services.external.aleph import AlephRecord
 from .parsers.volume_parser import (
@@ -24,64 +17,67 @@ class CategoryPath(BaseEsModel):
 
 class IndexFrequency(BaseEsModel):
     frequency: Keyword
-    date: Keyword
+    date: Optional[Keyword]
 
 
 class IndexDocument(BaseEsModel):
     __index_name__ = "documents"
     __index_version__ = "v2024.09-1"
 
+    class Config:
+        from_attributes = True
+
     id: Integer
     # Main identifiers
     sysno: Keyword
-    barcode: Keyword
-    volume: Keyword
-    volume_number: Integer
-    volume_year: Keyword
-    volume_year_number: Integer
-    bundle: Keyword
-    bundle_number: Integer
+    barcode: Optional[Keyword]
+    volume: Optional[Keyword]
+    volume_number: Optional[Integer]
+    volume_year: Optional[Keyword]
+    volume_year_number: Optional[Integer]
+    bundle: Optional[Keyword]
+    bundle_number: Optional[Integer]
     # Librarian identifiers
-    cnb: Keyword
-    signature: Keyword
-    isxn: Keyword
+    cnb: Optional[Keyword]
+    signature: Optional[Keyword]
+    isxn: Optional[Keyword]
     # VERA properties
     added_at: Date
     added_by: Keyword
     category_id: Integer
-    category_path: Nested[CategoryPath]
-    skc_sysno: Keyword
+    category_path: List[CategoryPath]
+    skc_sysno: Optional[Keyword]
     has_valid_main_record: Boolean
-    cnb_sysno: Keyword
+    cnb_sysno: Optional[Keyword]
     has_valid_cnb: Boolean
-    digitization_registry_id: Integer
+    digitization_registry_id: Optional[Integer]
     digitization_state: Keyword
     # Page count
-    page_count: Integer
-    page_count_catalog: Integer
-    page_count_predicted: Integer
-    page_count_manual: Integer
+    page_count: Optional[Integer]
+    page_count_catalog: Optional[Integer]
+    page_count_predicted: Optional[Integer]
+    page_count_manual: Optional[Integer]
     # Extraction properties
-    dedicated_scanner: Keyword
-    extraction_priority: Integer
+    dedicated_scanner: Optional[Keyword]
+    extraction_priority: Optional[Integer]
     is_extractable: Boolean
-    digitization_list_id: Integer
+    digitization_list_id: Optional[Integer]
     # Other properties
-    material_type: Keyword
-    issuance_type: Keyword
-    title: Keyword
-    size: Keyword
-    location_uri: Keyword
+    material_type: Optional[Keyword]
+    issuance_type: Optional[Keyword]
+    title: Optional[Keyword]
+    size: Optional[Keyword]
+    location_uri: Optional[Keyword]
     # Publication properties
-    publisher: Keyword
-    publishing_place: Keyword
-    publishing_year: Keyword
-    languages: Keyword
-    frequencies: Nested[IndexFrequency]
+    publisher: Optional[Keyword]
+    publishing_place: Optional[Keyword]
+    publishing_year: Optional[Keyword]
+    languages: List[Keyword] = []
+    frequencies: List[IndexFrequency]
 
     @model_validator(mode="before")
     @classmethod
-    def flatten_tuple(cls, data: Any) -> Any:
+    def from_model(cls, data: Any) -> Any:
         if not isinstance(data, Document):
             return data
 
@@ -135,12 +131,15 @@ class IndexDocument(BaseEsModel):
             ),
             title=aleph_record.title,
             size=aleph_record.size,
-            location_uri=aleph_record.locationUri,
+            location_uri=aleph_record.location_uri,
             publisher=aleph_record.publisher,
             publishing_place=aleph_record.publishing_place,
             publishing_year=aleph_record.publishing_year,
             languages=aleph_record.languages,
             frequencies=[
-                frequency.to_dict() for frequency in aleph_record.frequencies
+                IndexFrequency(
+                    frequency=frequency.frequency, date=frequency.date
+                )
+                for frequency in aleph_record.frequencies
             ],
         )

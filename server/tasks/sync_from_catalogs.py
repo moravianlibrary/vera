@@ -6,16 +6,17 @@ from services.external.aleph import AlephRecord
 from services.external.aleph import AlephIssue
 from services.external.aleph import AlephResponseStatus
 from schemas import IndexDocument
+from services.elasticsearch import get_es_session
 
 
 def SyncFromCatalogs(session: Session, task_id: int):
-    indexer = IndexDocument.get_indexer_instance()
+    es_session = next(get_es_session())
     updated_records_sysno = set()
 
     def update_document_from_catalog(document: Document):
         if document.sysno not in updated_records_sysno:
             catalog_record, aleph_response_status = update_catalog_record(
-                session, document.sysno
+                session, es_session, document.sysno
             )
 
             if aleph_response_status != AlephResponseStatus.Success:
@@ -51,7 +52,6 @@ def SyncFromCatalogs(session: Session, task_id: int):
         )
 
         document.save(session)
-
-        indexer.index(document)
+        IndexDocument.model_validate(document).save(es_session)
 
     run_task(session, task_id, update_document_from_catalog)
