@@ -6,8 +6,8 @@ import ExternalLinkButton from "../../../components/buttons/ExternalLinkButton";
 const MzkSysnoColumnBody = (catalogRecord: CatalogRecord) => {
     return (
         <ExternalLinkButton
-            label={catalogRecord.sysno}
-            url={createMzkAlephLink(catalogRecord.sysno)}
+            label={catalogRecord.sysno || catalogRecord.id}
+            url={createMzkAlephLink(catalogRecord.sysno || catalogRecord.id)}
         />
     );
 };

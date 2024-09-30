@@ -1,3 +1,5 @@
+import { filterBooleanQuery } from "../data/factories/EsQueriesFactory";
+
 const documents_index_settings = {
     search_attributes: [
         { field: "title", weight: 3 },
@@ -72,16 +74,19 @@ const documents_index_settings = {
             attribute: "is_extractable",
             field: "is_extractable",
             type: "numeric",
+            filterQuery: filterBooleanQuery,
         },
         {
             attribute: "has_valid_main_record",
             field: "has_valid_main_record",
             type: "numeric",
+            filterQuery: filterBooleanQuery,
         },
         {
             attribute: "has_valid_cnb",
             field: "has_valid_cnb",
             type: "numeric",
+            filterQuery: filterBooleanQuery,
         },
         {
             attribute: "digitization_state",

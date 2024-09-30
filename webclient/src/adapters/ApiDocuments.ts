@@ -30,7 +30,7 @@ interface DocumentBase {
     issuance_type: IssuanceType;
     title: string;
     digitization_state: DigitizationState;
-    
+
     year: string | null;
     bundle: string | null;
 
@@ -163,48 +163,77 @@ interface DocumentsQuery {
 
 namespace ApiDocuments {
     export function queryDocuments(query_params: Object) {
-        return axiosInstance.post(
-            `/documents/query`,
-            query_params,
-            { headers: authHeader("application/json") }
+        return axiosInstance.post(`/documents/query`, query_params, {
+            headers: authHeader("application/json"),
+        });
+    }
+
+    export function getDocuments(
+        offset: number,
+        rows: number,
+        signal?: AbortSignal
+    ) {
+        return axiosInstance.get<DocumentsResponse>(
+            `/documents?offset=${offset}&limit=${rows}`,
+            { headers: authHeader(), signal: signal }
         );
     }
 
-    export function getDocuments(offset: number, rows: number, signal?: AbortSignal) {
-        return axiosInstance.get<DocumentsResponse>(`/documents?offset=${offset}&limit=${rows}`, { headers: authHeader(), signal: signal });
-    }
-
     export function createDocument(document: Document) {
-        return axiosInstance.post<DocumentCreationResponse>("/documents/new", document, { headers: authHeader() });
+        return axiosInstance.post<DocumentCreationResponse>(
+            "/documents/new",
+            document,
+            { headers: authHeader() }
+        );
     }
 
     export function updateDocument(document: Document) {
-        return axiosInstance.put<Document>(`/documents/${document.id}`, document, { headers: authHeader() });
+        return axiosInstance.put<Document>(
+            `/documents/${document.id}`,
+            document,
+            { headers: authHeader() }
+        );
     }
 
     export function deleteDocument(id: number) {
-        return axiosInstance.delete<Document>(`/documents/${id}`, { headers: authHeader() });
+        return axiosInstance.delete<Document>(`/documents/${id}`, {
+            headers: authHeader(),
+        });
     }
 
-    export function insertDocument(identifier: Identifier, category_id: number | null, insert_digitized: boolean) {
-        const url = category_id !== null
-            ? `/documents/from_catalog?category_id=${category_id}&insert_digitized=${insert_digitized}`
-            : `/documents/from_catalog?insert_digitized=${insert_digitized}`;
-            // : `/catalogs?insert_digitized=${insert_digitized}`;
+    export function insertDocument(
+        identifier: Identifier,
+        category_id: number | null,
+        insert_digitized: boolean
+    ) {
+        const url =
+            category_id !== null
+                ? `/documents/from_catalog?category_id=${category_id}&insert_digitized=${insert_digitized}`
+                : `/documents/from_catalog?insert_digitized=${insert_digitized}`;
+        // : `/catalogs?insert_digitized=${insert_digitized}`;
 
-        return axiosInstance.post<DocumentCreationResponse>(url, identifier, { headers: authHeader() });
+        return axiosInstance.post<DocumentCreationResponse>(url, identifier, {
+            headers: authHeader(),
+        });
     }
 
-    export function insertDocumentsList(identifier_type: IdentifierType, values: string[], category_id?: number | null, insert_digitized?: boolean) {
-        let url = "/catalogs/list?"
+    export function insertDocumentsList(
+        identifier_type: IdentifierType,
+        values: string[],
+        category_id?: number | null,
+        insert_digitized?: boolean
+    ) {
+        let url = "/catalogs/list?";
         url += `identifier_type=${identifier_type}&`;
         url += `values=${values.join(",")}&`;
         if (category_id) {
-            url += `category_id=${category_id}&`
+            url += `category_id=${category_id}&`;
         }
         url += `insert_digitized=${insert_digitized}`;
 
-        return axiosInstance.post<DocumentCreationResponse[]>(url, { headers: authHeader() });
+        return axiosInstance.post<DocumentCreationResponse[]>(url, {
+            headers: authHeader(),
+        });
     }
 
     export function deleteDocuments(query: DocumentsQuery) {
@@ -224,13 +253,23 @@ namespace ApiDocuments {
     }
 
     export function exportDocuments(query: DocumentsQuery) {
-        return axiosInstance.post<Blob>(
-            `/documents/query/export`,
-            query,
-            { headers: authHeader("application/json"), responseType: 'blob' }
-        );
+        return axiosInstance.post<Blob>(`/documents/query/export`, query, {
+            headers: authHeader("application/json"),
+            responseType: "blob",
+        });
     }
 }
 
 export default ApiDocuments;
-export type { Identifier, DocumentBase, Document, Issue, CatalogDocument, DocumentCreationResponse, DocumentsQuery, DocumentsResponse, Frequency, IndexDocument };
+export type {
+    Identifier,
+    DocumentBase,
+    Document,
+    Issue,
+    CatalogDocument,
+    DocumentCreationResponse,
+    DocumentsQuery,
+    DocumentsResponse,
+    Frequency,
+    IndexDocument,
+};

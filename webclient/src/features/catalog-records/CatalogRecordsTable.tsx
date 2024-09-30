@@ -11,14 +11,18 @@ import CnbValidityColumnBody from "./table-columns/CnbValidityColumnBody";
 import MzkSysnoColumnBody from "./table-columns/MzkSysnoColumnBody";
 import { CatalogRecord } from "../../adapters/ApiCatalogRecords";
 import CatalogRecordDetails from "./CatalogRecordDetails";
-import { ColumnGroup } from "primereact/columngroup";
+import {
+    useHitsPerPage,
+    useInstantSearch,
+    usePagination,
+} from "react-instantsearch";
 
 interface CatalogRecordsTableProps {}
 
 const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
     Paginator: React.FC;
 } = () => {
-    const { catalogRecords } = useCatalogRecords();
+    const { results } = useInstantSearch();
     const { t } = useTranslation();
 
     const [expandedRows, setExpandedRows] = useState<any[]>([]);
@@ -34,7 +38,7 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
     return (
         <DataTable
             className="overflow-scroll"
-            value={catalogRecords}
+            value={results.hits}
             scrollable
             scrollHeight="flex"
             expandedRows={expandedRows}
@@ -46,7 +50,7 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
         >
             <Column expander style={{ width: "5rem" }} />
             <Column
-                field="sysno"
+                field="id"
                 header={t("catalog-records.mzk-sysno")}
                 body={MzkSysnoColumnBody}
             />
@@ -77,15 +81,25 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
 };
 
 const CatalogRecordsTablePaginator: React.FC = () => {
-    const { numFound, page, setPage, pageSize, setPageSize, refresh } =
-        useCatalogRecords();
+    const { results, refresh } = useInstantSearch();
+    const { currentRefinement, nbHits, refine: setPage } = usePagination();
+    const { items: pageSizeOptions, refine: setPageSize } = useHitsPerPage({
+        items: [
+            { value: 10, label: "10" },
+            { value: 15, label: "15" },
+            { value: 20, label: "20", default: true },
+            { value: 25, label: "25" },
+            { value: 50, label: "50" },
+            { value: 100, label: "100" },
+        ],
+    });
 
     return (
         <DataTablePaginator
-            numFound={numFound}
-            page={page}
-            onPageChangeNew={setPage}
-            pageSize={pageSize}
+            numFound={nbHits}
+            page={currentRefinement + 1}
+            pageSize={results.hitsPerPage}
+            onPageChangeNew={(page) => setPage(page - 1)}
             onPageSizeChange={setPageSize}
             onRefresh={refresh}
             numFoundText="catalog-records.numFound"

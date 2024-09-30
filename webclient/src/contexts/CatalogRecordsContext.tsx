@@ -30,12 +30,11 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
     const [pageSize, setPageSize] = useState<number>(20);
 
     const fetchCatalogRecords = async () => {
-        api.getPage(page, pageSize).then((response) => {
-            console.log(response.data);
-
-            setCatalogRecords(response.data.items);
-            setNumFound(response.data.num_found);
-        });
+        // api.getPage(page, pageSize).then((response) => {
+        //     console.log(response.data);
+        //     setCatalogRecords(response.data.items);
+        //     setNumFound(response.data.num_found);
+        // });
     };
 
     const refresh = () => {

@@ -30,8 +30,7 @@ import { IntentionsProvider } from "../contexts/categories/IntentionsContext";
 import { Splitter, SplitterPanel } from "primereact/splitter";
 import DocumentsFiltersView from "../features/documents/DocumentsFiltersView";
 import documentsIndex from "../adapters/IndexDocuments";
-import { Hits, InstantSearch } from "react-instantsearch";
-import DocumentDetails from "../features/documents/DocumentDetailsDialog";
+import { InstantSearch } from "react-instantsearch";
 import DocumentDetailsDialog from "../features/documents/DocumentDetailsDialog";
 
 const Documents: React.FC = () => {

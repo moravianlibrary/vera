@@ -1,5 +1,6 @@
 import { ActionType } from "../types/ActionType";
 import MarcFieldDifferenceType from "../types/MarcFieldDifferenceType";
+import { MaterialType } from "../types/MaterialType";
 import axiosInstance, { ApiBase, ApiOptions, authHeader } from "./ApiBase";
 
 export enum Marc21DiffType {
@@ -71,12 +72,14 @@ interface MarcRecord {
 }
 
 interface CatalogRecord {
+    id: string;
     sysno: string;
     main_record: MarcRecord;
     cnb: string | null;
     language: string | null;
     signature: string | null;
     isxn: string | null;
+    barcodes: string[] | null;
     skc_sysno: string | null;
     skc_record: MarcRecord | null;
     skc_difference: MarcFieldDifference[] | null;
@@ -85,7 +88,17 @@ interface CatalogRecord {
     cnb_record: MarcRecord | null;
     cnb_difference: MarcFieldDifference[] | null;
     has_valid_cnb: boolean;
-    last_updated: string;
+    added_at: string;
+    updated_at: string;
+    material_type: MaterialType | null;
+    title: string | null;
+    size: string | null;
+    location_uri: string | null;
+    publisher: string | null;
+    publishing_place: string | null;
+    publishing_year: string | null;
+    languages: string[] | null;
+    frequencies: string[] | null;
 }
 
 class ApiCatalogRecords extends ApiBase<CatalogRecord> {
@@ -94,7 +107,15 @@ class ApiCatalogRecords extends ApiBase<CatalogRecord> {
             disableCreate: true,
             disableUpdate: true,
             disableDelete: true,
+            disableGetPage: true,
         } as ApiOptions);
+    }
+
+    static search(query_params: Object) {
+        const url = "/catalog_records/search";
+        return ApiBase.axiosInstance.post(url, query_params, {
+            headers: authHeader(),
+        });
     }
 }
 

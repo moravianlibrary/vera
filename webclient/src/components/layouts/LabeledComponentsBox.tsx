@@ -6,6 +6,14 @@ interface LabeledComponentsBoxProps {
     ignoreNotProvided?: boolean;
 }
 
+function isEmptyValue(value) {
+    return (
+        value === undefined ||
+        value === null ||
+        (Array.isArray(value) && value.length === 0)
+    );
+}
+
 const LabeledComponentsBox: React.FC<LabeledComponentsBoxProps> = ({
     labels,
     components,
@@ -27,7 +35,9 @@ const LabeledComponentsBox: React.FC<LabeledComponentsBoxProps> = ({
                 ignoreNotProvided && !components[index] ? null : (
                     <Fragment key={`${label}_${index}`}>
                         <label className="font-bold">{label}:</label>
-                        {components[index] || "-"}
+                        {isEmptyValue(components[index])
+                            ? "-"
+                            : components[index] || "-"}
                     </Fragment>
                 )
             )}

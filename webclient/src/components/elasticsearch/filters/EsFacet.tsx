@@ -22,6 +22,7 @@ const EsFacet: React.FC<EsFacetProps> = (props) => {
         isShowingMore,
         toggleShowMore,
     } = useRefinementList(props);
+    console.log("items", items);
 
     if (!canRefine) return null;
 

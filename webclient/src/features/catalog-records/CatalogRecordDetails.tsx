@@ -41,10 +41,31 @@ const catalogRecordFields: CatalogRecordField[] = [
         translate: true,
     },
     {
-        attribute: "last_updated",
-        label: "catalog-records.last-updated",
+        attribute: "added_at",
+        label: "catalog-records.added_at",
         transform: formatDatetime,
     },
+    {
+        attribute: "updated_at",
+        label: "catalog-records.updated_at",
+        transform: formatDatetime,
+    },
+    { attribute: "material_type", label: "catalog-records.material-type" },
+    { attribute: "title", label: "catalog-records.title" },
+    { attribute: "size", label: "catalog-records.size" },
+    { attribute: "location_uri", label: "catalog-records.location-uri" },
+    { attribute: "publisher", label: "catalog-records.publisher" },
+    {
+        attribute: "publishing_place",
+        label: "catalog-records.publishing-place",
+    },
+    { attribute: "publishing_year", label: "catalog-records.publishing-year" },
+    {
+        attribute: "languages",
+        label: "catalog-records.languages",
+        transform: (l) => l.join(", "),
+    },
+    { attribute: "frequencies", label: "catalog-records.frequencies" },
 ];
 
 const CatalogRecordData: React.FC<CatalogRecordViewProps> = ({
