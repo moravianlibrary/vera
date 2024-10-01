@@ -2,6 +2,7 @@ import React from "react";
 import EsFilter from "./EsFilter";
 import { Checkbox } from "primereact/checkbox";
 import { RefinementListProps, useRefinementList } from "react-instantsearch";
+import { Button } from "primereact/button";
 
 interface EsFacetProps extends RefinementListProps {
     label: string;
@@ -22,7 +23,7 @@ const EsFacet: React.FC<EsFacetProps> = (props) => {
         isShowingMore,
         toggleShowMore,
     } = useRefinementList(props);
-    console.log("items", items);
+    console.log("canShowMore", canToggleShowMore, isShowingMore);
 
     if (!canRefine) return null;
 
@@ -62,6 +63,23 @@ const EsFacet: React.FC<EsFacetProps> = (props) => {
                     <span>{item.count}</span>
                 </div>
             ))}
+            {canToggleShowMore && (
+                <Button
+                    className="p-1 mt-2"
+                    outlined
+                    icon={
+                        isShowingMore
+                            ? "pi pi-chevron-up"
+                            : "pi pi-chevron-down"
+                    }
+                    label={
+                        isShowingMore
+                            ? "es.facet.show_less"
+                            : "es.facet.show_more"
+                    }
+                    onClick={toggleShowMore}
+                />
+            )}
         </EsFilter>
     );
 };

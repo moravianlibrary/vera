@@ -107,9 +107,9 @@ const NavigationMenu: React.FC<NavigationMenuProps> = () => {
     };
 
     return (
-        <div className="card w-screen">
+        <div className="navbar">
             <Toolbar
-                className="p-2 "
+                className="p-2"
                 style={{ backgroundColor: "#ebedef" }}
                 start={NavigationMenuStart}
                 end={NavigationMenuEnd}

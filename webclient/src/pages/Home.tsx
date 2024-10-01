@@ -106,7 +106,7 @@ export const Wiki: React.FC<WikiProps> = ({ language }) => {
     };
 
     return (
-        <Panel headerTemplate={wikiHeader}>
+        <Panel className="wiki" headerTemplate={wikiHeader}>
             <Markdown components={{ a: renderLink, img: renderImage }}>
                 {markdownContent}
             </Markdown>

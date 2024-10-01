@@ -54,6 +54,11 @@ const catalog_records_index_settings = {
             filterQuery: filterBooleanQuery,
         },
         {
+            attribute: "language",
+            field: "language",
+            type: "string",
+        },
+        {
             attribute: "material_type",
             field: "material_type",
             type: "string",

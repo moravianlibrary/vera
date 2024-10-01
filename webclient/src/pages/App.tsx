@@ -68,9 +68,11 @@ function App() {
         <WithProviders providers={[AccessProvider, ToastProvider]}>
             <StrictMode>
                 <Router>
-                    <main className="App">
+                    <main className="app">
                         <NavigationMenu />
-                        <Routing />
+                        <div className="content">
+                            <Routing />
+                        </div>
                     </main>
                 </Router>
             </StrictMode>

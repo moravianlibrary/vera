@@ -22,7 +22,6 @@ const CatalogRecordsDiv: React.FC<CatalogRecordsProps> = () => {
     return (
         <InstantSearch indexName="catalog_records" searchClient={searchClient}>
             <DataTableLayout
-                // header={<h1>Catalog Records</h1>}
                 sidebar={<CatalogRecordsFacetsBar />}
                 datatable={<CatalogRecordsTable />}
                 paginator={<CatalogRecordsTable.Paginator />}

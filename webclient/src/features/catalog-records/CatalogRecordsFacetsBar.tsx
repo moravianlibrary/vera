@@ -12,6 +12,7 @@ const CatalogRecordsFacetsBar: React.FC<CatalogRecordsFacetsBarProps> = () => {
                 label="Has valid main record"
             />
             <EsBooleanFacet attribute="has_valid_cnb" label="Has valid cnb" />
+            <EsFacet attribute="language" label="language" showMore limit={5} />
             <EsFacet attribute="material_type" label="Material Type" />
         </div>
     );

@@ -91,7 +91,7 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
 
     return (
         <Paginator
-            className="border-top-2 border-solid surface-50 fixed bottom-0 w-full"
+            className="border-top-2 border-solid surface-50 w-full"
             first={getFirst()}
             rowsPerPageOptions={[10, 15, 20, 25, 50]}
             rows={getRows()}

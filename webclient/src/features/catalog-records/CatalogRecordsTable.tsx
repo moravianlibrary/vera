@@ -37,7 +37,6 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
 
     return (
         <DataTable
-            className="overflow-scroll"
             value={results.hits}
             scrollable
             scrollHeight="flex"
