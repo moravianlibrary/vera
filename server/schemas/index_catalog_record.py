@@ -4,6 +4,7 @@ from typing import Any, List, Optional
 from services.external.aleph import AlephRecord
 from .index_document import IndexFrequency
 from models import CatalogRecord
+from datetime import datetime
 
 
 class MarcSubfield(BaseEsModel):
@@ -88,6 +89,15 @@ class MarcFieldDifference(MarcFieldBase):
     id: Integer
     difference_type: Keyword
     subfield_differences: List[MarcSubfieldDifference]
+
+    approved_by: Optional[Keyword]
+    approved_at: Optional[Date]
+
+    @field_validator("approved_at", mode="before")
+    def parse_approved_at(cls, approved_at: Any) -> Any:
+        if isinstance(approved_at, datetime):
+            return approved_at.isoformat()
+        return approved_at
 
 
 class IndexCatalogRecord(BaseEsModel):

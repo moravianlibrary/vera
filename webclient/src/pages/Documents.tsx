@@ -28,10 +28,11 @@ import { GeneratedExtractionsProvider } from "../contexts/extractions/GeneratedE
 import { LocationsProvider } from "../contexts/extractions/locations/LocationsContext";
 import { IntentionsProvider } from "../contexts/categories/IntentionsContext";
 import { Splitter, SplitterPanel } from "primereact/splitter";
-import DocumentsFiltersView from "../features/documents/DocumentsFiltersView";
+import DocumentsFiltersBar from "../features/documents/DocumentsFiltersBar";
 import documentsIndex from "../adapters/IndexDocuments";
 import { InstantSearch } from "react-instantsearch";
 import DocumentDetailsDialog from "../features/documents/DocumentDetailsDialog";
+import DataTableLayout from "../components/layouts/DataTableLayout";
 
 const Documents: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -91,41 +92,39 @@ const Documents: React.FC = () => {
     }, [searchParams, setExtractionId]);
 
     return (
-        <div className="table-container">
-            <DocumentsQueryProvider>
-                <IntentionsProvider>
-                    <CategoriesProvider>
-                        <DigitizationListsProvider>
-                            <LocationsProvider>
-                                <GeneratedExtractionsProvider>
-                                    <DocumentsProvider>
-                                        <DocumentsSelectionProvider>
-                                            <DocumentsActionsProvider>
-                                                <DigitizationListsManagerProvider>
-                                                    <AdvancedSearchProvider>
-                                                        <DocumentsDiv
-                                                            categoryIds={
-                                                                categoryIds
-                                                            }
-                                                            extractionId={
-                                                                extractionId
-                                                            }
-                                                            digitizationListId={
-                                                                digitizationListId
-                                                            }
-                                                        />
-                                                    </AdvancedSearchProvider>
-                                                </DigitizationListsManagerProvider>
-                                            </DocumentsActionsProvider>
-                                        </DocumentsSelectionProvider>
-                                    </DocumentsProvider>
-                                </GeneratedExtractionsProvider>
-                            </LocationsProvider>
-                        </DigitizationListsProvider>
-                    </CategoriesProvider>
-                </IntentionsProvider>
-            </DocumentsQueryProvider>
-        </div>
+        <DocumentsQueryProvider>
+            <IntentionsProvider>
+                <CategoriesProvider>
+                    <DigitizationListsProvider>
+                        <LocationsProvider>
+                            <GeneratedExtractionsProvider>
+                                <DocumentsProvider>
+                                    <DocumentsSelectionProvider>
+                                        <DocumentsActionsProvider>
+                                            <DigitizationListsManagerProvider>
+                                                <AdvancedSearchProvider>
+                                                    <DocumentsDiv
+                                                        categoryIds={
+                                                            categoryIds
+                                                        }
+                                                        extractionId={
+                                                            extractionId
+                                                        }
+                                                        digitizationListId={
+                                                            digitizationListId
+                                                        }
+                                                    />
+                                                </AdvancedSearchProvider>
+                                            </DigitizationListsManagerProvider>
+                                        </DocumentsActionsProvider>
+                                    </DocumentsSelectionProvider>
+                                </DocumentsProvider>
+                            </GeneratedExtractionsProvider>
+                        </LocationsProvider>
+                    </DigitizationListsProvider>
+                </CategoriesProvider>
+            </IntentionsProvider>
+        </DocumentsQueryProvider>
     );
 };
 
@@ -164,36 +163,29 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
     }, [categoryIds, extractionId, digitizationListId]);
 
     return (
-        <div>
-            <InstantSearch indexName="documents" searchClient={searchClient}>
-                <DocumentsHeader
-                    onInsert={() => setInsertMode(true)}
-                    onCreate={() => setCreateMode(true)}
-                    tableViewType={tableViewType}
-                    onTableViewTypeChange={(value) => setTableViewType(value)}
-                />
-                <Splitter>
-                    <SplitterPanel minSize={5} size={10}>
-                        <DocumentsFiltersView />
-                    </SplitterPanel>
-                    <SplitterPanel minSize={50} size={90}>
-                        <DocumentsTable tableViewType={tableViewType} />
-                    </SplitterPanel>
-                </Splitter>
-                {detailsDocuments.map((document) => (
-                    <DocumentDetailsDialog
-                        key={document.id}
-                        document={document}
+        <InstantSearch indexName="documents" searchClient={searchClient}>
+            <DataTableLayout
+                header={
+                    <DocumentsHeader
+                        onInsert={() => setInsertMode(true)}
+                        onCreate={() => setCreateMode(true)}
+                        tableViewType={tableViewType}
+                        onTableViewTypeChange={(value) =>
+                            setTableViewType(value)
+                        }
                     />
-                ))}
-                <Dialog
-                    visible={insertMode}
-                    onHide={() => setInsertMode(false)}
-                >
-                    <InsertDocuments onClose={() => setInsertMode(false)} />
-                </Dialog>
-            </InstantSearch>
-        </div>
+                }
+                sidebar={<DocumentsFiltersBar />}
+                datatable={<DocumentsTable tableViewType={tableViewType} />}
+                paginator={<DocumentsTable.Paginator />}
+            />
+            {detailsDocuments.map((document) => (
+                <DocumentDetailsDialog key={document.id} document={document} />
+            ))}
+            <Dialog visible={insertMode} onHide={() => setInsertMode(false)}>
+                <InsertDocuments onClose={() => setInsertMode(false)} />
+            </Dialog>
+        </InstantSearch>
     );
 };
 

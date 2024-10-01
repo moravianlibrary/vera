@@ -10,7 +10,7 @@ const MarcFieldDifferencesTagsBox: React.FC<
     MarcFieldDifferencesTagsBoxProps
 > = ({ differences }) => {
     return (
-        <div className="flex m-1 gap-2">
+        <div className="flex gap-2">
             {differences.map((difference, index) => (
                 <MarcFieldDifferenceTag key={index} difference={difference} />
             ))}

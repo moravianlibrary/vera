@@ -8,6 +8,7 @@ import MissingFieldDifference from "./marc-difference/MissingFieldDifference";
 import DifferentValueDifference from "./marc-difference/DifferentValueDifference";
 import { Button } from "primereact/button";
 import { useCatalogRecords } from "../../contexts/CatalogRecordsContext";
+import { formatDatetime } from "../../data/factories/DateFactory";
 
 interface CatalogRecordsDifferencesProps {
     difference: MarcFieldDifference;
@@ -17,7 +18,7 @@ const CatalogRecordsDifference: React.FC<CatalogRecordsDifferencesProps> = ({
     difference,
 }) => {
     const { t } = useTranslation();
-    const {} = useCatalogRecords();
+    const { approveDifference } = useCatalogRecords();
 
     const getDiffernceBody = () => {
         if (difference.tag === "008") {
@@ -31,6 +32,32 @@ const CatalogRecordsDifference: React.FC<CatalogRecordsDifferencesProps> = ({
             case MarcFieldDifferenceType.DifferentValue:
                 return <DifferentValueDifference difference={difference} />;
         }
+    };
+
+    const approvedLegend = () => {
+        return (
+            <div>
+                <span className="font-bold">
+                    {t("catalog-records.difference-approved")}:
+                </span>
+                <span>{` ${difference.approved_by}, ${formatDatetime(
+                    difference.approved_at!
+                )}`}</span>
+            </div>
+        );
+    };
+
+    const approveButton = () => {
+        return (
+            <Button
+                className="h-2rem"
+                outlined
+                rounded
+                icon="pi pi-check"
+                label={t("catalog-records.action-approve-difference")}
+                onClick={() => approveDifference(difference.id)}
+            />
+        );
     };
 
     return (
@@ -48,13 +75,7 @@ const CatalogRecordsDifference: React.FC<CatalogRecordsDifferencesProps> = ({
             >
                 {getDiffernceBody()}
             </div>
-            <Button
-                className="h-2rem"
-                outlined
-                rounded
-                icon="pi pi-check"
-                label={t("catalog-records.action-approve-difference")}
-            />
+            {(difference.approved_by && approvedLegend()) || approveButton()}
         </div>
     );
 };

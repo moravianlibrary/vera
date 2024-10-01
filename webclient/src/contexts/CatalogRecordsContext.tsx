@@ -13,6 +13,7 @@ interface CatalogRecordsContextProps {
     pageSize: number;
     setPageSize: (pageSize: number) => void;
     refresh: () => void;
+    approveDifference: (differenceId: number) => void;
 }
 
 const CatalogRecordsContext = createContext<
@@ -37,6 +38,12 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
         // });
     };
 
+    const approveDifference = (differenceId: number) => {
+        api.approveDifference(differenceId).then((response) => {
+            console.log(response.data);
+        });
+    };
+
     const refresh = () => {
         fetchCatalogRecords();
     };
@@ -53,6 +60,7 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
         pageSize,
         setPageSize,
         refresh,
+        approveDifference,
     };
 
     return (

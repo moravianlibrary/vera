@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { DataTable, DataTableRowEvent } from "primereact/datatable";
-import { useCatalogRecords } from "../../contexts/CatalogRecordsContext";
 import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
 import DataTablePaginator from "../../components/DataTablePaginator";

@@ -72,6 +72,8 @@ class TestIndexCatalogRecord(TestSchemaBase):
                                 "ind2": {"type": "keyword"},
                                 "control_field": {"type": "boolean"},
                                 "difference_type": {"type": "keyword"},
+                                "approved_by": {"type": "keyword"},
+                                "approved_at": {"type": "date"},
                                 "subfield_differences": {
                                     "properties": {
                                         "id": {"type": "integer"},
@@ -118,6 +120,8 @@ class TestIndexCatalogRecord(TestSchemaBase):
                                 "ind2": {"type": "keyword"},
                                 "control_field": {"type": "boolean"},
                                 "difference_type": {"type": "keyword"},
+                                "approved_by": {"type": "keyword"},
+                                "approved_at": {"type": "date"},
                                 "subfield_differences": {
                                     "properties": {
                                         "id": {"type": "integer"},

@@ -67,29 +67,35 @@
     background-color: #dc3545;
 }
 
-.periodical-volume-tag {
-    background-color: #167a1b;
-}
-.periodical-bundle-tag {
-    background-color: #7c9b2c;
-}
-.periodical-tag {
+.dt-periodical-tag {
     background-color: #007443;
 }
-.monograph-unit-tag {
-    background-color: #c73565;
+.dt-volume-tag {
+    background-color: #167a1b;
 }
-.monograph-tag {
+.dt-bundle-tag {
+    background-color: #7c9b2c;
+}
+.dt-monograph-tag {
     background-color: #a5407f;
 }
-.map-tag {
+.dt-unit-tag {
+    background-color: #c73565;
+}
+.dt-graphic-tag {
+    background-color: #DC2522;
+}
+.dt-map-tag {
     background-color: #735f32;
 }
-.music-tag {
+.dt-music-tag {
     background-color: #af580b;
 }
-.document-type-other-tag {
+.dt-other-tag {
     background-color: #3f4e4f;
+}
+.dt-invalid-tag {
+    background-color: #fd7e14;
 }
 
 .tag-not-found {
@@ -102,17 +108,20 @@
     background-color: #dc3545;
 }
 
-.tag-marc-difference-equal {
+.difft-missingfield-tag {
+    background-color: #9b59b6;
+}
+.difft-extrafield-tag {
+    background-color: #4a90e2;
+}
+.difft-differentvalue-tag {
+    background-color: #fd7e14;
+}
+.difft-approved-tag {
     background-color: #66bb6a;
 }
-.tag-marc-difference-missingfield {
-    background-color: #fd7e14;
-}
-.tag-marc-difference-extrafield {
-    background-color: #fd7e14;
-}
-.tag-marc-difference-differentvalue {
-    background-color: #fd7e14;
+.difft-equal-tag {
+    background-color: #66bb6a;
 }
 .tag-catalog-record-without-cnb {
     background-color: #66bb6a;

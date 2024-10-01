@@ -6,6 +6,7 @@ import Client from "@searchkit/instantsearch-client";
 import catalogRecordsIndex from "../adapters/IndexCatalogRecords";
 import { InstantSearch } from "react-instantsearch";
 import CatalogRecordsFacetsBar from "../features/catalog-records/CatalogRecordsFacetsBar";
+import CatalogRecordsHeader from "../features/catalog-records/CatalogRecordsHeader";
 
 interface CatalogRecordsProps {}
 
@@ -22,6 +23,7 @@ const CatalogRecordsDiv: React.FC<CatalogRecordsProps> = () => {
     return (
         <InstantSearch indexName="catalog_records" searchClient={searchClient}>
             <DataTableLayout
+                header={<CatalogRecordsHeader />}
                 sidebar={<CatalogRecordsFacetsBar />}
                 datatable={<CatalogRecordsTable />}
                 paginator={<CatalogRecordsTable.Paginator />}

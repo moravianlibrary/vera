@@ -95,7 +95,7 @@ def update_catalog_record_differences(
 @router.patch(
     "/differences/{difference_id}/approve",
     dependencies=[CanReviewCatalogRecords],
-    response_model=CatalogRecordResponse,
+    response_model=IndexCatalogRecord,
 )
 def approve_catalog_record_difference(
     difference_id: int = Path(...),
@@ -108,14 +108,15 @@ def approve_catalog_record_difference(
     ).approve(session, approved_by)
     catalog_record: CatalogRecord = difference.catalog_record
 
-    IndexCatalogRecord.model_validate(catalog_record).save(es_session)
+    record = IndexCatalogRecord.model_validate(catalog_record)
+    record.save(es_session)
 
     # Catalog record validity was not changed, no need to reindex documents
     if (
         difference.is_skc_difference
         and not catalog_record.has_valid_main_record
     ) or (difference.is_cnb_difference and not catalog_record.has_valid_cnb):
-        return difference
+        return record
 
     # Catalog record validity was changed, reindexing documents
     task = Task(
@@ -126,7 +127,7 @@ def approve_catalog_record_difference(
         TaskDocument(task_id=task.id, document_id=document_id).save(session)
     run_task.delay(task_id=task.id)
 
-    return difference
+    return record
 
 
 @router.get(

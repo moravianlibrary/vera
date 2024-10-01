@@ -1,12 +1,13 @@
 from typing import Optional, Tuple, Iterable, Dict, Set
 from sqlalchemy.orm import Session
-from services.external.aleph import AlephClient
+from services.external.aleph import AlephClient, AlephIssue
 from services.external.aleph import AlephResponseStatus
 from services.external.nkp_aleph.client import NkpAlephClient
 from models import (
     CatalogRecord,
     CatalogRecordFieldDifference,
     CatalogRecordSubfieldDifference,
+    CatalogRecordBarcode,
 )
 from services.marc_comparator import (
     MarcRecordsComparator,
@@ -153,6 +154,13 @@ def update_catalog_record(
     )
 
     catalog_record.save(session)
+
+    for issue in AlephIssue.from_record(main_aleph_record.record):
+        if issue.barcode is None:
+            continue
+        CatalogRecordBarcode(
+            sysno=catalog_record.sysno, barcode=issue.barcode
+        ).save(session)
 
     update_catalog_record_differences(session, catalog_record)
 

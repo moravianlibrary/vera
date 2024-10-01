@@ -70,3 +70,11 @@
 .layout-datatable .paginator {
   grid-area: footer;
 }
+
+.tag {
+  width: min-content;
+}
+
+.difft-approved-tag {
+  text-decoration: line-through;
+}

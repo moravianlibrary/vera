@@ -4,72 +4,51 @@ import { Tag } from "primereact/tag";
 import { MaterialType } from "../../types/MaterialType";
 import { IssuanceType } from "../../types/IssuanceType";
 import { IndexDocument } from "../../adapters/ApiDocuments";
+import IssuanceTypeTag from "./IssuanceTypeTag";
+import MaterialTypeTag from "./MaterialTypeTag";
 
 interface DocumentTypeTagProps {
     document: IndexDocument;
 }
 
+function isInvalidCombination(
+    materialType: MaterialType,
+    issuanceType?: IssuanceType
+) {
+    if (!issuanceType) return false;
+
+    const isUnitInvalid =
+        issuanceType === IssuanceType.Unit &&
+        materialType !== MaterialType.Book;
+    const isVolumeOrBundleInvalid =
+        [IssuanceType.Volume, IssuanceType.Bundle].includes(issuanceType) &&
+        materialType !== MaterialType.ContinuingResource;
+
+    return isUnitInvalid || isVolumeOrBundleInvalid;
+}
+
 const DocumentTypeTag: React.FC<DocumentTypeTagProps> = ({ document }) => {
     const { t } = useTranslation();
 
-    switch (document.material_type) {
-        case MaterialType.ContinuingResource:
-            switch (document.issuance_type) {
-                case IssuanceType.Volume:
-                    return (
-                        <Tag
-                            value={t(`document.periodical-volume`)}
-                            className="periodical-volume-tag"
-                        />
-                    );
-                case IssuanceType.Bundle:
-                    return (
-                        <Tag
-                            value={t(`document.periodical-bundle`)}
-                            className="periodical-bundle-tag"
-                        />
-                    );
-                default:
-                    return (
-                        <Tag
-                            value={t(`document.periodical`)}
-                            className="periodical-tag"
-                        />
-                    );
-            }
-
-        case MaterialType.Book:
-            switch (document.issuance_type) {
-                case IssuanceType.Unit:
-                    return (
-                        <Tag
-                            value={t(`document.monograph-unit`)}
-                            className="monograph-unit-tag"
-                        />
-                    );
-                default:
-                    return (
-                        <Tag
-                            value={t(`document.monograph`)}
-                            className="monograph-tag"
-                        />
-                    );
-            }
-
-        case MaterialType.Map:
-            return <Tag value={t(`document.map`)} className="map-tag" />;
-
-        case MaterialType.Music:
-            return <Tag value={t(`document.music`)} className="music-tag" />;
-
-        default:
-            return (
-                <Tag
-                    value={t(`document.type-other`)}
-                    className="document-type-other-tag"
-                />
-            );
+    if (isInvalidCombination(document.material_type, document.issuance_type)) {
+        return (
+            <Tag
+                value={t("document-type.invalid")}
+                className="dt-invalid-tag"
+            />
+        );
     }
+
+    if (document.issuance_type) {
+        return (
+            <IssuanceTypeTag
+                issuanceType={document.issuance_type}
+                includeMaterialType
+            />
+        );
+    }
+
+    return <MaterialTypeTag materialType={document.material_type} />;
 };
 
 export default DocumentTypeTag;

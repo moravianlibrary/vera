@@ -60,7 +60,9 @@ interface DocumentDetailsBodyProps {
     document: DocumentModel;
 }
 
-const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
+const DocumentsTable: React.FC<DocumentsTableProps> & {
+    Paginator: React.FC;
+} = ({ tableViewType }) => {
     const { t } = useTranslation();
 
     const { results, refresh } = useInstantSearch();
@@ -91,89 +93,76 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
 
     if (tableViewType === TableViewType.DatatableVisual) {
         return (
-            <div>
-                <DataTable
-                    className="documents-table"
-                    value={results.hits}
-                    scrollable
-                    scrollHeight="calc(100vh - 170px)"
-                    selectionMode="checkbox"
-                    selection={selectedDocuments}
-                    onSelectionChange={handleSelectionChange}
-                >
-                    <Column field="details" body={DocumentDetailsColumnBody} />
-
-                    <Column
-                        field="category_path"
-                        header={t("category")}
-                        body={CategoryColumnBody}
-                    />
-                    <Column
-                        field="type"
-                        header={t("Type")}
-                        body={DocumentTypeColumnBody}
-                    />
-                    <Column
-                        field="title"
-                        header={t("title")}
-                        body={TitleColumnBody}
-                    />
-                    <Column
-                        field="description"
-                        header={t("Description")}
-                        body={DescriptionColumnBody}
-                    />
-                    <Column
-                        field="pages_count"
-                        body={PageCountColumnBody}
-                        header={t("pages_count")}
-                    />
-                    <Column
-                        field="digitization_state"
-                        header={t("Digitization state")}
-                        body={DigitizationStateColumnBody}
-                    />
-                    <Column
-                        field="extraction_priority"
-                        header={t("Extraction priority")}
-                        body={ExtractionPriorityColumnBody}
-                    />
-                    <Column
-                        field="extractable"
-                        header={t("documents.table.extraction")}
-                        body={DocumentStateColumnBody}
-                    />
-                    <Column field="added_by" header={t("creator")} />
-
-                    <Column
-                        selectionMode="multiple"
-                        headerStyle={{ width: "3rem" }}
-                    />
-                </DataTable>
-                <DataTablePaginator
-                    numFound={nbHits}
-                    page={currentRefinement + 1}
-                    pageSize={results.hitsPerPage}
-                    onPageChangeNew={(page) => setPage(page - 1)}
-                    onPageSizeChange={setPageSize}
-                    onRefresh={() => refresh()}
-                />
-            </div>
-        );
-    }
-
-    return (
-        <div>
             <DataTable
-                className="documents-table flex-grow"
                 value={results.hits}
                 scrollable
-                scrollHeight="calc(100vh - 170px)"
+                scrollHeight="flex"
                 selectionMode="checkbox"
                 selection={selectedDocuments}
                 onSelectionChange={handleSelectionChange}
             >
-                {/* <Column
+                <Column field="details" body={DocumentDetailsColumnBody} />
+
+                <Column
+                    field="category_path"
+                    header={t("category")}
+                    body={CategoryColumnBody}
+                />
+                <Column
+                    field="type"
+                    header={t("Type")}
+                    body={DocumentTypeColumnBody}
+                />
+                <Column
+                    field="title"
+                    header={t("title")}
+                    body={TitleColumnBody}
+                />
+                <Column
+                    field="description"
+                    header={t("Description")}
+                    body={DescriptionColumnBody}
+                />
+                <Column
+                    field="pages_count"
+                    body={PageCountColumnBody}
+                    header={t("pages_count")}
+                />
+                <Column
+                    field="digitization_state"
+                    header={t("Digitization state")}
+                    body={DigitizationStateColumnBody}
+                />
+                <Column
+                    field="extraction_priority"
+                    header={t("Extraction priority")}
+                    body={ExtractionPriorityColumnBody}
+                />
+                <Column
+                    field="extractable"
+                    header={t("documents.table.extraction")}
+                    body={DocumentStateColumnBody}
+                />
+                <Column field="added_by" header={t("creator")} />
+
+                <Column
+                    selectionMode="multiple"
+                    headerStyle={{ width: "3rem" }}
+                />
+            </DataTable>
+        );
+    }
+
+    return (
+        <DataTable
+            value={results.hits}
+            scrollable
+            scrollHeight="flex"
+            selectionMode="checkbox"
+            selection={selectedDocuments}
+            onSelectionChange={handleSelectionChange}
+        >
+            {/* <Column
                     field="details"
                     body={(document) => (
                         <DocumentDetailsBody
@@ -183,54 +172,67 @@ const DocumentsTable: React.FC<DocumentsTableProps> = ({ tableViewType }) => {
                     )}
                 /> */}
 
-                <Column field="sysno" header={t("sysno")} />
-                <Column
-                    field="type"
-                    header={t("Type")}
-                    body={DocumentTypeColumnBody}
-                />
-                <Column
-                    field="description"
-                    header={t("Description")}
-                    body={DescriptionColumnBody}
-                />
-                <Column field="category_name" header={t("category")} />
-                <Column
-                    field="title"
-                    header={t("title")}
-                    body={TitleColumnBody}
-                />
-                <Column
-                    field="pages_count"
-                    body={PageCountColumnBody}
-                    header={t("pages_count")}
-                />
-                <Column
-                    className="pointer-events-none"
-                    field="signature"
-                    header={t("Signature")}
-                />
-                <Column field="barcode" header={t("Barcode")} />
-                <Column field="cnb" header={t("CNB")} />
-                <Column field="creator" header={t("creator")} />
-                <Column field="created_at" header={t("created_at")} />
-
-                <Column
-                    selectionMode="multiple"
-                    headerStyle={{ width: "3rem" }}
-                />
-            </DataTable>
-            <DataTablePaginator
-                numFound={nbHits}
-                page={currentRefinement + 1}
-                pageSize={results.hitsPerPage}
-                onPageChangeNew={(page) => setPage(page - 1)}
-                onPageSizeChange={setPageSize}
-                onRefresh={() => refresh()}
+            <Column field="sysno" header={t("sysno")} />
+            <Column
+                field="type"
+                header={t("Type")}
+                body={DocumentTypeColumnBody}
             />
-        </div>
+            <Column
+                field="description"
+                header={t("Description")}
+                body={DescriptionColumnBody}
+            />
+            <Column field="category_name" header={t("category")} />
+            <Column field="title" header={t("title")} body={TitleColumnBody} />
+            <Column
+                field="pages_count"
+                body={PageCountColumnBody}
+                header={t("pages_count")}
+            />
+            <Column
+                className="pointer-events-none"
+                field="signature"
+                header={t("Signature")}
+            />
+            <Column field="barcode" header={t("Barcode")} />
+            <Column field="cnb" header={t("CNB")} />
+            <Column field="creator" header={t("creator")} />
+            <Column field="created_at" header={t("created_at")} />
+
+            <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
+        </DataTable>
     );
 };
+
+const DocumentsTablePaginator: React.FC = () => {
+    const { results, refresh } = useInstantSearch();
+    const { currentRefinement, nbHits, refine: setPage } = usePagination();
+    const { items: pageSizeOptions, refine: setPageSize } = useHitsPerPage({
+        items: [
+            { value: 10, label: "10" },
+            { value: 15, label: "15" },
+            { value: 20, label: "20", default: true },
+            { value: 25, label: "25" },
+            { value: 50, label: "50" },
+            { value: 100, label: "100" },
+        ],
+    });
+
+    return (
+        <DataTablePaginator
+            numFound={nbHits}
+            page={currentRefinement + 1}
+            pageSize={results.hitsPerPage}
+            onPageChangeNew={(page) => setPage(page - 1)}
+            onPageSizeChange={setPageSize}
+            onRefresh={refresh}
+            numFoundText="documents.numFound"
+        />
+    );
+};
+
+DocumentsTable.Paginator = DocumentsTablePaginator;
 
 const DocumentDetailsTooltip: React.FC<DocumentDetailsBodyProps> = ({
     document,

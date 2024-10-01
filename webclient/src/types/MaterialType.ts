@@ -1,9 +1,10 @@
 enum MaterialType {
-    Book = 'Book',
-    ContinuingResource = 'ContinuingResource',
-    Map = 'Map',
-    Music = 'Music',
-    Other = 'Other'
+    Book = "Book",
+    ContinuingResource = "ContinuingResource",
+    Graphic = "Graphic",
+    Map = "Map",
+    Music = "Music",
+    Other = "Other",
 }
 
 export { MaterialType };

@@ -426,3 +426,35 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
 
         # Assert
         self.assertEqual(response.status_code, 400)
+
+    def test_approve_difference(self):
+        # Arrange
+        self.session.add(
+            CatalogRecord(sysno="MZK01-123456789", marc=self.marc_bytes),
+        )
+        self.session.flush()
+        self.session.add(
+            CatalogRecordFieldDifference(
+                sysno="MZK01-123456789",
+                source=CatalogSource.CNB,
+                tag="001",
+                difference_type=MarcFieldDifferenceType.Equal,
+                deleted=False,
+            )
+        )
+        self.session.flush()
+        self.mockTestUser([ActionType.ReviewCatalogRecords])
+
+        # Act
+        response = self.client.patch(
+            "/catalog_records/differences/1/approve",
+            headers={
+                "Authorization": "Bearer test_token",
+            },
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["cnb_difference"][0]["approved_by"], "test_user"
+        )

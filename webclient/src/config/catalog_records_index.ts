@@ -63,6 +63,30 @@ const catalog_records_index_settings = {
             field: "material_type",
             type: "string",
         },
+        {
+            attribute: "skc_difference.difference_type",
+            field: "difference_type",
+            type: "string",
+            nestedPath: "skc_difference",
+        },
+        {
+            attribute: "skc_difference.tag",
+            field: "tag",
+            type: "string",
+            nestedPath: "skc_difference",
+        },
+        {
+            attribute: "cnb_difference.difference_type",
+            field: "difference_type",
+            type: "string",
+            nestedPath: "cnb_difference",
+        },
+        {
+            attribute: "cnb_difference.tag",
+            field: "tag",
+            type: "string",
+            nestedPath: "cnb_difference",
+        },
     ],
 };
 

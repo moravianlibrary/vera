@@ -44,12 +44,15 @@ interface MarcSubfieldDifference {
 }
 
 interface MarcFieldDifference {
+    id: number;
     tag: string;
     ind1: string | null;
     ind2: string | null;
     control_field: boolean;
     difference_type: MarcFieldDifferenceType;
     subfield_differences: MarcSubfieldDifference[];
+    approved_by: string | null;
+    approved_at: string | null;
 }
 
 interface MarcSubfield {
@@ -69,6 +72,11 @@ interface MarcField {
 interface MarcRecord {
     leader: string;
     fields: MarcField[];
+}
+
+interface Frequency {
+    frequency: string;
+    date?: string;
 }
 
 interface CatalogRecord {
@@ -98,7 +106,7 @@ interface CatalogRecord {
     publishing_place: string | null;
     publishing_year: string | null;
     languages: string[] | null;
-    frequencies: string[] | null;
+    frequencies: Frequency[] | null;
 }
 
 class ApiCatalogRecords extends ApiBase<CatalogRecord> {
@@ -117,6 +125,13 @@ class ApiCatalogRecords extends ApiBase<CatalogRecord> {
             headers: authHeader(),
         });
     }
+
+    approveDifference(differenceId: number) {
+        const url = `/catalog_records/differences/${differenceId}/approve`;
+        return ApiBase.axiosInstance.patch(url, null, {
+            headers: authHeader(),
+        });
+    }
 }
 
 export default ApiCatalogRecords;
@@ -125,6 +140,7 @@ export type {
     MarcSubfieldDifference,
     MarcFieldDifference,
     MarcRecord,
+    Frequency,
     Marc21Diff,
     Marc21DiffRecord,
     Marc21Field,

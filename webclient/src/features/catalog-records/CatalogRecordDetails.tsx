@@ -2,12 +2,15 @@ import React from "react";
 import { TabPanel, TabView } from "primereact/tabview";
 import {
     CatalogRecord,
+    Frequency,
     MarcFieldDifference,
 } from "../../adapters/ApiCatalogRecords";
 import { formatDatetime } from "../../data/factories/DateFactory";
 import { useTranslation } from "react-i18next";
 import CatalogRecordsDifference from "./CatalogRecordDifference";
 import LabeledComponentsBox from "../../components/layouts/LabeledComponentsBox";
+import MaterialTypeTag from "../../components/tags/MaterialTypeTag";
+import ExternalLinkButton from "../../components/buttons/ExternalLinkButton";
 
 interface CatalogRecordViewProps {
     catalogRecord: CatalogRecord;
@@ -21,11 +24,16 @@ interface CatalogRecordField {
 }
 
 const catalogRecordFields: CatalogRecordField[] = [
-    { attribute: "sysno", label: "catalog-records.mzk-sysno" },
+    { attribute: "id", label: "catalog-records.mzk-sysno" },
     { attribute: "cnb", label: "catalog-records.cnb" },
     { attribute: "language", label: "catalog-records.language" },
     { attribute: "signature", label: "catalog-records.signature" },
     { attribute: "isxn", label: "catalog-records.isxn" },
+    {
+        attribute: "barcodes",
+        label: "catalog-records.barcodes",
+        transform: (bs) => bs.join(", "),
+    },
     { attribute: "skc_sysno", label: "catalog-records.skc-sysno" },
     {
         attribute: "has_valid_main_record",
@@ -42,18 +50,26 @@ const catalogRecordFields: CatalogRecordField[] = [
     },
     {
         attribute: "added_at",
-        label: "catalog-records.added_at",
+        label: "catalog-records.added-at",
         transform: formatDatetime,
     },
     {
         attribute: "updated_at",
-        label: "catalog-records.updated_at",
+        label: "catalog-records.updated-at",
         transform: formatDatetime,
     },
-    { attribute: "material_type", label: "catalog-records.material-type" },
+    {
+        attribute: "material_type",
+        label: "catalog-records.material-type",
+        transform: (mt) => <MaterialTypeTag materialType={mt} />,
+    },
     { attribute: "title", label: "catalog-records.title" },
     { attribute: "size", label: "catalog-records.size" },
-    { attribute: "location_uri", label: "catalog-records.location-uri" },
+    {
+        attribute: "location_uri",
+        label: "catalog-records.location-uri",
+        transform: (lu) => <ExternalLinkButton label={lu} url={lu} />,
+    },
     { attribute: "publisher", label: "catalog-records.publisher" },
     {
         attribute: "publishing_place",
@@ -65,7 +81,18 @@ const catalogRecordFields: CatalogRecordField[] = [
         label: "catalog-records.languages",
         transform: (l) => l.join(", "),
     },
-    { attribute: "frequencies", label: "catalog-records.frequencies" },
+    {
+        attribute: "frequencies",
+        label: "catalog-records.frequencies",
+        transform: (fs: Frequency[]) =>
+            fs
+                .map((f) =>
+                    f.date
+                        ? `"${f.date}": "${f.frequency}"`
+                        : `"${f.frequency}"`
+                )
+                .join(", "),
+    },
 ];
 
 const CatalogRecordData: React.FC<CatalogRecordViewProps> = ({
@@ -77,9 +104,10 @@ const CatalogRecordData: React.FC<CatalogRecordViewProps> = ({
         <LabeledComponentsBox
             labels={catalogRecordFields.map((field) => t(field.label))}
             components={catalogRecordFields.map((field) => {
-                const value = field.transform
-                    ? field.transform(catalogRecord[field.attribute])
-                    : catalogRecord[field.attribute];
+                const value =
+                    field.transform && catalogRecord[field.attribute]
+                        ? field.transform(catalogRecord[field.attribute])
+                        : catalogRecord[field.attribute];
                 return field.translate ? t(value) : value;
             })}
         />
@@ -101,9 +129,7 @@ const CatalogRecordDifferences = (differences: MarcFieldDifference[]) => {
     return (
         <LabeledComponentsBox
             labels={sorted.map((difference) =>
-                t(
-                    `catalog-records.table.difference.${difference.difference_type}`
-                )
+                t(`catalog-records.difference.${difference.difference_type}`)
             )}
             components={sorted.map((difference) => (
                 <CatalogRecordsDifference

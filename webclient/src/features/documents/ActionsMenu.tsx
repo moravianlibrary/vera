@@ -49,8 +49,8 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
             message: message,
             header: t("Confirm action"),
             icon: "pi pi-question",
-            acceptLabel: t("Yes"),
-            rejectLabel: t("No"),
+            acceptLabel: t("common.yes"),
+            rejectLabel: t("common.no"),
             accept: () => onAccept(),
         });
     };

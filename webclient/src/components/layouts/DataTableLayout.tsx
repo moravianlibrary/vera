@@ -1,5 +1,4 @@
-import { Button } from "primereact/button";
-import React, { useEffect, useState } from "react";
+import React, { Fragment, useState } from "react";
 
 interface DataTableLayoutProps {
     header?: React.ReactNode;
@@ -22,21 +21,21 @@ const DataTableLayout: React.FC<DataTableLayoutProps> = ({
         <div className="layout-datatable">
             {header && <div className="header">{header}</div>}
             {sidebar && (
-                <div className="sidebar" hidden={!isSidebarVisible}>
-                    {sidebar}
-                </div>
-            )}
-            {sidebar && (
-                <button
-                    className="toggle-sidebar-btn surface-50 text-500 border-2 border-round border-200"
-                    onClick={() => setIsSidebarVisible(!isSidebarVisible)}
-                >
-                    <i
-                        className={`text-xs pi pi-chevron-${
-                            isSidebarVisible ? "left" : "right"
-                        }`}
-                    />
-                </button>
+                <Fragment>
+                    <div className="sidebar" hidden={!isSidebarVisible}>
+                        {sidebar}
+                    </div>
+                    <button
+                        className="toggle-sidebar-btn surface-50 text-500 border-2 border-round border-200"
+                        onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+                    >
+                        <i
+                            className={`text-xs pi pi-chevron-${
+                                isSidebarVisible ? "left" : "right"
+                            }`}
+                        />
+                    </button>
+                </Fragment>
             )}
             <div className="section">{datatable}</div>
             <div className="paginator">{paginator}</div>

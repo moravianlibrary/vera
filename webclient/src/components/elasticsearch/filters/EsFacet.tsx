@@ -3,6 +3,7 @@ import EsFilter from "./EsFilter";
 import { Checkbox } from "primereact/checkbox";
 import { RefinementListProps, useRefinementList } from "react-instantsearch";
 import { Button } from "primereact/button";
+import { useTranslation } from "react-i18next";
 
 interface EsFacetProps extends RefinementListProps {
     label: string;
@@ -10,20 +11,15 @@ interface EsFacetProps extends RefinementListProps {
 }
 
 const EsFacet: React.FC<EsFacetProps> = (props) => {
+    const { t } = useTranslation();
     const {
         items,
-        hasExhaustiveItems,
-        createURL,
         refine,
-        sendEvent,
-        searchForItems,
-        isFromSearch,
         canRefine,
         canToggleShowMore,
         isShowingMore,
         toggleShowMore,
     } = useRefinementList(props);
-    console.log("canShowMore", canToggleShowMore, isShowingMore);
 
     if (!canRefine) return null;
 
@@ -74,8 +70,8 @@ const EsFacet: React.FC<EsFacetProps> = (props) => {
                     }
                     label={
                         isShowingMore
-                            ? "es.facet.show_less"
-                            : "es.facet.show_more"
+                            ? t("es.facet.show-less")
+                            : t("es.facet.show-more")
                     }
                     onClick={toggleShowMore}
                 />
