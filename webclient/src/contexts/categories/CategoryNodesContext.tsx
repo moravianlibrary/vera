@@ -13,7 +13,7 @@ import ApiCategories, {
     ParentDistribution,
 } from "../../adapters/ApiCategories";
 import { CategoryModel } from "./CategoryModel";
-import { useToast } from "../toast/ToastContext";
+import { useToast } from "../ToastContext";
 import { useTranslation } from "react-i18next";
 import { CategoryType } from "./CategoryType";
 import { useCategories } from "./CategoriesContext";

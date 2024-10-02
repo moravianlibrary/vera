@@ -29,6 +29,7 @@ const catalog_records_index_settings = {
         "has_valid_cnb",
         "added_at",
         "updated_at",
+        "indexed_at",
         "material_type",
         "title",
         "size",
@@ -40,6 +41,22 @@ const catalog_records_index_settings = {
         "frequencies",
     ],
     highlight_attributes: ["id"],
+    sorting: {
+        default: [{ field: "indexed_at", order: "desc" }],
+        _last_edited: [{ field: "indexed_at", order: "desc" }],
+        _non_valid_first: [
+            { field: "has_valid_main_record", order: "asc" },
+            { field: "has_valid_cnb", order: "asc" },
+            { field: "indexed_at", order: "desc" },
+        ],
+        _valid_first: [
+            { field: "has_valid_main_record", order: "desc" },
+            { field: "has_valid_cnb", order: "desc" },
+            { field: "indexed_at", order: "desc" },
+        ],
+        _newest: { field: "added_at", order: "desc" },
+        _oldest: { field: "added_at", order: "asc" },
+    },
     facet_attributes: [
         {
             attribute: "has_valid_main_record",

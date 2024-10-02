@@ -6,7 +6,7 @@ import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
 import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
 import LabeledComponent from "../../components/LabeledComponent";
-import { useToast } from "../../contexts/toast/ToastContext";
+import { useToast } from "../../contexts/ToastContext";
 import { format } from "date-fns";
 import ExtractionPriorityEditor from "../../components/editors/ExtractionPriorityEditor";
 import EditorProps from "../../components/editors/Editor";

@@ -1,6 +1,6 @@
 import React, { ReactNode, createContext, useContext, useRef } from "react";
 import { Toast } from "primereact/toast";
-import { ActionSeverity } from "../../types/PrimeReactTypes";
+import { ActionSeverity } from "../types/PrimeReactTypes";
 import { useTranslation } from "react-i18next";
 
 interface ToastContextProps {

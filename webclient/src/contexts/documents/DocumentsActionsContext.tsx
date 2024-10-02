@@ -3,7 +3,7 @@ import ApiDocuments, { IndexDocument } from "../../adapters/ApiDocuments";
 import DocumentModel from "./DocumentModel";
 import { TaskType } from "../../types/TaskType";
 import ApiTasks from "../../adapters/ApiTasks";
-import { useToast } from "../toast/ToastContext";
+import { useToast } from "../ToastContext";
 import { useTranslation } from "react-i18next";
 import { useDocuments } from "./DocumentsContext";
 import { useDocumentsSelection } from "./DocumentsSelectionContext";

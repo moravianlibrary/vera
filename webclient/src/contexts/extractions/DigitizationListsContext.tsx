@@ -5,7 +5,7 @@ import React, {
     ReactNode,
     useEffect,
 } from "react";
-import { useToast } from "../toast/ToastContext";
+import { useToast } from "../ToastContext";
 import { useTranslation } from "react-i18next";
 import { DocumentsQuery } from "../../adapters/ApiDocuments";
 import { DigitizationList } from "../../adapters/ApiDigitizationLists";

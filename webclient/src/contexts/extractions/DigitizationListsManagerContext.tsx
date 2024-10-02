@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode } from "react";
-import { useToast } from "../toast/ToastContext";
+import { useToast } from "../ToastContext";
 import { useTranslation } from "react-i18next";
 import { useDocuments } from "../documents/DocumentsContext";
 import { useDigitizationLists } from "./DigitizationListsContext";

@@ -9,7 +9,7 @@ import {
     ApiStorages,
     ApiLocations,
 } from "../../../adapters/ApiLocations";
-import { useToast } from "../../toast/ToastContext";
+import { useToast } from "../../ToastContext";
 
 interface LocationsContextProps {
     createLibrary: (name: string) => Promise<Library>;

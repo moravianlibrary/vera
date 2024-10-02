@@ -706,6 +706,7 @@ const resources = {
             common: {
                 yes: "Ano",
                 no: "Ne",
+                "sort-by": "Seřadit podle",
             },
 
             es: {
@@ -741,6 +742,7 @@ const resources = {
                 languages: "Jazyky",
                 frequencies: "Frekvence",
                 "action-approve-difference": "Schválit rozdíl",
+                "difference-approve-success": "Rozdíl byl schválen",
                 "difference-approved": "Schválil",
                 difference: {
                     Equal: "Shoda",
@@ -762,10 +764,17 @@ const resources = {
                     "has-valid-cnb": "ČNB je validné",
                     language: "Jazyk",
                     "material-type": "Typ materialu",
-                    "skc-difference-type": "Typ rozdílu - SKC",
-                    "skc-difference-tag": "Rozdílná pole - SKC",
-                    "cnb-difference-type": "Typ rozdílu - ČNB",
-                    "cnb-difference-tag": "Rozdílná pole - ČNB",
+                    "skc-difference-type": "Typ rozdílu - MZK vs SKC",
+                    "skc-difference-tag": "Rozdílná pole - MZK vs SKC",
+                    "cnb-difference-type": "Typ rozdílu - MZK vs ČNB",
+                    "cnb-difference-tag": "Rozdílná pole - MZK vs ČNB",
+                },
+                "sort-by": {
+                    "last-edited": "Poslední editace",
+                    "non-valid-first": "Nevalidný první",
+                    "valid-first": "Validný první",
+                    newest: "Nejnovejší",
+                    oldest: "Nejstarší",
                 },
                 details: {
                     data: "Detailní informace",

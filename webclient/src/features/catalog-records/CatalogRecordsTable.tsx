@@ -15,13 +15,14 @@ import {
     useInstantSearch,
     usePagination,
 } from "react-instantsearch";
+import { useCatalogRecords } from "../../contexts/CatalogRecordsContext";
 
 interface CatalogRecordsTableProps {}
 
 const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
     Paginator: React.FC;
 } = () => {
-    const { results } = useInstantSearch();
+    const { catalogRecords } = useCatalogRecords();
     const { t } = useTranslation();
 
     const [expandedRows, setExpandedRows] = useState<any[]>([]);
@@ -36,7 +37,7 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
 
     return (
         <DataTable
-            value={results.hits}
+            value={catalogRecords}
             scrollable
             scrollHeight="flex"
             expandedRows={expandedRows}

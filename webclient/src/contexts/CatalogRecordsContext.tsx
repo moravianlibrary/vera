@@ -4,15 +4,12 @@ import ApiCatalogRecords, {
     CatalogRecord,
 } from "../adapters/ApiCatalogRecords";
 import { BaseProviderProps } from "./BaseContext";
+import { useInstantSearch } from "react-instantsearch";
+import { useToast } from "./ToastContext";
+import { useTranslation } from "react-i18next";
 
 interface CatalogRecordsContextProps {
     catalogRecords: CatalogRecord[];
-    numFound: number;
-    page: number;
-    setPage: (page: number) => void;
-    pageSize: number;
-    setPageSize: (pageSize: number) => void;
-    refresh: () => void;
     approveDifference: (differenceId: number) => void;
 }
 
@@ -24,42 +21,35 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
     children,
 }) => {
     const api = new ApiCatalogRecords();
+    const { results } = useInstantSearch();
+    const { t } = useTranslation();
+    const showToast = useToast();
 
     const [catalogRecords, setCatalogRecords] = useState<CatalogRecord[]>([]);
-    const [numFound, setNumFound] = useState<number>(0);
-    const [page, setPage] = useState<number>(1);
-    const [pageSize, setPageSize] = useState<number>(20);
-
-    const fetchCatalogRecords = async () => {
-        // api.getPage(page, pageSize).then((response) => {
-        //     console.log(response.data);
-        //     setCatalogRecords(response.data.items);
-        //     setNumFound(response.data.num_found);
-        // });
-    };
 
     const approveDifference = (differenceId: number) => {
         api.approveDifference(differenceId).then((response) => {
-            console.log(response.data);
+            const updatedCatalogRecord = response.data;
+            setCatalogRecords(
+                catalogRecords.map((cr) => {
+                    return cr.id === updatedCatalogRecord.id
+                        ? updatedCatalogRecord
+                        : cr;
+                })
+            );
+            showToast(
+                "success",
+                t("catalog-records.difference-approve-success")
+            );
         });
     };
 
-    const refresh = () => {
-        fetchCatalogRecords();
-    };
-
     useEffect(() => {
-        fetchCatalogRecords();
-    }, [page, pageSize]);
+        setCatalogRecords(results.hits);
+    }, [results]);
 
     const contextValue: CatalogRecordsContextProps = {
         catalogRecords,
-        numFound,
-        page,
-        setPage,
-        pageSize,
-        setPageSize,
-        refresh,
         approveDifference,
     };
 

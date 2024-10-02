@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useToast } from "./toast/ToastContext";
+import { useToast } from "./ToastContext";
 import { ActionScope, ActionType } from "../types/ActionType";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 import keycloak, { keycloakInitOptions } from "../services/Keycloak";

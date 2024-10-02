@@ -6,7 +6,7 @@ import React, {
     useEffect,
 } from "react";
 import ApiExtractions, { Extraction } from "../../adapters/ApiExtractions";
-import { useToast } from "../toast/ToastContext";
+import { useToast } from "../ToastContext";
 import { useTranslation } from "react-i18next";
 
 interface ExtractionsContextProps {

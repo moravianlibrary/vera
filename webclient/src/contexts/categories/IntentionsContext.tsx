@@ -9,7 +9,7 @@ import ApiCategories, {
     IntentionCreate,
     Intention,
 } from "../../adapters/ApiCategories";
-import { useToast } from "../toast/ToastContext";
+import { useToast } from "../ToastContext";
 import { useTranslation } from "react-i18next";
 import { IntentionClassification } from "../../types/IntentionClassification";
 import IntentionValidator from "../../data/validators/IntentionValidator";

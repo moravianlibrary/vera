@@ -14,7 +14,7 @@ import ApiDocuments, {
     Issue,
 } from "../../adapters/ApiDocuments";
 import { DocumentCreateResult } from "../../types/DocumentCreateResult";
-import { useToast } from "../toast/ToastContext";
+import { useToast } from "../ToastContext";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { generateMessageForResponse } from "../../features/insert-documents/InsertDocumentsFunctions";
 import { ActionSeverity } from "../../types/PrimeReactTypes";

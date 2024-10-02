@@ -9,7 +9,7 @@ import { Column } from "primereact/column";
 import { Button } from "primereact/button";
 import { useDocuments } from "../../contexts/documents/DocumentsContext";
 import DocumentModel from "../../contexts/documents/DocumentModel";
-import { useToast } from "../../contexts/toast/ToastContext";
+import { useToast } from "../../contexts/ToastContext";
 import { Dialog } from "primereact/dialog";
 import { useDocumentsSelection } from "../../contexts/documents/DocumentsSelectionContext";
 import DataTablePaginator from "../../components/DataTablePaginator";

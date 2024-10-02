@@ -5,6 +5,7 @@ from services.external.aleph import AlephRecord
 from .index_document import IndexFrequency
 from models import CatalogRecord
 from datetime import datetime
+from config import VeraConfig
 
 
 class MarcSubfield(BaseEsModel):
@@ -128,6 +129,7 @@ class IndexCatalogRecord(BaseEsModel):
 
     added_at: Date
     updated_at: Date
+    indexed_at: Date
 
     # Other properties
     material_type: Optional[Keyword]
@@ -168,6 +170,7 @@ class IndexCatalogRecord(BaseEsModel):
             has_valid_cnb=data.has_valid_cnb,
             added_at=data.added_at.isoformat(),
             updated_at=data.updated_at.isoformat(),
+            indexed_at=VeraConfig.Timestamp.isoformat(),
             material_type=aleph_record.material_type,
             title=aleph_record.title,
             size=aleph_record.size,

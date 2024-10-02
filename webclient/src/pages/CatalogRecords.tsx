@@ -11,23 +11,21 @@ import CatalogRecordsHeader from "../features/catalog-records/CatalogRecordsHead
 interface CatalogRecordsProps {}
 
 const CatalogRecords: React.FC<CatalogRecordsProps> = (props) => {
-    return (
-        <CatalogRecordsProvider>
-            <CatalogRecordsDiv {...props} />
-        </CatalogRecordsProvider>
-    );
+    return <CatalogRecordsDiv {...props} />;
 };
 
 const CatalogRecordsDiv: React.FC<CatalogRecordsProps> = () => {
     const searchClient = Client(catalogRecordsIndex);
     return (
         <InstantSearch indexName="catalog_records" searchClient={searchClient}>
-            <DataTableLayout
-                header={<CatalogRecordsHeader />}
-                sidebar={<CatalogRecordsFacetsBar />}
-                datatable={<CatalogRecordsTable />}
-                paginator={<CatalogRecordsTable.Paginator />}
-            />
+            <CatalogRecordsProvider>
+                <DataTableLayout
+                    header={<CatalogRecordsHeader />}
+                    sidebar={<CatalogRecordsFacetsBar />}
+                    datatable={<CatalogRecordsTable />}
+                    paginator={<CatalogRecordsTable.Paginator />}
+                />
+            </CatalogRecordsProvider>
         </InstantSearch>
     );
 };

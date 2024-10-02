@@ -7,7 +7,7 @@ import { Button } from "primereact/button";
 import LocationLibraryForm from "./LocationLibraryForm";
 import LabeledComponent from "../../../components/LabeledComponent";
 import { InputText } from "primereact/inputtext";
-import { useToast } from "../../../contexts/toast/ToastContext";
+import { useToast } from "../../../contexts/ToastContext";
 
 interface StorageMenuProps {
     onClose: () => void;

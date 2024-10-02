@@ -5,7 +5,7 @@ import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocume
 import React from "react";
 import { getLocalizedIdentifiers } from "../../types/Identifiers";
 import AssignableCategoryPicker from "../../components/pickers/AssignableCategoryPicker";
-import { useToast } from "../../contexts/toast/ToastContext";
+import { useToast } from "../../contexts/ToastContext";
 import { IdentifierType } from "../../types/IdentifierType";
 import RequiredValueBadge from "../../components/RequiredValueBadge";
 import RequiredValuesButton from "../../components/RequiredValuesButton";

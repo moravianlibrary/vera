@@ -6,7 +6,7 @@ import Access from "./Access";
 import "../config/i18n";
 import "../styles/App.css";
 import "../styles/Palette.css";
-import { ToastProvider } from "../contexts/toast/ToastContext";
+import { ToastProvider } from "../contexts/ToastContext";
 import Categories from "../pages/Categories";
 import Documents from "../pages/Documents";
 import Login from "../components/Login";
