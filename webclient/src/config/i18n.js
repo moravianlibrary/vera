@@ -707,6 +707,7 @@ const resources = {
                 yes: "Ano",
                 no: "Ne",
                 "sort-by": "Seřadit podle",
+                facets: "Filtrovat podle",
             },
 
             es: {

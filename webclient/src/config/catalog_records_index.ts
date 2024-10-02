@@ -1,4 +1,7 @@
-import { filterBooleanQuery } from "../data/factories/EsQueriesFactory";
+import {
+    filterBooleanQuery,
+    filterNestedQuery,
+} from "../data/factories/EsQueriesFactory";
 
 const catalog_records_index_settings = {
     search_attributes: [

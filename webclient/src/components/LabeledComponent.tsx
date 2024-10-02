@@ -1,4 +1,3 @@
-import { classNames } from "primereact/utils";
 import React from "react";
 
 interface LabeledComponentProps {
@@ -10,8 +9,8 @@ interface LabeledComponentProps {
 
 const LabeledComponent: React.FC<LabeledComponentProps> = (props) => {
     let className = props.column
-            ? "flex flex-column"
-            : "flex align-items-baseline gap-2";
+        ? "flex flex-column"
+        : "flex align-items-baseline gap-2";
 
     if (props.className) {
         className += ` ${props.className}`;
@@ -23,6 +22,6 @@ const LabeledComponent: React.FC<LabeledComponentProps> = (props) => {
             <div>{props.children}</div>
         </div>
     );
-}
+};
 
 export default LabeledComponent;

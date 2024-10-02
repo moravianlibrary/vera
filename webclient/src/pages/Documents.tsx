@@ -28,7 +28,7 @@ import { GeneratedExtractionsProvider } from "../contexts/extractions/GeneratedE
 import { LocationsProvider } from "../contexts/extractions/locations/LocationsContext";
 import { IntentionsProvider } from "../contexts/categories/IntentionsContext";
 import { Splitter, SplitterPanel } from "primereact/splitter";
-import DocumentsFiltersBar from "../features/documents/DocumentsFiltersBar";
+import DocumentsQueryRules from "../features/documents/DocumentsQueryRules";
 import documentsIndex from "../adapters/IndexDocuments";
 import { InstantSearch } from "react-instantsearch";
 import DocumentDetailsDialog from "../features/documents/DocumentDetailsDialog";
@@ -175,7 +175,7 @@ const DocumentsDiv: React.FC<DocumentsDivProps> = ({
                         }
                     />
                 }
-                sidebar={<DocumentsFiltersBar />}
+                sidebar={<DocumentsQueryRules />}
                 datatable={<DocumentsTable tableViewType={tableViewType} />}
                 paginator={<DocumentsTable.Paginator />}
             />

@@ -4,9 +4,6 @@ import EsBooleanFacet from "../../components/elasticsearch/filters/EsBooleanFace
 import EsMaterialTypeFacet from "../../components/elasticsearch/filters/EsMaterialTypeFacet";
 import EsMarcFieldDifferenceTypeFacet from "../../components/elasticsearch/filters/EsMarcFieldDifferenceTypeFacet";
 import { useTranslation } from "react-i18next";
-import { SortBy } from "react-instantsearch";
-import { Divider } from "primereact/divider";
-import { Dropdown } from "primereact/dropdown";
 import EsSortBy from "../../components/elasticsearch/EsSortBy";
 import EsQueryRulesLayout from "../../components/layouts/EsQueryRulesLayout";
 
@@ -55,12 +52,6 @@ const CatalogRecordsFacetsBar: React.FC<CatalogRecordsFacetsBarProps> = () => {
                         attribute="has_valid_cnb"
                         label={t("catalog-records.facets.has-valid-cnb")}
                     />
-                    <EsFacet
-                        attribute="language"
-                        label={t("catalog-records.facets.language")}
-                        showMore
-                        limit={5}
-                    />
                     <EsMaterialTypeFacet
                         attribute="material_type"
                         label={t("catalog-records.facets.material-type")}
@@ -80,6 +71,12 @@ const CatalogRecordsFacetsBar: React.FC<CatalogRecordsFacetsBarProps> = () => {
                     <EsFacet
                         attribute="cnb_difference.tag"
                         label={t("catalog-records.facets.cnb-difference-tag")}
+                    />
+                    <EsFacet
+                        attribute="language"
+                        label={t("catalog-records.facets.language")}
+                        showMore
+                        limit={5}
                     />
                 </Fragment>
             }

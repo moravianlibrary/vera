@@ -3,6 +3,7 @@ import { RangeInputProps, useRange } from "react-instantsearch";
 import EsFilter from "./EsFilter";
 import { Slider, SliderChangeEvent } from "primereact/slider";
 import { InputNumber } from "primereact/inputnumber";
+import { Button } from "primereact/button";
 
 interface EsRangeFacetProps extends RangeInputProps {
     label: string;
@@ -32,7 +33,7 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
 
     return (
         <EsFilter label={label}>
-            <div className="flex gap-1">
+            <div className="flex p-inputgroup">
                 <InputNumber
                     value={value ? value[0] : undefined}
                     onChange={(e) =>
@@ -48,6 +49,13 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
                         value &&
                         handleChangeValue([value[0], e.value])
                     }
+                />
+                <Button outlined />
+                <Button
+                    outlined
+                    severity="danger"
+                    icon="pi pi-times"
+                    onClick={() => refine([undefined, undefined])}
                 />
             </div>
             <Slider
