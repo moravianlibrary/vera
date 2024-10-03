@@ -5,12 +5,12 @@ from logic.update_catalog_record import update_catalog_record
 from services.external.aleph import AlephRecord
 from services.external.aleph import AlephIssue
 from services.external.aleph import AlephResponseStatus
-from schemas import IndexDocument
-from services.elasticsearch import get_es_session
+from schemas import IndexDocument, EsSession
+from services.elasticsearch import with_es_session
 
 
-def SyncFromCatalogs(session: Session, task_id: int):
-    es_session = next(get_es_session())
+@with_es_session
+def SyncFromCatalogs(es_session: EsSession, session: Session, task_id: int):
     updated_records_sysno = set()
 
     def update_document_from_catalog(document: Document):
@@ -47,9 +47,7 @@ def SyncFromCatalogs(session: Session, task_id: int):
         document.volume_year = aleph_issue.volume
         document.bundle = aleph_issue.bundle
         document.document_signature = aleph_issue.signature
-        document.pages_count_catalog = aleph_record.parse_page_count(
-            aleph_issue.volume
-        )
+        document.pages_count_catalog = aleph_record.parse_page_count(aleph_issue.volume)
 
         document.save(session)
         IndexDocument.model_validate(document).save(es_session)

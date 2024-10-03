@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
 from typing import List
 from .utils.dependencies import DependsOnDbSession
@@ -50,5 +50,9 @@ def get_role(role_id: int = Path(...), session: Session = DependsOnDbSession):
 @router.get(
     "", dependencies=[CanManageAccess], response_model=List[RoleResponse]
 )
-def get_roles(session: Session = DependsOnDbSession):
-    return Role.all(session)
+def get_roles(
+    page: int = Query(1, description="Page number"),
+    page_size: int = Query(50, description="Page size"),
+    session: Session = DependsOnDbSession,
+):
+    return Role.get_page(session, page, page_size)

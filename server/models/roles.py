@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, JSON
-from sqlalchemy.orm import Session
+from sqlalchemy import asc
+from sqlalchemy.orm import Session, Query
 from typing import List, Optional
 from datatypes import ActionType
 from .base import BaseModel
@@ -27,6 +28,10 @@ class Role(BaseModel):
     @classmethod
     def find_by_name(cls, session: Session, name: str) -> Optional["Role"]:
         return session.query(cls).filter_by(name=name).first()
+
+    @classmethod
+    def query_base(cls, session: Session) -> Query:
+        return session.query(cls).order_by(asc(cls.name))
 
     @classmethod
     def from_dict(cls, dict_):

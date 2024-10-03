@@ -33,7 +33,7 @@ export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
     const loadRoles = async () => {
         api.getPage(1, 50)
             .then((response) => {
-                setRolesData(response.data.items);
+                setRolesData(response.data as any as Role[]);
             })
             .catch((error) => {
                 console.error(`Could not receive assignable roles: ${error}`);

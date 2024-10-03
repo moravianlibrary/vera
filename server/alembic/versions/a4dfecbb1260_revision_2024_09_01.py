@@ -484,6 +484,8 @@ def upgrade_departments() -> None:
 
 
 def upgrade_document_comments() -> None:
+    # skip
+    return
     op.drop_constraint(
         "comments_document_id_fkey", "comments", type_="foreignkey"
     )

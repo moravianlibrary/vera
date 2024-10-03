@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
 from typing import List
 from .utils.dependencies import DependsOnDbSession
@@ -59,5 +59,9 @@ def delete_department(
     dependencies=[CanManageAccess],
     response_model=List[DepartmentResponse],
 )
-def get_departments(db: Session = DependsOnDbSession):
-    return Department.all(db)
+def get_departments(
+    page: int = Query(1, description="Page number"),
+    page_size: int = Query(50, description="Page size"),
+    session: Session = DependsOnDbSession,
+):
+    return Department.get_page(session, page, page_size)

@@ -20,9 +20,7 @@ import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { Chip } from "primereact/chip";
 import { Department } from "../../adapters/ApiDepartments";
 
-interface DepartmentsTableProps {
-    header: () => React.JSX.Element;
-}
+interface DepartmentsTableProps {}
 
 const DepartmentsTable: React.FC<DepartmentsTableProps> = (props) => {
     const { t } = useTranslation();
@@ -81,7 +79,6 @@ const DepartmentsTable: React.FC<DepartmentsTableProps> = (props) => {
             onRowEditComplete={(e) => handleAcceptEdit(e.newData as Department)}
             scrollable
             scrollHeight="flex"
-            header={props.header}
         >
             <Column field="name" header={t("Name")} editor={textEditor} />
             <Column

@@ -145,8 +145,8 @@ async def lifespan(app_: FastAPI):
     logger.info("Database connection successfully established.")
     ensure_last_database_revision()
     # TODO: check on startup table
-    # sync_all_from_catalogs()
-    recreate_documents_index()
+    sync_all_from_catalogs()
+    # recreate_documents_index()
     # reindex_all()
 
     set_failed_tasks_on_start(next(get_session()))

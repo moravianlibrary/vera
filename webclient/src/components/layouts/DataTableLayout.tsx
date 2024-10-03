@@ -4,7 +4,7 @@ interface DataTableLayoutProps {
     header?: React.ReactNode;
     sidebar?: React.ReactNode;
     datatable: React.ReactNode;
-    paginator: React.ReactNode;
+    paginator?: React.ReactNode;
 }
 
 const DataTableLayout: React.FC<DataTableLayoutProps> = ({
@@ -38,7 +38,7 @@ const DataTableLayout: React.FC<DataTableLayoutProps> = ({
                 </Fragment>
             )}
             <div className="section">{datatable}</div>
-            <div className="paginator">{paginator}</div>
+            {paginator && <div className="paginator">{paginator}</div>}
         </div>
     );
 };

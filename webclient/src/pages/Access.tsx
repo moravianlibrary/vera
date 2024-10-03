@@ -13,6 +13,7 @@ import {
     useDepartments,
 } from "../contexts/DepartmentsContext";
 import { useLocation } from "react-router-dom";
+import DataTableLayout from "../components/layouts/DataTableLayout";
 
 const TableEnum = {
     DEPARTMENS: "departments",
@@ -78,18 +79,17 @@ const AccessDiv = () => {
         );
     };
 
-    if (table === TableEnum.DEPARTMENS) {
-        return (
-            <div className="Access">
-                <DepartmentsTable header={tableHeader} />
-            </div>
-        );
-    }
-
     return (
-        <div className="Access">
-            <RolesTable header={tableHeader} />
-        </div>
+        <DataTableLayout
+            header={tableHeader()}
+            datatable={
+                table === TableEnum.DEPARTMENS ? (
+                    <DepartmentsTable />
+                ) : (
+                    <RolesTable />
+                )
+            }
+        />
     );
 };
 

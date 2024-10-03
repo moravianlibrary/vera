@@ -25,9 +25,7 @@ export interface LabeledAction {
     label: string;
 }
 
-interface RolesTableProps {
-    header: () => React.JSX.Element;
-}
+interface RolesTableProps {}
 
 const RolesTable: React.FC<RolesTableProps> = (props) => {
     const { t } = useTranslation();
@@ -104,6 +102,15 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
         label: "Commenting on documents allowed",
     };
 
+    const readCatalogRecordsAction = {
+        action: ActionType.ReadCatalogRecords,
+        label: "Read catalog records allowed",
+    };
+    const reviewCatalogRecordsAction = {
+        action: ActionType.ReviewCatalogRecords,
+        label: "Review catalog records allowed",
+    };
+
     const readCategoriesActions = [
         {
             action: ActionType.ReadCategoriesDepartment,
@@ -160,8 +167,8 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
                     label="Allowed to edit documents"
                 />
                 <ActionColumn action={insertDatatableAction} role={role} />
-                <ActionColumn action={writeDatatableAction} role={role} />
-                <ActionColumn action={commentOnDatatableAction} role={role} />
+                <ActionColumn action={readCatalogRecordsAction} role={role} />
+                <ActionColumn action={reviewCatalogRecordsAction} role={role} />
                 <ActionColumn action={planTasksAction} role={role} />
                 <ActionColumn action={adminTasksAction} role={role} />
                 <ActionGroupColumn
@@ -177,7 +184,6 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
                 <ActionColumn action={extractAction} role={role} />
                 <ActionColumn action={adminExtractionsAction} role={role} />
                 <ActionColumn action={editAccessAction} role={role} />
-                <ActionColumn action={adminDatabaseAction} role={role} />
             </div>
         );
     };
@@ -200,11 +206,11 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
                     options={options}
                 />
                 <ActionColumnEditor
-                    action={writeDatatableAction}
+                    action={readCatalogRecordsAction}
                     options={options}
                 />
                 <ActionColumnEditor
-                    action={commentOnDatatableAction}
+                    action={reviewCatalogRecordsAction}
                     options={options}
                 />
                 <ActionColumnEditor
@@ -234,10 +240,6 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
                     action={editAccessAction}
                     options={options}
                 />
-                <ActionColumnEditor
-                    action={adminDatabaseAction}
-                    options={options}
-                />
             </div>
         );
     };
@@ -255,7 +257,6 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
             headerColumnGroup={headerColumnGroup}
             scrollable
             scrollHeight="flex"
-            header={props.header}
         >
             <Column field="name" editor={textEditor} />
             <Column

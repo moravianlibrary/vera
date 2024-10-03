@@ -1,6 +1,6 @@
 from typing import Dict, List
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy import Column, Integer, String, asc
+from sqlalchemy.orm import relationship, Session, Query
 from sqlalchemy.ext.hybrid import hybrid_property
 from .base import BaseModel
 from .users import User
@@ -21,6 +21,10 @@ class Department(BaseModel):
     @hybrid_property
     def usernames(self) -> List[str]:
         return [user.username for user in self.users]
+
+    @classmethod
+    def query_base(cls, session: Session) -> Query:
+        return session.query(cls).order_by(asc(cls.name))
 
     def save_users(
         self, session: Session, usernames: List[str]
