@@ -65,16 +65,16 @@ class TestSystemEndpoints(TestEndpointsBase):
             dedent(
                 """\
                 roles:
+                - id: 1
+                  name: Admin
+                  actions:
+                  - ReadDatatableOwn
                 - id: 3
                   name: Guest
                 - id: 2
                   name: User
                   actions:
                   - ReadDatatableDepartment
-                - id: 1
-                  name: Admin
-                  actions:
-                  - ReadDatatableOwn
                 """
             ),
         )

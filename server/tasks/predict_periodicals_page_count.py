@@ -1,0 +1,25 @@
+from sqlalchemy.orm import Session
+from models import TaskItem
+from tasks.run_items_processing import run_items_processing_task
+from schemas import IndexDocument, EsSession
+from services.predictor import Predictor
+from services.elasticsearch import with_es_session
+
+
+@with_es_session
+def PredictPeriodicalsPageCount(
+    es_session: EsSession, session: Session, task_id: int
+):
+    predictor = Predictor.get_instance()
+
+    def predict_volume_pages(task_item: TaskItem) -> None:
+        document = task_item.document
+
+        document.pages_count_predicted = (
+            predictor.predict_periodicals_page_count(document)
+        )
+        document.save(session)
+
+        IndexDocument.model_validate(document).save(es_session)
+
+    run_items_processing_task(session, task_id, predict_volume_pages)

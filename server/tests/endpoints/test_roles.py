@@ -87,15 +87,15 @@ class TestRolesEndpoints(TestEndpointsBase):
         self.session.flush()
         expected_roles = [
             {
-                "id": 4,
-                "name": "role 4",
-                "actions": [ActionType.ReadDatatableAll.value],
-            },
-            {"id": 3, "name": "role 3", "actions": [ActionType.Extract.value]},
-            {
                 "id": 2,
                 "name": "role 2",
                 "actions": [ActionType.WriteDatatable.value],
+            },
+            {"id": 3, "name": "role 3", "actions": [ActionType.Extract.value]},
+            {
+                "id": 4,
+                "name": "role 4",
+                "actions": [ActionType.ReadDatatableAll.value],
             },
         ]
 
@@ -107,8 +107,8 @@ class TestRolesEndpoints(TestEndpointsBase):
         # Assert
         self.assertEqual(response.status_code, 200)
         body = response.json()
-        self.assertEqual(len(expected_roles), len(body))
-        for expected_role, actual_role in zip(expected_roles, body):
+        self.assertEqual(len(expected_roles), body["num_found"])
+        for expected_role, actual_role in zip(expected_roles, body["items"]):
             self.assertEqual(expected_role["id"], actual_role["id"])
             self.assertEqual(expected_role["name"], actual_role["name"])
             self.assertListEqual(

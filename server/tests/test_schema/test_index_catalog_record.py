@@ -138,6 +138,7 @@ class TestIndexCatalogRecord(TestSchemaBase):
                         "has_valid_cnb": {"type": "boolean"},
                         "added_at": {"type": "date"},
                         "updated_at": {"type": "date"},
+                        "indexed_at": {"type": "date"},
                         "material_type": {"type": "keyword"},
                         "title": {"type": "keyword"},
                         "size": {"type": "keyword"},

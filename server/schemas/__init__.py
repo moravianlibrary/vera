@@ -25,7 +25,7 @@ from .tasks import (
     TaskDefinition,
     TaskOverview,
     TaskError,
-    TaskDocumentResponse,
+    TaskItemResponse,
     PeriodicTaskResponse,
 )
 from .users import CurrentUser, UserResponse
@@ -50,7 +50,7 @@ from .categories import (
 from .base_es_model import EsSession
 from .index_document import IndexDocument
 from .index_catalog_record import IndexCatalogRecord
-from .predictor import PredictPeriodicalPageCount
+from .predictor import PredictPeriodicalsPageCount
 from services.external.aleph import (
     AlephRecord,
     AlephIssue,
@@ -82,7 +82,7 @@ __all__ = [
     "TaskDefinition",
     "TaskError",
     "TaskOverview",
-    "TaskDocumentResponse",
+    "TaskItemResponse",
     "CurrentUser",
     "UserResponse",
     "DigitizationList",
@@ -100,7 +100,7 @@ __all__ = [
     "Distributions",
     "DistributionList",
     "Page",
-    "PredictPeriodicalPageCount",
+    "PredictPeriodicalsPageCount",
     "PeriodicTaskResponse",
     "AlephRecord",
     "AlephIssue",

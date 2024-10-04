@@ -12,7 +12,7 @@ def load_aleph_record(sysno: str) -> Record:
 
 class TestPredictions(TestCase):
     @patch("requests.get")
-    def test_predict_periodical_page_count_success(self, mock_get):
+    def test_predict_periodicals_page_count_success(self, mock_get):
         # Arrange
         mock_response = Mock()
         mock_response.status_code = 200
@@ -33,13 +33,13 @@ class TestPredictions(TestCase):
         predictor = Predictor(url="http://testurl.com")
 
         # Act
-        page_count = predictor.predict_periodical_page_count(mock_document)
+        page_count = predictor.predict_periodicals_page_count(mock_document)
 
         # Assert
         self.assertEqual(page_count, 100)
 
     @patch("requests.get")
-    def test_predict_periodical_page_count_failure(self, mock_get):
+    def test_predict_periodicals_page_count_failure(self, mock_get):
         # Arrange
         mock_response = Mock()
         mock_response.status_code = 500
@@ -59,7 +59,7 @@ class TestPredictions(TestCase):
 
         # Assert
         with self.assertRaises(Exception):
-            predictor.predict_periodical_page_count(mock_document)
+            predictor.predict_periodicals_page_count(mock_document)
 
     def test_get_instance(self):
         with patch("config.VeraConfig.PredictorUrl", "http://testurl.com"):

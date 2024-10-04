@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from models import (
     CatalogRecord,
     Task,
-    TaskDocument,
+    TaskItem,
     CatalogRecordFieldDifference,
 )
 from datatypes import TaskType, CatalogSource
@@ -124,7 +124,7 @@ def approve_catalog_record_difference(
         owner=approved_by,
     ).save(session)
     for document_id in catalog_record.document_ids:
-        TaskDocument(task_id=task.id, document_id=document_id).save(session)
+        TaskItem(task_id=task.id, document_id=document_id).save(session)
     run_task.delay(task_id=task.id)
 
     return record

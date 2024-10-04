@@ -5,7 +5,8 @@ from datetime import datetime
 from datatypes import (
     TaskState,
     TaskType,
-    TaskDocumentErrorType,
+    TaskItemErrorType,
+    TaskItemType,
     ElasticsearchParams,
 )
 
@@ -32,7 +33,7 @@ class TaskDefinition(BaseModel):
 
 
 class TaskError(BaseModel):
-    error_type: TaskDocumentErrorType
+    error_type: TaskItemErrorType
     error_message: Optional[str]
     count: int
 
@@ -51,12 +52,13 @@ class TaskOverview(TaskDefinition):
         from_attributes = True
 
 
-class TaskDocumentResponse(BaseModel):
-    document_id: int
+class TaskItemResponse(BaseModel):
+    item_id: str
+    item_type: TaskItemType
     deleted: bool
 
     processed: bool
-    error_type: Optional[TaskDocumentErrorType]
+    error_type: Optional[TaskItemErrorType]
     error_message: Optional[str]
 
 

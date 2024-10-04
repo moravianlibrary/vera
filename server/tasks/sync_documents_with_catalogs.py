@@ -1,19 +1,23 @@
 from sqlalchemy.orm import Session
-from models import CatalogRecord, Document
-from tasks.documents_processing import run_task
+from models import CatalogRecord, TaskItem
 from logic.update_catalog_record import update_catalog_record
 from services.external.aleph import AlephRecord
 from services.external.aleph import AlephIssue
 from services.external.aleph import AlephResponseStatus
 from schemas import IndexDocument, EsSession
 from services.elasticsearch import with_es_session
+from .run_items_processing import run_items_processing_task
 
 
 @with_es_session
-def SyncFromCatalogs(es_session: EsSession, session: Session, task_id: int):
+def SyncDocumentsWithCatalogs(
+    es_session: EsSession, session: Session, task_id: int
+):
     updated_records_sysno = set()
 
-    def update_document_from_catalog(document: Document):
+    def update_document_from_catalog(item: TaskItem):
+        document = item.document
+
         if document.sysno not in updated_records_sysno:
             catalog_record, aleph_response_status = update_catalog_record(
                 session, es_session, document.sysno
@@ -47,9 +51,11 @@ def SyncFromCatalogs(es_session: EsSession, session: Session, task_id: int):
         document.volume_year = aleph_issue.volume
         document.bundle = aleph_issue.bundle
         document.document_signature = aleph_issue.signature
-        document.pages_count_catalog = aleph_record.parse_page_count(aleph_issue.volume)
+        document.pages_count_catalog = aleph_record.parse_page_count(
+            aleph_issue.volume
+        )
 
         document.save(session)
         IndexDocument.model_validate(document).save(es_session)
 
-    run_task(session, task_id, update_document_from_catalog)
+    run_items_processing_task(session, task_id, update_document_from_catalog)

@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, Mock, patch
 from .base import TestEndpointsBase
-from models import Task, TaskDocument, TaskDataset, PeriodicTask
-from datatypes import TaskType
+from models import Task, TaskItem, TaskDataset, PeriodicTask
+from datatypes import TaskType, TaskItemType
 import worker
 
 
@@ -41,7 +41,7 @@ class TestTasksEndpoints(TestEndpointsBase):
         self.mockRunTask()
         self.mockIndexer()
         mock_search_source_ids.return_value = [1]
-        task_type = TaskType.GenerateItemsPagesDataset
+        task_type = TaskType.SyncDocumentsWithCatalogs
 
         # Act
         response = self.client.post(
@@ -57,7 +57,7 @@ class TestTasksEndpoints(TestEndpointsBase):
         self.assertEqual(body["task_type"], task_type.value)
         self.assertEqual(body["owner"], "test_user")
         self.assertEqual(
-            [td.document_id for td in TaskDocument.all(self.session)], [1]
+            [ti.item_id for ti in TaskItem.all(self.session)], ["1"]
         )
         # TODO: make it work
         # self.run_task_mock.delay.assert_called_once()
@@ -67,7 +67,9 @@ class TestTasksEndpoints(TestEndpointsBase):
 
     def test_get_task(self):
         # Arrange
-        self.session.add(Task(task_type=TaskType.Reindex, owner="test_user"))
+        self.session.add(
+            Task(task_type=TaskType.ReindexDocuments, owner="test_user")
+        )
         self.session.flush()
 
         # Act
@@ -77,26 +79,34 @@ class TestTasksEndpoints(TestEndpointsBase):
         self.assertResponse(response, 200)
         body = response.json()
         self.assertEqual(body["id"], 1)
-        self.assertEqual(body["task_type"], TaskType.Reindex.value)
+        self.assertEqual(body["task_type"], TaskType.ReindexDocuments.value)
         self.assertEqual(body["owner"], "test_user")
 
     def test_get_task_documents(self):
         # Arrange
-        self.session.add(Task(task_type=TaskType.Reindex, owner="test_user"))
+        self.session.add(
+            Task(task_type=TaskType.ReindexDocuments, owner="test_user")
+        )
         self.session.flush()
-        self.session.add(TaskDocument(task_id=1, document_id=1))
-        self.session.add(TaskDocument(task_id=1, document_id=2))
+        self.session.add(
+            TaskItem(task_id=1, item_id="1", item_type=TaskItemType.Document)
+        )
+        self.session.add(
+            TaskItem(task_id=1, item_id="2", item_type=TaskItemType.Document)
+        )
         self.session.flush()
 
         # Act
-        response = self.client.get("/tasks/1/documents", headers=self.headers)
+        response = self.client.get("/tasks/1/items", headers=self.headers)
 
         # Assert
         self.assertResponse(response, 200)
         body = response.json()
         self.assertEqual(len(body), 2)
-        self.assertEqual(body[0]["document_id"], 1)
-        self.assertEqual(body[1]["document_id"], 2)
+        self.assertEqual(body[0]["item_id"], "1")
+        self.assertEqual(body[0]["item_type"], "Document")
+        self.assertEqual(body[1]["item_id"], "2")
+        self.assertEqual(body[1]["item_type"], "Document")
 
     def test_get_task_dataset(self):
         # Arrange
@@ -121,7 +131,7 @@ class TestTasksEndpoints(TestEndpointsBase):
         # Arrange
         self.session.add_all(
             [
-                Task(task_type=TaskType.Reindex, owner="test_user"),
+                Task(task_type=TaskType.ReindexDocuments, owner="test_user"),
                 Task(
                     task_type=TaskType.GenerateItemsPagesDataset,
                     owner="test_user",
@@ -141,14 +151,16 @@ class TestTasksEndpoints(TestEndpointsBase):
             body["items"][0]["task_type"],
             TaskType.GenerateItemsPagesDataset.value,
         )
-        self.assertEqual(body["items"][1]["task_type"], TaskType.Reindex.value)
+        self.assertEqual(
+            body["items"][1]["task_type"], TaskType.ReindexDocuments.value
+        )
 
 
 class TestPeriodicTasksEndpoints(TestTasksEndpoints):
     def test_create_periodic_task(self):
         # Arrange
         task_params = {
-            "task_type": TaskType.PredictPeriodicalPageCount.value,
+            "task_type": TaskType.PredictPeriodicalsPageCount.value,
             "minute": 10,
             "hour": 5,
             "day_of_week": 1,
@@ -165,7 +177,7 @@ class TestPeriodicTasksEndpoints(TestTasksEndpoints):
         self.assertResponse(response, 200)
         body = response.json()
         self.assertEqual(
-            body["task_type"], TaskType.PredictPeriodicalPageCount.value
+            body["task_type"], TaskType.PredictPeriodicalsPageCount.value
         )
         self.assertEqual(body["minute"], 10)
         self.assertEqual(body["hour"], 5)
@@ -175,7 +187,9 @@ class TestPeriodicTasksEndpoints(TestTasksEndpoints):
 
     def test_update_periodic_task_query(self):
         # Arrange
-        periodic_task = PeriodicTask(task_type=TaskType.Reindex, minute=0)
+        periodic_task = PeriodicTask(
+            task_type=TaskType.ReindexDocuments, minute=0
+        )
         self.session.add(periodic_task)
         self.session.flush()
 
@@ -195,7 +209,9 @@ class TestPeriodicTasksEndpoints(TestTasksEndpoints):
 
     def test_update_periodic_task_schedule(self):
         # Arrange
-        periodic_task = PeriodicTask(task_type=TaskType.Reindex, minute=0)
+        periodic_task = PeriodicTask(
+            task_type=TaskType.ReindexDocuments, minute=0
+        )
         self.session.add(periodic_task)
         self.session.flush()
 
@@ -223,7 +239,9 @@ class TestPeriodicTasksEndpoints(TestTasksEndpoints):
 
     def test_delete_periodic_task(self):
         # Arrange
-        periodic_task = PeriodicTask(task_type=TaskType.Reindex, minute=0)
+        periodic_task = PeriodicTask(
+            task_type=TaskType.ReindexDocuments, minute=0
+        )
         self.session.add(periodic_task)
         self.session.flush()
 
@@ -263,7 +281,7 @@ class TestPeriodicTasksEndpoints(TestTasksEndpoints):
         # Arrange
         self.session.add_all(
             [
-                PeriodicTask(task_type=TaskType.Reindex, minute=0),
+                PeriodicTask(task_type=TaskType.ReindexDocuments, minute=0),
                 PeriodicTask(
                     task_type=TaskType.GenerateItemsPagesDataset, minute=5
                 ),
@@ -284,4 +302,6 @@ class TestPeriodicTasksEndpoints(TestTasksEndpoints):
             body["items"][0]["task_type"],
             TaskType.GenerateItemsPagesDataset.value,
         )
-        self.assertEqual(body["items"][1]["task_type"], TaskType.Reindex.value)
+        self.assertEqual(
+            body["items"][1]["task_type"], TaskType.ReindexDocuments.value
+        )

@@ -126,10 +126,10 @@ class TestDepartmentsEndpoints(TestEndpointsBase):
 
         expected_departments = [
             {
-                "id": 3,
-                "name": "Test Department 3",
-                "abbreviation": "TST-3",
-                "usernames": ["Test User 2", "Test User 3"],
+                "id": 1,
+                "name": "Test Department 1",
+                "abbreviation": "TST-1",
+                "usernames": [],
             },
             {
                 "id": 2,
@@ -138,10 +138,10 @@ class TestDepartmentsEndpoints(TestEndpointsBase):
                 "usernames": ["Test User 1"],
             },
             {
-                "id": 1,
-                "name": "Test Department 1",
-                "abbreviation": "TST-1",
-                "usernames": [],
+                "id": 3,
+                "name": "Test Department 3",
+                "abbreviation": "TST-3",
+                "usernames": ["Test User 2", "Test User 3"],
             },
         ]
 
@@ -151,9 +151,9 @@ class TestDepartmentsEndpoints(TestEndpointsBase):
         # Assert
         self.assertEqual(response.status_code, 200)
         body = response.json()
-        self.assertEqual(len(expected_departments), len(body))
+        self.assertEqual(len(expected_departments), body["num_found"])
         for expected_department, actual_department in zip(
-            expected_departments, body
+            expected_departments, body["items"]
         ):
             self.assertEqual(
                 expected_department["id"], actual_department["id"]

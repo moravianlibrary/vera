@@ -74,16 +74,16 @@ def sync_all_from_catalogs():
     from config import VeraConfig
     from datatypes import TaskType
     from models.base_engine import get_session
-    from models import Document, Task, TaskDocument
+    from models import Document, Task, TaskItem
     from worker import run_task
 
     session = next(get_session())
     task = Task(
-        task_type=TaskType.SyncFromCatalogs,
+        task_type=TaskType.SyncDocumentsWithCatalogs,
         owner=VeraConfig.BotName,
     ).save(session)
     for document in Document.all(session):
-        TaskDocument(task_id=task.id, document_id=document.id).save(session)
+        TaskItem(task_id=task.id, document_id=document.id).save(session)
 
     run_task.delay(task_id=task.id)
 
@@ -92,7 +92,7 @@ def reindex_all():
     from config import VeraConfig
     from datatypes import TaskType
     from models.base_engine import get_session
-    from models import Document, Task, TaskDocument
+    from models import Document, Task, TaskItem
     from worker import run_task
 
     session = next(get_session())
@@ -101,7 +101,7 @@ def reindex_all():
         owner=VeraConfig.BotName,
     ).save(session)
     for document in Document.all(session):
-        TaskDocument(task_id=task.id, document_id=document.id).save(session)
+        TaskItem(task_id=task.id, document_id=document.id).save(session)
 
     run_task.delay(task_id=task.id)
 
@@ -110,7 +110,7 @@ def recreate_documents_index():
     from config import VeraConfig
     from datatypes import TaskType
     from models.base_engine import get_session
-    from models import Document, Task, TaskDocument
+    from models import Document, Task, TaskItem
     from worker import run_task
     from services.elasticsearch import with_es_session
     from schemas import IndexCatalogRecord, IndexDocument
@@ -128,9 +128,19 @@ def recreate_documents_index():
         owner=VeraConfig.BotName,
     ).save(db_session)
     for document in Document.all(db_session):
-        TaskDocument(task_id=task.id, document_id=document.id).save(db_session)
+        TaskItem(task_id=task.id, document_id=document.id).save(db_session)
 
     run_task.delay(task_id=task.id)
+
+
+def reevaluate_all_catalog_records():
+    from tasks.reevaluate_all_catalog_records import (
+        ReevaluateAllCatalogRecords,
+    )
+    from models.base_engine import get_session
+
+    db_session = next(get_session())
+    ReevaluateAllCatalogRecords(db_session)
 
 
 @asynccontextmanager
@@ -145,7 +155,8 @@ async def lifespan(app_: FastAPI):
     logger.info("Database connection successfully established.")
     ensure_last_database_revision()
     # TODO: check on startup table
-    sync_all_from_catalogs()
+    # sync_all_from_catalogs()
+    # reevaluate_all_catalog_records()
     # recreate_documents_index()
     # reindex_all()
 

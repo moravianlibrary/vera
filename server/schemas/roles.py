@@ -15,6 +15,9 @@ class RoleCreate(BaseModel):
 
 
 class RoleResponse(BaseModel):
+    class Config:
+        from_attributes = True
+
     id: int
     name: str
     actions: List[ActionType]

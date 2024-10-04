@@ -1,12 +1,8 @@
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
-from typing import List
 from .utils.dependencies import DependsOnDbSession
 from .utils.permissions import CanManageAccess
-from schemas import (
-    DepartmentCreate,
-    DepartmentResponse,
-)
+from schemas import DepartmentCreate, DepartmentResponse, Page
 from models import Department
 
 
@@ -57,7 +53,7 @@ def delete_department(
 @router.get(
     "",
     dependencies=[CanManageAccess],
-    response_model=List[DepartmentResponse],
+    response_model=Page[DepartmentResponse],
 )
 def get_departments(
     page: int = Query(1, description="Page number"),

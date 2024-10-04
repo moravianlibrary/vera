@@ -5,17 +5,12 @@ from celery.schedules import crontab
 from os import environ, path
 from sys import path as sys_path
 from models.base_engine import DatabaseUrl, get_session
-from datatypes import TaskState, TaskType
+from datatypes import TaskState
 from sqlalchemy.orm import Session
 from sqlalchemy import update, or_
 from config import VeraConfig
 from models import Task, PeriodicTask
-from tasks import (
-    PredictPeriodicalPageCount,
-    Reindex,
-    SyncFromCatalogs,
-    SyncFromDigitizationRegistry,
-)
+from tasks import TaskDispatcher
 
 
 sys_path.append(path.abspath("/app"))
@@ -54,14 +49,6 @@ def set_failed_tasks_on_start(session: Session):
 def setup_periodic_tasks_on_start(session: Session):
     for periodic_task in PeriodicTask.all():
         setup_periodic_task(session, periodic_task)
-
-
-TASK_TYPE_TO_TASK_FUNCTION = {
-    TaskType.PredictPeriodicalPageCount: PredictPeriodicalPageCount,
-    TaskType.Reindex: Reindex,
-    TaskType.SyncFromCatalogs: SyncFromCatalogs,
-    TaskType.SyncFromDigitizationRegistry: SyncFromDigitizationRegistry,
-}
 
 
 def setup_periodic_task(periodic_task: PeriodicTask):
@@ -109,7 +96,7 @@ def run_task(task_id: int):
     task.save(session)
 
     try:
-        task_function = TASK_TYPE_TO_TASK_FUNCTION.get(task.task_type)
+        task_function = TaskDispatcher.get(task.task_type)
         if task_function is None:
             raise ValueError(f"Unknown task type: {task.task_type}")
         task_function(session, task_id)

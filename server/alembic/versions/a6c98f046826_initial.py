@@ -416,7 +416,7 @@ def upgrade() -> None:
             postgresql.ENUM(
                 "MissingVolume",
                 "ConflictPagesCount",
-                name="taskdocumenterrortype",
+                name="TaskItemerrortype",
             ),
             autoincrement=False,
             nullable=True,

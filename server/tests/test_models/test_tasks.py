@@ -1,6 +1,6 @@
 from .base import TestModelBase
-from models import Task, TaskDocument, TaskDataset
-from datatypes import TaskType, TaskDocumentErrorType
+from models import Task, TaskItem, TaskDataset
+from datatypes import TaskType, TaskItemErrorType, TaskItemType
 
 
 TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
@@ -10,37 +10,42 @@ class TestTaskModelPropertiesParsing(TestModelBase):
     def set_up_task_documents_testing(self):
         self.session.add(
             Task(
-                task_type=TaskType.Reindex,
+                task_type=TaskType.ReindexDocuments,
                 owner="Test User",
             )
         )
         self.session.flush()
         self.session.add_all(
             [
-                TaskDocument(
+                TaskItem(
                     task_id=1,
-                    document_id=1,
+                    item_id="1",
+                    item_type=TaskItemType.Document,
                     processed=True,
                 ),
-                TaskDocument(
+                TaskItem(
                     task_id=1,
-                    document_id=2,
+                    item_id="2",
+                    item_type=TaskItemType.Document,
                     processed=False,
                 ),
-                TaskDocument(
+                TaskItem(
                     task_id=1,
-                    document_id=3,
+                    item_id="3",
+                    item_type=TaskItemType.Document,
                     processed=True,
-                    error_type=TaskDocumentErrorType.UnknownError,
+                    error_type=TaskItemErrorType.UnknownError,
                 ),
-                TaskDocument(
+                TaskItem(
                     task_id=1,
-                    document_id=4,
+                    item_id="4",
+                    item_type=TaskItemType.Document,
                     processed=False,
-                    error_type=TaskDocumentErrorType.UnknownError,
+                    error_type=TaskItemErrorType.UnknownError,
                 ),
             ]
         )
+        self.session.flush()
 
     def test_processed_count_parsing(self):
         # Arrange
@@ -64,7 +69,7 @@ class TestTaskModelPropertiesParsing(TestModelBase):
         # Arrange
         self.session.add(
             Task(
-                task_type=TaskType.Reindex,
+                task_type=TaskType.ReindexDocuments,
                 owner="Test User",
             )
         )
@@ -75,7 +80,7 @@ class TestTaskModelPropertiesParsing(TestModelBase):
         self.session.add_all(
             [
                 Task(
-                    task_type=TaskType.Reindex,
+                    task_type=TaskType.GenerateItemsPagesDataset,
                     owner="Test User",
                 ),
                 TaskDataset(

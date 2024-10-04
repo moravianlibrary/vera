@@ -81,6 +81,12 @@ class CatalogRecord(BaseModel):
         viewonly=True,
     )
     documents = relationship("Document", back_populates="catalog_record")
+    task_items = relationship(
+        "TaskItem",
+        primaryjoin="TaskItem.item_id == CatalogRecord.sysno",
+        back_populates="catalog_record",
+        foreign_keys="TaskItem.item_id",
+    )
 
     @hybrid_property
     def main_record(self) -> Record:

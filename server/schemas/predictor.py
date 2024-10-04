@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-class PredictPeriodicalPageCount(BaseModel):
+class PredictPeriodicalsPageCount(BaseModel):
     title: Optional[str]
     year: Optional[int]
     frequency: Optional[int]

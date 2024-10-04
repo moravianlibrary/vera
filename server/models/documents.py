@@ -80,11 +80,11 @@ class Document(BaseModel):
     digitization_list = relationship(
         "DigitizationList", back_populates="documents"
     )
-    task_documents = relationship(
-        "TaskDocument",
-        primaryjoin="TaskDocument.document_id == Document.id",
+    task_items = relationship(
+        "TaskItem",
+        primaryjoin="cast(TaskItem.item_id, Integer) == Document.id",
         back_populates="document",
-        foreign_keys="TaskDocument.document_id",
+        foreign_keys="TaskItem.item_id",
     )
 
     @hybrid_property

@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Access from "./Access";
 import "../config/i18n";
 import "../styles/App.css";
+import "../styles/Layouts.css";
 import "../styles/Palette.css";
 import { ToastProvider } from "../contexts/ToastContext";
 import Categories from "../pages/Categories";

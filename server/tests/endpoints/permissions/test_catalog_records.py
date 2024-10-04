@@ -8,7 +8,7 @@ class TestCatalogRecordsEndpointsPermissions(TestEndpointsPermissionsBase):
             "POST",
             "/catalog_records/search",
             ActionType.ReadCatalogRecords,
-            success_status_code=503,
+            success_status_code=422,
         )
 
     def test_approve_catalog_record_difference_permission(self):
@@ -16,5 +16,5 @@ class TestCatalogRecordsEndpointsPermissions(TestEndpointsPermissionsBase):
             "PATCH",
             "/catalog_records/differences/1/approve",
             ActionType.ReviewCatalogRecords,
-            success_status_code=503,
+            success_status_code=404,
         )

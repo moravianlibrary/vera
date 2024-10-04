@@ -15,4 +15,7 @@ class DepartmentCreate(BaseModel):
 
 
 class DepartmentResponse(DepartmentCreate):
+    class Config:
+        from_attributes = True
+
     id: int

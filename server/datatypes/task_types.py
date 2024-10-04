@@ -2,12 +2,36 @@ from enum import Enum
 
 
 class TaskType(Enum):
-    PredictPeriodicalPageCount = "PredictPeriodicalPageCount"
-    Reindex = "Reindex"
-    SyncFromCatalogs = "SyncFromCatalogs"
-    SyncFromDigitizationRegistry = "SyncFromDigitizationRegistry"
+    PredictPeriodicalsPageCount = "PredictPeriodicalsPageCount"
+    ReindexDocuments = "ReindexDocuments"
+    SyncDocumentsWithCatalogs = "SyncDocumentsWithCatalogs"
+    SyncDocumentsWithDigitizationRegistry = (
+        "SyncDocumentsWithDigitizationRegistry"
+    )
+
+    ReindexCatalogRecords = "ReindexCatalogRecords"
+    SyncCatalogRecordsWithCatalogs = "SyncCatalogRecordsWithCatalogs"
+    ReevaluateCatalogRecordsDifferences = "ReevaluateCatalogRecordsDifferences"
+
     GenerateVolumesPagesDataset = "GenerateVolumesPagesDataset"
     GenerateItemsPagesDataset = "GenerateItemsPagesDataset"
+
+
+def is_catalog_records_task(task_type: TaskType) -> bool:
+    return task_type in [
+        TaskType.ReindexCatalogRecords,
+        TaskType.SyncCatalogRecordsWithCatalogs,
+        TaskType.ReevaluateCatalogRecordsDifferences,
+    ]
+
+
+def is_documents_task(task_type: TaskType) -> bool:
+    return task_type in [
+        TaskType.PredictPeriodicalsPageCount,
+        TaskType.ReindexDocuments,
+        TaskType.SyncDocumentsWithCatalogs,
+        TaskType.SyncDocumentsWithDigitizationRegistry,
+    ]
 
 
 class TaskState(Enum):
@@ -18,6 +42,11 @@ class TaskState(Enum):
     Killed = "Killed"
 
 
-class TaskDocumentErrorType(Enum):
+class TaskItemType(Enum):
+    CatalogRecord = "CatalogRecord"
+    Document = "Document"
+
+
+class TaskItemErrorType(Enum):
     ValueError = "ValueError"
     UnknownError = "UnknownError"

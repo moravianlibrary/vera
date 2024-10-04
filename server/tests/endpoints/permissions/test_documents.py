@@ -36,7 +36,7 @@ class TestDocumentsIntegration(TestEndpointsPermissionsBase):
             "POST",
             "documents/from_catalog",
             ActionType.InsertDatatable,
-            success_status_code=503,
+            success_status_code=422,
         )
 
     def test_update_document_edit_all_permission(self):
@@ -185,19 +185,19 @@ class TestDocumentsIntegration(TestEndpointsPermissionsBase):
             "POST",
             "documents/query",
             ActionType.ReadDatatableAll,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointPermitted(
             "POST",
             "documents/query",
             ActionType.ReadDatatableDepartment,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointPermitted(
             "POST",
             "documents/query",
             ActionType.ReadDatatableOwn,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointProhited(
             "POST",
@@ -214,19 +214,19 @@ class TestDocumentsIntegration(TestEndpointsPermissionsBase):
             "POST",
             "documents/query/export",
             ActionType.ReadDatatableAll,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointPermitted(
             "POST",
             "documents/query/export",
             ActionType.ReadDatatableDepartment,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointPermitted(
             "POST",
             "documents/query/export",
             ActionType.ReadDatatableOwn,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointProhited(
             "POST",
@@ -243,19 +243,19 @@ class TestDocumentsIntegration(TestEndpointsPermissionsBase):
             "PUT",
             "documents/query/change_category",
             ActionType.EditDatatableAll,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointPermitted(
             "PUT",
             "documents/query/change_category",
             ActionType.EditDatatableDepartment,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointPermitted(
             "PUT",
             "documents/query/change_category",
             ActionType.EditDatatableOwn,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointProhited(
             "PUT",
@@ -272,19 +272,19 @@ class TestDocumentsIntegration(TestEndpointsPermissionsBase):
             "POST",
             "documents/query/delete",
             ActionType.EditDatatableAll,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointPermitted(
             "POST",
             "documents/query/delete",
             ActionType.EditDatatableDepartment,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointPermitted(
             "POST",
             "documents/query/delete",
             ActionType.EditDatatableOwn,
-            expected_status_code=503,
+            expected_status_code=422,
         )
         self.assertEndpointProhited(
             "POST",

@@ -9,7 +9,14 @@ from .documents_types import (
 from .catalog_types import CatalogSource, CZECH_LANGUAGE
 from .intention_classification import IntentionClassification
 from .location_state import LocationState
-from .task_types import TaskType, TaskState, TaskDocumentErrorType
+from .task_types import (
+    TaskType,
+    TaskState,
+    TaskItemType,
+    TaskItemErrorType,
+    is_catalog_records_task,
+    is_documents_task,
+)
 from .typing import IdType, JsonBase, ElasticsearchParams
 
 from services.external.aleph import (
@@ -33,7 +40,7 @@ __all__ = [
     "DocumentField",
     "TaskType",
     "TaskState",
-    "TaskDocumentErrorType",
+    "TaskItemErrorType",
     "IdType",
     "JsonBase",
     "ElasticsearchParams",
@@ -44,4 +51,7 @@ __all__ = [
     "DigitizationState",
     "AlephResponseStatus",
     "MarcFieldDifferenceType",
+    "TaskItemType",
+    "is_catalog_records_task",
+    "is_documents_task",
 ]

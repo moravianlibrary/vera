@@ -2,12 +2,12 @@ import requests
 from typing import Optional
 from config import VeraConfig
 from models import Document
-from schemas import PredictPeriodicalPageCount
+from schemas import PredictPeriodicalsPageCount
 from services.external.aleph import AlephRecord
 from services.parsers.frequency_parser import parse_year, parse_frequency
 
 
-PREDICT_PERIODICAL_PAGE_COUNT_ENDPOINT = "/predict_periodical_page_count"
+PREDICT_PERIODICAL_PAGE_COUNT_ENDPOINT = "/predict_periodicals_page_count"
 PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD = "predicted_pages_count"
 
 
@@ -16,13 +16,13 @@ class Predictor:
         self.url = url
         self.timeout = timeout
 
-    def predict_periodical_page_count(
+    def predict_periodicals_page_count(
         self, document: Document
     ) -> Optional[int]:
         aleph_record = AlephRecord(
             document.sysno, document.catalog_record.main_record
         )
-        body = PredictPeriodicalPageCount(
+        body = PredictPeriodicalsPageCount(
             title=aleph_record.title,
             year=parse_year(document.volume_year or document.volume),
             frequency=parse_frequency(

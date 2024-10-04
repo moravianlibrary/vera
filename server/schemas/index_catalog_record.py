@@ -78,6 +78,7 @@ class MarcSubfieldDifference(MarcSubfield):
         from_attributes = True
 
     id: Integer
+    code: Optional[Keyword]
     value: Optional[Keyword]
     different_to: Optional[Keyword]
     differs: Boolean

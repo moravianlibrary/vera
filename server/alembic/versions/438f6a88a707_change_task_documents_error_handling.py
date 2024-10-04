@@ -19,10 +19,10 @@ depends_on = None
 
 def upgrade() -> None:
     op.drop_column("task_documents", "error_type")
-    op.execute("DROP TYPE IF EXISTS taskdocumenterrortype;")
+    op.execute("DROP TYPE IF EXISTS TaskItemerrortype;")
     op.execute(
         """
-        CREATE TYPE public.taskdocumenterrortype AS ENUM (
+        CREATE TYPE public.TaskItemerrortype AS ENUM (
             'ValueError',
             'UnknownError'
         );
@@ -32,9 +32,7 @@ def upgrade() -> None:
         "task_documents",
         sa.Column(
             "error_type",
-            type_=sa.Enum(
-                "taskdocumenterrortype", name="taskdocumenterrortype"
-            ),
+            type_=sa.Enum("TaskItemerrortype", name="TaskItemerrortype"),
             nullable=True,
         ),
     )
@@ -47,10 +45,10 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_column("task_documents", "error_message")
     op.drop_column("task_documents", "error_type")
-    op.execute("DROP TYPE IF EXISTS taskdocumenterrortype;")
+    op.execute("DROP TYPE IF EXISTS TaskItemerrortype;")
     op.execute(
         """
-        CREATE TYPE public.taskdocumenterrortype AS ENUM (
+        CREATE TYPE public.TaskItemerrortype AS ENUM (
             'MissingVolume',
             'ConflictPagesCount'
         );
@@ -60,9 +58,7 @@ def downgrade() -> None:
         "task_documents",
         sa.Column(
             "error_type",
-            type_=sa.Enum(
-                "taskdocumenterrortype", name="taskdocumenterrortype"
-            ),
+            type_=sa.Enum("TaskItemerrortype", name="TaskItemerrortype"),
             nullable=True,
         ),
     )

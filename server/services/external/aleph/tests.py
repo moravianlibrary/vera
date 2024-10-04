@@ -254,7 +254,7 @@ class TestAlephCatalog(TestCase):
         self.assertEqual(status, AlephResponseStatus.Success)
 
         self.assertEqual(
-            aleph_record.locationUri,
+            aleph_record.location_uri,
             "http://www.digitalniknihovna.cz/mzk/uuid/"
             "uuid:21834a15-a176-11e0-8965-0050569d679d",
         )

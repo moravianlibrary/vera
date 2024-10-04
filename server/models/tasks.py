@@ -12,7 +12,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, Session, Query
-from datatypes import TaskType, TaskState, TaskDocumentErrorType
+from datatypes import TaskType, TaskState, TaskItemType, TaskItemErrorType
 from .base import BaseModel
 from typing import Optional
 
@@ -35,20 +35,20 @@ class Task(BaseModel):
     started = Column(TIMESTAMP)
     finished = Column(TIMESTAMP)
 
-    documents = relationship("TaskDocument", back_populates="task")
+    items = relationship("TaskItem", back_populates="task")
     dataset = relationship("TaskDataset", back_populates="task", uselist=False)
 
     @hybrid_property
     def processed_count(self):
-        return sum(1 for document in self.documents if document.processed)
+        return sum(1 for item in self.items if item.processed)
 
     @hybrid_property
     def total_count(self):
-        return len(self.documents)
+        return len(self.items)
 
     @hybrid_property
     def error_count(self):
-        return sum(1 for document in self.documents if document.error_type)
+        return sum(1 for item in self.items if item.error_type)
 
     @hybrid_property
     def has_dataset(self):
@@ -59,34 +59,46 @@ class Task(BaseModel):
         return self.dataset.error_message if self.dataset else None
 
 
-class TaskDocument(BaseModel):
-    __tablename__ = "task_documents"
+class TaskItem(BaseModel):
+    __tablename__ = "task_items"
 
     task_id = Column(Integer, ForeignKey("tasks.id"), index=True)
-    document_id = Column(Integer, index=True)
+    item_id = Column(String, index=True)
+    item_type = Column(Enum(TaskItemType), nullable=False)
     deleted = Column(Boolean, server_default="false")
 
     processed = Column(Boolean, server_default="false")
-    error_type = Column(Enum(TaskDocumentErrorType))
+    error_type = Column(Enum(TaskItemErrorType))
     error_message = Column(String)
 
-    __table_args__ = (PrimaryKeyConstraint("task_id", "document_id"), {})
+    __table_args__ = (
+        PrimaryKeyConstraint("task_id", "item_id", "item_type"),
+        {},
+    )
 
-    task = relationship("Task", back_populates="documents")
+    task = relationship("Task", back_populates="items")
+    catalog_record = relationship(
+        "CatalogRecord",
+        primaryjoin="and_(TaskItem.item_id == CatalogRecord.sysno, "
+        "TaskItem.item_type == 'CatalogRecord')",
+        back_populates="task_items",
+        foreign_keys=item_id,
+    )
     document = relationship(
         "Document",
-        primaryjoin="TaskDocument.document_id == Document.id",
-        back_populates="task_documents",
-        foreign_keys=document_id,
+        primaryjoin="and_(TaskItem.item_id == Document.id, "
+        "TaskItem.item_type == 'Document')",
+        back_populates="task_items",
+        foreign_keys=item_id,
     )
 
     @classmethod
     def find(
-        cls, session: Session, task_id: int, document_id: int
-    ) -> Optional["TaskDocument"]:
+        cls, session: Session, task_id: int, item_id: str
+    ) -> Optional["TaskItem"]:
         return (
             session.query(cls)
-            .filter_by(task_id=task_id, document_id=document_id)
+            .filter_by(task_id=task_id, item_id=item_id)
             .first()
         )
 
@@ -95,7 +107,7 @@ class TaskDocument(BaseModel):
         return session.query(cls)
 
     def is_persisted(self, session: Session) -> bool:
-        return self.find(session, self.task_id, self.document_id) is not None
+        return self.find(session, self.task_id, self.item_id) is not None
 
 
 class TaskDataset(BaseModel):

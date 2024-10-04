@@ -1,7 +1,14 @@
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datatypes import TaskType, ElasticsearchParams, JsonBase
+from datatypes import (
+    TaskType,
+    ElasticsearchParams,
+    JsonBase,
+    is_catalog_records_task,
+    is_documents_task,
+    TaskItemType,
+)
 from worker import run_task
 from .utils.permissions import CanPlanTask, CanManageTask
 from .utils.dependencies import (
@@ -9,14 +16,16 @@ from .utils.dependencies import (
     DependsOnDbSession,
     DependsOnEsSession,
 )
-from schemas import IndexDocument, EsSession
-from models import Task, TaskDocument, PeriodicTask
+from models import Task, TaskItem, PeriodicTask
 from schemas import (
     TaskDefinition,
     TaskOverview,
-    TaskDocumentResponse,
+    TaskItemResponse,
     Page,
     PeriodicTaskResponse,
+    IndexDocument,
+    IndexCatalogRecord,
+    EsSession,
 )
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
@@ -30,18 +39,31 @@ def create_task(
     es_session: EsSession = DependsOnEsSession,
     db: Session = DependsOnDbSession,
 ):
-    if query_params is None:
-        task = Task(task_type=task_type, owner=owner).save(db)
-    else:
-        task = Task(
-            task_type=task_type,
-            query_params=query_params,
-            owner=owner,
-        ).save(db)
+    task = Task(
+        task_type=task_type,
+        query_params=query_params,
+        owner=owner,
+    ).save(db)
+
+    if is_catalog_records_task(task_type):
+        for catalog_record_sysno in IndexCatalogRecord.search_source_ids(
+            es_session, query_params
+        ):
+            TaskItem(
+                task_id=task.id,
+                item_id=catalog_record_sysno,
+                item_type=TaskItemType.CatalogRecord,
+            ).save(db)
+    elif is_documents_task(task_type):
         for document_id in IndexDocument.search_source_ids(
             es_session, query_params
         ):
-            TaskDocument(task_id=task.id, document_id=document_id).save(db)
+            TaskItem(
+                task_id=task.id,
+                item_id=str(document_id),
+                item_type=TaskItemType.Document,
+            ).save(db)
+
     run_task.delay(task_id=task.id)
     return task
 
@@ -66,15 +88,15 @@ def get_task(
 
 
 @router.get(
-    "/{id}/documents",
+    "/{id}/items",
     dependencies=[CanPlanTask],
-    response_model=List[TaskDocumentResponse],
+    response_model=List[TaskItemResponse],
 )
 def get_task_documents(
     id: int = Path(...),
     db: Session = DependsOnDbSession,
 ):
-    return Task.get(db, id).documents
+    return Task.get(db, id).items
 
 
 @router.get(

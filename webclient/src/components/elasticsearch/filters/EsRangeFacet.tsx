@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { RangeInputProps, useRange } from "react-instantsearch";
 import EsFilter from "./EsFilter";
 import { Slider, SliderChangeEvent } from "primereact/slider";
@@ -11,11 +11,17 @@ interface EsRangeFacetProps extends RangeInputProps {
 }
 
 const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
-    const { start, range, canRefine, refine } = useRange(props);
+    const { range, canRefine, refine } = useRange(props);
 
     const [value, setValue] = React.useState<[number, number] | undefined>(
-        (range.min && range.max && [range.min, range.max]) || undefined
+        undefined
     );
+
+    useEffect(() => {
+        if (range && range.min && range.max && !value) {
+            setValue([range.min, range.max]);
+        }
+    }, [range]);
 
     if (!canRefine) return null;
 
@@ -35,6 +41,7 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
         <EsFilter label={label}>
             <div className="flex p-inputgroup">
                 <InputNumber
+                    className="w-min"
                     value={value ? value[0] : undefined}
                     onChange={(e) =>
                         e.value &&
@@ -43,6 +50,7 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
                     }
                 />
                 <InputNumber
+                    className="w-min"
                     value={value ? value[1] : undefined}
                     onChange={(e) =>
                         e.value &&
@@ -50,7 +58,7 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
                         handleChangeValue([value[0], e.value])
                     }
                 />
-                <Button outlined />
+                {/* <Button outlined icon="pi pi-search" /> */}
                 <Button
                     outlined
                     severity="danger"

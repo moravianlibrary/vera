@@ -61,7 +61,7 @@ def update_catalog_record_difference(
     old_differences: Set[MarcFieldDifference] = set()
 
     for difference_model in actual_differences:
-        difference = MarcFieldDifference(difference_model)
+        difference = MarcFieldDifference.model_validate(difference_model)
         actual_difference_models_map[difference] = difference_model
         old_differences.add(difference)
 
