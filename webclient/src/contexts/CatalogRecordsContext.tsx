@@ -1,15 +1,12 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { createContext } from "react";
-import ApiCatalogRecords, {
-    CatalogRecord,
-} from "../adapters/ApiCatalogRecords";
+import ApiCatalogRecords from "../adapters/ApiCatalogRecords";
 import { BaseProviderProps } from "./BaseContext";
-import { useInstantSearch } from "react-instantsearch";
 import { useToast } from "./ToastContext";
 import { useTranslation } from "react-i18next";
+import { useEsDataTable } from "./EsDataTableContext";
 
 interface CatalogRecordsContextProps {
-    catalogRecords: CatalogRecord[];
     approveDifference: (differenceId: number) => void;
 }
 
@@ -21,22 +18,13 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
     children,
 }) => {
     const api = new ApiCatalogRecords();
-    const { results } = useInstantSearch();
+    const { updateItem } = useEsDataTable();
     const { t } = useTranslation();
     const showToast = useToast();
 
-    const [catalogRecords, setCatalogRecords] = useState<CatalogRecord[]>([]);
-
     const approveDifference = (differenceId: number) => {
         api.approveDifference(differenceId).then((response) => {
-            const updatedCatalogRecord = response.data;
-            setCatalogRecords(
-                catalogRecords.map((cr) => {
-                    return cr.id === updatedCatalogRecord.id
-                        ? updatedCatalogRecord
-                        : cr;
-                })
-            );
+            updateItem(response.data.id, response.data);
             showToast(
                 "success",
                 t("catalog-records.difference-approve-success")
@@ -44,12 +32,7 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
         });
     };
 
-    useEffect(() => {
-        setCatalogRecords(results.hits);
-    }, [results]);
-
     const contextValue: CatalogRecordsContextProps = {
-        catalogRecords,
         approveDifference,
     };
 

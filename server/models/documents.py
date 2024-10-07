@@ -80,12 +80,6 @@ class Document(BaseModel):
     digitization_list = relationship(
         "DigitizationList", back_populates="documents"
     )
-    task_items = relationship(
-        "TaskItem",
-        primaryjoin="cast(TaskItem.item_id, Integer) == Document.id",
-        back_populates="document",
-        foreign_keys="TaskItem.item_id",
-    )
 
     @hybrid_property
     def cnb(self) -> Optional[str]:

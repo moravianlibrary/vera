@@ -163,15 +163,15 @@ class TestCatalogSyncIntegration(TestTasksBase):
 
         # Act
         SyncDocumentsWithCatalogs(self.session, 1)
-        document = Document.get(self.session, 1)
+        task_item = TaskItem.find(self.session, 1, 1)
 
         # Assert
         self.assertEqual(
-            document.task_items[0].error_type,
+            task_item.error_type,
             TaskItemErrorType.UnknownError,
         )
         self.assertEqual(
-            document.task_items[0].error_message,
+            task_item.error_message,
             "Record with sysno MZK01-000165329 is not available from Aleph. "
             "Status: AlephResponseStatus.InvalidSysno.",
         )

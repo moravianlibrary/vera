@@ -81,15 +81,15 @@ class TaskItem(BaseModel):
         "CatalogRecord",
         primaryjoin="and_(TaskItem.item_id == CatalogRecord.sysno, "
         "TaskItem.item_type == 'CatalogRecord')",
-        back_populates="task_items",
         foreign_keys=item_id,
+        viewonly=True,
     )
     document = relationship(
         "Document",
         primaryjoin="and_(TaskItem.item_id == Document.id, "
         "TaskItem.item_type == 'Document')",
-        back_populates="task_items",
         foreign_keys=item_id,
+        viewonly=True,
     )
 
     @classmethod

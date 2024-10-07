@@ -81,6 +81,18 @@ class VeraConfig:
         def Password() -> str:
             return environ.get("ELASTICSEARCH_PASSWORD", "veraIndex")
 
+        @staticproperty
+        def CatalogRecordsQueryFields() -> List[str]:
+            return environ.get(
+                "CATALOG_RECORDS_QUERY_FIELDS",
+                "id^3,skc_sysno,cnb_sysno,cnb,signature,isxn,barcodes,"
+                "publisher",
+            ).split(",")
+
+        @staticproperty
+        def CatalogRecordsQueryFuzziness() -> str:
+            return environ.get("CATALOG_RECORDS_QUERY_FUZZINESS", "AUTO:4,8")
+
     class Postgres:
         @staticproperty
         def User() -> str:

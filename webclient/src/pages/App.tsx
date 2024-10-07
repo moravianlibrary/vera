@@ -20,6 +20,7 @@ import NavigationMenu from "../components/NavigationMenu";
 import ActionAccessRoute from "../components/access/ActionAccessRoute";
 import CatalogRecords from "./CatalogRecords";
 import WithProviders from "../components/wrappers/WithProviders";
+import { ConfirmDialog } from "primereact/confirmdialog";
 
 function Routing() {
     return (
@@ -74,6 +75,7 @@ function App() {
                         <div className="content">
                             <Routing />
                         </div>
+                        <ConfirmDialog />
                     </main>
                 </Router>
             </StrictMode>

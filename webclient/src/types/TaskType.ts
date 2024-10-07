@@ -1,10 +1,13 @@
 enum TaskType {
-    PredictPeriodicalPageCount = 'PredictPeriodicalPageCount',
-    Reindex = 'Reindex',
-    SyncFromCatalogs = 'SyncFromCatalogs',
-    SyncFromDigitizationRegistry = 'SyncFromDigitizationRegistry',
+    PredictPeriodicalsPageCount = "PredictPeriodicalsPageCount",
+    ReindexDocuments = "ReindexDocuments",
+    SyncDocumentsWithCatalogs = "SyncDocumentsWithCatalogs",
+    SyncDocumentsWithDigitizationRegistry = "SyncDocumentsWithDigitizationRegistry",
+    ReindexCatalogRecords = "ReindexCatalogRecords",
+    SyncCatalogRecordsWithCatalogs = "SyncCatalogRecordsWithCatalogs",
+    ReevaluateCatalogRecordsDifferences = "ReevaluateCatalogRecordsDifferences",
     GenerateVolumesPagesDataset = "GenerateVolumesPagesDataset",
-    GenerateItemsPagesDataset = "GenerateItemsPagesDataset"
+    GenerateItemsPagesDataset = "GenerateItemsPagesDataset",
 }
 
 export { TaskType };

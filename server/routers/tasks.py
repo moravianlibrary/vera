@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datatypes import (
     TaskType,
-    ElasticsearchParams,
+    EsRoutingParams,
     JsonBase,
     is_catalog_records_task,
     is_documents_task,
@@ -34,7 +34,7 @@ router = APIRouter(prefix="/tasks", tags=["Tasks"])
 @router.post("", dependencies=[CanPlanTask], response_model=TaskDefinition)
 def create_task(
     task_type: TaskType = Query(...),
-    query_params: Optional[ElasticsearchParams] = None,
+    query_params: Optional[EsRoutingParams] = None,
     owner: str = DependsOnCallerUsername,
     es_session: EsSession = DependsOnEsSession,
     db: Session = DependsOnDbSession,
@@ -131,7 +131,7 @@ def create_periodic_task(
     hour: Optional[int] = Query(...),
     day_of_week: Optional[int] = Query(...),
     day_of_month: Optional[int] = Query(...),
-    query_params: Optional[ElasticsearchParams] = None,
+    query_params: Optional[EsRoutingParams] = None,
     session: Session = DependsOnDbSession,
 ):
     return PeriodicTask(
@@ -151,7 +151,7 @@ def create_periodic_task(
 )
 def update_periodic_task_query(
     id: int = Path(...),
-    query_params: Optional[ElasticsearchParams] = None,
+    query_params: Optional[EsRoutingParams] = None,
     session: Session = DependsOnDbSession,
 ):
     periodic_task = PeriodicTask.get(session, id)

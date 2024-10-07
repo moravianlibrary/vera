@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { DataTable, DataTableRowEvent } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
@@ -10,23 +10,16 @@ import CnbValidityColumnBody from "./table-columns/CnbValidityColumnBody";
 import MzkSysnoColumnBody from "./table-columns/MzkSysnoColumnBody";
 import { CatalogRecord } from "../../adapters/ApiCatalogRecords";
 import CatalogRecordDetails from "./CatalogRecordDetails";
-import {
-    useHitsPerPage,
-    useInstantSearch,
-    usePagination,
-} from "react-instantsearch";
-import { useCatalogRecords } from "../../contexts/CatalogRecordsContext";
-import { useEsSelection } from "../../contexts/EsSelectionContext";
+import { useEsDataTable } from "../../contexts/EsDataTableContext";
 
 interface CatalogRecordsTableProps {}
 
 const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
     Paginator: React.FC;
 } = () => {
-    const { catalogRecords } = useCatalogRecords();
-    const { currentPageSelected, handleDataTableSelectionChange } =
-        useEsSelection();
     const { t } = useTranslation();
+    const { items, currentPageSelected, handleDataTableSelectionChange } =
+        useEsDataTable();
 
     const [expandedRows, setExpandedRows] = useState<any[]>([]);
 
@@ -40,9 +33,10 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
 
     return (
         <DataTable
-            value={catalogRecords}
+            value={items}
             scrollable
             scrollHeight="flex"
+            dataKey={"id"}
             expandedRows={expandedRows}
             onRowExpand={handleRowExpand}
             onRowCollapse={handleRowCollapse}
@@ -87,25 +81,15 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
 };
 
 const CatalogRecordsTablePaginator: React.FC = () => {
-    const { results, refresh } = useInstantSearch();
-    const { currentRefinement, nbHits, refine: setPage } = usePagination();
-    const { items: pageSizeOptions, refine: setPageSize } = useHitsPerPage({
-        items: [
-            { value: 10, label: "10" },
-            { value: 15, label: "15" },
-            { value: 20, label: "20", default: true },
-            { value: 25, label: "25" },
-            { value: 50, label: "50" },
-            { value: 100, label: "100" },
-        ],
-    });
+    const { numFound, refresh, page, setPage, pageSize, setPageSize } =
+        useEsDataTable();
 
     return (
         <DataTablePaginator
-            numFound={nbHits}
-            page={currentRefinement + 1}
-            pageSize={results.hitsPerPage}
-            onPageChangeNew={(page) => setPage(page - 1)}
+            numFound={numFound}
+            page={page}
+            pageSize={pageSize}
+            onPageChangeNew={setPage}
             onPageSizeChange={setPageSize}
             onRefresh={refresh}
             numFoundText="catalog-records.numFound"

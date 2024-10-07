@@ -29,22 +29,40 @@ interface TaskDocument {
     error_message: string;
 }
 
+interface EsQuery {
+    [key: string]: string;
+}
+
 namespace ApiTasks {
-    export function planTask(task_type: TaskType, query?: DocumentsQuery) {
+    export function planTask(task_type: TaskType, query?: EsQuery) {
         if (query) {
-            return axiosInstance.post(`/tasks?task_type=${task_type.toString()}`, query, { headers: authHeader() });
+            return axiosInstance.post(
+                `/tasks?task_type=${task_type.toString()}`,
+                query,
+                { headers: authHeader() }
+            );
         }
-        return axiosInstance.post(`/tasks?task_type=${task_type.toString()}`, null, { headers: authHeader() });
+        return axiosInstance.post(
+            `/tasks?task_type=${task_type.toString()}`,
+            null,
+            { headers: authHeader() }
+        );
     }
 
     export function getTasks(page: number, page_size: number) {
-        return axiosInstance.get<Page<Task>>(`/tasks?page=${page}&page_size=${page_size}`, { headers: authHeader() });
+        return axiosInstance.get<Page<Task>>(
+            `/tasks?page=${page}&page_size=${page_size}`,
+            { headers: authHeader() }
+        );
     }
 
     export function getTaskDocuments(task_id: number) {
-        return axiosInstance.get<TaskDocument[]>(`/tasks/${task_id}/documents`, { headers: authHeader() });
+        return axiosInstance.get<TaskDocument[]>(
+            `/tasks/${task_id}/documents`,
+            { headers: authHeader() }
+        );
     }
 }
 
 export default ApiTasks;
-export type { Task, TaskDocument };
+export type { Task, TaskDocument, EsQuery };

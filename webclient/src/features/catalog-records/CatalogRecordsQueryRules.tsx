@@ -49,27 +49,35 @@ const CatalogRecordsFacetsBar: React.FC<CatalogRecordsFacetsBarProps> = () => {
                         )}
                     />
                     <EsBooleanFacet
+                        attribute="skc_sysno_resolved"
+                        label={t("catalog-records.facets.skc-sysno-resolved")}
+                    />
+                    <EsBooleanFacet
                         attribute="has_valid_cnb"
                         label={t("catalog-records.facets.has-valid-cnb")}
+                    />
+                    <EsBooleanFacet
+                        attribute="cnb_sysno_resolved"
+                        label={t("catalog-records.facets.cnb-sysno-resolved")}
                     />
                     <EsMaterialTypeFacet
                         attribute="material_type"
                         label={t("catalog-records.facets.material-type")}
                     />
                     <EsMarcFieldDifferenceTypeFacet
-                        attribute="skc_difference.difference_type"
+                        attribute="skc_difference_type_facets"
                         label={t("catalog-records.facets.skc-difference-type")}
                     />
                     <EsFacet
-                        attribute="skc_difference.tag"
+                        attribute="skc_difference_tag_facets"
                         label={t("catalog-records.facets.skc-difference-tag")}
                     />
                     <EsMarcFieldDifferenceTypeFacet
-                        attribute="cnb_difference.difference_type"
+                        attribute="cnb_difference_type_facets"
                         label={t("catalog-records.facets.cnb-difference-type")}
                     />
                     <EsFacet
-                        attribute="cnb_difference.tag"
+                        attribute="cnb_difference_tag_facets"
                         label={t("catalog-records.facets.cnb-difference-tag")}
                     />
                     <EsFacet

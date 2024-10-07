@@ -108,7 +108,7 @@ def reindex_all():
 
 def recreate_documents_index():
     from config import VeraConfig
-    from datatypes import TaskType
+    from datatypes import TaskType, TaskItemType
     from models.base_engine import get_session
     from models import Document, Task, TaskItem
     from worker import run_task
@@ -124,23 +124,17 @@ def recreate_documents_index():
     db_session = next(get_session())
 
     task = Task(
-        task_type=TaskType.Reindex,
+        task_type=TaskType.ReindexDocuments,
         owner=VeraConfig.BotName,
     ).save(db_session)
     for document in Document.all(db_session):
-        TaskItem(task_id=task.id, document_id=document.id).save(db_session)
+        TaskItem(
+            task_id=task.id,
+            item_id=str(document.id),
+            item_type=TaskItemType.Document,
+        ).save(db_session)
 
     run_task.delay(task_id=task.id)
-
-
-def reevaluate_all_catalog_records():
-    from tasks.reevaluate_all_catalog_records import (
-        ReevaluateAllCatalogRecords,
-    )
-    from models.base_engine import get_session
-
-    db_session = next(get_session())
-    ReevaluateAllCatalogRecords(db_session)
 
 
 @asynccontextmanager

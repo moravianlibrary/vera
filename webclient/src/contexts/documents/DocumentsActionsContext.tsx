@@ -2,7 +2,7 @@ import React, { createContext, useContext, ReactNode, useState } from "react";
 import ApiDocuments, { IndexDocument } from "../../adapters/ApiDocuments";
 import DocumentModel from "./DocumentModel";
 import { TaskType } from "../../types/TaskType";
-import ApiTasks from "../../adapters/ApiTasks";
+import ApiTasks, { EsQuery } from "../../adapters/ApiTasks";
 import { useToast } from "../ToastContext";
 import { useTranslation } from "react-i18next";
 import { useDocuments } from "./DocumentsContext";
@@ -124,9 +124,11 @@ export const DocumentsActionsProvider: React.FC<
     };
 
     const startTask = async (taskType: TaskType) => {
-        ApiTasks.planTask(taskType, selectionQuery).then((response) => {
-            showToast("success", t("Task started successfully"), "");
-        });
+        ApiTasks.planTask(taskType, selectionQuery as EsQuery).then(
+            (response) => {
+                showToast("success", t("Task started successfully"), "");
+            }
+        );
     };
 
     const deleteDocuments = () => {

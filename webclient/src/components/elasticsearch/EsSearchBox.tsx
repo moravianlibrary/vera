@@ -4,10 +4,13 @@ import React, { useEffect, useState } from "react";
 import { SearchBoxProps, useSearchBox } from "react-instantsearch";
 import { IconField } from "primereact/iconfield";
 import { InputIcon } from "primereact/inputicon";
+import { useTranslation } from "react-i18next";
 
 interface EsSearchBoxProps extends SearchBoxProps {}
 
 const EsSearchBox: React.FC<EsSearchBoxProps> = (props) => {
+    const { t } = useTranslation();
+
     const { query, refine, clear } = useSearchBox(props);
     const [value, setValue] = useState("");
 
@@ -27,6 +30,7 @@ const EsSearchBox: React.FC<EsSearchBoxProps> = (props) => {
                 <InputText
                     type="text"
                     className="ais-SearchBox-input"
+                    placeholder={t("Search")}
                     value={value}
                     onChange={(e) => {
                         setValue(e.target.value);

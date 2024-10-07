@@ -329,7 +329,7 @@ const resources = {
             SyncFromCatalog: "Synchronizace z katalogu",
             "Sync from digitization registry":
                 "Synchronizovat z registru digitalizace",
-            SyncFromDigitizationRegistry:
+            SyncDocumentsWithDigitizationRegistry:
                 "Synchronizace z registru digitalizace",
 
             "documents without CNB": "dokumentů bez ČNB",
@@ -717,8 +717,31 @@ const resources = {
                 },
             },
 
+            tasks: {
+                name: {
+                    ReindexCatalogRecords: "Reindexovat katalogové záznamy",
+                    ReevaluateCatalogRecordsDifferences:
+                        "Přepočítat rozdíly mezi katalogovými záznamy",
+                    SyncCatalogRecordsWithCatalogs:
+                        "Synchronizovat katalogové záznamy s katalogy (MZK, SKC, ČNB)",
+                },
+                messages: {
+                    "confirm-start": {
+                        header: "Spustení úkolu",
+                        ReevaluateCatalogRecordsDifferences:
+                            "Opravdu chcete přepočítat rozdíly katalogových záznamů pro {{count}} vybrané záznamy?",
+                        SyncCatalogRecordsWithCatalogs:
+                            "Opravdu chcete synchronizovat vybrané {{count}} záznamy s katalogy?",
+                        ReindexCatalogRecords:
+                            "Opravdu chcete reindexovat vybrané {{count}} záznamy?",
+                    },
+                    started: "Úkol spusten",
+                },
+            },
+
             "catalog-records": {
                 numFound: "Počet nalezených záznamů",
+                "num-selected": "Počet vybránych záznamů",
                 "mzk-sysno": "MZK systémové číslo",
                 "skc-sysno": "SKC systémové číslo",
                 "cnb-sysno": "ČNB systémové číslo",
@@ -762,7 +785,9 @@ const resources = {
                 },
                 facets: {
                     "has-valid-main-record": "Záznam je validný",
+                    "skc-sysno-resolved": "SKC systémové číslo nalezeno",
                     "has-valid-cnb": "ČNB je validné",
+                    "cnb-sysno-resolved": "ČNB systémové číslo nalezeno",
                     language: "Jazyk",
                     "material-type": "Typ materialu",
                     "skc-difference-type": "Typ rozdílu - MZK vs SKC",

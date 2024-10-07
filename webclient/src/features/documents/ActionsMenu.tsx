@@ -70,11 +70,11 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
 
     const handleClickStartTask = (taskType: TaskType) => {
         const taskMesage =
-            taskType === TaskType.PredictPeriodicalPageCount
+            taskType === TaskType.PredictPeriodicalsPageCount
                 ? "Are you sure you want to predict periodical volume pages for {{count}} selected documents?"
-                : taskType === TaskType.SyncFromDigitizationRegistry
+                : taskType === TaskType.SyncDocumentsWithDigitizationRegistry
                 ? "Are you sure you want to sync {{count}} selected documents with digitization registry?"
-                : taskType === TaskType.SyncFromCatalogs
+                : taskType === TaskType.SyncDocumentsWithCatalogs
                 ? "Are you sure you want to sync {{count}} selected documents with catalog?"
                 : "Are you sure you want to process {{count}} selected documents?";
         confirmAction(t(taskMesage, { count: numSelected }), () =>
@@ -182,16 +182,19 @@ const DocumentsActionsMenu: React.FC<DocumentsActionsMenuProps> = () => {
             {
                 label: t("Predict volumes page counts"),
                 command: () =>
-                    handleClickStartTask(TaskType.PredictPeriodicalPageCount),
+                    handleClickStartTask(TaskType.PredictPeriodicalsPageCount),
             },
             {
                 label: t("Sync from catalog"),
-                command: () => handleClickStartTask(TaskType.SyncFromCatalogs),
+                command: () =>
+                    handleClickStartTask(TaskType.SyncDocumentsWithCatalogs),
             },
             {
                 label: t("Sync from digitization registry"),
                 command: () =>
-                    handleClickStartTask(TaskType.SyncFromDigitizationRegistry),
+                    handleClickStartTask(
+                        TaskType.SyncDocumentsWithDigitizationRegistry
+                    ),
             },
         ],
     };

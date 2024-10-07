@@ -17,7 +17,7 @@ from .task_types import (
     is_catalog_records_task,
     is_documents_task,
 )
-from .typing import IdType, JsonBase, ElasticsearchParams
+from .typing import IdType, JsonBase, ElasticsearchParams, EsRoutingParams
 
 from services.external.aleph import (
     IssuanceType,
@@ -54,4 +54,5 @@ __all__ = [
     "TaskItemType",
     "is_catalog_records_task",
     "is_documents_task",
+    "EsRoutingParams",
 ]

@@ -23,10 +23,12 @@ const catalog_records_index_settings = {
         "isxn",
         "barcodes",
         "skc_sysno",
+        "skc_sysno_resolved",
         "skc_record",
         "skc_difference",
         "has_valid_main_record",
         "cnb_sysno",
+        "cnb_sysno_resolved",
         "cnb_record",
         "cnb_difference",
         "has_valid_cnb",
@@ -68,15 +70,22 @@ const catalog_records_index_settings = {
             filterQuery: filterBooleanQuery,
         },
         {
+            attribute: "skc_sysno_resolved",
+            field: "skc_sysno_resolved",
+            type: "numeric",
+            filterQuery: filterBooleanQuery,
+        },
+        {
             attribute: "has_valid_cnb",
             field: "has_valid_cnb",
             type: "numeric",
             filterQuery: filterBooleanQuery,
         },
         {
-            attribute: "language",
-            field: "language",
-            type: "string",
+            attribute: "cnb_sysno_resolved",
+            field: "cnb_sysno_resolved",
+            type: "numeric",
+            filterQuery: filterBooleanQuery,
         },
         {
             attribute: "material_type",
@@ -84,30 +93,39 @@ const catalog_records_index_settings = {
             type: "string",
         },
         {
-            attribute: "skc_difference.difference_type",
-            field: "difference_type",
+            attribute: "skc_difference_type_facets",
+            field: "skc_difference_type_facets",
             type: "string",
-            nestedPath: "skc_difference",
         },
         {
-            attribute: "skc_difference.tag",
-            field: "tag",
+            attribute: "skc_difference_tag_facets",
+            field: "skc_difference_tag_facets",
             type: "string",
-            nestedPath: "skc_difference",
         },
         {
-            attribute: "cnb_difference.difference_type",
-            field: "difference_type",
+            attribute: "cnb_difference_type_facets",
+            field: "cnb_difference_type_facets",
             type: "string",
-            nestedPath: "cnb_difference",
         },
         {
-            attribute: "cnb_difference.tag",
-            field: "tag",
+            attribute: "cnb_difference_tag_facets",
+            field: "cnb_difference_tag_facets",
             type: "string",
-            nestedPath: "cnb_difference",
+        },
+        {
+            attribute: "language",
+            field: "language",
+            type: "string",
         },
     ],
 };
 
+const booleanAttributes = [
+    "has_valid_main_record",
+    "has_valid_cnb",
+    "skc_sysno_resolved",
+    "cnb_sysno_resolved",
+];
+
 export default catalog_records_index_settings;
+export { booleanAttributes };
