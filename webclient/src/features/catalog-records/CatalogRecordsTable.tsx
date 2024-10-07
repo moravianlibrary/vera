@@ -16,6 +16,7 @@ import {
     usePagination,
 } from "react-instantsearch";
 import { useCatalogRecords } from "../../contexts/CatalogRecordsContext";
+import { useEsSelection } from "../../contexts/EsSelectionContext";
 
 interface CatalogRecordsTableProps {}
 
@@ -23,6 +24,8 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
     Paginator: React.FC;
 } = () => {
     const { catalogRecords } = useCatalogRecords();
+    const { currentPageSelected, handleDataTableSelectionChange } =
+        useEsSelection();
     const { t } = useTranslation();
 
     const [expandedRows, setExpandedRows] = useState<any[]>([]);
@@ -46,6 +49,9 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
             rowExpansionTemplate={(data) => (
                 <CatalogRecordDetails catalogRecord={data as CatalogRecord} />
             )}
+            selectionMode="checkbox"
+            selection={currentPageSelected}
+            onSelectionChange={handleDataTableSelectionChange}
         >
             <Column expander style={{ width: "5rem" }} />
             <Column
@@ -75,6 +81,7 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
             />
             <Column field="cnb" header={t("catalog-records.cnb")} />
             <Column field="language" header={t("catalog-records.language")} />
+            <Column selectionMode="multiple" />
         </DataTable>
     );
 };

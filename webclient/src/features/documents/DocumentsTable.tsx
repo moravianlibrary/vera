@@ -66,7 +66,6 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
     const { t } = useTranslation();
 
     const { results, refresh } = useInstantSearch();
-    const { currentRefinement, nbHits, refine: setPage } = usePagination();
     const { items: pageSizeOptions, refine: setPageSize } = useHitsPerPage({
         items: [
             { value: 10, label: "10" },

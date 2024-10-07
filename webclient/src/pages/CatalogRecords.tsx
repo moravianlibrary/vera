@@ -8,6 +8,8 @@ import { InstantSearch } from "react-instantsearch";
 import CatalogRecordsQueryRules from "../features/catalog-records/CatalogRecordsQueryRules";
 import CatalogRecordsHeader from "../features/catalog-records/CatalogRecordsHeader";
 import { SearchRequest } from "searchkit";
+import { EsSelectionProvider } from "../contexts/EsSelectionContext";
+import WithProviders from "../components/wrappers/WithProviders";
 
 interface CatalogRecordsProps {}
 
@@ -106,14 +108,16 @@ const CatalogRecordsDiv: React.FC<CatalogRecordsProps> = () => {
     });
     return (
         <InstantSearch indexName="catalog_records" searchClient={searchClient}>
-            <CatalogRecordsProvider>
+            <WithProviders
+                providers={[EsSelectionProvider, CatalogRecordsProvider]}
+            >
                 <DataTableLayout
                     header={<CatalogRecordsHeader />}
                     sidebar={<CatalogRecordsQueryRules />}
                     datatable={<CatalogRecordsTable />}
                     paginator={<CatalogRecordsTable.Paginator />}
                 />
-            </CatalogRecordsProvider>
+            </WithProviders>
         </InstantSearch>
     );
 };
