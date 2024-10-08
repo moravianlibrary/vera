@@ -46,7 +46,7 @@ class TestTasksEndpoints(TestEndpointsBase):
         # Act
         response = self.client.post(
             f"/tasks?task_type={task_type.value}",
-            json={"query_params": {"query": "test"}},
+            json={"id": "1"},
             headers=self.headers,
         )
 

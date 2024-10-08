@@ -1,7 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Tag } from "primereact/tag";
-import DocumentModel from "../../contexts/documents/DocumentModel";
 import { IndexDocument } from "../../adapters/ApiDocuments";
 
 interface ExtractableTagProps {
@@ -14,7 +13,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
     if (document.is_extractable) {
         return (
             <Tag
-                value={t(`document.extractable.isExtractable`)}
+                value={t(`documents.extractable.isExtractable`)}
                 className="extractable-is-extractable"
             />
         );
@@ -22,7 +21,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
     if (document.digitization_list_id) {
         return (
             <Tag
-                value={t(`document.extractable.extracted`)}
+                value={t(`documents.extractable.extracted`)}
                 className="extractable-extracted"
             />
         );
@@ -30,7 +29,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
     if (document.cnb === null) {
         return (
             <Tag
-                value={t(`document.extractable.missingCnb`)}
+                value={t(`documents.extractable.missingCnb`)}
                 className="extractable-missing-cnb"
             />
         );
@@ -38,7 +37,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
     if (document.page_count === 0) {
         return (
             <Tag
-                value={t(`document.extractable.missingPages`)}
+                value={t(`documents.extractable.missingPages`)}
                 className="extractable-missing-pages"
             />
         );
@@ -46,7 +45,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
 
     return (
         <Tag
-            value={t(`document.extractable.notExtractable`)}
+            value={t(`documents.extractable.notExtractable`)}
             className="extractable-not-extractable"
         />
     );

@@ -1,5 +1,4 @@
 import { ApiBase, ApiOptions, authHeader } from "./ApiBase";
-import { DocumentsQuery } from "./ApiDocuments";
 
 interface DigitizationList {
     id: number;
@@ -18,7 +17,7 @@ class ApiDigitizationLists extends ApiBase<DigitizationList> {
         } as ApiOptions);
     }
 
-    createFromQuery(query: DocumentsQuery, intention_id?: number) {
+    createFromQuery(query: Object, intention_id?: number) {
         const url = intention_id
             ? `${this.endpoint}?intention_id=${intention_id}`
             : this.endpoint;
@@ -27,17 +26,14 @@ class ApiDigitizationLists extends ApiBase<DigitizationList> {
         });
     }
 
-    addDocumentsToExtraction(extraction_id: number, query: DocumentsQuery) {
+    addDocumentsToExtraction(extraction_id: number, query: Object) {
         const url = `${this.endpoint}/${extraction_id}/add_documents`;
         return ApiBase.axiosInstance.put<DigitizationList>(url, query, {
             headers: authHeader(),
         });
     }
 
-    removeDocumentsFromExtraction(
-        extraction_id: number,
-        query: DocumentsQuery
-    ) {
+    removeDocumentsFromExtraction(extraction_id: number, query: Object) {
         const url = `${this.endpoint}/${extraction_id}/remove_documents`;
         return ApiBase.axiosInstance.put<DigitizationList>(url, query, {
             headers: authHeader(),

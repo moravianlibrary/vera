@@ -14,7 +14,7 @@ const ExtractionPriorityTag: React.FC<ExtractionPriorityTagProps> = ({
     if (priority) {
         return (
             <Tag
-                value={t(`document.extraction-priority.${priority}`)}
+                value={t(`documents.extraction-priority.${priority}`)}
                 className={`extraction-priority-${priority}`}
             />
         );

@@ -1,5 +1,9 @@
-import React, { useEffect } from "react";
-import { RangeInputProps, useRange } from "react-instantsearch";
+import React, { useEffect, useState } from "react";
+import {
+    RangeInputProps,
+    useInstantSearch,
+    useRange,
+} from "react-instantsearch";
 import EsFilter from "./EsFilter";
 import { Slider, SliderChangeEvent } from "primereact/slider";
 import { InputNumber } from "primereact/inputnumber";
@@ -11,22 +15,43 @@ interface EsRangeFacetProps extends RangeInputProps {
 }
 
 const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
-    const { range, canRefine, refine } = useRange(props);
+    const { start, range, canRefine, refine } = useRange(props);
 
-    const [value, setValue] = React.useState<[number, number] | undefined>(
-        undefined
+    const [value, setValue] = useState<[number, number] | undefined>(undefined);
+    const [sliderValue, setSliderValue] = useState<[number, number]>([
+        -Infinity,
+        Infinity,
+    ]);
+    const [isActive, setIsActive] = useState<boolean>(
+        start[0] !== -Infinity || start[1] !== Infinity
     );
 
     useEffect(() => {
         if (range && range.min && range.max && !value) {
-            setValue([range.min, range.max]);
+            const initValue: [number, number] = [
+                Math.max(start[0] || -Infinity, range.min),
+                Math.min(start[1] || Infinity, range.max),
+            ];
+            setValue(initValue);
+            setSliderValue(initValue);
+            refine(initValue);
         }
-    }, [range]);
+    }, [start, range]);
+
+    useEffect(() => {
+        setIsActive(start[0] !== -Infinity || start[1] !== Infinity);
+    }, [start]);
 
     if (!canRefine) return null;
 
     const handleChangeValue = (value: [number, number]) => {
-        refine(value);
+        const limitedValue: [number, number] = [
+            Math.max(Math.min(value[0], range.max!), range.min!),
+            Math.max(Math.min(value[1], range.max!), range.min!),
+        ];
+
+        refine(limitedValue);
+        setSliderValue(limitedValue);
         setValue(value);
     };
 
@@ -41,6 +66,7 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
         <EsFilter label={label}>
             <div className="flex p-inputgroup">
                 <InputNumber
+                    id={`facet-range-min-v-${label}`}
                     className="w-min"
                     value={value ? value[0] : undefined}
                     onChange={(e) =>
@@ -50,6 +76,7 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
                     }
                 />
                 <InputNumber
+                    id={`facet-range-max-v-${label}`}
                     className="w-min"
                     value={value ? value[1] : undefined}
                     onChange={(e) =>
@@ -58,22 +85,23 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
                         handleChangeValue([value[0], e.value])
                     }
                 />
-                {/* <Button outlined icon="pi pi-search" /> */}
                 <Button
                     outlined
                     severity="danger"
                     icon="pi pi-times"
-                    onClick={() => refine([undefined, undefined])}
+                    disabled={!isActive}
+                    onClick={() => handleChangeValue([range.min!, range.max!])}
                 />
             </div>
-            <Slider
-                className="m-2"
-                value={value}
+            {/* <Slider
+                id={`facet-range-slider-${label}`}
+                className="m-2 w-auto"
+                value={sliderValue}
                 min={range.min}
                 max={range.max}
                 range
                 onChange={handleChangeSliderValue}
-            />
+            /> */}
         </EsFilter>
     );
 };

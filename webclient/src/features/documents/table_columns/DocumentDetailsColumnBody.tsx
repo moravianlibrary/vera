@@ -1,11 +1,11 @@
 import React from "react";
 import { Button } from "primereact/button";
 import { IndexDocument } from "../../../adapters/ApiDocuments";
-import { useDocumentsActions } from "../../../contexts/documents/DocumentsActionsContext";
+import { useDocuments } from "../../../contexts/DocumentsContext";
 
 const DocumentDetailsColumnBody = (document: IndexDocument) => {
     const { detailsDocuments, showDocumentDetails, closeDocumentDetails } =
-        useDocumentsActions();
+        useDocuments();
 
     const isVisible = () => {
         return detailsDocuments.map((d) => d.id).includes(document.id);

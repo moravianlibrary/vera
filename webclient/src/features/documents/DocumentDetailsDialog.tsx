@@ -4,12 +4,12 @@ import { IndexDocument } from "../../adapters/ApiDocuments";
 import { useEffect, useState } from "react";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
-import { useDocumentsActions } from "../../contexts/documents/DocumentsActionsContext";
 import LabeledComponent from "../../components/LabeledComponent";
 import { useToast } from "../../contexts/ToastContext";
 import { format } from "date-fns";
 import ExtractionPriorityEditor from "../../components/editors/ExtractionPriorityEditor";
 import EditorProps from "../../components/editors/Editor";
+import { useDocuments } from "../../contexts/DocumentsContext";
 
 interface DocumentDetailsDialogProps {
     document: IndexDocument;
@@ -128,8 +128,7 @@ const DocumentDetailsDialog: React.FC<DocumentDetailsDialogProps> = ({
     document,
 }) => {
     const { t } = useTranslation();
-    const { deleteDocument, detailsDocuments, closeDocumentDetails } =
-        useDocumentsActions();
+    const { detailsDocuments, closeDocumentDetails } = useDocuments();
 
     const [panelVisible, setPanelVisible] = useState(true);
     const [confirmVisible, setConfirmVisible] = useState(false);

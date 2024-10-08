@@ -204,7 +204,7 @@ class AlephRecord:
             f"extent: {self.extent}",
             f"additional_physical_data: {self.additional_physical_data}",
             f"size: {self.size}",
-            f"locationUri: {self.locationUri}",
+            f"locationUri: {self.location_uri}",
             f"frequencies: {self.frequencies}",
         ]
         return "\n".join(properties)

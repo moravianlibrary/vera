@@ -16,6 +16,7 @@ from .utils.dependencies import (
     DependsOnDbSession,
     DependsOnEsSession,
 )
+from .utils.query_routing_parser import parse_query_routing
 from models import Task, TaskItem, PeriodicTask
 from schemas import (
     TaskDefinition,
@@ -34,20 +35,20 @@ router = APIRouter(prefix="/tasks", tags=["Tasks"])
 @router.post("", dependencies=[CanPlanTask], response_model=TaskDefinition)
 def create_task(
     task_type: TaskType = Query(...),
-    query_params: Optional[EsRoutingParams] = None,
+    query_routing_params: Optional[EsRoutingParams] = None,
     owner: str = DependsOnCallerUsername,
     es_session: EsSession = DependsOnEsSession,
     db: Session = DependsOnDbSession,
 ):
     task = Task(
         task_type=task_type,
-        query_params=query_params,
+        query_params=query_routing_params,
         owner=owner,
     ).save(db)
 
     if is_catalog_records_task(task_type):
         for catalog_record_sysno in IndexCatalogRecord.search_source_ids(
-            es_session, query_params
+            es_session, parse_query_routing(query_routing_params)
         ):
             TaskItem(
                 task_id=task.id,
@@ -56,7 +57,7 @@ def create_task(
             ).save(db)
     elif is_documents_task(task_type):
         for document_id in IndexDocument.search_source_ids(
-            es_session, query_params
+            es_session, parse_query_routing(query_routing_params)
         ):
             TaskItem(
                 task_id=task.id,

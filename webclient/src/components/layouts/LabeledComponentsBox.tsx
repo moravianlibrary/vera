@@ -28,7 +28,6 @@ const LabeledComponentsBox: React.FC<LabeledComponentsBoxProps> = ({
                 maxWidth: "fit-content",
                 rowGap: "3px",
                 columnGap: "1rem",
-                alignItems: "center",
             }}
         >
             {labels.map((label, index) =>

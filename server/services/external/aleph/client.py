@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, Generator
 from io import BytesIO
 import re
 import requests
@@ -98,7 +98,7 @@ class AlephClient:
 
     def find_all_sysnos(
         self, base: str, field: AlephField, value: str
-    ) -> List[str]:
+    ) -> Generator[str, None, None]:
         response = requests.get(
             FIND_RESULT_SET_ENDPOINT.format(
                 ALEPH_BASE=ALEPH_BASE, BASE=base, CODE=field.value, VALUE=value
@@ -117,7 +117,6 @@ class AlephClient:
 
         set_number = find.find(".//set_number").text
 
-        sysnos = []
         for set_entry in range(1, int(no_records_tag.text) + 1):
             response = requests.get(
                 FIND_RECORDS_ENDPOINT.format(
@@ -130,10 +129,8 @@ class AlephClient:
             response.raise_for_status()
 
             result = etree.fromstring(response.content)
-            sysnos.extend(
-                [doc.text for doc in result.findall(".//doc_number")]
-            )
-        return sysnos
+            for doc in result.findall(".//doc_number"):
+                yield doc.text
 
     def parse_sysno_request(
         self, request_url: str

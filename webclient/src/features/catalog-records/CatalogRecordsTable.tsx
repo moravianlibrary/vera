@@ -18,18 +18,14 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
     Paginator: React.FC;
 } = () => {
     const { t } = useTranslation();
-    const { items, currentPageSelected, handleDataTableSelectionChange } =
-        useEsDataTable();
-
-    const [expandedRows, setExpandedRows] = useState<any[]>([]);
-
-    const handleRowExpand = (e: DataTableRowEvent) => {
-        setExpandedRows([...expandedRows, e.data]);
-    };
-
-    const handleRowCollapse = (e: DataTableRowEvent) => {
-        setExpandedRows(expandedRows.filter((row) => row.id !== e.data.id));
-    };
+    const {
+        items,
+        currentPageSelected,
+        handleDataTableSelectionChange,
+        expandedRows,
+        handleRowExpand,
+        handleRowCollapse,
+    } = useEsDataTable();
 
     return (
         <DataTable

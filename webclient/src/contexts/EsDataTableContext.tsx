@@ -1,4 +1,5 @@
 import {
+    DataTableRowEvent,
     DataTableSelectionMultipleChangeEvent,
     DataTableValueArray,
 } from "primereact/datatable";
@@ -38,6 +39,10 @@ interface EsDataTableContextProps {
     setAreAllItemsSelected: (value: boolean) => void;
     cancelSelection: () => void;
     selectedQuery: any;
+
+    expandedRows: any[];
+    handleRowExpand: (event: DataTableRowEvent) => void;
+    handleRowCollapse: (event: DataTableRowEvent) => void;
 }
 
 const EsDataTableContext = createContext<EsDataTableContextProps | undefined>(
@@ -76,6 +81,7 @@ export const EsDataTableProvider: React.FC<EsDataTableProviderProps> = ({
     const [areAllItemsSelected, setAreAllItemsSelected] =
         useState<boolean>(false);
     const [selectedQuery, setSelectedQuery] = useState<any>({});
+    const [expandedRows, setExpandedRows] = useState<any[]>([]);
 
     const updateItem = (id: string, item: any) => {
         // const prevItem = items.find((prevItem) => prevItem.id === id);
@@ -130,6 +136,19 @@ export const EsDataTableProvider: React.FC<EsDataTableProviderProps> = ({
         setSelectedQuery({});
     };
 
+    const handleRefresh = () => {
+        cancelSelection();
+        refresh();
+    };
+
+    const handleRowExpand = (e: DataTableRowEvent) => {
+        setExpandedRows([...expandedRows, e.data]);
+    };
+
+    const handleRowCollapse = (e: DataTableRowEvent) => {
+        setExpandedRows(expandedRows.filter((row) => row.id !== e.data.id));
+    };
+
     useEffect(() => {
         setItems(hits);
     }, [hits]);
@@ -144,10 +163,14 @@ export const EsDataTableProvider: React.FC<EsDataTableProviderProps> = ({
         }
     }, [items, selectedIds, areAllItemsSelected]);
 
+    useEffect(() => {
+        cancelSelection();
+    }, [uiState]);
+
     const contextValue: EsDataTableContextProps = {
         items,
         numFound,
-        refresh,
+        refresh: handleRefresh,
         updateItem,
 
         page: page + 1,
@@ -163,6 +186,10 @@ export const EsDataTableProvider: React.FC<EsDataTableProviderProps> = ({
         setAreAllItemsSelected: handleSetAreAllItemsSelected,
         cancelSelection,
         selectedQuery,
+
+        expandedRows,
+        handleRowExpand,
+        handleRowCollapse,
     };
 
     return (

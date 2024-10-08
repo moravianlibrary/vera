@@ -1,8 +1,6 @@
 import axiosInstance, { authHeader } from "./ApiBase";
-import { ActionType } from "../types/ActionType";
 import { TaskType } from "../types/TaskType";
 import { TaskState } from "../types/TaskState";
-import { DocumentsQuery } from "./ApiDocuments";
 import Page from "./Page";
 
 interface Task {

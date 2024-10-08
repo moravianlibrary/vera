@@ -243,7 +243,7 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
         self.assertEqual(400, response.status_code)
         self.assertEqual(
             response.json()["detail"],
-            "Extarcting documents with digitization state 'Finished' "
+            "Extracting documents with digitization state 'Finished' "
             "is disabled for this request",
         )
 

@@ -11,6 +11,7 @@ import CatalogRecordsDifference from "./CatalogRecordDifference";
 import LabeledComponentsBox from "../../components/layouts/LabeledComponentsBox";
 import MaterialTypeTag from "../../components/tags/MaterialTypeTag";
 import ExternalLinkButton from "../../components/buttons/ExternalLinkButton";
+import StringListDisplay from "../../components/layouts/StringListDisplay";
 
 interface CatalogRecordViewProps {
     catalogRecord: CatalogRecord;
@@ -32,7 +33,7 @@ const catalogRecordFields: CatalogRecordField[] = [
     {
         attribute: "barcodes",
         label: "catalog-records.barcodes",
-        transform: (bs) => bs.join(", "),
+        transform: (bs) => <StringListDisplay stringList={bs} maxItems={10} />,
     },
     { attribute: "skc_sysno", label: "catalog-records.skc-sysno" },
     {

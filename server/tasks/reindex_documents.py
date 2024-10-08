@@ -10,6 +10,10 @@ def ReindexDocuments(es_session: EsSession, session: Session, task_id: int):
     reindexed_sysno = set()
 
     def reindex_document(task_item: TaskItem):
+        if task_item.document is None:
+            IndexDocument.delete(es_session, task_item.item_id)
+            return
+
         document = task_item.document
 
         IndexDocument.model_validate(document).save(es_session)

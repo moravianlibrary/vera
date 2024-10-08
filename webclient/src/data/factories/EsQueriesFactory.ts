@@ -12,24 +12,17 @@ function filterBooleanQuery(field: string, value: string) {
     };
 }
 
-const filterNestedQuery = (filters) => {
-    const nestedFilters = filters.map((filter) => ({
-        term: {
-            [`cnb_difference.${filter.field}`]: filter.value,
-        },
-    }));
-
+function sortFacetDescByKey(field, size) {
     return {
-        nested: {
-            path: "cnb_difference",
-            query: {
-                bool: {
-                    must: nestedFilters,
-                },
+        terms: {
+            field,
+            size,
+            order: {
+                _key: "desc",
             },
         },
     };
-};
+}
 
 function stateToRoute(indexName, booleanAttributes, uiState) {
     const indexUiState = uiState[indexName] || {};
@@ -46,21 +39,26 @@ function stateToRoute(indexName, booleanAttributes, uiState) {
             ).join(",");
             return acc;
         }, {}),
+        ...Object.keys(indexUiState.range || {}).reduce((acc, key) => {
+            acc[key] = indexUiState.range[key];
+            return acc;
+        }, {}),
         page_size: indexUiState.hitsPerPage,
         page: indexUiState.page,
     };
 }
 
 function routeToState(indexName, booleanAttributes, routeState) {
-    console.log("routeState", routeState);
-
     return {
         [indexName]: {
             query: routeState.query,
             hitsPerPage: routeState.page_size,
             page: routeState.page,
             refinementList: Object.keys(routeState).reduce((acc, key) => {
-                if (key !== "query" && key !== "page_size" && key !== "page") {
+                if (
+                    !["query", "page_size", "page"].includes(key) &&
+                    !/^\d+:\d+|\d+:|:\d+$/.test(routeState[key])
+                ) {
                     const values = routeState[key].split(",");
                     acc[key] = booleanAttributes.includes(key)
                         ? values.map((v) => (v === "true" ? "1" : "0"))
@@ -68,8 +66,17 @@ function routeToState(indexName, booleanAttributes, routeState) {
                 }
                 return acc;
             }, {}),
+            range: Object.keys(routeState).reduce((acc, key) => {
+                if (
+                    !["query", "page_size", "page"].includes(key) &&
+                    /^\d+:\d+|\d+:|:\d+$/.test(routeState[key])
+                ) {
+                    acc[key] = routeState[key];
+                }
+                return acc;
+            }, {}),
         },
     };
 }
 
-export { filterBooleanQuery, filterNestedQuery, stateToRoute, routeToState };
+export { filterBooleanQuery, stateToRoute, routeToState, sortFacetDescByKey };

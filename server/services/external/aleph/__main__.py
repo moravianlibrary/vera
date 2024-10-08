@@ -1,7 +1,31 @@
-from pymarc import MARCReader, MARCWriter
+from pymarc import MARCReader, Record
 from .client import AlephClient
 from .datatypes import AlephField
 import argparse
+
+
+def pretty_print_marc_format(record: Record):
+    formatted_record = []
+
+    for field in record.get_fields():
+        if field.is_control_field():
+            formatted_record.append(f"{field.tag} CTL |  {field.data}")
+        else:
+            subfields = " ".join(
+                [f"|{subfield.code} {subfield.value}" for subfield in field]
+            )
+            formatted_record.append(
+                f"{field.tag} {field.indicator1} {field.indicator2} "
+                f"{subfields}"
+            )
+
+    return "\n".join(formatted_record)
+
+
+def write_pretty_printed_marcs(record, output_file):
+    with open(output_file, "w") as file:
+        formatted_record = pretty_print_marc_format(record)
+        file.write(formatted_record + "\n\n")
 
 
 def main():
@@ -46,15 +70,13 @@ def main():
     record = (
         [r for r in MARCReader(open(args.file, "rb"))][0]
         if args.file
-        else AlephClient().find_record(args.field, args.value)
+        else AlephClient().find_record(args.field, args.value)[0]
     )
 
     if args.output is not None:
-        writer = MARCWriter(open(args.output, "wb"))
-        writer.write(record)
-        writer.close()
+        write_pretty_printed_marcs(record.record, args.output)
     else:
-        print(record)
+        print(pretty_print_marc_format(record.record))
 
 
 if __name__ == "__main__":

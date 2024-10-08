@@ -1,10 +1,8 @@
 import React, { createContext, useContext, ReactNode } from "react";
 import { useToast } from "../ToastContext";
 import { useTranslation } from "react-i18next";
-import { useDocuments } from "../documents/DocumentsContext";
+import { useDocuments } from "../DocumentsContext";
 import { useDigitizationLists } from "./DigitizationListsContext";
-import { useDocumentsSelection } from "../documents/DocumentsSelectionContext";
-import { useDocumentsQuery } from "../documents/search/DocumentsQueryContext";
 
 interface DigitizationListsManagerContextProps {
     createDigitizationList: (intention_id?: number) => void;
@@ -31,84 +29,80 @@ export const DigitizationListsManagerProvider: React.FC<
         addDocumentsToDigitizationList,
         removeDocumentsFromDigitizationList,
     } = useDigitizationLists();
-    const { removeDocumentsFromResults } = useDocuments();
-    const { selectionQuery, cancelSelection } = useDocumentsSelection();
-    const { searchByDigitizationListId, digitizationListId } =
-        useDocumentsQuery();
 
     const createDigiList = async (intention_id?: number) => {
-        createDigitizationList(selectionQuery, intention_id)
-            .then((digitizationList) => {
-                showToast(
-                    "success",
-                    "Digitization list created successfully",
-                    ""
-                );
-                cancelSelection();
-                searchByDigitizationListId(digitizationList.id);
-            })
-            .catch((error) => {
-                if (
-                    400 <= error.response.status &&
-                    error.response.status < 500
-                ) {
-                    showToast(
-                        "error",
-                        "Digitization list creation failed",
-                        error.response.data.detail
-                    );
-                }
-            });
+        // createDigitizationList(selectionQuery, intention_id)
+        //     .then((digitizationList) => {
+        //         showToast(
+        //             "success",
+        //             "Digitization list created successfully",
+        //             ""
+        //         );
+        //         cancelSelection();
+        //         searchByDigitizationListId(digitizationList.id);
+        //     })
+        //     .catch((error) => {
+        //         if (
+        //             400 <= error.response.status &&
+        //             error.response.status < 500
+        //         ) {
+        //             showToast(
+        //                 "error",
+        //                 "Digitization list creation failed",
+        //                 error.response.data.detail
+        //             );
+        //         }
+        //     });
     };
 
     const addDocumentsToDigiList = async (digitization_list_id: number) => {
-        addDocumentsToDigitizationList(digitization_list_id, selectionQuery)
-            .then((digitizationList) => {
-                showToast(
-                    "success",
-                    "Digitization list updated successfully",
-                    ""
-                );
-                cancelSelection();
-                removeDocumentsFromResults(digitizationList.document_ids);
-            })
-            .catch((error) => {
-                if (
-                    400 <= error.response.status &&
-                    error.response.status < 500
-                ) {
-                    showToast(
-                        "error",
-                        "Digitization list update failed",
-                        error.response.data.detail
-                    );
-                }
-            });
+        // addDocumentsToDigitizationList(digitization_list_id, selectionQuery)
+        //     .then((digitizationList) => {
+        //         showToast(
+        //             "success",
+        //             "Digitization list updated successfully",
+        //             ""
+        //         );
+        //         cancelSelection();
+        //         removeDocumentsFromResults(digitizationList.document_ids);
+        //     })
+        //     .catch((error) => {
+        //         if (
+        //             400 <= error.response.status &&
+        //             error.response.status < 500
+        //         ) {
+        //             showToast(
+        //                 "error",
+        //                 "Digitization list update failed",
+        //                 error.response.data.detail
+        //             );
+        //         }
+        //     });
     };
 
     const removeDocumentsFromDigiList = async () => {
-        removeDocumentsFromDigitizationList(digitizationListId!, selectionQuery)
-            .then((digitizationList) => {
-                showToast(
-                    "success",
-                    "Digitization list updated successfully",
-                    ""
-                );
-                cancelSelection();
-                removeDocumentsFromResults(selectionQuery.id_list!);
-            })
-            .catch((error) => {
-                if (
-                    400 <= error.response.status &&
-                    error.response.status < 500
-                ) {
-                    showToast(
-                        "error",
-                        "Digitization list update failed",
-                        error.response.data.detail
-                    );
-                }
-            });
+        // removeDocumentsFromDigitizationList(digitizationListId!, selectionQuery)
+        //     .then((digitizationList) => {
+        //         showToast(
+        //             "success",
+        //             "Digitization list updated successfully",
+        //             ""
+        //         );
+        //         cancelSelection();
+        //         removeDocumentsFromResults(selectionQuery.id_list!);
+        //     })
+        //     .catch((error) => {
+        //         if (
+        //             400 <= error.response.status &&
+        //             error.response.status < 500
+        //         ) {
+        //             showToast(
+        //                 "error",
+        //                 "Digitization list update failed",
+        //                 error.response.data.detail
+        //             );
+        //         }
+        //     });
     };
 
     const contextValue: DigitizationListsManagerContextProps = {

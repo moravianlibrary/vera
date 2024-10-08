@@ -48,7 +48,7 @@ export const useCatalogRecords = (): CatalogRecordsContextProps => {
 
     if (!context) {
         throw new Error(
-            "useDepartments must be used within a DepartmentsProvider"
+            "useCatalogRecords must be used within a CatalogRecordsProvider"
         );
     }
 

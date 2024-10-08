@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
 from typing import Optional, List
-from models import DigitizationList
+from models import DigitizationList, Document
 from schemas import DigitizationList as DigitizationListSchema, Page
 from .utils.permissions import CanExtract, CanManageDigitizationList
 from .utils.dependencies import (
@@ -11,11 +11,14 @@ from .utils.dependencies import (
 )
 from exceptions import EmptyExtractionException
 from schemas import IndexDocument, EsSession
-from datatypes import ElasticsearchParams, DigitizationState
+from datatypes import EsRoutingParams, DigitizationState
+from .utils.query_routing_parser import parse_query_routing
 
 router = APIRouter(
     prefix="/extractions/digitization", tags=["Digitization lists"]
 )
+
+# TODO: make documents index in dedicated process
 
 
 @router.post(
@@ -24,21 +27,31 @@ router = APIRouter(
     response_model=DigitizationListSchema,
 )
 def create_extraction(
-    query_params: ElasticsearchParams,
+    query_routing_params: EsRoutingParams,
     intention_id: Optional[int] = Query(None, description="Intention ID"),
     ignore_digitization_states: List[DigitizationState] = Query([]),
     created_by: str = DependsOnCallerUsername,
     session: Session = DependsOnDbSession,
     es_session: EsSession = DependsOnEsSession,
 ):
-    document_ids = IndexDocument.search_source_ids(es_session, query_params)
+    document_ids = IndexDocument.search_source_ids(
+        es_session, parse_query_routing(query_routing_params)
+    )
     if not document_ids:
         raise EmptyExtractionException()
-    return (
+
+    digitization_list = (
         DigitizationList(intention_id=intention_id, created_by=created_by)
         .save(session)
         .add_documents(session, document_ids, ignore_digitization_states)
     )
+
+    for document_id in document_ids:
+        IndexDocument.model_validate(Document.get(session, document_id)).save(
+            es_session
+        )
+
+    return digitization_list
 
 
 @router.get(
@@ -72,18 +85,25 @@ def get_extraction(
     response_model=DigitizationListSchema,
 )
 def add_documents_to_extraction(
-    query_params: ElasticsearchParams,
+    query_routing_params: EsRoutingParams,
     digitization_list_id: int = Path(...),
     ignore_digitization_states: List[DigitizationState] = Query([]),
     session: Session = DependsOnDbSession,
     es_session: EsSession = DependsOnEsSession,
 ):
-    document_ids = IndexDocument.search_source_ids(es_session, query_params)
+    document_ids = IndexDocument.search_source_ids(
+        es_session, parse_query_routing(query_routing_params)
+    )
 
     digitization_list = DigitizationList.get(session, digitization_list_id)
     digitization_list.add_documents(
         session, document_ids, set(ignore_digitization_states)
     )
+
+    for document_id in document_ids:
+        IndexDocument.model_validate(Document.get(session, document_id)).save(
+            es_session
+        )
 
     return digitization_list
 
@@ -94,15 +114,22 @@ def add_documents_to_extraction(
     response_model=DigitizationListSchema,
 )
 def remove_documents_from_extraction(
-    query_params: ElasticsearchParams,
+    query_routing_params: EsRoutingParams,
     digitization_list_id: int = Path(...),
     session: Session = DependsOnDbSession,
     es_session: EsSession = DependsOnEsSession,
 ):
-    document_ids = IndexDocument.search_source_ids(es_session, query_params)
+    document_ids = IndexDocument.search_source_ids(
+        es_session, parse_query_routing(query_routing_params)
+    )
 
     digitization_list = DigitizationList.get(session, digitization_list_id)
     digitization_list.remove_documents(session, document_ids)
+
+    for document_id in document_ids:
+        IndexDocument.model_validate(Document.get(session, document_id)).save(
+            es_session
+        )
 
     return digitization_list
 
@@ -115,5 +142,11 @@ def remove_documents_from_extraction(
 def delete_extraction(
     digitization_list_id: int = Path(...),
     session: Session = DependsOnDbSession,
+    es_session: EsSession = DependsOnEsSession,
 ):
-    return DigitizationList.get(session, digitization_list_id).delete(session)
+    digitization_list = DigitizationList.get(session, digitization_list_id)
+
+    for document in digitization_list.documents:
+        IndexDocument.model_validate(document).save(es_session)
+
+    return digitization_list.delete(session)

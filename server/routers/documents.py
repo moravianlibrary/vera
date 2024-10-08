@@ -7,7 +7,7 @@ from schemas import (
     Identifier,
     DocumentResponse,
 )
-from datatypes import ElasticsearchParams
+from datatypes import ElasticsearchParams, EsRoutingParams
 from models import Document
 from routers.utils.permissions import (
     CanInsertDocument,
@@ -33,6 +33,7 @@ from .utils.query_restrictions import (
     restrict_read_query_params,
     restrict_edit_query_params,
 )
+from .utils.query_routing_parser import parse_query_routing
 
 
 XLSX_MIMETYPE = (
@@ -50,8 +51,8 @@ router = APIRouter(prefix="/documents", tags=["Documents"])
 async def add_document_from_catalog(
     identifier: Identifier,
     category_id: int = Query(),
-    pages_count_manual: Optional[int] = None,
-    extraction_priority: Optional[int] = None,
+    pages_count_manual: Optional[int] = Query(None),
+    extraction_priority: Optional[int] = Query(None),
     username: str = DependsOnCallerUsername,
     es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
@@ -135,15 +136,15 @@ def query_documents(
 
 @router.post("/query/export", dependencies=[CanReadDocuments])
 def export_query_documents(
-    query_params: ElasticsearchParams,
+    query_routing_params: EsRoutingParams,
     user: CurrentUser = DependsOnCurrentUser,
     es_session: EsSession = DependsOnEsSession,
 ):
     df = pd.DataFrame(
         hit["_source"]
-        for hit in query_documents(query_params, user, es_session)["hits"][
-            "hits"
-        ]
+        for hit in query_documents(
+            parse_query_routing(query_routing_params), user, es_session
+        )["hits"]["hits"]
     )
 
     with tempfile.NamedTemporaryFile(
@@ -168,19 +169,31 @@ def export_query_documents(
     dependencies=[CanManageDocuments],
 )
 def update_query_documents(
-    query_params: ElasticsearchParams,
-    category_id: Optional[int] = None,
+    query_routing_params: EsRoutingParams,
+    category_id: Optional[int] = Query(None),
+    pages_count_manual: Optional[int] = Query(None),
+    extraction_priority: Optional[int] = Query(None),
     user: CurrentUser = DependsOnCurrentUser,
     es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
+    if not category_id and not pages_count_manual and not extraction_priority:
+        return
     for document_id in IndexDocument.search_source_ids(
-        es_session, restrict_edit_query_params(query_params, user)
+        es_session,
+        restrict_edit_query_params(
+            parse_query_routing(query_routing_params), user
+        ),
     ):
         document = Document.get(session, document_id)
-        document.category_id = category_id
+        if category_id:
+            document.category_id = category_id
+        if pages_count_manual:
+            document.pages_count_manual = pages_count_manual
+        if extraction_priority:
+            document.extraction_priority = extraction_priority
         document.save(session)
-        IndexDocument(document).save(es_session)
+        IndexDocument.model_validate(document).save(es_session)
 
 
 @router.post(
@@ -188,13 +201,16 @@ def update_query_documents(
     dependencies=[CanManageDocuments],
 )
 def delete_query_documents(
-    query_params: ElasticsearchParams,
+    query_routing_params: EsRoutingParams,
     user: CurrentUser = DependsOnCurrentUser,
     es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
     for document_id in IndexDocument.search_source_ids(
-        es_session, restrict_edit_query_params(query_params, user)
+        es_session,
+        restrict_edit_query_params(
+            parse_query_routing(query_routing_params), user
+        ),
     ):
         Document.get(session, document_id).delete(session)
         IndexDocument.delete(es_session, document_id)

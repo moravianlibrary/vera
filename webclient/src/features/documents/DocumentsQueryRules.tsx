@@ -8,50 +8,77 @@ import EsRangeFacet from "../../components/elasticsearch/filters/EsRangeFacet";
 import EsMaterialTypeFacet from "../../components/elasticsearch/filters/EsMaterialTypeFacet";
 import EsIssuanceTypeFacet from "../../components/elasticsearch/filters/EsIssuanceTypeFacet";
 import EsQueryRulesLayout from "../../components/layouts/EsQueryRulesLayout";
-import { RangeInput } from "react-instantsearch";
+import { useTranslation } from "react-i18next";
 
 interface DocumentsQueryRulesProps {}
 
 export const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
+    const { t } = useTranslation();
+
     return (
         <EsQueryRulesLayout
             facets={
                 <Fragment>
                     <EsBooleanFacet
                         attribute="is_extractable"
-                        label="Is extractable"
+                        label={t("documents.facets.is-extractable")}
                     />
                     <EsBooleanFacet
                         attribute="has_valid_main_record"
-                        label="Has valid main record"
+                        label={t("documents.facets.has-valid-main-record")}
                     />
                     <EsBooleanFacet
                         attribute="has_valid_cnb"
-                        label="Has valid CNB"
+                        label={t("documents.facets.has-valid-cnb")}
                     />
                     <EsDigitizationStateFacet
                         attribute="digitization_state"
-                        label="Digitization State"
+                        label={t("documents.facets.digitization-state")}
                     />
                     <EsMaterialTypeFacet
                         attribute="material_type"
-                        label="Material Type"
+                        label={t("documents.facets.material-type")}
                     />
                     <EsIssuanceTypeFacet
                         attribute="issuance_type"
-                        label="Issuance Type"
+                        label={t("documents.facets.issuance-type")}
                     />
-                    <EsFacet attribute="added_by" label="Added By" />
-                    <EsCategoryFacet attribute="category_id" label="Category" />
+                    <EsFacet
+                        attribute="added_by"
+                        label={t("documents.facets.added-by")}
+                    />
+                    <EsCategoryFacet
+                        attribute="category_id"
+                        label={t("documents.facets.category")}
+                    />
                     <EsDigitizationListFacet
                         attribute="digitization_list_id"
-                        label="Digitization List"
-                        results={10}
+                        label={t("documents.facets.digitization-list")}
+                        showMore
+                        limit={5}
                     />
+                    {/* <EsRangeFacet attribute="page_count" label="Page Count" />
                     <EsRangeFacet
                         attribute="volume_number"
                         label="Volume Number"
                     />
+                    <EsRangeFacet
+                        attribute="volume_year_number"
+                        label="Volume Year Number"
+                    />
+                    <EsRangeFacet attribute="bundle_number" label="Bundle" />
+                    <EsRangeFacet
+                        attribute="page_count_manual"
+                        label="Page Count"
+                    />
+                    <EsRangeFacet
+                        attribute="page_count_catalog"
+                        label="Page Count"
+                    />
+                    <EsRangeFacet
+                        attribute="page_count_predicted"
+                        label="Page Count"
+                    /> */}
                 </Fragment>
             }
         />

@@ -662,13 +662,6 @@ const resources = {
             "digitizationState.Planned": "Naplánováno",
             "digitizationState.NotDigitized": "Nedigitalizováno",
 
-            "documents.table.extraction": "Extrakce",
-            "document.extractable.isExtractable": "Může být extrahovaný",
-            "document.extractable.extracted": "Již extrahovaný",
-            "document.extractable.missingCnb": "Chybí ČNB",
-            "document.extractable.missingPages": "Chybí počet stran",
-            "document.extractable.notExtractable": "Nemůže být extrahovaný",
-
             "documents.datatable-visual": "Tabulka - příznaky",
             "documents.datatable-data": "Tabulka - data",
             "documents.chart": "Graf",
@@ -689,11 +682,6 @@ const resources = {
                 invalid: "Neplatná kombinace",
             },
 
-            "document.record.diff-mzk-skc":
-                "Zobrazit rozdíl mezi MZK a SKC katalogem",
-            "document.record.diff-mzk-cnb":
-                "Zobrazit rozdíl mezi MZK a ČNB katalogem",
-
             "catalog.record.mzk": "MZK katalog záznam",
             "catalog.record.cnb": "ČNB katalog záznam",
             "catalog.record.skc": "SKC katalog záznam",
@@ -708,34 +696,14 @@ const resources = {
                 no: "Ne",
                 "sort-by": "Seřadit podle",
                 facets: "Filtrovat podle",
+                "show-more": "Zobrazit víc",
+                "show-less": "Zobrazit mín",
             },
 
             es: {
                 facet: {
                     "show-more": "Zobrazit víc",
                     "show-less": "Zobrazit mín",
-                },
-            },
-
-            tasks: {
-                name: {
-                    ReindexCatalogRecords: "Reindexovat katalogové záznamy",
-                    ReevaluateCatalogRecordsDifferences:
-                        "Přepočítat rozdíly mezi katalogovými záznamy",
-                    SyncCatalogRecordsWithCatalogs:
-                        "Synchronizovat katalogové záznamy s katalogy (MZK, SKC, ČNB)",
-                },
-                messages: {
-                    "confirm-start": {
-                        header: "Spustení úkolu",
-                        ReevaluateCatalogRecordsDifferences:
-                            "Opravdu chcete přepočítat rozdíly katalogových záznamů pro {{count}} vybrané záznamy?",
-                        SyncCatalogRecordsWithCatalogs:
-                            "Opravdu chcete synchronizovat vybrané {{count}} záznamy s katalogy?",
-                        ReindexCatalogRecords:
-                            "Opravdu chcete reindexovat vybrané {{count}} záznamy?",
-                    },
-                    started: "Úkol spusten",
                 },
             },
 
@@ -809,7 +777,20 @@ const resources = {
                 },
             },
 
-            document: {
+            documents: {
+                "num-found": "Počet nalezených dokumentů",
+                "num-selected": "Počet vybráných dokumentů",
+                facets: {
+                    "is-extractable": "Extrahovatelny",
+                    "has-valid-main-record": "Záznam je validný",
+                    "has-valid-cnb": "ČNB je validné",
+                    "digitization-state": "Stav digitalizace",
+                    "material-type": "Typ materialu",
+                    "issuance-type": "Typ vydáni",
+                    "added-by": "Přidal",
+                    category: "Kategorie",
+                    "digitization-list": "Seznam digitalizace",
+                },
                 "extraction-priority": {
                     5: "Najvyšší",
                     4: "Vysoká",
@@ -817,6 +798,73 @@ const resources = {
                     2: "Nizká",
                     1: "Najnižší",
                     "?": "Neznámá",
+                },
+                "table-columns": {
+                    category: "Kategorie",
+                    type: "Typ",
+                    title: "Název",
+                    description: "Popis",
+                    "page-count": "Počet stran",
+                    "digitization-state": "Stav digitalizace",
+                    "extraction-priority": "Priorita",
+                    extraction: "Extrakce",
+                    "added-by": "Přidal",
+                },
+                actions: {
+                    export: "Exportovat do souboru",
+                    "export-to-xlsx": "Exportovat do XLSX",
+                    "change-category": "Změnit kategorii",
+                    "change-priority": "Změnit prioritu",
+                    delete: "Smazat dokumenty",
+                    "create-digitization-list": "Vytvořit seznam digitalizace",
+                    "add-to-digitization-list":
+                        "Přidat do seznamu digitalizace",
+                    "remove-from-digitization-list":
+                        "Odstranit ze seznamu digitalizace",
+                },
+                extractable: {
+                    isExtractable: "Může být extrahovaný",
+                    extracted: "Již extrahovaný",
+                    missingCnb: "Chybí ČNB",
+                    missingPages: "Chybí počet stran",
+                    notExtractable: "Nemůže být extrahovaný",
+                },
+            },
+
+            tasks: {
+                name: {
+                    ReindexCatalogRecords: "Reindexovat katalogové záznamy",
+                    ReevaluateCatalogRecordsDifferences:
+                        "Přepočítat rozdíly mezi katalogovými záznamy",
+                    SyncCatalogRecordsWithCatalogs:
+                        "Synchronizovat katalogové záznamy s katalogy (MZK, SKC, ČNB)",
+                    PredictPeriodicalsPageCount:
+                        "Predikovat počet stran periodik",
+                    ReindexDocuments: "Reindexovat dokumenty",
+                    SyncDocumentsWithCatalogs:
+                        "Synchronizovat dokumenty s katalogy",
+                    SyncDocumentsWithDigitizationRegistry:
+                        "Synchronizovat dokumenty s registrom digitalizace",
+                },
+                messages: {
+                    "confirm-start": {
+                        header: "Spustení úkolu",
+                        ReevaluateCatalogRecordsDifferences:
+                            "Opravdu chcete přepočítat rozdíly katalogových záznamů pro {{count}} vybrané záznamy?",
+                        SyncCatalogRecordsWithCatalogs:
+                            "Opravdu chcete synchronizovat vybrané {{count}} záznamy s katalogy?",
+                        ReindexCatalogRecords:
+                            "Opravdu chcete reindexovat vybrané {{count}} záznamy?",
+                        PredictPeriodicalsPageCount:
+                            "Opravdu chcete predikovat počet stran periodik pro {{count}} vybrané dokumenty?",
+                        ReindexDocuments:
+                            "Opravdu chcete reindexovat vybrané {{count}} dokumenty?",
+                        SyncDocumentsWithCatalogs:
+                            "Opravdu chcete synchronizovat vybrané {{count}} dokumenty s katalogy?",
+                        SyncDocumentsWithDigitizationRegistry:
+                            "Opravdu chcete synchronizovat vybrané {{count}} dokumenty s registrom digitalizace?",
+                    },
+                    started: "Úkol spusten",
                 },
             },
         },

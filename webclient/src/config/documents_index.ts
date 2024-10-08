@@ -1,4 +1,7 @@
-import { filterBooleanQuery } from "../data/factories/EsQueriesFactory";
+import {
+    filterBooleanQuery,
+    sortFacetDescByKey,
+} from "../data/factories/EsQueriesFactory";
 
 const documents_index_settings = {
     search_attributes: [
@@ -66,11 +69,6 @@ const documents_index_settings = {
     highlight_attributes: ["title"],
     facet_attributes: [
         {
-            attribute: "volume_number",
-            field: "volume_number",
-            type: "numeric",
-        },
-        {
             attribute: "is_extractable",
             field: "is_extractable",
             type: "numeric",
@@ -117,8 +115,51 @@ const documents_index_settings = {
             attribute: "digitization_list_id",
             field: "digitization_list_id",
             type: "numeric",
+            facetQuery: sortFacetDescByKey,
+        },
+        {
+            attribute: "page_count",
+            field: "page_count",
+            type: "numeric",
+        },
+        {
+            attribute: "volume_number",
+            field: "volume_number",
+            type: "numeric",
+        },
+        {
+            attribute: "volume_year_number",
+            field: "volume_year_number",
+            type: "numeric",
+        },
+        {
+            attribute: "bundle_number",
+            field: "bundle_number",
+            type: "numeric",
+        },
+        {
+            attribute: "page_count_manual",
+            field: "page_count_manual",
+            type: "numeric",
+        },
+        {
+            attribute: "page_count_catalog",
+            field: "page_count_catalog",
+            type: "numeric",
+        },
+        {
+            attribute: "page_count_predicted",
+            field: "page_count_predicted",
+            type: "numeric",
         },
     ],
 };
 
+const booleanAttributes = [
+    "is_extractable",
+    "has_valid_main_record",
+    "has_valid_cnb",
+];
+
 export default documents_index_settings;
+export { booleanAttributes };

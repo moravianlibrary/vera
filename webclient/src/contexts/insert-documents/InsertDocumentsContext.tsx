@@ -87,6 +87,7 @@ export const InsertDocumentsProvider: React.FC<
     const { t } = useTranslation();
     const showToast = useToast();
     const { categories } = useCategories();
+    const api = new ApiDocuments();
 
     // First step variables
     const [identifier, setIdentifier] = useState<IdentifierType>(
@@ -284,7 +285,7 @@ export const InsertDocumentsProvider: React.FC<
             identifier_type: identifier,
             value: value,
         };
-        ApiDocuments.insertDocument(inputIdentifier, category, false)
+        api.insertDocument(inputIdentifier, category, false)
             .then((response) =>
                 processCreateResponses(inputIdentifier, response.data)
             )
@@ -300,7 +301,8 @@ export const InsertDocumentsProvider: React.FC<
                 value: fileUploadValue.value,
             };
 
-            await ApiDocuments.insertDocument(inputIdentifier, category, false)
+            await api
+                .insertDocument(inputIdentifier, category, false)
                 .then((response) =>
                     processCreateResponses(inputIdentifier, response.data)
                 )
@@ -329,7 +331,7 @@ export const InsertDocumentsProvider: React.FC<
             issue,
         ]);
 
-        ApiDocuments.insertDocument(
+        api.insertDocument(
             { identifier_type: IdentifierType.Barcode, value: issue.barcode },
             category,
             false
@@ -371,7 +373,7 @@ export const InsertDocumentsProvider: React.FC<
             ...document,
             pages_count_manual: pagesCount,
         };
-        ApiDocuments.updateDocument(updateDocument)
+        api.update(document.id, updateDocument)
             .then((response) => {
                 if (response.data.pages_count_manual === pagesCount) {
                     showToast("success", t("Pages count updated"), "");
