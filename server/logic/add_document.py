@@ -120,12 +120,15 @@ class AddDocumentPreprocessor:
             document = self.create_document(main_aleph_record, add_issue)
             if document is None:
                 return catalog_document, AddDocumentResponseStatus.UnknownError
-            add_issue.newly_added = True
         except exceptions.UniqueDocumentViolationException:
             return catalog_document, AddDocumentResponseStatus.UniqueViolation
 
         # TODO: handle exceptions
         IndexDocument.model_validate(document).save(self.es_session)
+
+        add_issue.newly_added = True
+        add_issue.document_id = document.id
+        add_issue.page_count = document.pages_count
 
         return catalog_document, AddDocumentResponseStatus.Success
 
