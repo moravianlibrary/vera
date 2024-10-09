@@ -51,8 +51,9 @@ router = APIRouter(prefix="/documents", tags=["Documents"])
 async def add_document_from_catalog(
     identifier: Identifier,
     category_id: int = Query(),
-    pages_count_manual: Optional[int] = Query(None),
+    predict_pages_count: bool = Query(True),
     extraction_priority: Optional[int] = Query(None),
+    pages_count_manual: Optional[int] = Query(None),
     username: str = DependsOnCallerUsername,
     es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
@@ -63,8 +64,9 @@ async def add_document_from_catalog(
         identifier,
         username,
         category_id,
-        pages_count_manual,
+        predict_pages_count,
         extraction_priority,
+        pages_count_manual,
     )
     return AddDocumentResponse(
         identifier=identifier, status=status, document=catalog_document

@@ -28,6 +28,7 @@ from services.external.aleph import (
     AlephIssue,
     AlephResponseStatus,
 )
+from services.predictor import Predictor
 from models import CatalogRecord, Document
 
 
@@ -39,14 +40,19 @@ class AddDocumentPreprocessor:
         identifier: Identifier,
         added_by: str,
         category_id: int,
-        pages_count_manual: Optional[int] = None,
+        predict_pages_count: bool = True,
         extraction_priority: Optional[int] = None,
+        pages_count_manual: Optional[int] = None,
     ):
         self.session = session
         self.es_session = es_session
         self.identifier = identifier
         self.added_by = added_by
         self.category_id = category_id
+        self.predict_pages_count = predict_pages_count
+        self.predictor = (
+            Predictor.get_instance() if predict_pages_count else None
+        )
         self.pages_count_manual = pages_count_manual
         self.extraction_priority = extraction_priority
 
@@ -111,10 +117,7 @@ class AddDocumentPreprocessor:
             )
 
         try:
-            document = self.create_document(
-                main_aleph_record,
-                add_issue,
-            )
+            document = self.create_document(main_aleph_record, add_issue)
             if document is None:
                 return catalog_document, AddDocumentResponseStatus.UnknownError
             add_issue.newly_added = True
@@ -204,7 +207,7 @@ class AddDocumentPreprocessor:
         main_aleph_record: AlephRecord,
         catalog_issue: CatalogIssueResponse,
     ) -> Document:
-        return Document(
+        document = Document(
             sysno=main_aleph_record.sysno,
             barcode=catalog_issue.barcode,
             volume=catalog_issue.volume,
@@ -220,7 +223,28 @@ class AddDocumentPreprocessor:
             ),
             pages_count_manual=self.pages_count_manual,
             extraction_priority=self.extraction_priority,
-        ).save(self.session)
+        )
+        if not self.predict_pages_count:
+            return document.save(self.session)
+
+        # TODO: rework
+        find_aleph_issues = [
+            aleph_issue
+            for aleph_issue in AlephIssue.from_record(main_aleph_record.record)
+            if aleph_issue.barcode == catalog_issue.barcode
+        ]
+        if not find_aleph_issues or len(find_aleph_issues) != 1:
+            return document.save(self.session)
+
+        try:
+            predicted_page_count = self.predictor.predict_page_count(
+                main_aleph_record
+            )
+        except Exception:
+            predicted_page_count = None
+        finally:
+            document.pages_count_predicted = predicted_page_count
+            return document.save(self.session)
 
 
 def add_document(
@@ -229,8 +253,9 @@ def add_document(
     identifier: Identifier,
     added_by: str,
     category_id: int,
-    pages_count_manual: Optional[int] = None,
+    predict_pages_count: bool = True,
     extraction_priority: Optional[int] = None,
+    pages_count_manual: Optional[int] = None,
 ) -> Tuple[Optional[CatalogDocumentResponse], AddDocumentResponseStatus]:
     return AddDocumentPreprocessor(
         session,
@@ -238,6 +263,7 @@ def add_document(
         identifier,
         added_by,
         category_id,
-        pages_count_manual,
+        predict_pages_count,
         extraction_priority,
+        pages_count_manual,
     )()

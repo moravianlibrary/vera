@@ -1,5 +1,11 @@
 from .base import TestEndpointsBase
-from models import CatalogRecord, Document, Intention, DigitizationList
+from models import (
+    Category,
+    CatalogRecord,
+    Document,
+    Intention,
+    DigitizationList,
+)
 from datatypes import DigitizationState, IssuanceType
 from datetime import date, timedelta
 from unittest.mock import patch, Mock
@@ -10,6 +16,8 @@ TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
 
 class TestDigitizationListsEndpoints(TestEndpointsBase):
     def setUpTestDocuments(self):
+        self.session.add(Category(name="Test Category"))
+        self.session.flush()
         self.session.add_all(
             [
                 CatalogRecord(
@@ -29,6 +37,7 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
                     barcode="2610568734",
                     issuance_type=IssuanceType.Unit,
                     digitization_state=DigitizationState.NotDigitized,
+                    category_id=1,
                     pages_count_catalog=357,
                     added_by="test_user",
                 ),
@@ -37,6 +46,7 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
                     barcode="2619253549",
                     issuance_type=IssuanceType.Unit,
                     digitization_state=DigitizationState.Finished,
+                    category_id=1,
                     pages_count_catalog=394,
                     added_by="test_user",
                 ),
@@ -45,6 +55,7 @@ class TestDigitizationListsEndpoints(TestEndpointsBase):
                     barcode="2619253549_2",
                     issuance_type=IssuanceType.Unit,
                     digitization_state=DigitizationState.NotDigitized,
+                    category_id=1,
                     pages_count_catalog=451,
                     added_by="test_user",
                 ),

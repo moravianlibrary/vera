@@ -3,6 +3,7 @@ from unittest.mock import patch, Mock
 from services.predictor import Predictor
 from pymarc import MARCReader, Record
 from services.predictor import PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD
+from schemas import AlephRecord
 
 
 def load_aleph_record(sysno: str) -> Record:
@@ -21,19 +22,17 @@ class TestPredictions(TestCase):
         }
         mock_get.return_value = mock_response
 
-        mock_document = Mock()
-        mock_document.sysno = "123"
-        mock_document.volume_year = "2024"
-        mock_document.volume = None
-        mock_document.catalog_record = Mock()
-        mock_document.catalog_record.main_record = load_aleph_record(
-            "MZK01-000121929"
-        )
+        sysno = "MZK01-000121929"
+        aleph_record = AlephRecord(sysno, load_aleph_record(sysno))
+        mock_aleph_issue = Mock()
+        mock_aleph_issue.volume_year = "2024"
 
         predictor = Predictor(url="http://testurl.com")
 
         # Act
-        page_count = predictor.predict_periodicals_page_count(mock_document)
+        page_count = predictor.predict_periodicals_page_count(
+            aleph_record, mock_aleph_issue
+        )
 
         # Assert
         self.assertEqual(page_count, 100)

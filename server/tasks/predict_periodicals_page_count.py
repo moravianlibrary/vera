@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from models import TaskItem
+from models import TaskItem, Document
 from tasks.run_items_processing import run_items_processing_task
-from schemas import IndexDocument, EsSession
+from schemas import IndexDocument, EsSession, AlephRecord, AlephIssue
 from services.predictor import Predictor
 from services.elasticsearch import with_es_session
 
@@ -13,10 +13,16 @@ def PredictPeriodicalsPageCount(
     predictor = Predictor.get_instance()
 
     def predict_volume_pages(task_item: TaskItem) -> None:
-        document = task_item.document
+        document: Document = task_item.document
+        aleph_record = AlephRecord(
+            document.sysno, document.catalog_record.main_record
+        )
+        aleph_issue = AlephIssue.specific_issue_from_record(
+            aleph_record.record, document.barcode, document.volume
+        )
 
         document.pages_count_predicted = (
-            predictor.predict_periodicals_page_count(document)
+            predictor.predict_periodicals_page_count(aleph_record, aleph_issue)
         )
         document.save(session)
 

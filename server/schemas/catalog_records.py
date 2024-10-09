@@ -27,6 +27,9 @@ class CatalogIssueResponse(BaseModel):
     bundle: Optional[str] = None
     signature: Optional[str] = None
 
+    document_id: Optional[int] = None
+    page_count: Optional[int] = None
+
     digitization_registry_id: Optional[int] = None
     digitization_state: DigitizationState = DigitizationState.NotDigitized
 
