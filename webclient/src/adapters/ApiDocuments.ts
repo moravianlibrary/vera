@@ -1,3 +1,4 @@
+import AddDocumentResponseStatus from "../types/AddDocumentResponseStatus";
 import { DigitizationState } from "../types/DigitizationState";
 import { DocumentCreateResult } from "../types/DocumentCreateResult";
 import { DocumentField } from "../types/DocumentSearchField";
@@ -138,20 +139,50 @@ interface Issue {
     can_digitize: boolean;
 }
 
+interface CatalogIssueResponse {
+    issuance_type: IssuanceType;
+    barcode?: string | null;
+    volume?: string | null;
+    volume_year?: string | null;
+    bundle?: string | null;
+    signature?: string | null;
+
+    document_id?: number | null;
+    page_count?: number | null;
+
+    digitization_registry_id?: number | null;
+    digitization_state: DigitizationState;
+    can_digitize: boolean;
+    already_added: boolean;
+    newly_added: boolean;
+}
+
+interface CatalogDocumentResponse {
+    sysno: string;
+    title: string;
+    material_type: MaterialType;
+    issues: CatalogIssueResponse[];
+    skc_sysno: string | null;
+    has_valid_main_record: boolean;
+    cnb_sysno: string | null;
+    has_valid_cnb: boolean;
+}
+
 interface CatalogDocument extends DocumentBase {
     issues: Issue[];
 }
 
-interface DocumentCreationResponse {
-    document?: Document | null;
-    catalog_document?: CatalogDocument | null;
-    create_result: DocumentCreateResult;
+interface AddDocumentResponse {
+    identifier: Identifier;
+    status: AddDocumentResponseStatus;
+    document?: CatalogDocumentResponse | null;
 }
 
 class ApiDocuments extends ApiBase<Document> {
     constructor() {
         super("/documents", {
             disableCreate: true,
+            disableUpdate: true,
             disableGetPage: true,
         } as ApiOptions);
     }
@@ -174,26 +205,7 @@ class ApiDocuments extends ApiBase<Document> {
                 : `/documents/from_catalog?insert_digitized=${insert_digitized}`;
         // : `/catalogs?insert_digitized=${insert_digitized}`;
 
-        return axiosInstance.post<DocumentCreationResponse>(url, identifier, {
-            headers: authHeader(),
-        });
-    }
-
-    insertDocumentsList(
-        identifier_type: IdentifierType,
-        values: string[],
-        category_id?: number | null,
-        insert_digitized?: boolean
-    ) {
-        let url = "/catalogs/list?";
-        url += `identifier_type=${identifier_type}&`;
-        url += `values=${values.join(",")}&`;
-        if (category_id) {
-            url += `category_id=${category_id}&`;
-        }
-        url += `insert_digitized=${insert_digitized}`;
-
-        return axiosInstance.post<DocumentCreationResponse[]>(url, {
+        return axiosInstance.post<AddDocumentResponse>(url, identifier, {
             headers: authHeader(),
         });
     }
@@ -228,8 +240,10 @@ export type {
     Document,
     Issue,
     CatalogDocument,
-    DocumentCreationResponse,
     DocumentsResponse,
     Frequency,
     IndexDocument,
+    AddDocumentResponse,
+    CatalogIssueResponse,
+    CatalogDocumentResponse,
 };

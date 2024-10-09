@@ -13,4 +13,13 @@ function createCnbLink(sysno: string) {
     return `https://aleph.nkp.cz/F/?func=direct&doc_number=${sysno}&local_base=CNB`;
 }
 
-export { createCnbLink, createMzkAlephLink, createSkcLink };
+function createDigitizationRegistryLink(id: number) {
+    return `https://registrdigitalizace.cz/rdcz/results;q=id:${id}`;
+}
+
+export {
+    createCnbLink,
+    createMzkAlephLink,
+    createSkcLink,
+    createDigitizationRegistryLink,
+};

@@ -16,8 +16,12 @@ import {
     messageSeverityToActionSeverity,
     parseResultsToLocalizedMessages,
 } from "./InsertDocumentsFunctions";
-import { DocumentCreationResponse } from "../../adapters/ApiDocuments";
-import { Document } from "../../adapters/ApiDocuments";
+import {
+    AddDocumentResponse,
+    CatalogDocumentResponse,
+    CatalogIssueResponse,
+    Document,
+} from "../../adapters/ApiDocuments";
 import { InputNumber } from "primereact/inputnumber";
 
 interface InsertDocumentsResultProps {
@@ -130,7 +134,7 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
 };
 
 interface AddPagesCountManuallyProps {
-    withoutPagesCount: Document[];
+    withoutPagesCount: [CatalogDocumentResponse, CatalogIssueResponse][];
     onClose: () => void;
 }
 
@@ -141,7 +145,9 @@ const AddPagesCountManually: React.FC<AddPagesCountManuallyProps> = ({
     const { t } = useTranslation();
     const { handleSetPagesCount } = useInsertDocuments();
 
-    const [documents, setDocuments] = useState<Document[]>([]);
+    const [documents, setDocuments] = useState<
+        [CatalogDocumentResponse, CatalogIssueResponse][]
+    >([]);
     const [index, setIndex] = useState(0);
     const [pagesCount, setPagesCount] = useState<number | null>(null);
 
@@ -161,7 +167,7 @@ const AddPagesCountManually: React.FC<AddPagesCountManuallyProps> = ({
 
     const handleAcceptInput = () => {
         if (pagesCount) {
-            handleSetPagesCount(documents[index], pagesCount);
+            handleSetPagesCount(documents[index][1], pagesCount);
         }
         if (index < documents.length - 1) {
             setIndex(index + 1);
@@ -235,7 +241,7 @@ const AddPagesCountManually: React.FC<AddPagesCountManuallyProps> = ({
 };
 
 interface InsertResultDetailsProps {
-    results: DocumentCreationResponse[];
+    results: AddDocumentResponse[];
 }
 
 const InsertResultDetails: React.FC<InsertResultDetailsProps> = ({
@@ -300,6 +306,3 @@ const InsertResultDetails: React.FC<InsertResultDetailsProps> = ({
 };
 
 export default InsertDocumentsResult;
-function truncateText(title: string) {
-    throw new Error("Function not implemented.");
-}

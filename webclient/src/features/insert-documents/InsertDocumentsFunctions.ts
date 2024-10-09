@@ -1,14 +1,17 @@
 import { MessagesMessage } from "primereact/messages";
-import { DocumentBase, DocumentCreationResponse } from "../../adapters/ApiDocuments";
-import { DocumentCreateResult } from "../../types/DocumentCreateResult";
 import { MessageSeverity } from "primereact/api";
 import { MaterialType } from "../../types/MaterialType";
 import { IssuanceType } from "../../types/IssuanceType";
 import { TFunction } from "i18next";
 import { ActionSeverity, Severity } from "../../types/PrimeReactTypes";
+import {
+    AddDocumentResponse,
+    CatalogDocumentResponse,
+} from "../../adapters/ApiDocuments";
+import AddDocumentResponseStatus from "../../types/AddDocumentResponseStatus";
 
 export interface InsertResultDetail {
-    result: DocumentCreateResult;
+    result: AddDocumentResponseStatus;
     id: number | null;
     sysno?: string;
     barcode?: string | null;
@@ -22,106 +25,158 @@ export interface InsertResultDetail {
     result_localized: string;
 }
 
-export function isSingleSuccessfulResult(results: DocumentCreationResponse[]): boolean {
+export function isSingleSuccessfulResult(
+    results: AddDocumentResponse[]
+): boolean {
     return (
         results.length === 1 &&
-        results[0].create_result === DocumentCreateResult.Success
+        results[0].status === AddDocumentResponseStatus.Success
     );
 }
 
-export function getResultSeverity(status: DocumentCreateResult): MessageSeverity {
-    if (status === DocumentCreateResult.Success) {
+export function getResultSeverity(
+    status: AddDocumentResponseStatus
+): MessageSeverity {
+    if (status === AddDocumentResponseStatus.Success) {
         return MessageSeverity.SUCCESS;
-    } else if (status === DocumentCreateResult.UniqueDocumentViolation
-            || status === DocumentCreateResult.AlreadyDigitized) {
+    } else if (
+        status === AddDocumentResponseStatus.UniqueViolation ||
+        status === AddDocumentResponseStatus.AlreadyDigitized
+    ) {
         return MessageSeverity.WARN;
     }
     return MessageSeverity.ERROR;
 }
 
-export function messageSeverityToSeverity(status: MessageSeverity): ActionSeverity {
+export function messageSeverityToSeverity(
+    status: MessageSeverity
+): ActionSeverity {
     switch (status) {
-        case MessageSeverity.SUCCESS: return "success";
-        case MessageSeverity.WARN: return "warn";
-        case MessageSeverity.ERROR: return "error";
-        case MessageSeverity.INFO: return "info";
+        case MessageSeverity.SUCCESS:
+            return "success";
+        case MessageSeverity.WARN:
+            return "warn";
+        case MessageSeverity.ERROR:
+            return "error";
+        case MessageSeverity.INFO:
+            return "info";
     }
     return;
 }
 
-export function messageSeverityToActionSeverity(status: MessageSeverity): Severity {
+export function messageSeverityToActionSeverity(
+    status: MessageSeverity
+): Severity {
     switch (status) {
-        case MessageSeverity.SUCCESS: return "success";
-        case MessageSeverity.WARN: return "warning";
-        case MessageSeverity.ERROR: return "danger";
-        case MessageSeverity.INFO: return "info";
+        case MessageSeverity.SUCCESS:
+            return "success";
+        case MessageSeverity.WARN:
+            return "warning";
+        case MessageSeverity.ERROR:
+            return "danger";
+        case MessageSeverity.INFO:
+            return "info";
     }
     return;
 }
 
-export function getResultSummary(result: DocumentCreateResult): string {
+export function getResultSummary(result: AddDocumentResponseStatus): string {
     switch (result) {
-        case DocumentCreateResult.AlreadyDigitized: return "Document already digitized";
-        case DocumentCreateResult.CatalogDocumentParsingError: return "Error while parsing catalog response";
-        case DocumentCreateResult.CatalogError: return "Error while connecting to catalog";
-        case DocumentCreateResult.DigitizationInProgress: return "Document digitization in progress";
-        case DocumentCreateResult.DigitizationPlanned: return "Document digitization planned";
-        case DocumentCreateResult.DigitizationRevision: return "Document is in revision";
-        case DocumentCreateResult.DocumentNotFoundInCatalog: return "Document not found in catalog";
-        case DocumentCreateResult.InvalidCatalogDocument: return "Invalid catalog document";
-        case DocumentCreateResult.InvalidIdentifier: return "Invalid document identifier";
-        case DocumentCreateResult.InvalidSysno: return "Invalid system number";
-        case DocumentCreateResult.InvalidSysnoBase: return "Invalid system number base";
-        case DocumentCreateResult.Success: return "Document successfuly created";
-        case DocumentCreateResult.UniqueDocumentViolation: return "Unique document violation";
-        case DocumentCreateResult.DigitizationForbidden: return "Digitization forbidden";
-        default: return "";
+        case AddDocumentResponseStatus.AlreadyDigitized:
+            return "Document already digitized";
+        case AddDocumentResponseStatus.CatalogDocumentParsingError:
+            return "Error while parsing catalog response";
+        case AddDocumentResponseStatus.CatalogError:
+            return "Error while connecting to catalog";
+        case AddDocumentResponseStatus.DigitizationInProgress:
+            return "Document digitization in progress";
+        case AddDocumentResponseStatus.DigitizationPlanned:
+            return "Document digitization planned";
+        case AddDocumentResponseStatus.DigitizationRevision:
+            return "Document is in revision";
+        case AddDocumentResponseStatus.DocumentNotFoundInCatalog:
+            return "Document not found in catalog";
+        case AddDocumentResponseStatus.InvalidCatalogDocument:
+            return "Invalid catalog document";
+        case AddDocumentResponseStatus.InvalidIdentifier:
+            return "Invalid document identifier";
+        case AddDocumentResponseStatus.InvalidSysno:
+            return "Invalid system number";
+        case AddDocumentResponseStatus.InvalidSysnoBase:
+            return "Invalid system number base";
+        case AddDocumentResponseStatus.Success:
+            return "Document successfuly created";
+        case AddDocumentResponseStatus.UniqueDocumentViolation:
+            return "Unique document violation";
+        case AddDocumentResponseStatus.DigitizationForbidden:
+            return "Digitization forbidden";
+        default:
+            return "";
     }
 }
 
-export function getResultDetail (document: DocumentBase | null | undefined): string {
+export function getResultDetail(
+    document: CatalogDocumentResponse | null | undefined
+): string {
     if (document === undefined || document === null) {
         return "";
     }
 
+    const issue = document.issues[0];
+
     if (document.material_type === MaterialType.ContinuingResource) {
-        switch (document.issuance_type) {
-            case IssuanceType.Bundle: return `${document.sysno}, ${document.volume}, ${document.bundle}, ${document.barcode}`;
-            case IssuanceType.Volume: return `${document.sysno}, ${document.volume}, ${document.barcode}`;
+        switch (issue.issuance_type) {
+            case IssuanceType.Bundle:
+                return `${document.sysno}, ${issue.volume}, ${issue.bundle}, ${issue.barcode}`;
+            case IssuanceType.Volume:
+                return `${document.sysno}, ${issue.volume}, ${issue.barcode}`;
         }
     }
 
-    if (document.material_type === MaterialType.Book && document.issuance_type === IssuanceType.Unit) {
-        return `${document.sysno}, ${document.volume}, ${document.barcode}`;
+    if (
+        document.material_type === MaterialType.Book &&
+        issue.issuance_type === IssuanceType.Unit
+    ) {
+        return `${document.sysno}, ${issue.volume}, ${issue.barcode}`;
     }
 
-    return document.barcode ? `${document.sysno}, ${document.barcode}` : document.sysno;
+    return issue.barcode
+        ? `${document.sysno}, ${issue.barcode}`
+        : document.sysno;
 }
-    
-export function generateMessageForResponse(document_response: DocumentCreationResponse) {
+
+export function generateMessageForResponse(
+    document_response: AddDocumentResponse
+) {
     return {
-        severity: getResultSeverity(document_response.create_result),
-        summary: getResultSummary(document_response.create_result),
-        detail: getResultDetail(document_response.document
-            ? document_response.document
-            : document_response.catalog_document
+        severity: getResultSeverity(document_response.status),
+        summary: getResultSummary(document_response.status),
+        detail: getResultDetail(
+            document_response.document?.issues
+                ? document_response.document.issues[0]
+                : document_response.document
         ),
-    }
+    };
 }
 
-function generateMessageForResult(t: TFunction, results: DocumentCreationResponse[], result: DocumentCreateResult): MessagesMessage | null {
-    const documents = results.filter(r => r.create_result === result);
+function generateMessageForResult(
+    t: TFunction,
+    results: AddDocumentResponse[],
+    status: AddDocumentResponseStatus
+): MessagesMessage | null {
+    const documents = results.filter((r) => r.status === status);
     if (documents.length === 0) {
         return null;
     }
 
     if (documents.length === 1) {
         return {
-            severity: getResultSeverity(documents[0].create_result),
-            summary: t(getResultSummary(documents[0].create_result)),
-            detail: getResultDetail(documents[0].document
-                ? documents[0].document
-                : documents[0].catalog_document
+            severity: getResultSeverity(documents[0].status),
+            summary: t(getResultSummary(documents[0].status)),
+            detail: getResultDetail(
+                documents[0].document
+                    ? documents[0].document
+                    : documents[0].catalog_document
             ),
             sticky: true,
             closable: false,
@@ -129,47 +184,63 @@ function generateMessageForResult(t: TFunction, results: DocumentCreationRespons
     }
 
     return {
-        severity: getResultSeverity(result),
-        summary: t(getResultSummary(result)),
-        detail: `${t('Count')}: ${documents.length}`,
+        severity: getResultSeverity(status),
+        summary: t(getResultSummary(status)),
+        detail: `${t("Count")}: ${documents.length}`,
         sticky: true,
         closable: false,
     };
 }
 
-export function parseResultsToLocalizedMessages(t: TFunction, results: DocumentCreationResponse[]): MessagesMessage[] {
-    return Object.values(DocumentCreateResult)
-            .map(result => generateMessageForResult(t, results, result))
-            .filter((message): message is MessagesMessage => message !== null);
+export function parseResultsToLocalizedMessages(
+    t: TFunction,
+    results: AddDocumentResponse[]
+): MessagesMessage[] {
+    return Object.values(AddDocumentResponseStatus)
+        .map((result) => generateMessageForResult(t, results, result))
+        .filter((message): message is MessagesMessage => message !== null);
 }
 
-export function getResultsDetails(t: TFunction, results: DocumentCreationResponse[]): InsertResultDetail[] {
-    return results.map(result => {
-        const material_type = result.document?.material_type ?? result.catalog_document?.material_type;
-        const issuance_type = result.document?.issuance_type ?? result.catalog_document?.issuance_type;
+export function getResultsDetails(
+    t: TFunction,
+    results: AddDocumentResponse[]
+): InsertResultDetail[] {
+    return results.map((result) => {
+        const material_type =
+            result.document?.material_type ??
+            result.catalog_document?.material_type;
+        const issuance_type =
+            result.document?.issuance_type ??
+            result.catalog_document?.issuance_type;
         const year = result.document?.year ?? result.catalog_document?.year;
-        const volume = result.document?.volume ?? result.catalog_document?.volume;
-        const bundle = result.document?.bundle ?? result.catalog_document?.bundle;
+        const volume =
+            result.document?.volume ?? result.catalog_document?.volume;
+        const bundle =
+            result.document?.bundle ?? result.catalog_document?.bundle;
         return {
             id: result.document?.id ?? null,
-            result: result.create_result,
+            result: result.status,
             sysno: result.document?.sysno ?? result.catalog_document?.sysno,
-            barcode: result.document?.barcode ?? result.catalog_document?.barcode,
-            material_type: result.document?.material_type ?? result.catalog_document?.material_type,
-            issuance_type: result.document?.issuance_type ?? result.catalog_document?.issuance_type,
+            barcode:
+                result.document?.barcode ?? result.catalog_document?.barcode,
+            material_type:
+                result.document?.material_type ??
+                result.catalog_document?.material_type,
+            issuance_type:
+                result.document?.issuance_type ??
+                result.catalog_document?.issuance_type,
             year: year,
             volume: volume,
             bundle: bundle,
             type: material_type
                 ? issuance_type
-                    ? `${t(material_type)} - ${t(issuance_type)}` : t(material_type)
+                    ? `${t(material_type)} - ${t(issuance_type)}`
+                    : t(material_type)
                 : issuance_type
-                    ? t(issuance_type)
-                    : "",
-            description: [year, volume, bundle]
-            .filter((x) => x)
-            .join(" "),
-            result_localized: t(getResultSummary(result.create_result)),
-        }
-    })
+                ? t(issuance_type)
+                : "",
+            description: [year, volume, bundle].filter((x) => x).join(" "),
+            result_localized: t(getResultSummary(result.status)),
+        };
+    });
 }

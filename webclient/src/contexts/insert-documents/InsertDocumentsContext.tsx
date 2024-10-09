@@ -1,26 +1,21 @@
-import React, {
-    ReactNode,
-    createContext,
-    useContext,
-    useEffect,
-    useState,
-} from "react";
+import React, { ReactNode, createContext, useContext, useState } from "react";
 import { IdentifierType } from "../../types/IdentifierType";
 import { useTranslation } from "react-i18next";
 import ApiDocuments, {
+    AddDocumentResponse,
+    CatalogDocumentResponse,
+    CatalogIssueResponse,
     Document,
-    DocumentCreationResponse,
     Identifier,
     Issue,
 } from "../../adapters/ApiDocuments";
-import { DocumentCreateResult } from "../../types/DocumentCreateResult";
 import { useToast } from "../ToastContext";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
 import { generateMessageForResponse } from "../../features/insert-documents/InsertDocumentsFunctions";
 import { ActionSeverity } from "../../types/PrimeReactTypes";
-import { MaterialType } from "../../types/MaterialType";
 import * as XLSX from "xlsx";
 import { useCategories } from "../categories/CategoriesContext";
+import AddDocumentResponseStatus from "../../types/AddDocumentResponseStatus";
 
 export interface FileUploadValue {
     filename: string;
@@ -39,6 +34,18 @@ export interface SpreadsheetFileContent {
     fileName: string;
     content: SpreadsheetContent[];
 }
+
+type AddDocumentResponses = Record<
+    AddDocumentResponseStatus,
+    AddDocumentResponse[]
+>;
+
+const generateEmptyResponses = (): AddDocumentResponses => {
+    return Object.values(AddDocumentResponseStatus).reduce((acc, status) => {
+        acc[status as AddDocumentResponseStatus] = [];
+        return acc;
+    }, {} as AddDocumentResponses);
+};
 
 interface InsertDocumentsContextProps {
     identifier: IdentifierType;
@@ -63,14 +70,15 @@ interface InsertDocumentsContextProps {
     clearFileUploadValues: () => void;
 
     acceptInput: () => void;
-    results: DocumentCreationResponse[];
-    chooseIssuesDocuments: DocumentCreationResponse[];
-    createIssue: (index: number, issue: Issue) => void;
-    creatingIssues: Issue[];
-    createdIssues: Issue[];
+    responses: AddDocumentResponses;
+    createIssue: (index: number, issue: CatalogIssueResponse) => void;
+    creatingIssues: CatalogIssueResponse[];
 
-    withoutPagesCount: Document[];
-    handleSetPagesCount: (document: Document, pagesCount: number) => void;
+    withoutPagesCount: number[];
+    handleSetPagesCount: (
+        issue: CatalogIssueResponse,
+        pagesCount: number
+    ) => void;
 }
 
 interface InsertDocumentsProviderProps {
@@ -86,7 +94,6 @@ export const InsertDocumentsProvider: React.FC<
 > = ({ children }) => {
     const { t } = useTranslation();
     const showToast = useToast();
-    const { categories } = useCategories();
     const api = new ApiDocuments();
 
     // First step variables
@@ -105,17 +112,18 @@ export const InsertDocumentsProvider: React.FC<
     const [fileUploadValues, setFileUploadValues] = useState<FileUploadValue[]>(
         []
     );
-    const [results, setResults] = useState<DocumentCreationResponse[]>([]);
-    const [chooseIssuesDocuments, setChooseIssuesDocuments] = useState<
-        DocumentCreationResponse[]
-    >([]);
+    // Responses
+    const [responses, setResponses] = useState<AddDocumentResponses>(
+        generateEmptyResponses()
+    );
 
     // Third step variables
-    const [creatingIssues, setCreatingIssues] = useState<Issue[]>([]);
-    const [createdIssues, setCreatedIssues] = useState<Issue[]>([]);
+    const [creatingIssues, setCreatingIssues] = useState<
+        CatalogIssueResponse[]
+    >([]);
 
     // Fourth step variables
-    const [withoutPagesCount, setWithoutPagesCount] = useState<Document[]>([]);
+    const [withoutPageCount, setWithoutPageCount] = useState<number[]>([]);
 
     // Second step functions
     const handleSetValue = (value: string) => {
@@ -250,72 +258,46 @@ export const InsertDocumentsProvider: React.FC<
         setSpreadsheetFileContent(null);
     };
 
-    const addToWithoutPagesCount = (document: Document) => {
-        const isPredictable = (document: Document) => {
-            return (
-                document.material_type === MaterialType.ContinuingResource &&
-                document.frequencies &&
-                document.frequencies.length > 0 &&
-                document.publisher &&
-                document.publishing_place &&
-                document.year
-            );
-        };
-        if (document.pages_count_catalog === null && !isPredictable(document)) {
-            setWithoutPagesCount((prev) => [...prev, document]);
-        }
-    };
+    const onInsertDocument = async (identifier: Identifier) => {
+        api.insertDocument(identifier, category, false)
+            .then((response) => {
+                const { status, document } = response.data;
 
-    const processCreateResponses = (
-        identifier: Identifier,
-        response: DocumentCreationResponse
-    ) => {
-        if (response.create_result === DocumentCreateResult.MultipleIssues) {
-            setChooseIssuesDocuments((prev) => [...prev, response]);
-        } else {
-            setResults((prev) => [...prev, response]);
-            if (response.create_result === DocumentCreateResult.Success) {
-                addToWithoutPagesCount(response.document!);
-            }
-        }
-    };
+                responses[status as AddDocumentResponseStatus].push(
+                    response.data
+                );
+                const index = responses[status].length - 1;
 
-    const createFromValue = async () => {
-        const inputIdentifier: Identifier = {
-            identifier_type: identifier,
-            value: value,
-        };
-        api.insertDocument(inputIdentifier, category, false)
-            .then((response) =>
-                processCreateResponses(inputIdentifier, response.data)
-            )
+                if (
+                    status === AddDocumentResponseStatus.Success &&
+                    !document?.issues[0].page_count
+                ) {
+                    setWithoutPageCount((prev) => [...prev, index]);
+                }
+            })
             .catch((error) => {
                 console.error(`Error while inserting document: ${error}`);
             });
     };
 
+    const createFromValue = async () => {
+        onInsertDocument({
+            identifier_type: identifier,
+            value: value,
+        });
+    };
+
     const createFromFiles = async () => {
         for (const fileUploadValue of fileUploadValues) {
-            const inputIdentifier: Identifier = {
+            onInsertDocument({
                 identifier_type: fileUploadValue.identifier,
                 value: fileUploadValue.value,
-            };
-
-            await api
-                .insertDocument(inputIdentifier, category, false)
-                .then((response) =>
-                    processCreateResponses(inputIdentifier, response.data)
-                )
-                .catch((error) => {
-                    console.error(`Error while inserting document: ${error}`);
-                });
+            });
         }
     };
 
     const acceptInput = async () => {
-        setChooseIssuesDocuments([]);
-        setResults([]);
-        setWithoutPagesCount([]);
+        setResponses(generateEmptyResponses());
         if (value !== "") {
             await createFromValue();
         }
@@ -325,20 +307,20 @@ export const InsertDocumentsProvider: React.FC<
     };
 
     // Third step functions
-    const createIssue = async (index: number, issue: Issue) => {
+    const createIssue = async (index: number, issue: CatalogIssueResponse) => {
         setCreatingIssues((prevCreatingIssues) => [
             ...prevCreatingIssues,
             issue,
         ]);
 
         api.insertDocument(
-            { identifier_type: IdentifierType.Barcode, value: issue.barcode },
+            { identifier_type: IdentifierType.Barcode, value: issue.barcode! },
             category,
             false
         )
             .then((response) => {
                 if (
-                    response.data.create_result !== DocumentCreateResult.Success
+                    response.data.status !== AddDocumentResponseStatus.Success
                 ) {
                     console.error(
                         "Could not create given issue. This code should be unreachable."
@@ -349,11 +331,7 @@ export const InsertDocumentsProvider: React.FC<
                         (i) => i.barcode !== issue.barcode
                     )
                 );
-                setCreatedIssues((prevCreatedIssues) => [
-                    ...prevCreatedIssues,
-                    issue,
-                ]);
-                setResults((prev) => [...prev, response.data]);
+                setResponses((prev) => [...prev, response.data]);
                 addToWithoutPagesCount(response.data.document!);
                 const messageProps = generateMessageForResponse(response.data);
                 showToast(
@@ -368,17 +346,21 @@ export const InsertDocumentsProvider: React.FC<
     };
 
     // Fourth step functions
-    const handleSetPagesCount = (document: Document, pagesCount: number) => {
+    const handleSetPagesCount = (
+        issue: CatalogIssueResponse,
+        pagesCount: number
+    ) => {
         const updateDocument = {
             ...document,
             pages_count_manual: pagesCount,
         };
-        api.update(document.id, updateDocument)
+        const documentId = issue.document_id!;
+        api.update(documentId, updateDocument)
             .then((response) => {
                 if (response.data.pages_count_manual === pagesCount) {
                     showToast("success", t("Pages count updated"), "");
                     setWithoutPagesCount((prev) =>
-                        prev.filter((d) => d.id !== document.id)
+                        prev.filter((d) => d[1].document_id !== documentId)
                     );
                 } else {
                     showToast("error", t("Pages count update failed"), "");
@@ -418,11 +400,10 @@ export const InsertDocumentsProvider: React.FC<
                 clearFileUploadValues,
 
                 acceptInput,
-                results,
+                responses,
                 chooseIssuesDocuments,
                 createIssue,
                 creatingIssues,
-                createdIssues,
 
                 withoutPagesCount,
                 handleSetPagesCount,

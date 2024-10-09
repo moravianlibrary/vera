@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Button } from "primereact/button";
 import { ProgressBar } from "primereact/progressbar";
 import { useTranslation } from "react-i18next";
-import { Issue } from "../../adapters/ApiDocuments";
+import { CatalogIssueResponse, Issue } from "../../adapters/ApiDocuments";
 import { DigitizationState } from "../../types/DigitizationState";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import { DigitizationRegistry } from "../../services/DigitizationRegistry";
 import DigitizationStateTag from "../../components/tags/DigitizationStateTag";
 import { Tag } from "primereact/tag";
+import { createDigitizationRegistryLink } from "../../data/factories/LinksFactory";
 
 enum IssueStates {
     AlreadyExists,
@@ -19,28 +20,28 @@ enum IssueStates {
 type State = IssueStates | DigitizationState | null;
 
 interface IssueDivProps {
-    issue: Issue;
-    onClick: (issue: Issue) => void;
+    issue: CatalogIssueResponse;
+    onClick: (issue: CatalogIssueResponse) => void;
 }
 
 interface DocumentIssueHeaderProps {
-    issue: Issue;
+    issue: CatalogIssueResponse;
     state: State;
 }
 
 interface DocumentIssueContentProps {
-    issue: Issue;
+    issue: CatalogIssueResponse;
     disabled?: boolean;
 }
 
 const DocumentIssueCard: React.FC<IssueDivProps> = ({ issue, onClick }) => {
-    const { creatingIssues, createdIssues } = useInsertDocuments();
+    const { creatingIssues } = useInsertDocuments();
 
     const active =
-        !issue.already_exists &&
+        !issue.already_added &&
         issue.digitization_state === DigitizationState.NotDigitized;
     const [state, setState] = useState<State>(
-        issue.already_exists
+        issue.already_added
             ? IssueStates.AlreadyExists
             : issue.digitization_state
     );
@@ -60,14 +61,10 @@ const DocumentIssueCard: React.FC<IssueDivProps> = ({ issue, onClick }) => {
     }, [creatingIssues]);
 
     useEffect(() => {
-        if (
-            createdIssues &&
-            !issue.already_exists &&
-            createdIssues.filter((i) => i.barcode === issue.barcode).length > 0
-        ) {
+        if (!issue.newly_added) {
             setState(IssueStates.Created);
         }
-    }, [createdIssues]);
+    }, [issue.newly_added]);
 
     if (state !== null && state !== DigitizationState.NotDigitized) {
         return (
@@ -87,11 +84,7 @@ const DocumentIssueCard: React.FC<IssueDivProps> = ({ issue, onClick }) => {
         <Button
             className="flex flex-1 overflow-visible text-gray-800"
             outlined
-            disabled={
-                !active ||
-                createdIssues.filter((i) => i.barcode === issue.barcode)
-                    .length > 0
-            }
+            disabled={!active}
             onClick={handleClick}
         >
             <div className="flex flex-column flex-1 align-items-start">
@@ -158,7 +151,9 @@ const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({
                     text
                     onClick={() =>
                         window.open(
-                            DigitizationRegistry.getDocumentLink(issue.barcode),
+                            createDigitizationRegistryLink(
+                                issue.digitization_registry_id!
+                            ),
                             "_blank"
                         )
                     }
@@ -203,12 +198,12 @@ const DocumentIssueContent: React.FC<DocumentIssueContentProps> = ({
                     <span>{issue.barcode}</span>
                 </div>
             )}
-            {issue.year && (
+            {issue.volume_year && (
                 <div className="flex gap-1">
                     <span className="font-bold white-space-nowrap">
                         {t("Year")}:
                     </span>
-                    <span>{issue.year}</span>
+                    <span>{issue.volume_year}</span>
                 </div>
             )}
             {issue.volume && (
