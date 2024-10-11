@@ -25,7 +25,6 @@ export interface AddDocumentsSettings {
     categoryId: number | null;
     insertAnother: boolean;
     extractionPriority: number;
-    fillMissingDataManually: boolean;
 }
 
 const SETTINGS_NAME = "addDocumentSettings";
@@ -35,7 +34,6 @@ const DEFAULT_SETTINGS: AddDocumentsSettings = {
     categoryId: null,
     insertAnother: true,
     extractionPriority: 3,
-    fillMissingDataManually: false,
 };
 
 export interface FileUploadValue {
@@ -83,11 +81,12 @@ interface InsertDocumentsContextProps {
     clearFileUploadValues: () => void;
 
     acceptInput: () => void;
-    resetInput: () => void;
+    resetInputs: () => void;
     processedCount: number;
     responses: AddDocumentResponses;
     createIssue: (index: number, issue: CatalogIssueResponse) => void;
     creatingIssues: CatalogIssueResponse[];
+    resetResults: () => void;
 
     withoutPageCount: number[];
     handleSetPagesCount: (
@@ -330,7 +329,7 @@ export const InsertDocumentsProvider: React.FC<
         }
     };
 
-    const resetInput = () => {
+    const resetInputs = () => {
         setValue("");
         setFileUploadValues([]);
         setSpreadsheetFileContent(null);
@@ -404,6 +403,12 @@ export const InsertDocumentsProvider: React.FC<
             });
     };
 
+    const resetResults = () => {
+        setResponses(generateEmptyResponses());
+        setWithoutPageCount([]);
+        setCreatingIssues([]);
+    };
+
     return (
         <InsertDocumentsContext.Provider
             value={{
@@ -420,7 +425,7 @@ export const InsertDocumentsProvider: React.FC<
                 clearFileUploadValues,
 
                 acceptInput,
-                resetInput,
+                resetInputs,
                 processedCount,
                 responses,
                 createIssue,
@@ -428,6 +433,7 @@ export const InsertDocumentsProvider: React.FC<
 
                 withoutPageCount,
                 handleSetPagesCount,
+                resetResults,
             }}
         >
             {children}

@@ -34,8 +34,6 @@ const AddDocumentsSettings: React.FC<AddDocumentsSettingsProps> = (props) => {
     const [extractionPriority, setExtractionPriority] = useState<number>(
         settings.extractionPriority
     );
-    const [fillMissingDataManually, setFillMissingDataManually] =
-        useState<boolean>(settings.fillMissingDataManually);
 
     const handleGoNext = () => {
         if (categoryId) {
@@ -44,7 +42,6 @@ const AddDocumentsSettings: React.FC<AddDocumentsSettingsProps> = (props) => {
                 categoryId,
                 insertAnother,
                 extractionPriority,
-                fillMissingDataManually,
             });
             props.onGoNext();
         } else {
@@ -90,14 +87,6 @@ const AddDocumentsSettings: React.FC<AddDocumentsSettingsProps> = (props) => {
                 <ExtractionPrioritySelect
                     value={extractionPriority}
                     onValueChange={setExtractionPriority}
-                />
-            </LabeledComponent>
-            <LabeledComponent
-                label={t("documents.add.settings.fill-missing-data-manually")}
-            >
-                <Checkbox
-                    checked={fillMissingDataManually}
-                    onChange={(e) => setFillMissingDataManually(e.checked!)}
                 />
             </LabeledComponent>
             <div className="flex justify-content-end p-1">

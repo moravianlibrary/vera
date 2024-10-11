@@ -25,9 +25,10 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
         fileUploadValues,
         clearFileUploadValues,
         acceptInput,
-        resetInput,
+        resetInputs,
         processedCount,
         responses,
+        resetResults,
     } = useInsertDocuments();
 
     const [accepted, setAccepted] = useState(false);
@@ -51,13 +52,19 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
     };
 
     useEffect(() => {
+        if (!accepted) {
+            resetResults();
+        }
+    }, [resetResults, accepted]);
+
+    useEffect(() => {
         if (accepted) {
             if (
                 (fileUploadValues.length > 0 &&
                     processedCount === fileUploadValues.length) ||
                 (fileUploadValues.length === 0 && processedCount === 1)
             ) {
-                resetInput();
+                resetInputs();
                 if (responses.MultipleIssues.length > 0 && props.onGoNext) {
                     props.onGoNext();
                 } else if (props.onSkipNext) {

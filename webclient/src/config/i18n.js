@@ -801,8 +801,6 @@ const resources = {
                         "choose-category": "Vyber kategorii",
                         "insert-another": "Vkládat další po úspěšném vložení",
                         "extraction-priority": "Extrahovat s prioritou",
-                        "fill-missing-data-manually":
-                            "Doplnit chybajucí počet stran ručne",
                     },
                     values: {
                         "text-input-header": "Hodnotou",

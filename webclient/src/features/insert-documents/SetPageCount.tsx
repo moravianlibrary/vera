@@ -7,6 +7,8 @@ import { Inplace, InplaceContent, InplaceDisplay } from "primereact/inplace";
 import { useTranslation } from "react-i18next";
 import { getResultDetail } from "./InsertDocumentsFunctions";
 import { Divider } from "primereact/divider";
+import { CatalogDocumentResponse } from "../../adapters/ApiDocuments";
+import SetDocumentPageCountForm from "../../components/forms/SetDocumentPageCountForm";
 
 interface AddDocumentsSetPageCountProps {}
 
@@ -24,37 +26,22 @@ const AddDocumentsSetPageCount: React.FC<
             </InplaceDisplay>
             <InplaceContent>
                 <div className="flex flex-column gap-1">
-                    {withoutPageCount.map((index) => (
-                        <div className="flex gap-1">
-                            <div key={index} className="flex flex-column w-min">
-                                <span
-                                    style={{
-                                        maxWidth: "40ch",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                    }}
-                                >
-                                    {responses.Success[index].document!.title}
-                                </span>
-                                <span>
-                                    {getResultDetail(
-                                        responses.Success[index].document!
-                                    )}
-                                </span>
-                            </div>
-                            <InputNumber
-                                className="w-8rem"
-                                autoFocus
-                                // value={pagesCount}
-                                // onChange={(e) => setPagesCount(e.value)}
-                                // onKeyDown={handleKeyPress}
-                                min={1}
-                                max={100000}
-                                maxFractionDigits={0}
+                    {withoutPageCount
+                        .map((index) => responses.Success[index].document)
+                        .map((document) => (
+                            <SetDocumentPageCountForm
+                                attributes={{
+                                    ...document!,
+                                    ...document!.issues[0],
+                                }}
+                                setPageCountCallback={(pageCount) =>
+                                    handleSetPagesCount(
+                                        document!.issues[0],
+                                        pageCount
+                                    )
+                                }
                             />
-                        </div>
-                    ))}
+                        ))}
                     <Button
                         label={t("documents.add.results.accept-set-page-count")}
                     />

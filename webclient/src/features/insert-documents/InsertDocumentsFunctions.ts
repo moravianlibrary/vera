@@ -61,23 +61,34 @@ export function getResultDetail(document: CatalogDocumentResponse) {
             : document.sysno;
     };
 
+    const joinNonNullValues = (values: (string | null | undefined)[]) => {
+        return values.filter((v) => v).join(", ");
+    };
+
     switch (document.material_type) {
         case MaterialType.Book:
             return issue.issuance_type === IssuanceType.Unit
-                ? `${document.sysno}, ${
-                      issue.volume || issue.volume_year || "-"
-                  }, ${issue.barcode}`
+                ? joinNonNullValues([
+                      document.sysno,
+                      issue.volume || issue.volume_year,
+                      issue.barcode,
+                  ])
                 : defaultResultDetail();
         case MaterialType.ContinuingResource:
             switch (issue.issuance_type) {
                 case IssuanceType.Bundle:
-                    return `${document.sysno}, ${
-                        issue.volume || issue.volume_year
-                    }, ${issue.bundle}, ${issue.barcode}`;
+                    return joinNonNullValues([
+                        document.sysno,
+                        issue.volume || issue.volume_year,
+                        issue.bundle,
+                        issue.barcode,
+                    ]);
                 case IssuanceType.Volume:
-                    return `${document.sysno}, ${
-                        issue.volume || issue.volume_year
-                    }, ${issue.barcode}`;
+                    return joinNonNullValues([
+                        document.sysno,
+                        issue.volume || issue.volume_year,
+                        issue.barcode,
+                    ]);
                 default:
                     return defaultResultDetail();
             }
