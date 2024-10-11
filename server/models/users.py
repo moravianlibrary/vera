@@ -14,7 +14,7 @@ class User(BaseModel):
     __tablename__ = "users"
 
     username = Column(String, primary_key=True, index=True, unique=True)
-    settings = Column(JSON)
+    settings = Column(JSON, default={})
     department_id = Column(Integer, ForeignKey("departments.id"))
 
     department = relationship("Department", back_populates="users")

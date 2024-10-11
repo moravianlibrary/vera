@@ -11,6 +11,7 @@ from .sync_documents_with_catalogs import SyncDocumentsWithCatalogs
 from .sync_documents_with_digitization_registry import (
     SyncDocumentsWithDigitizationRegistry,
 )
+from .recreate_indexes import RecreateIndexes
 from datatypes import TaskType
 
 TaskDispatcher = {
@@ -27,6 +28,7 @@ TaskDispatcher = {
     ),
     TaskType.GenerateVolumesPagesDataset: GenerateVolumesPagesDataset,
     TaskType.GenerateItemsPagesDataset: GenerateItemsPagesDataset,
+    TaskType.RecreateIndexes: RecreateIndexes,
 }
 
 __all__ = [

@@ -15,6 +15,7 @@ from .locations import Location, Library, Storage
 from .roles import Role
 from .tasks import Task, TaskDataset, TaskItem, PeriodicTask
 from .users import User
+from .settings import StartupTasks
 
 __all__ = [
     "Base",
@@ -42,4 +43,5 @@ __all__ = [
     "TaskItem",
     "PeriodicTask",
     "User",
+    "StartupTasks",
 ]

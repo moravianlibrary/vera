@@ -2,6 +2,10 @@ from enum import Enum
 
 
 class TaskType(Enum):
+    GenerateVolumesPagesDataset = "GenerateVolumesPagesDataset"
+    GenerateItemsPagesDataset = "GenerateItemsPagesDataset"
+    RecreateIndexes = "RecreateIndexes"
+
     PredictPeriodicalsPageCount = "PredictPeriodicalsPageCount"
     ReindexDocuments = "ReindexDocuments"
     SyncDocumentsWithCatalogs = "SyncDocumentsWithCatalogs"
@@ -12,9 +16,6 @@ class TaskType(Enum):
     ReindexCatalogRecords = "ReindexCatalogRecords"
     SyncCatalogRecordsWithCatalogs = "SyncCatalogRecordsWithCatalogs"
     ReevaluateCatalogRecordsDifferences = "ReevaluateCatalogRecordsDifferences"
-
-    GenerateVolumesPagesDataset = "GenerateVolumesPagesDataset"
-    GenerateItemsPagesDataset = "GenerateItemsPagesDataset"
 
 
 def is_catalog_records_task(task_type: TaskType) -> bool:

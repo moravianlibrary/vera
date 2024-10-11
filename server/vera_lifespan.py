@@ -70,71 +70,53 @@ def ensure_today_intention():
     Intention.ensure_intention_for_today(next(get_session()))
 
 
-def sync_all_from_catalogs():
+def plan_startup_tasks():
+    from sqlalchemy import text
     from config import VeraConfig
-    from datatypes import TaskType
+    from datatypes import TaskItemType
     from models.base_engine import get_session
-    from models import Document, Task, TaskItem
+    from models import Task, StartupTasks
     from worker import run_task
 
     session = next(get_session())
-    task = Task(
-        task_type=TaskType.SyncDocumentsWithCatalogs,
-        owner=VeraConfig.BotName,
-    ).save(session)
-    for document in Document.all(session):
-        TaskItem(task_id=task.id, document_id=document.id).save(session)
 
-    run_task.delay(task_id=task.id)
+    for startup_task in StartupTasks.all(session):
+        if startup_task.is_one_time_task and startup_task.has_run:
+            continue
 
+        logger.info(f"Planning start up task {startup_task.task_type.value}")
+        task = Task(
+            task_type=startup_task.task_type,
+            owner=VeraConfig.BotName,
+        ).save(session)
 
-def reindex_all():
-    from config import VeraConfig
-    from datatypes import TaskType
-    from models.base_engine import get_session
-    from models import Document, Task, TaskItem
-    from worker import run_task
+        if startup_task.item_type == TaskItemType.CatalogRecord:
+            session.execute(
+                text(
+                    """
+                    INSERT INTO task_items (task_id, item_id, item_type)
+                    SELECT :task_id, sysno, 'CatalogRecord'
+                    FROM catalog_records
+                    """
+                ),
+                {"task_id": task.id},
+            )
+        elif startup_task.item_type == TaskItemType.Document:
+            session.execute(
+                text(
+                    """
+                    INSERT INTO task_items (task_id, item_id, item_type)
+                    SELECT :task_id, CAST(id AS VARCHAR), 'Document'
+                    FROM documents
+                    """
+                ),
+                {"task_id": task.id},
+            )
 
-    session = next(get_session())
-    task = Task(
-        task_type=TaskType.Reindex,
-        owner=VeraConfig.BotName,
-    ).save(session)
-    for document in Document.all(session):
-        TaskItem(task_id=task.id, document_id=document.id).save(session)
+        task.has_run = True
+        task.save(session)
 
-    run_task.delay(task_id=task.id)
-
-
-def recreate_documents_index():
-    from config import VeraConfig
-    from datatypes import TaskType, TaskItemType
-    from models.base_engine import get_session
-    from models import Document, Task, TaskItem
-    from worker import run_task
-    from services.elasticsearch import with_es_session
-    from schemas import IndexCatalogRecord, IndexDocument
-
-    @with_es_session
-    def recreate_indexes(es_session):
-        IndexCatalogRecord.recreate_index(es_session)
-        IndexDocument.recreate_index(es_session)
-
-    recreate_indexes()
-    db_session = next(get_session())
-
-    task = Task(
-        task_type=TaskType.ReindexDocuments,
-        owner=VeraConfig.BotName,
-    ).save(db_session)
-    for document in Document.all(db_session):
-        TaskItem(
-            task_id=task.id,
-            item_id=str(document.id),
-            item_type=TaskItemType.Document,
-        ).save(db_session)
-
-    run_task.delay(task_id=task.id)
+        run_task.delay(task_id=task.id)
 
 
 @asynccontextmanager
@@ -148,11 +130,7 @@ async def lifespan(app_: FastAPI):
         return
     logger.info("Database connection successfully established.")
     ensure_last_database_revision()
-    # TODO: check on startup table
-    # sync_all_from_catalogs()
-    # reevaluate_all_catalog_records()
-    # recreate_documents_index()
-    # reindex_all()
+    plan_startup_tasks()
 
     set_failed_tasks_on_start(next(get_session()))
 
