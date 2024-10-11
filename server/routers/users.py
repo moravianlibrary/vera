@@ -41,7 +41,7 @@ def set_user_settings(
     user_model = User.get(db, user.username)
     user_model.settings = settings
     user_model.save(db)
-    user.settings = user_model.settings
+    user.settings = settings
     return user
 
 

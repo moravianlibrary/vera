@@ -2,9 +2,6 @@ import {
     DataTable,
     DataTableCellSelection,
     DataTableSelectionCellChangeEvent,
-    DataTableSelectionMultipleChangeEvent,
-    DataTableValue,
-    DataTableValueArray,
 } from "primereact/datatable";
 import { FileUpload } from "primereact/fileupload";
 import {

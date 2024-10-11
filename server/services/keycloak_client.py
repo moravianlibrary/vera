@@ -79,6 +79,7 @@ def get_user_from_token(token: str, db: Session) -> CurrentUser:
 
     return CurrentUser(
         username=user.username,
+        settings=user.settings,
         role_id=role.id,
         role_name=role.name,
         actions=role.actions,

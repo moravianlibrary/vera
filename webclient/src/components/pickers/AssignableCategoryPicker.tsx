@@ -98,7 +98,7 @@ const AssignableCategoryPicker: React.FC<AssignableCategoryPickerProps> = ({
         setSelectedCategory(
             category_id ? findCategoryById(categories, category_id) : null
         );
-    }, [category_id]);
+    }, [category_id, categories]);
 
     return (
         <TreeSelect

@@ -13,6 +13,8 @@ interface AccessContextProps {
     fetchCurrentUser: () => Promise<void>;
     hasPermission: (action: ActionType) => boolean;
     currentUser: CurrentUser | undefined;
+    getSettings: (name: string) => Object | null;
+    updateSettings: (name: string, value: Object) => void;
 }
 
 const AccessContext = createContext<AccessContextProps | undefined>(undefined);
@@ -38,54 +40,54 @@ export const AccessProvider: React.FC<BaseProviderProps> = ({ children }) => {
         }
     };
 
-    const fetchCurrentUser = async () => {
-        const parseActions = (actions: ActionType[]): ActionType[] => {
-            const parsedActions = actions;
-            if (
-                actions.some((action) =>
-                    [
-                        ActionType.ReadDatatableAll,
-                        ActionType.ReadDatatableDepartment,
-                        ActionType.ReadDatatableOwn,
-                    ].includes(action)
-                )
-            ) {
-                parsedActions.push(ActionType.ReadDatatable);
-            }
-            if (
-                actions.some((action) =>
-                    [
-                        ActionType.EditDatatableAll,
-                        ActionType.EditDatatableDepartment,
-                        ActionType.EditDatatableOwn,
-                    ].includes(action)
-                )
-            ) {
-                parsedActions.push(ActionType.EditDatatable);
-            }
-            if (
-                actions.some((action) =>
-                    [
-                        ActionType.ReadCategoriesAll,
-                        ActionType.ReadCategoriesDepartment,
-                    ].includes(action)
-                )
-            ) {
-                parsedActions.push(ActionType.ReadCategories);
-            }
-            if (
-                actions.some((action) =>
-                    [
-                        ActionType.EditCategoriesAll,
-                        ActionType.EditCategoriesDepartment,
-                    ].includes(action)
-                )
-            ) {
-                parsedActions.push(ActionType.EditCategories);
-            }
-            return parsedActions;
-        };
+    const parseActions = (actions: ActionType[]): ActionType[] => {
+        const parsedActions = actions;
+        if (
+            actions.some((action) =>
+                [
+                    ActionType.ReadDatatableAll,
+                    ActionType.ReadDatatableDepartment,
+                    ActionType.ReadDatatableOwn,
+                ].includes(action)
+            )
+        ) {
+            parsedActions.push(ActionType.ReadDatatable);
+        }
+        if (
+            actions.some((action) =>
+                [
+                    ActionType.EditDatatableAll,
+                    ActionType.EditDatatableDepartment,
+                    ActionType.EditDatatableOwn,
+                ].includes(action)
+            )
+        ) {
+            parsedActions.push(ActionType.EditDatatable);
+        }
+        if (
+            actions.some((action) =>
+                [
+                    ActionType.ReadCategoriesAll,
+                    ActionType.ReadCategoriesDepartment,
+                ].includes(action)
+            )
+        ) {
+            parsedActions.push(ActionType.ReadCategories);
+        }
+        if (
+            actions.some((action) =>
+                [
+                    ActionType.EditCategoriesAll,
+                    ActionType.EditCategoriesDepartment,
+                ].includes(action)
+            )
+        ) {
+            parsedActions.push(ActionType.EditCategories);
+        }
+        return parsedActions;
+    };
 
+    const fetchCurrentUser = async () => {
         try {
             const user = await api.getCurrentUser();
             setCurrentUser({
@@ -120,12 +122,35 @@ export const AccessProvider: React.FC<BaseProviderProps> = ({ children }) => {
         return currentUser?.actions?.includes(action) || false;
     };
 
+    const getSettings = (name: string) => {
+        if (currentUser) {
+            return currentUser.settings[name] || null;
+        }
+        return null;
+    };
+
+    const updateSettings = (name: string, value: Object) => {
+        if (currentUser) {
+            const currentSettings = currentUser.settings || {};
+            api.setUserSettings({ ...currentSettings, [name]: value }).then(
+                (response) => {
+                    setCurrentUser({
+                        ...response.data,
+                        actions: parseActions(response.data.actions),
+                    });
+                }
+            );
+        }
+    };
+
     const contextValue: AccessContextProps = {
         login,
         logout,
         fetchCurrentUser,
         hasPermission,
         currentUser,
+        getSettings,
+        updateSettings,
     };
 
     return (

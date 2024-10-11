@@ -1,30 +1,37 @@
 import React from "react";
-import { Rating, RatingChangeEvent } from "primereact/rating";
 import EditorProps from "./Editor";
+import ExtractionPriorityTag from "../tags/ExtractionPriorityTag";
+import { Button } from "primereact/button";
 
 const ExtractionPriorityEditor: React.FC<EditorProps<number>> = ({
     value,
     editorCallback,
     cancelCallback,
 }) => {
-    const handleChange = (e: RatingChangeEvent) => {
-        if (e && e.value) {
-            editorCallback(e.value);
-        } else {
-            cancelCallback();
-        }
-    };
-
     return (
-        <Rating
-            value={value}
-            stars={5}
-            cancel={true}
-            cancelIcon="pi pi-times"
-            onIcon={<i className={`extraction-priority-${value}-icon`} />}
-            offIcon={<i className="extraction-priority-empty-icon" />}
-            onChange={handleChange}
-        />
+        <div className="extraction-priority-editor">
+            {[1, 2, 3, 4, 5].map((priority) => (
+                <Button
+                    key={priority}
+                    text
+                    className={
+                        priority === value
+                            ? "button active"
+                            : "button non-active"
+                    }
+                    onClick={(e) => editorCallback(priority)}
+                >
+                    <ExtractionPriorityTag priority={priority} key={priority} />
+                </Button>
+            ))}
+            <Button
+                key="cancel"
+                text
+                className="p-1 text-red-500"
+                icon="pi pi-times"
+                onClick={cancelCallback}
+            />
+        </div>
     );
 };
 

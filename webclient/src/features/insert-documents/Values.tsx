@@ -8,6 +8,7 @@ import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocume
 import React from "react";
 import InsertDocumentsFiles from "./InsertDocumentsFiles";
 import { getIdentifierTypeLabel } from "../../types/Identifiers";
+import LabeledComponent from "../../components/LabeledComponent";
 
 interface InsertDocumentsValuesProps {
     onGoBack?: () => void;
@@ -18,18 +19,18 @@ interface InsertDocumentsValuesProps {
 const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
     const { t } = useTranslation();
     const {
-        identifier,
+        settings,
         value,
         setValue,
         fileUploadValues,
         clearFileUploadValues,
         acceptInput,
-        results,
-        chooseIssuesDocuments,
+        resetInput,
+        processedCount,
+        responses,
     } = useInsertDocuments();
 
     const [accepted, setAccepted] = useState(false);
-    const [processedCount, setProcessedCount] = useState(0);
 
     const handleAcceptInput = async () => {
         setAccepted(true);
@@ -50,36 +51,35 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
     };
 
     useEffect(() => {
-        const processedCount = results.length + chooseIssuesDocuments.length;
-        setProcessedCount(processedCount);
         if (accepted) {
             if (
                 (fileUploadValues.length > 0 &&
                     processedCount === fileUploadValues.length) ||
                 (fileUploadValues.length === 0 && processedCount === 1)
             ) {
-                setAccepted(false);
-                setValue("");
-                clearFileUploadValues();
-                if (chooseIssuesDocuments.length > 0 && props.onGoNext) {
+                resetInput();
+                if (responses.MultipleIssues.length > 0 && props.onGoNext) {
                     props.onGoNext();
                 } else if (props.onSkipNext) {
                     props.onSkipNext();
                 }
             }
         }
-    }, [results, chooseIssuesDocuments]);
+    }, [processedCount]);
 
     return (
         <div className="flex flex-column gap-5">
             <TabView>
                 <TabPanel
                     className="flex flex-column gap-3"
-                    header={t("Using value")}
+                    header={t("documents.add.values.text-input-header")}
                     disabled={fileUploadValues.length > 0}
                 >
-                    <div className="flex align-items-center gap-2">
-                        <span>{t(getIdentifierTypeLabel(identifier))}:</span>
+                    <LabeledComponent
+                        label={t(
+                            `enums.identifier-type.${settings.identifierType}`
+                        )}
+                    >
                         <InputText
                             autoFocus
                             disabled={accepted}
@@ -87,9 +87,9 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
                             onChange={(e) => setValue(e.target.value)}
                             onKeyDown={handleKeyPress}
                         />
-                    </div>
+                    </LabeledComponent>
                 </TabPanel>
-                <TabPanel header={t("Using files")}>
+                <TabPanel header={t("documents.add.values.file-input-header")}>
                     <InsertDocumentsFiles />
                 </TabPanel>
             </TabView>
@@ -97,7 +97,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
                 <Button
                     icon="pi pi-caret-left"
                     outlined
-                    label={t("prev_step")}
+                    label={t("documents.add.prev-step")}
                     onClick={handleGoBack}
                 />
                 {accepted && (
@@ -119,7 +119,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
                     icon="pi pi-caret-right"
                     iconPos="right"
                     outlined
-                    label={t("next_step")}
+                    label={t("documents.add.next-step")}
                     onClick={handleAcceptInput}
                 />
             </div>

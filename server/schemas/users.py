@@ -4,6 +4,9 @@ from datatypes import ActionType, JsonBase
 
 
 class CurrentUser(BaseModel):
+    class Config:
+        from_attibutes = True
+
     username: str
     settings: JsonBase = {}
 

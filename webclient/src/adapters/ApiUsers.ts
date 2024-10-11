@@ -1,9 +1,13 @@
 import axiosInstance, { ApiBase, authHeader } from "./ApiBase";
 import { ActionScope, ActionType } from "../types/ActionType";
 
+interface UserSettings {
+    [key: string]: any;
+}
+
 interface CurrentUser {
     username: string;
-    setttings: JSON;
+    settings: UserSettings;
     role_id: number;
     role_name: string;
     // actions: (ActionType | [ActionType, ActionScope])[];
@@ -33,7 +37,7 @@ class ApiUsers extends ApiBase<User> {
         });
     }
 
-    setUserSettings(settings: JSON) {
+    setUserSettings(settings: UserSettings) {
         return axiosInstance.post<CurrentUser>(
             `${this.endpoint}/current/settings`,
             settings,

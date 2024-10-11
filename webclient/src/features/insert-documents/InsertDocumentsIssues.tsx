@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import DocumentIssueCard from "./DocumentIssueCard";
 import React from "react";
-import { Issue } from "../../adapters/ApiDocuments.js";
+import { CatalogIssueResponse, Issue } from "../../adapters/ApiDocuments.js";
 import { IssuanceType } from "../../types/IssuanceType";
 import { Chip } from "primereact/chip";
 
@@ -51,40 +51,40 @@ const naturalSort = (a, b) => {
 };
 
 const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
-    const { chooseIssuesDocuments, createIssue } = useInsertDocuments();
+    const { responses, createIssue } = useInsertDocuments();
     const { t } = useTranslation();
 
     const [index, setIndex] = useState(0);
-    const [editions, setEditions] = useState<Issue[]>([]);
-    const [volumes, setVolumes] = useState<Issue[]>([]);
-    const [bundles, setBundles] = useState<Issue[]>([]);
+    const [editions, setEditions] = useState<CatalogIssueResponse[]>([]);
+    const [volumes, setVolumes] = useState<CatalogIssueResponse[]>([]);
+    const [bundles, setBundles] = useState<CatalogIssueResponse[]>([]);
 
     const handleChooseIssuesForDocument = (index) => {
-        const catalogDocument = chooseIssuesDocuments[index].catalog_document!;
+        const catalogDocument = responses.MultipleIssues[index].document!;
 
         setEditions(
             catalogDocument.issues
-                .filter((issue) => issue.type === IssuanceType.Unit)
-                .sort((a, b) => a.barcode.localeCompare(b.barcode))
+                .filter((issue) => issue.issuance_type === IssuanceType.Unit)
+                .sort((a, b) => naturalSort(a.barcode, b.barcode))
         );
         setVolumes(
             catalogDocument.issues
-                .filter((issue) => issue.type === IssuanceType.Volume)
+                .filter((issue) => issue.issuance_type === IssuanceType.Volume)
                 .sort((a, b) => {
                     let value = naturalSort(a.volume, b.volume);
                     if (value === 0) {
-                        let value = naturalSort(a.year, b.year);
+                        let value = naturalSort(a.volume_year, b.volume_year);
                     }
                     return value;
                 })
         );
         setBundles(
             catalogDocument.issues
-                .filter((issue) => issue.type === IssuanceType.Bundle)
+                .filter((issue) => issue.issuance_type === IssuanceType.Bundle)
                 .sort((a, b) => {
                     let value = naturalSort(a.volume, b.volume);
                     if (value === 0) {
-                        value = naturalSort(a.year, b.year);
+                        value = naturalSort(a.volume_year, b.volume_year);
                     }
                     if (value === 0) {
                         value = naturalSort(a.bundle, b.bundle);
@@ -99,13 +99,13 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
     };
 
     useEffect(() => {
-        if (chooseIssuesDocuments) {
-            if (chooseIssuesDocuments.length === 0) {
+        if (responses.MultipleIssues) {
+            if (responses.MultipleIssues.length === 0) {
                 props.onGoNext();
             }
             handleChooseIssuesForDocument(index);
         }
-    }, [chooseIssuesDocuments, index]);
+    }, [responses, index]);
 
     const getIssuesDiv = (header, issues) => {
         return (
@@ -131,9 +131,7 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
                         {t("Title")}:
                     </span>
                     <span>
-                        {` ${
-                            chooseIssuesDocuments[index].catalog_document!.title
-                        }`}
+                        {` ${responses.MultipleIssues[index].document!.title}`}
                     </span>
                 </div>
                 <div>
@@ -141,9 +139,7 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
                         {t("System number")}:
                     </span>
                     <span>
-                        {` ${
-                            chooseIssuesDocuments[index].catalog_document!.sysno
-                        }`}
+                        {` ${responses.MultipleIssues[index].document!.sysno}`}
                     </span>
                 </div>
             </div>
@@ -159,7 +155,7 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
     };
 
     const handleGoNext = () => {
-        if (index === chooseIssuesDocuments.length - 1) {
+        if (index === responses.MultipleIssues.length - 1) {
             props.onGoNext();
         } else {
             setIndex((prevIndex) => prevIndex + 1);
@@ -179,17 +175,17 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
             return t("Previous step");
         } else {
             return `${t("Previous document")} ${truncateText(
-                chooseIssuesDocuments[index - 1].catalog_document!.title
+                responses.MultipleIssues[index - 1].document!.title
             )}`;
         }
     };
 
     const getGoNextLabel = () => {
-        if (index === chooseIssuesDocuments.length - 1) {
+        if (index === responses.MultipleIssues.length - 1) {
             return t("Next step");
         } else {
             return `${t("Next document")} \"${truncateText(
-                chooseIssuesDocuments[index + 1].catalog_document!.title
+                responses.MultipleIssues[index + 1].document!.title
             )}\"`;
         }
     };
@@ -220,13 +216,13 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = (props) => {
                     label={getGoBackLabel()}
                     onClick={handleGoBack}
                 />
-                {chooseIssuesDocuments.length > 1 && (
+                {responses.MultipleIssues.length > 1 && (
                     <div className="flex px-5 gap-1">
                         <span className="font-bold">{`${t(
                             "Choose issues"
                         )}:`}</span>
                         <span>{`${index + 1} / ${
-                            chooseIssuesDocuments.length
+                            responses.MultipleIssues.length
                         }`}</span>
                     </div>
                 )}

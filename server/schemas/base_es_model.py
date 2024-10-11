@@ -21,6 +21,7 @@ class BaseEsModel(BaseModel):
     __index_name__: str = "undefined"
     __id_field__: str = "id"
     __index_version__: str = "init"
+    __dynamic__: str = "strict"
 
     @classmethod
     def __es_schema_properties__(cls) -> dict:
@@ -67,6 +68,7 @@ class BaseEsModel(BaseModel):
         return {
             "mappings": {
                 "_meta": {"index.version": cls.__index_version__},
+                "dynamic": cls.__dynamic__,
                 "properties": cls.__es_schema_properties__(),
             }
         }

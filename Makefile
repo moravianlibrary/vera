@@ -8,6 +8,14 @@ TARGET_SERVER_IMAGE_TEMPLATE_NAME := mzk.cz/vera-server
 TARGET_WORKER_IMAGE_TEMPLATE_NAME := mzk.cz/vera-worker
 TARGET_CLIENT_IMAGE_TEMPLATE_NAME := mzk.cz/vera-client
 
+start-devel:
+	docker-compose up -d server worker
+stop-devel:
+	docker-compose down server worker
+build-devel:
+	docker-compose build server worker
+run-devel: stop-devel build-devel start-devel
+
 start:
 	docker-compose up -d server worker client
 stop:

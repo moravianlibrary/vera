@@ -109,3 +109,37 @@
     border-bottom: 2px solid #444;
     width: fit-content;
 }
+
+.extraction-priority-editor {
+    display: flex;
+}
+
+.extraction-priority-editor .button {
+    padding: 0px;
+    margin: 0px;
+}
+
+.extraction-priority-editor .non-active .extraction-priority-1 {
+    background-color: #99e699;
+    border: none;
+}
+
+.extraction-priority-editor .non-active .extraction-priority-2 {
+    background-color: #d4f28d;
+    border: none;
+}
+
+.extraction-priority-editor .non-active .extraction-priority-3 {
+    background-color: #ffdb70;
+    border: none;
+}
+
+.extraction-priority-editor .non-active .extraction-priority-4 {
+    background-color: #ffcc99;
+    border: none;
+}
+
+.extraction-priority-editor .non-active .extraction-priority-5 {
+    background-color: #ff9999;
+    border: none;
+}

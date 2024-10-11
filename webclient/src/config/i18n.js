@@ -46,11 +46,9 @@ const resources = {
             title: "Název",
             pages_count: "Počet stran",
             signature: "Signatura",
-            Signature: "Signatura",
             issn: "ISSN",
             isbn: "ISBN",
             barcode: "Čárový kód",
-            Barcode: "Čárový kód",
             creator: "Vytvořil",
             created_at: "Vytvořeno",
             extractor: "Extrahoval",
@@ -108,38 +106,8 @@ const resources = {
             active_quota: "Aktivní zaměr",
             set_active_quota: "Nastavit jako aktívni zaměr",
 
-            next_step: "Dále",
-            prev_step: "Zpět",
-            insert_settings: "Nastavení vkládání",
-            choose_identifier: "Vyber identifikátor",
-            choose_category: "Vyber kategorii",
-            insert_values: "Výběr hodnot",
-            choose_issues: "Výběr vydání",
-            insert_result: "Výsledek",
-            insert_another: "Vložit další",
-            finish: "Skončit",
-            details: "Detaily",
             count: "Počet",
             Count: "Počet",
-
-            "Document is already digitized": "Dokument již digitalizován",
-            "Document already digitized": "Dokument již digitalizován",
-            "Error while parsing catalog response":
-                "Chyba při zpracování odpovědi katalogu",
-            "Error while connecting to catalog":
-                "Chyba při připojování katalogu",
-            "Document digitization in progress":
-                "Digitalizace dokumentu probíhá",
-            "Document digitization planned":
-                "Digitalizace dokumentu naplánována",
-            "Document is in revision": "Dokument se revizuje",
-            "Document not found in catalog": "Dokument nenalezen v katalogu",
-            "Invalid catalog document": "Neplatný dokument v katalogu",
-            "Invalid document identifier": "Neplatný identifikátor dokumentu",
-            "Invalid system number": "Neplatné systémové číslo",
-            "Invalid system number base": "Neplatná základna systémového čísla",
-            "Document successfuly created": "Dokument byl úspěšně přidán",
-            "Unique document violation": "Porušení jedinečnosti dokumentu",
 
             document_successfuly_created: "Dokument úspěšně přidán",
             unique_document_violation: "Duplicitní dokument",
@@ -211,7 +179,6 @@ const resources = {
             "Add group": "Přidat skupinu",
             "Match all": "Splňuje všechny",
             "Match any": "Splňuje jakékoli",
-            "System number": "Systémove číslo",
             Volume: "Ročník",
             Category: "Kategorie",
             Title: "Název",
@@ -345,23 +312,6 @@ const resources = {
             "Edit category": "Upravit kategorii",
             "Delete category": "Smazat kategorii",
             "Add child category": "Přidat podkategorii",
-
-            "Insert another upon successful insertion":
-                "Vkládat další po úspěšném vložení",
-            "Using value": "Hodnotou",
-            "Using files": "Ze souborů",
-            Choose: "Vybrat",
-            Upload: "Nahrát",
-            Filename: "Název souboru",
-            Value: "Hodnota",
-            Identifier: "Identifikátor",
-            "Previous step": "Zpět",
-            "Next step": "Další",
-            "Previous document": "Předchozý dokument",
-            "Next document": "Nasledující dokument",
-            "Choose issues": "Výběr vydání",
-            Result: "Výsledek",
-            Details: "Detaily",
 
             "from overall percentage": "z celkových procent",
             "pages by intention": "stran pro záměr",
@@ -707,6 +657,14 @@ const resources = {
                 },
             },
 
+            enums: {
+                "identifier-type": {
+                    Sysno: "Systémove číslo",
+                    Barcode: "Čárový kód",
+                    Signature: "Signatura",
+                },
+            },
+
             "catalog-records": {
                 numFound: "Počet nalezených záznamů",
                 "num-selected": "Počet vybránych záznamů",
@@ -829,7 +787,95 @@ const resources = {
                     missingPages: "Chybí počet stran",
                     notExtractable: "Nemůže být extrahovaný",
                 },
+                add: {
+                    "next-step": "Dále",
+                    "prev-step": "Zpět",
+                    step: {
+                        settings: "Nastavení vkládání",
+                        values: "Výběr hodnot",
+                        issues: "Výběr vydání",
+                        results: "Výsledek",
+                    },
+                    settings: {
+                        "choose-identifier": "Vyber identifikátor",
+                        "choose-category": "Vyber kategorii",
+                        "insert-another": "Vkládat další po úspěšném vložení",
+                        "extraction-priority": "Extrahovat s prioritou",
+                        "fill-missing-data-manually":
+                            "Doplnit chybajucí počet stran ručne",
+                    },
+                    values: {
+                        "text-input-header": "Hodnotou",
+                        "file-input-header": "Ze souborů",
+                    },
+                    results: {
+                        "insert-another": "Vložit další",
+                        "show-details": "Zobrazit detaily",
+                        "finish": "Skončit",
+                        "show-set-page-count": "Zobrazit nastaveni počtu stran",
+                        "accept-set-page-count": "Nastavit počty stran",
+                        status: {
+                            AlephNotAvailable: "Chyba při připojování katalogu",
+                            AlephRequestFailed:
+                                "Chyba při zpracování odpovědi katalogu",
+                            InvalidSysno: "Neplatné systémové číslo",
+                            InvalidSysnoBase:
+                                "Neplatný základ systémového čísla",
+                            AlephRecordNotFound_one:
+                                "Dokument nenalezen v katalogu",
+                            AlephRecordNotFound_few:
+                                "{{count}} dokumeny nenalezeny v katalogu",
+                            AlephRecordNotFound_many:
+                                "{{count}} dokumentu nenalezenych v katalogu",
+                            AlephRecordNotFound_other:
+                                "{{count}} dokumentu nenalezenych v katalogu",
+                            // AlephRecordNotFound: "Dokument nenalezen v katalogu",
+                            // AlephRecordNotFound: {
+                            //     one: "Dokument nenalezen v katalogu",
+                            //     few: "{{count}} dokumenty nenalezeny v katalogu",
+                            //     many: "{{count}} dokumentu nenalezenych v katalogu",
+                            // },
+                            MultipleAlephRecordsFound:
+                                "Více než jeden dokument nalezen v katalogu",
+                            InvalidAlephRecord: "Neplatný zaznam v katalogu",
+                            InvalidDigitizationState:
+                                "Neplatný stav digitalizace",
+                            UnknownError: "Neznámá chyba",
+                            // Warnings
+                            DigitizationForbidden:
+                                "Digitizace dokumentu je zakázána",
+                            AlreadyDigitized: "Dokument již digitalizován",
+                            DigitizationInProgress:
+                                "Digitalizace dokumentu probíhá",
+                            DigitizationPlanned:
+                                "Digitalizace dokumentu naplánována",
+                            AllIssuesProcessed:
+                                "Všechny vydání už byly zpracovány",
+                            UniqueViolation:
+                                "Dokument s rovnakými identifikátormi je již v databázi",
+                            // Infos
+                            MultipleIssues:
+                                "Dokument obsahuje více nespracovaných vydání",
+                            // Success
+                            Success: "Dokument byl úspěšně přidán",
+                            "without-page-count":
+                                "{{count}} dokumentů nema nastaven počet stran",
+                        },
+                    },
+                },
             },
+            Choose: "Vybrat",
+            Upload: "Nahrát",
+            Filename: "Název souboru",
+            Value: "Hodnota",
+            Identifier: "Identifikátor",
+            "Previous step": "Zpět",
+            "Next step": "Další",
+            "Previous document": "Předchozý dokument",
+            "Next document": "Nasledující dokument",
+            "Choose issues": "Výběr vydání",
+            Result: "Výsledek",
+            Details: "Detaily",
 
             tasks: {
                 name: {
@@ -877,6 +923,16 @@ i18n.use(initReactI18next).init({
     fallbackLng: "cz",
     interpolation: {
         escapeValue: false,
+    },
+    simplifyPluralSuffix: false,
+    pluralRules: {
+        cs: {
+            plurals: function (n) {
+                if (n === 1) return 0; // singular (one)
+                if (n >= 2 && n <= 4) return 1; // few (two, three, four)
+                return 2; // many
+            },
+        },
     },
 });
 

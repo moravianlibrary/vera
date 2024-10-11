@@ -26,22 +26,27 @@
 
 .extraction-priority-1 {
     background-color: #66b266; /* Darker green */
+    border: 2px solid #558a55; /* Slightly darker green */
 }
 
 .extraction-priority-2 {
     background-color: #99cc33; /* Olive green */
+    border: 2px solid #88b02d; /* Slightly darker olive green */
 }
 
 .extraction-priority-3 {
     background-color: #ffcc00; /* Strong yellow */
+    border: 2px solid #e6b800; /* Slightly darker yellow */
 }
 
 .extraction-priority-4 {
     background-color: #ff944d; /* Burnt orange */
+    border: 2px solid #e68544; /* Slightly darker burnt orange */
 }
 
 .extraction-priority-5 {
     background-color: #ff4d4d; /* Bright red */
+    border: 2px solid #e64545; /* Slightly darker red */
 }
 
 /* button {
