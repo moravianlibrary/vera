@@ -2,7 +2,7 @@ import React, { createContext, useContext, ReactNode } from "react";
 import { useToast } from "../ToastContext";
 import { useTranslation } from "react-i18next";
 import { useDocuments } from "../DocumentsContext";
-import { useDigitizationLists } from "./DigitizationListsContext";
+import { useDigitizationLists } from "../DigitizationListsContext";
 
 interface DigitizationListsManagerContextProps {
     createDigitizationList: (intention_id?: number) => void;

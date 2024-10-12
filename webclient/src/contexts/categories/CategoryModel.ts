@@ -47,11 +47,16 @@ export class CategoryModel implements Category {
     parent: CategoryModel | undefined;
     children: CategoryModel[] = [];
 
-    className = 'category';
+    className = "category";
     expanded: boolean = true;
-    style = { borderRadius: '12px' };
+    style = { borderRadius: "12px" };
 
-    constructor(type: CategoryType, category: Category, showIntentionOnly: boolean, parent?: CategoryModel) {
+    constructor(
+        type: CategoryType,
+        category: Category,
+        showIntentionOnly: boolean,
+        parent?: CategoryModel
+    ) {
         Object.assign(this, category);
 
         this.key = category.id;
@@ -62,17 +67,40 @@ export class CategoryModel implements Category {
 
         if (showIntentionOnly) {
             this.children = category.sub_categories
-            .filter((sub_category) => sub_category.overall_percentage && sub_category.overall_percentage > 0)
-            .map((sub_category) => (
-                new CategoryModel(CategoryType.Category, sub_category, showIntentionOnly, this)));
+                .filter(
+                    (sub_category) =>
+                        sub_category.overall_percentage &&
+                        sub_category.overall_percentage > 0
+                )
+                .map(
+                    (sub_category) =>
+                        new CategoryModel(
+                            CategoryType.Category,
+                            sub_category,
+                            showIntentionOnly,
+                            this
+                        )
+                );
         } else {
-            this.children = category.sub_categories
-            .map((sub_category) => (
-                new CategoryModel(CategoryType.Category, sub_category, showIntentionOnly, this)));
+            this.children = category.sub_categories.map(
+                (sub_category) =>
+                    new CategoryModel(
+                        CategoryType.Category,
+                        sub_category,
+                        showIntentionOnly,
+                        this
+                    )
+            );
         }
     }
 
-    static generateCategory(id: number, name: string = "", level: number = -1, categories: Category[] = [], parent_id: number | null = null): Category{
+    static generateCategory(
+        id: number,
+        name: string = "",
+        level: number = -1,
+        categories: Category[] = [],
+        parent_id: number | null = null
+    ): Category {
         return {
             id: id,
 
@@ -89,35 +117,82 @@ export class CategoryModel implements Category {
             departments: [],
             predecessors_departments: [],
 
-            total_pages: categories.reduce((sum, category) => sum + category.total_pages, 0),
-            total_documents: categories.reduce((sum, category) => sum + category.total_documents, 0),
-            documents_with_pages: categories.reduce((sum, category) => sum + category.documents_with_pages, 0),
-            documents_without_cnb: categories.reduce((sum, category) => sum + category.documents_without_cnb, 0),
-            extractable_pages: categories.reduce((sum, category) => sum + category.extractable_pages, 0),
-            extractable_documents: categories.reduce((sum, category) => sum + category.extractable_documents, 0),
-                    
-            sub_categories: categories
-        }
+            total_pages: categories.reduce(
+                (sum, category) => sum + category.total_pages,
+                0
+            ),
+            total_documents: categories.reduce(
+                (sum, category) => sum + category.total_documents,
+                0
+            ),
+            documents_with_pages: categories.reduce(
+                (sum, category) => sum + category.documents_with_pages,
+                0
+            ),
+            documents_without_cnb: categories.reduce(
+                (sum, category) => sum + category.documents_without_cnb,
+                0
+            ),
+            extractable_pages: categories.reduce(
+                (sum, category) => sum + category.extractable_pages,
+                0
+            ),
+            extractable_documents: categories.reduce(
+                (sum, category) => sum + category.extractable_documents,
+                0
+            ),
+
+            sub_categories: categories,
+        };
     }
 
-    static generateRootNode(rootType: CategoryType.Root | CategoryType.LevelRoot, name: string, categories: Category[], showIntentionOnly: boolean): CategoryModel {
-        const rootCategory: Category = CategoryModel.generateCategory(0, name, -1, categories);
+    static generateRootNode(
+        rootType: CategoryType.Root | CategoryType.LevelRoot,
+        name: string,
+        categories: Category[],
+        showIntentionOnly: boolean
+    ): CategoryModel {
+        const rootCategory: Category = CategoryModel.generateCategory(
+            0,
+            name,
+            -1,
+            categories
+        );
         if (categories.length > 0) {
             if (categories[0].intention_id) {
                 rootCategory.intention_id = categories[0].intention_id;
                 rootCategory.percentage = 100;
-                rootCategory.overall_percentage = categories.reduce((sum, category) => sum + category.overall_percentage!, 0);
-                rootCategory.pages_needed_to_meet_intention = categories.reduce((sum, category) => sum + category.pages_needed_to_meet_intention!, 0);
+                rootCategory.overall_percentage = categories.reduce(
+                    (sum, category) => sum + category.overall_percentage!,
+                    0
+                );
+                rootCategory.pages_needed_to_meet_intention = categories.reduce(
+                    (sum, category) =>
+                        sum + category.pages_needed_to_meet_intention!,
+                    0
+                );
             }
             if (categories[0].extraction_id) {
                 rootCategory.extraction_id = categories[0].extraction_id;
-                rootCategory.extracted_pages = categories.reduce((sum, category) => sum + category.extracted_pages!, 0);
-                rootCategory.extracted_documents = categories.reduce((sum, category) => sum + category.extracted_documents!, 0);
+                rootCategory.extracted_pages = categories.reduce(
+                    (sum, category) => sum + category.extracted_pages!,
+                    0
+                );
+                rootCategory.extracted_documents = categories.reduce(
+                    (sum, category) => sum + category.extracted_documents!,
+                    0
+                );
             }
             if (categories[0].digitization_ids) {
                 rootCategory.digitization_ids = categories[0].digitization_ids;
-                rootCategory.digitized_pages = categories.reduce((sum, category) => sum + category.digitized_pages!, 0);
-                rootCategory.digitized_documents = categories.reduce((sum, category) => sum + category.digitized_documents!, 0);
+                rootCategory.digitized_pages = categories.reduce(
+                    (sum, category) => sum + category.digitized_pages!,
+                    0
+                );
+                rootCategory.digitized_documents = categories.reduce(
+                    (sum, category) => sum + category.digitized_documents!,
+                    0
+                );
             }
         }
         return new CategoryModel(rootType, rootCategory, showIntentionOnly);
@@ -125,26 +200,49 @@ export class CategoryModel implements Category {
 
     static getClassName(type: CategoryType, category?: Category): string {
         if (category === undefined) {
-            return '';
+            return "";
         }
         if (type === CategoryType.Root || type === CategoryType.LevelRoot) {
-            return 'category-root';
+            return "category-root";
         }
         if (category.disabled) {
-            return 'category-disabled';
+            return "category-disabled";
         }
         switch (category.level) {
-            case 0: return category.assignable ? 'category-assignable-0' : 'category-0';
-            case 1: return category.assignable ? 'category-assignable-1' : 'category-1';
-            case 2: return category.assignable ? 'category-assignable-2' : 'category-2';
-            case 3: return category.assignable ? 'category-assignable-3' : 'category-3';
+            case 0:
+                return category.assignable
+                    ? "category-assignable-0"
+                    : "category-0";
+            case 1:
+                return category.assignable
+                    ? "category-assignable-1"
+                    : "category-1";
+            case 2:
+                return category.assignable
+                    ? "category-assignable-2"
+                    : "category-2";
+            case 3:
+                return category.assignable
+                    ? "category-assignable-3"
+                    : "category-3";
         }
-        return '';
+        return "";
     }
 
     insertChildNode(): CategoryModel {
-        const newCategory: Category = CategoryModel.generateCategory(-2, "", this.level + 1, [], this.id);
-        const newNode = new CategoryModel(CategoryType.NewCategory, newCategory, false, this);
+        const newCategory: Category = CategoryModel.generateCategory(
+            -2,
+            "",
+            this.level + 1,
+            [],
+            this.id
+        );
+        const newNode = new CategoryModel(
+            CategoryType.NewCategory,
+            newCategory,
+            false,
+            this
+        );
         this.children = [...this.children, newNode];
         return newNode;
     }
@@ -154,12 +252,12 @@ export class CategoryModel implements Category {
     }
 
     updateChildren(sub_categories: Category[]) {
-        sub_categories.forEach(child => {
-            const childModel = this.children.find(c => c.id === child.id);
+        sub_categories.forEach((child) => {
+            const childModel = this.children.find((c) => c.id === child.id);
             if (childModel) {
                 childModel.update(child);
             }
-        })
+        });
     }
 
     update(category: Category) {
@@ -178,8 +276,15 @@ export class CategoryModel implements Category {
     setCategory(category) {
         Object.assign(this, category);
         this.className = CategoryModel.getClassName(this.type, category);
-        this.children = category.sub_categories.map((sub_category) => (
-            new CategoryModel(CategoryType.Category, sub_category, false, this)));
+        this.children = category.sub_categories.map(
+            (sub_category) =>
+                new CategoryModel(
+                    CategoryType.Category,
+                    sub_category,
+                    false,
+                    this
+                )
+        );
     }
 
     setName(name: string) {
@@ -195,8 +300,12 @@ export class CategoryModel implements Category {
     }
 
     deleteChild(categoryId: number) {
-        this.children = this.children.filter(child => child.id !== categoryId);
-        this.sub_categories = this.sub_categories.filter(child => child.id !== categoryId);
+        this.children = this.children.filter(
+            (child) => child.id !== categoryId
+        );
+        this.sub_categories = this.sub_categories.filter(
+            (child) => child.id !== categoryId
+        );
     }
 
     find(category) {

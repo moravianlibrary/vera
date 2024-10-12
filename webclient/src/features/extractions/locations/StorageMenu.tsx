@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocations } from "../../../contexts/extractions/locations/LocationsContext";
+import { useLocations } from "../../../contexts/LocationsContext";
 import { Library, Storage } from "../../../adapters/ApiLocations";
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { Button } from "primereact/button";

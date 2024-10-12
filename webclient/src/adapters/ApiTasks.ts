@@ -1,5 +1,5 @@
-import axiosInstance, { authHeader } from "./ApiBase";
-import { TaskType } from "../types/TaskType";
+import axiosInstance, { ApiBase, ApiOptions, authHeader } from "./ApiBase";
+import { TaskItemErrorType, TaskItemType, TaskType } from "../types/TaskType";
 import { TaskState } from "../types/TaskState";
 import Page from "./Page";
 
@@ -18,21 +18,40 @@ interface Task {
     processed_count: number;
     total_count: number;
     error_count: number;
+
+    errors: string[];
+    has_dataset: boolean;
+    dataset_error: string;
 }
 
-interface TaskDocument {
-    document_id: number;
+interface TaskItem {
+    item_id: string;
+    item_type: TaskItemType;
+    deleted: boolean;
     processed: boolean;
-    error_type: string;
+    error_type: TaskItemErrorType;
     error_message: string;
 }
 
 interface EsQuery {
-    [key: string]: string;
+    index_name: string;
+    query?: string;
+    page?: number;
+    page_size?: number;
+    [key: string]: string | number | undefined;
 }
 
-namespace ApiTasks {
-    export function planTask(task_type: TaskType, query?: EsQuery) {
+class ApiTasks extends ApiBase<Task> {
+    constructor() {
+        super("/tasks", {
+            disableGet: true,
+            disableCreate: true,
+            disableDelete: true,
+            disableUpdate: true,
+        } as ApiOptions);
+    }
+
+    planTask(task_type: TaskType, query?: EsQuery) {
         if (query) {
             return axiosInstance.post(
                 `/tasks?task_type=${task_type.toString()}`,
@@ -47,20 +66,15 @@ namespace ApiTasks {
         );
     }
 
-    export function getTasks(page: number, page_size: number) {
-        return axiosInstance.get<Page<Task>>(
-            `/tasks?page=${page}&page_size=${page_size}`,
-            { headers: authHeader() }
-        );
-    }
-
-    export function getTaskDocuments(task_id: number) {
-        return axiosInstance.get<TaskDocument[]>(
-            `/tasks/${task_id}/documents`,
-            { headers: authHeader() }
+    getTaskItems(task_id: number, page: number, pageSize: number) {
+        return axiosInstance.get<Page<TaskItem>>(
+            `/tasks/${task_id}/items?page=${page}&page_size=${pageSize}`,
+            {
+                headers: authHeader(),
+            }
         );
     }
 }
 
 export default ApiTasks;
-export type { Task, TaskDocument, EsQuery };
+export type { Task, TaskItem, EsQuery };

@@ -100,7 +100,9 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
             rightContent={rightContent || onRefresh ? refreshButton : <></>}
             leftContent={leftContent || numFoundLabel() || <> </>}
             template={{
-                layout: "FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown",
+                layout: `FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink ${
+                    onPageSizeChange ? "RowsPerPageDropdown" : ""
+                }`,
                 PageLinks: (options) => {
                     if (
                         (options.view.startPage === options.page &&

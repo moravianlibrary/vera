@@ -10,15 +10,13 @@ import {
 import { useCategories } from "../../contexts/categories/CategoriesContext";
 import { confirmDialog } from "primereact/confirmdialog";
 import { useDocuments } from "../../contexts/DocumentsContext";
-import { useTasks } from "../../contexts/tasks/TasksContext";
 import { TaskType } from "../../types/TaskType";
-import { useEsDataTable } from "../../contexts/EsDataTableContext";
 import InitiateTaskStartItem, {
     InitiateTaskStartItemWithEsSelection,
 } from "../../components/menu-items/InitiateTaskStartItem";
 import { Badge } from "primereact/badge";
 import DigitizationListBox from "../../components/DigitizationListBox";
-import { useDigitizationLists } from "../../contexts/extractions/DigitizationListsContext";
+import { useDigitizationLists } from "../../contexts/DigitizationListsContext";
 import { useIntentions } from "../../contexts/categories/IntentionsContext";
 
 const DocumentsActionsMenuItems = () => {
@@ -33,7 +31,8 @@ const DocumentsActionsMenuItems = () => {
         onInitiateListItemsAddition,
         onInitiateListItemsRemoval,
     } = useDigitizationLists();
-    const { numSelected, selectedQuery } = useEsDataTable();
+    const numSelected = 0;
+    const selectedQuery = { index_name: "documents" };
 
     const handleClickUpdateCategory = (
         category_id: number,

@@ -1,5 +1,4 @@
-from typing import List
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from sqlalchemy.orm import Session
 from .utils.permissions import CanManageLocations
 from .utils.dependencies import DependsOnDbSession
@@ -10,6 +9,7 @@ from schemas import (
     StorageResponse,
     LocationCreate,
     LocationResponse,
+    Page,
 )
 from models import Library, Storage, Location
 
@@ -127,16 +127,28 @@ def delete_location(location_id: int, session: Session = DependsOnDbSession):
 
 
 # Select
-@router.get("/libraries", response_model=List[LibraryResponse])
-def get_libraries(session: Session = DependsOnDbSession):
-    return Library.all(session)
+@router.get("/libraries", response_model=Page[LibraryResponse])
+def get_libraries(
+    page: int = Query(1, description="Page number"),
+    page_size: int = Query(50, description="Page size"),
+    session: Session = DependsOnDbSession,
+):
+    return Library.get_page(session, page, page_size)
 
 
-@router.get("/storages", response_model=List[StorageResponse])
-def get_storages(session: Session = DependsOnDbSession):
-    return Storage.all(session)
+@router.get("/storages", response_model=Page[StorageResponse])
+def get_storages(
+    page: int = Query(1, description="Page number"),
+    page_size: int = Query(50, description="Page size"),
+    session: Session = DependsOnDbSession,
+):
+    return Storage.get_page(session, page, page_size)
 
 
-@router.get("/locations", response_model=List[LocationResponse])
-def get_locations(session: Session = DependsOnDbSession):
-    return Location.all(session)
+@router.get("/locations", response_model=Page[LocationResponse])
+def get_locations(
+    page: int = Query(1, description="Page number"),
+    page_size: int = Query(50, description="Page size"),
+    session: Session = DependsOnDbSession,
+):
+    return Location.get_page(session, page, page_size)

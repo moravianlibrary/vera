@@ -1,26 +1,28 @@
 import { DataTable, DataTableRowEditEvent } from "primereact/datatable";
 import React, { useEffect, useState } from "react";
-import { useTasks } from "../../contexts/tasks/TasksContext";
-import ApiTasks, { Task, TaskDocument } from "../../adapters/ApiTasks";
+import { useTasks } from "../../contexts/TasksContext";
+import ApiTasks, { Task, TaskItem } from "../../adapters/ApiTasks";
 import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
 import { TaskState } from "../../types/TaskState";
 import { format, min } from "date-fns";
 import { Tag } from "primereact/tag";
 import { MultiSelect } from "primereact/multiselect";
-import { FilterMatchMode } from "primereact/api";
 import { Button } from "primereact/button";
 import { Dropdown } from "primereact/dropdown";
 import { TaskType } from "../../types/TaskType";
 import config from "../../config/config";
+import DataTablePaginator from "../../components/DataTablePaginator";
 
 interface TasksTableProps {}
 
-interface TaskDocumentsProps {
+interface TaskItemsProps {
     task: Task;
 }
 
-const TasksTable: React.FC<TasksTableProps> = (props) => {
+const TasksTable: React.FC<TasksTableProps> & {
+    Paginator: React.FC;
+} = ({}) => {
     const { t } = useTranslation();
     const { tasks } = useTasks();
 
@@ -75,7 +77,7 @@ const TasksTable: React.FC<TasksTableProps> = (props) => {
         return <Tag value={label} severity={getTaskStateSeverity(task)}></Tag>;
     };
 
-    const documentsCountBody = (task: Task) => {
+    const itemsCountBody = (task: Task) => {
         if ([TaskState.Planned, TaskState.Running].includes(task.task_state)) {
             return `${task.processed_count}/${task.total_count}`;
         }
@@ -128,27 +130,26 @@ const TasksTable: React.FC<TasksTableProps> = (props) => {
                     outlined
                     label={t("Plan task")}
                     disabled={taskType === null}
-                    onClick={() => ApiTasks.planTask(taskType as TaskType)}
+                    // onClick={() => ApiTasks.planTask(taskType as TaskType)}
                 />
             </div>
         );
     };
 
     const getAdditionalData = (task: Task) => {
-        if (task.query_params) {
-            return <TaskDocuments task={task} />;
-        } else {
+        if (task.total_count > 0) {
+            return <TaskItems task={task} />;
+        } else if (task.has_dataset) {
             return <TaskCsv task={task} />;
         }
-    }
+    };
 
     return (
         <DataTable
-            className="documents-table"
-            header={header}
+            className="items-table"
             value={tasks}
             scrollable
-            scrollHeight="calc(100vh - 60px)"
+            scrollHeight="flex"
             expandedRows={expandedRows}
             onRowExpand={handleRowExpand}
             onRowCollapse={handleRowCollapse}
@@ -159,7 +160,7 @@ const TasksTable: React.FC<TasksTableProps> = (props) => {
             <Column body={taskTypeBody} header={t("task_type")} />
             <Column field="owner" header={t("owner")} />
             <Column body={taskStateBody} header={t("task_state")} />
-            <Column body={documentsCountBody} header={t("documents_count")} />
+            <Column body={itemsCountBody} header={t("items_count")} />
             <Column field="error_count" header={t("Error count")} />
             <Column
                 body={(task) => datetimeBody(task.planned)}
@@ -178,22 +179,41 @@ const TasksTable: React.FC<TasksTableProps> = (props) => {
     );
 };
 
-const TaskDocuments: React.FC<TaskDocumentsProps> = ({ task }) => {
-    const { t } = useTranslation();
+const TasksTablePaginator: React.FC = () => {
+    const { numFound, page, setPage, pageSize, setPageSize } = useTasks();
 
-    const [documents, setDocuments] = useState<TaskDocument[]>([]);
-    const [showDocuments, setShowDocuments] = useState<TaskDocument[]>([]);
+    return (
+        <DataTablePaginator
+            numFound={numFound}
+            page={page}
+            pageSize={pageSize}
+            onPageChangeNew={setPage}
+            onPageSizeChange={setPageSize}
+            numFoundText="tasks.num-found"
+        />
+    );
+};
+
+TasksTable.Paginator = TasksTablePaginator;
+
+const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
+    const { t } = useTranslation();
+    const { getTaskItems } = useTasks();
+
+    const [items, setItems] = useState<TaskItem[]>([]);
+    const [showItems, setShowItems] = useState<TaskItem[]>([]);
     const [errorTypes, setErrorTypes] = useState<string[]>([]);
     const [errorTypesFilter, setErrorTypesFilter] = useState<string[]>([]);
+    const [page, setPage] = useState<number>(1);
 
     useEffect(() => {
-        ApiTasks.getTaskDocuments(task.id)
-            .then((response) => {
-                setDocuments(response.data ? response.data : []);
-                setShowDocuments(response.data ? response.data : []);
+        getTaskItems(task.id, page, 20)
+            .then((taskItemsPage) => {
+                setItems(taskItemsPage.items);
+                setShowItems(taskItemsPage.items);
                 setErrorTypes([
                     ...new Set(
-                        response.data
+                        taskItemsPage.items
                             .map((d) =>
                                 d.error_type ? d.error_type : "Without error"
                             )
@@ -202,21 +222,21 @@ const TaskDocuments: React.FC<TaskDocumentsProps> = ({ task }) => {
                 ]);
             })
             .catch((error) => {
-                console.error(`Could not receive task documents: ${error}`);
+                console.error(`Could not receive task items: ${error}`);
             });
-    }, []);
+    }, [page]);
 
     useEffect(() => {
         if (errorTypesFilter.length === 0) {
-            setShowDocuments(documents);
+            setShowItems(items);
             return;
         }
-        setShowDocuments(
-            documents.filter((document) => {
+        setShowItems(
+            items.filter((item) => {
                 return (
                     (errorTypesFilter.includes("Without error") &&
-                        !document.error_type) ||
-                    errorTypesFilter.includes(document.error_type)
+                        !item.error_type) ||
+                    errorTypesFilter.includes(item.error_type)
                 );
             })
         );
@@ -244,8 +264,8 @@ const TaskDocuments: React.FC<TaskDocumentsProps> = ({ task }) => {
         );
     };
 
-    const processedBody = (document: TaskDocument) => {
-        if (document.processed) {
+    const processedBody = (item: TaskItem) => {
+        if (item.processed) {
             return <i className="pi pi-check text-green-700"></i>;
         } else {
             return <i className="pi pi-times text-red-700"></i>;
@@ -253,37 +273,47 @@ const TaskDocuments: React.FC<TaskDocumentsProps> = ({ task }) => {
     };
 
     return (
-        <DataTable value={showDocuments}>
-            <Column field="document_id" header={t("Document id")} />
-            <Column
-                field="processed"
-                header={t("Processed")}
-                body={processedBody}
+        <div className="flex flex-column">
+            <DataTablePaginator
+                numFound={task.total_count}
+                page={page}
+                pageSize={20}
+                onPageChangeNew={setPage}
             />
-            <Column
-                field="error_type"
-                header={errorTypeHeader}
-                body={(document) => t(document.error_type)}
-            />
-            <Column
-                field="error_message"
-                header={t("Error message")}
-                body={(document) => t(document.error_message)}
-            />
-        </DataTable>
+            <DataTable value={showItems}>
+                <Column field="item_id" header={t("Item id")} />
+                <Column
+                    field="processed"
+                    header={t("Processed")}
+                    body={processedBody}
+                />
+                <Column
+                    field="error_type"
+                    header={errorTypeHeader}
+                    body={(item) => t(item.error_type)}
+                />
+                <Column
+                    field="error_message"
+                    header={t("Error message")}
+                    body={(item) => t(item.error_message)}
+                />
+            </DataTable>
+        </div>
     );
 };
 
-
-const TaskCsv: React.FC<TaskDocumentsProps> = ({ task }) => {
+const TaskCsv: React.FC<TaskItemsProps> = ({ task }) => {
     const { t } = useTranslation();
     const fileUrl = `${config.apiUrl}tasks/${task.id}/csv`;
 
     const handleDownload = () => {
         if (fileUrl) {
-            const link = document.createElement('a');
+            const link = document.createElement("a");
             link.href = fileUrl;
-            link.setAttribute('download', `${t('task')}_${task.id}_${task.task_type}.csv`);
+            link.setAttribute(
+                "download",
+                `${t("task")}_${task.id}_${task.task_type}.csv`
+            );
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -291,7 +321,12 @@ const TaskCsv: React.FC<TaskDocumentsProps> = ({ task }) => {
     };
 
     return (
-        <Button label={t("Download CSV")} icon="pi pi-download" disabled={task.task_state !== TaskState.Finished} onClick={handleDownload} />
+        <Button
+            label={t("Download CSV")}
+            icon="pi pi-download"
+            disabled={task.task_state !== TaskState.Finished}
+            onClick={handleDownload}
+        />
     );
 };
 

@@ -9,7 +9,7 @@ import CatalogRecordsQueryRules from "../features/catalog-records/CatalogRecords
 import CatalogRecordsHeader from "../features/catalog-records/CatalogRecordsHeader";
 import WithProviders from "../components/wrappers/WithProviders";
 import { EsDataTableProvider } from "../contexts/EsDataTableContext";
-import { TasksProvider } from "../contexts/tasks/TasksContext";
+import { TasksProvider } from "../contexts/TasksContext";
 import { routeToState, stateToRoute } from "../data/factories/EsQueriesFactory";
 import { booleanAttributes } from "../config/catalog_records_index";
 

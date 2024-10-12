@@ -1,6 +1,12 @@
-import React, { createContext, useContext, ReactNode, useEffect } from "react";
+import React, {
+    createContext,
+    useContext,
+    ReactNode,
+    useEffect,
+    useState,
+} from "react";
 import { useTranslation } from "react-i18next";
-import { LocationState } from "../../../types/LocationState";
+import { LocationState } from "../types/LocationState";
 import {
     Library,
     Storage,
@@ -8,8 +14,8 @@ import {
     ApiLibraries,
     ApiStorages,
     ApiLocations,
-} from "../../../adapters/ApiLocations";
-import { useToast } from "../../ToastContext";
+} from "../adapters/ApiLocations";
+import { useToast } from "./ToastContext";
 
 interface LocationsContextProps {
     createLibrary: (name: string) => Promise<Library>;
@@ -43,6 +49,11 @@ interface LocationsContextProps {
     libraries: Library[];
     storages: Storage[];
     locations: Location[];
+    numFound: number;
+    page: number;
+    setPage: (page: number) => void;
+    pageSize: number;
+    setPageSize: (pageSize: number) => void;
 }
 
 const LocationsContext = createContext<LocationsContextProps | undefined>(
@@ -63,9 +74,12 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
     const { t } = useTranslation();
     const showToast = useToast();
 
-    const [libraries, setLibraries] = React.useState<Library[]>([]);
-    const [storages, setStorages] = React.useState<Storage[]>([]);
-    const [locations, setLocations] = React.useState<Location[]>([]);
+    const [libraries, setLibraries] = useState<Library[]>([]);
+    const [storages, setStorages] = useState<Storage[]>([]);
+    const [locations, setLocations] = useState<Location[]>([]);
+    const [numFound, setNumFound] = useState<number>(0);
+    const [page, setPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(20);
 
     const createLibrary = async (name: string): Promise<Library> => {
         try {
@@ -280,21 +294,17 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
 
     const fetchLocations = async () => {
         apiLibraries
-            .getPage(1, 50)
+            .getPage(1, 200)
             .then((response) => {
-                // setLibraries(response.data);
-                // setStorages(
-                //     response.data.map((l) => l.storages).flatMap((s) => s)
-                // );
-                // const locations = response.data.flatMap((library) =>
-                //     library.storages.flatMap((storage) =>
-                //         storage.locations.map(
-                //             (location) =>
-                //                 new Location(library, storage, location)
-                //         )
-                //     )
-                // );
-                setLocations(locations);
+                setLibraries(response.data.items);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+        apiStorages
+            .getPage(1, 200)
+            .then((response) => {
+                setStorages(response.data.items);
             })
             .catch((error) => {
                 console.error(error);
@@ -304,6 +314,19 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
     useEffect(() => {
         fetchLocations();
     }, []);
+
+    useEffect(() => {
+        console.debug(`Fetching locations from server.`);
+        apiLocations
+            .getPage(page, pageSize)
+            .then((response) => {
+                setLocations(response.data.items);
+                setNumFound(response.data.num_found);
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }, [page, pageSize]);
 
     const contextValue: LocationsContextProps = {
         createLibrary,
@@ -318,6 +341,12 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
         libraries,
         storages,
         locations,
+
+        numFound,
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
     };
 
     return (

@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Library, Storage } from "../../../adapters/ApiLocations";
-import { useLocations } from "../../../contexts/extractions/locations/LocationsContext";
+import { useLocations } from "../../../contexts/LocationsContext";
 import { useEffect, useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
@@ -19,7 +19,7 @@ export const LocationStorageForm: React.FC<LocationStorageFormProps> = ({
     onChangeStorage,
 }) => {
     const { t } = useTranslation();
-    const { createStorage } = useLocations();
+    const { createStorage, storages } = useLocations();
 
     const [storageOptions, setStorageOptions] = useState<Storage[]>([]);
     const [selectedStorage, setSelectedStorage] = useState<Storage | null>(
@@ -46,9 +46,13 @@ export const LocationStorageForm: React.FC<LocationStorageFormProps> = ({
             setStorageOptions([]);
             handleChangeStorage(null);
         } else {
-            setStorageOptions(library.storages);
+            setStorageOptions(
+                storages.filter((s) => s.library_id === library.id)
+            );
             handleChangeStorage(
-                library.storages.length > 0 ? library.storages[0] : null
+                storages.filter((s) => s.library_id === library.id).length > 0
+                    ? storages.filter((s) => s.library_id === library.id)[0]
+                    : null
             );
         }
     }, [library]);

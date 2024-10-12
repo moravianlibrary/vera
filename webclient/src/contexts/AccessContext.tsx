@@ -6,12 +6,37 @@ import { ReactKeycloakProvider } from "@react-keycloak/web";
 import keycloak, { keycloakInitOptions } from "../services/Keycloak";
 import ApiUsers, { CurrentUser } from "../adapters/ApiUsers";
 import { BaseProviderProps } from "./BaseContext";
+import { Category } from "../adapters/ApiCategories";
+import { IndexDocument } from "../adapters/ApiDocuments";
+import { DigitizationList } from "../adapters/ApiDigitizationLists";
+import { Extraction } from "../adapters/ApiExtractions";
+import { Task } from "../adapters/ApiTasks";
+
+export type OwnedItem =
+    | Category
+    | IndexDocument
+    | DigitizationList
+    | Extraction
+    | Task;
+
+export enum OwnedItemType {
+    IndexDocument,
+    Category,
+    DigitizationList,
+    Extraction,
+    Task,
+}
 
 interface AccessContextProps {
     login: () => void;
     logout: () => void;
     fetchCurrentUser: () => Promise<void>;
     hasPermission: (action: ActionType) => boolean;
+    hasOwnerPermission: (
+        action: ActionType,
+        itemType: OwnedItemType,
+        item: OwnedItem
+    ) => boolean;
     currentUser: CurrentUser | undefined;
     getSettings: (name: string) => Object | null;
     updateSettings: (name: string, value: Object) => void;
@@ -122,6 +147,45 @@ export const AccessProvider: React.FC<BaseProviderProps> = ({ children }) => {
         return currentUser?.actions?.includes(action) || false;
     };
 
+    const hasOwnerPermission = (
+        action: ActionType,
+        itemType: OwnedItemType,
+        item: OwnedItem
+    ) => {
+        if (!hasPermission(action) || !currentUser) return false;
+
+        switch (itemType) {
+            case OwnedItemType.Category:
+                return (
+                    currentUser.department_id !== null &&
+                    (item as Category).departments.includes(
+                        currentUser.department_id
+                    )
+                );
+            case OwnedItemType.IndexDocument:
+                // TODO: fix
+                // return currentUser?.department_id && item.department_id === currentUser.department_id;
+                return (
+                    currentUser.username === (item as IndexDocument).added_by
+                );
+            case OwnedItemType.DigitizationList:
+                return (
+                    currentUser.username ===
+                    (item as DigitizationList).created_by
+                );
+            case OwnedItemType.Extraction:
+                return (
+                    currentUser.username === (item as Extraction).generated_by
+                );
+            case OwnedItemType.Task:
+                return currentUser.username === (item as Task).owner;
+            default:
+                throw new Error(
+                    "Unsupported item type for owner permission check"
+                );
+        }
+    };
+
     const getSettings = (name: string) => {
         if (currentUser) {
             return currentUser.settings[name] || null;
@@ -148,6 +212,7 @@ export const AccessProvider: React.FC<BaseProviderProps> = ({ children }) => {
         logout,
         fetchCurrentUser,
         hasPermission,
+        hasOwnerPermission,
         currentUser,
         getSettings,
         updateSettings,

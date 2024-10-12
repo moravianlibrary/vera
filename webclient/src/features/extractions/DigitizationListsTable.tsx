@@ -4,85 +4,95 @@ import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
 import { Link } from "react-router-dom";
-import { useDigitizationLists } from "../../contexts/extractions/DigitizationListsContext";
+import { useDigitizationLists } from "../../contexts/DigitizationListsContext";
 import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 import { ActionType } from "../../types/ActionType";
 import DeleteButton from "../../components/buttons/DeleteButton";
-import { PaginatorPageChangeEvent } from "primereact/paginator";
 import DataTablePaginator from "../../components/DataTablePaginator";
 import { DigitizationList } from "../../adapters/ApiDigitizationLists";
+import InternalLinkButton from "../../components/buttons/InternalLinkButton";
+import { formatDatetime } from "../../data/factories/DateFactory";
 
-const DigitizationListsTable: React.FC = () => {
+interface DigitizationListsTableProps {}
+
+const DigitizationListsTable: React.FC<DigitizationListsTableProps> & {
+    Paginator: React.FC;
+} = ({}) => {
     const { t } = useTranslation();
 
-    const {
-        digitizationLists,
-        numFound,
-        loadExtractions,
-        deleteDigitizationList,
-    } = useDigitizationLists();
+    const { digitizationLists, deleteDigitizationList } =
+        useDigitizationLists();
 
-    const [offset, setOffset] = useState<number>(0);
-    const [limit, setLimit] = useState<number>(25);
-
-    const documentsButton = (digitizationList: DigitizationList) => {
-        return (
-            <Link to={`/documents?digitizationListId=${digitizationList.id}`}>
-                <Button outlined label={t("Show in documents")} />
-            </Link>
-        );
+    const documentsLink = (digitizationList: DigitizationList) => {
+        return `/documents?digitizationListId=${digitizationList.id}`;
     };
 
-    const categoriesButton = (digitizationList: DigitizationList) => {
-        return (
-            <Link to={`/categories?digitizationListId=${digitizationList.id}`}>
-                <Button outlined label={t("Show in categories")} />
-            </Link>
-        );
-    };
-
-    const handlePageChange = (e: PaginatorPageChangeEvent) => {
-        setOffset(e.first);
-        setLimit(e.rows);
-        loadExtractions(e.first, e.rows);
+    const categoriesLink = (digitizationList: DigitizationList) => {
+        return `/categories?digitizationListId=${digitizationList.id}`;
     };
 
     return (
-        <div>
-            <DataTable
-                value={digitizationLists}
-                scrollable
-                scrollHeight="calc(100vh - 210px)"
-            >
-                <Column field="id" header={t("id")} />
-                <Column field="extractor" header={t("Created by")} />
-                <Column field="extracted_at" header={t("Created at")} />
-                <Column field="extracted_pages" header={t("Pages count")} />
-                <Column field="documents_count" header={t("Documents count")} />
-                <Column field="intention_id" header={t("Intention")} />
-                <Column body={documentsButton} />
-                <Column body={categoriesButton} />
-                <Column
-                    body={(digitizationList) => (
-                        <ActionAccessComponent
-                            action={ActionType.AdminExtractions}
-                        >
-                            <DeleteButton
-                                itemId={digitizationList.id}
-                                onDeleteItem={deleteDigitizationList}
-                            />
-                        </ActionAccessComponent>
-                    )}
-                />
-            </DataTable>
-            <DataTablePaginator
-                offset={offset}
-                limit={limit}
-                numFound={numFound}
-                onPageChange={handlePageChange}
+        <DataTable value={digitizationLists} scrollable scrollHeight="flex">
+            <Column field="id" header={t("id")} />
+            <Column field="created_by" header={t("Created by")} />
+            <Column
+                field="created_at"
+                header={t("Created at")}
+                body={(dl) => formatDatetime(dl.created_at)}
             />
-        </div>
+            <Column field="page_count" header={t("Pages count")} />
+            <Column
+                field="documents_count"
+                header={t("Documents count")}
+                body={(dl) => dl.document_ids.length}
+            />
+            <Column field="intention_id" header={t("Intention")} />
+            <Column
+                body={(e) => (
+                    <InternalLinkButton
+                        label={t("Show in documents")}
+                        link={documentsLink(e)}
+                    />
+                )}
+            />
+            <Column
+                body={(e) => (
+                    <InternalLinkButton
+                        label={t("Show in categories")}
+                        link={categoriesLink(e)}
+                    />
+                )}
+            />
+            <Column
+                body={(digitizationList) => (
+                    <ActionAccessComponent action={ActionType.AdminExtractions}>
+                        <DeleteButton
+                            itemId={digitizationList.id}
+                            onDeleteItem={deleteDigitizationList}
+                        />
+                    </ActionAccessComponent>
+                )}
+            />
+        </DataTable>
     );
 };
+
+const DigitizationListsTablePaginator: React.FC = () => {
+    const { numFound, page, setPage, pageSize, setPageSize } =
+        useDigitizationLists();
+
+    return (
+        <DataTablePaginator
+            numFound={numFound}
+            page={page}
+            pageSize={pageSize}
+            onPageChangeNew={setPage}
+            onPageSizeChange={setPageSize}
+            numFoundText="digitization-lists.num-found"
+        />
+    );
+};
+
+DigitizationListsTable.Paginator = DigitizationListsTablePaginator;
 
 export default DigitizationListsTable;

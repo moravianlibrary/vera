@@ -17,10 +17,12 @@ import {
 } from "react-instantsearch";
 import { stateToRoute } from "../data/factories/EsQueriesFactory";
 import { booleanAttributes } from "../config/catalog_records_index";
+import { EsQuery } from "../adapters/ApiTasks";
 
 interface EsDataTableContextProps {
     items: any[];
     numFound: number;
+    queryParams: EsQuery;
     refresh: () => void;
     updateItem: (id: string, item: any) => void;
 
@@ -75,6 +77,9 @@ export const EsDataTableProvider: React.FC<EsDataTableProviderProps> = ({
     });
 
     const [items, setItems] = useState<any[]>([]);
+    const [queryParams, setQueryParams] = useState<EsQuery>({
+        index_name: "catalog_records",
+    });
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [currentPageSelected, setCurrentPageSelected] = useState<any[]>([]);
     const [numSelected, setNumSelected] = useState<number>(0);
@@ -150,7 +155,10 @@ export const EsDataTableProvider: React.FC<EsDataTableProviderProps> = ({
     };
 
     useEffect(() => {
-        setItems(hits);
+        // setItems(hits);
+        // setQueryParams(
+        //     stateToRoute("catalog_records", booleanAttributes, uiState)
+        // );
     }, [hits]);
 
     useEffect(() => {
@@ -164,12 +172,13 @@ export const EsDataTableProvider: React.FC<EsDataTableProviderProps> = ({
     }, [items, selectedIds, areAllItemsSelected]);
 
     useEffect(() => {
-        cancelSelection();
+        // cancelSelection();
     }, [uiState]);
 
     const contextValue: EsDataTableContextProps = {
         items,
         numFound,
+        queryParams,
         refresh: handleRefresh,
         updateItem,
 

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 from datatypes import LocationState
 from models import Library, Storage, Location
 
@@ -14,7 +14,6 @@ class LibraryCreate(BaseModel):
 
 class LibraryResponse(LibraryCreate):
     id: int
-    storages: List["StorageResponse"] = []
 
     class Config:
         from_attributes = True
@@ -32,7 +31,7 @@ class StorageCreate(BaseModel):
 
 class StorageResponse(StorageCreate):
     id: int
-    locations: List["LocationResponse"] = []
+    library: Optional["LibraryResponse"] = None
 
     class Config:
         from_attributes = True
@@ -58,6 +57,8 @@ class LocationCreate(BaseModel):
 
 class LocationResponse(LocationCreate):
     id: int
+
+    storage: Optional["StorageResponse"] = None
 
     class Config:
         from_attributes = True

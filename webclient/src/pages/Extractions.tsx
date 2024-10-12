@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { GeneratedExtractionsProvider } from "../contexts/extractions/GeneratedExtractionsContext";
+import { GeneratedExtractionsProvider } from "../contexts/GeneratedExtractionsContext";
 import ExtractionsTable from "../features/extractions/ExtractionsTable";
 import { useTranslation } from "react-i18next";
 import { OverlayPanel } from "primereact/overlaypanel";
@@ -7,18 +7,20 @@ import { Button } from "primereact/button";
 import ExtractionPropsMenu from "../features/extractions/GenerateExtractionMenu";
 import { SelectButton } from "primereact/selectbutton";
 import { Toolbar } from "primereact/toolbar";
-import { DigitizationListsProvider } from "../contexts/extractions/DigitizationListsContext";
+import { DigitizationListsProvider } from "../contexts/DigitizationListsContext";
 import DigitizationListsTable from "../features/extractions/DigitizationListsTable";
-import LocationsTable from "../features/extractions/locations/LocationsTable";
-import { LocationsProvider } from "../contexts/extractions/locations/LocationsContext";
+import LocationsTable from "../features/extractions/LocationsTable";
+import { LocationsProvider } from "../contexts/LocationsContext";
 import LocationsMenuButton from "../features/extractions/locations/LocationsMenuButton";
+import WithProviders from "../components/wrappers/WithProviders";
+import DataTableLayout from "../components/layouts/DataTableLayout";
 
 const Extractions: React.FC = () => {
     const { t } = useTranslation();
 
     const propsMenuPanel = useRef<OverlayPanel>(null);
 
-    const [table, setTable] = useState(1);
+    const [table, setTable] = useState<number>(1);
     const tables = [
         { name: t("Generate extractions"), value: 1 },
         { name: t("Digitization lists"), value: 2 },
@@ -51,10 +53,27 @@ const Extractions: React.FC = () => {
         />
     );
 
+    const getTableComponent = () => {
+        switch (table) {
+            case 1:
+                return ExtractionsTable;
+            case 2:
+                return DigitizationListsTable;
+            case 3:
+                return LocationsTable;
+        }
+    };
+
     return (
-        <DigitizationListsProvider>
-            <GeneratedExtractionsProvider>
-                <LocationsProvider>
+        <WithProviders
+            providers={[
+                DigitizationListsProvider,
+                GeneratedExtractionsProvider,
+                LocationsProvider,
+            ]}
+        >
+            <DataTableLayout
+                header={
                     <Toolbar
                         start={
                             table === 1
@@ -65,12 +84,21 @@ const Extractions: React.FC = () => {
                         }
                         center={selectTableButton}
                     />
-                    {table === 1 && <ExtractionsTable />}
-                    {table === 2 && <DigitizationListsTable />}
-                    {table === 3 && <LocationsTable />}
-                </LocationsProvider>
-            </GeneratedExtractionsProvider>
-        </DigitizationListsProvider>
+                }
+                datatable={
+                    (table === 1 && <ExtractionsTable />) ||
+                    (table === 2 && <DigitizationListsTable />) ||
+                    (table === 3 && <LocationsTable />) ||
+                    null
+                }
+                paginator={
+                    (table === 1 && <ExtractionsTable.Paginator />) ||
+                    (table === 2 && <DigitizationListsTable.Paginator />) ||
+                    (table === 3 && <LocationsTable.Paginator />) ||
+                    null
+                }
+            />
+        </WithProviders>
     );
 };
 

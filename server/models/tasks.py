@@ -14,7 +14,11 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, Session, Query
 from datatypes import TaskType, TaskState, TaskItemType, TaskItemErrorType
 from .base import BaseModel
-from typing import Optional
+from typing import List, Tuple, Optional
+from exceptions import (
+    InvalidPageNumberException,
+    InvalidPageSizeException,
+)
 
 
 class Task(BaseModel):
@@ -105,6 +109,25 @@ class TaskItem(BaseModel):
     @classmethod
     def query_base(cls, session) -> Query:
         return session.query(cls)
+
+    @classmethod
+    def get_page(
+        cls, session: Session, task_id: int, page=1, page_size=50
+    ) -> Tuple[List["TaskItem"], int]:
+        if page < 1:
+            raise InvalidPageNumberException()
+        if page_size < 1:
+            raise InvalidPageSizeException()
+
+        offset = (page - 1) * page_size
+        return (
+            TaskItem.query_base(session)
+            .filter_by(task_id=task_id)
+            .offset(offset)
+            .limit(page_size)
+            .all(),
+            TaskItem.query_base(session).filter_by(task_id=task_id).count(),
+        )
 
     def is_persisted(self, session: Session) -> bool:
         return self.find(session, self.task_id, self.item_id) is not None

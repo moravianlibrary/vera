@@ -12,21 +12,18 @@ import CategoryColumnBody from "./table_columns/CategoryColumnBody";
 import DocumentDetailsColumnBody from "./table_columns/DocumentDetailsColumnBody";
 import DocumentStateColumnBody from "./table_columns/DocumentStateColumnBody";
 import ExtractionPriorityColumnBody from "./table_columns/ExtractionPriorityColumnBody";
-import { useEsDataTable } from "../../contexts/EsDataTableContext";
 import { IndexDocument } from "../../adapters/ApiDocuments";
+import { useDocuments } from "../../contexts/DocumentsContext";
 
 interface DocumentsTableProps {}
-
-interface DocumentDetailsBodyProps {
-    document: IndexDocument;
-}
 
 const DocumentsTable: React.FC<DocumentsTableProps> & {
     Paginator: React.FC;
 } = ({}) => {
     const { t } = useTranslation();
-    const { items, currentPageSelected, handleDataTableSelectionChange } =
-        useEsDataTable();
+    const { items } =
+        // const { items, currentPageSelected, handleDataTableSelectionChange } =
+        useDocuments();
 
     return (
         <DataTable
@@ -34,9 +31,9 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
             scrollable
             scrollHeight="flex"
             dataKey={"id"}
-            selectionMode="checkbox"
-            selection={currentPageSelected}
-            onSelectionChange={handleDataTableSelectionChange}
+            // selectionMode="checkbox"
+            // selection={currentPageSelected}
+            // onSelectionChange={handleDataTableSelectionChange}
         >
             <Column field="details" body={DocumentDetailsColumnBody} />
 
@@ -92,7 +89,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
 
 const DocumentsTablePaginator: React.FC = () => {
     const { numFound, refresh, page, setPage, pageSize, setPageSize } =
-        useEsDataTable();
+        useDocuments();
 
     return (
         <DataTablePaginator

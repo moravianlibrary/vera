@@ -1,19 +1,21 @@
 import { ApiBase, ApiOptions } from "./ApiBase";
 import { DigitizationState } from "../types/DigitizationState";
 
-interface Extraction {
-    id: number;
-    document_ids: number[];
-    selected_pages: number;
-    generated_by: string;
-    generated_at: string;
-    // Extraction parameters
+interface ExtractionParameters {
     target_pages: number;
     ignore_digitization_states: DigitizationState[];
     include_categories: number[];
     location_ids: number[];
     target_pages_threshold: number;
     whole_categories_threshold: number;
+}
+
+interface Extraction extends ExtractionParameters {
+    id: number;
+    document_ids: number[];
+    selected_pages: number;
+    generated_by: string;
+    generated_at: string;
 }
 
 class ApiExtractions extends ApiBase<Extraction> {
@@ -25,4 +27,4 @@ class ApiExtractions extends ApiBase<Extraction> {
 }
 
 export default ApiExtractions;
-export type { Extraction };
+export type { Extraction, ExtractionParameters };

@@ -42,7 +42,7 @@ interface Category extends CreateCategory {
     percentage?: number;
     overall_percentage?: number;
     pages_needed_to_meet_intention?: number;
-    
+
     extraction_id?: number;
     extracted_pages?: number;
     extracted_documents?: number;
@@ -73,68 +73,143 @@ interface Distribution {
 
 namespace ApiCategories {
     export function getIntentions() {
-        return axiosInstance.get<Intention[]>("/intentions", { headers: authHeader() });
+        return axiosInstance.get<Intention[]>("/intentions", {
+            headers: authHeader(),
+        });
     }
 
     export function getCategories(departmentId: number | null = null) {
-        const url = departmentId ? `/categories/departments/${departmentId}` : "/categories";
+        const url = departmentId
+            ? `/categories/departments/${departmentId}`
+            : "/categories";
         return axiosInstance.get<Category[]>(url, { headers: authHeader() });
     }
 
-    export function getCategoriesByIntention(intentionId: number, departmentId: number | null = null) {
-        const url = (departmentId ? `/categories/departments/${departmentId}` : "/categories") + `/in_intention/${intentionId}`;
+    export function getCategoriesByIntention(
+        intentionId: number,
+        departmentId: number | null = null
+    ) {
+        const url =
+            (departmentId
+                ? `/categories/departments/${departmentId}`
+                : "/categories") + `/in_intention/${intentionId}`;
         return axiosInstance.get<Category[]>(url, { headers: authHeader() });
     }
 
-    export function getCategoriesForExtraction(intentionId: number, extractionId: number, departmentId: number | null = null) {
-        const url = (departmentId ? `/categories/departments/${departmentId}` : "/categories") + `/in_intention/${intentionId}/by_extraction/${extractionId}`;
-        return axiosInstance.get<Category[]>(url, { headers: authHeader() });
-    }
-    
-    export function getCategoriesForDigitization(intentionId: number, digitizationIds: number[] = [], departmentId: number | null = null) {
-        const url = (
-            (departmentId ? `/categories/departments/${departmentId}` : "/categories")
-            + `/in_intention/${intentionId}/by_digitizations`
-            + (digitizationIds.length > 0 ? `?digitization_ids=${digitizationIds.join(",")}` : ""));
+    export function getCategoriesForExtraction(
+        intentionId: number,
+        extractionId: number,
+        departmentId: number | null = null
+    ) {
+        const url =
+            (departmentId
+                ? `/categories/departments/${departmentId}`
+                : "/categories") +
+            `/in_intention/${intentionId}/by_extraction/${extractionId}`;
         return axiosInstance.get<Category[]>(url, { headers: authHeader() });
     }
 
-    export function createIntention(intention: IntentionCreate, copyDistributionFrom: number | null = null) {
-        const url = copyDistributionFrom ? `/intentions?copyDistributionFrom=${copyDistributionFrom}` : "/intentions";
-        return axiosInstance.post<Intention>(url, intention, { headers: authHeader() });
+    export function getCategoriesForDigitization(
+        intentionId: number,
+        digitizationIds: number[] = [],
+        departmentId: number | null = null
+    ) {
+        const url =
+            (departmentId
+                ? `/categories/departments/${departmentId}`
+                : "/categories") +
+            `/in_intention/${intentionId}/by_digitizations` +
+            (digitizationIds.length > 0
+                ? `?digitization_ids=${digitizationIds.join(",")}`
+                : "");
+        return axiosInstance.get<Category[]>(url, { headers: authHeader() });
     }
 
-    export function updateIntention(id: number, intention: IntentionCreate, copyDistributionFrom: number | null = null) {
-        const url = copyDistributionFrom ? `/intentions/${id}?copyDistributionFrom=${copyDistributionFrom}` : `/intentions/${id}`;
-        return axiosInstance.put<Intention>(url, intention, { headers: authHeader() });
+    export function createIntention(
+        intention: IntentionCreate,
+        copyDistributionFrom: number | null = null
+    ) {
+        const url = copyDistributionFrom
+            ? `/intentions?copyDistributionFrom=${copyDistributionFrom}`
+            : "/intentions";
+        return axiosInstance.post<Intention>(url, intention, {
+            headers: authHeader(),
+        });
+    }
+
+    export function updateIntention(
+        id: number,
+        intention: IntentionCreate,
+        copyDistributionFrom: number | null = null
+    ) {
+        const url = copyDistributionFrom
+            ? `/intentions/${id}?copyDistributionFrom=${copyDistributionFrom}`
+            : `/intentions/${id}`;
+        return axiosInstance.put<Intention>(url, intention, {
+            headers: authHeader(),
+        });
     }
 
     export function deleteIntention(id: number) {
-        return axiosInstance.delete<Intention>(`/intentions/${id}`, { headers: authHeader() });
+        return axiosInstance.delete<Intention>(`/intentions/${id}`, {
+            headers: authHeader(),
+        });
     }
 
-    export function createCategory(category: CreateCategory, parentId: number | null = null) {
+    export function createCategory(
+        category: CreateCategory,
+        parentId: number | null = null
+    ) {
         const url = parentId ? `/categories/${parentId}` : "/categories/root";
-        return axiosInstance.post<Category>(url, category, { headers: authHeader() });
+        return axiosInstance.post<Category>(url, category, {
+            headers: authHeader(),
+        });
     }
 
-    export function updateCategory(categoryId: number, category: CreateCategory) {
-        return axiosInstance.put<Category>(`/categories/${categoryId}`, category, { headers: authHeader() });
+    export function updateCategory(
+        categoryId: number,
+        category: CreateCategory
+    ) {
+        return axiosInstance.put<Category>(
+            `/categories/${categoryId}`,
+            category,
+            { headers: authHeader() }
+        );
     }
 
     export function deleteCategory(id: number) {
-        return axiosInstance.delete<Category>(`/categories/${id}`, { headers: authHeader() });
+        return axiosInstance.delete<Category>(`/categories/${id}`, {
+            headers: authHeader(),
+        });
     }
 
-    export function updateDistribution(distribution: ParentDistribution, parentId: number | null = null) {
+    export function updateDistribution(
+        distribution: ParentDistribution,
+        parentId: number | null = null
+    ) {
         const url = `/categories/${parentId ? parentId : "root"}/distribution`;
-        return axiosInstance.put<Category[]>(url, distribution, { headers: authHeader() });
+        return axiosInstance.put<Category[]>(url, distribution, {
+            headers: authHeader(),
+        });
     }
 
-    export function removeFromIntention(categoryId: number, intentionId: number) {
-        return axiosInstance.delete<Distribution[]>(`/categories/${categoryId}/in_intention/${intentionId}`, { headers: authHeader() });
+    export function removeFromIntention(
+        categoryId: number,
+        intentionId: number
+    ) {
+        return axiosInstance.delete<Distribution[]>(
+            `/categories/${categoryId}/in_intention/${intentionId}`,
+            { headers: authHeader() }
+        );
     }
 }
 
 export default ApiCategories;
-export type { CreateCategory, Category, IntentionCreate, Intention, ChildDistribution, ParentDistribution };
+export type {
+    CreateCategory,
+    Category,
+    IntentionCreate,
+    Intention,
+    ChildDistribution,
+    ParentDistribution,
+};

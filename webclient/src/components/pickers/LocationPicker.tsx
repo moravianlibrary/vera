@@ -5,7 +5,7 @@ import {
     TreeSelectChangeEvent,
     TreeSelectProps,
 } from "primereact/treeselect";
-import { useLocations } from "../../contexts/extractions/locations/LocationsContext";
+import { useLocations } from "../../contexts/LocationsContext";
 import { TreeNode } from "primereact/treenode";
 import { useTranslation } from "react-i18next";
 

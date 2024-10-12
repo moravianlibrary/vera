@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import Optional
 from datatypes import (
     TaskType,
     EsRoutingParams,
@@ -91,13 +91,15 @@ def get_task(
 @router.get(
     "/{id}/items",
     dependencies=[CanPlanTask],
-    response_model=List[TaskItemResponse],
+    response_model=Page[TaskItemResponse],
 )
 def get_task_documents(
     id: int = Path(...),
+    page: int = Query(1, description="Page number"),
+    page_size: int = Query(50, description="Page size"),
     db: Session = DependsOnDbSession,
 ):
-    return Task.get(db, id).items
+    return TaskItem.get_page(db, id, page, page_size)
 
 
 @router.get(

@@ -5,9 +5,10 @@ import React, {
     ReactNode,
     useEffect,
 } from "react";
-import ApiExtractions, { Extraction } from "../../adapters/ApiExtractions";
-import { useToast } from "../ToastContext";
+import ApiExtractions, { Extraction } from "../adapters/ApiExtractions";
+import { useToast } from "./ToastContext";
 import { useTranslation } from "react-i18next";
+import withPagination from "./base/PaginationInjector";
 
 interface ExtractionsContextProps {
     extractions: Extraction[];
@@ -50,17 +51,6 @@ export const GeneratedExtractionsProvider: React.FC<
     const [pageSize, setPageSize] = useState<number>(20);
     const [generating, setGenerating] = useState(false);
 
-    const loadExtractions = async (offset: number, limit: number) => {
-        api.getPage(offset, limit)
-            .then((response) => {
-                setExtractions(response.data.items);
-                setNumFound(response.data.num_found);
-            })
-            .catch((error) => {
-                console.error(`Could not receive extractions: ${error}`);
-            });
-    };
-
     const generateExtraction = async (
         extractionParams: Partial<Extraction>
     ) => {
@@ -101,8 +91,15 @@ export const GeneratedExtractionsProvider: React.FC<
     };
 
     useEffect(() => {
-        console.log(`Fetching extractions from server.`);
-        loadExtractions(page, pageSize);
+        console.debug(`Fetching extractions from server.`);
+        api.getPage(page, pageSize)
+            .then((response) => {
+                setExtractions(response.data.items);
+                setNumFound(response.data.num_found);
+            })
+            .catch((error) => {
+                console.error(`Could not receive extractions: ${error}`);
+            });
     }, [page, pageSize]);
 
     const contextValue: ExtractionsContextProps = {

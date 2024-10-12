@@ -9,6 +9,7 @@ import EsMaterialTypeFacet from "../../components/elasticsearch/filters/EsMateri
 import EsIssuanceTypeFacet from "../../components/elasticsearch/filters/EsIssuanceTypeFacet";
 import EsQueryRulesLayout from "../../components/layouts/EsQueryRulesLayout";
 import { useTranslation } from "react-i18next";
+import EsQueryChips from "../../components/elasticsearch/EsQueryChips";
 
 interface DocumentsQueryRulesProps {}
 
@@ -17,6 +18,7 @@ export const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
 
     return (
         <EsQueryRulesLayout
+            // sortBy={<EsQueryChips queryParams={queryParams} />}
             facets={
                 <Fragment>
                     <EsBooleanFacet

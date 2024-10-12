@@ -9,103 +9,11 @@ import { Toolbar } from "primereact/toolbar";
 import { Button } from "primereact/button";
 import { Menu } from "primereact/menu";
 import ActionAccessComponent from "./access/ActionAccessComponent";
+import { SplitButton } from "primereact/splitbutton";
 
 interface NavigationMenuProps {}
 
 const NavigationMenu: React.FC<NavigationMenuProps> = () => {
-    const { t } = useTranslation();
-    const { currentUser } = useAccess();
-    const navigate = useNavigate();
-
-    const items = [
-        {
-            label: "Router",
-            icon: "pi pi-palette",
-            items: [
-                {
-                    label: "Styled",
-                    url: "/theming",
-                },
-                {
-                    label: "Unstyled",
-                    url: "/unstyled",
-                },
-            ],
-        },
-        {
-            label: "Programmatic",
-            icon: "pi pi-link",
-            // command: () => {
-            //     router.push("/installation");
-            // },
-        },
-        {
-            label: "External",
-            icon: "pi pi-home",
-            items: [
-                {
-                    label: "React.js",
-                    url: "/documents",
-                },
-                {
-                    label: "Vite.js",
-                    url: "https://vitejs.dev/",
-                },
-            ],
-        },
-    ];
-    const getMenuItems = () => {
-        if (!currentUser || !currentUser.actions) {
-            return [];
-        }
-        const items: any = [];
-
-        if (currentUser.actions.includes(ActionType.ReadDatatable)) {
-            items.push({
-                label: t("Documents"),
-                icon: "pi pi-book",
-                command: () => navigate("/documents"),
-            });
-        }
-        if (currentUser.actions.includes(ActionType.ReadCatalogRecords)) {
-            items.push({
-                label: t("Catalog records"),
-                icon: "pi pi-server",
-                command: () => navigate("/catalog-records"),
-            });
-        }
-        if (currentUser.actions.includes(ActionType.ReadCategories)) {
-            items.push({
-                label: t("Categories"),
-                icon: "pi pi-tags",
-                command: () => navigate("/categories"),
-            });
-        }
-        if (currentUser.actions.includes(ActionType.Extract)) {
-            items.push({
-                label: t("Extractions"),
-                icon: "pi pi-receipt",
-                command: () => navigate("/extractions"),
-            });
-        }
-        if (currentUser.actions.includes(ActionType.PlanTasks)) {
-            items.push({
-                label: t("Tasks"),
-                icon: "pi pi-receipt",
-                command: () => navigate("/tasks"),
-            });
-        }
-        if (currentUser.actions.includes(ActionType.EditAccess)) {
-            items.push({
-                label: t("Access"),
-                icon: "pi pi-receipt",
-                command: () => navigate("/access"),
-            });
-        }
-
-        return items;
-    };
-
     return (
         <div className="navbar">
             <Toolbar

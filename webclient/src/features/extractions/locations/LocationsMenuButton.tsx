@@ -10,7 +10,7 @@ import { Dialog } from "primereact/dialog";
 import StorageMenu from "./StorageMenu";
 import LibraryMenu from "./LibraryMenu";
 import { ProgressSpinner } from "primereact/progressspinner";
-import { useLocations } from "../../../contexts/extractions/locations/LocationsContext";
+import { useLocations } from "../../../contexts/LocationsContext";
 import { LocationState } from "../../../types/LocationState";
 
 const LocationsMenuButton = () => {

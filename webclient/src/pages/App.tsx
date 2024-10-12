@@ -21,6 +21,7 @@ import ActionAccessRoute from "../components/access/ActionAccessRoute";
 import CatalogRecords from "./CatalogRecords";
 import WithProviders from "../components/wrappers/WithProviders";
 import { ConfirmDialog } from "primereact/confirmdialog";
+import PeriodicTasks from "./PeriodicTasks";
 
 function Routing() {
     return (
@@ -55,6 +56,11 @@ function Routing() {
                 element={<ActionAccessRoute action={ActionType.PlanTasks} />}
             >
                 <Route path="/tasks" element={<Tasks />} />
+            </Route>
+            <Route
+                element={<ActionAccessRoute action={ActionType.AdminTasks} />}
+            >
+                <Route path="/tasks/periodic" element={<PeriodicTasks />} />
             </Route>
             <Route
                 element={<ActionAccessRoute action={ActionType.EditAccess} />}

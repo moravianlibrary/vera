@@ -1,3 +1,5 @@
+import { EsQuery } from "../../adapters/ApiTasks";
+
 function filterBooleanQuery(field: string, value: string) {
     return {
         bool: {
@@ -28,6 +30,7 @@ function stateToRoute(indexName, booleanAttributes, uiState) {
     const indexUiState = uiState[indexName] || {};
 
     return {
+        index_name: indexName,
         query: indexUiState.query,
         ...Object.keys(indexUiState.refinementList || {}).reduce((acc, key) => {
             acc[key] = (
@@ -43,8 +46,8 @@ function stateToRoute(indexName, booleanAttributes, uiState) {
             acc[key] = indexUiState.range[key];
             return acc;
         }, {}),
-        page_size: indexUiState.hitsPerPage,
         page: indexUiState.page,
+        page_size: indexUiState.hitsPerPage,
     };
 }
 
@@ -56,7 +59,9 @@ function routeToState(indexName, booleanAttributes, routeState) {
             page: routeState.page,
             refinementList: Object.keys(routeState).reduce((acc, key) => {
                 if (
-                    !["query", "page_size", "page"].includes(key) &&
+                    !["indexName", "query", "page_size", "page"].includes(
+                        key
+                    ) &&
                     !/^\d+:\d+|\d+:|:\d+$/.test(routeState[key])
                 ) {
                     const values = routeState[key].split(",");
@@ -68,7 +73,9 @@ function routeToState(indexName, booleanAttributes, routeState) {
             }, {}),
             range: Object.keys(routeState).reduce((acc, key) => {
                 if (
-                    !["query", "page_size", "page"].includes(key) &&
+                    !["indexName", "query", "page_size", "page"].includes(
+                        key
+                    ) &&
                     /^\d+:\d+|\d+:|:\d+$/.test(routeState[key])
                 ) {
                     acc[key] = routeState[key];

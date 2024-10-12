@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import EsFacet, { EsFacetProps } from "./EsFacet";
-import { useDigitizationLists } from "../../../contexts/extractions/DigitizationListsContext";
+import { useDigitizationLists } from "../../../contexts/DigitizationListsContext";
 
 interface DigitizationListCheckboxLabelProps {
     label: string;

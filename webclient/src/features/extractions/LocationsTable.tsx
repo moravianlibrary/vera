@@ -2,38 +2,38 @@ import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocations } from "../../../contexts/extractions/locations/LocationsContext";
-import DeleteButton from "../../../components/buttons/DeleteButton";
-import { LocationState } from "../../../types/LocationState";
-import EditButton from "../../../components/buttons/EditButton";
-import LocationModel from "../../../contexts/extractions/locations/LocationModel";
+import { useLocations } from "../../contexts/LocationsContext";
+import DeleteButton from "../../components/buttons/DeleteButton";
+import { LocationState } from "../../types/LocationState";
+import EditButton from "../../components/buttons/EditButton";
 import { Dialog } from "primereact/dialog";
-import LocationForm from "./LocationForm";
-import { Library, Location, Storage } from "../../../adapters/ApiLocations";
+import LocationForm from "./locations/LocationForm";
+import { Library, Location, Storage } from "../../adapters/ApiLocations";
 import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
 import { Tooltip } from "primereact/tooltip";
+import DataTablePaginator from "../../components/DataTablePaginator";
 
 interface LocationsTableProps {}
 
-const compareLocations = (a: LocationModel, b: LocationModel): number => {
+const compareLocations = (a: Location, b: Location): number => {
     return (
-        a.library_name.localeCompare(b.library_name) ||
-        // a.storage_name.localeCompare(b.storage_name) ||
+        a.storage.library.name.localeCompare(b.storage.library.name) ||
+        // a.storage.name.localeCompare(b.storage.name) ||
         a.name.localeCompare(b.name)
     );
 };
 
-const LocationsTable: React.FC<LocationsTableProps> = () => {
+const LocationsTable: React.FC<LocationsTableProps> & {
+    Paginator: React.FC;
+} = ({}) => {
     const { t } = useTranslation();
     const { locations, deleteLocation } = useLocations();
 
     const [values, setValues] = useState<Location[]>(
         locations.sort(compareLocations)
     );
-    const [editLocation, setEditLocation] = useState<LocationModel | null>(
-        null
-    );
+    const [editLocation, setEditLocation] = useState<Location | null>(null);
 
     useEffect(() => {
         setValues(locations.sort(compareLocations));
@@ -51,24 +51,24 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
         );
     };
 
-    const getSubPatternBody = (subPattern: string) => {
+    const getSubPatternBody = (subPattern: string, index: number) => {
         if (subPattern === "[[:digit:]]") {
             return (
-                <div>
+                <div key={index}>
                     <Avatar label="D" className="any-digit bg-green-100" />
                 </div>
             );
         }
         if (subPattern === "[[:alpha:]]") {
             return (
-                <div>
+                <div key={index}>
                     <Avatar label="L" className="any-letter bg-blue-100" />
                 </div>
             );
         }
         if (subPattern === "[[:alnum:]]") {
             return (
-                <div>
+                <div key={index}>
                     <Avatar
                         label="X"
                         className="any-letter-or-digit bg-cyan-100"
@@ -76,13 +76,15 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
                 </div>
             );
         }
-        return <p>{subPattern}</p>;
+        return <p key={index}>{subPattern}</p>;
     };
 
-    const locationPatternBody = (data: LocationModel, options: any) => {
+    const locationPatternBody = (data: Location, options: any) => {
         const specialCharactersRegex =
             /(\[\[:digit:\]\]|\[\[:alpha:\]\]|\[\[:alnum:\]\])/g;
-        const patternTokenized = data.regexp.split(specialCharactersRegex);
+        const patternTokenized = data.regexp
+            .split(specialCharactersRegex)
+            .filter((token) => token);
         return (
             <div className="flex align-items-center">
                 <Tooltip
@@ -112,8 +114,8 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
                 scrollable
                 scrollHeight="calc(100vh - 170px)"
             >
-                <Column header={t("Library")} field="library_name" />
-                <Column header={t("Storage")} field="storage_name" />
+                <Column header={t("Library")} field="storage.library.name" />
+                <Column header={t("Storage")} field="storage.name" />
                 <Column header={t("Location")} field="name" />
                 <Column
                     header={t("Location prefix")}
@@ -159,8 +161,25 @@ const LocationsTable: React.FC<LocationsTableProps> = () => {
     );
 };
 
+const LocationsTablePaginator: React.FC = () => {
+    const { numFound, page, setPage, pageSize, setPageSize } = useLocations();
+
+    return (
+        <DataTablePaginator
+            numFound={numFound}
+            page={page}
+            pageSize={pageSize}
+            onPageChangeNew={setPage}
+            onPageSizeChange={setPageSize}
+            numFoundText="locations.num-found"
+        />
+    );
+};
+
+LocationsTable.Paginator = LocationsTablePaginator;
+
 interface EditLocationProps {
-    location: LocationModel;
+    location: Location;
     onClose: () => void;
 }
 
@@ -172,7 +191,7 @@ const EditLocation: React.FC<EditLocationProps> = ({
     const { updateLocation } = useLocations();
 
     const [library, setLibrary] = useState<Library | null>(
-        inputLocation.library
+        inputLocation.storage.library
     );
     const [storage, setStorage] = useState<Storage | null>(
         inputLocation.storage

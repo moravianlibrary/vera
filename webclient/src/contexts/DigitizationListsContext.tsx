@@ -5,18 +5,20 @@ import React, {
     ReactNode,
     useEffect,
 } from "react";
-import { useToast } from "../ToastContext";
 import { useTranslation } from "react-i18next";
-import { DigitizationList } from "../../adapters/ApiDigitizationLists";
-import ApiDigitizationLists from "../../adapters/ApiDigitizationLists";
-import { EsQuery } from "../../adapters/ApiTasks";
+import { DigitizationList } from "../adapters/ApiDigitizationLists";
+import ApiDigitizationLists from "../adapters/ApiDigitizationLists";
+import { EsQuery } from "../adapters/ApiTasks";
 import { confirmDialog } from "primereact/confirmdialog";
-import { useIntentions } from "../categories/IntentionsContext";
 
 interface DigitizationListsContextProps {
     digitizationLists: DigitizationList[];
     numFound: number;
-    loadExtractions: (offset: number, limit: number) => void;
+    page: number;
+    setPage: (page: number) => void;
+    pageSize: number;
+    setPageSize: (pageSize: number) => void;
+
     createDigitizationList: (
         query: Object,
         intention_id: number
@@ -68,24 +70,12 @@ export const DigitizationListsProvider: React.FC<
     const { t } = useTranslation();
     // const { removeDocumentFromResults } = useDocuments();
 
-    const loadAmount = 50;
     const [digitizationLists, setDigitizationLists] = useState<
         DigitizationList[]
     >([]);
     const [numFound, setNumFound] = useState<number>(0);
-
-    const loadExtractions = async (offset: number, limit: number) => {
-        const page = offset / loadAmount + 1;
-        const pageSize = loadAmount;
-        api.getPage(page, pageSize)
-            .then((response) => {
-                setDigitizationLists(response.data.items);
-                setNumFound(response.data.num_found);
-            })
-            .catch((error) => {
-                console.error(`Could not receive digitization lists: ${error}`);
-            });
-    };
+    const [page, setPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(20);
 
     const createDigitizationList = async (
         query: Object,
@@ -227,13 +217,24 @@ export const DigitizationListsProvider: React.FC<
 
     useEffect(() => {
         console.log(`Fetching extractions from server.`);
-        loadExtractions(0, loadAmount);
-    }, []);
+        api.getPage(page, pageSize)
+            .then((response) => {
+                setDigitizationLists(response.data.items);
+                setNumFound(response.data.num_found);
+            })
+            .catch((error) => {
+                console.error(`Could not receive extractions: ${error}`);
+            });
+    }, [page, pageSize]);
 
     const contextValue: DigitizationListsContextProps = {
         digitizationLists,
         numFound,
-        loadExtractions,
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
+
         createDigitizationList,
         addDocumentsToDigitizationList,
         removeDocumentsFromDigitizationList,

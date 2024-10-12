@@ -143,3 +143,25 @@
     background-color: #ff9999;
     border: none;
 }
+
+.navigation-button-group {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: auto; 
+}
+
+.navigation-button {
+    text-align: center;
+    margin: 2px;
+    border-left: 1px solid #999;
+    border-right: 1px solid #999;
+    border-radius: 1; 
+    color: var(--gray-700) !important;
+    transition: background-color 0.3s ease;
+    white-space: nowrap;
+}
+
+.navigation-button.active {
+    background-color: var(--gray-500) !important;
+    color: var(--gray-50) !important;
+}

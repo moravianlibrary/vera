@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocations } from "../../../contexts/extractions/locations/LocationsContext";
+import { useLocations } from "../../../contexts/LocationsContext";
 import { Library, Location, Storage } from "../../../adapters/ApiLocations";
 import { Button } from "primereact/button";
-import LocationModel from "../../../contexts/extractions/locations/LocationModel";
 import LocationForm from "./LocationForm";
 import { LocationState } from "../../../types/LocationState";
 
 interface CreateLocationMenuProps {
-    location?: LocationModel;
+    location?: Location;
 }
 
 const CreateLocationMenu: React.FC<CreateLocationMenuProps> = ({
@@ -19,7 +18,7 @@ const CreateLocationMenu: React.FC<CreateLocationMenuProps> = ({
 
     const [library, setLibrary] = useState<Library | null>(
         inputLocation
-            ? inputLocation.library
+            ? inputLocation.storage.library
             : libraries.length === 1
             ? libraries[0]
             : null

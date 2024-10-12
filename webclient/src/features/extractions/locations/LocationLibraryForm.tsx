@@ -4,7 +4,7 @@ import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { Library } from "../../../adapters/ApiLocations";
 import { useTranslation } from "react-i18next";
-import { useLocations } from "../../../contexts/extractions/locations/LocationsContext";
+import { useLocations } from "../../../contexts/LocationsContext";
 import { useState } from "react";
 
 interface LocationLibraryFormProps {

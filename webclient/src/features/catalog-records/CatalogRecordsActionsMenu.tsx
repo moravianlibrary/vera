@@ -2,7 +2,7 @@ import { MenuItem } from "primereact/menuitem";
 import { useAccess } from "../../contexts/AccessContext";
 import { ActionType } from "../../types/ActionType";
 import { useTranslation } from "react-i18next";
-import { useTasks } from "../../contexts/tasks/TasksContext";
+import { useTasks } from "../../contexts/TasksContext";
 import { TaskType } from "../../types/TaskType";
 import { useEsDataTable } from "../../contexts/EsDataTableContext";
 

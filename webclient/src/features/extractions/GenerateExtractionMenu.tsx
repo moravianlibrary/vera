@@ -2,7 +2,7 @@ import { InputNumber } from "primereact/inputnumber";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Extraction } from "../../adapters/ApiExtractions";
-import { useExtractions } from "../../contexts/extractions/GeneratedExtractionsContext";
+import { useExtractions } from "../../contexts/GeneratedExtractionsContext";
 import { AssignableCategoriesPicker } from "../../components/pickers/AssignableCategoryPicker";
 import LabeledComponent from "../../components/LabeledComponent";
 import { Button } from "primereact/button";

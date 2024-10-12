@@ -69,7 +69,7 @@ interface Document extends DocumentBase {
 }
 
 interface IndexDocument {
-    id: number;
+    id: string;
     // Main identifiers
     sysno: string;
     barcode: string | null;

@@ -1,6 +1,6 @@
 import React from "react";
 import { ListBox } from "primereact/listbox";
-import { useDigitizationLists } from "../contexts/extractions/DigitizationListsContext";
+import { useDigitizationLists } from "../contexts/DigitizationListsContext";
 import { useTranslation } from "react-i18next";
 
 interface DigitizationListBoxProps {

@@ -53,6 +53,9 @@ class TaskOverview(TaskDefinition):
 
 
 class TaskItemResponse(BaseModel):
+    class Config:
+        from_attributes = True
+
     item_id: str
     item_type: TaskItemType
     deleted: bool

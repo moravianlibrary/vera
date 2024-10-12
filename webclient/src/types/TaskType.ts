@@ -10,4 +10,14 @@ enum TaskType {
     GenerateItemsPagesDataset = "GenerateItemsPagesDataset",
 }
 
-export { TaskType };
+enum TaskItemType {
+    CatalogRecord = "CatalogRecord",
+    Document = "Document",
+}
+
+enum TaskItemErrorType {
+    ValueError = "ValueError",
+    UnknownError = "UnknownError",
+}
+
+export { TaskType, TaskItemType, TaskItemErrorType };
