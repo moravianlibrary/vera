@@ -1,12 +1,28 @@
 import React, { useContext } from "react";
 import { createContext } from "react";
-import ApiCatalogRecords from "../adapters/ApiCatalogRecords";
+import ApiCatalogRecords, {
+    CatalogRecord,
+} from "../adapters/ApiCatalogRecords";
 import { BaseProviderProps } from "./BaseContext";
 import { useToast } from "./ToastContext";
 import { useTranslation } from "react-i18next";
 import { useEsDataTable } from "./EsDataTableContext";
+import useEsPagination, {
+    EsItemsPaginationProps,
+} from "./base/EsPaginationInjector";
+import useEsSelection, {
+    EsItemsSelectionProps,
+} from "./base/EsSelectionInjector";
+import { stateToRoute } from "../data/factories/EsQueriesFactory";
+import { booleanAttributes } from "../config/documents_index";
+import useDataTableExpandedRows, {
+    DataTableExpandedRowsProps,
+} from "./base/DataTableExpandedRowsInjector";
 
-interface CatalogRecordsContextProps {
+interface CatalogRecordsContextProps
+    extends EsItemsPaginationProps<CatalogRecord>,
+        EsItemsSelectionProps<CatalogRecord>,
+        DataTableExpandedRowsProps {
     approveDifference: (differenceId: number) => void;
 }
 
@@ -21,6 +37,10 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
     const { updateItem } = useEsDataTable();
     const { t } = useTranslation();
     const showToast = useToast();
+    const { items, numFound, queryParams, ...restOfPaginationProps } =
+        useEsPagination((uiState) =>
+            stateToRoute("catalog_records", booleanAttributes, uiState)
+        );
 
     const approveDifference = (differenceId: number) => {
         api.approveDifference(differenceId).then((response) => {
@@ -33,6 +53,15 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
     };
 
     const contextValue: CatalogRecordsContextProps = {
+        items,
+        numFound,
+        queryParams,
+        ...restOfPaginationProps,
+
+        ...useEsSelection(items, numFound, queryParams),
+
+        ...useDataTableExpandedRows(),
+
         approveDifference,
     };
 

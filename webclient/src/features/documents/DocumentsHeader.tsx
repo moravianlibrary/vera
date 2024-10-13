@@ -5,6 +5,7 @@ import EsSearchBox from "../../components/elasticsearch/EsSearchBox";
 import EsSelectionMenu from "../../components/elasticsearch/EsSelectionMenu";
 import DocumentsInsertMenu from "./DocumentsInsertMenu";
 import DocumentsActionsMenuItems from "./DocumentsActionsMenuItems";
+import { useDocuments } from "../../contexts/DocumentsContext";
 
 interface DocumentsHeaderProps {}
 
@@ -17,6 +18,7 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({}) => {
             center={<EsSearchBox />}
             end={
                 <EsSelectionMenu
+                    selectionProps={useDocuments()}
                     actionsMenuItems={DocumentsActionsMenuItems()}
                     numSelectedLabel={t("documents.num-selected")}
                 />

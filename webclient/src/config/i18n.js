@@ -768,6 +768,42 @@ const resources = {
                     extraction: "Extrakce",
                     "added-by": "Přidal",
                 },
+                "query-params": {
+                    query: "Vyhledávaní: {{value}}",
+                    is_extractable: {
+                        true: "Může být extrahovaný",
+                        false: "Nemůže být extrahovaný",
+                    },
+                    has_valid_main_record: {
+                        true: "Záznam je validný",
+                        false: "Záznam není validný",
+                    },
+                    has_valid_cnb: {
+                        true: "ČNB je validné",
+                        false: "ČNB není validné",
+                    },
+                    digitization_state: {
+                        NotDigitized: "Nedigitalizováno",
+                        Planned: "Plánováno",
+                        InProgress: "Probíhá",
+                        Finished: "Dokončeno",
+                    },
+                    material_type: {
+                        Book: "Monografie",
+                        ContinuingResource: "Periodikum",
+                        Map: "Mapa",
+                        Music: "Hudba",
+                        Other: "Ostatní",
+                    },
+                    issuance_type: {
+                        Volume: "Ročník",
+                        Unit: "Vydáni",
+                        Bundle: "Svazek čísel",
+                    },
+                    added_by: "Přidal: {{value}}",
+                    category_id: "Id kategorie: {{value}}",
+                    digitization_list_id: "Id seznamu digitalizace: {{value}}",
+                },
                 actions: {
                     export: "Exportovat do souboru",
                     "export-to-xlsx": "Exportovat do XLSX",
@@ -809,7 +845,7 @@ const resources = {
                     results: {
                         "insert-another": "Vložit další",
                         "show-details": "Zobrazit detaily",
-                        "finish": "Skončit",
+                        finish: "Skončit",
                         "show-set-page-count": "Zobrazit nastaveni počtu stran",
                         "accept-set-page-count": "Nastavit počty stran",
                         status: {

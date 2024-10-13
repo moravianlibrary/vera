@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { EsQuery } from "../../adapters/ApiTasks";
 import {
     DataTableSelectionMultipleChangeEvent,
     DataTableValueArray,
 } from "primereact/datatable";
-import { EsItemsPaginationProps } from "./EsPaginationInjector";
 
-interface EsItemsSelectionProps<T extends { id: string }>
-    extends EsItemsPaginationProps<T> {
+interface EsItemsSelectionProps<T extends { id: string }> {
     numSelected: number;
     currentPageSelected: T[];
     handleDataTableSelectionChange: (
@@ -19,80 +17,81 @@ interface EsItemsSelectionProps<T extends { id: string }>
     selectedQuery: EsQuery;
 }
 
-const withEsSelection = <T extends { id: string }>(
-    WrappedComponent: React.ComponentType<EsItemsSelectionProps<T>>
+const useEsSelection = <T extends { id: string }>(
+    items: T[],
+    numFound: number,
+    queryParams: EsQuery
 ) => {
-    return (props: EsItemsSelectionProps<T> & Record<string, any>) => {
-        const { items, queryParams, numFound } = props;
+    const [numSelected, setNumSelected] = useState<number>(0);
+    const [currentPageSelected, setCurrentPageSelected] = useState<any[]>([]);
+    const [areAllSelected, setAreAllSelected] = useState<boolean>(false);
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [selectedQuery, setSelectedQuery] = useState<any>({});
 
-        const [numSelected, setNumSelected] = useState<number>(0);
-        const [currentPageSelected, setCurrentPageSelected] = useState<any[]>(
-            []
-        );
-        const [areAllSelected, setAreAllSelected] = useState<boolean>(false);
-        const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-        const [selectedQuery, setSelectedQuery] = useState<any>({});
+    const handleDataTableSelectionChange = (
+        event: DataTableSelectionMultipleChangeEvent<DataTableValueArray>
+    ) => {
+        const currentSelectedIds = new Set(event.value.map((item) => item.id));
+        const currentPageIds = new Set(items.map((item) => item.id));
 
-        const handleDataTableSelectionChange = (
-            event: DataTableSelectionMultipleChangeEvent<DataTableValueArray>
-        ) => {
-            const currentSelectedIds = new Set(
-                event.value.map((item) => item.id)
-            );
-            const currentPageIds = new Set(items.map((item) => item.id));
-
-            setSelectedIds((prevSelectedIds) => {
-                const updatedSelectedIds = new Set(prevSelectedIds);
-                currentPageIds.forEach((id) => {
-                    if (!currentSelectedIds.has(id)) {
-                        updatedSelectedIds.delete(id);
-                    }
-                });
-                currentSelectedIds.forEach((id) => updatedSelectedIds.add(id));
-
-                setNumSelected(updatedSelectedIds.size);
-
-                setAreAllSelected(updatedSelectedIds.size === numFound);
-
-                setSelectedQuery({
-                    id: Array.from(updatedSelectedIds).join(","),
-                });
-
-                return updatedSelectedIds;
+        setSelectedIds((prevSelectedIds) => {
+            const updatedSelectedIds = new Set(prevSelectedIds);
+            currentPageIds.forEach((id) => {
+                if (!currentSelectedIds.has(id)) {
+                    updatedSelectedIds.delete(id);
+                }
             });
-        };
+            currentSelectedIds.forEach((id) => updatedSelectedIds.add(id));
 
-        const onSetAreAllSelected = (value: boolean) => {
-            setAreAllSelected(value);
-            setNumSelected(value ? numFound : selectedIds.size);
-            setSelectedQuery(queryParams);
-        };
+            setNumSelected(updatedSelectedIds.size);
 
-        const cancelSelection = () => {
-            setSelectedIds(new Set());
-            setNumSelected(0);
-            setAreAllSelected(false);
-            setSelectedQuery({});
-        };
+            setAreAllSelected(updatedSelectedIds.size === numFound);
 
-        useEffect(() => {
-            cancelSelection();
-        }, [queryParams]);
+            setSelectedQuery({
+                id: Array.from(updatedSelectedIds).join(","),
+            });
 
-        return (
-            <WrappedComponent
-                {...(props as any)}
-                numSelected={numSelected}
-                currentPageSelected={currentPageSelected}
-                handleDataTableSelectionChange={handleDataTableSelectionChange}
-                areAllSelected={areAllSelected}
-                setAreAllSelected={onSetAreAllSelected}
-                cancelSelection={cancelSelection}
-                selectedQuery={selectedQuery}
-            />
-        );
+            return updatedSelectedIds;
+        });
+    };
+
+    const onSetAreAllSelected = (value: boolean) => {
+        setAreAllSelected(value);
+        setNumSelected(value ? numFound : selectedIds.size);
+        setSelectedQuery(queryParams);
+    };
+
+    const cancelSelection = () => {
+        setSelectedIds(new Set());
+        setNumSelected(0);
+        setAreAllSelected(false);
+        setSelectedQuery({});
+    };
+
+    useEffect(() => {
+        if (areAllSelected) {
+            setCurrentPageSelected(items);
+        } else {
+            setCurrentPageSelected(
+                items.filter((item) => selectedIds.has(item.id))
+            );
+        }
+    }, [items, selectedIds, areAllSelected]);
+
+    useEffect(() => {
+        cancelSelection();
+    }, [queryParams]);
+
+    return {
+        numSelected,
+        currentPageSelected,
+        handleDataTableSelectionChange,
+        areAllSelected,
+        setAreAllSelected: onSetAreAllSelected,
+        cancelSelection,
+        selectedQuery,
     };
 };
 
-export default withEsSelection;
+export default useEsSelection;
 export type { EsItemsSelectionProps };

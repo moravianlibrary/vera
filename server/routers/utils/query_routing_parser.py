@@ -47,7 +47,7 @@ def parse_query_routing(query_routing_params: EsRoutingParams) -> List[str]:
 
     for field, values in query_routing_params.items():
         print(field, values)
-        if field in ["query", "page", "page_size"]:
+        if field in ["query", "index_name", "page", "page_size"]:
             continue
 
         value_list = [value.strip() for value in values.split(",")]

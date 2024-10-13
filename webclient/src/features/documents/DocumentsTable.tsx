@@ -12,7 +12,6 @@ import CategoryColumnBody from "./table_columns/CategoryColumnBody";
 import DocumentDetailsColumnBody from "./table_columns/DocumentDetailsColumnBody";
 import DocumentStateColumnBody from "./table_columns/DocumentStateColumnBody";
 import ExtractionPriorityColumnBody from "./table_columns/ExtractionPriorityColumnBody";
-import { IndexDocument } from "../../adapters/ApiDocuments";
 import { useDocuments } from "../../contexts/DocumentsContext";
 
 interface DocumentsTableProps {}
@@ -21,8 +20,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
     Paginator: React.FC;
 } = ({}) => {
     const { t } = useTranslation();
-    const { items } =
-        // const { items, currentPageSelected, handleDataTableSelectionChange } =
+    const { items, currentPageSelected, handleDataTableSelectionChange } =
         useDocuments();
 
     return (
@@ -31,9 +29,9 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
             scrollable
             scrollHeight="flex"
             dataKey={"id"}
-            // selectionMode="checkbox"
-            // selection={currentPageSelected}
-            // onSelectionChange={handleDataTableSelectionChange}
+            selectionMode="checkbox"
+            selection={currentPageSelected}
+            onSelectionChange={handleDataTableSelectionChange}
         >
             <Column field="details" body={DocumentDetailsColumnBody} />
 

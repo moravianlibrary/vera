@@ -3,14 +3,17 @@ import { TaskType } from "../types/TaskType";
 import Page from "./Page";
 import { EsQuery } from "./ApiTasks";
 
-interface PeriodicTask {
-    id: number;
-    task_type: TaskType;
-    query_params?: string | null;
+interface CronExpression {
     minute?: number | null;
     hour?: number | null;
     day_of_week?: number | null;
     day_of_month?: number | null;
+}
+
+interface PeriodicTask extends CronExpression {
+    id: number;
+    task_type: TaskType;
+    query_params?: EsQuery | null;
 }
 
 class ApiPeriodicTasks extends ApiBase<PeriodicTask> {
@@ -55,4 +58,4 @@ class ApiPeriodicTasks extends ApiBase<PeriodicTask> {
 }
 
 export default ApiPeriodicTasks;
-export type { PeriodicTask };
+export type { CronExpression, PeriodicTask };

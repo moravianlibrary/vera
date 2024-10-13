@@ -2,7 +2,6 @@ import { MenuItem } from "primereact/menuitem";
 import { useTranslation } from "react-i18next";
 import { TaskType } from "../../types/TaskType";
 import { useTasks } from "../../contexts/TasksContext";
-import { useEsDataTable } from "../../contexts/EsDataTableContext";
 
 const InitiateTaskStartItem = (
     taskType: TaskType,
@@ -19,11 +18,4 @@ const InitiateTaskStartItem = (
     };
 };
 
-const InitiateTaskStartItemWithEsSelection = (taskType: TaskType): MenuItem => {
-    const { numSelected, selectedQuery } = useEsDataTable();
-
-    return InitiateTaskStartItem(taskType, numSelected, selectedQuery);
-};
-
 export default InitiateTaskStartItem;
-export { InitiateTaskStartItemWithEsSelection };

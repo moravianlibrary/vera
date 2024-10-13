@@ -164,15 +164,15 @@ def upgrade() -> None:
         op.f("ix_tasks_task_type"), "tasks", ["task_type"], unique=False
     )
 
-    op.execute(
-        """
-        INSERT INTO startup_tasks (task_type, item_type, is_one_time_task)
-        VALUES ('SyncCatalogRecordsWithCatalogs', 'CatalogRecord', TRUE);
-    """
-    )
-    op.execute(
-        "INSERT INTO startup_tasks (task_type) VALUES ('RecreateIndexes');"
-    )
+    # op.execute(
+    #     """
+    #     INSERT INTO startup_tasks (task_type, item_type, is_one_time_task)
+    #     VALUES ('SyncCatalogRecordsWithCatalogs', 'CatalogRecord', TRUE);
+    # """
+    # )
+    # op.execute(
+    #     "INSERT INTO startup_tasks (task_type) VALUES ('RecreateIndexes');"
+    # )
 
 
 def downgrade() -> None:

@@ -11,9 +11,7 @@ import { useCategories } from "../../contexts/categories/CategoriesContext";
 import { confirmDialog } from "primereact/confirmdialog";
 import { useDocuments } from "../../contexts/DocumentsContext";
 import { TaskType } from "../../types/TaskType";
-import InitiateTaskStartItem, {
-    InitiateTaskStartItemWithEsSelection,
-} from "../../components/menu-items/InitiateTaskStartItem";
+import InitiateTaskStartItem from "../../components/menu-items/InitiateTaskStartItem";
 import { Badge } from "primereact/badge";
 import DigitizationListBox from "../../components/DigitizationListBox";
 import { useDigitizationLists } from "../../contexts/DigitizationListsContext";
@@ -22,8 +20,13 @@ import { useIntentions } from "../../contexts/categories/IntentionsContext";
 const DocumentsActionsMenuItems = () => {
     const { t } = useTranslation();
     const { hasPermission } = useAccess();
-    const { exportDocuments, updateCategory, digitizationListIdFacets } =
-        useDocuments();
+    const {
+        numSelected,
+        selectedQuery,
+        exportDocuments,
+        updateCategory,
+        digitizationListIdFacets,
+    } = useDocuments();
     const { categories } = useCategories();
     const { activeIntention } = useIntentions();
     const {
@@ -31,8 +34,6 @@ const DocumentsActionsMenuItems = () => {
         onInitiateListItemsAddition,
         onInitiateListItemsRemoval,
     } = useDigitizationLists();
-    const numSelected = 0;
-    const selectedQuery = { index_name: "documents" };
 
     const handleClickUpdateCategory = (
         category_id: number,
@@ -117,7 +118,9 @@ const DocumentsActionsMenuItems = () => {
             TaskType.SyncDocumentsWithCatalogs,
             TaskType.SyncDocumentsWithDigitizationRegistry,
         ].forEach((taskType) => {
-            items.push(InitiateTaskStartItemWithEsSelection(taskType));
+            items.push(
+                InitiateTaskStartItem(taskType, numSelected, selectedQuery)
+            );
         });
     }
 

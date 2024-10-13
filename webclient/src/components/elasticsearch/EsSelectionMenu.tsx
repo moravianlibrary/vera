@@ -1,27 +1,25 @@
 import { Button } from "primereact/button";
-import React, { useRef } from "react";
+import React, { Context, useContext, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useEsDataTable } from "../../contexts/EsDataTableContext";
 import { Badge } from "primereact/badge";
 import { TieredMenu } from "primereact/tieredmenu";
 import { MenuItem } from "primereact/menuitem";
+import { EsItemsSelectionProps } from "../../contexts/base/EsSelectionInjector";
 
-interface EsSelectionMenuProps {
+interface EsSelectionMenuProps<T extends { id: string }> {
+    selectionProps: EsItemsSelectionProps<T>;
     actionsMenuItems: MenuItem[];
     numSelectedLabel: string;
 }
 
-const EsSelectionMenu: React.FC<EsSelectionMenuProps> = ({
+const EsSelectionMenu = <T extends { id: string }>({
+    selectionProps,
     actionsMenuItems,
     numSelectedLabel,
-}) => {
+}: EsSelectionMenuProps<T>) => {
     const { t } = useTranslation();
-    const {
-        numSelected,
-        areAllItemsSelected,
-        setAreAllItemsSelected,
-        cancelSelection,
-    } = useEsDataTable();
+    const { numSelected, areAllSelected, setAreAllSelected, cancelSelection } =
+        selectionProps;
 
     const actionSelectorMenuRef = useRef<TieredMenu | null>(null);
 
@@ -58,9 +56,9 @@ const EsSelectionMenu: React.FC<EsSelectionMenuProps> = ({
                 <Button
                     icon="pi pi-expand"
                     className="p-button-rounded p-button-text"
-                    severity={!areAllItemsSelected ? "info" : "secondary"}
-                    disabled={areAllItemsSelected}
-                    onClick={() => setAreAllItemsSelected(true)}
+                    severity={!areAllSelected ? "info" : "secondary"}
+                    disabled={areAllSelected}
+                    onClick={() => setAreAllSelected(true)}
                     tooltip={t(
                         "Select all documents that match the specified search criteria"
                     )}
