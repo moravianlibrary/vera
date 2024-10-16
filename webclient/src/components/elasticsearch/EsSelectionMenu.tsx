@@ -9,13 +9,13 @@ import { EsItemsSelectionProps } from "../../contexts/base/EsSelectionInjector";
 interface EsSelectionMenuProps<T extends { id: string }> {
     selectionProps: EsItemsSelectionProps<T>;
     actionsMenuItems: MenuItem[];
-    numSelectedLabel: string;
+    numSelectedLabelNs: string;
 }
 
 const EsSelectionMenu = <T extends { id: string }>({
     selectionProps,
     actionsMenuItems,
-    numSelectedLabel,
+    numSelectedLabelNs,
 }: EsSelectionMenuProps<T>) => {
     const { t } = useTranslation("elasticsearch");
     const { numSelected, areAllSelected, setAreAllSelected, cancelSelection } =
@@ -74,7 +74,10 @@ const EsSelectionMenu = <T extends { id: string }>({
             </div>
             <Badge
                 className="surface-50 text-gray-600"
-                value={t(numSelectedLabel, { count: numSelected })}
+                value={t("num-selected", {
+                    ns: numSelectedLabelNs,
+                    count: numSelected,
+                })}
             />
         </div>
     );

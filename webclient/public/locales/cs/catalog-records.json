@@ -1,0 +1,82 @@
+{
+    "num-found": "Počet nalezených záznamů: {{count}}",
+    "num-selected": "Počet vybránych záznamů: {{count}}",
+    "table": {
+        "columns": {
+            "mzk-sysno": "MZK systémové číslo",
+            "skc-sysno": "SKC systémové číslo",
+            "cnb-sysno": "ČNB systémové číslo",
+            "skc-validity": "Validita vůči SKC katalogu",
+            "cnb-validity": "Validita ČNB",
+            "cnb": "ČNB",
+            "language": "Jazyk"
+        },
+        "values": {
+            "valid-main-record": "Záznam je validný",
+            "not-found-in-skc": "Záznam nenalezen v SKC katalogu",
+            "valid-cnb": "ČNB je validné",
+            "should-not-have-cnb": "Nemá mít ČNB",
+            "not-found-in-cnb": "Záznam nenalezen v ČNB katalogu"
+        }
+    },
+    "properties": {
+        "id": "MZK systémové číslo",
+        "cnb": "ČNB",
+        "language": "Jazyk",
+        "signature": "Signatura",
+        "isxn": "ISXN",
+        "barcodes": "Čárové kódy",
+        "skc_sysno": "SKC systémové číslo",
+        "has_valid_main_record": "Záznam je validný",
+        "cnb_sysno": "ČNB systémové číslo",
+        "has_valid_cnb": "ČNB je validné",
+        "added_at": "Vytvořeno",
+        "updated_at": "Aktualizovano",
+        "material_type": "Typ materialu",
+        "title": "Název",
+        "size": "Velikost",
+        "location_uri": "Externí odkaz",
+        "publisher": "Vydávatel",
+        "publishing_place": "Misto vydáni",
+        "publishing_year": "Rok vydáni",
+        "languages": "Jazyky",
+        "frequencies": "Frekvence"
+    },
+    "action-approve-difference": "Schválit rozdíl",
+    "difference-approve-success": "Rozdíl byl schválen",
+    "difference-approved": "Schválil",
+    "difference": {
+        "Equal": "Shoda",
+        "DifferentValue": "Rozdílna hodnota",
+        "MissingField": "Chybí pole",
+        "ExtraField": "Extra pole"
+    },
+    "facets": {
+        "has-valid-main-record": "Záznam je validný",
+        "skc-sysno-resolved": "SKC systémové číslo nalezeno",
+        "has-valid-cnb": "ČNB je validné",
+        "cnb-sysno-resolved": "ČNB systémové číslo nalezeno",
+        "language": "Jazyk",
+        "material-type": "Typ materialu",
+        "skc-difference-type": "Typ rozdílu - MZK vs SKC",
+        "skc-difference-tag": "Rozdílná pole - MZK vs SKC",
+        "cnb-difference-type": "Typ rozdílu - MZK vs ČNB",
+        "cnb-difference-tag": "Rozdílná pole - MZK vs ČNB"
+    },
+    "sort-by": {
+        "last-edited": "Poslední editace",
+        "non-valid-first": "Nevalidný první",
+        "valid-first": "Validný první",
+        "newest": "Nejnovejší",
+        "oldest": "Nejstarší"
+    },
+    "details": {
+        "data": "Detailní informace",
+        "skc-difference": "Rozdíly mezi MZK a SKC katalogem",
+        "cnb-difference": "Rozdíly mezi MZK a ČNB katalogem"
+    },
+    "query-params": {
+        "query": "Vyhledávaní: {{value}}",
+        "all": "Všechny katalógové záznamy"
+    }
+}

@@ -19,72 +19,61 @@ interface CatalogRecordViewProps {
 
 interface CatalogRecordField {
     attribute: keyof CatalogRecord;
-    label: string;
     transform?: (value: any) => any;
     translate?: boolean;
 }
 
 const catalogRecordFields: CatalogRecordField[] = [
-    { attribute: "id", label: "catalog-records.mzk-sysno" },
-    { attribute: "cnb", label: "catalog-records.cnb" },
-    { attribute: "language", label: "catalog-records.language" },
-    { attribute: "signature", label: "catalog-records.signature" },
-    { attribute: "isxn", label: "catalog-records.isxn" },
+    { attribute: "id" },
+    { attribute: "cnb" },
+    { attribute: "language" },
+    { attribute: "signature" },
+    { attribute: "isxn" },
     {
         attribute: "barcodes",
-        label: "catalog-records.barcodes",
         transform: (bs) => <StringListDisplay stringList={bs} maxItems={10} />,
     },
-    { attribute: "skc_sysno", label: "catalog-records.skc-sysno" },
+    { attribute: "skc_sysno" },
     {
         attribute: "has_valid_main_record",
-        label: "catalog-records.has-valid-main-record",
         transform: (b) => (b ? "common.yes" : "common.no"),
         translate: true,
     },
-    { attribute: "cnb_sysno", label: "catalog-records.cnb-sysno" },
+    { attribute: "cnb_sysno" },
     {
         attribute: "has_valid_cnb",
-        label: "catalog-records.has-valid-cnb",
         transform: (b) => (b ? "common.yes" : "common.no"),
         translate: true,
     },
     {
         attribute: "added_at",
-        label: "catalog-records.added-at",
         transform: formatDatetime,
     },
     {
         attribute: "updated_at",
-        label: "catalog-records.updated-at",
         transform: formatDatetime,
     },
     {
         attribute: "material_type",
-        label: "catalog-records.material-type",
         transform: (mt) => <MaterialTypeTag materialType={mt} />,
     },
-    { attribute: "title", label: "catalog-records.title" },
-    { attribute: "size", label: "catalog-records.size" },
+    { attribute: "title" },
+    { attribute: "size" },
     {
         attribute: "location_uri",
-        label: "catalog-records.location-uri",
         transform: (lu) => <ExternalLinkButton label={lu} url={lu} />,
     },
-    { attribute: "publisher", label: "catalog-records.publisher" },
+    { attribute: "publisher" },
     {
         attribute: "publishing_place",
-        label: "catalog-records.publishing-place",
     },
-    { attribute: "publishing_year", label: "catalog-records.publishing-year" },
+    { attribute: "publishing_year" },
     {
         attribute: "languages",
-        label: "catalog-records.languages",
         transform: (l) => l.join(", "),
     },
     {
         attribute: "frequencies",
-        label: "catalog-records.frequencies",
         transform: (fs: Frequency[]) =>
             fs
                 .map((f) =>
@@ -99,11 +88,13 @@ const catalogRecordFields: CatalogRecordField[] = [
 const CatalogRecordData: React.FC<CatalogRecordViewProps> = ({
     catalogRecord,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("catalog-records");
 
     return (
         <LabeledComponentsBox
-            labels={catalogRecordFields.map((field) => t(field.label))}
+            labels={catalogRecordFields.map((field) =>
+                t(`properties.${field.attribute}`)
+            )}
             components={catalogRecordFields.map((field) => {
                 const value =
                     field.transform && catalogRecord[field.attribute]
@@ -116,7 +107,7 @@ const CatalogRecordData: React.FC<CatalogRecordViewProps> = ({
 };
 
 const CatalogRecordDifferences = (differences: MarcFieldDifference[]) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("types");
 
     const sortDifferences = (
         a: MarcFieldDifference,
@@ -130,7 +121,7 @@ const CatalogRecordDifferences = (differences: MarcFieldDifference[]) => {
     return (
         <LabeledComponentsBox
             labels={sorted.map((difference) =>
-                t(`catalog-records.difference.${difference.difference_type}`)
+                t(`record-difference.${difference.difference_type}`)
             )}
             components={sorted.map((difference) => (
                 <CatalogRecordsDifference
@@ -145,13 +136,13 @@ const CatalogRecordDifferences = (differences: MarcFieldDifference[]) => {
 const CatalogRecordDetails: React.FC<CatalogRecordViewProps> = ({
     catalogRecord,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("catalog-records");
 
     return (
         <TabView>
             <TabPanel
                 className="catalog-records-details-tabpanel"
-                header={t("catalog-records.details.data")}
+                header={t("table.details")}
             >
                 <CatalogRecordData catalogRecord={catalogRecord} />
             </TabPanel>
@@ -159,7 +150,7 @@ const CatalogRecordDetails: React.FC<CatalogRecordViewProps> = ({
                 catalogRecord.skc_difference.length > 0 && (
                     <TabPanel
                         className="catalog-records-details-tabpanel"
-                        header={t("catalog-records.details.skc-difference")}
+                        header={t("table.skc-difference")}
                     >
                         {CatalogRecordDifferences(catalogRecord.skc_difference)}
                     </TabPanel>
@@ -168,7 +159,7 @@ const CatalogRecordDetails: React.FC<CatalogRecordViewProps> = ({
                 catalogRecord.cnb_difference.length > 0 && (
                     <TabPanel
                         className="catalog-records-details-tabpanel"
-                        header={t("catalog-records.details.cnb-difference")}
+                        header={t("table.cnb-difference")}
                     >
                         {CatalogRecordDifferences(catalogRecord.cnb_difference)}
                     </TabPanel>
