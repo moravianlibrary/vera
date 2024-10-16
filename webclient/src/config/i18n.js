@@ -2,7 +2,7 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
 const resources = {
-    cz: {
+    cs: {
         translation: {
             home: "Domov",
             board: "Dokumenty",
@@ -370,8 +370,7 @@ const resources = {
             "Confirm action": "Potvrzení akce",
             Yes: "Ano",
             No: "Ne",
-            'Are you sure you want to change category to "{{category}}" for {{count}} selected documents?':
-                'Opravdu chcete změnit kategorii na "{{category}}" pro {{count}} vybraných dokumentů?',
+
             "Are you sure you want to predict periodical volume pages for {{count}} selected documents?":
                 "Opravdu chcete predikovat počet stránek ročníků periodík pro {{count}} vybraných dokumentů?",
             "Are you sure you want to sync {{count}} selected documents with digitization registry?":
@@ -389,7 +388,6 @@ const resources = {
             "Digitization list created successfully":
                 "Seznam digitalizace úspěšně vytvořen",
             "Task started successfully": "Ukol úspěšně spusten",
-            "Category changed successfully": "Kategorie byla úspěšně změnena",
 
             Search: "Vyhledávaní",
 
@@ -648,6 +646,11 @@ const resources = {
                 facets: "Filtrovat podle",
                 "show-more": "Zobrazit víc",
                 "show-less": "Zobrazit mín",
+                select: {
+                    "task-type": {
+                        placeholder: "Vybrat typ úkolu",
+                    },
+                },
             },
 
             es: {
@@ -662,6 +665,20 @@ const resources = {
                     Sysno: "Systémove číslo",
                     Barcode: "Čárový kód",
                     Signature: "Signatura",
+                },
+                "task-type": {
+                    ReindexCatalogRecords: "Reindexovat katalogové záznamy",
+                    ReevaluateCatalogRecordsDifferences:
+                        "Přepočítat rozdíly mezi katalogovými záznamy",
+                    SyncCatalogRecordsWithCatalogs:
+                        "Synchronizovat katalogové záznamy s katalogy (MZK, SKC, ČNB)",
+                    PredictPeriodicalsPageCount:
+                        "Predikovat počet stran periodik",
+                    ReindexDocuments: "Reindexovat dokumenty",
+                    SyncDocumentsWithCatalogs:
+                        "Synchronizovat dokumenty s katalogy",
+                    SyncDocumentsWithDigitizationRegistry:
+                        "Synchronizovat dokumenty s registrom digitalizace",
                 },
             },
 
@@ -733,6 +750,10 @@ const resources = {
                     "skc-difference": "Rozdíly mezi MZK a SKC katalogem",
                     "cnb-difference": "Rozdíly mezi MZK a ČNB katalogem",
                 },
+                "query-params": {
+                    query: "Vyhledávaní: {{value}}",
+                    all: "Všechny katalógové záznamy",
+                },
             },
 
             documents: {
@@ -748,6 +769,7 @@ const resources = {
                     "added-by": "Přidal",
                     category: "Kategorie",
                     "digitization-list": "Seznam digitalizace",
+                    "page-count": "Počet stran",
                 },
                 "extraction-priority": {
                     5: "Najvyšší",
@@ -770,6 +792,7 @@ const resources = {
                 },
                 "query-params": {
                     query: "Vyhledávaní: {{value}}",
+                    all: "Všechny dokumenty",
                     is_extractable: {
                         true: "Může být extrahovaný",
                         false: "Nemůže být extrahovaný",
@@ -804,12 +827,31 @@ const resources = {
                     category_id: "Id kategorie: {{value}}",
                     digitization_list_id: "Id seznamu digitalizace: {{value}}",
                 },
+                "sort-by": {
+                    "last-edited": "Poslední editace",
+                    newest: "Nejnovejší",
+                    oldest: "Nejstarší",
+                    "title-asc": "Název (A - Z)",
+                    "title-desc": "Název (Z - A)",
+                },
                 actions: {
                     export: "Exportovat do souboru",
                     "export-to-xlsx": "Exportovat do XLSX",
-                    "change-category": "Změnit kategorii",
-                    "change-priority": "Změnit prioritu",
-                    delete: "Smazat dokumenty",
+                    "update-category": {
+                        label: "Změnit kategorii",
+                        confirm_one:
+                            'Opravdu chcete změnit kategorii na "{{category}}" pro 1 vybraný dokument?',
+                        confirm_few:
+                            'Opravdu chcete změnit kategorii na "{{category}}" pro {{count}} vybrané dokumenty?',
+                        confirm_other:
+                            'Opravdu chcete změnit kategorii na "{{category}}" pro {{count}} vybraných dokumentů?',
+                        success: "Kategorie byla úspěšně změnena",
+                    },
+                    "update-extraction-priority": {
+                        label: "Změnit prioritu",
+                        confirm: "Potvrzení změny",
+                    },
+                    delete: { label: "Smazat dokumenty", confirm: "" },
                     "create-digitization-list": "Vytvořit seznam digitalizace",
                     "add-to-digitization-list":
                         "Přidat do seznamu digitalizace",
@@ -859,10 +901,8 @@ const resources = {
                                 "Dokument nenalezen v katalogu",
                             AlephRecordNotFound_few:
                                 "{{count}} dokumeny nenalezeny v katalogu",
-                            AlephRecordNotFound_many:
-                                "{{count}} dokumentu nenalezenych v katalogu",
                             AlephRecordNotFound_other:
-                                "{{count}} dokumentu nenalezenych v katalogu",
+                                "{{count}} dokumentů nenalezenych v katalogu",
                             // AlephRecordNotFound: "Dokument nenalezen v katalogu",
                             // AlephRecordNotFound: {
                             //     one: "Dokument nenalezen v katalogu",
@@ -892,6 +932,10 @@ const resources = {
                                 "Dokument obsahuje více nespracovaných vydání",
                             // Success
                             Success: "Dokument byl úspěšně přidán",
+                            Success_few:
+                                "{{count}} dokumenty byly úspěšně přidány",
+                            Success_other:
+                                "{{count}} dokumentů byl úspěšně přidán",
                             "without-page-count":
                                 "{{count}} dokumentů nema nastaven počet stran",
                         },
@@ -946,6 +990,35 @@ const resources = {
                     },
                     started: "Úkol spusten",
                 },
+                periodic: {
+                    create: "Naplánovat úkol",
+                    form: {
+                        "task-type": "Úkol",
+                        query: "Pro dotaz",
+                        cron: {
+                            minute: "Minuta",
+                            hour: "Hodina",
+                            day_of_week: "Den v tydnu",
+                            day_of_month: "Den v měsíci",
+                            "minute-placeholder": "0",
+                            "hour-placeholder": "0-23",
+                            "day_of_month-placeholder": "1-31",
+                            "hour-wildcard": "Každou hodinu",
+                            "day_of_month-wildcard": "Každý den v měsíci",
+                        },
+                        submit: "Naplánovat úkol",
+                    },
+                    day_of_week: {
+                        "*": "Každý den v tydnu",
+                        0: "Neděle",
+                        1: "Pondělí",
+                        2: "Úterý",
+                        3: "Středa",
+                        4: "Čtvrtek",
+                        5: "Pátek",
+                        6: "Sobota",
+                    },
+                },
             },
         },
     },
@@ -953,21 +1026,18 @@ const resources = {
 
 i18n.use(initReactI18next).init({
     resources,
-    lng: "cz",
-    fallbackLng: "cz",
+    lng: "cs",
+    fallbackLng: "cs",
+    ns: ["common", "documents", "dashboard"],
+    defaultNS: "common",
+
+    backend: {
+        loadPath: "/locales/{{lng}}/{{ns}}.json",
+    },
     interpolation: {
         escapeValue: false,
     },
     simplifyPluralSuffix: false,
-    pluralRules: {
-        cs: {
-            plurals: function (n) {
-                if (n === 1) return 0; // singular (one)
-                if (n >= 2 && n <= 4) return 1; // few (two, three, four)
-                return 2; // many
-            },
-        },
-    },
 });
 
 export default i18n;

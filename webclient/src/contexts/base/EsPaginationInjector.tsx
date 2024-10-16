@@ -5,13 +5,17 @@ import {
     usePagination,
 } from "react-instantsearch";
 import { EsQuery } from "../../adapters/ApiTasks";
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 
 interface EsItemsPaginationProps<T> extends ItemsPaginationProps<T> {
     queryParams: EsQuery;
+    queryRoute: EsQuery;
 }
 
-const useEsPagination = (stateToQueryParams: (uiState: any) => EsQuery) => {
+const useEsPagination = (
+    stateToQueryParams: (uiState: any) => EsQuery,
+    stateToQueryRoute: (uiState: any) => EsQuery
+) => {
     const { uiState, results, refresh } = useInstantSearch();
     const { hits, hitsPerPage } = results;
     const { nbHits, currentRefinement, refine: setPage } = usePagination();
@@ -25,12 +29,30 @@ const useEsPagination = (stateToQueryParams: (uiState: any) => EsQuery) => {
             { value: 100, label: "100" },
         ],
     });
-    const queryParams = useMemo(() => stateToQueryParams(uiState), [uiState]);
+    const [queryParams, setQueryParams] = useState<EsQuery>(
+        stateToQueryParams(uiState)
+    );
+    const [queryRoute, setQueryRoute] = useState<EsQuery>(
+        stateToQueryRoute(uiState)
+    );
+
+    useEffect(() => {
+        const newQueryParams = stateToQueryParams(uiState);
+        if (JSON.stringify(newQueryParams) !== JSON.stringify(queryParams)) {
+            setQueryParams(newQueryParams);
+        }
+
+        const newQueryRoute = stateToQueryRoute(uiState);
+        if (JSON.stringify(newQueryRoute) !== JSON.stringify(queryRoute)) {
+            setQueryRoute(newQueryRoute);
+        }
+    }, [uiState]);
 
     return {
         items: hits,
         numFound: nbHits,
         queryParams: queryParams,
+        queryRoute: queryRoute,
         refresh: refresh,
         page: currentRefinement + 1,
         setPage: (page: number) => setPage(page - 1),

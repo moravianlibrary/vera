@@ -20,19 +20,17 @@ export function isSingleSuccessfulResult(
     results: AddDocumentResponses
 ): boolean {
     return (
-        results.Success.length === 1 &&
+        Object.values(results.Success).length === 1 &&
         !Object.values(AddDocumentResponseStatus)
             .filter((s) => s !== AddDocumentResponseStatus.Success)
-            .some((s) => results[s].length > 0)
+            .some((s) => Object.values(results[s]).length > 0)
     );
 }
 
 export function areOnlySuccessfulResults(
-    results: AddDocumentResponses
+    results: AddDocumentResponse[]
 ): boolean {
-    return Object.values(results).every((rs) =>
-        rs.every((r) => r.status === AddDocumentResponseStatus.Success)
-    );
+    return results.every((r) => r.status === AddDocumentResponseStatus.Success);
 }
 
 export function getResponseMessageSeverity(status: AddDocumentResponseStatus) {

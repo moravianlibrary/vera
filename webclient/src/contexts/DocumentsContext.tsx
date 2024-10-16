@@ -1,23 +1,31 @@
-import React, { createContext, useContext, ReactNode, useState } from "react";
+import React, {
+    createContext,
+    useContext,
+    ReactNode,
+    useState,
+    useEffect,
+} from "react";
 import ApiDocuments, { IndexDocument } from "../adapters/ApiDocuments";
 import { useToast } from "./ToastContext";
 import { useTranslation } from "react-i18next";
 import { EsItemsPaginationProps } from "./base/EsPaginationInjector";
-import { stateToRoute } from "../data/factories/EsQueriesFactory";
+import { stateToQuery, stateToRoute } from "../data/factories/EsQueriesFactory";
 import { booleanAttributes } from "../config/documents_index";
 import { EsItemsSelectionProps } from "./base/EsSelectionInjector";
 import useEsSelection from "./base/EsSelectionInjector";
 import useEsPagination from "./base/EsPaginationInjector";
+import { DataTableExpandedRowsProps } from "./base/DataTableExpandedRowsInjector";
+import useDataTableExpandedRows from "./base/DataTableExpandedRowsInjector";
+import { useNotification } from "./NotificationContext";
 
 interface DocumentsContextProps
     extends EsItemsPaginationProps<IndexDocument>,
-        EsItemsSelectionProps<IndexDocument> {
-    detailsDocuments: IndexDocument[];
-    showDocumentDetails: (document: IndexDocument) => void;
-    closeDocumentDetails: (documentId: string) => void;
-
+        EsItemsSelectionProps<IndexDocument>,
+        DataTableExpandedRowsProps {
     exportDocuments: () => void;
-    updateCategory: (category_id: number) => void;
+    updateCategory: (categoryId: number, categoryName: string) => void;
+    updateExtractionPriority: (extractionPriority: number) => void;
+    updatePageCount: (pagesCount: number) => void;
     deleteDocuments: () => void;
 
     digitizationListIdFacets: string[];
@@ -33,34 +41,21 @@ interface DocumentsProviderProps {
 
 const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
     const api = new ApiDocuments();
-    const showToast = useToast();
-    const { t } = useTranslation();
+    const { showSuccess, showConfirmDialog, showConfirmDangerDialog } =
+        useNotification();
+    const { t } = useTranslation("documents");
     const { items, numFound, queryParams, refresh, ...restOfPaginationProps } =
-        useEsPagination((uiState) =>
-            stateToRoute("documents", booleanAttributes, uiState)
+        useEsPagination(
+            (uiState) => stateToQuery("documents", booleanAttributes, uiState),
+            (uiState) => stateToRoute("documents", booleanAttributes, uiState)
         );
-    const { selectedQuery, ...restOfSelectionProps } = useEsSelection(
-        items,
-        numFound,
-        queryParams
-    );
+    const { selectedQuery, numSelected, ...restOfSelectionProps } =
+        useEsSelection(items, numFound, queryParams);
+    const { reset, ...restOfExpandedRowsProps } = useDataTableExpandedRows();
 
-    const [detailsDocuments, setDetailsDocuments] = useState<IndexDocument[]>(
-        []
-    );
     const [digitizationListIdFacets, setDigitizationListIdFacets] = useState<
         string[]
     >([]);
-
-    const showDocumentDetails = (document: IndexDocument) => {
-        setDetailsDocuments([...detailsDocuments, document]);
-    };
-
-    const closeDocumentDetails = (documentId: string) => {
-        setDetailsDocuments(
-            detailsDocuments.filter((document) => document.id !== documentId)
-        );
-    };
 
     const exportDocuments = async () => {
         api.exportDocuments(selectedQuery)
@@ -82,26 +77,98 @@ const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
             });
     };
 
-    const updateCategory = (category_id: number) => {
-        api.updateCategory(selectedQuery, category_id)
-            .then((response) => {
-                refresh();
-                showToast("success", t("Category changed successfully"), "");
-            })
-            .catch((error) => {
-                console.error(`Could not update documents category: ${error}`);
-            });
+    const updateCategory = (categoryId: number, categoryName: string) => {
+        showConfirmDialog(
+            t("action.update-category.confirm", {
+                category: categoryName,
+                count: numSelected,
+            }),
+            () =>
+                api
+                    .updateProperty(selectedQuery, { category_id: categoryId })
+                    .then((response) => {
+                        refresh();
+                        showSuccess(t("actions.update-category.success"));
+                    })
+                    .catch((error) => {
+                        console.error(
+                            `Could not update documents category: ${error}`
+                        );
+                    })
+        );
+    };
+
+    const updateExtractionPriority = (extractionPriority: number) => {
+        showConfirmDialog(
+            t(
+                `actions.update-extraction-priority.confirm.${extractionPriority}`,
+                {
+                    count: numSelected,
+                }
+            ),
+            () =>
+                api
+                    .updateProperty(selectedQuery, {
+                        extraction_priority: extractionPriority,
+                    })
+                    .then((response) => {
+                        refresh();
+                        showSuccess(
+                            t("actions.update-extraction-priority.success")
+                        );
+                    })
+                    .catch((error) => {
+                        console.error(
+                            `Could not update documents extraction priority: ${error}`
+                        );
+                    })
+        );
+    };
+
+    const updatePageCount = (pageCount: number) => {
+        showConfirmDialog(
+            t("actions.update-page-count.confirm", {
+                page_count: pageCount,
+                count: numSelected,
+            }),
+            () =>
+                api
+                    .updateProperty(selectedQuery, {
+                        pages_count_manual: pageCount,
+                    })
+                    .then((response) => {
+                        refresh();
+                        showSuccess(t("actions.update-page-count.success"));
+                    })
+                    .catch((error) => {
+                        console.error(
+                            `Could not update documents category: ${error}`
+                        );
+                    })
+        );
     };
 
     const deleteDocuments = () => {
-        api.deleteDocuments(selectedQuery)
-            .then((response) => {
-                refresh();
-            })
-            .catch((error) => {
-                console.error(`Could not update documents category: ${error}`);
-            });
+        showConfirmDangerDialog(
+            t("actions.delete.confirm", {
+                count: numSelected,
+            }),
+            () =>
+                api
+                    .deleteDocuments(selectedQuery)
+                    .then((response) => {
+                        refresh();
+                        showSuccess(t("actions.delete.success"));
+                    })
+                    .catch((error) => {
+                        console.error(`Could not delete documents: ${error}`);
+                    })
+        );
     };
+
+    useEffect(() => {
+        reset();
+    }, [reset, queryParams]);
 
     const contextValue: DocumentsContextProps = {
         items,
@@ -111,14 +178,16 @@ const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
         ...restOfPaginationProps,
 
         selectedQuery,
+        numSelected,
         ...restOfSelectionProps,
 
-        detailsDocuments,
-        showDocumentDetails,
-        closeDocumentDetails,
+        ...restOfExpandedRowsProps,
+        reset,
 
         exportDocuments,
         updateCategory,
+        updateExtractionPriority,
+        updatePageCount,
         deleteDocuments,
 
         digitizationListIdFacets,

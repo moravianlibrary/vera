@@ -27,6 +27,10 @@ class DigitizationRegistryRecord:
         return self.data.get("cisloper")
 
     @property
+    def barcode(self) -> str:
+        return self.data.get("carkod")
+
+    @property
     def digitization_state(self) -> DigitizationState:
         state = self.data.get("stav")
         if state == "dokončeno":
@@ -44,6 +48,7 @@ class DigitizationRegistryRecord:
             f"year: {self.year}",
             f"volume: {self.volume}",
             f"bundle: {self.bundle}",
+            f"barcode: {self.barcode}",
             f"digitization_state: {self.digitization_state}",
         ]
         return "\n".join(properties)

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import TaskItem
+from models import TaskItem, Document
 from services.external.digitization_registry import DigitizationState
 from tasks.run_items_processing import run_items_processing_task
 from services.external.digitization_registry import (
@@ -11,20 +11,32 @@ from services.elasticsearch import get_es_session
 
 def SyncDocumentsWithDigitizationRegistry(session: Session, task_id: int):
     es_session = next(get_es_session())
+    client = DigitizationRegistryClient()
 
     def update_document_from_digitization_registry(
         task_item: TaskItem,
     ) -> None:
-        document = task_item.document
+        document: Document = task_item.document
 
-        record = DigitizationRegistryClient().get_record(
-            document.barcode,
+        records = client.get_issue_records(
             document.cnb,
             document.isxn,
-            document.volume,
-            document.volume_year,
-            document.bundle,
         )
+
+        record = (
+            client.select_volume_record(
+                records,
+                document.barcode,
+                document.volume_year,
+                document.volume,
+                document.bundle,
+            )
+            if records
+            else None
+        )
+
+        if not record:
+            record = client.get_record_by_barcode(document.barcode)
 
         if not record:
             document.digitization_registry_id = None

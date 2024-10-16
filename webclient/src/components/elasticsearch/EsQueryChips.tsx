@@ -35,6 +35,25 @@ const EsQueryChips: React.FC<EsQueryChipsProps> = ({ queryParams }) => {
         );
     };
 
+    if (!queryParams) {
+        return null;
+    }
+
+    if (Object.keys(queryParams).length === 1) {
+        return (
+            <div>
+                <Chip
+                    label={t(
+                        `${queryParams.index_name.replace(
+                            "_",
+                            "-"
+                        )}.query-params.all`
+                    )}
+                />
+            </div>
+        );
+    }
+
     return (
         <div>
             {Object.entries(queryParams)

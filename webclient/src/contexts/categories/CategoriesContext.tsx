@@ -75,12 +75,12 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
         }
 
         if (!activeIntention && !extractionId && !digitizationListId) {
-            console.log(`Fetching categories from server.`);
+            console.debug(`Fetching categories from server.`);
             await fetchCategories(() =>
                 ApiCategories.getCategories(departmentId)
             );
         } else if (activeIntention && !extractionId && !digitizationListId) {
-            console.log(`Fetching intention categories from server.`);
+            console.debug(`Fetching intention categories from server.`);
             await fetchCategories(() =>
                 ApiCategories.getCategoriesByIntention(
                     activeIntention.id,
@@ -88,7 +88,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
                 )
             );
         } else if (activeIntention && extractionId && !digitizationListId) {
-            console.log(`Fetching extraction categories from server.`);
+            console.debug(`Fetching extraction categories from server.`);
             await fetchCategories(() =>
                 ApiCategories.getCategoriesForExtraction(
                     activeIntention.id,
@@ -97,7 +97,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({
                 )
             );
         } else if (activeIntention && !extractionId && digitizationListId) {
-            console.log(`Fetching digitization list categories from server.`);
+            console.debug(`Fetching digitization list categories from server.`);
             await fetchCategories(() =>
                 ApiCategories.getCategoriesForDigitization(
                     activeIntention.id,

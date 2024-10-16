@@ -10,6 +10,7 @@ class TestIndexDocument(TestSchemaBase):
             {
                 "mappings": {
                     "_meta": {"index.version": "v2024.09-1"},
+                    "dynamic": "strict",
                     "properties": {
                         "id": {"type": "integer"},
                         # Main identifiers
@@ -27,6 +28,7 @@ class TestIndexDocument(TestSchemaBase):
                         "isxn": {"type": "keyword"},
                         # VERA properties
                         "added_at": {"type": "date"},
+                        "indexed_at": {"type": "date"},
                         "added_by": {"type": "keyword"},
                         "category_id": {"type": "integer"},
                         "category_path": {

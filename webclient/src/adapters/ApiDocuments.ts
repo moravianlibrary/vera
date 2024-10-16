@@ -178,6 +178,12 @@ interface AddDocumentResponse {
     document?: CatalogDocumentResponse | null;
 }
 
+interface UpdateDocumentsOptions {
+    category_id?: number;
+    extraction_priority?: number;
+    pages_count_manual?: number;
+}
+
 class ApiDocuments extends ApiBase<Document> {
     constructor() {
         super("/documents", {
@@ -217,8 +223,16 @@ class ApiDocuments extends ApiBase<Document> {
         });
     }
 
-    updateCategory(queryParams: Object, category_id: number) {
-        const url = `${this.endpoint}/query/change_category?category_id=${category_id}`;
+    updateProperty(queryParams: Object, options: UpdateDocumentsOptions) {
+        const endpoint = `${this.endpoint}/query/update_property`;
+        const queryString = Object.entries(options)
+            .filter(([, value]) => value !== undefined)
+            .map(
+                ([key, value]) =>
+                    `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+            )
+            .join("&");
+        const url = queryString ? `${endpoint}?${queryString}` : endpoint;
         return ApiBase.axiosInstance.put<Object>(url, queryParams, {
             headers: authHeader(),
         });

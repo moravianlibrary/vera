@@ -128,7 +128,7 @@ export const DepartmentsProvider: React.FC<DepartmentsProviderProps> = ({
     };
 
     useEffect(() => {
-        console.log(`Fetching departments from server.`);
+        console.debug(`Fetching departments from server.`);
         loadDepartments();
         loadUsers();
     }, []);

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import InsertDocuments from "../insert-documents/InsertDocuments";
 import { Dialog } from "primereact/dialog";
+import { InsertDocumentsProvider } from "../../contexts/insert-documents/InsertDocumentsContext";
 
 interface DocumentsInsertMenuProps {}
 
@@ -22,7 +23,11 @@ const DocumentsInsertMenu: React.FC<DocumentsInsertMenuProps> = ({}) => {
                 visible={isInsertDialogVisible}
                 onHide={() => setIsInsertDialogVisible(false)}
             >
-                <InsertDocuments />
+                <InsertDocumentsProvider>
+                    <InsertDocuments
+                        onClose={() => setIsInsertDialogVisible(false)}
+                    />
+                </InsertDocumentsProvider>
             </Dialog>
         </div>
     );

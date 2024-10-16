@@ -1,5 +1,6 @@
 import requests
 from typing import Generator, List, Optional
+from cachetools import TTLCache
 
 from .record import DigitizationRegistryRecord
 
@@ -10,8 +11,13 @@ REGISTER_SEARCH_ENDPOINT = (
     "select?q={QUERY}&start={START}&rows={ROWS}"
 )
 
+cache = TTLCache(maxsize=500, ttl=300)
+
 
 class DigitizationRegistryClient:
+    def _cache_key(self, cnb: Optional[str], isxn: Optional[str]) -> str:
+        return f"cnb={cnb}-isxn={isxn}"
+
     def get_query_records(
         self, query: str
     ) -> Generator[DigitizationRegistryRecord, None, None]:
@@ -56,46 +62,43 @@ class DigitizationRegistryClient:
             return None
         return documents[0]
 
-    def get_record_by_volume(
-        self,
-        query: str,
-        year: Optional[str],
-        volume: Optional[str],
-        bundle: Optional[str],
-    ) -> Optional[DigitizationRegistryRecord]:
-        for document in self.get_query_records(query):
-            if (
-                (year is None or year == document.year)
-                and (volume is None or volume == document.volume)
-                and (bundle is None or bundle == document.bundle)
-            ):
-                return document
-        return None
+    def get_issue_records(
+        self, cnb: Optional[str] = None, isxn: Optional[str] = None
+    ) -> List[DigitizationRegistryRecord]:
+        cache_key = self._cache_key(cnb, isxn)
 
-    def get_record(
+        if cache_key in cache:
+            return cache[cache_key]
+
+        if cnb:
+            records = list(self.get_query_records((f'ccnb:"{cnb}"')))
+            if records:
+                cache[cache_key] = records
+                return records
+
+        records = list(self.get_query_records((f'isxn:"{isxn}"')))
+        cache[cache_key] = records
+        return records if isxn else []
+
+    def get_document_record(
+        self, cnb: Optional[str] = None, isxn: Optional[str] = None
+    ) -> Optional[DigitizationRegistryRecord]:
+        records = self.get_issue_records(cnb, isxn)
+        return records[0] if len(records) == 1 else None
+
+    def select_volume_record(
         self,
+        records: List[DigitizationRegistryRecord],
         barcode: Optional[str] = None,
-        cnb: Optional[str] = None,
-        isxn: Optional[str] = None,
         year: Optional[str] = None,
         volume: Optional[str] = None,
         bundle: Optional[str] = None,
     ) -> Optional[DigitizationRegistryRecord]:
-        if barcode:
-            document = self.get_record_by_barcode(barcode)
-            if document:
-                return document
-
-        if cnb:
-            document = self.get_record_by_volume(
-                (f'ccnb:"{cnb}"'), year, volume, bundle
-            )
-            if document:
-                return document
-
-        if isxn:
-            return self.get_record_by_volume(
-                (f'isxn:"{isxn}"'), year, volume, bundle
-            )
-
+        for record in records:
+            if (barcode is not None and barcode == record.barcode) or (
+                (year is None or year == record.year)
+                and (volume is None or volume == record.volume)
+                and (bundle is None or bundle == record.bundle)
+            ):
+                return record
         return None

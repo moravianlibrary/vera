@@ -4,18 +4,17 @@ import { IndexDocument } from "../../../adapters/ApiDocuments";
 import { useDocuments } from "../../../contexts/DocumentsContext";
 
 const DocumentDetailsColumnBody = (document: IndexDocument) => {
-    const { detailsDocuments, showDocumentDetails, closeDocumentDetails } =
-        useDocuments();
+    const { expandedRows, onRowExpand, onRowCollapse } = useDocuments();
 
     const isVisible = () => {
-        return detailsDocuments.map((d) => d.id).includes(document.id);
+        return expandedRows.map((d) => d.id).includes(document.id);
     };
 
     const toggleDetailsVisibility = () => {
         if (!isVisible()) {
-            showDocumentDetails(document);
+            onRowExpand(document);
         } else {
-            closeDocumentDetails(document.id);
+            onRowCollapse(document);
         }
     };
 

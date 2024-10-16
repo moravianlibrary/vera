@@ -13,7 +13,7 @@ import useEsPagination, {
 import useEsSelection, {
     EsItemsSelectionProps,
 } from "./base/EsSelectionInjector";
-import { stateToRoute } from "../data/factories/EsQueriesFactory";
+import { stateToQuery, stateToRoute } from "../data/factories/EsQueriesFactory";
 import { booleanAttributes } from "../config/documents_index";
 import useDataTableExpandedRows, {
     DataTableExpandedRowsProps,
@@ -38,8 +38,11 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
     const { t } = useTranslation();
     const showToast = useToast();
     const { items, numFound, queryParams, ...restOfPaginationProps } =
-        useEsPagination((uiState) =>
-            stateToRoute("catalog_records", booleanAttributes, uiState)
+        useEsPagination(
+            (uiState) =>
+                stateToQuery("catalog_records", booleanAttributes, uiState),
+            (uiState) =>
+                stateToRoute("catalog_records", booleanAttributes, uiState)
         );
 
     const approveDifference = (differenceId: number) => {

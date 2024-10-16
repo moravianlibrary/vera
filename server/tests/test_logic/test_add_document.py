@@ -43,7 +43,10 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         digitization_record: Optional[DigitizationRegistryRecord] = None,
     ):
         instance = mock_digitization_registry_client.return_value
-        instance.get_record.return_value = digitization_record
+        instance.get_issue_records.return_value = [digitization_record]
+        instance.select_volume_record.return_value = digitization_record
+        instance.get_record_by_barcode.return_value = digitization_record
+        instance.get_document_record.return_value = digitization_record
 
     @patch("logic.add_document.DigitizationRegistryClient")
     @patch("logic.add_document.AlephClient")
@@ -171,6 +174,8 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                         barcode="2619937640",
                         signature="2-0653.734",
                         newly_added=True,
+                        document_id=1,
+                        page_count=480,
                     )
                 ],
             ),
@@ -571,7 +576,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 sysno="MZK03-001175162",
                 title="Albert, Abt zu St. Peter in Salzburg",
                 material_type=MaterialType.Graphic,
-                issues=[CatalogIssueResponse(newly_added=True)],
+                issues=[CatalogIssueResponse(newly_added=True, document_id=1)],
             ),
         )
 
@@ -651,6 +656,8 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                         barcode="2610051177",
                         signature="2-1028.445",
                         newly_added=True,
+                        document_id=2,
+                        page_count=364,
                     ),
                 ],
             ),

@@ -3,9 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import AddDocumentResponseStatus from "../../types/AddDocumentResponseStatus";
 import { useTranslation } from "react-i18next";
-import { CatalogDocumentResponse } from "../../adapters/ApiDocuments";
-import { IssuanceType } from "../../types/IssuanceType";
-import { MaterialType } from "../../types/MaterialType";
+import { AddDocumentResponse } from "../../adapters/ApiDocuments";
 import {
     getResponseMessageSeverity,
     getResultDetail,
@@ -24,19 +22,37 @@ const AddDocumentResultsMessages: React.FC<
     useEffect(() => {
         if (!messages.current) return;
 
+        const perStatusSummary = responses.reduce<
+            Record<string, AddDocumentResponse | number>
+        >((acc, response) => {
+            const status = response.status;
+            if (!acc[status]) {
+                acc[status] = response;
+            } else if (acc[status] instanceof Object) {
+                acc[status] = 2;
+            } else if (typeof acc[status] === "number") {
+                acc[status] = (acc[status] as number) + 1;
+            }
+            return acc;
+        }, {});
+
         const displayMessages: MessagesMessage[] = Object.values(
             AddDocumentResponseStatus
         )
-            .filter((s) => responses[s].length > 0)
+            .filter((s) => perStatusSummary[s])
             .map((s) => ({
                 severity: getResponseMessageSeverity(s),
                 summary: t(`documents.add.results.status.${s}`, {
-                    count: responses[s].length,
+                    count:
+                        perStatusSummary[s] instanceof Object
+                            ? 1
+                            : (perStatusSummary[s] as number),
                 }),
                 detail:
-                    responses[s].length === 1 &&
-                    responses[s][0].document &&
-                    getResultDetail(responses[s][0].document),
+                    perStatusSummary[s] instanceof Object &&
+                    getResultDetail(
+                        (perStatusSummary[s] as AddDocumentResponse).document!
+                    ),
                 sticky: true,
                 closable: false,
             }));

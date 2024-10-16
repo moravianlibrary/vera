@@ -10,15 +10,13 @@ import InsertDocumentsFiles from "./InsertDocumentsFiles";
 import { getIdentifierTypeLabel } from "../../types/Identifiers";
 import LabeledComponent from "../../components/LabeledComponent";
 
-interface InsertDocumentsValuesProps {
-    onGoBack?: () => void;
-    onGoNext?: () => void;
-    onSkipNext?: () => void;
-}
+interface InsertDocumentsValuesProps {}
 
-const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
+const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = () => {
     const { t } = useTranslation();
     const {
+        goToNextStep,
+        goToPrevStep,
         settings,
         value,
         setValue,
@@ -27,52 +25,17 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
         acceptInput,
         resetInputs,
         processedCount,
+        totalCount,
         responses,
+        multipleIssuesDocuments,
         resetResults,
     } = useInsertDocuments();
 
-    const [accepted, setAccepted] = useState(false);
-
-    const handleAcceptInput = async () => {
-        setAccepted(true);
-        acceptInput();
-    };
-
     const handleKeyPress = (event) => {
         if (event.key === "Enter") {
-            handleAcceptInput();
+            goToNextStep();
         }
     };
-
-    const handleGoBack = () => {
-        clearFileUploadValues();
-        if (props.onGoBack) {
-            props.onGoBack();
-        }
-    };
-
-    useEffect(() => {
-        if (!accepted) {
-            resetResults();
-        }
-    }, [resetResults, accepted]);
-
-    useEffect(() => {
-        if (accepted) {
-            if (
-                (fileUploadValues.length > 0 &&
-                    processedCount === fileUploadValues.length) ||
-                (fileUploadValues.length === 0 && processedCount === 1)
-            ) {
-                resetInputs();
-                if (responses.MultipleIssues.length > 0 && props.onGoNext) {
-                    props.onGoNext();
-                } else if (props.onSkipNext) {
-                    props.onSkipNext();
-                }
-            }
-        }
-    }, [processedCount]);
 
     return (
         <div className="flex flex-column gap-5">
@@ -80,7 +43,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
                 <TabPanel
                     className="flex flex-column gap-3"
                     header={t("documents.add.values.text-input-header")}
-                    disabled={fileUploadValues.length > 0}
+                    disabled={totalCount !== processedCount}
                 >
                     <LabeledComponent
                         label={t(
@@ -89,14 +52,17 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
                     >
                         <InputText
                             autoFocus
-                            disabled={accepted}
+                            disabled={totalCount !== processedCount}
                             value={value}
                             onChange={(e) => setValue(e.target.value)}
                             onKeyDown={handleKeyPress}
                         />
                     </LabeledComponent>
                 </TabPanel>
-                <TabPanel header={t("documents.add.values.file-input-header")}>
+                <TabPanel
+                    header={t("documents.add.values.file-input-header")}
+                    disabled={totalCount !== processedCount}
+                >
                     <InsertDocumentsFiles />
                 </TabPanel>
             </TabView>
@@ -105,9 +71,10 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
                     icon="pi pi-caret-left"
                     outlined
                     label={t("documents.add.prev-step")}
-                    onClick={handleGoBack}
+                    disabled={totalCount !== processedCount}
+                    onClick={goToPrevStep}
                 />
-                {accepted && (
+                {totalCount !== processedCount && (
                     <ProgressBar
                         className="w-18rem h-1rem"
                         mode={
@@ -122,12 +89,15 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = (props) => {
                     />
                 )}
                 <Button
-                    disabled={value === "" && fileUploadValues.length === 0}
                     icon="pi pi-caret-right"
                     iconPos="right"
                     outlined
                     label={t("documents.add.next-step")}
-                    onClick={handleAcceptInput}
+                    disabled={
+                        (value === "" && fileUploadValues.length === 0) ||
+                        totalCount !== processedCount
+                    }
+                    onClick={goToNextStep}
                 />
             </div>
         </div>

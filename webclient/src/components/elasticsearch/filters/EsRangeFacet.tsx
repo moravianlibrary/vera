@@ -8,6 +8,7 @@ import EsFilter from "./EsFilter";
 import { Slider, SliderChangeEvent } from "primereact/slider";
 import { InputNumber } from "primereact/inputnumber";
 import { Button } from "primereact/button";
+import { FloatLabel } from "primereact/floatlabel";
 
 interface EsRangeFacetProps extends RangeInputProps {
     label: string;
@@ -50,7 +51,6 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
             Math.max(Math.min(value[1], range.max!), range.min!),
         ];
 
-        refine(limitedValue);
         setSliderValue(limitedValue);
         setValue(value);
     };
@@ -62,6 +62,17 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
         ]);
     };
 
+    const handleApplyFilter = () => {
+        if (value) {
+            refine(value);
+        }
+    };
+
+    const handleCancelFilter = () => {
+        handleChangeValue([range.min!, range.max!]);
+        refine([range.min!, range.max!]);
+    };
+
     return (
         <EsFilter label={label}>
             <div className="flex p-inputgroup">
@@ -69,6 +80,8 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
                     id={`facet-range-min-v-${label}`}
                     className="w-min"
                     value={value ? value[0] : undefined}
+                    // min={range.min}
+                    // max={range.max}
                     onChange={(e) =>
                         e.value &&
                         value &&
@@ -79,6 +92,8 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
                     id={`facet-range-max-v-${label}`}
                     className="w-min"
                     value={value ? value[1] : undefined}
+                    // min={range.min}
+                    // max={range.max}
                     onChange={(e) =>
                         e.value &&
                         value &&
@@ -87,11 +102,18 @@ const EsRangeFacet: React.FC<EsRangeFacetProps> = ({ label, ...props }) => {
                 />
                 <Button
                     outlined
-                    severity="danger"
-                    icon="pi pi-times"
-                    disabled={!isActive}
-                    onClick={() => handleChangeValue([range.min!, range.max!])}
+                    severity="info"
+                    icon="pi pi-search"
+                    onClick={handleApplyFilter}
                 />
+                {isActive && (
+                    <Button
+                        outlined
+                        severity="danger"
+                        icon="pi pi-times"
+                        onClick={handleCancelFilter}
+                    />
+                )}
             </div>
             {/* <Slider
                 id={`facet-range-slider-${label}`}

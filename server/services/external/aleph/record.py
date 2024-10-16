@@ -178,7 +178,7 @@ class AlephRecord:
 
     @property
     def keywords(self) -> List[str]:
-        pass
+        return self.get_values("650", "a")
 
     def parse_page_count(self, volume: Optional[str]) -> Optional[int]:
         return parse_page_count(self.extent, volume)

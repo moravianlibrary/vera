@@ -203,15 +203,35 @@ class TestDigitizationRegistrySyncIntegration(TestTasksBase):
 
     @patch(
         "services.external.digitization_registry"
-        ".DigitizationRegistryClient.get_record"
+        ".DigitizationRegistryClient.get_issue_records"
+    )
+    @patch(
+        "services.external.digitization_registry"
+        ".DigitizationRegistryClient.select_volume_record"
+    )
+    @patch(
+        "services.external.digitization_registry"
+        ".DigitizationRegistryClient.get_document_record"
+    )
+    @patch(
+        "services.external.digitization_registry"
+        ".DigitizationRegistryClient.get_record_by_barcode"
     )
     @patch("schemas.IndexDocument.save")
     def test_registry_sync_with_not_found_record(
-        self, mock_save: Mock, mock_get_record: Mock
+        self,
+        mock_save: Mock,
+        mock_get_record_by_barcode: Mock,
+        mock_get_document_record: Mock,
+        mock_select_volume_record: Mock,
+        mock_get_issue_records: Mock,
     ):
         # Arrange
         mock_save.return_value = MagicMock()
-        mock_get_record.return_value = None
+        mock_get_record_by_barcode.return_value = []
+        mock_get_document_record.return_value = []
+        mock_select_volume_record.return_value = []
+        mock_get_issue_records.return_value = []
 
         # Act
         SyncDocumentsWithDigitizationRegistry(self.session, 1)

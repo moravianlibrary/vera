@@ -49,6 +49,7 @@ class AddDocumentPreprocessor:
         self.identifier = identifier
         self.added_by = added_by
         self.category_id = category_id
+        self.registry_client = DigitizationRegistryClient()
         self.predict_pages_count = predict_pages_count
         self.predictor = (
             Predictor.get_instance() if predict_pages_count else None
@@ -76,7 +77,10 @@ class AddDocumentPreprocessor:
         active_issues = [
             catalog_issue
             for catalog_issue in catalog_issues
-            if catalog_issue.can_digitize and not catalog_issue.already_added
+            if catalog_issue.can_digitize
+            and not catalog_issue.already_added
+            and catalog_issue.digitization_state
+            == DigitizationState.NotDigitized
         ]
 
         if self.identifier.identifier_type == IdentifierType.Barcode:
@@ -135,17 +139,23 @@ class AddDocumentPreprocessor:
     def get_catalog_issues(
         self, session: Session, main_aleph_record: AlephRecord
     ):
+        digitization_issues = self.registry_client.get_issue_records(
+            main_aleph_record.cnb, main_aleph_record.isxn
+        )
+
         catalog_issues = [
             CatalogIssueResponse.from_aleph_issue(
                 main_aleph_record,
                 aleph_issue,
-                DigitizationRegistryClient().get_record(
+                self.registry_client.select_volume_record(
+                    digitization_issues,
                     aleph_issue.barcode,
-                    main_aleph_record.cnb,
-                    main_aleph_record.isxn,
                     aleph_issue.volume_year,
                     aleph_issue.volume,
                     aleph_issue.bundle,
+                )
+                or self.registry_client.get_record_by_barcode(
+                    aleph_issue.barcode,
                 ),
                 Document.exists(
                     session,
@@ -164,9 +174,8 @@ class AddDocumentPreprocessor:
             if catalog_issues
             else [
                 CatalogIssueResponse.from_digitization_registry(
-                    DigitizationRegistryClient().get_record(
-                        cnb=main_aleph_record.cnb,
-                        isxn=main_aleph_record.isxn,
+                    DigitizationRegistryClient().get_document_record(
+                        cnb=main_aleph_record.cnb, isxn=main_aleph_record.isxn
                     ),
                     Document.exists(session, main_aleph_record.sysno),
                 )

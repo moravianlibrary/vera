@@ -167,7 +167,7 @@ def export_query_documents(
 
 
 @router.put(
-    "/query/change_category",
+    "/query/update_property",
     dependencies=[CanManageDocuments],
 )
 def update_query_documents(

@@ -22,6 +22,7 @@ import CatalogRecords from "./CatalogRecords";
 import WithProviders from "../components/wrappers/WithProviders";
 import { ConfirmDialog } from "primereact/confirmdialog";
 import PeriodicTasks from "./PeriodicTasks";
+import { NotificationProvider } from "../contexts/NotificationContext";
 
 function Routing() {
     return (
@@ -73,7 +74,9 @@ function Routing() {
 
 function App() {
     return (
-        <WithProviders providers={[AccessProvider, ToastProvider]}>
+        <WithProviders
+            providers={[AccessProvider, ToastProvider, NotificationProvider]}
+        >
             <StrictMode>
                 <Router>
                     <main className="app">

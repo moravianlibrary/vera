@@ -12,14 +12,13 @@ import { IntentionsProvider } from "../contexts/categories/IntentionsContext";
 import DocumentsQueryRules from "../features/documents/DocumentsQueryRules";
 import documentsIndex from "../adapters/IndexDocuments";
 import { InstantSearch } from "react-instantsearch";
-import DocumentDetailsDialog from "../features/documents/DocumentDetailsDialog";
 import DataTableLayout from "../components/layouts/DataTableLayout";
 import WithProviders from "../components/wrappers/WithProviders";
-import { EsDataTableProvider } from "../contexts/EsDataTableContext";
 import { TasksProvider } from "../contexts/TasksContext";
 import { DocumentsProvider } from "../contexts/DocumentsContext";
 import { routeToState, stateToRoute } from "../data/factories/EsQueriesFactory";
 import { booleanAttributes } from "../config/documents_index";
+import DocumentsDetails from "../features/documents/DocumentsDetails";
 
 const Documents: React.FC = () => {
     const searchClient = Client(documentsIndex);
@@ -46,7 +45,6 @@ const Documents: React.FC = () => {
                     DigitizationListsProvider,
                     IntentionsProvider,
                     DocumentsProvider,
-                    EsDataTableProvider,
                     TasksProvider,
                 ]}
             >
@@ -55,13 +53,8 @@ const Documents: React.FC = () => {
                     sidebar={<DocumentsQueryRules />}
                     datatable={<DocumentsTable />}
                     paginator={<DocumentsTable.Paginator />}
+                    dialog={<DocumentsDetails />}
                 />
-                {/* {detailsDocuments.map((document) => (
-                    <DocumentDetailsDialog
-                        key={document.id}
-                        document={document}
-                    />
-                ))} */}
             </WithProviders>
         </InstantSearch>
     );

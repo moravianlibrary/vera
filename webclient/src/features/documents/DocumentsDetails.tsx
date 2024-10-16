@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { IndexDocument } from "../../adapters/ApiDocuments";
+import { Frequency, IndexDocument } from "../../adapters/ApiDocuments";
 import { useEffect, useState } from "react";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
@@ -121,106 +121,53 @@ const DocumentFields = [
     { attribute: "publishing_place", label: "Publishing place" },
     { attribute: "publishing_year", label: "Publishing year" },
     { attribute: "languages", label: "Languages" },
-    { attribute: "frequencies", label: "Frequencies" },
+    {
+        attribute: "frequencies",
+        label: "Frequencies",
+        transform: (fs: Frequency[]) =>
+            fs
+                .map((f) =>
+                    f.date
+                        ? `"${f.date}": "${f.frequency}"`
+                        : `"${f.frequency}"`
+                )
+                .join(", "),
+    },
 ];
 
-const DocumentDetailsDialog: React.FC<DocumentDetailsDialogProps> = ({
-    document,
-}) => {
-    const { t } = useTranslation();
-    const { detailsDocuments, closeDocumentDetails } = useDocuments();
+interface DocumentsDetailsProps {}
 
-    const [panelVisible, setPanelVisible] = useState(true);
-    const [confirmVisible, setConfirmVisible] = useState(false);
-    const [editMode, setEditMode] = useState(false);
-    const [dialogPosition, setDialogPosition] = useState({ top: 0, left: 0 });
-
-    const handleAcceptDelete = () => {
-        setPanelVisible(false);
-        // deleteDocument(doc);
-    };
-
-    // useEffect(() => {
-    //     setPanelVisible(panelVisible && documentId === doc.id);
-    //     setDocumentId(doc.id);
-    // }, [doc]);
+const DocumentsDetails: React.FC<DocumentsDetailsProps> = () => {
+    const { expandedRows, onRowCollapse } = useDocuments();
 
     return (
-        <Dialog
-            id={`document-details-${document.id}`}
-            style={{
-                maxWidth: "600px",
-                marginLeft: "96px",
-                marginTop: "48px",
-                // top: dialogPosition.top,
-                // left: dialogPosition.left,
-            }}
-            visible={detailsDocuments.map((d) => d.id).includes(document.id)}
-            onHide={() => closeDocumentDetails(document.id)}
-            modal={false}
-            // position="left"
-            // minX={96}
-            // minY={48}
-        >
-            <div className="flex flex-column justify-content-between gap-1 m-0">
-                {DocumentFields.map((field) => (
-                    <DocumentDetailsItem
-                        key={field.attribute}
-                        document={document}
-                        field={field}
-                    />
-                ))}
-                {/* {!editMode && (
-                    <div className="flex flex-column gap-3">
-                        {" "}
-                        <DocumentDetailsTooltip document={doc} />
-                        <CatalogsFunctionality document={doc} />
-                        <div className="flex gap-3">
-                            <Button
-                                icon="pi pi-trash"
-                                severity="danger"
-                                outlined
-                                label={t("Delete")}
-                                onClick={() => setConfirmVisible(true)}
+        <div>
+            {expandedRows.map((document) => (
+                <Dialog
+                    id={`document-details-${document.id}`}
+                    style={{
+                        maxWidth: "600px",
+                        marginLeft: "96px",
+                        marginTop: "48px",
+                    }}
+                    visible={expandedRows
+                        .map((d) => d.id)
+                        .includes(document.id)}
+                    onHide={() => onRowCollapse(document)}
+                    modal={false}
+                >
+                    <div className="flex flex-column justify-content-between gap-1 m-0">
+                        {DocumentFields.map((field) => (
+                            <DocumentDetailsItem
+                                key={field.attribute}
+                                document={document}
+                                field={field}
                             />
-                            <ActionAccessComponent
-                                evaluate={(user) =>
-                                    isAllowedToEditDocument(user, doc)
-                                }
-                            >
-                                <Button
-                                    icon="pi pi-pencil"
-                                    outlined
-                                    label={t("Edit")}
-                                    onClick={() => setEditMode(true)}
-                                />
-                            </ActionAccessComponent>
-                        </div>
+                        ))}
                     </div>
-                )}
-                {editMode && (
-                    <DocumentDetailsEditor
-                        document={doc}
-                        onEditComplete={() => setEditMode(false)}
-                        onEditCancel={() => setEditMode(false)}
-                    />
-                )} */}
-                {/* <ConfirmDialog
-                    // group="declarative"
-                    visible={confirmVisible}
-                    onHide={() => setConfirmVisible(false)}
-                    header={t("Delete document")}
-                    message={t(
-                        "Are you sure you want to delete this document?"
-                    )}
-                    icon="pi pi-exclamation-triangle"
-                    acceptLabel={t("Delete")}
-                    acceptClassName="p-button-danger"
-                    rejectLabel={t("Cancel")}
-                    accept={handleAcceptDelete}
-                /> */}
-            </div>
-        </Dialog>
+                </Dialog>
+            ))}
+        </div>
     );
 };
 
@@ -315,4 +262,4 @@ const DocumentDetailsFieldValue: React.FC<DocumentDetailsFieldValueProps> = ({
     );
 };
 
-export default DocumentDetailsDialog;
+export default DocumentsDetails;

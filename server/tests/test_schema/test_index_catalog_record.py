@@ -10,6 +10,7 @@ class TestIndexCatalogRecord(TestSchemaBase):
             {
                 "mappings": {
                     "_meta": {"index.version": "v2024.09-1"},
+                    "dynamic": "strict",
                     "properties": {
                         "id": {"type": "keyword"},  # sysno
                         "main_record": {

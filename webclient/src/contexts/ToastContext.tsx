@@ -39,8 +39,8 @@ export function ToastProvider({ children }: ToastProviderProps): JSX.Element {
         }
         (toast.current as Toast).show({
             severity: severity,
-            summary: t(summary),
-            detail: t(detail),
+            summary: summary,
+            detail: detail,
             life: life,
             sticky: sticky,
         });

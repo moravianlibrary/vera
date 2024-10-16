@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import PeriodicTasksTable from "../features/tasks/PeriodicTasksTable";
 import DataTableLayout from "../components/layouts/DataTableLayout";
 import SubNavigationMenu from "../components/SubNavigationMenu";
@@ -30,6 +30,7 @@ const PeriodicTasks: React.FC<PeriodicTasksProps> = () => {
                                         submitCallback={handleCreate}
                                     />
                                 }
+                                visible
                             />
                         )}
                         end={() => <SubNavigationTasks />}

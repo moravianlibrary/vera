@@ -86,8 +86,6 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
         console.debug(`Fetching tasks from server.`);
         api.getPage(page, pageSize)
             .then((response) => {
-                console.log(response);
-
                 setTasks(response.data.items);
                 setNumFound(response.data.num_found);
             })

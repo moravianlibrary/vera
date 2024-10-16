@@ -1,4 +1,3 @@
-import { Messages, MessagesMessage } from "primereact/messages";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "primereact/button";
@@ -7,32 +6,30 @@ import React from "react";
 import { DataTable, DataTableValueArray } from "primereact/datatable";
 import { Dialog } from "primereact/dialog";
 import { Column } from "primereact/column";
-import { Tag } from "primereact/tag";
 import {
     areOnlySuccessfulResults,
     getResultSeverity,
-    isSingleSuccessfulResult,
     messageSeverityToActionSeverity,
-    parseResultsToLocalizedMessages,
 } from "./InsertDocumentsFunctions";
-import {
-    AddDocumentResponse,
-    CatalogDocumentResponse,
-    CatalogIssueResponse,
-    Document,
-} from "../../adapters/ApiDocuments";
-import { InputNumber } from "primereact/inputnumber";
 import AddDocumentResultsMessages from "./ResultsMessages";
 import AddDocumentsSetPageCount from "./SetPageCount";
+import { MaterialType } from "../../types/MaterialType";
+import { IssuanceType } from "../../types/IssuanceType";
+import AddDocumentResponseStatus from "../../types/AddDocumentResponseStatus";
+import DocumentTypeColumnBody from "../documents/table_columns/DocumentTypeColumnBody";
+import DescriptionColumnBody from "../documents/table_columns/DescriptionColumnBody";
+import { Tag } from "primereact/tag";
 
 interface InsertDocumentsResultProps {
-    onRestart: () => void;
     onClose: () => void;
 }
 
-const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
+const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = ({
+    onClose,
+}) => {
     const { t } = useTranslation();
-    const { settings, responses, withoutPageCount } = useInsertDocuments();
+    const { settings, goToPrevStep, responses, withoutPageCount } =
+        useInsertDocuments();
 
     const [countdown, setCountdown] = useState(2);
     const [detailsVisible, setDetailsVisible] = useState(false);
@@ -51,7 +48,7 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
 
     useEffect(() => {
         if (countdown <= 0) {
-            props.onRestart();
+            goToPrevStep();
         }
     }, [countdown]);
 
@@ -72,7 +69,7 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
                     icon="pi pi-replay"
                     outlined
                     label={getInsertAnotherLabel()}
-                    onClick={() => props.onRestart()}
+                    onClick={goToPrevStep}
                 />
                 <Button
                     icon="pi pi-question"
@@ -85,42 +82,59 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = (props) => {
                     iconPos="left"
                     outlined
                     label={t("documents.add.results.finish")}
-                    onClick={() => props.onClose()}
+                    onClick={onClose}
                 />
                 <Dialog
                     visible={detailsVisible}
                     onHide={() => setDetailsVisible(false)}
                 >
-                    {/* <InsertResultDetails results={results} /> */}
+                    <InsertResultDetails />
                 </Dialog>
             </div>
         </div>
     );
 };
 
-interface InsertResultDetailsProps {
-    results: AddDocumentResponse[];
+interface InsertResultDetailsProps {}
+
+interface AddDocumentDetails {
+    sysno: string;
+    material_type: MaterialType;
+    issuance_type: IssuanceType;
+    volume: string;
+    volume_year: string;
+    bundle: string;
+    page_count: number;
+    barcode: string;
+    status: AddDocumentResponseStatus;
 }
 
-const InsertResultDetails: React.FC<InsertResultDetailsProps> = ({
-    results,
-}) => {
+const InsertResultDetails: React.FC<InsertResultDetailsProps> = ({}) => {
     const { t } = useTranslation();
+    const { responses } = useInsertDocuments();
     const datatableRef = useRef<DataTable<DataTableValueArray>>(null);
 
-    // const descriptionBody = (document: InsertResultDetail) => {
-    //     return document.description;
-    // };
+    const parseResponses = () => {
+        return responses.flatMap((response) => {
+            return (
+                response.document?.issues.map((issue) => ({
+                    ...issue,
+                    ...response.document,
+                    status: response.status,
+                })) || []
+            );
+        });
+    };
 
-    // const resultBody = (document: InsertResultDetail) => {
-    //     const severity = getResultSeverity(document.result);
-    //     return (
-    //         <Tag
-    //             value={document.result_localized}
-    //             severity={messageSeverityToActionSeverity(severity)}
-    //         ></Tag>
-    //     );
-    // };
+    const ResultBody = (document: AddDocumentDetails) => {
+        const severity = getResultSeverity(document.status);
+        return (
+            <Tag
+                value={t(`documents.add.results.status.${document.status}`)}
+                severity={messageSeverityToActionSeverity(severity)}
+            ></Tag>
+        );
+    };
 
     const exportCsv = () => {
         if (datatableRef.current) {
@@ -140,25 +154,29 @@ const InsertResultDetails: React.FC<InsertResultDetailsProps> = ({
     return (
         <DataTable
             ref={datatableRef}
-            // value={getResultsDetails(t, results)}
+            value={parseResponses()}
             scrollable
             scrollHeight="calc(100vh - 290px)"
             header={header}
             exportFilename="insert_documents_details"
         >
             <Column field="sysno" header={t("System number")} />
-            <Column field="type" header={t("Type")} />
-            {/* <Column
+            <Column
+                field="type"
+                header={t("Type")}
+                body={DocumentTypeColumnBody}
+            />
+            <Column
                 field="description"
                 header={t("Description")}
-                body={descriptionBody}
-            /> */}
+                body={DescriptionColumnBody}
+            />
             <Column field="barcode" header={t("Barcode")} />
-            {/* <Column
+            <Column
                 field="result_localized"
                 header={t("Result")}
-                body={resultBody}
-            /> */}
+                body={ResultBody}
+            />
         </DataTable>
     );
 };

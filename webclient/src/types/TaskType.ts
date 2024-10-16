@@ -20,4 +20,27 @@ enum TaskItemErrorType {
     UnknownError = "UnknownError",
 }
 
-export { TaskType, TaskItemType, TaskItemErrorType };
+const DocumentsTasks = [
+    TaskType.PredictPeriodicalsPageCount,
+    TaskType.ReindexDocuments,
+    TaskType.SyncDocumentsWithCatalogs,
+    TaskType.SyncDocumentsWithDigitizationRegistry,
+];
+const CatalogRecordsTasks = [
+    TaskType.ReindexCatalogRecords,
+    TaskType.SyncCatalogRecordsWithCatalogs,
+    TaskType.ReevaluateCatalogRecordsDifferences,
+];
+const DatasetTasks = [
+    TaskType.GenerateVolumesPagesDataset,
+    TaskType.GenerateItemsPagesDataset,
+];
+
+export {
+    TaskType,
+    TaskItemType,
+    TaskItemErrorType,
+    DocumentsTasks,
+    CatalogRecordsTasks,
+    DatasetTasks,
+};

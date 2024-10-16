@@ -1,73 +1,68 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { CronExpression } from "../../adapters/ApiPeriodicTasks";
 import { InputNumber } from "primereact/inputnumber";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
+import LabeledComponent from "../LabeledComponent";
 
 interface CronExpressionFormProps {
-    initialValue?: CronExpression;
-    submitCallback: (expression: CronExpression) => void;
+    expression: CronExpression;
+    onChangeCallback: (expression: CronExpression) => void;
 }
 
 const CronExpressionForm: React.FC<CronExpressionFormProps> = ({
-    initialValue,
-    submitCallback,
+    expression,
+    onChangeCallback,
 }) => {
     const { t } = useTranslation();
 
-    const [formData, setFormData] = useState<CronExpression>(
-        initialValue || ({} as CronExpression)
-    );
-
     const handleChange = (name: string, value: number | null) => {
-        console.log(formData);
-
-        setFormData({
-            ...formData,
+        onChangeCallback({
+            ...expression,
             [name]: value,
         });
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        submitCallback(formData);
-    };
-
     return (
-        <form onSubmit={handleSubmit} className="flex flex-column w-max gap-2">
+        <div className="flex flex-column w-max gap-2">
             <CronExpressionItem
                 name="minute"
-                value={formData.minute || null}
+                value={expression.minute || 0}
                 range={[0, 59]}
-                onChange={(v) => handleChange("minute", v)}
+                onChange={(v) => handleChange("minute", v === null ? 0 : v)}
             />
             <CronExpressionItem
                 name="hour"
-                value={formData.hour || null}
+                value={expression.hour === undefined ? null : expression.hour}
                 range={[0, 23]}
                 showWildcard
                 onChange={(v) => handleChange("hour", v)}
             />
-            <div key="day_of_week">
-                <span>{t("tasks.periodic.form.cron.day_of_week")}</span>
+            <LabeledComponent label={t("tasks.periodic.form.cron.day_of_week")}>
                 <Dropdown
-                    options={[null, 0, 1, 2, 3, 4, 5, 6].map((v) => ({
-                        label: t(`tasks.periodic.day-${v !== null ? v : "*"}`),
-                        value: v || null,
+                    options={[-1, 0, 1, 2, 3, 4, 5, 6].map((v) => ({
+                        label: t(
+                            `tasks.periodic.day_of_week.${v === -1 ? "*" : v}`
+                        ),
+                        value: v,
                     }))}
-                    value={formData.day_of_week || null}
+                    value={
+                        expression.day_of_week === undefined
+                            ? -1
+                            : expression.day_of_week
+                    }
                     onChange={(e) => handleChange("day_of_week", e.value)}
                 />
-            </div>
+            </LabeledComponent>
             <CronExpressionItem
                 name="day_of_month"
-                value={formData.day_of_month || null}
+                value={expression.day_of_month || null}
                 range={[1, 31]}
                 showWildcard
                 onChange={(v) => handleChange("day_of_month", v)}
             />
-        </form>
+        </div>
     );
 };
 
@@ -89,13 +84,25 @@ const CronExpressionItem: React.FC<CronExpressionItemProps> = ({
     const { t } = useTranslation();
 
     return (
-        <div key={name}>
-            <span>{t(`tasks.periodic.form.cron.${name}`)}</span>
+        <LabeledComponent
+            key={name}
+            label={t(`tasks.periodic.form.cron.${name}`)}
+            column
+        >
             <div className="p-inputgroup">
                 {showWildcard && (
-                    <Button label="*" onClick={() => onChange(null)} />
+                    <Button
+                        label={t(`tasks.periodic.form.cron.${name}-wildcard`)}
+                        className={
+                            value === null
+                                ? "bg-yellow-500 border-yellow-600"
+                                : ""
+                        }
+                        onClick={() => onChange(null)}
+                    />
                 )}
                 <InputNumber
+                    key={name}
                     value={value}
                     min={range[0]}
                     max={range[1]}
@@ -109,18 +116,26 @@ const CronExpressionItem: React.FC<CronExpressionItemProps> = ({
                     icon="pi pi-chevron-up"
                     size="small"
                     onClick={() =>
-                        onChange(Math.min(range[1], (value || 0) + 1))
+                        onChange(
+                            value === null
+                                ? range[0]
+                                : Math.min(range[1], value + 1)
+                        )
                     }
                 />
                 <Button
                     icon="pi pi-chevron-down"
                     size="small"
                     onClick={() =>
-                        onChange(Math.max(range[0], (value || 0) - 1))
+                        onChange(
+                            value === null
+                                ? null
+                                : Math.max(range[0], value - 1)
+                        )
                     }
                 />
             </div>
-        </div>
+        </LabeledComponent>
     );
 };
 

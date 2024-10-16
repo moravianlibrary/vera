@@ -25,6 +25,8 @@ const DocumentsActionsMenuItems = () => {
         selectedQuery,
         exportDocuments,
         updateCategory,
+        updateExtractionPriority,
+        deleteDocuments,
         digitizationListIdFacets,
     } = useDocuments();
     const { categories } = useCategories();
@@ -34,23 +36,6 @@ const DocumentsActionsMenuItems = () => {
         onInitiateListItemsAddition,
         onInitiateListItemsRemoval,
     } = useDigitizationLists();
-
-    const handleClickUpdateCategory = (
-        category_id: number,
-        category_name: string
-    ) => {
-        confirmDialog({
-            message: t(
-                `Are you sure you want to change category to "{{category}}" for {{count}} selected documents?`,
-                { category: category_name, count: 1 }
-            ),
-            header: t("Confirm action"),
-            icon: "pi pi-question",
-            acceptLabel: t("common.yes"),
-            rejectLabel: t("common.no"),
-            accept: () => updateCategory(category_id),
-        });
-    };
 
     const createCategoriesTieredMenu = () => {
         const createCategoryTieredSubMenu = (category: CategoryOption) => {
@@ -65,8 +50,7 @@ const DocumentsActionsMenuItems = () => {
             } else if (category.selectable) {
                 return {
                     label: category.label,
-                    command: () =>
-                        handleClickUpdateCategory(category.key, category.label),
+                    command: () => updateCategory(category.key, category.label),
                 };
             }
         };
@@ -94,20 +78,28 @@ const DocumentsActionsMenuItems = () => {
 
     if (hasPermission(ActionType.EditDatatable)) {
         const changeCategoryMenuItem = {
-            label: t("documents.actions.change-category"),
+            label: t("documents.actions.update-category.label"),
             icon: "pi pi-tags",
             items: createCategoriesTieredMenu(),
         };
         items.push(changeCategoryMenuItem);
         const changePriorityMenuItem = {
-            label: t("documents.actions.change-priority"),
+            label: t("documents.actions.update-extraction-priority.label"),
             icon: "pi pi-star",
             items: Array.from({ length: 5 }, (_, index) => ({
                 label: t(`documents.extraction-priority.${5 - index}`),
-                command: () => console.log(5 - index),
+                command: () => updateExtractionPriority(5 - index),
             })),
         };
         items.push(changePriorityMenuItem);
+        items.push({ separator: true });
+        const deleteMenuItem = {
+            label: t("documents.actions.delete.label"),
+            icon: "pi pi-trash",
+            className: "text-red-500",
+            command: () => deleteDocuments(),
+        };
+        items.push(deleteMenuItem);
     }
 
     if (hasPermission(ActionType.PlanTasks)) {

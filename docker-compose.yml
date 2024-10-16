@@ -53,7 +53,7 @@ services:
       - TIMEZONE=Europe/Prague
       - KRAMERIUS_API_URL=https://api.kramerius.mzk.cz/search
       - ELASTICSEARCH_URL=http://vera-index:9200
-      - PREDICTOR_URL=http://vera-ai:8001
+      - PREDICTOR_URL=http://vera-ai:8000
     depends_on:
       - postgres
       - redis
@@ -88,7 +88,7 @@ services:
       - KEYCLOAK_ISSUER_CLIENT_ID=vera
       - KRAMERIUS_API_URL=https://api.kramerius.mzk.cz/search
       - ELASTICSEARCH_URL=http://vera-index:9200
-      - PREDICTOR_URL=http://vera-ai:8001
+      - PREDICTOR_URL=http://vera-ai:8000
     depends_on:
       - ai
       - worker

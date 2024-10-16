@@ -101,8 +101,8 @@ class TestTasksEndpoints(TestEndpointsBase):
 
         # Assert
         self.assertResponse(response, 200)
-        body = response.json()
-        self.assertEqual(len(body), 2)
+        body = response.json()["items"]
+        self.assertEqual(response.json()["num_found"], 2)
         self.assertEqual(body[0]["item_id"], "1")
         self.assertEqual(body[0]["item_type"], "Document")
         self.assertEqual(body[1]["item_id"], "2")

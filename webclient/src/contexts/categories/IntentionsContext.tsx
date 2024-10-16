@@ -69,7 +69,7 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
     };
 
     useEffect(() => {
-        console.log(`Fetching intentions from server.`);
+        console.debug(`Fetching intentions from server.`);
         loadIntentions();
     }, []);
 

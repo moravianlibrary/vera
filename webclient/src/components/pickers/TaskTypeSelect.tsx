@@ -30,7 +30,15 @@ const TaskTypeSelect: React.FC<TaskTypeSelectProps> = ({
     return (
         <Dropdown
             value={value}
-            options={(options || Object.values(TaskType)).map(mapToOption)}
+            options={(options || Object.values(TaskType))
+                .filter(
+                    (t) =>
+                        ![
+                            TaskType.GenerateItemsPagesDataset,
+                            TaskType.GenerateVolumesPagesDataset,
+                        ].includes(t)
+                )
+                .map(mapToOption)}
             onChange={handleChange}
             placeholder={t("common.select.task-type.placeholder")}
         />

@@ -113,8 +113,8 @@ def plan_startup_tasks():
                 {"task_id": task.id},
             )
 
-        task.has_run = True
-        task.save(session)
+        startup_task.has_run = True
+        startup_task.save(session)
 
         run_task.delay(task_id=task.id)
 

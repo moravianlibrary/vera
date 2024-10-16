@@ -27,7 +27,7 @@ const AddDocumentsSetPageCount: React.FC<
             <InplaceContent>
                 <div className="flex flex-column gap-1">
                     {withoutPageCount
-                        .map((index) => responses.Success[index].document)
+                        .map((index) => responses[index].document)
                         .map((document) => (
                             <SetDocumentPageCountForm
                                 attributes={{

@@ -216,7 +216,7 @@ export const DigitizationListsProvider: React.FC<
     };
 
     useEffect(() => {
-        console.log(`Fetching extractions from server.`);
+        console.debug(`Fetching extractions from server.`);
         api.getPage(page, pageSize)
             .then((response) => {
                 setDigitizationLists(response.data.items);

@@ -1,6 +1,7 @@
 alembic
 apscheduler
 bs4
+cachetools
 celery
 elasticsearch
 fastapi==0.103.2

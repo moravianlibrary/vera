@@ -11,10 +11,10 @@ import { Tag } from "primereact/tag";
 import { createDigitizationRegistryLink } from "../../data/factories/LinksFactory";
 
 enum IssueStates {
-    AlreadyExists,
-    DigitizationForbidden,
-    Creating,
-    Created,
+    AlreadyExists = "AlreadyExists",
+    DigitizationForbidden = "DigitizationForbidden",
+    Creating = "Creating",
+    Created = "Created",
 }
 
 type State = IssueStates | DigitizationState | null;
@@ -43,6 +43,8 @@ const DocumentIssueCard: React.FC<IssueDivProps> = ({ issue, onClick }) => {
     const [state, setState] = useState<State>(
         issue.already_added
             ? IssueStates.AlreadyExists
+            : creatingIssues.includes(issue)
+            ? IssueStates.Creating
             : issue.digitization_state
     );
 
@@ -51,20 +53,17 @@ const DocumentIssueCard: React.FC<IssueDivProps> = ({ issue, onClick }) => {
     };
 
     useEffect(() => {
-        if (
-            creatingIssues &&
-            state === DigitizationState.NotDigitized &&
-            creatingIssues.filter((i) => i.barcode === issue.barcode).length > 0
-        ) {
-            setState(IssueStates.Creating);
-        }
-    }, [creatingIssues]);
-
-    useEffect(() => {
-        if (!issue.newly_added) {
+        if (issue.already_added || issue.newly_added) {
             setState(IssueStates.Created);
         }
-    }, [issue.newly_added]);
+    }, [issue.newly_added, issue.already_added]);
+
+    useEffect(() => {
+        if (creatingIssues.includes(issue)) {
+            console.log("Creating issue: " + issue.barcode + " - ");
+            setState(IssueStates.Creating);
+        }
+    }, [creatingIssues, issue]);
 
     if (state !== null && state !== DigitizationState.NotDigitized) {
         return (
@@ -140,11 +139,7 @@ const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({
     };
 
     const getLinkButton = () => {
-        if (
-            state === DigitizationState.Finished ||
-            state === DigitizationState.InProgress ||
-            state === DigitizationState.Planned
-        ) {
+        if (issue.digitization_registry_id) {
             return (
                 <Button
                     className="p-1"

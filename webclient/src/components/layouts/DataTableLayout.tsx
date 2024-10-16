@@ -5,6 +5,7 @@ interface DataTableLayoutProps {
     sidebar?: React.ReactNode;
     datatable: React.ReactNode;
     paginator?: React.ReactNode;
+    dialog?: React.ReactNode;
 }
 
 const DataTableLayout: React.FC<DataTableLayoutProps> = ({
@@ -12,6 +13,7 @@ const DataTableLayout: React.FC<DataTableLayoutProps> = ({
     sidebar,
     datatable,
     paginator,
+    dialog,
 }) => {
     const [isSidebarVisible, setIsSidebarVisible] = useState<boolean>(
         sidebar !== undefined
@@ -39,6 +41,7 @@ const DataTableLayout: React.FC<DataTableLayoutProps> = ({
             )}
             <div className="section">{datatable}</div>
             {paginator && <div className="paginator">{paginator}</div>}
+            {dialog && <div className="dialog">{dialog}</div>}
         </div>
     );
 };

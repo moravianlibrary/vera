@@ -26,7 +26,7 @@ function sortFacetDescByKey(field, size) {
     };
 }
 
-function stateToRoute(indexName, booleanAttributes, uiState) {
+function stateToQuery(indexName, booleanAttributes, uiState) {
     const indexUiState = uiState[indexName] || {};
 
     return {
@@ -46,8 +46,14 @@ function stateToRoute(indexName, booleanAttributes, uiState) {
             acc[key] = indexUiState.range[key];
             return acc;
         }, {}),
-        page: indexUiState.page,
-        page_size: indexUiState.hitsPerPage,
+    };
+}
+
+function stateToRoute(indexName, booleanAttributes, uiState) {
+    return {
+        ...stateToQuery(indexName, booleanAttributes, uiState),
+        page: uiState[indexName] && uiState[indexName].page,
+        page_size: uiState[indexName] && uiState[indexName].hitsPerPage,
     };
 }
 
@@ -86,4 +92,10 @@ function routeToState(indexName, booleanAttributes, routeState) {
     };
 }
 
-export { filterBooleanQuery, stateToRoute, routeToState, sortFacetDescByKey };
+export {
+    filterBooleanQuery,
+    stateToQuery,
+    stateToRoute,
+    routeToState,
+    sortFacetDescByKey,
+};

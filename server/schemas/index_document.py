@@ -8,6 +8,7 @@ from .parsers.volume_parser import (
     parse_volume_year,
     parse_bundle,
 )
+from config import VeraConfig
 
 
 class CategoryPath(BaseEsModel):
@@ -74,6 +75,7 @@ class IndexDocument(BaseEsModel):
     publishing_year: Optional[Keyword]
     languages: List[Keyword] = []
     frequencies: List[IndexFrequency]
+    indexed_at: Date
 
     @model_validator(mode="before")
     @classmethod
@@ -142,4 +144,5 @@ class IndexDocument(BaseEsModel):
                 )
                 for frequency in aleph_record.frequencies
             ],
+            indexed_at=VeraConfig.Timestamp.isoformat(),
         )

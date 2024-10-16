@@ -103,7 +103,7 @@ export const RolesProvider: React.FC<RolesProviderProps> = ({ children }) => {
     }, [rolesData]);
 
     useEffect(() => {
-        console.log(`Fetching roles from server.`);
+        console.debug(`Fetching roles from server.`);
         loadRoles();
     }, []);
 

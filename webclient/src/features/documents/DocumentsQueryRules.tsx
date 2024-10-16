@@ -8,6 +8,7 @@ import EsRangeFacet from "../../components/elasticsearch/filters/EsRangeFacet";
 import EsMaterialTypeFacet from "../../components/elasticsearch/filters/EsMaterialTypeFacet";
 import EsIssuanceTypeFacet from "../../components/elasticsearch/filters/EsIssuanceTypeFacet";
 import EsQueryRulesLayout from "../../components/layouts/EsQueryRulesLayout";
+import EsSortBy from "../../components/elasticsearch/EsSortBy";
 import { useTranslation } from "react-i18next";
 
 interface DocumentsQueryRulesProps {}
@@ -17,6 +18,32 @@ export const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
 
     return (
         <EsQueryRulesLayout
+            sortBy={
+                <EsSortBy
+                    items={[
+                        {
+                            label: t("documents.sort-by.last-edited"),
+                            value: "catalog-records_last_edited",
+                        },
+                        {
+                            label: t("documents.sort-by.newest"),
+                            value: "documents_newest",
+                        },
+                        {
+                            label: t("documents.sort-by.oldest"),
+                            value: "documents_oldest",
+                        },
+                        {
+                            label: t("documents.sort-by.title-asc"),
+                            value: "documents_title_asc",
+                        },
+                        {
+                            label: t("documents.sort-by.title-desc"),
+                            value: "documents_title_desc",
+                        },
+                    ]}
+                />
+            }
             facets={
                 <Fragment>
                     <EsBooleanFacet
@@ -57,8 +84,11 @@ export const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                         showMore
                         limit={5}
                     />
-                    {/* <EsRangeFacet attribute="page_count" label="Page Count" />
                     <EsRangeFacet
+                        attribute="page_count"
+                        label={t("documents.facets.page-count")}
+                    />
+                    {/* <EsRangeFacet
                         attribute="volume_number"
                         label="Volume Number"
                     />

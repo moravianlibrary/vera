@@ -6,8 +6,11 @@ interface RequiredValuesButtonProps extends ButtonProps {
     requiredValues: any[];
 }
 
-const RequiredValuesButton: React.FC<RequiredValuesButtonProps> = (props) => {
-    const nullValues = props.requiredValues.filter(
+const RequiredValuesButton: React.FC<RequiredValuesButtonProps> = ({
+    requiredValues,
+    ...props
+}) => {
+    const nullValues = requiredValues.filter(
         (v) => v === undefined || v === null
     ).length;
     if (nullValues === 0) {

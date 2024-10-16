@@ -1,27 +1,51 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { DataTableRowEvent } from "primereact/datatable";
 
 interface DataTableExpandedRowsProps {
     expandedRows: any[];
-    onRowExpand: (event: DataTableRowEvent) => void;
-    onRowCollapse: (event: DataTableRowEvent) => void;
+    onRowExpand: (dat: any) => void;
+    onRowExpandEvent: (event: DataTableRowEvent) => void;
+    onRowCollapse: (data: any) => void;
+    onRowCollapseEvent: (event: DataTableRowEvent) => void;
+    reset: () => void;
 }
 
 const useDataTableExpandedRows = () => {
     const [expandedRows, setExpandedRows] = useState<any[]>([]);
 
-    const onRowExpand = (e: DataTableRowEvent) => {
-        setExpandedRows([...expandedRows, e.data]);
-    };
+    const onRowExpand = useCallback((data: any) => {
+        setExpandedRows((prev) => [...prev, data]);
+    }, []);
 
-    const onRowCollapse = (e: DataTableRowEvent) => {
-        setExpandedRows(expandedRows.filter((row) => row.id !== e.data.id));
-    };
+    const onRowExpandEvent = useCallback(
+        (e: DataTableRowEvent) => {
+            onRowExpand(e.data);
+        },
+        [onRowExpand]
+    );
+
+    const onRowCollapse = useCallback((data: any) => {
+        setExpandedRows((prev) => prev.filter((row) => row.id !== data.id));
+    }, []);
+
+    const onRowCollapseEvent = useCallback(
+        (e: DataTableRowEvent) => {
+            onRowCollapse(e.data);
+        },
+        [onRowCollapse]
+    );
+
+    const reset = useCallback(() => {
+        setExpandedRows([]);
+    }, []);
 
     return {
         expandedRows,
         onRowExpand,
+        onRowExpandEvent,
         onRowCollapse,
+        onRowCollapseEvent,
+        reset,
     };
 };
 
