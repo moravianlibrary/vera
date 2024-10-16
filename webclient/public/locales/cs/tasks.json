@@ -1,0 +1,53 @@
+{
+    "labels": {
+        "ReindexCatalogRecords": "Reindexovat katalogové záznamy",
+        "ReevaluateCatalogRecordsDifferences": "Přepočítat rozdíly mezi katalogovými záznamy",
+        "SyncCatalogRecordsWithCatalogs": "Synchronizovat katalogové záznamy s katalogy (MZK, SKC, ČNB)",
+        "PredictPeriodicalsPageCount": "Predikovat počet stran",
+        "ReindexDocuments": "Reindexovat dokumenty",
+        "SyncDocumentsWithCatalogs": "Synchronizovat dokumenty s katalogy",
+        "SyncDocumentsWithDigitizationRegistry": "Synchronizovat dokumenty s registrom digitalizace"
+    },
+    "messages": {
+        "confirm-start": {
+            "header": "Spustení úkolu",
+            "ReevaluateCatalogRecordsDifferences": "Opravdu chcete přepočítat rozdíly katalogových záznamů pro {{count}} vybrané záznamy?",
+            "SyncCatalogRecordsWithCatalogs": "Opravdu chcete synchronizovat vybrané {{count}} záznamy s katalogy?",
+            "ReindexCatalogRecords": "Opravdu chcete reindexovat vybrané {{count}} záznamy?",
+            "PredictPeriodicalsPageCount": "Opravdu chcete predikovat počet stran periodik pro {{count}} vybrané dokumenty?",
+            "ReindexDocuments": "Opravdu chcete reindexovat vybrané {{count}} dokumenty?",
+            "SyncDocumentsWithCatalogs": "Opravdu chcete synchronizovat vybrané {{count}} dokumenty s katalogy?",
+            "SyncDocumentsWithDigitizationRegistry": "Opravdu chcete synchronizovat vybrané {{count}} dokumenty s registrom digitalizace?"
+        },
+        "started": "Úkol spusten"
+    },
+    "periodic": {
+        "create": "Naplánovat úkol",
+        "form": {
+            "task-type": "Úkol",
+            "query": "Pro dotaz",
+            "cron": {
+                "minute": "Minuta",
+                "hour": "Hodina",
+                "day_of_week": "Den v tydnu",
+                "day_of_month": "Den v měsíci",
+                "minute-placeholder": "0",
+                "hour-placeholder": "0-23",
+                "day_of_month-placeholder": "1-31",
+                "hour-wildcard": "Každou hodinu",
+                "day_of_month-wildcard": "Každý den v měsíci"
+            },
+            "submit": "Naplánovat úkol"
+        },
+        "day_of_week": {
+            "*": "Každý den v tydnu",
+            "0": "Neděle",
+            "1": "Pondělí",
+            "2": "Úterý",
+            "3": "Středa",
+            "4": "Čtvrtek",
+            "5": "Pátek",
+            "6": "Sobota"
+        }
+    }
+}

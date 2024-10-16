@@ -27,7 +27,7 @@ const NavigationMenu: React.FC<NavigationMenuProps> = () => {
 };
 
 const NavigationMenuStart = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("navigation");
     const navigate = useNavigate();
 
     return (
@@ -38,7 +38,7 @@ const NavigationMenuStart = () => {
             <ActionAccessComponent action={ActionType.ReadDatatable}>
                 <Button
                     className="text-gray-700"
-                    label={t("Documents")}
+                    label={t("documents")}
                     icon="pi pi-book"
                     text
                     onClick={() => navigate("/documents")}
@@ -47,7 +47,7 @@ const NavigationMenuStart = () => {
             <ActionAccessComponent action={ActionType.ReadCatalogRecords}>
                 <Button
                     className="text-gray-700"
-                    label={t("Catalog records")}
+                    label={t("catalog-records")}
                     icon="pi pi-server"
                     text
                     onClick={() => navigate("/catalog-records")}
@@ -56,7 +56,7 @@ const NavigationMenuStart = () => {
             <ActionAccessComponent action={ActionType.ReadDatatable}>
                 <Button
                     className="text-gray-700"
-                    label={t("Categories")}
+                    label={t("categories")}
                     icon="pi pi-tags"
                     text
                     onClick={() => navigate("/categories")}
@@ -65,7 +65,7 @@ const NavigationMenuStart = () => {
             <ActionAccessComponent action={ActionType.Extract}>
                 <Button
                     className="text-gray-700"
-                    label={t("Extractions")}
+                    label={t("extractions")}
                     icon="pi pi-receipt"
                     text
                     onClick={() => navigate("/extractions")}
@@ -74,7 +74,7 @@ const NavigationMenuStart = () => {
             <ActionAccessComponent action={ActionType.PlanTasks}>
                 <Button
                     className="text-gray-700"
-                    label={t("Tasks")}
+                    label={t("tasks")}
                     icon="pi pi-play-circle"
                     text
                     onClick={() => navigate("/tasks")}
@@ -84,43 +84,12 @@ const NavigationMenuStart = () => {
                 {/* <AccessMenu /> */}
                 <Button
                     className="text-gray-700"
-                    label={t("Access management")}
+                    label={t("access-management")}
                     icon="pi pi-user-edit"
                     text
                     onClick={(event) => navigate("/access")}
                 />
             </ActionAccessComponent>
-        </div>
-    );
-};
-
-interface AccessMenuProps {}
-
-const AccessMenu: React.FC<AccessMenuProps> = () => {
-    const { t } = useTranslation();
-    const navigate = useNavigate();
-
-    const menuRef = useRef<Menu | null>(null);
-
-    const items = [
-        {
-            label: t("Roles"),
-            command: () => navigate("/access?tab=roles"),
-        },
-        {
-            label: t("Departments"),
-            command: () => navigate("/access?tab=departments"),
-        },
-    ];
-    return (
-        <div>
-            <Button
-                label={t("Access management")}
-                icon="pi pi-user-edit"
-                text
-                onClick={(event) => menuRef.current!.toggle(event)}
-            />
-            <Menu ref={menuRef} model={items} popup />
         </div>
     );
 };

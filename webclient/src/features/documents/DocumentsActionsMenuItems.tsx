@@ -18,7 +18,7 @@ import { useDigitizationLists } from "../../contexts/DigitizationListsContext";
 import { useIntentions } from "../../contexts/categories/IntentionsContext";
 
 const DocumentsActionsMenuItems = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
     const { hasPermission } = useAccess();
     const {
         numSelected,
@@ -65,11 +65,11 @@ const DocumentsActionsMenuItems = () => {
     const items: MenuItem[] = [];
 
     const exportDocumentsMenuItem = {
-        label: t("documents.actions.export"),
+        label: t("actions.export"),
         icon: "pi pi-file-export",
         items: [
             {
-                label: t("documents.actions.export-to-xslx"),
+                label: t("actions.export-to-xlsx"),
                 command: () => exportDocuments(),
             },
         ],
@@ -78,23 +78,23 @@ const DocumentsActionsMenuItems = () => {
 
     if (hasPermission(ActionType.EditDatatable)) {
         const changeCategoryMenuItem = {
-            label: t("documents.actions.update-category.label"),
+            label: t("actions.update-category.label"),
             icon: "pi pi-tags",
             items: createCategoriesTieredMenu(),
         };
         items.push(changeCategoryMenuItem);
         const changePriorityMenuItem = {
-            label: t("documents.actions.update-extraction-priority.label"),
+            label: t("actions.update-extraction-priority.label"),
             icon: "pi pi-star",
             items: Array.from({ length: 5 }, (_, index) => ({
-                label: t(`documents.extraction-priority.${5 - index}`),
+                label: t(`extraction-priority.${5 - index}`, { ns: "types" }),
                 command: () => updateExtractionPriority(5 - index),
             })),
         };
         items.push(changePriorityMenuItem);
         items.push({ separator: true });
         const deleteMenuItem = {
-            label: t("documents.actions.delete.label"),
+            label: t("actions.delete.label"),
             icon: "pi pi-trash",
             className: "text-red-500",
             command: () => deleteDocuments(),
@@ -125,7 +125,7 @@ const DocumentsActionsMenuItems = () => {
 
     if (hasPermission(ActionType.Extract) && activeIntention) {
         const createDigitizationListMenuItem = {
-            label: t("documents.actions.create-digitization-list"),
+            label: t("actions.create-digitization-list"),
             icon: "pi pi-receipt",
             command: () =>
                 onInitiateListCreation(
@@ -142,7 +142,7 @@ const DocumentsActionsMenuItems = () => {
         digitizationListIdFacets.length === 0
     ) {
         const addDocumentsToDigitizationListMenuItem = {
-            label: t("documents.actions.add-to-digitization-list"),
+            label: t("actions.add-to-digitization-list"),
             icon: (
                 <i className="pi pi-receipt p-overlay-badge mr-2">
                     <Badge
@@ -175,7 +175,7 @@ const DocumentsActionsMenuItems = () => {
         digitizationListIdFacets.length === 1
     ) {
         const removeDocumentsFromDigitizationListMenuItem = {
-            label: t("documents.actions.remove-from-digitization-list"),
+            label: t("actions.remove-from-digitization-list"),
             icon: (
                 <i className="pi pi-receipt p-overlay-badge mr-2">
                     <Badge

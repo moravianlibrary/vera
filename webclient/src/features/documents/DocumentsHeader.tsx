@@ -10,7 +10,7 @@ import { useDocuments } from "../../contexts/DocumentsContext";
 interface DocumentsHeaderProps {}
 
 const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({}) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
 
     return (
         <Toolbar
@@ -20,7 +20,7 @@ const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({}) => {
                 <EsSelectionMenu
                     selectionProps={useDocuments()}
                     actionsMenuItems={DocumentsActionsMenuItems()}
-                    numSelectedLabel={t("documents.num-selected")}
+                    numSelectedLabel={t("num-selected")}
                 />
             }
         />

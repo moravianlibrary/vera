@@ -9,7 +9,7 @@ import { useTranslation } from "react-i18next";
 interface EsSearchBoxProps extends SearchBoxProps {}
 
 const EsSearchBox: React.FC<EsSearchBoxProps> = (props) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("elasticsearch");
 
     const { query, refine, clear } = useSearchBox(props);
     const [value, setValue] = useState("");
@@ -30,7 +30,7 @@ const EsSearchBox: React.FC<EsSearchBoxProps> = (props) => {
                 <InputText
                     type="text"
                     className="ais-SearchBox-input"
-                    placeholder={t("Search")}
+                    placeholder={t("search")}
                     value={value}
                     onChange={(e) => {
                         setValue(e.target.value);

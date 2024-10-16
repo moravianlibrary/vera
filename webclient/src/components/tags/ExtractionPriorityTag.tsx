@@ -9,12 +9,12 @@ interface ExtractionPriorityTagProps {
 const ExtractionPriorityTag: React.FC<ExtractionPriorityTagProps> = ({
     priority,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("types");
 
     if (priority) {
         return (
             <Tag
-                value={t(`documents.extraction-priority.${priority}`)}
+                value={t(`extraction-priority.${priority}`)}
                 className={`extraction-priority-${priority}`}
             />
         );

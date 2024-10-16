@@ -4,10 +4,10 @@ import { IndexDocument } from "../../../adapters/ApiDocuments";
 import { useTranslation } from "react-i18next";
 
 const CategoryColumnBody = (document: IndexDocument) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
 
     if (!document.category_path) {
-        return t("documents.table.no-category");
+        return t("table.no-category");
     }
     const categoryPath = document.category_path
         .map((category) => category.category_name)

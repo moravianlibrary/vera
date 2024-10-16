@@ -17,7 +17,7 @@ const EsSelectionMenu = <T extends { id: string }>({
     actionsMenuItems,
     numSelectedLabel,
 }: EsSelectionMenuProps<T>) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("elasticsearch");
     const { numSelected, areAllSelected, setAreAllSelected, cancelSelection } =
         selectionProps;
 
@@ -50,7 +50,7 @@ const EsSelectionMenu = <T extends { id: string }>({
                     onClick={toggleActionSelectorMenu}
                     aria-controls="popup_menu_left"
                     aria-haspopup
-                    tooltip={t("Documents actions")}
+                    tooltip={t("selection.actions-menu")}
                     tooltipOptions={{ position: "top", showDelay: 500 }}
                 />
                 <Button
@@ -59,9 +59,7 @@ const EsSelectionMenu = <T extends { id: string }>({
                     severity={!areAllSelected ? "info" : "secondary"}
                     disabled={areAllSelected}
                     onClick={() => setAreAllSelected(true)}
-                    tooltip={t(
-                        "Select all documents that match the specified search criteria"
-                    )}
+                    tooltip={t("selection.all")}
                     tooltipOptions={{ position: "top", showDelay: 500 }}
                 />
                 <Button
@@ -70,13 +68,13 @@ const EsSelectionMenu = <T extends { id: string }>({
                     severity={numSelected > 0 ? "info" : "secondary"}
                     disabled={numSelected === 0}
                     onClick={cancelSelection}
-                    tooltip={t("Cancel document selection")}
+                    tooltip={t("selection.cancel")}
                     tooltipOptions={{ position: "top", showDelay: 500 }}
                 />
             </div>
             <Badge
                 className="surface-50 text-gray-600"
-                value={`${t(numSelectedLabel)}: ${numSelected}`}
+                value={t(numSelectedLabel, { count: numSelected })}
             />
         </div>
     );

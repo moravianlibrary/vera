@@ -11,7 +11,7 @@ interface EsFacetProps extends RefinementListProps {
 }
 
 const EsFacet: React.FC<EsFacetProps> = (props) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("elasticsearch");
     const {
         items,
         refine,
@@ -70,8 +70,8 @@ const EsFacet: React.FC<EsFacetProps> = (props) => {
                     }
                     label={
                         isShowingMore
-                            ? t("es.facet.show-less")
-                            : t("es.facet.show-more")
+                            ? t("facet.show-less")
+                            : t("facet.show-more")
                     }
                     onClick={toggleShowMore}
                 />

@@ -34,8 +34,7 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
     leftContent,
     numFoundText,
 }) => {
-    const { t } = useTranslation();
-
+    const { t } = useTranslation("common");
     const handlePageChange = (event: PaginatorPageChangeEvent) => {
         if (onPageChange) {
             onPageChange(event);
@@ -82,10 +81,7 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
             return null;
         }
         return (
-            <Badge
-                className="surface-50 text-gray-600"
-                value={`${t(numFoundText)}: ${numFound}`}
-            />
+            <Badge className="surface-50 text-gray-600" value={numFoundText} />
         );
     };
 

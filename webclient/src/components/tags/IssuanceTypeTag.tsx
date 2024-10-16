@@ -12,7 +12,7 @@ const IssuanceTypeTag: React.FC<IssuanceTypeTagProps> = ({
     issuanceType,
     includeMaterialType,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("types");
 
     switch (issuanceType) {
         case IssuanceType.Volume:

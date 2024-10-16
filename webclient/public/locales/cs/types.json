@@ -1,0 +1,52 @@
+{
+    "identifier-type": {
+        "Sysno": "Systémove číslo",
+        "Barcode": "Čárový kód",
+        "Signature": "Signatura"
+    },
+    "task-type": {
+        "ReindexCatalogRecords": "Reindexovat katalogové záznamy",
+        "ReevaluateCatalogRecordsDifferences": "Přepočítat rozdíly mezi katalogovými záznamy",
+        "SyncCatalogRecordsWithCatalogs": "Synchronizovat katalogové záznamy s katalogy (MZK, SKC, ČNB)",
+        "PredictPeriodicalsPageCount": "Predikovat počet stran periodik",
+        "ReindexDocuments": "Reindexovat dokumenty",
+        "SyncDocumentsWithCatalogs": "Synchronizovat dokumenty s katalogy",
+        "SyncDocumentsWithDigitizationRegistry": "Synchronizovat dokumenty s registrom digitalizace"
+    },
+    "document-type": {
+        "periodical": "Periodikum",
+        "periodical-volume": "Ročník periodika",
+        "periodical-bundle": "Svazek čísel periodika",
+        "volume": "Ročník",
+        "bundle": "Svazek čísel",
+        "monograph": "Monografie",
+        "monograph-unit": "Jednotka monografie",
+        "unit": "Jednotka",
+        "graphic": "Grafika",
+        "map": "Mapa",
+        "music": "Zvuk",
+        "other": "Ostatní",
+        "invalid": "Neplatná kombinace"
+    },
+    "digitization-state": {
+        "Finished": "Dokončeno",
+        "InProgress": "Probiha",
+        "Planned": "Naplánováno",
+        "NotDigitized": "Nedigitalizováno"
+    },
+    "extractable": {
+        "isExtractable": "Může být extrahovaný",
+        "extracted": "Již extrahovaný",
+        "missingCnb": "Chybí ČNB",
+        "missingPages": "Chybí počet stran",
+        "notExtractable": "Nemůže být extrahovaný"
+    },
+    "extraction-priority": {
+        "5": "Najvyšší",
+        "4": "Vysoká",
+        "3": "Strední",
+        "2": "Nizká",
+        "1": "Najnižší",
+        "?": "Neznámá"
+    }
+}

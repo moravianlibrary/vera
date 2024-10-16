@@ -34,15 +34,10 @@ const Categories: React.FC<CategoriesProps> = (props) => {
 };
 
 const CategoriesContent: React.FC<CategoriesProps> = (props) => {
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
 
-    const {
-        categories,
-        extractionId,
-        setExtractionId,
-        digitizationListId,
-        setDigitizationListId,
-    } = useCategories();
+    const { extractionId, setExtractionId, setDigitizationListId } =
+        useCategories();
 
     const [viewType, setViewType] = useState<CategoryViewType>(
         CategoryViewType.CategoryTable

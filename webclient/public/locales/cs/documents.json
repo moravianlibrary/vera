@@ -1,0 +1,213 @@
+{
+    "num-found": "Počet nalezených dokumentů: {{count}}",
+    "num-selected": "Počet vybráných dokumentů: {{count}}",
+    "add-documents": "Přidat dokumenty",
+    "properties": {
+        "id": "ID",
+        "sysno": "Systémové číslo",
+        "barcode": "Čárový kód",
+        "volume": "Ročník",
+        "volume_number": "Ročník (číslo)",
+        "volume_year": "Rok",
+        "volume_year_number": "Rok (číslo)",
+        "bundle": "Svazek",
+        "bundle_number": "Svazek (číslo)",
+        "cnb": "ČNB",
+        "language": "Jazyk",
+        "signature": "Signatura",
+        "isxn": "ISXN",
+        "added_at": "Přidáno",
+        "added_by": "Přidal",
+        "category_path": "Kategorie",
+        "skc_sysno": "SKC systémové číslo",
+        "has_valid_main_record": "Záznam je validný",
+        "cnb_sysno": "ČNB systémové číslo",
+        "has_valid_cnb": "ČNB je validné",
+        "digitization_registry_id": "ID register digitalizace",
+        "digitization_state": "Stav digitalizace",
+        "page_count": "Počet stran",
+        "page_count_catalog": "Počet stran v katalogu",
+        "page_count_manual": "Počet stran ručně zadán",
+        "page_count_predicted": "Počet stran predikovaný",
+        "extraction_priority": "Priorita extrakce",
+        "is_extractable": "Extrahovatelny",
+        "digitization_list_id": "ID seznamu digitalizace",
+        "material_type": "Typ materialu",
+        "issuance_type": "Typ vydáni",
+        "title": "Název",
+        "size": "Velikost",
+        "location_uri": "Adresa",
+        "publisher": "Vydavatel",
+        "publishing_place": "Místo vydáni",
+        "publishing_year": "Rok vydání",
+        "languages": "Jazyky",
+        "frequencies": "Frekvence"
+    },
+    "facets": {
+        "is-extractable": "Extrahovatelny",
+        "has-valid-main-record": "Záznam je validný",
+        "has-valid-cnb": "ČNB je validné",
+        "digitization-state": "Stav digitalizace",
+        "material-type": "Typ materialu",
+        "issuance-type": "Typ vydáni",
+        "added-by": "Přidal",
+        "category": "Kategorie",
+        "digitization-list": "Seznam digitalizace",
+        "page-count": "Počet stran"
+    },
+    "table": {
+        "columns": {
+            "category": "Kategorie",
+            "type": "Typ",
+            "title": "Název",
+            "description": "Popis",
+            "page-count": "Počet stran",
+            "digitization-state": "Stav digitalizace",
+            "extraction-priority": "Priorita",
+            "extraction": "Extrakce",
+            "added-by": "Přidal"
+        },
+        "page-count": {
+            "catalog": "{{count}} z katalogu",
+            "manually": "{{count}} ručně zadán",
+            "predicted": "{{count}} predikovaný"
+        }
+    },
+    "query-params": {
+        "query": "Vyhledávaní: {{value}}",
+        "all": "Všechny dokumenty",
+        "is_extractable": {
+            "true": "Může být extrahovaný",
+            "false": "Nemůže být extrahovaný"
+        },
+        "has_valid_main_record": {
+            "true": "Záznam je validný",
+            "false": "Záznam není validný"
+        },
+        "has_valid_cnb": {
+            "true": "ČNB je validné",
+            "false": "ČNB není validné"
+        },
+        "digitization_state": {
+            "NotDigitized": "Nedigitalizováno",
+            "Planned": "Plánováno",
+            "InProgress": "Probíhá",
+            "Finished": "Dokončeno"
+        },
+        "material_type": {
+            "Book": "Monografie",
+            "ContinuingResource": "Periodikum",
+            "Map": "Mapa",
+            "Music": "Hudba",
+            "Other": "Ostatní"
+        },
+        "issuance_type": {
+            "Volume": "Ročník",
+            "Unit": "Vydáni",
+            "Bundle": "Svazek čísel"
+        },
+        "added_by": "Přidal: {{value}}",
+        "category_id": "Id kategorie: {{value}}",
+        "digitization_list_id": "Id seznamu digitalizace: {{value}}"
+    },
+    "sort-by": {
+        "last-edited": "Poslední editace",
+        "newest": "Nejnovejší",
+        "oldest": "Nejstarší",
+        "title-asc": "Název (A - Z)",
+        "title-desc": "Název (Z - A)"
+    },
+    "actions": {
+        "export": "Exportovat do souboru",
+        "export-to-xlsx": "Exportovat do XLSX",
+        "update-category": {
+            "label": "Změnit kategorii",
+            "confirm_one": "Opravdu chcete změnit kategorii na \"{{category}}\" pro 1 vybraný dokument?",
+            "confirm_few": "Opravdu chcete změnit kategorii na \"{{category}}\" pro {{count}} vybrané dokumenty?",
+            "confirm_other": "Opravdu chcete změnit kategorii na \"{{category}}\" pro {{count}} vybraných dokumentů?",
+            "success": "Kategorie byla úspěšně změnena"
+        },
+        "update-extraction-priority": {
+            "label": "Změnit prioritu",
+            "confirm": {
+                "1_one": "Opravdu chcete změnit prioritu na \"Najnižší\" pro 1 vybraný dokument?",
+                "1_few": "Opravdu chcete změnit prioritu na \"Najnižší\" pro {{count}} vybrané dokumenty?",
+                "1_other": "Opravdu chcete změnit prioritu na \"Najnižší\" pro {{count}} vybraných dokumentů?",
+                "2_one": "Opravdu chcete změnit prioritu na \"Nizká\" pro 1 vybraný dokument?",
+                "2_few": "Opravdu chcete změnit prioritu na \"Nizká\" pro {{count}} vybrané dokumenty?",
+                "2_other": "Opravdu chcete změnit prioritu na \"Nizká\" pro {{count}} vybraných dokumentů?",
+                "3_one": "Opravdu chcete změnit prioritu na \"Strední\" pro 1 vybraný dokument?",
+                "3_few": "Opravdu chcete změnit prioritu na \"Strední\" pro {{count}} vybrané dokumenty?",
+                "3_other": "Opravdu chcete změnit prioritu na \"Strední\" pro {{count}} vybraných dokumentů?",
+                "4_one": "Opravdu chcete změnit prioritu na \"Vysoká\" pro 1 vybraný dokument?",
+                "4_few": "Opravdu chcete změnit prioritu na \"Vysoká\" pro {{count}} vybrané dokumenty?",
+                "4_other": "Opravdu chcete změnit prioritu na \"Vysoká\" pro {{count}} vybraných dokumentů?",
+                "5_one": "Opravdu chcete změnit prioritu na \"Najvyšší\" pro 1 vybraný dokument?",
+                "5_few": "Opravdu chcete změnit prioritu na \"Najvyšší\" pro {{count}} vybrané dokumenty?",
+                "5_other": "Opravdu chcete změnit prioritu na \"Najvyšší\" pro {{count}} vybraných dokumentů?"
+            },
+            "success": "Prioritá byla úspěšně změnena"
+        },
+        "delete": {
+            "label": "Smazat dokumenty",
+            "confirm_one": "Opravdu chcete smazat 1 vybraný dokument?",
+            "confirm_few": "Opravdu chcete smazat {{count}} vybrané dokumenty?",
+            "confirm_other": "Opravdu chcete smazat {{count}} vybraných dokumentů?",
+            "success": "Dokumenty byly úspěšně smazány"
+        },
+        "create-digitization-list": "Vytvořit seznam digitalizace",
+        "add-to-digitization-list": "Přidat do seznamu digitalizace",
+        "remove-from-digitization-list": "Odstranit ze seznamu digitalizace"
+    },
+    "add": {
+        "next-step": "Dále",
+        "prev-step": "Zpět",
+        "step": {
+            "settings": "Nastavení vkládání",
+            "values": "Výběr hodnot",
+            "issues": "Výběr vydání",
+            "results": "Výsledek"
+        },
+        "settings": {
+            "choose-identifier": "Vyber identifikátor",
+            "choose-category": "Vyber kategorii",
+            "insert-another": "Vkládat další po úspěšném vložení",
+            "extraction-priority": "Extrahovat s prioritou"
+        },
+        "values": {
+            "text-input-header": "Hodnotou",
+            "file-input-header": "Ze souborů"
+        },
+        "results": {
+            "insert-another": "Vložit další",
+            "show-details": "Zobrazit detaily",
+            "finish": "Skončit",
+            "show-set-page-count": "Zobrazit nastaveni počtu stran",
+            "accept-set-page-count": "Nastavit počty stran",
+            "status": {
+                "AlephNotAvailable": "Chyba při připojování katalogu",
+                "AlephRequestFailed": "Chyba při zpracování odpovědi katalogu",
+                "InvalidSysno": "Neplatné systémové číslo",
+                "InvalidSysnoBase": "Neplatný základ systémového čísla",
+                "AlephRecordNotFound_one": "Dokument nenalezen v katalogu",
+                "AlephRecordNotFound_few": "{{count}} dokumeny nenalezeny v katalogu",
+                "AlephRecordNotFound_other": "{{count}} dokumentů nenalezenych v katalogu",
+                "MultipleAlephRecordsFound": "Více než jeden dokument nalezen v katalogu",
+                "InvalidAlephRecord": "Neplatný zaznam v katalogu",
+                "InvalidDigitizationState": "Neplatný stav digitalizace",
+                "UnknownError": "Neznámá chyba",
+                "DigitizationForbidden": "Digitizace dokumentu je zakázána",
+                "AlreadyDigitized": "Dokument již digitalizován",
+                "DigitizationInProgress": "Digitalizace dokumentu probíhá",
+                "DigitizationPlanned": "Digitalizace dokumentu naplánována",
+                "AllIssuesProcessed": "Všechny vydání už byly zpracovány",
+                "UniqueViolation": "Dokument s rovnakými identifikátormi je již v databázi",
+                "MultipleIssues": "Dokument obsahuje více nespracovaných vydání",
+                "Success": "Dokument byl úspěšně přidán",
+                "Success_few": "{{count}} dokumenty byly úspěšně přidány",
+                "Success_other": "{{count}} dokumentů byl úspěšně přidán",
+                "without-page-count": "{{count}} dokumentů nema nastaven počet stran"
+            }
+        }
+    }
+}

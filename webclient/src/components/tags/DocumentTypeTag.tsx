@@ -28,7 +28,7 @@ function isInvalidCombination(
 }
 
 const DocumentTypeTag: React.FC<DocumentTypeTagProps> = ({ document }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("types");
 
     if (isInvalidCombination(document.material_type, document.issuance_type)) {
         return (

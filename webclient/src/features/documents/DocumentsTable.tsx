@@ -19,7 +19,7 @@ interface DocumentsTableProps {}
 const DocumentsTable: React.FC<DocumentsTableProps> & {
     Paginator: React.FC;
 } = ({}) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
     const { items, currentPageSelected, handleDataTableSelectionChange } =
         useDocuments();
 
@@ -37,48 +37,45 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
 
             <Column
                 field="category_path"
-                header={t("documents.table-columns.category")}
+                header={t("table.columns.category")}
                 body={CategoryColumnBody}
             />
             <Column
                 field="type"
-                header={t("documents.table-columns.type")}
+                header={t("table.columns.type")}
                 body={DocumentTypeColumnBody}
             />
             <Column
                 field="title"
-                header={t("documents.table-columns.title")}
+                header={t("table.columns.title")}
                 body={TitleColumnBody}
             />
             <Column
                 field="description"
-                header={t("documents.table-columns.description")}
+                header={t("table.columns.description")}
                 body={DescriptionColumnBody}
             />
             <Column
                 field="pages_count"
                 body={PageCountColumnBody}
-                header={t("documents.table-columns.page-count")}
+                header={t("table.columns.page-count")}
             />
             <Column
                 field="digitization_state"
-                header={t("documents.table-columns.digitization-state")}
+                header={t("table.columns.digitization-state")}
                 body={DigitizationStateColumnBody}
             />
             <Column
                 field="extraction_priority"
-                header={t("documents.table-columns.extraction-priority")}
+                header={t("table.columns.extraction-priority")}
                 body={ExtractionPriorityColumnBody}
             />
             <Column
                 field="extractable"
-                header={t("documents.table-columns.extraction")}
+                header={t("table.columns.extraction")}
                 body={DocumentStateColumnBody}
             />
-            <Column
-                field="added_by"
-                header={t("documents.table-columns.added-by")}
-            />
+            <Column field="added_by" header={t("table.columns.added-by")} />
 
             <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
         </DataTable>
@@ -86,6 +83,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
 };
 
 const DocumentsTablePaginator: React.FC = () => {
+    const { t } = useTranslation("documents");
     const { numFound, refresh, page, setPage, pageSize, setPageSize } =
         useDocuments();
 
@@ -97,7 +95,7 @@ const DocumentsTablePaginator: React.FC = () => {
             onPageChangeNew={setPage}
             onPageSizeChange={setPageSize}
             onRefresh={refresh}
-            numFoundText="documents.num-found"
+            numFoundText={t("num-found", { count: numFound })}
         />
     );
 };

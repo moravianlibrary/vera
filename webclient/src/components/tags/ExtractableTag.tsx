@@ -8,12 +8,12 @@ interface ExtractableTagProps {
 }
 
 const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("types");
 
     if (document.is_extractable) {
         return (
             <Tag
-                value={t(`documents.extractable.isExtractable`)}
+                value={t(`extractable.isExtractable`)}
                 className="extractable-is-extractable"
             />
         );
@@ -21,7 +21,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
     if (document.digitization_list_id) {
         return (
             <Tag
-                value={t(`documents.extractable.extracted`)}
+                value={t(`extractable.extracted`)}
                 className="extractable-extracted"
             />
         );
@@ -29,7 +29,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
     if (document.cnb === null) {
         return (
             <Tag
-                value={t(`documents.extractable.missingCnb`)}
+                value={t(`extractable.missingCnb`)}
                 className="extractable-missing-cnb"
             />
         );
@@ -37,7 +37,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
     if (document.page_count === 0) {
         return (
             <Tag
-                value={t(`documents.extractable.missingPages`)}
+                value={t(`extractable.missingPages`)}
                 className="extractable-missing-pages"
             />
         );
@@ -45,7 +45,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
 
     return (
         <Tag
-            value={t(`documents.extractable.notExtractable`)}
+            value={t(`extractable.notExtractable`)}
             className="extractable-not-extractable"
         />
     );

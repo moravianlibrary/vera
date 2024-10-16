@@ -8,13 +8,13 @@ import { InsertDocumentsProvider } from "../../contexts/insert-documents/InsertD
 interface DocumentsInsertMenuProps {}
 
 const DocumentsInsertMenu: React.FC<DocumentsInsertMenuProps> = ({}) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
     const [isInsertDialogVisible, setIsInsertDialogVisible] = useState(false);
 
     return (
         <div>
             <Button
-                label={t("insert_document")}
+                label={t("add-documents")}
                 icon="pi pi-plus"
                 outlined
                 onClick={() => setIsInsertDialogVisible(true)}

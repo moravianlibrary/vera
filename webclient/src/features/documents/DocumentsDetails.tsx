@@ -17,7 +17,6 @@ interface DocumentDetailsDialogProps {
 
 interface DocumentDetailsFieldType {
     attribute: string;
-    label: string;
     transform?: (value: any) => any;
     createLink?: (value: any) => string;
     editor?: React.FC<EditorProps<any>>;
@@ -48,82 +47,72 @@ function createCnbLink(sysno: string) {
 }
 
 const DocumentFields = [
-    { attribute: "id", label: "ID" },
+    { attribute: "id" },
     {
         attribute: "sysno",
-        label: "System number",
         createLink: createMzkAlephLink,
     },
-    { attribute: "barcode", label: "Barcode" },
-    { attribute: "volume", label: "Volume" },
-    { attribute: "volume_number", label: "Volume (number)" },
-    { attribute: "volume_year", label: "Volume year" },
-    { attribute: "volume_year_number", label: "Volume year (number)" },
-    { attribute: "bundle", label: "Bundle" },
-    { attribute: "bundle_number", label: "Bundle (number)" },
-    { attribute: "cnb", label: "CNB" },
-    { attribute: "language", label: "Language" },
-    { attribute: "signature", label: "Signature" },
-    { attribute: "isxn", label: "ISXN" },
+    { attribute: "barcode" },
+    { attribute: "volume" },
+    { attribute: "volume_number" },
+    { attribute: "volume_year" },
+    { attribute: "volume_year_number" },
+    { attribute: "bundle" },
+    { attribute: "bundle_number" },
+    { attribute: "cnb" },
+    { attribute: "language" },
+    { attribute: "signature" },
+    { attribute: "isxn" },
     {
         attribute: "added_at",
-        label: "Added at",
         transform: (value) => format(new Date(value), "dd.MM.yyyy HH:mm:ss"),
     },
-    { attribute: "added_by", label: "Added by" },
+    { attribute: "added_by" },
     {
         attribute: "category_path",
-        label: "Category path",
         transform: (value) => value.map((x) => x.category_name).join(" > "),
     },
     {
         attribute: "skc_sysno",
-        label: "SKC system number",
         createLink: createSkcLink,
     },
-    { attribute: "has_valid_main_record", label: "Has valid main record" },
+    { attribute: "has_valid_main_record" },
     {
         attribute: "cnb_sysno",
-        label: "CNB system number",
         createLink: createCnbLink,
     },
-    { attribute: "has_valid_cnb", label: "Has valid CNB" },
+    { attribute: "has_valid_cnb" },
     {
         attribute: "digitization_registry_id",
-        label: "Digitization registry ID",
     },
     {
         attribute: "digitization_state",
-        label: "Digitization state",
     },
-    { attribute: "page_count", label: "Page count" },
-    { attribute: "page_count_catalog", label: "Page count catalog" },
+    { attribute: "page_count" },
+    { attribute: "page_count_catalog" },
     {
         attribute: "page_count_manual",
-        label: "Page count manual",
         editable: true,
     },
-    { attribute: "page_count_predicted", label: "Page count predicted" },
-    // { attribute: "dedicated_scanner", label: "Dedicated scanner" },
+    { attribute: "page_count_predicted" },
+    // { attribute: "dedicated_scanner" },
     {
         attribute: "extraction_priority",
-        label: "Extraction priority",
         editor: ExtractionPriorityEditor,
     },
-    { attribute: "is_extractable", label: "Is extractable" },
-    { attribute: "digitization_list_id", label: "Digitization list ID" },
-    { attribute: "material_type", label: "Material type" },
-    { attribute: "issuance_type", label: "Issuance type" },
-    { attribute: "title", label: "Title" },
-    { attribute: "size", label: "Size" },
-    { attribute: "location_uri", label: "Location URI" },
-    { attribute: "publisher", label: "Publisher" },
-    { attribute: "publishing_place", label: "Publishing place" },
-    { attribute: "publishing_year", label: "Publishing year" },
-    { attribute: "languages", label: "Languages" },
+    { attribute: "is_extractable" },
+    { attribute: "digitization_list_id" },
+    { attribute: "material_type" },
+    { attribute: "issuance_type" },
+    { attribute: "title" },
+    { attribute: "size" },
+    { attribute: "location_uri", createLink: (value) => value },
+    { attribute: "publisher" },
+    { attribute: "publishing_place" },
+    { attribute: "publishing_year" },
+    { attribute: "languages" },
     {
         attribute: "frequencies",
-        label: "Frequencies",
         transform: (fs: Frequency[]) =>
             fs
                 .map((f) =>
@@ -175,18 +164,17 @@ const DocumentDetailsItem: React.FC<DocumentDetailsFieldProps> = ({
     document,
     field,
 }) => {
-    const { t } = useTranslation();
-
+    const { t } = useTranslation("documents");
     const [editMode, setEditMode] = useState(false);
 
     if (!document[field.attribute]) return null;
 
     return (
         <div
-            key={field.label}
+            key={field.attribute}
             className="flex justify-content-between align-items-center gap-5 m-0"
         >
-            <label>{t(field.label)}:</label>
+            <label>{t(`properties.${field.attribute}`)}:</label>
             {!editMode && (
                 <DocumentDetailsFieldValue
                     value={

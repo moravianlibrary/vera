@@ -8,7 +8,7 @@ interface MaterialTypeTagProps {
 }
 
 const MaterialTypeTag: React.FC<MaterialTypeTagProps> = ({ materialType }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("types");
 
     switch (materialType) {
         case MaterialType.ContinuingResource:

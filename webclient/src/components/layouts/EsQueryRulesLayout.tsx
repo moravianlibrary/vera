@@ -11,16 +11,14 @@ const EsQueryRulesLayout: React.FC<EsQueryRulesLayoutProps> = ({
     sortBy,
     facets,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("elasticsearch");
 
     return (
         <div className="layout-es-query-rules">
             {sortBy && (
-                <LabeledSection label={t("common.sort-by")}>
-                    {sortBy}
-                </LabeledSection>
+                <LabeledSection label={t("sort-by")}>{sortBy}</LabeledSection>
             )}
-            <LabeledSection label={t("common.facets")}>{facets}</LabeledSection>
+            <LabeledSection label={t("facets")}>{facets}</LabeledSection>
         </div>
     );
 };

@@ -1,16 +1,10 @@
 import i18n from "i18next";
+import HttpBackend from "i18next-http-backend";
 import { initReactI18next } from "react-i18next";
 
 const resources = {
     cs: {
         translation: {
-            home: "Domov",
-            board: "Dokumenty",
-            categories: "Kategorie",
-            access: "Správa oprávnění",
-            login: "Přihlásit se",
-            logout: "Odhlásit se",
-
             cancel: "Zrušit",
             clear: "Vyčistit",
             username: "Uživatelské jméno",
@@ -37,23 +31,6 @@ const resources = {
             update_record_apply: "Aktualizovat",
             delete_record_apply: "Vymazat",
             "Document already exists": "Dokument již přidán",
-
-            sysno: "Systémové číslo",
-            volume_number: "Ročník",
-            volume: "Ročník",
-            item_number: "Číslo periodika",
-            category: "Kategorie",
-            title: "Název",
-            pages_count: "Počet stran",
-            signature: "Signatura",
-            issn: "ISSN",
-            isbn: "ISBN",
-            barcode: "Čárový kód",
-            creator: "Vytvořil",
-            created_at: "Vytvořeno",
-            extractor: "Extrahoval",
-            extracted_at: "Extrahováno",
-            year_issued: "Rok vydání",
 
             Name: "Název",
             "Pages count": "Počet stran",
@@ -123,7 +100,6 @@ const resources = {
                 "Uživatel má přiřazen více než jedno oddělení",
             app_not_available: "Aplikace není dostupna",
 
-            tasks: "Úkoly",
             id: "Id",
             task_type: "Název úkolu",
             owner: "Vlastník",
@@ -139,8 +115,6 @@ const resources = {
             Finished: "Dokončeno",
             Failed: "Chyba",
             Killed: "Zrušeno",
-
-            PredictVolumePages: "Predikce počtu stran ročníků",
 
             invalid_percentage_distribution: "Neplatné procentuální rozdělení",
             unique_category_name_violation:
@@ -206,7 +180,6 @@ const resources = {
                 "Povoleno upravovat přístupová nastavení",
             "Administrating database allowed": "Povoleno spravovat databázi",
 
-            Extractions: "Extrakce",
             Extractor: "Extrahoval",
             "Extracted at": "Extrahováno",
             "Target pages count": "Cílový počet stránek",
@@ -303,7 +276,6 @@ const resources = {
             "Number of found documents": "Počet nalezených dokumentů",
             "Active filtering": "Aktivní filtr",
             "Cancel filtering": "Zrušit filtr",
-            "Cancel document selection": "Zrušit výběr dokumentu",
             "Delete selected documents": "Smazat vybrané dokumenty",
             "Other options": "Ostatní možnosti",
 
@@ -339,9 +311,6 @@ const resources = {
             "Pages count updated": "Počet stránek aktualizovan",
             "Pages count update failed":
                 "Aktualizace počtu stránek se nezdařila",
-            "Pages count - from catalog": "Počet stránek - z katalogu",
-            "Pages count - predicted": "Počet stránek - predikovaný",
-            "Pages count - set manually": "Počet stránek - ručně zadán",
             "Set pages count": "Nastavit počet stránek",
             "Set pages count and go to next document":
                 "Nastavit počet stránek a přejít na další dokument",
@@ -367,10 +336,6 @@ const resources = {
             "Start task": "Spustit úkol",
             "Documents actions": "Akce nad dokumenty",
 
-            "Confirm action": "Potvrzení akce",
-            Yes: "Ano",
-            No: "Ne",
-
             "Are you sure you want to predict periodical volume pages for {{count}} selected documents?":
                 "Opravdu chcete predikovat počet stránek ročníků periodík pro {{count}} vybraných dokumentů?",
             "Are you sure you want to sync {{count}} selected documents with digitization registry?":
@@ -388,8 +353,6 @@ const resources = {
             "Digitization list created successfully":
                 "Seznam digitalizace úspěšně vytvořen",
             "Task started successfully": "Ukol úspěšně spusten",
-
-            Search: "Vyhledávaní",
 
             "Please select a category": "Vyberte prosím kategorii",
 
@@ -603,33 +566,6 @@ const resources = {
             Yes: "Ano",
             No: "Ne",
 
-            "Catalog records": "Katalogové záznamy",
-
-            "digitizationState.Finished": "Dokončeno",
-            "digitizationState.InProgress": "Probiha",
-            "digitizationState.Planned": "Naplánováno",
-            "digitizationState.NotDigitized": "Nedigitalizováno",
-
-            "documents.datatable-visual": "Tabulka - příznaky",
-            "documents.datatable-data": "Tabulka - data",
-            "documents.chart": "Graf",
-
-            "document-type": {
-                periodical: "Periodikum",
-                "periodical-volume": "Ročník periodika",
-                "periodical-bundle": "Svazek čísel periodika",
-                volume: "Ročník",
-                bundle: "Svazek čísel",
-                monograph: "Monografie",
-                "monograph-unit": "Jednotka monografie",
-                unit: "Jednotka",
-                graphic: "Grafika",
-                map: "Mapa",
-                music: "Zvuk",
-                other: "Ostatní",
-                invalid: "Neplatná kombinace",
-            },
-
             "catalog.record.mzk": "MZK katalog záznam",
             "catalog.record.cnb": "ČNB katalog záznam",
             "catalog.record.skc": "SKC katalog záznam",
@@ -640,45 +576,10 @@ const resources = {
             "documents.table.no-category": "Bez kategorie",
 
             common: {
-                yes: "Ano",
-                no: "Ne",
-                "sort-by": "Seřadit podle",
-                facets: "Filtrovat podle",
-                "show-more": "Zobrazit víc",
-                "show-less": "Zobrazit mín",
                 select: {
                     "task-type": {
                         placeholder: "Vybrat typ úkolu",
                     },
-                },
-            },
-
-            es: {
-                facet: {
-                    "show-more": "Zobrazit víc",
-                    "show-less": "Zobrazit mín",
-                },
-            },
-
-            enums: {
-                "identifier-type": {
-                    Sysno: "Systémove číslo",
-                    Barcode: "Čárový kód",
-                    Signature: "Signatura",
-                },
-                "task-type": {
-                    ReindexCatalogRecords: "Reindexovat katalogové záznamy",
-                    ReevaluateCatalogRecordsDifferences:
-                        "Přepočítat rozdíly mezi katalogovými záznamy",
-                    SyncCatalogRecordsWithCatalogs:
-                        "Synchronizovat katalogové záznamy s katalogy (MZK, SKC, ČNB)",
-                    PredictPeriodicalsPageCount:
-                        "Predikovat počet stran periodik",
-                    ReindexDocuments: "Reindexovat dokumenty",
-                    SyncDocumentsWithCatalogs:
-                        "Synchronizovat dokumenty s katalogy",
-                    SyncDocumentsWithDigitizationRegistry:
-                        "Synchronizovat dokumenty s registrom digitalizace",
                 },
             },
 
@@ -756,192 +657,6 @@ const resources = {
                 },
             },
 
-            documents: {
-                "num-found": "Počet nalezených dokumentů",
-                "num-selected": "Počet vybráných dokumentů",
-                facets: {
-                    "is-extractable": "Extrahovatelny",
-                    "has-valid-main-record": "Záznam je validný",
-                    "has-valid-cnb": "ČNB je validné",
-                    "digitization-state": "Stav digitalizace",
-                    "material-type": "Typ materialu",
-                    "issuance-type": "Typ vydáni",
-                    "added-by": "Přidal",
-                    category: "Kategorie",
-                    "digitization-list": "Seznam digitalizace",
-                    "page-count": "Počet stran",
-                },
-                "extraction-priority": {
-                    5: "Najvyšší",
-                    4: "Vysoká",
-                    3: "Strední",
-                    2: "Nizká",
-                    1: "Najnižší",
-                    "?": "Neznámá",
-                },
-                "table-columns": {
-                    category: "Kategorie",
-                    type: "Typ",
-                    title: "Název",
-                    description: "Popis",
-                    "page-count": "Počet stran",
-                    "digitization-state": "Stav digitalizace",
-                    "extraction-priority": "Priorita",
-                    extraction: "Extrakce",
-                    "added-by": "Přidal",
-                },
-                "query-params": {
-                    query: "Vyhledávaní: {{value}}",
-                    all: "Všechny dokumenty",
-                    is_extractable: {
-                        true: "Může být extrahovaný",
-                        false: "Nemůže být extrahovaný",
-                    },
-                    has_valid_main_record: {
-                        true: "Záznam je validný",
-                        false: "Záznam není validný",
-                    },
-                    has_valid_cnb: {
-                        true: "ČNB je validné",
-                        false: "ČNB není validné",
-                    },
-                    digitization_state: {
-                        NotDigitized: "Nedigitalizováno",
-                        Planned: "Plánováno",
-                        InProgress: "Probíhá",
-                        Finished: "Dokončeno",
-                    },
-                    material_type: {
-                        Book: "Monografie",
-                        ContinuingResource: "Periodikum",
-                        Map: "Mapa",
-                        Music: "Hudba",
-                        Other: "Ostatní",
-                    },
-                    issuance_type: {
-                        Volume: "Ročník",
-                        Unit: "Vydáni",
-                        Bundle: "Svazek čísel",
-                    },
-                    added_by: "Přidal: {{value}}",
-                    category_id: "Id kategorie: {{value}}",
-                    digitization_list_id: "Id seznamu digitalizace: {{value}}",
-                },
-                "sort-by": {
-                    "last-edited": "Poslední editace",
-                    newest: "Nejnovejší",
-                    oldest: "Nejstarší",
-                    "title-asc": "Název (A - Z)",
-                    "title-desc": "Název (Z - A)",
-                },
-                actions: {
-                    export: "Exportovat do souboru",
-                    "export-to-xlsx": "Exportovat do XLSX",
-                    "update-category": {
-                        label: "Změnit kategorii",
-                        confirm_one:
-                            'Opravdu chcete změnit kategorii na "{{category}}" pro 1 vybraný dokument?',
-                        confirm_few:
-                            'Opravdu chcete změnit kategorii na "{{category}}" pro {{count}} vybrané dokumenty?',
-                        confirm_other:
-                            'Opravdu chcete změnit kategorii na "{{category}}" pro {{count}} vybraných dokumentů?',
-                        success: "Kategorie byla úspěšně změnena",
-                    },
-                    "update-extraction-priority": {
-                        label: "Změnit prioritu",
-                        confirm: "Potvrzení změny",
-                    },
-                    delete: { label: "Smazat dokumenty", confirm: "" },
-                    "create-digitization-list": "Vytvořit seznam digitalizace",
-                    "add-to-digitization-list":
-                        "Přidat do seznamu digitalizace",
-                    "remove-from-digitization-list":
-                        "Odstranit ze seznamu digitalizace",
-                },
-                extractable: {
-                    isExtractable: "Může být extrahovaný",
-                    extracted: "Již extrahovaný",
-                    missingCnb: "Chybí ČNB",
-                    missingPages: "Chybí počet stran",
-                    notExtractable: "Nemůže být extrahovaný",
-                },
-                add: {
-                    "next-step": "Dále",
-                    "prev-step": "Zpět",
-                    step: {
-                        settings: "Nastavení vkládání",
-                        values: "Výběr hodnot",
-                        issues: "Výběr vydání",
-                        results: "Výsledek",
-                    },
-                    settings: {
-                        "choose-identifier": "Vyber identifikátor",
-                        "choose-category": "Vyber kategorii",
-                        "insert-another": "Vkládat další po úspěšném vložení",
-                        "extraction-priority": "Extrahovat s prioritou",
-                    },
-                    values: {
-                        "text-input-header": "Hodnotou",
-                        "file-input-header": "Ze souborů",
-                    },
-                    results: {
-                        "insert-another": "Vložit další",
-                        "show-details": "Zobrazit detaily",
-                        finish: "Skončit",
-                        "show-set-page-count": "Zobrazit nastaveni počtu stran",
-                        "accept-set-page-count": "Nastavit počty stran",
-                        status: {
-                            AlephNotAvailable: "Chyba při připojování katalogu",
-                            AlephRequestFailed:
-                                "Chyba při zpracování odpovědi katalogu",
-                            InvalidSysno: "Neplatné systémové číslo",
-                            InvalidSysnoBase:
-                                "Neplatný základ systémového čísla",
-                            AlephRecordNotFound_one:
-                                "Dokument nenalezen v katalogu",
-                            AlephRecordNotFound_few:
-                                "{{count}} dokumeny nenalezeny v katalogu",
-                            AlephRecordNotFound_other:
-                                "{{count}} dokumentů nenalezenych v katalogu",
-                            // AlephRecordNotFound: "Dokument nenalezen v katalogu",
-                            // AlephRecordNotFound: {
-                            //     one: "Dokument nenalezen v katalogu",
-                            //     few: "{{count}} dokumenty nenalezeny v katalogu",
-                            //     many: "{{count}} dokumentu nenalezenych v katalogu",
-                            // },
-                            MultipleAlephRecordsFound:
-                                "Více než jeden dokument nalezen v katalogu",
-                            InvalidAlephRecord: "Neplatný zaznam v katalogu",
-                            InvalidDigitizationState:
-                                "Neplatný stav digitalizace",
-                            UnknownError: "Neznámá chyba",
-                            // Warnings
-                            DigitizationForbidden:
-                                "Digitizace dokumentu je zakázána",
-                            AlreadyDigitized: "Dokument již digitalizován",
-                            DigitizationInProgress:
-                                "Digitalizace dokumentu probíhá",
-                            DigitizationPlanned:
-                                "Digitalizace dokumentu naplánována",
-                            AllIssuesProcessed:
-                                "Všechny vydání už byly zpracovány",
-                            UniqueViolation:
-                                "Dokument s rovnakými identifikátormi je již v databázi",
-                            // Infos
-                            MultipleIssues:
-                                "Dokument obsahuje více nespracovaných vydání",
-                            // Success
-                            Success: "Dokument byl úspěšně přidán",
-                            Success_few:
-                                "{{count}} dokumenty byly úspěšně přidány",
-                            Success_other:
-                                "{{count}} dokumentů byl úspěšně přidán",
-                            "without-page-count":
-                                "{{count}} dokumentů nema nastaven počet stran",
-                        },
-                    },
-                },
-            },
             Choose: "Vybrat",
             Upload: "Nahrát",
             Filename: "Název souboru",
@@ -954,90 +669,35 @@ const resources = {
             "Choose issues": "Výběr vydání",
             Result: "Výsledek",
             Details: "Detaily",
-
-            tasks: {
-                name: {
-                    ReindexCatalogRecords: "Reindexovat katalogové záznamy",
-                    ReevaluateCatalogRecordsDifferences:
-                        "Přepočítat rozdíly mezi katalogovými záznamy",
-                    SyncCatalogRecordsWithCatalogs:
-                        "Synchronizovat katalogové záznamy s katalogy (MZK, SKC, ČNB)",
-                    PredictPeriodicalsPageCount:
-                        "Predikovat počet stran periodik",
-                    ReindexDocuments: "Reindexovat dokumenty",
-                    SyncDocumentsWithCatalogs:
-                        "Synchronizovat dokumenty s katalogy",
-                    SyncDocumentsWithDigitizationRegistry:
-                        "Synchronizovat dokumenty s registrom digitalizace",
-                },
-                messages: {
-                    "confirm-start": {
-                        header: "Spustení úkolu",
-                        ReevaluateCatalogRecordsDifferences:
-                            "Opravdu chcete přepočítat rozdíly katalogových záznamů pro {{count}} vybrané záznamy?",
-                        SyncCatalogRecordsWithCatalogs:
-                            "Opravdu chcete synchronizovat vybrané {{count}} záznamy s katalogy?",
-                        ReindexCatalogRecords:
-                            "Opravdu chcete reindexovat vybrané {{count}} záznamy?",
-                        PredictPeriodicalsPageCount:
-                            "Opravdu chcete predikovat počet stran periodik pro {{count}} vybrané dokumenty?",
-                        ReindexDocuments:
-                            "Opravdu chcete reindexovat vybrané {{count}} dokumenty?",
-                        SyncDocumentsWithCatalogs:
-                            "Opravdu chcete synchronizovat vybrané {{count}} dokumenty s katalogy?",
-                        SyncDocumentsWithDigitizationRegistry:
-                            "Opravdu chcete synchronizovat vybrané {{count}} dokumenty s registrom digitalizace?",
-                    },
-                    started: "Úkol spusten",
-                },
-                periodic: {
-                    create: "Naplánovat úkol",
-                    form: {
-                        "task-type": "Úkol",
-                        query: "Pro dotaz",
-                        cron: {
-                            minute: "Minuta",
-                            hour: "Hodina",
-                            day_of_week: "Den v tydnu",
-                            day_of_month: "Den v měsíci",
-                            "minute-placeholder": "0",
-                            "hour-placeholder": "0-23",
-                            "day_of_month-placeholder": "1-31",
-                            "hour-wildcard": "Každou hodinu",
-                            "day_of_month-wildcard": "Každý den v měsíci",
-                        },
-                        submit: "Naplánovat úkol",
-                    },
-                    day_of_week: {
-                        "*": "Každý den v tydnu",
-                        0: "Neděle",
-                        1: "Pondělí",
-                        2: "Úterý",
-                        3: "Středa",
-                        4: "Čtvrtek",
-                        5: "Pátek",
-                        6: "Sobota",
-                    },
-                },
-            },
         },
     },
 };
 
-i18n.use(initReactI18next).init({
-    resources,
-    lng: "cs",
-    fallbackLng: "cs",
-    ns: ["common", "documents", "dashboard"],
-    defaultNS: "common",
+i18n.use(HttpBackend)
+    .use(initReactI18next)
+    .init({
+        // resources,
+        lng: "cs",
+        fallbackLng: "cs",
+        ns: [
+            "navigation",
+            "types",
+            "documents",
+            "elasticsearch",
+            "notifications",
+            "tasks",
+            "types",
+        ],
+        defaultNS: "navigation",
 
-    backend: {
-        loadPath: "/locales/{{lng}}/{{ns}}.json",
-    },
-    interpolation: {
-        escapeValue: false,
-    },
-    simplifyPluralSuffix: false,
-});
+        backend: {
+            loadPath: "/locales/{{lng}}/{{ns}}.json",
+        },
+        interpolation: {
+            escapeValue: false,
+        },
+        simplifyPluralSuffix: false,
+        debug: true,
+    });
 
 export default i18n;

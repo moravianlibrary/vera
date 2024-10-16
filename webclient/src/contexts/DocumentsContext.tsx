@@ -79,7 +79,7 @@ const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
 
     const updateCategory = (categoryId: number, categoryName: string) => {
         showConfirmDialog(
-            t("action.update-category.confirm", {
+            t("actions.update-category.confirm", {
                 category: categoryName,
                 count: numSelected,
             }),

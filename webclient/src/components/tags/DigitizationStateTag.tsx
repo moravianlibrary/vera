@@ -7,40 +7,19 @@ interface DigitizationStateTagProps {
     state: DigitizationState;
 }
 
+function camelToDashCase(str) {
+    return str.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+}
+
 const DigitizationStateTag: React.FC<DigitizationStateTagProps> = ({
     state,
 }) => {
-    const { t } = useTranslation();
-
-    if (state === DigitizationState.Finished) {
-        return (
-            <Tag
-                value={t(`digitizationState.${state}`)}
-                className="digitization-state-finished"
-            />
-        );
-    }
-    if (state === DigitizationState.InProgress) {
-        return (
-            <Tag
-                value={t(`digitizationState.${state}`)}
-                className="digitization-state-in-progress"
-            />
-        );
-    }
-    if (state === DigitizationState.Planned) {
-        return (
-            <Tag
-                value={t(`digitizationState.${state}`)}
-                className="digitization-state-planned"
-            />
-        );
-    }
+    const { t } = useTranslation("types");
 
     return (
         <Tag
-            value={t(`digitizationState.${DigitizationState.NotDigitized}`)}
-            className="digitization-state-not-digitized"
+            value={t(`digitization-state.${state}`)}
+            className={`digitization-state-${camelToDashCase(state)}`}
         />
     );
 };

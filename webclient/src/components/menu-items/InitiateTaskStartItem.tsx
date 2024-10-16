@@ -8,11 +8,11 @@ const InitiateTaskStartItem = (
     count?: number,
     queryParams?: any
 ): MenuItem => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("tasks");
     const { onInitiateTaskStart } = useTasks();
 
     return {
-        label: t(`tasks.name.${taskType}`),
+        label: t(`labels.${taskType}`),
         icon: "pi pi-play-circle",
         command: () => onInitiateTaskStart(taskType, count, queryParams),
     };

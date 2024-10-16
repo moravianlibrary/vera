@@ -1,0 +1,16 @@
+{
+    "search": "Vyhledávaní",
+    "yes": "Ano",
+    "no": "Ne",
+    "sort-by": "Seřadit podle",
+    "facets": "Filtrovat podle",
+    "facet": {
+        "show-more": "Zobrazit víc",
+        "show-less": "Zobrazit mín"
+    },
+    "selection": {
+        "all": "Vybrat všechny výsledky podle zadaných kritérií vyhledávání",
+        "cancel": "Zrušit výběr",
+        "actions-menu": "Akce nad vybránými výsledkami"
+    }
+}

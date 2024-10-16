@@ -8,7 +8,7 @@ import DeveloperTools, { DeveloperToolsRef } from "./DeveloperTools";
 interface LoginProps {}
 
 const Login: React.FC<LoginProps> = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("navigation");
     const { currentUser, login, logout } = useAccess();
     // const [isLoggedIn, setIsLoggedIn] = useState(false);
 
