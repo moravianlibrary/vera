@@ -34,7 +34,7 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
     leftContent,
     numFoundText,
 }) => {
-    const { t } = useTranslation("common");
+    const { t } = useTranslation("app");
     const handlePageChange = (event: PaginatorPageChangeEvent) => {
         if (onPageChange) {
             onPageChange(event);
@@ -129,7 +129,7 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
                                     userSelect: "none",
                                 }}
                             >
-                                {t("Items per page")}:{" "}
+                                {t("paginator.items-per-page")}:{" "}
                             </span>
                             <Dropdown
                                 value={options.value}

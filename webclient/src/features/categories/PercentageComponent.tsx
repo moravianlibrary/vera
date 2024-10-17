@@ -16,7 +16,7 @@ interface CateogryPercentageProps {
 const CategoryPercentage: React.FC<CateogryPercentageProps> = ({
     category,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
 
     const { setEditDistribution } = useCategoryModels();
     const { activeIntention } = useIntentions();
@@ -55,7 +55,7 @@ const CategoryPercentage: React.FC<CateogryPercentageProps> = ({
                     text
                     severity="secondary"
                     onClick={handleEditDistribution}
-                    tooltip={t("Edit distribution")}
+                    tooltip={t("actions.edit-distribution")}
                     tooltipOptions={{ position: "right", showDelay: 500 }}
                 >
                     <i className="pi pi-pencil" />

@@ -13,6 +13,7 @@ import { Dropdown } from "primereact/dropdown";
 import { TaskType } from "../../types/TaskType";
 import config from "../../config/config";
 import DataTablePaginator from "../../components/DataTablePaginator";
+import { TaskStateTag } from "../../components/tags/TaskStateTag";
 
 interface TasksTableProps {}
 
@@ -23,7 +24,7 @@ interface TaskItemsProps {
 const TasksTable: React.FC<TasksTableProps> & {
     Paginator: React.FC;
 } = ({}) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("tasks");
     const { tasks } = useTasks();
 
     const [expandedRows, setExpandedRows] = useState<Task[]>([]);
@@ -50,31 +51,6 @@ const TasksTable: React.FC<TasksTableProps> & {
 
     const taskTypeBody = (task: Task) => {
         return t(task.task_type);
-    };
-
-    const getTaskStateSeverity = (task: Task) => {
-        switch (task.task_state) {
-            case TaskState.Planned:
-                return null;
-            case TaskState.Running:
-                return "info";
-            case TaskState.Finished:
-                return task.error_count === 0 ? "success" : "warning";
-            case TaskState.Failed:
-                return "danger";
-            case TaskState.Killed:
-                return "danger";
-            default:
-                return null;
-        }
-    };
-
-    const taskStateBody = (task: Task) => {
-        const label =
-            task.task_state == TaskState.Finished && task.error_count > 0
-                ? t("Finished with errors")
-                : t(task.task_state);
-        return <Tag value={label} severity={getTaskStateSeverity(task)}></Tag>;
     };
 
     const itemsCountBody = (task: Task) => {
@@ -156,30 +132,50 @@ const TasksTable: React.FC<TasksTableProps> & {
             rowExpansionTemplate={getAdditionalData}
         >
             <Column expander style={{ width: "5rem" }} />
-            <Column field="id" header={t("id")} />
-            <Column body={taskTypeBody} header={t("task_type")} />
-            <Column field="owner" header={t("owner")} />
-            <Column body={taskStateBody} header={t("task_state")} />
-            <Column body={itemsCountBody} header={t("items_count")} />
-            <Column field="error_count" header={t("Error count")} />
+            <Column field="id" header={t("table.columns.id")} />
+            <Column
+                body={(task) =>
+                    t(`task-type.${task.task_type}`, { ns: "types" })
+                }
+                header={t("table.columns.task-type")}
+            />
+            <Column field="owner" header={t("table.columns.owner")} />
+            <Column
+                body={(task) => (
+                    <TaskStateTag
+                        state={task.task_state}
+                        errorCount={task.error_count}
+                    />
+                )}
+                header={t("table.columns.task-state")}
+            />
+            <Column
+                body={itemsCountBody}
+                header={t("table.columns.items-count")}
+            />
+            <Column
+                field="error_count"
+                header={t("table.columns.error-count")}
+            />
             <Column
                 body={(task) => datetimeBody(task.planned)}
-                header={t("planned")}
+                header={t("table.columns.planned")}
             />
             <Column
                 body={(task) => datetimeBody(task.started)}
-                header={t("started")}
+                header={t("table.columns.started")}
             />
             <Column
                 body={(task) => datetimeBody(task.finished)}
-                header={t("finished")}
+                header={t("table.columns.finished")}
             />
-            <Column body={durationBody} header={t("duration")} />
+            <Column body={durationBody} header={t("table.columns.duration")} />
         </DataTable>
     );
 };
 
 const TasksTablePaginator: React.FC = () => {
+    const { t } = useTranslation("tasks");
     const { numFound, page, setPage, pageSize, setPageSize } = useTasks();
 
     return (
@@ -189,7 +185,7 @@ const TasksTablePaginator: React.FC = () => {
             pageSize={pageSize}
             onPageChangeNew={setPage}
             onPageSizeChange={setPageSize}
-            numFoundText="tasks.num-found"
+            numFoundText={t("num-found", { count: numFound })}
         />
     );
 };
@@ -197,10 +193,11 @@ const TasksTablePaginator: React.FC = () => {
 TasksTable.Paginator = TasksTablePaginator;
 
 const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("tasks");
     const { getTaskItems } = useTasks();
 
     const [items, setItems] = useState<TaskItem[]>([]);
+    const [itemsCount, setItemsCount] = useState<number>(0);
     const [showItems, setShowItems] = useState<TaskItem[]>([]);
     const [errorTypes, setErrorTypes] = useState<string[]>([]);
     const [errorTypesFilter, setErrorTypesFilter] = useState<string[]>([]);
@@ -210,6 +207,7 @@ const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
         getTaskItems(task.id, page, 20)
             .then((taskItemsPage) => {
                 setItems(taskItemsPage.items);
+                setItemsCount(taskItemsPage.num_found);
                 setShowItems(taskItemsPage.items);
                 setErrorTypes([
                     ...new Set(
@@ -245,9 +243,9 @@ const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
     const errorTypeHeader = () => {
         return (
             <div className="flex justify-content-start align-items-center gap-4">
-                <span>{t("Error type")}</span>
+                <span>{t("table.columns.item-error-type")}</span>
                 {errorTypes.length > 1 &&
-                    errorTypes.includes("Without error") && (
+                    errorTypes.includes("table.values.item-without-error") && (
                         <MultiSelect
                             className="m-0 h-full"
                             value={errorTypesFilter}
@@ -274,17 +272,19 @@ const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
 
     return (
         <div className="flex flex-column">
-            <DataTablePaginator
-                numFound={task.total_count}
-                page={page}
-                pageSize={20}
-                onPageChangeNew={setPage}
-            />
+            {itemsCount > 20 && (
+                <DataTablePaginator
+                    numFound={task.total_count}
+                    page={page}
+                    pageSize={20}
+                    onPageChangeNew={setPage}
+                />
+            )}
             <DataTable value={showItems}>
-                <Column field="item_id" header={t("Item id")} />
+                <Column field="item_id" header={t("table.columns.item-id")} />
                 <Column
                     field="processed"
-                    header={t("Processed")}
+                    header={t("table.columns.item-processed")}
                     body={processedBody}
                 />
                 <Column
@@ -294,7 +294,7 @@ const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
                 />
                 <Column
                     field="error_message"
-                    header={t("Error message")}
+                    header={t("table.columns.item-error-message")}
                     body={(item) => t(item.error_message)}
                 />
             </DataTable>

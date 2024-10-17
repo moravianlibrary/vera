@@ -23,7 +23,7 @@ const PeriodicTaskForm: React.FC<PeriodicTaskFormProps> = ({
     initialValue,
     submitCallback,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("periodic-tasks");
 
     const [formData, setFormData] = useState<Partial<PeriodicTask>>(
         initialValue || ({} as Partial<PeriodicTask>)
@@ -69,14 +69,14 @@ const PeriodicTaskForm: React.FC<PeriodicTaskFormProps> = ({
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-column w-max gap-2">
-            <LabeledComponent label={t("tasks.periodic.form.task-type")}>
+            <LabeledComponent label={t("form.task-type")}>
                 <TaskTypeSelect
                     value={formData.task_type || null}
                     onChange={handleTaskTypeChange}
                 />
             </LabeledComponent>
             {queryParams && (
-                <LabeledComponent label={t("tasks.periodic.form.query")}>
+                <LabeledComponent label={t("form.query")}>
                     <EsQueryChips queryParams={queryParams} />
                 </LabeledComponent>
             )}
@@ -84,7 +84,7 @@ const PeriodicTaskForm: React.FC<PeriodicTaskFormProps> = ({
                 expression={formData}
                 onChangeCallback={handleCronExpressionChange}
             />
-            <Button type="submit" label={t("tasks.periodic.form.submit")} />
+            <Button type="submit" label={t("form.submit")} />
         </form>
     );
 };

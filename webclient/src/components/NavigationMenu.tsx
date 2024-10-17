@@ -87,7 +87,7 @@ const NavigationMenuStart = () => {
                     label={t("access-management")}
                     icon="pi pi-user-edit"
                     text
-                    onClick={(event) => navigate("/access")}
+                    onClick={(event) => navigate("/departments")}
                 />
             </ActionAccessComponent>
         </div>

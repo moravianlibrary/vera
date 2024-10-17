@@ -11,7 +11,7 @@ interface IntentionsDisplayOptionsProps {}
 const IntentionsDisplayOptions: React.FC<
     IntentionsDisplayOptionsProps
 > = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
     const { showIntentionOnly, setShowIntentionOnly } = useCategoryModels();
     const { activeIntention, selectIntention } = useIntentions();
 
@@ -20,11 +20,11 @@ const IntentionsDisplayOptions: React.FC<
             <Button
                 className={activeIntention ? "m-0 text-800" : "m-0 bg-primary"}
                 text={activeIntention !== null}
-                label={t("Without intention")}
+                label={t("display-options.without-intention")}
                 onClick={() => selectIntention(null)}
             />
             <LabeledComponent
-                label={t("Selected intention")}
+                label={t("display-options.selected-intention")}
                 className="p-button-label text-800 my-2 mx-1 align-items-center"
             >
                 <IntentionPicker
@@ -38,7 +38,7 @@ const IntentionsDisplayOptions: React.FC<
                         showIntentionOnly ? "m-0 bg-primary" : "m-0 text-800"
                     }
                     text={!showIntentionOnly}
-                    label={t("Show only intention categories")}
+                    label={t("display-options.only-intention")}
                     onClick={() => setShowIntentionOnly(!showIntentionOnly)}
                 />
             )}

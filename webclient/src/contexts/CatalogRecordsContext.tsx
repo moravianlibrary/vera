@@ -35,7 +35,7 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
 }) => {
     const api = new ApiCatalogRecords();
     const { updateItem } = useEsDataTable();
-    const { t } = useTranslation();
+    const { t } = useTranslation("catalog-records");
     const showToast = useToast();
     const { items, numFound, queryParams, ...restOfPaginationProps } =
         useEsPagination(
@@ -50,7 +50,7 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
             updateItem(response.data.id, response.data);
             showToast(
                 "success",
-                t("catalog-records.difference-approve-success")
+                t("actions.difference-approve-success")
             );
         });
     };

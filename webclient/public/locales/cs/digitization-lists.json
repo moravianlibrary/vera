@@ -1,0 +1,13 @@
+{
+    "num-found": "Počet nalezených seznamů: {{count}}",
+    "table": {
+        "columns": {
+            "id": "ID",
+            "created-by": "Vytvořil",
+            "created-at": "Vytvořeno",
+            "page-count": "Počet stránek",
+            "documents-count": "Počet dokumentů",
+            "intention": "Zaměr"
+        }
+    }
+}

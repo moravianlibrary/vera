@@ -52,18 +52,18 @@ const CategoriesToolbar: React.FC<CategoriesToolbarProps> = ({
 interface CategoryOptionsProps {}
 
 const CategoryOptions: React.FC<CategoryOptionsProps> = ({}) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
 
     return (
         <div className="flex ml-2 gap-4 flex-wrap">
-            <InplaceOptions label={t("Categories display options")}>
+            <InplaceOptions label={t("display-options.categories")}>
                 <CategoriesDisplayOptions />
             </InplaceOptions>
-            <InplaceOptions label={t("Intentions display options")}>
+            <InplaceOptions label={t("display-options.intentions")}>
                 <IntentionsDisplayOptions />
             </InplaceOptions>
             <ActionAccessComponent action={ActionType.ReadCategoriesAll}>
-                <InplaceOptions label={t("Departments display options")}>
+                <InplaceOptions label={t("display-options.departments")}>
                     <DepartmentsDisplayOptions />
                 </InplaceOptions>
             </ActionAccessComponent>
@@ -74,7 +74,7 @@ const CategoryOptions: React.FC<CategoryOptionsProps> = ({}) => {
 interface IntentionsOptionsProps {}
 
 const IntentionsOptions: React.FC<IntentionsOptionsProps> = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("intentions");
     const { createIntention } = useIntentions();
 
     const editIntentionRef = useRef<EditIntentionMenuRef>(null);
@@ -90,7 +90,7 @@ const IntentionsOptions: React.FC<IntentionsOptionsProps> = () => {
                 className="m-0 text-800"
                 icon="pi pi-plus"
                 text
-                label={t("Add intention")}
+                label={t("actions.add")}
                 onClick={() => editIntentionRef.current?.toggle()}
             />
         </div>

@@ -1,0 +1,22 @@
+{
+    "actions": {
+        "add": "Přidat zámer"
+    },
+    "form": {
+        "label": {
+            "name": "Jméno zámeru",
+            "description": "Popis zámeru",
+            "target-page-count": "Cílový počet stránek",
+            "date-range": "Časové období"
+        }
+    },
+    "table": {
+        "columns": {
+            "name": "Jméno zámeru",
+            "description": "Popis zámeru",
+            "target-page-count": "Cílový počet stránek",
+            "date-range": "Časové období",
+            "classification": "Klasifikace"
+        }
+    }
+}

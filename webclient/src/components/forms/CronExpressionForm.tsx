@@ -15,7 +15,7 @@ const CronExpressionForm: React.FC<CronExpressionFormProps> = ({
     expression,
     onChangeCallback,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("periodic-tasks");
 
     const handleChange = (name: string, value: number | null) => {
         onChangeCallback({
@@ -39,12 +39,10 @@ const CronExpressionForm: React.FC<CronExpressionFormProps> = ({
                 showWildcard
                 onChange={(v) => handleChange("hour", v)}
             />
-            <LabeledComponent label={t("tasks.periodic.form.cron.day_of_week")}>
+            <LabeledComponent label={t("form.cron.day_of_week")}>
                 <Dropdown
                     options={[-1, 0, 1, 2, 3, 4, 5, 6].map((v) => ({
-                        label: t(
-                            `tasks.periodic.day_of_week.${v === -1 ? "*" : v}`
-                        ),
+                        label: t(`values.day_of_week.${v === -1 ? "*" : v}`),
                         value: v,
                     }))}
                     value={
@@ -81,18 +79,14 @@ const CronExpressionItem: React.FC<CronExpressionItemProps> = ({
     onChange,
     showWildcard,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("periodic-tasks");
 
     return (
-        <LabeledComponent
-            key={name}
-            label={t(`tasks.periodic.form.cron.${name}`)}
-            column
-        >
+        <LabeledComponent key={name} label={t(`form.cron.${name}`)} column>
             <div className="p-inputgroup">
                 {showWildcard && (
                     <Button
-                        label={t(`tasks.periodic.form.cron.${name}-wildcard`)}
+                        label={t(`form.cron.${name}-wildcard`)}
                         className={
                             value === null
                                 ? "bg-yellow-500 border-yellow-600"
@@ -108,9 +102,7 @@ const CronExpressionItem: React.FC<CronExpressionItemProps> = ({
                     max={range[1]}
                     onChange={(e) => onChange(e.value)}
                     mode="decimal"
-                    placeholder={t(
-                        `tasks.periodic.form.cron.${name}-placeholder`
-                    )}
+                    placeholder={t(`form.cron.${name}-placeholder`)}
                 />
                 <Button
                     icon="pi pi-chevron-up"

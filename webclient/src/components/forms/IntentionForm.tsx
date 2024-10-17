@@ -19,7 +19,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
     onSubmit,
     onAbort,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("intentions");
 
     const [name, setName] = useState<string>(intention.name);
     const [description, setDescription] = useState<string | null>(
@@ -52,7 +52,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
             className="flex flex-column w-max gap-2"
         >
             <LabeledComponent
-                label={t("Intention name")}
+                label={t("form.label.name")}
                 className="justify-content-between"
             >
                 <InputText
@@ -62,7 +62,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
                 />
             </LabeledComponent>
             <LabeledComponent
-                label={t("Description")}
+                label={t("form.label.description")}
                 className="justify-content-between"
             >
                 <InputText
@@ -71,7 +71,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
                 />
             </LabeledComponent>
             <LabeledComponent
-                label={t("Target page count")}
+                label={t("form.label.target-page-count")}
                 className="justify-content-between"
             >
                 <InputNumber
@@ -80,7 +80,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
                 />
             </LabeledComponent>
             <LabeledComponent
-                label={t("Date range")}
+                label={t("form.label.date-range")}
                 className="justify-content-between"
             >
                 <Calendar
@@ -91,7 +91,7 @@ const IntentionForm: React.FC<IntentionFormProps> = ({
                     onChange={(e) => setDateRange(e.value as Date[])}
                 />
             </LabeledComponent>
-            <Button type="submit" label={t("Submit")} />
+            <Button type="submit" label={t("submit", { ns: "app" })} />
         </form>
     );
 };

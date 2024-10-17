@@ -10,7 +10,7 @@ interface PeriodicTasksTableProps {}
 const PeriodicTasksTable: React.FC<PeriodicTasksTableProps> & {
     Paginator: React.FC;
 } = ({}) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("periodic-tasks");
     const { items } = usePeriodicTasks();
 
     return (
@@ -21,7 +21,7 @@ const PeriodicTasksTable: React.FC<PeriodicTasksTableProps> & {
             scrollHeight="flex"
         >
             <Column expander style={{ width: "5rem" }} />
-            <Column field="id" header={t("id")} />
+            <Column field="table.column.id" header={t("id")} />
             <Column field="owner" header={t("owner")} />
             <Column field="error_count" header={t("Error count")} />
         </DataTable>
@@ -29,6 +29,7 @@ const PeriodicTasksTable: React.FC<PeriodicTasksTableProps> & {
 };
 
 const PeriodicTasksTablePaginator: React.FC = () => {
+    const { t } = useTranslation("periodic-tasks");
     const { numFound, page, setPage, pageSize, setPageSize } =
         usePeriodicTasks();
 
@@ -39,7 +40,7 @@ const PeriodicTasksTablePaginator: React.FC = () => {
             pageSize={pageSize}
             onPageChangeNew={setPage}
             onPageSizeChange={setPageSize}
-            numFoundText="tasks.num-found"
+            numFoundText={t("num-found", { count: numFound })}
         />
     );
 };

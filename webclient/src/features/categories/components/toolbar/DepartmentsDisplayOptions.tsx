@@ -10,7 +10,7 @@ interface DepartmentsDisplayOptionsProps {}
 const DepartmentsDisplayOptions: React.FC<
     DepartmentsDisplayOptionsProps
 > = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
     const { department, setDepartment } = useCategories();
 
     return (
@@ -18,11 +18,11 @@ const DepartmentsDisplayOptions: React.FC<
             <Button
                 className={department === null ? "bg-primary" : "m-0 text-800"}
                 text={department !== null}
-                label={t("Show all categories")}
+                label={t("display-options.all")}
                 onClick={() => setDepartment(null)}
             />
             <LabeledComponent
-                label={t("Selected department")}
+                label={t("display-options.selected-department")}
                 className="p-button-label text-800 my-2 mx-1 align-items-center"
             >
                 <DepartmentPicker

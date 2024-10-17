@@ -14,16 +14,16 @@ const MarcFieldDifferenceTypeTag: React.FC<MarcFieldDifferenceTypeTagProps> = ({
     approved,
     value,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("types");
 
     return (
         <Tag
-            className={
-                approved
+            className={`diff-tag 
+                ${approved
                     ? "difft-approved-tag"
-                    : `difft-${differenceType.toLowerCase()}-tag`
+                    : `difft-${differenceType.toLowerCase()}-tag`}`
             }
-            value={value || t(`catalog-records.difference.${differenceType}`)}
+            value={value || t(`marc-difference.${differenceType}`)}
         />
     );
 };

@@ -5,7 +5,13 @@
     "documents": "Dokumenty",
     "catalog-records": "Katalogové záznamy",
     "categories": "Kategorie",
+    "categories-table": "Kategorie - tabulka",
+    "categories-chart": "Kategorie - diagram",
+    "intentions": "Zámery",
     "extractions": "Extrakce",
+    "digitization-lists": "Seznamy digitalizace",
+    "locations": "Skladové lokace",
     "tasks": "Úkoly",
+    "periodic-tasks": "Periodické úkoly",
     "access-management": "Správa oprávnění"
 }

@@ -1,0 +1,15 @@
+{
+    "num-found": "Počet nalezených lokací: {{count}}",
+    "table": {
+        "columns": {
+            "library": "Knihovna",
+            "storage": "Uložení",
+            "name": "Jméno lokace",
+            "regexp": "Prefix lokace",
+            "state": "Stav lokace",
+            "description": "Popis lokace",
+            "additional-info": "Dodatečné informace"
+        }
+    },
+    "location": "Lokace"
+}

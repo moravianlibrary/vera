@@ -4,6 +4,7 @@ interface LabeledComponentsBoxProps {
     labels: string[];
     components: React.ReactNode[];
     ignoreNotProvided?: boolean;
+    center?: boolean;
 }
 
 function isEmptyValue(value) {
@@ -18,6 +19,7 @@ const LabeledComponentsBox: React.FC<LabeledComponentsBoxProps> = ({
     labels,
     components,
     ignoreNotProvided,
+    center,
 }) => {
     return (
         <div
@@ -28,12 +30,15 @@ const LabeledComponentsBox: React.FC<LabeledComponentsBoxProps> = ({
                 maxWidth: "fit-content",
                 rowGap: "3px",
                 columnGap: "1rem",
+                alignItems: center ? "center" : "start",
             }}
         >
             {labels.map((label, index) =>
                 ignoreNotProvided && !components[index] ? null : (
-                    <Fragment key={`${label}_${index}`}>
-                        <label className="font-bold">{label}:</label>
+                    <Fragment key={index}>
+                        <label key={`${index}_label`} className="font-bold">
+                            {label}:
+                        </label>
                         {isEmptyValue(components[index])
                             ? "-"
                             : components[index] || "-"}

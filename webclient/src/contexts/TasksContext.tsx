@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { confirmDialog } from "primereact/confirmdialog";
 import { useToast } from "./ToastContext";
 import Page from "../adapters/Page";
+import { useNotification } from "./NotificationContext";
 
 interface TasksContextProps {
     tasks: Task[] | undefined;
@@ -40,8 +41,8 @@ interface TasksProviderProps {
 
 export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     const api = new ApiTasks();
-    const { t } = useTranslation();
-    const showToast = useToast();
+    const { t } = useTranslation("tasks");
+    const { showSuccess, showConfirmDialog } = useNotification();
 
     const [tasks, setTasks] = useState<Task[] | undefined>();
     const [numFound, setNumFound] = useState<number>(0);
@@ -50,7 +51,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
 
     const startTask = async (taskType: TaskType, queryParams?: EsQuery) => {
         api.planTask(taskType, queryParams).then((response) => {
-            showToast("success", t("tasks.messages.started"), "");
+            showSuccess(t("messages.started"));
         });
     };
 
@@ -59,14 +60,10 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
         count?: number,
         queryParams?: EsQuery
     ) => {
-        confirmDialog({
-            message: t(`tasks.messages.confirm-start.${taskType}`, { count }),
-            header: t("tasks.messages.confirm-start.header"),
-            icon: "pi pi-question",
-            acceptLabel: t("common.yes"),
-            rejectLabel: t("common.no"),
-            accept: () => startTask(taskType, queryParams),
-        });
+        showConfirmDialog(
+            t(`messages.confirm-start.${taskType}`, { count }),
+            () => startTask(taskType, queryParams)
+        );
     };
 
     const getTaskItems = async (

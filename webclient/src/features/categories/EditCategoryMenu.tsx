@@ -41,7 +41,7 @@ interface CategoryFormProps {
 }
 
 const CategoryForm: React.FC<CategoryFormProps> = ({ category }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
     const { departments: departmentsOptions } = useDepartments();
     const { closeCategoryEdit, createCategory, updateCategory } =
         useCategoryModels();
@@ -78,13 +78,13 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category }) => {
     return (
         <div className="flex flex-column gap-2">
             <InputText
-                placeholder={t("name")}
+                placeholder={t("form.placeholder.name")}
                 keyfilter={new RegExp("^[0-9\\p{L}\\s\\.,!?]*$", "u")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
             />
             <InputTextarea
-                placeholder={t("description")}
+                placeholder={t("form.placeholder.description")}
                 keyfilter={new RegExp("^[0-9\\p{L}\\s\\.,!?]*$", "u")}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -98,15 +98,15 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category }) => {
                     }
                 />
                 <label htmlFor="assignable" className="ml-2">
-                    {t("assignable_category")}
+                    {t("form.label.assignable")}
                 </label>
             </div>
             {departmentsOptions &&
                 departmentsOptions.length > 0 &&
                 category.level === 0 && (
-                    <LabeledComponent label={t("use_category_departments")}>
+                    <LabeledComponent label={t("form.label.departments")}>
                         <MultiSelect
-                            placeholder={t("select_departments")}
+                            placeholder={t("form.placeholder.departments")}
                             value={departments}
                             onChange={(e) => setDepartments(e.value)}
                             options={departmentsOptions}
@@ -118,14 +118,14 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ category }) => {
                 )}
             <div className="flex gap-4">
                 <Button
-                    label={t("Save")}
+                    label={t("save", { ns: "app" })}
                     icon="pi pi-save"
                     outlined
                     severity="success"
                     onClick={handleUpdate}
                 />
                 <Button
-                    label={t("Cancel")}
+                    label={t("cancel", { ns: "app" })}
                     icon="pi pi-times"
                     outlined
                     severity="danger"

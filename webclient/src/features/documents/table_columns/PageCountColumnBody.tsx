@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { IndexDocument } from "../../../adapters/ApiDocuments";
 
 const PageCountColumnBody = (document: IndexDocument) => {
-    const { t } = useTranslation("documents.table");
+    const { t } = useTranslation("documents");
 
     const counts = [
         document.page_count_catalog,
@@ -20,17 +20,21 @@ const PageCountColumnBody = (document: IndexDocument) => {
 
     if (document.page_count_catalog) {
         countsJoined.push(
-            t("page-count.catalog", { count: document.page_count_catalog })
+            t("table.page-count.catalog", {
+                count: document.page_count_catalog,
+            })
         );
     }
     if (document.page_count_manual) {
         countsJoined.push(
-            t("page-count.manual", { count: document.page_count_manual })
+            t("table.page-count.manual", { count: document.page_count_manual })
         );
     }
     if (document.page_count_predicted) {
         countsJoined.push(
-            t("page-count.predicted", { count: document.page_count_predicted })
+            t("table.page-count.predicted", {
+                count: document.page_count_predicted,
+            })
         );
     }
 

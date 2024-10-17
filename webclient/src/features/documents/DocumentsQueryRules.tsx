@@ -23,7 +23,7 @@ export const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                     items={[
                         {
                             label: t("sort-by.last-edited"),
-                            value: "documents_last_edited",
+                            value: "documents",
                         },
                         {
                             label: t("sort-by.newest"),

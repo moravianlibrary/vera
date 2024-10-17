@@ -12,7 +12,7 @@ const MarcFieldDifferenceTag: React.FC<MarcFieldDifferenceTagProps> = ({
 }) => {
     const { t } = useTranslation("types");
 
-    const differenceTypeLabel = t(`records-difference.${d.difference_type}`);
+    const differenceTypeLabel = t(`marc-difference.${d.difference_type}`);
     const label = d.control_field
         ? `${differenceTypeLabel}: ${d.tag} CTL`
         : `${differenceTypeLabel}: ${d.tag} ${d.ind1 || "_"} ${

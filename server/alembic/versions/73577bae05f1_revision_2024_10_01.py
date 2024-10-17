@@ -163,16 +163,30 @@ def upgrade() -> None:
     op.create_index(
         op.f("ix_tasks_task_type"), "tasks", ["task_type"], unique=False
     )
+    
+    op.execute(
+        """
+        UPDATE users SET settings = '{}'
+        """
+    )
 
-    # op.execute(
-    #     """
-    #     INSERT INTO startup_tasks (task_type, item_type, is_one_time_task)
-    #     VALUES ('SyncCatalogRecordsWithCatalogs', 'CatalogRecord', TRUE);
-    # """
-    # )
-    # op.execute(
-    #     "INSERT INTO startup_tasks (task_type) VALUES ('RecreateIndexes');"
-    # )
+    op.execute(
+        """
+        UPDATE roles
+        SET actions = actions::jsonb || '["ReadCatalogRecords", "ReviewCatalogRecords"]'::jsonb
+        WHERE name = 'Admin'
+        """
+    )
+
+    op.execute(
+        "INSERT INTO startup_tasks (task_type) VALUES ('RecreateIndexes');"
+    )
+    op.execute(
+        """
+        INSERT INTO startup_tasks (task_type, item_type, is_one_time_task)
+        VALUES ('SyncCatalogRecordsWithCatalogs', 'CatalogRecord', TRUE);
+    """
+    )
 
 
 def downgrade() -> None:

@@ -4,6 +4,7 @@ import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { Tooltip } from "primereact/tooltip";
 import CategoryNodeEditMenu from "./CategoryActionsMenu";
 import { CategoryModelExtractionStats } from "./CategoriesChartNode";
+import CountInText from "../../components/views/CountInText";
 
 interface CategoriesChartRootProps {
     category: CategoryModel;
@@ -40,95 +41,43 @@ export const CategoriesChartLevelRoot: React.FC<CategoriesChartRootProps> = ({
 const RootCategoryStats: React.FC<CategoriesChartRootProps> = ({
     category,
 }) => {
-    const { t } = useTranslation();
-
     return (
         <div className="flex flex-column align-items-start gap-2">
             <CategoryModelExtractionStats category={category} />
+            <CountInText.GreaterThanZero
+                textKey="details.missing-page-count"
+                textNs="categories"
+                count={category.pages_needed_to_meet_intention}
+                className="text-red-700"
+            />
             <div className="flex flex-column align-items-start">
-                {category.pages_needed_to_meet_intention &&
-                    category.pages_needed_to_meet_intention > 0 && (
-                        <div className="text-red-700">
-                            <span className="font-bold">
-                                {category.pages_needed_to_meet_intention}
-                            </span>{" "}
-                            {t("category_missing_count_pages")}
-                        </div>
-                    )}
-                {category.documents_without_cnb > 0 && (
-                    <div className="text-red-700">
-                        <span className="font-bold">
-                            {category.documents_without_cnb}
-                        </span>{" "}
-                        {t("documents without CNB")}
-                    </div>
-                )}
-            </div>
-            {/* <div className="flex gap-2">
-                <div>
-                    <span className="font-bold">
-                        {category.pages_needed_to_meet_intention}
-                    </span>{" "}
-                    {t("pages by intention")}
-                </div>
-                {category.pages_needed_to_meet_intention && (
-                    <div
-                        className={
-                            category.pages_needed_to_meet_intention <= 0
-                                ? "font-bold text-green-900"
-                                : "font-bold text-red-700"
-                        }
-                    >
-                        <span>{"["}</span>
-                        <Tooltip target=".fullfilment" showDelay={500} />
-                        <i
-                            className={
-                                "fullfilment " +
-                                (category.pages_needed_to_meet_intention <= 0
-                                    ? "pi pi-check"
-                                    : "pi pi-times")
-                            }
-                            data-pr-tooltip={
-                                category.pages_needed_to_meet_intention <= 0
-                                    ? t("Fulfilled")
-                                    : t("Unfulfilled")
-                            }
-                        />
-                        <span>{"]"}</span>
-                    </div>
-                )}
-            </div> */}
-            <div className="flex flex-column align-items-start">
-                <div>
-                    <span className="font-bold">
-                        {category.extractable_pages}
-                    </span>{" "}
-                    {t("extractable pages")}
-                </div>
-                <div>
-                    <span className="font-bold">{category.total_pages}</span>{" "}
-                    {t("category_count_pages")}
-                </div>
+                <CountInText
+                    textKey="details.extractable-page-count"
+                    textNs="categories"
+                    count={category.extractable_pages}
+                />
+                <CountInText
+                    textKey="details.page-count"
+                    textNs="categories"
+                    count={category.total_pages}
+                />
             </div>
             <div className="flex flex-column align-items-start">
-                <div>
-                    <span className="font-bold">
-                        {category.extractable_documents}
-                    </span>{" "}
-                    {t("extractable documents")}
-                </div>
-                <div>
-                    <span className="font-bold">
-                        {category.documents_with_pages}
-                    </span>{" "}
-                    {t("category_count_documents_with_pages")}
-                </div>
-                <div>
-                    <span className="font-bold">
-                        {category.total_documents}
-                    </span>{" "}
-                    {t("category_count_documents")}
-                </div>
+                <CountInText
+                    textKey="details.extractable-documents-count"
+                    textNs="categories"
+                    count={category.extractable_documents}
+                />
+                <CountInText
+                    textKey="details.documents-with-pages-count"
+                    textNs="categories"
+                    count={category.documents_with_pages}
+                />
+                <CountInText
+                    textKey="details.documents-count"
+                    textNs="categories"
+                    count={category.total_documents}
+                />
             </div>
         </div>
     );

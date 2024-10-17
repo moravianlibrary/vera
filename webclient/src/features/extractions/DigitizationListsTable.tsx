@@ -1,15 +1,12 @@
 import { DataTable } from "primereact/datatable";
-import React, { useState } from "react";
+import React from "react";
 import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
-import { Button } from "primereact/button";
-import { Link } from "react-router-dom";
 import { useDigitizationLists } from "../../contexts/DigitizationListsContext";
 import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 import { ActionType } from "../../types/ActionType";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import DataTablePaginator from "../../components/DataTablePaginator";
-import { DigitizationList } from "../../adapters/ApiDigitizationLists";
 import InternalLinkButton from "../../components/buttons/InternalLinkButton";
 import { formatDatetime } from "../../data/factories/DateFactory";
 
@@ -18,48 +15,39 @@ interface DigitizationListsTableProps {}
 const DigitizationListsTable: React.FC<DigitizationListsTableProps> & {
     Paginator: React.FC;
 } = ({}) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("digitization-lists");
 
     const { digitizationLists, deleteDigitizationList } =
         useDigitizationLists();
 
-    const documentsLink = (digitizationList: DigitizationList) => {
-        return `/documents?digitizationListId=${digitizationList.id}`;
-    };
-
-    const categoriesLink = (digitizationList: DigitizationList) => {
-        return `/categories?digitizationListId=${digitizationList.id}`;
-    };
-
     return (
         <DataTable value={digitizationLists} scrollable scrollHeight="flex">
-            <Column field="id" header={t("id")} />
-            <Column field="created_by" header={t("Created by")} />
+            <Column field="id" header={t("table.columns.id")} />
+            <Column field="created_by" header={t("table.columns.created-by")} />
             <Column
                 field="created_at"
-                header={t("Created at")}
+                header={t("table.columns.created-at")}
                 body={(dl) => formatDatetime(dl.created_at)}
             />
-            <Column field="page_count" header={t("Pages count")} />
+            <Column field="page_count" header={t("table.columns.page-count")} />
             <Column
                 field="documents_count"
-                header={t("Documents count")}
+                header={t("table.columns.documents-count")}
                 body={(dl) => dl.document_ids.length}
             />
-            <Column field="intention_id" header={t("Intention")} />
             <Column
-                body={(e) => (
-                    <InternalLinkButton
-                        label={t("Show in documents")}
-                        link={documentsLink(e)}
-                    />
+                field="intention_id"
+                header={t("table.columns.intention")}
+            />
+            <Column
+                body={(dl) => (
+                    <InternalLinkButton.ShowInDocuments digitizationList={dl} />
                 )}
             />
             <Column
-                body={(e) => (
-                    <InternalLinkButton
-                        label={t("Show in categories")}
-                        link={categoriesLink(e)}
+                body={(dl) => (
+                    <InternalLinkButton.ShowInCategories
+                        digitizationList={dl}
                     />
                 )}
             />
@@ -78,6 +66,7 @@ const DigitizationListsTable: React.FC<DigitizationListsTableProps> & {
 };
 
 const DigitizationListsTablePaginator: React.FC = () => {
+    const { t } = useTranslation("digitization-lists");
     const { numFound, page, setPage, pageSize, setPageSize } =
         useDigitizationLists();
 
@@ -88,7 +77,7 @@ const DigitizationListsTablePaginator: React.FC = () => {
             pageSize={pageSize}
             onPageChangeNew={setPage}
             onPageSizeChange={setPageSize}
-            numFoundText="digitization-lists.num-found"
+            numFoundText={t("num-found", { count: numFound })}
         />
     );
 };

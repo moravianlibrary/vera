@@ -75,6 +75,10 @@
   width: min-content;
 }
 
+.diff-tag {
+  text-wrap: nowrap;
+}
+
 .difft-approved-tag {
   text-decoration: line-through;
 }

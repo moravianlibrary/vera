@@ -11,9 +11,7 @@ const Tasks: React.FC<TasksProps> = () => {
     return (
         <TasksProvider>
             <DataTableLayout
-                header={
-                    <SubNavigationMenu end={() => <SubNavigationTasks />} />
-                }
+                header={<SubNavigationMenu end={<SubNavigationTasks />} />}
                 datatable={<TasksTable />}
                 paginator={<TasksTable.Paginator />}
             />

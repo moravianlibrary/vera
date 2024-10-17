@@ -68,8 +68,7 @@ const documents_index_settings = {
     ],
     highlight_attributes: ["title"],
     sorting: {
-        default: [{ field: "indexed_at", order: "desc" }],
-        _last_edited: [{ field: "indexed_at", order: "desc" }],
+        documents: [{ field: "indexed_at", order: "desc" }],
         _newest: { field: "added_at", order: "desc" },
         _oldest: { field: "added_at", order: "asc" },
         _title_asc: { field: "title", order: "asc" },

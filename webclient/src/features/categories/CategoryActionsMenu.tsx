@@ -24,7 +24,7 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
     node,
     allowDistributionEdit,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
     const {
         addCategory,
         openCategoryEdit,
@@ -65,7 +65,7 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
         return (
             <Button
                 className="p-2"
-                label={t("Edit distribution")}
+                label={t("actions.edit-distribution")}
                 icon="pi pi-calculator"
                 text
                 severity="secondary"
@@ -78,7 +78,7 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
         return (
             <Button
                 className="p-2"
-                label={t("Add child category")}
+                label={t("actions.add-child")}
                 icon="pi pi-plus"
                 text
                 severity="secondary"
@@ -91,7 +91,7 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
         return (
             <Button
                 className="p-2"
-                label={t("Edit category")}
+                label={t("actions.edit")}
                 icon="pi pi-pencil"
                 text
                 severity="secondary"
@@ -104,7 +104,7 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
         return (
             <Button
                 className="p-2"
-                label={t("Delete category")}
+                label={t("actions.delete")}
                 icon="pi pi-trash"
                 text
                 severity="secondary"

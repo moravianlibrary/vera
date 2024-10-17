@@ -11,7 +11,7 @@ import { PeriodicTasksProvider } from "../contexts/PeriodicTasksContext";
 interface PeriodicTasksProps {}
 
 const PeriodicTasks: React.FC<PeriodicTasksProps> = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("periodic-tasks");
 
     const handleCreate = () => {};
 
@@ -20,10 +20,10 @@ const PeriodicTasks: React.FC<PeriodicTasksProps> = () => {
             <DataTableLayout
                 header={
                     <SubNavigationMenu
-                        start={() => (
+                        start={
                             <OverlayFormLayout
                                 buttonProps={{
-                                    label: t("tasks.periodic.create"),
+                                    label: t("actions.create"),
                                 }}
                                 form={
                                     <PeriodicTaskForm
@@ -32,8 +32,8 @@ const PeriodicTasks: React.FC<PeriodicTasksProps> = () => {
                                 }
                                 visible
                             />
-                        )}
-                        end={() => <SubNavigationTasks />}
+                        }
+                        end={<SubNavigationTasks />}
                     />
                 }
                 datatable={<PeriodicTasksTable />}

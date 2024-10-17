@@ -15,7 +15,6 @@ import { useIntentions } from "../../contexts/categories/IntentionsContext";
 interface EditDistributionMenuProps {}
 
 const EditDistributionMenu: React.FC<EditDistributionMenuProps> = () => {
-    const { t } = useTranslation();
     const { editDistribution, setEditDistribution } = useCategoryModels();
     const { activeIntention } = useIntentions();
 
@@ -58,7 +57,7 @@ const DistributionForm: React.FC<DistributionFormProps> = ({
     category,
     onHide,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
     const { saveDistribution, setEditDistribution } = useCategoryModels();
 
     const [distributions, setDistributions] = useState<ChildDistribution[]>(
@@ -87,7 +86,7 @@ const DistributionForm: React.FC<DistributionFormProps> = ({
 
     return (
         <div className="flex flex-column gap-2">
-            <LabeledComponent label={t("Change distribution for category")}>
+            <LabeledComponent label={t("actions.edit-distribution")}>
                 <span className="font-bold">{category.name}</span>
             </LabeledComponent>
             {category.sub_categories.map((child, index) => (
@@ -120,14 +119,14 @@ const DistributionForm: React.FC<DistributionFormProps> = ({
             ))}
             <div className="flex gap-4">
                 <Button
-                    label={t("Save")}
+                    label={t("save", { ns: "app" })}
                     icon="pi pi-save"
                     outlined
                     severity="success"
                     onClick={handleSaveDistribution}
                 />
                 <Button
-                    label={t("Cancel")}
+                    label={t("cancel", { ns: "app" })}
                     icon="pi pi-times"
                     outlined
                     severity="danger"

@@ -1,0 +1,22 @@
+{
+    "table": {
+        "columns": {
+            "id": "ID",
+            "generated-by": "Generoval",
+            "generated-at": "Generováno",
+            "target-page-count": "Cílový počet stránek",
+            "selected-page-count": "Vybrán počet stránek",
+            "documents-count": "Počet dokumentů",
+            "show-in-documents": "Zobrazit v dokumentech",
+            "show-in-categories": "Zobrazit v kategoriích"
+        }
+    },
+    "actions": {
+        "generate": "Generovat extrakci"
+    },
+    "Target pages threshold": "Cílový počet stránek s rozptylem",
+    "Whole categories threshold": "Celé kategorie s rozptylem",
+    "Include categories": "Zahrnout kategorie",
+    "Quota": "Zaměr",
+    "Select categories": "Vybrat kategorie"
+}

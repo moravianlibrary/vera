@@ -7,7 +7,7 @@ import NavigationButtonGroup from "./NavigationButtonGroup";
 interface SubNavigationTasksProps {}
 
 const SubNavigationTasks: React.FC<SubNavigationTasksProps> = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("navigation");
     const { hasPermission } = useAccess();
 
     if (
@@ -21,12 +21,12 @@ const SubNavigationTasks: React.FC<SubNavigationTasksProps> = () => {
         <NavigationButtonGroup
             navigationButtons={[
                 {
-                    label: t("navigation.tasks"),
+                    label: t("tasks"),
                     to: "/tasks",
                     action: ActionType.PlanTasks,
                 },
                 {
-                    label: t("navigation.periodic-tasks"),
+                    label: t("periodic-tasks"),
                     to: "/tasks/periodic",
                     action: ActionType.AdminTasks,
                 },

@@ -32,7 +32,6 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
             value={items}
             scrollable
             scrollHeight="flex"
-            dataKey={"id"}
             expandedRows={expandedRows}
             onRowExpand={onRowExpandEvent}
             onRowCollapse={onRowCollapseEvent}

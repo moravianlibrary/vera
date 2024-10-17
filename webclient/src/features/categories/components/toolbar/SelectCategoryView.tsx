@@ -12,21 +12,21 @@ const SelectCategoryView: React.FC<SelectCategoryViewProps> = ({
     categoryView,
     onCategoryViewChange,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("navigation");
 
     const displayOptions = [
         {
-            label: t("Categories table"),
+            label: t("categories-table"),
             icon: "pi pi-table",
             value: CategoryViewType.CategoryTable,
         },
         {
-            label: t("Categories chart"),
+            label: t("categories-chart"),
             icon: "pi pi-chart",
             value: CategoryViewType.CategoryChart,
         },
         {
-            label: t("Intentions"),
+            label: t("intentions"),
             icon: "pi pi-chart",
             value: CategoryViewType.Intentions,
         },

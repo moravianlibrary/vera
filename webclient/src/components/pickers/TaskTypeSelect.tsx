@@ -14,10 +14,10 @@ const TaskTypeSelect: React.FC<TaskTypeSelectProps> = ({
     onChange,
     options,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("types");
 
     const mapToOption = (taskType: TaskType) => ({
-        label: t(`enums.task-type.${taskType}`),
+        label: t(`task-type.${taskType}`),
         value: taskType,
     });
 
@@ -40,7 +40,7 @@ const TaskTypeSelect: React.FC<TaskTypeSelectProps> = ({
                 )
                 .map(mapToOption)}
             onChange={handleChange}
-            placeholder={t("common.select.task-type.placeholder")}
+            placeholder={t("placeholder.task-type")}
         />
     );
 };

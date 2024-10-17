@@ -1,4 +1,8 @@
 {
+    "boolean": {
+        "true": "Ano",
+        "false": "Ne"
+    },
     "identifier-type": {
         "Sysno": "Systémove číslo",
         "Barcode": "Čárový kód",
@@ -11,7 +15,10 @@
         "PredictPeriodicalsPageCount": "Predikovat počet stran periodik",
         "ReindexDocuments": "Reindexovat dokumenty",
         "SyncDocumentsWithCatalogs": "Synchronizovat dokumenty s katalogy",
-        "SyncDocumentsWithDigitizationRegistry": "Synchronizovat dokumenty s registrom digitalizace"
+        "SyncDocumentsWithDigitizationRegistry": "Synchronizovat dokumenty s registrom digitalizace",
+        "RecreateIndexes": "Vytvořit nové indexy",
+        "GenerateVolumesPagesDataset": "Generovat dataset počtu stran ročníků",
+        "GenerateItemsPagesDataset": "Generovat dataset počtu stran čísel"
     },
     "document-type": {
         "periodical": "Periodikum",
@@ -41,6 +48,29 @@
         "missingPages": "Chybí počet stran",
         "notExtractable": "Nemůže být extrahovaný"
     },
+    "marc-difference": {
+        "Equal": "Shoda",
+        "DifferentValue": "Rozdílna hodnota",
+        "MissingField": "Chybí pole",
+        "ExtraField": "Extra pole"
+    },
+    "location-state": {
+        "Active": "Doplňuje se",
+        "Closed": "Uzavřeno"
+    },
+    "task-state": {
+        "Planned": "Naplánováno",
+        "Running": "Běží",
+        "Finished": "Dokončeno",
+        "FinishedWithErrors": "Ukončeno s chybami",
+        "Failed": "Chyba",
+        "Killed": "Zrušeno"
+    },
+    "intention-classification": {
+        "Previous": "Předchozí",
+        "Current": "Aktuální",
+        "Upcoming": "Nadcházející"
+    },
     "extraction-priority": {
         "5": "Najvyšší",
         "4": "Vysoká",
@@ -48,5 +78,8 @@
         "2": "Nizká",
         "1": "Najnižší",
         "?": "Neznámá"
+    },
+    "placeholder": {
+        "task-type": "Vybrat typ úkolu"
     }
 }

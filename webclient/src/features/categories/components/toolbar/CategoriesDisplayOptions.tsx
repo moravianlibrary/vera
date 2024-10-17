@@ -11,7 +11,7 @@ interface CategoriesDisplayOptionsProps {}
 const CategoriesDisplayOptions: React.FC<
     CategoriesDisplayOptionsProps
 > = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
     const {
         currentCategory,
         activeLevel,
@@ -30,12 +30,12 @@ const CategoriesDisplayOptions: React.FC<
                 className="m-0 text-800"
                 icon="pi pi-eye"
                 text
-                label={t("All categories")}
+                label={t("display-options.all")}
                 onClick={() => focusRootCategory()}
             />
             <div className="flex gap-1 my-2 mx-1 align-items-center">
                 <span className="p-button-label text-800">
-                    {t("Categories of level")}:
+                    {t("display-options.level")}:
                 </span>
                 <SelectButton
                     options={levelOptions}
@@ -44,7 +44,7 @@ const CategoriesDisplayOptions: React.FC<
                 />
             </div>
             <LabeledComponent
-                label={t("Selected category")}
+                label={t("display-options.selected-category")}
                 className="p-button-label text-800 my-2 mx-1 align-items-center"
             >
                 <CategoryPicker
@@ -61,7 +61,7 @@ const CategoriesDisplayOptions: React.FC<
                 }
                 text={!focusAssignable}
                 icon={focusAssignable ? "pi pi-star-fill" : "pi pi-star"}
-                label={t("Assignable categories")}
+                label={t("display-options.assignable")}
                 onClick={() => focusAssignableCategories()}
             />
         </div>

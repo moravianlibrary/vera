@@ -27,7 +27,7 @@ const compareLocations = (a: Location, b: Location): number => {
 const LocationsTable: React.FC<LocationsTableProps> & {
     Paginator: React.FC;
 } = ({}) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("locations");
     const { locations, deleteLocation } = useLocations();
 
     const [values, setValues] = useState<Location[]>(
@@ -40,15 +40,7 @@ const LocationsTable: React.FC<LocationsTableProps> & {
     }, [locations]);
 
     const locationStateBody = (data: any, options: any) => {
-        return (
-            <p>
-                {t(
-                    data.state === LocationState.Active
-                        ? "Location active"
-                        : "Location closed"
-                )}
-            </p>
-        );
+        return <p>{t(`location-state.${data.state}`, { ns: "types" })}</p>;
     };
 
     const getSubPatternBody = (subPattern: string, index: number) => {
@@ -109,26 +101,31 @@ const LocationsTable: React.FC<LocationsTableProps> & {
 
     return (
         <div>
-            <DataTable
-                value={values}
-                scrollable
-                scrollHeight="calc(100vh - 170px)"
-            >
-                <Column header={t("Library")} field="storage.library.name" />
-                <Column header={t("Storage")} field="storage.name" />
-                <Column header={t("Location")} field="name" />
+            <DataTable value={values} scrollable scrollHeight="flex">
                 <Column
-                    header={t("Location prefix")}
+                    header={t("table.columns.library")}
+                    field="storage.library.name"
+                />
+                <Column
+                    header={t("table.columns.storage")}
+                    field="storage.name"
+                />
+                <Column header={t("table.columns.name")} field="name" />
+                <Column
+                    header={t("table.columns.regexp")}
                     field="regexp"
                     body={locationPatternBody}
                 />
-                <Column header={t("Description")} field="description" />
                 <Column
-                    header={t("Additional information")}
+                    header={t("table.columns.description")}
+                    field="description"
+                />
+                <Column
+                    header={t("table.columns.additional-info")}
                     field="additional_info"
                 />
                 <Column
-                    header={t("Location state")}
+                    header={t("table.columns.state")}
                     field="state"
                     body={locationStateBody}
                 />

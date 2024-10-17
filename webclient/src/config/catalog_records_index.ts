@@ -44,8 +44,7 @@ const catalog_records_index_settings = {
     ],
     highlight_attributes: ["id"],
     sorting: {
-        default: [{ field: "indexed_at", order: "desc" }],
-        _last_edited: [{ field: "indexed_at", order: "desc" }],
+        catalog_records: [{ field: "indexed_at", order: "desc" }],
         _non_valid_first: [
             { field: "has_valid_main_record", order: "asc" },
             { field: "has_valid_cnb", order: "asc" },

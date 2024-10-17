@@ -2,9 +2,9 @@ import React from "react";
 import { Toolbar } from "primereact/toolbar";
 
 interface SubNavigationMenuProps {
-    start?: () => React.ReactNode;
-    center?: () => React.ReactNode;
-    end?: () => React.ReactNode;
+    start?: React.ReactNode;
+    center?: React.ReactNode;
+    end?: React.ReactNode;
 }
 
 const SubNavigationMenu: React.FC<SubNavigationMenuProps> = ({

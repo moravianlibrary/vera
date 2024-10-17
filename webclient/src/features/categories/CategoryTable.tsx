@@ -15,7 +15,7 @@ import { IntentionClassification } from "../../types/IntentionClassification";
 interface CategoriesTableProps {}
 
 const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
     const { activeIntention } = useIntentions();
     const { currentCategory } = useCategoryModels();
 
@@ -25,14 +25,12 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                 className="documents-table"
                 value={currentCategory ? ([currentCategory] as any) : []}
                 scrollable
-                scrollHeight="calc(100vh - 170px)"
-                // columnResizeMode="expand"
-                // resizableColumns
+                scrollHeight="flex"
             >
                 <Column
                     style={{ width: "300px" }}
                     field="category.name"
-                    header={t("Category name")}
+                    header={t("table.columns.name")}
                     expander
                     body={(node, options) => <CategoryNameBody node={node} />}
                 />
@@ -40,51 +38,53 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                     <Column
                         style={{ width: "80px" }}
                         field="percentage"
-                        header={t("Percentage")}
-                        body={(node) => `${node.percentage || 0}%`}
+                        header={t("table.columns.percentage")}
+                        body={(node) =>
+                            t("table.values.percentage", {
+                                percentage: node.percentage || 0,
+                            })
+                        }
                     />
                 )}
                 {activeIntention && (
                     <Column
                         style={{ width: "80px" }}
                         field="overall_percentage"
-                        header={t("Overall percentage")}
-                        body={(node) => `${node.overall_percentage || 0}%`}
+                        header={t("table.columns.overall-percentage")}
+                        body={(node) =>
+                            t("table.values.overall-percentage", {
+                                percentage: node.percentage || 0,
+                            })
+                        }
                     />
                 )}
                 <Column
                     style={{ width: "100px" }}
                     field="total"
-                    header={t("Overall count")}
+                    header={t("table.columns.overall-count")}
                     body={(node) =>
-                        `${node.total_pages} ${t("pages in")} ${
-                            node.total_documents
-                        } ${t("documents")}`
+                        t("table.values.overall-count", {
+                            page_count: node.total_pages || 0,
+                            count: node.total_documents || 0,
+                        })
                     }
                 />
                 <Column
                     style={{ width: "120px" }}
                     field="extractable"
-                    header={t("Extractable count")}
+                    header={t("table.columns.extractable-count")}
                     body={(node) =>
-                        `${node.extractable_pages} ${t("pages in")} ${
-                            node.extractable_documents
-                        } ${t("documents")}`
+                        t("table.values.extractable-count", {
+                            page_count: node.extractable_pages || 0,
+                            count: node.extractable_documents || 0,
+                        })
                     }
-                />
-                <Column
-                    style={{ width: "100px" }}
-                    field="count_documents_without_cnb"
-                    header={t("Documents without CNB")}
-                    body={(node) => (
-                        <DangerCountBody count={node.documents_without_cnb} />
-                    )}
                 />
                 {activeIntention && (
                     <Column
                         style={{ width: "100px" }}
                         field="count_pages"
-                        header={t("Missing pages to fulfill intention")}
+                        header={t("table.columns.missing-to-fulfill")}
                         body={(node) => (
                             <DangerCountBody
                                 count={node.pages_needed_to_meet_intention}
@@ -98,7 +98,7 @@ const CategoriesTable: React.FC<CategoriesTableProps> = (props) => {
                     <Column
                         style={{ width: "80px" }}
                         field="actions"
-                        header={t("Actions")}
+                        header={t("table.columns.actions")}
                         body={(node) => <ActionButtons node={node} />}
                     />
                 )}
@@ -113,7 +113,7 @@ interface CategoryColumnBodyProps {
 }
 
 const CategoryNameBody: React.FC<CategoryColumnBodyProps> = ({ node }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
 
     if (node.type !== CategoryType.Category) {
         return <span>{node.name}</span>;
@@ -129,14 +129,14 @@ const CategoryNameBody: React.FC<CategoryColumnBodyProps> = ({ node }) => {
             }}
         >
             {node.name}
-            <Link to={`/documents?categoryId=${node.id}`}>
+            <Link to={`/documents?index_name=documents&categoryId=${node.id}`}>
                 <Button
                     className="p-1 text-xs"
                     icon="pi pi-external-link"
                     iconPos="right"
                     severity="secondary"
                     text
-                    tooltip={t("Show in documents")}
+                    tooltip={t("actions.show-in-documents")}
                     tooltipOptions={{ position: "right", showDelay: 500 }}
                 />
             </Link>

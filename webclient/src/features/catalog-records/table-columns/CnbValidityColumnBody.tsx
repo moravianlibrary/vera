@@ -23,7 +23,7 @@ const CnbValidityColumnBody = (catalogRecord: CatalogRecord) => {
         );
     }
     if (!catalogRecord.cnb_sysno) {
-        return <NotFoundTag label={t(`tables.values.not-found-in-cnb`)} />;
+        return <NotFoundTag label={t(`table.values.not-found-in-cnb`)} />;
     }
     if (!catalogRecord.cnb_difference) {
         throw new Error("cnb_difference is null even though cnb_sysno exists");

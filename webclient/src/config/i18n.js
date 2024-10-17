@@ -5,21 +5,9 @@ import { initReactI18next } from "react-i18next";
 const resources = {
     cs: {
         translation: {
-            cancel: "Zrušit",
-            clear: "Vyčistit",
-            username: "Uživatelské jméno",
-            login_button: "Přihlásit",
-
             department: "Oddělení",
             role_name: "Role",
-            category_name: "Název kategorie",
 
-            rows_per_page: "Řádků na stránku",
-            range_separator: "ze",
-
-            insert_record_title: "Vytvořit nový záznam",
-            insert_document: "Přidat dokument",
-            insert_record_tooltip: "",
             insert_records_from_file: "Vytvořit nové záznamy ze subora",
             select_category_title: "Vyberte kategorii",
             record_title: "Záznam",
@@ -31,9 +19,6 @@ const resources = {
             update_record_apply: "Aktualizovat",
             delete_record_apply: "Vymazat",
             "Document already exists": "Dokument již přidán",
-
-            Name: "Název",
-            "Pages count": "Počet stran",
 
             users: "Uživatelé",
             departments: "Oddělení",
@@ -65,16 +50,8 @@ const resources = {
             successful_registration_body: "",
 
             all_categories: "Všechny kategorie",
-            category_count_pages: "stran v kategorii",
-            category_missing_count_pages: "stran chybí k naplnění",
-            category_count_documents_with_pages: "dokumnetů se stranami",
-            category_count_documents: "dokumentů v kategorii",
 
             show_all_categories: "Zobraz všechny",
-            insert_mode: "Vkládací mód",
-            assignable_category: "Přiřaditelná kategorie",
-            use_category_departments: "Umožniť používat pouze oddělením",
-            select_departments: "Vyber oddělení",
 
             name: "Název",
             description: "Popis",
@@ -82,9 +59,6 @@ const resources = {
             select_quota: "Výběr zaměru",
             active_quota: "Aktivní zaměr",
             set_active_quota: "Nastavit jako aktívni zaměr",
-
-            count: "Počet",
-            Count: "Počet",
 
             document_successfuly_created: "Dokument úspěšně přidán",
             unique_document_violation: "Duplicitní dokument",
@@ -99,22 +73,6 @@ const resources = {
             "User have more than one assigned department":
                 "Uživatel má přiřazen více než jedno oddělení",
             app_not_available: "Aplikace není dostupna",
-
-            id: "Id",
-            task_type: "Název úkolu",
-            owner: "Vlastník",
-            task_state: "Stav",
-            documents_count: "Počet dokumentů",
-            planned: "Naplánováno",
-            started: "Spuštěno",
-            finished: "Ukončeno",
-            duration: "Trvání",
-
-            Planned: "Naplánováno",
-            Running: "Běží",
-            Finished: "Dokončeno",
-            Failed: "Chyba",
-            Killed: "Zrušeno",
 
             invalid_percentage_distribution: "Neplatné procentuální rozdělení",
             unique_category_name_violation:
@@ -159,7 +117,6 @@ const resources = {
             "Choose a category": "Vyber kategorie",
 
             Role: "Role",
-            Actions: "Akce",
             Operations: "Operace",
 
             Own: "Vlastní",
@@ -180,47 +137,10 @@ const resources = {
                 "Povoleno upravovat přístupová nastavení",
             "Administrating database allowed": "Povoleno spravovat databázi",
 
-            Extractor: "Extrahoval",
-            "Extracted at": "Extrahováno",
-            "Target pages count": "Cílový počet stránek",
-            "Documents count": "Počet dokumentů",
-            "Show in categories": "Zobrazit v kategoriích",
-            "Show in documents": "Zobrazit v dokumentech",
             "Mark documents": "Označit dokumenty",
             "Unmark documents": "Zrušit označení dokumentů",
-            "Generate extraction": "Generovat extrakci",
-            "Target pages threshold": "Cílový počet stránek s rozptylem",
-            "Whole categories threshold": "Celé kategorie s rozptylem",
-            "Include categories": "Zahrnout kategorie",
-            Quota: "Zaměr",
-            "Select categories": "Vybrat kategorie",
             "Select quota": "Vybrat zaměr",
             Generate: "Generovat",
-            " extracted pages": " extrahováno stránek",
-            " extracted documents": " extrahováno dokumentů",
-
-            "Error count": "Počet chyb",
-
-            "Material type": "Typ materialu",
-            Year: "Rok",
-            Unit: "Vydáni",
-            Bundle: "Svazek čísel",
-            "Issuance type": "Typ vydáni",
-            CNB: "ČNB",
-            "Digitization state": "Stav digitalizace",
-            "Pages count predicted": "Predikovaný počet stran",
-            Size: "Velikost",
-            Publisher: "Vydávatel",
-            "Publishing place": "Misto vydáni",
-            "Publishing year": "Rok vydáni",
-            Languages: "Jazyky",
-            Frequencies: "Frekvence",
-            Creator: "Vytvořil",
-            "Creator department": "Oddělení",
-            "Created at": "Vytvořeno",
-            "Extraction id": "Id extrakce",
-            Type: "Typ",
-            Description: "Popis",
 
             Book: "Monografie",
             ContinuingResource: "Periodikum",
@@ -228,30 +148,11 @@ const resources = {
             Music: "Hudba",
             Other: "Ostatní",
 
-            InProgress: "Probiha",
-            NotDigitized: "Nedigitalizováno",
-
-            Cancel: "Zrušit",
-            Delete: "Smazat",
-            "Delete document": "Smazání dokumentu",
-            "Delete documents": "Smazání dokumentů",
-            "Are you sure you want to delete this document?":
-                "Opravdu chcete smazat tento dokument?",
-            "Are you sure you want to delete all selected documents?":
-                "Opravdu chcete smazat všechny vybrané dokumenty?",
-            "Number of selected documents": "Počet vybraných dokumentů",
-
             "Copied to clipboard": "Zkopírováno do schránky",
 
-            "Document id": "Id dokumentu",
-            Processed: "Zpracováno",
-            "Error type": "Typ chyby",
-            "Error message": "Zpráva o chybe",
             ValueError: "Neplatná hodnota",
             UnknownError: "Neznámá chyba",
-            "Finished with errors": "Ukončeno s chybami",
             Any: "Jakýkoli",
-            "Without error": "Bez chyby",
 
             "Document is missing a volume year":
                 "Dokument neobsahuje rok vydáni",
@@ -272,20 +173,6 @@ const resources = {
             SyncDocumentsWithDigitizationRegistry:
                 "Synchronizace z registru digitalizace",
 
-            "documents without CNB": "dokumentů bez ČNB",
-            "Number of found documents": "Počet nalezených dokumentů",
-            "Active filtering": "Aktivní filtr",
-            "Cancel filtering": "Zrušit filtr",
-            "Delete selected documents": "Smazat vybrané dokumenty",
-            "Other options": "Ostatní možnosti",
-
-            "Edit distribution": "Upravit rozdelení",
-            "Category options": "Možnosti kategorie",
-            "Edit category": "Upravit kategorii",
-            "Delete category": "Smazat kategorii",
-            "Add child category": "Přidat podkategorii",
-
-            "from overall percentage": "z celkových procent",
             "pages by intention": "stran pro záměr",
             "Extracted pages count": "Počet extrahováných stránek",
             Fulfilled: "Splněno",
@@ -293,16 +180,11 @@ const resources = {
             "You can move to the next category using the Enter key":
                 "S použitím klávesy Enter můzete přejít na další kategorii",
             "All categories": "Všechny kategorie",
-            "Categories of level": "Kategorie úrovně",
-            "Assignable categories": "Přiřaditelné kategorie",
-            "Selected category": "Vybrana kategorie",
             "Documents are still included in the categories":
                 "Dokumenty jsou stále zařazeny do kategorií",
             "Documents are no longer included in the categories":
                 "Dokumenty již nejsou zařazeny do kategorií",
             "Show extraction": "Zobrazit extrakci",
-            "extractable pages": "extrahovatelných stránek",
-            "extractable documents": "extrahovatelných dokumentů",
 
             "Download CSV": "Stáhnout CSV",
 
@@ -314,17 +196,8 @@ const resources = {
             "Set pages count": "Nastavit počet stránek",
             "Set pages count and go to next document":
                 "Nastavit počet stránek a přejít na další dokument",
-            "from catalog": "z katalogu",
-            predicted: "predikovaný",
-            "set manually": "ručně zadán",
 
-            "Digitization lists": "Seznamy digitalizace",
             "Generate extractions": "Generovani extrakcí",
-            "Created by": "Vytvořil",
-            Intention: "Zaměr",
-            "Generated by": "Vygeneroval",
-            "Generated at": "Vygenerováno",
-            "Selected pages count": "Vybrán počet stránek",
             "Create digitization list": "Vytvořit seznam digitalizace",
             "Digitization list creation failed":
                 "Vytvoření seznamu digitalizace se nezdařilo",
@@ -372,40 +245,12 @@ const resources = {
             "Add documents to digitization list":
                 "Přidat dokumenty do seznamu digitalizace",
 
-            "Items per page": "Záznamů na stranu",
-
             "Filter by category": "Filtrovat podle kategorie",
             "Filter by digitization list":
                 "Filtrovat podle seznamu digitalizace",
             "Filter by generated extraction":
                 "Filtrovat podle generovane extrakce",
             "Select field": "Vyber pole",
-
-            Equals: "Je rovno",
-            StartsWith: "Začína na",
-            EndsWith: "Končí na",
-            Contains: "Obsahuje",
-            NotContains: "Neobsahuje",
-            NotEquals: "Není rovno",
-            IsNull: "Není nastaveno",
-            IsNotNull: "Je nastaveno",
-            EqualTo: "Rovná se",
-            NotEqualTo: "Nerovná se",
-            LessThan: "Meně než",
-            MoreThan: "Více než",
-            Between: "Mezi",
-            IsIn: "Je v",
-            IsNotIn: "Není v",
-            Is: "Je",
-            IsNot: "Není",
-            Match: "Odpovídá",
-            NotMatch: "Neodpovídá",
-            "Add rules group": "Přidat skupinu pravidel",
-
-            "Catalog's pages count": "Počet stránek z katalogu",
-            "Manual pages count": "Počet stránek ručně zadán",
-            "Predicted pages count": "Počet stránek predikovaný",
-            documents: "dokumentů",
 
             "File type not supported": "Týp souboru neni podporován",
             Confirm: "Potvrz",
@@ -415,20 +260,6 @@ const resources = {
             "Cell selection is possible by clicking on individual cells or by dragging across multiple cells":
                 "Výběr buněk je možný kliknutím na jednotlivé buňky nebo tažením přes více buněk",
 
-            Save: "Uložit",
-            Edit: "Upravit",
-
-            "Storage locations": "Skladové lokace",
-            Library: "Knihovna",
-            Storage: "Uložení",
-            Location: "Lokace",
-            "Location name": "Jméno lokace",
-            "Location prefix": "Prefix lokace",
-            "Location state": "Stav lokace",
-            "Location active": "Doplňuje se",
-            "Location closed": "Uzavřeno",
-            "Location description": "Popis lokace",
-            "Additional information": "Dodatečné informace",
             "Create location": "Vytvořit lokaci",
             "Special characters": "Speciální znaky",
             "Any digit": "Libovolná číslice",
@@ -491,23 +322,6 @@ const resources = {
             "Assign label": "Přiradit označení",
             "Ignore row": "Ignorovat řádek",
 
-            "Category name": "Jméno kategorie",
-            Percentage: "Podíl",
-            "Overall percentage": "Celkový podíl",
-            "Extractable count": "Extrahovatelní počet",
-            "Overall count": "Celkový počet",
-            "Missing pages to fulfill intention":
-                "Chýba stran k naplňení zámeru",
-            "Documents without CNB": "Dokumentů bez ČNB",
-            Table: "Tabulka",
-            Chart: "Diagram",
-            Categories: "Kategorie",
-            Intentions: "Zámery",
-            "pages in": "stránek v",
-
-            Documents: "Dokumenty",
-            Tasks: "Ukoly",
-            "Access management": "Správa prístupů",
             "Change distribution for category":
                 "Změnit distribuci pro kategorií",
 
@@ -518,26 +332,7 @@ const resources = {
             "Categories table": "Tabulka kategorií",
             "Categories chart": "Diagram kategorií",
 
-            "Categories display options": "Výběr zobrazení kategorií",
-            "Intentions display options": "Výběr zobrazení zámerů",
-            "Departments display options": "Výběr zobrazení oddělení",
-            "Without intention": "Bez zámerů",
-            "Selected intention": "Vybraný zámer",
-            "Show only intention categories": "Zobrazit pouze kategorie zámerů",
-            "Show all categories": "Zobrazit všechny kategorie",
-            "Selected department": "Vybraný oddělení",
-            "Select intention": "Vybrat zámer",
-            "Select department": "Vybrat oddělení",
-
             "Add intention": "Přidat zámer",
-            "Target page count": "Cílový počet stránek",
-            "Date range": "Časové období",
-            Classification: "Klasifikace",
-            Previous: "Předchozí",
-            Current: "Aktuální",
-            Upcoming: "Nadcházející",
-            "Intention name": "Jméno zámeru",
-            Submit: "Potvrdit",
 
             "Intention name must not be empty":
                 "Jméno zámeru neměže být prázdne",
@@ -563,25 +358,8 @@ const resources = {
             "Digitization forbidden": "Nelze digitalizovat",
 
             "Is extractable": "Může být extrahovaný",
-            Yes: "Ano",
-            No: "Ne",
-
-            "catalog.record.mzk": "MZK katalog záznam",
-            "catalog.record.cnb": "ČNB katalog záznam",
-            "catalog.record.skc": "SKC katalog záznam",
-            "catalog.record.value-differs": "<- rozdílna hodnota ->",
-            "catalog.record.cnb-not-found": "Záznam v ČNB katalogu nenalezen",
-            "catalog.record.skc-not-found": "Záznam v SKC katalogu nenalezen",
 
             "documents.table.no-category": "Bez kategorie",
-
-            common: {
-                select: {
-                    "task-type": {
-                        placeholder: "Vybrat typ úkolu",
-                    },
-                },
-            },
 
             Choose: "Vybrat",
             Upload: "Nahrát",
@@ -606,6 +384,7 @@ i18n.use(HttpBackend)
         lng: "cs",
         fallbackLng: "cs",
         ns: [
+            "app",
             "navigation",
             "types",
             "documents",
@@ -614,6 +393,10 @@ i18n.use(HttpBackend)
             "tasks",
             "types",
             "catalog-records",
+            "intentions",
+            "extractions",
+            "digitization-lists",
+            "locations",
         ],
         defaultNS: "navigation",
 

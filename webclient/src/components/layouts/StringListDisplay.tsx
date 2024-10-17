@@ -17,13 +17,13 @@ const StringListDisplay: React.FC<StringListDisplayProps> = ({
 
     const [showMore, setShowMore] = useState<boolean>(false);
 
-    if (stringList.length === 0) return null;
+    if (stringList.length === 0) return <span>-</span>;
 
     if (stringList.length <= maxItems) {
         return (
-            <div>
-                {stringList.map((s) => (
-                    <span>{s}</span>
+            <div className="flex flex-column">
+                {stringList.map((s, i) => (
+                    <span key={i}>{s}</span>
                 ))}
             </div>
         );
@@ -33,8 +33,8 @@ const StringListDisplay: React.FC<StringListDisplayProps> = ({
         <div className="layout-string-list">
             <div className="flex flex-column">
                 {(showMore ? stringList : stringList.slice(0, maxItems)).map(
-                    (s) => (
-                        <span>{s}</span>
+                    (s, i) => (
+                        <span key={i}>{s}</span>
                     )
                 )}
             </div>

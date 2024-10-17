@@ -25,7 +25,11 @@ const useDataTableExpandedRows = () => {
     );
 
     const onRowCollapse = useCallback((data: any) => {
-        setExpandedRows((prev) => prev.filter((row) => row.id !== data.id));
+        if (data.id) {
+            setExpandedRows((prev) => prev.filter((row) => row.id !== data.id));
+        } else {
+            setExpandedRows((prev) => prev.filter((row) => row !== data));
+        }
     }, []);
 
     const onRowCollapseEvent = useCallback(
@@ -34,7 +38,7 @@ const useDataTableExpandedRows = () => {
         },
         [onRowCollapse]
     );
-
+    
     const reset = useCallback(() => {
         setExpandedRows([]);
     }, []);

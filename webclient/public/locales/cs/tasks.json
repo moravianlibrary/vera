@@ -1,4 +1,26 @@
 {
+    "num-found": "Počet nalezených úkolu: {{count}}",
+    "table": {
+        "columns": {
+            "id": "ID",
+            "task-type": "Název úkolu",
+            "owner": "Vlastník",
+            "task-state": "Stav",
+            "items-count": "Počet položek",
+            "error-count": "Počet chyb",
+            "planned": "Naplánováno",
+            "started": "Spuštěno",
+            "finished": "Ukončeno",
+            "duration": "Trvání",
+            "item-id": "ID položky",
+            "item-processed": "Zpracováno",
+            "item-error-type": "Typ chyby",
+            "item-error-message": "Zpráva o chybe"
+        },
+        "values": {
+            "item-without-error": "Bez chyby"
+        }
+    },
     "labels": {
         "ReindexCatalogRecords": "Reindexovat katalogové záznamy",
         "ReevaluateCatalogRecordsDifferences": "Přepočítat rozdíly mezi katalogovými záznamy",
@@ -20,34 +42,5 @@
             "SyncDocumentsWithDigitizationRegistry": "Opravdu chcete synchronizovat vybrané {{count}} dokumenty s registrom digitalizace?"
         },
         "started": "Úkol spusten"
-    },
-    "periodic": {
-        "create": "Naplánovat úkol",
-        "form": {
-            "task-type": "Úkol",
-            "query": "Pro dotaz",
-            "cron": {
-                "minute": "Minuta",
-                "hour": "Hodina",
-                "day_of_week": "Den v tydnu",
-                "day_of_month": "Den v měsíci",
-                "minute-placeholder": "0",
-                "hour-placeholder": "0-23",
-                "day_of_month-placeholder": "1-31",
-                "hour-wildcard": "Každou hodinu",
-                "day_of_month-wildcard": "Každý den v měsíci"
-            },
-            "submit": "Naplánovat úkol"
-        },
-        "day_of_week": {
-            "*": "Každý den v tydnu",
-            "0": "Neděle",
-            "1": "Pondělí",
-            "2": "Úterý",
-            "3": "Středa",
-            "4": "Čtvrtek",
-            "5": "Pátek",
-            "6": "Sobota"
-        }
     }
 }

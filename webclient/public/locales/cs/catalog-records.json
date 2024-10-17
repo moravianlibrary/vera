@@ -19,6 +19,16 @@
             "not-found-in-cnb": "Záznam nenalezen v ČNB katalogu"
         }
     },
+    "details": {
+        "data": "Detailní informace",
+        "skc-difference": "Rozdíly mezi MZK a SKC katalogem",
+        "cnb-difference": "Rozdíly mezi MZK a ČNB katalogem"
+    },
+    "actions": {
+        "action-approve-difference": "Schválit rozdíl",
+        "difference-approve-success": "Rozdíl byl schválen",
+        "difference-approved": "Schválil"
+    },
     "properties": {
         "id": "MZK systémové číslo",
         "cnb": "ČNB",
@@ -42,15 +52,6 @@
         "languages": "Jazyky",
         "frequencies": "Frekvence"
     },
-    "action-approve-difference": "Schválit rozdíl",
-    "difference-approve-success": "Rozdíl byl schválen",
-    "difference-approved": "Schválil",
-    "difference": {
-        "Equal": "Shoda",
-        "DifferentValue": "Rozdílna hodnota",
-        "MissingField": "Chybí pole",
-        "ExtraField": "Extra pole"
-    },
     "facets": {
         "has-valid-main-record": "Záznam je validný",
         "skc-sysno-resolved": "SKC systémové číslo nalezeno",
@@ -69,11 +70,6 @@
         "valid-first": "Validný první",
         "newest": "Nejnovejší",
         "oldest": "Nejstarší"
-    },
-    "details": {
-        "data": "Detailní informace",
-        "skc-difference": "Rozdíly mezi MZK a SKC katalogem",
-        "cnb-difference": "Rozdíly mezi MZK a ČNB katalogem"
     },
     "query-params": {
         "query": "Vyhledávaní: {{value}}",

@@ -21,6 +21,7 @@ interface CatalogRecordField {
     attribute: keyof CatalogRecord;
     transform?: (value: any) => any;
     translate?: boolean;
+    translateNs?: string;
 }
 
 const catalogRecordFields: CatalogRecordField[] = [
@@ -36,14 +37,16 @@ const catalogRecordFields: CatalogRecordField[] = [
     { attribute: "skc_sysno" },
     {
         attribute: "has_valid_main_record",
-        transform: (b) => (b ? "common.yes" : "common.no"),
+        transform: (b) => `boolean.${b}`,
         translate: true,
+        translateNs: "types",
     },
     { attribute: "cnb_sysno" },
     {
         attribute: "has_valid_cnb",
-        transform: (b) => (b ? "common.yes" : "common.no"),
+        transform: (b) => `boolean.${b}`,
         translate: true,
+        translateNs: "types",
     },
     {
         attribute: "added_at",
@@ -95,12 +98,16 @@ const CatalogRecordData: React.FC<CatalogRecordViewProps> = ({
             labels={catalogRecordFields.map((field) =>
                 t(`properties.${field.attribute}`)
             )}
-            components={catalogRecordFields.map((field) => {
+            components={catalogRecordFields.map((field, index) => {
                 const value =
-                    field.transform && catalogRecord[field.attribute]
+                    field.transform &&
+                    catalogRecord[field.attribute] !== undefined &&
+                    catalogRecord[field.attribute] !== null
                         ? field.transform(catalogRecord[field.attribute])
                         : catalogRecord[field.attribute];
-                return field.translate ? t(value) : value;
+                return field.translate && typeof value === "string"
+                    ? t(value, { ns: field.translateNs || "catalog-records" })
+                    : value;
             })}
         />
     );
@@ -121,7 +128,7 @@ const CatalogRecordDifferences = (differences: MarcFieldDifference[]) => {
     return (
         <LabeledComponentsBox
             labels={sorted.map((difference) =>
-                t(`record-difference.${difference.difference_type}`)
+                t(`marc-difference.${difference.difference_type}`)
             )}
             components={sorted.map((difference) => (
                 <CatalogRecordsDifference
@@ -129,6 +136,7 @@ const CatalogRecordDifferences = (differences: MarcFieldDifference[]) => {
                     difference={difference}
                 />
             ))}
+            center
         />
     );
 };
@@ -142,7 +150,7 @@ const CatalogRecordDetails: React.FC<CatalogRecordViewProps> = ({
         <TabView>
             <TabPanel
                 className="catalog-records-details-tabpanel"
-                header={t("table.details")}
+                header={t("details.data")}
             >
                 <CatalogRecordData catalogRecord={catalogRecord} />
             </TabPanel>
@@ -150,7 +158,7 @@ const CatalogRecordDetails: React.FC<CatalogRecordViewProps> = ({
                 catalogRecord.skc_difference.length > 0 && (
                     <TabPanel
                         className="catalog-records-details-tabpanel"
-                        header={t("table.skc-difference")}
+                        header={t("details.skc-difference")}
                     >
                         {CatalogRecordDifferences(catalogRecord.skc_difference)}
                     </TabPanel>
@@ -159,7 +167,7 @@ const CatalogRecordDetails: React.FC<CatalogRecordViewProps> = ({
                 catalogRecord.cnb_difference.length > 0 && (
                     <TabPanel
                         className="catalog-records-details-tabpanel"
-                        header={t("table.cnb-difference")}
+                        header={t("details.cnb-difference")}
                     >
                         {CatalogRecordDifferences(catalogRecord.cnb_difference)}
                     </TabPanel>

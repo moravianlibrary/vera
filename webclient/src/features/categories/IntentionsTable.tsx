@@ -19,7 +19,7 @@ import { useAccess } from "../../contexts/AccessContext";
 interface IntentionsTableProps {}
 
 const IntentionsTable: React.FC<IntentionsTableProps> = (props) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("intentions");
     const { intentions } = useIntentions();
     const { hasPermission } = useAccess();
 
@@ -29,22 +29,22 @@ const IntentionsTable: React.FC<IntentionsTableProps> = (props) => {
                 className="documents-table"
                 value={intentions}
                 scrollable
-                scrollHeight="calc(100vh - 170px)"
+                scrollHeight="flex"
                 columnResizeMode="expand"
             >
-                <Column header={t("Name")} field="name" />
+                <Column header={t("table.columns.name")} field="name" />
                 <Column
-                    header={t("Target page count")}
+                    header={t("table.columns.target-page-count")}
                     field="target_page_count"
                 />
                 <Column
-                    header={t("Date range")}
+                    header={t("table.columns.date-range")}
                     body={(intention) => (
                         <IntentionDateRangeBody intention={intention} />
                     )}
                 />
                 <Column
-                    header={t("Classification")}
+                    header={t("table.columns.classification")}
                     body={(intention) => (
                         <IntentionClassificationBody intention={intention} />
                     )}
@@ -85,13 +85,11 @@ const IntentionClassificationBody: React.FC<IntentionColumnBodyProps> = ({
 }) => {
     const { t } = useTranslation();
 
-    if (intention.classification === IntentionClassification.Previous) {
-        return <Tag className="tag-ic-previous">{t("Previous")}</Tag>;
-    } else if (intention.classification === IntentionClassification.Current) {
-        return <Tag className="tag-ic-current">{t("Current")}</Tag>;
-    } else if (intention.classification === IntentionClassification.Upcoming) {
-        return <Tag className="tag-ic-upcoming">{t("Upcoming")}</Tag>;
-    }
+    return (
+        <Tag className={`tag-ic-${intention.classification.toLowerCase()}`}>
+            {t(`types.intention-classification.${intention.classification}`)}
+        </Tag>
+    );
 };
 
 const ActionButtonsBody: React.FC<IntentionColumnBodyProps> = ({

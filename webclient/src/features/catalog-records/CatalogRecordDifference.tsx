@@ -17,7 +17,7 @@ interface CatalogRecordsDifferencesProps {
 const CatalogRecordsDifference: React.FC<CatalogRecordsDifferencesProps> = ({
     difference,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("catalog-records");
     const { approveDifference } = useCatalogRecords();
 
     const getDiffernceBody = () => {
@@ -38,7 +38,7 @@ const CatalogRecordsDifference: React.FC<CatalogRecordsDifferencesProps> = ({
         return (
             <div>
                 <span className="font-bold">
-                    {t("catalog-records.difference-approved")}:
+                    {t("actions.difference-approved")}:
                 </span>
                 <span>{` ${difference.approved_by}, ${formatDatetime(
                     difference.approved_at!
@@ -54,7 +54,7 @@ const CatalogRecordsDifference: React.FC<CatalogRecordsDifferencesProps> = ({
                 outlined
                 rounded
                 icon="pi pi-check"
-                label={t("catalog-records.action-approve-difference")}
+                label={t("actions.action-approve-difference")}
                 onClick={() => approveDifference(difference.id)}
             />
         );

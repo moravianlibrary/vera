@@ -23,7 +23,7 @@ const CategoriesChartUpdate: React.FC<CategoriesChartUpdateProps> = ({
 }) => {
     const { closeCategoryEdit, updateCategory, createCategory } =
         useCategoryModels();
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
 
     const { departments: departmentsOptions } = useDepartments();
 
@@ -80,13 +80,13 @@ const CategoriesChartUpdate: React.FC<CategoriesChartUpdateProps> = ({
                     </Button>
                 </div>
                 <InputText
-                    placeholder={t("name")}
+                    placeholder={t("form.placeholder.name")}
                     keyfilter={new RegExp("^[0-9\\p{L}\\s\\.,!?]*$", "u")}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                 />
                 <InputTextarea
-                    placeholder={t("description")}
+                    placeholder={t("form.placeholder.description")}
                     keyfilter={new RegExp("^[0-9\\p{L}\\s\\.,!?]*$", "u")}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -100,7 +100,7 @@ const CategoriesChartUpdate: React.FC<CategoriesChartUpdateProps> = ({
                         }
                     />
                     <label htmlFor="assignable" className="ml-2">
-                        {t("assignable_category")}
+                        {t("form.label.assignable")}
                     </label>
                 </div>
                 {departmentsOptions &&
@@ -114,17 +114,14 @@ const CategoriesChartUpdate: React.FC<CategoriesChartUpdateProps> = ({
                         ))}
                     </div> */}
                             {/* <Tooltip target=".use-category-departments"  /> */}
-                            <span
-                                className="text-left use-category-departments"
-                                data-pr-tooltip={t(
-                                    "This setting is propagated downwards"
-                                )}
-                            >
-                                {t("use_category_departments")}:
+                            <span className="text-left use-category-departments">
+                                {t("form.label.departments")}:
                             </span>
                             <div className="card flex justify-content-center">
                                 <MultiSelect
-                                    placeholder={t("select_departments")}
+                                    placeholder={t(
+                                        "form.placeholder.select-departments"
+                                    )}
                                     value={departments}
                                     onChange={(e) => setDepartments(e.value)}
                                     options={departmentsOptions}

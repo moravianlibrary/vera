@@ -1,0 +1,14 @@
+{
+    "submit": "Potvrdit",
+    "save": "Uložit",
+    "edit": "Upravit",
+    "cancel": "Zrušit",
+    "delete": "Smazat",
+    "paginator": {
+        "items-per-page": "Záznamů na stranu"
+    },
+    "internal-link": {
+        "show-in-documents": "Zobrazit v dokumentech",
+        "show-in-categories": "Zobrazit v kategoriích"
+    }
+}

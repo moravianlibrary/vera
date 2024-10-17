@@ -18,7 +18,6 @@ const SCROLL_BY_PROPORTION = 0.8;
 const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
     const { currentCategory, focusParentCategory, editCategory } =
         useCategoryModels();
-    const { categories } = useCategories();
     const containerRef = useRef<HTMLDivElement>(null);
 
     const getCategoryModelComponent = (category: CategoryModel) => {
