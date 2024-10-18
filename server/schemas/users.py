@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from typing import List, Optional
+from pydantic import BaseModel, model_validator
+from typing import List, Optional, Any
 from datatypes import ActionType, JsonBase
+from models import User
 
 
 class CurrentUser(BaseModel):
@@ -23,4 +24,14 @@ class CurrentUser(BaseModel):
 
 
 class UserResponse(BaseModel):
+    class Config:
+        from_attibutes = True
+
     username: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_model(cls, data: Any) -> Any:
+        if isinstance(data, User):
+            return {"username": data.username}
+        return data

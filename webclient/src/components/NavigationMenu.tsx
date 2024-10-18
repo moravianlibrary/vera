@@ -1,15 +1,9 @@
-import React, { useRef } from "react";
-import { Menubar } from "primereact/menubar";
-import { useAccess } from "../contexts/AccessContext";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import { ActionType } from "../types/ActionType";
 import Login from "./Login";
-import { useNavigate } from "react-router-dom";
 import { Toolbar } from "primereact/toolbar";
-import { Button } from "primereact/button";
-import { Menu } from "primereact/menu";
-import ActionAccessComponent from "./access/ActionAccessComponent";
-import { SplitButton } from "primereact/splitbutton";
+import NavigationButtonGroup from "./navigation/NavigationButtonGroup";
 
 interface NavigationMenuProps {}
 
@@ -28,69 +22,52 @@ const NavigationMenu: React.FC<NavigationMenuProps> = () => {
 
 const NavigationMenuStart = () => {
     const { t } = useTranslation("navigation");
-    const navigate = useNavigate();
 
     return (
-        <div className="card flex gap-2 flex-wrap">
-            <Button className="p-0" text onClick={() => navigate("/")}>
-                <img src="/logo32.svg" />
-            </Button>
-            <ActionAccessComponent action={ActionType.ReadDatatable}>
-                <Button
-                    className="text-gray-700"
-                    label={t("documents")}
-                    icon="pi pi-book"
-                    text
-                    onClick={() => navigate("/documents")}
-                />
-            </ActionAccessComponent>
-            <ActionAccessComponent action={ActionType.ReadCatalogRecords}>
-                <Button
-                    className="text-gray-700"
-                    label={t("catalog-records")}
-                    icon="pi pi-server"
-                    text
-                    onClick={() => navigate("/catalog-records")}
-                />
-            </ActionAccessComponent>
-            <ActionAccessComponent action={ActionType.ReadDatatable}>
-                <Button
-                    className="text-gray-700"
-                    label={t("categories")}
-                    icon="pi pi-tags"
-                    text
-                    onClick={() => navigate("/categories")}
-                />
-            </ActionAccessComponent>
-            <ActionAccessComponent action={ActionType.Extract}>
-                <Button
-                    className="text-gray-700"
-                    label={t("extractions")}
-                    icon="pi pi-receipt"
-                    text
-                    onClick={() => navigate("/extractions")}
-                />
-            </ActionAccessComponent>
-            <ActionAccessComponent action={ActionType.PlanTasks}>
-                <Button
-                    className="text-gray-700"
-                    label={t("tasks")}
-                    icon="pi pi-play-circle"
-                    text
-                    onClick={() => navigate("/tasks")}
-                />
-            </ActionAccessComponent>
-            <ActionAccessComponent action={ActionType.EditAccess}>
-                {/* <AccessMenu /> */}
-                <Button
-                    className="text-gray-700"
-                    label={t("access-management")}
-                    icon="pi pi-user-edit"
-                    text
-                    onClick={(event) => navigate("/departments")}
-                />
-            </ActionAccessComponent>
-        </div>
+        <NavigationButtonGroup
+            navigationButtons={[
+                {
+                    to: "/",
+                    imageSource: "/logo32.svg",
+                },
+                {
+                    label: t("documents"),
+                    icon: "pi pi-book",
+                    to: "/documents",
+                    action: ActionType.ReadDatatable,
+                },
+                {
+                    label: t("catalog-records"),
+                    icon: "pi pi-server",
+                    to: "/catalog-records",
+                    action: ActionType.ReadCatalogRecords,
+                },
+                {
+                    label: t("categories"),
+                    icon: "pi pi-tags",
+                    to: "/categories",
+                    action: ActionType.ReadDatatable,
+                },
+                {
+                    label: t("extractions"),
+                    icon: "pi pi-receipt",
+                    to: "/extractions",
+                    action: ActionType.Extract,
+                },
+                {
+                    label: t("tasks"),
+                    icon: "pi pi-play-circle",
+                    to: "/tasks",
+                    action: ActionType.PlanTasks,
+                },
+                {
+                    label: t("access-management"),
+                    icon: "pi pi-user-edit",
+                    to: "/access-management/departments",
+                    action: ActionType.EditAccess,
+                },
+            ]}
+        />
     );
 };
 

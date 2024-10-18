@@ -80,6 +80,7 @@ class Document(BaseModel):
     digitization_list = relationship(
         "DigitizationList", back_populates="documents"
     )
+    extractions = relationship("ExtractionDocument", back_populates="document")
 
     @hybrid_property
     def cnb(self) -> Optional[str]:
@@ -137,6 +138,10 @@ class Document(BaseModel):
             & cls.digitization_list_id.is_(None)
         )
 
+    @hybrid_property
+    def extraction_ids(self) -> List[int]:
+        return [e.extraction_id for e in self.extractions]
+
     def raise_for_extractibility(
         self, ignore_digitization_states: Set[DigitizationState]
     ) -> None:
@@ -161,6 +166,17 @@ class Document(BaseModel):
     @hybrid_property
     def category_name(self) -> Optional[str]:
         return self.category.name if self.category else None
+
+    @hybrid_property
+    def category_ids(self) -> List[int]:
+        curr_category = self.category
+        category_id_path = []
+
+        while curr_category:
+            category_id_path.append(curr_category.id)
+            curr_category = curr_category.parent_category
+
+        return category_id_path if category_id_path else []
 
     @hybrid_property
     def category_path(self) -> Optional[List[Dict[int, str]]]:

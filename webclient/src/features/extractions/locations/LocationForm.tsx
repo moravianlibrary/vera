@@ -26,7 +26,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
     onStorageChange,
     onLocationChange,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("locations");
 
     const handleNameChange = (name: string) => {
         onLocationChange({
@@ -67,7 +67,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
         <div className="flex flex-column gap-1">
             <LabeledComponent
                 className="justify-content-between"
-                label={t("Library")}
+                label={t("form.library")}
             >
                 <LocationLibraryForm
                     library={library}
@@ -76,7 +76,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"
-                label={t("Storage")}
+                label={t("form.storage")}
             >
                 <LocationStorageForm
                     library={library}
@@ -86,7 +86,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"
-                label={t("Location name")}
+                label={t("form.name")}
             >
                 <InputText
                     value={location ? location.name : ""}
@@ -97,7 +97,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"
-                label={t("Location prefix")}
+                label={t("form.regexp")}
             >
                 <LocationPrefixForm
                     prefix={location ? location.regexp : ""}
@@ -107,7 +107,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"
-                label={t("Additional information")}
+                label={t("form.additional-info")}
             >
                 <InputText
                     value={
@@ -122,7 +122,7 @@ const LocationForm: React.FC<LocationFormProps> = ({
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"
-                label={t("Location description")}
+                label={t("form.description")}
             >
                 <InputText
                     value={
@@ -137,16 +137,12 @@ const LocationForm: React.FC<LocationFormProps> = ({
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"
-                label={t("Location state")}
+                label={t("form.state")}
             >
                 <Dropdown
                     value={location ? location.state : null}
                     options={Object.values(LocationState).map((state) => ({
-                        label: t(
-                            state === LocationState.Active
-                                ? "Location active"
-                                : "Location closed"
-                        ),
+                        label: t(`location-state.${state}`, { ns: "types" }),
                         value: state,
                     }))}
                     onChange={(e) =>

@@ -14,9 +14,9 @@ interface StorageMenuProps {
 }
 
 const StorageMenu: React.FC<StorageMenuProps> = ({ onClose }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("locations");
     const showToast = useToast();
-    const { libraries, storages, updateStorage, deleteStorage } =
+    const { libraries, storages, locations, updateStorage, deleteStorage } =
         useLocations();
 
     const [selectedStorage, setSelectedStorage] = useState<Storage | null>(
@@ -40,7 +40,7 @@ const StorageMenu: React.FC<StorageMenuProps> = ({ onClose }) => {
 
     const handleDeleteStorage = () => {
         if (selectedStorage) {
-            if (selectedStorage.locations.length > 0) {
+            if (locations.some((l) => l.storage_id === selectedStorage.id)) {
                 showToast(
                     "error",
                     t(
@@ -66,7 +66,7 @@ const StorageMenu: React.FC<StorageMenuProps> = ({ onClose }) => {
                         onChange={handleSelectStorage}
                         optionLabel="name"
                         optionValue="id"
-                        placeholder={t("Select storage")}
+                        placeholder={t("form.placeholder.storage")}
                     />
                     <Button
                         severity="danger"
@@ -78,7 +78,7 @@ const StorageMenu: React.FC<StorageMenuProps> = ({ onClose }) => {
                 </div>
                 <LabeledComponent
                     className="justify-content-between"
-                    label={t("Library")}
+                    label={t("form.library-name")}
                 >
                     <LocationLibraryForm
                         library={library}
@@ -88,7 +88,7 @@ const StorageMenu: React.FC<StorageMenuProps> = ({ onClose }) => {
                 </LabeledComponent>
                 <LabeledComponent
                     className="justify-content-between"
-                    label={t("Storage name")}
+                    label={t("form.storage-name")}
                 >
                     <InputText
                         value={storageName}
@@ -100,7 +100,7 @@ const StorageMenu: React.FC<StorageMenuProps> = ({ onClose }) => {
             <div className="flex gap-1">
                 <Button
                     className="w-full"
-                    label={t("Save")}
+                    label={t("save", { ns: "app" })}
                     severity="success"
                     outlined
                     icon="pi pi-check"
@@ -109,7 +109,7 @@ const StorageMenu: React.FC<StorageMenuProps> = ({ onClose }) => {
                 />
                 <Button
                     className="w-full"
-                    label={t("Cancel")}
+                    label={t("cancel", { ns: "app" })}
                     severity="danger"
                     outlined
                     icon="pi pi-times"

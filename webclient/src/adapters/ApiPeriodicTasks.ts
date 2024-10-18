@@ -20,13 +20,36 @@ class ApiPeriodicTasks extends ApiBase<PeriodicTask> {
     constructor() {
         super("/tasks/periodic", {
             disableGetPage: true,
-            disableDelete: true,
+            disableCreate: true,
             disableUpdate: true,
         } as ApiOptions);
     }
 
+    plan(periodicTask: Partial<PeriodicTask>) {
+        const queryString = Object.entries({
+            task_type: periodicTask.task_type,
+            minute: periodicTask.minute,
+            hour: periodicTask.hour,
+            day_of_week: periodicTask.day_of_week,
+            day_of_month: periodicTask.day_of_month,
+        })
+            .filter(([, value]) => value !== undefined)
+            .map(
+                ([key, value]) =>
+                    `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+            )
+            .join("&");
+        return ApiBase.axiosInstance.post<PeriodicTask>(
+            `${this.endpoint}?${queryString}`,
+            periodicTask.query_params,
+            {
+                headers: authHeader(),
+            }
+        );
+    }
+
     updateQuery(task_id: number, query: EsQuery) {
-        return axiosInstance.put(`/tasks/${task_id}/query`, query, {
+        return axiosInstance.put(`${this.endpoint}/${task_id}/query`, query, {
             headers: authHeader(),
         });
     }
@@ -39,7 +62,7 @@ class ApiPeriodicTasks extends ApiBase<PeriodicTask> {
         dayOfMonth: number
     ) {
         return axiosInstance.put<PeriodicTask>(
-            `/tasks/${task_id}/schedule?minute=${minute}&hour=${hour}&day_of_week=${dayOfWeek}&day_of_month=${dayOfMonth}`,
+            `${this.endpoint}/${task_id}/schedule?minute=${minute}&hour=${hour}&day_of_week=${dayOfWeek}&day_of_month=${dayOfMonth}`,
             null,
             {
                 headers: authHeader(),

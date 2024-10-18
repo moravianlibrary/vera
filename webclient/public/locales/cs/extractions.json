@@ -1,4 +1,5 @@
 {
+    "num-found": "Počet nalezených extrakcí: {{count}}",
     "table": {
         "columns": {
             "id": "ID",
@@ -14,9 +15,12 @@
     "actions": {
         "generate": "Generovat extrakci"
     },
-    "Target pages threshold": "Cílový počet stránek s rozptylem",
-    "Whole categories threshold": "Celé kategorie s rozptylem",
-    "Include categories": "Zahrnout kategorie",
-    "Quota": "Zaměr",
-    "Select categories": "Vybrat kategorie"
+    "form": {
+        "target-page-threshold": "Cílový počet stránek s rozptylem",
+        "whole-categories-threshold": "Celé kategorie s rozptylem",
+        "only-include-categories": "Zahrnout pouze dokumenty z těchto kategorií",
+        "only-include-locations": "Zahrnout pouze dokumenty z těchto lokací",
+        "page-count": "Počet stran",
+        "submit": "Generovat extrakci"
+    }
 }

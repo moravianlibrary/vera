@@ -55,9 +55,15 @@ class TestUsersEndpoints(TestEndpointsBase):
 
         # Assert
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
+        self.assertDictEqual(
             response.json(),
-            [{"username": "test_user_1"}, {"username": "test_user_2"}],
+            {
+                "items": [
+                    {"username": "test_user_1"},
+                    {"username": "test_user_2"},
+                ],
+                "num_found": 2,
+            },
         )
 
     def test_emulate_access(self):

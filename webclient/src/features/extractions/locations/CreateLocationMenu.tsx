@@ -13,7 +13,7 @@ interface CreateLocationMenuProps {
 const CreateLocationMenu: React.FC<CreateLocationMenuProps> = ({
     location: inputLocation,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("locations");
     const { libraries, createLocation } = useLocations();
 
     const [library, setLibrary] = useState<Library | null>(
@@ -63,7 +63,7 @@ const CreateLocationMenu: React.FC<CreateLocationMenuProps> = ({
             />
             <Button
                 outlined
-                label={t("Create")}
+                label={t("form.submit")}
                 onClick={handleCreateLocation}
                 disabled={!location?.name || !location?.regexp}
             />

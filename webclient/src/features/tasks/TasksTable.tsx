@@ -6,11 +6,8 @@ import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
 import { TaskState } from "../../types/TaskState";
 import { format, min } from "date-fns";
-import { Tag } from "primereact/tag";
 import { MultiSelect } from "primereact/multiselect";
 import { Button } from "primereact/button";
-import { Dropdown } from "primereact/dropdown";
-import { TaskType } from "../../types/TaskType";
 import config from "../../config/config";
 import DataTablePaginator from "../../components/DataTablePaginator";
 import { TaskStateTag } from "../../components/tags/TaskStateTag";
@@ -29,28 +26,12 @@ const TasksTable: React.FC<TasksTableProps> & {
 
     const [expandedRows, setExpandedRows] = useState<Task[]>([]);
 
-    const taskOptions = [
-        {
-            label: t("Generate volumes pages dataset"),
-            value: TaskType.GenerateVolumesPagesDataset,
-        },
-        {
-            label: t("Generate items pages dataset"),
-            value: TaskType.GenerateItemsPagesDataset,
-        },
-    ];
-    const [taskType, setTaskType] = useState<TaskType | null>(null);
-
     const handleRowExpand = (e: DataTableRowEditEvent) => {
         setExpandedRows([...expandedRows, e.data as Task]);
     };
 
     const handleRowCollapse = (e: DataTableRowEditEvent) => {
         setExpandedRows(expandedRows.filter((row) => row.id !== e.data.id));
-    };
-
-    const taskTypeBody = (task: Task) => {
-        return t(task.task_type);
     };
 
     const itemsCountBody = (task: Task) => {
@@ -91,25 +72,6 @@ const TasksTable: React.FC<TasksTableProps> & {
         }
         const paddedMinutes = minutes < 10 ? `0${minutes}` : minutes;
         return `${hours}:${paddedMinutes}:${paddedSeconds}`;
-    };
-
-    const header = () => {
-        return (
-            // <div className="p-inputgroup">
-            <div className="flex">
-                <Dropdown
-                    options={taskOptions}
-                    value={taskType}
-                    onChange={(e) => setTaskType(e.value)}
-                />
-                <Button
-                    outlined
-                    label={t("Plan task")}
-                    disabled={taskType === null}
-                    // onClick={() => ApiTasks.planTask(taskType as TaskType)}
-                />
-            </div>
-        );
     };
 
     const getAdditionalData = (task: Task) => {

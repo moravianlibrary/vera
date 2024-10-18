@@ -241,25 +241,25 @@ class TestDocumentsIntegration(TestEndpointsPermissionsBase):
     def test_change_category_for_query_documents_permission(self):
         self.assertEndpointPermitted(
             "PUT",
-            "documents/query/change_category",
+            "documents/query/update_property",
             ActionType.EditDatatableAll,
             expected_status_code=422,
         )
         self.assertEndpointPermitted(
             "PUT",
-            "documents/query/change_category",
+            "documents/query/update_property",
             ActionType.EditDatatableDepartment,
             expected_status_code=422,
         )
         self.assertEndpointPermitted(
             "PUT",
-            "documents/query/change_category",
+            "documents/query/update_property",
             ActionType.EditDatatableOwn,
             expected_status_code=422,
         )
         self.assertEndpointProhited(
             "PUT",
-            "documents/query/change_category",
+            "documents/query/update_property",
             [
                 ActionType.EditDatatableAll,
                 ActionType.EditDatatableDepartment,

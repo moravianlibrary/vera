@@ -60,7 +60,6 @@ const DocumentIssueCard: React.FC<IssueDivProps> = ({ issue, onClick }) => {
 
     useEffect(() => {
         if (creatingIssues.includes(issue)) {
-            console.log("Creating issue: " + issue.barcode + " - ");
             setState(IssueStates.Creating);
         }
     }, [creatingIssues, issue]);

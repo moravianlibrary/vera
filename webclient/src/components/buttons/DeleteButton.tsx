@@ -6,6 +6,7 @@ interface DeleteButtonProps {
     onDelete?: () => void;
     itemId?: number;
     onDeleteItem?: (itemId: number) => void;
+    hideWhenDisabled?: boolean;
 }
 
 const DeleteButton: React.FC<DeleteButtonProps> = ({
@@ -13,6 +14,7 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
     onDelete,
     itemId,
     onDeleteItem,
+    hideWhenDisabled,
 }) => {
     const handleClick = () => {
         if (itemId && onDeleteItem) {
@@ -21,6 +23,9 @@ const DeleteButton: React.FC<DeleteButtonProps> = ({
             onDelete();
         }
     };
+
+    if (disabled && hideWhenDisabled) return null;
+
     return (
         <Button
             disabled={disabled}

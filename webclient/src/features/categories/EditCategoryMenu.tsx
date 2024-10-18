@@ -42,7 +42,7 @@ interface CategoryFormProps {
 
 const CategoryForm: React.FC<CategoryFormProps> = ({ category }) => {
     const { t } = useTranslation("categories");
-    const { departments: departmentsOptions } = useDepartments();
+    const { items: departmentsOptions } = useDepartments();
     const { closeCategoryEdit, createCategory, updateCategory } =
         useCategoryModels();
 

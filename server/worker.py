@@ -63,6 +63,7 @@ def setup_periodic_task(periodic_task: PeriodicTask):
             day_of_month=parse_cron_value(periodic_task.day_of_month),
         ),
         run_periodic_task_instance.s(periodic_task.id),
+        name=periodic_task.id,
     )
 
 

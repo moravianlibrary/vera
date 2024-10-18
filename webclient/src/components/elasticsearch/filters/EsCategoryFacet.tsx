@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { EsFacetProps } from "./EsFacet";
 import EsFilter from "./EsFilter";
 import {
@@ -32,10 +32,11 @@ const EsCategoryFacet: React.FC<EsFacetProps> = (props) => {
         toggleShowMore,
     } = useRefinementList(props);
 
-    const { t } = useTranslation();
-    const { getAssignableCategoriesTrees } = useCategories();
+    const { categories, getAssignableCategoriesTrees } = useCategories();
+    const [isInitialized, setIsInitialized] = useState<boolean>(false);
     const [selectedCategories, setSelectedCategories] =
         useState<TreeSelectSelectionKeysType>({});
+
     function buildAssignableCategoriesOptionsTree(
         categories: Category[]
     ): CategoryFacetOption[] {
@@ -55,14 +56,9 @@ const EsCategoryFacet: React.FC<EsFacetProps> = (props) => {
                 key: category.id,
                 label: category.name,
                 data: currPath,
-                count:
-                    (categoryFacet ? categoryFacet.count : 0) +
-                    children.reduce(
-                        (sum, child) => sum + (child.count || 0),
-                        0
-                    ),
+                count: categoryFacet ? categoryFacet.count : 0,
                 children: children,
-                selectable: category.assignable,
+                selectable: true,
             };
         };
 
@@ -97,6 +93,20 @@ const EsCategoryFacet: React.FC<EsFacetProps> = (props) => {
             </div>
         );
     };
+
+    useEffect(() => {
+        console.log(items, isInitialized);
+        if (!isInitialized) {
+            setSelectedCategories(
+                items
+                    .filter((item) => item.isRefined)
+                    .reduce((acc, item) => {
+                        acc[item.value] = true;
+                        return acc;
+                    }, {} as TreeSelectSelectionKeysType)
+            );
+        }
+    }, [items]);
 
     return (
         <EsFilter label={props.label}>

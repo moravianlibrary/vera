@@ -14,7 +14,7 @@ import { useLocations } from "../../../contexts/LocationsContext";
 import { LocationState } from "../../../types/LocationState";
 
 const LocationsMenuButton = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("locations");
     const {
         libraries,
         storages,
@@ -121,17 +121,17 @@ const LocationsMenuButton = () => {
 
     const items = [
         {
-            label: t("Manage libraries"),
+            label: t("actions.manage-libraries"),
             icon: "pi pi-pencil",
             command: () => setLibraryMenuVisible(true),
         },
         {
-            label: t("Manage storages"),
+            label: t("actions.manage-storages"),
             icon: "pi pi-pencil",
             command: () => setStorageMenuVisible(true),
         },
         {
-            label: t("Insert using table data form"),
+            label: t("actions.insert-from-table"),
             icon: "pi pi-clipboard",
             command: () => setTabSeparatedInputVisible(true),
         },
@@ -140,35 +140,35 @@ const LocationsMenuButton = () => {
     const locationMapping = [
         {
             mapTo: "library",
-            mapFrom: t("Library"),
+            mapFrom: t("form.library"),
             required: true,
         },
         {
             mapTo: "storage",
-            mapFrom: t("Storage"),
+            mapFrom: t("form.storage"),
             required: true,
         },
         {
             mapTo: "name",
-            mapFrom: t("Location name"),
+            mapFrom: t("propertes.name"),
             required: true,
         },
         {
             mapTo: "regexp",
-            mapFrom: t("Location prefix"),
+            mapFrom: t("form.regexp"),
             required: true,
         },
         {
             mapTo: "description",
-            mapFrom: t("Description"),
+            mapFrom: t("form.description"),
         },
         {
             mapTo: "additionalInfo",
-            mapFrom: t("Additional information"),
+            mapFrom: t("form.additional-info"),
         },
         {
             mapTo: "state",
-            mapFrom: t("Location state"),
+            mapFrom: t("form.state"),
         },
     ];
 
@@ -178,7 +178,7 @@ const LocationsMenuButton = () => {
                 <SplitButton
                     icon="pi pi-angle-down"
                     dropdownIcon="pi pi-ellipsis-v"
-                    label={t("Create location")}
+                    label={t("actions.create")}
                     outlined
                     model={items}
                     onClick={(e) => createLocationMenuPanel.current!.toggle(e)}

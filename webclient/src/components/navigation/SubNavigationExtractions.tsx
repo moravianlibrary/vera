@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ActionType } from "../../types/ActionType";
-import NavigationButtonGroup from "./NavigationButtonGroup";
+import SubNavigationButtonGroup from "./SubNavigationButtonGroup";
 
 interface SubNavigationExtractionsProps {}
 
@@ -11,7 +11,7 @@ const SubNavigationExtractions: React.FC<
     const { t } = useTranslation("navigation");
 
     return (
-        <NavigationButtonGroup
+        <SubNavigationButtonGroup
             navigationButtons={[
                 {
                     label: t("extractions"),

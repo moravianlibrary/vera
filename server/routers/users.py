@@ -1,6 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from sqlalchemy.orm import Session
-from typing import List
 from .utils import access_emulation
 from .utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
 from .utils.permissions import CanManageAccess, CanEmulateAccess
@@ -9,6 +8,7 @@ from schemas import (
     CurrentUser,
     ActionList,
     UserResponse,
+    Page,
 )
 from models import Role, User
 
@@ -26,10 +26,14 @@ def authorize_user(
 @router.get(
     "",
     dependencies=[CanManageAccess],
-    response_model=List[UserResponse],
+    response_model=Page[UserResponse],
 )
-def get_users(db: Session = DependsOnDbSession):
-    return User.all(db)
+def get_users(
+    page: int = Query(1, description="Page number"),
+    page_size: int = Query(50, description="Page size"),
+    session: Session = DependsOnDbSession,
+):
+    return User.get_page(session, page, page_size)
 
 
 @router.post("/current/settings", response_model=CurrentUser)

@@ -8,53 +8,26 @@ import {
 import {
     DataTable,
     DataTableEditingRows,
-    DataTableRowEditEvent,
     DataTableValueArray,
 } from "primereact/datatable";
 import { textEditor } from "../../services/Editors";
-import { Button } from "primereact/button";
 import { useDepartments } from "../../contexts/DepartmentsContext";
 import React from "react";
 import { Chips, ChipsChangeEvent } from "primereact/chips";
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { Chip } from "primereact/chip";
 import { Department } from "../../adapters/ApiDepartments";
+import DeleteButton from "../../components/buttons/DeleteButton";
+import { ColumnGroup } from "primereact/columngroup";
+import { Row } from "primereact/row";
 
 interface DepartmentsTableProps {}
 
-const DepartmentsTable: React.FC<DepartmentsTableProps> = (props) => {
-    const { t } = useTranslation();
+const DepartmentsTable: React.FC<DepartmentsTableProps> = () => {
+    const { t } = useTranslation("departments");
 
-    const {
-        departments,
-        editingDepartments,
-        users,
-        handleEditDepartment,
-        handleAcceptEdit,
-        handleCancelEdit,
-        handleDeleteDepartment,
-    } = useDepartments();
-
-    const handleRowEditChange = (event: DataTableRowEditEvent) => {
-        const changeEditDepartment = departments[event.index];
-        if (editingDepartments.includes(changeEditDepartment)) {
-            handleCancelEdit(changeEditDepartment);
-        } else {
-            handleEditDepartment(changeEditDepartment);
-        }
-    };
-
-    const deleteButton = (department: Department) => {
-        if (department.id) {
-            return (
-                <Button
-                    className="p-button-rounded p-button-text p-button-danger"
-                    icon="pi pi-trash"
-                    onClick={() => handleDeleteDepartment(department)}
-                />
-            );
-        }
-    };
+    const { items, deleteItem, editingItems, onRowEditEvent, saveChanges } =
+        useDepartments();
 
     const usersColumnBody = (data: Department, option: ColumnBodyOptions) => {
         return (
@@ -66,34 +39,46 @@ const DepartmentsTable: React.FC<DepartmentsTableProps> = (props) => {
         );
     };
 
+    const headerColumnGroup = (
+        <ColumnGroup>
+            <Row>
+                <Column header={t("table.columns.name")} />
+                <Column header={t("table.columns.abbreviation")} />
+                <Column header={t("table.columns.usernames")} />
+                <Column header={t("table.columns.actions")} colSpan={2} />
+            </Row>
+        </ColumnGroup>
+    );
+
     return (
         <DataTable
-            value={departments}
+            value={items}
             editMode="row"
-            onRowEditChange={handleRowEditChange}
+            onRowEditChange={onRowEditEvent}
             editingRows={
-                (editingDepartments as
-                    | DataTableValueArray
-                    | DataTableEditingRows) || []
+                (editingItems as DataTableValueArray | DataTableEditingRows) ||
+                []
             }
-            onRowEditComplete={(e) => handleAcceptEdit(e.newData as Department)}
+            onRowEditComplete={(e) =>
+                saveChanges(e.newData.id, e.newData as Department)
+            }
+            headerColumnGroup={headerColumnGroup}
             scrollable
             scrollHeight="flex"
         >
-            <Column field="name" header={t("Name")} editor={textEditor} />
+            <Column field="name" editor={textEditor} />
+            <Column field="abbreviation" editor={textEditor} />
             <Column
-                field="abbreviation"
-                header={t("Abbreviation")}
-                editor={textEditor}
-            />
-            <Column
-                header={t("Users")}
-                field="users"
+                field="usernames"
                 body={usersColumnBody}
                 editor={(options) => <UsersEditor options={options} />}
             />
             <Column rowEditor />
-            <Column body={deleteButton} />
+            <Column
+                body={(d) => (
+                    <DeleteButton itemId={d.id} onDeleteItem={deleteItem} />
+                )}
+            />
         </DataTable>
     );
 };
@@ -103,15 +88,15 @@ interface UsersEditorProps {
 }
 
 export const UsersEditor: React.FC<UsersEditorProps> = ({ options }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("departments");
     const { rowData, editorCallback } = options;
     const [selectedUsers, setSelectedUsers] = useState<string[]>(
-        rowData.users || []
+        rowData.usernames || []
     );
-    const { users } = useDepartments();
+    const { usernames } = useDepartments();
 
     useEffect(() => {
-        setSelectedUsers(rowData.users || []);
+        setSelectedUsers(rowData.usernames || []);
     }, [rowData]);
 
     const handleChipsChange = (e: ChipsChangeEvent) => {
@@ -133,10 +118,11 @@ export const UsersEditor: React.FC<UsersEditorProps> = ({ options }) => {
             />
             <Dropdown
                 disabled={
-                    users.filter((u) => !selectedUsers.includes(u)).length === 0
+                    usernames.filter((u) => !selectedUsers.includes(u))
+                        .length === 0
                 }
-                placeholder={t("Add user")}
-                options={users.filter((u) => !selectedUsers.includes(u))}
+                placeholder={t("actions.placeholder.add-user")}
+                options={usernames.filter((u) => !selectedUsers.includes(u))}
                 multiple
                 onChange={handleDropdownChange}
             />

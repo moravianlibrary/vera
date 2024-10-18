@@ -14,14 +14,14 @@ interface DepartmentPickerProps {
 
 const DepartmentPicker: React.FC<DepartmentPickerProps> = (props) => {
     const { t } = useTranslation();
-    const { departments } = useDepartments();
+    const { items } = useDepartments();
 
     return (
         <div className={`flex flex-column ${props.className}`}>
             <Dropdown
                 disabled={props.disabled}
                 value={props.selectedDepartment}
-                options={departments}
+                options={items}
                 optionLabel="name"
                 onChange={(e) => props.onDepartmentChange(e.value)}
                 placeholder={t("Select department")}

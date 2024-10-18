@@ -159,6 +159,7 @@ const LocationsTable: React.FC<LocationsTableProps> & {
 };
 
 const LocationsTablePaginator: React.FC = () => {
+    const { t } = useTranslation("locations");
     const { numFound, page, setPage, pageSize, setPageSize } = useLocations();
 
     return (
@@ -168,7 +169,7 @@ const LocationsTablePaginator: React.FC = () => {
             pageSize={pageSize}
             onPageChangeNew={setPage}
             onPageSizeChange={setPageSize}
-            numFoundText="locations.num-found"
+            numFoundText={t("num-found", { count: numFound })}
         />
     );
 };

@@ -77,9 +77,12 @@ class AddDocumentPreprocessor:
         active_issues = [
             catalog_issue
             for catalog_issue in catalog_issues
-            if catalog_issue.can_digitize
-            and not catalog_issue.already_added
-            and catalog_issue.digitization_state
+            if catalog_issue.can_digitize and not catalog_issue.already_added
+        ]
+        not_digitized_issues = [
+            active_issue
+            for active_issue in active_issues
+            if active_issue.digitization_state
             == DigitizationState.NotDigitized
         ]
 
@@ -98,6 +101,11 @@ class AddDocumentPreprocessor:
                 AddDocumentResponseStatus.MultipleIssues,
             )
         elif len(active_issues) == 0:
+            return (
+                catalog_document,
+                AddDocumentResponseStatus.AllIssuesProcessed,
+            )
+        elif len(not_digitized_issues) == 0:
             return (
                 catalog_document,
                 AddDocumentResponseStatus.AllIssuesProcessed,

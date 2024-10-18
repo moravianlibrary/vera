@@ -12,14 +12,20 @@ const NavigationButtonGroup: React.FC<NavigationButtonGroupProps> = ({
     const location = useLocation();
 
     return (
-        <div className="navigation-button-group">
+        <div className="navigation-group">
             {navigationButtons.map((button) => (
                 <NavigationButton
                     key={button.to}
-                    className={location.pathname === button.to ? "active" : ""}
-                    label={button.label}
-                    to={button.to}
-                    action={button.action}
+                    {...button}
+                    className={`${button.className ? button.className : ""}
+                        ${
+                            button.to !== "/" &&
+                            location.pathname.startsWith(
+                                button.to.match(/(\/[^/]+)/)[1]
+                            )
+                                ? "active"
+                                : ""
+                        }`}
                 />
             ))}
         </div>

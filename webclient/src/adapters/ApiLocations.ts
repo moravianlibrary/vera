@@ -4,7 +4,6 @@ import { ApiBase, ApiOptions } from "./ApiBase";
 interface Library {
     id: number;
     name: string;
-    storages: Storage[];
 }
 
 interface Storage {
@@ -12,7 +11,6 @@ interface Storage {
     name: string;
     library_id: number;
     library: Library;
-    locations: Location[];
 }
 
 interface Location {

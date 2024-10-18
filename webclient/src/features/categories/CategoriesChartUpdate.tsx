@@ -25,7 +25,7 @@ const CategoriesChartUpdate: React.FC<CategoriesChartUpdateProps> = ({
         useCategoryModels();
     const { t } = useTranslation("categories");
 
-    const { departments: departmentsOptions } = useDepartments();
+    const { items: departmentsOptions } = useDepartments();
 
     const [name, setName] = useState<string>(category.name);
     const [description, setDescription] = useState<string>(

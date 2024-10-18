@@ -13,5 +13,7 @@
     "locations": "Skladové lokace",
     "tasks": "Úkoly",
     "periodic-tasks": "Periodické úkoly",
-    "access-management": "Správa oprávnění"
+    "access-management": "Správa oprávnění",
+    "departments": "Oddělení",
+    "roles": "Role"
 }

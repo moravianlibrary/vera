@@ -1,18 +1,18 @@
 import { Button } from "primereact/button";
 import { useTranslation } from "react-i18next";
-import { useRoles } from "../../contexts/roles/RolesContext";
+import { useRoles } from "../../contexts/RolesContext";
 
 interface AddRoleMenuProps {}
 
 const AddRoleMenu: React.FC<AddRoleMenuProps> = () => {
     const { t } = useTranslation("roles");
-    const { handleAddRole } = useRoles();
+    const { addItem } = useRoles();
 
     return (
         <Button
             label={t("actions.create")}
             icon="pi pi-plus"
-            onClick={handleAddRole}
+            onClick={addItem}
         />
     );
 };

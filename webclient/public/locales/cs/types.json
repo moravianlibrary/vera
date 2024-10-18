@@ -79,6 +79,28 @@
         "1": "Najnižší",
         "?": "Neznámá"
     },
+    "permissions": {
+        "scope": {
+            "None": "Žádne",
+            "Own": "Vlastní",
+            "Department": "Oddělení",
+            "All": "Všechny"
+        },
+        "type": {
+            "ReadDatatable": "Povoleno číst dokumenty",
+            "EditDatatable": "Povoleno upravovat dokumenty",
+            "InsertDatatable": "Povoleno vkládat dokumenty",
+            "ReadCategories": "Povoleno číst kategorie",
+            "EditCategories": "Povoleno upravovat kategorie",
+            "ReadCatalogRecords": "Povoleno číst katalógové záznamy",
+            "ReviewCatalogRecords": "Povoleno ",
+            "PlanTasks": "Povoleno plánovat úkoly",
+            "AdminTasks": "Povoleno spravovat úkoly",
+            "Extract": "Povoleno extrahovat",
+            "AdminExtractions": "Povoleno spravovat extrakce",
+            "EditAccess": "Povoleno upravovat přístupová nastavení"
+        }
+    },
     "placeholder": {
         "task-type": "Vybrat typ úkolu"
     }

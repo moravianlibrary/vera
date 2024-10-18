@@ -79,7 +79,7 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
     const [locations, setLocations] = useState<Location[]>([]);
     const [numFound, setNumFound] = useState<number>(0);
     const [page, setPage] = useState<number>(1);
-    const [pageSize, setPageSize] = useState<number>(20);
+    const [pageSize, setPageSize] = useState<number>(500);
 
     const createLibrary = async (name: string): Promise<Library> => {
         try {
@@ -116,9 +116,6 @@ export const LocationsProvider: React.FC<LocationsProviderProps> = ({
                 `${t("Name")}: ${name}`
             );
             setStorages((storages) => [...storages, response.data]);
-            libraries
-                .find((l) => l.id === library_id)!
-                .storages.push(response.data);
             return response.data as Storage;
         } catch (error) {
             showToast("error", t("Storage creation failed"), "");

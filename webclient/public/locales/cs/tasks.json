@@ -30,6 +30,13 @@
         "SyncDocumentsWithCatalogs": "Synchronizovat dokumenty s katalogy",
         "SyncDocumentsWithDigitizationRegistry": "Synchronizovat dokumenty s registrom digitalizace"
     },
+    "actions": {
+        "start": "Spustit úkol"
+    },
+    "form": {
+        "task-type": "Typ úkolu",
+        "submit": "Spustit úkol"
+    },
     "messages": {
         "confirm-start": {
             "header": "Spustení úkolu",

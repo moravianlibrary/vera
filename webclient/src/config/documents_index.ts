@@ -33,6 +33,7 @@ const documents_index_settings = {
         "added_at",
         "added_by",
         "category_id",
+        "category_ids",
         "category_path",
         // Catalog properties
         "skc_sysno",
@@ -52,6 +53,7 @@ const documents_index_settings = {
         "dedicated_scanner",
         "extraction_priority",
         "is_extractable",
+        "extraction_ids",
         "digitization_list_id",
         // Other properties
         "material_type",
@@ -114,9 +116,15 @@ const documents_index_settings = {
             type: "string",
         },
         {
-            attribute: "category_id",
-            field: "category_id",
+            attribute: "category_ids",
+            field: "category_ids",
             type: "numeric",
+        },
+        {
+            attribute: "extraction_ids",
+            field: "extraction_ids",
+            type: "numeric",
+            facetQuery: sortFacetDescByKey,
         },
         {
             attribute: "digitization_list_id",

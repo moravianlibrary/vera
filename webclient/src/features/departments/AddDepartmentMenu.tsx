@@ -6,13 +6,13 @@ interface AddDepartmentMenuProps {}
 
 const AddDepartmentMenu: React.FC<AddDepartmentMenuProps> = () => {
     const { t } = useTranslation("departments");
-    const { handleAddDepartment } = useDepartments();
+    const { addItem } = useDepartments();
 
     return (
         <Button
             label={t("actions.create")}
             icon="pi pi-plus"
-            onClick={handleAddDepartment}
+            onClick={addItem}
         />
     );
 };

@@ -10,14 +10,19 @@ interface DigitizationListCheckboxLabelProps {
 const DigitizationListCheckboxLabel: React.FC<
     DigitizationListCheckboxLabelProps
 > = ({ label, value }) => {
-    const { findDigitizationList } = useDigitizationLists();
+    const { digitizationLists, findDigitizationList } = useDigitizationLists();
 
     const [valueLabel, setValueLabel] = useState<string>(value);
 
     useEffect(() => {
         const fetchLabel = async () => {
             try {
-                const list = await findDigitizationList(Number(value));
+                let list = await digitizationLists.find(
+                    (dl) => dl.id === Number(value)
+                );
+                if (!list) {
+                    list = await findDigitizationList(Number(value));
+                }
                 setValueLabel(`${value}: ${list?.created_by}`);
             } catch (error) {
                 setValueLabel(`${value}: [Error fetching list]`);
@@ -25,7 +30,7 @@ const DigitizationListCheckboxLabel: React.FC<
         };
 
         fetchLabel();
-    }, [value]);
+    }, [value, digitizationLists]);
 
     return (
         <label htmlFor={`es-${label}-${value}-checkbox`}>{valueLabel}</label>

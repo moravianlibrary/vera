@@ -21,6 +21,7 @@ interface TasksContextProps {
     pageSize: number;
     setPageSize: (pageSize: number) => void;
 
+    startTask: (taskType: TaskType) => void;
     onInitiateTaskStart: (
         taskType: TaskType,
         count?: number,
@@ -99,6 +100,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
         pageSize,
         setPageSize,
 
+        startTask,
         onInitiateTaskStart,
         getTaskItems,
     };

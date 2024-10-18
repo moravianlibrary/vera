@@ -6,14 +6,15 @@ import { useTranslation } from "react-i18next";
 import OverlayFormLayout from "../components/layouts/OverlayFormLayout";
 import PeriodicTaskForm from "../components/forms/PeriodicTaskForm";
 import SubNavigationTasks from "../components/navigation/SubNavigationTasks";
-import { PeriodicTasksProvider } from "../contexts/PeriodicTasksContext";
+import {
+    PeriodicTasksProvider,
+    usePeriodicTasks,
+} from "../contexts/PeriodicTasksContext";
 
 interface PeriodicTasksProps {}
 
 const PeriodicTasks: React.FC<PeriodicTasksProps> = () => {
     const { t } = useTranslation("periodic-tasks");
-
-    const handleCreate = () => {};
 
     return (
         <PeriodicTasksProvider>
@@ -25,11 +26,7 @@ const PeriodicTasks: React.FC<PeriodicTasksProps> = () => {
                                 buttonProps={{
                                     label: t("actions.create"),
                                 }}
-                                form={
-                                    <PeriodicTaskForm
-                                        submitCallback={handleCreate}
-                                    />
-                                }
+                                form={<PeriodicTaskForm.Create />}
                                 visible
                             />
                         }

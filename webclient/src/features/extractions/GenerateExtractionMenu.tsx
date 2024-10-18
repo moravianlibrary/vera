@@ -6,18 +6,15 @@ import { useExtractions } from "../../contexts/GeneratedExtractionsContext";
 import { AssignableCategoriesPicker } from "../../components/pickers/AssignableCategoryPicker";
 import LabeledComponent from "../../components/LabeledComponent";
 import { Button } from "primereact/button";
-import LocationPicker, {
-    LocationType,
-    MetaLocation,
-} from "../../components/pickers/LocationPicker";
-import { Library, Storage } from "../../adapters/ApiLocations";
+import { Library, Location, Storage } from "../../adapters/ApiLocations";
 import { CategoriesProvider } from "../../contexts/categories/CategoriesContext";
 import { IntentionsProvider } from "../../contexts/categories/IntentionsContext";
+import LocationsPicker from "../../components/pickers/LocationsPicker";
 
 interface ExtractionPropsMenuProps {}
 
 const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("extractions");
     const { defaultProps, generateExtraction, generating } = useExtractions();
 
     const [extractionProps, setExtractionProps] = useState<Extraction>(
@@ -25,7 +22,7 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
     );
 
     const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-    const [selectedLocations, setSelectedLocations] = useState<number[]>([]);
+    const [selectedLocations, setSelectedLocations] = useState<Location[]>([]);
     const [pagesCount, setPagesCount] = useState<number | null>(null);
 
     const handleCategoriesChange = (categories: number[]) => {
@@ -34,15 +31,19 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
         setSelectedCategories(categories);
     };
 
-    const handleLocationsChange = (locations: number[]) => {
-        extractionProps.location_ids = locations;
+    const handleLocationsChange = (locations: Location[]) => {
+        const locationIds = locations.map((l) => l.id);
+        extractionProps.location_ids = locationIds;
         setExtractionProps(extractionProps);
         setSelectedLocations(locations);
     };
 
     const handleGenerate = () => {
         if (!generating && pagesCount) {
-            generateExtraction(extractionProps);
+            generateExtraction({
+                ...extractionProps,
+                target_pages: pagesCount,
+            });
         }
     };
 
@@ -50,7 +51,7 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
         <div className="flex flex-column gap-2">
             <LabeledComponent
                 className="justify-content-between"
-                label={t("Target pages threshold")}
+                label={t("form.target-page-threshold")}
             >
                 <InputNumber
                     autoFocus
@@ -67,7 +68,7 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"
-                label={t("Whole categories threshold")}
+                label={t("form.whole-categories-threshold")}
             >
                 <InputNumber
                     className="w-8rem"
@@ -81,7 +82,7 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between flex "
-                label={t("Include only documents from these categories")}
+                label={t("form.only-include-categories")}
             >
                 <IntentionsProvider>
                     <CategoriesProvider>
@@ -95,13 +96,16 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"
-                label={t("Include only documents from these locations")}
+                label={t("form.only-include-locations")}
             >
-                <LocationsPicker callback={handleLocationsChange} />
+                <LocationsPicker
+                    value={selectedLocations}
+                    callback={handleLocationsChange}
+                />
             </LabeledComponent>
             <LabeledComponent
                 className="justify-content-between"
-                label={t("Pages count")}
+                label={t("form.page-count")}
             >
                 <InputNumber
                     className="w-8rem"
@@ -113,120 +117,9 @@ const ExtractionPropsMenu: React.FC<ExtractionPropsMenuProps> = () => {
                 // style={
                 //    generating ? { animation: "spin 1s infinite linear" } : {}
                 // }
-                label={t("Generate")}
+                label={t("form.submit")}
                 disabled={pagesCount === null || generating}
                 onClick={handleGenerate}
-            />
-        </div>
-    );
-};
-
-interface LocationsPickerProps {
-    callback(location_ids: number[]): void;
-}
-
-const LocationsPicker: React.FC<LocationsPickerProps> = ({ callback }) => {
-    const [pickedLocations, setPickedLocations] = useState<
-        (MetaLocation | null)[]
-    >([null]);
-
-    const handleCallback = (locations: (MetaLocation | null)[]) => {
-        callback(
-            locations
-                .filter((l) => l !== null)
-                .map((location) => {
-                    if (location!.type === LocationType.Library) {
-                        return (location!.data as Library).storages
-                            .flatMap((s) => s.locations)
-                            .map((l) => l.id);
-                    }
-                    if (location!.type === LocationType.Storage) {
-                        return (location!.data as Storage).locations.map(
-                            (l) => l.id
-                        );
-                    }
-                    return [location!.data.id];
-                })
-                .flat()
-        );
-    };
-
-    const handlePickLocation = (
-        index: number,
-        location: MetaLocation | null
-    ) => {
-        const newPickedLocations = [...pickedLocations];
-        newPickedLocations[index] = location;
-        setPickedLocations(newPickedLocations);
-        handleCallback(newPickedLocations);
-    };
-
-    const handleRemoveLocation = (index: number) => {
-        const newPickedLocations = pickedLocations.filter(
-            (_, i) => i !== index
-        );
-        setPickedLocations(newPickedLocations);
-        handleCallback(newPickedLocations);
-    };
-
-    return (
-        <div>
-            {pickedLocations.map((pl, i) => (
-                <LocationPickerForm
-                    key={i}
-                    index={i}
-                    isLast={i === pickedLocations.length - 1}
-                    location={pl}
-                    callback={handlePickLocation}
-                    remove={handleRemoveLocation}
-                />
-            ))}
-        </div>
-    );
-};
-
-interface LocationPickerFormProps {
-    index: number;
-    isLast: boolean;
-    location: MetaLocation | null;
-    callback(index: number, location: MetaLocation | null): void;
-    remove: (index) => void;
-}
-
-const LocationPickerForm: React.FC<LocationPickerFormProps> = ({
-    index,
-    isLast,
-    location,
-    callback,
-    remove,
-}) => {
-    if (isLast) {
-        return (
-            <div className="p-inputgroup">
-                <LocationPicker
-                    location={location}
-                    callback={(l) => callback(index, l)}
-                />
-                <Button
-                    icon="pi pi-plus"
-                    outlined
-                    onClick={() => callback(index + 1, null)}
-                />
-            </div>
-        );
-    }
-
-    return (
-        <div className="p-inputgroup">
-            <LocationPicker
-                location={location}
-                callback={(l) => callback(index, l)}
-            />
-            <Button
-                icon="pi pi-trash"
-                severity="danger"
-                outlined
-                onClick={() => remove(index)}
             />
         </div>
     );

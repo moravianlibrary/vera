@@ -20,6 +20,7 @@
             "extractable-count_other": "{{page_count}} stránek v {{count}} dokumentech"
         }
     },
+    "all-categories": "Všechny kategorie",
     "actions": {
         "show-in-documents": "Zobrazit v dokumentech",
         "category-options": "Možnosti kategorie",

@@ -27,17 +27,17 @@ const CronExpressionForm: React.FC<CronExpressionFormProps> = ({
     return (
         <div className="flex flex-column w-max gap-2">
             <CronExpressionItem
-                name="minute"
-                value={expression.minute || 0}
-                range={[0, 59]}
-                onChange={(v) => handleChange("minute", v === null ? 0 : v)}
-            />
-            <CronExpressionItem
                 name="hour"
                 value={expression.hour === undefined ? null : expression.hour}
                 range={[0, 23]}
                 showWildcard
                 onChange={(v) => handleChange("hour", v)}
+            />
+            <CronExpressionItem
+                name="minute"
+                value={expression.minute || 0}
+                range={[0, 59]}
+                onChange={(v) => handleChange("minute", v === null ? 0 : v)}
             />
             <LabeledComponent label={t("form.cron.day_of_week")}>
                 <Dropdown
@@ -86,6 +86,7 @@ const CronExpressionItem: React.FC<CronExpressionItemProps> = ({
             <div className="p-inputgroup">
                 {showWildcard && (
                     <Button
+                        type="button"
                         label={t(`form.cron.${name}-wildcard`)}
                         className={
                             value === null
@@ -105,6 +106,7 @@ const CronExpressionItem: React.FC<CronExpressionItemProps> = ({
                     placeholder={t(`form.cron.${name}-placeholder`)}
                 />
                 <Button
+                    type="button"
                     icon="pi pi-chevron-up"
                     size="small"
                     onClick={() =>
@@ -116,6 +118,7 @@ const CronExpressionItem: React.FC<CronExpressionItemProps> = ({
                     }
                 />
                 <Button
+                    type="button"
                     icon="pi pi-chevron-down"
                     size="small"
                     onClick={() =>

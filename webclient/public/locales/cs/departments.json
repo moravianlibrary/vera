@@ -1,0 +1,16 @@
+{
+    "table": {
+        "columns": {
+            "name": "Název oddělení",
+            "abbreviation": "Zkratka oddělení",
+            "usernames": "Uživatelé",
+            "actions": "Akce"
+        }
+    },
+    "actions": {
+        "placeholder": {
+            "add-user": "Přidat uživatele"
+        },
+        "create": "Vytvorit oddělení"
+    }
+}

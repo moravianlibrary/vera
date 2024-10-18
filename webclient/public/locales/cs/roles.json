@@ -1,0 +1,12 @@
+{
+    "table": {
+        "columns": {
+            "role": "Role",
+            "permissions": "Povolenia",
+            "actions": "Akce"
+        }
+    },
+    "actions": {
+        "create": "Vytvořit rolu"
+    }
+}

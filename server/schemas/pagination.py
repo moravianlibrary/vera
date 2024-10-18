@@ -5,6 +5,9 @@ T = TypeVar("T")
 
 
 class Page(BaseModel, Generic[T]):
+    class Config:
+        from_attibutes = True
+
     items: List[T]
     num_found: int
 

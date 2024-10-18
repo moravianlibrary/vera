@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import { OwnedItemType, useAccess } from "../../contexts/AccessContext";
 import DataTablePaginator from "../../components/DataTablePaginator";
-import { Extraction } from "../../adapters/ApiExtractions";
 import { ActionType } from "../../types/ActionType";
 import InternalLinkButton from "../../components/buttons/InternalLinkButton";
 import { formatDatetime } from "../../data/factories/DateFactory";
@@ -20,14 +19,6 @@ const ExtractionsTable: React.FC<ExtractionsTableProps> & {
     const { hasPermission, hasOwnerPermission } = useAccess();
 
     const { extractions, deleteExtraction } = useExtractions();
-
-    const documentsLink = (extraction: Extraction) => {
-        return `/documents?extractionId=${extraction.id}`;
-    };
-
-    const categoriesLink = (extraction: Extraction) => {
-        return `/categories?extractionId=${extraction.id}`;
-    };
 
     return (
         <DataTable value={extractions} scrollable scrollHeight="flex">

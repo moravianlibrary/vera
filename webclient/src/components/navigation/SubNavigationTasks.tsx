@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { ActionType } from "../../types/ActionType";
 import { useAccess } from "../../contexts/AccessContext";
-import NavigationButtonGroup from "./NavigationButtonGroup";
+import SubNavigationButtonGroup from "./SubNavigationButtonGroup";
 
 interface SubNavigationTasksProps {}
 
@@ -18,7 +18,7 @@ const SubNavigationTasks: React.FC<SubNavigationTasksProps> = () => {
     }
 
     return (
-        <NavigationButtonGroup
+        <SubNavigationButtonGroup
             navigationButtons={[
                 {
                     label: t("tasks"),

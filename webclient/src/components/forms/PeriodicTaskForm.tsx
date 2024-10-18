@@ -13,16 +13,19 @@ import {
 } from "../../types/TaskType";
 import { EsQuery } from "../../adapters/ApiTasks";
 import { Button } from "primereact/button";
+import { usePeriodicTasks } from "../../contexts/PeriodicTasksContext";
 
-interface PeriodicTaskFormProps {
+interface PeriodicTasksInitialValueProps {
     initialValue?: Partial<PeriodicTask>;
+}
+
+interface PeriodicTaskFormProps extends PeriodicTasksInitialValueProps {
     submitCallback: (periodicTask: Partial<PeriodicTask>) => void;
 }
 
-const PeriodicTaskForm: React.FC<PeriodicTaskFormProps> = ({
-    initialValue,
-    submitCallback,
-}) => {
+const PeriodicTaskForm: React.FC<PeriodicTaskFormProps> & {
+    Create: React.FC<PeriodicTasksInitialValueProps>;
+} = ({ initialValue, submitCallback }) => {
     const { t } = useTranslation("periodic-tasks");
 
     const [formData, setFormData] = useState<Partial<PeriodicTask>>(
@@ -63,6 +66,7 @@ const PeriodicTaskForm: React.FC<PeriodicTaskFormProps> = ({
         if (!formData.task_type) return;
         submitCallback({
             ...formData,
+            minute: formData.minute || 0,
             query_params: queryParams,
         });
     };
@@ -84,9 +88,37 @@ const PeriodicTaskForm: React.FC<PeriodicTaskFormProps> = ({
                 expression={formData}
                 onChangeCallback={handleCronExpressionChange}
             />
-            <Button type="submit" label={t("form.submit")} />
+            <Button
+                type="submit"
+                disabled={!formData.task_type}
+                label={t("form.submit")}
+            />
         </form>
     );
 };
+
+const Create: React.FC<PeriodicTasksInitialValueProps> = ({ initialValue }) => {
+    const { planPeriodicTask } = usePeriodicTasks();
+
+    return (
+        <PeriodicTaskForm
+            initialValue={initialValue}
+            submitCallback={planPeriodicTask}
+        />
+    );
+};
+
+const Update: React.FC<PeriodicTasksInitialValueProps> = ({ initialValue }) => {
+    const { planPeriodicTask } = usePeriodicTasks();
+
+    return (
+        <PeriodicTaskForm
+            initialValue={initialValue}
+            submitCallback={planPeriodicTask}
+        />
+    );
+};
+
+PeriodicTaskForm.Create = Create;
 
 export default PeriodicTaskForm;

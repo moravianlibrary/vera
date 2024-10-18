@@ -1,9 +1,10 @@
-import React from "react";
+import React, { startTransition } from "react";
 import { Button } from "primereact/button";
-import { Link } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DigitizationList } from "../../adapters/ApiDigitizationLists";
 import { Extraction } from "../../adapters/ApiExtractions";
+import { Category } from "../../adapters/ApiCategories";
 
 interface InternalLinkButtonProps {
     label: string;
@@ -11,6 +12,7 @@ interface InternalLinkButtonProps {
 }
 
 interface ItemInternalLinkButtonProps {
+    category?: Category;
     digitizationList?: DigitizationList;
     extraction?: Extraction;
 }
@@ -19,25 +21,33 @@ const InternalLinkButton: React.FC<InternalLinkButtonProps> & {
     ShowInCategories: React.FC<ItemInternalLinkButtonProps>;
     ShowInDocuments: React.FC<ItemInternalLinkButtonProps>;
 } = ({ label, link }) => {
+    const navigate = useNavigate();
+
     return (
-        <Link to={link}>
-            <Button className="internal-link-button" label={label} />
-        </Link>
+        <Button
+            className="internal-link-button"
+            label={label}
+            onClick={(e) => startTransition(() => navigate(link))}
+        />
     );
 };
 
 const ShowInDocuments: React.FC<ItemInternalLinkButtonProps> = ({
+    category,
     digitizationList,
     extraction,
 }) => {
     const { t } = useTranslation("app");
 
     const getLink = () => {
+        if (category) {
+            return `/documents?category_id=${category.id}`;
+        }
         if (digitizationList) {
-            return `/documents?digitizationListId=${digitizationList.id}`;
+            return `/documents?digitization_list_id=${digitizationList.id}`;
         }
         if (extraction) {
-            return `/documents?extractionId=${extraction.id}`;
+            return `/documents?extraction_ids=${extraction.id}`;
         }
     };
 
@@ -50,12 +60,16 @@ const ShowInDocuments: React.FC<ItemInternalLinkButtonProps> = ({
 };
 
 const ShowInCategories: React.FC<ItemInternalLinkButtonProps> = ({
+    category,
     digitizationList,
     extraction,
 }) => {
     const { t } = useTranslation("app");
 
     const getLink = () => {
+        if (category) {
+            return `/categories?category_id=${category.id}`;
+        }
         if (digitizationList) {
             return `/categories?digitizationListId=${digitizationList.id}`;
         }

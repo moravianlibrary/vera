@@ -22,3 +22,4 @@ const WithProviders: FC<WithProvidersProps> = ({ providers, children }) => {
 };
 
 export default WithProviders;
+export type { Provider };

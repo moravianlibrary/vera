@@ -129,7 +129,7 @@ const CategoryNameBody: React.FC<CategoryColumnBodyProps> = ({ node }) => {
             }}
         >
             {node.name}
-            <Link to={`/documents?index_name=documents&categoryId=${node.id}`}>
+            <Link to={`/documents?index_name=documents&category_id=${node.id}`}>
                 <Button
                     className="p-1 text-xs"
                     icon="pi pi-external-link"

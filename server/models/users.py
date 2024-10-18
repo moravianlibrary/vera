@@ -26,7 +26,7 @@ class User(BaseModel):
     @property
     def department_categories_ids(self) -> Optional[List[int]]:
         return (
-            [category.id for category in self.department.categories]
+            [category.category_id for category in self.department.categories]
             if self.department is not None
             else None
         )

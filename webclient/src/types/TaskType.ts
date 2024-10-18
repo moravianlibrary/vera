@@ -1,4 +1,7 @@
 enum TaskType {
+    GenerateVolumesPagesDataset = "GenerateVolumesPagesDataset",
+    GenerateItemsPagesDataset = "GenerateItemsPagesDataset",
+    RecreateIndexes = "RecreateIndexes",
     PredictPeriodicalsPageCount = "PredictPeriodicalsPageCount",
     ReindexDocuments = "ReindexDocuments",
     SyncDocumentsWithCatalogs = "SyncDocumentsWithCatalogs",
@@ -6,8 +9,6 @@ enum TaskType {
     ReindexCatalogRecords = "ReindexCatalogRecords",
     SyncCatalogRecordsWithCatalogs = "SyncCatalogRecordsWithCatalogs",
     ReevaluateCatalogRecordsDifferences = "ReevaluateCatalogRecordsDifferences",
-    GenerateVolumesPagesDataset = "GenerateVolumesPagesDataset",
-    GenerateItemsPagesDataset = "GenerateItemsPagesDataset",
 }
 
 enum TaskItemType {
@@ -35,6 +36,7 @@ const DatasetTasks = [
     TaskType.GenerateVolumesPagesDataset,
     TaskType.GenerateItemsPagesDataset,
 ];
+const ManagementTasks = [TaskType.RecreateIndexes];
 
 export {
     TaskType,
@@ -43,4 +45,5 @@ export {
     DocumentsTasks,
     CatalogRecordsTasks,
     DatasetTasks,
+    ManagementTasks,
 };

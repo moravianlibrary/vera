@@ -78,12 +78,15 @@ function Routing() {
             <Route
                 element={<ActionAccessRoute action={ActionType.EditAccess} />}
             >
-                <Route path="/departments" element={<Departments />} />
+                <Route
+                    path="/access-management/departments"
+                    element={<Departments />}
+                />
             </Route>
             <Route
                 element={<ActionAccessRoute action={ActionType.EditAccess} />}
             >
-                <Route path="/roles" element={<Roles />} />
+                <Route path="/access-management/roles" element={<Roles />} />
             </Route>
         </Routes>
     );

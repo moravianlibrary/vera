@@ -46,6 +46,7 @@ class IndexDocument(BaseEsModel):
     added_at: Date
     added_by: Keyword
     category_id: Integer
+    category_ids: List[Integer]
     category_path: List[CategoryPath]
     skc_sysno: Optional[Keyword]
     has_valid_main_record: Boolean
@@ -62,6 +63,7 @@ class IndexDocument(BaseEsModel):
     dedicated_scanner: Optional[Keyword]
     extraction_priority: Optional[Integer]
     is_extractable: Boolean
+    extraction_ids: List[Integer]
     digitization_list_id: Optional[Integer]
     # Other properties
     material_type: Optional[Keyword]
@@ -103,6 +105,7 @@ class IndexDocument(BaseEsModel):
             added_at=data.added_at.isoformat(),
             added_by=data.added_by,
             category_id=data.category_id,
+            category_ids=data.category_ids,
             category_path=data.category_path,
             # Catalog properties
             skc_sysno=data.catalog_record.skc_sysno,
@@ -122,6 +125,7 @@ class IndexDocument(BaseEsModel):
             dedicated_scanner=data.dedicated_scanner,
             extraction_priority=data.extraction_priority,
             is_extractable=data.is_extractable,
+            extraction_ids=data.extraction_ids,
             digitization_list_id=data.digitization_list_id,
             material_type=(
                 aleph_record.material_type.value

@@ -7,16 +7,19 @@ import React, {
 } from "react";
 import ApiDepartments, { Department } from "../adapters/ApiDepartments";
 import ApiUsers from "../adapters/ApiUsers";
+import useItemsPagination, {
+    ItemsPaginationProps,
+} from "./base/PaginationInjector";
+import useItemActions, { ItemActionsProps } from "./base/ItemActionsInjector";
+import useDataTableEdit, {
+    DataTableEditProps,
+} from "./base/DataTableEditInjector";
 
-interface DepartmentsContextProps {
-    departments: Department[];
-    editingDepartments: Department[];
-    users: string[];
-    handleAddDepartment: () => void;
-    handleEditDepartment: (department: Department) => void;
-    handleCancelEdit: (department: Department) => void;
-    handleAcceptEdit: (department: Department) => void;
-    handleDeleteDepartment: (department: Department) => void;
+interface DepartmentsContextProps
+    extends Omit<ItemsPaginationProps<Department>, "items">,
+        ItemActionsProps<Department>,
+        DataTableEditProps<Department> {
+    usernames: string[];
 }
 
 const DepartmentsContext = createContext<DepartmentsContextProps | undefined>(
@@ -31,117 +34,49 @@ export const DepartmentsProvider: React.FC<DepartmentsProviderProps> = ({
     children,
 }) => {
     const api = new ApiDepartments();
+    const apiUsers = new ApiUsers();
 
-    const [departments, setDepartments] = useState<Department[]>([]);
-    const [numFound, setNumFound] = useState<number>(0);
-    const [editingDepartments, setEditingDepartments] = useState<Department[]>(
-        []
+    const {
+        items: currItems,
+        refresh,
+        ...restOfPaginationProps
+    } = useItemsPagination(api, "departments");
+    const { createItem, updateItem, ...restOfItemActionsProps } =
+        useItemActions(api, refresh, "departments", "departments");
+    const dataTableEditProps = useDataTableEdit(
+        currItems,
+        { id: null, name: "", abbreviation: "", usernames: [] },
+        createItem,
+        updateItem
     );
-    const [users, setUsers] = useState<string[]>([]);
 
-    const loadDepartments = async () => {
-        api.getPage(1, 50)
-            .then((response) => {
-                setDepartments(response.data.items);
-                setNumFound(response.data.num_found);
-            })
-            .catch((error) => {
-                console.error(`Could not receive departments: ${error}`);
-            });
-    };
+    const [usernames, setUsernames] = useState<string[]>([]);
 
     const loadUsers = async () => {
-        new ApiUsers()
+        apiUsers
             .getPage(1, 50)
             .then((response) =>
-                setUsers(response.data.items.map((user) => user.username) || [])
+                setUsernames(
+                    response.data.items.map((user) => user.username) || []
+                )
             )
             .catch((error) => {
                 console.error(`Could not receive user names: ${error}`);
             });
     };
 
-    const handleAddDepartment = () => {
-        if (
-            departments.length > 0 &&
-            departments[departments.length - 1].id === undefined
-        ) {
-            return;
-        }
-        // const newDepartment = Department.createEmpty();
-        // setDepartments([...departments, newDepartment]);
-        // setEditingDepartments([...editingDepartments, newDepartment]);
-    };
-
-    const handleEditDepartment = (department: Department) => {
-        setEditingDepartments([...editingDepartments, department]);
-    };
-
-    const handleCancelEdit = (department: Department) => {
-        setEditingDepartments(
-            editingDepartments.filter((d) => d.id !== department.id)
-        );
-        if (department.id === undefined) {
-            setDepartments(departments.filter((d) => d !== department));
-        }
-    };
-
-    const handleAcceptEdit = (department: Department) => {
-        if (department.id) {
-            api.update(department.id, department)
-                .then((response) => {
-                    setDepartments(
-                        departments.map((d) =>
-                            d.id === department.id ? response.data : d
-                        )
-                    );
-                })
-                .catch((error) => {
-                    console.error(`Could not update department: ${error}`);
-                });
-        } else {
-            api.create(department)
-                .then((response) => {
-                    setDepartments([
-                        ...departments.filter((d) => d.id !== undefined),
-                        response.data,
-                    ]);
-                })
-                .catch((error) => {
-                    console.error(`Could not create department: ${error}`);
-                });
-        }
-    };
-
-    const handleDeleteDepartment = (department: Department) => {
-        if (department.id) {
-            api.delete(department.id)
-                .then(() => {
-                    setDepartments(
-                        departments.filter((d) => d.id !== department.id)
-                    );
-                })
-                .catch((error) => {
-                    console.error(`Could not delete department: ${error}`);
-                });
-        }
-    };
-
     useEffect(() => {
-        console.debug(`Fetching departments from server.`);
-        loadDepartments();
         loadUsers();
     }, []);
 
     const contextValue: DepartmentsContextProps = {
-        departments,
-        editingDepartments,
-        users,
-        handleAddDepartment,
-        handleEditDepartment,
-        handleCancelEdit,
-        handleAcceptEdit,
-        handleDeleteDepartment,
+        refresh,
+        ...restOfPaginationProps,
+        createItem,
+        updateItem,
+        ...restOfItemActionsProps,
+        ...dataTableEditProps,
+        usernames,
     };
 
     return (

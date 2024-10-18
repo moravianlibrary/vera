@@ -10,6 +10,7 @@ import EsIssuanceTypeFacet from "../../components/elasticsearch/filters/EsIssuan
 import EsQueryRulesLayout from "../../components/layouts/EsQueryRulesLayout";
 import EsSortBy from "../../components/elasticsearch/EsSortBy";
 import { useTranslation } from "react-i18next";
+import EsExtractionFacet from "../../components/elasticsearch/filters/EsExtractionsFacet";
 
 interface DocumentsQueryRulesProps {}
 
@@ -75,8 +76,14 @@ export const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                         label={t("facets.added-by")}
                     />
                     <EsCategoryFacet
-                        attribute="category_id"
+                        attribute="category_ids"
                         label={t("facets.category")}
+                    />
+                    <EsExtractionFacet
+                        attribute="extraction_ids"
+                        label={t("facets.extraction")}
+                        showMore
+                        limit={5}
                     />
                     <EsDigitizationListFacet
                         attribute="digitization_list_id"

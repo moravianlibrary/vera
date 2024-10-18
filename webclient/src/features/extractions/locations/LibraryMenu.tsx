@@ -13,9 +13,10 @@ interface LibraryMenuProps {
 }
 
 const LibraryMenu: React.FC<LibraryMenuProps> = ({ onClose }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("locations");
     const showToast = useToast();
-    const { libraries, updateLibrary, deleteLibrary } = useLocations();
+    const { libraries, storages, updateLibrary, deleteLibrary } =
+        useLocations();
 
     const [selectedLibrary, setSelectedLibrary] = useState<Library | null>(
         null
@@ -38,7 +39,7 @@ const LibraryMenu: React.FC<LibraryMenuProps> = ({ onClose }) => {
 
     const handleDeleteLibrary = () => {
         if (selectedLibrary) {
-            if (selectedLibrary.storages.length > 0) {
+            if (storages.some((s) => s.library_id === selectedLibrary.id)) {
                 showToast(
                     "error",
                     t(
@@ -63,7 +64,7 @@ const LibraryMenu: React.FC<LibraryMenuProps> = ({ onClose }) => {
                         onChange={handleSelectLibrary}
                         optionLabel="name"
                         optionValue="id"
-                        placeholder={t("Select library")}
+                        placeholder={t("form.placeholder.library")}
                     />
                     <Button
                         severity="danger"
@@ -75,7 +76,7 @@ const LibraryMenu: React.FC<LibraryMenuProps> = ({ onClose }) => {
                 </div>
                 <LabeledComponent
                     className="justify-content-between"
-                    label={t("Library name")}
+                    label={t("form.library-name")}
                 >
                     <InputText
                         value={libraryName}
@@ -87,7 +88,7 @@ const LibraryMenu: React.FC<LibraryMenuProps> = ({ onClose }) => {
             <div className="flex gap-1">
                 <Button
                     className="w-full"
-                    label={t("Save")}
+                    label={t("save", { ns: "app" })}
                     severity="success"
                     outlined
                     icon="pi pi-check"
@@ -96,7 +97,7 @@ const LibraryMenu: React.FC<LibraryMenuProps> = ({ onClose }) => {
                 />
                 <Button
                     className="w-full"
-                    label={t("Cancel")}
+                    label={t("cancel", { ns: "app" })}
                     severity="danger"
                     outlined
                     icon="pi pi-times"

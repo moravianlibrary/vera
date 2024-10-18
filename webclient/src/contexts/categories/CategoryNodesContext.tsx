@@ -59,7 +59,7 @@ interface CategoryModelsProviderProps {
 export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
     props
 ) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("categories");
     const showToast = useToast();
     const { categories, refreshCategories } = useCategories();
     const { activeIntention } = useIntentions();
@@ -84,7 +84,7 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
     const createCategoryModels = (categories: Category[]) => {
         const createdRootNode = CategoryModel.generateRootNode(
             CategoryType.Root,
-            t("all_categories"),
+            t("all-categories"),
             categories,
             showIntentionOnly && activeIntention !== null
         );

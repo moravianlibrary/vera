@@ -21,6 +21,7 @@ interface ExtractionsContextProps {
     generateExtraction: (createProps: Partial<Extraction>) => void;
     generating: boolean;
     deleteExtraction: (id: number) => void;
+    findExtraction: (digitization_list_id: number) => Promise<Extraction>;
 }
 
 const ExtractionsContext = createContext<ExtractionsContextProps | undefined>(
@@ -90,6 +91,10 @@ export const GeneratedExtractionsProvider: React.FC<
             });
     };
 
+    const findExtraction = async (extraction_id: number) => {
+        return (await api.get(extraction_id)).data;
+    };
+
     useEffect(() => {
         console.debug(`Fetching extractions from server.`);
         api.getPage(page, pageSize)
@@ -113,6 +118,7 @@ export const GeneratedExtractionsProvider: React.FC<
         generateExtraction,
         generating,
         deleteExtraction,
+        findExtraction,
     };
 
     return (

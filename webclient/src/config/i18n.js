@@ -20,27 +20,6 @@ const resources = {
             delete_record_apply: "Vymazat",
             "Document already exists": "Dokument již přidán",
 
-            users: "Uživatelé",
-            departments: "Oddělení",
-            roles: "Role",
-            department_abbreviation: "Zkratka oddělení",
-            department_name: "Název oddělení",
-            actions: "Akce",
-
-            read_datatable_none: "zakázano čtení",
-            read_datatable_own: "povoleno čtení vlastních záznamů",
-            read_datatable_department: "povoleno čtení záznamů oddělení",
-            read_datatable_all: "povoleno čtení všech záznamů",
-            edit_datatable_none: "zakázaná editace",
-            edit_datatable_own: "povolená editace vlastních záznamů",
-            edit_datatable_department: "povolená editace záznamů oddělení",
-            edit_datatable_all: "povolená editace všech záznamů",
-            write_datatable: "povolen zápis",
-            comment_on_datatable: "povoleno komentovaní",
-            edit_access: "povolena správa oprávnění",
-            edit_categories: "povolena správa kategorii",
-            extract: "povolena extrakce",
-
             insufficient_rights_title: "Nedostatečné prava",
             insufficient_rights_body:
                 "K provedení dané akce nemate dostačující prava",
@@ -52,13 +31,6 @@ const resources = {
             all_categories: "Všechny kategorie",
 
             show_all_categories: "Zobraz všechny",
-
-            name: "Název",
-            description: "Popis",
-
-            select_quota: "Výběr zaměru",
-            active_quota: "Aktivní zaměr",
-            set_active_quota: "Nastavit jako aktívni zaměr",
 
             document_successfuly_created: "Dokument úspěšně přidán",
             unique_document_violation: "Duplicitní dokument",
@@ -104,38 +76,10 @@ const resources = {
             "This setting is propagated downwards":
                 "Toto nastavení se propaguje směrem dolů",
 
-            "Apply filter": "Aktivuj filtr",
-            "Save filter": "Uložit filtr",
-            "Clear filter": "Vyčistit filtr",
-            "Add rule": "Přidat pravidlo",
-            "Add group": "Přidat skupinu",
-            "Match all": "Splňuje všechny",
-            "Match any": "Splňuje jakékoli",
-            Volume: "Ročník",
-            Category: "Kategorie",
-            Title: "Název",
             "Choose a category": "Vyber kategorie",
 
             Role: "Role",
             Operations: "Operace",
-
-            Own: "Vlastní",
-            "Department's": "Oddělení",
-            All: "Všechny",
-
-            "Allowed to read documents": "Povoleno číst dokumenty",
-            "Allowed to edit documents": "Povoleno upravovat dokumenty",
-            "Document insertion allowed": "Povoleno vkládat dokumenty",
-            "Document creation allowed": "Povoleno vytvářet dokumenty",
-            "Commenting on documents allowed": "Povoleno komentovat dokumenty",
-            "Planning tasks allowed": "Povoleno plánovat úkoly",
-            "Administrating tasks allowed": "Povoleno spravovat úkoly",
-            "Allowed to read categories": "Povoleno číst kategorie",
-            "Allowed to edit categories": "Povoleno upravovat kategorie",
-            "Extraction allowed": "Povoleno extrahovat",
-            "Editing access settings allowed":
-                "Povoleno upravovat přístupová nastavení",
-            "Administrating database allowed": "Povoleno spravovat databázi",
 
             "Mark documents": "Označit dokumenty",
             "Unmark documents": "Zrušit označení dokumentů",
@@ -229,7 +173,6 @@ const resources = {
 
             "Please select a category": "Vyberte prosím kategorii",
 
-            "Administrating extractions allowed": "Povoleno spravovat extrakce",
             pages: "stránek",
 
             "Some documents have already been extracted":
@@ -292,27 +235,13 @@ const resources = {
             "The location was deleted successfully":
                 "Lokace byla úspěšně smazána",
             "Location deletion failed": "Lokaci se nepodařilo smazat",
-            "Manage libraries": "Správa knihoven",
-            "Manage storages": "Správa uložení",
-            "Select library": "Vybrat knihovnu",
-            "Select storage": "Vybrat uložení",
-            "Library name": "Jméno knihovny",
-            "Storage name": "Jméno uložení",
             "The library cannot be deleted because it contains storages":
                 "Knihovnu nelze smazat, protože obsahuje uložení",
             "The storage cannot be deleted because it contains locations":
                 "Uložení nelze smazat, protože obsahuje lokaci",
 
-            "Include only documents from these categories":
-                "Zahrnout pouze dokumenty z těchto kategorií",
-            "Include only documents from these locations":
-                "Zahrnout pouze dokumenty z těchto lokací",
-            "Select location": "Vybrat lokaci",
-
             "Select operation": "Vybrat operaci",
             "Insert table data here": "Zde vložte tabulkové data",
-            "Insert using table data form":
-                "Vložit pomocí tabulkového formuláře",
             "Table data form": "Formulář tabulkových dat",
             Required: "Vyžadované",
             Create: "Vytvořit",
@@ -397,6 +326,8 @@ i18n.use(HttpBackend)
             "extractions",
             "digitization-lists",
             "locations",
+            "roles",
+            "departments",
         ],
         defaultNS: "navigation",
 
