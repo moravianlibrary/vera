@@ -1,7 +1,6 @@
-import { ActionType } from "../types/ActionType";
 import MarcFieldDifferenceType from "../types/MarcFieldDifferenceType";
 import { MaterialType } from "../types/MaterialType";
-import axiosInstance, { ApiBase, ApiOptions, authHeader } from "./ApiBase";
+import { ApiBase, ApiOptions, authHeader } from "./ApiBase";
 
 export enum Marc21DiffType {
     MissingField = "MissingField",

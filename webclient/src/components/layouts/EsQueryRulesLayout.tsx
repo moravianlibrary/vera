@@ -19,8 +19,6 @@ const EsQueryRulesLayout: React.FC<EsQueryRulesLayoutProps> = ({
     const { t } = useTranslation("elasticsearch");
     const { uiState } = useInstantSearch();
 
-    console.log(uiState);
-
     return (
         <div className="layout-es-query-rules">
             {sortBy && (

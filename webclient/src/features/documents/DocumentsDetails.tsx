@@ -134,6 +134,7 @@ const DocumentsDetails: React.FC<DocumentsDetailsProps> = () => {
             {expandedRows.map((document) => (
                 <Dialog
                     id={`document-details-${document.id}`}
+                    key={`document-details-${document.id}`}
                     style={{
                         maxWidth: "600px",
                         marginLeft: "96px",

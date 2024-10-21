@@ -44,8 +44,6 @@ const useEsPagination = (
     const [queryRoute, setQueryRoute] = useState<EsQuery>(memoizedQueryRoute);
 
     // useEffect(() => {
-    //     console.log("Uistate changed");
-
     //     const newQueryParams = stateToQueryParams(uiState);
     //     if (JSON.stringify(newQueryParams) !== JSON.stringify(queryParams)) {
     //         setQueryParams(newQueryParams);

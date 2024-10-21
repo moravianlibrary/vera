@@ -6,9 +6,13 @@ import { IndexSettingsDispatcher } from "../../config/elasticsearch";
 
 interface EsQueryChipsProps {
     queryParams: EsQuery;
+    removeFilterCallback?: (attribute: string) => void;
 }
 
-const EsQueryChips: React.FC<EsQueryChipsProps> = ({ queryParams }) => {
+const EsQueryChips: React.FC<EsQueryChipsProps> = ({
+    queryParams,
+    removeFilterCallback,
+}) => {
     const { t } = useTranslation(queryParams.index_name.replace(/_/, "-"));
 
     const getLabel = (
@@ -60,6 +64,8 @@ const EsQueryChips: React.FC<EsQueryChipsProps> = ({ queryParams }) => {
                         ns: "elasticsearch",
                         value: queryParams["query"],
                     })}
+                    removable={removeFilterCallback !== undefined}
+                    onRemove={() => removeFilterCallback("query")}
                 />
             )}
             {IndexSettingsDispatcher[queryParams.index_name].facet_attributes
@@ -78,6 +84,8 @@ const EsQueryChips: React.FC<EsQueryChipsProps> = ({ queryParams }) => {
                                 fa.translateAs,
                                 fa.tType
                             )}
+                            removable={removeFilterCallback !== undefined}
+                            onRemove={() => removeFilterCallback(fa.attribute)}
                         />
                     ));
                 })}

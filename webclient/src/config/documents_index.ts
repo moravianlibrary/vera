@@ -71,6 +71,10 @@ const documents_index_settings = {
     highlight_attributes: ["title"],
     sorting: {
         documents: [{ field: "indexed_at", order: "desc" }],
+        _priority: [
+            { field: "extraction_priority", order: "desc" },
+            { field: "indexed_at", order: "desc" },
+        ],
         _newest: { field: "added_at", order: "desc" },
         _oldest: { field: "added_at", order: "asc" },
         _title_asc: { field: "title", order: "asc" },
@@ -131,6 +135,7 @@ const documents_index_settings = {
         {
             attribute: "category_ids",
             field: "category_ids",
+            size: 100,
             type: "numeric",
             translateAs: "text",
         },

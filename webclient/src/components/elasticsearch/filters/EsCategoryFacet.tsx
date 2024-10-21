@@ -7,7 +7,6 @@ import {
     TreeSelectSelectionKeysType,
 } from "primereact/treeselect";
 import { CategoryOption } from "../../../components/pickers/AssignableCategoryPicker";
-import { useTranslation } from "react-i18next";
 import { TreeNode } from "primereact/treenode";
 import { useRefinementList } from "react-instantsearch";
 import { useCategories } from "../../../contexts/categories/CategoriesContext";
@@ -18,19 +17,7 @@ interface CategoryFacetOption extends CategoryOption {
 }
 
 const EsCategoryFacet: React.FC<EsFacetProps> = (props) => {
-    const {
-        items,
-        hasExhaustiveItems,
-        createURL,
-        refine,
-        sendEvent,
-        searchForItems,
-        isFromSearch,
-        canRefine,
-        canToggleShowMore,
-        isShowingMore,
-        toggleShowMore,
-    } = useRefinementList(props);
+    const { items, refine } = useRefinementList(props);
 
     const { categories, getAssignableCategoriesTrees } = useCategories();
     const [isInitialized, setIsInitialized] = useState<boolean>(false);

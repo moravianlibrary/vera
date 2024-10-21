@@ -73,7 +73,7 @@
         },
         "page-count": {
             "catalog": "{{count}} z katalogu",
-            "manually": "{{count}} ručně zadán",
+            "manual": "{{count}} ručně zadáný",
             "predicted": "{{count}} predikovaný"
         }
     },
@@ -101,8 +101,9 @@
         "page-count": "Počet stran: {{value}}"
     },
     "sort-by": {
-        "last-edited": "Poslední editace",
-        "newest": "Nejnovejší",
+        "last-edited": "Poslední úprava",
+        "extraction-priority": "Podle priority",
+        "newest": "Nejnovější",
         "oldest": "Nejstarší",
         "title-asc": "Název (A - Z)",
         "title-desc": "Název (Z - A)"

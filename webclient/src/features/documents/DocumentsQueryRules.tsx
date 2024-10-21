@@ -27,6 +27,10 @@ export const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                             value: "documents",
                         },
                         {
+                            label: t("sort-by.extraction-priority"),
+                            value: "documents_extraction_priority",
+                        },
+                        {
                             label: t("sort-by.newest"),
                             value: "documents_newest",
                         },
@@ -78,16 +82,19 @@ export const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                     <EsCategoryFacet
                         attribute="category_ids"
                         label={t("facets.category")}
+                        limit={100}
                     />
                     <EsExtractionFacet
                         attribute="extraction_ids"
                         label={t("facets.extraction")}
+                        sortBy={["name:desc"]}
                         showMore
                         limit={5}
                     />
                     <EsDigitizationListFacet
                         attribute="digitization_list_id"
                         label={t("facets.digitization-list")}
+                        sortBy={["name:desc"]}
                         showMore
                         limit={5}
                     />

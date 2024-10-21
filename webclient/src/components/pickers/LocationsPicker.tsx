@@ -20,14 +20,8 @@ const LocationsPicker: React.FC<LocationsPickerProps> = ({
     const { locations } = useLocations();
 
     const onChange = (e: DropdownChangeEvent) => {
-        console.log(e.value);
-
         callback(e.value ? (Array.isArray(e.value) ? e.value : [e.value]) : []);
     };
-
-    useEffect(() => {
-        console.log("Value", value);
-    }, [value]);
 
     return (
         <div>
