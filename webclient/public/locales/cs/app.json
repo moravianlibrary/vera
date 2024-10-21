@@ -4,6 +4,7 @@
     "edit": "Upravit",
     "cancel": "Zrušit",
     "delete": "Smazat",
+    "required": "Vyžadované",
     "show-more": "Zobrazit víc",
     "show-less": "Zobrazit mín",
     "paginator": {
@@ -17,5 +18,17 @@
         "label": "Vývojářské nástroje",
         "access-emulation": "Emulace přístupu",
         "stop-access-emulation": "Zastavit emulaci přístupu"
-    }
+    },
+    "spreadsheet-input": {
+        "insert-here": "Zde vložte tabulkové data",
+        "assign-column-labels": "Přiradit označení sloupců",
+        "form": "Formulář tabulkových dat",
+        "duplicate-column": "Duplikovat sloupec",
+        "delete-column": "Smazat sloupec",
+        "assign-label": "Přiradit označení",
+        "ignore-row": "Ignorovat řádek",
+        "cell-selection-tooltip": "Výběr buněk je možný kliknutím na jednotlivé buňky nebo tažením přes více buněk",
+        "selected-cells": "Vybrané buňky: {{count}} z {{count_total}}"
+    },
+    "copied-to-clipboard": "Zkopírováno do schránky"
 }

@@ -1,7 +1,7 @@
 import React from "react";
 import TasksTable from "../features/tasks/TasksTable";
 import DataTableLayout from "../components/layouts/DataTableLayout";
-import SubNavigationMenu from "../components/SubNavigationMenu";
+import SubNavigationMenu from "../components/navigation/SubNavigationMenu";
 import SubNavigationTasks from "../components/navigation/SubNavigationTasks";
 import { TasksProvider } from "../contexts/TasksContext";
 import OverlayFormLayout from "../components/layouts/OverlayFormLayout";

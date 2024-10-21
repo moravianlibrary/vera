@@ -9,5 +9,22 @@
             "documents-count": "Počet dokumentů",
             "intention": "Zaměr"
         }
+    },
+    "actions": {
+        "create": {
+            "confirm_one": "Opravdu chcete vytvořit seznam digitalizace z {{count}} vybraného dokumentů?",
+            "confirm_few": "Opravdu chcete vytvořit seznam digitalizace z {{count}} vybraných dokumentů?",
+            "confirm_other": "Opravdu chcete vytvořit seznam digitalizace z {{count}} vybraných dokumentů?"
+        },
+        "update": {
+            "confirm_one": "Opravdu chcete pridat {{count}} vybraných dokumentů do seznamu digitalizace {{digitizationListId}}?",
+            "confirm_few": "Opravdu chcete pridat {{count}} vybraných dokumentů do seznamu digitalizace {{digitizationListId}}?",
+            "confirm_other": "Opravdu chcete pridat {{count}} vybraných dokumentů do seznamu digitalizace {{digitizationListId}}?"
+        },
+        "delete": {
+            "confirm_one": "Opravdu chcete odstranit {{count}} vybraných dokumentů ze seznamu digitalizace {{digitizationListId}}?",
+            "confirm_few": "Opravdu chcete odstranit {{count}} vybraných dokumentů ze seznamu digitalizace {{digitizationListId}}?",
+            "confirm_other": "Opravdu chcete odstranit {{count}} vybraných dokumentů ze seznamu digitalizace {{digitizationListId}}?"
+        }
     }
 }

@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { SplitButton } from "primereact/splitbutton";
 import TabSeparatedInput, {
     ModelType,
-} from "../../../components/TabSeparatedInput";
+} from "../../../components/forms/TabSeparatedInput";
 import { Dialog } from "primereact/dialog";
 import StorageMenu from "./StorageMenu";
 import LibraryMenu from "./LibraryMenu";

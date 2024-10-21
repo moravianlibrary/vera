@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Sidebar } from "primereact/sidebar";
 import { useTranslation } from "react-i18next";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
-import LabeledComponent from "../../components/LabeledComponent";
+import LabeledComponent from "../../components/wrappers/LabeledComponent";
 import { InputNumber } from "primereact/inputnumber";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 import { Button } from "primereact/button";

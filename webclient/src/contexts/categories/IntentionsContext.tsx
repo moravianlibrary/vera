@@ -13,6 +13,7 @@ import { useToast } from "../ToastContext";
 import { useTranslation } from "react-i18next";
 import { IntentionClassification } from "../../types/IntentionClassification";
 import IntentionValidator from "../../data/validators/IntentionValidator";
+import { useNotification } from "../NotificationContext";
 
 interface IntentionsContextProps {
     intentions: Intention[];
@@ -34,8 +35,8 @@ interface IntentionsProviderProps {
 export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
     children,
 }) => {
-    const { t } = useTranslation();
-    const showToast = useToast();
+    const { t } = useTranslation("intentions");
+    const { showSuccess, showFailure } = useNotification();
 
     const [intentions, setIntentions] = useState<Intention[]>([]);
     const [currentIntention, setCurrentIntention] = useState<Intention | null>(
@@ -84,28 +85,22 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
     ): boolean => {
         if (intentions) {
             if (!IntentionValidator.hasValidName(intention)) {
-                showToast(
-                    "error",
-                    messageHeader,
-                    t("Intention name must not be empty")
-                );
+                showFailure(messageHeader, t("actions.failure.empty-name"));
                 return false;
             }
             if (!IntentionValidator.hasValidTargetPageCount(intention)) {
-                showToast(
-                    "error",
+                showFailure(
                     messageHeader,
-                    t("Intention target page count must be positive")
+                    t("actions.failure.invalid-page-count")
                 );
                 return false;
             }
 
             if (!currentIntention || intentionId !== currentIntention.id) {
                 if (!IntentionValidator.hasDateRangeAfterToday(intention)) {
-                    showToast(
-                        "error",
+                    showFailure(
                         messageHeader,
-                        t("Intention date range must start today or later")
+                        t("actions.failure.invalid-start-date")
                     );
                     return false;
                 }
@@ -116,20 +111,16 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
                         currentIntention
                     )
                 ) {
-                    showToast(
-                        "error",
+                    showFailure(
                         messageHeader,
-                        t("Current intention start date must not be changed")
+                        t("actions.failure.curr-start-date-change")
                     );
                     return false;
                 }
                 if (!IntentionValidator.hasEndDateAfterToday(intention)) {
-                    showToast(
-                        "error",
+                    showFailure(
                         messageHeader,
-                        t(
-                            "Current intention date range must end today or later"
-                        )
+                        t("actions.failure.date-range-overlap")
                     );
                     return false;
                 }
@@ -142,11 +133,7 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
                     intentionId
                 )
             ) {
-                showToast(
-                    "error",
-                    messageHeader,
-                    t("Intention name must be unique")
-                );
+                showFailure(messageHeader, t("actions-failure.unique-name"));
                 return false;
             }
             if (
@@ -156,10 +143,9 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
                     intentionId
                 )
             ) {
-                showToast(
-                    "error",
+                showFailure(
                     messageHeader,
-                    t("Intention date range must not overlap")
+                    t("actions.failure.date-range-overlap")
                 );
                 return false;
             }
@@ -168,24 +154,18 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
     };
 
     const createIntention = (intention: IntentionCreate) => {
-        if (
-            !validateIntention(
-                intention,
-
-                t("Intention creation failed")
-            )
-        ) {
+        if (!validateIntention(intention, t("actions.failure.create"))) {
             return;
         }
         ApiCategories.createIntention(intention)
             .then((response) => {
                 const newIntention = response.data;
-                showToast(
-                    "success",
-                    t("The intention was successfully created"),
-                    `${t("Name")}: ${newIntention.name}, ${t(
-                        "Target page count"
-                    )}: ${newIntention.target_page_count}`
+                showSuccess(
+                    t("actions.success.create"),
+                    t("actions.success.create-details", {
+                        name: newIntention.name,
+                        count: newIntention.target_page_count,
+                    })
                 );
                 if (intentions) {
                     setIntentions([...intentions, newIntention]);
@@ -198,10 +178,12 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
                     400 <= error.response?.status &&
                     error.response?.status < 500
                 ) {
-                    showToast(
-                        "error",
-                        t("Intention creation failed"),
-                        t(error.response.data.detail)
+                    showFailure(
+                        t("actions.failure.create"),
+                        t("actions.failure.create-details", {
+                            name: intention.name,
+                            count: intention.target_page_count,
+                        })
                     );
                 } else {
                     console.error(error);
@@ -216,7 +198,7 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
         if (
             !validateIntention(
                 intention,
-                t("Intention update failed"),
+                t("actions.failure.update"),
                 intentionId
             )
         ) {
@@ -225,12 +207,12 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
         ApiCategories.updateIntention(intentionId, intention)
             .then((response) => {
                 const updatedIntention: Intention = response.data;
-                showToast(
-                    "success",
-                    t("The intention was successfully updated"),
-                    `${t("Name")}: ${updatedIntention.name}, ${t(
-                        "Pages count"
-                    )}: ${updatedIntention.target_page_count}`
+                showSuccess(
+                    t("actions.success.update"),
+                    t("actions.success.update-details", {
+                        name: updatedIntention.name,
+                        count: updatedIntention.target_page_count,
+                    })
                 );
                 const updatedIntentions = intentions?.map((q) =>
                     q.id === updatedIntention.id ? updatedIntention : q
@@ -243,10 +225,12 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
                     400 <= error.response?.status &&
                     error.response?.status < 500
                 ) {
-                    showToast(
-                        "error",
-                        t("Intention update failed"),
-                        t(error.response.data.detail)
+                    showFailure(
+                        t("actions.failure.update"),
+                        t("actions.failure.update-details", {
+                            name: intention.name,
+                            count: intention.target_page_count,
+                        })
                     );
                 } else {
                     console.error(error);
@@ -257,19 +241,13 @@ export const IntentionsProvider: React.FC<IntentionsProviderProps> = ({
     const deleteIntention = (intentionId: number) => {
         ApiCategories.deleteIntention(intentionId)
             .then((response) => {
-                showToast(
-                    "success",
-                    t("The intention was deleted successfully"),
-                    `${t("Name")}: ${response.data.name}, ${t(
-                        "Pages count"
-                    )}: ${response.data.target_page_count}`
-                );
+                showSuccess(t("actions.success.delete"));
                 setIntentions(
                     intentions?.filter((q) => q.id !== response.data.id)
                 );
             })
             .catch((error) => {
-                showToast("error", t("Intention deletion failed"), "");
+                showFailure(t("actions.failure.delete"));
                 console.error(error);
             });
     };

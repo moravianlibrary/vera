@@ -4,7 +4,6 @@ import "../styles/Documents.css";
 import DocumentsHeader from "../features/documents/DocumentsHeader";
 import DocumentsTable from "../features/documents/DocumentsTable";
 import { DigitizationListsProvider } from "../contexts/DigitizationListsContext";
-import { DigitizationListsManagerProvider } from "../contexts/extractions/DigitizationListsManagerContext";
 import { CategoriesProvider } from "../contexts/categories/CategoriesContext";
 import { GeneratedExtractionsProvider } from "../contexts/GeneratedExtractionsContext";
 import { LocationsProvider } from "../contexts/LocationsContext";
@@ -38,7 +37,6 @@ const Documents: React.FC = () => {
                     CategoriesProvider,
                     LocationsProvider,
                     GeneratedExtractionsProvider,
-                    DigitizationListsManagerProvider,
                     DigitizationListsProvider,
                     IntentionsProvider,
                     DocumentsProvider,

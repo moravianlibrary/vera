@@ -1,11 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import React from "react";
 import CategoryPercentage from "./PercentageComponent";
 import { Tooltip } from "primereact/tooltip";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
-import { Button } from "primereact/button";
-import { Link } from "react-router-dom";
 import { useCategories } from "../../contexts/categories/CategoriesContext";
 import CategoryNodeEditMenu from "./CategoryActionsMenu";
 import CategoryDocumentsLinkButton from "../../components/buttons/CategoryDocumentsLinkButton";

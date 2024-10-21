@@ -2,10 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Button } from "primereact/button";
 import { ProgressBar } from "primereact/progressbar";
 import { useTranslation } from "react-i18next";
-import { CatalogIssueResponse, Issue } from "../../adapters/ApiDocuments";
+import { CatalogIssueResponse } from "../../adapters/ApiDocuments";
 import { DigitizationState } from "../../types/DigitizationState";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
-import { DigitizationRegistry } from "../../services/DigitizationRegistry";
 import DigitizationStateTag from "../../components/tags/DigitizationStateTag";
 import { Tag } from "primereact/tag";
 import { createDigitizationRegistryLink } from "../../data/factories/LinksFactory";
@@ -97,7 +96,7 @@ const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({
     issue,
     state,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("types");
 
     if (state === null) {
         return;
@@ -121,7 +120,7 @@ const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({
         ) {
             return (
                 <Tag
-                    value={t("Document already exists")}
+                    value={t("issues-states.already-exists")}
                     className="document-already-exists"
                 />
             );
@@ -129,7 +128,7 @@ const DocumentIssueHeader: React.FC<DocumentIssueHeaderProps> = ({
         if (state === IssueStates.DigitizationForbidden) {
             return (
                 <Tag
-                    value={t("Digitization forbidden")}
+                    value={t("issues-states.digitization-forbidden")}
                     className="digitization-forbidden"
                 />
             );

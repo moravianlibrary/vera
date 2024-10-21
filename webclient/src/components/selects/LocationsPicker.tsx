@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Library, Location, Storage } from "../../adapters/ApiLocations";
+import React from "react";
+import { Location } from "../../adapters/ApiLocations";
 import { useLocations } from "../../contexts/LocationsContext";
 import { useTranslation } from "react-i18next";
-import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
+import { DropdownChangeEvent } from "primereact/dropdown";
 import { MultiSelect } from "primereact/multiselect";
 
 interface LocationsPickerProps {

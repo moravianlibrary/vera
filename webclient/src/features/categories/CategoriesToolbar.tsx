@@ -1,5 +1,5 @@
 import { Button } from "primereact/button";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Toolbar } from "primereact/toolbar";
 import { useIntentions } from "../../contexts/categories/IntentionsContext";
@@ -51,7 +51,7 @@ const CategoriesToolbar: React.FC<CategoriesToolbarProps> = ({
 
 interface CategoryOptionsProps {}
 
-const CategoryOptions: React.FC<CategoryOptionsProps> = ({}) => {
+const CategoryOptions: React.FC<CategoryOptionsProps> = () => {
     const { t } = useTranslation("categories");
 
     return (

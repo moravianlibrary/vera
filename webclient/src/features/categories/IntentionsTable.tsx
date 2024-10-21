@@ -12,7 +12,6 @@ import EditButton from "../../components/buttons/EditButton";
 import EditIntentionMenu, {
     EditIntentionMenuRef,
 } from "./components/EditIntentionMenu";
-import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 import { ActionType } from "../../types/ActionType";
 import { useAccess } from "../../contexts/AccessContext";
 

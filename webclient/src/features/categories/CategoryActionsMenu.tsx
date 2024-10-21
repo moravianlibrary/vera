@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-
 import { Button } from "primereact/button";
 import { Menu } from "primereact/menu";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
@@ -10,7 +9,7 @@ import { ActionType } from "../../types/ActionType";
 import { useAccess } from "../../contexts/AccessContext";
 import { useTranslation } from "react-i18next";
 import { useIntentions } from "../../contexts/categories/IntentionsContext";
-import { CurrentUser, User } from "../../adapters/ApiUsers";
+import { CurrentUser } from "../../adapters/ApiUsers";
 import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 
 interface CategoryEditMenuProps {

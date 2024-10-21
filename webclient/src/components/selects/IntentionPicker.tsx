@@ -13,7 +13,7 @@ interface IntentionPickerProps {
 }
 
 const IntentionPicker: React.FC<IntentionPickerProps> = (props) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("intentions");
     const { intentions, activeIntention } = useIntentions();
 
     useEffect(() => {
@@ -30,7 +30,7 @@ const IntentionPicker: React.FC<IntentionPickerProps> = (props) => {
                 options={intentions}
                 optionLabel="name"
                 onChange={(e) => props.onIntentionChange(e.value)}
-                placeholder={t("Select intention")}
+                placeholder={t("select-placeholder")}
             />
         </div>
     );

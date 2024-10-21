@@ -1,19 +1,14 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Frequency, IndexDocument } from "../../adapters/ApiDocuments";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
-import LabeledComponent from "../../components/LabeledComponent";
 import { useToast } from "../../contexts/ToastContext";
 import { format } from "date-fns";
 import ExtractionPriorityEditor from "../../components/editors/ExtractionPriorityEditor";
 import EditorProps from "../../components/editors/Editor";
 import { useDocuments } from "../../contexts/DocumentsContext";
-
-interface DocumentDetailsDialogProps {
-    document: IndexDocument;
-}
 
 interface DocumentDetailsFieldType {
     attribute: string;
@@ -208,12 +203,12 @@ const DocumentDetailsFieldValue: React.FC<DocumentDetailsFieldValueProps> = ({
     field,
     toggleEditMode,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("app");
     const showToast = useToast();
 
     const copyToClipboard = (value: string) => {
         navigator.clipboard.writeText(value);
-        showToast("info", t("Copied to clipboard"), "");
+        showToast("info", t("copied-to-clipboard"), "");
     };
 
     return (

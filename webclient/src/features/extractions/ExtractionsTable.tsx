@@ -5,7 +5,7 @@ import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import { OwnedItemType, useAccess } from "../../contexts/AccessContext";
-import DataTablePaginator from "../../components/DataTablePaginator";
+import DataTablePaginator from "../../components/views/DataTablePaginator";
 import { ActionType } from "../../types/ActionType";
 import InternalLinkButton from "../../components/buttons/InternalLinkButton";
 import { formatDatetime } from "../../data/factories/DateFactory";

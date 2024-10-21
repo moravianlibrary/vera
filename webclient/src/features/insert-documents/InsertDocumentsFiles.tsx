@@ -10,7 +10,7 @@ import {
     SpreadsheetFileContent,
     useInsertDocuments,
 } from "../../contexts/insert-documents/InsertDocumentsContext";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Column,
     ColumnBodyOptions,
@@ -18,10 +18,6 @@ import {
 } from "primereact/column";
 import { useTranslation } from "react-i18next";
 import { Dropdown } from "primereact/dropdown";
-import {
-    getIdentifierTypeLabel,
-    getLocalizedIdentifiers,
-} from "../../types/Identifiers";
 import { IdentifierType } from "../../types/IdentifierType";
 import { Button } from "primereact/button";
 import { Tag } from "primereact/tag";
@@ -31,6 +27,7 @@ import { Tooltip } from "primereact/tooltip";
 import { TabMenu } from "primereact/tabmenu";
 import { useCategories } from "../../contexts/categories/CategoriesContext";
 import { Category } from "../../adapters/ApiCategories";
+import { IdentifierTypeSelectItems } from "../../data/factories/DropdownItemsFactory";
 
 const InsertDocumentsFiles: React.FC = () => {
     const { t } = useTranslation("documents");
@@ -137,8 +134,8 @@ const InsertDocumentsFiles: React.FC = () => {
     const identifierEditor = (options: ColumnEditorOptions) => {
         return (
             <Dropdown
+                options={IdentifierTypeSelectItems()}
                 value={options.value}
-                options={getLocalizedIdentifiers(t)}
                 onChange={(e) =>
                     options.editorCallback!(e.target.value as IdentifierType)
                 }
@@ -166,7 +163,9 @@ const InsertDocumentsFiles: React.FC = () => {
             <Column
                 field="identifier"
                 header={t("properties.identifier")}
-                body={(v) => t(getIdentifierTypeLabel(v.identifier))}
+                body={(v) =>
+                    t(`identifier-type.${v.valueOf()}`, { ns: "types" })
+                }
                 editor={identifierEditor}
                 onCellEditComplete={onCellValueEdit}
             />
@@ -250,7 +249,7 @@ const SpreadsheetDataTable: React.FC<SpreadsheetDataTableProps> = ({
     spreadsheetFile,
     onAccept,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("app");
 
     const [currentSheet, setCurrentSheet] = useState<SpreadsheetContent | null>(
         spreadsheetFile?.content?.[0] || null
@@ -316,9 +315,7 @@ const SpreadsheetDataTable: React.FC<SpreadsheetDataTableProps> = ({
     };
 
     const footer = () => {
-        const tooltip = t(
-            "Cell selection is possible by clicking on individual cells or by dragging across multiple cells"
-        );
+        const tooltip = t("spreadsheet-input.cell-selection-tooltip");
         const menuItems = spreadsheetFile?.content.map((sheet) => ({
             label: sheet.sheetName,
             command: () => setCurrentSheet(sheet),
@@ -338,9 +335,10 @@ const SpreadsheetDataTable: React.FC<SpreadsheetDataTableProps> = ({
                     <Tooltip target=".pi-info-circle" content={tooltip} />
                     <i className="pi pi-info-circle text-blue-700 text-lg" />
                     <span>
-                        {`${t(
-                            "Selected cells"
-                        )}: ${countSelectedCurr} (${countSelectedAll})`}
+                        {t("Selected cells", {
+                            count: countSelectedCurr,
+                            count_total: countSelectedAll,
+                        })}
                     </span>
                     <Button
                         icon="pi pi-times"
@@ -350,7 +348,7 @@ const SpreadsheetDataTable: React.FC<SpreadsheetDataTableProps> = ({
                         onClick={handleCancelSelection}
                     />
                 </div>
-                <Button label={t("Accept")} onClick={handleAccept} />
+                <Button label={t("submit")} onClick={handleAccept} />
             </div>
         );
     };

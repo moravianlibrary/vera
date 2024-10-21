@@ -1,6 +1,6 @@
 import React, { startTransition } from "react";
 import { Button } from "primereact/button";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DigitizationList } from "../../adapters/ApiDigitizationLists";
 import { Extraction } from "../../adapters/ApiExtractions";

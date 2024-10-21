@@ -2,7 +2,7 @@ import { DataTable } from "primereact/datatable";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Column } from "primereact/column";
-import DataTablePaginator from "../../components/DataTablePaginator";
+import DataTablePaginator from "../../components/views/DataTablePaginator";
 import DigitizationStateColumnBody from "./table_columns/DigitizationStateColumnBody";
 import DescriptionColumnBody from "./table_columns/DescriptionColumnBody";
 import PageCountColumnBody from "./table_columns/PageCountColumnBody";

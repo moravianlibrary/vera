@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { OrganizationChart } from "primereact/organizationchart";
 import { CategoryType } from "../../contexts/categories/CategoryType";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
@@ -9,11 +9,10 @@ import CategoriesChartNode from "./CategoriesChartNode";
 import CategoriesChartUpdate from "./CategoriesChartUpdate";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { Button } from "primereact/button";
-import { useCategories } from "../../contexts/categories/CategoriesContext";
 
 interface CategoriesChartProps {}
 
-const SCROLL_BY_PROPORTION = 0.8;
+// const SCROLL_BY_PROPORTION = 0.8;
 
 const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
     const { currentCategory, focusParentCategory, editCategory } =
@@ -36,33 +35,33 @@ const CategoriesChart: React.FC<CategoriesChartProps> = (props) => {
         }
     };
 
-    const handleScrollLeft = (e) => {
-        e.preventDefault();
-        const container = containerRef.current;
-        if (!container) {
-            return;
-        }
-        container.scrollBy({
-            left: -(
-                container.getBoundingClientRect().width * SCROLL_BY_PROPORTION
-            ),
-            top: 0,
-            behavior: "smooth",
-        });
-    };
+    // const handleScrollLeft = (e) => {
+    //     e.preventDefault();
+    //     const container = containerRef.current;
+    //     if (!container) {
+    //         return;
+    //     }
+    //     container.scrollBy({
+    //         left: -(
+    //             container.getBoundingClientRect().width * SCROLL_BY_PROPORTION
+    //         ),
+    //         top: 0,
+    //         behavior: "smooth",
+    //     });
+    // };
 
-    const handleScrollRight = () => {
-        const container = containerRef.current;
-        if (!container) {
-            return;
-        }
-        container.scrollBy({
-            left:
-                container.getBoundingClientRect().width * SCROLL_BY_PROPORTION,
-            top: 0,
-            behavior: "smooth",
-        });
-    };
+    // const handleScrollRight = () => {
+    //     const container = containerRef.current;
+    //     if (!container) {
+    //         return;
+    //     }
+    //     container.scrollBy({
+    //         left:
+    //             container.getBoundingClientRect().width * SCROLL_BY_PROPORTION,
+    //         top: 0,
+    //         behavior: "smooth",
+    //     });
+    // };
 
     if (!currentCategory) {
         return <div></div>;

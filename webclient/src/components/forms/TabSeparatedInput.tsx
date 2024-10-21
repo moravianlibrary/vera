@@ -34,13 +34,13 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
     mapModel,
     onSubmit,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("app");
 
     const [columnMappings, setColumnMappings] = useState<(MapModel | null)[]>(
         []
     );
     const [data, setData] = useState<CellBase[][]>([
-        [{ value: t("Insert table data here") }],
+        [{ value: t("spreadsheet-input.insert-here") }],
     ]);
     const [selected, setSelected] = useState<Selection>(new EmptySelection());
 
@@ -96,7 +96,7 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
         return (
             <div className="flex gap-2 align-items-end">
                 <div className="flex flex-wrap w-full gap-2 align-items-center">
-                    <span>{t("Assign column labels")}:</span>
+                    <span>{t("spreadsheet-input.assign-column-labels")}:</span>
                     {mapModel.map((mapper) => (
                         <ColumnLabelChip
                             label={mapper.mapFrom}
@@ -107,12 +107,12 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
                 </div>
                 <div className="flex justify-content-end gap-2">
                     <Button
-                        label={t("Cancel")}
+                        label={t("cancel")}
                         icon="pi pi-times"
                         onClick={onHide}
                     />
                     <Button
-                        label={t("Confirm")}
+                        label={t("submit")}
                         icon="pi pi-check"
                         onClick={handleSubmit}
                     />
@@ -125,7 +125,7 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
         <Dialog
             visible={visible}
             onHide={onHide}
-            header={t("Table data form")}
+            header={t("spreadsheet-input.form")}
             footer={dialogFooterButtons()}
         >
             <div className="flex flex-column w-full gap-3">
@@ -177,7 +177,7 @@ const ColumnLabelChip: React.FC<ColumnLabelChipProps> = ({
                 <Badge
                     key={`${label}_badge`}
                     severity={isSelected ? "success" : "warning"}
-                    value={isSelected ? "" : t("Required")}
+                    value={isSelected ? "" : t("required")}
                     style={{
                         position: "relative",
                         top: "-7px",
@@ -222,20 +222,20 @@ const SpreadsheetColumn: React.FC<SpreadsheetColumnProps> = ({
     onDuplicateColumn,
     onDeleteColumn,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("app");
     const contextMenuRef = useRef<ContextMenu | null>(null);
 
     const items = [
         {
-            label: t("Duplicate column"),
+            label: t("spreadsheet-input.duplicate-column"),
             command: () => onDuplicateColumn?.(column),
         },
         {
-            label: t("Delete column"),
+            label: t("spreadsheet-input.delete-column"),
             command: () => onDeleteColumn?.(column),
         },
         {
-            label: t("Assign label"),
+            label: t("spreadsheet-input.ssign-label"),
             items: mapColumns
                 ? mapColumns.map((c) => ({
                       label: c.mapFrom,
@@ -278,13 +278,16 @@ const SpreadsheetRow: React.FC<RowIndicatorProps> = ({
     selected,
     onSelect,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("app");
 
     const contextMenuRef = useRef<ContextMenu | null>(null);
     const [ignoreRow, setIgnoreRow] = useState<boolean>(false);
 
     const items = [
-        { label: t("Ignore row"), command: () => setIgnoreRow(!ignoreRow) },
+        {
+            label: t("spreadsheet-input.ignore-row"),
+            command: () => setIgnoreRow(!ignoreRow),
+        },
     ];
 
     const handleSelect = () => {

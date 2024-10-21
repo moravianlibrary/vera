@@ -28,7 +28,11 @@
         "edit": "Upravit kategorii",
         "edit-distribution": "Upravit rozdelení",
         "delete": "Smazat kategorii",
-        "add-child": "Přidat podkategorii"
+        "add-child": "Přidat podkategorii",
+        "failure": {
+            "invalid-distribution": "Neplatné procentuální rozdělení",
+            "delete": "Smazání kategorie se nezdařilo"
+        }
     },
     "details": {
         "missing-page-count": "<strong>{{count}}</strong> stran chybí k naplnění",

@@ -4,11 +4,10 @@ import React, {
     useState,
     ReactNode,
     useEffect,
-    ChildContextProvider,
+    useCallback,
 } from "react";
 import ApiCategories, {
     Category,
-    ChildDistribution,
     CreateCategory,
     ParentDistribution,
 } from "../../adapters/ApiCategories";
@@ -81,16 +80,19 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
     const [editDistribution, setEditDistribution] =
         useState<CategoryModel | null>(null);
 
-    const createCategoryModels = (categories: Category[]) => {
-        const createdRootNode = CategoryModel.generateRootNode(
-            CategoryType.Root,
-            t("all-categories"),
-            categories,
-            showIntentionOnly && activeIntention !== null
-        );
-        setRootNode(createdRootNode);
-        setCurrentCategory(createdRootNode);
-    };
+    const createCategoryModels = useCallback(
+        (categories: Category[]) => {
+            const createdRootNode = CategoryModel.generateRootNode(
+                CategoryType.Root,
+                t("all-categories"),
+                categories,
+                showIntentionOnly && activeIntention !== null
+            );
+            setRootNode(createdRootNode);
+            setCurrentCategory(createdRootNode);
+        },
+        [activeIntention, showIntentionOnly, t]
+    );
 
     const addCategory = (toCategory: CategoryModel) => {
         if (!editCategory) {
@@ -144,7 +146,7 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
                 if (
                     error.response &&
                     error.response.status &&
-                    error.response.status == 409
+                    error.response.status === 409
                 ) {
                     showToast(
                         "error",
@@ -172,20 +174,13 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
                 ) {
                     showToast(
                         "error",
-                        t("Category deletion failed"),
+                        t("actions.failure.delete"),
                         t(error.response.data.detail)
                     );
                 } else {
                     console.error(error);
                 }
             });
-    };
-
-    const updateCategoryModels = (categories: Category[]) => {
-        if (!rootNode) {
-            createCategoryModels(categories);
-            return;
-        }
     };
 
     const changeFocus = (
@@ -233,7 +228,7 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
         changeFocus(
             CategoryModel.generateRootNode(
                 CategoryType.LevelRoot,
-                `${t("Categories of level")} ${level}`,
+                `${t("display-options.level")} ${level}`,
                 rootNode!.getNodesByLevel(level),
                 showIntentionOnly && activeIntention !== null
             ),
@@ -246,7 +241,7 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
         changeFocus(
             CategoryModel.generateRootNode(
                 CategoryType.LevelRoot,
-                t("Assignable categories"),
+                t("display-options.assignable"),
                 rootNode!.getAssignableCategoryModels(),
                 showIntentionOnly && activeIntention !== null
             ),
@@ -265,7 +260,7 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
             0
         );
         if (percentageSum !== 100) {
-            showToast("error", t("invalid_percentage_distribution"), "");
+            showToast("error", t("actions.failure.invalid-distribution"), "");
             return;
         }
 
@@ -287,7 +282,7 @@ export const CategoryModelsProvider: React.FC<CategoryModelsProviderProps> = (
         if (categories) {
             createCategoryModels(categories);
         }
-    }, [categories, showIntentionOnly]);
+    }, [categories, showIntentionOnly, createCategoryModels]);
 
     const contextValue: CategoryModelsContextProps = {
         currentCategory,

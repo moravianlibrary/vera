@@ -9,7 +9,7 @@ interface WikiProps {
     language: string;
 }
 
-export const Wiki: React.FC<WikiProps> = ({ language }) => {
+const Wiki: React.FC<WikiProps> = ({ language }) => {
     const [page, setPage] = useState<string>("Home.md");
     const [markdownContent, setMarkdownContent] = useState<string>();
     const [history, setHistory] = useState<string[]>(["Home.md"]);

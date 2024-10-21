@@ -1,20 +1,15 @@
-import { Fieldset } from "primereact/fieldset";
-import React, { useState } from "react";
+import React from "react";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
-import { InputNumber } from "primereact/inputnumber";
 import { Button } from "primereact/button";
 import { Inplace, InplaceContent, InplaceDisplay } from "primereact/inplace";
 import { useTranslation } from "react-i18next";
-import { getResultDetail } from "./InsertDocumentsFunctions";
-import { Divider } from "primereact/divider";
-import { CatalogDocumentResponse } from "../../adapters/ApiDocuments";
 import SetDocumentPageCountForm from "../../components/forms/SetDocumentPageCountForm";
 
 interface AddDocumentsSetPageCountProps {}
 
 const AddDocumentsSetPageCount: React.FC<
     AddDocumentsSetPageCountProps
-> = ({}) => {
+> = () => {
     const { t } = useTranslation();
     const { responses, withoutPageCount, handleSetPagesCount } =
         useInsertDocuments();

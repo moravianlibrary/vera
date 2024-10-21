@@ -140,5 +140,9 @@
         "Success_few": "{{count}} dokumenty byly úspěšně přidány",
         "Success_other": "{{count}} dokumentů byl úspěšně přidán",
         "without-page-count": "{{count}} dokumentů nema nastaven počet stran"
+    },
+    "issues-states": {
+        "already-exists": "Již přidáno",
+        "digitization-forbidden": "Nelze digitalizovat"
     }
 }

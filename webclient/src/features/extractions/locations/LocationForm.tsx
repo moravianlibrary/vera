@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import LabeledComponent from "../../../components/LabeledComponent";
+import LabeledComponent from "../../../components/wrappers/LabeledComponent";
 import { Dropdown } from "primereact/dropdown";
 import { Library, Location, Storage } from "../../../adapters/ApiLocations";
 import { InputText } from "primereact/inputtext";

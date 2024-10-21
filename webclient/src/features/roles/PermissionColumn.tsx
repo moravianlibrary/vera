@@ -1,7 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Checkbox, CheckboxChangeEvent } from "primereact/checkbox";
-import { ColumnEditorOptions } from "primereact/column";
 import { ActionType, SimplePermission } from "../../types/ActionType";
 
 interface PermissionColumnProps {

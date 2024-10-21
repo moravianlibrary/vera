@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "primereact/button";
 import { Checkbox } from "primereact/checkbox";
-import { Chip } from "primereact/chip";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
 import { MultiSelect } from "primereact/multiselect";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { CategoryType } from "../../contexts/categories/CategoryType";
 import { useDepartments } from "../../contexts/DepartmentsContext";
-import { Tooltip } from "primereact/tooltip";
 import { Department } from "../../adapters/ApiDepartments";
 import { useCategoryModels } from "../../contexts/categories/CategoryNodesContext";
 

@@ -13,7 +13,10 @@
         }
     },
     "actions": {
-        "generate": "Generovat extrakci"
+        "create": {
+            "label": "Generovat extrakci",
+            "failure": "Generovani extrakce se nezdarilo"
+        }
     },
     "form": {
         "target-page-threshold": "Cílový počet stránek s rozptylem",

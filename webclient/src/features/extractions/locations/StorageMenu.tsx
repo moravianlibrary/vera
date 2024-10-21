@@ -5,7 +5,7 @@ import { Library, Storage } from "../../../adapters/ApiLocations";
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { Button } from "primereact/button";
 import LocationLibraryForm from "./LocationLibraryForm";
-import LabeledComponent from "../../../components/LabeledComponent";
+import LabeledComponent from "../../../components/wrappers/LabeledComponent";
 import { InputText } from "primereact/inputtext";
 import { useToast } from "../../../contexts/ToastContext";
 

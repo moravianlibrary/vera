@@ -2,7 +2,7 @@ import React from "react";
 import { LocationsProvider } from "../contexts/LocationsContext";
 import WithProviders from "../components/wrappers/WithProviders";
 import DataTableLayout from "../components/layouts/DataTableLayout";
-import SubNavigationMenu from "../components/SubNavigationMenu";
+import SubNavigationMenu from "../components/navigation/SubNavigationMenu";
 import SubNavigationExtractions from "../components/navigation/SubNavigationExtractions";
 import LocationsTable from "../features/extractions/LocationsTable";
 import LocationsMenuButton from "../features/extractions/locations/LocationsMenuButton";

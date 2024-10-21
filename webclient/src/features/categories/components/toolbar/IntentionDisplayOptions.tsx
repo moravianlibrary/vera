@@ -1,10 +1,10 @@
 import { Button } from "primereact/button";
 import React from "react";
-import LabeledComponent from "../../../../components/LabeledComponent";
+import LabeledComponent from "../../../../components/wrappers/LabeledComponent";
 import { useCategoryModels } from "../../../../contexts/categories/CategoryNodesContext";
 import { useTranslation } from "react-i18next";
 import { useIntentions } from "../../../../contexts/categories/IntentionsContext";
-import IntentionPicker from "../../../../components/pickers/IntentionPicker";
+import IntentionPicker from "../../../../components/selects/IntentionPicker";
 
 interface IntentionsDisplayOptionsProps {}
 

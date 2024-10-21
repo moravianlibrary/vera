@@ -162,6 +162,7 @@
         "settings": {
             "choose-identifier": "Vyber identifikátor",
             "choose-category": "Vyber kategorii",
+            "choose-category-required": "Vyberte prosím kategorii",
             "insert-another": "Vkládat další po úspěšném vložení",
             "extraction-priority": "Extrahovat s prioritou"
         },

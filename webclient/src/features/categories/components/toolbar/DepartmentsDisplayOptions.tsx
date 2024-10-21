@@ -1,8 +1,8 @@
 import { Button } from "primereact/button";
 import React from "react";
-import LabeledComponent from "../../../../components/LabeledComponent";
+import LabeledComponent from "../../../../components/wrappers/LabeledComponent";
 import { useTranslation } from "react-i18next";
-import DepartmentPicker from "../../../../components/pickers/DepartmentPicker";
+import DepartmentPicker from "../../../../components/selects/DepartmentPicker";
 import { useCategories } from "../../../../contexts/categories/CategoriesContext";
 
 interface DepartmentsDisplayOptionsProps {}

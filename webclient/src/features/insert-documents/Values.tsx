@@ -2,13 +2,11 @@ import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { TabView, TabPanel } from "primereact/tabview";
 import { ProgressBar } from "primereact/progressbar";
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import React from "react";
 import InsertDocumentsFiles from "./InsertDocumentsFiles";
-import { getIdentifierTypeLabel } from "../../types/Identifiers";
-import LabeledComponent from "../../components/LabeledComponent";
+import LabeledComponent from "../../components/wrappers/LabeledComponent";
 
 interface InsertDocumentsValuesProps {}
 

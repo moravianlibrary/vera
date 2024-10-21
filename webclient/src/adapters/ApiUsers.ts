@@ -1,5 +1,5 @@
-import axiosInstance, { ApiBase, authHeader } from "./ApiBase";
-import { ActionScope, ActionType } from "../types/ActionType";
+import axiosInstance, { ApiBase } from "./ApiBase";
+import { ActionType } from "../types/ActionType";
 
 interface UserSettings {
     [key: string]: any;
@@ -10,7 +10,6 @@ interface CurrentUser {
     settings: UserSettings;
     role_id: number;
     role_name: string;
-    // actions: (ActionType | [ActionType, ActionScope])[];
     actions: ActionType[];
     department_id: number | null;
     department_name: string | null;

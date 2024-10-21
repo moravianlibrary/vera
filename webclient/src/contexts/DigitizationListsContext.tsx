@@ -4,12 +4,13 @@ import React, {
     useState,
     ReactNode,
     useEffect,
+    useMemo,
 } from "react";
 import { useTranslation } from "react-i18next";
 import { DigitizationList } from "../adapters/ApiDigitizationLists";
 import ApiDigitizationLists from "../adapters/ApiDigitizationLists";
 import { EsQuery } from "../adapters/ApiTasks";
-import { confirmDialog } from "primereact/confirmdialog";
+import { useNotification } from "./NotificationContext";
 
 interface DigitizationListsContextProps {
     digitizationLists: DigitizationList[];
@@ -65,10 +66,10 @@ interface DigitizationListsProviderProps {
 export const DigitizationListsProvider: React.FC<
     DigitizationListsProviderProps
 > = ({ children }) => {
-    const api = new ApiDigitizationLists();
+    const api = useMemo(() => new ApiDigitizationLists(), []);
 
     const { t } = useTranslation();
-    // const { removeDocumentFromResults } = useDocuments();
+    const { showConfirmDialog } = useNotification();
 
     const [digitizationLists, setDigitizationLists] = useState<
         DigitizationList[]
@@ -161,17 +162,13 @@ export const DigitizationListsProvider: React.FC<
         queryParams: EsQuery,
         intentionId: number
     ) => {
-        confirmDialog({
-            message: t(
+        showConfirmDialog(
+            t(
                 `Are you sure you want to create digitization list from {{count}} selected documents?`,
                 { count }
             ),
-            header: t("Confirm action"),
-            icon: "pi pi-question",
-            acceptLabel: t("common.yes"),
-            rejectLabel: t("common.no"),
-            accept: () => createDigitizationList(queryParams, intentionId),
-        });
+            () => createDigitizationList(queryParams, intentionId)
+        );
     };
 
     const onInitiateListItemsAddition = (
@@ -179,18 +176,14 @@ export const DigitizationListsProvider: React.FC<
         queryParams: EsQuery,
         digitizationListId: number
     ) => {
-        confirmDialog({
-            message: t(
+        showConfirmDialog(
+            t(
                 `Are you sure you want to add {{count}} selected documents to digitization list {{digitizationListId}}?`,
                 { count, digitizationListId }
             ),
-            header: t("Confirm action"),
-            icon: "pi pi-question",
-            acceptLabel: t("common.yes"),
-            rejectLabel: t("common.no"),
-            accept: () =>
-                addDocumentsToDigitizationList(digitizationListId, queryParams),
-        });
+            () =>
+                addDocumentsToDigitizationList(digitizationListId, queryParams)
+        );
     };
 
     const onInitiateListItemsRemoval = (
@@ -198,21 +191,17 @@ export const DigitizationListsProvider: React.FC<
         queryParams: EsQuery,
         digitizationListId: number
     ) => {
-        confirmDialog({
-            message: t(
+        showConfirmDialog(
+            t(
                 `Are you sure you want to remove {{count}} selected documents from digitization list {{digitizationListId}}?`,
                 { count, digitizationListId }
             ),
-            header: t("Confirm action"),
-            icon: "pi pi-question",
-            acceptLabel: t("common.yes"),
-            rejectLabel: t("common.no"),
-            accept: () =>
+            () =>
                 removeDocumentsFromDigitizationList(
                     digitizationListId,
                     queryParams
-                ),
-        });
+                )
+        );
     };
 
     useEffect(() => {
@@ -225,7 +214,7 @@ export const DigitizationListsProvider: React.FC<
             .catch((error) => {
                 console.error(`Could not receive extractions: ${error}`);
             });
-    }, [page, pageSize]);
+    }, [page, pageSize, api]);
 
     const contextValue: DigitizationListsContextProps = {
         digitizationLists,

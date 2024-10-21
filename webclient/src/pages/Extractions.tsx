@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import ExtractionPropsMenu from "../features/extractions/GenerateExtractionMenu";
 import WithProviders from "../components/wrappers/WithProviders";
 import DataTableLayout from "../components/layouts/DataTableLayout";
-import SubNavigationMenu from "../components/SubNavigationMenu";
+import SubNavigationMenu from "../components/navigation/SubNavigationMenu";
 import OverlayFormLayout from "../components/layouts/OverlayFormLayout";
 import SubNavigationExtractions from "../components/navigation/SubNavigationExtractions";
 import { LocationsProvider } from "../contexts/LocationsContext";

@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": ["dom", "es2015"],
+    "lib": [
+      "dom",
+      "es2015"
+    ],
     "jsx": "react-jsx",
     "module": "esnext",
     "moduleResolution": "node",
@@ -10,8 +13,10 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "isolatedModules": true,
-	"downlevelIteration": true
+    "downlevelIteration": true
   },
-  "include": ["src/**/*.tsx", "src/**/*.ts"]
+  "include": [
+    "src/**/*.tsx",
+    "src/**/*.ts"
+  ]
 }
-

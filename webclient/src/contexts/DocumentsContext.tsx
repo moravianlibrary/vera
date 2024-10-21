@@ -208,4 +208,4 @@ const useDocuments = (): DocumentsContextProps => {
     return context;
 };
 
-export { DocumentsContext, DocumentsProvider, useDocuments };
+export { DocumentsProvider, useDocuments };

@@ -6,7 +6,7 @@ import {
     TreeSelectChangeEvent,
     TreeSelectSelectionKeysType,
 } from "primereact/treeselect";
-import { CategoryOption } from "../../../components/pickers/AssignableCategoryPicker";
+import { CategoryOption } from "../../selects/AssignableCategoryPicker";
 import { TreeNode } from "primereact/treenode";
 import { useRefinementList } from "react-instantsearch";
 import { useCategories } from "../../../contexts/categories/CategoriesContext";

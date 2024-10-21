@@ -4,7 +4,6 @@ import EsSearchBox from "../../components/elasticsearch/EsSearchBox";
 import EsSelectionMenu from "../../components/elasticsearch/EsSelectionMenu";
 import CatalogRecordsActionsMenuItems from "./CatalogRecordsActionsMenu";
 import { useCatalogRecords } from "../../contexts/CatalogRecordsContext";
-import { useTranslation } from "react-i18next";
 
 interface CatalogRecordsHeaderProps {}
 

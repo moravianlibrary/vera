@@ -13,7 +13,7 @@ interface DepartmentPickerProps {
 }
 
 const DepartmentPicker: React.FC<DepartmentPickerProps> = (props) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("departments");
     const { items } = useDepartments();
 
     return (
@@ -24,7 +24,7 @@ const DepartmentPicker: React.FC<DepartmentPickerProps> = (props) => {
                 options={items}
                 optionLabel="name"
                 onChange={(e) => props.onDepartmentChange(e.value)}
-                placeholder={t("Select department")}
+                placeholder={t("select-placeholder")}
             />
         </div>
     );

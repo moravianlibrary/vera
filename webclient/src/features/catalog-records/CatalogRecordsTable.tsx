@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { DataTable, DataTableRowEvent } from "primereact/datatable";
+import React from "react";
+import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
-import DataTablePaginator from "../../components/DataTablePaginator";
+import DataTablePaginator from "../../components/views/DataTablePaginator";
 import SkcValidityColumnBody from "./table-columns/SkcValidityColumnBody";
 import SkcSysnoColumnBody from "./table-columns/SkcSysnoColumnBody";
 import CnbSysnoColumnBody from "./table-columns/CnbSysnoColumnBody";

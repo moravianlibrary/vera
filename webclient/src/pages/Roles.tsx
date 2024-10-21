@@ -2,7 +2,7 @@ import "../styles/Access.css";
 import RolesTable from "../features/roles/RolesTable";
 import { RolesProvider } from "../contexts/RolesContext";
 import DataTableLayout from "../components/layouts/DataTableLayout";
-import SubNavigationMenu from "../components/SubNavigationMenu";
+import SubNavigationMenu from "../components/navigation/SubNavigationMenu";
 import SubNavigationAccess from "../components/navigation/SubNavigationAccess";
 import AddRoleMenu from "../features/roles/AddRoleMenu";
 

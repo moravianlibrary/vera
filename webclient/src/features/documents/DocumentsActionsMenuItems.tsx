@@ -1,4 +1,3 @@
-import React from "react";
 import { MenuItem } from "primereact/menuitem";
 import { useTranslation } from "react-i18next";
 import { useAccess } from "../../contexts/AccessContext";
@@ -6,14 +5,13 @@ import { ActionType } from "../../types/ActionType";
 import {
     CategoryOption,
     buildAssignableCategoriesOptionsTree,
-} from "../../components/pickers/AssignableCategoryPicker";
+} from "../../components/selects/AssignableCategoryPicker";
 import { useCategories } from "../../contexts/categories/CategoriesContext";
-import { confirmDialog } from "primereact/confirmdialog";
 import { useDocuments } from "../../contexts/DocumentsContext";
 import { TaskType } from "../../types/TaskType";
 import InitiateTaskStartItem from "../../components/menu-items/InitiateTaskStartItem";
 import { Badge } from "primereact/badge";
-import DigitizationListBox from "../../components/DigitizationListBox";
+import DigitizationListBox from "../../components/views/DigitizationListBox";
 import { useDigitizationLists } from "../../contexts/DigitizationListsContext";
 import { useIntentions } from "../../contexts/categories/IntentionsContext";
 

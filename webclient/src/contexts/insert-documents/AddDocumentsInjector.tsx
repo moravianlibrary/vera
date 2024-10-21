@@ -6,7 +6,6 @@ import ApiDocuments, {
 } from "../../adapters/ApiDocuments";
 import { AddDocumentsSettings } from "./InsertDocumentsContext";
 import AddDocumentResponseStatus from "../../types/AddDocumentResponseStatus";
-import { set } from "date-fns";
 
 interface IdentifierWithSettings extends Identifier {
     categoryId: number;
@@ -74,7 +73,7 @@ const useAddDocuments = (api: ApiDocuments, settings: AddDocumentsSettings) => {
                 setProcessedCount((prev) => prev + 1);
             }
         },
-        [settings, responses, setResponses, multipleIssuesDocuments]
+        [settings, setResponses, multipleIssuesDocuments, api]
     );
 
     const addDocuments = useCallback(
@@ -126,6 +125,7 @@ const useAddDocuments = (api: ApiDocuments, settings: AddDocumentsSettings) => {
             setMultipleIssuesDocuments,
             setResponses,
             setProcessedCount,
+            api,
         ]
     );
 

@@ -13,7 +13,7 @@ interface LocationStorageFormProps {
     onChangeStorage: (storage: Storage | null) => void;
 }
 
-export const LocationStorageForm: React.FC<LocationStorageFormProps> = ({
+const LocationStorageForm: React.FC<LocationStorageFormProps> = ({
     library,
     storage,
     onChangeStorage,

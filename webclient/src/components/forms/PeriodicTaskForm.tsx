@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { CronExpression, PeriodicTask } from "../../adapters/ApiPeriodicTasks";
-import TaskTypeSelect from "../pickers/TaskTypeSelect";
+import TaskTypeSelect from "../selects/TaskTypeSelect";
 import { useTranslation } from "react-i18next";
-import LabeledComponent from "../LabeledComponent";
+import LabeledComponent from "../wrappers/LabeledComponent";
 import EsQueryChips from "../elasticsearch/EsQueryChips";
 import CronExpressionForm from "./CronExpressionForm";
 import {

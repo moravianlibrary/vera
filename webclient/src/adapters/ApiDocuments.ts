@@ -1,7 +1,5 @@
 import AddDocumentResponseStatus from "../types/AddDocumentResponseStatus";
 import { DigitizationState } from "../types/DigitizationState";
-import { DocumentCreateResult } from "../types/DocumentCreateResult";
-import { DocumentField } from "../types/DocumentSearchField";
 import { IdentifierType } from "../types/IdentifierType";
 import { IssuanceType } from "../types/IssuanceType";
 import { MaterialType } from "../types/MaterialType";
@@ -15,57 +13,6 @@ interface Identifier {
 interface Frequency {
     frequency: string;
     date: string | null;
-}
-
-interface DocumentBase {
-    sysno: string;
-    volume: string | null;
-    barcode: string | null;
-
-    cnb: string | null;
-    isbn_issn: string | null;
-    signature: string | null;
-
-    material_type: MaterialType;
-    issuance_type: IssuanceType;
-    title: string;
-    digitization_state: DigitizationState;
-
-    year: string | null;
-    bundle: string | null;
-
-    pages_count_manual: number | null;
-    size: string | null;
-    locationUri: string | null;
-
-    publishers: string[];
-    publishing_places: string[];
-
-    publisher: string | null;
-    publishing_place: string | null;
-    publishing_year: string | null;
-    languages: string[] | null;
-
-    frequencies: Frequency[] | null;
-}
-
-interface Document extends DocumentBase {
-    id: number;
-    category_id: number | null;
-    category_name: string | null;
-
-    pages_count_catalog: number | null;
-    pages_count_predicted: number | null;
-    dedicated_scanner: string | null;
-
-    created_at: string;
-    creator: string;
-    department: string | null;
-
-    is_extractable: boolean;
-    extraction_id: number | null;
-    extractor: string | null;
-    extracted_at: string | null;
 }
 
 interface IndexDocument {
@@ -122,23 +69,6 @@ interface IndexDocument {
     frequencies: any;
 }
 
-interface DocumentsResponse {
-    documents: Document[];
-    num_found: number;
-}
-
-interface Issue {
-    type: IssuanceType;
-    barcode: string;
-    signature?: string | null;
-    year?: string | null;
-    volume?: string | null;
-    bundle?: string | null;
-    digitization_state: DigitizationState | null;
-    already_exists: boolean;
-    can_digitize: boolean;
-}
-
 interface CatalogIssueResponse {
     issuance_type: IssuanceType;
     barcode?: string | null;
@@ -168,10 +98,6 @@ interface CatalogDocumentResponse {
     has_valid_cnb: boolean;
 }
 
-interface CatalogDocument extends DocumentBase {
-    issues: Issue[];
-}
-
 interface AddDocumentResponse {
     identifier: Identifier;
     status: AddDocumentResponseStatus;
@@ -184,7 +110,7 @@ interface UpdateDocumentsOptions {
     pages_count_manual?: number;
 }
 
-class ApiDocuments extends ApiBase<Document> {
+class ApiDocuments extends ApiBase<IndexDocument> {
     constructor() {
         super("/documents", {
             disableCreate: true,
@@ -250,11 +176,6 @@ class ApiDocuments extends ApiBase<Document> {
 export default ApiDocuments;
 export type {
     Identifier,
-    DocumentBase,
-    Document,
-    Issue,
-    CatalogDocument,
-    DocumentsResponse,
     Frequency,
     IndexDocument,
     AddDocumentResponse,

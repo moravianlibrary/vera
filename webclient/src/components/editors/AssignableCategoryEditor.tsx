@@ -1,6 +1,6 @@
 import { ColumnEditorOptions } from "primereact/column";
 import React from "react";
-import AssignableCategoryPicker from "../pickers/AssignableCategoryPicker";
+import AssignableCategoryPicker from "../selects/AssignableCategoryPicker";
 
 interface AssignableCategoryEditorProps {
     options: ColumnEditorOptions;

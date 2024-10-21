@@ -14,7 +14,7 @@ import EsExtractionFacet from "../../components/elasticsearch/filters/EsExtracti
 
 interface DocumentsQueryRulesProps {}
 
-export const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
+const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
     const { t } = useTranslation("documents");
 
     return (

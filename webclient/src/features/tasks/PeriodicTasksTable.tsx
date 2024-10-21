@@ -3,7 +3,7 @@ import React from "react";
 import { usePeriodicTasks } from "../../contexts/PeriodicTasksContext";
 import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
-import DataTablePaginator from "../../components/DataTablePaginator";
+import DataTablePaginator from "../../components/views/DataTablePaginator";
 import EsQueryChips from "../../components/elasticsearch/EsQueryChips";
 import DeleteButton from "../../components/buttons/DeleteButton";
 

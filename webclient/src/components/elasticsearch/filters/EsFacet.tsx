@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import EsFilter from "./EsFilter";
 import { Checkbox } from "primereact/checkbox";
 import { RefinementListProps, useRefinementList } from "react-instantsearch";

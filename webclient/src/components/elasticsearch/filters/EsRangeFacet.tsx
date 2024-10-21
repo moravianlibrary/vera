@@ -1,14 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-    RangeInputProps,
-    useInstantSearch,
-    useRange,
-} from "react-instantsearch";
+import { RangeInputProps, useRange } from "react-instantsearch";
 import EsFilter from "./EsFilter";
-import { Slider, SliderChangeEvent } from "primereact/slider";
+import { SliderChangeEvent } from "primereact/slider";
 import { InputNumber } from "primereact/inputnumber";
 import { Button } from "primereact/button";
-import { FloatLabel } from "primereact/floatlabel";
 
 interface EsRangeFacetProps extends RangeInputProps {
     label: string;

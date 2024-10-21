@@ -1,8 +1,5 @@
-import { useEffect, useState } from "react";
-
 import { Button } from "primereact/button";
 import { Panel } from "primereact/panel";
-
 import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import DocumentIssueCard from "./DocumentIssueCard";
@@ -80,9 +77,9 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = () => {
 
     const getGoNextLabel = () => {
         if (nextIssuesDocument) {
-            return `${t("add.issues.next-document")} \"${truncateText(
+            return `${t("add.issues.next-document")} "${truncateText(
                 nextIssuesDocument.title
-            )}\"`;
+            )}"`;
         } else {
             return t("add.next-step");
         }

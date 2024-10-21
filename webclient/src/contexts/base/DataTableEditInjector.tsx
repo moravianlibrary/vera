@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { ApiBase } from "../../adapters/ApiBase";
-import { useTranslation } from "react-i18next";
 import { DataTableRowEditEvent } from "primereact/datatable";
 
 type ItemWithNullableId<T> = Omit<T, "id"> & {
@@ -31,7 +29,7 @@ const useDataTableEdit = <T extends { id: number }>(
     const addItem = useCallback(() => {
         setItems((prev) => [emptyItem, ...prev]);
         setEditingItems((prev) => [...prev, emptyItem]);
-    }, [items, editingItems, setEditingItems]);
+    }, [setEditingItems, emptyItem]);
 
     const editItem = useCallback(
         (itemId: number) => {
@@ -40,7 +38,7 @@ const useDataTableEdit = <T extends { id: number }>(
             if (!item) return;
             setEditingItems((prev) => [...prev, item]);
         },
-        [items, editingItems, setEditingItems]
+        [editingItems, items, setEditingItems]
     );
 
     const saveChanges = useCallback(
@@ -52,14 +50,14 @@ const useDataTableEdit = <T extends { id: number }>(
             }
             setEditingItems((prev) => prev.filter((i) => i.id !== itemId));
         },
-        [editingItems, setEditingItems]
+        [setEditingItems, createItem, updateItem]
     );
 
     const discardChanges = useCallback(
         (itemId: number | null) => {
             setEditingItems((prev) => prev.filter((i) => i.id !== itemId));
         },
-        [editingItems, setEditingItems]
+        [setEditingItems]
     );
 
     const onRowEditEvent = useCallback(
@@ -71,7 +69,7 @@ const useDataTableEdit = <T extends { id: number }>(
                 editItem(item.id);
             }
         },
-        [editingItems, editItem, discardChanges]
+        [editingItems, items, editItem, discardChanges]
     );
 
     useEffect(() => {

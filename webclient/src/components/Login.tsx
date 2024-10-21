@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 import { Button } from "primereact/button";
 import { useTranslation } from "react-i18next";
 import { useAccess } from "../contexts/AccessContext";
 import { ActionType } from "../types/ActionType";
-import DeveloperTools, { DeveloperToolsRef } from "./DeveloperTools";
+import DeveloperTools, { DeveloperToolsRef } from "./views/DeveloperTools";
 
 interface LoginProps {}
 

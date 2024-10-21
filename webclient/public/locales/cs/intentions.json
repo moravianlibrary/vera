@@ -1,7 +1,28 @@
 {
     "actions": {
-        "add": "Přidat zámer"
+        "add": "Přidat zámer",
+        "failure": {
+            "empty-name": "Jméno zámeru neměže být prázdne",
+            "invalid-page-count": "Cílový počet stránek musí být kladný",
+            "invalid-start-date": "Časové období zámeru musí začínat dnes nebo později",
+            "curr-start-date-change": "Začáteční datum aktuálního záměru nelze změnit",
+            "date-range-overlap": "Časové období zámeřů se nesmí překrývat",
+            "unique-name": "Jméno zámeru musí být jedinečný",
+            "create": "Vytvoření zámeru se nezdařilo",
+            "create-details": "Název: {{name}}, Cílový počet stran: {{count}}",
+            "update": "Aktualizace zámeru se nezdařila",
+            "update-details": "Název: {{name}}, Cílový počet stran: {{count}}",
+            "delete": "Odstraneni zámeru se nezdařilo"
+        },
+        "success": {
+            "create": "Zámer byl úspěšně vytvořen",
+            "create-details": "Název: {{name}}, Cílový počet stran: {{count}}",
+            "update": "Zámer byl úspěšně aktualizován",
+            "update-details": "Název: {{name}}, Cílový počet stran: {{count}}",
+            "delete": "Zámer byl úspěšně smazan"
+        }
     },
+    "select-placeholder": "Vyber záme",
     "form": {
         "label": {
             "name": "Jméno zámeru",

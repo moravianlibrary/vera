@@ -1,9 +1,9 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { ActionType } from "../types/ActionType";
-import Login from "./Login";
+import { ActionType } from "../../types/ActionType";
+import Login from "../Login";
 import { Toolbar } from "primereact/toolbar";
-import NavigationButtonGroup from "./navigation/NavigationButtonGroup";
+import NavigationButtonGroup from "./NavigationButtonGroup";
 
 interface NavigationMenuProps {}
 

@@ -5,7 +5,7 @@ import {
     usePagination,
 } from "react-instantsearch";
 import { EsQuery } from "../../adapters/ApiTasks";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 
 interface EsItemsPaginationProps<T> extends ItemsPaginationProps<T> {
     uiState: any;
@@ -17,10 +17,10 @@ const useEsPagination = (
     stateToQueryParams: (uiState: any) => EsQuery,
     stateToQueryRoute: (uiState: any) => EsQuery
 ) => {
-    const { uiState, indexUiState, results, refresh } = useInstantSearch();
+    const { uiState, results, refresh } = useInstantSearch();
     const { hits, hitsPerPage } = results;
     const { nbHits, currentRefinement, refine: setPage } = usePagination();
-    const { items: pageSizeOptions, refine: setPageSize } = useHitsPerPage({
+    const { refine: setPageSize } = useHitsPerPage({
         items: [
             { value: 10, label: "10" },
             { value: 15, label: "15" },
@@ -32,11 +32,11 @@ const useEsPagination = (
     });
     const memoizedQueryParams = useMemo(
         () => stateToQueryParams(uiState),
-        [uiState]
+        [uiState, stateToQueryParams]
     );
     const memoizedQueryRoute = useMemo(
         () => stateToQueryRoute(uiState),
-        [uiState]
+        [uiState, stateToQueryRoute]
     );
 
     const [queryParams, setQueryParams] =
@@ -59,8 +59,8 @@ const useEsPagination = (
         items: hits,
         numFound: nbHits,
         uiState,
-        queryParams: queryParams,
-        queryRoute: queryRoute,
+        queryParams,
+        queryRoute,
         refresh: refresh,
         page: currentRefinement + 1,
         setPage: (page: number) => setPage(page - 1),

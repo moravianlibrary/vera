@@ -1,8 +1,8 @@
 import { Button } from "primereact/button";
 import { SelectButton } from "primereact/selectbutton";
 import React from "react";
-import LabeledComponent from "../../../../components/LabeledComponent";
-import CategoryPicker from "../../../../components/pickers/CategoryPicker";
+import LabeledComponent from "../../../../components/wrappers/LabeledComponent";
+import CategoryPicker from "../../../../components/selects/CategoryPicker";
 import { useCategoryModels } from "../../../../contexts/categories/CategoryNodesContext";
 import { useTranslation } from "react-i18next";
 

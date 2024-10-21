@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocations } from "../../contexts/LocationsContext";
 import DeleteButton from "../../components/buttons/DeleteButton";
-import { LocationState } from "../../types/LocationState";
 import EditButton from "../../components/buttons/EditButton";
 import { Dialog } from "primereact/dialog";
 import LocationForm from "./locations/LocationForm";
@@ -12,7 +11,7 @@ import { Library, Location, Storage } from "../../adapters/ApiLocations";
 import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
 import { Tooltip } from "primereact/tooltip";
-import DataTablePaginator from "../../components/DataTablePaginator";
+import DataTablePaginator from "../../components/views/DataTablePaginator";
 
 interface LocationsTableProps {}
 
@@ -26,7 +25,7 @@ const compareLocations = (a: Location, b: Location): number => {
 
 const LocationsTable: React.FC<LocationsTableProps> & {
     Paginator: React.FC;
-} = ({}) => {
+} = () => {
     const { t } = useTranslation("locations");
     const { locations, deleteLocation } = useLocations();
 

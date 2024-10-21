@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { ManagementTasks, TaskType } from "../../types/TaskType";
 import { useState } from "react";
-import TaskTypeSelect from "../pickers/TaskTypeSelect";
-import LabeledComponent from "../LabeledComponent";
+import TaskTypeSelect from "../selects/TaskTypeSelect";
+import LabeledComponent from "../wrappers/LabeledComponent";
 import { Button } from "primereact/button";
 import { useTasks } from "../../contexts/TasksContext";
 

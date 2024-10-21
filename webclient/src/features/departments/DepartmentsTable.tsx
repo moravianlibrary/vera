@@ -10,7 +10,6 @@ import {
     DataTableEditingRows,
     DataTableValueArray,
 } from "primereact/datatable";
-import { textEditor } from "../../services/Editors";
 import { useDepartments } from "../../contexts/DepartmentsContext";
 import React from "react";
 import { Chips, ChipsChangeEvent } from "primereact/chips";
@@ -20,6 +19,7 @@ import { Department } from "../../adapters/ApiDepartments";
 import DeleteButton from "../../components/buttons/DeleteButton";
 import { ColumnGroup } from "primereact/columngroup";
 import { Row } from "primereact/row";
+import { textEditor } from "../../components/editors/ColumnEditors";
 
 interface DepartmentsTableProps {}
 
@@ -87,7 +87,7 @@ interface UsersEditorProps {
     options: ColumnEditorOptions;
 }
 
-export const UsersEditor: React.FC<UsersEditorProps> = ({ options }) => {
+const UsersEditor: React.FC<UsersEditorProps> = ({ options }) => {
     const { t } = useTranslation("departments");
     const { rowData, editorCallback } = options;
     const [selectedUsers, setSelectedUsers] = useState<string[]>(

@@ -1,15 +1,15 @@
 import { DataTable, DataTableRowEditEvent } from "primereact/datatable";
 import React, { useEffect, useState } from "react";
 import { useTasks } from "../../contexts/TasksContext";
-import ApiTasks, { Task, TaskItem } from "../../adapters/ApiTasks";
+import { Task, TaskItem } from "../../adapters/ApiTasks";
 import { Column } from "primereact/column";
 import { useTranslation } from "react-i18next";
 import { TaskState } from "../../types/TaskState";
-import { format, min } from "date-fns";
+import { format } from "date-fns";
 import { MultiSelect } from "primereact/multiselect";
 import { Button } from "primereact/button";
 import config from "../../config/config";
-import DataTablePaginator from "../../components/DataTablePaginator";
+import DataTablePaginator from "../../components/views/DataTablePaginator";
 import { TaskStateTag } from "../../components/tags/TaskStateTag";
 
 interface TasksTableProps {}
@@ -20,7 +20,7 @@ interface TaskItemsProps {
 
 const TasksTable: React.FC<TasksTableProps> & {
     Paginator: React.FC;
-} = ({}) => {
+} = () => {
     const { t } = useTranslation("tasks");
     const { tasks } = useTasks();
 
@@ -158,7 +158,7 @@ const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
     const { t } = useTranslation("tasks");
     const { getTaskItems } = useTasks();
 
-    const [items, setItems] = useState<TaskItem[]>([]);
+    // const [items, setItems] = useState<TaskItem[]>([]);
     const [itemsCount, setItemsCount] = useState<number>(0);
     const [showItems, setShowItems] = useState<TaskItem[]>([]);
     const [errorTypes, setErrorTypes] = useState<string[]>([]);
@@ -168,39 +168,39 @@ const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
     useEffect(() => {
         getTaskItems(task.id, page, 20)
             .then((taskItemsPage) => {
-                setItems(taskItemsPage.items);
+                // setItems(taskItemsPage.items);
                 setItemsCount(taskItemsPage.num_found);
                 setShowItems(taskItemsPage.items);
-                setErrorTypes([
-                    ...new Set(
-                        taskItemsPage.items
-                            .map((d) =>
-                                d.error_type ? d.error_type : "Without error"
-                            )
-                            .filter((t) => t)
-                    ),
-                ]);
+                // setErrorTypes([
+                //     ...new Set(
+                //         taskItemsPage.items
+                //             .map((d) =>
+                //                 d.error_type ? d.error_type : "without-error"
+                //             )
+                //             .filter((t) => t)
+                //     ),
+                // ]);
             })
             .catch((error) => {
                 console.error(`Could not receive task items: ${error}`);
             });
-    }, [page]);
+    }, [page, getTaskItems, task.id]);
 
-    useEffect(() => {
-        if (errorTypesFilter.length === 0) {
-            setShowItems(items);
-            return;
-        }
-        setShowItems(
-            items.filter((item) => {
-                return (
-                    (errorTypesFilter.includes("Without error") &&
-                        !item.error_type) ||
-                    errorTypesFilter.includes(item.error_type)
-                );
-            })
-        );
-    }, [errorTypesFilter]);
+    // useEffect(() => {
+    //     if (errorTypesFilter.length === 0) {
+    //         setShowItems(items);
+    //         return;
+    //     }
+    //     setShowItems(
+    //         items.filter((item) => {
+    //             return (
+    //                 (errorTypesFilter.includes("Without error") &&
+    //                     !item.error_type) ||
+    //                 errorTypesFilter.includes(item.error_type)
+    //             );
+    //         })
+    //     );
+    // }, [errorTypesFilter, items]);
 
     const errorTypeHeader = () => {
         return (

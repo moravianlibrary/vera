@@ -4,7 +4,7 @@ import { useLocations } from "../../../contexts/LocationsContext";
 import { Library } from "../../../adapters/ApiLocations";
 import { Dropdown, DropdownChangeEvent } from "primereact/dropdown";
 import { Button } from "primereact/button";
-import LabeledComponent from "../../../components/LabeledComponent";
+import LabeledComponent from "../../../components/wrappers/LabeledComponent";
 import { InputText } from "primereact/inputtext";
 import { useToast } from "../../../contexts/ToastContext";
 

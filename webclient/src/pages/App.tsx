@@ -14,7 +14,7 @@ import Tasks from "./Tasks";
 import { ActionType } from "../types/ActionType";
 import Home from "./Home";
 import { AccessProvider } from "../contexts/AccessContext";
-import NavigationMenu from "../components/NavigationMenu";
+import NavigationMenu from "../components/navigation/NavigationMenu";
 import ActionAccessRoute from "../components/access/ActionAccessRoute";
 import CatalogRecords from "./CatalogRecords";
 import WithProviders from "../components/wrappers/WithProviders";

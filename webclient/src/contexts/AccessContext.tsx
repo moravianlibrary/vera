@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "./ToastContext";
-import { ActionScope, ActionType } from "../types/ActionType";
+import { ActionType } from "../types/ActionType";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
-import keycloak, { keycloakInitOptions } from "../services/Keycloak";
+import keycloak, { keycloakInitOptions } from "../adapters/Keycloak";
 import ApiUsers, { CurrentUser } from "../adapters/ApiUsers";
 import { BaseProviderProps } from "./BaseContext";
 import { Category } from "../adapters/ApiCategories";
@@ -12,7 +12,7 @@ import { DigitizationList } from "../adapters/ApiDigitizationLists";
 import { Extraction } from "../adapters/ApiExtractions";
 import { Task } from "../adapters/ApiTasks";
 
-export type OwnedItem =
+type OwnedItem =
     | Category
     | IndexDocument
     | DigitizationList

@@ -11,9 +11,7 @@ import { IdentifierType } from "../../types/IdentifierType";
 import { useTranslation } from "react-i18next";
 import ApiDocuments, {
     AddDocumentResponse,
-    CatalogDocumentResponse,
     CatalogIssueResponse,
-    Identifier,
 } from "../../adapters/ApiDocuments";
 import { useToast } from "../ToastContext";
 import { FileUploadHandlerEvent } from "primereact/fileupload";
@@ -28,7 +26,6 @@ import useObjectiveSettings, {
 import useAddDocuments, {
     AddDocumentsInjectorProps,
 } from "./AddDocumentsInjector";
-import { set } from "date-fns";
 
 export interface AddDocumentsSettings {
     identifierType: IdentifierType;
@@ -68,13 +65,6 @@ export type AddDocumentResponses = Record<
     AddDocumentResponseStatus,
     AddDocumentResponse[]
 >;
-
-const generateEmptyResponses = (): AddDocumentResponses => {
-    return Object.values(AddDocumentResponseStatus).reduce((acc, status) => {
-        acc[status as AddDocumentResponseStatus] = [];
-        return acc;
-    }, {} as AddDocumentResponses);
-};
 
 interface InsertDocumentsContextProps
     extends ObjectiveSettingsInjectorProps<AddDocumentsSettings>,
@@ -424,7 +414,7 @@ export const InsertDocumentsProvider: React.FC<
         const documentId = issue.document_id!;
         api.update(documentId, updateDocument)
             .then((response) => {
-                if (response.data.pages_count_manual === pagesCount) {
+                if (response.data.page_count_manual === pagesCount) {
                     showToast("success", t("Pages count updated"), "");
                     setWithoutPageCount((prev) =>
                         prev.filter((d) => d[1].document_id !== documentId)

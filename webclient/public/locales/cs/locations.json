@@ -30,6 +30,7 @@
         "storage-name": "Jméno uložení",
         "placeholder": {
             "library": "Vybrat knihovnu",
+            "library-empty": "Vytvorit novou knihovnu",
             "storage": "Vybrat uložení",
             "location": "Vybrat lokaci"
         }

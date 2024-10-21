@@ -1,11 +1,11 @@
 import { Sidebar } from "primereact/sidebar";
 import React, { forwardRef, useImperativeHandle, useState } from "react";
-import EmulateActionsForm from "./forms/EmulateActionsForm";
-import { ActionType } from "../types/ActionType";
-import ApiUsers from "../adapters/ApiUsers";
+import EmulateActionsForm from "../forms/EmulateActionsForm";
+import { ActionType } from "../../types/ActionType";
+import ApiUsers from "../../adapters/ApiUsers";
 import { Button } from "primereact/button";
 import { useTranslation } from "react-i18next";
-import { useAccess } from "../contexts/AccessContext";
+import { useAccess } from "../../contexts/AccessContext";
 
 interface DeveloperToolsProps {}
 

@@ -2,39 +2,6 @@ import MarcFieldDifferenceType from "../types/MarcFieldDifferenceType";
 import { MaterialType } from "../types/MaterialType";
 import { ApiBase, ApiOptions, authHeader } from "./ApiBase";
 
-export enum Marc21DiffType {
-    MissingField = "MissingField",
-    ExtraField = "ExtraField",
-    DifferentValue = "DifferentValue",
-    Equal = "Equal",
-}
-
-interface Marc21Subfield {
-    code: string;
-    value: string;
-}
-
-interface Marc21Field {
-    tag: string;
-    control_field: boolean;
-    indicator1: string | null;
-    indicator2: string | null;
-    subfields: Marc21Subfield[];
-    data: string | null;
-}
-
-interface Marc21Diff {
-    type: Marc21DiffType;
-    field: Marc21Field;
-    value: string | null;
-}
-
-interface Marc21DiffRecord {
-    diffs: Marc21Diff[];
-    sysno1: string | null;
-    sysno2: string | null;
-}
-
 interface MarcSubfieldDifference {
     code: string;
     value: string | null;
@@ -140,8 +107,4 @@ export type {
     MarcFieldDifference,
     MarcRecord,
     Frequency,
-    Marc21Diff,
-    Marc21DiffRecord,
-    Marc21Field,
-    Marc21Subfield,
 };

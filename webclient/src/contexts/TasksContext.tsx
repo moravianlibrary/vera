@@ -4,12 +4,11 @@ import React, {
     useState,
     ReactNode,
     useEffect,
+    useMemo,
 } from "react";
 import ApiTasks, { EsQuery, Task, TaskItem } from "../adapters/ApiTasks";
 import { TaskType } from "../types/TaskType";
 import { useTranslation } from "react-i18next";
-import { confirmDialog } from "primereact/confirmdialog";
-import { useToast } from "./ToastContext";
 import Page from "../adapters/Page";
 import { useNotification } from "./NotificationContext";
 
@@ -41,7 +40,7 @@ interface TasksProviderProps {
 }
 
 export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
-    const api = new ApiTasks();
+    const api = useMemo(() => new ApiTasks(), []);
     const { t } = useTranslation("tasks");
     const { showSuccess, showConfirmDialog } = useNotification();
 
@@ -90,7 +89,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
             .catch((error) => {
                 console.error(error);
             });
-    }, [page, pageSize]);
+    }, [page, pageSize, api]);
 
     const contextValue: TasksContextProps = {
         tasks,

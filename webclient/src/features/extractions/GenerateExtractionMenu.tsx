@@ -3,13 +3,13 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Extraction } from "../../adapters/ApiExtractions";
 import { useExtractions } from "../../contexts/GeneratedExtractionsContext";
-import { AssignableCategoriesPicker } from "../../components/pickers/AssignableCategoryPicker";
-import LabeledComponent from "../../components/LabeledComponent";
+import { AssignableCategoriesPicker } from "../../components/selects/AssignableCategoryPicker";
+import LabeledComponent from "../../components/wrappers/LabeledComponent";
 import { Button } from "primereact/button";
-import { Library, Location, Storage } from "../../adapters/ApiLocations";
+import { Location } from "../../adapters/ApiLocations";
 import { CategoriesProvider } from "../../contexts/categories/CategoriesContext";
 import { IntentionsProvider } from "../../contexts/categories/IntentionsContext";
-import LocationsPicker from "../../components/pickers/LocationsPicker";
+import LocationsPicker from "../../components/selects/LocationsPicker";
 
 interface ExtractionPropsMenuProps {}
 

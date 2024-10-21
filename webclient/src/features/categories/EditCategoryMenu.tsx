@@ -8,7 +8,7 @@ import { Checkbox } from "primereact/checkbox";
 import { Department } from "../../adapters/ApiDepartments";
 import { useDepartments } from "../../contexts/DepartmentsContext";
 import { MultiSelect } from "primereact/multiselect";
-import LabeledComponent from "../../components/LabeledComponent";
+import LabeledComponent from "../../components/wrappers/LabeledComponent";
 import { Button } from "primereact/button";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
 import { CategoryType } from "../../contexts/categories/CategoryType";

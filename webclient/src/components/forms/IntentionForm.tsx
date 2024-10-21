@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { InputText } from "primereact/inputtext";
 import { IntentionCreate } from "../../adapters/ApiCategories";
-import LabeledComponent from "../LabeledComponent";
+import LabeledComponent from "../wrappers/LabeledComponent";
 import { useTranslation } from "react-i18next";
 import IntentionFactory from "../../data/factories/IntentionFactory";
 import { Button } from "primereact/button";

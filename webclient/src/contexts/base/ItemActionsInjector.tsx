@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import { ApiBase } from "../../adapters/ApiBase";
 import { useTranslation } from "react-i18next";
+import { useNotification } from "../NotificationContext";
 
 interface ItemActionsProps<T> {
     createItem: (item: Partial<T>) => void;
@@ -15,6 +16,7 @@ const useItemActions = <T extends Object>(
     translationNs: string
 ) => {
     const { t } = useTranslation(translationNs);
+    const { showSuccess, showFailure } = useNotification();
 
     const createItem = useCallback(
         (item: Partial<T>) => {
@@ -22,7 +24,7 @@ const useItemActions = <T extends Object>(
                 refreshResults();
             });
         },
-        [refreshResults]
+        [refreshResults, api]
     );
 
     const updateItem = useCallback(
@@ -31,7 +33,7 @@ const useItemActions = <T extends Object>(
                 refreshResults();
             });
         },
-        [refreshResults]
+        [refreshResults, api]
     );
 
     const deleteItem = useCallback(
@@ -40,7 +42,7 @@ const useItemActions = <T extends Object>(
                 refreshResults();
             });
         },
-        [refreshResults]
+        [refreshResults, api]
     );
 
     return {

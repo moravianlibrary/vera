@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
+import React from "react";
 import { CategoryModel } from "../../contexts/categories/CategoryModel";
-import { Tooltip } from "primereact/tooltip";
 import CategoryNodeEditMenu from "./CategoryActionsMenu";
 import { CategoryModelExtractionStats } from "./CategoriesChartNode";
 import CountInText from "../../components/views/CountInText";

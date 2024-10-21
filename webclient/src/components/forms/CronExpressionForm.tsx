@@ -4,7 +4,7 @@ import { CronExpression } from "../../adapters/ApiPeriodicTasks";
 import { InputNumber } from "primereact/inputnumber";
 import { Dropdown } from "primereact/dropdown";
 import { Button } from "primereact/button";
-import LabeledComponent from "../LabeledComponent";
+import LabeledComponent from "../wrappers/LabeledComponent";
 
 interface CronExpressionFormProps {
     expression: CronExpression;

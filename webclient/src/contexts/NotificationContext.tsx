@@ -13,6 +13,7 @@ interface NotificationContextProps {
         sticky?: boolean
     ) => void;
     showSuccess: (summary: string, detail?: string) => void;
+    showFailure: (summary: string, detail?: string) => void;
     showConfirmDialog: (message: string, acceptCallback: () => void) => void;
     showConfirmDangerDialog: (
         message: string,
@@ -55,6 +56,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         showToast("success", summary, detail);
     };
 
+    const showFailure = (summary: string, detail: string = "") => {
+        showToast("error", summary, detail);
+    };
+
     const showConfirmDialog = (message: string, acceptCallback: () => void) => {
         confirmDialog({
             message: message,
@@ -83,6 +88,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     const contextValue: NotificationContextProps = {
         showToast,
         showSuccess,
+        showFailure,
         showConfirmDialog,
         showConfirmDangerDialog,
     };

@@ -2,12 +2,12 @@ import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
-import React, { useEffect, useState } from "react";
-import AssignableCategoryPicker from "../../components/pickers/AssignableCategoryPicker";
-import RequiredValueBadge from "../../components/RequiredValueBadge";
-import RequiredValuesButton from "../../components/RequiredValuesButton";
-import LabeledComponent from "../../components/LabeledComponent";
-import ExtractionPrioritySelect from "../../components/pickers/ExtractionPrioritySelect";
+import React from "react";
+import AssignableCategoryPicker from "../../components/selects/AssignableCategoryPicker";
+import RequiredValueBadge from "../../components/wrappers/RequiredValueBadge";
+import RequiredValuesButton from "../../components/wrappers/RequiredValuesButton";
+import LabeledComponent from "../../components/wrappers/LabeledComponent";
+import ExtractionPrioritySelect from "../../components/selects/ExtractionPrioritySelect";
 import { IdentifierTypeSelectItems } from "../../data/factories/DropdownItemsFactory";
 
 interface AddDocumentsSettingsProps {}
@@ -30,7 +30,7 @@ const AddDocumentsSettings: React.FC<AddDocumentsSettingsProps> = () => {
             </LabeledComponent>
             <RequiredValueBadge
                 isValueSelected={!!settings.categoryId}
-                infoMessage={t("Please select a category")}
+                infoMessage={t("add.settings.choose-category-required")}
             >
                 <LabeledComponent label={t("add.settings.choose-category")}>
                     <AssignableCategoryPicker

@@ -1,9 +1,7 @@
-import { MessagesMessage } from "primereact/messages";
 import { MessageSeverity } from "primereact/api";
 import { MaterialType } from "../../types/MaterialType";
 import { IssuanceType } from "../../types/IssuanceType";
-import { TFunction } from "i18next";
-import { ActionSeverity, Severity } from "../../types/PrimeReactTypes";
+import { Severity } from "../../types/PrimeReactTypes";
 import {
     AddDocumentResponse,
     CatalogDocumentResponse,
@@ -14,18 +12,6 @@ import AddDocumentResponseStatus, {
     AddDocumentResponseSuccessStatus,
     AddDocumentResponseWarningStatus,
 } from "../../types/AddDocumentResponseStatus";
-import { AddDocumentResponses } from "../../contexts/insert-documents/InsertDocumentsContext";
-
-export function isSingleSuccessfulResult(
-    results: AddDocumentResponses
-): boolean {
-    return (
-        Object.values(results.Success).length === 1 &&
-        !Object.values(AddDocumentResponseStatus)
-            .filter((s) => s !== AddDocumentResponseStatus.Success)
-            .some((s) => Object.values(results[s]).length > 0)
-    );
-}
 
 export function areOnlySuccessfulResults(
     results: AddDocumentResponse[]
@@ -109,22 +95,6 @@ export function getResultSeverity(
     return MessageSeverity.ERROR;
 }
 
-export function messageSeverityToSeverity(
-    status: MessageSeverity
-): ActionSeverity {
-    switch (status) {
-        case MessageSeverity.SUCCESS:
-            return "success";
-        case MessageSeverity.WARN:
-            return "warn";
-        case MessageSeverity.ERROR:
-            return "error";
-        case MessageSeverity.INFO:
-            return "info";
-    }
-    return;
-}
-
 export function messageSeverityToActionSeverity(
     status: MessageSeverity
 ): Severity {
@@ -139,52 +109,4 @@ export function messageSeverityToActionSeverity(
             return "info";
     }
     return;
-}
-
-export function generateMessageForResponse(
-    document_response: AddDocumentResponse
-) {
-    return {
-        severity: getResultSeverity(document_response.status),
-        summary: document_response.status,
-        detail: "Fill detail",
-    };
-}
-
-function generateMessageForResult(
-    t: TFunction,
-    results: AddDocumentResponse[],
-    status: AddDocumentResponseStatus
-): MessagesMessage | null {
-    const documents = results.filter((r) => r.status === status);
-    if (documents.length === 0) {
-        return null;
-    }
-
-    if (documents.length === 1) {
-        return {
-            severity: getResultSeverity(documents[0].status),
-            summary: t(documents[0].status),
-            detail: "Fill detail",
-            sticky: true,
-            closable: false,
-        };
-    }
-
-    return {
-        severity: getResultSeverity(status),
-        summary: t(status),
-        detail: `${t("Count")}: ${documents.length}`,
-        sticky: true,
-        closable: false,
-    };
-}
-
-export function parseResultsToLocalizedMessages(
-    t: TFunction,
-    results: AddDocumentResponse[]
-): MessagesMessage[] {
-    return Object.values(AddDocumentResponseStatus)
-        .map((result) => generateMessageForResult(t, results, result))
-        .filter((message): message is MessagesMessage => message !== null);
 }

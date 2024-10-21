@@ -4,11 +4,9 @@ import { SelectButton, SelectButtonChangeEvent } from "primereact/selectbutton";
 import {
     ActionScope,
     ActionType,
-    Permission,
     ScopePermission,
     SimplePermission,
 } from "../../types/ActionType";
-import { ColumnEditorOptions } from "primereact/column";
 
 interface ScopePermissionColumnProps {
     permission: ScopePermission;
@@ -73,7 +71,7 @@ const Editor: React.FC<ScopePermissionColumnEditorProps> = ({
                 ? (curr.replace(permission, "") as ActionScope)
                 : ActionScope.None
         );
-    }, [permissions]);
+    }, [permissions, permission]);
 
     const handleChangeAction = (event: SelectButtonChangeEvent) => {
         const newScope: ActionScope = event.value || ActionScope.None;

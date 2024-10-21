@@ -6,7 +6,7 @@ import { useDigitizationLists } from "../../contexts/DigitizationListsContext";
 import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 import { ActionType } from "../../types/ActionType";
 import DeleteButton from "../../components/buttons/DeleteButton";
-import DataTablePaginator from "../../components/DataTablePaginator";
+import DataTablePaginator from "../../components/views/DataTablePaginator";
 import InternalLinkButton from "../../components/buttons/InternalLinkButton";
 import { formatDatetime } from "../../data/factories/DateFactory";
 

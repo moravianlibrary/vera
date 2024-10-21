@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { Menu } from "primereact/menu";
 import { Tooltip } from "primereact/tooltip";
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Chip } from "primereact/chip";
-import { Avatar } from "primereact/avatar";
 
 interface LocationPrefixFormProps {
     prefix: string;

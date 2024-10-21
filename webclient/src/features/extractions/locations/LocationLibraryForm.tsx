@@ -13,7 +13,7 @@ interface LocationLibraryFormProps {
     disabled?: boolean;
 }
 
-export const LocationLibraryForm: React.FC<LocationLibraryFormProps> = ({
+const LocationLibraryForm: React.FC<LocationLibraryFormProps> = ({
     library,
     onChangeLibrary,
     disabled,
@@ -75,7 +75,7 @@ export const LocationLibraryForm: React.FC<LocationLibraryFormProps> = ({
                 optionLabel="name"
                 onChange={(e) => handleChangeLibrary(e.value)}
                 disabled={disabled}
-                emptyMessage={t("Create new library")}
+                emptyMessage={t("form.placeholder.library-empty")}
             />
             <Button
                 icon="pi pi-plus"

@@ -8,7 +8,6 @@ import {
 import React from "react";
 import { ColumnGroup } from "primereact/columngroup";
 import { Row } from "primereact/row";
-import { textEditor } from "../../services/Editors.js";
 import {
     ActionType,
     PermissionTypes,
@@ -25,11 +24,7 @@ import DeleteButton from "../../components/buttons/DeleteButton";
 import RoleFactory from "../../data/factories/RoleFactory";
 import PermissionColumn from "./PermissionColumn";
 import ScopePermissionColumn from "./ScopePermissionColumn";
-
-export interface LabeledAction {
-    action: ActionType;
-    label: string;
-}
+import { textEditor } from "../../components/editors/ColumnEditors";
 
 interface RolesTableProps {}
 

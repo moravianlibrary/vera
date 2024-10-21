@@ -4,11 +4,12 @@ import React, {
     useState,
     ReactNode,
     useEffect,
+    useMemo,
 } from "react";
 import ApiExtractions, { Extraction } from "../adapters/ApiExtractions";
 import { useToast } from "./ToastContext";
 import { useTranslation } from "react-i18next";
-import withPagination from "./base/PaginationInjector";
+import { useNotification } from "./NotificationContext";
 
 interface ExtractionsContextProps {
     extractions: Extraction[];
@@ -35,10 +36,10 @@ interface ExtractionsProviderProps {
 export const GeneratedExtractionsProvider: React.FC<
     ExtractionsProviderProps
 > = ({ children }) => {
-    const api = new ApiExtractions();
+    const api = useMemo(() => new ApiExtractions(), []);
 
-    const { t } = useTranslation();
-    const showToast = useToast();
+    const { t } = useTranslation("extractions");
+    const { showFailure } = useNotification();
 
     const defaultProps: Partial<Extraction> = {
         include_categories: [],
@@ -65,11 +66,7 @@ export const GeneratedExtractionsProvider: React.FC<
                 error.response.status &&
                 error.response.status === 400
             ) {
-                showToast(
-                    "error",
-                    t("Extraction creation failed"),
-                    t(error.response.data.detail)
-                );
+                showFailure(t("actions.create.failure"));
             }
             console.error(error);
         } finally {
@@ -105,7 +102,7 @@ export const GeneratedExtractionsProvider: React.FC<
             .catch((error) => {
                 console.error(`Could not receive extractions: ${error}`);
             });
-    }, [page, pageSize]);
+    }, [page, pageSize, api]);
 
     const contextValue: ExtractionsContextProps = {
         extractions,
