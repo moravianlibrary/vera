@@ -134,6 +134,9 @@ class IndexCatalogRecord(BaseEsModel):
     cnb_difference_tag_facets: List[Keyword]
     has_valid_cnb: Boolean
 
+    has_documents: Boolean
+    has_active_documents: Boolean
+
     added_at: Date
     updated_at: Date
     indexed_at: Date
@@ -209,6 +212,8 @@ class IndexCatalogRecord(BaseEsModel):
                 data.cnb_difference
             ),
             has_valid_cnb=data.has_valid_cnb,
+            has_documents=data.has_documents,
+            has_active_documents=data.has_active_documents,
             added_at=data.added_at.isoformat(),
             updated_at=data.updated_at.isoformat(),
             indexed_at=VeraConfig.Timestamp.isoformat(),

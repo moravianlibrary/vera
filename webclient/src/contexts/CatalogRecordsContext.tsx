@@ -14,7 +14,6 @@ import useEsSelection, {
     EsItemsSelectionProps,
 } from "./base/EsSelectionInjector";
 import { stateToQuery, stateToRoute } from "../data/factories/EsQueriesFactory";
-import { booleanAttributes } from "../config/documents_index";
 import useDataTableExpandedRows, {
     DataTableExpandedRowsProps,
 } from "./base/DataTableExpandedRowsInjector";
@@ -39,19 +38,14 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
     const showToast = useToast();
     const { items, numFound, queryParams, ...restOfPaginationProps } =
         useEsPagination(
-            (uiState) =>
-                stateToQuery("catalog_records", booleanAttributes, uiState),
-            (uiState) =>
-                stateToRoute("catalog_records", booleanAttributes, uiState)
+            (uiState) => stateToQuery("catalog_records", uiState),
+            (uiState) => stateToRoute("catalog_records", uiState)
         );
 
     const approveDifference = (differenceId: number) => {
         api.approveDifference(differenceId).then((response) => {
             updateItem(response.data.id, response.data);
-            showToast(
-                "success",
-                t("actions.difference-approve-success")
-            );
+            showToast("success", t("actions.difference-approve-success"));
         });
     };
 

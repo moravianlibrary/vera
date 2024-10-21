@@ -95,7 +95,6 @@ const EsCategoryFacet: React.FC<EsFacetProps> = (props) => {
     };
 
     useEffect(() => {
-        console.log(items, isInitialized);
         if (!isInitialized) {
             setSelectedCategories(
                 items

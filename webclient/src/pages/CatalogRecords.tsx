@@ -11,7 +11,6 @@ import WithProviders from "../components/wrappers/WithProviders";
 import { EsDataTableProvider } from "../contexts/EsDataTableContext";
 import { TasksProvider } from "../contexts/TasksContext";
 import { routeToState, stateToRoute } from "../data/factories/EsQueriesFactory";
-import { booleanAttributes } from "../config/catalog_records_index";
 
 interface CatalogRecordsProps {}
 
@@ -28,17 +27,9 @@ const CatalogRecordsDiv: React.FC<CatalogRecordsProps> = () => {
             routing={{
                 stateMapping: {
                     stateToRoute: (state) =>
-                        stateToRoute(
-                            "catalog_records",
-                            booleanAttributes,
-                            state
-                        ),
+                        stateToRoute("catalog_records", state),
                     routeToState: (route) =>
-                        routeToState(
-                            "catalog_records",
-                            booleanAttributes,
-                            route
-                        ),
+                        routeToState("catalog_records", route),
                 },
             }}
         >

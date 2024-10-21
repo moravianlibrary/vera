@@ -13,7 +13,7 @@ import LabeledComponent from "../../components/LabeledComponent";
 interface InsertDocumentsValuesProps {}
 
 const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
     const {
         goToNextStep,
         goToPrevStep,
@@ -21,14 +21,8 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = () => {
         value,
         setValue,
         fileUploadValues,
-        clearFileUploadValues,
-        acceptInput,
-        resetInputs,
         processedCount,
         totalCount,
-        responses,
-        multipleIssuesDocuments,
-        resetResults,
     } = useInsertDocuments();
 
     const handleKeyPress = (event) => {
@@ -42,13 +36,13 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = () => {
             <TabView>
                 <TabPanel
                     className="flex flex-column gap-3"
-                    header={t("documents.add.values.text-input-header")}
+                    header={t("add.values.text-input-header")}
                     disabled={totalCount !== processedCount}
                 >
                     <LabeledComponent
-                        label={t(
-                            `enums.identifier-type.${settings.identifierType}`
-                        )}
+                        label={t(`identifier-type.${settings.identifierType}`, {
+                            ns: "types",
+                        })}
                     >
                         <InputText
                             autoFocus
@@ -60,7 +54,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = () => {
                     </LabeledComponent>
                 </TabPanel>
                 <TabPanel
-                    header={t("documents.add.values.file-input-header")}
+                    header={t("add.values.file-input-header")}
                     disabled={totalCount !== processedCount}
                 >
                     <InsertDocumentsFiles />
@@ -70,7 +64,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = () => {
                 <Button
                     icon="pi pi-caret-left"
                     outlined
-                    label={t("documents.add.prev-step")}
+                    label={t("add.prev-step")}
                     disabled={totalCount !== processedCount}
                     onClick={goToPrevStep}
                 />
@@ -92,7 +86,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = () => {
                     icon="pi pi-caret-right"
                     iconPos="right"
                     outlined
-                    label={t("documents.add.next-step")}
+                    label={t("add.next-step")}
                     disabled={
                         (value === "" && fileUploadValues.length === 0) ||
                         totalCount !== processedCount

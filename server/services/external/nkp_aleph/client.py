@@ -99,7 +99,7 @@ class NkpAlephClient:
         cnb: Optional[str],
         isxn: Optional[str],
         local_base: str,
-        retry: int = 0,
+        retry: int = 3,
     ) -> Optional[str]:
         document = (cnb and self.find_document_by_cnb(cnb, local_base)) or (
             isxn and self.find_document_by_isxn(isxn, local_base)
@@ -111,11 +111,9 @@ class NkpAlephClient:
             document = self.parse_multiple_results(document)
 
         skc_sysno = self.parse_skc_sysno_from_document(document)
-        if skc_sysno is None:
-            if retry < 3:
-                return self.find_nkp_sysno(cnb, isxn, local_base, retry + 1)
+        if skc_sysno is None and retry > 0:
             sleep(10)
-            return None
+            return self.find_nkp_sysno(cnb, isxn, local_base, retry - 1)
         return skc_sysno
 
     def skc_html_marc21_to_marc21(
@@ -172,7 +170,9 @@ class NkpAlephClient:
 
         return sysno, record
 
-    def get_marc21(self, sysno: str, local_base: str) -> Optional[str]:
+    def get_marc21(
+        self, sysno: str, local_base: str, retry: int = 3
+    ) -> Optional[Record]:
         response = requests.get(
             GET_MARC21.format(
                 NKP_BASE=NKP_BASE, LOCAL_BASE=local_base, SYSNO=sysno
@@ -183,11 +183,15 @@ class NkpAlephClient:
             return None
 
         html_marc21 = BeautifulSoup(response.content, "html.parser")
-        return (
-            self.skc_html_marc21_to_marc21(html_marc21)[1]
-            if html_marc21
-            else None
-        )
+        if not html_marc21:
+            return None
+
+        record = self.skc_html_marc21_to_marc21(html_marc21)[1]
+        if not record and retry > 0:
+            sleep(10)
+            self.get_marc21(sysno, local_base, retry - 1)
+
+        return record
 
     def get_record(
         self,
@@ -196,14 +200,19 @@ class NkpAlephClient:
         local_base: str,
     ) -> Optional[AlephRecord]:
         sysno = self.find_nkp_sysno(cnb, isxn, local_base)
-        return (
-            AlephRecord(sysno, self.get_marc21(sysno, local_base))
-            if sysno
-            else None
-        )
+        if sysno is None:
+            return None
+        record = self.get_marc21(sysno, local_base)
+        if record is None:
+            print(f"Could not download {local_base} for system number {sysno}")
+        return AlephRecord(sysno, record) if sysno else None
 
-    def get_skc_record(self, cnb: Optional[str], isxn: Optional[str]):
+    def get_skc_record(
+        self, cnb: Optional[str], isxn: Optional[str]
+    ) -> Optional[AlephRecord]:
         return self.get_record(cnb, isxn, SKC_LOCAL_BASE)
 
-    def get_cnb_record(self, cnb: Optional[str], isxn: Optional[str]):
+    def get_cnb_record(
+        self, cnb: Optional[str], isxn: Optional[str]
+    ) -> Optional[AlephRecord]:
         return self.get_record(cnb, isxn, CNB_LOCAL_BASE)

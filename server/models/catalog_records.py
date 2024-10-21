@@ -155,6 +155,14 @@ class CatalogRecord(BaseModel):
         return self.language != CZECH_LANGUAGE or self.cnb_sysno is not None
 
     @hybrid_property
+    def has_documents(self) -> bool:
+        return bool(self.documents)
+
+    @hybrid_property
+    def has_active_documents(self) -> bool:
+        return any(d.digitization_list_id is None for d in self.documents)
+
+    @hybrid_property
     def barcodes(self) -> List[str]:
         return [barcode.barcode for barcode in self.record_barcodes]
 

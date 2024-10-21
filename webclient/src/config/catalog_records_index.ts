@@ -29,6 +29,8 @@ const catalog_records_index_settings = {
         "cnb_record",
         "cnb_difference",
         "has_valid_cnb",
+        "has_documents",
+        "has_active_documents",
         "added_at",
         "updated_at",
         "indexed_at",
@@ -48,11 +50,13 @@ const catalog_records_index_settings = {
         _non_valid_first: [
             { field: "has_valid_main_record", order: "asc" },
             { field: "has_valid_cnb", order: "asc" },
+            { field: "has_active_documents", order: "desc" },
             { field: "indexed_at", order: "desc" },
         ],
         _valid_first: [
             { field: "has_valid_main_record", order: "desc" },
             { field: "has_valid_cnb", order: "desc" },
+            { field: "has_active_documents", order: "desc" },
             { field: "indexed_at", order: "desc" },
         ],
         _newest: { field: "added_at", order: "desc" },
@@ -60,68 +64,91 @@ const catalog_records_index_settings = {
     },
     facet_attributes: [
         {
+            attribute: "has_documents",
+            field: "has_documents",
+            type: "numeric",
+            filterQuery: filterBooleanQuery,
+            stateAs: "boolean",
+            translateAs: "boolean",
+        },
+        {
+            attribute: "has_active_documents",
+            field: "has_active_documents",
+            type: "numeric",
+            filterQuery: filterBooleanQuery,
+            stateAs: "boolean",
+            translateAs: "boolean",
+        },
+        {
             attribute: "has_valid_main_record",
             field: "has_valid_main_record",
             type: "numeric",
             filterQuery: filterBooleanQuery,
+            stateAs: "boolean",
+            translateAs: "boolean",
         },
         {
             attribute: "skc_sysno_resolved",
             field: "skc_sysno_resolved",
             type: "numeric",
             filterQuery: filterBooleanQuery,
+            stateAs: "boolean",
+            translateAs: "boolean",
         },
         {
             attribute: "has_valid_cnb",
             field: "has_valid_cnb",
             type: "numeric",
             filterQuery: filterBooleanQuery,
+            stateAs: "boolean",
+            translateAs: "boolean",
         },
         {
             attribute: "cnb_sysno_resolved",
             field: "cnb_sysno_resolved",
             type: "numeric",
             filterQuery: filterBooleanQuery,
+            stateAs: "boolean",
+            translateAs: "boolean",
         },
         {
             attribute: "material_type",
             field: "material_type",
             type: "string",
+            translateAs: "type",
+            tType: "material-type",
         },
         {
             attribute: "skc_difference_type_facets",
             field: "skc_difference_type_facets",
             type: "string",
+            translateAs: "structural",
         },
         {
             attribute: "skc_difference_tag_facets",
             field: "skc_difference_tag_facets",
             type: "string",
+            translateAs: "text",
         },
         {
             attribute: "cnb_difference_type_facets",
             field: "cnb_difference_type_facets",
             type: "string",
+            translateAs: "structural",
         },
         {
             attribute: "cnb_difference_tag_facets",
             field: "cnb_difference_tag_facets",
             type: "string",
+            translateAs: "text",
         },
         {
             attribute: "language",
             field: "language",
             type: "string",
+            translateAs: "text",
         },
     ],
 };
 
-const booleanAttributes = [
-    "has_valid_main_record",
-    "has_valid_cnb",
-    "skc_sysno_resolved",
-    "cnb_sysno_resolved",
-];
-
 export default catalog_records_index_settings;
-export { booleanAttributes };

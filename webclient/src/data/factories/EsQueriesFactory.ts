@@ -1,4 +1,4 @@
-import { EsQuery } from "../../adapters/ApiTasks";
+import { IndexSettingsDispatcher } from "../../config/elasticsearch";
 
 function filterBooleanQuery(field: string, value: string) {
     return {
@@ -26,7 +26,10 @@ function sortFacetDescByKey(field, size) {
     };
 }
 
-function stateToQuery(indexName, booleanAttributes, uiState) {
+function stateToQuery(indexName, uiState) {
+    const stateAsBoolean = IndexSettingsDispatcher[indexName].facet_attributes
+        .filter((fa) => fa.stateAs === "boolean")
+        .map((fa) => fa.attribute);
     const indexUiState = uiState[indexName] || {};
 
     return {
@@ -34,7 +37,7 @@ function stateToQuery(indexName, booleanAttributes, uiState) {
         query: indexUiState.query,
         ...Object.keys(indexUiState.refinementList || {}).reduce((acc, key) => {
             acc[key] = (
-                booleanAttributes.includes(key)
+                stateAsBoolean.includes(key)
                     ? indexUiState.refinementList[key].map((v) =>
                           v === "1" ? "true" : "false"
                       )
@@ -49,15 +52,19 @@ function stateToQuery(indexName, booleanAttributes, uiState) {
     };
 }
 
-function stateToRoute(indexName, booleanAttributes, uiState) {
+function stateToRoute(indexName, uiState) {
     return {
-        ...stateToQuery(indexName, booleanAttributes, uiState),
+        ...stateToQuery(indexName, uiState),
         page: uiState[indexName] && uiState[indexName].page,
         page_size: uiState[indexName] && uiState[indexName].hitsPerPage,
     };
 }
 
-function routeToState(indexName, booleanAttributes, routeState) {
+function routeToState(indexName, routeState) {
+    const stateAsBoolean = IndexSettingsDispatcher[indexName].facet_attributes
+        .filter((fa) => fa.stateAs === "boolean")
+        .map((fa) => fa.attribute);
+
     return {
         [indexName]: {
             query: routeState.query,
@@ -71,7 +78,7 @@ function routeToState(indexName, booleanAttributes, routeState) {
                     !/^\d+:\d+|\d+:|:\d+$/.test(routeState[key])
                 ) {
                     const values = routeState[key].split(",");
-                    acc[key] = booleanAttributes.includes(key)
+                    acc[key] = stateAsBoolean.includes(key)
                         ? values.map((v) => (v === "true" ? "1" : "0"))
                         : values;
                 }

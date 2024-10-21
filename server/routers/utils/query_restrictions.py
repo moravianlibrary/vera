@@ -1,4 +1,4 @@
-from typing import Dict, Generator, List
+from typing import Dict, Generator, List, Optional
 from schemas import CurrentUser
 from datatypes import ActionType, ElasticsearchParams
 
@@ -24,7 +24,7 @@ def restrict_edit_query_params(
         return query_params
     if user.has_action(ActionType.EditDatatableDepartment):
         return restrict_query_params_for_categories(
-            query_params, user.department_categories_ids
+            query_params, user.department_categories_ids, user.username
         )
     if user.has_action(ActionType.EditDatatableOwn):
         return restrict_query_params_for_username(query_params, user.username)
@@ -74,22 +74,36 @@ def restrict_query_params_for_username(
 
 def restrict_query_params_for_categories(
     query_params: Dict[str, any],
-    category_ids: List[int],
+    category_ids: Optional[List[int]],
     username: str,
 ) -> Generator[Dict, None, None]:
-    categories_restriction = {
-        "nested": {
-            "path": "category_path",
-            "query": {"terms": {"category_path.category_id": category_ids}},
-        }
-    }
     username_restriction = {"term": {"added_by": username}}
+    if category_ids:
+        categories_restriction = {
+            "nested": {
+                "path": "category_path",
+                "query": {
+                    "terms": {"category_path.category_id": category_ids}
+                },
+            }
+        }
+        return restrict_query_params(
+            query_params,
+            restriction_clause={
+                "bool": {
+                    "should": [
+                        categories_restriction,
+                        username_restriction,
+                    ],
+                    "minimum_should_match": 1,
+                }
+            },
+        )
     return restrict_query_params(
         query_params,
         restriction_clause={
             "bool": {
                 "should": [
-                    categories_restriction,
                     username_restriction,
                 ],
                 "minimum_should_match": 1,

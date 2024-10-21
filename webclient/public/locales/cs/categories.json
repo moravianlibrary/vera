@@ -22,6 +22,7 @@
     },
     "all-categories": "Všechny kategorie",
     "actions": {
+        "options": "Možnosti",
         "show-in-documents": "Zobrazit v dokumentech",
         "category-options": "Možnosti kategorie",
         "edit": "Upravit kategorii",

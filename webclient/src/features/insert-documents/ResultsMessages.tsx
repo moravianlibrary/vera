@@ -14,7 +14,7 @@ interface AddDocumentResultsMessagesProps {}
 const AddDocumentResultsMessages: React.FC<
     AddDocumentResultsMessagesProps
 > = ({}) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("types");
     const { responses, withoutPageCount } = useInsertDocuments();
 
     const messages = useRef<Messages>(null);
@@ -42,7 +42,7 @@ const AddDocumentResultsMessages: React.FC<
             .filter((s) => perStatusSummary[s])
             .map((s) => ({
                 severity: getResponseMessageSeverity(s),
-                summary: t(`documents.add.results.status.${s}`, {
+                summary: t(`add-documents-response-status.${s}`, {
                     count:
                         perStatusSummary[s] instanceof Object
                             ? 1
@@ -59,7 +59,7 @@ const AddDocumentResultsMessages: React.FC<
         if (withoutPageCount.length > 0) {
             displayMessages.push({
                 severity: "info",
-                summary: t("documents.add.results.status.without-page-count", {
+                summary: t("add-documents-response-status.without-page-count", {
                     count: withoutPageCount.length,
                 }),
                 sticky: true,

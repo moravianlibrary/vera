@@ -43,6 +43,14 @@ const CatalogRecordsFacetsBar: React.FC<CatalogRecordsFacetsBarProps> = () => {
             facets={
                 <Fragment>
                     <EsBooleanFacet
+                        attribute="has_documents"
+                        label={t("facets.has-documents")}
+                    />
+                    <EsBooleanFacet
+                        attribute="has_active_documents"
+                        label={t("facets.has-active-documents")}
+                    />
+                    <EsBooleanFacet
                         attribute="has_valid_main_record"
                         label={t("facets.has-valid-main-record")}
                     />
@@ -86,6 +94,7 @@ const CatalogRecordsFacetsBar: React.FC<CatalogRecordsFacetsBarProps> = () => {
                     />
                 </Fragment>
             }
+            queryParamsIndexName="catalog_records"
         />
     );
 };

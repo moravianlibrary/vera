@@ -3,6 +3,7 @@
     "num-selected": "Počet vybráných dokumentů: {{count}}",
     "add-documents": "Přidat dokumenty",
     "properties": {
+        "identifier": "Identifikátor",
         "id": "ID",
         "sysno": "Systémové číslo",
         "barcode": "Čárový kód",
@@ -18,6 +19,7 @@
         "isxn": "ISXN",
         "added_at": "Přidáno",
         "added_by": "Přidal",
+        "category": "Kategorie",
         "category_path": "Kategorie",
         "skc_sysno": "SKC systémové číslo",
         "has_valid_main_record": "Záznam je validný",
@@ -34,6 +36,7 @@
         "digitization_list_id": "ID seznamu digitalizace",
         "material_type": "Typ materialu",
         "issuance_type": "Typ vydáni",
+        "type": "Typ dokumentu",
         "title": "Název",
         "size": "Velikost",
         "location_uri": "Adresa",
@@ -75,41 +78,27 @@
         }
     },
     "query-params": {
-        "query": "Vyhledávaní: {{value}}",
         "all": "Všechny dokumenty",
-        "is_extractable": {
+        "is-extractable": {
             "true": "Může být extrahovaný",
             "false": "Nemůže být extrahovaný"
         },
-        "has_valid_main_record": {
+        "has-valid-main-record": {
             "true": "Záznam je validný",
             "false": "Záznam není validný"
         },
-        "has_valid_cnb": {
+        "has-valid-cnb": {
             "true": "ČNB je validné",
             "false": "ČNB není validné"
         },
-        "digitization_state": {
-            "NotDigitized": "Nedigitalizováno",
-            "Planned": "Plánováno",
-            "InProgress": "Probíhá",
-            "Finished": "Dokončeno"
-        },
-        "material_type": {
-            "Book": "Monografie",
-            "ContinuingResource": "Periodikum",
-            "Map": "Mapa",
-            "Music": "Hudba",
-            "Other": "Ostatní"
-        },
-        "issuance_type": {
-            "Volume": "Ročník",
-            "Unit": "Vydáni",
-            "Bundle": "Svazek čísel"
-        },
-        "added_by": "Přidal: {{value}}",
-        "category_id": "Id kategorie: {{value}}",
-        "digitization_list_id": "Id seznamu digitalizace: {{value}}"
+        "digitization-state": "Stav digitalizace: {{value}}",
+        "material-type": "Typ materiálu: {{value}}",
+        "issuance-type": "Typ vydáni: {{value}}",
+        "added-by": "Přidal: {{value}}",
+        "category-ids": "Id kategorie: {{value}}",
+        "extraction-ids": "Id extrakce: {{value}}",
+        "digitization-list-id": "Id seznamu digitalizace: {{value}}",
+        "page-count": "Počet stran: {{value}}"
     },
     "sort-by": {
         "last-edited": "Poslední editace",
@@ -177,38 +166,29 @@
         },
         "values": {
             "text-input-header": "Hodnotou",
-            "file-input-header": "Ze souborů"
+            "file-input-header": "Ze souborů",
+            "select-file": "Vybrat",
+            "upload-file": "Nahrát",
+            "filename": "Název souboru",
+            "value": "Hodnota",
+            "identifier": "Identifikátor"
+        },
+        "issues": {
+            "prev-document": "Předchozý dokument",
+            "next-document": "Nasledující dokument",
+            "issues-selection": "Výběr vydání",
+            "editions": "Edice",
+            "volumes": "Ročníky",
+            "bundles": "Svazky"
         },
         "results": {
             "insert-another": "Vložit další",
             "show-details": "Zobrazit detaily",
+            "details": "Detaily vkládání",
+            "result": "Výsledek",
             "finish": "Skončit",
             "show-set-page-count": "Zobrazit nastaveni počtu stran",
-            "accept-set-page-count": "Nastavit počty stran",
-            "status": {
-                "AlephNotAvailable": "Chyba při připojování katalogu",
-                "AlephRequestFailed": "Chyba při zpracování odpovědi katalogu",
-                "InvalidSysno": "Neplatné systémové číslo",
-                "InvalidSysnoBase": "Neplatný základ systémového čísla",
-                "AlephRecordNotFound_one": "Dokument nenalezen v katalogu",
-                "AlephRecordNotFound_few": "{{count}} dokumeny nenalezeny v katalogu",
-                "AlephRecordNotFound_other": "{{count}} dokumentů nenalezenych v katalogu",
-                "MultipleAlephRecordsFound": "Více než jeden dokument nalezen v katalogu",
-                "InvalidAlephRecord": "Neplatný zaznam v katalogu",
-                "InvalidDigitizationState": "Neplatný stav digitalizace",
-                "UnknownError": "Neznámá chyba",
-                "DigitizationForbidden": "Digitizace dokumentu je zakázána",
-                "AlreadyDigitized": "Dokument již digitalizován",
-                "DigitizationInProgress": "Digitalizace dokumentu probíhá",
-                "DigitizationPlanned": "Digitalizace dokumentu naplánována",
-                "AllIssuesProcessed": "Všechny vydání už byly zpracovány",
-                "UniqueViolation": "Dokument s rovnakými identifikátormi je již v databázi",
-                "MultipleIssues": "Dokument obsahuje více nespracovaných vydání",
-                "Success": "Dokument byl úspěšně přidán",
-                "Success_few": "{{count}} dokumenty byly úspěšně přidány",
-                "Success_other": "{{count}} dokumentů byl úspěšně přidán",
-                "without-page-count": "{{count}} dokumentů nema nastaven počet stran"
-            }
+            "accept-set-page-count": "Nastavit počty stran"
         }
     }
 }

@@ -26,6 +26,7 @@ enum ActionType {
 
     EditAccess = "EditAccess",
     StopEmulatingAccess = "StopEmulatingAccess",
+    EmulateAccess = "EmulateAccess",
 
     Extract = "Extract",
     AdminExtractions = "AdminExtractions",

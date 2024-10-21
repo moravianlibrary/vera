@@ -83,13 +83,15 @@ const RolesTable: React.FC<RolesTableProps> = (props) => {
                             key={index}
                             permission={permission}
                             scopes={ValidScopesDispatcher(permission)}
-                            options={options}
+                            permissions={options.value}
+                            editorCallback={options.editorCallback!}
                         />
                     ) : (
                         <PermissionColumn.Editor
                             key={index}
                             permission={permission}
-                            options={options}
+                            permissions={options.value}
+                            editorCallback={options.editorCallback!}
                         />
                     );
                 })}

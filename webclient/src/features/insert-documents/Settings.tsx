@@ -4,8 +4,6 @@ import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
 import React, { useEffect, useState } from "react";
 import AssignableCategoryPicker from "../../components/pickers/AssignableCategoryPicker";
-import { useToast } from "../../contexts/ToastContext";
-import { IdentifierType } from "../../types/IdentifierType";
 import RequiredValueBadge from "../../components/RequiredValueBadge";
 import RequiredValuesButton from "../../components/RequiredValuesButton";
 import LabeledComponent from "../../components/LabeledComponent";
@@ -15,15 +13,13 @@ import { IdentifierTypeSelectItems } from "../../data/factories/DropdownItemsFac
 interface AddDocumentsSettingsProps {}
 
 const AddDocumentsSettings: React.FC<AddDocumentsSettingsProps> = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
     const { goToNextStep, settings, setSettingsProperty } =
         useInsertDocuments();
 
     return (
         <div className="flex flex-column gap-3">
-            <LabeledComponent
-                label={t("documents.add.settings.choose-identifier")}
-            >
+            <LabeledComponent label={t("add.settings.choose-identifier")}>
                 <Dropdown
                     options={IdentifierTypeSelectItems()}
                     value={settings.identifierType}
@@ -36,9 +32,7 @@ const AddDocumentsSettings: React.FC<AddDocumentsSettingsProps> = () => {
                 isValueSelected={!!settings.categoryId}
                 infoMessage={t("Please select a category")}
             >
-                <LabeledComponent
-                    label={t("documents.add.settings.choose-category")}
-                >
+                <LabeledComponent label={t("add.settings.choose-category")}>
                     <AssignableCategoryPicker
                         category_id={settings.categoryId}
                         callback={(categoryId) =>
@@ -47,9 +41,7 @@ const AddDocumentsSettings: React.FC<AddDocumentsSettingsProps> = () => {
                     />
                 </LabeledComponent>
             </RequiredValueBadge>
-            <LabeledComponent
-                label={t("documents.add.settings.insert-another")}
-            >
+            <LabeledComponent label={t("add.settings.insert-another")}>
                 <Checkbox
                     checked={settings.insertAnother}
                     onChange={(e) =>
@@ -57,9 +49,7 @@ const AddDocumentsSettings: React.FC<AddDocumentsSettingsProps> = () => {
                     }
                 />
             </LabeledComponent>
-            <LabeledComponent
-                label={t("documents.add.settings.extraction-priority")}
-            >
+            <LabeledComponent label={t("add.settings.extraction-priority")}>
                 <ExtractionPrioritySelect
                     value={settings.extractionPriority}
                     onValueChange={(priority) =>
@@ -72,7 +62,7 @@ const AddDocumentsSettings: React.FC<AddDocumentsSettingsProps> = () => {
                     icon="pi pi-caret-right"
                     iconPos="right"
                     outlined
-                    label={t("documents.add.next-step")}
+                    label={t("add.next-step")}
                     onClick={goToNextStep}
                     requiredValues={[
                         { name: "categoryId", value: settings.categoryId },

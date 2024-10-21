@@ -9,6 +9,8 @@ import DifferentValueDifference from "./marc-difference/DifferentValueDifference
 import { Button } from "primereact/button";
 import { useCatalogRecords } from "../../contexts/CatalogRecordsContext";
 import { formatDatetime } from "../../data/factories/DateFactory";
+import ActionAccessComponent from "../../components/access/ActionAccessComponent";
+import { ActionType } from "../../types/ActionType";
 
 interface CatalogRecordsDifferencesProps {
     difference: MarcFieldDifference;
@@ -49,14 +51,16 @@ const CatalogRecordsDifference: React.FC<CatalogRecordsDifferencesProps> = ({
 
     const approveButton = () => {
         return (
-            <Button
-                className="h-2rem"
-                outlined
-                rounded
-                icon="pi pi-check"
-                label={t("actions.action-approve-difference")}
-                onClick={() => approveDifference(difference.id)}
-            />
+            <ActionAccessComponent action={ActionType.ReviewCatalogRecords}>
+                <Button
+                    className="h-2rem"
+                    outlined
+                    rounded
+                    icon="pi pi-check"
+                    label={t("actions.action-approve-difference")}
+                    onClick={() => approveDifference(difference.id)}
+                />
+            </ActionAccessComponent>
         );
     };
 

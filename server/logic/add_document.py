@@ -106,9 +106,17 @@ class AddDocumentPreprocessor:
                 AddDocumentResponseStatus.AllIssuesProcessed,
             )
         elif len(not_digitized_issues) == 0:
+            if any(
+                issue.digitization_state == DigitizationState.Unknown
+                for issue in active_issues
+            ):
+                return (
+                    catalog_document,
+                    AddDocumentResponseStatus.InvalidDigitizationState,
+                )
             return (
                 catalog_document,
-                AddDocumentResponseStatus.AllIssuesProcessed,
+                AddDocumentResponseStatus.AlreadyDigitized,
             )
         else:
             add_issue = active_issues[0]

@@ -82,60 +82,77 @@ const documents_index_settings = {
             field: "is_extractable",
             type: "numeric",
             filterQuery: filterBooleanQuery,
+            stateAs: "boolean",
+            translateAs: "boolean",
         },
         {
             attribute: "has_valid_main_record",
             field: "has_valid_main_record",
             type: "numeric",
             filterQuery: filterBooleanQuery,
+            stateAs: "boolean",
+            translateAs: "boolean",
         },
         {
             attribute: "has_valid_cnb",
             field: "has_valid_cnb",
             type: "numeric",
             filterQuery: filterBooleanQuery,
+            stateAs: "boolean",
+            translateAs: "boolean",
         },
         {
             attribute: "digitization_state",
             field: "digitization_state",
             type: "string",
+            translateAs: "type",
+            tType: "digitization-state",
         },
         {
             attribute: "material_type",
             field: "material_type",
             type: "string",
+            translateAs: "type",
+            tType: "material-type",
         },
         {
             attribute: "issuance_type",
             field: "issuance_type",
             type: "string",
+            translateAs: "type",
+            tType: "issuance-type",
         },
         {
             attribute: "added_by",
             field: "added_by",
             type: "string",
+            translateAs: "text",
         },
         {
             attribute: "category_ids",
             field: "category_ids",
             type: "numeric",
+            translateAs: "text",
         },
         {
             attribute: "extraction_ids",
             field: "extraction_ids",
             type: "numeric",
             facetQuery: sortFacetDescByKey,
+            translateAs: "text",
         },
         {
             attribute: "digitization_list_id",
             field: "digitization_list_id",
             type: "numeric",
             facetQuery: sortFacetDescByKey,
+            translateAs: "text",
         },
         {
             attribute: "page_count",
             field: "page_count",
             type: "numeric",
+            translateAs: "text",
         },
         {
             attribute: "volume_number",
@@ -170,11 +187,4 @@ const documents_index_settings = {
     ],
 };
 
-const booleanAttributes = [
-    "is_extractable",
-    "has_valid_main_record",
-    "has_valid_cnb",
-];
-
 export default documents_index_settings;
-export { booleanAttributes };

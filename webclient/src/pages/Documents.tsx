@@ -17,7 +17,6 @@ import WithProviders from "../components/wrappers/WithProviders";
 import { TasksProvider } from "../contexts/TasksContext";
 import { DocumentsProvider } from "../contexts/DocumentsContext";
 import { routeToState, stateToRoute } from "../data/factories/EsQueriesFactory";
-import { booleanAttributes } from "../config/documents_index";
 import DocumentsDetails from "../features/documents/DocumentsDetails";
 
 const Documents: React.FC = () => {
@@ -29,10 +28,8 @@ const Documents: React.FC = () => {
             searchClient={searchClient}
             routing={{
                 stateMapping: {
-                    stateToRoute: (state) =>
-                        stateToRoute("documents", booleanAttributes, state),
-                    routeToState: (route) =>
-                        routeToState("documents", booleanAttributes, route),
+                    stateToRoute: (state) => stateToRoute("documents", state),
+                    routeToState: (route) => routeToState("documents", route),
                 },
             }}
         >

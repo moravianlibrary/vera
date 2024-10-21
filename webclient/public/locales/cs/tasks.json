@@ -31,7 +31,8 @@
         "SyncDocumentsWithDigitizationRegistry": "Synchronizovat dokumenty s registrom digitalizace"
     },
     "actions": {
-        "start": "Spustit úkol"
+        "start": "Spustit úkol",
+        "download-csv": "Stáhnout CSV"
     },
     "form": {
         "task-type": "Typ úkolu",

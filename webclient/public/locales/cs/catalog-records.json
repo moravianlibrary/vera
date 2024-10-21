@@ -53,6 +53,8 @@
         "frequencies": "Frekvence"
     },
     "facets": {
+        "has-documents": "Má dokumenty vo VERE",
+        "has-active-documents": "Má neextrahované dokumenty",
         "has-valid-main-record": "Záznam je validný",
         "skc-sysno-resolved": "SKC systémové číslo nalezeno",
         "has-valid-cnb": "ČNB je validné",
@@ -72,7 +74,44 @@
         "oldest": "Nejstarší"
     },
     "query-params": {
-        "query": "Vyhledávaní: {{value}}",
-        "all": "Všechny katalógové záznamy"
+        "all": "Všechny katalógové záznamy",
+        "has-documents": {
+            "true": "Má dokumenty vo VERE",
+            "false": "Nemá dokumenty vo VERE"
+        },
+        "has-active-documents": {
+            "true": "Má neextrahované dokumenty",
+            "false": "Má iba extrahované dokumenty"
+        },
+        "has-valid-main-record": {
+            "true": "Záznam je validný",
+            "false": "Záznam není validný"
+        },
+        "has-valid-cnb": {
+            "true": "ČNB je validné",
+            "false": "ČNB není validné"
+        },
+        "skc-sysno-resolved": {
+            "true": "SKC systémové číslo nalezeno",
+            "false": "SKC systémové číslo nenalezeno"
+        },
+        "cnb-sysno-resolved": {
+            "true": "ČNB systémové číslo nalezeno",
+            "false": "ČNB systémové číslo nenalezeno"
+        },
+        "material-type": "Typ materiálu: {{value}}",
+        "skc-difference-type-facets": {
+            "MissingField": "Chybějící pole v porovnání MZK a SKC",
+            "ExtraField": "Extra pole v porovnání MZK a SKC",
+            "DifferentValue": "Rozdílná hodnota MZK oproti SKC"
+        },
+        "skc-difference-tag-facets": "Rozdílne pole {{value}} v porovnání MZK a SKC",
+        "cnb-difference-type-facets": {
+            "MissingField": "Chybějící pole v porovnání MZK a ČNB",
+            "ExtraField": "Extra pole v porovnání MZK a ČNB",
+            "DifferentValue": "Rozdílná hodnota MZK oproti ČNB"
+        },
+        "cnb-difference-tag-facets": "Rozdílne pole {{value}} v porovnání MZK a ČNB",
+        "language": "Jazyk: {{value}}"
     }
 }

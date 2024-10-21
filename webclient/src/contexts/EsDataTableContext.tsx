@@ -16,7 +16,6 @@ import {
     usePagination,
 } from "react-instantsearch";
 import { stateToRoute } from "../data/factories/EsQueriesFactory";
-import { booleanAttributes } from "../config/catalog_records_index";
 import { EsQuery } from "../adapters/ApiTasks";
 
 interface EsDataTableContextProps {
@@ -129,9 +128,7 @@ export const EsDataTableProvider: React.FC<EsDataTableProviderProps> = ({
     const handleSetAreAllItemsSelected = (value: boolean) => {
         setAreAllItemsSelected(value);
         setNumSelected(value ? numFound : selectedIds.size);
-        setSelectedQuery(
-            stateToRoute("catalog_records", booleanAttributes, uiState)
-        );
+        setSelectedQuery(stateToRoute("catalog_records", uiState));
     };
 
     const cancelSelection = () => {

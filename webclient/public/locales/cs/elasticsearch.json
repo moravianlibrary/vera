@@ -12,5 +12,8 @@
         "all": "Vybrat všechny výsledky podle zadaných kritérií vyhledávání",
         "cancel": "Zrušit výběr",
         "actions-menu": "Akce nad vybránými výsledkami"
-    }
+    },
+    "query-params": "Parametre vyhledávání",
+    "query-params-query": "Vyhledávaní: {{value}}",
+    "cancel-filters": "Zrušit filtre"
 }

@@ -227,7 +227,7 @@ const CategoryNodeEditMenu: React.FC<CategoryEditMenuProps> = ({
                     text
                     severity="secondary"
                     onClick={handleToggleMenu}
-                    tooltip={t("Category options")}
+                    tooltip={t("actions.options")}
                     tooltipOptions={{ position: "left", showDelay: 1000 }}
                 >
                     <i className="pi pi-cog" />

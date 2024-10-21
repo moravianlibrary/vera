@@ -49,7 +49,7 @@ const Login: React.FC<LoginProps> = () => {
     if (
         currentUser.actions &&
         (currentUser.actions.includes(ActionType.EditAccess) ||
-            currentUser.actions.includes(ActionType.StopEmulatingAccess))
+            currentUser.actions.includes(ActionType.EmulateAccess))
     ) {
         return (
             <div className="flex gap-2">

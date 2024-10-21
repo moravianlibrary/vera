@@ -41,7 +41,7 @@ const ShowInDocuments: React.FC<ItemInternalLinkButtonProps> = ({
 
     const getLink = () => {
         if (category) {
-            return `/documents?category_id=${category.id}`;
+            return `/documents?category_ids=${category.id}`;
         }
         if (digitizationList) {
             return `/documents?digitization_list_id=${digitizationList.id}`;

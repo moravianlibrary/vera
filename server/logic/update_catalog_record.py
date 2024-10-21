@@ -136,22 +136,20 @@ def update_catalog_record(
     skc_aleph_record = NkpAlephClient().get_skc_record(
         main_aleph_record.cnb, main_aleph_record.isxn
     )
-    catalog_record.skc_sysno = (
-        skc_aleph_record.sysno if skc_aleph_record else None
-    )
-    catalog_record.skc_marc = (
-        skc_aleph_record.record.as_marc() if skc_aleph_record else None
-    )
+    if skc_aleph_record:
+        catalog_record.skc_sysno = skc_aleph_record.sysno
+        if skc_aleph_record.record is None:
+            return None, AlephResponseStatus.RequestFailed
+        catalog_record.skc_marc = skc_aleph_record.record.as_marc()
 
     cnb_aleph_record = NkpAlephClient().get_cnb_record(
         main_aleph_record.cnb, main_aleph_record.isxn
     )
-    catalog_record.cnb_sysno = (
-        cnb_aleph_record.sysno if cnb_aleph_record else None
-    )
-    catalog_record.cnb_marc = (
-        cnb_aleph_record.record.as_marc() if cnb_aleph_record else None
-    )
+    if cnb_aleph_record:
+        catalog_record.cnb_sysno = cnb_aleph_record.sysno
+        if cnb_aleph_record.record is None:
+            return None, AlephResponseStatus.RequestFailed
+        catalog_record.cnb_marc = cnb_aleph_record.record.as_marc()
 
     catalog_record.save(session)
 

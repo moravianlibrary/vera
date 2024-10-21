@@ -13,7 +13,7 @@ const StringListDisplay: React.FC<StringListDisplayProps> = ({
     maxItems,
     separator = ", ",
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("app");
 
     const [showMore, setShowMore] = useState<boolean>(false);
 
@@ -41,7 +41,7 @@ const StringListDisplay: React.FC<StringListDisplayProps> = ({
             <Button
                 className="p-0 m-0"
                 text
-                label={showMore ? t("common.show-less") : t("common.show-more")}
+                label={showMore ? t("show-less") : t("show-more")}
                 icon={showMore ? "pi pi-angle-up" : "pi pi-angle-down"}
                 onClick={() => setShowMore(!showMore)}
             />

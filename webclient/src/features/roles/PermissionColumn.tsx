@@ -2,15 +2,16 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Checkbox, CheckboxChangeEvent } from "primereact/checkbox";
 import { ColumnEditorOptions } from "primereact/column";
-import { SimplePermission } from "../../types/ActionType";
+import { ActionType, SimplePermission } from "../../types/ActionType";
 
 interface PermissionColumnProps {
     permission: SimplePermission;
 }
 
 interface PermissionColumnEditorProps {
-    options: ColumnEditorOptions;
     permission: SimplePermission;
+    permissions: ActionType[];
+    editorCallback: (permissions: ActionType[]) => void;
 }
 
 const PermissionColumn: React.FC<PermissionColumnProps> & {
@@ -29,17 +30,17 @@ const PermissionColumn: React.FC<PermissionColumnProps> & {
 };
 
 const Editor: React.FC<PermissionColumnEditorProps> = ({
-    options,
     permission,
+    permissions,
+    editorCallback,
 }) => {
     const { t } = useTranslation("types");
-
     const handleChangePermission = (event: CheckboxChangeEvent) => {
         if (event.checked) {
-            options.editorCallback!([...options.value, event.value]);
+            editorCallback([...permissions, event.value]);
         } else {
-            options.editorCallback!(
-                options.value.filter((action) => action !== event.value)
+            editorCallback(
+                permissions.filter((action) => action !== event.value)
             );
         }
     };
@@ -49,7 +50,7 @@ const Editor: React.FC<PermissionColumnEditorProps> = ({
             <Checkbox
                 value={permission}
                 onChange={handleChangePermission}
-                checked={options.value.includes(permission)}
+                checked={permissions.includes(permission)}
             />
             <label className="ml-2">
                 {t(`permissions.type.${permission}`)}

@@ -86,12 +86,6 @@ const resources = {
             "Select quota": "Vybrat zaměr",
             Generate: "Generovat",
 
-            Book: "Monografie",
-            ContinuingResource: "Periodikum",
-            Map: "Mapa",
-            Music: "Hudba",
-            Other: "Ostatní",
-
             "Copied to clipboard": "Zkopírováno do schránky",
 
             ValueError: "Neplatná hodnota",
@@ -289,19 +283,6 @@ const resources = {
             "Is extractable": "Může být extrahovaný",
 
             "documents.table.no-category": "Bez kategorie",
-
-            Choose: "Vybrat",
-            Upload: "Nahrát",
-            Filename: "Název souboru",
-            Value: "Hodnota",
-            Identifier: "Identifikátor",
-            "Previous step": "Zpět",
-            "Next step": "Další",
-            "Previous document": "Předchozý dokument",
-            "Next document": "Nasledující dokument",
-            "Choose issues": "Výběr vydání",
-            Result: "Výsledek",
-            Details: "Detaily",
         },
     },
 };

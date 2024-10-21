@@ -4,11 +4,18 @@
     "edit": "Upravit",
     "cancel": "Zrušit",
     "delete": "Smazat",
+    "show-more": "Zobrazit víc",
+    "show-less": "Zobrazit mín",
     "paginator": {
         "items-per-page": "Záznamů na stranu"
     },
     "internal-link": {
         "show-in-documents": "Zobrazit v dokumentech",
         "show-in-categories": "Zobrazit v kategoriích"
+    },
+    "developer-tools": {
+        "label": "Vývojářské nástroje",
+        "access-emulation": "Emulace přístupu",
+        "stop-access-emulation": "Zastavit emulaci přístupu"
     }
 }

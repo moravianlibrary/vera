@@ -265,7 +265,7 @@ const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
 };
 
 const TaskCsv: React.FC<TaskItemsProps> = ({ task }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("tasks");
     const fileUrl = `${config.apiUrl}tasks/${task.id}/csv`;
 
     const handleDownload = () => {
@@ -284,7 +284,7 @@ const TaskCsv: React.FC<TaskItemsProps> = ({ task }) => {
 
     return (
         <Button
-            label={t("Download CSV")}
+            label={t("actions.download-csv")}
             icon="pi pi-download"
             disabled={task.task_state !== TaskState.Finished}
             onClick={handleDownload}

@@ -25,7 +25,7 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = () => {
         goToNextStep,
         goToPrevStep,
     } = useInsertDocuments();
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
 
     const getIssuesDiv = (header, issues) => {
         return (
@@ -48,13 +48,13 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = () => {
             <div className="flex flex-column overflown-ellipsis p-1">
                 <div>
                     <span className="font-bold white-space-nowrap">
-                        {t("Title")}:
+                        {t("properties.title")}:
                     </span>
                     <span>{` ${currIssuesDocument!.title}`}</span>
                 </div>
                 <div>
                     <span className="font-bold white-space-nowrap">
-                        {t("System number")}:
+                        {t("properties.sysno")}:
                     </span>
                     <span>{` ${currIssuesDocument!.sysno}`}</span>
                 </div>
@@ -72,21 +72,19 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = () => {
 
     const getGoBackLabel = () => {
         if (prevIssuesDocument) {
-            return `${t("Previous document")} ${truncateText(
+            return `${t("add.issues.prev-document")} ${truncateText(
                 prevIssuesDocument.title
             )}`;
-        } else {
-            return t("Previous step");
         }
     };
 
     const getGoNextLabel = () => {
         if (nextIssuesDocument) {
-            return `${t("Next document")} \"${truncateText(
+            return `${t("add.issues.next-document")} \"${truncateText(
                 nextIssuesDocument.title
             )}\"`;
         } else {
-            return t("Next step");
+            return t("add.next-step");
         }
     };
 
@@ -101,13 +99,13 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = () => {
             >
                 {editions &&
                     editions.length > 0 &&
-                    getIssuesDiv("Edice", editions)}
+                    getIssuesDiv(t("add.issues.editions"), editions)}
                 {volumes &&
                     volumes.length > 0 &&
-                    getIssuesDiv("Rocniky", volumes)}
+                    getIssuesDiv(t("add.issues.volumes"), volumes)}
                 {bundles &&
                     bundles.length > 0 &&
-                    getIssuesDiv("Svazky cisel", bundles)}
+                    getIssuesDiv(t("add.issues.bundles"), bundles)}
             </div>
             <div className="flex justify-content-between align-items-center p-1">
                 {(currIndex > 0 && (
@@ -123,7 +121,7 @@ const InsertDocumentsIssues: React.FC<InsertDocumentsIssuesProps> = () => {
                 {totalCountIssuesDocuments > 1 && (
                     <div className="flex px-5 gap-1">
                         <span className="font-bold">{`${t(
-                            "Choose issues"
+                            "add.issues.issues-selection"
                         )}:`}</span>
                         <span>{`${
                             currIndex + 1

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { SelectButton, SelectButtonChangeEvent } from "primereact/selectbutton";
 import {
     ActionScope,
+    ActionType,
     Permission,
     ScopePermission,
     SimplePermission,
@@ -17,7 +18,8 @@ interface ScopePermissionColumnProps {
 interface ScopePermissionColumnEditorProps {
     permission: SimplePermission;
     scopes: ActionScope[];
-    options: ColumnEditorOptions;
+    permissions: ActionType[];
+    editorCallback: (permissions: ActionType[]) => void;
 }
 
 const ScopePermissionColumn: React.FC<ScopePermissionColumnProps> & {
@@ -53,7 +55,8 @@ const ScopePermissionColumn: React.FC<ScopePermissionColumnProps> & {
 const Editor: React.FC<ScopePermissionColumnEditorProps> = ({
     permission,
     scopes,
-    options,
+    permissions,
+    editorCallback,
 }) => {
     const { t } = useTranslation("types");
 
@@ -64,21 +67,25 @@ const Editor: React.FC<ScopePermissionColumnEditorProps> = ({
     const [scope, setScope] = useState<ActionScope>(ActionScope.None);
 
     useEffect(() => {
-        const curr = options.value.find((p) => p.startsWith(permission));
-        setScope(curr ? curr.replace(permission, "") : ActionScope.None);
-    }, [options.value]);
+        const curr = permissions.find((p) => p.startsWith(permission));
+        setScope(
+            curr
+                ? (curr.replace(permission, "") as ActionScope)
+                : ActionScope.None
+        );
+    }, [permissions]);
 
     const handleChangeAction = (event: SelectButtonChangeEvent) => {
         const newScope: ActionScope = event.value || ActionScope.None;
-        const newAction = `${permission}${newScope}` as Permission;
+        const newAction = `${permission}${newScope}` as ActionType;
 
         if (newScope === ActionScope.None) {
-            options.editorCallback!(
-                options.value.filter((p) => !p.startsWith(permission))
+            editorCallback(
+                permissions.filter((p) => !p.startsWith(permission))
             );
         } else {
-            options.editorCallback!([
-                ...options.value.filter((p) => !p.startsWith(permission)),
+            editorCallback([
+                ...permissions.filter((p) => !p.startsWith(permission)),
                 newAction,
             ]);
         }

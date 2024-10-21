@@ -19,11 +19,9 @@ const Tasks: React.FC<TasksProps> = () => {
         <TasksProvider>
             <DataTableLayout
                 header={
-                    <SubNavigationMenu
-                        start={
-                            <ActionAccessComponent
-                                action={ActionType.AdminTasks}
-                            >
+                    <ActionAccessComponent action={ActionType.AdminTasks}>
+                        <SubNavigationMenu
+                            start={
                                 <OverlayFormLayout
                                     buttonProps={{
                                         label: t("actions.start"),
@@ -31,10 +29,10 @@ const Tasks: React.FC<TasksProps> = () => {
                                     form={<TaskForm.Start />}
                                     visible
                                 />
-                            </ActionAccessComponent>
-                        }
-                        end={<SubNavigationTasks />}
-                    />
+                            }
+                            end={<SubNavigationTasks />}
+                        />
+                    </ActionAccessComponent>
                 }
                 datatable={<TasksTable />}
                 paginator={<TasksTable.Paginator />}

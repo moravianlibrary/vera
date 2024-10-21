@@ -116,10 +116,7 @@ const DocumentsActionsMenuItems = () => {
         });
     }
 
-    if (
-        hasPermission(ActionType.Extract) ||
-        hasPermission(ActionType.AdminExtractions)
-    ) {
+    if (hasPermission(ActionType.Extract)) {
         items.push({ separator: true });
     }
 
@@ -139,6 +136,7 @@ const DocumentsActionsMenuItems = () => {
 
     if (
         hasPermission(ActionType.AdminExtractions) &&
+        hasPermission(ActionType.Extract) &&
         digitizationListIdFacets.length === 0
     ) {
         const addDocumentsToDigitizationListMenuItem = {
@@ -172,6 +170,7 @@ const DocumentsActionsMenuItems = () => {
 
     if (
         hasPermission(ActionType.AdminExtractions) &&
+        hasPermission(ActionType.Extract) &&
         digitizationListIdFacets.length === 1
     ) {
         const removeDocumentsFromDigitizationListMenuItem = {

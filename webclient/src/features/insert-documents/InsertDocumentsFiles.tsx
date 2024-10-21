@@ -33,7 +33,7 @@ import { useCategories } from "../../contexts/categories/CategoriesContext";
 import { Category } from "../../adapters/ApiCategories";
 
 const InsertDocumentsFiles: React.FC = () => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
     const { categories } = useCategories();
     const {
         fileUploadValues,
@@ -97,9 +97,9 @@ const InsertDocumentsFiles: React.FC = () => {
                     multiple
                     maxFileSize={2000000}
                     // accept="text/plain"
-                    chooseLabel={`${t("Choose")} (.txt, .xlsx)`}
-                    uploadLabel={t("Upload")}
-                    cancelLabel={t("Cancel")}
+                    chooseLabel={`${t("add.values.select-file")} (.txt, .xlsx)`}
+                    uploadLabel={t("add.values.upload-file")}
+                    cancelLabel={t("cancel", { ns: "app" })}
                     itemTemplate={itemTemplate}
                 />
                 <Dialog
@@ -161,18 +161,18 @@ const InsertDocumentsFiles: React.FC = () => {
             scrollable
             scrollHeight="calc(100vh - 510px)"
         >
-            <Column field="filename" header={t("Filename")} filter />
-            <Column field="value" header={t("Value")} filter />
+            <Column field="filename" header={t("add.values.filename")} filter />
+            <Column field="value" header={t("add.values.value")} filter />
             <Column
                 field="identifier"
-                header={t("Identifier")}
+                header={t("properties.identifier")}
                 body={(v) => t(getIdentifierTypeLabel(v.identifier))}
                 editor={identifierEditor}
                 onCellEditComplete={onCellValueEdit}
             />
             <Column
                 field="category_id"
-                header={t("Category")}
+                header={t("properties.category")}
                 body={(v) => categoryBody(v.category_id)}
                 editor={(options) => (
                     <AssignableCategoryEditor options={options} />

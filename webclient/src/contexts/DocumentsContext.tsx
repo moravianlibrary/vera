@@ -6,11 +6,9 @@ import React, {
     useEffect,
 } from "react";
 import ApiDocuments, { IndexDocument } from "../adapters/ApiDocuments";
-import { useToast } from "./ToastContext";
 import { useTranslation } from "react-i18next";
 import { EsItemsPaginationProps } from "./base/EsPaginationInjector";
 import { stateToQuery, stateToRoute } from "../data/factories/EsQueriesFactory";
-import { booleanAttributes } from "../config/documents_index";
 import { EsItemsSelectionProps } from "./base/EsSelectionInjector";
 import useEsSelection from "./base/EsSelectionInjector";
 import useEsPagination from "./base/EsPaginationInjector";
@@ -46,8 +44,8 @@ const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
     const { t } = useTranslation("documents");
     const { items, numFound, queryParams, refresh, ...restOfPaginationProps } =
         useEsPagination(
-            (uiState) => stateToQuery("documents", booleanAttributes, uiState),
-            (uiState) => stateToRoute("documents", booleanAttributes, uiState)
+            (uiState) => stateToQuery("documents", uiState),
+            (uiState) => stateToRoute("documents", uiState)
         );
     const { selectedQuery, numSelected, ...restOfSelectionProps } =
         useEsSelection(items, numFound, queryParams);

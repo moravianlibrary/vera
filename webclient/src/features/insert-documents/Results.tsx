@@ -27,7 +27,7 @@ interface InsertDocumentsResultProps {
 const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = ({
     onClose,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
     const { settings, goToPrevStep, responses, withoutPageCount } =
         useInsertDocuments();
 
@@ -56,8 +56,8 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = ({
         return settings.insertAnother &&
             withoutPageCount.length === 0 &&
             areOnlySuccessfulResults(responses)
-            ? `${t("documents.add.results.insert-another")} (${countdown}s)`
-            : t("documents.add.results.insert-another");
+            ? `${t("add.results.insert-another")} (${countdown}s)`
+            : t("add.results.insert-another");
     };
 
     return (
@@ -74,14 +74,14 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = ({
                 <Button
                     icon="pi pi-question"
                     outlined
-                    label={t("documents.add.results.show-details")}
+                    label={t("add.results.show-details")}
                     onClick={() => setDetailsVisible(true)}
                 />
                 <Button
                     icon="pi pi-times"
                     iconPos="left"
                     outlined
-                    label={t("documents.add.results.finish")}
+                    label={t("add.results.finish")}
                     onClick={onClose}
                 />
                 <Dialog
@@ -110,7 +110,7 @@ interface AddDocumentDetails {
 }
 
 const InsertResultDetails: React.FC<InsertResultDetailsProps> = ({}) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
     const { responses } = useInsertDocuments();
     const datatableRef = useRef<DataTable<DataTableValueArray>>(null);
 
@@ -130,7 +130,7 @@ const InsertResultDetails: React.FC<InsertResultDetailsProps> = ({}) => {
         const severity = getResultSeverity(document.status);
         return (
             <Tag
-                value={t(`documents.add.results.status.${document.status}`)}
+                value={t(`add.results.status.${document.status}`)}
                 severity={messageSeverityToActionSeverity(severity)}
             ></Tag>
         );
@@ -145,7 +145,9 @@ const InsertResultDetails: React.FC<InsertResultDetailsProps> = ({}) => {
     const header = () => {
         return (
             <div className="flex flex-wrap align-items-center justify-content-between gap-2">
-                <span className="text-900 font-bold">{t("Details")}</span>
+                <span className="text-900 font-bold">
+                    {t("add.results.details")}
+                </span>
                 <Button icon="pi pi-download" raised onClick={exportCsv} />
             </div>
         );
@@ -160,21 +162,21 @@ const InsertResultDetails: React.FC<InsertResultDetailsProps> = ({}) => {
             header={header}
             exportFilename="insert_documents_details"
         >
-            <Column field="sysno" header={t("System number")} />
+            <Column field="sysno" header={t("properties.sysno")} />
             <Column
                 field="type"
-                header={t("Type")}
+                header={t("properties.type")}
                 body={DocumentTypeColumnBody}
             />
             <Column
                 field="description"
-                header={t("Description")}
+                header={t("properties.description")}
                 body={DescriptionColumnBody}
             />
-            <Column field="barcode" header={t("Barcode")} />
+            <Column field="barcode" header={t("properties.barcode")} />
             <Column
                 field="result_localized"
-                header={t("Result")}
+                header={t("add.results.result")}
                 body={ResultBody}
             />
         </DataTable>

@@ -17,6 +17,7 @@ const DeveloperTools: React.ForwardRefRenderFunction<
     unknown,
     DeveloperToolsProps
 > = ({}, ref) => {
+    const { t } = useTranslation("app");
     const [visible, setVisible] = useState(false);
 
     useImperativeHandle(
@@ -37,7 +38,9 @@ const DeveloperTools: React.ForwardRefRenderFunction<
             position="right"
         >
             <div className="flex flex-column gap-3">
-                <span className="font-bold text-xl">Developer tools</span>
+                <span className="font-bold text-xl">
+                    {t("developer-tools.label")}
+                </span>
                 <DeveloperAccessEmulation />
             </div>
         </Sidebar>
@@ -51,7 +54,7 @@ const DeveloperAccessEmulation: React.FC<
 > = () => {
     const api = new ApiUsers();
 
-    const { t } = useTranslation();
+    const { t } = useTranslation("app");
     const { fetchCurrentUser, hasPermission } = useAccess();
 
     const handleSubmitEmulate = (actions: ActionType[]) => {
@@ -65,11 +68,11 @@ const DeveloperAccessEmulation: React.FC<
     return (
         <div className="flex flex-column gap-2">
             <span className="font-bold text-lg">
-                Developer access emulation
+                {t("developer-tools.access-emulation")}
             </span>
             <EmulateActionsForm onSubmit={handleSubmitEmulate} />
             <Button
-                label={t("Stop access emulation")}
+                label={t("developer-tools.stop-access-emulation")}
                 disabled={hasPermission(ActionType.StopEmulatingAccess)}
                 onClick={handleStopAccessEmulation}
             />

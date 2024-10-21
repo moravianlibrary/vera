@@ -20,6 +20,19 @@
         "GenerateVolumesPagesDataset": "Generovat dataset počtu stran ročníků",
         "GenerateItemsPagesDataset": "Generovat dataset počtu stran čísel"
     },
+    "material-type": {
+        "Book": "Monografie",
+        "ContinuingResource": "Periodikum",
+        "Graphic": "Grafika",
+        "Map": "Mapa",
+        "Music": "Hudba",
+        "Other": "Ostatní"
+    },
+    "issuance-type": {
+        "Volume": "Ročník",
+        "Unit": "Vydáni",
+        "Bundle": "Svazek čísel"
+    },
     "document-type": {
         "periodical": "Periodikum",
         "periodical-volume": "Ročník periodika",
@@ -93,7 +106,7 @@
             "ReadCategories": "Povoleno číst kategorie",
             "EditCategories": "Povoleno upravovat kategorie",
             "ReadCatalogRecords": "Povoleno číst katalógové záznamy",
-            "ReviewCatalogRecords": "Povoleno ",
+            "ReviewCatalogRecords": "Povolená revize katalogových záznamů",
             "PlanTasks": "Povoleno plánovat úkoly",
             "AdminTasks": "Povoleno spravovat úkoly",
             "Extract": "Povoleno extrahovat",
@@ -103,5 +116,29 @@
     },
     "placeholder": {
         "task-type": "Vybrat typ úkolu"
+    },
+    "add-documents-response-status": {
+        "AlephNotAvailable": "Chyba při připojování katalogu",
+        "AlephRequestFailed": "Chyba při zpracování odpovědi katalogu",
+        "InvalidSysno": "Neplatné systémové číslo",
+        "InvalidSysnoBase": "Neplatný základ systémového čísla",
+        "AlephRecordNotFound_one": "Dokument nenalezen v katalogu",
+        "AlephRecordNotFound_few": "{{count}} dokumeny nenalezeny v katalogu",
+        "AlephRecordNotFound_other": "{{count}} dokumentů nenalezenych v katalogu",
+        "MultipleAlephRecordsFound": "Více než jeden dokument nalezen v katalogu",
+        "InvalidAlephRecord": "Neplatný zaznam v katalogu",
+        "InvalidDigitizationState": "Neplatný stav digitalizace",
+        "UnknownError": "Neznámá chyba",
+        "DigitizationForbidden": "Digitizace dokumentu je zakázána",
+        "AlreadyDigitized": "Dokument již digitalizován",
+        "DigitizationInProgress": "Digitalizace dokumentu probíhá",
+        "DigitizationPlanned": "Digitalizace dokumentu naplánována",
+        "AllIssuesProcessed": "Všechny vydání už byly zpracovány",
+        "UniqueViolation": "Dokument s rovnakými identifikátormi je již v databázi",
+        "MultipleIssues": "Dokument obsahuje více nespracovaných vydání",
+        "Success": "Dokument byl úspěšně přidán",
+        "Success_few": "{{count}} dokumenty byly úspěšně přidány",
+        "Success_other": "{{count}} dokumentů byl úspěšně přidán",
+        "without-page-count": "{{count}} dokumentů nema nastaven počet stran"
     }
 }

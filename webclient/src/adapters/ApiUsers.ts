@@ -47,7 +47,7 @@ class ApiUsers extends ApiBase<User> {
 
     emulateAccess(actions: ActionType[]) {
         return axiosInstance.post<CurrentUser>(
-            `${this.endpoint}/users/emulate`,
+            `${this.endpoint}/current/emulate`,
             { actions },
             { headers: this.authHeader() }
         );
@@ -55,7 +55,7 @@ class ApiUsers extends ApiBase<User> {
 
     endAccessEmulation() {
         return axiosInstance.delete<CurrentUser>(
-            `${this.endpoint}/users/emulate`,
+            `${this.endpoint}/current/emulate`,
             { headers: this.authHeader() }
         );
     }

@@ -20,6 +20,8 @@ router = APIRouter(prefix="/users", tags=["Users"])
 def authorize_user(
     user: CurrentUser = DependsOnCurrentUser,
 ):
+    if user.username in access_emulation.emulated_users:
+        user.actions = access_emulation.emulated_users[user.username]
     return user
 
 
