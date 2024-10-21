@@ -29,7 +29,7 @@ class Intention(BaseModel):
 
     @classmethod
     def query_base(cls, session) -> Query:
-        return session.query(cls).order_by(cls.end_date)
+        return session.query(cls).order_by(desc(cls.end_date))
 
     def validate_before_save(self, session: Session) -> None:
         def has_conflicting_intentions() -> bool:
@@ -92,4 +92,4 @@ class Intention(BaseModel):
             target_page_count=100000,
             start_date=date(2024, 1, 1),
             end_date=date.today(),
-        ).save()
+        ).save(session)

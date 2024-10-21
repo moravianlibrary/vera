@@ -16,4 +16,3 @@ class StartupTasks(BaseModel):
     @classmethod
     def query_base(cls, session: Session) -> Query:
         return session.query(cls).order_by(asc(cls.id))
-

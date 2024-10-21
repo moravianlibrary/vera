@@ -4,7 +4,12 @@ from schemas import CurrentUser, Page, ExtractionResponse, GenerateExtraction
 from models import Intention, Extraction
 from services.extractions_generator.generator import ExtractionGenerator
 from .utils.permissions import CanExtract, CanManageExtraction
-from .utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
+from .utils.dependencies import (
+    DependsOnCurrentUser,
+    DependsOnDbSession,
+    DependsOnEsSession,
+)
+from schemas import IndexDocument, EsSession
 
 
 router = APIRouter(
@@ -21,13 +26,14 @@ def create_extraction(
     settings: GenerateExtraction,
     user: CurrentUser = DependsOnCurrentUser,
     db: Session = DependsOnDbSession,
+    es_session: EsSession = DependsOnEsSession,
 ):
     generator = ExtractionGenerator(
         Intention.get_current_intention(db).id, settings, db
     )
     generator.generate()
 
-    return Extraction(
+    extraction = Extraction(
         document_ids=generator.extracted_documents,
         selected_pages=generator.extracted_pages_count,
         target_pages=settings.target_pages,
@@ -37,6 +43,13 @@ def create_extraction(
         whole_categories_threshold=settings.whole_categories_threshold,
         generated_by=user.username,
     ).save(db)
+
+    for extraction_document in extraction.documents:
+        IndexDocument.model_validate(extraction_document.document).save(
+            es_session
+        )
+
+    return extraction
 
 
 @router.get(

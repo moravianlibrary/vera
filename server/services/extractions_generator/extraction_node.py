@@ -30,7 +30,9 @@ class ExtractionNode:
         for child in self.children:
             child.set_parent(self)
 
-        self._documents: List[Document] = documents
+        self._documents: List[Document] = sorted(
+            documents, key=lambda d: d.extraction_priority, reverse=True
+        )
         self.total_pages = sum(document.pages_count for document in documents)
         self.extracted_documents: List[Document] = []
         self.extracted_pages = 0

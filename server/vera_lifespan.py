@@ -130,6 +130,7 @@ async def lifespan(app_: FastAPI):
         return
     logger.info("Database connection successfully established.")
     ensure_last_database_revision()
+    ensure_today_intention()
     plan_startup_tasks()
 
     set_failed_tasks_on_start(next(get_session()))

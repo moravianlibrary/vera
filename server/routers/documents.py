@@ -5,7 +5,6 @@ from schemas import (
     CurrentUser,
     AddDocumentResponse,
     Identifier,
-    DocumentResponse,
 )
 from datatypes import ElasticsearchParams, EsRoutingParams
 from models import Document
@@ -76,7 +75,7 @@ async def add_document_from_catalog(
 @router.put(
     "/{document_id}",
     dependencies=[CanManageDocument],
-    response_model=DocumentResponse,
+    response_model=IndexDocument,
 )
 def update_document(
     document_id: int = Path(...),
@@ -100,7 +99,7 @@ def update_document(
 @router.delete(
     "/{document_id}",
     dependencies=[CanManageDocument],
-    response_model=DocumentResponse,
+    response_model=IndexDocument,
 )
 def delete_document(
     document_id: int = Path(...),
@@ -114,7 +113,7 @@ def delete_document(
 @router.get(
     "/{document_id}",
     dependencies=[CanReadDocument],
-    response_model=DocumentResponse,
+    response_model=IndexDocument,
 )
 def get_document(
     document_id: int = Path(...),

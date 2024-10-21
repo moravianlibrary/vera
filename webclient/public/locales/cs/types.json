@@ -55,11 +55,12 @@
         "NotDigitized": "Nedigitalizováno"
     },
     "extractable": {
-        "isExtractable": "Může být extrahovaný",
+        "is-extractable": "Může být extrahovaný",
         "extracted": "Již extrahovaný",
-        "missingCnb": "Chybí ČNB",
-        "missingPages": "Chybí počet stran",
-        "notExtractable": "Nemůže být extrahovaný"
+        "invalid-main-record": "Záznam není validný",
+        "invalid-cnb": "ČNB není validné",
+        "missing-page-count": "Chybí počet stran",
+        "not-extractable": "Nemůže být extrahovaný"
     },
     "marc-difference": {
         "Equal": "Shoda",

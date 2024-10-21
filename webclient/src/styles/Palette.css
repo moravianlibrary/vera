@@ -49,7 +49,10 @@
 .extractable-extracted {
     background-color: #6c757d;
 }
-.extractable-missing-cnb {
+.extractable-invalid-main-record {
+    background-color: #dc3545;
+}
+.extractable-invalid-cnb {
     background-color: #dc3545;
 }
 .extractable-missing-pages {

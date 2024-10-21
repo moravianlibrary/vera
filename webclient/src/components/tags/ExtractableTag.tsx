@@ -13,7 +13,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
     if (document.is_extractable) {
         return (
             <Tag
-                value={t(`extractable.isExtractable`)}
+                value={t(`extractable.is-extractable`)}
                 className="extractable-is-extractable"
             />
         );
@@ -26,18 +26,26 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
             />
         );
     }
-    if (document.cnb === null) {
+    if (!document.has_valid_main_record) {
         return (
             <Tag
-                value={t(`extractable.missingCnb`)}
-                className="extractable-missing-cnb"
+                value={t(`extractable.invalid-main-record`)}
+                className="extractable-invalid-main-record"
             />
         );
     }
-    if (document.page_count === 0) {
+    if (!document.has_valid_cnb) {
         return (
             <Tag
-                value={t(`extractable.missingPages`)}
+                value={t(`extractable.invalid-cnb`)}
+                className="extractable-invalid-cnb"
+            />
+        );
+    }
+    if (document.page_count === undefined || document.page_count === 0) {
+        return (
+            <Tag
+                value={t(`extractable.missing-page-count`)}
                 className="extractable-missing-pages"
             />
         );
@@ -45,7 +53,7 @@ const ExtractableTag: React.FC<ExtractableTagProps> = ({ document }) => {
 
     return (
         <Tag
-            value={t(`extractable.notExtractable`)}
+            value={t(`extractable.not-extractable`)}
             className="extractable-not-extractable"
         />
     );
