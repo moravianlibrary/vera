@@ -8,7 +8,6 @@ import { InstantSearch } from "react-instantsearch";
 import CatalogRecordsQueryRules from "../features/catalog-records/CatalogRecordsQueryRules";
 import CatalogRecordsHeader from "../features/catalog-records/CatalogRecordsHeader";
 import WithProviders from "../components/wrappers/WithProviders";
-import { EsDataTableProvider } from "../contexts/EsDataTableContext";
 import { TasksProvider } from "../contexts/TasksContext";
 import { routeToState, stateToRoute } from "../data/factories/EsQueriesFactory";
 
@@ -32,14 +31,15 @@ const CatalogRecordsDiv: React.FC<CatalogRecordsProps> = () => {
                         routeToState("catalog_records", route),
                 },
             }}
+            initialUiState={{
+                catalog_records: {
+                    refinementList: {
+                        has_documents: ["1"],
+                    },
+                },
+            }}
         >
-            <WithProviders
-                providers={[
-                    CatalogRecordsProvider,
-                    EsDataTableProvider,
-                    TasksProvider,
-                ]}
-            >
+            <WithProviders providers={[CatalogRecordsProvider, TasksProvider]}>
                 <DataTableLayout
                     header={<CatalogRecordsHeader />}
                     sidebar={<CatalogRecordsQueryRules />}

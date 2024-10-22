@@ -6,14 +6,13 @@ import ApiCatalogRecords, {
 import { BaseProviderProps } from "./BaseContext";
 import { useToast } from "./ToastContext";
 import { useTranslation } from "react-i18next";
-import { useEsDataTable } from "./EsDataTableContext";
 import useEsPagination, {
     EsItemsPaginationProps,
 } from "./base/EsPaginationInjector";
 import useEsSelection, {
     EsItemsSelectionProps,
 } from "./base/EsSelectionInjector";
-import { stateToQuery, stateToRoute } from "../data/factories/EsQueriesFactory";
+// import { stateToQuery, stateToRoute } from "../data/factories/EsQueriesFactory";
 import useDataTableExpandedRows, {
     DataTableExpandedRowsProps,
 } from "./base/DataTableExpandedRowsInjector";
@@ -33,14 +32,15 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
     children,
 }) => {
     const api = new ApiCatalogRecords();
-    const { updateItem } = useEsDataTable();
     const { t } = useTranslation("catalog-records");
     const showToast = useToast();
-    const { items, numFound, queryParams, ...restOfPaginationProps } =
-        useEsPagination(
-            (uiState) => stateToQuery("catalog_records", uiState),
-            (uiState) => stateToRoute("catalog_records", uiState)
-        );
+    // const { items, numFound, queryParams, ...restOfPaginationProps } =
+    //     useEsPagination(
+    //         (uiState) => stateToQuery("catalog_records", uiState),
+    //         (uiState) => stateToRoute("catalog_records", uiState)
+    //     );
+    const { items, numFound, updateItem, ...restOfPaginationProps } =
+        useEsPagination<CatalogRecord>();
 
     const approveDifference = (differenceId: number) => {
         api.approveDifference(differenceId).then((response) => {
@@ -52,10 +52,12 @@ export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
     const contextValue: CatalogRecordsContextProps = {
         items,
         numFound,
-        queryParams,
+        updateItem,
+        // queryParams,
         ...restOfPaginationProps,
 
-        ...useEsSelection(items, numFound, queryParams),
+        // ...useEsSelection(items, numFound, queryParams),
+        ...useEsSelection("catalog_records"),
 
         ...useDataTableExpandedRows(),
 

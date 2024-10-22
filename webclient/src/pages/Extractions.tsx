@@ -23,7 +23,7 @@ const Extractions: React.FC = () => {
                         start={
                             <OverlayFormLayout
                                 buttonProps={{
-                                    label: t("actions.generate"),
+                                    label: t("actions.create.label"),
                                 }}
                                 form={<ExtractionPropsMenu />}
                             />

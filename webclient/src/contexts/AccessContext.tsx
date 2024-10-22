@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useToast } from "./ToastContext";
 import { ActionType } from "../types/ActionType";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 import keycloak, { keycloakInitOptions } from "../adapters/Keycloak";
@@ -11,6 +10,7 @@ import { IndexDocument } from "../adapters/ApiDocuments";
 import { DigitizationList } from "../adapters/ApiDigitizationLists";
 import { Extraction } from "../adapters/ApiExtractions";
 import { Task } from "../adapters/ApiTasks";
+import { useNotification } from "./NotificationContext";
 
 type OwnedItem =
     | Category
@@ -47,8 +47,8 @@ const AccessContext = createContext<AccessContextProps | undefined>(undefined);
 export const AccessProvider: React.FC<BaseProviderProps> = ({ children }) => {
     const api = new ApiUsers();
 
-    const { t } = useTranslation();
-    const showToast = useToast();
+    const { t } = useTranslation("app");
+    const { showFailure } = useNotification();
     const [currentUser, setCurrentUser] = useState<CurrentUser | undefined>(
         undefined
     );
@@ -123,10 +123,10 @@ export const AccessProvider: React.FC<BaseProviderProps> = ({ children }) => {
             setCurrentUser(undefined);
             if (error.response && error.response.status === 401) {
                 if (error.response.data?.detail !== null) {
-                    showToast("error", t(error.response.data.detail), "");
+                    showFailure(t(error.response.data.detail));
                 }
             } else if (error.code === "ERR_NETWORK") {
-                showToast("error", t("app_not_available"), "");
+                showFailure(t("app-not-available"));
             }
         }
     };

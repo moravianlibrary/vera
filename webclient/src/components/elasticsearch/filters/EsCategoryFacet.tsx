@@ -92,6 +92,8 @@ const EsCategoryFacet: React.FC<EsFacetProps> = (props) => {
                     }, {} as TreeSelectSelectionKeysType)
             );
         }
+        console.log(items);
+        console.log(items.length);
     }, [items]);
 
     return (

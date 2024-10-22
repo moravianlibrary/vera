@@ -22,7 +22,6 @@ const resources = {
                 "Uživatel má přiřazené více než jednu roli",
             "User have more than one assigned department":
                 "Uživatel má přiřazen více než jedno oddělení",
-            app_not_available: "Aplikace není dostupna",
 
             unique_category_name_violation:
                 "Porušení jedinečného názvu kategorie",

@@ -4,6 +4,8 @@ import {
     DataTableSelectionMultipleChangeEvent,
     DataTableValueArray,
 } from "primereact/datatable";
+import { useInstantSearch } from "react-instantsearch";
+import { stateToQuery } from "../../data/factories/EsQueriesFactory";
 
 interface EsItemsSelectionProps<T extends { id: string }> {
     numSelected: number;
@@ -18,10 +20,14 @@ interface EsItemsSelectionProps<T extends { id: string }> {
 }
 
 const useEsSelection = <T extends { id: string }>(
-    items: T[],
-    numFound: number,
-    queryParams: EsQuery
+    // items: T[],
+    // numFound: number,
+    // queryParams: EsQuery
+    indexName: string
 ) => {
+    const { uiState, results } = useInstantSearch();
+    const { hits: items, nbHits: numFound } = results;
+    //
     const [numSelected, setNumSelected] = useState<number>(0);
     const [currentPageSelected, setCurrentPageSelected] = useState<any[]>([]);
     const [areAllSelected, setAreAllSelected] = useState<boolean>(false);
@@ -58,7 +64,7 @@ const useEsSelection = <T extends { id: string }>(
     const onSetAreAllSelected = (value: boolean) => {
         setAreAllSelected(value);
         setNumSelected(value ? numFound : selectedIds.size);
-        setSelectedQuery(queryParams);
+        setSelectedQuery(value ? stateToQuery(indexName, uiState) : {});
     };
 
     const cancelSelection = () => {
@@ -80,7 +86,7 @@ const useEsSelection = <T extends { id: string }>(
 
     useEffect(() => {
         cancelSelection();
-    }, [queryParams]);
+    }, [uiState]);
 
     return {
         numSelected,

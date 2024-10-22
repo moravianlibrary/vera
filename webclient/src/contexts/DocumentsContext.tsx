@@ -42,13 +42,15 @@ const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
     const { showSuccess, showConfirmDialog, showConfirmDangerDialog } =
         useNotification();
     const { t } = useTranslation("documents");
-    const { items, numFound, queryParams, refresh, ...restOfPaginationProps } =
-        useEsPagination(
-            (uiState) => stateToQuery("documents", uiState),
-            (uiState) => stateToRoute("documents", uiState)
-        );
+    // const { items, numFound, queryParams, refresh, ...restOfPaginationProps } =
+    //     useEsPagination(
+    //         (uiState) => stateToQuery("documents", uiState),
+    //         (uiState) => stateToRoute("documents", uiState)
+    //     );
+    const { uiState, items, numFound, refresh, ...restOfPaginationProps } =
+        useEsPagination<IndexDocument>();
     const { selectedQuery, numSelected, ...restOfSelectionProps } =
-        useEsSelection(items, numFound, queryParams);
+        useEsSelection("documents");
     const { reset, ...restOfExpandedRowsProps } = useDataTableExpandedRows();
 
     const [digitizationListIdFacets, setDigitizationListIdFacets] = useState<
@@ -166,12 +168,13 @@ const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
 
     useEffect(() => {
         reset();
-    }, [reset, queryParams]);
+    }, [reset, uiState]);
 
     const contextValue: DocumentsContextProps = {
+        uiState,
         items,
         numFound,
-        queryParams,
+        // queryParams,
         refresh,
         ...restOfPaginationProps,
 

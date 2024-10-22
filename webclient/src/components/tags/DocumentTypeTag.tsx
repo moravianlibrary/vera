@@ -30,6 +30,19 @@ function isInvalidCombination(
 const DocumentTypeTag: React.FC<DocumentTypeTagProps> = ({ document }) => {
     const { t } = useTranslation("types");
 
+    // A lot of monographs does not have information about being a Book in MZK catalog
+    if (
+        document.material_type === MaterialType.Other &&
+        document.issuance_type === IssuanceType.Unit
+    ) {
+        return (
+            <IssuanceTypeTag
+                issuanceType={IssuanceType.Unit}
+                includeMaterialType
+            />
+        );
+    }
+
     if (isInvalidCombination(document.material_type, document.issuance_type)) {
         return (
             <Tag
