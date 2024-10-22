@@ -28,32 +28,40 @@ const InsertDocumentsResult: React.FC<InsertDocumentsResultProps> = ({
     onClose,
 }) => {
     const { t } = useTranslation("documents");
-    const { settings, goToPrevStep, responses, withoutPageCount } =
+    const { settings, currStep, goToPrevStep, responses, withoutPageCount } =
         useInsertDocuments();
 
-    const [countdown, setCountdown] = useState(2);
+    const [countdown, setCountdown] = useState(settings.insertAnotherAfter);
     const [detailsVisible, setDetailsVisible] = useState(false);
 
     useEffect(() => {
         if (
-            settings.insertAnother &&
+            currStep === 3 &&
+            settings.insertAnotherAfter !== null &&
             withoutPageCount.length === 0 &&
+            responses.length > 0 &&
             areOnlySuccessfulResults(responses)
         ) {
-            const timer = setInterval(() => {
-                setCountdown((prevCountdown) => prevCountdown - 1);
-            }, 1000);
-        }
-    }, [responses, settings, withoutPageCount]);
+            if (settings.insertAnotherAfter === 0) {
+                goToPrevStep();
+                return;
+            }
 
-    useEffect(() => {
-        if (countdown <= 0) {
-            goToPrevStep();
+            const displayTimer = setInterval(() => {
+                setCountdown((prevCountdown) => {
+                    return prevCountdown - 1;
+                });
+            }, 1000);
+            const prevStepTimer = setInterval(() => {
+                goToPrevStep();
+                clearInterval(displayTimer);
+                clearInterval(prevStepTimer);
+            }, settings.insertAnotherAfter * 1000);
         }
-    }, [countdown]);
+    }, [responses, settings, withoutPageCount, goToPrevStep, currStep]);
 
     const getInsertAnotherLabel = () => {
-        return settings.insertAnother &&
+        return settings.insertAnotherAfter &&
             withoutPageCount.length === 0 &&
             areOnlySuccessfulResults(responses)
             ? `${t("add.results.insert-another")} (${countdown}s)`

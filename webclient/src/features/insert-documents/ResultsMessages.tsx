@@ -50,9 +50,12 @@ const AddDocumentResultsMessages: React.FC<
                 }),
                 detail:
                     perStatusSummary[s] instanceof Object &&
-                    getResultDetail(
-                        (perStatusSummary[s] as AddDocumentResponse).document!
-                    ),
+                    (perStatusSummary[s] as AddDocumentResponse).document
+                        ? getResultDetail(
+                              (perStatusSummary[s] as AddDocumentResponse)
+                                  .document!
+                          )
+                        : "",
                 sticky: true,
                 closable: false,
             }));

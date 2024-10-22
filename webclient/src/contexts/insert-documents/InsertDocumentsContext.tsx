@@ -30,7 +30,7 @@ import useAddDocuments, {
 export interface AddDocumentsSettings {
     identifierType: IdentifierType;
     categoryId: number | null;
-    insertAnother: boolean;
+    insertAnotherAfter: number | null;
     extractionPriority: number;
 }
 
@@ -39,7 +39,7 @@ const SETTINGS_NAME = "addDocumentSettings";
 const DEFAULT_SETTINGS: AddDocumentsSettings = {
     identifierType: IdentifierType.Sysno,
     categoryId: null,
-    insertAnother: true,
+    insertAnotherAfter: 3,
     extractionPriority: 3,
 };
 
@@ -111,7 +111,7 @@ export const InsertDocumentsProvider: React.FC<
     const showToast = useToast();
     const api = new ApiDocuments();
 
-    const { settings, ...restOfObjectiveSettingsProps } =
+    const { settings, saveSettings, ...restOfObjectiveSettingsProps } =
         useObjectiveSettings<AddDocumentsSettings>(
             SETTINGS_NAME,
             DEFAULT_SETTINGS
@@ -201,6 +201,7 @@ export const InsertDocumentsProvider: React.FC<
     const goToNextStep = useCallback(() => {
         switch (currStep) {
             case 0:
+                saveSettings();
                 setCurrStep(1);
                 break;
             case 1:
@@ -220,7 +221,7 @@ export const InsertDocumentsProvider: React.FC<
             default:
                 break;
         }
-    }, [currStep, value, fileUploadValues]);
+    }, [currStep, value, fileUploadValues, saveSettings]);
 
     const goToPrevStep = useCallback(() => {
         switch (currStep) {
@@ -445,6 +446,7 @@ export const InsertDocumentsProvider: React.FC<
                 goToPrevStep,
 
                 settings,
+                saveSettings,
                 ...restOfObjectiveSettingsProps,
 
                 value,

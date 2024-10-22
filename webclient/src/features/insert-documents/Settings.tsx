@@ -1,4 +1,3 @@
-import { Checkbox } from "primereact/checkbox";
 import { Dropdown } from "primereact/dropdown";
 import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
@@ -9,6 +8,7 @@ import RequiredValuesButton from "../../components/wrappers/RequiredValuesButton
 import LabeledComponent from "../../components/wrappers/LabeledComponent";
 import ExtractionPrioritySelect from "../../components/selects/ExtractionPrioritySelect";
 import { IdentifierTypeSelectItems } from "../../data/factories/DropdownItemsFactory";
+import TimeoutSelect from "../../components/selects/TimeoutSelect";
 
 interface AddDocumentsSettingsProps {}
 
@@ -42,10 +42,11 @@ const AddDocumentsSettings: React.FC<AddDocumentsSettingsProps> = () => {
                 </LabeledComponent>
             </RequiredValueBadge>
             <LabeledComponent label={t("add.settings.insert-another")}>
-                <Checkbox
-                    checked={settings.insertAnother}
-                    onChange={(e) =>
-                        setSettingsProperty("insertAnother", e.checked!)
+                <TimeoutSelect
+                    initValue={3}
+                    value={settings.insertAnotherAfter}
+                    callback={(v) =>
+                        setSettingsProperty("insertAnotherAfter", v)
                     }
                 />
             </LabeledComponent>
@@ -64,9 +65,7 @@ const AddDocumentsSettings: React.FC<AddDocumentsSettingsProps> = () => {
                     outlined
                     label={t("add.next-step")}
                     onClick={goToNextStep}
-                    requiredValues={[
-                        { name: "categoryId", value: settings.categoryId },
-                    ]}
+                    requiredValues={[settings.categoryId]}
                 />
             </div>
         </div>

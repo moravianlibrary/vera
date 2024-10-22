@@ -17,13 +17,16 @@ const useObjectiveSettings = <T extends Object>(
         (getSettings(settingsName) as T) || defaultSettings
     );
 
-    const setSettingsProperty = useCallback((name: string, value: any) => {
-        setSettings((prev) => ({ ...prev, [name]: value }));
-    }, []);
+    const setSettingsProperty = useCallback(
+        (name: string, value: any) => {
+            setSettings((prev) => ({ ...prev, [name]: value }));
+        },
+        [setSettings]
+    );
 
     const saveSettings = useCallback(() => {
         updateSettings(settingsName, settings);
-    }, [settings]);
+    }, [settings, settingsName, updateSettings]);
 
     return {
         settings,

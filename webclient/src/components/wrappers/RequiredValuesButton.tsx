@@ -13,6 +13,7 @@ const RequiredValuesButton: React.FC<RequiredValuesButtonProps> = ({
     const nullValues = requiredValues.filter(
         (v) => v === undefined || v === null
     ).length;
+
     if (nullValues === 0) {
         return (
             <div className="relative">
