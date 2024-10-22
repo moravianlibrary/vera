@@ -28,7 +28,6 @@ from schemas import (
     IndexCatalogRecord,
     EsSession,
 )
-from worker import setup_periodic_task
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -138,7 +137,7 @@ def create_periodic_task(
     query_params: Optional[EsRoutingParams] = None,
     session: Session = DependsOnDbSession,
 ):
-    periodic_task = PeriodicTask(
+    return PeriodicTask(
         task_type=task_type,
         query_params=query_params,
         minute=minute,
@@ -146,8 +145,6 @@ def create_periodic_task(
         day_of_week=day_of_week,
         day_of_month=day_of_month,
     ).save(session)
-    setup_periodic_task(periodic_task)
-    return periodic_task
 
 
 @router.put(
@@ -183,9 +180,7 @@ def update_periodic_task_schedule(
     periodic_task.hour = hour
     periodic_task.day_of_week = day_of_week
     periodic_task.day_of_month = day_of_month
-    periodic_task.save(session)
-    setup_periodic_task(periodic_task)
-    return periodic_task
+    return periodic_task.save(session)
 
 
 @router.delete(

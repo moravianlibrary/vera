@@ -1,4 +1,4 @@
-from .base_engine import Base, DatabaseUrl, Engine
+from .base_engine import Base, DatabaseUrl, Engine, with_db_session
 from .catalog_records import (
     CatalogRecord,
     CatalogRecordBarcode,
@@ -18,6 +18,7 @@ from .users import User
 from .settings import StartupTasks
 
 __all__ = [
+    "with_db_session",
     "Base",
     "DatabaseUrl",
     "Engine",

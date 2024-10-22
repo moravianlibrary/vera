@@ -27,6 +27,7 @@ COPY tasks /app/tasks
 COPY config.py /app
 COPY vera.py /app
 COPY vera_lifespan.py /app
+COPY vera_scheduler.py /app
 COPY worker.py /app
 
 

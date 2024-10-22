@@ -2,17 +2,29 @@
 import logging
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from apscheduler.schedulers.background import BackgroundScheduler
-from models import DatabaseUrl, Engine
+from models import (
+    DatabaseUrl,
+    Engine,
+    with_db_session,
+    Task,
+    PeriodicTask,
+    Intention,
+    StartupTasks,
+)
+from datatypes import TaskState, TaskItemType
 from time import time
+from sqlalchemy.orm import Session
+from sqlalchemy import update, or_, text
+from sqlalchemy.exc import OperationalError
+from config import VeraConfig
+from worker import run_task
+from vera_scheduler import vera_scheduler
 
 
 logger = logging.getLogger("uvicorn")
 
 
 def check_connection():
-    from sqlalchemy.exc import OperationalError
-
     retries = 5
     for attempt in range(retries):
         try:
@@ -29,8 +41,6 @@ def check_connection():
 
 
 def get_actual_revision():
-    from sqlalchemy import text
-
     try:
         with Engine.connect() as connection:
             result = connection.execute(
@@ -63,23 +73,42 @@ def ensure_last_database_revision():
     )
 
 
-def ensure_today_intention():
-    from models.base_engine import get_session
-    from models import Intention
+@with_db_session
+def set_failed_tasks_on_start(session: Session):
+    logger.info(
+        "Setting all tasks in Planned or Running state to Failed on startup."
+    )
+    session.execute(
+        update(Task)
+        .where(
+            or_(
+                Task.task_state == TaskState.Planned,
+                Task.task_state == TaskState.Running,
+            )
+        )
+        .values(task_state=TaskState.Failed, finished=VeraConfig.Timestamp)
+    )
+    session.commit()
+    logger.info("Tasks have been updated to Failed state on startup.")
 
-    Intention.ensure_intention_for_today(next(get_session()))
+
+@with_db_session
+def setup_periodic_tasks_on_start(session: Session):
+    logger.info("Setting up periodic tasks on startup.")
+
+    for periodic_task in PeriodicTask.all(session):
+        periodic_task.schedule()
+
+    logger.info("All periodic tasks have been set up.")
 
 
-def plan_startup_tasks():
-    from sqlalchemy import text
-    from config import VeraConfig
-    from datatypes import TaskItemType
-    from models.base_engine import get_session
-    from models import Task, StartupTasks
-    from worker import run_task
+@with_db_session
+def ensure_today_intention(session: Session):
+    Intention.ensure_intention_for_today(session)
 
-    session = next(get_session())
 
+@with_db_session
+def plan_startup_tasks(session: Session):
     for startup_task in StartupTasks.all(session):
         if startup_task.is_one_time_task and startup_task.has_run:
             continue
@@ -121,26 +150,24 @@ def plan_startup_tasks():
 
 @asynccontextmanager
 async def lifespan(app_: FastAPI):
-    from models.base_engine import get_session
-    from worker import set_failed_tasks_on_start
-
     logger.info("Checking database connection.")
     if not check_connection():
         logger.info("Database connection failed. Exiting.")
         return
     logger.info("Database connection successfully established.")
+
     ensure_last_database_revision()
+
+    vera_scheduler.start()
+
+    set_failed_tasks_on_start()
+    # plan_startup_tasks()
+    setup_periodic_tasks_on_start()
     ensure_today_intention()
-    plan_startup_tasks()
 
-    set_failed_tasks_on_start(next(get_session()))
-
-    scheduler = BackgroundScheduler()
-    scheduler.start()
-
-    scheduler.add_job(ensure_today_intention, "cron", hour=0)
+    vera_scheduler.add_job(ensure_today_intention, "cron", hour=0)
 
     yield
 
-    scheduler.shutdown()
+    vera_scheduler.shutdown()
     logger.info("Shutting down.")

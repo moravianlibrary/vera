@@ -1,13 +1,9 @@
-from typing import Optional
 import logging
 from celery import Celery
-from celery.schedules import crontab
 from os import environ, path
 from sys import path as sys_path
 from models.base_engine import DatabaseUrl, get_session
 from datatypes import TaskState
-from sqlalchemy.orm import Session
-from sqlalchemy import update, or_
 from config import VeraConfig
 from models import Task, PeriodicTask
 from tasks import TaskDispatcher
@@ -16,81 +12,54 @@ from tasks import TaskDispatcher
 sys_path.append(path.abspath("/app"))
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("Worker")
 
 
 celery_worker = Celery(
     "tasks",
     broker=environ.get("BROKER_URL"),
+    broker_connection_retry_on_startup=True,
     result_backend=f"db+{DatabaseUrl}",
     database_table_names={
         "task": "celery_tasks",
         "group": "celery_groups",
     },
+    timezone=VeraConfig.TimeZone,
 )
-
-
-# TODO: move to lifespan
-def set_failed_tasks_on_start(session: Session):
-    session.execute(
-        update(Task)
-        .where(
-            or_(
-                Task.task_state == TaskState.Planned,
-                Task.task_state == TaskState.Running,
-            )
-        )
-        .values(task_state=TaskState.Failed, finished=VeraConfig.Timestamp)
-    )
-    session.commit()
-
-
-# TODO: move to lifespan
-def setup_periodic_tasks_on_start(session: Session):
-    for periodic_task in PeriodicTask.all():
-        setup_periodic_task(session, periodic_task)
-
-
-def setup_periodic_task(periodic_task: PeriodicTask):
-    def parse_cron_value(value: Optional[str]) -> str:
-        return value if value else "*"
-
-    celery_worker.add_periodic_task(
-        crontab(
-            minute=periodic_task.minute,
-            hour=parse_cron_value(periodic_task.hour),
-            day_of_week=parse_cron_value(periodic_task.day_of_week),
-            day_of_month=parse_cron_value(periodic_task.day_of_month),
-        ),
-        run_periodic_task_instance.s(periodic_task.id),
-        name=periodic_task.id,
-    )
 
 
 @celery_worker.task
 def run_periodic_task_instance(periodic_task_id: int):
+    logger.info(f"Running periodic task instance with id {periodic_task_id}.")
+
     session = next(get_session())
     periodic_task = PeriodicTask.find(session, periodic_task_id)
     if periodic_task is None:
+        logger.warn(f"Periodic task with id {periodic_task_id} not found.")
         return
 
+    logger.info(f"Creating new task for periodic task {periodic_task_id}.")
     task = Task(
         task_type=periodic_task.task_type,
         owner=VeraConfig.BotName,
-        query=periodic_task.query,
+        query_params=periodic_task.query_params,
     ).save(session)
 
+    logger.info(
+        f"Task created with id {task.id} for periodic task {periodic_task_id}."
+    )
     run_task.delay(task_id=task.id)
 
 
 @celery_worker.task
 def run_task(task_id: int):
-    # import models
-    # sys_path.append(path.abspath("categories/"))
-    # sys_path.append(path.abspath("extractions/"))
+    logger.info(f"Running task with id {task_id}.")
 
     session = next(get_session())
-    task = Task.get(session, task_id)
+    task = Task.find(session, task_id)
+
+    if not task:
+        logger.error(f"Task with id {task_id} not found.")
 
     task.started = VeraConfig.Timestamp
     task.task_state = TaskState.Running
@@ -99,14 +68,20 @@ def run_task(task_id: int):
     try:
         task_function = TaskDispatcher.get(task.task_type)
         if task_function is None:
-            raise ValueError(f"Unknown task type: {task.task_type}")
+            logger.error(
+                f"Task with id {task_id} failed "
+                f"due to unknown task type: {task.task_type}"
+            )
+            return
+
+        logger.info(f"Executing task function for task id {task_id}.")
         task_function(session, task_id)
 
-        task.finished = VeraConfig.Timestamp
         task.task_state = TaskState.Finished
-        task.save(session)
+        logger.info(f"Task with id {task_id} has finished successfully.")
     except Exception as e:
-        logging.warning(f"Task with id {task_id} failed: {e}")
-        task.finished = VeraConfig.Timestamp
         task.task_state = TaskState.Failed
+        logger.error(f"Task with id {task_id} failed due to error: {e}")
+    finally:
+        task.finished = VeraConfig.Timestamp
         task.save(session)

@@ -37,10 +37,6 @@ const EsQueryChips: React.FC<EsQueryChipsProps> = ({
         }
     };
 
-    if (!queryParams) {
-        return null;
-    }
-
     if (
         Object.entries(queryParams).filter(
             ([key, value]) =>

@@ -33,7 +33,11 @@ const PeriodicTasksTable: React.FC<PeriodicTasksTableProps> & {
             <Column
                 field="query_params"
                 header={t("table.columns.query-params")}
-                body={(pt) => <EsQueryChips queryParams={pt.query_params} />}
+                body={(pt) =>
+                    pt.query_params ? (
+                        <EsQueryChips queryParams={pt.query_params} />
+                    ) : null
+                }
             />
             <Column field="hour" header={t("table.columns.hour")} />
             <Column field="minute" header={t("table.columns.minute")} />

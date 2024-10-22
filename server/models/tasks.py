@@ -19,6 +19,7 @@ from exceptions import (
     InvalidPageNumberException,
     InvalidPageSizeException,
 )
+from vera_scheduler import vera_scheduler
 
 
 class Task(BaseModel):
@@ -159,3 +160,28 @@ class PeriodicTask(BaseModel):
     hour = Column(Integer)
     day_of_week = Column(Integer)
     day_of_month = Column(Integer)
+
+    def schedule(self):
+        from worker import run_periodic_task_instance
+
+        def parse_cron_value(value: Optional[str]) -> str:
+            return value if value else "*"
+
+        vera_scheduler.add_job(
+            func=lambda: run_periodic_task_instance.delay(self.id),
+            trigger="cron",
+            id=str(self.id),
+            replace_existing=True,
+            minute=self.minute,
+            hour=parse_cron_value(self.hour),
+            day_of_week=parse_cron_value(self.day_of_week),
+            day=parse_cron_value(self.day_of_month),
+        )
+
+    def save(self, session: Session) -> "PeriodicTask":
+        super().save(session)
+        self.schedule()
+        return self
+
+    def validate_before_delete(self, session: Session) -> None:
+        vera_scheduler.remove_job(str(self.id))

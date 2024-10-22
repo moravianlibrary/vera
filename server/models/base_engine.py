@@ -3,6 +3,8 @@ from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import sessionmaker, Session
 import yaml
 from config import VeraConfig
+from typing import Any, Callable
+from functools import wraps
 
 DatabaseUrl = (
     f"postgresql://"
@@ -31,6 +33,18 @@ def get_session():
         yield session
     finally:
         session.close()
+
+
+def with_db_session(func: Callable) -> Callable:
+    @wraps(func)
+    def wrapper(*args, **kwargs) -> Any:
+        db_session = SessionLocal()
+        try:
+            return func(db_session, *args, **kwargs)
+        finally:
+            db_session.close()
+
+    return wrapper
 
 
 def get_all_models():
