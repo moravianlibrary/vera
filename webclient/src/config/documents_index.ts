@@ -49,6 +49,7 @@ const documents_index_settings = {
         "page_count_catalog",
         "page_count_manual",
         "page_count_predicted",
+        "has_page_count",
         // Extraction properties
         "dedicated_scanner",
         "extraction_priority",
@@ -100,6 +101,14 @@ const documents_index_settings = {
         {
             attribute: "has_valid_cnb",
             field: "has_valid_cnb",
+            type: "numeric",
+            filterQuery: filterBooleanQuery,
+            stateAs: "boolean",
+            translateAs: "boolean",
+        },
+        {
+            attribute: "has_page_count",
+            field: "has_page_count",
             type: "numeric",
             filterQuery: filterBooleanQuery,
             stateAs: "boolean",

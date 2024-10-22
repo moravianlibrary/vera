@@ -50,6 +50,7 @@
         "is-extractable": "Extrahovatelny",
         "has-valid-main-record": "Záznam je validný",
         "has-valid-cnb": "ČNB je validné",
+        "has-page-count": "Nastaven počet stran",
         "digitization-state": "Stav digitalizace",
         "material-type": "Typ materialu",
         "issuance-type": "Typ vydáni",
@@ -90,6 +91,10 @@
         "has-valid-cnb": {
             "true": "ČNB je validné",
             "false": "ČNB není validné"
+        },
+        "has-page-count": {
+            "true": "Má nastaven počet stran",
+            "false": "Nemá nastaven počet stran"
         },
         "digitization-state": "Stav digitalizace: {{value}}",
         "material-type": "Typ materiálu: {{value}}",

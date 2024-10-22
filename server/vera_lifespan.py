@@ -161,7 +161,7 @@ async def lifespan(app_: FastAPI):
     vera_scheduler.start()
 
     set_failed_tasks_on_start()
-    # plan_startup_tasks()
+    plan_startup_tasks()
     setup_periodic_tasks_on_start()
     ensure_today_intention()
 

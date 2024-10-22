@@ -63,6 +63,10 @@ const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                         attribute="has_valid_cnb"
                         label={t("facets.has-valid-cnb")}
                     />
+                    <EsBooleanFacet
+                        attribute="has_page_count"
+                        label={t("facets.has-page-count")}
+                    />
                     <EsDigitizationStateFacet
                         attribute="digitization_state"
                         label={t("facets.digitization-state")}

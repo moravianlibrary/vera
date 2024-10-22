@@ -59,6 +59,7 @@ class IndexDocument(BaseEsModel):
     page_count_catalog: Optional[Integer]
     page_count_predicted: Optional[Integer]
     page_count_manual: Optional[Integer]
+    has_page_count: Boolean
     # Extraction properties
     dedicated_scanner: Optional[Keyword]
     extraction_priority: Optional[Integer]
@@ -122,6 +123,7 @@ class IndexDocument(BaseEsModel):
             page_count_catalog=data.pages_count_catalog,
             page_count_predicted=data.pages_count_predicted,
             page_count_manual=data.pages_count_manual,
+            has_page_count=bool(data.pages_count),
             dedicated_scanner=data.dedicated_scanner,
             extraction_priority=data.extraction_priority,
             is_extractable=data.is_extractable,
