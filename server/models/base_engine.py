@@ -53,4 +53,3 @@ def import_from_yaml(session: Session, yaml_string: str):
             if db_item.is_persisted(session):
                 continue
             db_item.merge(session)
-        print(model.all(session))

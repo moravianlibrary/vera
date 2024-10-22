@@ -37,6 +37,19 @@ def upgrade() -> None:
             nullable=False,
         ),
     )
+    op.execute(
+        """
+        UPDATE catalog_records cr
+        SET added_at = subquery.latest_added_at,
+            updated_at = subquery.latest_added_at
+        FROM (
+            SELECT sysno, MAX(added_at) AS latest_added_at
+            FROM documents
+            GROUP BY sysno
+        ) AS subquery
+        WHERE cr.sysno = subquery.sysno;
+        """
+    )
     op.drop_column("catalog_records", "last_updated")
     op.drop_index("ix_categories_id", table_name="categories")
     op.create_index(
