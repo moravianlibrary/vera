@@ -37,6 +37,7 @@ const DatasetTasks = [
     TaskType.GenerateItemsPagesDataset,
 ];
 const ManagementTasks = [TaskType.RecreateIndexes];
+const NoItemsTasks = [...DatasetTasks, ...ManagementTasks];
 
 export {
     TaskType,
@@ -46,4 +47,5 @@ export {
     CatalogRecordsTasks,
     DatasetTasks,
     ManagementTasks,
+    NoItemsTasks,
 };

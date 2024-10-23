@@ -11,6 +11,7 @@ import { Button } from "primereact/button";
 import config from "../../config/config";
 import DataTablePaginator from "../../components/views/DataTablePaginator";
 import { TaskStateTag } from "../../components/tags/TaskStateTag";
+import { ManagementTasks, NoItemsTasks } from "../../types/TaskType";
 
 interface TasksTableProps {}
 
@@ -35,10 +36,15 @@ const TasksTable: React.FC<TasksTableProps> & {
     };
 
     const itemsCountBody = (task: Task) => {
-        if ([TaskState.Planned, TaskState.Running].includes(task.task_state)) {
-            return `${task.processed_count}/${task.total_count}`;
-        }
-        return `${task.total_count}`;
+        return NoItemsTasks.includes(task.task_type)
+            ? "-"
+            : task.task_state === TaskState.Finished
+            ? `${task.total_count}`
+            : `${task.processed_count}/${task.total_count}`;
+    };
+
+    const errorsCountBody = (task: Task) => {
+        return NoItemsTasks.includes(task.task_type) ? "-" : task.error_count;
     };
 
     const datetimeBody = (datetime: string) => {
@@ -112,12 +118,13 @@ const TasksTable: React.FC<TasksTableProps> & {
                 header={t("table.columns.task-state")}
             />
             <Column
-                body={itemsCountBody}
                 header={t("table.columns.items-count")}
+                body={itemsCountBody}
             />
             <Column
                 field="error_count"
                 header={t("table.columns.error-count")}
+                body={errorsCountBody}
             />
             <Column
                 body={(task) => datetimeBody(task.planned)}
