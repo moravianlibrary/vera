@@ -32,6 +32,15 @@ class AddDocumentResponseStatus(Enum):
     UnknownError = "UnknownError"
 
 
+class DocumentFlag(Enum):
+    IsExtractable = "IsExtractable"
+    AlreadyExtracted = "AlreadyExtracted"
+    IsNotExtractable = "IsNotExtractable"
+    InvalidMainRecord = "InvalidMainRecord"
+    InvalidCnb = "InvalidCnb"
+    MissingPageCount = "MissingPageCount"
+
+
 AlephToResponseStatusConverter = {
     AlephResponseStatus.Success: AddDocumentResponseStatus.Success,
     AlephResponseStatus.RecordNotFound: (

@@ -2,6 +2,7 @@ from .action_type import ActionType
 from .identifier_type import IdentifierType
 from .documents_types import (
     AddDocumentResponseStatus,
+    DocumentFlag,
     AlephToResponseStatusConverter,
     DigitizationStateToResponseStatusConverter,
     IdentifierToAlephFieldConverted,
@@ -55,4 +56,5 @@ __all__ = [
     "is_catalog_records_task",
     "is_documents_task",
     "EsRoutingParams",
+    "DocumentFlag",
 ]

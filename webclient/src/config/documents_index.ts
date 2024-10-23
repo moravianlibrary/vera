@@ -35,13 +35,12 @@ const documents_index_settings = {
         "category_id",
         "category_ids",
         "category_path",
+        "document_flags",
         // Catalog properties
         "skc_sysno",
         "skc_diff",
-        "has_valid_main_record",
         "cnb_sysno",
         "cnb_diff",
-        "has_valid_cnb",
         "digitization_registry_id",
         "digitization_state",
         // Page count
@@ -49,11 +48,9 @@ const documents_index_settings = {
         "page_count_catalog",
         "page_count_manual",
         "page_count_predicted",
-        "has_page_count",
         // Extraction properties
         "dedicated_scanner",
         "extraction_priority",
-        "is_extractable",
         "extraction_ids",
         "digitization_list_id",
         // Other properties
@@ -83,36 +80,11 @@ const documents_index_settings = {
     },
     facet_attributes: [
         {
-            attribute: "is_extractable",
-            field: "is_extractable",
-            type: "numeric",
-            filterQuery: filterBooleanQuery,
-            stateAs: "boolean",
-            translateAs: "boolean",
-        },
-        {
-            attribute: "has_valid_main_record",
-            field: "has_valid_main_record",
-            type: "numeric",
-            filterQuery: filterBooleanQuery,
-            stateAs: "boolean",
-            translateAs: "boolean",
-        },
-        {
-            attribute: "has_valid_cnb",
-            field: "has_valid_cnb",
-            type: "numeric",
-            filterQuery: filterBooleanQuery,
-            stateAs: "boolean",
-            translateAs: "boolean",
-        },
-        {
-            attribute: "has_page_count",
-            field: "has_page_count",
-            type: "numeric",
-            filterQuery: filterBooleanQuery,
-            stateAs: "boolean",
-            translateAs: "boolean",
+            attribute: "document_flags",
+            field: "document_flags",
+            type: "string",
+            translateAs: "type",
+            tType: "document-flag",
         },
         {
             attribute: "digitization_state",

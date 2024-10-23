@@ -4,10 +4,12 @@ import { Checkbox } from "primereact/checkbox";
 import { RefinementListProps, useRefinementList } from "react-instantsearch";
 import { Button } from "primereact/button";
 import { useTranslation } from "react-i18next";
+import { orderBy } from "../../../types/DocumentFlag";
 
 interface EsFacetProps extends RefinementListProps {
     label: string;
     onDisplayLabel?: (item) => React.ReactNode;
+    orderBy?: (a, b) => number;
 }
 
 const EsFacet: React.FC<EsFacetProps> = (props) => {
@@ -37,7 +39,10 @@ const EsFacet: React.FC<EsFacetProps> = (props) => {
 
     return (
         <EsFilter label={props.label}>
-            {items.map((item) => (
+            {(props.orderBy
+                ? items.sort((a, b) => props.orderBy(a.value, b.value))
+                : items
+            ).map((item) => (
                 <div
                     key={item.value}
                     className={

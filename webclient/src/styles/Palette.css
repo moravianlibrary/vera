@@ -43,23 +43,23 @@
     background-color: #757575;
 }
 
-.extractable-is-extractable {
+.document-flag-is-extractable {
     background-color: #007bff;
 }
-.extractable-extracted {
+.document-flag-already-extracted {
     background-color: #6c757d;
 }
-.extractable-invalid-main-record {
-    background-color: #dc3545;
-}
-.extractable-invalid-cnb {
-    background-color: #dc3545;
-}
-.extractable-missing-pages {
-    background-color: #dc3545;
-}
-.extractable-not-extractable {
+.document-flag-is-not-extractable {
     background-color: #fd7e14;
+}
+.document-flag-invalid-main-record {
+    background-color: #dc3545;
+}
+.document-flag-invalid-cnb {
+    background-color: #dc3545;
+}
+.document-flag-missing-page-count {
+    background-color: #dc3545;
 }
 
 .document-already-exists {

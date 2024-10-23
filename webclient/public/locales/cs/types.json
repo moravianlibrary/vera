@@ -54,13 +54,13 @@
         "Planned": "Naplánováno",
         "NotDigitized": "Nedigitalizováno"
     },
-    "extractable": {
-        "is-extractable": "Může být extrahovaný",
-        "extracted": "Již extrahovaný",
-        "invalid-main-record": "Záznam není validný",
-        "invalid-cnb": "ČNB není validné",
-        "missing-page-count": "Chybí počet stran",
-        "not-extractable": "Nemůže být extrahovaný"
+    "document-flag": {
+        "IsExtractable": "Může být extrahovaný",
+        "AlreadyExtracted": "Již extrahovaný",
+        "IsNotExtractable": "Nemůže být extrahovaný",
+        "InvalidMainRecord": "Záznam není validný",
+        "InvalidCnb": "ČNB není validné",
+        "MissingPageCount": "Chybí počet stran"
     },
     "marc-difference": {
         "Equal": "Shoda",

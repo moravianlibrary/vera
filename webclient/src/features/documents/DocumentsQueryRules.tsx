@@ -11,6 +11,7 @@ import EsQueryRulesLayout from "../../components/layouts/EsQueryRulesLayout";
 import EsSortBy from "../../components/elasticsearch/EsSortBy";
 import { useTranslation } from "react-i18next";
 import EsExtractionFacet from "../../components/elasticsearch/filters/EsExtractionsFacet";
+import EsDocumentFlagFacet from "../../components/elasticsearch/filters/EsDocumentFlagFacet";
 
 interface DocumentsQueryRulesProps {}
 
@@ -51,21 +52,9 @@ const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
             }
             facets={
                 <Fragment>
-                    <EsBooleanFacet
-                        attribute="is_extractable"
-                        label={t("facets.is-extractable")}
-                    />
-                    <EsBooleanFacet
-                        attribute="has_valid_main_record"
-                        label={t("facets.has-valid-main-record")}
-                    />
-                    <EsBooleanFacet
-                        attribute="has_valid_cnb"
-                        label={t("facets.has-valid-cnb")}
-                    />
-                    <EsBooleanFacet
-                        attribute="has_page_count"
-                        label={t("facets.has-page-count")}
+                    <EsDocumentFlagFacet
+                        attribute="document_flags"
+                        label={t("facets.document-flags")}
                     />
                     <EsDigitizationStateFacet
                         attribute="digitization_state"

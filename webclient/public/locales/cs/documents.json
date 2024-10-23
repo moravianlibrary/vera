@@ -47,10 +47,7 @@
         "frequencies": "Frekvence"
     },
     "facets": {
-        "is-extractable": "Extrahovatelny",
-        "has-valid-main-record": "Záznam je validný",
-        "has-valid-cnb": "ČNB je validné",
-        "has-page-count": "Nastaven počet stran",
+        "document-flags": "Příznaky dokumentu",
         "digitization-state": "Stav digitalizace",
         "material-type": "Typ materialu",
         "issuance-type": "Typ vydáni",
@@ -70,7 +67,8 @@
             "digitization-state": "Stav digitalizace",
             "extraction-priority": "Priorita",
             "extraction": "Extrakce",
-            "added-by": "Přidal"
+            "added-by": "Přidal",
+            "document-flags": "Příznaky dokumentu"
         },
         "page-count": {
             "catalog": "{{count}} z katalogu",
@@ -80,22 +78,7 @@
     },
     "query-params": {
         "all": "Všechny dokumenty",
-        "is-extractable": {
-            "true": "Může být extrahovaný",
-            "false": "Nemůže být extrahovaný"
-        },
-        "has-valid-main-record": {
-            "true": "Záznam je validný",
-            "false": "Záznam není validný"
-        },
-        "has-valid-cnb": {
-            "true": "ČNB je validné",
-            "false": "ČNB není validné"
-        },
-        "has-page-count": {
-            "true": "Má nastaven počet stran",
-            "false": "Nemá nastaven počet stran"
-        },
+        "document-flags": "Příznak: {{value}}",
         "digitization-state": "Stav digitalizace: {{value}}",
         "material-type": "Typ materiálu: {{value}}",
         "issuance-type": "Typ vydáni: {{value}}",

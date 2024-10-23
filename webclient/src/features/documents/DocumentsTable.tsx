@@ -10,7 +10,7 @@ import TitleColumnBody from "./table_columns/TitleColumnBody";
 import DocumentTypeColumnBody from "./table_columns/DocumentTypeColumnBody";
 import CategoryColumnBody from "./table_columns/CategoryColumnBody";
 import DocumentDetailsColumnBody from "./table_columns/DocumentDetailsColumnBody";
-import DocumentStateColumnBody from "./table_columns/DocumentStateColumnBody";
+import DocumentStateColumnBody from "./table_columns/DocumentFlagsColumnBody";
 import ExtractionPriorityColumnBody from "./table_columns/ExtractionPriorityColumnBody";
 import { useDocuments } from "../../contexts/DocumentsContext";
 
@@ -71,8 +71,8 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
                 body={ExtractionPriorityColumnBody}
             />
             <Column
-                field="extractable"
-                header={t("table.columns.extraction")}
+                field="document_flags"
+                header={t("table.columns.document-flags")}
                 body={DocumentStateColumnBody}
             />
             <Column field="added_by" header={t("table.columns.added-by")} />

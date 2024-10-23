@@ -1,5 +1,6 @@
 import AddDocumentResponseStatus from "../types/AddDocumentResponseStatus";
 import { DigitizationState } from "../types/DigitizationState";
+import DocumentFlag from "../types/DocumentFlag";
 import { IdentifierType } from "../types/IdentifierType";
 import { IssuanceType } from "../types/IssuanceType";
 import { MaterialType } from "../types/MaterialType";
@@ -36,6 +37,7 @@ interface IndexDocument {
     added_by: string;
     category_id: number | null;
     category_path: any;
+    document_flags: DocumentFlag[];
     // Catalog properties
     skc_sysno: string | null;
     skc_diff: any;

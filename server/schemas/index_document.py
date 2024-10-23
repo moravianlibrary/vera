@@ -1,4 +1,4 @@
-from .base_es_model import BaseEsModel, Integer, Keyword, Date, Boolean, List
+from .base_es_model import BaseEsModel, Integer, Keyword, Date, List
 from pydantic import model_validator
 from typing import Any, Optional
 from models import Document
@@ -8,6 +8,7 @@ from .parsers.volume_parser import (
     parse_volume_year,
     parse_bundle,
 )
+from datatypes import DocumentFlag
 from config import VeraConfig
 
 
@@ -19,6 +20,25 @@ class CategoryPath(BaseEsModel):
 class IndexFrequency(BaseEsModel):
     frequency: Keyword
     date: Optional[Keyword]
+
+
+def DocumentFlagsDispatcher(document: Document) -> List[str]:
+    flags = []
+    if document.digitization_list_id is not None:
+        flags.append(DocumentFlag.AlreadyExtracted.value)
+    elif document.is_extractable:
+        flags.append(DocumentFlag.IsExtractable.value)
+    else:
+        flags.append(DocumentFlag.IsNotExtractable.value)
+
+    if not document.catalog_record.has_valid_main_record:
+        flags.append(DocumentFlag.InvalidMainRecord.value)
+    if not document.catalog_record.has_valid_cnb:
+        flags.append(DocumentFlag.InvalidCnb.value)
+    if document.pages_count is None or document.pages_count == 0:
+        flags.append(DocumentFlag.MissingPageCount.value)
+
+    return flags
 
 
 class IndexDocument(BaseEsModel):
@@ -48,10 +68,10 @@ class IndexDocument(BaseEsModel):
     category_id: Integer
     category_ids: List[Integer]
     category_path: List[CategoryPath]
+    document_flags: List[Keyword]
+    # Catalogs properties
     skc_sysno: Optional[Keyword]
-    has_valid_main_record: Boolean
     cnb_sysno: Optional[Keyword]
-    has_valid_cnb: Boolean
     digitization_registry_id: Optional[Integer]
     digitization_state: Keyword
     # Page count
@@ -59,11 +79,9 @@ class IndexDocument(BaseEsModel):
     page_count_catalog: Optional[Integer]
     page_count_predicted: Optional[Integer]
     page_count_manual: Optional[Integer]
-    has_page_count: Boolean
     # Extraction properties
     dedicated_scanner: Optional[Keyword]
     extraction_priority: Optional[Integer]
-    is_extractable: Boolean
     extraction_ids: List[Integer]
     digitization_list_id: Optional[Integer]
     # Other properties
@@ -108,11 +126,10 @@ class IndexDocument(BaseEsModel):
             category_id=data.category_id,
             category_ids=data.category_ids,
             category_path=data.category_path,
+            document_flags=DocumentFlagsDispatcher(data),
             # Catalog properties
             skc_sysno=data.catalog_record.skc_sysno,
-            has_valid_main_record=(data.catalog_record.has_valid_main_record),
             cnb_sysno=data.catalog_record.cnb_sysno,
-            has_valid_cnb=data.catalog_record.has_valid_cnb,
             digitization_registry_id=data.digitization_registry_id,
             digitization_state=(
                 data.digitization_state.value
@@ -123,10 +140,8 @@ class IndexDocument(BaseEsModel):
             page_count_catalog=data.pages_count_catalog,
             page_count_predicted=data.pages_count_predicted,
             page_count_manual=data.pages_count_manual,
-            has_page_count=bool(data.pages_count),
             dedicated_scanner=data.dedicated_scanner,
             extraction_priority=data.extraction_priority,
-            is_extractable=data.is_extractable,
             extraction_ids=data.extraction_ids,
             digitization_list_id=data.digitization_list_id,
             material_type=(
