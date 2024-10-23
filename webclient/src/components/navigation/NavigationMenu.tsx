@@ -39,7 +39,7 @@ const NavigationMenuStart = () => {
                 {
                     label: t("catalog-records"),
                     icon: "pi pi-server",
-                    to: "/catalog-records",
+                    to: "/catalog-records?index_name=catalog_records&has_documents=true&has_active_documents=true",
                     action: ActionType.ReadCatalogRecords,
                 },
                 {

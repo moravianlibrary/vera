@@ -2,7 +2,11 @@ import React from "react";
 import EsFacet, { EsFacetProps } from "./EsFacet";
 import { useTranslation } from "react-i18next";
 
-const EsBooleanFacet: React.FC<EsFacetProps> = ({ attribute, label }) => {
+const EsBooleanFacet: React.FC<EsFacetProps> = ({
+    attribute,
+    label,
+    ...restOfProps
+}) => {
     const { t } = useTranslation("elasticsearch");
     return (
         <EsFacet
@@ -16,6 +20,7 @@ const EsBooleanFacet: React.FC<EsFacetProps> = ({ attribute, label }) => {
                     label: item.value === "1" ? t("yes") : t("no"),
                 }))
             }
+            {...restOfProps}
         />
     );
 };

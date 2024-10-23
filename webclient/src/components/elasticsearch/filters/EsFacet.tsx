@@ -1,10 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import EsFilter from "./EsFilter";
 import { Checkbox } from "primereact/checkbox";
 import { RefinementListProps, useRefinementList } from "react-instantsearch";
 import { Button } from "primereact/button";
 import { useTranslation } from "react-i18next";
-import { orderBy } from "../../../types/DocumentFlag";
 
 interface EsFacetProps extends RefinementListProps {
     label: string;

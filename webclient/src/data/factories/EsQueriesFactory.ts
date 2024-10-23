@@ -53,6 +53,8 @@ function stateToQuery(indexName, uiState) {
 }
 
 function stateToRoute(indexName, uiState) {
+    console.log(uiState);
+
     return {
         ...stateToQuery(indexName, uiState),
         page: uiState[indexName] && uiState[indexName].page,

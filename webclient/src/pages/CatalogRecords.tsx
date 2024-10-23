@@ -31,13 +31,6 @@ const CatalogRecordsDiv: React.FC<CatalogRecordsProps> = () => {
                         routeToState("catalog_records", route),
                 },
             }}
-            initialUiState={{
-                catalog_records: {
-                    refinementList: {
-                        has_documents: ["1"],
-                    },
-                },
-            }}
         >
             <WithProviders providers={[CatalogRecordsProvider, TasksProvider]}>
                 <DataTableLayout
