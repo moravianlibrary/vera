@@ -1,20 +1,32 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Frequency, IndexDocument } from "../../adapters/ApiDocuments";
+import {
+    Frequency,
+    IndexDocument,
+    UpdateAttributes,
+} from "../../adapters/ApiDocuments";
 import { useState } from "react";
 import { Button } from "primereact/button";
 import { Dialog } from "primereact/dialog";
-import { useToast } from "../../contexts/ToastContext";
-import { format } from "date-fns";
 import ExtractionPriorityEditor from "../../components/editors/ExtractionPriorityEditor";
 import EditorProps from "../../components/editors/Editor";
 import { useDocuments } from "../../contexts/DocumentsContext";
+import { formatDatetime } from "../../data/factories/DateFactory";
+import ExternalLinkButton from "../../components/buttons/ExternalLinkButton";
+import DigitizationStateTag from "../../components/tags/DigitizationStateTag";
+import MaterialTypeTag from "../../components/tags/MaterialTypeTag";
+import IssuanceTypeTag from "../../components/tags/IssuanceTypeTag";
+import { createCategoryPathLabel } from "../../data/factories/LabelsFactory";
+import DocumentFlagTag from "../../components/tags/DocumentFlagTag";
+import LabeledComponentsBox from "../../components/layouts/LabeledComponentsBox";
+import ExtractionPriorityTag from "../../components/tags/ExtractionPriorityTag";
+import { useNotification } from "../../contexts/NotificationContext";
 
 interface DocumentDetailsFieldType {
     attribute: string;
     transform?: (value: any) => any;
-    createLink?: (value: any) => string;
     editor?: React.FC<EditorProps<any>>;
+    copy?: boolean;
 }
 
 interface DocumentDetailsFieldProps {
@@ -22,66 +34,61 @@ interface DocumentDetailsFieldProps {
     field: DocumentDetailsFieldType;
 }
 
-interface DocumentDetailsFieldValueProps {
-    value: any;
-    field: DocumentDetailsFieldType;
-    toggleEditMode: () => void;
-}
-
-function createMzkAlephLink(sysno: string) {
-    const sysnoSplit = sysno.split("-");
-    return `https://aleph.mzk.cz:443/F?func=direct&doc_number=${sysnoSplit[1]}&local_base=${sysnoSplit[0]}&format=999`;
-}
-
-function createSkcLink(sysno: string) {
-    return `https://aleph.nkp.cz/F/?func=direct&doc_number=${sysno}&local_base=SKC`;
-}
-
-function createCnbLink(sysno: string) {
-    return `https://aleph.nkp.cz/F/?func=direct&doc_number=${sysno}&local_base=CNB`;
-}
-
 const DocumentFields = [
-    { attribute: "id" },
+    { attribute: "id", copy: true },
     {
         attribute: "sysno",
-        createLink: createMzkAlephLink,
+        transform: (value) => <ExternalLinkButton.MzkCatalog value={value} />,
+        copy: true,
     },
-    { attribute: "barcode" },
-    { attribute: "volume" },
-    { attribute: "volume_number" },
-    { attribute: "volume_year" },
-    { attribute: "volume_year_number" },
-    { attribute: "bundle" },
-    { attribute: "bundle_number" },
-    { attribute: "cnb" },
-    { attribute: "language" },
-    { attribute: "signature" },
-    { attribute: "isxn" },
+    { attribute: "barcode", copy: true },
+    { attribute: "volume", copy: true },
+    { attribute: "volume_number", copy: true },
+    { attribute: "volume_year", copy: true },
+    { attribute: "volume_year_number", copy: true },
+    { attribute: "bundle", copy: true },
+    { attribute: "bundle_number", copy: true },
+    { attribute: "cnb", copy: true },
+    { attribute: "language", copy: true },
+    { attribute: "signature", copy: true },
+    { attribute: "isxn", copy: true },
     {
         attribute: "added_at",
-        transform: (value) => format(new Date(value), "dd.MM.yyyy HH:mm:ss"),
+        transform: formatDatetime,
     },
     { attribute: "added_by" },
     {
+        attribute: "indexed_at",
+        transform: formatDatetime,
+    },
+    {
         attribute: "category_path",
-        transform: (value) => value.map((x) => x.category_name).join(" > "),
+        transform: createCategoryPathLabel,
+    },
+    {
+        attribute: "document_flags",
+        transform: (value) => <DocumentFlagTag.List flags={value} column />,
     },
     {
         attribute: "skc_sysno",
-        createLink: createSkcLink,
+        transform: (value) => <ExternalLinkButton.SckCatalog value={value} />,
+        copy: true,
     },
-    { attribute: "has_valid_main_record" },
     {
         attribute: "cnb_sysno",
-        createLink: createCnbLink,
+        transform: (value) => <ExternalLinkButton.CnbCatalog value={value} />,
+        copy: true,
     },
-    { attribute: "has_valid_cnb" },
     {
         attribute: "digitization_registry_id",
+        transform: (value) => (
+            <ExternalLinkButton.DigitizationRegistry value={value} />
+        ),
+        copy: true,
     },
     {
         attribute: "digitization_state",
+        transform: (value) => <DigitizationStateTag state={value} />,
     },
     { attribute: "page_count" },
     { attribute: "page_count_catalog" },
@@ -93,19 +100,32 @@ const DocumentFields = [
     // { attribute: "dedicated_scanner" },
     {
         attribute: "extraction_priority",
+        transform: (value) => <ExtractionPriorityTag priority={value} />,
         editor: ExtractionPriorityEditor,
     },
-    { attribute: "is_extractable" },
     { attribute: "digitization_list_id" },
-    { attribute: "material_type" },
-    { attribute: "issuance_type" },
-    { attribute: "title" },
-    { attribute: "size" },
-    { attribute: "location_uri", createLink: (value) => value },
-    { attribute: "publisher" },
-    { attribute: "publishing_place" },
-    { attribute: "publishing_year" },
-    { attribute: "languages" },
+    {
+        attribute: "material_type",
+        transform: (value) => <MaterialTypeTag materialType={value} />,
+    },
+    {
+        attribute: "issuance_type",
+        transform: (value) => <IssuanceTypeTag issuanceType={value} />,
+    },
+    { attribute: "title", copy: true },
+    { attribute: "size", copy: true },
+    {
+        attribute: "location_uri",
+        transform: (value) => (
+            <a href={value} target="_blank">
+                {value}
+            </a>
+        ),
+    },
+    { attribute: "publisher", copy: true },
+    { attribute: "publishing_place", copy: true },
+    { attribute: "publishing_year", copy: true },
+    { attribute: "languages", copy: true },
     {
         attribute: "frequencies",
         transform: (fs: Frequency[]) =>
@@ -116,6 +136,7 @@ const DocumentFields = [
                         : `"${f.frequency}"`
                 )
                 .join(", "),
+        copy: true,
     },
 ];
 
@@ -124,16 +145,17 @@ interface DocumentsDetailsProps {}
 const DocumentsDetails: React.FC<DocumentsDetailsProps> = () => {
     const { expandedRows, onRowCollapse } = useDocuments();
 
+    console.log(expandedRows);
+
     return (
         <div>
-            {expandedRows.map((document) => (
+            {/* {expandedRows.map((document) => (
                 <Dialog
                     id={`document-details-${document.id}`}
                     key={`document-details-${document.id}`}
                     style={{
-                        maxWidth: "600px",
-                        marginLeft: "96px",
-                        marginTop: "48px",
+                        maxWidth: "80%",
+                        minWidth: "600px",
                     }}
                     visible={expandedRows
                         .map((d) => d.id)
@@ -141,18 +163,37 @@ const DocumentsDetails: React.FC<DocumentsDetailsProps> = () => {
                     onHide={() => onRowCollapse(document)}
                     modal={false}
                 >
-                    <div className="flex flex-column justify-content-between gap-1 m-0">
-                        {DocumentFields.map((field) => (
-                            <DocumentDetailsItem
-                                key={field.attribute}
-                                document={document}
-                                field={field}
-                            />
-                        ))}
-                    </div>
+                    <DocumentDetails document={document} />
                 </Dialog>
-            ))}
+            ))} */}
         </div>
+    );
+};
+
+interface DocumentDetailsProps {
+    document: IndexDocument;
+}
+
+const DocumentDetails: React.FC<DocumentDetailsProps> = ({ document }) => {
+    const { t } = useTranslation("documents");
+
+    return (
+        <LabeledComponentsBox
+            labels={DocumentFields.map((field) =>
+                t(`properties.${field.attribute}`)
+            )}
+            components={DocumentFields.map(
+                (field, index) =>
+                    field.attribute in document && (
+                        <DocumentDetailsItem
+                            key={index}
+                            field={field}
+                            document={document}
+                        />
+                    )
+            )}
+            ignoreNotProvided
+        />
     );
 };
 
@@ -161,87 +202,72 @@ const DocumentDetailsItem: React.FC<DocumentDetailsFieldProps> = ({
     field,
 }) => {
     const { t } = useTranslation("documents");
-    const [editMode, setEditMode] = useState(false);
+    const { showInfo } = useNotification();
+    const { updateDocumentAttribute } = useDocuments();
 
-    if (!document[field.attribute]) return null;
-
-    return (
-        <div
-            key={field.attribute}
-            className="flex justify-content-between align-items-center gap-5 m-0"
-        >
-            <label>{t(`properties.${field.attribute}`)}:</label>
-            {!editMode && (
-                <DocumentDetailsFieldValue
-                    value={
-                        field.transform
-                            ? field.transform(document[field.attribute])
-                            : document[field.attribute]
-                    }
-                    field={field}
-                    toggleEditMode={() => setEditMode(!editMode)}
-                />
-            )}
-            {editMode && field.editor && (
-                <div className="flex p-1">
-                    <field.editor
-                        value={document[field.attribute]}
-                        editorCallback={(value) => {
-                            document[field.attribute] = value;
-                            setEditMode(!editMode);
-                        }}
-                        cancelCallback={() => setEditMode(!editMode)}
-                    />
-                </div>
-            )}
-        </div>
-    );
-};
-
-const DocumentDetailsFieldValue: React.FC<DocumentDetailsFieldValueProps> = ({
-    value,
-    field,
-    toggleEditMode,
-}) => {
-    const { t } = useTranslation("app");
-    const showToast = useToast();
+    const [editMode, setEditMode] = useState<boolean>(false);
 
     const copyToClipboard = (value: string) => {
         navigator.clipboard.writeText(value);
-        showToast("info", t("copied-to-clipboard"), "");
+        showInfo(t("copied-to-clipboard"), value);
     };
 
+    const onEditorCallback = (value: any) => {
+        if (field.attribute === "category_path") {
+            updateDocumentAttribute(document.id, "category_id", value);
+        } else if (
+            ["extraction_priority", "pages_count_manual"].includes(
+                field.attribute
+            )
+        ) {
+            updateDocumentAttribute(
+                document.id,
+                field.attribute as UpdateAttributes,
+                value
+            );
+        } else {
+            console.log(field.attribute);
+        }
+        setEditMode(false);
+    };
+
+    if (editMode) {
+        return (
+            <field.editor
+                value={document[field.attribute]}
+                editorCallback={onEditorCallback}
+                cancelCallback={() => setEditMode(false)}
+            />
+        );
+    }
+
     return (
-        <div className="flex gap-1 align-items-center">
-            <span className="p-0 max-w-23rem">{value}</span>
+        <div key={field.attribute} className="flex align-items-center gap-2">
+            {field.transform ? (
+                field.transform(document[field.attribute])
+            ) : (
+                <span>{document[field.attribute]}</span>
+            )}
             {field.editor && (
                 <Button
                     className="p-1 text-xs align-content-center text-yellow-500"
                     text
-                    onClick={toggleEditMode}
+                    onClick={() => setEditMode(true)}
                 >
                     <i className="pi pi-pencil" />
                 </Button>
             )}
-            {field.createLink && (
+            {field.copy && (
                 <Button
-                    className="p-1 text-xs align-content-center text-blue-600"
-                    severity="help"
+                    className="p-1 text-xs align-content-center text-cyan-500"
                     text
                     onClick={() =>
-                        window.open(field.createLink!(value), "_blank")
+                        copyToClipboard(document[field.attribute] as string)
                     }
                 >
-                    <i className="pi pi-external-link" />
+                    <i className="pi pi-copy" />
                 </Button>
             )}
-            <Button
-                className="p-1 text-xs align-content-center text-cyan-500"
-                text
-                onClick={() => copyToClipboard(value as string)}
-            >
-                <i className="pi pi-copy" />
-            </Button>
         </div>
     );
 };

@@ -83,6 +83,7 @@ def update_document(
     pages_count_manual: Optional[int] = Query(None),
     extraction_priority: Optional[int] = Query(None),
     user: CurrentUser = DependsOnCurrentUser,
+    es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
     OwnershipValidator.EnforceDocumentEdit(user, document_id, session)
@@ -93,7 +94,9 @@ def update_document(
         document.pages_count_manual = pages_count_manual
     if extraction_priority:
         document.extraction_priority = extraction_priority
-    return document.save(session)
+    document.save(session)
+    IndexDocument.model_validate(document).save(es_session, True)
+    return document
 
 
 @router.delete(

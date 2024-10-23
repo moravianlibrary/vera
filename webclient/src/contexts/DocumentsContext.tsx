@@ -5,10 +5,12 @@ import React, {
     useState,
     useEffect,
 } from "react";
-import ApiDocuments, { IndexDocument } from "../adapters/ApiDocuments";
+import ApiDocuments, {
+    IndexDocument,
+    UpdateAttributes,
+} from "../adapters/ApiDocuments";
 import { useTranslation } from "react-i18next";
 import { EsItemsPaginationProps } from "./base/EsPaginationInjector";
-import { stateToQuery, stateToRoute } from "../data/factories/EsQueriesFactory";
 import { EsItemsSelectionProps } from "./base/EsSelectionInjector";
 import useEsSelection from "./base/EsSelectionInjector";
 import useEsPagination from "./base/EsPaginationInjector";
@@ -20,6 +22,11 @@ interface DocumentsContextProps
     extends EsItemsPaginationProps<IndexDocument>,
         EsItemsSelectionProps<IndexDocument>,
         DataTableExpandedRowsProps {
+    updateDocumentAttribute: (
+        documentId: string,
+        attribute: UpdateAttributes,
+        value: any
+    ) => void;
     exportDocuments: () => void;
     updateCategory: (categoryId: number, categoryName: string) => void;
     updateExtractionPriority: (extractionPriority: number) => void;
@@ -148,6 +155,23 @@ const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
         );
     };
 
+    const updateDocumentAttribute = (
+        documentId: string,
+        attribute: UpdateAttributes,
+        value: any
+    ) => {
+        api.updateDocument(documentId, { [attribute]: value })
+            .then((response) => {
+                refresh();
+                showSuccess(t(`actions.update-${attribute}.success`));
+            })
+            .catch((error) => {
+                console.error(
+                    t(`actions.update-${attribute}.failure`, { error })
+                );
+            });
+    };
+
     const deleteDocuments = () => {
         showConfirmDangerDialog(
             t("actions.delete.confirm", {
@@ -184,6 +208,8 @@ const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
 
         ...restOfExpandedRowsProps,
         reset,
+
+        updateDocumentAttribute,
 
         exportDocuments,
         updateCategory,

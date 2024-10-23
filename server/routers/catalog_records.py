@@ -85,7 +85,7 @@ def update_catalog_record_differences(
     update_catalog_record_logic.update_catalog_record_differences(
         session, catalog_record
     )
-    IndexCatalogRecord.model_validate(catalog_record).save(es_session)
+    IndexCatalogRecord.model_validate(catalog_record).save(es_session, True)
     return catalog_record
 
 
@@ -109,7 +109,7 @@ def approve_catalog_record_difference(
     catalog_record: CatalogRecord = difference.catalog_record
 
     record = IndexCatalogRecord.model_validate(catalog_record)
-    record.save(es_session)
+    record.save(es_session, True)
 
     # Catalog record validity was not changed, no need to reindex documents
     if (
@@ -120,7 +120,7 @@ def approve_catalog_record_difference(
 
     # Catalog record validity was changed, reindexing documents
     task = Task(
-        task_type=TaskType.Reindex,
+        task_type=TaskType.ReindexCatalogRecords,
         owner=approved_by,
     ).save(session)
     for document_id in catalog_record.document_ids:

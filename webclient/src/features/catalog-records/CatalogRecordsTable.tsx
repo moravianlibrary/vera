@@ -32,6 +32,8 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
             value={items}
             scrollable
             scrollHeight="flex"
+            // dataKey="id"
+            dataKey={(cr) => cr.id}
             expandedRows={expandedRows}
             onRowExpand={onRowExpandEvent}
             onRowCollapse={onRowCollapseEvent}
@@ -42,7 +44,7 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
             selection={currentPageSelected}
             onSelectionChange={handleDataTableSelectionChange}
         >
-            <Column expander style={{ width: "5rem" }} />
+            <Column expander={true} style={{ width: "5rem" }} />
             <Column
                 field="id"
                 header={t("table.columns.mzk-sysno")}

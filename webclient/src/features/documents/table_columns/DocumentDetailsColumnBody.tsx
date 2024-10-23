@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "primereact/button";
 import { IndexDocument } from "../../../adapters/ApiDocuments";
 import { useDocuments } from "../../../contexts/DocumentsContext";
@@ -7,7 +6,7 @@ const DocumentDetailsColumnBody = (document: IndexDocument) => {
     const { expandedRows, onRowExpand, onRowCollapse } = useDocuments();
 
     const isVisible = () => {
-        return expandedRows.map((d) => d.id).includes(document.id);
+        return expandedRows.includes(document.id);
     };
 
     const toggleDetailsVisibility = () => {

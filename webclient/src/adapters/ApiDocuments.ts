@@ -16,6 +16,12 @@ interface Frequency {
     date: string | null;
 }
 
+interface CategoryPathItem {
+    category_id: number;
+    category_name: string;
+}
+type CategoryPath = CategoryPathItem[];
+
 interface IndexDocument {
     id: string;
     // Main identifiers
@@ -35,8 +41,9 @@ interface IndexDocument {
     // VERA properties
     added_at: string;
     added_by: string;
+    indexed_at: string;
     category_id: number | null;
-    category_path: any;
+    category_path: CategoryPath;
     document_flags: DocumentFlag[];
     // Catalog properties
     skc_sysno: string | null;
@@ -55,7 +62,6 @@ interface IndexDocument {
     // Extraction properties
     dedicated_scanner: string | null;
     extraction_priority: number | null;
-    is_extractable: boolean;
     digitization_list_id: number | null;
     // Other properties
     material_type: MaterialType;
@@ -112,6 +118,11 @@ interface UpdateDocumentsOptions {
     pages_count_manual?: number;
 }
 
+type UpdateAttributes =
+    | "category_id"
+    | "extraction_priority"
+    | "pages_count_manual";
+
 class ApiDocuments extends ApiBase<IndexDocument> {
     constructor() {
         super("/documents", {
@@ -140,6 +151,21 @@ class ApiDocuments extends ApiBase<IndexDocument> {
         // : `/catalogs?insert_digitized=${insert_digitized}`;
 
         return axiosInstance.post<AddDocumentResponse>(url, identifier, {
+            headers: authHeader(),
+        });
+    }
+
+    updateDocument(documentId: string, options: UpdateDocumentsOptions) {
+        const endpoint = `${this.endpoint}/${documentId}`;
+        const queryString = Object.entries(options)
+            .filter(([, value]) => value !== undefined)
+            .map(
+                ([key, value]) =>
+                    `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+            )
+            .join("&");
+        const url = queryString ? `${endpoint}?${queryString}` : endpoint;
+        return ApiBase.axiosInstance.put<Object>(url, null, {
             headers: authHeader(),
         });
     }
@@ -183,4 +209,6 @@ export type {
     AddDocumentResponse,
     CatalogIssueResponse,
     CatalogDocumentResponse,
+    CategoryPath,
+    UpdateAttributes,
 };

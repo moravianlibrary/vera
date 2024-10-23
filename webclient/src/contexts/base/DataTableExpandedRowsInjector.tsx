@@ -11,11 +11,15 @@ interface DataTableExpandedRowsProps {
 }
 
 const useDataTableExpandedRows = () => {
-    const [expandedRows, setExpandedRows] = useState<any[]>([]);
+    const [expandedRows, setExpandedRows] = useState<any>({});
 
-    const onRowExpand = useCallback((data: any) => {
-        setExpandedRows((prev) => [...prev, data]);
-    }, []);
+    const onRowExpand = useCallback(
+        (data: any) => {
+            console.log(expandedRows);
+            setExpandedRows({ ...expandedRows, [data.id]: true });
+        },
+        [expandedRows, setExpandedRows]
+    );
 
     const onRowExpandEvent = useCallback(
         (e: DataTableRowEvent) => {
@@ -25,11 +29,11 @@ const useDataTableExpandedRows = () => {
     );
 
     const onRowCollapse = useCallback((data: any) => {
-        if (data.id) {
-            setExpandedRows((prev) => prev.filter((row) => row.id !== data.id));
-        } else {
-            setExpandedRows((prev) => prev.filter((row) => row !== data));
-        }
+        setExpandedRows((prev) => {
+            const newRows = { ...prev };
+            delete newRows[data.id];
+            return newRows;
+        });
     }, []);
 
     const onRowCollapseEvent = useCallback(
@@ -38,9 +42,9 @@ const useDataTableExpandedRows = () => {
         },
         [onRowCollapse]
     );
-    
+
     const reset = useCallback(() => {
-        setExpandedRows([]);
+        setExpandedRows({});
     }, []);
 
     return {

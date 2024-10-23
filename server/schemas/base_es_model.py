@@ -141,9 +141,10 @@ class BaseEsModel(BaseModel):
     def delete(cls, session: EsSession, source_id: str):
         session.delete(index=cls.__index_name__, id=source_id)
 
-    def save(self, session: EsSession):
+    def save(self, session: EsSession, wait_for: bool = False):
         session.index(
             index=self.__index_name__,
             id=self.id,
             document=self.model_dump(exclude_none=True),
+            refresh="true" if wait_for else None,
         )

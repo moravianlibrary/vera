@@ -1,7 +1,4 @@
-import {
-    filterBooleanQuery,
-    sortFacetDescByKey,
-} from "../data/factories/EsQueriesFactory";
+import { sortFacetDescByKey } from "../data/factories/EsQueriesFactory";
 
 const documents_index_settings = {
     search_attributes: [
@@ -32,6 +29,7 @@ const documents_index_settings = {
         // VERA properties
         "added_at",
         "added_by",
+        "indexed_at",
         "category_id",
         "category_ids",
         "category_path",
