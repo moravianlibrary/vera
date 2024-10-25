@@ -27,12 +27,7 @@ const EsQueryRulesLayout: React.FC<EsQueryRulesLayoutProps> = ({
             <LabeledSection label={t("facets")}>{facets}</LabeledSection>
             {queryParamsIndexName && (
                 <LabeledSection label={t("query-params")}>
-                    <EsQueryParams
-                        queryParams={stateToQuery(
-                            queryParamsIndexName,
-                            uiState
-                        )}
-                    />
+                    <EsQueryParams queryParams={stateToQuery(uiState)} />
                 </LabeledSection>
             )}
         </div>

@@ -1,3 +1,4 @@
+import { EsQuery } from "../../adapters/ApiTasks";
 import { IndexSettingsDispatcher } from "../../config/elasticsearch";
 
 function filterBooleanQuery(field: string, value: string) {
@@ -26,7 +27,9 @@ function sortFacetDescByKey(field, size) {
     };
 }
 
-function stateToQuery(indexName, uiState) {
+function stateToQuery(uiState) {
+    const indexName = Object.keys(uiState)[0];
+
     const stateAsBoolean = IndexSettingsDispatcher[indexName].facet_attributes
         .filter((fa) => fa.stateAs === "boolean")
         .map((fa) => fa.attribute);
@@ -52,17 +55,23 @@ function stateToQuery(indexName, uiState) {
     };
 }
 
-function stateToRoute(indexName, uiState) {
-    console.log(uiState);
+function stateToRoute(uiState) {
+    const indexName = Object.keys(uiState)[0];
 
     return {
-        ...stateToQuery(indexName, uiState),
+        ...stateToQuery(uiState),
         page: uiState[indexName] && uiState[indexName].page,
         page_size: uiState[indexName] && uiState[indexName].hitsPerPage,
     };
 }
 
-function routeToState(indexName, routeState) {
+function routeToState(routeState, initState?: any) {
+    const indexName = routeState.index_name;
+
+    if (!indexName && initState) {
+        return initState;
+    }
+
     const stateAsBoolean = IndexSettingsDispatcher[indexName].facet_attributes
         .filter((fa) => fa.stateAs === "boolean")
         .map((fa) => fa.attribute);
@@ -74,7 +83,7 @@ function routeToState(indexName, routeState) {
             page: routeState.page,
             refinementList: Object.keys(routeState).reduce((acc, key) => {
                 if (
-                    !["indexName", "query", "page_size", "page"].includes(
+                    !["index_name", "query", "page_size", "page"].includes(
                         key
                     ) &&
                     !/^\d+:\d+|\d+:|:\d+$/.test(routeState[key])
@@ -88,7 +97,7 @@ function routeToState(indexName, routeState) {
             }, {}),
             range: Object.keys(routeState).reduce((acc, key) => {
                 if (
-                    !["indexName", "query", "page_size", "page"].includes(
+                    !["index_name", "query", "page_size", "page"].includes(
                         key
                     ) &&
                     /^\d+:\d+|\d+:|:\d+$/.test(routeState[key])
@@ -101,10 +110,27 @@ function routeToState(indexName, routeState) {
     };
 }
 
+function createInitState(indexSettings: any) {
+    const indexName = indexSettings.index_name;
+    const facetAttributes = IndexSettingsDispatcher[indexName].facet_attributes;
+
+    return {
+        [indexName]: {
+            refinementList: facetAttributes
+                .filter((fa) => fa.init)
+                .reduce((acc, fa) => {
+                    acc[fa.attribute] = [fa.init];
+                    return acc;
+                }, {}),
+        },
+    };
+}
+
 export {
     filterBooleanQuery,
     stateToQuery,
     stateToRoute,
     routeToState,
     sortFacetDescByKey,
+    createInitState,
 };

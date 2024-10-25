@@ -1,6 +1,7 @@
 import { sortFacetDescByKey } from "../data/factories/EsQueriesFactory";
 
 const documents_index_settings = {
+    index_name: "documents",
     search_attributes: [
         { field: "title", weight: 3 },
         "sysno",

@@ -19,12 +19,7 @@ interface EsItemsSelectionProps<T extends { id: string }> {
     selectedQuery: EsQuery;
 }
 
-const useEsSelection = <T extends { id: string }>(
-    // items: T[],
-    // numFound: number,
-    // queryParams: EsQuery
-    indexName: string
-) => {
+const useEsSelection = <T extends { id: string }>() => {
     const { uiState, results } = useInstantSearch();
     const { hits: items, nbHits: numFound } = results;
     //
@@ -64,7 +59,7 @@ const useEsSelection = <T extends { id: string }>(
     const onSetAreAllSelected = (value: boolean) => {
         setAreAllSelected(value);
         setNumSelected(value ? numFound : selectedIds.size);
-        setSelectedQuery(value ? stateToQuery(indexName, uiState) : {});
+        setSelectedQuery(value ? stateToQuery(uiState) : {});
     };
 
     const cancelSelection = () => {

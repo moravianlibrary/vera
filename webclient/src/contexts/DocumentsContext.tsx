@@ -17,6 +17,7 @@ import useEsPagination from "./base/EsPaginationInjector";
 import { DataTableExpandedRowsProps } from "./base/DataTableExpandedRowsInjector";
 import useDataTableExpandedRows from "./base/DataTableExpandedRowsInjector";
 import { useNotification } from "./NotificationContext";
+import { BaseProviderProps } from "./BaseContext";
 
 interface DocumentsContextProps
     extends EsItemsPaginationProps<IndexDocument>,
@@ -40,24 +41,28 @@ const DocumentsContext = createContext<DocumentsContextProps | undefined>(
     undefined
 );
 
-interface DocumentsProviderProps {
-    children: ReactNode;
-}
-
-const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
+const DocumentsProvider: React.FC<
+    BaseProviderProps & {
+        searchClient: {
+            clearCache(): Promise<void>;
+        };
+    }
+> = ({ searchClient, children }) => {
     const api = new ApiDocuments();
     const { showSuccess, showConfirmDialog, showConfirmDangerDialog } =
         useNotification();
     const { t } = useTranslation("documents");
-    // const { items, numFound, queryParams, refresh, ...restOfPaginationProps } =
-    //     useEsPagination(
-    //         (uiState) => stateToQuery("documents", uiState),
-    //         (uiState) => stateToRoute("documents", uiState)
-    //     );
-    const { uiState, items, numFound, refresh, ...restOfPaginationProps } =
-        useEsPagination<IndexDocument>();
+    const {
+        items,
+        numFound,
+        queryParams,
+        queryRoute,
+        refresh,
+        updateItem,
+        ...restOfPaginationProps
+    } = useEsPagination<IndexDocument>();
     const { selectedQuery, numSelected, ...restOfSelectionProps } =
-        useEsSelection("documents");
+        useEsSelection();
     const { reset, ...restOfExpandedRowsProps } = useDataTableExpandedRows();
 
     const [digitizationListIdFacets, setDigitizationListIdFacets] = useState<
@@ -162,7 +167,8 @@ const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
     ) => {
         api.updateDocument(documentId, { [attribute]: value })
             .then((response) => {
-                refresh();
+                updateItem(documentId, response.data);
+                searchClient.clearCache();
                 showSuccess(t(`actions.update-${attribute}.success`));
             })
             .catch((error) => {
@@ -192,22 +198,23 @@ const DocumentsProvider: React.FC<DocumentsProviderProps> = ({ children }) => {
 
     useEffect(() => {
         reset();
-    }, [reset, uiState]);
+    }, [reset, queryParams.current, queryRoute.current]);
 
     const contextValue: DocumentsContextProps = {
-        uiState,
         items,
         numFound,
-        // queryParams,
+        queryParams,
+        queryRoute,
         refresh,
+        updateItem,
         ...restOfPaginationProps,
 
         selectedQuery,
         numSelected,
         ...restOfSelectionProps,
 
-        ...restOfExpandedRowsProps,
         reset,
+        ...restOfExpandedRowsProps,
 
         updateDocumentAttribute,
 

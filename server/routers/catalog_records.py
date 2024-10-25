@@ -23,7 +23,7 @@ from services.marc_comparator import (
 )
 from logic import update_catalog_record as update_catalog_record_logic
 from services.external.aleph import AlephResponseStatus
-from datatypes import ElasticsearchParams
+from datatypes import ElasticsearchParams, TaskItemType
 
 
 router = APIRouter(prefix="/catalog_records", tags=["Catalog records"])
@@ -124,7 +124,11 @@ def approve_catalog_record_difference(
         owner=approved_by,
     ).save(session)
     for document_id in catalog_record.document_ids:
-        TaskItem(task_id=task.id, document_id=document_id).save(session)
+        TaskItem(
+            task_id=task.id,
+            item_id=str(document_id),
+            item_type=TaskItemType.Document,
+        ).save(session)
     run_task.delay(task_id=task.id)
 
     return record

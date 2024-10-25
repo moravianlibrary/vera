@@ -1,6 +1,7 @@
 import { filterBooleanQuery } from "../data/factories/EsQueriesFactory";
 
 const catalog_records_index_settings = {
+    index_name: "catalog_records",
     search_attributes: [
         { field: "id", weight: 3 },
         "skc_sysno",
@@ -70,6 +71,7 @@ const catalog_records_index_settings = {
             filterQuery: filterBooleanQuery,
             stateAs: "boolean",
             translateAs: "boolean",
+            init: "1",
         },
         {
             attribute: "has_active_documents",
@@ -78,6 +80,7 @@ const catalog_records_index_settings = {
             filterQuery: filterBooleanQuery,
             stateAs: "boolean",
             translateAs: "boolean",
+            init: "1",
         },
         {
             attribute: "has_valid_main_record",

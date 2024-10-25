@@ -15,7 +15,6 @@ const useDataTableExpandedRows = () => {
 
     const onRowExpand = useCallback(
         (data: any) => {
-            console.log(expandedRows);
             setExpandedRows({ ...expandedRows, [data.id]: true });
         },
         [expandedRows, setExpandedRows]

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { createContext } from "react";
 import ApiCatalogRecords, {
     CatalogRecord,
@@ -12,7 +12,6 @@ import useEsPagination, {
 import useEsSelection, {
     EsItemsSelectionProps,
 } from "./base/EsSelectionInjector";
-// import { stateToQuery, stateToRoute } from "../data/factories/EsQueriesFactory";
 import useDataTableExpandedRows, {
     DataTableExpandedRowsProps,
 } from "./base/DataTableExpandedRowsInjector";
@@ -28,38 +27,50 @@ const CatalogRecordsContext = createContext<
     CatalogRecordsContextProps | undefined
 >(undefined);
 
-export const CatalogRecordsProvider: React.FC<BaseProviderProps> = ({
-    children,
-}) => {
+export const CatalogRecordsProvider: React.FC<
+    BaseProviderProps & {
+        searchClient: {
+            clearCache(): Promise<void>;
+        };
+    }
+> = ({ searchClient, children }) => {
     const api = new ApiCatalogRecords();
     const { t } = useTranslation("catalog-records");
     const showToast = useToast();
-    // const { items, numFound, queryParams, ...restOfPaginationProps } =
-    //     useEsPagination(
-    //         (uiState) => stateToQuery("catalog_records", uiState),
-    //         (uiState) => stateToRoute("catalog_records", uiState)
-    //     );
-    const { items, numFound, updateItem, ...restOfPaginationProps } =
-        useEsPagination<CatalogRecord>();
+    const {
+        items,
+        numFound,
+        queryParams,
+        queryRoute,
+        updateItem,
+        ...restOfPaginationProps
+    } = useEsPagination<CatalogRecord>();
+    const { reset, ...restOfExpandedRowsProps } = useDataTableExpandedRows();
 
     const approveDifference = (differenceId: number) => {
         api.approveDifference(differenceId).then((response) => {
             updateItem(response.data.id, response.data);
+            searchClient.clearCache();
             showToast("success", t("actions.difference-approve-success"));
         });
     };
 
+    useEffect(() => {
+        reset();
+    }, [reset, queryParams.current, queryRoute.current]);
+
     const contextValue: CatalogRecordsContextProps = {
         items,
         numFound,
+        queryParams,
+        queryRoute,
         updateItem,
-        // queryParams,
         ...restOfPaginationProps,
 
-        // ...useEsSelection(items, numFound, queryParams),
-        ...useEsSelection("catalog_records"),
+        ...useEsSelection(),
 
-        ...useDataTableExpandedRows(),
+        reset,
+        ...restOfExpandedRowsProps,
 
         approveDifference,
     };

@@ -7,9 +7,13 @@ import catalogRecordsIndex from "../adapters/IndexCatalogRecords";
 import { InstantSearch } from "react-instantsearch";
 import CatalogRecordsQueryRules from "../features/catalog-records/CatalogRecordsQueryRules";
 import CatalogRecordsHeader from "../features/catalog-records/CatalogRecordsHeader";
-import WithProviders from "../components/wrappers/WithProviders";
 import { TasksProvider } from "../contexts/TasksContext";
-import { routeToState, stateToRoute } from "../data/factories/EsQueriesFactory";
+import {
+    createInitState,
+    routeToState,
+    stateToRoute,
+} from "../data/factories/EsQueriesFactory";
+import catalog_records_index_settings from "../config/catalog_records_index";
 
 interface CatalogRecordsProps {}
 
@@ -25,21 +29,25 @@ const CatalogRecordsDiv: React.FC<CatalogRecordsProps> = () => {
             searchClient={searchClient}
             routing={{
                 stateMapping: {
-                    stateToRoute: (state) =>
-                        stateToRoute("catalog_records", state),
+                    stateToRoute: (state) => stateToRoute(state),
                     routeToState: (route) =>
-                        routeToState("catalog_records", route),
+                        routeToState(
+                            route,
+                            createInitState(catalog_records_index_settings)
+                        ),
                 },
             }}
         >
-            <WithProviders providers={[CatalogRecordsProvider, TasksProvider]}>
-                <DataTableLayout
-                    header={<CatalogRecordsHeader />}
-                    sidebar={<CatalogRecordsQueryRules />}
-                    datatable={<CatalogRecordsTable />}
-                    paginator={<CatalogRecordsTable.Paginator />}
-                />
-            </WithProviders>
+            <TasksProvider>
+                <CatalogRecordsProvider searchClient={searchClient}>
+                    <DataTableLayout
+                        header={<CatalogRecordsHeader />}
+                        sidebar={<CatalogRecordsQueryRules />}
+                        datatable={<CatalogRecordsTable />}
+                        paginator={<CatalogRecordsTable.Paginator />}
+                    />
+                </CatalogRecordsProvider>
+            </TasksProvider>
         </InstantSearch>
     );
 };

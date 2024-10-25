@@ -6,7 +6,7 @@ const DocumentDetailsColumnBody = (document: IndexDocument) => {
     const { expandedRows, onRowExpand, onRowCollapse } = useDocuments();
 
     const isVisible = () => {
-        return expandedRows.includes(document.id);
+        return document.id in expandedRows && expandedRows[document.id];
     };
 
     const toggleDetailsVisibility = () => {

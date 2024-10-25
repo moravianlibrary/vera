@@ -128,7 +128,7 @@ export const EsDataTableProvider: React.FC<EsDataTableProviderProps> = ({
     const handleSetAreAllItemsSelected = (value: boolean) => {
         setAreAllItemsSelected(value);
         setNumSelected(value ? numFound : selectedIds.size);
-        setSelectedQuery(stateToRoute("catalog_records", uiState));
+        setSelectedQuery(stateToRoute(uiState));
     };
 
     const cancelSelection = () => {

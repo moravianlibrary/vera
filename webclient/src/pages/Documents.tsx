@@ -15,8 +15,13 @@ import DataTableLayout from "../components/layouts/DataTableLayout";
 import WithProviders from "../components/wrappers/WithProviders";
 import { TasksProvider } from "../contexts/TasksContext";
 import { DocumentsProvider } from "../contexts/DocumentsContext";
-import { routeToState, stateToRoute } from "../data/factories/EsQueriesFactory";
+import {
+    createInitState,
+    routeToState,
+    stateToRoute,
+} from "../data/factories/EsQueriesFactory";
 import DocumentsDetails from "../features/documents/DocumentsDetails";
+import documents_index_settings from "../config/documents_index";
 
 const Documents: React.FC = () => {
     const searchClient = Client(documentsIndex);
@@ -27,30 +32,36 @@ const Documents: React.FC = () => {
             searchClient={searchClient}
             routing={{
                 stateMapping: {
-                    stateToRoute: (state) => stateToRoute("documents", state),
-                    routeToState: (route) => routeToState("documents", route),
+                    stateToRoute: (state) => stateToRoute(state),
+                    routeToState: (route) =>
+                        routeToState(
+                            route,
+                            createInitState(documents_index_settings)
+                        ),
                 },
             }}
         >
-            <WithProviders
-                providers={[
-                    CategoriesProvider,
-                    LocationsProvider,
-                    GeneratedExtractionsProvider,
-                    DigitizationListsProvider,
-                    IntentionsProvider,
-                    DocumentsProvider,
-                    TasksProvider,
-                ]}
-            >
-                <DataTableLayout
-                    header={<DocumentsHeader />}
-                    sidebar={<DocumentsQueryRules />}
-                    datatable={<DocumentsTable />}
-                    paginator={<DocumentsTable.Paginator />}
-                    dialog={<DocumentsDetails />}
-                />
-            </WithProviders>
+            <TasksProvider>
+                <DocumentsProvider searchClient={searchClient}>
+                    <WithProviders
+                        providers={[
+                            CategoriesProvider,
+                            LocationsProvider,
+                            GeneratedExtractionsProvider,
+                            DigitizationListsProvider,
+                            IntentionsProvider,
+                        ]}
+                    >
+                        <DataTableLayout
+                            header={<DocumentsHeader />}
+                            sidebar={<DocumentsQueryRules />}
+                            datatable={<DocumentsTable />}
+                            paginator={<DocumentsTable.Paginator />}
+                            dialog={<DocumentsDetails />}
+                        />
+                    </WithProviders>
+                </DocumentsProvider>
+            </TasksProvider>
         </InstantSearch>
     );
 };

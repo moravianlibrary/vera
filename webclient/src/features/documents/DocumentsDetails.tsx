@@ -143,29 +143,27 @@ const DocumentFields = [
 interface DocumentsDetailsProps {}
 
 const DocumentsDetails: React.FC<DocumentsDetailsProps> = () => {
-    const { expandedRows, onRowCollapse } = useDocuments();
-
-    console.log(expandedRows);
+    const { expandedRows, items, onRowCollapse } = useDocuments();
 
     return (
         <div>
-            {/* {expandedRows.map((document) => (
-                <Dialog
-                    id={`document-details-${document.id}`}
-                    key={`document-details-${document.id}`}
-                    style={{
-                        maxWidth: "80%",
-                        minWidth: "600px",
-                    }}
-                    visible={expandedRows
-                        .map((d) => d.id)
-                        .includes(document.id)}
-                    onHide={() => onRowCollapse(document)}
-                    modal={false}
-                >
-                    <DocumentDetails document={document} />
-                </Dialog>
-            ))} */}
+            {items
+                .filter((document) => document.id in expandedRows)
+                .map((document) => (
+                    <Dialog
+                        id={`document-details-${document.id}`}
+                        key={`document-details-${document.id}`}
+                        style={{
+                            maxWidth: "80%",
+                            minWidth: "600px",
+                        }}
+                        visible={true}
+                        onHide={() => onRowCollapse(document)}
+                        modal={false}
+                    >
+                        <DocumentDetails document={document} />
+                    </Dialog>
+                ))}
         </div>
     );
 };
@@ -225,8 +223,6 @@ const DocumentDetailsItem: React.FC<DocumentDetailsFieldProps> = ({
                 field.attribute as UpdateAttributes,
                 value
             );
-        } else {
-            console.log(field.attribute);
         }
         setEditMode(false);
     };
