@@ -119,6 +119,15 @@
     margin: 0px;
 }
 
+.number-editor {
+    display: flex;
+}
+
+.number-editor .button {
+    padding: 0px;
+    margin: 0px;
+}
+
 .extraction-priority-editor .non-active .extraction-priority-1 {
     background-color: #99e699;
     border: none;

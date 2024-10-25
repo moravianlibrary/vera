@@ -28,6 +28,8 @@ interface DocumentsContextProps
         attribute: UpdateAttributes,
         value: any
     ) => void;
+    deleteDocument: (documentId: string) => void;
+
     exportDocuments: () => void;
     updateCategory: (categoryId: number, categoryName: string) => void;
     updateExtractionPriority: (extractionPriority: number) => void;
@@ -69,6 +71,43 @@ const DocumentsProvider: React.FC<
         string[]
     >([]);
 
+    const updateDocumentAttribute = (
+        documentId: string,
+        attribute: UpdateAttributes,
+        value: any
+    ) => {
+        api.updateDocument(documentId, { [attribute]: value })
+            .then((response) => {
+                updateItem(documentId, response.data);
+                searchClient.clearCache();
+                showSuccess(
+                    t(`actions.update-${attribute.replace(/_/g, "-")}.success`)
+                );
+            })
+            .catch((error) => {
+                console.error(
+                    t(`actions.update-${attribute}.failure`, { error })
+                );
+            });
+    };
+
+    const deleteDocument = (documentId: string) => {
+        showConfirmDangerDialog(
+            t("actions.delete.confirm", {
+                count: 1,
+            }),
+            () =>
+                api
+                    .delete(documentId)
+                    .then((response) => {
+                        refresh();
+                        showSuccess(t("actions.delete.success", { count: 1 }));
+                    })
+                    .catch((error) => {
+                        console.error(`Could not delete documents: ${error}`);
+                    })
+        );
+    };
     const exportDocuments = async () => {
         api.exportDocuments(selectedQuery)
             .then((response) => {
@@ -160,24 +199,6 @@ const DocumentsProvider: React.FC<
         );
     };
 
-    const updateDocumentAttribute = (
-        documentId: string,
-        attribute: UpdateAttributes,
-        value: any
-    ) => {
-        api.updateDocument(documentId, { [attribute]: value })
-            .then((response) => {
-                updateItem(documentId, response.data);
-                searchClient.clearCache();
-                showSuccess(t(`actions.update-${attribute}.success`));
-            })
-            .catch((error) => {
-                console.error(
-                    t(`actions.update-${attribute}.failure`, { error })
-                );
-            });
-    };
-
     const deleteDocuments = () => {
         showConfirmDangerDialog(
             t("actions.delete.confirm", {
@@ -188,7 +209,9 @@ const DocumentsProvider: React.FC<
                     .deleteDocuments(selectedQuery)
                     .then((response) => {
                         refresh();
-                        showSuccess(t("actions.delete.success"));
+                        showSuccess(
+                            t("actions.delete.success", { count: numSelected })
+                        );
                     })
                     .catch((error) => {
                         console.error(`Could not delete documents: ${error}`);
@@ -217,6 +240,7 @@ const DocumentsProvider: React.FC<
         ...restOfExpandedRowsProps,
 
         updateDocumentAttribute,
+        deleteDocument,
 
         exportDocuments,
         updateCategory,

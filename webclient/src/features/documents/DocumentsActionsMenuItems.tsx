@@ -76,7 +76,7 @@ const DocumentsActionsMenuItems = () => {
 
     if (hasPermission(ActionType.EditDatatable)) {
         const changeCategoryMenuItem = {
-            label: t("actions.update-category.label"),
+            label: t("actions.update-category-id.label"),
             icon: "pi pi-tags",
             items: createCategoriesTieredMenu(),
         };

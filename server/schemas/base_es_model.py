@@ -138,8 +138,14 @@ class BaseEsModel(BaseModel):
         return session.get(index=cls.__index_name__, id=source_id)["_source"]
 
     @classmethod
-    def delete(cls, session: EsSession, source_id: str):
-        session.delete(index=cls.__index_name__, id=source_id)
+    def delete(
+        cls, session: EsSession, source_id: str, wait_for: bool = False
+    ):
+        session.delete(
+            index=cls.__index_name__,
+            id=source_id,
+            refresh="true" if wait_for else None,
+        )
 
     def save(self, session: EsSession, wait_for: bool = False):
         session.index(

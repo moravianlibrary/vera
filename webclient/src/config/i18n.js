@@ -100,10 +100,6 @@ const resources = {
                 "Vybrat všechny dokumenty podle zadaných kritérií vyhledávání",
 
             "Create location": "Vytvořit lokaci",
-            "Special characters": "Speciální znaky",
-            "Any digit": "Libovolná číslice",
-            "Any letter": "Libovolné písmeno",
-            "Any letter or digit": "Libovolná číslice nebo písmeno",
             "The library was created successfully":
                 "Knihovna byla úspěšně vytvořena",
             "Library creation failed": "Knihovnu se nepodařilo vytvořit",
@@ -184,7 +180,7 @@ i18n.use(HttpBackend)
             escapeValue: false,
         },
         simplifyPluralSuffix: false,
-        debug: true,
+        // debug: true,
     });
 
 export default i18n;

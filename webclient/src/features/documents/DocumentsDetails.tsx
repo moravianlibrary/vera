@@ -21,10 +21,17 @@ import DocumentFlagTag from "../../components/tags/DocumentFlagTag";
 import LabeledComponentsBox from "../../components/layouts/LabeledComponentsBox";
 import ExtractionPriorityTag from "../../components/tags/ExtractionPriorityTag";
 import { useNotification } from "../../contexts/NotificationContext";
+import NumberEditor from "../../components/editors/NumberEditor";
+import CategoryPathEditor from "../../components/editors/CategoryPathEditor";
+import ActionAccessComponent from "../../components/access/ActionAccessComponent";
+import { OwnedItemType, useAccess } from "../../contexts/AccessContext";
+import { ActionType } from "../../types/ActionType";
+import DeleteButton from "../../components/buttons/DeleteButton";
 
 interface DocumentDetailsFieldType {
     attribute: string;
     transform?: (value: any) => any;
+    default?: any;
     editor?: React.FC<EditorProps<any>>;
     copy?: boolean;
 }
@@ -34,7 +41,7 @@ interface DocumentDetailsFieldProps {
     field: DocumentDetailsFieldType;
 }
 
-const DocumentFields = [
+const documentFields: DocumentDetailsFieldType[] = [
     { attribute: "id", copy: true },
     {
         attribute: "sysno",
@@ -64,6 +71,7 @@ const DocumentFields = [
     {
         attribute: "category_path",
         transform: createCategoryPathLabel,
+        editor: CategoryPathEditor,
     },
     {
         attribute: "document_flags",
@@ -94,7 +102,8 @@ const DocumentFields = [
     { attribute: "page_count_catalog" },
     {
         attribute: "page_count_manual",
-        editable: true,
+        default: "-",
+        editor: NumberEditor,
     },
     { attribute: "page_count_predicted" },
     // { attribute: "dedicated_scanner" },
@@ -175,23 +184,36 @@ interface DocumentDetailsProps {
 const DocumentDetails: React.FC<DocumentDetailsProps> = ({ document }) => {
     const { t } = useTranslation("documents");
 
+    const isUnset = (field: DocumentDetailsFieldType) => {
+        return (
+            (!(field.attribute in document) ||
+                document[field.attribute] === null ||
+                (Array.isArray(document[field.attribute]) &&
+                    document[field.attribute].length === 0)) &&
+            field.default === undefined
+        );
+    };
+
     return (
-        <LabeledComponentsBox
-            labels={DocumentFields.map((field) =>
-                t(`properties.${field.attribute}`)
-            )}
-            components={DocumentFields.map(
-                (field, index) =>
-                    field.attribute in document && (
-                        <DocumentDetailsItem
-                            key={index}
-                            field={field}
-                            document={document}
-                        />
-                    )
-            )}
-            ignoreNotProvided
-        />
+        <div className="flex flex-column gap-3">
+            <LabeledComponentsBox
+                labels={documentFields.map((field) =>
+                    t(`properties.${field.attribute}`)
+                )}
+                components={documentFields.map(
+                    (field, index) =>
+                        !isUnset(field) && (
+                            <DocumentDetailsItem
+                                key={index}
+                                field={field}
+                                document={document}
+                            />
+                        )
+                )}
+                ignoreNotProvided
+            />
+            <DocumentDetailsFooter document={document} />
+        </div>
     );
 };
 
@@ -202,19 +224,24 @@ const DocumentDetailsItem: React.FC<DocumentDetailsFieldProps> = ({
     const { t } = useTranslation("documents");
     const { showInfo } = useNotification();
     const { updateDocumentAttribute } = useDocuments();
+    const { hasPermission, hasOwnerPermission } = useAccess();
 
     const [editMode, setEditMode] = useState<boolean>(false);
 
     const copyToClipboard = (value: string) => {
         navigator.clipboard.writeText(value);
-        showInfo(t("copied-to-clipboard"), value);
+        showInfo(t("copied-to-clipboard", { ns: "app" }), value);
     };
 
     const onEditorCallback = (value: any) => {
         if (field.attribute === "category_path") {
-            updateDocumentAttribute(document.id, "category_id", value);
+            updateDocumentAttribute(
+                document.id,
+                "category_id",
+                value[0].category_id
+            );
         } else if (
-            ["extraction_priority", "pages_count_manual"].includes(
+            ["extraction_priority", "page_count_manual"].includes(
                 field.attribute
             )
         ) {
@@ -237,14 +264,25 @@ const DocumentDetailsItem: React.FC<DocumentDetailsFieldProps> = ({
         );
     }
 
+    const hasEditPermission = () => {
+        return (
+            hasPermission(ActionType.EditDatatableAll) ||
+            hasOwnerPermission(
+                ActionType.EditDatatableOwn,
+                OwnedItemType.IndexDocument,
+                document
+            )
+        );
+    };
+
     return (
         <div key={field.attribute} className="flex align-items-center gap-2">
             {field.transform ? (
                 field.transform(document[field.attribute])
             ) : (
-                <span>{document[field.attribute]}</span>
+                <span>{document[field.attribute] || field.default}</span>
             )}
-            {field.editor && (
+            {field.editor && hasEditPermission() && (
                 <Button
                     className="p-1 text-xs align-content-center text-yellow-500"
                     text
@@ -264,6 +302,26 @@ const DocumentDetailsItem: React.FC<DocumentDetailsFieldProps> = ({
                     <i className="pi pi-copy" />
                 </Button>
             )}
+        </div>
+    );
+};
+
+const DocumentDetailsFooter: React.FC<DocumentDetailsProps> = ({
+    document,
+}) => {
+    const { t } = useTranslation("documents");
+    const { deleteDocument } = useDocuments();
+    return (
+        <div>
+            <Button
+                className=""
+                rounded
+                outlined
+                severity="danger"
+                icon="pi pi-trash"
+                label={t("actions.delete.label", { count: 1 })}
+                onClick={() => deleteDocument(document.id)}
+            />
         </div>
     );
 };

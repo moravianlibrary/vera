@@ -18,7 +18,7 @@ const LocationLibraryForm: React.FC<LocationLibraryFormProps> = ({
     onChangeLibrary,
     disabled,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("locations");
     const { libraries, createLibrary } = useLocations();
 
     const [selectedLibrary, setSelectedLibrary] = useState<Library | null>(

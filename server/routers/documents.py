@@ -76,11 +76,12 @@ async def add_document_from_catalog(
     "/{document_id}",
     dependencies=[CanManageDocument],
     response_model=IndexDocument,
+    response_model_exclude_unset=True,
 )
 def update_document(
     document_id: int = Path(...),
     category_id: Optional[int] = Query(None),
-    pages_count_manual: Optional[int] = Query(None),
+    page_count_manual: Optional[int] = Query(None),
     extraction_priority: Optional[int] = Query(None),
     user: CurrentUser = DependsOnCurrentUser,
     es_session: EsSession = DependsOnEsSession,
@@ -90,8 +91,8 @@ def update_document(
     document = Document.get(session, document_id)
     if category_id:
         document.category_id = category_id
-    if pages_count_manual:
-        document.pages_count_manual = pages_count_manual
+    if page_count_manual:
+        document.pages_count_manual = page_count_manual
     if extraction_priority:
         document.extraction_priority = extraction_priority
     document.save(session)
@@ -107,10 +108,13 @@ def update_document(
 def delete_document(
     document_id: int = Path(...),
     user: CurrentUser = DependsOnCurrentUser,
+    es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
     OwnershipValidator.EnforceDocumentEdit(user, document_id, session)
-    return Document.get(session, document_id).delete(session)
+    document = Document.get(session, document_id).delete(session)
+    IndexDocument.delete(es_session, document_id)
+    return document
 
 
 @router.get(

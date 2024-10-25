@@ -121,7 +121,7 @@ interface UpdateDocumentsOptions {
 type UpdateAttributes =
     | "category_id"
     | "extraction_priority"
-    | "pages_count_manual";
+    | "page_count_manual";
 
 class ApiDocuments extends ApiBase<IndexDocument> {
     constructor() {

@@ -8,7 +8,15 @@
             "regexp": "Prefix lokace",
             "description": "Popis lokace",
             "additional-info": "Dodatečné informace",
-            "state": "Stav lokace"
+            "state": "Stav lokace",
+            "actions": "Akce"
+        },
+        "values": {
+            "special-characters": {
+                "any-digit": "Libovolná číslice",
+                "any-letter": "Libovolné písmeno",
+                "any-letter-or-digit": "Libovolná číslice nebo písmeno"
+            }
         }
     },
     "actions": {
@@ -22,6 +30,12 @@
         "storage": "Uložení",
         "name": "Jméno lokace",
         "regexp": "Prefix lokace",
+        "special-characters": {
+            "label": "Speciální znaky",
+            "any-digit": "Libovolná číslice",
+            "any-letter": "Libovolné písmeno",
+            "any-letter-or-digit": "Libovolná číslice nebo písmeno"
+        },
         "additional-info": "Dodatečné informace",
         "description": "Popis lokace",
         "state": "Stav lokace",
@@ -31,8 +45,10 @@
         "placeholder": {
             "library": "Vybrat knihovnu",
             "library-empty": "Vytvorit novou knihovnu",
+            "create-storage": "Vytvorit nové uložení",
             "storage": "Vybrat uložení",
-            "location": "Vybrat lokaci"
+            "location": "Vybrat lokaci",
+            "special-characters": "Vložit speciální znaky"
         }
     }
 }

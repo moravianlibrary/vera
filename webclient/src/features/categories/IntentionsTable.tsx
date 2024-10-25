@@ -82,11 +82,11 @@ const IntentionDateRangeBody: React.FC<IntentionColumnBodyProps> = ({
 const IntentionClassificationBody: React.FC<IntentionColumnBodyProps> = ({
     intention,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("types");
 
     return (
         <Tag className={`tag-ic-${intention.classification.toLowerCase()}`}>
-            {t(`types.intention-classification.${intention.classification}`)}
+            {t(`intention-classification.${intention.classification}`)}
         </Tag>
     );
 };

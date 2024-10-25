@@ -99,6 +99,7 @@ const TabSeparatedInput: React.FC<SpreadsheetInputProps> = ({
                     <span>{t("spreadsheet-input.assign-column-labels")}:</span>
                     {mapModel.map((mapper) => (
                         <ColumnLabelChip
+                            key={mapper.mapTo}
                             label={mapper.mapFrom}
                             required={mapper.required}
                             isSelected={columnMappings.includes(mapper)}

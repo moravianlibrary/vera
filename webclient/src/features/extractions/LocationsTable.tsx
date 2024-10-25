@@ -12,6 +12,8 @@ import { Button } from "primereact/button";
 import { Avatar } from "primereact/avatar";
 import { Tooltip } from "primereact/tooltip";
 import DataTablePaginator from "../../components/views/DataTablePaginator";
+import { ColumnGroup } from "primereact/columngroup";
+import { Row } from "primereact/row";
 
 interface LocationsTableProps {}
 
@@ -80,17 +82,19 @@ const LocationsTable: React.FC<LocationsTableProps> & {
             <div className="flex align-items-center">
                 <Tooltip
                     target=".any-digit"
-                    content={t("Any digit")}
+                    content={t("table.values.special-characters.any-digit")}
                     position="top"
                 />
                 <Tooltip
                     target=".any-letter"
-                    content={t("Any letter")}
+                    content={t("table.values.special-characters.any-letter")}
                     position="top"
                 />
                 <Tooltip
                     target=".any-letter-or-digit"
-                    content={t("Any letter or digit")}
+                    content={t(
+                        "table.values.special-characters.any-letter-or-digit"
+                    )}
                     position="top"
                 />
                 {patternTokenized.map(getSubPatternBody)}
@@ -98,38 +102,37 @@ const LocationsTable: React.FC<LocationsTableProps> & {
         );
     };
 
+    const tableHeader = (
+        <ColumnGroup>
+            <Row>
+                <Column header={t("table.columns.library")} />
+                <Column header={t("table.columns.storage")} />
+                <Column header={t("table.columns.name")} />
+                <Column header={t("table.columns.regexp")} />
+                <Column header={t("table.columns.description")} />
+                <Column header={t("table.columns.additional-info")} />
+                <Column header={t("table.columns.state")} />
+                <Column header={t("table.columns.actions")} colSpan={2} />
+            </Row>
+        </ColumnGroup>
+    );
+
     return (
         <div>
-            <DataTable value={values} scrollable scrollHeight="flex">
+            <DataTable
+                value={values}
+                scrollable
+                scrollHeight="flex"
+                headerColumnGroup={tableHeader}
+            >
+                <Column field="storage.library.name" />
+                <Column field="storage.name" />
+                <Column field="name" />
+                <Column field="regexp" body={locationPatternBody} />
+                <Column field="description" />
+                <Column field="additional_info" />
+                <Column field="state" body={locationStateBody} />
                 <Column
-                    header={t("table.columns.library")}
-                    field="storage.library.name"
-                />
-                <Column
-                    header={t("table.columns.storage")}
-                    field="storage.name"
-                />
-                <Column header={t("table.columns.name")} field="name" />
-                <Column
-                    header={t("table.columns.regexp")}
-                    field="regexp"
-                    body={locationPatternBody}
-                />
-                <Column
-                    header={t("table.columns.description")}
-                    field="description"
-                />
-                <Column
-                    header={t("table.columns.additional-info")}
-                    field="additional_info"
-                />
-                <Column
-                    header={t("table.columns.state")}
-                    field="state"
-                    body={locationStateBody}
-                />
-                <Column
-                    header={t("Edit")}
                     body={(data, options) => (
                         <EditButton
                             itemId={data.id}
@@ -138,7 +141,6 @@ const LocationsTable: React.FC<LocationsTableProps> & {
                     )}
                 />
                 <Column
-                    header={t("Delete")}
                     body={(data, options) => (
                         <DeleteButton
                             itemId={data.id}

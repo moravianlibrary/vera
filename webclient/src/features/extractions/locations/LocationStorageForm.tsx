@@ -18,7 +18,7 @@ const LocationStorageForm: React.FC<LocationStorageFormProps> = ({
     storage,
     onChangeStorage,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("locations");
     const { createStorage, storages } = useLocations();
 
     const [storageOptions, setStorageOptions] = useState<Storage[]>([]);
@@ -88,7 +88,7 @@ const LocationStorageForm: React.FC<LocationStorageFormProps> = ({
                 optionLabel="name"
                 disabled={!library}
                 onChange={(e) => handleChangeStorage(e.value)}
-                emptyMessage={t("Create new storage")}
+                emptyMessage={t("form.placeholder.create-storage")}
             />
             <Button
                 icon="pi pi-plus"

@@ -10,16 +10,17 @@ interface DigitizationListBoxProps {
 const DigitizationListBox: React.FC<DigitizationListBoxProps> = ({
     callback,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("documents");
     const { digitizationLists } = useDigitizationLists();
     return (
         <ListBox
             className="overflow-auto"
             style={{ maxHeight: "calc(100vh - 200px)" }}
             options={digitizationLists.map((l) => ({
-                label: `${l.id}: ${l.created_by}, ${l.created_at}, ${
-                    l.page_count
-                } ${t("pages")}`,
+                label: `${l.id}: ${l.created_by}, ${l.created_at}, ${t(
+                    "page-count",
+                    { count: l.page_count }
+                )}`,
                 value: l.id,
             }))}
             onChange={(e) => callback(e.value as number)}

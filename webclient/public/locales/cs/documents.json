@@ -19,6 +19,8 @@
         "isxn": "ISXN",
         "added_at": "Přidáno",
         "added_by": "Přidal",
+        "indexed_at": "Indexováno",
+        "document_flags": "Příznaky dokumentu",
         "category": "Kategorie",
         "category_path": "Kategorie",
         "skc_sysno": "SKC systémové číslo",
@@ -99,7 +101,7 @@
     "actions": {
         "export": "Exportovat do souboru",
         "export-to-xlsx": "Exportovat do XLSX",
-        "update-category": {
+        "update-category-id": {
             "label": "Změnit kategorii",
             "confirm_one": "Opravdu chcete změnit kategorii na \"{{category}}\" pro 1 vybraný dokument?",
             "confirm_few": "Opravdu chcete změnit kategorii na \"{{category}}\" pro {{count}} vybrané dokumenty?",
@@ -127,12 +129,18 @@
             },
             "success": "Prioritá byla úspěšně změnena"
         },
+        "update-page-count-manual": {
+            "success": "Počet stran byl úspěšně změněn"
+        },
         "delete": {
             "label": "Smazat dokumenty",
+            "label_one": "Smazat dokument",
             "confirm_one": "Opravdu chcete smazat 1 vybraný dokument?",
             "confirm_few": "Opravdu chcete smazat {{count}} vybrané dokumenty?",
             "confirm_other": "Opravdu chcete smazat {{count}} vybraných dokumentů?",
-            "success": "Dokumenty byly úspěšně smazány"
+            "success_one": "Dokument byl úspěšně smazán",
+            "success_few": "Dokumenty byly úspěšně smazány",
+            "success_other": "Dokumenty byly úspěšně smazány"
         },
         "create-digitization-list": "Vytvořit seznam digitalizace",
         "add-to-digitization-list": "Přidat do seznamu digitalizace",
@@ -180,5 +188,8 @@
             "show-set-page-count": "Zobrazit nastaveni počtu stran",
             "accept-set-page-count": "Nastavit počty stran"
         }
-    }
+    },
+    "page-count_one": "1 strana",
+    "page-count_few:": "{{count}} strany",
+    "page-count_other": "{{count}} strán"
 }

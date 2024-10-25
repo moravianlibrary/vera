@@ -138,7 +138,7 @@ export class ApiBase<T> {
         });
     }
 
-    delete(item_id: number) {
+    delete(item_id: number | string) {
         this.raiseOnDisabledOperation(ApiOperation.Delete);
         return axiosInstance.delete(`${this.endpoint}/${item_id}`, {
             headers: this.authHeader(this.options.contentTypeDelete!),

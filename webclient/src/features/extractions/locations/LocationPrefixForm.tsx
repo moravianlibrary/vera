@@ -17,24 +17,24 @@ const LocationPrefixForm: React.FC<LocationPrefixFormProps> = ({
     onChangePrefix,
     disabled,
 }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation("locations");
 
     const specialCharactersMenuRef = useRef<Menu>(null);
 
     const items = [
         {
-            label: t("Special characters"),
+            label: t("form.special-characters.label"),
             items: [
                 {
-                    label: t("Any digit"),
+                    label: t("form.special-characters.any-digit"),
                     command: () => onChangePrefix(prefix + "[[:digit:]]"),
                 },
                 {
-                    label: t("Any letter"),
+                    label: t("form.special-characters.any-letter"),
                     command: () => onChangePrefix(prefix + "[[:alpha:]]"),
                 },
                 {
-                    label: t("Any letter or digit"),
+                    label: t("form.special-characters.any-letter-or-digit"),
                     command: () => onChangePrefix(prefix + "[[:alnum:]]"),
                 },
             ],
@@ -66,7 +66,7 @@ const LocationPrefixForm: React.FC<LocationPrefixFormProps> = ({
             />
             <Tooltip
                 target=".pi-hashtag"
-                content={t("Insert special character")}
+                content={t("form.placeholder.special-characters")}
                 position="top"
             />
             <Menu

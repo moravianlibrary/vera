@@ -150,7 +150,7 @@ const LocationsMenuButton = () => {
         },
         {
             mapTo: "name",
-            mapFrom: t("propertes.name"),
+            mapFrom: t("form.name"),
             required: true,
         },
         {
