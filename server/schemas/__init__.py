@@ -14,12 +14,14 @@ from .extractions import (
     GenerateExtraction,
     ExtractionResponse,
 )
-from .documents import (
+from .catalog_response import (
     AddDocumentResponse,
-    DocumentResponse,
-    CommentCreate,
-    Comment,
+    Identifier,
+    IdentifierWithAttributes,
+    CatalogDocumentResponse,
+    CatalogIssueResponse,
 )
+from .documents import IndexDocument, Comment, Frequency
 from .tasks import (
     Dataset,
     TaskDefinition,
@@ -31,13 +33,7 @@ from .tasks import (
 from .users import CurrentUser, UserResponse
 from .digitization_lists import DigitizationList, DigitizationLists
 from .pagination import Page
-from .catalog_records import (
-    Identifier,
-    CatalogIssueResponse,
-    CatalogRecordResponse,
-    CatalogDocumentResponse,
-    Frequency,
-)
+from .catalog_records import IndexCatalogRecord
 from .categories import (
     CategoryCreate,
     CategoryResponse,
@@ -48,8 +44,6 @@ from .categories import (
     DistributionList,
 )
 from .base_es_model import EsSession
-from .index_document import IndexDocument
-from .index_catalog_record import IndexCatalogRecord
 from .predictor import PredictPeriodicalsPageCount
 from services.external.aleph import (
     AlephRecord,
@@ -74,7 +68,6 @@ __all__ = [
     "ExtractionDocument",
     "GenerateExtraction",
     "ExtractionResponse",
-    "AddDocumentResponse",
     "DocumentResponse",
     "CommentCreate",
     "Comment",
@@ -89,7 +82,6 @@ __all__ = [
     "DigitizationLists",
     "Identifier",
     "CatalogIssueResponse",
-    "CatalogRecordResponse",
     "CatalogDocumentResponse",
     "Frequency",
     "CategoryCreate",
@@ -108,4 +100,7 @@ __all__ = [
     "IndexDocument",
     "IndexCatalogRecord",
     "EsSession",
+    "AddDocumentResponse",
+    "IdentifierWithAttributes",
+    "Frequency",
 ]

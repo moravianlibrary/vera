@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from models import CatalogRecord, TaskItem
-from logic.update_catalog_record import update_catalog_record
+from .update_catalog_record import update_catalog_record
 from services.external.aleph import AlephRecord
 from services.external.aleph import AlephIssue
 from services.external.aleph import AlephResponseStatus

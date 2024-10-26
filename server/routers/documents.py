@@ -1,11 +1,7 @@
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
-from typing import Optional
-from schemas import (
-    CurrentUser,
-    AddDocumentResponse,
-    Identifier,
-)
+from typing import Optional, List
+from schemas import CurrentUser, IdentifierWithAttributes
 from datatypes import ElasticsearchParams, EsRoutingParams
 from models import Document
 from routers.utils.permissions import (
@@ -22,8 +18,7 @@ from routers.utils.dependencies import (
     DependsOnCallerUsername,
     DependsOnEsSession,
 )
-from logic.add_document import add_document
-from schemas import IndexDocument, EsSession
+from schemas import IndexDocument, EsSession, AddDocumentResponse
 from starlette.responses import FileResponse
 import pandas as pd
 import tempfile
@@ -31,8 +26,10 @@ from datetime import datetime
 from .utils.query_restrictions import (
     restrict_read_query_params,
     restrict_edit_query_params,
+    restrict_query_params_for_username,
 )
 from .utils.query_routing_parser import parse_query_routing
+from worker import run_add_document, run_add_documents
 
 
 XLSX_MIMETYPE = (
@@ -45,31 +42,57 @@ router = APIRouter(prefix="/documents", tags=["Documents"])
 @router.post(
     "/from_catalog",
     dependencies=[CanInsertDocument],
-    response_model=AddDocumentResponse,
+    response_model=None,
 )
 async def add_document_from_catalog(
-    identifier: Identifier,
-    category_id: int = Query(),
+    attributes: IdentifierWithAttributes | List[IdentifierWithAttributes],
     predict_pages_count: bool = Query(True),
-    extraction_priority: Optional[int] = Query(None),
-    pages_count_manual: Optional[int] = Query(None),
-    username: str = DependsOnCallerUsername,
+    caller: str = DependsOnCallerUsername,
     es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
-    catalog_document, status = add_document(
-        session,
-        es_session,
-        identifier,
-        username,
-        category_id,
-        predict_pages_count,
-        extraction_priority,
-        pages_count_manual,
+    if isinstance(attributes, list):
+        run_add_documents.delay(
+            attributes_list=attributes,
+            caller=caller,
+            predict_page_count=predict_pages_count,
+        )
+    else:
+        run_add_document.delay(
+            attributes=attributes.model_dump_json(),
+            caller=caller,
+            predict_page_count=predict_pages_count,
+        )
+
+
+@router.post(
+    "/from_catalog/responses",
+    dependencies=[CanReadDocuments],
+    response_model=None,
+)
+def search_add_documents_responses(
+    query_params: ElasticsearchParams,
+    caller: str = DependsOnCallerUsername,
+    es_session: EsSession = DependsOnEsSession,
+):
+    return AddDocumentResponse.search(
+        es_session, restrict_query_params_for_username(query_params, caller)
     )
-    return AddDocumentResponse(
-        identifier=identifier, status=status, document=catalog_document
-    )
+
+
+@router.delete(
+    "/from_catalog/responses/{response_id}",
+    dependencies=[CanReadDocuments],
+    response_model=None,
+)
+def delete_add_documents_responses(
+    response_id: str = Path(...),
+    caller: str = DependsOnCallerUsername,
+    es_session: EsSession = DependsOnEsSession,
+):
+    if AddDocumentResponse.get(es_session, response_id).added_by != caller:
+        raise Exception("You can only delete your own responses")
+    return AddDocumentResponse.delete(es_session, response_id)
 
 
 @router.put(

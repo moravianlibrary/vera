@@ -1,4 +1,4 @@
-from logic import update_catalog_record
+from .update_catalog_record import update_catalog_record_differences
 from models import TaskItem
 from .run_items_processing import run_items_processing_task
 from sqlalchemy.orm import Session
@@ -13,9 +13,7 @@ def ReevaluateCatalogRecordsDifferences(
     def reindex_catalog_record(task_item: TaskItem):
         catalog_record = task_item.catalog_record
 
-        update_catalog_record.update_catalog_record_differences(
-            session, catalog_record
-        )
+        update_catalog_record_differences(session, catalog_record)
         IndexCatalogRecord.model_validate(catalog_record).save(es_session)
         for document in catalog_record.documents:
             IndexDocument.model_validate(document).save(es_session)

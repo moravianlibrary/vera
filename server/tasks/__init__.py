@@ -12,6 +12,7 @@ from .sync_documents_with_digitization_registry import (
     SyncDocumentsWithDigitizationRegistry,
 )
 from .recreate_indexes import RecreateIndexes
+from .add_documents import add_documents
 from datatypes import TaskType
 
 TaskDispatcher = {
@@ -33,4 +34,5 @@ TaskDispatcher = {
 
 __all__ = [
     "TaskDispatcher",
+    "add_documents",
 ]

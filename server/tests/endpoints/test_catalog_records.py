@@ -16,7 +16,7 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
         )
 
     @patch(
-        "schemas.index_catalog_record.IndexCatalogRecord.search",
+        "schemas.catalog_records.IndexCatalogRecord.search",
     )
     def test_get_catalog_records(self, mock_search: Mock):
         # Arrange
@@ -97,9 +97,19 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
         # Assert
         self.assertEqual(response.status_code, 200)
         record = response.json()
-        self.assertEqual(record["sysno"], "MZK01-123456789")
+        self.assertEqual(record["id"], "MZK01-123456789")
         self.assertEqual(
-            record["main_record"]["fields"], [{"001": "000121929"}]
+            record["main_record"]["fields"],
+            [
+                {
+                    "control_field": True,
+                    "data": "000121929",
+                    "ind1": None,
+                    "ind2": None,
+                    "subfields": [],
+                    "tag": "001",
+                }
+            ],
         )
 
     def test_get_catalog_record_by_sysno_invalid_sysno(self):
@@ -234,15 +244,24 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
         self.assertEqual(
             response.json(),
             {
+                "skc_difference": [],
+                "skc_record": None,
+                "skc_sysno": None,
+                "sysno": "MZK01-123456789",
                 "cnb": None,
                 "cnb_difference": [
                     {
+                        "id": 1,
                         "tag": "001",
-                        "indicator1": None,
-                        "indicator2": None,
+                        "ind1": None,
+                        "ind2": None,
+                        "control_field": True,
                         "difference_type": "Equal",
+                        "approved_at": None,
+                        "approved_by": None,
                         "subfield_differences": [
                             {
+                                "id": 1,
                                 "code": None,
                                 "value": "000121929",
                                 "different_to": "000121929",
@@ -252,13 +271,26 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
                         "control_field": True,
                     }
                 ],
+                "cnb_sysno": None,
+                "cnb_sysno_resolved": False,
                 "cnb_record": {
-                    "fields": [{"001": "000121929"}],
+                    "fields": [
+                        {
+                            "control_field": True,
+                            "data": "000121929",
+                            "ind1": None,
+                            "ind2": None,
+                            "subfields": [],
+                            "tag": "001",
+                        }
+                    ],
                     "leader": "00048    a2200037   4500",
                 },
-                "cnb_sysno": None,
+                "cnb_difference_tag_facets": ["001"],
+                "cnb_difference_type_facets": ["Equal"],
                 "has_valid_cnb": False,
                 "has_valid_main_record": False,
+                "barcodes": [],
                 "isxn": None,
                 "language": "cze",
                 "added_at": response.json()["added_at"],
@@ -268,10 +300,7 @@ class TestCatalogRecordsEndpoints(TestEndpointsBase):
                     "leader": "00048    a2200037   4500",
                 },
                 "signature": None,
-                "skc_difference": [],
-                "skc_record": None,
-                "skc_sysno": None,
-                "sysno": "MZK01-123456789",
+                "frequencies": [],
             },
         )
 

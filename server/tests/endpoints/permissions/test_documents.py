@@ -2,6 +2,8 @@ from .base import TestEndpointsPermissionsBase
 from datatypes import ActionType, DigitizationState
 from models import CatalogRecord, Category, Document, Department, User
 
+TEST_MARC_BYTES = b"00048    a2200037   4500001001000000\x1e000121929\x1e\x1d"
+
 
 class TestDocumentsIntegration(TestEndpointsPermissionsBase):
     def setUp(self):
@@ -9,7 +11,7 @@ class TestDocumentsIntegration(TestEndpointsPermissionsBase):
 
         self.session.add_all(
             [
-                CatalogRecord(sysno="test_sysno", marc=b"a"),
+                CatalogRecord(sysno="test_sysno", marc=TEST_MARC_BYTES),
                 Category(name="test"),
                 Department(name="test_department_1", abbreviation="TST-1"),
                 Department(name="test_department_2 ", abbreviation="TST-2"),

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List, Dict, Generator, get_type_hints
 from elasticsearch import Elasticsearch
+from enum import Enum
 
 
 type EsSession = Elasticsearch
@@ -36,25 +37,17 @@ class BaseEsModel(BaseModel):
                 hasattr(field_info, "__origin__")
                 and field_info.__origin__ == list
             ):
-                item_type = field_info.__args__[0]
-                if isinstance(item_type, type) and issubclass(
-                    item_type, BaseModel
-                ):
-                    properties[field_name] = {
-                        "type": "nested",
-                        "properties": item_type.__es_schema_properties__(),
-                    }
-                else:
-                    properties[field_name] = {
-                        "type": item_type.__name__.lower()
-                    }
-            elif isinstance(field_info, type) and issubclass(
+                field_info = field_info.__args__[0]
+
+            if isinstance(field_info, type) and issubclass(
                 field_info, BaseEsModel
             ):
                 properties[field_name] = {
                     "type": "nested",
                     "properties": field_info.__es_schema_properties__(),
                 }
+            elif isinstance(field_info, type) and issubclass(field_info, Enum):
+                properties[field_name] = {"type": "keyword"}
             else:
                 properties[field_name] = {"type": field_info.__name__.lower()}
 
@@ -151,6 +144,6 @@ class BaseEsModel(BaseModel):
         session.index(
             index=self.__index_name__,
             id=self.id,
-            document=self.model_dump(exclude_none=True),
+            document=self.model_dump_json(exclude_none=True),
             refresh="true" if wait_for else None,
         )

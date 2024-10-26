@@ -9,7 +9,7 @@ class TestIndexDocument(TestSchemaBase):
             IndexDocument._es_schema(),
             {
                 "mappings": {
-                    "_meta": {"index.version": "v2024.09-1"},
+                    "_meta": {"index.version": "v2024.10-1"},
                     "dynamic": "strict",
                     "properties": {
                         "id": {"type": "integer"},
@@ -31,6 +31,7 @@ class TestIndexDocument(TestSchemaBase):
                         "indexed_at": {"type": "date"},
                         "added_by": {"type": "keyword"},
                         "category_id": {"type": "integer"},
+                        "category_ids": {"type": "integer"},
                         "category_path": {
                             "type": "nested",
                             "properties": {
@@ -38,10 +39,9 @@ class TestIndexDocument(TestSchemaBase):
                                 "category_name": {"type": "keyword"},
                             },
                         },
+                        "document_flags": {"type": "keyword"},
                         "skc_sysno": {"type": "keyword"},
-                        "has_valid_main_record": {"type": "boolean"},
                         "cnb_sysno": {"type": "keyword"},
-                        "has_valid_cnb": {"type": "boolean"},
                         "digitization_registry_id": {"type": "integer"},
                         "digitization_state": {"type": "keyword"},
                         # Page count
@@ -52,7 +52,7 @@ class TestIndexDocument(TestSchemaBase):
                         # Extraction properties
                         "dedicated_scanner": {"type": "keyword"},
                         "extraction_priority": {"type": "integer"},
-                        "is_extractable": {"type": "boolean"},
+                        "extraction_ids": {"type": "integer"},
                         "digitization_list_id": {"type": "integer"},
                         # Other properties
                         "material_type": {"type": "keyword"},

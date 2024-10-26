@@ -9,7 +9,7 @@ from models import (
 )
 from datatypes import TaskType, CatalogSource
 from exceptions import ObjectMissingRequiredFieldException
-from schemas import CatalogRecordResponse, EsSession, IndexCatalogRecord
+from schemas import EsSession, IndexCatalogRecord
 from worker import run_task
 from .utils.permissions import CanReadCatalogRecords, CanReviewCatalogRecords
 from .utils.dependencies import (
@@ -21,8 +21,6 @@ from services.marc_comparator import (
     MarcFieldDifference,
     MarcRecordsComparator,
 )
-from logic import update_catalog_record as update_catalog_record_logic
-from services.external.aleph import AlephResponseStatus
 from datatypes import ElasticsearchParams, TaskItemType
 
 
@@ -44,49 +42,13 @@ def search_catalog_records(
 @router.get(
     "/{sysno}",
     dependencies=[CanReadCatalogRecords],
-    response_model=CatalogRecordResponse,
+    response_model=IndexCatalogRecord,
 )
 def get_catalog_record(
     sysno: str = Path(...),
     session: Session = DependsOnDbSession,
 ):
     return CatalogRecord.get(session, sysno)
-
-
-@router.post(
-    "/{sysno}/update",
-    dependencies=[CanReadCatalogRecords],
-    response_model=CatalogRecordResponse,
-)
-def update_catalog_record(
-    sysno: str = Path(...),
-    es_session: EsSession = DependsOnEsSession,
-    session: Session = DependsOnDbSession,
-):
-    catalog_record, status = update_catalog_record_logic.update_catalog_record(
-        session, es_session, sysno
-    )
-    if status != AlephResponseStatus.Success:
-        raise Exception(f"Failed to update catalog record {sysno}: {status}")
-    return catalog_record
-
-
-@router.post(
-    "/{sysno}/update_differences",
-    dependencies=[CanReadCatalogRecords],
-    response_model=CatalogRecordResponse,
-)
-def update_catalog_record_differences(
-    sysno: str = Path(...),
-    es_session: EsSession = DependsOnEsSession,
-    session: Session = DependsOnDbSession,
-):
-    catalog_record = CatalogRecord.get(session, sysno)
-    update_catalog_record_logic.update_catalog_record_differences(
-        session, catalog_record
-    )
-    IndexCatalogRecord.model_validate(catalog_record).save(es_session, True)
-    return catalog_record
 
 
 # TODO: Implement differences getter with filtering

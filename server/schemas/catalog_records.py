@@ -1,156 +1,233 @@
-from pydantic import BaseModel, field_validator
-from typing import List, Optional
-from pymarc import Record
-from datatypes import IdentifierType, JsonBase
+from .base_es_model import BaseEsModel, Keyword, Date, Boolean, Integer
+from pydantic import model_validator, field_validator
+from typing import Any, List, Optional
 from services.external.aleph import AlephRecord
-from services.external.aleph import AlephIssue
-from services.external.aleph import MaterialType, IssuanceType
-from services.external.digitization_registry import (
-    DigitizationRegistryRecord,
-)
-from services.external.digitization_registry import DigitizationState
+from .documents import Frequency
 from models import CatalogRecord
-from services.marc_comparator.schemas import MarcFieldDifference
 from datetime import datetime
+from config import VeraConfig
+from datatypes import MarcFieldDifferenceType, MaterialType
 
 
-class Identifier(BaseModel):
-    identifier_type: IdentifierType
-    value: str
+class MarcSubfield(BaseEsModel):
+    code: Keyword
+    value: Keyword
 
 
-class CatalogIssueResponse(BaseModel):
-    issuance_type: Optional[IssuanceType] = None
-    barcode: Optional[str] = None
-    volume: Optional[str] = None
-    volume_year: Optional[str] = None
-    bundle: Optional[str] = None
-    signature: Optional[str] = None
-
-    document_id: Optional[int] = None
-    page_count: Optional[int] = None
-
-    digitization_registry_id: Optional[int] = None
-    digitization_state: DigitizationState = DigitizationState.NotDigitized
-
-    can_digitize: bool = True
-    already_added: bool = False
-    newly_added: bool = False
-
-    @classmethod
-    def from_aleph_issue(
-        cls,
-        aleph_record: AlephRecord,
-        aleph_issue: AlephIssue,
-        digitization_registry_record: DigitizationRegistryRecord,
-        already_added: bool,
-    ) -> "CatalogIssueResponse":
-        return cls(
-            issuance_type=aleph_issue.issuance_type,
-            barcode=aleph_issue.barcode,
-            volume=aleph_issue.volume,
-            volume_year=aleph_issue.volume_year,
-            bundle=aleph_issue.bundle,
-            signature=aleph_issue.signature or aleph_record.signature,
-            digitization_registry_id=(
-                digitization_registry_record.id
-                if digitization_registry_record
-                else None
-            ),
-            digitization_state=(
-                digitization_registry_record.digitization_state
-                if digitization_registry_record
-                else DigitizationState.NotDigitized
-            ),
-            can_digitize=aleph_issue.can_digitize,
-            already_added=already_added,
-        )
-
-    @classmethod
-    def from_digitization_registry(
-        cls,
-        digitization_registry_record: DigitizationRegistryRecord,
-        already_added: bool,
-    ) -> "CatalogIssueResponse":
-        return cls(
-            digitization_registry_id=(
-                digitization_registry_record.id
-                if digitization_registry_record
-                else None
-            ),
-            digitization_state=(
-                digitization_registry_record.digitization_state
-                if digitization_registry_record
-                else DigitizationState.NotDigitized
-            ),
-            already_added=already_added,
-        )
+class MarcFieldBase(BaseEsModel):
+    tag: Keyword
+    ind1: Optional[Keyword] = None
+    ind2: Optional[Keyword] = None
+    control_field: Boolean = False
 
 
-class CatalogRecordResponse(BaseModel):
-    sysno: str
-    main_record: JsonBase
+class MarcField(MarcFieldBase):
+    data: Optional[Keyword] = None
+    subfields: List[MarcSubfield] = []
 
-    cnb: Optional[str]
-    language: str
-    signature: Optional[str]
-    isxn: Optional[str]
 
-    skc_sysno: Optional[str]
-    skc_record: Optional[JsonBase]
-    skc_difference: Optional[List[MarcFieldDifference]] = None
-    has_valid_main_record: bool
-
-    cnb_sysno: Optional[str]
-    cnb_record: Optional[JsonBase]
-    cnb_difference: Optional[List[MarcFieldDifference]] = None
-    has_valid_cnb: bool
-
-    added_at: datetime
-    updated_at: datetime
-
-    @field_validator("main_record", "skc_record", "cnb_record", mode="before")
-    def parse_marc(cls, record: Optional[Record]):
-        return record.as_dict() if record is not None else None
-
+class MarcRecord(BaseEsModel):
     class Config:
-        arbitrary_types_allowed = True
         from_attributes = True
 
+    leader: Keyword
+    fields: List[MarcField]
 
-class CatalogDocumentResponse(BaseModel):
-    sysno: str
-    title: str
-    material_type: MaterialType
-    issues: List[CatalogIssueResponse]
+    # TODO: split into other models and specialize
+    @field_validator("fields", mode="before")
+    def parse_fields(cls, fields: Any) -> Any:
+        if not isinstance(fields, list):
+            return fields
 
-    skc_sysno: Optional[str] = None
-    has_valid_main_record: bool = False
-    cnb_sysno: Optional[str] = None
-    has_valid_cnb: bool = False
+        validated_fields: List[MarcField] = []
 
-    @classmethod
-    def from_records(
-        cls,
-        aleph_record: AlephRecord,
-        catalog_issues: List[CatalogIssueResponse],
-        catalog_record: CatalogRecord,
-    ) -> "CatalogDocumentResponse":
-        return cls(
-            sysno=aleph_record.sysno,
-            title=aleph_record.title,
-            material_type=aleph_record.material_type,
-            issues=catalog_issues,
-            skc_sysno=catalog_record.skc_sysno,
-            has_valid_main_record=catalog_record.has_valid_main_record,
-            cnb_sysno=catalog_record.cnb_sysno,
-            has_valid_cnb=catalog_record.has_valid_cnb,
-        )
+        for field in fields:
+            for tag, value in field.items():
+                if isinstance(value, str):
+                    validated_fields.append(
+                        MarcField(tag=tag, data=value, control_field=True)
+                    )
+                elif isinstance(value, dict):
+                    if "subfields" in value:
+                        validated_fields.append(
+                            MarcField(
+                                tag=tag,
+                                ind1=value.get("ind1"),
+                                ind2=value.get("ind2"),
+                                subfields=[
+                                    MarcSubfield(code=code, value=value)
+                                    for subfield in value["subfields"]
+                                    for code, value in subfield.items()
+                                ],
+                                control_field=False,
+                            )
+                        )
+                    else:
+                        raise ValueError(
+                            f"Invalid MARC field structure for tag {tag}."
+                        )
+                else:
+                    raise ValueError(
+                        f"Invalid type for MARC field value: {value}"
+                    )
+
+        return validated_fields
 
 
-class Frequency(BaseModel):
-    frequency: str
-    date: Optional[str] = None
+class MarcSubfieldDifference(MarcSubfield):
+    class Config:
+        from_attributes = True
+
+    id: Integer
+    code: Optional[Keyword]
+    value: Optional[Keyword]
+    different_to: Optional[Keyword]
+    differs: Boolean
+
+
+class MarcFieldDifference(MarcFieldBase):
+    class Config:
+        from_attributes = True
+
+    id: Integer
+    difference_type: MarcFieldDifferenceType
+    subfield_differences: List[MarcSubfieldDifference]
+
+    approved_by: Optional[Keyword]
+    approved_at: Optional[Date]
+
+    @field_validator("approved_at", mode="before")
+    def parse_approved_at(cls, approved_at: Any) -> Any:
+        if isinstance(approved_at, datetime):
+            return approved_at.isoformat()
+        return approved_at
+
+
+class IndexCatalogRecord(BaseEsModel):
+    __index_name__ = "catalog_records"
+    __index_version__ = "v2024.10-1"
 
     class Config:
-        arbitrary_types_allowed = True
+        from_attributes = True
+
+    id: Keyword  # sysno
+    main_record: MarcRecord
+
+    cnb: Optional[Keyword]
+    language: Keyword
+    signature: Optional[Keyword]
+    isxn: Optional[Keyword]
+    barcodes: List[Keyword]
+
+    skc_sysno: Optional[Keyword]
+    skc_sysno_resolved: Boolean
+    skc_record: Optional[MarcRecord]
+    skc_difference: List[MarcFieldDifference]
+    skc_difference_type_facets: List[MarcFieldDifferenceType]
+    skc_difference_tag_facets: List[Keyword]
+    has_valid_main_record: Boolean
+
+    cnb_sysno: Optional[Keyword]
+    cnb_sysno_resolved: Boolean
+    cnb_record: Optional[MarcRecord]
+    cnb_difference: List[MarcFieldDifference]
+    cnb_difference_type_facets: List[MarcFieldDifferenceType]
+    cnb_difference_tag_facets: List[Keyword]
+    has_valid_cnb: Boolean
+
+    has_documents: Boolean
+    has_active_documents: Boolean
+
+    added_at: Date
+    updated_at: Date
+    indexed_at: Date
+
+    # Other properties
+    material_type: Optional[MaterialType]
+    title: Optional[Keyword]
+    size: Optional[Keyword]
+    location_uri: Optional[Keyword]
+
+    # Publication properties
+    publisher: Optional[Keyword]
+    publishing_place: Optional[Keyword]
+    publishing_year: Optional[Keyword]
+    languages: List[Keyword]
+    frequencies: List[Frequency]
+
+    @model_validator(mode="before")
+    @classmethod
+    def from_model(cls, data: Any) -> Any:
+        if not isinstance(data, CatalogRecord):
+            return data
+
+        aleph_record = AlephRecord(data.sysno, data.main_record)
+
+        def extract_diff_type_facets(
+            differences: List[MarcFieldDifference],
+        ) -> List[Keyword]:
+            return (
+                list(
+                    {difference.difference_type for difference in differences}
+                )
+                if differences
+                else []
+            )
+
+        def extract_diff_tag_facets(
+            differences: List[MarcFieldDifference],
+        ) -> List[Keyword]:
+            return (
+                list({difference.tag for difference in differences})
+                if differences
+                else []
+            )
+
+        return IndexCatalogRecord(
+            id=data.sysno,
+            main_record=data.main_record.as_dict(),
+            cnb=data.cnb,
+            language=data.language,
+            signature=data.signature,
+            isxn=data.isxn,
+            barcodes=data.barcodes,
+            skc_sysno=data.skc_sysno,
+            skc_sysno_resolved=data.skc_sysno_resolved,
+            skc_record=data.skc_record.as_dict() if data.skc_record else None,
+            skc_difference=data.skc_difference,
+            skc_difference_type_facets=extract_diff_type_facets(
+                data.skc_difference
+            ),
+            skc_difference_tag_facets=extract_diff_tag_facets(
+                data.skc_difference
+            ),
+            has_valid_main_record=data.has_valid_main_record,
+            cnb_sysno=data.cnb_sysno,
+            cnb_sysno_resolved=data.cnb_sysno_resolved,
+            cnb_record=data.cnb_record.as_dict() if data.cnb_record else None,
+            cnb_difference=data.cnb_difference,
+            cnb_difference_type_facets=extract_diff_type_facets(
+                data.cnb_difference
+            ),
+            cnb_difference_tag_facets=extract_diff_tag_facets(
+                data.cnb_difference
+            ),
+            has_valid_cnb=data.has_valid_cnb,
+            has_documents=data.has_documents,
+            has_active_documents=data.has_active_documents,
+            added_at=data.added_at.isoformat(),
+            updated_at=data.updated_at.isoformat(),
+            indexed_at=VeraConfig.Timestamp.isoformat(),
+            material_type=aleph_record.material_type,
+            title=aleph_record.title,
+            size=aleph_record.size,
+            location_uri=aleph_record.location_uri,
+            publisher=aleph_record.publisher,
+            publishing_place=aleph_record.publishing_place,
+            publishing_year=aleph_record.publishing_year,
+            languages=aleph_record.languages,
+            frequencies=[
+                Frequency(frequency=frequency.frequency, date=frequency.date)
+                for frequency in aleph_record.frequencies
+            ],
+        )

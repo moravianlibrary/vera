@@ -19,6 +19,8 @@ from sqlalchemy.exc import OperationalError
 from config import VeraConfig
 from worker import run_task
 from vera_scheduler import vera_scheduler
+from schemas import AddDocumentResponse, EsSession
+from services.elasticsearch import with_es_session
 
 
 logger = logging.getLogger("uvicorn")
@@ -107,6 +109,12 @@ def ensure_today_intention(session: Session):
     Intention.ensure_intention_for_today(session)
 
 
+@with_es_session
+def recreate_add_documents_responses(es_session: EsSession):
+    logger.info("Recreating add documents responses index.")
+    AddDocumentResponse.recreate_index(es_session)
+
+
 @with_db_session
 def plan_startup_tasks(session: Session):
     for startup_task in StartupTasks.all(session):
@@ -157,6 +165,8 @@ async def lifespan(app_: FastAPI):
     logger.info("Database connection successfully established.")
 
     ensure_last_database_revision()
+
+    recreate_add_documents_responses()
 
     vera_scheduler.start()
 

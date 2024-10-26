@@ -6,7 +6,9 @@ from models.base_engine import DatabaseUrl, get_session
 from datatypes import TaskState
 from config import VeraConfig
 from models import Task, PeriodicTask
-from tasks import TaskDispatcher
+from tasks import TaskDispatcher, add_documents
+from schemas import IdentifierWithAttributes
+from typing import List
 
 
 sys_path.append(path.abspath("/app"))
@@ -85,3 +87,20 @@ def run_task(task_id: int):
     finally:
         task.finished = VeraConfig.Timestamp
         task.save(session)
+
+
+@celery_worker.task
+def run_add_document(
+    attributes: IdentifierWithAttributes, caller: str, predict_page_count: bool
+):
+    pass
+    # add_documents([attributes], caller, predict_page_count)
+
+
+@celery_worker.task
+def run_add_documents(
+    attributes_list: List[IdentifierWithAttributes],
+    caller: str,
+    predict_page_count: bool,
+):
+    add_documents(attributes_list, caller, predict_page_count)

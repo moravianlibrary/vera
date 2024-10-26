@@ -1,19 +1,23 @@
 from tests.test_base_database import TestBaseDatabase
 from tests.test_mock_indexer import TestMockIndexer
 from unittest.mock import patch, Mock
-from logic.add_document import add_document
+from tasks.add_document import AddDocumentsProcessor
 from datatypes import (
     AlephResponseStatus,
     AddDocumentResponseStatus,
     IdentifierType,
 )
 from schemas import (
-    Identifier,
+    IdentifierWithAttributes,
     CatalogDocumentResponse,
     CatalogIssueResponse,
     DigitizationRegistryRecord,
 )
 from models import CatalogRecord, CatalogRecordBarcode, Category, Document
+from services.external.digitization_registry import (
+    DigitizationRegistryClient,
+)
+from services.predictor import Predictor
 from typing import Any
 from pydantic import BaseModel
 from datatypes import MaterialType, IssuanceType, DigitizationState
@@ -24,6 +28,15 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
     def setUp(self):
         TestBaseDatabase.setUp(self)
         TestMockIndexer.setUp(self)
+
+    def setUpProcessor(self, registry_client: Optional[Mock] = None):
+        self.add_documents_processor = AddDocumentsProcessor(
+            self.session,
+            self.getMockEsSession(),
+            registry_client or DigitizationRegistryClient(),
+            Predictor.get_instance(),
+            "test_user",
+        )
 
     def read_marc_bytes(self, sysno, filepath="tests/aleph_records"):
         with open(f"{filepath}/{sysno}.marc", "rb") as f:
@@ -37,21 +50,20 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             response.model_dump(), expected_response.model_dump()
         )
 
-    def mockDigitizationRecord(
+    def getMockDigitizationRecord(
         self,
-        mock_digitization_registry_client: Mock,
         digitization_record: Optional[DigitizationRegistryRecord] = None,
     ):
-        instance = mock_digitization_registry_client.return_value
+        instance = Mock()
         instance.get_issue_records.return_value = [digitization_record]
         instance.select_volume_record.return_value = digitization_record
         instance.get_record_by_barcode.return_value = digitization_record
         instance.get_document_record.return_value = digitization_record
+        return instance
 
-    @patch("logic.add_document.DigitizationRegistryClient")
-    @patch("logic.add_document.AlephClient")
+    @patch("tasks.add_document.AlephClient")
     def test_response_status_not_found_when_sysno_not_found(
-        self, mock_aleph_client: Mock, mock_digitization_registry_client: Mock
+        self, mock_aleph_client: Mock
     ):
         # Arrange
         mock_aleph_client_instance = mock_aleph_client.return_value
@@ -60,31 +72,28 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             AlephResponseStatus.RecordNotFound,
         )
 
-        self.mockDigitizationRecord(mock_digitization_registry_client)
+        mock_digitization_registry_client = Mock()
+        self.setUpProcessor(mock_digitization_registry_client)
 
         # Act
-        response, status = add_document(
-            self.session,
-            self.getMockEsSession(),
-            Identifier(
-                identifier_type=IdentifierType.Sysno, value="123456789"
+        response, status = self.add_documents_processor(
+            IdentifierWithAttributes(
+                identifier_type=IdentifierType.Sysno,
+                value="123456789",
+                category_id=1,
             ),
-            "test_user",
-            1,
         )
 
         # Assert
         self.assertEqual(status, AddDocumentResponseStatus.AlephRecordNotFound)
         self.assertIsNone(response)
 
-    @patch("logic.add_document.DigitizationRegistryClient")
-    @patch("logic.add_document.update_catalog_record")
-    @patch("logic.add_document.AlephClient")
+    @patch("tasks.add_document.update_catalog_record")
+    @patch("tasks.add_document.AlephClient")
     def test_response_status_not_found_when_catalog_record_not_found(
         self,
         mock_aleph_client: Mock,
         mock_update_catalog_record: Mock,
-        mock_digitization_registry_client: Mock,
     ):
         # Arrange
         sysno = ("MZK01-123456789",)
@@ -99,30 +108,25 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             AlephResponseStatus.RecordNotFound,
         )
 
-        self.mockDigitizationRecord(mock_digitization_registry_client)
+        self.setUpProcessor()
 
         # Act
-        response, status = add_document(
-            self.session,
-            self.getMockEsSession(),
-            Identifier(
+        response, status = self.add_documents_processor(
+            IdentifierWithAttributes(
                 identifier_type=IdentifierType.Sysno,
                 value="123456789",
+                category_id=1,
             ),
-            "test_user",
-            1,
         )
 
         # Assert
         self.assertEqual(status, AddDocumentResponseStatus.AlephRecordNotFound)
         self.assertIsNone(response)
 
-    @patch("logic.add_document.DigitizationRegistryClient")
-    @patch("logic.add_document.update_catalog_record")
+    @patch("tasks.add_document.update_catalog_record")
     def test_create_new_document_when_catalog_record_with_one_issue(
         self,
         mock_update_catalog_record: Mock,
-        mock_digitization_registry_client: Mock,
     ):
         # Arrange
         sysno = "MZK01-000164099"
@@ -146,18 +150,15 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         )
         self.session.flush()
 
-        self.mockDigitizationRecord(mock_digitization_registry_client)
+        self.setUpProcessor(self.getMockDigitizationRecord())
 
         # Act
-        response, status = add_document(
-            self.session,
-            self.getMockEsSession(),
-            Identifier(
+        response, status = self.add_documents_processor(
+            IdentifierWithAttributes(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
+                category_id=1,
             ),
-            "test_user",
-            1,
         )
 
         # Assert
@@ -181,12 +182,10 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("logic.add_document.DigitizationRegistryClient")
-    @patch("logic.add_document.update_catalog_record")
+    @patch("tasks.add_document.update_catalog_record")
     def test_add_document_when_catalog_record_with_one_already_added(
         self,
         mock_update_catalog_record: Mock,
-        mock_digitization_registry_client: Mock,
     ):
         # Arrange
         sysno = "MZK01-000164099"
@@ -212,18 +211,15 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         self.session.add(Document(sysno=sysno, barcode="2619937640"))
         self.session.flush()
 
-        self.mockDigitizationRecord(mock_digitization_registry_client)
+        self.setUpProcessor(self.getMockDigitizationRecord())
 
         # Act
-        response, status = add_document(
-            self.session,
-            self.getMockEsSession(),
-            Identifier(
+        response, status = self.add_documents_processor(
+            IdentifierWithAttributes(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
+                category_id=1,
             ),
-            "test_user",
-            1,
         )
 
         # Assert
@@ -245,12 +241,10 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("logic.add_document.DigitizationRegistryClient")
-    @patch("logic.add_document.update_catalog_record")
+    @patch("tasks.add_document.update_catalog_record")
     def test_add_document_with_barcode_when_record_with_one_already_added(
         self,
         mock_update_catalog_record: Mock,
-        mock_digitization_registry_client: Mock,
     ):
         # Arrange
         sysno = "MZK01-000164099"
@@ -278,18 +272,15 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         self.session.add(Document(sysno=sysno, barcode="2619937640"))
         self.session.flush()
 
-        self.mockDigitizationRecord(mock_digitization_registry_client)
+        self.setUpProcessor(self.getMockDigitizationRecord())
 
         # Act
-        response, status = add_document(
-            self.session,
-            self.getMockEsSession(),
-            Identifier(
+        response, status = self.add_documents_processor(
+            IdentifierWithAttributes(
                 identifier_type=IdentifierType.Barcode,
                 value="2619937640",
+                category_id=1,
             ),
-            "test_user",
-            1,
         )
 
         # Assert
@@ -311,12 +302,10 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("logic.add_document.DigitizationRegistryClient")
-    @patch("logic.add_document.update_catalog_record")
+    @patch("tasks.add_document.update_catalog_record")
     def test_create_new_document_when_catalog_record_with_one_digitized_issue(
         self,
         mock_update_catalog_record: Mock,
-        mock_digitization_registry_client: Mock,
     ):
         # Arrange
         sysno = "MZK01-000164099"
@@ -340,21 +329,19 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         )
         self.session.flush()
 
-        self.mockDigitizationRecord(
-            mock_digitization_registry_client,
-            DigitizationRegistryRecord({"id": 1, "stav": "dokončeno"}),
+        self.setUpProcessor(
+            self.getMockDigitizationRecord(
+                DigitizationRegistryRecord({"id": 1, "stav": "dokončeno"})
+            )
         )
 
         # Act
-        response, status = add_document(
-            self.session,
-            self.getMockEsSession(),
-            Identifier(
+        response, status = self.add_documents_processor(
+            IdentifierWithAttributes(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
+                category_id=1,
             ),
-            "test_user",
-            1,
         )
 
         # Assert
@@ -377,12 +364,10 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("logic.add_document.DigitizationRegistryClient")
-    @patch("logic.add_document.update_catalog_record")
+    @patch("tasks.add_document.update_catalog_record")
     def test_create_new_document_when_catalog_record_with_one_unknown_state(
         self,
         mock_update_catalog_record: Mock,
-        mock_digitization_registry_client: Mock,
     ):
         # Arrange
         sysno = "MZK01-000164099"
@@ -406,21 +391,19 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         )
         self.session.flush()
 
-        self.mockDigitizationRecord(
-            mock_digitization_registry_client,
-            DigitizationRegistryRecord({"id": 1, "stav": "revize"}),
+        self.setUpProcessor(
+            self.getMockDigitizationRecord(
+                DigitizationRegistryRecord({"id": 1, "stav": "revize"}),
+            )
         )
 
         # Act
-        response, status = add_document(
-            self.session,
-            self.getMockEsSession(),
-            Identifier(
+        response, status = self.add_documents_processor(
+            IdentifierWithAttributes(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
+                category_id=1,
             ),
-            "test_user",
-            1,
         )
 
         # Assert
@@ -445,14 +428,12 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("logic.add_document.DigitizationRegistryClient")
-    @patch("logic.add_document.update_catalog_record")
-    @patch("logic.add_document.AlephClient")
+    @patch("tasks.add_document.update_catalog_record")
+    @patch("tasks.add_document.AlephClient")
     def test_create_new_document_when_catalog_record_with_multiple_issues(
         self,
         mock_aleph_client: Mock,
         mock_update_catalog_record: Mock,
-        mock_digitization_registry_client: Mock,
     ):
         # Arrange
         sysno = "MZK01-000121929"
@@ -479,18 +460,15 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         self.session.add_all([catalog_record, category])
         self.session.flush()
 
-        self.mockDigitizationRecord(mock_digitization_registry_client)
+        self.setUpProcessor(self.getMockDigitizationRecord())
 
         # Act
-        response, status = add_document(
-            self.session,
-            self.getMockEsSession(),
-            Identifier(
+        response, status = self.add_documents_processor(
+            IdentifierWithAttributes(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
+                category_id=1,
             ),
-            "test_user",
-            1,
         )
 
         # Assert
@@ -516,16 +494,14 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("logic.add_document.DigitizationRegistryClient")
-    @patch("logic.add_document.AlephIssue")
-    @patch("logic.add_document.update_catalog_record")
-    @patch("logic.add_document.AlephClient")
+    @patch("tasks.add_document.AlephIssue")
+    @patch("tasks.add_document.update_catalog_record")
+    @patch("tasks.add_document.AlephClient")
     def test_create_new_document_when_catalog_record_with_no_issues(
         self,
         mock_aleph_client: Mock,
         mock_update_catalog_record: Mock,
         mock_aleph_issue: Mock,
-        mock_digitization_registry_client: Mock,
     ):
         # Arrange
         sysno = "MZK03-001175162"
@@ -554,18 +530,15 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         self.session.add_all([catalog_record, category])
         self.session.flush()
 
-        self.mockDigitizationRecord(mock_digitization_registry_client)
+        self.setUpProcessor(self.getMockDigitizationRecord())
 
         # Act
-        response, status = add_document(
-            self.session,
-            self.getMockEsSession(),
-            Identifier(
+        response, status = self.add_documents_processor(
+            IdentifierWithAttributes(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
+                category_id=1,
             ),
-            "test_user",
-            1,
         )
 
         # Assert
@@ -580,14 +553,12 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("logic.add_document.DigitizationRegistryClient")
-    @patch("logic.add_document.update_catalog_record")
-    @patch("logic.add_document.AlephClient")
+    @patch("tasks.add_document.update_catalog_record")
+    @patch("tasks.add_document.AlephClient")
     def test_create_new_document_when_other_issue_is_already_added(
         self,
         mock_aleph_client: Mock,
         mock_update_catalog_record: Mock,
-        mock_digitization_registry_client: Mock,
     ):
         # Arrange
         sysno = "MZK01-000121929"
@@ -622,18 +593,15 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         )
         self.session.flush()
 
-        self.mockDigitizationRecord(mock_digitization_registry_client)
+        self.setUpProcessor(self.getMockDigitizationRecord())
 
         # Act
-        response, status = add_document(
-            self.session,
-            self.getMockEsSession(),
-            Identifier(
+        response, status = self.add_documents_processor(
+            IdentifierWithAttributes(
                 identifier_type=IdentifierType.Sysno,
                 value=sysno,
+                category_id=1,
             ),
-            "test_user",
-            1,
         )
 
         # Assert

@@ -9,7 +9,7 @@ from services.external.digitization_registry import (
 from schemas import (
     CatalogDocumentResponse,
     CatalogIssueResponse,
-    Identifier,
+    IdentifierWithAttributes,
     EsSession,
     IndexDocument,
 )
@@ -21,7 +21,7 @@ from datatypes import (
     IdentifierToAlephFieldConverted,
 )
 from services import exceptions
-from logic.update_catalog_record import update_catalog_record
+from .update_catalog_record import update_catalog_record
 from services.external.aleph import (
     AlephClient,
     AlephRecord,
@@ -32,35 +32,28 @@ from services.predictor import Predictor
 from models import CatalogRecord, Document
 
 
-class AddDocumentPreprocessor:
+class AddDocumentsProcessor:
     def __init__(
         self,
         session: Session,
         es_session: EsSession,
-        identifier: Identifier,
+        registry_client: DigitizationRegistryClient,
+        predictor: Optional[Predictor],
         added_by: str,
-        category_id: int,
-        predict_pages_count: bool = True,
-        extraction_priority: Optional[int] = None,
-        pages_count_manual: Optional[int] = None,
     ):
         self.session = session
         self.es_session = es_session
-        self.identifier = identifier
+        self.registry_client = registry_client
+        self.predictor = predictor
         self.added_by = added_by
-        self.category_id = category_id
-        self.registry_client = DigitizationRegistryClient()
-        self.predict_pages_count = predict_pages_count
-        self.predictor = (
-            Predictor.get_instance() if predict_pages_count else None
-        )
-        self.pages_count_manual = pages_count_manual
-        self.extraction_priority = extraction_priority
 
     def __call__(
         self,
+        attributes: IdentifierWithAttributes,
     ) -> Tuple[Optional[CatalogDocumentResponse], AddDocumentResponseStatus]:
-        catalog_record, status = self.get_catalog_record()
+        catalog_record, status = self.get_catalog_record(
+            attributes.identifier_type, attributes.value
+        )
 
         if catalog_record is None:
             return None, status
@@ -86,11 +79,11 @@ class AddDocumentPreprocessor:
             == DigitizationState.NotDigitized
         ]
 
-        if self.identifier.identifier_type == IdentifierType.Barcode:
+        if attributes.identifier_type == IdentifierType.Barcode:
             find_catalog_issues = [
                 catalog_issue
                 for catalog_issue in catalog_issues
-                if catalog_issue.barcode == self.identifier.value
+                if catalog_issue.barcode == attributes.value
             ]
             if len(find_catalog_issues) != 1:
                 return catalog_document, AddDocumentResponseStatus.UnknownError
@@ -137,7 +130,9 @@ class AddDocumentPreprocessor:
             )
 
         try:
-            document = self.create_document(main_aleph_record, add_issue)
+            document = self.create_document(
+                main_aleph_record, add_issue, attributes
+            )
             if document is None:
                 return catalog_document, AddDocumentResponseStatus.UnknownError
         except exceptions.UniqueDocumentViolationException:
@@ -200,11 +195,11 @@ class AddDocumentPreprocessor:
 
     def get_catalog_record(
         self,
+        identifier_type: IdentifierType,
+        value: str,
     ) -> Tuple[Optional[CatalogRecord], AddDocumentResponseStatus]:
         catalog_record = CatalogRecord.find_by_identifier(
-            self.session,
-            self.identifier.identifier_type,
-            self.identifier.value,
+            self.session, identifier_type, value
         )
 
         if catalog_record is not None and (
@@ -213,8 +208,8 @@ class AddDocumentPreprocessor:
             return catalog_record, AddDocumentResponseStatus.Success
 
         sysno, aleph_response_status = AlephClient().find_sysno(
-            IdentifierToAlephFieldConverted[self.identifier.identifier_type],
-            self.identifier.value,
+            IdentifierToAlephFieldConverted[identifier_type],
+            value,
         )
 
         if aleph_response_status != AlephResponseStatus.Success:
@@ -234,6 +229,7 @@ class AddDocumentPreprocessor:
         self,
         main_aleph_record: AlephRecord,
         catalog_issue: CatalogIssueResponse,
+        attributes: IdentifierWithAttributes,
     ) -> Document:
         document = Document(
             sysno=main_aleph_record.sysno,
@@ -243,16 +239,16 @@ class AddDocumentPreprocessor:
             bundle=catalog_issue.bundle,
             document_signature=catalog_issue.signature,
             added_by=self.added_by,
-            category_id=self.category_id,
+            category_id=attributes.category_id,
             digitization_registry_id=catalog_issue.digitization_registry_id,
             digitization_state=catalog_issue.digitization_state,
             pages_count_catalog=main_aleph_record.parse_page_count(
                 catalog_issue.volume
             ),
-            pages_count_manual=self.pages_count_manual,
-            extraction_priority=self.extraction_priority,
+            pages_count_manual=attributes.page_count_manual,
+            extraction_priority=attributes.extraction_priority,
         )
-        if not self.predict_pages_count:
+        if not self.predictor:
             return document.save(self.session)
 
         # TODO: rework
@@ -273,25 +269,3 @@ class AddDocumentPreprocessor:
         finally:
             document.pages_count_predicted = predicted_page_count
             return document.save(self.session)
-
-
-def add_document(
-    session: Session,
-    es_session: EsSession,
-    identifier: Identifier,
-    added_by: str,
-    category_id: int,
-    predict_pages_count: bool = True,
-    extraction_priority: Optional[int] = None,
-    pages_count_manual: Optional[int] = None,
-) -> Tuple[Optional[CatalogDocumentResponse], AddDocumentResponseStatus]:
-    return AddDocumentPreprocessor(
-        session,
-        es_session,
-        identifier,
-        added_by,
-        category_id,
-        predict_pages_count,
-        extraction_priority,
-        pages_count_manual,
-    )()

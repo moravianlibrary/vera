@@ -9,7 +9,7 @@ class TestIndexCatalogRecord(TestSchemaBase):
             IndexCatalogRecord._es_schema(),
             {
                 "mappings": {
-                    "_meta": {"index.version": "v2024.09-1"},
+                    "_meta": {"index.version": "v2024.10-1"},
                     "dynamic": "strict",
                     "properties": {
                         "id": {"type": "keyword"},  # sysno
@@ -142,6 +142,8 @@ class TestIndexCatalogRecord(TestSchemaBase):
                         },
                         "cnb_difference_type_facets": {"type": "keyword"},
                         "cnb_difference_tag_facets": {"type": "keyword"},
+                        "has_active_documents": {"type": "boolean"},
+                        "has_documents": {"type": "boolean"},
                         "has_valid_cnb": {"type": "boolean"},
                         "added_at": {"type": "date"},
                         "updated_at": {"type": "date"},
