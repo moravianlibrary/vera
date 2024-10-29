@@ -1,4 +1,7 @@
 enum AddDocumentResponseStatus {
+    // Unprocessed
+    Unprocessed = "Unprocessed",
+    InternalError = "InternalError",
     // Errors
     AlephNotAvailable = "AlephNotAvailable",
     AlephRequestFailed = "AlephRequestFailed",
@@ -35,11 +38,11 @@ const AddDocumentResponseErrorStatus = [
 ];
 const AddDocumentResponseWarningStatus = [
     AddDocumentResponseStatus.DigitizationForbidden,
+    AddDocumentResponseStatus.AllIssuesProcessed,
+    AddDocumentResponseStatus.UniqueViolation,
     AddDocumentResponseStatus.AlreadyDigitized,
     AddDocumentResponseStatus.DigitizationInProgress,
     AddDocumentResponseStatus.DigitizationPlanned,
-    AddDocumentResponseStatus.AllIssuesProcessed,
-    AddDocumentResponseStatus.UniqueViolation,
 ];
 
 const AddDocumentResponseInfoStatus = [

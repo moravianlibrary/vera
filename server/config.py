@@ -68,6 +68,21 @@ class VeraConfig:
     def BotName() -> str:
         return environ.get("BOT_NAME", "VeraBot")
 
+    class Broker:
+        @staticproperty
+        def Url() -> str:
+            return (
+                f"redis://{VeraConfig.Broker.Host}:{VeraConfig.Broker.Port}/0"
+            )
+
+        @staticproperty
+        def Host() -> str:
+            return environ.get("BROKER_HOST", "redis")
+
+        @staticproperty
+        def Port() -> str:
+            return int(environ.get("BROKER_PORT", "6379"))
+
     class Elasticsearch:
         @staticproperty
         def Url() -> str:

@@ -1,9 +1,4 @@
-from schemas import (
-    IdentifierWithAttributes,
-    Identifier,
-    AddDocumentResponse,
-    EsSession,
-)
+from schemas import AddDocumentResponse, EsSession
 from services.elasticsearch import with_es_session
 from services.external.digitization_registry import (
     DigitizationRegistryClient,
@@ -11,12 +6,32 @@ from services.external.digitization_registry import (
 from services.predictor import Predictor
 from sqlalchemy.orm import Session
 from models import with_db_session
+from datatypes import AddDocumentResponseStatus
 from .add_document import AddDocumentsProcessor
-from typing import List
 import logging
+from typing import List
+from config import VeraConfig
 
 
 logger = logging.getLogger("uvicorn")
+
+
+GET_UNPROCESSED_QUERY = {
+    "size": 50,
+    "from": 0,
+    "query": {"bool": {"must": {"term": {"status": "Unprocessed"}}}},
+}
+
+
+def get_unprocessed_responses(
+    es_session: EsSession,
+) -> List[AddDocumentResponse]:
+    return [
+        AddDocumentResponse.model_validate(hit["_source"])
+        for hit in AddDocumentResponse.search(
+            es_session, GET_UNPROCESSED_QUERY
+        )["hits"]["hits"]
+    ]
 
 
 @with_es_session
@@ -24,8 +39,6 @@ logger = logging.getLogger("uvicorn")
 def add_documents(
     db_session: Session,
     es_session: EsSession,
-    attributes_list: List[IdentifierWithAttributes],
-    added_by: str,
     predict_page_count: bool = True,
 ):
     add_documents_processor = AddDocumentsProcessor(
@@ -33,21 +46,26 @@ def add_documents(
         es_session=es_session,
         registry_client=DigitizationRegistryClient(),
         predictor=Predictor.get_instance() if predict_page_count else None,
-        added_by=added_by,
     )
 
-    for attributes in attributes_list:
+    def process_response(response: AddDocumentResponse):
         try:
-            document, status = add_documents_processor(attributes)
+            document, status = add_documents_processor(
+                response.attributes, response.added_by
+            )
 
-            AddDocumentResponse(
-                identifier=Identifier(
-                    identifier_type=attributes.identifier_type,
-                    value=attributes.value,
-                ),
-                status=status,
-                document=document,
-                added_by=added_by,
-            ).save(es_session)
+            response.document = document
+            response.status = status
         except Exception as e:
             logger.error(f"Failed to add document due to error: {e}")
+            response.status = AddDocumentResponseStatus.InternalError
+        finally:
+            response.indexed_at = VeraConfig.Timestamp.isoformat()
+            response.save(es_session, True)
+
+    unprocessed = get_unprocessed_responses(es_session)
+
+    while unprocessed:
+        for response in unprocessed:
+            process_response(response)
+        unprocessed = get_unprocessed_responses(es_session)

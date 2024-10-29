@@ -8,14 +8,10 @@ from services.external.digitization_registry import (
 )
 from services.external.digitization_registry import DigitizationState
 from models import CatalogRecord
-from .base_es_model import (
-    BaseEsModel,
-    Keyword,
-    Boolean,
-    Integer,
-)
+from .base_es_model import BaseEsModel, Keyword, Boolean, Integer, Date
 from pydantic import Field
 from uuid import uuid4
+from config import VeraConfig
 
 
 class CatalogIssueResponse(BaseEsModel):
@@ -134,8 +130,12 @@ class AddDocumentResponse(BaseEsModel):
     __index_name__ = "add_documents_responses"
     __index_version__ = "v2024.10-1"
 
+    class Config:
+        from_attributes = True
+
     id: Keyword = Field(default_factory=lambda: str(uuid4()))
-    identifier: Identifier
-    status: AddDocumentResponseStatus
+    attributes: IdentifierWithAttributes
+    indexed_at: Date = VeraConfig.Timestamp.isoformat()
+    status: AddDocumentResponseStatus = AddDocumentResponseStatus.Unprocessed
     document: Optional[CatalogDocumentResponse] = None
     added_by: Keyword

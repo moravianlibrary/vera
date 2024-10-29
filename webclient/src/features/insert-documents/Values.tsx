@@ -4,9 +4,10 @@ import { TabView, TabPanel } from "primereact/tabview";
 import { ProgressBar } from "primereact/progressbar";
 import { useTranslation } from "react-i18next";
 import { useInsertDocuments } from "../../contexts/insert-documents/InsertDocumentsContext";
-import React from "react";
+import React, { useState } from "react";
 import InsertDocumentsFiles from "./InsertDocumentsFiles";
 import LabeledComponent from "../../components/wrappers/LabeledComponent";
+import { useAddDocuments } from "../../contexts/AddDocumentsContext";
 
 interface InsertDocumentsValuesProps {}
 
@@ -16,12 +17,13 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = () => {
         goToNextStep,
         goToPrevStep,
         settings,
-        value,
-        setValue,
         fileUploadValues,
         processedCount,
         totalCount,
     } = useInsertDocuments();
+    const { addDocument } = useAddDocuments();
+
+    const [value, setValue] = useState<string>("");
 
     const handleKeyPress = (event) => {
         if (event.key === "Enter") {
@@ -89,7 +91,7 @@ const InsertDocumentsValues: React.FC<InsertDocumentsValuesProps> = () => {
                         (value === "" && fileUploadValues.length === 0) ||
                         totalCount !== processedCount
                     }
-                    onClick={goToNextStep}
+                    onClick={() => addDocument(value)}
                 />
             </div>
         </div>

@@ -11,6 +11,12 @@ interface Identifier {
     value: string;
 }
 
+interface IdentifierWithAttributes extends Identifier {
+    category_id: number;
+    extraction_priority?: number;
+    page_count_manual?: number;
+}
+
 interface Frequency {
     frequency: string;
     date: string | null;
@@ -107,9 +113,11 @@ interface CatalogDocumentResponse {
 }
 
 interface AddDocumentResponse {
-    identifier: Identifier;
+    attributes: IdentifierWithAttributes;
     status: AddDocumentResponseStatus;
     document?: CatalogDocumentResponse | null;
+    added_by: string;
+    indexed_at: string;
 }
 
 interface UpdateDocumentsOptions {
@@ -140,17 +148,24 @@ class ApiDocuments extends ApiBase<IndexDocument> {
     }
 
     insertDocument(
-        identifier: Identifier,
-        category_id: number | null,
-        insert_digitized: boolean
+        attributes: IdentifierWithAttributes | IdentifierWithAttributes[]
     ) {
-        const url =
-            category_id !== null
-                ? `/documents/from_catalog?category_id=${category_id}&insert_digitized=${insert_digitized}`
-                : `/documents/from_catalog?insert_digitized=${insert_digitized}`;
-        // : `/catalogs?insert_digitized=${insert_digitized}`;
+        const url = "/documents/from_catalog";
+        return axiosInstance.post(url, attributes, {
+            headers: authHeader(),
+        });
+    }
 
-        return axiosInstance.post<AddDocumentResponse>(url, identifier, {
+    searchAddDocumentsResponses(queryParams: Object) {
+        const url = "/documents/from_catalog/responses";
+        return ApiBase.axiosInstance.post(url, queryParams, {
+            headers: authHeader(),
+        });
+    }
+
+    deleteAddDocumentsResponses(queryParams: Object) {
+        const url = `${this.endpoint}/query/from_catalog/responses`;
+        return ApiBase.axiosInstance.post<Object>(url, queryParams, {
             headers: authHeader(),
         });
     }
@@ -204,6 +219,7 @@ class ApiDocuments extends ApiBase<IndexDocument> {
 export default ApiDocuments;
 export type {
     Identifier,
+    IdentifierWithAttributes,
     Frequency,
     IndexDocument,
     AddDocumentResponse,

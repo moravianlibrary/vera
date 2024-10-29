@@ -10,10 +10,12 @@ import {
 interface ExternalLinkButtonProps {
     label: string;
     url: string;
+    hideValue?: boolean;
 }
 
 interface SpecificLinkButtonProps {
     value?: string;
+    hideValue?: boolean;
 }
 
 const ExternalLinkButton: React.FC<ExternalLinkButtonProps> & {
@@ -21,10 +23,10 @@ const ExternalLinkButton: React.FC<ExternalLinkButtonProps> & {
     SckCatalog: React.FC<SpecificLinkButtonProps>;
     CnbCatalog: React.FC<SpecificLinkButtonProps>;
     DigitizationRegistry: React.FC<SpecificLinkButtonProps>;
-} = ({ label, url }) => {
+} = ({ label, url, hideValue }) => {
     return (
         <div className="flex align-items-center gap-2">
-            <span>{label}</span>
+            {!hideValue && <span>{label}</span>}
             <Button
                 className="p-1 text-blue-600"
                 text
@@ -54,11 +56,15 @@ const CnbCatalog: React.FC<SpecificLinkButtonProps> = ({ value }) => {
     ) : null;
 };
 
-const DigitizationRegistry: React.FC<SpecificLinkButtonProps> = ({ value }) => {
+const DigitizationRegistry: React.FC<SpecificLinkButtonProps> = ({
+    value,
+    hideValue,
+}) => {
     return value ? (
         <ExternalLinkButton
             label={value}
             url={createDigitizationRegistryLink(Number(value))}
+            hideValue={hideValue}
         />
     ) : null;
 };

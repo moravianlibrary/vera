@@ -144,11 +144,23 @@
         },
         "create-digitization-list": "Vytvořit seznam digitalizace",
         "add-to-digitization-list": "Přidat do seznamu digitalizace",
-        "remove-from-digitization-list": "Odstranit ze seznamu digitalizace"
+        "remove-from-digitization-list": "Odstranit ze seznamu digitalizace",
+        "show-response-status-details": "Zobrazit detaily",
+        "go-back-to-responses-summary": "Skrýt detaily",
+        "show-responses-summary": "Zobrazit zpracovane"
     },
     "add": {
         "next-step": "Dále",
         "prev-step": "Zpět",
+        "progress": "Zpracováno: {{numProcessed}} / {{numFound}}",
+        "attributes": {
+            "identifier-type": "Identifikátor",
+            "value": "Hodnota",
+            "indexed-at": "Zpracováno",
+            "type": "Typ dokumentu",
+            "description": "Popis",
+            "barcode": "Čárový kód"
+        },
         "step": {
             "settings": "Nastavení vkládání",
             "values": "Výběr hodnot",

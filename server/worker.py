@@ -1,14 +1,14 @@
 import logging
 from celery import Celery
-from os import environ, path
+from os import path
 from sys import path as sys_path
 from models.base_engine import DatabaseUrl, get_session
 from datatypes import TaskState
 from config import VeraConfig
 from models import Task, PeriodicTask
 from tasks import TaskDispatcher, add_documents
-from schemas import IdentifierWithAttributes
-from typing import List
+import redis
+from contextlib import contextmanager
 
 
 sys_path.append(path.abspath("/app"))
@@ -19,7 +19,7 @@ logger = logging.getLogger("Worker")
 
 celery_worker = Celery(
     "tasks",
-    broker=environ.get("BROKER_URL"),
+    broker=VeraConfig.Broker.Url,
     broker_connection_retry_on_startup=True,
     result_backend=f"db+{DatabaseUrl}",
     database_table_names={
@@ -27,6 +27,9 @@ celery_worker = Celery(
         "group": "celery_groups",
     },
     timezone=VeraConfig.TimeZone,
+)
+redis_client = redis.Redis(
+    host=VeraConfig.Broker.Host, port=VeraConfig.Broker.Port
 )
 
 
@@ -89,18 +92,20 @@ def run_task(task_id: int):
         task.save(session)
 
 
-@celery_worker.task
-def run_add_document(
-    attributes: IdentifierWithAttributes, caller: str, predict_page_count: bool
-):
-    pass
-    # add_documents([attributes], caller, predict_page_count)
+@contextmanager
+def redis_lock(lock_name):
+    """
+    Yield 1 if specified lock_name is not already set in redis.
+    Otherwise returns 0.
+    """
+    status = redis_client.set(lock_name, "lock", nx=True)
+    try:
+        yield status
+    finally:
+        redis_client.delete(lock_name)
 
 
 @celery_worker.task
-def run_add_documents(
-    attributes_list: List[IdentifierWithAttributes],
-    caller: str,
-    predict_page_count: bool,
-):
-    add_documents(attributes_list, caller, predict_page_count)
+def run_add_documents():
+    with redis_lock("my_lock_name") as acquired:
+        add_documents()

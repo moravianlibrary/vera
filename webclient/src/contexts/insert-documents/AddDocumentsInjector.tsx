@@ -3,22 +3,17 @@ import ApiDocuments, {
     AddDocumentResponse,
     CatalogDocumentResponse,
     Identifier,
+    IdentifierWithAttributes,
 } from "../../adapters/ApiDocuments";
 import { AddDocumentsSettings } from "./InsertDocumentsContext";
-import AddDocumentResponseStatus from "../../types/AddDocumentResponseStatus";
-
-interface IdentifierWithSettings extends Identifier {
-    categoryId: number;
-    extractionPriority: number;
-}
 
 interface AddDocumentsInjectorProps {
     processedCount: number;
     totalCount: number;
     responses: AddDocumentResponse[];
     multipleIssuesDocuments: Record<string, CatalogDocumentResponse>;
-    addDocument: (identifier: Identifier) => void;
-    addDocuments: (identifiers: IdentifierWithSettings[]) => void;
+    addDocument: (identifier: IdentifierWithAttributes) => void;
+    addDocuments: (identifiers: IdentifierWithAttributes[]) => void;
     resetResponses: () => void;
 }
 
@@ -31,93 +26,22 @@ const useAddDocuments = (api: ApiDocuments, settings: AddDocumentsSettings) => {
     >({});
 
     const addDocument = useCallback(
-        async (identifier: Identifier) => {
+        async (identifier: IdentifierWithAttributes) => {
             try {
-                setTotalCount((prev) => prev + 1);
-
-                const response = (
-                    await api.insertDocument(
-                        identifier,
-                        settings.categoryId,
-                        false
-                    )
-                ).data;
-
-                if (
-                    response.status ===
-                        AddDocumentResponseStatus.MultipleIssues &&
-                    response.document
-                ) {
-                    setMultipleIssuesDocuments((prev) => ({
-                        ...prev,
-                        [response.document!.sysno]: response.document!,
-                    }));
-                }
-                if (
-                    response.document &&
-                    response.document.sysno in multipleIssuesDocuments
-                ) {
-                    setMultipleIssuesDocuments((prev) => ({
-                        ...prev,
-                        [response.document!.sysno]: {
-                            ...(prev[response.document!.sysno] || {}),
-                            ...response.document,
-                        },
-                    }));
-                }
-
-                setResponses((prev) => [...prev, response]);
+                await api.insertDocument(identifier);
             } catch (error) {
                 console.error(`Error while accepting input: ${error}`);
-            } finally {
-                setProcessedCount((prev) => prev + 1);
             }
         },
         [settings, setResponses, multipleIssuesDocuments, api]
     );
 
     const addDocuments = useCallback(
-        async (identifiers: IdentifierWithSettings[]) => {
+        async (identifiers: IdentifierWithAttributes[]) => {
             try {
-                setTotalCount((prev) => prev + identifiers.length);
-
-                const responses = await Promise.all(
-                    identifiers.map(async (identifier) => {
-                        const response = await api.insertDocument(
-                            {
-                                identifier_type: identifier.identifier_type,
-                                value: identifier.value,
-                            },
-                            identifier.categoryId,
-                            false
-                        );
-
-                        // Update processed count immediately after each insertion
-                        setProcessedCount((prev) => prev + 1);
-
-                        return response.data;
-                    })
-                );
-
-                setMultipleIssuesDocuments((prev) => ({
-                    ...prev,
-                    ...responses
-                        .filter(
-                            (response) =>
-                                response.status ===
-                                AddDocumentResponseStatus.MultipleIssues
-                        )
-                        .reduce((acc, response) => {
-                            acc[response.document!.sysno] = response.document!;
-                            return acc;
-                        }, {} as Record<string, CatalogDocumentResponse>),
-                }));
-
-                setResponses((prev) => [...prev, ...responses]);
+                await api.insertDocument(identifiers);
             } catch (error) {
                 console.error(`Error while accepting input: ${error}`);
-            } finally {
-                setProcessedCount((prev) => prev + 1);
             }
         },
         [

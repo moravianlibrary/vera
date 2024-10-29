@@ -22,6 +22,7 @@ import {
 } from "../data/factories/EsQueriesFactory";
 import DocumentsDetails from "../features/documents/DocumentsDetails";
 import documents_index_settings from "../config/documents_index";
+import { AddDocumentsProvider } from "../contexts/AddDocumentsContext";
 
 const Documents: React.FC = () => {
     const searchClient = Client(documentsIndex);
@@ -45,6 +46,7 @@ const Documents: React.FC = () => {
                 <DocumentsProvider searchClient={searchClient}>
                     <WithProviders
                         providers={[
+                            AddDocumentsProvider,
                             CategoriesProvider,
                             LocationsProvider,
                             GeneratedExtractionsProvider,

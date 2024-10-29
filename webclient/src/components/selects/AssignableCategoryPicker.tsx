@@ -17,6 +17,7 @@ interface AssignableCategoriesPickerProps {
 interface AssignableCategoryPickerProps {
     category_id: number | null;
     callback(category_id: number | null): void;
+    showClear?: boolean;
 }
 
 export const AssignableCategoriesPicker: React.FC<
@@ -69,6 +70,7 @@ export const AssignableCategoriesPicker: React.FC<
 const AssignableCategoryPicker: React.FC<AssignableCategoryPickerProps> = ({
     category_id,
     callback,
+    showClear = true,
 }) => {
     const { getAssignableCategoriesTrees } = useCategories();
 
@@ -111,7 +113,7 @@ const AssignableCategoryPicker: React.FC<AssignableCategoryPickerProps> = ({
                 callback(e.value ? parseInt(e.value as string) : null)
             }
             filter
-            showClear
+            showClear={showClear}
         />
     );
 };

@@ -11,6 +11,9 @@ IdentifierToAlephFieldConverted = {
 
 
 class AddDocumentResponseStatus(Enum):
+    # Processing
+    Unprocessed = "Unprocessed"
+    InternalError = "InternalError"
     # AlephResponseStatus values
     AlephNotAvailable = "AlephNotAvailable"
     AlephRequestFailed = "AlephRequestFailed"

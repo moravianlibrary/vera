@@ -29,7 +29,7 @@ from .utils.query_restrictions import (
     restrict_query_params_for_username,
 )
 from .utils.query_routing_parser import parse_query_routing
-from worker import run_add_document, run_add_documents
+from worker import run_add_documents
 
 
 XLSX_MIMETYPE = (
@@ -49,20 +49,17 @@ async def add_document_from_catalog(
     predict_pages_count: bool = Query(True),
     caller: str = DependsOnCallerUsername,
     es_session: EsSession = DependsOnEsSession,
-    session: Session = DependsOnDbSession,
 ):
     if isinstance(attributes, list):
-        run_add_documents.delay(
-            attributes_list=attributes,
-            caller=caller,
-            predict_page_count=predict_pages_count,
-        )
+        for curr_attributes in attributes:
+            AddDocumentResponse(
+                attributes=curr_attributes, added_by=caller
+            ).save(es_session, True)
     else:
-        run_add_document.delay(
-            attributes=attributes.model_dump_json(),
-            caller=caller,
-            predict_page_count=predict_pages_count,
+        AddDocumentResponse(attributes=attributes, added_by=caller).save(
+            es_session, True
         )
+    run_add_documents.delay()
 
 
 @router.post(
@@ -81,18 +78,19 @@ def search_add_documents_responses(
 
 
 @router.delete(
-    "/from_catalog/responses/{response_id}",
+    "/from_catalog/responses",
     dependencies=[CanReadDocuments],
     response_model=None,
 )
 def delete_add_documents_responses(
-    response_id: str = Path(...),
+    query_params: ElasticsearchParams,
     caller: str = DependsOnCallerUsername,
     es_session: EsSession = DependsOnEsSession,
 ):
-    if AddDocumentResponse.get(es_session, response_id).added_by != caller:
-        raise Exception("You can only delete your own responses")
-    return AddDocumentResponse.delete(es_session, response_id)
+    for uuid in AddDocumentResponse.search_source_ids(
+        es_session, restrict_query_params_for_username(query_params, caller)
+    ):
+        AddDocumentResponse.delete(es_session, uuid, True)
 
 
 @router.put(

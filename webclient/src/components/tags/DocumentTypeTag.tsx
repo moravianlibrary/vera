@@ -3,12 +3,12 @@ import { useTranslation } from "react-i18next";
 import { Tag } from "primereact/tag";
 import { MaterialType } from "../../types/MaterialType";
 import { IssuanceType } from "../../types/IssuanceType";
-import { IndexDocument } from "../../adapters/ApiDocuments";
 import IssuanceTypeTag from "./IssuanceTypeTag";
 import MaterialTypeTag from "./MaterialTypeTag";
 
 interface DocumentTypeTagProps {
-    document: IndexDocument;
+    materialType: MaterialType;
+    issuanceType?: IssuanceType;
 }
 
 function isInvalidCombination(
@@ -27,13 +27,16 @@ function isInvalidCombination(
     return isUnitInvalid || isVolumeOrBundleInvalid;
 }
 
-const DocumentTypeTag: React.FC<DocumentTypeTagProps> = ({ document }) => {
+const DocumentTypeTag: React.FC<DocumentTypeTagProps> = ({
+    materialType,
+    issuanceType,
+}) => {
     const { t } = useTranslation("types");
 
     // A lot of monographs does not have information about being a Book in MZK catalog
     if (
-        document.material_type === MaterialType.Other &&
-        document.issuance_type === IssuanceType.Unit
+        materialType === MaterialType.Other &&
+        issuanceType === IssuanceType.Unit
     ) {
         return (
             <IssuanceTypeTag
@@ -43,7 +46,7 @@ const DocumentTypeTag: React.FC<DocumentTypeTagProps> = ({ document }) => {
         );
     }
 
-    if (isInvalidCombination(document.material_type, document.issuance_type)) {
+    if (isInvalidCombination(materialType, issuanceType)) {
         return (
             <Tag
                 value={t("document-type.invalid")}
@@ -52,16 +55,13 @@ const DocumentTypeTag: React.FC<DocumentTypeTagProps> = ({ document }) => {
         );
     }
 
-    if (document.issuance_type) {
+    if (issuanceType) {
         return (
-            <IssuanceTypeTag
-                issuanceType={document.issuance_type}
-                includeMaterialType
-            />
+            <IssuanceTypeTag issuanceType={issuanceType} includeMaterialType />
         );
     }
 
-    return <MaterialTypeTag materialType={document.material_type} />;
+    return <MaterialTypeTag materialType={materialType} />;
 };
 
 export default DocumentTypeTag;

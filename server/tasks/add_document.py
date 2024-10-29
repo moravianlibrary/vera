@@ -39,17 +39,14 @@ class AddDocumentsProcessor:
         es_session: EsSession,
         registry_client: DigitizationRegistryClient,
         predictor: Optional[Predictor],
-        added_by: str,
     ):
         self.session = session
         self.es_session = es_session
         self.registry_client = registry_client
         self.predictor = predictor
-        self.added_by = added_by
 
     def __call__(
-        self,
-        attributes: IdentifierWithAttributes,
+        self, attributes: IdentifierWithAttributes, added_by: str
     ) -> Tuple[Optional[CatalogDocumentResponse], AddDocumentResponseStatus]:
         catalog_record, status = self.get_catalog_record(
             attributes.identifier_type, attributes.value
@@ -131,7 +128,7 @@ class AddDocumentsProcessor:
 
         try:
             document = self.create_document(
-                main_aleph_record, add_issue, attributes
+                main_aleph_record, add_issue, attributes, added_by
             )
             if document is None:
                 return catalog_document, AddDocumentResponseStatus.UnknownError
@@ -230,6 +227,7 @@ class AddDocumentsProcessor:
         main_aleph_record: AlephRecord,
         catalog_issue: CatalogIssueResponse,
         attributes: IdentifierWithAttributes,
+        added_by: str,
     ) -> Document:
         document = Document(
             sysno=main_aleph_record.sysno,
@@ -238,7 +236,7 @@ class AddDocumentsProcessor:
             volume_year=catalog_issue.volume,
             bundle=catalog_issue.bundle,
             document_signature=catalog_issue.signature,
-            added_by=self.added_by,
+            added_by=added_by,
             category_id=attributes.category_id,
             digitization_registry_id=catalog_issue.digitization_registry_id,
             digitization_state=catalog_issue.digitization_state,

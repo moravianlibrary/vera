@@ -156,14 +156,11 @@ export const InsertDocumentsProvider: React.FC<
 
     const onAddDocument = useCallback(async () => {
         try {
-            await addDocument({
+            await api.insertDocument({
                 identifier_type: settings.identifierType,
                 value: value,
+                category_id: settings.categoryId,
             });
-
-            setCurrStep(
-                Object.keys(multipleIssuesDocuments).length > 0 ? 2 : 3
-            );
         } catch (error) {
             console.error("Error adding document:", error);
         }
@@ -175,12 +172,10 @@ export const InsertDocumentsProvider: React.FC<
                 fileUploadValues.map((value) => ({
                     identifier_type: value.identifier,
                     value: value.value,
-                    categoryId: value.category_id!,
-                    extractionPriority: settings.extractionPriority,
+                    category_id: value.category_id!,
+                    extraction_priority: settings.extractionPriority,
                 }))
             );
-
-            setCurrStep(totalCountIssuesDocuments > 0 ? 2 : 3);
         } catch (error) {
             console.error("Error adding documents:", error);
         }
@@ -381,19 +376,9 @@ export const InsertDocumentsProvider: React.FC<
 
     const acceptInput = async () => {
         if (value !== "") {
-            addDocument({
-                identifier_type: settings.identifierType,
-                value: value,
-            });
+            onAddDocument();
         } else if (fileUploadValues) {
-            addDocuments(
-                fileUploadValues.map((value) => ({
-                    identifier_type: value.identifier,
-                    value: value.value,
-                    categoryId: value.category_id!,
-                    extractionPriority: settings.extractionPriority,
-                }))
-            );
+            onAddDocuments();
         }
     };
 
