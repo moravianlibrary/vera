@@ -8,7 +8,13 @@ from services.external.digitization_registry import (
 )
 from services.external.digitization_registry import DigitizationState
 from models import CatalogRecord
-from .base_es_model import BaseEsModel, Keyword, Boolean, Integer, Date
+from .base_es_model import (
+    BaseEsModel,
+    Keyword,
+    Boolean,
+    Integer,
+    Date,
+)
 from pydantic import Field
 from uuid import uuid4
 from config import VeraConfig
@@ -29,8 +35,8 @@ class CatalogIssueResponse(BaseEsModel):
     digitization_state: DigitizationState = DigitizationState.NotDigitized
 
     can_digitize: Boolean = True
-    already_added: Boolean = False
     newly_added: Boolean = False
+    processing: Boolean = False
 
     @classmethod
     def from_aleph_issue(
@@ -38,7 +44,7 @@ class CatalogIssueResponse(BaseEsModel):
         aleph_record: AlephRecord,
         aleph_issue: AlephIssue,
         digitization_registry_record: DigitizationRegistryRecord,
-        already_added: bool,
+        document_id: Optional[int] = None,
     ) -> "CatalogIssueResponse":
         return cls(
             issuance_type=aleph_issue.issuance_type,
@@ -58,14 +64,14 @@ class CatalogIssueResponse(BaseEsModel):
                 else DigitizationState.NotDigitized
             ),
             can_digitize=aleph_issue.can_digitize,
-            already_added=already_added,
+            document_id=document_id,
         )
 
     @classmethod
     def from_digitization_registry(
         cls,
         digitization_registry_record: DigitizationRegistryRecord,
-        already_added: bool,
+        document_id: Optional[int] = None,
     ) -> "CatalogIssueResponse":
         return cls(
             digitization_registry_id=(
@@ -78,7 +84,7 @@ class CatalogIssueResponse(BaseEsModel):
                 if digitization_registry_record
                 else DigitizationState.NotDigitized
             ),
-            already_added=already_added,
+            document_id=document_id,
         )
 
 
@@ -105,11 +111,29 @@ class CatalogDocumentResponse(BaseEsModel):
             title=aleph_record.title,
             material_type=aleph_record.material_type,
             issues=catalog_issues,
+            # issues=(
+            #     catalog_issues[0]
+            #     if len(catalog_issues) == 1
+            #     else catalog_issues
+            # ),
             skc_sysno=catalog_record.skc_sysno,
             has_valid_main_record=catalog_record.has_valid_main_record,
             cnb_sysno=catalog_record.cnb_sysno,
             has_valid_cnb=catalog_record.has_valid_cnb,
         )
+
+    def replace_issue(self, issue: CatalogIssueResponse):
+        if self.issues:
+            self.issues = [
+                (
+                    issue
+                    if existing_issue.barcode == issue.barcode
+                    else existing_issue
+                )
+                for existing_issue in self.issues
+            ]
+        else:
+            raise ValueError("Issues list is missing.")
 
 
 class Identifier(BaseEsModel):
@@ -139,3 +163,30 @@ class AddDocumentResponse(BaseEsModel):
     status: AddDocumentResponseStatus = AddDocumentResponseStatus.Unprocessed
     document: Optional[CatalogDocumentResponse] = None
     added_by: Keyword
+    parent_id: Optional[Keyword] = None
+
+    def set_issue_processing(self, issue_barcode: str):
+        if self.document and self.document.issues:
+            issue = next(
+                (
+                    issue
+                    for issue in self.document.issues
+                    if issue.barcode == issue_barcode
+                ),
+                None,
+            )
+
+            if issue:
+                issue.processing = True
+            else:
+                raise ValueError(
+                    f"Issue with barcode {issue_barcode} not found."
+                )
+        else:
+            raise ValueError("Document or issues list is missing.")
+
+    def replace_issue(self, issue: CatalogIssueResponse):
+        if self.document and self.document.issues:
+            self.document.replace_issue(issue)
+        else:
+            raise ValueError("Document is missing.")

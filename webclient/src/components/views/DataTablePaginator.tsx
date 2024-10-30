@@ -6,42 +6,34 @@ import { Button } from "primereact/button";
 import { Badge } from "primereact/badge";
 
 interface DataTablePaginatorProps {
-    offset?: number;
-    limit?: number;
     numFound: number;
-    page?: number;
-    pageSize?: number;
-    onPageChange?: (e: PaginatorPageChangeEvent) => void;
-    onPageChangeNew?: (newPage: number) => void;
-    onPageSizeChange?: (newPageSize: number) => void;
+    page: number;
+    pageSize: number;
+    onPageChange: (newPage: number) => void;
+    onPageSizeChange: (newPageSize: number) => void;
     rightContent?: React.ReactNode;
     onRefresh?: () => void;
     leftContent?: React.ReactNode;
     numFoundText?: string;
+    pageSizeOptions?: number[];
 }
 
 const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
-    offset,
-    limit,
     numFound,
     page,
     pageSize,
     onPageChange,
-    onPageChangeNew,
     onPageSizeChange,
     rightContent,
     onRefresh,
     leftContent,
     numFoundText,
+    pageSizeOptions,
 }) => {
     const { t } = useTranslation("app");
     const handlePageChange = (event: PaginatorPageChangeEvent) => {
-        if (onPageChange) {
-            onPageChange(event);
-        }
-
-        if (onPageChangeNew && event.page + 1 !== page) {
-            onPageChangeNew(event.page + 1);
+        if (onPageChange && event.page + 1 !== page) {
+            onPageChange(event.page + 1);
         }
         if (onPageSizeChange && event.rows !== pageSize) {
             onPageSizeChange(event.rows);
@@ -57,23 +49,7 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
     );
 
     const getFirst = () => {
-        if (offset) {
-            return offset;
-        }
-        if (page && pageSize) {
-            return pageSize * (page - 1) + 1;
-        }
-        return 0;
-    };
-
-    const getRows = () => {
-        if (limit) {
-            return limit;
-        }
-        if (pageSize) {
-            return pageSize;
-        }
-        return 10;
+        return pageSize > 1 ? pageSize * (page - 1) + 1 : page - 1;
     };
 
     const numFoundLabel = () => {
@@ -89,8 +65,8 @@ const DataTablePaginator: React.FC<DataTablePaginatorProps> = ({
         <Paginator
             className="border-top-2 border-solid surface-50 w-full"
             first={getFirst()}
-            rowsPerPageOptions={[10, 15, 20, 25, 50]}
-            rows={getRows()}
+            rowsPerPageOptions={pageSizeOptions || [10, 15, 20, 25, 50]}
+            rows={pageSize}
             totalRecords={numFound || 1}
             onPageChange={handlePageChange}
             rightContent={rightContent || onRefresh ? refreshButton : <></>}

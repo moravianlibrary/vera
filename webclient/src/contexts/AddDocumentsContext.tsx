@@ -45,6 +45,7 @@ export interface Bucket {
 interface AddDocumentsContextProps
     extends ObjectiveSettingsInjectorProps<AddDocumentsSettings> {
     addDocument: (value: string) => void;
+    addDocumentIssue: (responseId: string, barcode: string) => Promise<void>;
     addDocuments: (attributes: IdentifierWithAttributes[]) => void;
     numProcessed: number;
     numFound: number;
@@ -53,7 +54,7 @@ interface AddDocumentsContextProps
         status: AddDocumentResponseStatus,
         page: number,
         pageSize: number
-    ) => Promise<AddDocumentResponse[]>;
+    ) => Promise<[AddDocumentResponse[], number]>;
 }
 
 interface AddDocumentsProviderProps {
@@ -118,6 +119,23 @@ export const AddDocumentsProvider: React.FC<AddDocumentsProviderProps> = ({
         [settings]
     );
 
+    const addDocumentIssue = useCallback(
+        async (responseId: string, barcode: string): Promise<void> => {
+            try {
+                await api.addDocumentIssue(responseId, {
+                    identifier_type: IdentifierType.Barcode,
+                    value: barcode,
+                    category_id: settings.categoryId,
+                    extraction_priority: settings.extractionPriority,
+                });
+                setNumFound((prev) => prev + 1);
+            } catch (error) {
+                console.error("Error adding document issue:", error);
+            }
+        },
+        [settings]
+    );
+
     const addDocuments = (attributes: IdentifierWithAttributes[]) => {
         api.insertDocument(attributes);
         setNumFound((prev) => prev + attributes.length);
@@ -132,9 +150,11 @@ export const AddDocumentsProvider: React.FC<AddDocumentsProviderProps> = ({
             const response = await api.searchAddDocumentsResponses(
                 getStatusPageQuery(status, page, pageSize)
             );
-            return response.data.hits.hits.map((hit) => hit._source);
+            const responses = response.data.hits.hits.map((hit) => hit._source);
+            const numFound = response.data.hits.total.value;
+            return [responses, numFound] as [AddDocumentResponse[], number];
         } catch (error) {
-            return [];
+            return [[], 0] as [AddDocumentResponse[], number];
         }
     };
 
@@ -142,16 +162,19 @@ export const AddDocumentsProvider: React.FC<AddDocumentsProviderProps> = ({
         if (numFound === numProcessed) return;
 
         const timer = setInterval(() => {
-            setNumFound((prevCount) => {
-                if (prevCount > 0) {
-                    fetchProcessedCount();
-                }
-                return prevCount;
-            });
-        }, 1000);
+            fetchProcessedCount();
+        }, 3000);
+
+        const checkIfCompleted = () => {
+            if (numFound === numProcessed) {
+                clearInterval(timer);
+            }
+        };
+
+        checkIfCompleted();
 
         return () => clearInterval(timer);
-    }, [numFound]);
+    }, [numFound, numProcessed]);
 
     useEffect(() => {
         fetchProcessedCount();
@@ -163,6 +186,7 @@ export const AddDocumentsProvider: React.FC<AddDocumentsProviderProps> = ({
         ...restOfObjectiveSettingsProps,
 
         addDocument,
+        addDocumentIssue,
         addDocuments,
         numProcessed,
         numFound,

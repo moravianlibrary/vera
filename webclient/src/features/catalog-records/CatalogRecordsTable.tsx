@@ -43,6 +43,9 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
             selectionMode="checkbox"
             selection={currentPageSelected}
             onSelectionChange={handleDataTableSelectionChange}
+            onMouseDownCapture={(e) => {
+                e.stopPropagation();
+            }}
         >
             <Column expander={true} style={{ width: "5rem" }} />
             <Column
@@ -87,7 +90,7 @@ const CatalogRecordsTablePaginator: React.FC = () => {
             numFound={numFound}
             page={page}
             pageSize={pageSize}
-            onPageChangeNew={setPage}
+            onPageChange={setPage}
             onPageSizeChange={setPageSize}
             onRefresh={refresh}
             numFoundText={t("num-found", { count: numFound })}

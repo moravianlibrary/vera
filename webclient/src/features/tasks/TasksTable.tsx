@@ -152,7 +152,7 @@ const TasksTablePaginator: React.FC = () => {
             numFound={numFound}
             page={page}
             pageSize={pageSize}
-            onPageChangeNew={setPage}
+            onPageChange={setPage}
             onPageSizeChange={setPageSize}
             numFoundText={t("num-found", { count: numFound })}
         />
@@ -171,6 +171,7 @@ const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
     const [errorTypes, setErrorTypes] = useState<string[]>([]);
     const [errorTypesFilter, setErrorTypesFilter] = useState<string[]>([]);
     const [page, setPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(20);
 
     useEffect(() => {
         getTaskItems(task.id, page, 20)
@@ -245,8 +246,9 @@ const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
                 <DataTablePaginator
                     numFound={task.total_count}
                     page={page}
-                    pageSize={20}
-                    onPageChangeNew={setPage}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                    onPageSizeChange={setPageSize}
                 />
             )}
             <DataTable value={showItems}>

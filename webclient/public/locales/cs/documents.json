@@ -46,7 +46,16 @@
         "publishing_place": "Místo vydáni",
         "publishing_year": "Rok vydání",
         "languages": "Jazyky",
-        "frequencies": "Frekvence"
+        "frequencies": "Frekvence",
+        "description": {
+            "volume-year-volume-bundle": "Rok:{{volume_year}}, Ročník:{{volume}}, Svazek:{{bundle}}",
+            "volume-year-bundle": "Rok:{{volume_year}}, Svazek:{{bundle}}",
+            "volume-year-volume": "Rok:{{volume_year}}, Ročník:{{volume}}",
+            "volume-year": "Rok:{{volume_year}}",
+            "volume-bundle": "Ročník:{{volume}}, Svazek:{{bundle}}",
+            "volume": "Ročník:{{volume}}",
+            "bundle": "Svazek:{{bundle}}"
+        }
     },
     "facets": {
         "document-flags": "Příznaky dokumentu",
@@ -153,6 +162,7 @@
         "next-step": "Dále",
         "prev-step": "Zpět",
         "progress": "Zpracováno: {{numProcessed}} / {{numFound}}",
+        "add-issue": "Přidat",
         "attributes": {
             "identifier-type": "Identifikátor",
             "value": "Hodnota",

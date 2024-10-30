@@ -5,6 +5,7 @@ interface LabeledComponentProps {
     children: React.ReactNode;
     column?: boolean;
     className?: string;
+    boldLabel?: boolean;
 }
 
 const LabeledComponent: React.FC<LabeledComponentProps> = (props) => {
@@ -18,7 +19,9 @@ const LabeledComponent: React.FC<LabeledComponentProps> = (props) => {
 
     return (
         <div className={className}>
-            <label>{props.label}:</label>
+            <label className={props.boldLabel ? "font-bold" : ""}>
+                {props.label}:
+            </label>
             <div>{props.children}</div>
         </div>
     );

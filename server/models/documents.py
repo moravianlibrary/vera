@@ -251,6 +251,38 @@ class Document(BaseModel):
             )
 
     @classmethod
+    def find_id_by_identifiers(
+        cls,
+        session: Session,
+        sysno: str,
+        barcode: Optional[str] = None,
+        volume: Optional[str] = None,
+        volume_year: Optional[str] = None,
+        bundle: Optional[str] = None,
+    ) -> Optional[int]:
+        if barcode:
+            document = (
+                session.query(cls)
+                .filter_by(sysno=sysno, barcode=barcode)
+                .one_or_none()
+            )
+        elif volume or volume_year or bundle:
+            return (
+                session.query(cls)
+                .filter_by(
+                    sysno=sysno,
+                    volume=volume,
+                    volume_year=volume_year,
+                    bundle=bundle,
+                )
+                .one_or_none()
+            )
+        else:
+            document = session.query(cls).filter_by(sysno=sysno).one_or_none()
+
+        return document.id if document else None
+
+    @classmethod
     def exists(
         cls,
         session: Session,

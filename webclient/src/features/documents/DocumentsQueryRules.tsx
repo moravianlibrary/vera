@@ -95,6 +95,7 @@ const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                         attribute="page_count"
                         label={t("facets.page-count")}
                     />
+                    <EsRangeFacet attribute="id" label={t("facets.id")} />
                     {/* <EsRangeFacet
                         attribute="volume_number"
                         label="Volume Number"

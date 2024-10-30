@@ -46,6 +46,7 @@ const AddDocumentsMenu: React.FC<AddDocumentsMenuProps> = ({}) => {
                 <Dialog
                     visible={responsesVisible}
                     onHide={() => setResponseVisible(false)}
+                    className="my-dialog"
                 >
                     <AddDocumentsResults />
                 </Dialog>

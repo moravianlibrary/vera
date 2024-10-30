@@ -188,8 +188,8 @@ class NkpAlephClient:
 
         record = self.skc_html_marc21_to_marc21(html_marc21)[1]
         if not record and retry > 0:
-            sleep(10)
-            self.get_marc21(sysno, local_base, retry - 1)
+            sleep(2)
+            return self.get_marc21(sysno, local_base, retry - 1)
 
         return record
 
@@ -203,8 +203,6 @@ class NkpAlephClient:
         if sysno is None:
             return None
         record = self.get_marc21(sysno, local_base)
-        if record is None:
-            print(f"Could not download {local_base} for system number {sysno}")
         return AlephRecord(sysno, record) if sysno else None
 
     def get_skc_record(

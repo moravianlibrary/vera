@@ -63,6 +63,18 @@ def add_documents(
             response.indexed_at = VeraConfig.Timestamp.isoformat()
             response.save(es_session, True)
 
+            if response.parent_id is not None:
+                parent_response = AddDocumentResponse.model_validate(
+                    AddDocumentResponse.get(es_session, response.parent_id)
+                )
+                issue = (
+                    [i for i in response.document.issues if i.newly_added][0]
+                    if response.document and response.document.issues
+                    else None
+                )
+                parent_response.replace_issue(issue)
+                parent_response.save(es_session, True)
+
     unprocessed = get_unprocessed_responses(es_session)
 
     while unprocessed:

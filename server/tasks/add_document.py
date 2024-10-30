@@ -1,5 +1,5 @@
 from typing import Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime
 from config import VeraConfig
 from sqlalchemy.orm import Session
 from services.external.digitization_registry import DigitizationState
@@ -67,7 +67,7 @@ class AddDocumentsProcessor:
         active_issues = [
             catalog_issue
             for catalog_issue in catalog_issues
-            if catalog_issue.can_digitize and not catalog_issue.already_added
+            if catalog_issue.can_digitize and catalog_issue.document_id is None
         ]
         not_digitized_issues = [
             active_issue
@@ -111,7 +111,7 @@ class AddDocumentsProcessor:
         else:
             add_issue = active_issues[0]
 
-        if add_issue.already_added:
+        if add_issue.document_id is not None:
             return catalog_document, AddDocumentResponseStatus.UniqueViolation
         if add_issue.digitization_state == DigitizationState.Unknown:
             return (
@@ -165,7 +165,7 @@ class AddDocumentsProcessor:
                 or self.registry_client.get_record_by_barcode(
                     aleph_issue.barcode,
                 ),
-                Document.exists(
+                Document.find_id_by_identifiers(
                     session,
                     main_aleph_record.sysno,
                     aleph_issue.barcode,
@@ -185,7 +185,9 @@ class AddDocumentsProcessor:
                     DigitizationRegistryClient().get_document_record(
                         cnb=main_aleph_record.cnb, isxn=main_aleph_record.isxn
                     ),
-                    Document.exists(session, main_aleph_record.sysno),
+                    Document.find_id_by_identifiers(
+                        session, main_aleph_record.sysno
+                    ),
                 )
             ]
         )
@@ -195,19 +197,29 @@ class AddDocumentsProcessor:
         identifier_type: IdentifierType,
         value: str,
     ) -> Tuple[Optional[CatalogRecord], AddDocumentResponseStatus]:
+        if identifier_type == IdentifierType.Sysno:
+            sysno, aleph_response_status = AlephClient().find_sysno(
+                IdentifierToAlephFieldConverted[identifier_type],
+                value,
+            )
+            value = sysno
+
         catalog_record = CatalogRecord.find_by_identifier(
             self.session, identifier_type, value
         )
 
-        if catalog_record is not None and (
-            datetime.now() - catalog_record.updated_at
-        ) <= timedelta(seconds=VeraConfig.CatalogRecordsValidFor):
+        if (
+            catalog_record is not None
+            and ((datetime.now() - catalog_record.updated_at).seconds)
+            <= VeraConfig.CatalogRecordsValidFor
+        ):
             return catalog_record, AddDocumentResponseStatus.Success
 
-        sysno, aleph_response_status = AlephClient().find_sysno(
-            IdentifierToAlephFieldConverted[identifier_type],
-            value,
-        )
+        if identifier_type != IdentifierType.Sysno:
+            sysno, aleph_response_status = AlephClient().find_sysno(
+                IdentifierToAlephFieldConverted[identifier_type],
+                value,
+            )
 
         if aleph_response_status != AlephResponseStatus.Success:
             return (

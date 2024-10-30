@@ -12,6 +12,7 @@ const FACETS_QUERY = {
         },
     },
 };
+
 function getStatusPageQuery(
     status: AddDocumentResponseStatus,
     page: number,
@@ -29,6 +30,13 @@ function getStatusPageQuery(
                 },
             },
         },
+        sort: [
+            {
+                indexed_at: {
+                    order: "asc",
+                },
+            },
+        ],
     };
 }
 

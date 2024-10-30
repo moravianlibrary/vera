@@ -32,7 +32,4 @@ TaskDispatcher = {
     TaskType.RecreateIndexes: RecreateIndexes,
 }
 
-__all__ = [
-    "TaskDispatcher",
-    "add_documents",
-]
+__all__ = ["TaskDispatcher", "add_documents"]

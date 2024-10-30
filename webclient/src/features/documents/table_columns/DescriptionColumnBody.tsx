@@ -1,9 +1,12 @@
 import { IndexDocument } from "../../../adapters/ApiDocuments";
+import { parseDescription } from "../../../data/factories/DocumentAttributesFactory";
 
 const DescriptionColumnBody = (document: IndexDocument) => {
-    return [document.volume_year, document.volume, document.bundle]
-        .filter((x) => x)
-        .join(" ");
+    return parseDescription(
+        document.volume_year,
+        document.volume,
+        document.bundle
+    );
 };
 
 export default DescriptionColumnBody;

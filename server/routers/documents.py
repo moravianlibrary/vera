@@ -77,6 +77,30 @@ def search_add_documents_responses(
     )
 
 
+@router.post(
+    "/from_catalog/responses/{response_id}",
+    dependencies=[CanReadDocuments],
+    response_model=None,
+)
+def add_document_issue(
+    attributes: IdentifierWithAttributes,
+    response_id: str = Path(...),
+    caller: str = DependsOnCallerUsername,
+    es_session: EsSession = DependsOnEsSession,
+):
+    response = AddDocumentResponse.model_validate(
+        AddDocumentResponse.get(es_session, response_id)
+    )
+    response.set_issue_processing(attributes.value)
+    response.save(es_session, True)
+
+    AddDocumentResponse(
+        attributes=attributes, added_by=caller, parent_id=response.id
+    ).save(es_session, True)
+
+    run_add_documents.delay()
+
+
 @router.delete(
     "/from_catalog/responses",
     dependencies=[CanReadDocuments],

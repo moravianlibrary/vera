@@ -32,6 +32,9 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
             selectionMode="checkbox"
             selection={currentPageSelected}
             onSelectionChange={handleDataTableSelectionChange}
+            onMouseDownCapture={(e) => {
+                e.stopPropagation();
+            }}
         >
             <Column field="details" body={DocumentDetailsColumnBody} />
 
@@ -92,7 +95,7 @@ const DocumentsTablePaginator: React.FC = () => {
             numFound={numFound}
             page={page}
             pageSize={pageSize}
-            onPageChangeNew={setPage}
+            onPageChange={setPage}
             onPageSizeChange={setPageSize}
             onRefresh={refresh}
             numFoundText={t("num-found", { count: numFound })}

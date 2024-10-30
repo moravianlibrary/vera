@@ -47,15 +47,19 @@ class TestAddDocumentsResponses(TestSchemaBase):
                             },
                             "type": "nested",
                         },
-                        "identifier": {
+                        "attributes": {
                             "properties": {
                                 "identifier_type": {"type": "keyword"},
                                 "value": {"type": "keyword"},
+                                "category_id": {"type": "integer"},
+                                "extraction_priority": {"type": "integer"},
+                                "page_count_manual": {"type": "integer"},
                             },
                             "type": "nested",
                         },
                         "status": {"type": "keyword"},
                         "added_by": {"type": "keyword"},
+                        "indexed_at": {"type": "date"},
                     },
                 },
             },

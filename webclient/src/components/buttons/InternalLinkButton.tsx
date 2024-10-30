@@ -9,19 +9,35 @@ import { Category } from "../../adapters/ApiCategories";
 interface InternalLinkButtonProps {
     label: string;
     link: string;
+    openInNewTab?: boolean;
 }
 
 interface ItemInternalLinkButtonProps {
     category?: Category;
     digitizationList?: DigitizationList;
     extraction?: Extraction;
+    documentsQuery?: string;
+    documentId?: number;
+    openInNewTab?: boolean;
 }
 
 const InternalLinkButton: React.FC<InternalLinkButtonProps> & {
     ShowInCategories: React.FC<ItemInternalLinkButtonProps>;
     ShowInDocuments: React.FC<ItemInternalLinkButtonProps>;
-} = ({ label, link }) => {
+} = ({ label, link, openInNewTab }) => {
     const navigate = useNavigate();
+
+    if (openInNewTab) {
+        return (
+            <Button
+                className="p-1 text-blue-600"
+                text
+                onClick={() => window.open(link, "_blank")}
+            >
+                <i className="pi pi-external-link" />
+            </Button>
+        );
+    }
 
     return (
         <Button
@@ -32,22 +48,33 @@ const InternalLinkButton: React.FC<InternalLinkButtonProps> & {
     );
 };
 
+const DOCUMENTS_BASE = "/documents?index_name=documents";
+
 const ShowInDocuments: React.FC<ItemInternalLinkButtonProps> = ({
     category,
     digitizationList,
     extraction,
+    documentsQuery,
+    documentId,
+    openInNewTab,
 }) => {
     const { t } = useTranslation("app");
 
     const getLink = () => {
         if (category) {
-            return `/documents?category_ids=${category.id}`;
+            return `${DOCUMENTS_BASE}/category_ids=${category.id}`;
         }
         if (digitizationList) {
-            return `/documents?digitization_list_id=${digitizationList.id}`;
+            return `${DOCUMENTS_BASE}&digitization_list_id=${digitizationList.id}`;
         }
         if (extraction) {
-            return `/documents?extraction_ids=${extraction.id}`;
+            return `${DOCUMENTS_BASE}&extraction_ids=${extraction.id}`;
+        }
+        if (documentsQuery) {
+            return `${DOCUMENTS_BASE}&query=${documentsQuery}`;
+        }
+        if (documentId) {
+            return `${DOCUMENTS_BASE}&id=${documentId}:${documentId}`;
         }
     };
 
@@ -55,6 +82,7 @@ const ShowInDocuments: React.FC<ItemInternalLinkButtonProps> = ({
         <InternalLinkButton
             label={t("internal-link.show-in-documents")}
             link={getLink()}
+            openInNewTab={openInNewTab}
         />
     );
 };

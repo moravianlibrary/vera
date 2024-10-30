@@ -21,7 +21,6 @@ const parseTextFileUpload = (
 ) => {
     return new Promise<IdentifierWithAttributes[]>((resolve, reject) => {
         const fileReader = new FileReader();
-        console.log(identifier_type);
 
         fileReader.onload = (e) => {
             if (e.target) {

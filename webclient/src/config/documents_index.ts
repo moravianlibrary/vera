@@ -79,6 +79,11 @@ const documents_index_settings = {
     },
     facet_attributes: [
         {
+            attribute: "id",
+            field: "id",
+            type: "numeric",
+        },
+        {
             attribute: "document_flags",
             field: "document_flags",
             type: "string",

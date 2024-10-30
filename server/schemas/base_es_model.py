@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import List, Dict, Generator, get_type_hints
 from elasticsearch import Elasticsearch
 from enum import Enum
+from typing import TypeVar, Union, get_origin, get_args
 
 
 type EsSession = Elasticsearch
@@ -10,6 +11,8 @@ type Keyword = str
 type Integer = int
 type Boolean = bool
 type Date = str
+T = TypeVar("T")
+SingleOrList = Union[T, List[T]]
 
 
 class BaseEsModel(BaseModel):
@@ -33,6 +36,8 @@ class BaseEsModel(BaseModel):
                 continue
             if hasattr(field_info, "_name") and field_info._name == "Optional":
                 field_info = field_info.__args__[0]
+            if get_origin(field_info) is Union:
+                field_info = get_args(field_info)[0]
             if (
                 hasattr(field_info, "__origin__")
                 and field_info.__origin__ == list

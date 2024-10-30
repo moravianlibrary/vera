@@ -97,8 +97,12 @@ interface CatalogIssueResponse {
     digitization_registry_id?: number | null;
     digitization_state: DigitizationState;
     can_digitize: boolean;
+    // Remove
     already_added: boolean;
     newly_added: boolean;
+    // Remove
+    processing: boolean;
+    parentDocument?: CatalogDocumentResponse;
 }
 
 interface CatalogDocumentResponse {
@@ -110,9 +114,11 @@ interface CatalogDocumentResponse {
     has_valid_main_record: boolean;
     cnb_sysno: string | null;
     has_valid_cnb: boolean;
+    parentResponse?: AddDocumentResponse;
 }
 
 interface AddDocumentResponse {
+    id: string;
     attributes: IdentifierWithAttributes;
     status: AddDocumentResponseStatus;
     document?: CatalogDocumentResponse | null;
@@ -151,6 +157,16 @@ class ApiDocuments extends ApiBase<IndexDocument> {
         attributes: IdentifierWithAttributes | IdentifierWithAttributes[]
     ) {
         const url = "/documents/from_catalog";
+        return axiosInstance.post(url, attributes, {
+            headers: authHeader(),
+        });
+    }
+
+    addDocumentIssue(
+        response_id: string,
+        attributes: IdentifierWithAttributes
+    ) {
+        const url = `/documents/from_catalog/responses/${response_id}`;
         return axiosInstance.post(url, attributes, {
             headers: authHeader(),
         });

@@ -75,7 +75,7 @@ const DigitizationListsTablePaginator: React.FC = () => {
             numFound={numFound}
             page={page}
             pageSize={pageSize}
-            onPageChangeNew={setPage}
+            onPageChange={setPage}
             onPageSizeChange={setPageSize}
             numFoundText={t("num-found", { count: numFound })}
         />
