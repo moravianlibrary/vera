@@ -9,29 +9,10 @@ from models import with_db_session
 from datatypes import AddDocumentResponseStatus
 from .add_document import AddDocumentsProcessor
 import logging
-from typing import List
 from config import VeraConfig
 
 
 logger = logging.getLogger("uvicorn")
-
-
-GET_UNPROCESSED_QUERY = {
-    "size": 50,
-    "from": 0,
-    "query": {"bool": {"must": {"term": {"status": "Unprocessed"}}}},
-}
-
-
-def get_unprocessed_responses(
-    es_session: EsSession,
-) -> List[AddDocumentResponse]:
-    return [
-        AddDocumentResponse.model_validate(hit["_source"])
-        for hit in AddDocumentResponse.search(
-            es_session, GET_UNPROCESSED_QUERY
-        )["hits"]["hits"]
-    ]
 
 
 @with_es_session
@@ -61,23 +42,43 @@ def add_documents(
             response.status = AddDocumentResponseStatus.InternalError
         finally:
             response.indexed_at = VeraConfig.Timestamp.isoformat()
+
+            issues = (
+                [i for i in response.document.issues if i.newly_added]
+                if response.document and response.document.issues
+                else None
+            )
+
+            if not issues:
+                response.save(es_session, True)
+                return
+
+            issue = issues[0]
+            response.document_id = issue.document_id
+            response.replace_issue(issue)
             response.save(es_session, True)
 
-            if response.parent_id is not None:
-                parent_response = AddDocumentResponse.model_validate(
-                    AddDocumentResponse.get(es_session, response.parent_id)
-                )
-                issue = (
-                    [i for i in response.document.issues if i.newly_added][0]
-                    if response.document and response.document.issues
-                    else None
-                )
-                parent_response.replace_issue(issue)
-                parent_response.save(es_session, True)
+            for prev_response in AddDocumentResponse.get_responses_with_sysno(
+                es_session, response.document.sysno
+            ):
+                if prev_response.id == response.id:
+                    continue
+                if (
+                    prev_response.status
+                    != AddDocumentResponseStatus.MultipleIssues
+                ):
+                    issue.newly_added = False
+                else:
+                    # TODO: This else should not be here
+                    # But without it, it sets newly_added to False
+                    # for all previously added issues
+                    issue.newly_added = True
+                prev_response.replace_issue(issue)
+                prev_response.save(es_session, True)
 
-    unprocessed = get_unprocessed_responses(es_session)
+    unprocessed = AddDocumentResponse.get_unprocessed_responses(es_session)
 
     while unprocessed:
         for response in unprocessed:
             process_response(response)
-        unprocessed = get_unprocessed_responses(es_session)
+        unprocessed = AddDocumentResponse.get_unprocessed_responses(es_session)

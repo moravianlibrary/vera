@@ -97,10 +97,7 @@ interface CatalogIssueResponse {
     digitization_registry_id?: number | null;
     digitization_state: DigitizationState;
     can_digitize: boolean;
-    // Remove
-    already_added: boolean;
     newly_added: boolean;
-    // Remove
     processing: boolean;
     parentDocument?: CatalogDocumentResponse;
 }
@@ -129,7 +126,7 @@ interface AddDocumentResponse {
 interface UpdateDocumentsOptions {
     category_id?: number;
     extraction_priority?: number;
-    pages_count_manual?: number;
+    page_count_manual?: number;
 }
 
 type UpdateAttributes =
@@ -162,9 +159,9 @@ class ApiDocuments extends ApiBase<IndexDocument> {
         });
     }
 
-    addDocumentIssue(
+    addDocumentIssues(
         response_id: string,
-        attributes: IdentifierWithAttributes
+        attributes: IdentifierWithAttributes | IdentifierWithAttributes[]
     ) {
         const url = `/documents/from_catalog/responses/${response_id}`;
         return axiosInstance.post(url, attributes, {
@@ -179,9 +176,28 @@ class ApiDocuments extends ApiBase<IndexDocument> {
         });
     }
 
-    deleteAddDocumentsResponses(queryParams: Object) {
-        const url = `${this.endpoint}/query/from_catalog/responses`;
-        return ApiBase.axiosInstance.post<Object>(url, queryParams, {
+    updateResponseDocument(
+        responseId: string,
+        documentId: string,
+        options: UpdateDocumentsOptions
+    ) {
+        const endpoint = `${this.endpoint}/from_catalog/responses/${responseId}/document/${documentId}`;
+        const queryString = Object.entries(options)
+            .filter(([, value]) => value !== undefined)
+            .map(
+                ([key, value]) =>
+                    `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
+            )
+            .join("&");
+        const url = queryString ? `${endpoint}?${queryString}` : endpoint;
+        return ApiBase.axiosInstance.patch<Object>(url, null, {
+            headers: authHeader(),
+        });
+    }
+
+    deleteAddDocumentsResponses() {
+        const url = `${this.endpoint}/from_catalog/responses`;
+        return ApiBase.axiosInstance.delete<Object>(url, {
             headers: authHeader(),
         });
     }

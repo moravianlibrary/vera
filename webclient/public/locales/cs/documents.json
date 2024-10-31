@@ -163,12 +163,16 @@
         "prev-step": "Zpět",
         "progress": "Zpracováno: {{numProcessed}} / {{numFound}}",
         "add-issue": "Přidat",
+        "add-all-issues": "Přidat všechna vydání",
         "attributes": {
             "identifier-type": "Identifikátor",
             "value": "Hodnota",
             "indexed-at": "Zpracováno",
             "type": "Typ dokumentu",
             "description": "Popis",
+            "newly-added": "Nově přidáno",
+            "issue-state": "Stav",
+            "page-count": "Počet stran",
             "barcode": "Čárový kód"
         },
         "step": {
@@ -207,6 +211,7 @@
             "details": "Detaily vkládání",
             "result": "Výsledek",
             "finish": "Skončit",
+            "restart": "Začít znova",
             "show-set-page-count": "Zobrazit nastaveni počtu stran",
             "accept-set-page-count": "Nastavit počty stran"
         }

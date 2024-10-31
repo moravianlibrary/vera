@@ -27,14 +27,14 @@ import { DigitizationState } from "../../../types/DigitizationState";
 import { formatDatetime } from "../../../data/factories/DateFactory";
 import { ProgressSpinner } from "primereact/progressspinner";
 import DataTablePaginator from "../../../components/views/DataTablePaginator";
+import NumberEditor from "../../../components/editors/NumberEditor";
 
 interface AddDocumentsResultsProps {}
 
 const AddDocumentsResults: React.FC<AddDocumentsResultsProps> = () => {
     const { t } = useTranslation("documents");
-    const { statusBuckets } = useAddDocuments();
-    const [showStatus, setShowStatus] =
-        useState<AddDocumentResponseStatus | null>(null);
+    const { statusBuckets, showStatus, setShowStatus, reset } =
+        useAddDocuments();
 
     const getResponseMessageSeverity = (status: AddDocumentResponseStatus) => {
         if (AddDocumentResponseErrorStatus.includes(status)) {
@@ -48,6 +48,10 @@ const AddDocumentsResults: React.FC<AddDocumentsResultsProps> = () => {
         }
         return MessageSeverity.SECONDARY;
     };
+
+    useEffect(() => {
+        reset();
+    }, []);
 
     if (showStatus === null) {
         return (
@@ -85,72 +89,19 @@ const AddDocumentsResults: React.FC<AddDocumentsResultsProps> = () => {
         );
     }
 
-    return (
-        <StatusResults status={showStatus} goBack={() => setShowStatus(null)} />
-    );
+    return <StatusResults />;
 };
 
-interface StatusResultsProps {
-    status: AddDocumentResponseStatus;
-    goBack: () => void;
-}
-
-const StatusResults: React.FC<StatusResultsProps> = ({ status, goBack }) => {
+const StatusResults: React.FC = () => {
     const { t } = useTranslation("documents");
-    const { getResponses, addDocumentIssue } = useAddDocuments();
-
-    const [responses, setResponses] = useState<AddDocumentResponse[]>([]);
-    const [numFound, setNumFound] = useState<number>(0);
-    const [page, setPage] = useState<number>(1);
-    const [pageSize, setPageSize] = useState<number>(1);
-    const [issues, setIssues] = useState<CatalogIssueResponse[]>([]);
-
-    const fetch = (page: number, pageSize: number) => {
-        getResponses(status, page, pageSize).then((data) => {
-            const responses = data[0];
-            setResponses(responses);
-            setNumFound(data[1]);
-            responses.forEach((response) => {
-                if (response.document) {
-                    response.document.parentResponse = response;
-                    response.document.issues.forEach((issue) => {
-                        issue.parentDocument = response.document;
-                    });
-                }
-            });
-            setIssues(
-                responses.flatMap((response) => response.document?.issues || [])
-            );
-        });
-    };
-
-    const refresh = () => {
-        fetch(page, pageSize);
-    };
-
-    useEffect(() => {
-        fetch(page, pageSize);
-    }, [page, pageSize]);
-
-    const paginator = (
-        <DataTablePaginator
-            numFound={numFound}
-            page={page}
-            onPageChange={setPage}
-            pageSize={pageSize}
-            onPageSizeChange={setPageSize}
-            pageSizeOptions={[1, 5, 10, 50]}
-            leftContent={
-                <Button
-                    outlined
-                    icon="pi pi-chevron-left"
-                    label={t("actions.go-back-to-responses-summary")}
-                    onClick={goBack}
-                />
-            }
-            onRefresh={refresh}
-        />
-    );
+    const {
+        showStatus,
+        items,
+        issues,
+        addDocumentIssue,
+        addAllDocumentIssues,
+        setDocumentPageCount,
+    } = useAddDocuments();
 
     const identifierValue = (response: AddDocumentResponse) => {
         return t(`identifier-type.${response.attributes.identifier_type}`, {
@@ -162,10 +113,10 @@ const StatusResults: React.FC<StatusResultsProps> = ({ status, goBack }) => {
         return (
             <div>
                 <DataTable
-                    value={responses}
+                    value={items}
                     scrollable
-                    scrollHeight="50vh"
-                    header={t(`add-documents-response-status.${status}`, {
+                    scrollHeight="calc(100vh - 530px)"
+                    header={t(`add-documents-response-status.${showStatus}`, {
                         ns: "types",
                         count: 1,
                     })}
@@ -183,7 +134,7 @@ const StatusResults: React.FC<StatusResultsProps> = ({ status, goBack }) => {
                         header={t("add.attributes.value")}
                     />
                 </DataTable>
-                {paginator}
+                <StatusResultsPaginator />
             </div>
         );
     }
@@ -193,10 +144,7 @@ const StatusResults: React.FC<StatusResultsProps> = ({ status, goBack }) => {
     const hasBundles = issues.some((i) => i.bundle);
 
     const addIssue = (issue: CatalogIssueResponse) => {
-        addDocumentIssue(
-            issue.parentDocument.parentResponse.id,
-            issue.barcode
-        ).then(() => refresh());
+        addDocumentIssue(issue.parentDocument.parentResponse.id, issue.barcode);
     };
 
     const issuanceTypeGroupTemplate = (issue: CatalogIssueResponse) => {
@@ -251,12 +199,19 @@ const StatusResults: React.FC<StatusResultsProps> = ({ status, goBack }) => {
     const issueStateBody = (issue: CatalogIssueResponse) => {
         if (issue.document_id) {
             return (
-                <div className="flex align-items-center">
-                    <span>{`${t("properties.id")}: ${issue.document_id}`}</span>
-                    <InternalLinkButton.ShowInDocuments
-                        documentId={issue.document_id}
-                        openInNewTab={true}
-                    />
+                <div className="flex align-items-center gap-3">
+                    {issue.newly_added && (
+                        <Tag>{t("add.attributes.newly-added")}</Tag>
+                    )}
+                    <div className="flex align-items-center">
+                        <span>{`${t("properties.id")}: ${
+                            issue.document_id
+                        }`}</span>
+                        <InternalLinkButton.ShowInDocuments
+                            documentId={issue.document_id}
+                            openInNewTab={true}
+                        />
+                    </div>
                 </div>
             );
         }
@@ -291,16 +246,53 @@ const StatusResults: React.FC<StatusResultsProps> = ({ status, goBack }) => {
         return "";
     };
 
+    const pageCountBody = (issue: CatalogIssueResponse) => {
+        if (!issue.newly_added) return null;
+        if (issue.page_count) {
+            return <span>{issue.page_count}</span>;
+        }
+        return (
+            <NumberEditor
+                value={null}
+                editorCallback={(value) =>
+                    setDocumentPageCount(
+                        issue.parentDocument.parentResponse.id,
+                        `${issue.document_id}`,
+                        value
+                    )
+                }
+            />
+        );
+    };
+
+    const header = () => {
+        return (
+            <div className="flex justify-content-between align-items-center">
+                <span>
+                    {t(`add-documents-response-status.${showStatus}`, {
+                        ns: "types",
+                        count: 1,
+                    })}
+                </span>
+                {showStatus === AddDocumentResponseStatus.MultipleIssues && (
+                    <Button
+                        label={t("add.add-all-issues")}
+                        icon="pi pi-plus"
+                        outlined
+                        onClick={() => addAllDocumentIssues()}
+                    />
+                )}
+            </div>
+        );
+    };
+
     return (
         <div>
             <DataTable
                 value={issues}
                 scrollable
-                scrollHeight="50vh"
-                header={t(`add-documents-response-status.${status}`, {
-                    ns: "types",
-                    count: 1,
-                })}
+                scrollHeight="calc(100vh - 550px)"
+                header={header}
                 rowGroupMode="subheader"
                 groupRowsBy="parentDocument.parentResponse.attributes.value"
                 rowGroupHeaderTemplate={issuanceTypeGroupTemplate}
@@ -340,10 +332,55 @@ const StatusResults: React.FC<StatusResultsProps> = ({ status, goBack }) => {
                     header={t("add.attributes.issue-state")}
                     body={issueStateBody}
                 />
+                <Column
+                    field="page_count"
+                    header={t("add.attributes.page-count")}
+                    body={pageCountBody}
+                    hidden={
+                        ![
+                            AddDocumentResponseStatus.MultipleIssues,
+                            AddDocumentResponseStatus.SuccessWithMissingPageCount,
+                            AddDocumentResponseStatus.Success,
+                        ].includes(showStatus)
+                    }
+                />
             </DataTable>
-            {paginator}
+            <StatusResultsPaginator />
         </div>
     );
 };
 
+const StatusResultsPaginator: React.FC = () => {
+    const { t } = useTranslation("documents");
+    const {
+        numFound,
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
+        pageSizeOptions,
+        refresh,
+        setShowStatus,
+    } = useAddDocuments();
+
+    return (
+        <DataTablePaginator
+            numFound={numFound}
+            page={page}
+            onPageChange={setPage}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={pageSizeOptions}
+            leftContent={
+                <Button
+                    outlined
+                    icon="pi pi-chevron-left"
+                    label={t("actions.go-back-to-responses-summary")}
+                    onClick={() => setShowStatus(null)}
+                />
+            }
+            onRefresh={refresh}
+        />
+    );
+};
 export default AddDocumentsResults;

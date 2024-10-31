@@ -24,13 +24,15 @@ const NumberEditor: React.FC<EditorProps<number>> = ({
                 icon="pi pi-check"
                 onClick={() => editorCallback(currValue)}
             />
-            <Button
-                key="cancel"
-                text
-                className="p-1 text-red-500"
-                icon="pi pi-times"
-                onClick={cancelCallback}
-            />
+            {cancelCallback && (
+                <Button
+                    key="cancel"
+                    text
+                    className="p-1 text-red-500"
+                    icon="pi pi-times"
+                    onClick={cancelCallback}
+                />
+            )}
         </div>
     );
 };

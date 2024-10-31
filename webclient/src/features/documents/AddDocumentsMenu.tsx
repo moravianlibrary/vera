@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { Dialog } from "primereact/dialog";
 import ActionAccessComponent from "../../components/access/ActionAccessComponent";
 import { ActionType } from "../../types/ActionType";
-import AddDocumentsResults from "./add-documents/AddDocumentsResults";
 import AddDocumentsSteps from "./add-documents/AddDocumentsSteps";
 import AddDocumentsProgress from "./add-documents/AddDocumentsProgress";
 import { useAddDocuments } from "../../contexts/AddDocumentsContext";
@@ -13,10 +12,9 @@ interface AddDocumentsMenuProps {}
 
 const AddDocumentsMenu: React.FC<AddDocumentsMenuProps> = ({}) => {
     const { t } = useTranslation("documents");
-    const { numFound } = useAddDocuments();
+    const { numFoundAll } = useAddDocuments();
 
-    const [addDocumentsVisible, setAddDocumentsVisible] = useState(false);
-    const [responsesVisible, setResponseVisible] = useState(false);
+    const [visible, setVisible] = useState(false);
 
     return (
         <ActionAccessComponent action={ActionType.InsertDatatable}>
@@ -26,29 +24,19 @@ const AddDocumentsMenu: React.FC<AddDocumentsMenuProps> = ({}) => {
                         label={t("add-documents")}
                         icon="pi pi-plus"
                         outlined
-                        onClick={() => setAddDocumentsVisible(true)}
+                        onClick={() => setVisible(true)}
                     />
-                    {numFound > 0 && (
-                        <Button
-                            outlined
-                            label={t("actions.show-responses-summary")}
-                            onClick={() => setResponseVisible(true)}
-                        />
-                    )}
                 </div>
                 <AddDocumentsProgress column />
                 <Dialog
-                    visible={addDocumentsVisible}
-                    onHide={() => setAddDocumentsVisible(false)}
+                    visible={visible}
+                    onHide={() => setVisible(false)}
+                    resizable={false}
                 >
-                    <AddDocumentsSteps />
-                </Dialog>
-                <Dialog
-                    visible={responsesVisible}
-                    onHide={() => setResponseVisible(false)}
-                    className="my-dialog"
-                >
-                    <AddDocumentsResults />
+                    <AddDocumentsSteps
+                        onHide={() => setVisible(false)}
+                        initStep={numFoundAll === 0 ? 0 : 2}
+                    />
                 </Dialog>
             </div>
         </ActionAccessComponent>

@@ -69,11 +69,11 @@ class AddDocumentsProcessor:
             for catalog_issue in catalog_issues
             if catalog_issue.can_digitize and catalog_issue.document_id is None
         ]
-        not_digitized_issues = [
+        digitized_issues = [
             active_issue
             for active_issue in active_issues
             if active_issue.digitization_state
-            == DigitizationState.NotDigitized
+            != DigitizationState.NotDigitized
         ]
 
         if attributes.identifier_type == IdentifierType.Barcode:
@@ -85,17 +85,12 @@ class AddDocumentsProcessor:
             if len(find_catalog_issues) != 1:
                 return catalog_document, AddDocumentResponseStatus.UnknownError
             add_issue = find_catalog_issues[0]
-        elif len(active_issues) > 1:
+        elif len(active_issues) - len(digitized_issues) > 1:
             return (
                 catalog_document,
                 AddDocumentResponseStatus.MultipleIssues,
             )
-        elif len(active_issues) == 0:
-            return (
-                catalog_document,
-                AddDocumentResponseStatus.AllIssuesProcessed,
-            )
-        elif len(not_digitized_issues) == 0:
+        elif len(catalog_issues) == len(digitized_issues):
             if any(
                 issue.digitization_state == DigitizationState.Unknown
                 for issue in active_issues
@@ -107,6 +102,11 @@ class AddDocumentsProcessor:
             return (
                 catalog_document,
                 AddDocumentResponseStatus.AlreadyDigitized,
+            )
+        elif len(active_issues) - len(digitized_issues) == 0:
+            return (
+                catalog_document,
+                AddDocumentResponseStatus.AllIssuesProcessed,
             )
         else:
             add_issue = active_issues[0]
@@ -142,7 +142,11 @@ class AddDocumentsProcessor:
         add_issue.document_id = document.id
         add_issue.page_count = document.pages_count
 
-        return catalog_document, AddDocumentResponseStatus.Success
+        return catalog_document, (
+            AddDocumentResponseStatus.Success
+            if add_issue.page_count is not None
+            else AddDocumentResponseStatus.SuccessWithMissingPageCount
+        )
 
     def get_catalog_issues(
         self, session: Session, main_aleph_record: AlephRecord

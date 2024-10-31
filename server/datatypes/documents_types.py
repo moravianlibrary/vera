@@ -33,6 +33,7 @@ class AddDocumentResponseStatus(Enum):
     DigitizationPlanned = "DigitizationPlanned"
     AllIssuesProcessed = "AllIssuesProcessed"
     UnknownError = "UnknownError"
+    SuccessWithMissingPageCount = "SuccessWithMissingPageCount"
 
 
 class DocumentFlag(Enum):

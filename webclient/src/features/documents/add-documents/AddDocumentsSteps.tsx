@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import React from "react";
 import { Stepper, StepperRefAttributes } from "primereact/stepper";
@@ -11,17 +11,46 @@ import AddDocumentsValues from "./AddDocumentsValues";
 import AddDocumentsResults from "./AddDocumentsResults";
 import AddDocumentsProgress from "./AddDocumentsProgress";
 
-interface AddDocumentsStepsProps {}
+interface AddDocumentsStepsProps {
+    initStep?: number;
+    onHide?: () => void;
+}
 
-const AddDocumentsSteps: React.FC<AddDocumentsStepsProps> = () => {
+const AddDocumentsSteps: React.FC<AddDocumentsStepsProps> = ({
+    initStep,
+    onHide,
+}) => {
     const { t } = useTranslation("documents");
-    const { settings } = useAddDocuments();
+    const { settings, removeResults, numFoundAll, numProcessed } =
+        useAddDocuments();
 
+    const [step, setStep] = useState<number>(0);
     const stepperRef = useRef<StepperRefAttributes>(undefined);
+
+    useEffect(() => {
+        if (initStep) {
+            setStep(initStep);
+        }
+    }, []);
+
+    const onRestart = () => {
+        removeResults();
+        stepperRef?.current?.setActiveStep(0);
+    };
+
+    const onFinish = () => {
+        removeResults();
+        onHide();
+    };
 
     return (
         <div className="flex flex-column">
-            <Stepper ref={stepperRef} linear headerPosition="bottom">
+            <Stepper
+                ref={stepperRef}
+                activeStep={step}
+                linear
+                headerPosition="bottom"
+            >
                 <StepperPanel header={t("add.step.settings")}>
                     <div className="flex flex-column gap-5">
                         <AddDocumentsSettings />
@@ -42,7 +71,7 @@ const AddDocumentsSteps: React.FC<AddDocumentsStepsProps> = () => {
                 <StepperPanel header={t("add.step.values")}>
                     <div className="flex flex-column gap-5">
                         <AddDocumentsValues />
-                        <div className="flex justify-content-between">
+                        <div className="flex justify-content-between gap-3">
                             <Button
                                 icon="pi pi-caret-left"
                                 iconPos="left"
@@ -68,7 +97,7 @@ const AddDocumentsSteps: React.FC<AddDocumentsStepsProps> = () => {
                 <StepperPanel header={t("add.step.results")}>
                     <div className="flex flex-column gap-5">
                         <AddDocumentsResults />
-                        <div className="flex justify-content-between">
+                        <div className="flex justify-content-between gap-3">
                             <Button
                                 icon="pi pi-caret-left"
                                 iconPos="left"
@@ -78,15 +107,25 @@ const AddDocumentsSteps: React.FC<AddDocumentsStepsProps> = () => {
                                     stepperRef?.current?.prevCallback()
                                 }
                             />
-                            <Button
-                                icon="pi pi-times"
-                                iconPos="left"
-                                outlined
-                                label={t("add.results.finish")}
-                                onClick={() =>
-                                    stepperRef?.current?.nextCallback()
-                                }
-                            />
+                            <AddDocumentsProgress />
+                            <div className="flex gap-3">
+                                <Button
+                                    icon="pi pi-undo"
+                                    iconPos="left"
+                                    outlined
+                                    label={t("add.results.restart")}
+                                    onClick={onRestart}
+                                    disabled={numFoundAll !== numProcessed}
+                                />
+                                <Button
+                                    icon="pi pi-times"
+                                    iconPos="left"
+                                    outlined
+                                    label={t("add.results.finish")}
+                                    onClick={onFinish}
+                                    disabled={numFoundAll !== numProcessed}
+                                />
+                            </div>
                         </div>
                     </div>
                 </StepperPanel>

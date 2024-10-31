@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from datatypes import AddDocumentResponseStatus, IdentifierType
 from services.external.aleph import AlephRecord
 from services.external.aleph import AlephIssue
@@ -14,6 +14,7 @@ from .base_es_model import (
     Boolean,
     Integer,
     Date,
+    EsSession,
 )
 from pydantic import Field
 from uuid import uuid4
@@ -111,11 +112,6 @@ class CatalogDocumentResponse(BaseEsModel):
             title=aleph_record.title,
             material_type=aleph_record.material_type,
             issues=catalog_issues,
-            # issues=(
-            #     catalog_issues[0]
-            #     if len(catalog_issues) == 1
-            #     else catalog_issues
-            # ),
             skc_sysno=catalog_record.skc_sysno,
             has_valid_main_record=catalog_record.has_valid_main_record,
             cnb_sysno=catalog_record.cnb_sysno,
@@ -149,6 +145,10 @@ class IdentifierWithAttributes(Identifier):
     extraction_priority: Optional[Integer] = None
     page_count_manual: Optional[Integer] = None
 
+    @property
+    def identifier_pair(self) -> Tuple[IdentifierType, str]:
+        return self.identifier_type, self.value
+
 
 class AddDocumentResponse(BaseEsModel):
     __index_name__ = "add_documents_responses"
@@ -163,7 +163,7 @@ class AddDocumentResponse(BaseEsModel):
     status: AddDocumentResponseStatus = AddDocumentResponseStatus.Unprocessed
     document: Optional[CatalogDocumentResponse] = None
     added_by: Keyword
-    parent_id: Optional[Keyword] = None
+    document_id: Optional[Integer] = None
 
     def set_issue_processing(self, issue_barcode: str):
         if self.document and self.document.issues:
@@ -190,3 +190,48 @@ class AddDocumentResponse(BaseEsModel):
             self.document.replace_issue(issue)
         else:
             raise ValueError("Document is missing.")
+
+    @classmethod
+    def get_responses_by_query(
+        cls, es_session: EsSession, query
+    ) -> List["AddDocumentResponse"]:
+        return [
+            cls.model_validate(hit["_source"])
+            for hit in cls.search(es_session, query)["hits"]["hits"]
+        ]
+
+    @classmethod
+    def get_unprocessed_responses(
+        cls,
+        es_session: EsSession,
+    ) -> List["AddDocumentResponse"]:
+        return cls.get_responses_by_query(
+            es_session,
+            {
+                "size": 50,
+                "from": 0,
+                "query": {
+                    "bool": {"must": {"term": {"status": "Unprocessed"}}}
+                },
+            },
+        )
+
+    @classmethod
+    def get_responses_with_sysno(
+        cls, es_session: EsSession, sysno: str
+    ) -> List["AddDocumentResponse"]:
+        return cls.get_responses_by_query(
+            es_session,
+            {
+                "query": {
+                    "nested": {
+                        "path": "document",
+                        "query": {
+                            "bool": {
+                                "must": [{"term": {"document.sysno": sysno}}]
+                            }
+                        },
+                    }
+                }
+            },
+        )

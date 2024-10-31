@@ -13,6 +13,12 @@ const FACETS_QUERY = {
     },
 };
 
+const ALL_ITEMS_QUERY = {
+    query: {
+        match_all: {},
+    },
+};
+
 function getStatusPageQuery(
     status: AddDocumentResponseStatus,
     page: number,
@@ -55,4 +61,4 @@ function getResponseQuery(id: string) {
     };
 }
 
-export { FACETS_QUERY, getStatusPageQuery, getResponseQuery };
+export { FACETS_QUERY, ALL_ITEMS_QUERY, getStatusPageQuery, getResponseQuery };

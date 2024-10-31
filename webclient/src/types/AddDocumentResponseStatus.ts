@@ -23,9 +23,11 @@ enum AddDocumentResponseStatus {
     MultipleIssues = "MultipleIssues",
     // Success
     Success = "Success",
+    SuccessWithMissingPageCount = "SuccessWithMissingPageCount",
 }
 
 const AddDocumentResponseErrorStatus = [
+    AddDocumentResponseStatus.InternalError,
     AddDocumentResponseStatus.AlephNotAvailable,
     AddDocumentResponseStatus.AlephRequestFailed,
     AddDocumentResponseStatus.InvalidSysno,
@@ -47,9 +49,16 @@ const AddDocumentResponseWarningStatus = [
 
 const AddDocumentResponseInfoStatus = [
     AddDocumentResponseStatus.MultipleIssues,
+    AddDocumentResponseStatus.SuccessWithMissingPageCount,
 ];
 
 const AddDocumentResponseSuccessStatus = [AddDocumentResponseStatus.Success];
+
+const Order = Object.values(AddDocumentResponseStatus);
+const orderBy = (
+    a: AddDocumentResponseStatus,
+    b: AddDocumentResponseStatus
+): number => Order.indexOf(a) - Order.indexOf(b);
 
 export default AddDocumentResponseStatus;
 export {
@@ -57,4 +66,5 @@ export {
     AddDocumentResponseWarningStatus,
     AddDocumentResponseInfoStatus,
     AddDocumentResponseSuccessStatus,
+    orderBy,
 };

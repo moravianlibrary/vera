@@ -185,7 +185,7 @@ const DocumentsProvider: React.FC<
             () =>
                 api
                     .updateProperty(selectedQuery, {
-                        pages_count_manual: pageCount,
+                        page_count_manual: pageCount,
                     })
                     .then((response) => {
                         refresh();

@@ -1,8 +1,13 @@
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
-from typing import Optional, List
+from typing import Optional, List, Set, Tuple
 from schemas import CurrentUser, IdentifierWithAttributes
-from datatypes import ElasticsearchParams, EsRoutingParams
+from datatypes import (
+    ElasticsearchParams,
+    EsRoutingParams,
+    AddDocumentResponseStatus,
+    IdentifierType,
+)
 from models import Document
 from routers.utils.permissions import (
     CanInsertDocument,
@@ -51,7 +56,12 @@ async def add_document_from_catalog(
     es_session: EsSession = DependsOnEsSession,
 ):
     if isinstance(attributes, list):
+        processed_attributes: Set[Tuple[IdentifierType, str]] = set()
         for curr_attributes in attributes:
+            if curr_attributes.identifier_pair in processed_attributes:
+                continue
+            processed_attributes.add(curr_attributes.identifier_pair)
+
             AddDocumentResponse(
                 attributes=curr_attributes, added_by=caller
             ).save(es_session, True)
@@ -83,7 +93,7 @@ def search_add_documents_responses(
     response_model=None,
 )
 def add_document_issue(
-    attributes: IdentifierWithAttributes,
+    attributes: IdentifierWithAttributes | List[IdentifierWithAttributes],
     response_id: str = Path(...),
     caller: str = DependsOnCallerUsername,
     es_session: EsSession = DependsOnEsSession,
@@ -91,14 +101,73 @@ def add_document_issue(
     response = AddDocumentResponse.model_validate(
         AddDocumentResponse.get(es_session, response_id)
     )
-    response.set_issue_processing(attributes.value)
-    response.save(es_session, True)
 
-    AddDocumentResponse(
-        attributes=attributes, added_by=caller, parent_id=response.id
-    ).save(es_session, True)
+    if not isinstance(attributes, list):
+        attributes = [attributes]
+
+    for curr_attributes in attributes:
+        response.set_issue_processing(curr_attributes.value)
+        response.save(es_session, True)
+
+    for curr_attributes in attributes:
+        AddDocumentResponse(attributes=curr_attributes, added_by=caller).save(
+            es_session, True
+        )
 
     run_add_documents.delay()
+
+
+@router.patch(
+    "/from_catalog/responses/{response_id}/document/{document_id}",
+    dependencies=[CanReadDocuments],
+    response_model=None,
+)
+def patch_document_issue(
+    response_id: str = Path(...),
+    document_id: int = Path(...),
+    page_count_manual: int = Query(...),
+    caller: str = DependsOnCallerUsername,
+    es_session: EsSession = DependsOnEsSession,
+    session: Session = DependsOnDbSession,
+):
+    if not page_count_manual:
+        return
+
+    response = AddDocumentResponse.model_validate(
+        AddDocumentResponse.get(es_session, response_id)
+    )
+
+    if response.status not in [
+        AddDocumentResponseStatus.SuccessWithMissingPageCount,
+        AddDocumentResponseStatus.MultipleIssues,
+    ]:
+        return
+
+    document = Document.get(session, document_id)
+    document.pages_count_manual = page_count_manual
+    document.save(session)
+    IndexDocument.model_validate(document).save(es_session)
+
+    issue = [
+        i for i in response.document.issues if i.document_id == document_id
+    ][0]
+    issue.page_count = document.pages_count
+
+    for response in AddDocumentResponse.get_responses_with_sysno(
+        es_session, response.document.sysno
+    ):
+        if (
+            response.status
+            == AddDocumentResponseStatus.SuccessWithMissingPageCount
+            and response.document_id == document_id
+        ):
+            response.status = AddDocumentResponseStatus.Success
+        if response.status == AddDocumentResponseStatus.MultipleIssues:
+            issue.newly_added = True
+        else:
+            issue.newly_added = False
+        response.replace_issue(issue)
+        response.save(es_session, True)
 
 
 @router.delete(
@@ -107,12 +176,19 @@ def add_document_issue(
     response_model=None,
 )
 def delete_add_documents_responses(
-    query_params: ElasticsearchParams,
     caller: str = DependsOnCallerUsername,
     es_session: EsSession = DependsOnEsSession,
 ):
     for uuid in AddDocumentResponse.search_source_ids(
-        es_session, restrict_query_params_for_username(query_params, caller)
+        es_session,
+        restrict_query_params_for_username(
+            {
+                "query": {
+                    "match_all": {},
+                },
+            },
+            caller,
+        ),
     ):
         AddDocumentResponse.delete(es_session, uuid, True)
 
@@ -224,13 +300,13 @@ def export_query_documents(
 def update_query_documents(
     query_routing_params: EsRoutingParams,
     category_id: Optional[int] = Query(None),
-    pages_count_manual: Optional[int] = Query(None),
+    page_count_manual: Optional[int] = Query(None),
     extraction_priority: Optional[int] = Query(None),
     user: CurrentUser = DependsOnCurrentUser,
     es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
-    if not category_id and not pages_count_manual and not extraction_priority:
+    if not category_id and not page_count_manual and not extraction_priority:
         return
     for document_id in IndexDocument.search_source_ids(
         es_session,
@@ -241,8 +317,8 @@ def update_query_documents(
         document = Document.get(session, document_id)
         if category_id:
             document.category_id = category_id
-        if pages_count_manual:
-            document.pages_count_manual = pages_count_manual
+        if page_count_manual:
+            document.pages_count_manual = page_count_manual
         if extraction_priority:
             document.extraction_priority = extraction_priority
         document.save(session)

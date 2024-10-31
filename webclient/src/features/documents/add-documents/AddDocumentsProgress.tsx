@@ -11,18 +11,21 @@ const AddDocumentsProgress: React.FC<AddDocumentsProgressProps> = ({
     column,
 }) => {
     const { t } = useTranslation("documents");
-    const { numProcessed, numFound } = useAddDocuments();
+    const { numProcessed, numFoundAll } = useAddDocuments();
 
-    if (numFound === 0) return null;
+    if (numFoundAll === 0) return null;
 
     if (column) {
         return (
             <div className="flex align-items-center">
                 <Badge
                     className="surface-50 text-gray-600 white-space-nowrap"
-                    value={t("add.progress", { numProcessed, numFound })}
+                    value={t("add.progress", {
+                        numProcessed,
+                        numFound: numFoundAll,
+                    })}
                 />
-                {numProcessed !== numFound && (
+                {numProcessed !== numFoundAll && (
                     <ProgressSpinner
                         style={{ width: "16px", height: "16px" }}
                         strokeWidth="8"
@@ -37,9 +40,9 @@ const AddDocumentsProgress: React.FC<AddDocumentsProgressProps> = ({
     return (
         <div className="flex align-items-center gap-1">
             <span className="text-gray-600 white-space-nowrap">
-                {t("add.progress", { numProcessed, numFound })}
+                {t("add.progress", { numProcessed, numFound: numFoundAll })}
             </span>
-            {numProcessed !== numFound && (
+            {numProcessed !== numFoundAll && (
                 <ProgressSpinner
                     style={{ width: "22px", height: "22px" }}
                     strokeWidth="8"

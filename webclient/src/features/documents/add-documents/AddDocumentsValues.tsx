@@ -20,10 +20,12 @@ const AddDocumentsValues: React.FC<AddDocumentsValuesProps> = () => {
     );
 
     const tabViewRef = useRef<TabView>(undefined);
+    const inputTextRef = useRef(null);
 
     const submitValue = () => {
         addDocument(value);
         setValue("");
+        inputTextRef?.current?.focus();
     };
 
     const handleKeyPress = (event) => {
@@ -51,6 +53,7 @@ const AddDocumentsValues: React.FC<AddDocumentsValuesProps> = () => {
                     >
                         <div className="p-inputgroup">
                             <InputText
+                                ref={inputTextRef}
                                 autoFocus
                                 value={value}
                                 onChange={(e) => setValue(e.target.value)}

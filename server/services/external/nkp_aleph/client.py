@@ -36,6 +36,7 @@ MARC21_TAG_PATTERN = r"(\d{3})"
 
 class NkpAlephClient:
     def find_document_by_cnb(self, cnb: str, local_base: str):
+        return None
         response = requests.get(
             FIND_BY_CODE_AND_VALUE.format(
                 NKP_BASE=NKP_BASE,
@@ -51,6 +52,7 @@ class NkpAlephClient:
         return BeautifulSoup(response.content, "html.parser")
 
     def find_document_by_isxn(self, isxn: str, local_base: str):
+        return None
         response = requests.get(
             FIND_BY_CODE_AND_VALUE.format(
                 NKP_BASE=NKP_BASE,
@@ -90,6 +92,7 @@ class NkpAlephClient:
         self,
         document: BeautifulSoup,
     ) -> Optional[str]:
+        return None
         document_str = str(document)
         match = re.search(SYSNO_PATTERN, document_str)
         return match.group(1) if match else None
@@ -101,6 +104,7 @@ class NkpAlephClient:
         local_base: str,
         retry: int = 3,
     ) -> Optional[str]:
+        return None
         document = (cnb and self.find_document_by_cnb(cnb, local_base)) or (
             isxn and self.find_document_by_isxn(isxn, local_base)
         )
@@ -120,6 +124,7 @@ class NkpAlephClient:
         self,
         document: BeautifulSoup,
     ) -> Optional[Tuple[str, Record]]:
+        return None
         record_table = document.find("table", id="record")
         if record_table is None:
             return None, None
@@ -173,6 +178,7 @@ class NkpAlephClient:
     def get_marc21(
         self, sysno: str, local_base: str, retry: int = 3
     ) -> Optional[Record]:
+        return None
         response = requests.get(
             GET_MARC21.format(
                 NKP_BASE=NKP_BASE, LOCAL_BASE=local_base, SYSNO=sysno
@@ -199,6 +205,7 @@ class NkpAlephClient:
         isxn: Optional[str],
         local_base: str,
     ) -> Optional[AlephRecord]:
+        return None
         sysno = self.find_nkp_sysno(cnb, isxn, local_base)
         if sysno is None:
             return None
@@ -208,9 +215,11 @@ class NkpAlephClient:
     def get_skc_record(
         self, cnb: Optional[str], isxn: Optional[str]
     ) -> Optional[AlephRecord]:
-        return self.get_record(cnb, isxn, SKC_LOCAL_BASE)
+        return None
+        # return self.get_record(cnb, isxn, SKC_LOCAL_BASE)
 
     def get_cnb_record(
         self, cnb: Optional[str], isxn: Optional[str]
     ) -> Optional[AlephRecord]:
-        return self.get_record(cnb, isxn, CNB_LOCAL_BASE)
+        return None
+        # return self.get_record(cnb, isxn, CNB_LOCAL_BASE)
