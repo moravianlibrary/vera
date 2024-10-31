@@ -1,0 +1,47 @@
+.iwiki {
+    display: grid;
+    grid-template-areas:
+        "top top top"
+        "left content right"
+        "bottom bottom bottom";
+    grid-template-columns: 1fr 2fr 1fr; /* Adjusts the width of columns */
+    grid-template-rows: 1fr 10fr 1fr; /* Adjusts the height of rows */
+    overflow: hidden; /* Hides overflow from the main container */
+}
+
+.iwiki .content {
+    grid-area: content; /* Places content in the center area */
+    overflow: auto; /* Allows scrolling for content if necessary */
+    padding: 20px;
+    border: 2px solid #ddd;
+    max-width: 60vw;
+    max-height: 80vh;
+}
+
+.iwiki .top-buttons {
+    grid-area: top; /* Places top buttons in the top area */
+    display: flex;
+    justify-content: center; /* Centers buttons horizontally */
+    gap: 10px; /* Adds space between buttons */
+}
+
+.iwiki .right-buttons {
+    grid-area: right; /* Places right buttons in the right area */
+    display: flex;
+    flex-direction: column; /* Aligns buttons vertically */
+    gap: 10px; /* Adds space between buttons */
+}
+
+.iwiki .bottom-buttons {
+    grid-area: bottom; /* Places bottom buttons in the bottom area */
+    display: flex;
+    justify-content: center; /* Centers buttons horizontally */
+    gap: 10px; /* Adds space between buttons */
+}
+
+.iwiki .left-buttons {
+    grid-area: left; /* Places left buttons in the left area */
+    display: flex;
+    flex-direction: column; /* Aligns buttons vertically */
+    gap: 10px; /* Adds space between buttons */
+}

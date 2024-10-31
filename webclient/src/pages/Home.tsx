@@ -4,6 +4,7 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { Toolbar } from "primereact/toolbar";
 import Markdown from "react-markdown";
+import IWiki from "../components/views/IWiki";
 
 interface WikiProps {
     language: string;
@@ -116,8 +117,9 @@ const Wiki: React.FC<WikiProps> = ({ language }) => {
 
 const Home: React.FC = () => {
     return (
-        <div>
-            <Wiki language="cs" />
+        <div className="w-full h-full">
+            <IWiki />
+            {/* <Wiki language="cs" /> */}
         </div>
     );
 };
