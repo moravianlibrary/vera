@@ -17,7 +17,6 @@ COPY alembic /app/alembic
 
 COPY datatypes /app/datatypes
 COPY exceptions /app/exceptions
-COPY logic /app/logic
 COPY models /app/models
 COPY routers /app/routers
 COPY schemas /app/schemas
