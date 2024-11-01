@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import "../../styles/IWiki.css";
 import { Button } from "primereact/button";
+import { longFormatters } from "date-fns";
 
 interface WikiPageLayout {
     label: string;
@@ -38,8 +39,6 @@ const IWiki: React.FC = () => {
     };
 
     const changePage = async (wikiPage: string) => {
-        console.log(wikiPage);
-
         setCurrPage({
             layout: settings[wikiPage],
             content: await fetchMarkdown("cs", wikiPage),
@@ -64,6 +63,10 @@ const IWiki: React.FC = () => {
         if (!settings) return;
         changePage("Home");
     }, [settings]);
+
+    useEffect(() => {
+        console.log(currPage);
+    }, [currPage]);
 
     if (!currPage) return null;
 
