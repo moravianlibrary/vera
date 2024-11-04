@@ -65,7 +65,16 @@ const Wiki: React.FC = () => {
 
             pagesToLoad[pageKey] = page;
 
-            const menuItems: MenuItem[] = [];
+            const menuItems: MenuItem[] =
+                page.sub_pages.length > 0
+                    ? [
+                          {
+                              label: page.name,
+                              command: () =>
+                                  setCurrentPath([...pagePath, pageKey]),
+                          },
+                      ]
+                    : [];
 
             for (const subPage of page.sub_pages) {
                 if (!pagesToLoad[subPage] && !pages[subPage]) {
@@ -111,10 +120,17 @@ const Wiki: React.FC = () => {
     };
 
     const renderers = {
-        link: ({ href, children }) => (
+        a: ({ href, children }) => (
             <a href={href} target="_blank" rel="noopener noreferrer">
                 {children}
             </a>
+        ),
+        img: ({ src, alt }) => (
+            <img
+                src={`${process.env.PUBLIC_URL}/wiki/${language}/${src}`}
+                alt={alt}
+                style={{ display: "block" }}
+            />
         ),
     };
 
@@ -125,13 +141,7 @@ const Wiki: React.FC = () => {
                 model={breadcrumbItems}
                 home={home}
             />
-            <PanelMenu
-                className="panel-menu"
-                model={menuItems}
-                expandedKeys={[]}
-                onExpandedKeysChange={null}
-                multiple
-            />
+            <PanelMenu className="panel-menu" model={menuItems} multiple />
             <div className="content">
                 <Markdown components={renderers}>{currentContent}</Markdown>
             </div>

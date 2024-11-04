@@ -10,6 +10,7 @@
 
 .iwiki .bread-crumb {
     grid-area: bread-crumb; 
+    height: min-content;
 }
 
 .iwiki .panel-menu {
@@ -19,8 +20,9 @@
 
 .iwiki .content {
     grid-area: content; 
-    overflow: auto; 
+    overflow: scroll; 
     padding: 20px;
     margin: 10px;
     border: 2px solid #ddd;
+    max-height: calc(100vh - 137px);
 }

@@ -1,12 +1,8 @@
 {
     "Home": {
         "label": "VERA",
-        "main": true,
-        "right": "Development",
-        "bottom": "Navigation"
-    },
-    "Development": {
-        "label": "Vývoj",
-        "left": "Home"
+        "children": [
+            ""
+        ]
     }
 }

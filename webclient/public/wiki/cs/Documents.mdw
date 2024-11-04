@@ -1,5 +1,15 @@
+---
+name: Dokumenty
+sub-page: Documents_Add
+sub-page: Documents_Filter
+sub-page: Documents_EditSingle
+sub-page: Documents_EditMultiple
+---
+
 # Dokumenty
-Záložka, v ktorej je možné pridávať, editovať a prehliadať dokumenty. Zobrazenie tejto záložky závisí na tom, či má daný user právo zobrazovať dokumenty (buď vlastné, oddelenia alebo všetky).
+Záložka, v ktorej je možné pridávať, editovať a prehliadať dokumenty. Zobrazenie tejto záložky závisí na tom, či má daný užívateľ právo zobrazovať dokumenty (buď vlastné, oddelenia alebo všetky).
+
+Obsahuje formulár pre pridávanie dokumentov, samotné dokumenty, nástroje na ich filtráciu a editáciu.
 
 #### Pridávanie dokumentov
 Na to aby užívateľ mohol pridávať dokumenty, potrebuje rolu, ktorá má povolené pridávanie dokumentov.
