@@ -35,7 +35,6 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             self.getMockEsSession(),
             registry_client or DigitizationRegistryClient(),
             Predictor.get_instance(),
-            "test_user",
         )
 
     def read_marc_bytes(self, sysno, filepath="tests/aleph_records"):
@@ -82,6 +81,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 value="123456789",
                 category_id=1,
             ),
+            "test_user",
         )
 
         # Assert
@@ -96,7 +96,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         mock_update_catalog_record: Mock,
     ):
         # Arrange
-        sysno = ("MZK01-123456789",)
+        sysno = "MZK01-123456789"
         mock_aleph_client_instance = mock_aleph_client.return_value
         mock_aleph_client_instance.find_sysno.return_value = (
             sysno,
@@ -117,6 +117,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 value="123456789",
                 category_id=1,
             ),
+            "test_user",
         )
 
         # Assert
@@ -159,6 +160,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 value=sysno,
                 category_id=1,
             ),
+            "test_user",
         )
 
         # Assert
@@ -220,6 +222,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 value=sysno,
                 category_id=1,
             ),
+            "test_user",
         )
 
         # Assert
@@ -235,7 +238,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                         issuance_type=IssuanceType.Unit,
                         barcode="2619937640",
                         signature="2-0653.734",
-                        already_added=True,
+                        document_id=1,
                     )
                 ],
             ),
@@ -281,6 +284,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 value="2619937640",
                 category_id=1,
             ),
+            "test_user",
         )
 
         # Assert
@@ -296,7 +300,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                         issuance_type=IssuanceType.Unit,
                         barcode="2619937640",
                         signature="2-0653.734",
-                        already_added=True,
+                        document_id=1,
                     )
                 ],
             ),
@@ -342,6 +346,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 value=sysno,
                 category_id=1,
             ),
+            "test_user",
         )
 
         # Assert
@@ -404,6 +409,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 value=sysno,
                 category_id=1,
             ),
+            "test_user",
         )
 
         # Assert
@@ -469,6 +475,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 value=sysno,
                 category_id=1,
             ),
+            "test_user",
         )
 
         # Assert
@@ -539,10 +546,13 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 value=sysno,
                 category_id=1,
             ),
+            "test_user",
         )
 
         # Assert
-        self.assertEqual(status, AddDocumentResponseStatus.Success)
+        self.assertEqual(
+            status, AddDocumentResponseStatus.SuccessWithMissingPageCount
+        )
         self.assertIsResponse(
             response,
             CatalogDocumentResponse(
@@ -602,6 +612,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                 value=sysno,
                 category_id=1,
             ),
+            "test_user",
         )
 
         # Assert
@@ -617,7 +628,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
                         issuance_type=IssuanceType.Unit,
                         barcode="2610046383",
                         signature="2-1028.445",
-                        already_added=True,
+                        document_id=1,
                     ),
                     CatalogIssueResponse(
                         issuance_type=IssuanceType.Unit,

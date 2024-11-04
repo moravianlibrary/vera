@@ -68,7 +68,7 @@ class AlephClient:
             )
         except Exception as e:
             logger.warning(f"An error occurred: {e}")
-            return None, AlephResponseStatus.AlephRequestFailed
+            return None, AlephResponseStatus.RequestFailed
 
         if response.status_code != 200:
             logger.warning(
@@ -76,12 +76,12 @@ class AlephClient:
             )
             if response.status_code == 404:
                 return None, AlephResponseStatus.AlephNotAvailable
-            return None, AlephResponseStatus.AlephRequestFailed
+            return None, AlephResponseStatus.RequestFailed
 
         content = etree.fromstring(response.content)
 
         if content is None:
-            return None, AlephResponseStatus.AlephRequestFailed
+            return None, AlephResponseStatus.RequestFailed
 
         if content.find(".//ns0:error", namespaces=NS_0) is not None:
             return None, AlephResponseStatus.RecordNotFound
@@ -139,7 +139,7 @@ class AlephClient:
         if response.status_code != 200:
             if response.status_code == 404:
                 return None, AlephResponseStatus.AlephNotAvailable
-            return None, AlephResponseStatus.AlephRequestFailed
+            return None, AlephResponseStatus.RequestFailed
 
         find = etree.fromstring(response.content)
         if find.find(".//error") is not None:
@@ -167,7 +167,7 @@ class AlephClient:
             timeout=self.timeout,
         )
         if response.status_code != 200:
-            return None, AlephResponseStatus.AlephRequestFailed
+            return None, AlephResponseStatus.RequestFailed
 
         result = etree.fromstring(response.content)
         return (

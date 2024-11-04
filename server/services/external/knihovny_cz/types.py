@@ -9,3 +9,4 @@ class LibraryPrefix(Enum):
 class KnihovnyCzField(Enum):
     FullRecord = "fullRecord"
     PerLibraryIds = "dedupIds"
+    Id = "id"
