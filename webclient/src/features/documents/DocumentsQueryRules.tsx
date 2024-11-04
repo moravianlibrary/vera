@@ -12,6 +12,7 @@ import EsSortBy from "../../components/elasticsearch/EsSortBy";
 import { useTranslation } from "react-i18next";
 import EsExtractionFacet from "../../components/elasticsearch/filters/EsExtractionsFacet";
 import EsDocumentFlagFacet from "../../components/elasticsearch/filters/EsDocumentFlagFacet";
+import EsNumberFacet from "../../components/elasticsearch/filters/EsNumberFacet";
 
 interface DocumentsQueryRulesProps {}
 
@@ -95,7 +96,7 @@ const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                         attribute="page_count"
                         label={t("facets.page-count")}
                     />
-                    <EsRangeFacet attribute="id" label={t("facets.id")} />
+                    <EsNumberFacet attribute="id" label={t("facets.id")} />
                     {/* <EsRangeFacet
                         attribute="volume_number"
                         label="Volume Number"

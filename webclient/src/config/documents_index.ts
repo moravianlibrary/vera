@@ -82,6 +82,7 @@ const documents_index_settings = {
             attribute: "id",
             field: "id",
             type: "numeric",
+            translateAs: "number",
         },
         {
             attribute: "document_flags",

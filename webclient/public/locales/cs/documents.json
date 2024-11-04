@@ -66,7 +66,8 @@
         "category": "Kategorie",
         "extraction": "Extrakce",
         "digitization-list": "Seznam digitalizace",
-        "page-count": "Počet stran"
+        "page-count": "Počet stran",
+        "id": "ID"
     },
     "table": {
         "columns": {
@@ -97,7 +98,8 @@
         "category-ids": "Id kategorie: {{value}}",
         "extraction-ids": "Id extrakce: {{value}}",
         "digitization-list-id": "Id seznamu digitalizace: {{value}}",
-        "page-count": "Počet stran: {{value}}"
+        "page-count": "Počet stran: {{value}}",
+        "id": "ID: {{value}}"
     },
     "sort-by": {
         "last-edited": "Poslední úprava",

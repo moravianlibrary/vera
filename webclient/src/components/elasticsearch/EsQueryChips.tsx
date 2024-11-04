@@ -32,6 +32,10 @@ const EsQueryChips: React.FC<EsQueryChipsProps> = ({
             case "boolean":
             case "structural":
                 return t(`query-params.${tKey}.${value}`);
+            case "number":
+                return t(`query-params.${tKey}`, {
+                    value: value.replace(/^\d+:/, ""),
+                });
             default:
                 return `${tKey}: ${value}`;
         }
