@@ -1,4 +1,4 @@
-from .update_catalog_record import update_catalog_record_differences
+from .subtasks import update_catalog_record_differences
 from models import TaskItem
 from .run_items_processing import run_items_processing_task
 from sqlalchemy.orm import Session

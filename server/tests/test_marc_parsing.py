@@ -17,7 +17,7 @@ from services.marc_comparator import (
 )
 from pymarc import Field, Record, Subfield
 from typing import Optional
-from tasks.update_catalog_record import MzkSkcRecordsComparator
+from tasks.subtasks.catalog_record_differences import MzkSkcRecordsComparator
 
 
 class TestMarcFieldDifferenceType(TestCase):

@@ -7,11 +7,11 @@ from tasks import (
     ReindexDocuments,
     PredictPeriodicalsPageCount,
 )
-from services.external.aleph import AlephResponseStatus
+from services.aleph import AlephResponseStatus
 from services.external.digitization_registry import DigitizationState
 from datatypes import TaskItemErrorType
 from models import CatalogRecord, Document, Task, TaskItem, Category
-from services.external.aleph import AlephRecord
+from services.aleph import AlephMzkRecord
 from services.predictor import PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD
 from pymarc import MARCReader
 from typing import Callable, Any
@@ -172,7 +172,7 @@ class TestCatalogSyncIntegration(TestTasksBase):
         )
         self.assertEqual(
             task_item.error_message,
-            "Record with sysno MZK01-000165329 is not available from Aleph. "
+            "Record with sysno MZK01-000165329 is not available from services.aleph. "
             "Status: AlephResponseStatus.InvalidSysno.",
         )
 

@@ -21,15 +21,16 @@ from datatypes import (
     IdentifierToAlephFieldConverted,
 )
 from services import exceptions
+from .create_catalog_record import create_catalog_record
 from .update_catalog_record import update_catalog_record
-from services.external.aleph import (
-    AlephClient,
-    AlephRecord,
-    AlephIssue,
+from services.aleph import (
+    AlephMzkRecord,
+    AlephMzkIssue,
     AlephResponseStatus,
 )
 from services.predictor import Predictor
 from models import CatalogRecord, Document
+from dispatchers import get_mzk_client
 
 
 class AddDocumentsProcessor:
@@ -55,7 +56,7 @@ class AddDocumentsProcessor:
         if catalog_record is None:
             return None, status
 
-        main_aleph_record = AlephRecord(
+        main_aleph_record = AlephMzkRecord(
             catalog_record.sysno, catalog_record.main_record
         )
         catalog_issues = self.get_catalog_issues(
@@ -149,7 +150,7 @@ class AddDocumentsProcessor:
         )
 
     def get_catalog_issues(
-        self, session: Session, main_aleph_record: AlephRecord
+        self, session: Session, main_aleph_record: AlephMzkRecord
     ):
         digitization_issues = self.registry_client.get_issue_records(
             main_aleph_record.cnb, main_aleph_record.isxn
@@ -178,7 +179,9 @@ class AddDocumentsProcessor:
                     aleph_issue.bundle,
                 ),
             )
-            for aleph_issue in AlephIssue.from_record(main_aleph_record.record)
+            for aleph_issue in AlephMzkIssue.from_record(
+                main_aleph_record.record
+            )
         ]
 
         return (
@@ -201,29 +204,39 @@ class AddDocumentsProcessor:
         identifier_type: IdentifierType,
         value: str,
     ) -> Tuple[Optional[CatalogRecord], AddDocumentResponseStatus]:
+        mzk_client = get_mzk_client()
+
         if identifier_type == IdentifierType.Sysno:
-            sysno, aleph_response_status = AlephClient().find_sysno(
-                IdentifierToAlephFieldConverted[identifier_type],
-                value,
-            )
-            value = sysno
+            parsed_sysno = mzk_client.parse_sysno(value)
+            if parsed_sysno is not None:
+                value = parsed_sysno
 
         catalog_record = CatalogRecord.find_by_identifier(
             self.session, identifier_type, value
         )
 
-        if (
-            catalog_record is not None
-            and ((datetime.now() - catalog_record.updated_at).seconds)
-            <= VeraConfig.CatalogRecordsValidFor
-        ):
-            return catalog_record, AddDocumentResponseStatus.Success
+        if catalog_record is not None:
+            if (
+                (datetime.now() - catalog_record.updated_at).seconds
+            ) <= VeraConfig.CatalogRecordsValidFor:
+                return catalog_record, AddDocumentResponseStatus.Success
+            try:
+                return (
+                    update_catalog_record(
+                        self.session, self.es_session, catalog_record
+                    ),
+                    AddDocumentResponseStatus.Success,
+                )
+            except Exception:
+                return (
+                    None,
+                    AddDocumentResponseStatus.UnknownError,
+                )
 
-        if identifier_type != IdentifierType.Sysno:
-            sysno, aleph_response_status = AlephClient().find_sysno(
-                IdentifierToAlephFieldConverted[identifier_type],
-                value,
-            )
+        mzk_record, aleph_response_status = get_mzk_client().search_for_record(
+            IdentifierToAlephFieldConverted[identifier_type],
+            value,
+        )
 
         if aleph_response_status != AlephResponseStatus.Success:
             return (
@@ -231,8 +244,8 @@ class AddDocumentsProcessor:
                 AlephToResponseStatusConverter[aleph_response_status],
             )
 
-        catalog_record, aleph_response_status = update_catalog_record(
-            self.session, self.es_session, sysno
+        catalog_record, aleph_response_status = create_catalog_record(
+            self.session, self.es_session, mzk_record
         )
         return catalog_record, AlephToResponseStatusConverter.get(
             aleph_response_status
@@ -240,7 +253,7 @@ class AddDocumentsProcessor:
 
     def create_document(
         self,
-        main_aleph_record: AlephRecord,
+        main_aleph_record: AlephMzkRecord,
         catalog_issue: CatalogIssueResponse,
         attributes: IdentifierWithAttributes,
         added_by: str,
@@ -268,7 +281,9 @@ class AddDocumentsProcessor:
         # TODO: rework
         find_aleph_issues = [
             aleph_issue
-            for aleph_issue in AlephIssue.from_record(main_aleph_record.record)
+            for aleph_issue in AlephMzkIssue.from_record(
+                main_aleph_record.record
+            )
             if aleph_issue.barcode == catalog_issue.barcode
         ]
         if not find_aleph_issues or len(find_aleph_issues) != 1:

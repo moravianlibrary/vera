@@ -1,4 +1,4 @@
-from services.external.aleph.tests import TestAlephCatalog
+from services.aleph.tests import TestAlephCatalog
 from services.external.digitization_registry.tests import (
     TestDigitizationRegistry,
 )

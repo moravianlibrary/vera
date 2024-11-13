@@ -68,6 +68,32 @@ class VeraConfig:
     def BotName() -> str:
         return environ.get("BOT_NAME", "VeraBot")
 
+    class AlephMzk:
+        @staticproperty
+        def Host() -> str:
+            return environ.get("ALEPH_MZK_HOST", "https://aleph.mzk.cz")
+
+        @staticproperty
+        def TTL() -> int:
+            return int(environ.get("ALEPH_MZK_TTL", "300"))
+
+    class AlephNkp:
+        @staticproperty
+        def Host() -> str:
+            return environ.get("ALEPH_NKP_HOST", "https://aleph.nkp.cz")
+
+        @staticproperty
+        def Port() -> int:
+            return int(environ.get("ALEPH_NKP_PORT", "9991"))
+
+        @staticproperty
+        def RateLimitMs() -> int:
+            return int(environ.get("ALEPH_NKP_RATE_LIMIT_MS", "1000"))
+
+        @staticproperty
+        def TTL() -> int:
+            return int(environ.get("ALEPH_NKP_TTL", "300"))
+
     class Broker:
         @staticproperty
         def Url() -> str:

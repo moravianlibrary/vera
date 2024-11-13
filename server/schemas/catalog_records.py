@@ -1,7 +1,7 @@
 from .base_es_model import BaseEsModel, Keyword, Date, Boolean, Integer
 from pydantic import model_validator, field_validator
 from typing import Any, List, Optional
-from services.external.aleph import AlephRecord
+from services.aleph import AlephMzkRecord
 from .documents import Frequency
 from models import CatalogRecord
 from datetime import datetime

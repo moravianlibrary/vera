@@ -1,8 +1,8 @@
 from typing import List, Optional, Tuple
 from datatypes import AddDocumentResponseStatus, IdentifierType
-from services.external.aleph import AlephRecord
-from services.external.aleph import AlephIssue
-from services.external.aleph import MaterialType, IssuanceType
+from services.aleph import AlephMzkRecord
+from services.aleph import AlephMzkIssue
+from services.aleph import MaterialType, IssuanceType
 from services.external.digitization_registry import (
     DigitizationRegistryRecord,
 )
@@ -42,8 +42,8 @@ class CatalogIssueResponse(BaseEsModel):
     @classmethod
     def from_aleph_issue(
         cls,
-        aleph_record: AlephRecord,
-        aleph_issue: AlephIssue,
+        aleph_record: AlephMzkRecord,
+        aleph_issue: AlephMzkIssue,
         digitization_registry_record: DigitizationRegistryRecord,
         document_id: Optional[int] = None,
     ) -> "CatalogIssueResponse":
@@ -103,7 +103,7 @@ class CatalogDocumentResponse(BaseEsModel):
     @classmethod
     def from_records(
         cls,
-        aleph_record: AlephRecord,
+        aleph_record: AlephMzkRecord,
         catalog_issues: List[CatalogIssueResponse],
         catalog_record: CatalogRecord,
     ) -> "CatalogDocumentResponse":

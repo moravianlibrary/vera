@@ -20,7 +20,7 @@ from .task_types import (
 )
 from .typing import IdType, JsonBase, ElasticsearchParams, EsRoutingParams
 
-from services.external.aleph import (
+from services.aleph import (
     IssuanceType,
     MaterialType,
     AlephResponseStatus,

@@ -1,13 +1,9 @@
-from typing import Optional, Tuple, Iterable, Dict, Set
+from typing import Iterable, Dict, Set
 from sqlalchemy.orm import Session
-from services.external.aleph import AlephClient, AlephIssue
-from services.external.aleph import AlephResponseStatus
-from services.external.nkp_aleph.client import NkpAlephClient
 from models import (
     CatalogRecord,
     CatalogRecordFieldDifference,
     CatalogRecordSubfieldDifference,
-    CatalogRecordBarcode,
 )
 from services.marc_comparator import (
     MarcRecordsComparator,
@@ -16,10 +12,8 @@ from services.marc_comparator import (
     GeneralInformationComparator,
     MarcFieldDifference,
 )
-from schemas import IndexCatalogRecord, EsSession
 from pymarc import Record
 from datatypes import CatalogSource
-
 
 MzkSkcRecordsComparator = MarcRecordsComparator(
     {
@@ -46,7 +40,7 @@ MzkCnbRecordsComparator = MarcRecordsComparator(
 )
 
 
-def update_catalog_record_difference(
+def _update_catalog_record_difference(
     session: Session,
     sysno: str,
     main_record: Record,
@@ -94,7 +88,7 @@ def update_catalog_record_differences(
     session: Session, catalog_record: CatalogRecord
 ):
     if catalog_record.skc_record is not None:
-        update_catalog_record_difference(
+        _update_catalog_record_difference(
             session,
             catalog_record.sysno,
             catalog_record.main_record,
@@ -104,7 +98,7 @@ def update_catalog_record_differences(
             MzkSkcRecordsComparator,
         )
     if catalog_record.cnb_record is not None:
-        update_catalog_record_difference(
+        _update_catalog_record_difference(
             session,
             catalog_record.sysno,
             catalog_record.main_record,
@@ -113,55 +107,3 @@ def update_catalog_record_differences(
             catalog_record.cnb_difference,
             MzkCnbRecordsComparator,
         )
-
-
-def update_catalog_record(
-    session: Session, es_session: EsSession, sysno: str
-) -> Tuple[Optional[CatalogRecord], AlephResponseStatus]:
-    main_aleph_record, aleph_response_status = AlephClient().get_record(sysno)
-
-    if aleph_response_status != AlephResponseStatus.Success:
-        return None, aleph_response_status
-
-    catalog_record = CatalogRecord.find(session, sysno)
-    if catalog_record is None:
-        catalog_record = CatalogRecord(sysno=sysno)
-
-    catalog_record.marc = main_aleph_record.record.as_marc()
-    catalog_record.cnb = main_aleph_record.cnb
-    catalog_record.language = main_aleph_record.language
-    catalog_record.signature = main_aleph_record.signature
-    catalog_record.isxn = main_aleph_record.isxn
-
-    skc_aleph_record = NkpAlephClient().get_skc_record(
-        main_aleph_record.cnb, main_aleph_record.isxn
-    )
-    if skc_aleph_record:
-        catalog_record.skc_sysno = skc_aleph_record.sysno
-        if skc_aleph_record.record is None:
-            return None, AlephResponseStatus.RequestFailed
-        catalog_record.skc_marc = skc_aleph_record.record.as_marc()
-
-    cnb_aleph_record = NkpAlephClient().get_cnb_record(
-        main_aleph_record.cnb, main_aleph_record.isxn
-    )
-    if cnb_aleph_record:
-        catalog_record.cnb_sysno = cnb_aleph_record.sysno
-        if cnb_aleph_record.record is None:
-            return None, AlephResponseStatus.RequestFailed
-        catalog_record.cnb_marc = cnb_aleph_record.record.as_marc()
-
-    catalog_record.save(session)
-
-    for issue in AlephIssue.from_record(main_aleph_record.record):
-        if issue.barcode is None:
-            continue
-        CatalogRecordBarcode(
-            sysno=catalog_record.sysno, barcode=issue.barcode
-        ).save(session)
-
-    update_catalog_record_differences(session, catalog_record)
-
-    IndexCatalogRecord.model_validate(catalog_record).save(es_session)
-
-    return catalog_record, AlephResponseStatus.Success

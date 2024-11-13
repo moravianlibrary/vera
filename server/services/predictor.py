@@ -2,7 +2,7 @@ import requests
 from typing import Optional
 from config import VeraConfig
 from schemas import PredictPeriodicalsPageCount
-from services.external.aleph import AlephRecord, AlephIssue
+from services.aleph import AlephMzkRecord, AlephMzkIssue
 from datatypes import MaterialType
 
 
@@ -16,7 +16,7 @@ class Predictor:
         self.timeout = timeout
 
     def predict_page_count(
-        self, aleph_record: AlephRecord, aleph_issue: AlephIssue
+        self, aleph_record: AlephMzkRecord, aleph_issue: AlephMzkIssue
     ):
         return (
             self.predict_periodicals_page_count(aleph_record, aleph_issue)
@@ -25,7 +25,7 @@ class Predictor:
         )
 
     def predict_periodicals_page_count(
-        self, aleph_record: AlephRecord, aleph_issue: AlephIssue
+        self, aleph_record: AlephMzkRecord, aleph_issue: AlephMzkIssue
     ) -> Optional[int]:
         body = PredictPeriodicalsPageCount.validate_aleph_record(
             aleph_record, aleph_issue

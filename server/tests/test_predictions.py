@@ -3,7 +3,7 @@ from unittest.mock import patch, Mock
 from services.predictor import Predictor
 from pymarc import MARCReader, Record
 from services.predictor import PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD
-from schemas import AlephRecord
+from schemas import AlephMzkRecord
 
 
 def load_aleph_record(sysno: str) -> Record:
@@ -23,7 +23,9 @@ class TestPredictions(TestCase):
         mock_get.return_value = mock_response
 
         sysno = "MZK01-000121929"
-        aleph_record = AlephRecord(sysno, load_aleph_record(sysno))
+        aleph_record = AlephMzkRecord(
+            "MZK01", "000121929", load_aleph_record(sysno)
+        )
         mock_aleph_issue = Mock()
         mock_aleph_issue.volume_year = "2024"
 

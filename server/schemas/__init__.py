@@ -45,9 +45,9 @@ from .categories import (
 )
 from .base_es_model import EsSession
 from .predictor import PredictPeriodicalsPageCount
-from services.external.aleph import (
-    AlephRecord,
-    AlephIssue,
+from services.aleph import (
+    AlephMzkRecord,
+    AlephMzkIssue,
 )
 from services.external.digitization_registry import DigitizationRegistryRecord
 
@@ -83,7 +83,6 @@ __all__ = [
     "Identifier",
     "CatalogIssueResponse",
     "CatalogDocumentResponse",
-    "Frequency",
     "CategoryCreate",
     "CategoryResponse",
     "Categories",
@@ -94,8 +93,8 @@ __all__ = [
     "Page",
     "PredictPeriodicalsPageCount",
     "PeriodicTaskResponse",
-    "AlephRecord",
-    "AlephIssue",
+    "AlephMzkRecord",
+    "AlephMzkIssue",
     "DigitizationRegistryRecord",
     "IndexDocument",
     "IndexCatalogRecord",

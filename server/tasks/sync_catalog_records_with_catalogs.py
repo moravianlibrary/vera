@@ -1,4 +1,4 @@
-from .update_catalog_record import update_catalog_record
+from .subtasks import update_catalog_record
 from models import TaskItem
 from sqlalchemy.orm import Session
 from schemas import IndexCatalogRecord, IndexDocument, EsSession

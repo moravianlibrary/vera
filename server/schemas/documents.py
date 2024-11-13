@@ -4,7 +4,7 @@ from .base_es_model import BaseEsModel, Integer, Keyword, Date, List
 from pydantic import model_validator
 from typing import Any, Optional
 from models import Document
-from services.external.aleph import AlephRecord
+from services.aleph import AlephMzkRecord
 from .parsers.volume_parser import (
     parse_volume,
     parse_volume_year,

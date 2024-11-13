@@ -1,7 +1,7 @@
 from tests.test_base_database import TestBaseDatabase
 from tests.test_mock_indexer import TestMockIndexer
 from unittest.mock import patch, Mock
-from tasks.add_document import AddDocumentsProcessor
+from tasks.subtasks.add_document import AddDocumentsProcessor
 from datatypes import (
     AlephResponseStatus,
     AddDocumentResponseStatus,
@@ -501,7 +501,7 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("tasks.add_document.AlephIssue")
+    @patch("tasks.add_document.AlephMzkIssue")
     @patch("tasks.add_document.update_catalog_record")
     @patch("tasks.add_document.AlephClient")
     def test_create_new_document_when_catalog_record_with_no_issues(

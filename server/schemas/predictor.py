@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from services.parsers.frequency_parser import parse_year, parse_frequency
-from services.external.aleph import AlephRecord, AlephIssue
+from services.aleph import AlephMzkRecord, AlephMzkIssue
 from typing import Any, Type
 
 
@@ -28,7 +28,7 @@ class PredictPeriodicalsPageCount(BaseModel):
 
     @classmethod
     def validate_aleph_record(
-        cls, aleph_record: AlephRecord, aleph_issue: AlephIssue
+        cls, aleph_record: AlephMzkRecord, aleph_issue: AlephMzkIssue
     ) -> "PredictPeriodicalsPageCount":
         # Validate the title
         cls.validate_field("title", aleph_record.title, str)

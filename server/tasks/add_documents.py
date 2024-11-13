@@ -7,7 +7,7 @@ from services.predictor import Predictor
 from sqlalchemy.orm import Session
 from models import with_db_session
 from datatypes import AddDocumentResponseStatus
-from .add_document import AddDocumentsProcessor
+from .subtasks.add_document import AddDocumentsProcessor
 import logging
 from config import VeraConfig
 

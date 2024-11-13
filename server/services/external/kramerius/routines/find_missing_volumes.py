@@ -1,6 +1,6 @@
 from typing import Callable, IO, Optional
 
-from catalogs.aleph_document import AlephDocument, AlephIssue
+from catalogs.aleph_document import AlephDocument, AlephMzkIssue
 from catalogs.enums import CatalogResponseStatus, IdentifierType, IssuanceType
 from catalogs.routines import get_document_by_identifier_type
 from kramerius.client import KrameriusApi
@@ -38,7 +38,7 @@ kramerius_search = KrameriusSearch(api)
 
 
 def match_issuance_date_aleph_issue_kramerius_item(
-    issue: AlephIssue, item: KrameriusDocument
+    issue: AlephMzkIssue, item: KrameriusDocument
 ):
     return issue.bundle is not None and (
         issue.bundle == item.part_number_string or issue.bundle == item.title
@@ -46,7 +46,7 @@ def match_issuance_date_aleph_issue_kramerius_item(
 
 
 def match_issuance_date_aleph_issue_kramerius_volume(
-    issue: AlephIssue, volume: KrameriusDocument
+    issue: AlephMzkIssue, volume: KrameriusDocument
 ):
     return issue.type == IssuanceType.Volume and (
         (
@@ -64,7 +64,7 @@ def match_issuance_date_aleph_issue_kramerius_volume(
     )
 
 
-def is_same_issue(issue: AlephIssue, volume: KrameriusDocument):
+def is_same_issue(issue: AlephMzkIssue, volume: KrameriusDocument):
     if match_issuance_date_aleph_issue_kramerius_volume(issue, volume):
         return True
 
@@ -80,7 +80,7 @@ def is_same_issue(issue: AlephIssue, volume: KrameriusDocument):
     return False
 
 
-def is_missing_issue(issue: AlephIssue, periodical: KrameriusDocument):
+def is_missing_issue(issue: AlephMzkIssue, periodical: KrameriusDocument):
     query = (
         SearchQuery(SolrField.ParentPid, periodical.pid)
         .and_(SolrField.Model, KrameriusModel.PeriodicalVolume)
@@ -144,7 +144,7 @@ def find_missing_issues_for_periodical(
 
 def find_missing_periodical_volumes(
     missing_issues_processor: Callable[
-        [KrameriusDocument, AlephDocument, AlephIssue], None
+        [KrameriusDocument, AlephDocument, AlephMzkIssue], None
     ]
 ):
     query = (
@@ -175,7 +175,7 @@ def write_output(
     file: IO[str],
     parent: KrameriusDocument,
     catalog_document: AlephDocument,
-    issue: AlephIssue,
+    issue: AlephMzkIssue,
 ):
     def parse_to_csv_cell(value: Optional[str]) -> str:
         if value is None:

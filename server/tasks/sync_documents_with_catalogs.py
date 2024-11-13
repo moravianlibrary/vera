@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
-from models import CatalogRecord, TaskItem
-from .update_catalog_record import update_catalog_record
-from services.external.aleph import AlephRecord
-from services.external.aleph import AlephIssue
-from services.external.aleph import AlephResponseStatus
+from models import CatalogRecord, TaskItem, Document
+from .subtasks import update_catalog_record
+from services.aleph import AlephMzkRecord
+from services.aleph import AlephMzkIssue
+from services.aleph import AlephResponseStatus
 from schemas import IndexDocument, EsSession
 from services.elasticsearch import with_es_session
 from .run_items_processing import run_items_processing_task
@@ -17,6 +17,7 @@ def SyncDocumentsWithCatalogs(
 
     def update_document_from_catalog(item: TaskItem):
         document = item.document
+        document: Document
 
         if document.sysno not in updated_records_sysno:
             catalog_record, aleph_response_status = update_catalog_record(
@@ -26,19 +27,21 @@ def SyncDocumentsWithCatalogs(
             if aleph_response_status != AlephResponseStatus.Success:
                 raise Exception(
                     f"Record with sysno {document.sysno} is not available "
-                    f"from Aleph. Status: {aleph_response_status}."
+                    f"from services.aleph. Status: {aleph_response_status}."
                 )
 
             updated_records_sysno.add(document.sysno)
         else:
             catalog_record = CatalogRecord.get(session, document.sysno)
 
-        aleph_record = AlephRecord(
-            catalog_record.sysno,
+        sysno_split = catalog_record.sysno.split("-")
+        aleph_record = AlephMzkRecord(
+            sysno_split[0],
+            sysno_split[1],
             catalog_record.main_record,
         )
 
-        aleph_issue = AlephIssue.specific_issue_from_record(
+        aleph_issue = AlephMzkIssue.specific_issue_from_record(
             aleph_record.record, document.barcode, document.volume
         )
         if aleph_issue is None:
