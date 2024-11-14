@@ -1,4 +1,4 @@
-from services.aleph import (
+from mzk_aleph import (
     AlephOAISession,
     AlephXSession,
     AlephMzkClient,

@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from services.aleph import AlephMzkIssue, AlephMzkRecord
+from mzk_aleph import AlephMzkIssue, AlephMzkRecord
 from models import (
     CatalogRecord,
     CatalogRecordBarcode,

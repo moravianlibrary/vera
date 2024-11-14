@@ -15,7 +15,7 @@ def PredictPeriodicalsPageCount(
     def predict_volume_pages(task_item: TaskItem) -> None:
         document: Document = task_item.document
         aleph_record = AlephMzkRecord(
-            document.sysno, document.catalog_record.main_record
+            document.catalog_record.main_record, sysno=document.sysno
         )
         aleph_issue = AlephMzkIssue.specific_issue_from_record(
             aleph_record.record, document.barcode, document.volume

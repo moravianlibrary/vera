@@ -1,8 +1,8 @@
 from typing import List, Optional, Tuple
 from datatypes import AddDocumentResponseStatus, IdentifierType
-from services.aleph import AlephMzkRecord
-from services.aleph import AlephMzkIssue
-from services.aleph import MaterialType, IssuanceType
+from mzk_aleph import AlephMzkRecord
+from mzk_aleph import AlephMzkIssue
+from mzk_aleph import MaterialType, IssuanceType
 from services.external.digitization_registry import (
     DigitizationRegistryRecord,
 )

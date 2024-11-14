@@ -1,16 +1,16 @@
 from pydantic import BaseModel
 from services.parsers.frequency_parser import parse_year, parse_frequency
-from services.aleph import AlephMzkRecord, AlephMzkIssue
+from mzk_aleph import AlephMzkRecord, AlephMzkIssue
 from typing import Any, Type
 
 
 class PredictPeriodicalsPageCount(BaseModel):
     title: str
-    year: int
+    year: int | None = None
     frequency: int
-    publisher: str
-    language: str
-    region: str
+    publisher: str | None = None
+    language: str | None = None
+    region: str | None = None
     keywords: str
 
     @classmethod
@@ -35,8 +35,11 @@ class PredictPeriodicalsPageCount(BaseModel):
 
         # Determine the volume year
         volume_year = aleph_issue.volume_year or aleph_issue.volume
-        year = parse_year(volume_year)
-        cls.validate_field("year", year, int)
+        try:
+            year = parse_year(volume_year)
+            cls.validate_field("year", year, int)
+        except ValueError:
+            year = None
 
         # Validate frequency
         frequency = parse_frequency(volume_year, aleph_record.frequencies)

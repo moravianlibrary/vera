@@ -19,12 +19,6 @@ from .task_types import (
     is_documents_task,
 )
 from .typing import IdType, JsonBase, ElasticsearchParams, EsRoutingParams
-
-from services.aleph import (
-    IssuanceType,
-    MaterialType,
-    AlephResponseStatus,
-)
 from services.external.digitization_registry import DigitizationState
 from services.marc_comparator import MarcFieldDifferenceType
 
@@ -47,10 +41,7 @@ __all__ = [
     "ElasticsearchParams",
     "CatalogSource",
     "CZECH_LANGUAGE",
-    "IssuanceType",
-    "MaterialType",
     "DigitizationState",
-    "AlephResponseStatus",
     "MarcFieldDifferenceType",
     "TaskItemType",
     "is_catalog_records_task",

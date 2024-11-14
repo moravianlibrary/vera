@@ -16,7 +16,7 @@ from sqlalchemy import (
     or_,
 )
 
-from services.aleph import IssuanceType
+from mzk_aleph import IssuanceType
 from services.external.digitization_registry import DigitizationState
 from exceptions import (
     CannotExtractDocumentWithInvalidCnb,

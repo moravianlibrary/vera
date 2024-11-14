@@ -4,7 +4,7 @@ from .base_es_model import BaseEsModel, Integer, Keyword, Date, List
 from pydantic import model_validator
 from typing import Any, Optional
 from models import Document
-from services.aleph import AlephMzkRecord
+from mzk_aleph import AlephMzkRecord, MaterialType, IssuanceType
 from .parsers.volume_parser import (
     parse_volume,
     parse_volume_year,
@@ -13,8 +13,6 @@ from .parsers.volume_parser import (
 from datatypes import (
     DocumentFlag,
     DigitizationState,
-    MaterialType,
-    IssuanceType,
 )
 from config import VeraConfig
 
@@ -123,8 +121,8 @@ class IndexDocument(BaseEsModel):
         if not isinstance(data, Document):
             return data
 
-        aleph_record = AlephRecord(
-            data.catalog_record.sysno, data.catalog_record.main_record
+        aleph_record = AlephMzkRecord(
+            data.catalog_record.main_record, sysno=data.catalog_record.sysno
         )
 
         return IndexDocument(

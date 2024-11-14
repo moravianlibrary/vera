@@ -3,9 +3,9 @@ from tests.test_mock_indexer import TestMockIndexer
 from unittest.mock import patch, Mock
 from tasks.subtasks.add_document import AddDocumentsProcessor
 from datatypes import (
-    AlephResponseStatus,
     AddDocumentResponseStatus,
     IdentifierType,
+    DigitizationState,
 )
 from schemas import (
     IdentifierWithAttributes,
@@ -20,8 +20,12 @@ from services.external.digitization_registry import (
 from services.predictor import Predictor
 from typing import Any
 from pydantic import BaseModel
-from datatypes import MaterialType, IssuanceType, DigitizationState
 from typing import Optional
+from mzk_aleph import (
+    AlephResponseStatus,
+    MaterialType,
+    IssuanceType,
+)
 
 
 class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
@@ -60,16 +64,18 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         instance.get_document_record.return_value = digitization_record
         return instance
 
-    @patch("tasks.add_document.AlephClient")
-    def test_response_status_not_found_when_sysno_not_found(
-        self, mock_aleph_client: Mock
+    @patch("tasks.subtasks.add_document.get_mzk_client")
+    def test_response_status_not_found_when_record_not_found(
+        self, mock_get_mzk_client: Mock
     ):
         # Arrange
-        mock_aleph_client_instance = mock_aleph_client.return_value
-        mock_aleph_client_instance.find_sysno.return_value = (
+        mock_aleph_mzk_client = Mock()
+        mock_aleph_mzk_client.parse_sysno.return_value = None
+        mock_aleph_mzk_client.search_for_record.return_value = (
             None,
             AlephResponseStatus.RecordNotFound,
         )
+        mock_get_mzk_client.return_value = mock_aleph_mzk_client
 
         mock_digitization_registry_client = Mock()
         self.setUpProcessor(mock_digitization_registry_client)
@@ -88,57 +94,24 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
         self.assertEqual(status, AddDocumentResponseStatus.AlephRecordNotFound)
         self.assertIsNone(response)
 
-    @patch("tasks.add_document.update_catalog_record")
-    @patch("tasks.add_document.AlephClient")
-    def test_response_status_not_found_when_catalog_record_not_found(
-        self,
-        mock_aleph_client: Mock,
-        mock_update_catalog_record: Mock,
-    ):
-        # Arrange
-        sysno = "MZK01-123456789"
-        mock_aleph_client_instance = mock_aleph_client.return_value
-        mock_aleph_client_instance.find_sysno.return_value = (
-            sysno,
-            AlephResponseStatus.Success,
-        )
-
-        mock_update_catalog_record.return_value = (
-            None,
-            AlephResponseStatus.RecordNotFound,
-        )
-
-        self.setUpProcessor()
-
-        # Act
-        response, status = self.add_documents_processor(
-            IdentifierWithAttributes(
-                identifier_type=IdentifierType.Sysno,
-                value="123456789",
-                category_id=1,
-            ),
-            "test_user",
-        )
-
-        # Assert
-        self.assertEqual(status, AddDocumentResponseStatus.AlephRecordNotFound)
-        self.assertIsNone(response)
-
-    @patch("tasks.add_document.update_catalog_record")
+    @patch("tasks.subtasks.add_document.get_mzk_client")
     def test_create_new_document_when_catalog_record_with_one_issue(
-        self,
-        mock_update_catalog_record: Mock,
+        self, mock_get_mzk_client: Mock
     ):
         # Arrange
         sysno = "MZK01-000164099"
 
+        mock_aleph_mzk_client = Mock()
+        mock_aleph_mzk_client.parse_sysno.return_value = sysno
+        mock_aleph_mzk_client.search_for_record.return_value = (
+            None,
+            AlephResponseStatus.RecordNotFound,
+        )
+        mock_get_mzk_client.return_value = mock_aleph_mzk_client
+
         catalog_record = CatalogRecord(
             sysno=sysno,
             marc=self.read_marc_bytes(sysno),
-        )
-        mock_update_catalog_record.return_value = (
-            catalog_record,
-            AlephResponseStatus.Success,
         )
 
         self.session.add_all(
@@ -184,21 +157,24 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("tasks.add_document.update_catalog_record")
+    @patch("tasks.subtasks.add_document.get_mzk_client")
     def test_add_document_when_catalog_record_with_one_already_added(
-        self,
-        mock_update_catalog_record: Mock,
+        self, mock_get_mzk_client: Mock
     ):
         # Arrange
         sysno = "MZK01-000164099"
 
+        mock_aleph_mzk_client = Mock()
+        mock_aleph_mzk_client.parse_sysno.return_value = sysno
+        mock_aleph_mzk_client.search_for_record.return_value = (
+            None,
+            AlephResponseStatus.RecordNotFound,
+        )
+        mock_get_mzk_client.return_value = mock_aleph_mzk_client
+
         catalog_record = CatalogRecord(
             sysno=sysno,
             marc=self.read_marc_bytes(sysno),
-        )
-        mock_update_catalog_record.return_value = (
-            catalog_record,
-            AlephResponseStatus.Success,
         )
 
         self.session.add_all(
@@ -244,21 +220,23 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("tasks.add_document.update_catalog_record")
+    @patch("tasks.subtasks.add_document.get_mzk_client")
     def test_add_document_with_barcode_when_record_with_one_already_added(
-        self,
-        mock_update_catalog_record: Mock,
+        self, mock_get_mzk_client: Mock
     ):
         # Arrange
         sysno = "MZK01-000164099"
 
-        catalog_record = CatalogRecord(
-            sysno=sysno,
-            marc=self.read_marc_bytes(sysno),
+        mock_aleph_mzk_client = Mock()
+        mock_aleph_mzk_client.parse_sysno.return_value = sysno
+        mock_aleph_mzk_client.search_for_record.return_value = (
+            None,
+            AlephResponseStatus.RecordNotFound,
         )
-        mock_update_catalog_record.return_value = (
-            catalog_record,
-            AlephResponseStatus.Success,
+        mock_get_mzk_client.return_value = mock_aleph_mzk_client
+
+        catalog_record = CatalogRecord(
+            sysno=sysno, marc=self.read_marc_bytes(sysno)
         )
 
         self.session.add_all(
@@ -306,21 +284,24 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("tasks.add_document.update_catalog_record")
+    @patch("tasks.subtasks.add_document.get_mzk_client")
     def test_create_new_document_when_catalog_record_with_one_digitized_issue(
-        self,
-        mock_update_catalog_record: Mock,
+        self, mock_get_mzk_client: Mock
     ):
         # Arrange
         sysno = "MZK01-000164099"
 
+        mock_aleph_mzk_client = Mock()
+        mock_aleph_mzk_client.parse_sysno.return_value = sysno
+        mock_aleph_mzk_client.search_for_record.return_value = (
+            None,
+            AlephResponseStatus.RecordNotFound,
+        )
+        mock_get_mzk_client.return_value = mock_aleph_mzk_client
+
         catalog_record = CatalogRecord(
             sysno=sysno,
             marc=self.read_marc_bytes(sysno),
-        )
-        mock_update_catalog_record.return_value = (
-            catalog_record,
-            AlephResponseStatus.Success,
         )
 
         self.session.add_all(
@@ -369,21 +350,24 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("tasks.add_document.update_catalog_record")
+    @patch("tasks.subtasks.add_document.get_mzk_client")
     def test_create_new_document_when_catalog_record_with_one_unknown_state(
-        self,
-        mock_update_catalog_record: Mock,
+        self, mock_get_mzk_client: Mock
     ):
         # Arrange
         sysno = "MZK01-000164099"
 
+        mock_aleph_mzk_client = Mock()
+        mock_aleph_mzk_client.parse_sysno.return_value = sysno
+        mock_aleph_mzk_client.search_for_record.return_value = (
+            None,
+            AlephResponseStatus.RecordNotFound,
+        )
+        mock_get_mzk_client.return_value = mock_aleph_mzk_client
+
         catalog_record = CatalogRecord(
             sysno=sysno,
             marc=self.read_marc_bytes(sysno),
-        )
-        mock_update_catalog_record.return_value = (
-            catalog_record,
-            AlephResponseStatus.Success,
         )
 
         self.session.add_all(
@@ -434,29 +418,24 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("tasks.add_document.update_catalog_record")
-    @patch("tasks.add_document.AlephClient")
+    @patch("tasks.subtasks.add_document.get_mzk_client")
     def test_create_new_document_when_catalog_record_with_multiple_issues(
-        self,
-        mock_aleph_client: Mock,
-        mock_update_catalog_record: Mock,
+        self, mock_get_mzk_client: Mock
     ):
         # Arrange
         sysno = "MZK01-000121929"
 
-        mock_aleph_client_instance = mock_aleph_client.return_value
-        mock_aleph_client_instance.find_sysno.return_value = (
-            sysno,
-            AlephResponseStatus.Success,
+        mock_aleph_mzk_client = Mock()
+        mock_aleph_mzk_client.parse_sysno.return_value = sysno
+        mock_aleph_mzk_client.search_for_record.return_value = (
+            None,
+            AlephResponseStatus.RecordNotFound,
         )
+        mock_get_mzk_client.return_value = mock_aleph_mzk_client
 
         catalog_record = CatalogRecord(
             sysno=sysno,
             marc=self.read_marc_bytes(sysno),
-        )
-        mock_update_catalog_record.return_value = (
-            catalog_record,
-            AlephResponseStatus.Success,
         )
 
         category = Category(
@@ -501,31 +480,25 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("tasks.add_document.AlephMzkIssue")
-    @patch("tasks.add_document.update_catalog_record")
-    @patch("tasks.add_document.AlephClient")
+    @patch("tasks.subtasks.add_document.AlephMzkIssue")
+    @patch("tasks.subtasks.add_document.get_mzk_client")
     def test_create_new_document_when_catalog_record_with_no_issues(
-        self,
-        mock_aleph_client: Mock,
-        mock_update_catalog_record: Mock,
-        mock_aleph_issue: Mock,
+        self, mock_get_mzk_client: Mock, mock_aleph_issue: Mock
     ):
         # Arrange
         sysno = "MZK03-001175162"
 
-        mock_aleph_client_instance = mock_aleph_client.return_value
-        mock_aleph_client_instance.find_sysno.return_value = (
-            sysno,
-            AlephResponseStatus.Success,
+        mock_aleph_mzk_client = Mock()
+        mock_aleph_mzk_client.parse_sysno.return_value = sysno
+        mock_aleph_mzk_client.search_for_record.return_value = (
+            None,
+            AlephResponseStatus.RecordNotFound,
         )
+        mock_get_mzk_client.return_value = mock_aleph_mzk_client
 
         catalog_record = CatalogRecord(
             sysno=sysno,
             marc=self.read_marc_bytes(sysno),
-        )
-        mock_update_catalog_record.return_value = (
-            catalog_record,
-            AlephResponseStatus.Success,
         )
 
         mock_aleph_issue.from_record.return_value = []
@@ -563,29 +536,24 @@ class TestAddDocumentLogic(TestBaseDatabase, TestMockIndexer):
             ),
         )
 
-    @patch("tasks.add_document.update_catalog_record")
-    @patch("tasks.add_document.AlephClient")
+    @patch("tasks.subtasks.add_document.get_mzk_client")
     def test_create_new_document_when_other_issue_is_already_added(
-        self,
-        mock_aleph_client: Mock,
-        mock_update_catalog_record: Mock,
+        self, mock_get_mzk_client: Mock
     ):
         # Arrange
         sysno = "MZK01-000121929"
 
-        mock_aleph_client_instance = mock_aleph_client.return_value
-        mock_aleph_client_instance.find_sysno.return_value = (
-            sysno,
-            AlephResponseStatus.Success,
+        mock_aleph_mzk_client = Mock()
+        mock_aleph_mzk_client.parse_sysno.return_value = sysno
+        mock_aleph_mzk_client.search_for_record.return_value = (
+            None,
+            AlephResponseStatus.RecordNotFound,
         )
+        mock_get_mzk_client.return_value = mock_aleph_mzk_client
 
         catalog_record = CatalogRecord(
             sysno=sysno,
             marc=self.read_marc_bytes(sysno),
-        )
-        mock_update_catalog_record.return_value = (
-            catalog_record,
-            AlephResponseStatus.Success,
         )
 
         category = Category(

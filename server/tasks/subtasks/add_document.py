@@ -23,7 +23,7 @@ from datatypes import (
 from services import exceptions
 from .create_catalog_record import create_catalog_record
 from .update_catalog_record import update_catalog_record
-from services.aleph import (
+from mzk_aleph import (
     AlephMzkRecord,
     AlephMzkIssue,
     AlephResponseStatus,
@@ -57,7 +57,7 @@ class AddDocumentsProcessor:
             return None, status
 
         main_aleph_record = AlephMzkRecord(
-            catalog_record.sysno, catalog_record.main_record
+            catalog_record.main_record, sysno=catalog_record.sysno
         )
         catalog_issues = self.get_catalog_issues(
             self.session, main_aleph_record

@@ -2,8 +2,7 @@ import requests
 from typing import Optional
 from config import VeraConfig
 from schemas import PredictPeriodicalsPageCount
-from services.aleph import AlephMzkRecord, AlephMzkIssue
-from datatypes import MaterialType
+from mzk_aleph import AlephMzkRecord, AlephMzkIssue, MaterialType
 
 
 PREDICT_PERIODICAL_PAGE_COUNT_ENDPOINT = "/predict"

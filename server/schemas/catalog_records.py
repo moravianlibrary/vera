@@ -1,12 +1,12 @@
 from .base_es_model import BaseEsModel, Keyword, Date, Boolean, Integer
 from pydantic import model_validator, field_validator
 from typing import Any, List, Optional
-from services.aleph import AlephMzkRecord
 from .documents import Frequency
 from models import CatalogRecord
 from datetime import datetime
 from config import VeraConfig
-from datatypes import MarcFieldDifferenceType, MaterialType
+from datatypes import MarcFieldDifferenceType
+from mzk_aleph import AlephMzkRecord, MaterialType
 
 
 class MarcSubfield(BaseEsModel):
@@ -161,7 +161,7 @@ class IndexCatalogRecord(BaseEsModel):
         if not isinstance(data, CatalogRecord):
             return data
 
-        aleph_record = AlephRecord(data.sysno, data.main_record)
+        aleph_record = AlephMzkRecord(data.main_record, sysno=data.sysno)
 
         def extract_diff_type_facets(
             differences: List[MarcFieldDifference],

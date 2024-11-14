@@ -1,5 +1,5 @@
 from typing import Optional, Tuple
-from services.aleph import AlephMzkRecord
+from mzk_aleph import AlephMzkRecord
 from pymarc import Record
 from dispatchers import get_skc_client, get_cnb_client
 from services.external.knihovny_cz import KnihovnyCzClient, KnihovnyCzField

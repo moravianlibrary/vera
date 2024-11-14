@@ -1,5 +1,5 @@
 from enum import Enum
-from services.aleph import AlephField, AlephResponseStatus
+from mzk_aleph import AlephField, AlephResponseStatus
 from services.external.digitization_registry import DigitizationState
 from datatypes import IdentifierType
 

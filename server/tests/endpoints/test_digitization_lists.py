@@ -6,7 +6,8 @@ from models import (
     Intention,
     DigitizationList,
 )
-from datatypes import DigitizationState, IssuanceType
+from datatypes import DigitizationState
+from mzk_aleph import IssuanceType
 from datetime import date, timedelta
 from unittest.mock import patch, Mock
 

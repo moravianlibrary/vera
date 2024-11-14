@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 from models import CatalogRecord, TaskItem, Document
 from .subtasks import update_catalog_record
-from services.aleph import AlephMzkRecord
-from services.aleph import AlephMzkIssue
-from services.aleph import AlephResponseStatus
+from mzk_aleph import AlephMzkRecord
+from mzk_aleph import AlephMzkIssue
+from mzk_aleph import AlephResponseStatus
 from schemas import IndexDocument, EsSession
 from services.elasticsearch import with_es_session
 from .run_items_processing import run_items_processing_task
@@ -27,18 +27,15 @@ def SyncDocumentsWithCatalogs(
             if aleph_response_status != AlephResponseStatus.Success:
                 raise Exception(
                     f"Record with sysno {document.sysno} is not available "
-                    f"from services.aleph. Status: {aleph_response_status}."
+                    f"from mzk_aleph. Status: {aleph_response_status}."
                 )
 
             updated_records_sysno.add(document.sysno)
         else:
             catalog_record = CatalogRecord.get(session, document.sysno)
 
-        sysno_split = catalog_record.sysno.split("-")
         aleph_record = AlephMzkRecord(
-            sysno_split[0],
-            sysno_split[1],
-            catalog_record.main_record,
+            catalog_record.main_record, sysno=catalog_record.sysno
         )
 
         aleph_issue = AlephMzkIssue.specific_issue_from_record(

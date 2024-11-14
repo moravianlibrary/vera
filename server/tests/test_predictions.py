@@ -12,20 +12,18 @@ def load_aleph_record(sysno: str) -> Record:
 
 
 class TestPredictions(TestCase):
-    @patch("requests.get")
-    def test_predict_periodicals_page_count_success(self, mock_get):
+    @patch("requests.post")
+    def test_predict_periodicals_page_count_success(self, mock_post):
         # Arrange
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
             PREDICT_PERIODICAL_PAGE_COUNT_KEYWORD: 100
         }
-        mock_get.return_value = mock_response
+        mock_post.return_value = mock_response
 
         sysno = "MZK01-000121929"
-        aleph_record = AlephMzkRecord(
-            "MZK01", "000121929", load_aleph_record(sysno)
-        )
+        aleph_record = AlephMzkRecord(load_aleph_record(sysno), sysno=sysno)
         mock_aleph_issue = Mock()
         mock_aleph_issue.volume_year = "2024"
 

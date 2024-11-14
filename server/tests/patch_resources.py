@@ -1,5 +1,5 @@
 from unittest.mock import patch, MagicMock
-from services.aleph import MockAlephClient
+from mzk_aleph import MockAlephClient
 from services.external.digitization_registry import (
     MockDigitizationRegistryClient,
 )

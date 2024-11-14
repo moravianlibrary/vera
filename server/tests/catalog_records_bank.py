@@ -1,6 +1,6 @@
 from models import CatalogRecord
 from pymarc import MARCReader
-from services.aleph import AlephMzkRecord
+from mzk_aleph import AlephMzkRecord
 
 
 def get_test_catalog_records():

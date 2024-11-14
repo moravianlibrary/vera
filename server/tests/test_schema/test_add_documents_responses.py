@@ -13,6 +13,7 @@ class TestAddDocumentsResponses(TestSchemaBase):
                     "dynamic": "strict",
                     "properties": {
                         "id": {"type": "keyword"},
+                        "document_id": {"type": "integer"},
                         "document": {
                             "properties": {
                                 "cnb_sysno": {"type": "keyword"},
@@ -20,7 +21,6 @@ class TestAddDocumentsResponses(TestSchemaBase):
                                 "has_valid_main_record": {"type": "boolean"},
                                 "issues": {
                                     "properties": {
-                                        "already_added": {"type": "boolean"},
                                         "barcode": {"type": "keyword"},
                                         "bundle": {"type": "keyword"},
                                         "can_digitize": {"type": "boolean"},
@@ -34,6 +34,7 @@ class TestAddDocumentsResponses(TestSchemaBase):
                                         "issuance_type": {"type": "keyword"},
                                         "newly_added": {"type": "boolean"},
                                         "page_count": {"type": "integer"},
+                                        "processing": {"type": "boolean"},
                                         "signature": {"type": "keyword"},
                                         "volume": {"type": "keyword"},
                                         "volume_year": {"type": "keyword"},

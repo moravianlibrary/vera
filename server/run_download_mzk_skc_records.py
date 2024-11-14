@@ -1,5 +1,5 @@
 from time import sleep
-from services.aleph import AlephClient
+from mzk_aleph import AlephClient
 from services.external.nkp_aleph.client import NkpAlephClient
 from os import path
 

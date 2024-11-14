@@ -45,7 +45,7 @@ from .categories import (
 )
 from .base_es_model import EsSession
 from .predictor import PredictPeriodicalsPageCount
-from services.aleph import (
+from mzk_aleph import (
     AlephMzkRecord,
     AlephMzkIssue,
 )

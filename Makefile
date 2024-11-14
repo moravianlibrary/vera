@@ -8,6 +8,12 @@ TARGET_SERVER_IMAGE_TEMPLATE_NAME := mzk.cz/vera-server
 TARGET_WORKER_IMAGE_TEMPLATE_NAME := mzk.cz/vera-worker
 TARGET_CLIENT_IMAGE_TEMPLATE_NAME := mzk.cz/vera-client
 
+create-env:
+	python -m venv server/.venv && source server/.venv/bin/activate && pip install -r server/requirements_server.txt
+
+rm-env:
+	rm -r server/.venv/
+
 start-devel:
 	docker-compose up -d server worker
 stop-devel:
