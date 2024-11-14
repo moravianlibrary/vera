@@ -1,3 +1,6 @@
 [submodule "vera_ai"]
 	path = vera_ai
 	url = git@gitlab.mzk.cz:osdd/vera_ai.git
+[submodule "mzk_libs/aleph"]
+	path = mzk_libs/aleph
+	url = git@gitlab.mzk.cz:osdd/python-clients/aleph.git
