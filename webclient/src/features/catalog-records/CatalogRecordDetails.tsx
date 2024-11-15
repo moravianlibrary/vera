@@ -12,6 +12,9 @@ import LabeledComponentsBox from "../../components/layouts/LabeledComponentsBox"
 import MaterialTypeTag from "../../components/tags/MaterialTypeTag";
 import ExternalLinkButton from "../../components/buttons/ExternalLinkButton";
 import StringListDisplay from "../../components/layouts/StringListDisplay";
+import TagsView from "../../components/views/TagsView";
+import SkcRecordFlagTag from "../../components/tags/SkcRecordFlagTag";
+import CnbRecordFlagTag from "../../components/tags/CnbRecordFlagTag";
 
 interface CatalogRecordViewProps {
     catalogRecord: CatalogRecord;
@@ -25,7 +28,10 @@ interface CatalogRecordField {
 }
 
 const catalogRecordFields: CatalogRecordField[] = [
-    { attribute: "id" },
+    {
+        attribute: "id",
+        transform: (value) => <ExternalLinkButton.MzkCatalog value={value} />,
+    },
     { attribute: "cnb" },
     { attribute: "language" },
     { attribute: "signature" },
@@ -34,19 +40,35 @@ const catalogRecordFields: CatalogRecordField[] = [
         attribute: "barcodes",
         transform: (bs) => <StringListDisplay stringList={bs} maxItems={10} />,
     },
-    { attribute: "skc_sysno" },
     {
-        attribute: "has_valid_main_record",
-        transform: (b) => `boolean.${b}`,
-        translate: true,
-        translateNs: "types",
+        attribute: "skc_sysno",
+        transform: (value) => <ExternalLinkButton.SckCatalog value={value} />,
     },
-    { attribute: "cnb_sysno" },
     {
-        attribute: "has_valid_cnb",
-        transform: (b) => `boolean.${b}`,
-        translate: true,
-        translateNs: "types",
+        attribute: "skc_record_flags",
+        transform: (flags) => (
+            <TagsView
+                values={flags}
+                onDisplayValue={(f, i) => (
+                    <SkcRecordFlagTag key={i} value={f} />
+                )}
+            />
+        ),
+    },
+    {
+        attribute: "cnb_sysno",
+        transform: (value) => <ExternalLinkButton.CnbCatalog value={value} />,
+    },
+    {
+        attribute: "cnb_record_flags",
+        transform: (flags) => (
+            <TagsView
+                values={flags}
+                onDisplayValue={(f, i) => (
+                    <CnbRecordFlagTag key={i} value={f} />
+                )}
+            />
+        ),
     },
     {
         attribute: "added_at",

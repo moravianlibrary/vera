@@ -16,3 +16,4 @@ requests
 scipy
 sqlalchemy
 typing-extensions==4.8.0
+./mzk_libs/aleph

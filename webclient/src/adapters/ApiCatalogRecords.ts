@@ -1,5 +1,7 @@
+import CnbRecordFlag from "../types/CnbRecordFlag";
 import MarcFieldDifferenceType from "../types/MarcFieldDifferenceType";
 import { MaterialType } from "../types/MaterialType";
+import SkcRecordFlag from "../types/SkcRecordFlag";
 import { ApiBase, ApiOptions, authHeader } from "./ApiBase";
 
 interface MarcSubfieldDifference {
@@ -57,11 +59,11 @@ interface CatalogRecord {
     skc_sysno: string | null;
     skc_record: MarcRecord | null;
     skc_difference: MarcFieldDifference[] | null;
-    has_valid_main_record: boolean;
+    skc_record_flags: (SkcRecordFlag | MarcFieldDifferenceType)[];
     cnb_sysno: string | null;
     cnb_record: MarcRecord | null;
     cnb_difference: MarcFieldDifference[] | null;
-    has_valid_cnb: boolean;
+    cnb_record_flags: (CnbRecordFlag | MarcFieldDifferenceType)[];
     added_at: string;
     updated_at: string;
     material_type: MaterialType | null;

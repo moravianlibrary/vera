@@ -5,7 +5,7 @@ from .documents import Frequency
 from models import CatalogRecord
 from datetime import datetime
 from config import VeraConfig
-from datatypes import MarcFieldDifferenceType
+from datatypes import MarcFieldDifferenceType, SkcRecordFlag, CnbRecordFlag
 from mzk_aleph import AlephMzkRecord, MaterialType
 
 
@@ -120,20 +120,16 @@ class IndexCatalogRecord(BaseEsModel):
     barcodes: List[Keyword]
 
     skc_sysno: Optional[Keyword]
-    skc_sysno_resolved: Boolean
     skc_record: Optional[MarcRecord]
     skc_difference: List[MarcFieldDifference]
-    skc_difference_type_facets: List[MarcFieldDifferenceType]
+    skc_record_flags: List[SkcRecordFlag]
     skc_difference_tag_facets: List[Keyword]
-    has_valid_main_record: Boolean
 
     cnb_sysno: Optional[Keyword]
-    cnb_sysno_resolved: Boolean
     cnb_record: Optional[MarcRecord]
     cnb_difference: List[MarcFieldDifference]
-    cnb_difference_type_facets: List[MarcFieldDifferenceType]
+    cnb_record_flags: List[CnbRecordFlag]
     cnb_difference_tag_facets: List[Keyword]
-    has_valid_cnb: Boolean
 
     has_documents: Boolean
     has_active_documents: Boolean
@@ -161,6 +157,7 @@ class IndexCatalogRecord(BaseEsModel):
         if not isinstance(data, CatalogRecord):
             return data
 
+        data: CatalogRecord
         aleph_record = AlephMzkRecord(data.main_record, sysno=data.sysno)
 
         def extract_diff_type_facets(
@@ -168,7 +165,10 @@ class IndexCatalogRecord(BaseEsModel):
         ) -> List[Keyword]:
             return (
                 list(
-                    {difference.difference_type for difference in differences}
+                    {
+                        difference.difference_type.value
+                        for difference in differences
+                    }
                 )
                 if differences
                 else []
@@ -183,6 +183,31 @@ class IndexCatalogRecord(BaseEsModel):
                 else []
             )
 
+        def skc_record_flags(
+            differences: List[MarcFieldDifference], found: bool, is_valid: bool
+        ) -> List[Keyword]:
+            if not found:
+                return [SkcRecordFlag.NotFound]
+            flags = extract_diff_type_facets(differences)
+            if is_valid:
+                flags.append(SkcRecordFlag.Valid)
+            return flags
+
+        def cnb_record_flags(
+            differences: List[MarcFieldDifference],
+            without_cnb: bool,
+            found: bool,
+            is_valid: bool,
+        ) -> List[Keyword]:
+            if without_cnb and not found:
+                return [CnbRecordFlag.ShouldNotHaveCnb]
+            if not found:
+                return [CnbRecordFlag.NotFound]
+            flags = extract_diff_type_facets(differences)
+            if is_valid:
+                flags.append(CnbRecordFlag.Valid)
+            return flags
+
         return IndexCatalogRecord(
             id=data.sysno,
             main_record=data.main_record.as_dict(),
@@ -192,27 +217,28 @@ class IndexCatalogRecord(BaseEsModel):
             isxn=data.isxn,
             barcodes=data.barcodes,
             skc_sysno=data.skc_sysno,
-            skc_sysno_resolved=data.skc_sysno_resolved,
             skc_record=data.skc_record.as_dict() if data.skc_record else None,
             skc_difference=data.skc_difference,
-            skc_difference_type_facets=extract_diff_type_facets(
-                data.skc_difference
+            skc_record_flags=skc_record_flags(
+                data.skc_difference,
+                data.skc_sysno_resolved,
+                data.has_valid_main_record,
             ),
             skc_difference_tag_facets=extract_diff_tag_facets(
                 data.skc_difference
             ),
-            has_valid_main_record=data.has_valid_main_record,
             cnb_sysno=data.cnb_sysno,
-            cnb_sysno_resolved=data.cnb_sysno_resolved,
             cnb_record=data.cnb_record.as_dict() if data.cnb_record else None,
             cnb_difference=data.cnb_difference,
-            cnb_difference_type_facets=extract_diff_type_facets(
-                data.cnb_difference
+            cnb_record_flags=cnb_record_flags(
+                data.cnb_difference,
+                data.without_cnb,
+                data.cnb_sysno_resolved,
+                data.has_valid_cnb,
             ),
             cnb_difference_tag_facets=extract_diff_tag_facets(
                 data.cnb_difference
             ),
-            has_valid_cnb=data.has_valid_cnb,
             has_documents=data.has_documents,
             has_active_documents=data.has_active_documents,
             added_at=data.added_at.isoformat(),

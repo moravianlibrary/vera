@@ -98,6 +98,9 @@ const TasksTable: React.FC<TasksTableProps> & {
             onRowExpand={handleRowExpand}
             onRowCollapse={handleRowCollapse}
             rowExpansionTemplate={getAdditionalData}
+            onMouseDownCapture={(e) => {
+                e.stopPropagation();
+            }}
         >
             <Column expander style={{ width: "5rem" }} />
             <Column field="id" header={t("table.columns.id")} />

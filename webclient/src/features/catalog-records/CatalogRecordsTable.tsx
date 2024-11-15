@@ -11,6 +11,7 @@ import MzkSysnoColumnBody from "./table-columns/MzkSysnoColumnBody";
 import { CatalogRecord } from "../../adapters/ApiCatalogRecords";
 import CatalogRecordDetails from "./CatalogRecordDetails";
 import { useCatalogRecords } from "../../contexts/CatalogRecordsContext";
+import ExternalLinkButton from "../../components/buttons/ExternalLinkButton";
 
 interface CatalogRecordsTableProps {}
 
@@ -51,9 +52,12 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
             <Column
                 field="id"
                 header={t("table.columns.mzk-sysno")}
-                body={MzkSysnoColumnBody}
+                body={(data) => (
+                    <ExternalLinkButton.MzkCatalog value={data.id} />
+                )}
             />
-            <Column
+            <Column field="title" header={t("table.columns.title")} />
+            {/* <Column
                 field="skc_sysno"
                 header={t("table.columns.skc-sysno")}
                 body={SkcSysnoColumnBody}
@@ -62,7 +66,7 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
                 field="cnb_sysno"
                 header={t("table.columns.cnb-sysno")}
                 body={CnbSysnoColumnBody}
-            />
+            /> */}
             <Column
                 field="skc_validity"
                 header={t("table.columns.skc-validity")}
@@ -73,8 +77,8 @@ const CatalogRecordsTable: React.FC<CatalogRecordsTableProps> & {
                 header={t("table.columns.cnb-validity")}
                 body={CnbValidityColumnBody}
             />
-            <Column field="cnb" header={t("table.columns.cnb")} />
-            <Column field="language" header={t("table.columns.language")} />
+            {/* <Column field="cnb" header={t("table.columns.cnb")} />
+            <Column field="language" header={t("table.columns.language")} /> */}
             <Column selectionMode="multiple" />
         </DataTable>
     );

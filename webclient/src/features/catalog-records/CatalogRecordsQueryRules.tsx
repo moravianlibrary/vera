@@ -6,6 +6,8 @@ import EsMarcFieldDifferenceTypeFacet from "../../components/elasticsearch/filte
 import { useTranslation } from "react-i18next";
 import EsSortBy from "../../components/elasticsearch/EsSortBy";
 import EsQueryRulesLayout from "../../components/layouts/EsQueryRulesLayout";
+import SkcRecordFlagTag from "../../components/tags/SkcRecordFlagTag";
+import CnbRecordFlagTag from "../../components/tags/CnbRecordFlagTag";
 
 interface CatalogRecordsFacetsBarProps {}
 
@@ -22,14 +24,6 @@ const CatalogRecordsFacetsBar: React.FC<CatalogRecordsFacetsBarProps> = () => {
                             value: "catalog_records",
                         },
                         {
-                            label: t("sort-by.non-valid-first"),
-                            value: "catalog-records_non_valid_first",
-                        },
-                        {
-                            label: t("sort-by.valid-first"),
-                            value: "catalog-records_valid_first",
-                        },
-                        {
                             label: t("sort-by.newest"),
                             value: "catalog-records_newest",
                         },
@@ -42,21 +36,19 @@ const CatalogRecordsFacetsBar: React.FC<CatalogRecordsFacetsBarProps> = () => {
             }
             facets={
                 <Fragment>
-                    <EsBooleanFacet
-                        attribute="has_valid_main_record"
-                        label={t("facets.has-valid-main-record")}
+                    <EsFacet
+                        attribute="skc_record_flags"
+                        label={t("facets.skc-record-flags")}
+                        onDisplayLabel={(item) => (
+                            <SkcRecordFlagTag value={item.value} />
+                        )}
                     />
-                    <EsBooleanFacet
-                        attribute="skc_sysno_resolved"
-                        label={t("facets.skc-sysno-resolved")}
-                    />
-                    <EsBooleanFacet
-                        attribute="has_valid_cnb"
-                        label={t("facets.has-valid-cnb")}
-                    />
-                    <EsBooleanFacet
-                        attribute="cnb_sysno_resolved"
-                        label={t("facets.cnb-sysno-resolved")}
+                    <EsFacet
+                        attribute="cnb_record_flags"
+                        label={t("facets.cnb-record-flags")}
+                        onDisplayLabel={(item) => (
+                            <CnbRecordFlagTag value={item.value} />
+                        )}
                     />
                     <EsMaterialTypeFacet
                         attribute="material_type"

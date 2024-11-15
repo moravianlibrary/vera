@@ -4,19 +4,13 @@
     "table": {
         "columns": {
             "mzk-sysno": "MZK systémové číslo",
+            "title": "Název",
             "skc-sysno": "SKC systémové číslo",
             "cnb-sysno": "ČNB systémové číslo",
             "skc-validity": "Validita vůči SKC katalogu",
             "cnb-validity": "Validita ČNB",
             "cnb": "ČNB",
             "language": "Jazyk"
-        },
-        "values": {
-            "valid-main-record": "Záznam je validný",
-            "not-found-in-skc": "Záznam nenalezen v SKC katalogu",
-            "valid-cnb": "ČNB je validné",
-            "should-not-have-cnb": "Nemá mít ČNB",
-            "not-found-in-cnb": "Záznam nenalezen v ČNB katalogu"
         }
     },
     "details": {
@@ -37,9 +31,11 @@
         "isxn": "ISXN",
         "barcodes": "Čárové kódy",
         "skc_sysno": "SKC systémové číslo",
-        "has_valid_main_record": "Záznam je validný",
+        "skc-record-flags": "Příznaky - MZK vs SKC",
+        "skc_record_flags": "Příznaky - MZK vs SKC",
         "cnb_sysno": "ČNB systémové číslo",
-        "has_valid_cnb": "ČNB je validné",
+        "cnb-record-flags": "Příznaky - MZK vs ČNB",
+        "cnb_record_flags": "Příznaky - MZK vs ČNB",
         "added_at": "Vytvořeno",
         "updated_at": "Aktualizovano",
         "material_type": "Typ materialu",
@@ -61,9 +57,9 @@
         "cnb-sysno-resolved": "ČNB systémové číslo nalezeno",
         "language": "Jazyk",
         "material-type": "Typ materialu",
-        "skc-difference-type": "Typ rozdílu - MZK vs SKC",
+        "skc-record-flags": "Příznaky - MZK vs SKC",
         "skc-difference-tag": "Rozdílná pole - MZK vs SKC",
-        "cnb-difference-type": "Typ rozdílu - MZK vs ČNB",
+        "cnb-record-flags": "Příznaky - MZK vs ČNB",
         "cnb-difference-tag": "Rozdílná pole - MZK vs ČNB"
     },
     "sort-by": {
@@ -75,6 +71,8 @@
     },
     "query-params": {
         "all": "Všechny katalógové záznamy",
+        "skc-record-flags": "Příznak - MZK vs SKC: {{value}}",
+        "cnb-record-flags": "Příznak - MZK vs ČNB: {{value}}",
         "has-documents": {
             "true": "Má dokumenty vo VERE",
             "false": "Nemá dokumenty vo VERE"
@@ -82,22 +80,6 @@
         "has-active-documents": {
             "true": "Má neextrahované dokumenty",
             "false": "Má iba extrahované dokumenty"
-        },
-        "has-valid-main-record": {
-            "true": "Záznam je validný",
-            "false": "Záznam není validný"
-        },
-        "has-valid-cnb": {
-            "true": "ČNB je validné",
-            "false": "ČNB není validné"
-        },
-        "skc-sysno-resolved": {
-            "true": "SKC systémové číslo nalezeno",
-            "false": "SKC systémové číslo nenalezeno"
-        },
-        "cnb-sysno-resolved": {
-            "true": "ČNB systémové číslo nalezeno",
-            "false": "ČNB systémové číslo nenalezeno"
         },
         "material-type": "Typ materiálu: {{value}}",
         "skc-difference-type-facets": {

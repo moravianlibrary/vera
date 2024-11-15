@@ -7,8 +7,13 @@ ENV PYTHONUNBUFFERED 1
 # Create and set the working directory in the container
 WORKDIR /app
 
+# Install YAZ C library
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libyaz5
+
 # Copy the requirements file to the container and install dependencies
 COPY requirements_server.txt /app/
+COPY mzk_libs /app/mzk_libs
 RUN pip install --no-cache-dir -r requirements_server.txt
 
 # Copy the entire project directory into the container
@@ -16,6 +21,7 @@ COPY alembic.ini /app/alembic.ini
 COPY alembic /app/alembic
 
 COPY datatypes /app/datatypes
+COPY dispatchers /app/dispatchers
 COPY exceptions /app/exceptions
 COPY models /app/models
 COPY routers /app/routers

@@ -42,7 +42,6 @@ class TestIndexCatalogRecord(TestSchemaBase):
                         "isxn": {"type": "keyword"},
                         "barcodes": {"type": "keyword"},
                         "skc_sysno": {"type": "keyword"},
-                        "skc_sysno_resolved": {"type": "boolean"},
                         "skc_record": {
                             "properties": {
                                 "fields": {
@@ -89,11 +88,9 @@ class TestIndexCatalogRecord(TestSchemaBase):
                             },
                             "type": "nested",
                         },
-                        "skc_difference_type_facets": {"type": "keyword"},
+                        "skc_record_flags": {"type": "keyword"},
                         "skc_difference_tag_facets": {"type": "keyword"},
-                        "has_valid_main_record": {"type": "boolean"},
                         "cnb_sysno": {"type": "keyword"},
-                        "cnb_sysno_resolved": {"type": "boolean"},
                         "cnb_record": {
                             "properties": {
                                 "fields": {
@@ -140,11 +137,10 @@ class TestIndexCatalogRecord(TestSchemaBase):
                             },
                             "type": "nested",
                         },
-                        "cnb_difference_type_facets": {"type": "keyword"},
+                        "cnb_record_flags": {"type": "keyword"},
                         "cnb_difference_tag_facets": {"type": "keyword"},
                         "has_active_documents": {"type": "boolean"},
                         "has_documents": {"type": "boolean"},
-                        "has_valid_cnb": {"type": "boolean"},
                         "added_at": {"type": "date"},
                         "updated_at": {"type": "date"},
                         "indexed_at": {"type": "date"},

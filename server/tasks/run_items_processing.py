@@ -16,11 +16,26 @@ def run_items_processing_task(session: Session, task_id: int, func: callable):
         except ValueError as e:
             task_item.error_type = TaskItemErrorType.ValueError
             task_item.error_message = str(e)
+            logger.error(
+                "ValueError encountered "
+                f"while processing item {task_item.item_id}",
+                exc_info=True,
+            )
         except TypeError as e:
             task_item.error_type = TaskItemErrorType.ValueError
             task_item.error_message = str(e)
+            logger.error(
+                "TypeError encountered "
+                f"while processing item {task_item.item_id}",
+                exc_info=True,
+            )
         except Exception as e:
             task_item.error_type = TaskItemErrorType.UnknownError
             task_item.error_message = str(e)
+            logger.error(
+                "Unexpected error encountered "
+                f"while processing item {task_item.item_id}",
+                exc_info=True,
+            )
         task_item.processed = True
         task_item.save(session)

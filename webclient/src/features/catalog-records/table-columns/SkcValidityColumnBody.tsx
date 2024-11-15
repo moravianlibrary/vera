@@ -1,49 +1,28 @@
-import React from "react";
 import { CatalogRecord } from "../../../adapters/ApiCatalogRecords";
-import ValidityTag from "../../../components/tags/ValidityTag";
-import NotFoundTag from "../../../components/tags/NotFoundTag";
-import MarcFieldDifferencesTagsBox from "../../../components/tags/MarcFieldDifferencesTagsBox";
-import { useTranslation } from "react-i18next";
 import MarcFieldDifferenceTag from "../../../components/tags/MarcFieldDifferenceTag";
+import SkcRecordFlag from "../../../types/SkcRecordFlag";
+import SkcRecordFlagTag from "../../../components/tags/SkcRecordFlagTag";
 
 const SkcValidityColumnBody = (catalogRecord: CatalogRecord) => {
-    const { t } = useTranslation("catalog-records");
+    const skcRecordFlags = catalogRecord.skc_record_flags.filter(
+        (f): f is SkcRecordFlag =>
+            Object.values(SkcRecordFlag).includes(f as SkcRecordFlag)
+    );
 
-    if (catalogRecord.has_valid_main_record && !catalogRecord.skc_difference) {
-        return (
-            <ValidityTag
-                label={t("table.values.valid-main-record")}
-                isValid={true}
-            />
-        );
-    }
-    if (!catalogRecord.skc_sysno) {
-        return <NotFoundTag label={t(`table.values.not-found-in-skc`)} />;
-    }
-    if (!catalogRecord.skc_difference) {
-        throw new Error("skc_difference is null even though skc_sysno exists");
-    }
-    if (catalogRecord.has_valid_main_record) {
-        return (
-            <div className="flex gap-2">
-                <ValidityTag
-                    label={t("table.values.valid-main-record")}
-                    isValid={true}
-                />
-                {catalogRecord.skc_difference.map((difference, index) => (
+    return (
+        <div className="flex flex-wrap gap-2">
+            {skcRecordFlags.map((flag, index) => (
+                <SkcRecordFlagTag key={index} value={flag} />
+            ))}
+            {catalogRecord.skc_difference
+                .sort((a, b) => a.tag.localeCompare(b.tag))
+                .map((difference, index) => (
                     <MarcFieldDifferenceTag
                         key={index}
                         difference={difference}
                     />
                 ))}
-            </div>
-        );
-    }
-
-    return (
-        <MarcFieldDifferencesTagsBox
-            differences={catalogRecord.skc_difference}
-        />
+        </div>
     );
 };
 

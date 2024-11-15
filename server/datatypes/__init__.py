@@ -7,7 +7,12 @@ from .documents_types import (
     DigitizationStateToResponseStatusConverter,
     IdentifierToAlephFieldConverted,
 )
-from .catalog_types import CatalogSource, CZECH_LANGUAGE
+from .catalog_types import (
+    CatalogSource,
+    CZECH_LANGUAGE,
+    SkcRecordFlag,
+    CnbRecordFlag,
+)
 from .intention_classification import IntentionClassification
 from .location_state import LocationState
 from .task_types import (
@@ -48,4 +53,6 @@ __all__ = [
     "is_documents_task",
     "EsRoutingParams",
     "DocumentFlag",
+    "SkcRecordFlag",
+    "CnbRecordFlag",
 ]

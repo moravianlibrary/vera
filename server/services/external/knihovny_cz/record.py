@@ -19,7 +19,7 @@ class KnihovnyCzRecord:
         sysnos = [
             id_ for id_ in self.per_library_ids if id_.startswith(prefix)
         ]
-        return sysnos[0] if len(sysnos) == 1 else None
+        return sysnos[0].removeprefix(prefix) if len(sysnos) == 1 else None
 
     @property
     def skc_sysno(self) -> Optional[str]:

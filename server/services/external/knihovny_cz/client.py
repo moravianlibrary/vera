@@ -1,7 +1,7 @@
 import requests
 from typing import List, Optional
 from .record import KnihovnyCzRecord
-from .types import KnihovnyCzField
+from .types import KnihovnyCzField, LibraryPrefix
 
 
 KNIHOVNY_CZ_URL = "https://www.knihovny.cz/api/v1"
@@ -21,11 +21,14 @@ class KnihovnyCzClient:
     def __init__(self) -> None:
         self.session = requests.Session()
 
-    def get_knihovny_cz_document(
-        self, sysno: str, fields: List[KnihovnyCzField] = []
+    def get_record(
+        self,
+        library: LibraryPrefix,
+        sysno: str,
+        fields: List[KnihovnyCzField] = [],
     ) -> Optional[KnihovnyCzRecord]:
         url = GET_RECORD_ENDPOINT.format(
-            KNIHOVNY_CZ_URL=KNIHOVNY_CZ_URL, SYSNO=sysno
+            KNIHOVNY_CZ_URL=KNIHOVNY_CZ_URL, SYSNO=f"{library.value}.{sysno}"
         )
         for field in fields:
             url += f"&field%5B%5D={field.value}"
@@ -37,7 +40,9 @@ class KnihovnyCzClient:
         if len(records) == 0:
             return None
         if len(records) > 1:
-            raise ValueError(f"Record with sysno {sysno} found more than once")
+            raise ValueError(
+                f"Record with id {library}.{sysno} found more than once"
+            )
 
         record = records[0]
         return KnihovnyCzRecord(sysno, record)

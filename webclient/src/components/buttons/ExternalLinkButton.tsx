@@ -26,7 +26,7 @@ const ExternalLinkButton: React.FC<ExternalLinkButtonProps> & {
 } = ({ label, url, hideValue }) => {
     return (
         <div className="flex align-items-center gap-2">
-            {!hideValue && <span>{label}</span>}
+            {!hideValue && <span className="white-space-nowrap">{label}</span>}
             <Button
                 className="p-1 text-blue-600"
                 text

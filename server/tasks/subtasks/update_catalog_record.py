@@ -13,8 +13,12 @@ from schemas import EsSession, IndexCatalogRecord
 def update_catalog_record(
     session: Session, es_session: EsSession, catalog_record: CatalogRecord
 ) -> CatalogRecord:
-    mzk_record, _ = get_mzk_client().get_record(catalog_record.sysno)
+    sysno_split = catalog_record.sysno.split("-")
+    mzk_record, _ = get_mzk_client().get_record(sysno_split[0], sysno_split[1])
     mzk_record: AlephMzkRecord
+
+    if mzk_record is None:
+        raise Exception(f"MZK record {catalog_record.sysno} not found")
 
     catalog_record.marc = mzk_record.record.as_marc()
     catalog_record.cnb = mzk_record.cnb
@@ -26,21 +30,23 @@ def update_catalog_record(
         skc_record = get_skc_client().get_record(catalog_record.skc_sysno)
         if catalog_record.skc_record is not None and skc_record is None:
             raise Exception(f"SKC record {catalog_record.skc_sysno} not found")
-        catalog_record.skc_record = skc_record
+        catalog_record.skc_marc = skc_record.as_marc()
     else:
-        catalog_record.skc_sysno, catalog_record.skc_record = (
-            find_skc_sysno_and_marc(mzk_record)
-        )
+        skc_sysno, skc_record = find_skc_sysno_and_marc(mzk_record)
+        if skc_sysno is not None:
+            catalog_record.skc_sysno = skc_sysno
+            catalog_record.skc_marc = skc_record.as_marc()
 
     if catalog_record.cnb_sysno is not None:
         cnb_record = get_cnb_client().get_record(catalog_record.cnb_sysno)
         if catalog_record.cnb_record is not None and cnb_record is None:
             raise Exception(f"CNB record {catalog_record.cnb_sysno} not found")
-        catalog_record.cnb_record = catalog_record.cnb_record
+        catalog_record.cnb_marc = cnb_record.as_marc()
     else:
-        catalog_record.cnb_sysno, catalog_record.cnb_record = (
-            find_cnb_sysno_and_marc(mzk_record)
-        )
+        cnb_sysno, cnb_record = find_cnb_sysno_and_marc(mzk_record)
+        if cnb_sysno is not None:
+            catalog_record.cnb_sysno = cnb_sysno
+            catalog_record.cnb_marc = cnb_record.as_marc()
 
     catalog_record.save(session)
 

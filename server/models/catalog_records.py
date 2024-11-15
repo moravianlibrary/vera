@@ -151,8 +151,12 @@ class CatalogRecord(BaseModel):
         return self.skc_sysno is not None
 
     @hybrid_property
+    def without_cnb(self) -> bool:
+        return self.language != CZECH_LANGUAGE
+
+    @hybrid_property
     def cnb_sysno_resolved(self) -> bool:
-        return self.language != CZECH_LANGUAGE or self.cnb_sysno is not None
+        return self.cnb_sysno is not None
 
     @hybrid_property
     def has_documents(self) -> bool:

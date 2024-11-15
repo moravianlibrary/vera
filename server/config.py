@@ -79,8 +79,8 @@ class VeraConfig:
 
     class AlephNkp:
         @staticproperty
-        def Host() -> str:
-            return environ.get("ALEPH_NKP_HOST", "https://aleph.nkp.cz")
+        def Url() -> str:
+            return environ.get("ALEPH_NKP_URL", "aleph.nkp.cz")
 
         @staticproperty
         def Port() -> int:

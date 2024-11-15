@@ -20,12 +20,19 @@ def create_catalog_record(
     catalog_record.signature = mzk_record.signature
     catalog_record.isxn = mzk_record.isxn
 
-    catalog_record.skc_sysno, catalog_record.skc_record = (
-        find_skc_sysno_and_marc(mzk_record)
-    )
-    catalog_record.cnb_sysno, catalog_record.cnb_record = (
-        find_cnb_sysno_and_marc(mzk_record)
-    )
+    skc_sysno, skc_record = find_skc_sysno_and_marc(mzk_record)
+    if skc_sysno is not None:
+        if skc_record is None:
+            raise Exception(f"SKC record {skc_sysno} not found")
+        catalog_record.skc_sysno = skc_sysno
+        catalog_record.skc_marc = skc_record.as_marc()
+
+    cnb_sysno, cnb_record = find_cnb_sysno_and_marc(mzk_record)
+    if cnb_sysno is not None:
+        if cnb_record is None:
+            raise Exception(f"CNB record {cnb_sysno} not found")
+        catalog_record.cnb_sysno = cnb_sysno
+        catalog_record.cnb_marc = cnb_record.as_marc()
 
     catalog_record.save(session)
 

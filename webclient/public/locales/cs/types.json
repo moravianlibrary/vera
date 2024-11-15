@@ -180,5 +180,22 @@
     "issues-states": {
         "already-exists": "Již přidáno",
         "digitization-forbidden": "Nelze digitalizovat"
+    },
+    "skc-record-flags": {
+        "Valid": "Záznam je validný",
+        "NotFound": "Záznam nenalezen v SKC katalogu",
+        "Equal": "Shoda",
+        "DifferentValue": "Rozdílna hodnota",
+        "MissingField": "Chybí pole",
+        "ExtraField": "Extra pole"
+    },
+    "cnb-record-flags": {
+        "Valid": "ČNB je validné",
+        "ShouldNotHaveCnb": "Nemusí mít ČNB",
+        "NotFound": "Záznam nenalezen v ČNB katalogu",
+        "Equal": "Shoda",
+        "DifferentValue": "Rozdílna hodnota",
+        "MissingField": "Chybí pole",
+        "ExtraField": "Extra pole"
     }
 }

@@ -54,7 +54,7 @@ def _create_nkp_session():
     global nkp_z3950_session
 
     nkp_z3950_session = NkpZ3950Session(
-        VeraConfig.AlephNkp.Host,
+        VeraConfig.AlephNkp.Url,
         VeraConfig.AlephNkp.Port,
         VeraConfig.AlephNkp.RateLimitMs,
     )
