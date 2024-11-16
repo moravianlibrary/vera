@@ -25,6 +25,10 @@ const dataMapping: GeneralInformationMapping[] = [
 const GeneralInformationDifference: React.FC<
     GeneralInformationDifferenceProps
 > = ({ difference }) => {
+    if (!difference.subfield_differences[0]?.value) {
+        return null;
+    }
+
     const value = difference.subfield_differences[0].value!.replace(/ /g, "-");
     const differentTo =
         difference.subfield_differences[0].different_to!.replace(/ /g, "-");

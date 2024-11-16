@@ -11,7 +11,10 @@ import { Button } from "primereact/button";
 import config from "../../config/config";
 import DataTablePaginator from "../../components/views/DataTablePaginator";
 import { TaskStateTag } from "../../components/tags/TaskStateTag";
-import { ManagementTasks, NoItemsTasks } from "../../types/TaskType";
+import { NoItemsTasks } from "../../types/TaskType";
+import { toZonedTime } from "date-fns-tz";
+
+const timeZone = "Europe/London";
 
 interface TasksTableProps {}
 
@@ -54,11 +57,13 @@ const TasksTable: React.FC<TasksTableProps> & {
     };
 
     const durationBody = (task: Task) => {
-        if (!task.started || !task.finished) {
+        if (!task.started) {
             return;
         }
         const startDate = new Date(task.started!).getTime();
-        const endDate = new Date(task.finished!).getTime();
+        const endDate = new Date(
+            task.finished ?? toZonedTime(new Date(), timeZone)
+        ).getTime();
         const dateDifference = endDate - startDate;
 
         const hours = Math.floor(
@@ -148,7 +153,8 @@ const TasksTable: React.FC<TasksTableProps> & {
 
 const TasksTablePaginator: React.FC = () => {
     const { t } = useTranslation("tasks");
-    const { numFound, page, setPage, pageSize, setPageSize } = useTasks();
+    const { numFound, page, setPage, pageSize, setPageSize, refresh } =
+        useTasks();
 
     return (
         <DataTablePaginator
@@ -157,6 +163,7 @@ const TasksTablePaginator: React.FC = () => {
             pageSize={pageSize}
             onPageChange={setPage}
             onPageSizeChange={setPageSize}
+            onRefresh={refresh}
             numFoundText={t("num-found", { count: numFound })}
         />
     );

@@ -19,6 +19,7 @@ interface TasksContextProps {
     setPage: (page: number) => void;
     pageSize: number;
     setPageSize: (pageSize: number) => void;
+    refresh: () => void;
 
     startTask: (taskType: TaskType) => void;
     onInitiateTaskStart: (
@@ -79,8 +80,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
         }
     };
 
-    useEffect(() => {
-        console.debug(`Fetching tasks from server.`);
+    const refresh = () => {
         api.getPage(page, pageSize)
             .then((response) => {
                 setTasks(response.data.items);
@@ -89,6 +89,11 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
             .catch((error) => {
                 console.error(error);
             });
+    };
+
+    useEffect(() => {
+        console.debug(`Fetching tasks from server.`);
+        refresh();
     }, [page, pageSize, api]);
 
     const contextValue: TasksContextProps = {
@@ -98,6 +103,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
         setPage,
         pageSize,
         setPageSize,
+        refresh,
 
         startTask,
         onInitiateTaskStart,
