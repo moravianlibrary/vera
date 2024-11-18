@@ -6,6 +6,7 @@ const catalog_records_index_settings = {
         { field: "id", weight: 3 },
         "skc_sysno",
         "cnb_sysno",
+        "title",
         "cnb",
         "signature",
         "isxn",
@@ -50,6 +51,12 @@ const catalog_records_index_settings = {
         _oldest: { field: "added_at", order: "asc" },
     },
     facet_attributes: [
+        {
+            attribute: "id",
+            field: "id",
+            type: "string",
+            translateAs: "text",
+        },
         {
             attribute: "skc_record_flags",
             field: "skc_record_flags",

@@ -82,14 +82,24 @@ const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                     <EsExtractionFacet
                         attribute="extraction_ids"
                         label={t("facets.extraction")}
-                        sortBy={["name:desc"]}
+                        sortBy={(a, b) =>
+                            b.name.localeCompare(a.name, undefined, {
+                                numeric: true,
+                                sensitivity: "base",
+                            })
+                        }
                         showMore
                         limit={5}
                     />
                     <EsDigitizationListFacet
                         attribute="digitization_list_id"
                         label={t("facets.digitization-list")}
-                        sortBy={["name:desc"]}
+                        sortBy={(a, b) =>
+                            b.name.localeCompare(a.name, undefined, {
+                                numeric: true,
+                                sensitivity: "base",
+                            })
+                        }
                         showMore
                         limit={5}
                     />

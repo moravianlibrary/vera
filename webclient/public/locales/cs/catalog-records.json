@@ -60,7 +60,8 @@
         "skc-record-flags": "Příznaky - MZK vs SKC",
         "skc-difference-tag": "Rozdílná pole - MZK vs SKC",
         "cnb-record-flags": "Příznaky - MZK vs ČNB",
-        "cnb-difference-tag": "Rozdílná pole - MZK vs ČNB"
+        "cnb-difference-tag": "Rozdílná pole - MZK vs ČNB",
+        "id": "MZK systémové číslo"
     },
     "sort-by": {
         "last-edited": "Poslední editace",
@@ -94,6 +95,7 @@
             "DifferentValue": "Rozdílná hodnota MZK oproti ČNB"
         },
         "cnb-difference-tag-facets": "Rozdílne pole {{value}} v porovnání MZK a ČNB",
-        "language": "Jazyk: {{value}}"
+        "language": "Jazyk: {{value}}",
+        "id": "Systémové číslo: {{value}}"
     }
 }

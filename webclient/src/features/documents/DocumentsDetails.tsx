@@ -27,6 +27,7 @@ import ActionAccessComponent from "../../components/access/ActionAccessComponent
 import { OwnedItemType, useAccess } from "../../contexts/AccessContext";
 import { ActionType } from "../../types/ActionType";
 import DeleteButton from "../../components/buttons/DeleteButton";
+import InternalLinkButton from "../../components/buttons/InternalLinkButton";
 
 interface DocumentDetailsFieldType {
     attribute: string;
@@ -312,7 +313,7 @@ const DocumentDetailsFooter: React.FC<DocumentDetailsProps> = ({
     const { t } = useTranslation("documents");
     const { deleteDocument } = useDocuments();
     return (
-        <div>
+        <div className="flex justify-content-between">
             <Button
                 className=""
                 rounded
@@ -321,6 +322,22 @@ const DocumentDetailsFooter: React.FC<DocumentDetailsProps> = ({
                 icon="pi pi-trash"
                 label={t("actions.delete.label", { count: 1 })}
                 onClick={() => deleteDocument(document.id)}
+            />
+            <Button
+                className="text-blue-600"
+                rounded
+                outlined
+                label={t("internal-link.show-in-catalog-records", {
+                    ns: "app",
+                })}
+                icon="pi pi-external-link"
+                iconPos="right"
+                onClick={() =>
+                    window.open(
+                        `catalog-records?index_name=catalog_records&id=${document.sysno}`,
+                        "_blank"
+                    )
+                }
             />
         </div>
     );

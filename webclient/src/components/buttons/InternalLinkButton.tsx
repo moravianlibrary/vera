@@ -18,10 +18,12 @@ interface ItemInternalLinkButtonProps {
     extraction?: Extraction;
     documentsQuery?: string;
     documentId?: number;
+    catalogRecordId?: string;
     openInNewTab?: boolean;
 }
 
 const InternalLinkButton: React.FC<InternalLinkButtonProps> & {
+    ShowInCatalogRecords: React.FC<ItemInternalLinkButtonProps>;
     ShowInCategories: React.FC<ItemInternalLinkButtonProps>;
     ShowInDocuments: React.FC<ItemInternalLinkButtonProps>;
 } = ({ label, link, openInNewTab }) => {
@@ -87,6 +89,29 @@ const ShowInDocuments: React.FC<ItemInternalLinkButtonProps> = ({
     );
 };
 
+const CATALOG_RECORDS_BASE = "/catalog-records?index_name=catalog_records";
+
+const ShowInCatalogRecords: React.FC<ItemInternalLinkButtonProps> = ({
+    catalogRecordId,
+    openInNewTab,
+}) => {
+    const { t } = useTranslation("app");
+
+    const getLink = () => {
+        if (catalogRecordId) {
+            return `${CATALOG_RECORDS_BASE}&id=${catalogRecordId}`;
+        }
+    };
+
+    return (
+        <InternalLinkButton
+            label={t("internal-link.show-in-catalog-records")}
+            link={getLink()}
+            openInNewTab={openInNewTab}
+        />
+    );
+};
+
 const ShowInCategories: React.FC<ItemInternalLinkButtonProps> = ({
     category,
     digitizationList,
@@ -114,6 +139,7 @@ const ShowInCategories: React.FC<ItemInternalLinkButtonProps> = ({
     );
 };
 
+InternalLinkButton.ShowInCatalogRecords = ShowInCatalogRecords;
 InternalLinkButton.ShowInCategories = ShowInCategories;
 InternalLinkButton.ShowInDocuments = ShowInDocuments;
 

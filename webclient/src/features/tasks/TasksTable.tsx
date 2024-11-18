@@ -184,7 +184,7 @@ const TaskItems: React.FC<TaskItemsProps> = ({ task }) => {
     const [pageSize, setPageSize] = useState<number>(20);
 
     useEffect(() => {
-        getTaskItems(task.id, page, 20)
+        getTaskItems(task.id, page, pageSize)
             .then((taskItemsPage) => {
                 // setItems(taskItemsPage.items);
                 setItemsCount(taskItemsPage.num_found);

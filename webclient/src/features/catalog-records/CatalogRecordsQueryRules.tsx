@@ -8,6 +8,7 @@ import EsSortBy from "../../components/elasticsearch/EsSortBy";
 import EsQueryRulesLayout from "../../components/layouts/EsQueryRulesLayout";
 import SkcRecordFlagTag from "../../components/tags/SkcRecordFlagTag";
 import CnbRecordFlagTag from "../../components/tags/CnbRecordFlagTag";
+import EsIdFacet from "../../components/elasticsearch/filters/EsIdFacet";
 
 interface CatalogRecordsFacetsBarProps {}
 
@@ -78,6 +79,7 @@ const CatalogRecordsFacetsBar: React.FC<CatalogRecordsFacetsBarProps> = () => {
                         showMore
                         limit={5}
                     />
+                    <EsIdFacet attribute="id" label={t("facets.id")} />
                     <EsBooleanFacet
                         attribute="has_documents"
                         label={t("facets.has-documents")}

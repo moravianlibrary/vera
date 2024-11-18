@@ -13,7 +13,8 @@
     },
     "internal-link": {
         "show-in-documents": "Zobrazit v dokumentech",
-        "show-in-categories": "Zobrazit v kategoriích"
+        "show-in-categories": "Zobrazit v kategoriích",
+        "show-in-catalog-records": "Zobrazit v katalogových záznamech"
     },
     "developer-tools": {
         "label": "Vývojářské nástroje",
