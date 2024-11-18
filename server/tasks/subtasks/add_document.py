@@ -244,7 +244,7 @@ class AddDocumentsProcessor:
                 AlephToResponseStatusConverter[aleph_response_status],
             )
 
-        catalog_record, aleph_response_status = create_catalog_record(
+        catalog_record = create_catalog_record(
             self.session, self.es_session, mzk_record
         )
         return catalog_record, AlephToResponseStatusConverter.get(

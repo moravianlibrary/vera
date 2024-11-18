@@ -112,7 +112,7 @@ const AddDocumentsFiles: React.FC<AddDocumentsFilesProps> = ({
             value={attributes}
             scrollable
             // scrollHeight="flex"
-            scrollHeight="calc(100vh - 610px)"
+            scrollHeight="calc(100vh - 650px)"
             showHeaders={false}
             footer={
                 <div className="flex gap-1 justify-content-between">

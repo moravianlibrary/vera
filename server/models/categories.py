@@ -7,6 +7,7 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     UniqueConstraint,
     String,
+    func,
 )
 from sqlalchemy.orm import Mapped, relationship, Session, Query
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -86,14 +87,15 @@ class Category(BaseModel):
         departments_ids.extend(self.parent_category.predecessors_departments)
         return departments_ids
 
-    @hybrid_property
-    def total_pages(self) -> int:
-        return sum(
-            document.pages_count
-            for document in self.documents
-            if document.pages_count is not None
+    def total_pages(self, db_session: Session) -> int:
+        return (
+            db_session.query(func.sum(Document.pages_count))
+            .filter(Document.category_id == self.id)
+            .scalar()
+            or 0
         ) + sum(
-            sub_category.total_pages for sub_category in self.sub_categories
+            sub_category.total_pages(db_session)
+            for sub_category in self.sub_categories
         )
 
     @hybrid_property
@@ -103,41 +105,25 @@ class Category(BaseModel):
             for sub_category in self.sub_categories
         )
 
-    @hybrid_property
-    def documents_with_pages(self) -> int:
-        return sum(
-            1 for document in self.documents if not document.pages_count
+    def extractable_pages(self, db_session: Session) -> int:
+        return (
+            db_session.query(func.sum(Document.pages_count))
+            .filter(Document.category_id == self.id, Document.is_extractable)
+            .scalar()
+            or 0
         ) + sum(
-            sub_category.documents_with_pages
+            sub_category.extractable_pages(db_session)
             for sub_category in self.sub_categories
         )
 
-    @hybrid_property
-    def documents_without_cnb(self) -> int:
-        return sum(
-            1 for document in self.documents if not document.pages_count
+    def extractable_documents(self, db_session: Session) -> int:
+        return (
+            db_session.query(func.count(Document.id))
+            .filter(Document.category_id == self.id, Document.is_extractable)
+            .scalar()
+            or 0
         ) + sum(
-            sub_category.documents_without_cnb
-            for sub_category in self.sub_categories
-        )
-
-    @hybrid_property
-    def extractable_pages(self) -> int:
-        return sum(
-            document.pages_count
-            for document in self.documents
-            if document.is_extractable
-        ) + sum(
-            sub_category.extractable_pages
-            for sub_category in self.sub_categories
-        )
-
-    @hybrid_property
-    def extractable_documents(self) -> int:
-        return sum(
-            1 for document in self.documents if document.is_extractable
-        ) + sum(
-            sub_category.extractable_documents
+            sub_category.extractable_documents(db_session)
             for sub_category in self.sub_categories
         )
 
@@ -209,7 +195,7 @@ class Category(BaseModel):
             raise UniqueCategoryNameViolationException()
 
     def validate_before_delete(self, session: Session) -> "Category":
-        if self.total_pages > 0:
+        if self.total_pages(session) > 0:
             raise NonEmptyCategoryDeletionException()
         if (
             sum(distribution.percentage for distribution in self.distributions)
@@ -333,8 +319,7 @@ class Distribution(BaseModel):
             2,
         )
 
-    @hybrid_property
-    def pages_needed_to_meet_intention(self):
+    def pages_needed_to_meet_intention(self, db_session: Session) -> int:
         if self.intention.classification == IntentionClassification.Previous:
             return 0
 
@@ -345,7 +330,7 @@ class Distribution(BaseModel):
         if self.intention.classification == IntentionClassification.Upcoming:
             return pages_needed + self.previous_pages_needed
 
-        return pages_needed - self.category.extractable_pages
+        return pages_needed - self.category.extractable_pages(db_session)
 
     @hybrid_property
     def previous_pages_needed(self) -> int:

@@ -10,6 +10,7 @@ from datatypes import ActionType
 from .utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
 
 from .mappers.categories import (
+    map_to_category_with_sub_categories,
     map_to_category_distribution,
     map_to_category_extraction,
     map_to_category_digitization,
@@ -57,7 +58,7 @@ def create_root_category(
 ):
     created_category = category.load_to_model(Category()).save(db)
     created_category.save_departments(db, category.departments)
-    return created_category
+    return map_to_category_with_sub_categories(db, created_category)
 
 
 @router.post(
@@ -74,7 +75,7 @@ def create_sub_category(
     OwnershipValidator.EnforceCategoryEdit(current_user, category_id, db)
     created_category = category.load_to_model(Category(), category_id).save(db)
     created_category.save_departments(db, category.departments)
-    return created_category
+    return map_to_category_with_sub_categories(db, created_category)
 
 
 @router.put(
@@ -89,7 +90,9 @@ def update_category(
     db: Session = DependsOnDbSession,
 ):
     OwnershipValidator.EnforceCategoryEdit(current_user, category_id, db)
-    return category.load_to_model(Category.get(db, category_id)).save(db)
+    return map_to_category_with_sub_categories(
+        db, category.load_to_model(Category.get(db, category_id)).save(db)
+    )
 
 
 @router.put(
@@ -107,6 +110,7 @@ def update_root_distribution(
     )
     return [
         map_to_category_distribution(
+            db,
             distribution.load_to_model(
                 Distribution(), distribution_list.intention_id
             )
@@ -136,6 +140,7 @@ def update_sub_distribution(
     )
     return [
         map_to_category_distribution(
+            db,
             (
                 distribution.load_to_model(
                     Distribution(), distribution_list.intention_id
@@ -175,7 +180,9 @@ def delete_category(
     db: Session = DependsOnDbSession,
 ):
     OwnershipValidator.EnforceCategoryEdit(current_user, category_id, db)
-    return Category.get(db, category_id).delete(db)
+    return map_to_category_with_sub_categories(
+        db, Category.get(db, category_id).delete(db)
+    )
 
 
 @router.get(
@@ -186,7 +193,10 @@ def delete_category(
 def get_categories(
     db: Session = DependsOnDbSession,
 ):
-    return db.query(Category).filter_by(parent_id=None).all()
+    return [
+        map_to_category_with_sub_categories(db, category)
+        for category in Category.get_categories(db)
+    ]
 
 
 @router.get(
@@ -199,7 +209,7 @@ def get_categories_by_intention(
     db: Session = DependsOnDbSession,
 ):
     return [
-        map_to_category_distribution(category, intention_id)
+        map_to_category_distribution(db, category, intention_id)
         for category in Category.get_categories(db)
     ]
 
@@ -217,6 +227,7 @@ def get_categories_by_extraction(
     extraction = Extraction.get(db, digitization_list_id)
     return [
         map_to_category_extraction(
+            db,
             category,
             intention_id,
             extraction,
@@ -246,6 +257,7 @@ def get_categories_by_digitization(
         ]
     return [
         map_to_category_digitization(
+            db,
             category,
             intention_id,
             digitization_ids,
@@ -265,7 +277,10 @@ def get_department_categories(
     db: Session = DependsOnDbSession,
 ):
     OwnershipValidator.EnforceCategoryRead(current_user, department_id, db)
-    return Category.get_department_categories(department_id, db)
+    return [
+        map_to_category_with_sub_categories(db, category)
+        for category in Category.get_department_categories(department_id, db)
+    ]
 
 
 @router.get(
@@ -279,7 +294,7 @@ def get_department_categories_by_intention(
     db: Session = DependsOnDbSession,
 ):
     return [
-        map_to_category_distribution(category, intention_id)
+        map_to_category_distribution(db, category, intention_id)
         for category in (Category.get_department_categories(department_id, db))
     ]
 
@@ -299,6 +314,7 @@ def get_department_categories_by_extraction(
     extraction = Extraction.get(db, digitization_list_id)
     return [
         map_to_category_extraction(
+            db,
             category,
             intention_id,
             extraction,
@@ -330,6 +346,7 @@ def get_department_categories_by_digitization(
         ]
     return [
         map_to_category_digitization(
+            db,
             category,
             intention_id,
             digitization_ids,

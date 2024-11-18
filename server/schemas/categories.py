@@ -45,9 +45,6 @@ class CategoryResponse(CategoryCreate):
     total_pages: int
     total_documents: int
 
-    documents_with_pages: int
-    documents_without_cnb: int
-
     extractable_pages: int
     extractable_documents: int
 

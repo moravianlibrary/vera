@@ -1,9 +1,12 @@
 from typing import List
 from models import Extraction, Category
 from schemas import CategoryResponse
+from sqlalchemy.orm import Session
 
 
-def map_to_category(category: Category):
+def map_to_category(
+    db_session: Session, category: Category
+) -> CategoryResponse:
     return CategoryResponse(
         id=category.id,
         name=category.name,
@@ -15,25 +18,37 @@ def map_to_category(category: Category):
         disabled=category.disabled,
         departments=category.departments,
         predecessors_departments=category.predecessors_departments,
-        total_pages=category.total_pages,
+        total_pages=category.total_pages(db_session),
         total_documents=category.total_documents,
-        documents_with_pages=category.documents_with_pages,
-        documents_without_cnb=category.documents_without_cnb,
-        extractable_pages=category.extractable_pages,
-        extractable_documents=category.extractable_documents,
+        extractable_pages=category.extractable_pages(db_session),
+        extractable_documents=category.extractable_documents(db_session),
         sub_categories=[],
     )
 
 
-def map_to_category_distribution(
-    category: Category, intention_id: int
+def map_to_category_with_sub_categories(
+    db_session: Session, category: Category
 ) -> CategoryResponse:
     sub_categories: List[CategoryResponse] = [
-        map_to_category_distribution(sub_category, intention_id)
+        map_to_category_with_sub_categories(db_session, sub_category)
         for sub_category in category.sub_categories
     ]
 
-    category_schema = map_to_category(category)
+    category_schema: CategoryResponse = map_to_category(db_session, category)
+    category_schema.sub_categories = sub_categories
+
+    return category_schema
+
+
+def map_to_category_distribution(
+    db_session: Session, category: Category, intention_id: int
+) -> CategoryResponse:
+    sub_categories: List[CategoryResponse] = [
+        map_to_category_distribution(db_session, sub_category, intention_id)
+        for sub_category in category.sub_categories
+    ]
+
+    category_schema: CategoryResponse = map_to_category(db_session, category)
     category_schema.sub_categories = sub_categories
 
     distribution = category.find_distribution(intention_id)
@@ -42,19 +57,22 @@ def map_to_category_distribution(
         category_schema.percentage = distribution.percentage
         category_schema.overall_percentage = distribution.overall_percentage
         category_schema.pages_needed_to_meet_intention = (
-            distribution.pages_needed_to_meet_intention
+            distribution.pages_needed_to_meet_intention(db_session)
         )
 
     return category_schema
 
 
 def map_to_category_extraction(
+    db_session: Session,
     category: Category,
     intention_id: int,
     extraction: Extraction,
 ) -> CategoryResponse:
     sub_categories: List[CategoryResponse] = [
-        map_to_category_extraction(sub_category, intention_id, extraction)
+        map_to_category_extraction(
+            db_session, sub_category, intention_id, extraction
+        )
         for sub_category in category.sub_categories
     ]
 
@@ -72,7 +90,7 @@ def map_to_category_extraction(
         if sub_category.extracted_documents
     )
 
-    category_schema = map_to_category(category)
+    category_schema: CategoryResponse = map_to_category(db_session, category)
     category_schema.sub_categories = sub_categories
 
     distribution = category.find_distribution(intention_id)
@@ -81,7 +99,7 @@ def map_to_category_extraction(
         category_schema.percentage = distribution.percentage
         category_schema.overall_percentage = distribution.overall_percentage
         category_schema.pages_needed_to_meet_intention = (
-            distribution.pages_needed_to_meet_intention
+            distribution.pages_needed_to_meet_intention(db_session)
         )
 
     category_schema.digitization_list_id = extraction.id
@@ -92,13 +110,14 @@ def map_to_category_extraction(
 
 
 def map_to_category_digitization(
+    db_session: Session,
     category: Category,
     intention_id: int,
     digitization_ids: List[int],
 ) -> CategoryResponse:
     sub_categories: List[CategoryResponse] = [
         map_to_category_digitization(
-            sub_category, intention_id, digitization_ids
+            db_session, sub_category, intention_id, digitization_ids
         )
         for sub_category in category.sub_categories
     ]
@@ -117,7 +136,7 @@ def map_to_category_digitization(
         if sub_category.digitized_documents
     )
 
-    category_schema = map_to_category(category)
+    category_schema: CategoryResponse = map_to_category(db_session, category)
     category_schema.sub_categories = sub_categories
 
     distribution = category.find_distribution(intention_id)
@@ -126,7 +145,7 @@ def map_to_category_digitization(
         category_schema.percentage = distribution.percentage
         category_schema.overall_percentage = distribution.overall_percentage
         category_schema.pages_needed_to_meet_intention = (
-            distribution.pages_needed_to_meet_intention
+            distribution.pages_needed_to_meet_intention(db_session)
         )
 
     category_schema.digitization_ids = digitization_ids
