@@ -244,12 +244,17 @@ class AddDocumentsProcessor:
                 AlephToResponseStatusConverter[aleph_response_status],
             )
 
-        catalog_record = create_catalog_record(
-            self.session, self.es_session, mzk_record
-        )
-        return catalog_record, AlephToResponseStatusConverter.get(
-            aleph_response_status
-        )
+        catalog_record = CatalogRecord.find(self.session, mzk_record.sysno)
+
+        if catalog_record is not None:
+            update_catalog_record(
+                self.session, self.es_session, catalog_record, mzk_record
+            )
+        else:
+            catalog_record = create_catalog_record(
+                self.session, self.es_session, mzk_record
+            )
+        return catalog_record, AlephResponseStatus.Success
 
     def create_document(
         self,

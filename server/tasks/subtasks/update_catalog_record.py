@@ -11,11 +11,16 @@ from schemas import EsSession, IndexCatalogRecord
 
 
 def update_catalog_record(
-    session: Session, es_session: EsSession, catalog_record: CatalogRecord
+    session: Session,
+    es_session: EsSession,
+    catalog_record: CatalogRecord,
+    mzk_record: AlephMzkRecord | None = None,
 ) -> CatalogRecord:
-    sysno_split = catalog_record.sysno.split("-")
-    mzk_record, _ = get_mzk_client().get_record(sysno_split[0], sysno_split[1])
-    mzk_record: AlephMzkRecord
+    if mzk_record is None:
+        sysno_split = catalog_record.sysno.split("-")
+        mzk_record, _ = get_mzk_client().get_record(
+            sysno_split[0], sysno_split[1]
+        )
 
     if mzk_record is None:
         raise Exception(f"MZK record {catalog_record.sysno} not found")

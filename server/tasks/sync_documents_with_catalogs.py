@@ -21,7 +21,7 @@ def SyncDocumentsWithCatalogs(
 
         if document.sysno not in updated_records_sysno:
             catalog_record, aleph_response_status = update_catalog_record(
-                session, es_session, document.sysno
+                session, es_session, CatalogRecord.get(session, document.sysno)
             )
 
             if aleph_response_status != AlephResponseStatus.Success:

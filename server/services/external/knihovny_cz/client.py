@@ -1,4 +1,5 @@
 import requests
+from time import sleep
 from typing import List, Optional
 from .record import KnihovnyCzRecord
 from .types import KnihovnyCzField, LibraryPrefix
@@ -26,6 +27,7 @@ class KnihovnyCzClient:
         library: LibraryPrefix,
         sysno: str,
         fields: List[KnihovnyCzField] = [],
+        retry: int = 0,
     ) -> Optional[KnihovnyCzRecord]:
         url = GET_RECORD_ENDPOINT.format(
             KNIHOVNY_CZ_URL=KNIHOVNY_CZ_URL, SYSNO=f"{library.value}.{sysno}"
@@ -34,6 +36,11 @@ class KnihovnyCzClient:
             url += f"&field%5B%5D={field.value}"
 
         response = self.session.get(url)
+
+        if response.status_code == 503 and retry < 3:
+            sleep((retry + 1) ** 2)
+            return self.get_record(library, sysno, fields, retry + 1)
+
         response.raise_for_status()
 
         records = response.json()["records"]

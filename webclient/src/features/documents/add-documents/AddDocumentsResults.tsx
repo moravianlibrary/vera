@@ -1,33 +1,33 @@
-import React, { useEffect, useState } from "react";
+import { MessageSeverity } from "primereact/api";
 import { Button } from "primereact/button";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
+import { Message } from "primereact/message";
+import { ProgressSpinner } from "primereact/progressspinner";
+import { Tag } from "primereact/tag";
+import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import {
+    AddDocumentResponse,
+    CatalogIssueResponse,
+} from "../../../adapters/ApiDocuments";
+import ExternalLinkButton from "../../../components/buttons/ExternalLinkButton";
+import InternalLinkButton from "../../../components/buttons/InternalLinkButton";
+import NumberEditor from "../../../components/editors/NumberEditor";
+import DigitizationStateTag from "../../../components/tags/DigitizationStateTag";
+import IssuanceTypeTag from "../../../components/tags/IssuanceTypeTag";
+import MaterialTypeTag from "../../../components/tags/MaterialTypeTag";
+import DataTablePaginator from "../../../components/views/DataTablePaginator";
+import LabeledComponent from "../../../components/wrappers/LabeledComponent";
 import { useAddDocuments } from "../../../contexts/AddDocumentsContext";
+import { formatDatetime } from "../../../data/factories/DateFactory";
 import AddDocumentResponseStatus, {
     AddDocumentResponseErrorStatus,
     AddDocumentResponseInfoStatus,
     AddDocumentResponseSuccessStatus,
     AddDocumentResponseWarningStatus,
 } from "../../../types/AddDocumentResponseStatus";
-import {
-    AddDocumentResponse,
-    CatalogIssueResponse,
-} from "../../../adapters/ApiDocuments";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import { useTranslation } from "react-i18next";
-import { Message } from "primereact/message";
-import { MessageSeverity } from "primereact/api";
-import IssuanceTypeTag from "../../../components/tags/IssuanceTypeTag";
-import DigitizationStateTag from "../../../components/tags/DigitizationStateTag";
-import ExternalLinkButton from "../../../components/buttons/ExternalLinkButton";
-import LabeledComponent from "../../../components/wrappers/LabeledComponent";
-import MaterialTypeTag from "../../../components/tags/MaterialTypeTag";
-import { Tag } from "primereact/tag";
-import InternalLinkButton from "../../../components/buttons/InternalLinkButton";
 import { DigitizationState } from "../../../types/DigitizationState";
-import { formatDatetime } from "../../../data/factories/DateFactory";
-import { ProgressSpinner } from "primereact/progressspinner";
-import DataTablePaginator from "../../../components/views/DataTablePaginator";
-import NumberEditor from "../../../components/editors/NumberEditor";
 
 interface AddDocumentsResultsProps {}
 
@@ -218,7 +218,9 @@ const StatusResults: React.FC = () => {
         if (!issue.can_digitize) {
             return (
                 <Tag
-                    value={t("issues-states.digitization-forbidden")}
+                    value={t("issues-states.digitization-forbidden", {
+                        ns: "types",
+                    })}
                     className="digitization-forbidden"
                 />
             );
