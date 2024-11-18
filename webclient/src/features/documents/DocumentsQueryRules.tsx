@@ -56,6 +56,7 @@ const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                     <EsDocumentFlagFacet
                         attribute="document_flags"
                         label={t("facets.document-flags")}
+                        operator="and"
                     />
                     <EsDigitizationStateFacet
                         attribute="digitization_state"

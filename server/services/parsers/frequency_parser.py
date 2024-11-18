@@ -86,7 +86,17 @@ def parse_year(year_issued: str) -> int:
     raise ValueError(f"Could not parse publishing year '{year_issued}'.")
 
 
-def parse_frequency(year_issued: str, frequencies: List[Frequency]) -> int:
+def parse_frequency(
+    year_issued: str | None, frequencies: List[Frequency]
+) -> int:
+    if year_issued is None:
+        without_date = [f for f in frequencies if f.date is None]
+        return (
+            parse_frequency_to_x(without_date[0].frequency)
+            if without_date
+            else 0
+        )
+
     match = re.match(VOLUME_RANGE, year_issued)
     if match:
         result = parse_frequency_for_year(match.group(1), frequencies)

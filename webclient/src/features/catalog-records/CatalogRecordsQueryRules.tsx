@@ -42,6 +42,7 @@ const CatalogRecordsFacetsBar: React.FC<CatalogRecordsFacetsBarProps> = () => {
                         onDisplayLabel={(item) => (
                             <SkcRecordFlagTag value={item.value} />
                         )}
+                        operator="and"
                     />
                     <EsFacet
                         attribute="cnb_record_flags"
@@ -49,6 +50,7 @@ const CatalogRecordsFacetsBar: React.FC<CatalogRecordsFacetsBarProps> = () => {
                         onDisplayLabel={(item) => (
                             <CnbRecordFlagTag value={item.value} />
                         )}
+                        operator="and"
                     />
                     <EsMaterialTypeFacet
                         attribute="material_type"

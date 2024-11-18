@@ -11,14 +11,12 @@ class PredictPeriodicalsPageCount(BaseModel):
     publisher: str | None = None
     language: str | None = None
     region: str | None = None
-    keywords: str
+    keywords: str | None = None
 
     @classmethod
     def validate_field(
         cls, field_name: str, value: Any, expected_type: Type
     ) -> None:
-        if value is None:
-            raise ValueError(f"The field '{field_name}' must not be None.")
         if not isinstance(value, expected_type):
             raise TypeError(
                 f"The field '{field_name}' "
@@ -35,26 +33,30 @@ class PredictPeriodicalsPageCount(BaseModel):
 
         # Determine the volume year
         volume_year = aleph_issue.volume_year or aleph_issue.volume
-        try:
-            year = parse_year(volume_year)
-            cls.validate_field("year", year, int)
-        except ValueError:
-            year = None
+        year = None
+        if volume_year is not None:
+            try:
+                year = parse_year(volume_year)
+            except ValueError:
+                pass
+        cls.validate_field("year", year, int | None)
 
         # Validate frequency
         frequency = parse_frequency(volume_year, aleph_record.frequencies)
         cls.validate_field("frequency", frequency, int)
 
         # Validate other fields
-        cls.validate_field("publisher", aleph_record.publisher, str)
-        cls.validate_field("language", aleph_record.language, str)
-        cls.validate_field("region", aleph_record.publishing_place, str)
+        cls.validate_field("publisher", aleph_record.publisher, str | None)
+        cls.validate_field("language", aleph_record.language, str | None)
+        cls.validate_field("region", aleph_record.publishing_place, str | None)
 
         # Validate keywords
         cls.validate_field("keywords", aleph_record.keywords, list)
 
         # Join keywords into a string
-        keywords = ",".join(aleph_record.keywords)
+        keywords = (
+            ",".join(aleph_record.keywords) if aleph_record.keywords else None
+        )
 
         return cls(
             title=aleph_record.title,
