@@ -12,7 +12,7 @@ from models import (
     StartupTasks,
 )
 from datatypes import TaskState, TaskItemType
-from time import time
+from time import sleep
 from sqlalchemy.orm import Session
 from sqlalchemy import update, or_, text
 from sqlalchemy.exc import OperationalError
@@ -37,7 +37,7 @@ def check_connection():
                 f"Attempt {attempt + 1}/{retries}: "
                 f"Failed to connect to the database. Retrying."
             )
-            time.sleep(2**attempt)
+            sleep(2**attempt)
 
     return False
 

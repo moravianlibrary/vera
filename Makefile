@@ -9,7 +9,7 @@ TARGET_WORKER_IMAGE_TEMPLATE_NAME := mzk.cz/vera-worker
 TARGET_CLIENT_IMAGE_TEMPLATE_NAME := mzk.cz/vera-client
 
 create-env:
-	python -m venv server/.venv && source server/.venv/bin/activate && pip install -r server/requirements_server.txt
+	cd server/ && python -m venv .venv && source .venv/bin/activate && pip install -r requirements_server.txt
 
 rm-env:
 	rm -r server/.venv/

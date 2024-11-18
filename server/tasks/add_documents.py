@@ -38,7 +38,9 @@ def add_documents(
             response.document = document
             response.status = status
         except Exception as e:
-            logger.error(f"Failed to add document due to error: {e}")
+            logger.error(
+                f"Failed to add document due to error: {e}", exc_info=True
+            )
             response.status = AddDocumentResponseStatus.InternalError
         finally:
             response.indexed_at = VeraConfig.Timestamp.isoformat()

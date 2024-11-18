@@ -1,5 +1,5 @@
 import logging
-from celery import Celery
+from celery import Celery, signals
 from os import path
 from sys import path as sys_path
 from models.base_engine import DatabaseUrl, get_session
@@ -9,6 +9,7 @@ from models import Task, PeriodicTask
 from tasks import TaskDispatcher, add_documents
 import redis
 from contextlib import contextmanager
+from vera_scheduler import vera_scheduler
 
 
 sys_path.append(path.abspath("/app"))
@@ -31,6 +32,11 @@ celery_worker = Celery(
 redis_client = redis.Redis(
     host=VeraConfig.Broker.Host, port=VeraConfig.Broker.Port
 )
+
+
+@signals.worker_process_init.connect
+def worker_startup(**kwargs):
+    vera_scheduler.start()
 
 
 @celery_worker.task

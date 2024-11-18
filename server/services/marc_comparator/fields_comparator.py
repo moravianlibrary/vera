@@ -52,6 +52,8 @@ class MarcFieldsComparator:
                             code=subfield.code, value=subfield.value
                         )
                         for subfield in field1
+                        if not self.subfield_codes
+                        or subfield.code in self.subfield_codes
                     ],
                 )
             )
@@ -65,6 +67,8 @@ class MarcFieldsComparator:
                             code=subfield.code, different_to=subfield.value
                         )
                         for subfield in field2
+                        if not self.subfield_codes
+                        or subfield.code in self.subfield_codes
                     ],
                 )
             )
@@ -179,6 +183,18 @@ class MarcFieldsComparator:
     ) -> List[MarcFieldDifference]:
         fields1 = record1.get_fields(self.field_tag)
         fields2 = record2.get_fields(self.field_tag)
+
+        if self.subfield_codes:
+            fields1 = [
+                field
+                for field in fields1
+                if field.get_subfields(*self.subfield_codes)
+            ]
+            fields2 = [
+                field
+                for field in fields2
+                if field.get_subfields(*self.subfield_codes)
+            ]
 
         if len(fields1) == 1 and len(fields2) == 1:
             return self.evaluate_single_field(fields1[0], fields2[0])

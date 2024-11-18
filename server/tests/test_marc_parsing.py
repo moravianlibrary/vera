@@ -14,6 +14,7 @@ from services.marc_comparator import (
     MarcFieldDifference,
     MarcFieldDifferenceType,
     MarcSubfieldDifference,
+    MarcFieldsComparator,
 )
 from pymarc import Field, Record, Subfield
 from typing import Optional
@@ -387,4 +388,59 @@ class TestNormalizedTextDataComparator(TestCase):
         # Act and Assert
         self.assertEqual(
             MzkSkcRecordsComparator.evaluate(record1, record2), []
+        )
+
+
+class TestSpecificCodesComparator(TestCase):
+    def test_020_equal_ignoring_q_codes(self):
+        # Arrange
+        comparator = MarcFieldsComparator(
+            "020", subfield_codes=["a"], ignore_equals=True
+        )
+
+        record1 = Record()
+        record1.add_field(
+            Field(tag="020", subfields=[Subfield(code="q", value="123")])
+        )
+        record2 = Record()
+
+        # Act
+        diffs = comparator.evaluate(record1, record2)
+
+        # Arrange
+        self.assertEqual(diffs, [])
+
+    def test_020_missing_ignoring_q_codes(self):
+        # Arrange
+        comparator = MarcFieldsComparator(
+            "020", subfield_codes=["a"], ignore_equals=True
+        )
+
+        record1 = Record()
+        record1.add_field(
+            Field(
+                tag="020",
+                subfields=[
+                    Subfield(code="a", value="isbn"),
+                    Subfield(code="q", value="123"),
+                ],
+            )
+        )
+        record2 = Record()
+
+        # Act
+        diffs = comparator.evaluate(record1, record2)
+
+        # Arrange
+        self.assertEqual(
+            diffs,
+            [
+                MarcFieldDifference(
+                    tag="020",
+                    difference_type="ExtraField",
+                    subfield_differences=[
+                        MarcSubfieldDifference(code="a", value="isbn")
+                    ],
+                )
+            ],
         )
