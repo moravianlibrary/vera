@@ -1,8 +1,21 @@
-import React, { createContext, useContext, ReactNode, useRef } from "react";
+import React, {
+    createContext,
+    useContext,
+    ReactNode,
+    useRef,
+    useEffect,
+    useState,
+} from "react";
 import { ActionSeverity } from "../types/PrimeReactTypes";
 import { Toast } from "primereact/toast";
 import { useTranslation } from "react-i18next";
 import { confirmDialog } from "primereact/confirmdialog";
+import { useAccess } from "./AccessContext";
+import { Dialog } from "primereact/dialog";
+import Markdown from "react-markdown";
+import { RENDERERS } from "../pages/Home";
+import { Button } from "primereact/button";
+import InternalLinkButton from "../components/buttons/InternalLinkButton";
 
 interface NotificationContextProps {
     showToast: (
@@ -30,11 +43,17 @@ interface NotificationProviderProps {
     children: ReactNode;
 }
 
+const LATEST_VERSION_MD = `${process.env.PUBLIC_URL}/wiki/cs/Version_2024_11.md`;
+
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     children,
 }) => {
     const { t } = useTranslation("notifications");
     const toast = useRef(null);
+    const { currentUser, getSettings, updateSettings } = useAccess();
+
+    const [notificationContent, setNotificationContent] =
+        useState<React.ReactNode | null>(null);
 
     const showToast = (
         severity: ActionSeverity,
@@ -90,6 +109,21 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         });
     };
 
+    useEffect(() => {
+        const loadVersionNotification = async () => {
+            const response = await fetch(LATEST_VERSION_MD);
+            const md = await response.text();
+            setNotificationContent(
+                <Markdown components={RENDERERS}>{md}</Markdown>
+            );
+        };
+
+        if (currentUser && getSettings("newVersion") === true) {
+            updateSettings("newVersion", false);
+            loadVersionNotification();
+        }
+    }, [getSettings, updateSettings, currentUser]);
+
     const contextValue: NotificationContextProps = {
         showToast,
         showSuccess,
@@ -102,6 +136,41 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     return (
         <NotificationContext.Provider value={contextValue}>
             {children}
+            {notificationContent && (
+                <Dialog
+                    visible={notificationContent !== null}
+                    onHide={() => setNotificationContent(null)}
+                    header={
+                        <div className="flex justify-content-center align-items-center gap-2">
+                            <span className="text-6xl">{t("new-version")}</span>
+                            <div>
+                                <img
+                                    src={`${process.env.PUBLIC_URL}/partyy.png`}
+                                    alt="Partyy"
+                                />
+                                <img
+                                    src={`${process.env.PUBLIC_URL}/partyy.png`}
+                                    alt="Partyy"
+                                />
+                            </div>
+                        </div>
+                    }
+                    footer={
+                        <div className="flex justify-content-start">
+                            <Button
+                                className="p-2 text-blue-600"
+                                text
+                                label={t("learn-more")}
+                                icon="pi pi-external-link"
+                                iconPos="right"
+                                onClick={() => window.open("/")}
+                            />
+                        </div>
+                    }
+                >
+                    {notificationContent}
+                </Dialog>
+            )}
             <Toast
                 className="mt-6 max-w-screen w-auto"
                 ref={toast}

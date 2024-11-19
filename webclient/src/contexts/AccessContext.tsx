@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActionType } from "../types/ActionType";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
@@ -11,6 +11,7 @@ import { DigitizationList } from "../adapters/ApiDigitizationLists";
 import { Extraction } from "../adapters/ApiExtractions";
 import { Task } from "../adapters/ApiTasks";
 import { useNotification } from "./NotificationContext";
+import { Toast } from "primereact/toast";
 
 type OwnedItem =
     | Category
@@ -48,10 +49,10 @@ export const AccessProvider: React.FC<BaseProviderProps> = ({ children }) => {
     const api = new ApiUsers();
 
     const { t } = useTranslation("app");
-    const { showFailure } = useNotification();
     const [currentUser, setCurrentUser] = useState<CurrentUser | undefined>(
         undefined
     );
+    const toast = useRef<Toast>(null);
 
     const login = () => {
         if (keycloak && !keycloak.authenticated) {
@@ -123,10 +124,20 @@ export const AccessProvider: React.FC<BaseProviderProps> = ({ children }) => {
             setCurrentUser(undefined);
             if (error.response && error.response.status === 401) {
                 if (error.response.data?.detail !== null) {
-                    showFailure(t(error.response.data.detail));
+                    (toast.current as Toast).show({
+                        severity: "error",
+                        summary: t(error.response.data.detail),
+                        life: 5000,
+                        sticky: false,
+                    });
                 }
             } else if (error.code === "ERR_NETWORK") {
-                showFailure(t("app-not-available"));
+                (toast.current as Toast).show({
+                    severity: "error",
+                    summary: t("app-not-available"),
+                    life: 5000,
+                    sticky: false,
+                });
             }
         }
     };
@@ -226,6 +237,11 @@ export const AccessProvider: React.FC<BaseProviderProps> = ({ children }) => {
         >
             <AccessContext.Provider value={contextValue}>
                 {children}
+                <Toast
+                    className="mt-6 max-w-screen w-auto"
+                    ref={toast}
+                    position="top-center"
+                />
             </AccessContext.Provider>
         </ReactKeycloakProvider>
     );

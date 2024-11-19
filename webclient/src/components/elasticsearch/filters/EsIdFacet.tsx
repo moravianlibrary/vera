@@ -17,7 +17,6 @@ const EsIdFacet: React.FC<EsFacetProps> = ({ label, ...restOfProps }) => {
 
     const handleCancelFilter = () => {
         refine(items.find((item) => item.isRefined).value);
-        console.log("refine", items.find((item) => item.isRefined).value);
     };
 
     if (!Array.isArray(items) || !isActive) return null;

@@ -17,6 +17,21 @@ interface WikiSection {
 
 const language = "cs";
 
+const RENDERERS = {
+    a: ({ href, children }) => (
+        <a href={href} target="_blank" rel="noopener noreferrer">
+            {children}
+        </a>
+    ),
+    img: ({ src, alt }) => (
+        <img
+            src={`${process.env.PUBLIC_URL}/wiki/${language}/${src}`}
+            alt={alt}
+            style={{ display: "block" }}
+        />
+    ),
+};
+
 const Wiki: React.FC = () => {
     const [pages, setPages] = useState<Record<string, string>>({});
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -43,7 +58,6 @@ const Wiki: React.FC = () => {
             `${process.env.PUBLIC_URL}/wiki/${language}/layout.json`
         );
         const layout: WikiSection[] = await response.json();
-        console.log(layout);
 
         const pages: Record<string, string> = {};
 
@@ -79,6 +93,7 @@ const Wiki: React.FC = () => {
             )
         );
         setPages(pages);
+        setCurrentPath([layout[0].label]);
     };
 
     useEffect(() => {
@@ -95,27 +110,12 @@ const Wiki: React.FC = () => {
         command: () => setCurrentPath(currentPath.slice(0, index + 1)),
     }));
 
-    const renderers = {
-        a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer">
-                {children}
-            </a>
-        ),
-        img: ({ src, alt }) => (
-            <img
-                src={`${process.env.PUBLIC_URL}/wiki/${language}/${src}`}
-                alt={alt}
-                style={{ display: "block" }}
-            />
-        ),
-    };
-
     return (
         <div className="iwiki">
             <BreadCrumb className="bread-crumb" model={breadcrumbItems} />
             <PanelMenu className="panel-menu" model={menuItems} multiple />
             <div className="content">
-                <Markdown components={renderers}>{currentContent}</Markdown>
+                <Markdown components={RENDERERS}>{currentContent}</Markdown>
             </div>
         </div>
     );
@@ -130,3 +130,4 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+export { RENDERERS };

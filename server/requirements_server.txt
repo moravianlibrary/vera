@@ -20,4 +20,4 @@ scipy
 sqlalchemy
 typing-extensions==4.8.0
 uvicorn
-./mzk_libs/aleph
+mzk_aleph

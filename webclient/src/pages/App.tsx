@@ -95,7 +95,7 @@ function Routing() {
 function App() {
     return (
         <WithProviders
-            providers={[AccessProvider, ToastProvider, NotificationProvider]}
+            providers={[ToastProvider, NotificationProvider, AccessProvider]}
         >
             <StrictMode>
                 <Router>
