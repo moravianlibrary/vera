@@ -20,11 +20,14 @@ nkp_z3950_session = None
 def _close_mzk_sessions():
     global mzk_oai_session, mzk_x_session
 
-    mzk_oai_session.close()
-    mzk_oai_session = None
-
-    mzk_x_session.close()
-    mzk_x_session = None
+    try:
+        mzk_oai_session.close()
+        mzk_x_session.close()
+    except Exception:
+        pass
+    finally:
+        mzk_oai_session = None
+        mzk_x_session = None
 
 
 def _reset_mzk_sessions_ttl():
@@ -34,7 +37,7 @@ def _reset_mzk_sessions_ttl():
             run_date=VeraConfig.Timestamp
             + timedelta(seconds=VeraConfig.AlephMzk.TTL)
         ),
-        name="close_mzk_sessions",
+        id="close_mzk_sessions",
         replace_existing=True,
     )
 
@@ -51,8 +54,12 @@ def _create_mzk_sessions():
 def _close_nkp_session():
     global nkp_z3950_session
 
-    nkp_z3950_session.close()
-    nkp_z3950_session = None
+    try:
+        nkp_z3950_session.close()
+    except Exception:
+        pass
+    finally:
+        nkp_z3950_session = None
 
 
 def _reset_nkp_session_ttl():
@@ -62,7 +69,7 @@ def _reset_nkp_session_ttl():
             run_date=VeraConfig.Timestamp
             + timedelta(seconds=VeraConfig.AlephMzk.TTL)
         ),
-        name="close_nkp_session",
+        id="close_nkp_session",
         replace_existing=True,
     )
 
