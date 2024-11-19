@@ -35,6 +35,7 @@ def _reset_mzk_sessions_ttl():
             + timedelta(seconds=VeraConfig.AlephMzk.TTL)
         ),
         name="close_mzk_sessions",
+        replace_existing=True,
     )
 
 
@@ -62,6 +63,7 @@ def _reset_nkp_session_ttl():
             + timedelta(seconds=VeraConfig.AlephMzk.TTL)
         ),
         name="close_nkp_session",
+        replace_existing=True,
     )
 
 
