@@ -6,118 +6,94 @@ import { PanelMenu } from "primereact/panelmenu";
 import { MenuItem } from "primereact/menuitem";
 
 interface WikiPage {
-    name: string;
-    sub_pages: string[];
-    prev_page?: string;
+    label: string;
     content: string;
 }
 
+interface WikiSection {
+    label: string;
+    children: (WikiPage | WikiSection)[];
+}
+
 const language = "cs";
-const homePageName = "Home";
 
 const Wiki: React.FC = () => {
-    const [pages, setPages] = useState<Record<string, WikiPage>>({});
+    const [pages, setPages] = useState<Record<string, string>>({});
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-    const [currentPath, setCurrentPath] = useState<string[]>([homePageName]);
+    const [currentPath, setCurrentPath] = useState<string[]>([]);
     const [currentContent, setCurrentContent] = useState<string>("");
 
-    const fetchWikiPage = async (
+    const fetchWikiPageContent = async (
         language: string,
-        wikiPage: string
-    ): Promise<WikiPage | null> => {
+        content: string
+    ): Promise<string | null> => {
         try {
             const response = await fetch(
-                `${process.env.PUBLIC_URL}/wiki/${language}/${wikiPage}.mdw`
+                `${process.env.PUBLIC_URL}/wiki/${language}/${content}`
             );
-            const mdwContent = await response.text();
-
-            const pageAttributesMatch =
-                mdwContent.match(/---\n([\s\S]*?)\n---/);
-            const pageAttributes = pageAttributesMatch
-                ? pageAttributesMatch[1]
-                : "";
-
-            const nameMatch = pageAttributes.match(/name:\s*(.+)/);
-            const subPagesMatch = [
-                ...pageAttributes.matchAll(/sub-page:\s*(.+)/g),
-            ];
-
-            const name = nameMatch ? nameMatch[1].trim() : wikiPage;
-            const sub_pages = subPagesMatch.map((match) => match[1].trim());
-
-            const content = mdwContent.replace(/---\n[\s\S]*?\n---/, "").trim();
-
-            return { name, sub_pages, content };
+            return await response.text();
         } catch (error) {
             console.error("Error fetching Markdown:", error);
             return null;
         }
     };
 
-    const loadAllPages = async (wikiPage: string) => {
-        const pagesToLoad: Record<string, WikiPage> = {};
+    const fetchWikiLayout = async (language: string) => {
+        const response = await fetch(
+            `${process.env.PUBLIC_URL}/wiki/${language}/layout.json`
+        );
+        const layout: WikiSection[] = await response.json();
+        console.log(layout);
 
-        const fetchPageAndSubPages = async (
-            pageKey: string,
-            pagePath: string[]
-        ) => {
-            const page = await fetchWikiPage(language, pageKey);
+        const pages: Record<string, string> = {};
 
-            pagesToLoad[pageKey] = page;
-
-            const menuItems: MenuItem[] =
-                page.sub_pages.length > 0
-                    ? [
-                          {
-                              label: page.name,
-                              command: () =>
-                                  setCurrentPath([...pagePath, pageKey]),
-                          },
-                      ]
-                    : [];
-
-            for (const subPage of page.sub_pages) {
-                if (!pagesToLoad[subPage] && !pages[subPage]) {
-                    menuItems.push(
-                        await fetchPageAndSubPages(subPage, [
-                            ...pagePath,
-                            pageKey,
-                        ])
-                    );
-                }
+        const transformSection = async (
+            section: WikiSection | WikiPage,
+            path: string[] = []
+        ): Promise<MenuItem> => {
+            if ("children" in section) {
+                return {
+                    label: section.label,
+                    items: await Promise.all(
+                        section.children.map((child) =>
+                            transformSection(child, [...path, section.label])
+                        )
+                    ),
+                };
             }
 
-            return menuItems.length > 0
-                ? { label: page.name, items: menuItems }
-                : {
-                      label: page.name,
-                      command: () => setCurrentPath([...pagePath, pageKey]),
-                  };
+            const currentPath = [...path, section.label];
+            pages[currentPath.join("/")] = await fetchWikiPageContent(
+                language,
+                section.content
+            );
+            return {
+                label: section.label,
+                command: () => setCurrentPath(currentPath),
+            };
         };
 
-        const menuItems = await fetchPageAndSubPages(wikiPage, []);
-
-        setPages(pagesToLoad);
-        setMenuItems(menuItems.items! as MenuItem[]);
+        setMenuItems(
+            await Promise.all(
+                layout.map((section) => transformSection(section))
+            )
+        );
+        setPages(pages);
     };
 
     useEffect(() => {
-        loadAllPages(homePageName);
-    }, [homePageName]);
+        fetchWikiLayout(language);
+    }, [language]);
 
     useEffect(() => {
-        const currentPageName = currentPath[currentPath.length - 1];
-        setCurrentContent(pages[currentPageName]?.content || "");
+        setCurrentContent(pages[currentPath.join("/")]);
     }, [currentPath, pages]);
 
-    const breadcrumbItems = currentPath.slice(1).map((pageName, index) => ({
-        label: pages[pageName]?.name || pageName,
+    const breadcrumbItems = currentPath.map((pageName, index) => ({
+        label: pageName,
+        icon: "pi pi-home",
         command: () => setCurrentPath(currentPath.slice(0, index + 1)),
     }));
-    const home = {
-        icon: "pi pi-home",
-        command: () => setCurrentPath([homePageName]),
-    };
 
     const renderers = {
         a: ({ href, children }) => (
@@ -136,11 +112,7 @@ const Wiki: React.FC = () => {
 
     return (
         <div className="iwiki">
-            <BreadCrumb
-                className="bread-crumb"
-                model={breadcrumbItems}
-                home={home}
-            />
+            <BreadCrumb className="bread-crumb" model={breadcrumbItems} />
             <PanelMenu className="panel-menu" model={menuItems} multiple />
             <div className="content">
                 <Markdown components={renderers}>{currentContent}</Markdown>

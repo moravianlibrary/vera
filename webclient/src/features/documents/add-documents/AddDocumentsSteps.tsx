@@ -21,7 +21,7 @@ const AddDocumentsSteps: React.FC<AddDocumentsStepsProps> = ({
     onHide,
 }) => {
     const { t } = useTranslation("documents");
-    const { settings, removeResults, numFoundAll, numProcessed } =
+    const { settings, saveSettings, removeResults, numFoundAll, numProcessed } =
         useAddDocuments();
 
     const [step, setStep] = useState<number>(0);
@@ -32,6 +32,11 @@ const AddDocumentsSteps: React.FC<AddDocumentsStepsProps> = ({
             setStep(initStep);
         }
     }, []);
+
+    const onSecondStep = () => {
+        saveSettings();
+        stepperRef?.current?.nextCallback();
+    };
 
     const onRestart = () => {
         removeResults();
@@ -60,9 +65,7 @@ const AddDocumentsSteps: React.FC<AddDocumentsStepsProps> = ({
                                 iconPos="right"
                                 outlined
                                 label={t("add.next-step")}
-                                onClick={() =>
-                                    stepperRef?.current?.nextCallback()
-                                }
+                                onClick={onSecondStep}
                                 requiredValues={[settings.categoryId]}
                             />
                         </div>
