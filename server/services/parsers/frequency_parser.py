@@ -3,6 +3,8 @@ from typing import List, Optional
 from schemas import Frequency
 
 
+DEFAULT_FREQUENCY = 6
+
 VOLUME_YEAR = r"^\s*(\d{4})\s*$"
 VOLUME_RANGE = r"^\s*(\d{4})-(\d{4})?\s*$"
 
@@ -109,7 +111,7 @@ def parse_frequency(
         if result is not None:
             return parse_frequency_to_x(result)
 
-    return 0
+    return DEFAULT_FREQUENCY
 
 
 def parse_frequency_for_year(

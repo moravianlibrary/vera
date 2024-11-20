@@ -4,14 +4,19 @@ from mzk_aleph import AlephMzkRecord, AlephMzkIssue
 from typing import Any, Type
 
 
+DEFAULT_YEAR = 1976
+DEFAULT_LANGUAGE = "cze"
+MISSING_VALUE = "missing"
+
+
 class PredictPeriodicalsPageCount(BaseModel):
     title: str
     year: int | None = None
     frequency: int
-    publisher: str | None = None
-    language: str | None = None
-    region: str | None = None
-    keywords: str | None = None
+    publisher: str
+    language: str
+    region: str
+    keywords: str
 
     @classmethod
     def validate_field(
@@ -60,10 +65,10 @@ class PredictPeriodicalsPageCount(BaseModel):
 
         return cls(
             title=aleph_record.title,
-            year=year,
+            year=year or DEFAULT_YEAR,
             frequency=frequency,
-            publisher=aleph_record.publisher,
-            language=aleph_record.language,
-            region=aleph_record.publishing_place,
-            keywords=keywords,
+            publisher=aleph_record.publisher or MISSING_VALUE,
+            language=aleph_record.language or DEFAULT_LANGUAGE,
+            region=aleph_record.publishing_place or MISSING_VALUE,
+            keywords=keywords or MISSING_VALUE,
         )

@@ -32,7 +32,7 @@ class Predictor:
         response = requests.post(
             f"{self.url}/{PREDICT_PERIODICAL_PAGE_COUNT_ENDPOINT}",
             json=body,
-            timeout=1,
+            timeout=VeraConfig.RequestTimeout,
         )
         if response.status_code != 200:
             raise Exception(response.json()["detail"])
