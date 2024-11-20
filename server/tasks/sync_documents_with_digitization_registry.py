@@ -5,12 +5,14 @@ from tasks.run_items_processing import run_items_processing_task
 from services.external.digitization_registry import (
     DigitizationRegistryClient,
 )
-from schemas import IndexDocument
-from services.elasticsearch import get_es_session
+from schemas import IndexDocument, EsSession
+from services.elasticsearch import with_es_session
 
 
-def SyncDocumentsWithDigitizationRegistry(session: Session, task_id: int):
-    es_session = next(get_es_session())
+@with_es_session
+def SyncDocumentsWithDigitizationRegistry(
+    es_session: EsSession, session: Session, task_id: int
+):
     client = DigitizationRegistryClient()
 
     def update_document_from_digitization_registry(
