@@ -43,6 +43,10 @@ def SyncDocumentsWithDigitizationRegistry(
         if not record:
             document.digitization_registry_id = None
             document.digitization_state = DigitizationState.NotDigitized
+        elif record.digitization_state == DigitizationState.Unknown:
+            raise Exception(
+                f"Digitization record with id {record.id} has unknown state"
+            )
         else:
             document.digitization_registry_id = record.id
             document.digitization_state = record.digitization_state
