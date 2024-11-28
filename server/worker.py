@@ -102,25 +102,18 @@ def run_task(task_id: int):
 @contextmanager
 def one_at_a_time_lock(
     lock_name: str,
-    timeout: int | None = 10,
-    blocking_timeout: int | None = None,
+    blocking_timeout: int | None = 30,
 ):
-    lock = Lock(
-        redis_client,
-        lock_name,
-        timeout=timeout,
-        blocking=True,
-        blocking_timeout=blocking_timeout,
-    )
+    lock = Lock(redis_client, lock_name)
     if lock.acquire(blocking=True, blocking_timeout=blocking_timeout):
-        logger.debug(f"Lock '{lock_name}' acquired.")
+        logger.info(f"Lock '{lock_name}' acquired.")
         try:
             yield True
         finally:
             lock.release()
-            logger.debug(f"Lock '{lock_name}' released.")
+            logger.info(f"Lock '{lock_name}' released.")
     else:
-        logger.debug(f"Lock '{lock_name}' could not be acquired.")
+        logger.info(f"Lock '{lock_name}' could not be acquired.")
         yield False
 
 
