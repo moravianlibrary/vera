@@ -8,6 +8,7 @@ from config import VeraConfig
 from models import Task, PeriodicTask
 from tasks import TaskDispatcher, add_documents
 import redis
+from redis.lock import Lock
 from contextlib import contextmanager
 from vera_scheduler import vera_scheduler
 
@@ -34,7 +35,7 @@ redis_client = redis.Redis(
 )
 
 
-@signals.worker_process_init.connect
+@signals.worker_init.connect
 def worker_startup(**kwargs):
     vera_scheduler.start()
 
@@ -99,19 +100,32 @@ def run_task(task_id: int):
 
 
 @contextmanager
-def redis_lock(lock_name):
-    """
-    Yield 1 if specified lock_name is not already set in redis.
-    Otherwise returns 0.
-    """
-    status = redis_client.set(lock_name, "lock", nx=True)
-    try:
-        yield status
-    finally:
-        redis_client.delete(lock_name)
+def one_at_a_time_lock(
+    lock_name: str,
+    timeout: int | None = 10,
+    blocking_timeout: int | None = None,
+):
+    lock = Lock(
+        redis_client,
+        lock_name,
+        timeout=timeout,
+        blocking=True,
+        blocking_timeout=blocking_timeout,
+    )
+    if lock.acquire(blocking=True, blocking_timeout=blocking_timeout):
+        logger.debug(f"Lock '{lock_name}' acquired.")
+        try:
+            yield True
+        finally:
+            lock.release()
+            logger.debug(f"Lock '{lock_name}' released.")
+    else:
+        logger.debug(f"Lock '{lock_name}' could not be acquired.")
+        yield False
 
 
 @celery_worker.task
 def run_add_documents():
-    with redis_lock("my_lock_name") as acquired:
-        add_documents()
+    with one_at_a_time_lock("add_documents") as acquired:
+        if acquired:
+            add_documents()

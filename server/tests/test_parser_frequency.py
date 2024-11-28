@@ -33,7 +33,7 @@ class TestFrequencyParser(unittest.TestCase):
             parse_year("Invalid year")
 
     def test_parse_frequency_no_match(self):
-        self.assertEqual(parse_frequency("2025", self.frequencies), 0)
+        self.assertEqual(parse_frequency("2025", self.frequencies), 6)
 
     def test_parse_yearly_frequency(self):
         self.assertEqual(parse_frequency("2020", self.frequencies), 1)

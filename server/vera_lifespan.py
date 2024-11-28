@@ -20,7 +20,7 @@ from config import VeraConfig
 from worker import run_task
 from vera_scheduler import vera_scheduler
 from schemas import AddDocumentResponse, EsSession
-from services.elasticsearch import with_es_session
+from services.elasticsearch import with_es_session, is_indexer_available
 
 
 logger = logging.getLogger("uvicorn")
@@ -36,6 +36,20 @@ def check_connection():
             logger.error(
                 f"Attempt {attempt + 1}/{retries}: "
                 f"Failed to connect to the database. Retrying."
+            )
+            sleep(2**attempt)
+
+    return False
+
+
+def check_index_connection(retries: int = 5):
+    for attempt in range(retries):
+        if is_indexer_available():
+            return True
+        else:
+            logger.error(
+                f"Attempt {attempt + 1}/{retries}: "
+                f"Failed to connect to the index. Retrying."
             )
             sleep(2**attempt)
 
@@ -163,6 +177,12 @@ async def lifespan(app_: FastAPI):
         logger.info("Database connection failed. Exiting.")
         return
     logger.info("Database connection successfully established.")
+
+    logger.info("Checking index connection.")
+    if not check_index_connection():
+        logger.info("Index connection failed. Exiting.")
+        return
+    logger.info("Index connection successfully established.")
 
     ensure_last_database_revision()
 

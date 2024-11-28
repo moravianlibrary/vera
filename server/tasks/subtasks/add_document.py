@@ -204,13 +204,6 @@ class AddDocumentsProcessor:
         identifier_type: IdentifierType,
         value: str,
     ) -> Tuple[Optional[CatalogRecord], AddDocumentResponseStatus]:
-        mzk_client = get_mzk_client()
-
-        if identifier_type == IdentifierType.Sysno:
-            parsed_sysno = mzk_client.parse_sysno(value)
-            if parsed_sysno is not None:
-                value = parsed_sysno
-
         catalog_record = CatalogRecord.find_by_identifier(
             self.session, identifier_type, value
         )
