@@ -3,7 +3,6 @@ from models import CatalogRecord, TaskItem, Document
 from .subtasks import update_catalog_record
 from mzk_aleph import AlephMzkRecord
 from mzk_aleph import AlephMzkIssue
-from mzk_aleph import AlephResponseStatus
 from schemas import IndexDocument, EsSession
 from services.elasticsearch import with_es_session
 from .run_items_processing import run_items_processing_task
@@ -20,15 +19,9 @@ def SyncDocumentsWithCatalogs(
         document: Document
 
         if document.sysno not in updated_records_sysno:
-            catalog_record, aleph_response_status = update_catalog_record(
+            catalog_record = update_catalog_record(
                 session, es_session, CatalogRecord.get(session, document.sysno)
             )
-
-            if aleph_response_status != AlephResponseStatus.Success:
-                raise Exception(
-                    f"Record with sysno {document.sysno} is not available "
-                    f"from mzk_aleph. Status: {aleph_response_status}."
-                )
 
             updated_records_sysno.add(document.sysno)
         else:
