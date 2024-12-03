@@ -35,7 +35,7 @@ redis_client = redis.Redis(
 )
 
 
-@signals.worker_init.connect
+@signals.celeryd_init.connect
 def worker_startup(**kwargs):
     vera_scheduler.start()
 

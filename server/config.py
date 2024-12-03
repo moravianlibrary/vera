@@ -26,7 +26,7 @@ class VeraConfig:
 
     @staticproperty
     def TimeZone() -> tzinfo:
-        return pytz.timezone("UTC")
+        return pytz.timezone(environ.get("TZ", "Europe/Prague"))
 
     @staticproperty
     def Timestamp() -> datetime:
@@ -75,7 +75,7 @@ class VeraConfig:
 
         @staticproperty
         def TTL() -> int:
-            return int(environ.get("ALEPH_MZK_TTL", "300"))
+            return int(environ.get("ALEPH_MZK_TTL", "30"))
 
     class AlephNkp:
         @staticproperty
@@ -92,7 +92,7 @@ class VeraConfig:
 
         @staticproperty
         def TTL() -> int:
-            return int(environ.get("ALEPH_NKP_TTL", "300"))
+            return int(environ.get("ALEPH_NKP_TTL", "30"))
 
     class Broker:
         @staticproperty
