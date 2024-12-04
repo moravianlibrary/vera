@@ -46,7 +46,7 @@ const catalog_records_index_settings = {
     ],
     highlight_attributes: ["id"],
     sorting: {
-        catalog_records: [{ field: "indexed_at", order: "desc" }],
+        catalog_records: [{ field: "updated_at", order: "desc" }],
         _newest: { field: "added_at", order: "desc" },
         _oldest: { field: "added_at", order: "asc" },
     },

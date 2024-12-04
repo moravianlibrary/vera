@@ -13,6 +13,7 @@ import DocumentDetailsColumnBody from "./table_columns/DocumentDetailsColumnBody
 import DocumentStateColumnBody from "./table_columns/DocumentFlagsColumnBody";
 import ExtractionPriorityColumnBody from "./table_columns/ExtractionPriorityColumnBody";
 import { useDocuments } from "../../contexts/DocumentsContext";
+import { formatDatetime } from "../../data/factories/DateFactory";
 
 interface DocumentsTableProps {}
 
@@ -79,6 +80,11 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
                 body={DocumentStateColumnBody}
             />
             <Column field="added_by" header={t("table.columns.added-by")} />
+            <Column
+                field="added_at"
+                header={t("table.columns.added-at")}
+                body={(data) => formatDatetime(data.added_at)}
+            />
 
             <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
         </DataTable>

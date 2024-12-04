@@ -25,20 +25,20 @@ const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                 <EsSortBy
                     items={[
                         {
-                            label: t("sort-by.last-edited"),
-                            value: "documents",
-                        },
-                        {
-                            label: t("sort-by.extraction-priority"),
-                            value: "documents_extraction_priority",
-                        },
-                        {
                             label: t("sort-by.newest"),
                             value: "documents_newest",
                         },
                         {
                             label: t("sort-by.oldest"),
                             value: "documents_oldest",
+                        },
+                        {
+                            label: t("sort-by.last-edited"),
+                            value: "documents_last_edited",
+                        },
+                        {
+                            label: t("sort-by.extraction-priority"),
+                            value: "documents_extraction_priority",
                         },
                         {
                             label: t("sort-by.title-asc"),
