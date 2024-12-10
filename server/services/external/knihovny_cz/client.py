@@ -41,6 +41,12 @@ class KnihovnyCzClient:
             sleep((retry + 1) ** 2)
             return self.get_record(library, sysno, fields, retry + 1)
 
+        if (
+            response.status_code == 400
+            and response.json()["statusMessage"] == "Error loading record"
+        ):
+            return None
+
         response.raise_for_status()
 
         records = response.json()["records"]
