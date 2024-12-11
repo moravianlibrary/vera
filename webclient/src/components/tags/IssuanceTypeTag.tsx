@@ -51,4 +51,9 @@ const IssuanceTypeTag: React.FC<IssuanceTypeTagProps> = ({
     }
 };
 
+const valueToIssuanceTypeTag = (value: string) => {
+    return <IssuanceTypeTag issuanceType={value as IssuanceType} />;
+};
+
 export default IssuanceTypeTag;
+export { valueToIssuanceTypeTag };

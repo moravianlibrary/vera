@@ -56,4 +56,9 @@ const MaterialTypeTag: React.FC<MaterialTypeTagProps> = ({ materialType }) => {
     }
 };
 
+const valueToMaterialTypeTag = (value: string) => {
+    return <MaterialTypeTag materialType={value as MaterialType} />;
+};
+
 export default MaterialTypeTag;
+export { valueToMaterialTypeTag };

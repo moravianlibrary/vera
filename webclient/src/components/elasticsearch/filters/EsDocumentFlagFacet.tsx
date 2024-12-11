@@ -15,4 +15,9 @@ const EsDocumentFlagFacet: React.FC<EsFacetProps> = (props) => {
     );
 };
 
+const valueToDocumentFlagTag = (value: string) => {
+    return <DocumentFlagTag flag={value as DocumentFlag} />;
+};
+
 export default EsDocumentFlagFacet;
+export { valueToDocumentFlagTag };

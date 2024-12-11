@@ -14,7 +14,6 @@ import { InstantSearch } from "react-instantsearch";
 import DataTableLayout from "../components/layouts/DataTableLayout";
 import WithProviders from "../components/wrappers/WithProviders";
 import { TasksProvider } from "../contexts/TasksContext";
-import { DocumentsProvider } from "../contexts/DocumentsContext";
 import {
     createInitState,
     routeToState,
@@ -23,6 +22,11 @@ import {
 import DocumentsDetails from "../features/documents/DocumentsDetails";
 import documents_index_settings from "../config/documents_index";
 import { AddDocumentsProvider } from "../contexts/AddDocumentsContext";
+import useNewDocuments, {
+    NewDocumentsProvider,
+} from "../contexts/DocumentsContext copy";
+import DataTablePaginator from "../components/layouts/DataTablePaginator";
+import { useTranslation } from "react-i18next";
 
 const Documents: React.FC = () => {
     const searchClient = Client(documentsIndex);
@@ -43,28 +47,43 @@ const Documents: React.FC = () => {
             }}
         >
             <TasksProvider>
-                <DocumentsProvider searchClient={searchClient}>
-                    <WithProviders
-                        providers={[
-                            AddDocumentsProvider,
-                            CategoriesProvider,
-                            LocationsProvider,
-                            GeneratedExtractionsProvider,
-                            DigitizationListsProvider,
-                            IntentionsProvider,
-                        ]}
-                    >
-                        <DataTableLayout
-                            header={<DocumentsHeader />}
-                            sidebar={<DocumentsQueryRules />}
-                            datatable={<DocumentsTable />}
-                            paginator={<DocumentsTable.Paginator />}
-                            dialog={<DocumentsDetails />}
-                        />
-                    </WithProviders>
-                </DocumentsProvider>
+                <WithProviders
+                    providers={[
+                        AddDocumentsProvider,
+                        CategoriesProvider,
+                        LocationsProvider,
+                        GeneratedExtractionsProvider,
+                        DigitizationListsProvider,
+                        IntentionsProvider,
+                        NewDocumentsProvider,
+                    ]}
+                >
+                    <DocumentsLayout />
+                </WithProviders>
             </TasksProvider>
         </InstantSearch>
+    );
+};
+
+const DocumentsLayout: React.FC = () => {
+    const { t } = useTranslation("documents");
+    const documentsProps = useNewDocuments();
+
+    return (
+        <DataTableLayout
+            // header={<DocumentsHeader />}
+            sidebar={<DocumentsQueryRules />}
+            datatable={<DocumentsTable />}
+            paginator={
+                <DataTablePaginator
+                    context={documentsProps}
+                    numFoundText={t("num-found", {
+                        count: documentsProps.numFound,
+                    })}
+                />
+            }
+            // dialog={<DocumentsDetails />}
+        />
     );
 };
 

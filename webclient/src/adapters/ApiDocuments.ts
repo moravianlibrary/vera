@@ -1,3 +1,4 @@
+import { EsSearchRequest, EsSearchResponse } from "../elasticsearch/Search";
 import AddDocumentResponseStatus from "../types/AddDocumentResponseStatus";
 import { DigitizationState } from "../types/DigitizationState";
 import DocumentFlag from "../types/DocumentFlag";
@@ -141,6 +142,15 @@ class ApiDocuments extends ApiBase<IndexDocument> {
             disableUpdate: true,
             disableGetPage: true,
         } as ApiOptions);
+    }
+
+    search(queryParams: EsSearchRequest) {
+        const url = "/documents/query";
+        return ApiBase.axiosInstance
+            .post<EsSearchResponse<IndexDocument>>(url, queryParams, {
+                headers: authHeader(),
+            })
+            .then((response) => response.data);
     }
 
     static queryDocuments(queryParams: Object) {

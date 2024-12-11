@@ -1,18 +1,13 @@
-import React, { Fragment } from "react";
-import EsBooleanFacet from "../../components/elasticsearch/filters/EsBooleanFacet";
-import EsDigitizationStateFacet from "../../components/elasticsearch/filters/EsDigitizationStateFacet";
-import EsFacet from "../../components/elasticsearch/filters/EsFacet";
-import EsCategoryFacet from "../../components/elasticsearch/filters/EsCategoryFacet";
-import EsDigitizationListFacet from "../../components/elasticsearch/filters/EsDigitizationListFacet";
-import EsRangeFacet from "../../components/elasticsearch/filters/EsRangeFacet";
-import EsMaterialTypeFacet from "../../components/elasticsearch/filters/EsMaterialTypeFacet";
-import EsIssuanceTypeFacet from "../../components/elasticsearch/filters/EsIssuanceTypeFacet";
-import EsQueryRulesLayout from "../../components/layouts/EsQueryRulesLayout";
+import React from "react";
 import EsSortBy from "../../components/elasticsearch/EsSortBy";
 import { useTranslation } from "react-i18next";
-import EsExtractionFacet from "../../components/elasticsearch/filters/EsExtractionsFacet";
-import EsDocumentFlagFacet from "../../components/elasticsearch/filters/EsDocumentFlagFacet";
-import EsNumberFacet from "../../components/elasticsearch/filters/EsNumberFacet";
+import { valueToDocumentFlagTag } from "../../components/elasticsearch/filters/EsDocumentFlagFacet";
+import useNewDocuments from "../../contexts/DocumentsContext copy";
+import { valueToIssuanceTypeTag } from "../../components/tags/IssuanceTypeTag";
+import { valueToMaterialTypeTag } from "../../components/tags/MaterialTypeTag";
+import { valueToDigitizationStateTag } from "../../components/tags/DigitizationStateTag";
+import DocumentFlag, { orderBy } from "../../types/DocumentFlag";
+import EsQueryRulesLayout from "../../components/layouts/EsQueryRulesLayout copy";
 
 interface DocumentsQueryRulesProps {}
 
@@ -21,6 +16,7 @@ const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
 
     return (
         <EsQueryRulesLayout
+            context={useNewDocuments()}
             sortBy={
                 <EsSortBy
                     items={[
@@ -51,87 +47,50 @@ const DocumentsQueryRules: React.FC<DocumentsQueryRulesProps> = () => {
                     ]}
                 />
             }
-            facets={
-                <Fragment>
-                    <EsDocumentFlagFacet
-                        attribute="document_flags"
-                        label={t("facets.document-flags")}
-                        operator="and"
-                    />
-                    <EsDigitizationStateFacet
-                        attribute="digitization_state"
-                        label={t("facets.digitization-state")}
-                    />
-                    <EsMaterialTypeFacet
-                        attribute="material_type"
-                        label={t("facets.material-type")}
-                    />
-                    <EsIssuanceTypeFacet
-                        attribute="issuance_type"
-                        label={t("facets.issuance-type")}
-                    />
-                    <EsFacet
-                        attribute="added_by"
-                        label={t("facets.added-by")}
-                    />
-                    <EsCategoryFacet
-                        attribute="category_ids"
-                        label={t("facets.category")}
-                        limit={100}
-                    />
-                    <EsExtractionFacet
-                        attribute="extraction_ids"
-                        label={t("facets.extraction")}
-                        sortBy={(a, b) =>
-                            b.name.localeCompare(a.name, undefined, {
-                                numeric: true,
-                                sensitivity: "base",
-                            })
-                        }
-                        showMore
-                        limit={5}
-                    />
-                    <EsDigitizationListFacet
-                        attribute="digitization_list_id"
-                        label={t("facets.digitization-list")}
-                        sortBy={(a, b) =>
-                            b.name.localeCompare(a.name, undefined, {
-                                numeric: true,
-                                sensitivity: "base",
-                            })
-                        }
-                        showMore
-                        limit={5}
-                    />
-                    <EsRangeFacet
-                        attribute="page_count"
-                        label={t("facets.page-count")}
-                    />
-                    <EsNumberFacet attribute="id" label={t("facets.id")} />
-                    {/* <EsRangeFacet
-                        attribute="volume_number"
-                        label="Volume Number"
-                    />
-                    <EsRangeFacet
-                        attribute="volume_year_number"
-                        label="Volume Year Number"
-                    />
-                    <EsRangeFacet attribute="bundle_number" label="Bundle" />
-                    <EsRangeFacet
-                        attribute="page_count_manual"
-                        label="Page Count"
-                    />
-                    <EsRangeFacet
-                        attribute="page_count_catalog"
-                        label="Page Count"
-                    />
-                    <EsRangeFacet
-                        attribute="page_count_predicted"
-                        label="Page Count"
-                    /> */}
-                </Fragment>
-            }
-            queryParamsIndexName="documents"
+            facetsProps={[
+                {
+                    field: "document_flags",
+                    operator: "and",
+                    label: t("facets.document-flags"),
+                    onDisplayLabel: valueToDocumentFlagTag,
+                    orderBy: (a, b) =>
+                        orderBy(a.key as DocumentFlag, b.key as DocumentFlag),
+                },
+                {
+                    field: "digitization_state",
+                    label: t("facets.digitization-state"),
+                    onDisplayLabel: valueToDigitizationStateTag,
+                },
+                {
+                    field: "material_type",
+                    label: t("facets.material-type"),
+                    onDisplayLabel: valueToMaterialTypeTag,
+                },
+                {
+                    field: "issuance_type",
+                    label: t("facets.issuance-type"),
+                    onDisplayLabel: valueToIssuanceTypeTag,
+                },
+                {
+                    field: "added_by",
+                    label: t("facets.added-by"),
+                },
+                {
+                    field: "category_ids",
+                    label: t("facets.category"),
+                    showLimit: 100,
+                },
+                {
+                    field: "extraction_ids",
+                    label: t("facets.extraction"),
+                    showLimit: 5,
+                },
+                {
+                    field: "digitization_list_id",
+                    label: t("facets.digitization-list"),
+                    showLimit: 5,
+                },
+            ]}
         />
     );
 };

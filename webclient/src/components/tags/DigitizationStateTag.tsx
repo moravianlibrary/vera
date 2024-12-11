@@ -24,4 +24,9 @@ const DigitizationStateTag: React.FC<DigitizationStateTagProps> = ({
     );
 };
 
+const valueToDigitizationStateTag = (value: string) => {
+    return <DigitizationStateTag state={value as DigitizationState} />;
+};
+
 export default DigitizationStateTag;
+export { valueToDigitizationStateTag };

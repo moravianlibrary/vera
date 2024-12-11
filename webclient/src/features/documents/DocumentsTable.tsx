@@ -14,6 +14,7 @@ import DocumentStateColumnBody from "./table_columns/DocumentFlagsColumnBody";
 import ExtractionPriorityColumnBody from "./table_columns/ExtractionPriorityColumnBody";
 import { useDocuments } from "../../contexts/DocumentsContext";
 import { formatDatetime } from "../../data/factories/DateFactory";
+import useNewDocuments from "../../contexts/DocumentsContext copy";
 
 interface DocumentsTableProps {}
 
@@ -21,8 +22,7 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
     Paginator: React.FC;
 } = ({}) => {
     const { t } = useTranslation("documents");
-    const { items, currentPageSelected, handleDataTableSelectionChange } =
-        useDocuments();
+    const { items } = useNewDocuments();
 
     return (
         <DataTable
@@ -30,9 +30,9 @@ const DocumentsTable: React.FC<DocumentsTableProps> & {
             scrollable
             scrollHeight="flex"
             dataKey={"id"}
-            selectionMode="checkbox"
-            selection={currentPageSelected}
-            onSelectionChange={handleDataTableSelectionChange}
+            // selectionMode="checkbox"
+            // selection={currentPageSelected}
+            // onSelectionChange={handleDataTableSelectionChange}
             onMouseDownCapture={(e) => {
                 e.stopPropagation();
             }}
