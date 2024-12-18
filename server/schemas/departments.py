@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List
 from models import Department
+from .base_es_model import BaseEsModel, Integer, Keyword
 
 
 class DepartmentCreate(BaseModel):
@@ -19,3 +20,10 @@ class DepartmentResponse(DepartmentCreate):
         from_attributes = True
 
     id: int
+
+
+class IndexDepartment(BaseEsModel):
+    id: Integer
+    name: Keyword
+    abbreviation: Keyword
+    usernames: List[Keyword]

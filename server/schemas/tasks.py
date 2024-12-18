@@ -9,6 +9,7 @@ from datatypes import (
     TaskItemType,
     ElasticsearchParams,
 )
+from .base_es_model import BaseEsModel, Integer, Keyword, Date, Boolean, Text
 
 
 # Dataset schema
@@ -78,3 +79,31 @@ class PeriodicTaskResponse(BaseModel):
     class Config:
         arbitrary_types_allowed = True
         from_attributes = True
+
+
+class IndexTask(BaseEsModel):
+    id: Integer
+    task_type: TaskType
+
+    owner: Keyword
+
+    query_params: Optional[ElasticsearchParams]
+
+    task_state: TaskState
+    planned: Date
+    started: Optional[Date]
+    finished: Optional[Date]
+
+    total_items: Integer = 0
+    has_dataset: Boolean = False
+    stacktrace: Optional[Text]
+
+
+class IndexTaskItem(BaseEsModel):
+    item_id: Keyword
+    item_type: TaskItemType
+    deleted: Boolean
+
+    processed: Boolean = False
+    error_type: Optional[TaskItemErrorType] = None
+    error_message: Optional[str] = None

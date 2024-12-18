@@ -8,7 +8,9 @@ from typing import TypeVar, Union, get_origin, get_args
 type EsSession = Elasticsearch
 
 type Keyword = str
+type Text = str
 type Integer = int
+type Float = float
 type Boolean = bool
 type Date = str
 T = TypeVar("T")

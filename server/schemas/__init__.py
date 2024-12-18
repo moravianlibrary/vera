@@ -1,14 +1,7 @@
 from .roles import RoleCreate, RoleResponse, ActionList
-from .locations import (
-    LibraryCreate,
-    LibraryResponse,
-    StorageCreate,
-    StorageResponse,
-    LocationCreate,
-    LocationResponse,
-)
+from .locations import LocationCreate, IndexLocation
 from .departments import DepartmentCreate, DepartmentResponse
-from .intentions import IntentionCreate, IntentionResponse
+from .intentions import IntentionCreate, IntentionResponse, IndexIntention
 from .extractions import (
     ExtractionDocument,
     GenerateExtraction,
@@ -102,4 +95,6 @@ __all__ = [
     "AddDocumentResponse",
     "IdentifierWithAttributes",
     "Frequency",
+    "IndexIntention",
+    "IndexLocation",
 ]

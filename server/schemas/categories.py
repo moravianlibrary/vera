@@ -6,6 +6,8 @@ from pydantic import (
 )
 from typing import List, Optional, Set
 from models import Category, Distribution
+from .base_es_model import BaseEsModel, Keyword, Integer, Text, Boolean
+from .departments import IndexDepartment
 
 from services.exceptions import (
     InvalidDistributionSumException,
@@ -60,6 +62,23 @@ class CategoryResponse(CategoryCreate):
     digitization_ids: Optional[List[int]] = None
     digitized_pages: Optional[int] = None
     digitized_documents: Optional[int] = None
+
+
+class IndexCategory(BaseEsModel):
+    __index_name__ = "categories"
+
+    id: Integer
+    name: Keyword
+    description: Optional[Text] = None
+
+    parent_id: Optional[Integer] = None
+    level: Integer
+
+    assignable: Boolean = False
+    disabled: Boolean = False
+
+    assigned_to_department: Optional[IndexDepartment] = None
+    assigned_to_user: Optional[Keyword] = None
 
 
 Categories = List[SerializeAsAny[CategoryResponse]]

@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Path, Query
+from fastapi import APIRouter, Path
 from sqlalchemy.orm import Session
-from typing import Optional
-from .utils.dependencies import DependsOnDbSession
+from .utils.dependencies import DependsOnDbSession, DependsOnEsSession
 from .utils.permissions import CanReadIntentions, CanManageIntentions
-from models import Distribution, Intention
-from schemas import IntentionCreate, IntentionResponse
-from typing import List
+from models import Intention, IntentionCategory
+from schemas import IntentionCreate, IntentionResponse, IndexIntention
+from datatypes import ElasticsearchParams
+from schemas import EsSession
 
 router = APIRouter(prefix="/intentions", tags=["Intentions"])
 
@@ -13,23 +13,30 @@ router = APIRouter(prefix="/intentions", tags=["Intentions"])
 @router.post(
     "",
     dependencies=[CanManageIntentions],
-    response_model=IntentionResponse,
 )
 def create_intention(
     intention: IntentionCreate,
-    copy_distribution_from: Optional[int] = Query(
-        None, alias="copyDistributionFrom"
-    ),
     session: Session = DependsOnDbSession,
 ):
-    if copy_distribution_from is None:
-        return Intention.create(intention, session)
-    copy_from_intention = Intention.get(copy_distribution_from, session)
-    intention = Intention.create(intention, session)
-    Distribution.copy_distributions(
-        copy_from_intention.id, intention.id, session
-    )
-    return intention
+    db_intention = Intention(
+        name=intention.name,
+        description=intention.description,
+        target_page_count=intention.target_page_count,
+        start_date=intention.start_date,
+        end_date=intention.end_date,
+    ).save(session)
+
+    for category_id in intention.associated_categories:
+        IntentionCategory(
+            intention_id=db_intention.id, category_id=category_id
+        ).save(session)
+
+    session.refresh(db_intention)
+
+    IndexIntention.model_validate(db_intention).save()
+
+    # TODO: return response
+    return
 
 
 @router.put(
@@ -40,25 +47,35 @@ def create_intention(
 def update_intention(
     intention: IntentionCreate,
     intention_id: int = Path(...),
-    copy_distribution_from: Optional[int] = Query(
-        None, alias="copyDistributionFrom"
-    ),
     session: Session = DependsOnDbSession,
 ):
-    if intention.end_date < intention.start_date:
-        date = intention.end_date
-        intention.end_date = intention.start_date
-        intention.start_date = date
+    db_intention = Intention.get(session, intention_id)
 
-    if copy_distribution_from is None:
-        return Intention.update(intention_id, intention, session)
+    db_intention.name = intention.name
+    db_intention.description = intention.description
+    db_intention.target_page_count = intention.target_page_count
+    db_intention.start_date = intention.start_date
+    db_intention.end_date = intention.end_date
 
-    copy_from_intention = Intention.get(copy_distribution_from, session)
-    intention = Intention.update(intention_id, intention, session)
-    Distribution.copy_distributions(
-        copy_from_intention.id, intention.id, session
-    )
-    return intention
+    db_intention.save(session)
+
+    old_categories = {
+        category.category_id for category in db_intention.associated_categories
+    }
+    new_categories = set(intention.associated_categories)
+
+    for category_id in old_categories - new_categories:
+        IntentionCategory.get(session, (intention_id, category_id)).delete(
+            session
+        )
+
+    for category_id in new_categories - old_categories:
+        IntentionCategory(
+            intention_id=intention_id,
+            category_id=category_id,
+        ).save(session)
+
+    # TODO: update other fields
 
 
 @router.delete(
@@ -73,23 +90,11 @@ def delete_intention(
 
 
 @router.get(
-    "",
+    "/search",
     dependencies=[CanReadIntentions],
-    response_model=List[IntentionResponse],
 )
 def get_intentions(
-    session: Session = DependsOnDbSession,
+    query_params: ElasticsearchParams,
+    es_session: EsSession = DependsOnEsSession,
 ):
-    return Intention.all(session)
-
-
-@router.get(
-    "/{intention_id}",
-    dependencies=[CanReadIntentions],
-    response_model=IntentionResponse,
-)
-def get_intention(
-    intention_id: int = Path(...),
-    session: Session = DependsOnDbSession,
-):
-    return Intention.get(session, intention_id)
+    return IndexIntention.search(es_session, query_params)

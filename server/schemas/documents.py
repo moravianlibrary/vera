@@ -58,6 +58,11 @@ def DocumentFlagsDispatcher(document: Document) -> List[str]:
     return flags
 
 
+class IndexDocumentIntention(BaseEsModel):
+    id: Integer
+    name: Keyword
+
+
 class IndexDocument(BaseEsModel):
     __index_name__ = "documents"
     __index_version__ = "v2024.10-1"

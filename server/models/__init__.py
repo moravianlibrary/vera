@@ -10,7 +10,7 @@ from .departments import Department
 from .digitization_lists import DigitizationList
 from .documents import Document, DocumentComment
 from .extractions import Extraction
-from .intentions import Intention
+from .intentions import Intention, IntentionCategory
 from .locations import Location, Library, Storage
 from .roles import Role
 from .tasks import Task, TaskDataset, TaskItem, PeriodicTask
@@ -45,4 +45,5 @@ __all__ = [
     "PeriodicTask",
     "User",
     "StartupTasks",
+    "IntentionCategory",
 ]
