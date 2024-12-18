@@ -14,8 +14,9 @@ type EsFacetOrder = { _key: "asc" | "desc" };
 
 interface EsFacetAttribute {
     field: string;
-    type: "string" | "boolean" | "numeric" | "nested";
+    type: "string" | "boolean" | "numeric" | "nested" | "object";
     limit?: number;
+    attributes?: string[];
     order?: EsFacetOrder;
 }
 

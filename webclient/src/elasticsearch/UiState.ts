@@ -1,3 +1,5 @@
+import { EsSort } from "./IndexSettings";
+
 type EsFacetValue = string | number | boolean;
 
 interface EsActiveFacet {
@@ -5,9 +7,16 @@ interface EsActiveFacet {
     value?: EsFacetValue | EsFacetValue[];
 }
 
-interface EsUiState {
+interface EsParamsState {
     query?: string;
+    queryExact?: boolean;
     activeFacets?: EsActiveFacet[];
 }
 
-export type { EsFacetValue, EsActiveFacet, EsUiState };
+interface EsUiState extends EsParamsState {
+    sort?: EsSort;
+    page: number;
+    pageSize: number;
+}
+
+export type { EsFacetValue, EsActiveFacet, EsParamsState, EsUiState };

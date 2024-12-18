@@ -1,4 +1,8 @@
-import { EsIndexSettings, EsSortOrder } from "./IndexSettings";
+import {
+    EsFacetAttribute,
+    EsIndexSettings,
+    EsSortOrder,
+} from "./IndexSettings";
 
 interface EsQuery {
     bool?: {
@@ -21,7 +25,10 @@ interface EsTermsAggregation {
 
 type EsAggregation =
     | { terms: EsTermsAggregation }
-    | { stats: { field: string } };
+    | { stats: { field: string } }
+    | { composite: any }
+    | { multi_terms: any }
+    | { nested: any; aggs: any };
 
 interface EsSearchRequest {
     index?: string;
@@ -81,14 +88,45 @@ interface EsSearchParams {
     query: EsQuery;
 }
 
-function buildSearchRequest(
+function buildRequest(
     indexSettings: EsIndexSettings,
-    query: EsQuery,
-    refinedFacets: Record<string, string[]>,
     page: number,
-    pageSize: number
+    pageSize: number,
+    refinedFacets?: Record<string, string[]>,
+    searchQuery?: string,
+    searchExact?: boolean,
+    facetAttributes?: EsFacetAttribute[]
 ) {
-    const currQuery = JSON.parse(JSON.stringify(query));
+    const query: EsQuery = { bool: {} };
+
+    // Add the `must` clause if there is a search query
+    if (searchQuery && indexSettings.search_attributes?.length > 0) {
+        const searchFields = indexSettings.search_attributes.map((attr) =>
+            typeof attr === "string" ? attr : `${attr.field}^${attr.weight}`
+        );
+
+        query.bool.must = searchExact
+            ? [
+                  {
+                      bool: {
+                          should: searchFields.map((field) => ({
+                              term: { [field]: searchQuery },
+                          })),
+                          minimum_should_match: 1,
+                      },
+                  },
+              ]
+            : [
+                  {
+                      multi_match: {
+                          query: searchQuery,
+                          fields: searchFields,
+                          fuzziness: "AUTO",
+                      },
+                  },
+              ];
+    }
+
     const facetFilters = Object.entries(refinedFacets)
         .filter(([, values]) => values.length > 0)
         .map(([key, values]) =>
@@ -99,48 +137,122 @@ function buildSearchRequest(
                           should: values.map((value) => ({
                               term: { [key]: value },
                           })),
+                          minimum_should_match: 1,
                       },
                   }
         );
 
-    if (!currQuery.bool) {
-        currQuery.bool = { filter: facetFilters, must: { match_all: {} } };
-    } else if (!currQuery.bool.filter && facetFilters.length > 0) {
-        currQuery.bool.filter = facetFilters;
-    } else if (facetFilters.length > 0) {
-        currQuery.bool.filter.concat(facetFilters);
+    // Add the `filter` clause if there are facet filters
+    if (facetFilters.length > 0) {
+        query.bool.filter = facetFilters;
     }
+
+    // Add a `match_all` clause if no `must` clause is defined
+    if (!query.bool.must) {
+        query.bool.must = [{ match_all: {} }];
+    }
+
+    // Build the aggregation section
+    const aggs = (facetAttributes || []).reduce((acc, facet) => {
+        if (facet.type === "string") {
+            acc[facet.field] = {
+                terms: { field: facet.field, order: facet.order },
+            };
+        } else if (facet.type === "numeric") {
+            acc[facet.field] = {
+                terms: { field: facet.field, order: facet.order },
+            };
+        } else if (facet.type === "nested") {
+            const fieldSplit = facet.field.split(".");
+            if (fieldSplit.length !== 2) {
+                throw new Error(
+                    "Nested fields must be in the form of `parent.nested_field`"
+                );
+            }
+            acc[facet.field] = {
+                nested: {
+                    path: fieldSplit[0],
+                },
+                aggs: {
+                    [fieldSplit[1]]: {
+                        terms: {
+                            field: facet.field,
+                            size: facet.limit,
+                        },
+                    },
+                },
+            };
+        } else if (facet.type === "object") {
+            acc[`${facet.field}_object`] = {
+                nested: {
+                    path: facet.field,
+                },
+                aggs: {
+                    categories: {
+                        composite: {
+                            size: facet.limit,
+                            sources: facet.attributes.map((attr) => ({
+                                [attr]: {
+                                    terms: {
+                                        field: `${facet.field}.${attr}`,
+                                    },
+                                },
+                            })),
+                        },
+                    },
+                },
+            };
+        }
+        return acc;
+    }, {} as Record<string, EsAggregation>);
 
     return {
         _source: { includes: indexSettings.result_attributes },
-        query: currQuery,
         from: (page - 1) * pageSize,
-        aggs: (indexSettings.facet_attributes || []).reduce((acc, facet) => {
-            if (facet.type === "string") {
-                acc[facet.field] = {
-                    terms: { field: facet.field, order: facet.order },
-                };
-            } else if (facet.type === "numeric") {
-                acc[facet.field] = {
-                    terms: { field: facet.field, order: facet.order },
-                };
-                // acc[facet.field] = { stats: { field: facet.field } };
-            }
-
-            return acc;
-        }, {} as Record<string, EsAggregation>),
         size: pageSize,
+        query,
+        aggs,
     };
+}
+
+function buildSearchRequest(
+    indexSettings: EsIndexSettings,
+    page: number,
+    pageSize: number,
+    refinedFacets?: Record<string, string[]>,
+    searchQuery?: string,
+    searchExact?: boolean
+) {
+    return buildRequest(
+        indexSettings,
+        page,
+        pageSize,
+        refinedFacets,
+        searchQuery,
+        searchExact,
+        indexSettings.facet_attributes.filter((f) => !refinedFacets[f.field])
+    );
 }
 
 function buildFacetsRequest(
     indexSettings: EsIndexSettings,
-    query: EsQuery,
     refinedFacets: Record<string, string[]>,
-    lastRefinedFacet: string
+    lastRefinedFacet: string,
+    searchQuery?: string,
+    searchExact?: boolean
 ) {
     const { [lastRefinedFacet]: _, ...facetsWithoutLast } = refinedFacets;
-    return buildSearchRequest(indexSettings, query, facetsWithoutLast, 0, 0);
+    return buildRequest(
+        indexSettings,
+        0,
+        0,
+        facetsWithoutLast,
+        searchQuery,
+        searchExact,
+        indexSettings.facet_attributes.filter(
+            (f) => f.field === lastRefinedFacet
+        )
+    );
 }
 
 function buildResponseFacets(
@@ -151,6 +263,7 @@ function buildResponseFacets(
         (acc, [facetName, facetData]) => {
             const refinedKeys = refinedFacets[facetName] || [];
 
+            if (!facetData.buckets) return acc;
             acc[facetName] = {
                 ...facetData,
                 buckets: facetData.buckets.map((bucket) => ({

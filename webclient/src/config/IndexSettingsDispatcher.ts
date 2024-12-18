@@ -98,8 +98,8 @@ const documentsIndexSettings: EsIndexSettings = {
             type: "string",
         },
         {
-            field: "category_ids",
-            type: "string",
+            field: "category_path.category_id",
+            type: "nested",
             limit: 100,
         },
         {

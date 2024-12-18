@@ -83,7 +83,7 @@ class IndexDocument(BaseEsModel):
     added_at: Date
     added_by: Keyword
     category_id: Integer
-    category_ids: List[Integer]
+    category_ids: List[Integer]  # Deprecated
     category_path: List[CategoryPath]
     document_flags: List[DocumentFlag]
     # Catalogs properties
