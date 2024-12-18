@@ -4,8 +4,11 @@ import {
     EsAggregation,
     EsFacets,
     EsQuery,
+    EsRefinedFacet,
     EsSearchRequest,
     EsSearchResponse,
+    buildFacetsRequest,
+    buildResponseFacets,
     buildSearchRequest,
 } from "./Search";
 
@@ -39,8 +42,6 @@ const DEFAULT_PAGE_SIZE_OPTIONS: EsPageSizeOption[] = [
     { value: 100, label: "100" },
 ];
 
-type EsRefinedFacet = Record<string, string[]>;
-
 const useElasticsearch = <T extends { id: string }>(
     indexSettings: EsIndexSettings,
     search: (queryParams: EsSearchRequest) => Promise<EsSearchResponse<T>>,
@@ -52,6 +53,7 @@ const useElasticsearch = <T extends { id: string }>(
     const [numFound, setNumFound] = useState(0);
     const [facets, setFacets] = useState<EsFacets>({});
     const [refinedFacets, setRefinedFacets] = useState<EsRefinedFacet>({});
+    const [lastRefinedFacet, setLastRefinedFacet] = useState<string>(undefined);
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(20);
     const [query, setQuery] = useState<EsQuery>(defaultQuery);
@@ -63,7 +65,9 @@ const useElasticsearch = <T extends { id: string }>(
         search(searchRequest).then((response) => {
             setItems(response.hits.hits.map((hit) => hit._source));
             setNumFound(response.hits.total.value);
-            setFacets(response.aggregations || {});
+            setFacets(
+                buildResponseFacets(response.aggregations || {}, refinedFacets)
+            );
         });
     };
 
@@ -82,6 +86,7 @@ const useElasticsearch = <T extends { id: string }>(
             } else {
                 updatedFacets[facet] = [...updatedFacets[facet], value];
             }
+            setLastRefinedFacet(facet);
 
             return updatedFacets;
         });
@@ -97,16 +102,38 @@ const useElasticsearch = <T extends { id: string }>(
     };
 
     useEffect(() => {
-        setSearchRequest(
-            buildSearchRequest(
+        const searchRequest = buildSearchRequest(
+            indexSettings,
+            query,
+            refinedFacets,
+            page,
+            pageSize
+        );
+        if (lastRefinedFacet) {
+            const facetRequest = buildFacetsRequest(
                 indexSettings,
                 query,
                 refinedFacets,
-                page,
-                pageSize
-            )
-        );
-    }, [query, refinedFacets, page, pageSize]);
+                lastRefinedFacet
+            );
+            Promise.all([search(searchRequest), search(facetRequest)]).then(
+                ([searchResponse, facetsResponse]) => {
+                    searchResponse.aggregations[lastRefinedFacet] =
+                        facetsResponse.aggregations[lastRefinedFacet];
+                    setItems(
+                        searchResponse.hits.hits.map((hit) => hit._source)
+                    );
+                    setNumFound(searchResponse.hits.total.value);
+                    setFacets(
+                        buildResponseFacets(
+                            searchResponse.aggregations || {},
+                            refinedFacets
+                        )
+                    );
+                }
+            );
+        }
+    }, [query, refinedFacets, lastRefinedFacet, page, pageSize]);
 
     useEffect(() => {
         refresh();

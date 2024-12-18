@@ -49,6 +49,8 @@ interface EsFacet {
 
 type EsFacets = Record<string, EsFacet>;
 
+type EsRefinedFacet = Record<string, string[]>;
+
 interface EsSearchResponse<T = unknown> {
     took: number;
     timed_out: boolean;
@@ -86,9 +88,7 @@ function buildSearchRequest(
     page: number,
     pageSize: number
 ) {
-    console.log("INPUT", query);
-
-    const currQuery = { ...query };
+    const currQuery = JSON.parse(JSON.stringify(query));
     const facetFilters = Object.entries(refinedFacets)
         .filter(([, values]) => values.length > 0)
         .map(([key, values]) =>
@@ -113,7 +113,7 @@ function buildSearchRequest(
 
     return {
         _source: { includes: indexSettings.result_attributes },
-        query,
+        query: currQuery,
         from: (page - 1) * pageSize,
         aggs: (indexSettings.facet_attributes || []).reduce((acc, facet) => {
             if (facet.type === "string") {
@@ -133,6 +133,38 @@ function buildSearchRequest(
     };
 }
 
+function buildFacetsRequest(
+    indexSettings: EsIndexSettings,
+    query: EsQuery,
+    refinedFacets: Record<string, string[]>,
+    lastRefinedFacet: string
+) {
+    const { [lastRefinedFacet]: _, ...facetsWithoutLast } = refinedFacets;
+    return buildSearchRequest(indexSettings, query, facetsWithoutLast, 0, 0);
+}
+
+function buildResponseFacets(
+    responseAggregations: EsFacets,
+    refinedFacets: EsRefinedFacet
+) {
+    return Object.entries(responseAggregations).reduce(
+        (acc, [facetName, facetData]) => {
+            const refinedKeys = refinedFacets[facetName] || [];
+
+            acc[facetName] = {
+                ...facetData,
+                buckets: facetData.buckets.map((bucket) => ({
+                    ...bucket,
+                    isRefined: refinedKeys.includes(bucket.key),
+                })),
+            };
+
+            return acc;
+        },
+        {} as EsFacets
+    );
+}
+
 export type {
     EsQuery,
     EsSearchRequest,
@@ -142,5 +174,6 @@ export type {
     EsFacetBucket,
     EsFacet,
     EsFacets,
+    EsRefinedFacet,
 };
-export { buildSearchRequest };
+export { buildSearchRequest, buildFacetsRequest, buildResponseFacets };
