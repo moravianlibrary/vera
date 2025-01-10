@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Path
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from models import (
     CatalogRecord,
@@ -22,6 +23,7 @@ from services.marc_comparator import (
     MarcRecordsComparator,
 )
 from datatypes import ElasticsearchParams, TaskItemType
+from config import VeraConfig
 
 
 router = APIRouter(prefix="/catalog_records", tags=["Catalog records"])
@@ -65,33 +67,100 @@ def approve_catalog_record_difference(
     es_session: EsSession = DependsOnEsSession,
     session: Session = DependsOnDbSession,
 ):
-    difference = CatalogRecordFieldDifference.get(
-        session, difference_id
-    ).approve(session, approved_by)
+    difference = CatalogRecordFieldDifference.get(session, difference_id)
+
+    if difference.approved_by is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Field difference with id {difference.id} "
+            "already approved",
+        )
+
+    difference.approved_by = approved_by
+    difference.approved_at = VeraConfig.Timestamp()
+    difference.rescind_by = None
+    difference.rescind_at = None
+    difference.save(session)
+
     catalog_record: CatalogRecord = difference.catalog_record
 
     record = IndexCatalogRecord.model_validate(catalog_record)
     record.save(es_session, True)
 
-    # Catalog record validity was not changed, no need to reindex documents
+    if (
+        difference.is_skc_difference and catalog_record.has_valid_main_record
+    ) or (difference.is_cnb_difference and catalog_record.has_valid_cnb):
+        # Catalog record validity was changed, reindexing documents
+        # TODO: into specific task
+        task = Task(
+            task_type=TaskType.ReindexDocuments,
+            owner=approved_by,
+        ).save(session)
+        for document_id in catalog_record.document_ids:
+            TaskItem(
+                task_id=task.id,
+                item_id=str(document_id),
+                item_type=TaskItemType.Document,
+            ).save(session)
+        run_task.delay(task_id=task.id)
+
+    return record
+
+
+@router.patch(
+    "/differences/{difference_id}/rescind",
+    dependencies=[CanReviewCatalogRecords],
+    response_model=IndexCatalogRecord,
+)
+def rescind_catalog_record_difference(
+    difference_id: int = Path(...),
+    rescinded_by: str = DependsOnCallerUsername,
+    es_session: EsSession = DependsOnEsSession,
+    session: Session = DependsOnDbSession,
+):
+    difference = CatalogRecordFieldDifference.get(session, difference_id)
+
+    if difference.approved_by is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Field difference with id {difference.id} "
+            "is not approved",
+        )
+    if difference.rescind_by is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Field difference with id {difference.id} "
+            "already rescinded",
+        )
+
+    difference.rescinded_by = rescinded_by
+    difference.rescinded_at = VeraConfig.Timestamp()
+    difference.save(session)
+
+    catalog_record: CatalogRecord = difference.catalog_record
+
+    record = IndexCatalogRecord.model_validate(catalog_record)
+    record.save(es_session, True)
+
     if (
         difference.is_skc_difference
-        and not catalog_record.has_valid_main_record
-    ) or (difference.is_cnb_difference and not catalog_record.has_valid_cnb):
-        return record
-
-    # Catalog record validity was changed, reindexing documents
-    task = Task(
-        task_type=TaskType.ReindexCatalogRecords,
-        owner=approved_by,
-    ).save(session)
-    for document_id in catalog_record.document_ids:
-        TaskItem(
-            task_id=task.id,
-            item_id=str(document_id),
-            item_type=TaskItemType.Document,
+        and len(catalog_record.skc_difference) == 1
+    ) or (
+        difference.is_cnb_difference
+        and len(catalog_record.cnb_difference) == 1
+    ):
+        # TODO: into specific task
+        task = Task(
+            task_type=TaskType.ReindexDocuments,
+            owner=rescinded_by,
         ).save(session)
-    run_task.delay(task_id=task.id)
+        for document_id in catalog_record.document_ids:
+            TaskItem(
+                task_id=task.id,
+                item_id=str(document_id),
+                item_type=TaskItemType.Document,
+            ).save(session)
+        run_task.delay(task_id=task.id)
 
     return record
 

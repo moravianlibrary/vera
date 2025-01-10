@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Path
+from fastapi import APIRouter, Path, HTTPException, status
 from sqlalchemy.orm import Session
 from .utils.dependencies import DependsOnDbSession, DependsOnEsSession
 from .utils.permissions import CanReadIntentions, CanManageIntentions
+from .utils.responses import CreateResponse, UpdateResponse, DeleteResponse
 from models import Intention, IntentionCategory
 from schemas import IntentionCreate, IntentionResponse, IndexIntention
 from datatypes import ElasticsearchParams
@@ -17,6 +18,7 @@ router = APIRouter(prefix="/intentions", tags=["Intentions"])
 def create_intention(
     intention: IntentionCreate,
     session: Session = DependsOnDbSession,
+    es_session: EsSession = DependsOnEsSession,
 ):
     db_intention = Intention(
         name=intention.name,
@@ -33,10 +35,9 @@ def create_intention(
 
     session.refresh(db_intention)
 
-    IndexIntention.model_validate(db_intention).save()
+    IndexIntention.model_validate(db_intention).save(es_session, True)
 
-    # TODO: return response
-    return
+    return CreateResponse(f"Intention {intention.name}")
 
 
 @router.put(
@@ -48,6 +49,7 @@ def update_intention(
     intention: IntentionCreate,
     intention_id: int = Path(...),
     session: Session = DependsOnDbSession,
+    es_session: EsSession = DependsOnEsSession,
 ):
     db_intention = Intention.get(session, intention_id)
 
@@ -75,7 +77,11 @@ def update_intention(
             category_id=category_id,
         ).save(session)
 
-    # TODO: update other fields
+    session.refresh(db_intention)
+
+    IndexIntention.model_validate(db_intention).save(es_session, True)
+
+    return UpdateResponse(f"Intention {intention.name}")
 
 
 @router.delete(
@@ -84,9 +90,21 @@ def update_intention(
     response_model=IntentionResponse,
 )
 def delete_intention(
-    intention_id: int = Path(...), session: Session = DependsOnDbSession
+    intention_id: int = Path(...),
+    session: Session = DependsOnDbSession,
+    es_session: EsSession = DependsOnEsSession,
 ):
-    return Intention.get(session, intention_id).delete(session)
+    db_intention = Intention.get(session, intention_id)
+    if db_intention.associated_documents:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Intention {db_intention.name} cannot be deleted "
+            "because it has associated documents",
+        )
+
+    Intention.delete(session)
+    IndexIntention.delete(session, intention_id, True)
+    return DeleteResponse(f"Intention {db_intention.name}")
 
 
 @router.get(

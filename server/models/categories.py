@@ -192,7 +192,9 @@ class Category(BaseModel):
             session, self.name, self.parent_id
         )
         if same_category is not None and same_category.id != self.id:
-            raise UniqueCategoryNameViolationException()
+            raise Exception(
+                "Category does not have unique name amongst its siblings"
+            )
 
     def validate_before_delete(self, session: Session) -> "Category":
         if self.total_pages(session) > 0:

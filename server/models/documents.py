@@ -81,6 +81,9 @@ class Document(BaseModel):
         "DigitizationList", back_populates="documents"
     )
     extractions = relationship("ExtractionDocument", back_populates="document")
+    associated_intentions = relationship(
+        "IntentionDocument", back_populates="document"
+    )
 
     @hybrid_property
     def cnb(self) -> Optional[str]:

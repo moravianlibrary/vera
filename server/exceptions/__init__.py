@@ -6,7 +6,6 @@ from .base import (
     InvalidPageNumberException,
     InvalidPageSizeException,
 )
-from .catalog_records import FieldDifferenceAlreadyApprovedException
 from .documents import (
     CannotExtractDocumentWithInvalidCnb,
     CannotExtractDocumentWithInvalidMainRecord,
@@ -20,7 +19,6 @@ from .extractions import EmptyExtractionException
 __all__ = [
     "ObjectNotFoundException",
     "ObjectMissingRequiredFieldException",
-    "FieldDifferenceAlreadyApprovedException",
     "CannotExtractDocumentWithInvalidCnb",
     "CannotExtractDocumentWithInvalidMainRecord",
     "CannotExtractDocumentWithoutPageCount",

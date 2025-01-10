@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Path, Query
+from fastapi.exceptions import HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
@@ -8,6 +9,7 @@ from .utils.permissions import (
 )
 from datatypes import ActionType
 from .utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
+from .utils.responses import ErrorResponse
 
 from .mappers.categories import (
     map_to_category_with_sub_categories,
@@ -56,6 +58,35 @@ def create_root_category(
     category: CategoryCreate,
     db: Session = DependsOnDbSession,
 ):
+    if (
+        Category.find_by_name_and_parent_id(db, category.name, None)
+        is not None
+    ):
+        return ErrorResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            message="Category does not have unique name amongst its siblings",
+        )
+
+    db_category = Category(
+        name=category.name,
+        description=category.description,
+        parent_id=None,
+        level=0,
+        assignable=category.assignable,
+        extract_whole=category.extract_whole,
+    )
+
+    old_departments = db_category.departments
+    new_departments = category.departments
+
+    for department_id in old_departments - new_departments:
+        CategoryDepartments.find(db, db_category.id, department_id).delete(db)
+
+    for department_id in new_departments - old_departments:
+        CategoryDepartments(
+            category_id=db_category.id, department_id=department_id
+        ).save(db)
+
     created_category = category.load_to_model(Category()).save(db)
     created_category.save_departments(db, category.departments)
     return map_to_category_with_sub_categories(db, created_category)

@@ -19,7 +19,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from datatypes import IdentifierType, CatalogSource, CZECH_LANGUAGE
 from services.marc_comparator import MarcFieldDifferenceType
 from .utils.parsers import marc_binary_to_record
-from exceptions import FieldDifferenceAlreadyApprovedException
 from .base import BaseModel
 
 
@@ -249,6 +248,8 @@ class CatalogRecordFieldDifference(BaseModel):
 
     approved_by = Column(String)
     approved_at = Column(TIMESTAMP)
+    rescinded_by = Column(String)
+    rescinded_at = Column(TIMESTAMP)
     deleted = Column(Boolean, server_default="false", nullable=False)
 
     catalog_record = relationship(
@@ -280,19 +281,6 @@ class CatalogRecordFieldDifference(BaseModel):
         else:
             session.delete(self)
             session.commit()
-        return self
-
-    def approve(
-        self, session: Session, approved_by: str
-    ) -> "CatalogRecordFieldDifference":
-        if self.approved_by is not None:
-            raise FieldDifferenceAlreadyApprovedException(self.id)
-
-        self.approved_by = approved_by
-        self.approved_at = func.now()
-
-        session.commit()
-        session.refresh(self)
         return self
 
 

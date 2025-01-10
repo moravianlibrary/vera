@@ -13,9 +13,11 @@ class Intention(BaseModel):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
 
-    distributions = relationship("Distribution", back_populates="intention")
     associated_categories = relationship(
         "IntentionCategory", back_populates="intention"
+    )
+    associated_documents = relationship(
+        "IntentionDocument", back_populates="intention"
     )
 
 
@@ -33,3 +35,17 @@ class IntentionCategory(BaseModel):
         "Intention", back_populates="associated_categories"
     )
     category = relationship("Category", back_populates="associated_intentions")
+
+
+class IntentionDocument(BaseModel):
+    __tablename__ = "intention_documents"
+
+    intention_id = Column(
+        Integer, ForeignKey("intentions.id"), primary_key=True
+    )
+    document_id = Column(Integer, ForeignKey("documents.id"), primary_key=True)
+
+    intention = relationship(
+        "Intention", back_populates="associated_documents"
+    )
+    document = relationship("Document", back_populates="associated_intentions")
