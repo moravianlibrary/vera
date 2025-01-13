@@ -7,6 +7,7 @@ coverage
 elasticsearch
 fastapi==0.103.2
 lxml
+openpyxl
 pandas
 psycopg2-binary
 pydantic
