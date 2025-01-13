@@ -109,7 +109,10 @@ const DocumentsProvider: React.FC<
         );
     };
     const exportDocuments = async () => {
-        api.exportDocuments(selectedQuery)
+        api.exportDocuments({
+            ...selectedQuery,
+            fields: "id,signature,barcode,sysno,volume,volume_year,bundle,isxn",
+        })
             .then((response) => {
                 const blob = new Blob([response.data], {
                     type: response.headers["content-type"],

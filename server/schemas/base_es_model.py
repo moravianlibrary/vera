@@ -104,6 +104,30 @@ class BaseEsModel(BaseModel):
         return session.search(index=cls.__index_name__, body=query_params)
 
     @classmethod
+    def search_all(
+        cls, session: EsSession, query_params: Dict[str, any]
+    ) -> List[Dict]:
+        documents = []
+        scroll_id = None
+
+        while True:
+            if scroll_id:
+                response = session.scroll(scroll_id=scroll_id, scroll="1m")
+            else:
+                response = session.search(
+                    index=cls.__index_name__, body=query_params, scroll="1m"
+                )
+
+            hits = response["hits"]["hits"]
+            documents.extend(hit["_source"] for hit in hits)
+
+            scroll_id = response.get("_scroll_id")
+            if not scroll_id or len(hits) == 0:
+                break
+
+        return documents
+
+    @classmethod
     def search_source_ids(
         cls, session: EsSession, query_params: Dict[str, any]
     ) -> List[str]:

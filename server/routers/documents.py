@@ -270,10 +270,12 @@ def export_query_documents(
     es_session: EsSession = DependsOnEsSession,
 ):
     df = pd.DataFrame(
-        hit["_source"]
-        for hit in query_documents(
-            parse_query_routing(query_routing_params), user, es_session
-        )["hits"]["hits"]
+        IndexDocument.search_all(
+            es_session,
+            restrict_read_query_params(
+                parse_query_routing(query_routing_params), user
+            ),
+        )
     )
 
     with tempfile.NamedTemporaryFile(

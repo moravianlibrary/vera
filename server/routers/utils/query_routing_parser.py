@@ -1,9 +1,9 @@
-from typing import List
+from typing import Dict
 from datatypes import EsRoutingParams
 from config import VeraConfig
 
 
-def parse_query_routing(query_routing_params: EsRoutingParams) -> List[str]:
+def parse_query_routing(query_routing_params: EsRoutingParams) -> Dict:
     query_params = {
         "_source": query_routing_params.get("fields", "id").split(","),
         "query": {"bool": {"must": []}},
@@ -46,7 +46,7 @@ def parse_query_routing(query_routing_params: EsRoutingParams) -> List[str]:
         )
 
     for field, values in query_routing_params.items():
-        if field in ["query", "index_name", "page", "page_size"]:
+        if field in ["query", "index_name", "page", "page_size", "fields"]:
             continue
 
         value_list = [value.strip() for value in values.split(",")]
