@@ -105,7 +105,10 @@ class BaseEsModel(BaseModel):
 
     @classmethod
     def search_all(
-        cls, session: EsSession, query_params: Dict[str, any]
+        cls,
+        session: EsSession,
+        query_params: Dict[str, any],
+        fields: List[str] | None = None,
     ) -> List[Dict]:
         documents = []
         scroll_id = None
@@ -119,7 +122,14 @@ class BaseEsModel(BaseModel):
                 )
 
             hits = response["hits"]["hits"]
-            documents.extend(hit["_source"] for hit in hits)
+            documents.extend(
+                (
+                    {field: hit["_source"][field] for field in fields}
+                    if fields
+                    else hit["_source"]
+                )
+                for hit in hits
+            )
 
             scroll_id = response.get("_scroll_id")
             if not scroll_id or len(hits) == 0:

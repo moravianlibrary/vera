@@ -111,7 +111,7 @@ const DocumentsProvider: React.FC<
     const exportDocuments = async () => {
         api.exportDocuments({
             ...selectedQuery,
-            fields: "id,signature,barcode,sysno,volume,volume_year,bundle,isxn",
+            fields: "signature,title,barcode",
         })
             .then((response) => {
                 const blob = new Blob([response.data], {

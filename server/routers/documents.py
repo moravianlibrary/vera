@@ -275,6 +275,7 @@ def export_query_documents(
             restrict_read_query_params(
                 parse_query_routing(query_routing_params), user
             ),
+            query_routing_params.get("fields", "id").split(","),
         )
     )
 
