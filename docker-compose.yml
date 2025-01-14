@@ -97,6 +97,15 @@ services:
     networks:
       - vera
 
+  docs-diagrams:
+    image: structurizr/lite:latest
+    container_name: vera-docs-diagrams
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./docs:/usr/local/structurizr
+    restart: unless-stopped
+
 volumes:
   data:
   index:

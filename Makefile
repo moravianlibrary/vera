@@ -75,3 +75,9 @@ test:
 		&& .venv/bin/python -m coverage run -m unittest discover -s tests/ \
 		&& coverage html \
 		&& coverage report
+
+run-docs-diagrams:
+	docker-compose up -d docs-diagrams
+
+stop-docs-diagrams:
+	docker-compose down docs-diagrams

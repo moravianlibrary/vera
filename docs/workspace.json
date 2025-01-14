@@ -1,0 +1,344 @@
+{
+  "configuration" : { },
+  "description" : "Description",
+  "documentation" : { },
+  "id" : 1,
+  "lastModifiedAgent" : "structurizr-ui",
+  "lastModifiedDate" : "2025-01-13T14:03:59Z",
+  "model" : {
+    "people" : [ {
+      "id" : "1",
+      "location" : "Unspecified",
+      "name" : "User",
+      "properties" : {
+        "structurizr.dsl.identifier" : "user"
+      },
+      "relationships" : [ {
+        "destinationId" : "2",
+        "id" : "11",
+        "sourceId" : "1",
+        "tags" : "Relationship"
+      } ],
+      "tags" : "Element,Person"
+    } ],
+    "softwareSystems" : [ {
+      "containers" : [ {
+        "components" : [ {
+          "documentation" : { },
+          "id" : "4",
+          "name" : "Documents Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "vera.client.documents"
+          },
+          "tags" : "Element,Component"
+        }, {
+          "documentation" : { },
+          "id" : "5",
+          "name" : "Add Documents Component",
+          "properties" : {
+            "structurizr.dsl.identifier" : "vera.client.adddocuments"
+          },
+          "tags" : "Element,Component"
+        } ],
+        "documentation" : { },
+        "id" : "3",
+        "name" : "React Client",
+        "properties" : {
+          "structurizr.dsl.identifier" : "vera.client"
+        },
+        "relationships" : [ {
+          "description" : "make API calls to",
+          "destinationId" : "6",
+          "id" : "12",
+          "sourceId" : "3",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "documentation" : { },
+        "id" : "6",
+        "name" : "Application",
+        "properties" : {
+          "structurizr.dsl.identifier" : "vera.app"
+        },
+        "relationships" : [ {
+          "description" : "reads/writes to",
+          "destinationId" : "9",
+          "id" : "13",
+          "sourceId" : "6",
+          "tags" : "Relationship"
+        }, {
+          "description" : "reads/writes to",
+          "destinationId" : "10",
+          "id" : "14",
+          "sourceId" : "6",
+          "tags" : "Relationship"
+        }, {
+          "description" : "sends messages to",
+          "destinationId" : "7",
+          "id" : "15",
+          "sourceId" : "6",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "documentation" : { },
+        "id" : "7",
+        "name" : "Redis Broker",
+        "properties" : {
+          "structurizr.dsl.identifier" : "vera.broker"
+        },
+        "relationships" : [ {
+          "description" : "deliver messages to",
+          "destinationId" : "8",
+          "id" : "19",
+          "sourceId" : "7",
+          "tags" : "Relationship"
+        }, {
+          "description" : "deliver messages to",
+          "destinationId" : "6",
+          "id" : "20",
+          "sourceId" : "7",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "documentation" : { },
+        "id" : "8",
+        "name" : "Celery Worker",
+        "properties" : {
+          "structurizr.dsl.identifier" : "vera.worker"
+        },
+        "relationships" : [ {
+          "description" : "reads/writes to",
+          "destinationId" : "9",
+          "id" : "16",
+          "sourceId" : "8",
+          "tags" : "Relationship"
+        }, {
+          "description" : "reads/writes to",
+          "destinationId" : "10",
+          "id" : "17",
+          "sourceId" : "8",
+          "tags" : "Relationship"
+        }, {
+          "description" : "sends messages to",
+          "destinationId" : "7",
+          "id" : "18",
+          "sourceId" : "8",
+          "tags" : "Relationship"
+        } ],
+        "tags" : "Element,Container"
+      }, {
+        "documentation" : { },
+        "id" : "9",
+        "name" : "Elasticsearch Index",
+        "properties" : {
+          "structurizr.dsl.identifier" : "vera.index"
+        },
+        "tags" : "Element,Container"
+      }, {
+        "documentation" : { },
+        "id" : "10",
+        "name" : "PostgreSQL Database",
+        "properties" : {
+          "structurizr.dsl.identifier" : "vera.db"
+        },
+        "tags" : "Element,Container"
+      } ],
+      "documentation" : { },
+      "id" : "2",
+      "location" : "Unspecified",
+      "name" : "VERA",
+      "properties" : {
+        "structurizr.dsl.identifier" : "vera"
+      },
+      "tags" : "Element,Software System"
+    } ]
+  },
+  "name" : "VERA",
+  "properties" : {
+    "structurizr.dsl" : "d29ya3NwYWNlICJWRVJBIiB7CgogICAgIWlkZW50aWZpZXJzIGhpZXJhcmNoaWNhbAoKICAgIG1vZGVsIHsKICAgICAgICB1c2VyID0gcGVyc29uICJVc2VyIgoKICAgICAgICB2ZXJhID0gc29mdHdhcmVTeXN0ZW0gIlZFUkEiIHsKICAgICAgICAgICAgY2xpZW50ID0gY29udGFpbmVyICJSZWFjdCBDbGllbnQiIHsKICAgICAgICAgICAgICAgIGRvY3VtZW50cyA9IGNvbXBvbmVudCAiRG9jdW1lbnRzIENvbXBvbmVudCIKICAgICAgICAgICAgICAgIGFkZERvY3VtZW50cyA9IGNvbXBvbmVudCAiQWRkIERvY3VtZW50cyBDb21wb25lbnQiICAgIAogICAgICAgICAgICB9CiAgICAgICAgICAgIGFwcCA9IGNvbnRhaW5lciAiQXBwbGljYXRpb24iCiAgICAgICAgICAgIGJyb2tlciA9IGNvbnRhaW5lciAiUmVkaXMgQnJva2VyIgogICAgICAgICAgICB3b3JrZXIgPSBjb250YWluZXIgIkNlbGVyeSBXb3JrZXIiCiAgICAgICAgICAgIGluZGV4ID0gY29udGFpbmVyICJFbGFzdGljc2VhcmNoIEluZGV4IgogICAgICAgICAgICBkYiA9IGNvbnRhaW5lciAiUG9zdGdyZVNRTCBEYXRhYmFzZSIKICAgICAgICB9CgogICAgICAgIHVzZXIgLT4gdmVyYSAiIgoKICAgICAgICB2ZXJhLmNsaWVudCAtPiB2ZXJhLmFwcCAibWFrZSBBUEkgY2FsbHMgdG8iCiAgICAgICAgdmVyYS5hcHAgLT4gdmVyYS5pbmRleCAicmVhZHMvd3JpdGVzIHRvIgogICAgICAgIHZlcmEuYXBwIC0+IHZlcmEuZGIgInJlYWRzL3dyaXRlcyB0byIKICAgICAgICB2ZXJhLmFwcCAtPiB2ZXJhLmJyb2tlciAic2VuZHMgbWVzc2FnZXMgdG8iCgogICAgICAgIHZlcmEud29ya2VyIC0+IHZlcmEuaW5kZXggInJlYWRzL3dyaXRlcyB0byIKICAgICAgICB2ZXJhLndvcmtlciAtPiB2ZXJhLmRiICJyZWFkcy93cml0ZXMgdG8iCiAgICAgICAgdmVyYS53b3JrZXIgLT4gdmVyYS5icm9rZXIgInNlbmRzIG1lc3NhZ2VzIHRvIgoKICAgICAgICB2ZXJhLmJyb2tlciAtPiB2ZXJhLndvcmtlciAiZGVsaXZlciBtZXNzYWdlcyB0byIKICAgICAgICB2ZXJhLmJyb2tlciAtPiB2ZXJhLmFwcCAiZGVsaXZlciBtZXNzYWdlcyB0byIKICAgIH0KCiAgICB2aWV3cyB7CiAgICAgICAgcHJvcGVydGllcyB7CiAgICAgICAgICAgICJtZXJtYWlkLnVybCIgImh0dHBzOi8vbWVybWFpZC5pbmsiCiAgICAgICAgICAgICJtZXJtYWlkLmZvcm1hdCIgInN2ZyIKICAgICAgICB9CiAgICAgICAgCiAgICAgICAgc3lzdGVtTGFuZHNjYXBlIHN5c3RlbSB7CiAgICAgICAgICAgIGluY2x1ZGUgdXNlcgogICAgICAgICAgICBpbmNsdWRlIHZlcmEKICAgICAgICAgICAgYXV0b0xheW91dCBscgogICAgICAgIH0KCiAgICAgICAgY29udGFpbmVyIHZlcmEgewogICAgICAgICAgICBpbmNsdWRlIHZlcmEuY2xpZW50CiAgICAgICAgICAgIGluY2x1ZGUgdmVyYS5hcHAKICAgICAgICAgICAgaW5jbHVkZSB2ZXJhLmJyb2tlcgogICAgICAgICAgICBpbmNsdWRlIHZlcmEud29ya2VyCiAgICAgICAgICAgIGluY2x1ZGUgdmVyYS5pbmRleAogICAgICAgICAgICBpbmNsdWRlIHZlcmEuZGIKICAgICAgICAgICAgYXV0b0xheW91dCBscgogICAgICAgIH0KCiAgICAgICAgY29tcG9uZW50IHZlcmEuY2xpZW50IHsKICAgICAgICAgICAgaW5jbHVkZSB2ZXJhLmNsaWVudC5kb2N1bWVudHMKICAgICAgICAgICAgaW5jbHVkZSB2ZXJhLmNsaWVudC5hZGREb2N1bWVudHMKICAgICAgICAgICAgYXV0b0xheW91dCBscgogICAgICAgIH0KCiAgICAgICAgaW1hZ2UgdmVyYS5jbGllbnQuZG9jdW1lbnRzIHsKICAgICAgICAgICAgbWVybWFpZCBodHRwczovL2RvY3Muc3RydWN0dXJpenIuY29tL2RzbC9jb29rYm9vay9pbWFnZS12aWV3L2NvbXBvbmVudDEubW1kCiAgICAgICAgICAgIHRpdGxlICJDbGFzcyBkaWFncmFtIGZvciBDb21wb25lbnQxIgogICAgICAgIH0KCiAgICAgICAgc3R5bGVzIHsKICAgICAgICAgICAgZWxlbWVudCAiUGVyc29uIiB7CiAgICAgICAgICAgICAgICBzaGFwZSBwZXJzb24KICAgICAgICAgICAgICAgIGJhY2tncm91bmQgIiNmNGQwM2YiCiAgICAgICAgICAgICAgICBjb2xvciAiIzAwMDAwMCIKICAgICAgICAgICAgfQoKICAgICAgICAgICAgZWxlbWVudCAiVkVSQSBDbGllbnQgVmlldyIgewogICAgICAgICAgICAgICAgc2hhcGUgcm91bmRlZEJveAogICAgICAgICAgICAgICAgYmFja2dyb3VuZCAiI2FlZDZmMSIKICAgICAgICAgICAgICAgIGNvbG9yICIjMDAwMDAwIgogICAgICAgICAgICB9CiAgICAgICAgfQogICAgfQp9"
+  },
+  "views" : {
+    "componentViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "3",
+      "dimensions" : {
+        "height" : 1411,
+        "width" : 890
+      },
+      "elements" : [ {
+        "id" : "4",
+        "x" : 220,
+        "y" : 185
+      }, {
+        "id" : "5",
+        "x" : 220,
+        "y" : 785
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "generatedKey" : true,
+      "key" : "Component-001",
+      "order" : 3
+    } ],
+    "configuration" : {
+      "branding" : { },
+      "lastSavedView" : "Component-001",
+      "metadataSymbols" : "SquareBrackets",
+      "properties" : {
+        "mermaid.format" : "svg",
+        "mermaid.url" : "https://mermaid.ink"
+      },
+      "styles" : {
+        "elements" : [ {
+          "background" : "#f4d03f",
+          "color" : "#000000",
+          "shape" : "Person",
+          "tag" : "Person"
+        }, {
+          "background" : "#aed6f1",
+          "color" : "#000000",
+          "shape" : "RoundedBox",
+          "tag" : "VERA Client View"
+        } ]
+      },
+      "terminology" : { }
+    },
+    "containerViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "dimensions" : {
+        "height" : 1415,
+        "width" : 3890
+      },
+      "elements" : [ {
+        "id" : "3",
+        "x" : 220,
+        "y" : 489
+      }, {
+        "id" : "6",
+        "x" : 970,
+        "y" : 489
+      }, {
+        "id" : "7",
+        "x" : 1720,
+        "y" : 489
+      }, {
+        "id" : "8",
+        "x" : 2470,
+        "y" : 489
+      }, {
+        "id" : "9",
+        "x" : 3220,
+        "y" : 185
+      }, {
+        "id" : "10",
+        "x" : 3220,
+        "y" : 789
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "generatedKey" : true,
+      "key" : "Container-001",
+      "order" : 2,
+      "relationships" : [ {
+        "id" : "12"
+      }, {
+        "id" : "13",
+        "vertices" : [ {
+          "x" : 1720,
+          "y" : 339
+        } ]
+      }, {
+        "id" : "14",
+        "vertices" : [ {
+          "x" : 1720,
+          "y" : 939
+        } ]
+      }, {
+        "id" : "15",
+        "vertices" : [ {
+          "x" : 1570,
+          "y" : 789
+        } ]
+      }, {
+        "id" : "16"
+      }, {
+        "id" : "17"
+      }, {
+        "id" : "18",
+        "vertices" : [ {
+          "x" : 2320,
+          "y" : 489
+        } ]
+      }, {
+        "id" : "19",
+        "vertices" : [ {
+          "x" : 2320,
+          "y" : 789
+        } ]
+      }, {
+        "id" : "20",
+        "vertices" : [ {
+          "x" : 1570,
+          "y" : 489
+        } ]
+      } ],
+      "softwareSystemId" : "2"
+    } ],
+    "imageViews" : [ {
+      "content" : "https://mermaid.ink/svg/pako:eJxNjrEKwzAMRH9FaC6BrsZkaZdCp85dhK0kAssOtjsl-fcKsuSW4x53cBtgKJHRYUjU2lNorqTfDKYolUOXkuHzPsmj6Foy534Hvw_DJb90TeBAzFgNtHPgveTOdaLA43ip4w1QuSpJRLdhX2xkHyJP9Esdj-MPGEEzCA==",
+      "contentType" : "image/svg+xml",
+      "elementId" : "4",
+      "generatedKey" : true,
+      "key" : "Image-001",
+      "order" : 4,
+      "title" : "Class diagram for Component1"
+    } ],
+    "systemLandscapeViews" : [ {
+      "automaticLayout" : {
+        "applied" : true,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "LeftRight",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "dimensions" : {
+        "height" : 800,
+        "width" : 1550
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 200,
+        "y" : 165
+      }, {
+        "id" : "2",
+        "x" : 900,
+        "y" : 215
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "system",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "11"
+      } ]
+    } ]
+  }
+}

@@ -1,0 +1,13 @@
+@startuml
+actor User
+rectangle System {
+  usecase "View Reports" as ViewReports <<implemented>>
+  usecase "Edit Reports" as EditReports <<planned>>
+  usecase "Delete Reports" as DeleteReports <<implemented>>
+}
+
+User --> ViewReports
+User --> EditReports
+User --> DeleteReports
+
+@enduml
