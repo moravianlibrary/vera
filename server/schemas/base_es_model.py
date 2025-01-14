@@ -124,7 +124,11 @@ class BaseEsModel(BaseModel):
             hits = response["hits"]["hits"]
             documents.extend(
                 (
-                    {field: hit["_source"][field] for field in fields}
+                    {
+                        field: hit["_source"][field]
+                        for field in fields
+                        if field in hit["_source"]
+                    }
                     if fields
                     else hit["_source"]
                 )
