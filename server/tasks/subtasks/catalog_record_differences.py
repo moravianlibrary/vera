@@ -23,7 +23,9 @@ MzkSkcRecordsComparator = MarcRecordsComparator(
         "250": EditionFieldComparator(),
         "260": MarcFieldsComparator("260", subfield_codes=["a", "b", "c"]),
         "264": MarcFieldsComparator("264", subfield_codes=["a", "b", "c"]),
-        "300": MarcFieldsComparator("300", subfield_codes=["a", "b", "c"]),
+        "300": MarcFieldsComparator(
+            "300", subfield_codes=["a", "b", "c", "e"]
+        ),
         "362": MarcFieldsComparator("362", subfield_codes=["a"]),
     },
     True,
