@@ -1,16 +1,21 @@
-# Project Structure
-
-- client
-- database migrations
-- catalog connectors
-    - aleph
-        - z39.50
-- marc comparator
-- ai
-- digitization registries
-    - rd
-    - local
-- items tasks
-- schemas
-- digitization planner
-- client
+/vera
+│── /backend
+│   ├── /ai
+│   ├── /catalog_connectors
+│   │   ├── /aleph
+│   │   │   ├── /z39.50
+│   │   ├── /other_connectors (if needed)
+│   ├── /database_migrations
+│   ├── /digitization_planner
+│   ├── /digitization_registries
+│   │   ├── /rd
+│   │   ├── /local
+│   ├── /marc_comparator
+│   ├── /items_tasks
+│   ├── /schemas
+│   ├── /tests
+│── /client
+├── /configs
+│── /docs
+│── build.sh
+│── README.md
