@@ -1,25 +1,41 @@
+# Structure
+
 /vera
-│── /backend
+│── /app
 │   ├── /ai
-│   ├── /catalog_connectors
+│   ├── /catalog-connectors
 │   │   ├── /aleph
 │   │   │   ├── /z39.50
-│   │   ├── /other_connectors (if needed)
-│   ├── /database_migrations
-│   ├── /digitization_planner (vera / core)
-│   ├── /digitization_registries
+│   │   ├── /other-connectors (if needed)
+│   ├── /catalog-records
+│   ├── /database-migrations
+│   ├── /digitization-planner (vera / core)
+│   ├── /digitization-registries
 │   │   ├── /kramerius (maybe ?)
 │   │   ├── /local
 │   │   ├── /rd
-│   ├── /marc_comparator
+│   ├── /marc-comparator
 │   ├── /tasks
-│   │   ├── /catalog_records
-│   │   ├── /data_source
+│   │   ├── /catalog-records
+│   │   ├── /data-source
 │   │   ├── /documents
 │   ├── /schemas
 │   ├── /tests
 │── /client
+│   ├── /marc-comparator
+│   ├── /vera
 ├── /configs
 │── /docs
 │── build.sh
 │── README.md
+
+## Build
+
+Individual builds for different applications would wrap different parts of the project to container image.
+
+- VERA:
+    - MZK App
+    - Client
+- MARC Comparator:
+    - App: catalog-connector, catalog-records, marc-comparator, tasks/catalog-records
+    - Client

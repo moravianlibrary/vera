@@ -1,39 +1,336 @@
 @startuml VERA - Use Case Diagram
 
-actor Curator
-actor "Guest"
+' Draw settings
+left to right direction
 
-package "Documents" {
-    usecase "Propose document for digitalization" as UC1
-    usecase "Add document for digitalization" as UC2
-    usecase "Add already digitized document for digitalization" as UC3
-    usecase "Add document again (only if it was processed before)" as UC4
-    usecase "Browser through processed adding documents" as UC5
-    usecase "Select specific unit to add" as UC6
-    usecase "Update document category" as UC7
-    usecase "Update document extraction priority" as UC8
-    usecase "Update document manual page count" as UC9
-    usecase "Decline document digitization proposal" as UC10
-    usecase "Cancel declination of document digitization proposal" as UC11
-    usecase "Decline document digitization" as UC12
-    usecase "Cancel declination of document digitization" as UC13
-    usecase "Delete document" as UC14
+!define ALREADY_IMPLEMENTED_COLOR #A0E88E
+!define REIMPLEMENT_COLOR #F1E27C
+!define PLANNED_COLOR #87CEFA
+!define MAYBE_IN_FUTURE_COLOR #F08080
+
+skinparam usecase {
+    BackgroundColor<< Already Implemented >> ALREADY_IMPLEMENTED_COLOR
+    BackgroundColor<< Reimplement >> REIMPLEMENT_COLOR
+    BackgroundColor<< Planned >> PLANNED_COLOR
+    BackgroundColor<< Maybe In Future >> MAYBE_IN_FUTURE_COLOR
 }
 
-Guest --> UC1
-Curator --> UC2
-Curator --> UC3
-Curator --> UC4
-Curator --> UC5
-Curator --> UC6
-Curator --> UC7
-Curator --> UC8
-Curator --> UC9
-Curator --> UC1
-Curator --> UC10
-Curator --> UC11
-Curator --> UC12
-Curator --> UC13
-Curator --> UC14
+' Legend
+legend top right
+  | <ALREADY_IMPLEMENTED_COLOR> | Already Implemented |
+  | <REIMPLEMENT_COLOR>         | Reimplement     |
+  | <PLANNED_COLOR>             | Planned             |
+  | <MAYBE_IN_FUTURE_COLOR>     | Maybe In Future     |
+endlegend
+
+' Documents
+
+actor User
+actor Curator
+actor DocumentsManager
+
+Curator <|-- DocumentsManager
+
+package "Adding Documents" {
+    usecase "Propose document for digitalization" as DOC1 <<Maybe In Future>>
+    usecase "Cancel digitalization proposal" as DOC2 <<Maybe In Future>>
+    usecase "Add document for digitalization" as DOC3 <<Already Implemented>>
+    usecase "Select specific unit to add/propose" as DOC4 <<Already Implemented>>
+    usecase "Browse processed added/proposed documents" as DOC5 <<Already Implemented>>
+    usecase "Add already digitized document" as DOC6 <<Planned>>
+    usecase "Add document again (if processed before)" as DOC7 <<Planned>>
+}
+
+package "Managing Digitization" {
+    usecase "Decline digitization proposal" as DOC8 <<Maybe In Future>>
+    usecase "Cancel the decline of document digitization proposal" as DOC9 <<Maybe In Future>>
+    usecase "Decline digitization" as DOC10 <<Planned>>
+    usecase "Cancel digitization decline" as DOC11 <<Planned>>
+}
+
+package "Reading Documents" {
+    usecase "Search for documents (based on ownership permission)" as DOC12 <<Already Implemented>>
+    usecase "View document details" as DOC13 <<Already Implemented>>
+}
+
+package "Editing Documents" {
+    usecase "Update document category" as DOC14 <<Already Implemented>>
+    usecase "Update extraction priority" as DOC15 <<Already Implemented>>
+    usecase "Update manual page count" as DOC16 <<Already Implemented>>
+    usecase "Run tasks on document" as DOC17 <<Already Implemented>>
+    usecase "Archive document" as DOC18 <<Planned>>
+    usecase "Remove document" as DOC19 <<Reimplement>>
+}
+
+User --> DOC1
+User --> DOC2
+User --> DOC4
+User --> DOC5
+User --> DOC12
+User --> DOC13
+
+Curator --> DOC3
+Curator --> DOC4
+Curator --> DOC5
+Curator --> DOC12
+Curator --> DOC13
+Curator --> DOC14
+Curator --> DOC15
+Curator --> DOC16
+Curator --> DOC17
+Curator --> DOC18
+
+DocumentsManager --> DOC6
+DocumentsManager --> DOC7
+DocumentsManager --> DOC8
+DocumentsManager --> DOC9
+DocumentsManager --> DOC10
+DocumentsManager --> DOC11
+DocumentsManager --> DOC19
+
+newpage
+
+' Draw settings
+left to right direction
+
+skinparam usecase {
+    BackgroundColor<< Already Implemented >> ALREADY_IMPLEMENTED_COLOR
+    BackgroundColor<< Reimplement >> REIMPLEMENT_COLOR
+    BackgroundColor<< Planned >> PLANNED_COLOR
+    BackgroundColor<< Maybe In Future >> MAYBE_IN_FUTURE_COLOR
+}
+
+' Legend
+legend top right
+  | <ALREADY_IMPLEMENTED_COLOR> | Already Implemented |
+  | <REIMPLEMENT_COLOR>         | Reimplement     |
+  | <PLANNED_COLOR>             | Planned             |
+  | <MAYBE_IN_FUTURE_COLOR>     | Maybe In Future     |
+endlegend
+
+' Catalog Records
+
+actor System
+actor CatalogRecordsReviewer
+actor Admin
+
+Curator <|-- CatalogRecordsReviewer
+Curator <|-- Admin
+
+package "Catalog Record Operations" {
+    usecase "Get catalog record" as CR1 <<Already Implemented>>
+    usecase "Compare catalog records" as CR2 <<Reimplement>>
+    usecase "Search saved catalog records" as CR3 <<Already Implemented>>
+    usecase "Approve difference" as CR4 <<Already Implemented>>
+    usecase "Rescind difference approval" as CR5 <<Already Implemented>>
+    usecase "Set up auto-approve for specific difference categories" as CR6 <<Planned>>
+    usecase "Decline digitalization from specific record" as CR7 <<Planned>>
+    usecase "Cancel declination of digitization" as CR8 <<Planned>>
+    usecase "Run tasks on catalog records" as CR9 <<Already Implemented>>
+}
+
+package "Catalog Records Lists" {
+    usecase "Manage catalog record lists" as CR10 <<Planned>>
+    usecase "Assign lists to users" as CR11 <<Planned>>
+    usecase "Notify users via email or in-app when list changes" as CR12 <<Planned>>
+}
+
+System --> CR1
+System --> CR2
+System --> CR12
+
+Curator --> CR3
+
+CatalogRecordsReviewer --> CR4
+CatalogRecordsReviewer --> CR5
+CatalogRecordsReviewer --> CR7
+CatalogRecordsReviewer --> CR8
+CatalogRecordsReviewer --> CR9
+CatalogRecordsReviewer --> CR10
+CatalogRecordsReviewer --> CR11
+
+Admin --> CR6
+
+newpage
+
+' Draw settings
+left to right direction
+
+skinparam usecase {
+    BackgroundColor<< Already Implemented >> ALREADY_IMPLEMENTED_COLOR
+    BackgroundColor<< Reimplement >> REIMPLEMENT_COLOR
+    BackgroundColor<< Planned >> PLANNED_COLOR
+    BackgroundColor<< Maybe In Future >> MAYBE_IN_FUTURE_COLOR
+}
+
+' Legend
+legend top right
+  | <ALREADY_IMPLEMENTED_COLOR> | Already Implemented |
+  | <REIMPLEMENT_COLOR>         | Reimplement     |
+  | <PLANNED_COLOR>             | Planned             |
+  | <MAYBE_IN_FUTURE_COLOR>     | Maybe In Future     |
+endlegend
+
+' Categories
+
+actor CategoriesManager
+
+Curator <|-- CategoriesManager
+
+package "Category Operations" {
+    usecase "Create/Update/Delete category" as CAT1 <<Reimplement>>
+    usecase "Search categories" as CAT2 <<Reimplement>>
+    usecase "Use categories while adding documents" as CAT3 <<Already Implemented>>
+    usecase "Assign categories to user groups or to individual users" as CAT4 <<Planned>>
+    usecase "Set automatic categories from data sources" as CAT5 <<Planned>>
+    usecase "Manage category distributions" as CAT6 <<Reimplement>>
+}
+
+Curator -> CAT2
+Curator -> CAT3
+
+CategoriesManager --> CAT1
+CategoriesManager --> CAT4
+CategoriesManager --> CAT5
+CategoriesManager --> CAT6
+
+' Digitization Lists
+
+actor DigitizationStuff
+actor DigitizationManager
+
+DigitizationStuff <|-- DigitizationManager
+
+package "Digitization Lists" {
+    usecase "Pregenerate digitization list (based on categories, locations, etc.)" as DL1 <<Reimplement>>
+    usecase "Save pregeneration properties" as DL2 <<Planned>>
+    usecase "List past pregeneration properties" as DL3 <<Planned>>
+    usecase "Create digitalization list (from Documents view)" as DL4 <<Already Implemented>>
+    usecase "Add/Remove items to digitalization list" as DL5 <<Already Implemented>>
+    usecase "Remove digitalization list" as DL6 <<Already Implemented>>
+}
+
+DigitizationStuff --> DL1
+DigitizationStuff --> DL3
+DigitizationStuff --> DL4
+
+DigitizationManager --> DL5
+DigitizationManager --> DL6
+
+System --> DL2
+
+' Locations
+
+package "Locations" {
+    usecase "Create/Update/Delete locations" as LOC1 <<Reimplement>>
+    usecase "List locations" as LOC2 <<Reimplement>>
+    usecase "Create/Update/Delete location groups" as LOC3 <<Planned>>
+    usecase "List locations by group" as LOC4 <<Planned>>
+}
+
+Curator --> LOC2
+Curator --> LOC4
+
+DigitizationStuff --> LOC2
+DigitizationStuff --> LOC4
+
+DigitizationManager --> LOC1
+DigitizationManager --> LOC3
+
+' Intentions
+
+package "Intentions" {
+    usecase "Create intentions based on time periods" as INT1 <<Planned>>
+    usecase "Create project-based intentions" as INT2 <<Planned>>
+    usecase "Update/Delete intentions" as INT3 <<Reimplement>>
+    usecase "Assign intentions to extracted documents" as INT4 <<Planned>>
+    usecase "Assign intentions to digitization lists" as INT5 <<Planned>>
+    usecase "Search intentions" as INT6 <<Reimplement>>
+    usecase "Create statistical views based on intentions" as INT7 <<Planned>>
+}
+
+CategoriesManager --> INT1
+CategoriesManager --> INT2
+CategoriesManager --> INT3
+
+DigitizationManager --> INT4
+DigitizationManager --> INT5
+
+Curator --> INT6
+
+System --> INT6
+
+newpage
+
+' Draw settings
+left to right direction
+
+skinparam usecase {
+    BackgroundColor<< Already Implemented >> ALREADY_IMPLEMENTED_COLOR
+    BackgroundColor<< Reimplement >> REIMPLEMENT_COLOR
+    BackgroundColor<< Planned >> PLANNED_COLOR
+    BackgroundColor<< Maybe In Future >> MAYBE_IN_FUTURE_COLOR
+}
+
+' Legend
+legend top right
+  | <ALREADY_IMPLEMENTED_COLOR> | Already Implemented |
+  | <REIMPLEMENT_COLOR>         | Reimplement     |
+  | <PLANNED_COLOR>             | Planned             |
+  | <MAYBE_IN_FUTURE_COLOR>     | Maybe In Future     |
+endlegend
+
+' Tasks
+
+package "Task Operations" {
+    usecase "Reindex items" as TSK1 <<Already Implemented>>
+    usecase "Add documents" as TSK2 <<Already Implemented>>
+    usecase "Sync items with external sources" as TSK3 <<Already Implemented>>
+    usecase "Generate datasets based on specific rules" as TSK4 <<Planned>>
+    usecase "Schedule periodic tasks" as TSK5 <<Already Implemented>>
+    usecase "Manage periodic tasks" as TSK6 <<Already Implemented>>
+}
+
+System --> TSK1
+System --> TSK2
+System --> TSK3
+System --> TSK4
+
+Admin --> TSK5
+Admin --> TSK6
+
+' System
+
+package "System Operations" {
+    usecase "Emulate access for testing purposes" as SYS1 <<Already Implemented>>
+    usecase "Export/import database for backup/migration" as SYS2 <<Planned>>
+}
+
+Admin --> SYS1
+Admin --> SYS2
+
+' Users
+
+package "User Operations" {
+    usecase "Login" as USR1 <<Already Implemented>>
+    usecase "List users in the database" as USR2 <<Already Implemented>>
+    usecase "List groups in Keycloak" as USR3 <<Planned>>
+    usecase "List roles in Keycloak" as USR4 <<Planned>>
+    usecase "List all possible permissions" as USR5 <<Planned>>
+    usecase "Manage roles" as USR6 <<Already Implemented>>
+    usecase "Save user client settings" as USR7 <<Already Implemented>>
+    usecase "Define roles and groups in Keycloak from YAML config" as USR8 <<Planned>>
+}
+
+User --> USR1
+
+Admin --> USR2
+Admin --> USR3
+Admin --> USR4
+Admin --> USR5
+Admin --> USR6
+
+System --> USR7
+System --> USR8
 
 @enduml
