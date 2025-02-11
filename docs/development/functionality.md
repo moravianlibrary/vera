@@ -127,10 +127,10 @@
 - Save responses/state of adding, allow searching through responses/states.
 - Add page count to documents missing page count.
 - Select specific issue of a document when adding.
+- It should be possible to add units, volumes, bundles and standalones (in future maybe cd/dvd, lp) [find out all possibilities from MZK Aleph]
 - Option to reset results (remove all results for a user).
 - *Config:* Option to automatically remove results after a set period.
 - When digitization state is not 'Not Digitized', then give option to add despite.
-- It should be possible to add units, volumes, bundles and standalones (in future maybe cd/dvd, lp) [find out all possibilities from MZK Aleph]
 - Based on permission, either add document or flag it as proposition.
 
 **Add Document**

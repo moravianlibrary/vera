@@ -1,0 +1,39 @@
+@startuml VERA - Use Case Diagram
+
+actor Curator
+actor "Guest"
+
+package "Documents" {
+    usecase "Propose document for digitalization" as UC1
+    usecase "Add document for digitalization" as UC2
+    usecase "Add already digitized document for digitalization" as UC3
+    usecase "Add document again (only if it was processed before)" as UC4
+    usecase "Browser through processed adding documents" as UC5
+    usecase "Select specific unit to add" as UC6
+    usecase "Update document category" as UC7
+    usecase "Update document extraction priority" as UC8
+    usecase "Update document manual page count" as UC9
+    usecase "Decline document digitization proposal" as UC10
+    usecase "Cancel declination of document digitization proposal" as UC11
+    usecase "Decline document digitization" as UC12
+    usecase "Cancel declination of document digitization" as UC13
+    usecase "Delete document" as UC14
+}
+
+Guest --> UC1
+Curator --> UC2
+Curator --> UC3
+Curator --> UC4
+Curator --> UC5
+Curator --> UC6
+Curator --> UC7
+Curator --> UC8
+Curator --> UC9
+Curator --> UC1
+Curator --> UC10
+Curator --> UC11
+Curator --> UC12
+Curator --> UC13
+Curator --> UC14
+
+@enduml
