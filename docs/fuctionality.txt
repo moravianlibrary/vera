@@ -1,0 +1,56 @@
+### FUNCTIONALITY ###
+
+--- Broker ---
+transport event message
+manage and enforce locks
+
+--- Catalog Records ---
+config: define catalog properties - Aleph Z39.50, but later also others
+config: catalog records comparing (set authority catalogs, join queries, comparator settings, auto-approve)
+get catalog record: download catalog record from catalog -> save catalog record
+search saved catalog records (filter by differences and record properties)
+display catalog record differences
+approve catalog record difference
+rescind catalog record difference
+categorize catalog record differences
+auto-approve differences
+option to decline digitalization of all documents from specific record [also option to cancel declanation]
+option to send records with differences by email to control
+
+--- Documents ---
+add documents - in process add or load catalog record - check all conditions from Add Documents
+add documents synchronized -> new add state 'In Adding Process'
+add documents without blocking
+add documents - save responses/state of adding -> then provide option for searching through them
+    - also provide options to add page count to documents without page count
+    - also provide option to choose specific issue from document
+    - it should be possible to add units, volumes, bundles and standalones (in future maybe cd/dvd, lp) [find out all possibilities from MZK Aleph]
+    - option for reseting results (removing all results for a user)
+    - also config option to remove them automatically after some time
+    - choose while adding category (mandatory), extraction priority
+    - option to ignore digitization state 
+
+listen for event 'catalog record validated' and update responding documents
+check documents x catalog records sync
+option to decline digitalization of a document [also option to cancel declanation]
+option to ask for digitization (maybe join with Tlacitko Digitalizace)
+option to update category, extraction priority, manual page count
+option to delete document [works by setting flag deleted]
+export documents - csv, txt
+    - choose documents fields to export
+    - choose location and filename
+    - add preset of fields
+property: digitization state - from other source than registry
+
+--- Categories ---
+create sub category
+assign distribution (percentage) to category [all children on same level sums up to 100%]
+manage set of distributions
+    - update root distribution
+    - update category distribution
+delete (sub)category
+update category
+search through categories (filter by category name, department name, user name, digitization list, extraction)
+assign category to department
+assign category to user
+property: name, description, assignable, extract whole, archived, owner, exlusively owned, enabled controls
