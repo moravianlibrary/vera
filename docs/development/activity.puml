@@ -1,0 +1,41 @@
+@startuml VERA - Add Documents Activity Diagram
+
+|#pink|User|
+start
+
+:Open Add Documents Dialog;
+:Select Category;
+:Select Extraction Priority;
+:Select Identifier Type;
+
+if (Adding One Document?) then (yes)
+    :Enter Document Identifier;
+    if (Document?) then (yes)
+'     |#lightgreen|Curator: Add document for digitalization;
+'     :Add document for digitalization;
+'   else (no)
+'     |#lightgray|Curator: Cancel digitalization proposal;
+'     :Cancel digitalization proposal;
+'   endif
+' else (no)
+'   #pink:User: Browse processed documents;
+'   :Browse processed documents;
+' endif
+' |#lightblue|DocumentsManager|
+' :Manage digitization process;
+' if (Document declined?) then (yes)
+'   |#lightblue|DocumentsManager: Decline proposal;
+'   :Decline digitization proposal;
+' else (no)
+'   |#lightblue|DocumentsManager: Add already digitized document;
+'   :Add already digitized document;
+' endif
+' |#lightgray|User|
+' if (Document found?) then (yes)
+'   :View document details;
+' else (no)
+'   :Cancel search;
+' endif
+stop
+
+@enduml
