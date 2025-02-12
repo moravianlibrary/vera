@@ -88,7 +88,7 @@ DocumentsManager --> DOC10
 DocumentsManager --> DOC11
 DocumentsManager --> DOC19
 
-newpage
+' newpage
 
 ' Draw settings
 left to right direction
@@ -151,7 +151,7 @@ CatalogRecordsReviewer --> CR11
 
 Admin --> CR6
 
-newpage
+' newpage
 
 ' Draw settings
 left to right direction
@@ -196,10 +196,10 @@ CategoriesManager --> CAT6
 
 ' Digitization Lists
 
-actor DigitizationStuff
+actor DigitizationStaff
 actor DigitizationManager
 
-DigitizationStuff <|-- DigitizationManager
+DigitizationStaff <|-- DigitizationManager
 
 package "Digitization Lists" {
     usecase "Pregenerate digitization list (based on categories, locations, etc.)" as DL1 <<Reimplement>>
@@ -210,9 +210,9 @@ package "Digitization Lists" {
     usecase "Remove digitalization list" as DL6 <<Already Implemented>>
 }
 
-DigitizationStuff --> DL1
-DigitizationStuff --> DL3
-DigitizationStuff --> DL4
+DigitizationStaff --> DL1
+DigitizationStaff --> DL3
+DigitizationStaff --> DL4
 
 DigitizationManager --> DL5
 DigitizationManager --> DL6
@@ -231,8 +231,8 @@ package "Locations" {
 Curator --> LOC2
 Curator --> LOC4
 
-DigitizationStuff --> LOC2
-DigitizationStuff --> LOC4
+DigitizationStaff --> LOC2
+DigitizationStaff --> LOC4
 
 DigitizationManager --> LOC1
 DigitizationManager --> LOC3
@@ -260,7 +260,7 @@ Curator --> INT6
 
 System --> INT6
 
-newpage
+' newpage
 
 ' Draw settings
 left to right direction

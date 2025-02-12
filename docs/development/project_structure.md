@@ -1,5 +1,6 @@
 # Structure
 
+```
 /vera
 │── /app
 │   ├── /ai
@@ -28,6 +29,7 @@
 │── /docs
 │── build.sh
 │── README.md
+```
 
 ## Build
 
