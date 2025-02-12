@@ -82,7 +82,7 @@ def approve_catalog_record_difference(
 
     # Catalog record validity was changed, reindexing documents
     task = Task(
-        task_type=TaskType.ReindexCatalogRecords,
+        task_type=TaskType.ReindexDocuments,
         owner=approved_by,
     ).save(session)
     for document_id in catalog_record.document_ids:
