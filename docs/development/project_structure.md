@@ -36,7 +36,7 @@
 Individual builds for different applications would wrap different parts of the project to container image.
 
 - VERA:
-    - MZK App
+    - MZK VERA App
     - Client
 - MARC Comparator:
     - App: catalog-connector, catalog-records, marc-comparator, tasks/catalog-records
