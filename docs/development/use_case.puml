@@ -32,6 +32,9 @@ actor DocumentsManager
 Curator <|-- DocumentsManager
 
 package "Adding Documents" {
+    usecase "Search through catalog" as DOC6 <<Planned>>
+    usecase "Choose identifier from search results" as DOC6 <<Planned>>
+    usecase "Find document by identifier" as DOC6 <<Planned>>
     usecase "Propose document for digitalization" as DOC1 <<Maybe In Future>>
     usecase "Cancel digitalization proposal" as DOC2 <<Maybe In Future>>
     usecase "Add document for digitalization" as DOC3 <<Already Implemented>>
@@ -39,6 +42,7 @@ package "Adding Documents" {
     usecase "Browse processed added/proposed documents" as DOC5 <<Already Implemented>>
     usecase "Add already digitized document" as DOC6 <<Planned>>
     usecase "Add document again (if processed before)" as DOC7 <<Planned>>
+    usecase "Set document page count" as DOC7 <<Already Implemented>>
 }
 
 package "Managing Digitization" {

@@ -1,0 +1,20 @@
+@startjson VERA - Comparator Config Json Schema
+[
+    {
+        "authoritativeInstitution": "string",
+        "compareGeneralInfo": "boolean",
+        "compareFields": [
+            {
+                "tags": ["string"],
+                "repeatable": "boolean",
+                "subfields": [
+                    {
+                        "code": "string",
+                        "repeatable": "boolean"
+                    }
+                ]
+            }
+        ]
+    }
+]
+@endjson

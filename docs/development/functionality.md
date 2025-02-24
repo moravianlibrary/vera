@@ -1,10 +1,28 @@
 # App/Client Configuration
 
-#### Client & Backend Configurations
-
+**Client & Backend Configurations**
 - Use shared JSON schemas for Pydantic (Python) or Java Spring (validators for client).
 - Support YAML-based configurations on both the backend and client side.
 - Create configuration validators for all application settings.
+
+**Institution Configuration Entity**
+
+**Comparator Configuration Entity**
+
+**VERA Configuration Entity**
+| Field |
+|-------|
+| Institution |
+
+
+**Kramerius Configuration Entity**
+| Field                      |
+|----------------------------|
+| Name                       |
+| Code                       |
+| API URL                    |
+| Version                    |
+| Use As Digitization Source |
 
 ---
 
@@ -73,14 +91,29 @@
 
 ## Digitization state modules
 
-#### Digitization registry module
+#### Digitization registry module (rd-cz)
 
 - get registry record for specific set of identificators
 
-#### Local Digitization registry module
+#### Local Digitization registry module (rd-local)
 
 - get state for specific document identified by barcode or sysno
 - set state for specific document
+
+#### Kramerius Digitization registry module (rd-kramerius)
+
+- if document found in specific Kramerius, then flag this document as AlreadyDigitized
+- save successfuly paired documents x Kramerius pid to database
+- enable defining multiple such modules
+
+**Kramerius Digitization Entity**
+| Field             |
+|-------------------|
+| Identifier Type   |
+| Identifier Value  |
+| Catalog Record ID |
+| Kramerius Code    |
+| Pid               |
 
 ---
 
@@ -123,23 +156,60 @@
 
 #### Document Addition
 
-- Add documents: synchronize using broker ("In Adding Process" state).
-- Save responses/state of adding, allow searching through responses/states.
-- Add page count to documents missing page count.
-- Select specific issue of a document when adding.
-- It should be possible to add units, volumes, bundles and standalones (in future maybe cd/dvd, lp) [find out all possibilities from MZK Aleph]
+**General Functionality**
+- Search through the catalog and select an identifier from search results.
+- Two document addition modes:
+    - Direct Addition – Use a specific identifier (Barcode, ISXN, Signature, System Number).
+    - Search & Select – Search using other identifiers and choose a record/issue from results.
+- Display catalog records in search results with highlighted issues.
+- Search Box:
+    - Guess the identifier based on value format.
+    - Search by Title and Author.
+- Add Box:
+    - Validate identifier value format.
+- Add documents by synchronizing via broker (state: `InAddingProcess`).
+- Store responses and states of document additions, allowing later searches through them.
+- Automatically add missing page count if not present.
+- Allow selecting a specific issue of a document before adding.
+- Support adding:
+    - Units
+    - Volumes
+    - Bundles
+    - Standalone documents
+    - *Future: Possibly support CD/DVD, LP — check possibilities in MZK Aleph.*
 - Option to reset results (remove all results for a user).
-- *Config:* Option to automatically remove results after a set period.
-- When digitization state is not 'Not Digitized', then give option to add despite.
-- Based on permission, either add document or flag it as proposition.
+- If a document's digitization state is not `NotDigitized`, allow adding it manually despite being digitized.
+- Group Document Additions based on the input file name.
+- Display page count origin:
+    - Specific location in catalog record
+    - Predicted values (if enabled)
+- Configuration Options:
+    - Auto-remove results after a configurable period.
+    - Enable/disable page count prediction
 
-**Add Document**
-| Field           |
-|:----------------|
-| Identifier Type |
-| Identifier      |
-| Category        |
-| Priority        |
+**Functionality with propositions**
+- Depending on permissions, either:
+    - Directly add a document.
+    - Flag it as a proposition instead.
+- Create a default category for propositions.
+- Always add propositions to a dedicated `Propositions` category.
+- If adding as a curator, force category selection.
+
+**Document Addition Entity**
+| Field                     | Type          | Required | Default value |
+|:--------------------------|---------------|----------|---------------|
+| Identifier Type           | Enumeration   | Yes      |               |
+| Identifier Value          | String        | Yes      |               |
+| File Name                 | String        | No       | None          |
+| Category                  | Integer (ID)  | Yes      |               |
+| Priority                  | Integer [1-5] | No       | 3             |
+| Ignore Digitization State | Boolean       | No       | False         |
+| Add Again If Present      | Boolean       | No       | False         |
+
+**Enumerations**
+- Identifier Type - Barcode, System number, ISXN, Signature (location).
+
+**Activity Diagram**
 
 #### Document Updates & Actions
 
@@ -155,6 +225,16 @@
 - Allow users to choose document fields to export.
 - Add preset of fields.
 - Choose file location and filename, include preset field options.
+
+#### Documents View
+
+- Filter by facets
+- Search box:
+    - Checkbox option to search either exact match or use fuzzy search.
+    - When searching for exact match try to guess the Identifier Type based on format (e.g. barcode of format `\d{10}`)
+- Show recently added documents - from the last batch.
+- Displaying details of a document - all parseable properties and VERA properties.
+- Generating statistics.
 
 ---
 
