@@ -1,0 +1,74 @@
+@startuml
+
+skinparam classAttributeIconSize 0
+
+class CatalogConnector {
+  +getRecord(Code, RecordId): [Record, Status]
+  +search(CatalogQuery): [Code, RecordId, Record, Status]
+}
+
+class KrameriusConnector {
+  +search(KrameriusQuery): [KrameriusDocument, Status]
+}
+
+class RDConnector {
+  +getRecord(RecordId): [RDRecord, Status]
+  +search(RDQuery): [RDRecordId, RDRecord, Status]
+}
+
+class DigitizationRegistry {
+  +getRecord(DocumentId, DocumentIdentifiers): List[State, Source]
+  +updateState(DocumentId, State): void
+}
+
+class MARCComparator {
+  +compare(Record, Record): List[MARCDifferences]
+}
+
+class CatalogRecordsDatabase {
+  +getMainRecord(Code, RecordId):
+  +getAuthorityRecords(Code, RecordId):
+  +syncRecord(Code, RecordId):
+}
+
+class DocumentsService {
+  +process(): void
+  +validate(): bool
+}
+
+class CategoriesService {
+  +process(): void
+  +validate(): bool
+}
+
+class DigitizationListsService {
+  +process(): void
+  +validate(): bool
+}
+
+' Implementing interfaces
+IConnector <|.. CatalogConnector
+IConnector <|.. KrameriusConnector
+IConnector <|.. RDConnector
+
+IDataSource <|.. Registry
+IDataSource <|.. Comparator
+
+IService <|.. CatalogRecordsService
+IService <|.. DocumentsService
+IService <|.. CategoriesService
+IService <|.. DigitizationListsService
+
+' Dependencies
+CatalogConnector --> Z39_50 : Uses
+CatalogConnector --> X_API : Uses
+CatalogConnector --> OAI_API : Uses
+
+KrameriusConnector --> Registry : Reads from
+RDConnector --> Registry : Reads from
+
+CatalogRecordsService --> Comparator : Compares records
+DocumentsService --> CatalogRecordsService : Fetches records
+
+@enduml
+
