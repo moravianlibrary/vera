@@ -1,28 +1,20 @@
 @startuml
-
 skinparam classAttributeIconSize 0
 
-class CatalogConnector {
-  +getRecord(Code, RecordId): [Record, Status]
-  +search(CatalogQuery): [Code, RecordId, Record, Status]
-}
+package "Connectors" {
+  class CatalogConnector {
+    +getRecord(Code, RecordId): [Record, Status]
+    +search(CatalogQuery): [Code, RecordId, Record, Status]
+  }
 
-class KrameriusConnector {
-  +search(KrameriusQuery): [KrameriusDocument, Status]
-}
+  class KrameriusConnector {
+    +search(KrameriusQuery): [KrameriusDocument, Status]
+  }
 
-class RDConnector {
-  +getRecord(RecordId): [RDRecord, Status]
-  +search(RDQuery): [RDRecordId, RDRecord, Status]
-}
-
-class DigitizationRegistry {
-  +getRecord(DocumentId, DocumentIdentifiers): List[State, Source]
-  +updateState(DocumentId, State): void
-}
-
-class MARCComparator {
-  +compare(Record, Record): List[MARCDifferences]
+  class RDConnector {
+    +getRecord(RecordId): [RDRecord, Status]
+    +search(RDQuery): [RDRecordId, RDRecord, Status]
+  }
 }
 
 class CatalogRecordsDatabase {
@@ -31,44 +23,222 @@ class CatalogRecordsDatabase {
   +syncRecord(Code, RecordId):
 }
 
-class DocumentsService {
-  +process(): void
-  +validate(): bool
+package "Digitization Planner" {
+
+  package "API Controllers" {
+    class DocumentsController {
+      +add(DocumentAddition): Status
+      +searchAdditions(DocumentAdditionsQuery): DocumentAdditionsResponse
+      +clearAdditionResponses(): Message
+      +search(DocumentsQuery): DocumentsResponse
+      +export(DocumentsQuery): DocumentsFile
+      +updateProperty(DocumentsQuery): Message
+      +delete(DocumentsQuery): Message
+      +declineDigitization(DocumentsQuery): Message
+      +cancelDigitizationDeclination(DocumentsQuery): Message
+      +runTask(DocumentsQuery, Task): Message
+      +generateList(adhereToCategories: Boolean): 
+    }
+
+    class CatalogRecordsController {
+      +get(CatalogRecordId): CatalogRecord
+      +search(CatalogRecordsQuery): CatalogRecordsResponse
+      +approveDifference(DifferenceId): CatalogRecord
+      +rescindDifference(DifferenceId): CatalogRecord
+      +createList():
+      +updateList():
+      +deleteList():
+    }
+
+    class CategoriesController {
+      +create(): Category
+      +update(): Category
+      +delete(): Category
+      +search(): Categories
+    }
+
+    class IntentionsController {
+      +create(): Intention
+      +update(): Intention
+      +delete(): Intention
+      +search(): Intentions
+    }
+
+    class DigitizationListsController {
+      +create(): DigitizationList
+      +delete(): DigitizationList
+      +addDocuments(): DigitizationList
+      +removeDocuments(): DigitizationList
+      +search(): DigitizationLists
+    }
+
+    class UserController {
+      +getNotifications(): UserNotifications
+      +getSettings(): UserSettings
+      +saveSettings(UserSettings): UserSettings
+    }
+  }
+
+  package "Security" {
+    class Permission {}
+
+    class OwnershipPermission {}
+  }
+
+  package "Services" {
+    class DocumentsService {
+      +add(DocumentAddition): Status
+      +clearAdditionResponses(): Message
+      +export(DocumentsQuery): DocumentsFile
+      +updateProperty(DocumentsQuery): Message
+      +delete(DocumentsQuery): Message
+      +declineDigitization(DocumentsQuery): Message
+      +cancelDigitizationDeclination(DocumentsQuery): Message
+    }
+  }
+
+  package "Repositories" {
+    package "Type" {
+      enum IdentifierType {
+        Barcode
+        SystemNumber
+        ISXN
+        Signature
+      }
+    }
+
+    package "Model" {
+      class DocumentAddition {
+        +identifierType: Enum<IdentifierType>
+        +identifierValue: String
+        +filename: String | None = None
+        +category: Integer
+        +priority: Integer [1-5] = 3
+        +ignoreDigitizationState: Boolean = False
+        +addAgainIfPresent: Boolean = False
+      }
+
+      class Document {
+        +id: Integer
+        +recordId: String
+        +barcode: String | None
+        +volume: String | None
+        +volume_year: String | None
+        +bundle: String | None
+        +iteration: Integer | None
+        +documentSignature: String | None
+        +issuanceType: Enum<IssuanceType>
+        +added_at: Timestamp = now
+        +added_by: String
+        +categoryId: Integer
+        +pageCountCatalog: Integer | None
+        +pageCountPredicted: Integer | None
+        +pageCountManual: Integer | None
+        +priority: Integer [1-5]
+        +digitizationListId: Integer | None
+        +cnb(): String | None
+        +signature(): String | None
+        +isxn(): String | None
+        +pageCount(): Integer | None
+        +isExtractable(): Boolean
+        +categoryName(): String
+        +categoryIds(): List<Integer>1
+        +extractedBy(): String | None
+        +extractedAt(): String | None
+      }
+
+      class Category {
+        +id: Integer
+        +name: String
+        +descripton: String | None
+        +parentId: Integer | None = None
+        +level: Integer = 0
+        +assignable: Boolean = False
+        +extractWhole: Boolean = False
+        +disabled: Boolean = False
+        +archived: Boolean = False
+        +directlyAssignedTo: GroupName | UserName | None = None
+        +sourceTask: BashScriptTask | None = None
+        +assignedTo(): GroupName | UserName | None = None
+        +totalPageCount(): Integer
+        +totalDocuments(): Integer
+        +extractablePageCount(): Integer
+        +extractableDocuments(): Integer
+        +extractedPageCount(): Integer
+        +extractedDocuments(): Integer
+      }
+    }
+
+    class DocumentAdditionRepository {
+      +get():
+      +save():
+      +index():
+      +search(DocumentAdditionsQuery): DocumentAdditionsResponse
+    }
+
+    class DocumentRepository {
+      +get():
+      +save():
+      +index():
+      +search(DocumentQuery): DocumentsResponse
+    }
+
+    class CatalogRecordsRepository {
+      +get():
+      +save():
+      +index():
+      +search(CatalogRecordsQuery): CatalogRecordsResponse
+    }
+
+    class CategoriesRepository {
+      +get():
+      +save():
+      +index():
+      +search(CategoriesQuery): CategoriesResponse
+    }
+  }
+
+  "API Controllers" --> "Security": Enforces permissions
 }
 
-class CategoriesService {
-  +process(): void
-  +validate(): bool
+package "Digitization Registry" {
+  class Controller {
+    +getRecord(DocumentId, DocumentIdentifiers): List[State, Source]
+    +updateState(DocumentId, State): void
+  }
 }
 
-class DigitizationListsService {
-  +process(): void
-  +validate(): bool
+package "MARC Comparator" {
+  class Controller {
+    +compare(Record, Record): List[MARCDifferences]
+    +loadFromArchive(ArchiveFile, MappingFile): void
+  }
+
+  class Service {
+    +compare(Record, Record): List[MARCDifferences]
+    +loadFromArchive(ArchiveFile, MappingFile): void
+  }
+
+  class Repository {
+    +saveArchive(ArchiveFile): void
+    +saveMapping(MappingFile): void
+    +saveComparison(): void
+    +loadComparison(): void
+  }
+
+  Controller --> Service : Uses
+  Service --> Repository : Uses
 }
-
-' Implementing interfaces
-IConnector <|.. CatalogConnector
-IConnector <|.. KrameriusConnector
-IConnector <|.. RDConnector
-
-IDataSource <|.. Registry
-IDataSource <|.. Comparator
-
-IService <|.. CatalogRecordsService
-IService <|.. DocumentsService
-IService <|.. CategoriesService
-IService <|.. DigitizationListsService
 
 ' Dependencies
-CatalogConnector --> Z39_50 : Uses
-CatalogConnector --> X_API : Uses
-CatalogConnector --> OAI_API : Uses
 
-KrameriusConnector --> Registry : Reads from
-RDConnector --> Registry : Reads from
+CatalogRecordsDatabase --> CatalogConnector : Fetches records
+CatalogRecordsDatabase --> MARCComparator : Compares records
+CatalogConnector --> Aleph_Z39_50 : Uses
+CatalogConnector --> Aleph_X_API : Uses
+CatalogConnector --> Aleph_OAI_API : Uses
 
-CatalogRecordsService --> Comparator : Compares records
-DocumentsService --> CatalogRecordsService : Fetches records
+DigitizationRegistry --> RDConnector : Reads from
+DigitizationRegistry --> KrameriusConnector : Reads from
 
 @enduml
-

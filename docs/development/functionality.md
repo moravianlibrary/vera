@@ -246,6 +246,7 @@
 - Search categories by name, user group name, digitization list.
 - Assign categories to user groups or individual users.
 - Set automatic categories from sources like catalog, registry, or Kramerius.
+- On logging show users that are assigned to some category (either by their username or groupname) changes in the categories.
 
 **Category**
 | Field               |
