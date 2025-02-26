@@ -1,0 +1,58 @@
+catalogConfig:
+  main:
+    properties:
+      cnb:
+        source:
+          - field: "020"
+            subfield: "a"
+            regex: "^(\\d+)"
+
+      language:
+        source:
+          - field: "008"
+            controlFieldPosition: [35, 37]
+
+      isxn:
+        source:
+          - field: "020"
+            subfield: "a"
+
+      signature:
+        source:
+          - field: "100"
+            subfield: "a"
+
+      barcodes:
+        source:
+          - field: "020"
+            subfield: "a"
+
+      materialType:
+        source:
+          - field: "020"
+            subfield: "a"
+
+      author:
+        source:
+          - field: "100"
+            subfield: "a"
+
+      title:
+        source:
+          - field: "245"
+            subfield: "a"
+
+      subtitle:
+        source:
+          - field: "245"
+            subfield: "b"
+
+      size:
+        source:
+          - field: "245"
+            subfield: "b"
+
+      locationUri:
+        source:
+          - field: "245"
+            subfield: "b"

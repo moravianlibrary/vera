@@ -27,22 +27,18 @@ package "Digitization Planner" {
 
   package "API Controllers" {
     class DocumentsController {
-      +add(DocumentAddition): Status
+      +add(List<DocumentAddition>): Message
       +searchAdditions(DocumentAdditionsQuery): DocumentAdditionsResponse
       +clearAdditionResponses(): Message
       +search(DocumentsQuery): DocumentsResponse
       +export(DocumentsQuery): DocumentsFile
-      +updateProperty(DocumentsQuery): Message
-      +delete(DocumentsQuery): Message
-      +declineDigitization(DocumentsQuery): Message
-      +cancelDigitizationDeclination(DocumentsQuery): Message
-      +runTask(DocumentsQuery, Task): Message
-      +generateList(adhereToCategories: Boolean): 
+      +runTask(DocumentsQuery, DocumentsTask): Message
     }
 
     class CatalogRecordsController {
       +get(CatalogRecordId): CatalogRecord
       +search(CatalogRecordsQuery): CatalogRecordsResponse
+      +runTask(CatalogRecordsQuery, CatalogRecordsTask): Message
       +approveDifference(DifferenceId): CatalogRecord
       +rescindDifference(DifferenceId): CatalogRecord
       +createList():
@@ -55,6 +51,8 @@ package "Digitization Planner" {
       +update(): Category
       +delete(): Category
       +search(): Categories
+      +getScript(CategoryId): BashScriptFile
+      +saveScript(CategoryId, BashScriptFile | None): Message
     }
 
     class IntentionsController {
@@ -94,28 +92,84 @@ package "Digitization Planner" {
       +delete(DocumentsQuery): Message
       +declineDigitization(DocumentsQuery): Message
       +cancelDigitizationDeclination(DocumentsQuery): Message
+      +generateList(adhereToCategories: Boolean):
+    }
+  }
+
+  package "Types" {
+    enum IdentifierType {
+      Barcode
+      SystemNumber
+      ISXN
+      Signature
+    }
+
+    enum DocumentsTask {
+      UpdateProperty
+      Remove
+      Reindex
+      SyncDigitizationState
+      SyncCatalogRecord
+      PredictPageCount
+      DeclineDigitization
+      CancelDigitizationDeclination
+      GenerateDigitizationList
+    }
+
+    enum CatalogRecordsTask {
+      Reindex
+      Sync
+      ReevaluateDifferences
+    }
+
+    enum SystemTask {
+      RecreateIndexes
+      GenerateBackup
+      LoadFromBackup
+      FindAndRepairInconsistencies
+    }
+
+    enum CategoriesTask {
+      AddDocumentsUsingScript
     }
   }
 
   package "Repositories" {
-    package "Type" {
-      enum IdentifierType {
-        Barcode
-        SystemNumber
-        ISXN
-        Signature
-      }
-    }
 
     package "Model" {
       class DocumentAddition {
         +identifierType: Enum<IdentifierType>
         +identifierValue: String
+        +owner: String
         +filename: String | None = None
         +category: Integer
         +priority: Integer [1-5] = 3
         +ignoreDigitizationState: Boolean = False
         +addAgainIfPresent: Boolean = False
+      }
+
+      class CatalogRecord {
+        +id: String
+        +base: String
+        +code: String
+        +marc: Binary
+        +unreachable: Boolean = False
+        +addedAt: Timestamp
+        +updatedAt: Timestamp
+      }
+
+      class CatalogRecordAuthority {
+        +mainId: String
+        +authorityBase: String
+        +isValid: Boolean = True
+        +hasDifferences: Boolean = False
+        +authorityId: String | None = None
+      }
+
+      class CatalogRecordDifference {
+        +id: Integer
+        +mainId: String
+        +authorityId: String
       }
 
       class Document {
@@ -142,7 +196,7 @@ package "Digitization Planner" {
         +pageCount(): Integer | None
         +isExtractable(): Boolean
         +categoryName(): String
-        +categoryIds(): List<Integer>1
+        +categoryIds(): List<Integer>
         +extractedBy(): String | None
         +extractedAt(): String | None
       }
@@ -158,7 +212,7 @@ package "Digitization Planner" {
         +disabled: Boolean = False
         +archived: Boolean = False
         +directlyAssignedTo: GroupName | UserName | None = None
-        +sourceTask: BashScriptTask | None = None
+        +sourceTask: BashScriptFile | None = None
         +assignedTo(): GroupName | UserName | None = None
         +totalPageCount(): Integer
         +totalDocuments(): Integer
