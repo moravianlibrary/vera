@@ -3,9 +3,9 @@ catalogConfig:
     properties:
       cnb:
         source:
-          - field: "020"
+          - field: "015"
             subfield: "a"
-            regex: "^(\\d+)"
+            pattern: "^cnb(\\d{9})$"
 
       language:
         source:
@@ -16,11 +16,17 @@ catalogConfig:
         source:
           - field: "020"
             subfield: "a"
+          - field: "022"
+            subfield: "a"
+        takeFirst: true
 
       signature:
         source:
-          - field: "100"
-            subfield: "a"
+          - field: "910"
+            subfield: "b"
+          - field: "910"
+            subfield: "c"
+        takeFirst: true
 
       barcodes:
         source:
@@ -29,7 +35,7 @@ catalogConfig:
 
       materialType:
         source:
-          - field: "020"
+          - field: "990"
             subfield: "a"
 
       author:
@@ -47,12 +53,36 @@ catalogConfig:
           - field: "245"
             subfield: "b"
 
+      extent:
+        source:
+          - field: "300"
+            subfield: "a"
+
       size:
         source:
-          - field: "245"
-            subfield: "b"
+          - field: "300"
+            subfield: "c"
 
       locationUri:
         source:
-          - field: "245"
-            subfield: "b"
+          - field: "856"
+            ind1: "4"
+            ind2: "1"
+            subfield: "u"
+      
+      currentFrequency:
+        source:
+          - tuple:
+            - field: "310"
+              subfield: "a"
+            - field: "310"
+              subfield: "b"
+
+      formerFrequency:
+        source:
+          - tuple:
+            - field: "321"
+              subfield: "a"
+            - field: "321"
+              subfield: "b"
+

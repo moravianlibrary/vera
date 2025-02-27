@@ -151,11 +151,18 @@ package "Digitization Planner" {
       class CatalogRecord {
         +id: String
         +base: String
-        +code: String
+        +systemNumber: String
         +marc: Binary
         +unreachable: Boolean = False
         +addedAt: Timestamp
         +updatedAt: Timestamp
+        +hasAddedDocuments(): Boolean
+        +hasActiveDocuments(): Boolean
+        +isValid(): Boolean
+        +authoritiesRecordIds(): List<String>
+        +authoritiesMarc(): List<Marc>
+        +authoritiesDifference(): List<MarcDifference>
+        +authoritiesDifferenceFlags(): List<DifferenceFlag>
       }
 
       class CatalogRecordAuthority {
