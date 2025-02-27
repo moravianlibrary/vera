@@ -27,70 +27,82 @@ endlegend
 
 actor User
 actor Curator
-actor DocumentsManager
+actor DigitizationManager
 
-Curator <|-- DocumentsManager
+Curator <|-- DigitizationManager
 
 package "Adding Documents" {
-    usecase "Search through catalog" as DOC6 <<Planned>>
-    usecase "Choose identifier from search results" as DOC6 <<Planned>>
-    usecase "Find document by identifier" as DOC6 <<Planned>>
-    usecase "Propose document for digitalization" as DOC1 <<Maybe In Future>>
-    usecase "Cancel digitalization proposal" as DOC2 <<Maybe In Future>>
-    usecase "Add document for digitalization" as DOC3 <<Already Implemented>>
-    usecase "Select specific unit to add/propose" as DOC4 <<Already Implemented>>
-    usecase "Browse processed added/proposed documents" as DOC5 <<Already Implemented>>
-    usecase "Add already digitized document" as DOC6 <<Planned>>
-    usecase "Add document again (if processed before)" as DOC7 <<Planned>>
-    usecase "Set document page count" as DOC7 <<Already Implemented>>
+    usecase "Search through catalog" as DOC_ADD1 <<Planned>>
+    usecase "Choose identifier from search results" as DOC_ADD2 <<Planned>>
+    usecase "Find document by identifier" as DOC_ADD3 <<Already Implemented>>
+    usecase "Propose document for digitalization" as DOC_ADD4 <<Maybe In Future>>
+    usecase "Cancel digitalization proposal" as DOC_ADD5 <<Maybe In Future>>
+    usecase "Add document for digitalization" as DOC_ADD6 <<Already Implemented>>
+    usecase "Select specific unit to add/propose" as DOC_ADD7 <<Already Implemented>>
+    usecase "Browse processed added/proposed documents" as DOC_ADD8 <<Already Implemented>>
+    usecase "Add already digitized document" as DOC_ADD9 <<Planned>>
+    usecase "Add document again (if processed before)" as DOC_ADD10 <<Planned>>
+    usecase "Set document page count" as DOC_ADD11 <<Already Implemented>>
 }
 
 package "Managing Digitization" {
-    usecase "Decline digitization proposal" as DOC8 <<Maybe In Future>>
-    usecase "Cancel the decline of document digitization proposal" as DOC9 <<Maybe In Future>>
-    usecase "Decline digitization" as DOC10 <<Planned>>
-    usecase "Cancel digitization decline" as DOC11 <<Planned>>
+    usecase "Decline digitization proposal" as DIGI_MAN1 <<Planned>>
+    usecase "Cancel the decline of document digitization proposal" as DIGI_MAN2 <<Planned>>
+    usecase "Decline digitization" as DIGI_MAN3 <<Planned>>
+    usecase "Cancel digitization decline" as DIGI_MAN4 <<Planned>>
 }
 
 package "Reading Documents" {
-    usecase "Search for documents (based on ownership permission)" as DOC12 <<Already Implemented>>
-    usecase "View document details" as DOC13 <<Already Implemented>>
+    usecase "Search for documents (based on ownership permission)" as DOC_READ1 <<Already Implemented>>
+    usecase "View document details" as DOC_READ2 <<Already Implemented>>
 }
 
 package "Editing Documents" {
-    usecase "Update document category" as DOC14 <<Already Implemented>>
-    usecase "Update extraction priority" as DOC15 <<Already Implemented>>
-    usecase "Update manual page count" as DOC16 <<Already Implemented>>
-    usecase "Run tasks on document" as DOC17 <<Already Implemented>>
-    usecase "Archive document" as DOC18 <<Planned>>
-    usecase "Remove document" as DOC19 <<Reimplement>>
+    usecase "Update document category" as DOC_EDIT1 <<Already Implemented>>
+    usecase "Update extraction priority" as DOC_EDIT2 <<Already Implemented>>
+    usecase "Update manual page count" as DOC_EDIT3 <<Already Implemented>>
+    usecase "Reindex document" as DOC_EDIT4 <<Already Implemented>>
+    usecase "Synchronize digitization state" as DOC_EDIT5 <<Already Implemented>>
+    usecase "Synchronize from catalog" as DOC_EDIT6 <<Already Implemented>>
+    usecase "Archive document" as DOC_EDIT7 <<Planned>>
+    usecase "Remove document" as DOC_EDIT8 <<Reimplement>>
 }
 
-User --> DOC1
-User --> DOC2
-User --> DOC4
-User --> DOC5
-User --> DOC12
-User --> DOC13
+User --> DOC_ADD1
+User --> DOC_ADD2
+User --> DOC_ADD3
+User --> DOC_ADD4
+User --> DOC_ADD7
+User --> DOC_ADD8
+User --> DOC_READ1
+User --> DOC_READ2
 
-Curator --> DOC3
-Curator --> DOC4
-Curator --> DOC5
-Curator --> DOC12
-Curator --> DOC13
-Curator --> DOC14
-Curator --> DOC15
-Curator --> DOC16
-Curator --> DOC17
-Curator --> DOC18
+Curator --> DOC_ADD1
+Curator --> DOC_ADD2
+Curator --> DOC_ADD3
+Curator --> DOC_ADD6
+Curator --> DOC_ADD7
+Curator --> DOC_ADD8
+Curator --> DOC_ADD11
+Curator --> DOC_READ1
+Curator --> DOC_READ2
+Curator --> DOC_EDIT1
+Curator --> DOC_EDIT2
+Curator --> DOC_EDIT3
+Curator --> DOC_EDIT4
+Curator --> DOC_EDIT5
+Curator --> DOC_EDIT6
+Curator --> DOC_EDIT7
 
-DocumentsManager --> DOC6
-DocumentsManager --> DOC7
-DocumentsManager --> DOC8
-DocumentsManager --> DOC9
-DocumentsManager --> DOC10
-DocumentsManager --> DOC11
-DocumentsManager --> DOC19
+DigitizationManager --> DOC_ADD5
+DigitizationManager --> DOC_ADD9
+DigitizationManager --> DOC_ADD10
+DigitizationManager --> DOC_ADD11
+DigitizationManager --> DIGI_MAN1
+DigitizationManager --> DIGI_MAN2
+DigitizationManager --> DIGI_MAN3
+DigitizationManager --> DIGI_MAN4
+DigitizationManager --> DOC_EDIT8
 
 ' newpage
 
@@ -130,18 +142,21 @@ package "Catalog Record Operations" {
     usecase "Set up auto-approve for specific difference categories" as CR6 <<Planned>>
     usecase "Decline digitalization from specific record" as CR7 <<Planned>>
     usecase "Cancel declination of digitization" as CR8 <<Planned>>
-    usecase "Run tasks on catalog records" as CR9 <<Already Implemented>>
+    usecase "Reindex" as CR9 <<Already Implemented>>
+    usecase "Reevaluate differences" as CR10 <<Already Implemented>>
+    usecase "Synchronize with catalog" as CR11 <<Already Implemented>>
+    usecase "Add record independently from documents" as CR12 <<Planned>>
 }
 
 package "Catalog Records Lists" {
-    usecase "Manage catalog record lists" as CR10 <<Planned>>
-    usecase "Assign lists to users" as CR11 <<Planned>>
-    usecase "Notify users via email or in-app when list changes" as CR12 <<Planned>>
+    usecase "Manage catalog record lists" as CR13 <<Planned>>
+    usecase "Assign lists to users" as CR14 <<Planned>>
+    usecase "Notify users via email or in-app when list changes" as CR15 <<Planned>>
 }
 
 System --> CR1
 System --> CR2
-System --> CR12
+System --> CR15
 
 Curator --> CR3
 
@@ -152,6 +167,9 @@ CatalogRecordsReviewer --> CR8
 CatalogRecordsReviewer --> CR9
 CatalogRecordsReviewer --> CR10
 CatalogRecordsReviewer --> CR11
+CatalogRecordsReviewer --> CR12
+CatalogRecordsReviewer --> CR13
+CatalogRecordsReviewer --> CR14
 
 Admin --> CR6
 
@@ -186,7 +204,7 @@ package "Category Operations" {
     usecase "Search categories" as CAT2 <<Reimplement>>
     usecase "Use categories while adding documents" as CAT3 <<Already Implemented>>
     usecase "Assign categories to user groups or to individual users" as CAT4 <<Planned>>
-    usecase "Set automatic categories from data sources" as CAT5 <<Planned>>
+    usecase "Assign bash(?) script to category to be used as documents source" as CAT5 <<Planned>>
     usecase "Manage category distributions" as CAT6 <<Reimplement>>
 }
 
@@ -290,7 +308,7 @@ package "Task Operations" {
     usecase "Reindex items" as TSK1 <<Already Implemented>>
     usecase "Add documents" as TSK2 <<Already Implemented>>
     usecase "Sync items with external sources" as TSK3 <<Already Implemented>>
-    usecase "Generate datasets based on specific rules" as TSK4 <<Planned>>
+    usecase "Generate datasets by running provided scripts" as TSK4 <<Planned>>
     usecase "Schedule periodic tasks" as TSK5 <<Already Implemented>>
     usecase "Manage periodic tasks" as TSK6 <<Already Implemented>>
 }

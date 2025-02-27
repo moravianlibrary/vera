@@ -29,14 +29,14 @@ package "Digitization Planner" {
     class DocumentsController {
       +add(List<DocumentAddition>): Message
       +searchAdditions(DocumentAdditionsQuery): DocumentAdditionsResponse
-      +clearAdditionResponses(): Message
+      +closeAdditions(DocumentAdditionsQuery): Message
       +search(DocumentsQuery): DocumentsResponse
       +export(DocumentsQuery): DocumentsFile
       +runTask(DocumentsQuery, DocumentsTask): Message
     }
 
     class CatalogRecordsController {
-      +get(CatalogRecordId): CatalogRecord
+      +get(CatalogBase, SystemNumber): CatalogRecord
       +search(CatalogRecordsQuery): CatalogRecordsResponse
       +runTask(CatalogRecordsQuery, CatalogRecordsTask): Message
       +approveDifference(DifferenceId): CatalogRecord
@@ -51,8 +51,8 @@ package "Digitization Planner" {
       +update(): Category
       +delete(): Category
       +search(): Categories
-      +getScript(CategoryId): BashScriptFile
-      +saveScript(CategoryId, BashScriptFile | None): Message
+      +getScript(CategoryId): BashScriptFile | None
+      +updateScript(CategoryId, BashScriptFile | None): Message
     }
 
     class IntentionsController {
@@ -74,6 +74,17 @@ package "Digitization Planner" {
       +getNotifications(): UserNotifications
       +getSettings(): UserSettings
       +saveSettings(UserSettings): UserSettings
+    }
+
+    class SystemController {
+      +testEntityProperty(EntityProperty):
+      +createEntityProperty(EntityProperty):
+      +updateEntityProperty(EntityPropertyId):
+      +deleteEntityProperty(Entity, EntityPropertyId):
+      +searchEntityProperties()
+      +runTask(SystemTask): Message
+      +listBackups()
+      +downloadBackup()
     }
   }
 
@@ -187,7 +198,6 @@ package "Digitization Planner" {
         +volume_year: String | None
         +bundle: String | None
         +iteration: Integer | None
-        +documentSignature: String | None
         +issuanceType: Enum<IssuanceType>
         +added_at: Timestamp = now
         +added_by: String
@@ -197,15 +207,15 @@ package "Digitization Planner" {
         +pageCountManual: Integer | None
         +priority: Integer [1-5]
         +digitizationListId: Integer | None
-        +cnb(): String | None
-        +signature(): String | None
-        +isxn(): String | None
         +pageCount(): Integer | None
         +isExtractable(): Boolean
         +categoryName(): String
         +categoryIds(): List<Integer>
         +extractedBy(): String | None
         +extractedAt(): String | None
+      }
+
+      class ParsingScript {
       }
 
       class Category {
@@ -218,15 +228,40 @@ package "Digitization Planner" {
         +extractWhole: Boolean = False
         +disabled: Boolean = False
         +archived: Boolean = False
-        +directlyAssignedTo: GroupName | UserName | None = None
         +sourceTask: BashScriptFile | None = None
-        +assignedTo(): GroupName | UserName | None = None
+        +directlyAssignedTo: List<GroupName> | List<UserName> | None = None
+        +assignedTo(): List<GroupName> | List<UserName> | None = None
         +totalPageCount(): Integer
         +totalDocuments(): Integer
         +extractablePageCount(): Integer
         +extractableDocuments(): Integer
         +extractedPageCount(): Integer
         +extractedDocuments(): Integer
+      }
+
+      class Connector {
+        +name: String
+                
+      }
+
+      class EntityProperty {
+        +id: Integer
+        +entity: 
+        +name: String
+        +translations: JSON
+        +parseScript: ParseScript
+      }
+
+      class CategoriesDistribution {
+        +id: Integer
+        +name: String
+        +active: Boolean
+      }
+
+      class CategoryDistribution {
+        +categoryId: Integer
+        +distributionId: Integer
+        +percentage: Float
       }
     }
 
