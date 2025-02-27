@@ -2,18 +2,97 @@
 skinparam classAttributeIconSize 0
 
 package "Connectors" {
-  class CatalogConnector {
-    +getRecord(Code, RecordId): [Record, Status]
-    +search(CatalogQuery): [Code, RecordId, Record, Status]
+
+  package "Catalog" {
+    enum CatalogFetchStatus {
+      CatalogUnavailable
+      CatalogRequestFailed
+      RecordNotFound
+      UnrecognizedBase
+      InvalidSystemNumber
+      Success
+    }
+
+    class CatalogGetResponse {
+      record: Record | None
+      status: CatalogFetchStatus
+    }
+
+    class CatalogSearchItem {
+      base: String
+      systemNumber: String
+      record: Record
+    }
+
+    class CatalogSearchResponse {
+      items: List<CatalogSearchItem> | None
+      numFound: Integer
+      status: CatalogFetchStatus
+    }
+
+    interface CatalogConnector {
+      +getRecord(base: String, systemNumber: String): CatalogGetResponse
+      +search(
+        value: String,
+        base: String | None,
+        field: String | None,
+        page: Integer,
+        pageSize: Integer
+      ): CatalogSearchResponse
+    }
+
+    class CatalogDispatcher {
+      +loadConfig(config: CatalogConnectorConfig): None
+      +getRecord(base: String, systemNumber: String): CatalogGetResponse
+      +search(
+        value: String,
+        base: String | None,
+        field: String | None,
+        page: Integer,
+        pageSize: Integer
+      ): CatalogSearchResponse
+    }
   }
 
-  class KrameriusConnector {
-    +search(KrameriusQuery): [KrameriusDocument, Status]
-  }
+  package "Digitization Registry" {
+    enum DRFetchStatus {
+      Unavailable
+      RequestFailed
+      Success
+    }
 
-  class RDConnector {
-    +getRecord(RecordId): [RDRecord, Status]
-    +search(RDQuery): [RDRecordId, RDRecord, Status]
+    enum DRState {
+      Finished
+      InProgress
+      Planned
+      NotDigitized
+      Revision
+      Unknown
+    }
+
+    class DRConnectorResponse {
+      source: String | None
+      id: Integer | None
+      state: DRState | None
+      status: FetchStatus
+    }
+
+    interface DRConnector {
+      +getRecord(recordId: String): DRConnectorResponse
+      +search(record: Record, issue: Issue): DRConnectorResponse
+    }
+
+    class RDczConnector implements DRConnector {
+    }
+
+    class DRKrameriusConnector implements DRConnector {
+    }
+
+    class DRDispatcher {
+      +loadConfig(config: DRConnectorConfig): None
+      +getRecord(recordId: String): List<DRConnectorResponse>
+      +search(record: Record, issue: Issue): List<DRConnectorResponse>
+    }
   }
 }
 
@@ -25,55 +104,96 @@ class CatalogRecordsDatabase {
 
 package "Digitization Planner" {
 
+  package "Schemas" {
+    class MessageResponse {
+      status: StatusCode,
+      message: String
+    }
+
+    class UpdateMessageResponse<T> extends MessageResponse {
+      item: T | None
+    }
+
+    class DocumentAddition {
+      identifierType: IdentifierType
+      identifierValue: String
+      fileName: String | None
+      categoryId: Integer | None
+      priority: Integer [1-5] | None
+      ignoreDigitizationState: Boolean | None
+      addAgainIfPresent: Boolean | None
+    }
+
+    class ProcessedDocumentAddition extends DocumentAddition {
+      identifierType: IdentifierType
+      identifierValue: String
+      owner: String
+      record: Record | None
+      status: DocumentAdditionStatus
+    }
+  }
+
   package "API Controllers" {
+    class DocumentAdditionsController {
+      +add(additions: List<DocumentAddition>): MessageResponse
+      +search(query: DocumentAdditionQuery): DocumentAdditionResponse
+      +close(query: DocumentAdditionQuery): MessageResponse
+      +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): MessageResponse
+      +declineProposal(query: DocumentAdditionQuery): MessageResponse
+    }
+
     class DocumentsController {
-      +add(List<DocumentAddition>): Message
-      +searchAdditions(DocumentAdditionsQuery): DocumentAdditionsResponse
-      +closeAdditions(DocumentAdditionsQuery): Message
-      +search(DocumentsQuery): DocumentsResponse
-      +export(DocumentsQuery): DocumentsFile
-      +runTask(DocumentsQuery, DocumentsTask): Message
+      +search(DocumentQuery): DocumentResponse
+      +export(DocumentQuery): DocumentFile
+      +runTask(DocumentQuery, DocumentTask): MessageResponse
     }
 
     class CatalogRecordsController {
-      +get(CatalogBase, SystemNumber): CatalogRecord
-      +search(CatalogRecordsQuery): CatalogRecordsResponse
-      +runTask(CatalogRecordsQuery, CatalogRecordsTask): Message
-      +approveDifference(DifferenceId): CatalogRecord
-      +rescindDifference(DifferenceId): CatalogRecord
-      +createList():
-      +updateList():
-      +deleteList():
+      +search(query: CatalogRecordQuery): CatalogRecordResponse
+      +runTask(query: CatalogRecordQuery, CatalogRecordTask): MessageResponse
+      +approveDifference(differenceId: Integer): MessageResponse<CatalogRecord>
+      +rescindDifference(differenceId: Integer): MessageResponse<CatalogRecord>
+      +createList(list: CatalogRecordListEdit): MessageResponse<CatalogRecordList>
+      +updateList(listId: Integer, list: CatalogRecordListEdit): MessageResponse<CatalogRecordList>
+      +deleteList(listId: Integer): MessageResponse
+      +searchLists(query: CatalogRecordListQuery): CatalogRecordListResponse
     }
 
     class CategoriesController {
-      +create(): Category
-      +update(): Category
-      +delete(): Category
-      +search(): Categories
-      +getScript(CategoryId): BashScriptFile | None
-      +updateScript(CategoryId, BashScriptFile | None): Message
+      +create(category: CategoryEdit): MessageResponse
+      +update(categoryId: Integer, category: CategoryEdit): MessageResponse<Category>
+      +changeParent(
+        categoryId: Integer,
+        fromParent: Integer | None,
+        toParent: Integer | None
+      ): MessageResponse
+      +delete(categoryId: Integer): MessageResponse
+      +search(query: CategoryQuery): CategoryResponse
+      +getScript(categoryId: Integer): MessageResponse<Script>
+      +updateScript(categoryId: Integer, script: Script | None): MessageResponse
     }
 
     class IntentionsController {
-      +create(): Intention
-      +update(): Intention
-      +delete(): Intention
-      +search(): Intentions
+      +create(intention: IntentionEdit): MessageResponse
+      +update(intentionId: Integer, intention: IntentionEdit): MessageResponse<Intention>
+      +delete(intentionId: Integer): MessageResponse
+      +search(query: IntentionQuery): IntentionResponse
+      +accept(intentionId: Integer): MessageResponse
+      +decline(intentionId: Integer): MessageResponse
     }
 
     class DigitizationListsController {
-      +create(): DigitizationList
-      +delete(): DigitizationList
-      +addDocuments(): DigitizationList
-      +removeDocuments(): DigitizationList
-      +search(): DigitizationLists
+      +create(query: DocumentQuery): MessageResponse
+      +delete(digitizationListId: Integer): MessageResponse
+      +addDocuments(digitizationListId: Integer, query: DocumentQuery): MessageResponse
+      +removeDocuments(digitizationListId: Integer, query: DocumentQuery): MesageResponse
+      +search(query: DigitizationListQuery): DigitizationListResponse
     }
 
     class UserController {
       +getNotifications(): UserNotifications
       +getSettings(): UserSettings
-      +saveSettings(UserSettings): UserSettings
+      +saveSettings(UserSettings): MessageResponse
     }
 
     class SystemController {
@@ -128,6 +248,9 @@ package "Digitization Planner" {
     }
 
     enum CatalogRecordsTask {
+      ApproveDifferences
+      RescindDifferences
+      IgnoreMissingAuthority
       Reindex
       Sync
       ReevaluateDifferences
