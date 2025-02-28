@@ -96,12 +96,6 @@ package "Connectors" {
   }
 }
 
-class CatalogRecordsDatabase {
-  +getMainRecord(Code, RecordId):
-  +getAuthorityRecords(Code, RecordId):
-  +syncRecord(Code, RecordId):
-}
-
 package "Digitization Planner" {
 
   package "Schemas" {
@@ -137,7 +131,7 @@ package "Digitization Planner" {
     class DocumentAdditionsController {
       +add(additions: List<DocumentAddition>): MessageResponse
       +search(query: DocumentAdditionQuery): DocumentAdditionResponse
-      +close(query: DocumentAdditionQuery): MessageResponse
+      +delete(query: DocumentAdditionQuery): MessageResponse
       +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): MessageResponse
       +declineProposal(query: DocumentAdditionQuery): MessageResponse
     }
@@ -215,10 +209,20 @@ package "Digitization Planner" {
   }
 
   package "Services" {
+    class DocumentAdditionService {
+      +enqueue(additions: List<DocumentAddition>): None
+      +restrictQuery(query: DocumentAdditionQuery, user: User): DocumentAdditionQuery
+      +delete(query: DocumentAdditionQuery): MessageResponse
+      +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): MessageResponse
+      +declineProposal(query: DocumentAdditionQuery): MessageResponse
+      +processAdditions()
+    }
+
     class DocumentsService {
-      +add(DocumentAddition): Status
-      +clearAdditionResponses(): Message
-      +export(DocumentsQuery): DocumentsFile
+      +restrictQuery(query: DocumentQuery, user: User): DocumentQuery
+      +generateExport(query: DocumentQuery): pd.Dataframe
+      +planTask(query: DocumentQuery, DocumentTask): MessageResponse
+
       +updateProperty(DocumentsQuery): Message
       +delete(DocumentsQuery): Message
       +declineDigitization(DocumentsQuery): Message
