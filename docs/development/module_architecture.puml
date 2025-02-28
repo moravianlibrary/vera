@@ -1,4 +1,5 @@
-@startuml
+@startuml VERA - Package Class Diagram
+
 skinparam classAttributeIconSize 0
 
 package "Connectors" {
@@ -74,7 +75,7 @@ package "Connectors" {
       source: String | None
       id: Integer | None
       state: DRState | None
-      status: FetchStatus
+      status: DRFetchStatus
     }
 
     interface DRConnector {
@@ -104,7 +105,7 @@ package "Digitization Planner" {
       message: String
     }
 
-    class UpdateMessageResponse<T> extends MessageResponse {
+    class ItemMessageResponse<T> extends MessageResponse {
       item: T | None
     }
 
@@ -119,16 +120,21 @@ package "Digitization Planner" {
     }
 
     class ProcessedDocumentAddition extends DocumentAddition {
-      identifierType: IdentifierType
-      identifierValue: String
       owner: String
       record: Record | None
       status: DocumentAdditionStatus
     }
+
+    class GenerateDocumentListSettings {
+      +targetPageCount: Integer | None
+      +targetPageCountThreshold: Float | None
+      +useCategoryDistributions: Boolean | None
+      +wholeCategoryThreshold: Float | None
+    }
   }
 
   package "API Controllers" {
-    class DocumentAdditionsController {
+    class DocumentAdditionController {
       +add(additions: List<DocumentAddition>): MessageResponse
       +search(query: DocumentAdditionQuery): DocumentAdditionResponse
       +delete(query: DocumentAdditionQuery): MessageResponse
@@ -136,24 +142,42 @@ package "Digitization Planner" {
       +declineProposal(query: DocumentAdditionQuery): MessageResponse
     }
 
-    class DocumentsController {
-      +search(DocumentQuery): DocumentResponse
-      +export(DocumentQuery): DocumentFile
-      +runTask(DocumentQuery, DocumentTask): MessageResponse
+    class DocumentController {
+      +search(query: DocumentQuery): DocumentResponse
+      +export(query: DocumentQuery): CsvFile | TxtFile
+      +updateProperty(query: DocumentQuery, propertyName: String, propertyValue: String): Task
+      +generateList(query: DocumentQuery, settings: GenerateDocumentListSettings): Task
+      +runTask(query: DocumentQuery, taskType: DocumentTask): Task
+      +planPeriodicTask(
+        query: DocumentQuery,
+        taskType: DocumentTask,
+        period: TaskPeriod,
+        name: String
+      ): PeriodicTask
+      +updatePeriodicTaskQuery(query: CatalogRecordQuery, periodicTaskId: Integer): PeriodicTask
     }
 
-    class CatalogRecordsController {
+    class CatalogRecordController {
       +search(query: CatalogRecordQuery): CatalogRecordResponse
-      +runTask(query: CatalogRecordQuery, CatalogRecordTask): MessageResponse
+      +runTask(query: CatalogRecordQuery, taskType: CatalogRecordTask): Task
+      +planPeriodicTask(
+        query: CatalogRecordQuery,
+        taskType: CatalogRecordTask,
+        period: TaskPeriod,
+        name: String
+      ): PeriodicTask
+      +updatePeriodicTaskQuery(query: DocumentQuery, periodicTaskId: Integer): PeriodicTask
+
       +approveDifference(differenceId: Integer): MessageResponse<CatalogRecord>
       +rescindDifference(differenceId: Integer): MessageResponse<CatalogRecord>
+
       +createList(list: CatalogRecordListEdit): MessageResponse<CatalogRecordList>
       +updateList(listId: Integer, list: CatalogRecordListEdit): MessageResponse<CatalogRecordList>
       +deleteList(listId: Integer): MessageResponse
       +searchLists(query: CatalogRecordListQuery): CatalogRecordListResponse
     }
 
-    class CategoriesController {
+    class CategoryController {
       +create(category: CategoryEdit): MessageResponse
       +update(categoryId: Integer, category: CategoryEdit): MessageResponse<Category>
       +changeParent(
@@ -167,38 +191,56 @@ package "Digitization Planner" {
       +updateScript(categoryId: Integer, script: Script | None): MessageResponse
     }
 
-    class IntentionsController {
+    class IntentionController {
       +create(intention: IntentionEdit): MessageResponse
       +update(intentionId: Integer, intention: IntentionEdit): MessageResponse<Intention>
       +delete(intentionId: Integer): MessageResponse
+
+      +createProject(intention: IntentionEdit): MessageResponse
+      +updateProject(intentionId: Integer, intention: IntentionEdit): MessageResponse<Intention>
+      +deleteProject(intentionId: Integer): MessageResponse
+
+      +acceptProject(intentionId: Integer): MessageResponse
+      +declineProject(intentionId: Integer): MessageResponse
+      
       +search(query: IntentionQuery): IntentionResponse
-      +accept(intentionId: Integer): MessageResponse
-      +decline(intentionId: Integer): MessageResponse
     }
 
     class DigitizationListsController {
-      +create(query: DocumentQuery): MessageResponse
-      +delete(digitizationListId: Integer): MessageResponse
-      +addDocuments(digitizationListId: Integer, query: DocumentQuery): MessageResponse
-      +removeDocuments(digitizationListId: Integer, query: DocumentQuery): MesageResponse
+      +create(query: DocumentQuery): MessageResponse<Task>
+      +delete(digitizationListId: Integer): MessageResponse<Task>
+      +addDocuments(digitizationListId: Integer, query: DocumentQuery): MessageResponse<Task>
+      +removeDocuments(digitizationListId: Integer, query: DocumentQuery): MesageResponse<Task>
       +search(query: DigitizationListQuery): DigitizationListResponse
+    }
+
+    class TaskController {
+      +searchTasks(query: TaskQuery): TaskResponse
+      +searchTaskItems(query: TaskItemQuery): TaskItemResponse
+      +searchPeriodicTasks(query: PeriodicTaskQuery): PeriodicTaskResponse
+      +updatePeriodicTask(periodicTaskId: Integer, name: String, period: TaskPeriod): PeriodicTask
+      +deletePeriodicTask(periodicTaskId: Integer): MessageResponse
     }
 
     class UserController {
       +getNotifications(): UserNotifications
       +getSettings(): UserSettings
-      +saveSettings(UserSettings): MessageResponse
+      +saveSettings(settings: UserSettings): MessageResponse
     }
 
     class SystemController {
-      +testEntityProperty(EntityProperty):
-      +createEntityProperty(EntityProperty):
-      +updateEntityProperty(EntityPropertyId):
-      +deleteEntityProperty(Entity, EntityPropertyId):
-      +searchEntityProperties()
-      +runTask(SystemTask): Message
-      +listBackups()
-      +downloadBackup()
+      +testEntityProperty(entityProperty: EntityProperty, recordId: Integer): String
+      +createEntityProperty(entityProperty: EntityProperty): UpdateMessageResponse<EntityProperty>
+      +updateEntityProperty(entityPropertyId: Integer, entityProperty: EntityProperty): UpdateMessageResponse<EntityProperty>
+      +deleteEntityProperty(entityPropertyId: Integer): MessageResponse
+      +getEntityProperties(): List<EntityProperty>
+
+      +runTask(taskType: SystemTask.RecreateIndexes | SystemTask.GenerateBackup): Task
+      +planPeriodicTask(taskType: SystemTask.RecreateIndexes | SystemTask.GenerateBackup): PeriodicTask
+      +loadFromBackup(file: BinFile): Task
+
+      +listBackups(): List<String>
+      +downloadBackup(name: String): BinFile
     }
   }
 
@@ -209,25 +251,100 @@ package "Digitization Planner" {
   }
 
   package "Services" {
-    class DocumentAdditionService {
-      +enqueue(additions: List<DocumentAddition>): None
-      +restrictQuery(query: DocumentAdditionQuery, user: User): DocumentAdditionQuery
-      +delete(query: DocumentAdditionQuery): MessageResponse
-      +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): MessageResponse
-      +declineProposal(query: DocumentAdditionQuery): MessageResponse
-      +processAdditions()
+
+    class EnqueueDocumentAdditionResult {
+      +enqueued: Integer
+      +alreadyEnqueued: Integer
     }
 
-    class DocumentsService {
+    class DeleteDocumentAdditionResult {
+      +deleted: Integer
+      +alreadyDeleted: Integer
+    }
+
+    class AcceptProposalResult {
+      +accepted: Integer
+      +acceptedDeclined: Integer
+      +alreadyAccepted: Integer
+    }
+
+    class DeclineProposalResult {
+      +declined: Integer
+      +alreadyAccepted: Integer
+      +alreadyDeclined: Integer
+    }
+
+    class DocumentAdditionService {
+      +enqueue(additions: List<DocumentAddition>): EnqueueDocumentAdditionResult
+      +restrictQuery(query: DocumentAdditionQuery, user: User): DocumentAdditionQuery
+      +delete(query: DocumentAdditionQuery): DeleteDocumentAdditionResult
+      +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): AcceptProposalResult
+      +declineProposal(query: DocumentAdditionQuery): DeclineProposalResult
+    }
+
+    class DocumentAdditionTaskService {
+      +processAdditions(): None
+    }
+
+    class DocumentService {
       +restrictQuery(query: DocumentQuery, user: User): DocumentQuery
       +generateExport(query: DocumentQuery): pd.Dataframe
-      +planTask(query: DocumentQuery, DocumentTask): MessageResponse
+      +planUpdatePropertyTask(query: DocumentQuery, propertyName: String, propertyValue: String): Task
+      +planGenerateListTask(query: DocumentQuery, settings: GenerateDocumentListSettings): Task
+      +planTask(query: DocumentQuery, task: DocumentTask): Task
+    }
 
-      +updateProperty(DocumentsQuery): Message
-      +delete(DocumentsQuery): Message
-      +declineDigitization(DocumentsQuery): Message
-      +cancelDigitizationDeclination(DocumentsQuery): Message
-      +generateList(adhereToCategories: Boolean):
+    class DocumentTaskService {
+      +updateProperty(task: Task): None
+      +remove(task: Task): None
+      +declineDigitization(task: Task): None
+      +cancelDigitizationDeclination(task: Task): None
+      +generateList(task: Task): None
+      +reindex(task: Task): None
+      +syncDigitizationState(task: Task): None
+      +predictPageCount(task: Task): None
+    }
+
+    class CatalogRecordService {
+      +runTask(query: CatalogRecordQuery, taskType: CatalogRecordTask): Task
+    }
+
+    class CatalogRecordTaskService {
+      +ignoreMissingAuthority(task: Task): None
+      +reindex(task: Task): None
+      +sync(task: Task): None
+      +reevaluateDifferences(task: Task): None
+    }
+
+    class CategoryService {
+      +updateScript(categoryId: Integer, script: Script | None): None
+    }
+
+    class CategoryTaskService {
+      +addDocumentsUsingScript(task: Task): None
+    }
+
+    class UserService {
+      +getNotifications(): UserNotifications
+    }
+
+    class SystemService {
+      +testEntityProperty(EntityProperty):
+      +createEntityProperty(EntityProperty):
+      +updateEntityProperty(EntityPropertyId):
+      +deleteEntityProperty(Entity, EntityPropertyId):
+      +getEntityProperties(query: EntityProp)
+    }
+
+    class SystemTask {
+      +recreateIndexes(): Task
+      +generateBackup(filename: String): Task
+      +loadFromBackup(file: BinFile): Task
+    }
+
+    class WorkerService {
+      +runTask(taskId: Integer): None
+      +runPeriodicTask(periodicTaskId: Integer): None
     }
   }
 
@@ -242,33 +359,30 @@ package "Digitization Planner" {
     enum DocumentsTask {
       UpdateProperty
       Remove
+      DeclineDigitization
+      CancelDigitizationDeclination
+      GenerateDigitizationList
       Reindex
       SyncDigitizationState
       SyncCatalogRecord
       PredictPageCount
-      DeclineDigitization
-      CancelDigitizationDeclination
-      GenerateDigitizationList
     }
 
     enum CatalogRecordsTask {
-      ApproveDifferences
-      RescindDifferences
       IgnoreMissingAuthority
       Reindex
       Sync
       ReevaluateDifferences
     }
 
+    enum CategoriesTask {
+      AddDocumentsUsingScript
+    }
+
     enum SystemTask {
       RecreateIndexes
       GenerateBackup
       LoadFromBackup
-      FindAndRepairInconsistencies
-    }
-
-    enum CategoriesTask {
-      AddDocumentsUsingScript
     }
   }
 
@@ -340,9 +454,6 @@ package "Digitization Planner" {
         +categoryIds(): List<Integer>
         +extractedBy(): String | None
         +extractedAt(): String | None
-      }
-
-      class ParsingScript {
       }
 
       class Category {
@@ -422,6 +533,9 @@ package "Digitization Planner" {
   }
 
   "API Controllers" --> "Security": Enforces permissions
+  "API Controllers" --> "Services": Uses
+  "API Controllers" --> "Repositories": Uses
+  "Services" --> "Repositories": Uses
 }
 
 package "Digitization Registry" {
