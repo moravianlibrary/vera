@@ -1,0 +1,274 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 10
+skinparam linetype ortho
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Types" {
+    enum IdentifierType {
+      Barcode
+      SystemNumber
+      ISXN
+      Signature
+    }
+
+    enum DocumentTask {
+      UpdateProperty
+      Remove
+      DeclineDigitization
+      CancelDigitizationDeclination
+      GenerateDigitizationList
+      Reindex
+      SyncDigitizationState
+      SyncCatalogRecord
+      PredictPageCount
+    }
+  }
+
+  package "Schemas" {
+    entity MessageResponse {
+      status: StatusCode,
+      message: String
+    }
+
+    entity ItemMessageResponse<T> extends MessageResponse {
+      item: T | None
+    }
+
+    entity DocumentAddition {
+      identifierType: IdentifierType
+      identifierValue: String
+      fileName: String | None
+      categoryId: Integer | None
+      priority: Integer [1-5] | None
+      ignoreDigitizationState: Boolean | None
+      addAgainIfPresent: Boolean | None
+    }
+
+    DocumentAddition --> IdentifierType : uses >
+
+    entity ProcessedDocumentAddition extends DocumentAddition {
+      owner: String
+      record: Record | None
+      status: DocumentAdditionStatus
+    }
+
+    entity GenerateDocumentListSettings {
+      +targetPageCount: Integer | None
+      +targetPageCountThreshold: Float | None
+      +useCategoryDistributions: Boolean | None
+      +wholeCategoryThreshold: Float | None
+    }
+
+    entity Task {
+    }
+
+    entity TaskPeriod {
+    }
+
+    entity DocumentQuery extends ElasticsearchQuery {}
+
+    entity DocumentResponse extends ElasticsearchResponse {}
+  }
+
+  package "Repositories" {
+
+    package "Model" {
+      class DocumentAdditionModel {
+        +id: Integer
+        +identifierType: Enum<IdentifierType>
+        +identifierValue: String
+        +owner: String
+        +filename: String | None = None
+        +category: Integer
+        +priority: Integer [1-5] = 3
+        +ignoreDigitizationState: Boolean = False
+        +addAgainIfPresent: Boolean = False
+      }
+
+      class DocumentModel {
+        +id: Integer
+        +recordId: String
+        +barcode: String | None
+        +volume: String | None
+        +volume_year: String | None
+        +bundle: String | None
+        +iteration: Integer | None
+        +issuanceType: Enum<IssuanceType>
+        +added_at: Timestamp = now
+        +added_by: String
+        +categoryId: Integer
+        +pageCountCatalog: Integer | None
+        +pageCountPredicted: Integer | None
+        +pageCountManual: Integer | None
+        +priority: Integer [1-5]
+        +digitizationListId: Integer | None
+        +pageCount(): Integer | None
+        +isExtractable(): Boolean
+        +categoryName(): String
+        +categoryIds(): List<Integer>
+        +extractedBy(): String | None
+        +extractedAt(): String | None
+      }
+    }
+
+    class DocumentAdditionRepository {
+      +get(additionId: Integer): DocumentAdditionModel
+      +save(addition: DocumentAdditionModel): DocumentAdditionModel
+      +delete(additionId: Integer): DocumentAdditionModel
+      +index(addition: DocumentAdditionModel): DocumentAdditionModel
+      +search(DocumentAdditionsQuery): DocumentAdditionsResponse
+    }
+
+    DocumentAdditionRepository --> DocumentAdditionModel : uses >
+    DocumentAdditionRepository --> DocumentAddition : uses >
+    DocumentAdditionRepository --> DocumentAddition : uses >
+
+    class DocumentRepository {
+      +get(documentId: Integer): DocumentModel
+      +getAll(): List<DocumentModel>
+      +save(document: DocumentModel): DocumentModel
+      +delete(additionId: Integer): DocumentAdditionModel
+      +index(document: DocumentModel): Document
+      +search(DocumentQuery): DocumentsResponse
+    }
+  }
+
+  package "Services" {
+
+    class EnqueueDocumentAdditionResult {
+      +enqueued: Integer
+      +alreadyEnqueued: Integer
+    }
+
+    class DeleteDocumentAdditionResult {
+      +deleted: Integer
+      +alreadyDeleted: Integer
+    }
+
+    class AcceptProposalResult {
+      +accepted: Integer
+      +acceptedDeclined: Integer
+      +alreadyAccepted: Integer
+    }
+
+    class DeclineProposalResult {
+      +declined: Integer
+      +alreadyAccepted: Integer
+      +alreadyDeclined: Integer
+    }
+
+    class DocumentAdditionService {
+      +enqueue(additions: List<DocumentAddition>): EnqueueDocumentAdditionResult
+      +restrictQuery(query: DocumentAdditionQuery, user: User): DocumentAdditionQuery
+      +delete(query: DocumentAdditionQuery): DeleteDocumentAdditionResult
+      +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): AcceptProposalResult
+      +declineProposal(query: DocumentAdditionQuery): DeclineProposalResult
+    }
+
+    DocumentAdditionService --> DocumentAddition : uses >
+    DocumentAdditionService --> DocumentAdditionQuery : uses >
+    
+    DocumentAdditionController o-- EnqueueDocumentAdditionResult : returns >
+    DocumentAdditionController o-- DeleteDocumentAdditionResult : returns >
+    DocumentAdditionController o-- AcceptProposalResult : returns >
+    DocumentAdditionController o-- DeclineProposalResult : returns >
+
+    DocumentAdditionService --> DocumentRepository : uses >
+
+    class DocumentAdditionTaskService {
+      +processAdditions(): None
+    }
+
+    class DocumentService {
+      +restrictQuery(query: DocumentQuery, user: User): DocumentQuery
+      +generateExport(query: DocumentQuery): pd.Dataframe
+      +planUpdatePropertyTask(query: DocumentQuery, propertyName: String, propertyValue: String): Task
+      +planGenerateListTask(query: DocumentQuery, settings: GenerateDocumentListSettings): Task
+      +planTask(query: DocumentQuery, task: DocumentTask): Task
+    }
+
+    DocumentService --> DocumentQuery : uses >
+    DocumentService --> User : uses >
+    DocumentService --> GenerateDocumentListSettings : uses >
+    DocumentService --> DocumentTask : uses >
+
+    DocumentService o-- Task : returns >
+
+    DocumentService --> DocumentRepository : uses >
+
+    class DocumentTaskService {
+      +updateProperty(task: Task): None
+      +remove(task: Task): None
+      +declineDigitization(task: Task): None
+      +cancelDigitizationDeclination(task: Task): None
+      +generateList(task: Task): None
+      +reindex(task: Task): None
+      +syncDigitizationState(task: Task): None
+      +predictPageCount(task: Task): None
+    }
+
+    DocumentService --> Task : uses >
+
+    DocumentTaskService --> DocumentRepository : uses >
+
+    class WorkerService {
+      +triggerDocumentAddition(): None
+      +runTask(taskId: Integer): None
+      +runPeriodicTask(periodicTaskId: Integer): None
+    }
+  }
+
+  package "API Controllers" {
+    class DocumentAdditionController {
+      +add(additions: List<DocumentAddition>): MessageResponse
+      +search(query: DocumentAdditionQuery): DocumentAdditionResponse
+      +delete(query: DocumentAdditionQuery): MessageResponse
+      +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): MessageResponse
+      +declineProposal(query: DocumentAdditionQuery): MessageResponse
+    }
+
+    DocumentAdditionController --> DocumentAddition : uses >
+
+    DocumentAdditionController o-- ProcessedDocumentAddition : returns >
+    DocumentAdditionController o-- MessageResponse : returns >
+
+    DocumentAdditionController --> DocumentAdditionService : calls >
+    DocumentAdditionController --> DocumentAdditionTaskService : runs task >
+
+    class DocumentController {
+      +search(query: DocumentQuery): DocumentResponse
+      +export(query: DocumentQuery): CsvFile | TxtFile
+      +updateProperty(query: DocumentQuery, propertyName: String, propertyValue: String): Task
+      +generateList(query: DocumentQuery, settings: GenerateDocumentListSettings): Task
+      +getPrevGenerateListSetting(): List<GenerateDocumentListSettings>
+      +runTask(query: DocumentQuery, taskType: DocumentTask): Task
+      +planPeriodicTask(
+        query: DocumentQuery,
+        taskType: DocumentTask,
+        period: TaskPeriod,
+        name: String
+      ): PeriodicTask
+      +updatePeriodicTaskQuery(query: DocumentQuery, periodicTaskId: Integer): PeriodicTask
+    }
+
+    DocumentController --> DocumentQuery : uses >
+    DocumentController --> GenerateDocumentListSettings : uses >
+    DocumentController --> DocumentTask : uses >
+    DocumentController --> TaskPeriod : uses >
+
+    DocumentController o-- DocumentResponse : returns >
+    DocumentController o-- Task : returns >
+    DocumentController o-- GenerateDocumentListSettings : returns >
+    DocumentController o-- PeriodicTask : returns >
+
+    DocumentController --> DocumentRepository : calls >
+    DocumentController --> DocumentService : calls >
+    DocumentController --> WorkerService : starts tasks >
+  }
+}
+
+@enduml

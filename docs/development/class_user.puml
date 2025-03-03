@@ -1,0 +1,156 @@
+@startuml VERA - User class diagram
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 10
+skinparam linetype ortho
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Types" {
+
+    entity UserSettings extends JSON
+  }
+
+  package "Schemas" {
+
+    entity MessageResponse {
+      +status: StatusCode,
+      +message: String
+    }
+  
+    entity ItemMessageResponse<T> extends MessageResponse {
+      +item: T | None
+    }
+
+    entity RoleEdit {
+      +name: String
+      +description: String
+      +permissions: Permissions
+    }
+
+    entity Role extends RoleEdit {
+      +id: Integer
+    }
+
+    entity GroupEdit {
+      +name: String
+      +description: String
+      +users: List<String>
+    }
+
+    entity Group extends GroupEdit {
+      +id: Integer
+    }
+  
+    entity CurrentUser {
+      +username: String
+      +settings: UserSettings
+      +role: Role
+      +groups: List<Group>
+    }
+
+    CurrentUser --> Role : has
+    CurrentUser --> Group : belongs to
+    CurrentUser --> UserSettings : has
+  }
+  
+  package "Repositories" {
+  
+    package "Model" {
+
+      class RoleModel {
+        +id: Integer
+        +name: String
+        +description: String
+      }
+
+      class GroupModel {
+        +id: Integer
+        +name: String
+        +description: String
+        +users(): List<UserModel>
+      }
+
+      class UserModel {
+        +username: String
+        +settings: JSON
+        +groups(): List<GroupModel>
+      }
+
+      class UserGroupRelationship {
+        +username: String
+        +group_id: Integer
+      }
+    }
+
+    class RoleRepository {
+      +get(roleId: Integer): RoleModel
+      +find(roleName: String): RoleModel
+      +save(role: RoleModel): RoleModel
+      +delete(roleId: Integer): RoleModel
+      +getAll(): List<RoleModel>
+    }
+
+    class GroupRepository {
+      +get(groupId: Integer): GroupModel
+      +save(group: GroupModel): GroupModel
+      +delete(groupId: Integer): GroupModel
+      +getAll(): List<GroupModel>
+    }
+
+    class UserRepository {
+      +get(username: String): UserModel
+      +save(user: UserModel): UserModel
+    }
+
+    RoleRepository --> RoleModel : manages
+    GroupRepository --> GroupModel : manages
+    GroupRepository --> UserGroupRelationship : manages
+    UserRepository --> UserModel : manages
+  }
+  
+  package "Services" {
+
+    class UserService {
+      +getCurrentUser(token: String): CurrentUser
+      +getNotifications(username: String): UserNotifications
+    }
+
+    UserService --|> UserRepository : uses
+    UserService --|> TaskRepository : uses
+  }
+  
+  package "API Controllers" {
+
+    class RoleController {
+      +getAll(): List<Role>
+      +create(role: RoleEdit): ItemMessageResponse<Role>
+      +update(roleId: Integer, role: RoleEdit): ItemMessageResponse<Role>
+      +delete(roleId: Integer): MessageResponse
+    }
+
+    RoleController --> RoleRepository : uses
+
+    class GroupController {
+      +getAll(): List<Group>
+      +create(group: GroupEdit): ItemMessageResponse<Group>
+      +update(groupId: Integer, group: GroupEdit): ItemMessageResponse<Group>
+      +delete(groupId: Integer): MessageResponse
+    }
+
+    GroupController --> GroupRepository : uses
+
+    class UserController {
+      +getNotifications(): UserNotifications
+      +getSettings(): UserSettings
+      +saveSettings(settings: UserSettings): MessageResponse
+    }
+
+    UserController --> UserService : uses
+    UserController --> UserRepository : uses
+  }
+}
+
+@enduml

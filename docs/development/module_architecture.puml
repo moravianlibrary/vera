@@ -1,6 +1,9 @@
-@startuml VERA - Package Class Diagram
-
+@startuml
 skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 10
+skinparam linetype ortho
+top to bottom direction
 
 package "Connectors" {
 
@@ -14,18 +17,18 @@ package "Connectors" {
       Success
     }
 
-    class CatalogGetResponse {
+    entity CatalogGetResponse {
       record: Record | None
       status: CatalogFetchStatus
     }
 
-    class CatalogSearchItem {
+    entity CatalogSearchItem {
       base: String
       systemNumber: String
       record: Record
     }
 
-    class CatalogSearchResponse {
+    entity CatalogSearchResponse {
       items: List<CatalogSearchItem> | None
       numFound: Integer
       status: CatalogFetchStatus
@@ -42,17 +45,36 @@ package "Connectors" {
       ): CatalogSearchResponse
     }
 
-    class CatalogDispatcher {
-      +loadConfig(config: CatalogConnectorConfig): None
-      +getRecord(base: String, systemNumber: String): CatalogGetResponse
-      +search(
-        value: String,
-        base: String | None,
-        field: String | None,
-        page: Integer,
-        pageSize: Integer
-      ): CatalogSearchResponse
+    class AlephCatalogConnector extends CatalogConnector {
+      +loadConfig(config: AlephCatalogConnectorConfig): None
     }
+
+    class AlephZ3950 {
+    }
+
+    class AlephXApi {
+    }
+
+    class AlephOaiApi {
+    }
+
+    class CatalogConnectorManager extends CatalogConnector {
+      +loadConfig(config: CatalogConnectorConfig): None
+      +findAuthoritySystemNumber(base: String, systemNumber: String, authorityBase: String): CatalogGetResponse
+    }
+
+    CatalogGetResponse --> CatalogFetchStatus : uses >
+    CatalogSearchResponse --> CatalogFetchStatus : uses >
+    CatalogSearchResponse o-- CatalogSearchItem : contains >
+
+    CatalogConnector o-- CatalogGetResponse : returns >
+    CatalogConnector o-- CatalogSearchResponse : returns >
+
+    AlephCatalogConnector --> AlephZ3950 : uses
+    AlephCatalogConnector --> AlephXApi : uses
+    AlephCatalogConnector --> AlephOaiApi : uses
+
+    CatalogConnectorManager *-- CatalogConnector : manages >
   }
 
   package "Digitization Registry" {
@@ -71,9 +93,9 @@ package "Connectors" {
       Unknown
     }
 
-    class DRConnectorResponse {
+    entity DRConnectorResponse {
       source: String | None
-      id: Integer | None
+      id: String | None
       state: DRState | None
       status: DRFetchStatus
     }
@@ -83,33 +105,75 @@ package "Connectors" {
       +search(record: Record, issue: Issue): DRConnectorResponse
     }
 
-    class RDczConnector implements DRConnector {
-    }
-
-    class DRKrameriusConnector implements DRConnector {
-    }
+    class RDczConnector implements DRConnector
+    class DRKrameriusConnector implements DRConnector
 
     class DRDispatcher {
       +loadConfig(config: DRConnectorConfig): None
       +getRecord(recordId: String): List<DRConnectorResponse>
       +search(record: Record, issue: Issue): List<DRConnectorResponse>
     }
+
+    DRConnectorResponse --> DRFetchStatus : uses >
+    DRConnectorResponse --> DRState : uses >
+
+    DRDispatcher o-- DRConnectorResponse : returns >
+    DRConnector o-- DRConnectorResponse : returns >
+    DRDispatcher *-- DRConnector : manages >
   }
 }
 
 package "Digitization Planner" {
 
+  package "Types" {
+    enum IdentifierType {
+      Barcode
+      SystemNumber
+      ISXN
+      Signature
+    }
+
+    enum DocumentTask {
+      UpdateProperty
+      Remove
+      DeclineDigitization
+      CancelDigitizationDeclination
+      GenerateDigitizationList
+      Reindex
+      SyncDigitizationState
+      SyncCatalogRecord
+      PredictPageCount
+    }
+
+    enum CatalogRecordTask {
+      IgnoreMissingAuthority
+      Reindex
+      Sync
+      ReevaluateDifferences
+    }
+
+    enum CategoryTask {
+      AddDocumentsUsingScript
+    }
+
+    enum SystemTask {
+      RecreateIndexes
+      GenerateBackup
+      LoadFromBackup
+    }
+  }
+
   package "Schemas" {
-    class MessageResponse {
+    entity MessageResponse {
       status: StatusCode,
       message: String
     }
 
-    class ItemMessageResponse<T> extends MessageResponse {
+    entity ItemMessageResponse<T> extends MessageResponse {
       item: T | None
     }
 
-    class DocumentAddition {
+    entity DocumentAddition {
       identifierType: IdentifierType
       identifierValue: String
       fileName: String | None
@@ -119,135 +183,261 @@ package "Digitization Planner" {
       addAgainIfPresent: Boolean | None
     }
 
-    class ProcessedDocumentAddition extends DocumentAddition {
+    DocumentAddition --> IdentifierType : uses >
+
+    entity ProcessedDocumentAddition extends DocumentAddition {
       owner: String
       record: Record | None
       status: DocumentAdditionStatus
     }
 
-    class GenerateDocumentListSettings {
+    entity GenerateDocumentListSettings {
       +targetPageCount: Integer | None
       +targetPageCountThreshold: Float | None
       +useCategoryDistributions: Boolean | None
       +wholeCategoryThreshold: Float | None
     }
+
+    entity Task {
+    }
+
+    entity TaskPeriod {
+    }
+
+    entity PeriodicTask {
+    }
+
+    entity ElasticsearchQuery {}
+
+    entity ElasticsearchResponse {}
+
+    entity TaskQuery {}
+
+    entity TaskResponse {}
+
+    entity TaskItemQuery {}
+
+    entity TaskItemResponse {}
+
+    entity PeriodicTaskQuery {}
+
+    entity PeriodicTaskResponse {}
+
+    entity DocumentQuery extends ElasticsearchQuery {}
+
+    entity DocumentResponse extends ElasticsearchResponse {}
+
+    entity CatalogRecord {}
+
+    entity CatalogRecordQuery extends ElasticsearchQuery {}
+
+    entity CatalogRecordResponse extends ElasticsearchResponse {}
+
+    entity CatalogRecordListEdit {}
+
+    entity CatalogRecordList extends CatalogRecordListEdit {}
+
+    entity CategoryEdit {}
+
+    entity Category extends CategoryEdit {}
+
+    entity Script {}
+
+    entity CategoryQuery extends ElasticsearchQuery {}
+
+    entity CategoryResponse extends ElasticsearchResponse {}
+
+    entity IntentionEdit {}
+
+    entity Intention extends IntentionEdit {}
+
+    entity IntentionQuery extends ElasticsearchQuery {}
+
+    entity IntentionResponse extends ElasticsearchResponse {}
+
+    entity IntentionQuery extends ElasticsearchQuery {}
+
+    entity IntentionResponse extends ElasticsearchResponse {}
+
+    entity DigitizationListQuery extends ElasticsearchQuery {}
+
+    entity DigitizationListResponse extends ElasticsearchResponse {}
   }
 
-  package "API Controllers" {
-    class DocumentAdditionController {
-      +add(additions: List<DocumentAddition>): MessageResponse
-      +search(query: DocumentAdditionQuery): DocumentAdditionResponse
-      +delete(query: DocumentAdditionQuery): MessageResponse
-      +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): MessageResponse
-      +declineProposal(query: DocumentAdditionQuery): MessageResponse
+  package "Repositories" {
+
+    package "Model" {
+      class DocumentAdditionModel {
+        +id: Integer
+        +identifierType: Enum<IdentifierType>
+        +identifierValue: String
+        +owner: String
+        +filename: String | None = None
+        +category: Integer
+        +priority: Integer [1-5] = 3
+        +ignoreDigitizationState: Boolean = False
+        +addAgainIfPresent: Boolean = False
+      }
+
+      class CatalogRecordModel {
+        +id: String
+        +base: String
+        +systemNumber: String
+        +marc: Binary
+        +unreachable: Boolean = False
+        +addedAt: Timestamp
+        +updatedAt: Timestamp
+        +hasAddedDocuments(): Boolean
+        +hasActiveDocuments(): Boolean
+        +isValid(): Boolean
+        +authoritiesRecordIds(): List<String>
+        +authoritiesMarc(): List<Marc>
+        +authoritiesDifference(): List<MarcDifference>
+        +authoritiesDifferenceFlags(): List<DifferenceFlag>
+      }
+
+      class CatalogRecordAuthorityModel {
+        +mainId: String
+        +authorityBase: String
+        +isValid: Boolean = True
+        +hasDifferences: Boolean = False
+        +authorityId: String | None = None
+      }
+
+      class CatalogRecordDifferenceModel {
+        +id: Integer
+        +mainId: String
+        +authorityId: String
+      }
+
+      class DocumentModel {
+        +id: Integer
+        +recordId: String
+        +barcode: String | None
+        +volume: String | None
+        +volume_year: String | None
+        +bundle: String | None
+        +iteration: Integer | None
+        +issuanceType: Enum<IssuanceType>
+        +added_at: Timestamp = now
+        +added_by: String
+        +categoryId: Integer
+        +pageCountCatalog: Integer | None
+        +pageCountPredicted: Integer | None
+        +pageCountManual: Integer | None
+        +priority: Integer [1-5]
+        +digitizationListId: Integer | None
+        +pageCount(): Integer | None
+        +isExtractable(): Boolean
+        +categoryName(): String
+        +categoryIds(): List<Integer>
+        +extractedBy(): String | None
+        +extractedAt(): String | None
+      }
+
+      class CategoryModel {
+        +id: Integer
+        +name: String
+        +descripton: String | None
+        +parentId: Integer | None = None
+        +level: Integer = 0
+        +assignable: Boolean = False
+        +extractWhole: Boolean = False
+        +disabled: Boolean = False
+        +archived: Boolean = False
+        +sourceTask: BashScriptFile | None = None
+        +directlyAssignedTo: List<GroupName> | List<UserName> | None = None
+        +assignedTo(): List<GroupName> | List<UserName> | None = None
+        +totalPageCount(): Integer
+        +totalDocuments(): Integer
+        +extractablePageCount(): Integer
+        +extractableDocuments(): Integer
+        +extractedPageCount(): Integer
+        +extractedDocuments(): Integer
+      }
+
+      class Connector {
+        +name: String
+                
+      }
+
+      class EntityPropertyModel {
+        +id: Integer
+        +entity: 
+        +name: String
+        +translations: JSON
+        +parseScript: ParseScript
+      }
+
+      class CategoriesDistributionModel {
+        +id: Integer
+        +name: String
+        +active: Boolean
+      }
+
+      class CategoryDistribution {
+        +categoryId: Integer
+        +distributionId: Integer
+        +percentage: Float
+      }
     }
 
-    class DocumentController {
-      +search(query: DocumentQuery): DocumentResponse
-      +export(query: DocumentQuery): CsvFile | TxtFile
-      +updateProperty(query: DocumentQuery, propertyName: String, propertyValue: String): Task
-      +generateList(query: DocumentQuery, settings: GenerateDocumentListSettings): Task
-      +runTask(query: DocumentQuery, taskType: DocumentTask): Task
-      +planPeriodicTask(
-        query: DocumentQuery,
-        taskType: DocumentTask,
-        period: TaskPeriod,
-        name: String
-      ): PeriodicTask
-      +updatePeriodicTaskQuery(query: CatalogRecordQuery, periodicTaskId: Integer): PeriodicTask
+    class DocumentAdditionRepository {
+      +get(additionId: Integer): DocumentAdditionModel
+      +save(addition: DocumentAdditionModel): DocumentAdditionModel
+      +delete(additionId: Integer): DocumentAdditionModel
+      +index(addition: DocumentAdditionModel): DocumentAdditionModel
+      +search(DocumentAdditionsQuery): DocumentAdditionsResponse
     }
 
-    class CatalogRecordController {
-      +search(query: CatalogRecordQuery): CatalogRecordResponse
-      +runTask(query: CatalogRecordQuery, taskType: CatalogRecordTask): Task
-      +planPeriodicTask(
-        query: CatalogRecordQuery,
-        taskType: CatalogRecordTask,
-        period: TaskPeriod,
-        name: String
-      ): PeriodicTask
-      +updatePeriodicTaskQuery(query: DocumentQuery, periodicTaskId: Integer): PeriodicTask
+    DocumentAdditionRepository --> DocumentAdditionModel : uses >
+    DocumentAdditionRepository --> DocumentAddition : uses >
+    DocumentAdditionRepository --> DocumentAddition : uses >
 
-      +approveDifference(differenceId: Integer): MessageResponse<CatalogRecord>
-      +rescindDifference(differenceId: Integer): MessageResponse<CatalogRecord>
-
-      +createList(list: CatalogRecordListEdit): MessageResponse<CatalogRecordList>
-      +updateList(listId: Integer, list: CatalogRecordListEdit): MessageResponse<CatalogRecordList>
-      +deleteList(listId: Integer): MessageResponse
-      +searchLists(query: CatalogRecordListQuery): CatalogRecordListResponse
+    class DocumentRepository {
+      +get(documentId: Integer): DocumentModel
+      +getAll(): List<DocumentModel>
+      +save(document: DocumentModel): DocumentModel
+      +delete(additionId: Integer): DocumentAdditionModel
+      +index(document: DocumentModel): Document
+      +search(DocumentQuery): DocumentsResponse
     }
 
-    class CategoryController {
-      +create(category: CategoryEdit): MessageResponse
-      +update(categoryId: Integer, category: CategoryEdit): MessageResponse<Category>
-      +changeParent(
-        categoryId: Integer,
-        fromParent: Integer | None,
-        toParent: Integer | None
-      ): MessageResponse
-      +delete(categoryId: Integer): MessageResponse
-      +search(query: CategoryQuery): CategoryResponse
-      +getScript(categoryId: Integer): MessageResponse<Script>
-      +updateScript(categoryId: Integer, script: Script | None): MessageResponse
+    class CatalogRecordRepository {
+      +get(catalogRecordId: String): CatalogRecordModel
+      +save(catalogRecord: CatalogRecordModel): CatalogRecordModel
+      +delete(catalogRecordId: String): CatalogRecordModel
+      +index(catalogRecord: CatalogRecordModel): CatalogRecord
+      +search(CatalogRecordsQuery): CatalogRecordsResponse
     }
 
-    class IntentionController {
-      +create(intention: IntentionEdit): MessageResponse
-      +update(intentionId: Integer, intention: IntentionEdit): MessageResponse<Intention>
-      +delete(intentionId: Integer): MessageResponse
-
-      +createProject(intention: IntentionEdit): MessageResponse
-      +updateProject(intentionId: Integer, intention: IntentionEdit): MessageResponse<Intention>
-      +deleteProject(intentionId: Integer): MessageResponse
-
-      +acceptProject(intentionId: Integer): MessageResponse
-      +declineProject(intentionId: Integer): MessageResponse
-      
-      +search(query: IntentionQuery): IntentionResponse
+    class CategoryRepository {
+      +get(categoryId: Integer): CategoryModel
+      +save(category: CategoryModel): CategoryModel
+      +index():
+      +search(CategoriesQuery): CategoriesResponse
     }
 
-    class DigitizationListsController {
-      +create(query: DocumentQuery): MessageResponse<Task>
-      +delete(digitizationListId: Integer): MessageResponse<Task>
-      +addDocuments(digitizationListId: Integer, query: DocumentQuery): MessageResponse<Task>
-      +removeDocuments(digitizationListId: Integer, query: DocumentQuery): MesageResponse<Task>
-      +search(query: DigitizationListQuery): DigitizationListResponse
+    class IntentionRepository {
+      +get():
+      +save():
+      +index():
+      +search(CategoriesQuery): CategoriesResponse
     }
 
-    class TaskController {
-      +searchTasks(query: TaskQuery): TaskResponse
-      +searchTaskItems(query: TaskItemQuery): TaskItemResponse
-      +searchPeriodicTasks(query: PeriodicTaskQuery): PeriodicTaskResponse
-      +updatePeriodicTask(periodicTaskId: Integer, name: String, period: TaskPeriod): PeriodicTask
-      +deletePeriodicTask(periodicTaskId: Integer): MessageResponse
+    class DigitizationListRepository {
+      +get():
+      +save():
+      +index():
+      +search(CategoriesQuery): CategoriesResponse
     }
 
-    class UserController {
-      +getNotifications(): UserNotifications
-      +getSettings(): UserSettings
-      +saveSettings(settings: UserSettings): MessageResponse
+    class TaskRepository {
+      +get():
+      +save():
+      +index():
+      +search(CategoriesQuery): CategoriesResponse
     }
-
-    class SystemController {
-      +testEntityProperty(entityProperty: EntityProperty, recordId: Integer): String
-      +createEntityProperty(entityProperty: EntityProperty): UpdateMessageResponse<EntityProperty>
-      +updateEntityProperty(entityPropertyId: Integer, entityProperty: EntityProperty): UpdateMessageResponse<EntityProperty>
-      +deleteEntityProperty(entityPropertyId: Integer): MessageResponse
-      +getEntityProperties(): List<EntityProperty>
-
-      +runTask(taskType: SystemTask.RecreateIndexes | SystemTask.GenerateBackup): Task
-      +planPeriodicTask(taskType: SystemTask.RecreateIndexes | SystemTask.GenerateBackup): PeriodicTask
-      +loadFromBackup(file: BinFile): Task
-
-      +listBackups(): List<String>
-      +downloadBackup(name: String): BinFile
-    }
-  }
-
-  package "Security" {
-    class Permission {}
-
-    class OwnershipPermission {}
   }
 
   package "Services" {
@@ -282,6 +472,16 @@ package "Digitization Planner" {
       +declineProposal(query: DocumentAdditionQuery): DeclineProposalResult
     }
 
+    DocumentAdditionService --> DocumentAddition : uses >
+    DocumentAdditionService --> DocumentAdditionQuery : uses >
+    
+    DocumentAdditionController o-- EnqueueDocumentAdditionResult : returns >
+    DocumentAdditionController o-- DeleteDocumentAdditionResult : returns >
+    DocumentAdditionController o-- AcceptProposalResult : returns >
+    DocumentAdditionController o-- DeclineProposalResult : returns >
+
+    DocumentAdditionService --> DocumentRepository : uses >
+
     class DocumentAdditionTaskService {
       +processAdditions(): None
     }
@@ -294,6 +494,15 @@ package "Digitization Planner" {
       +planTask(query: DocumentQuery, task: DocumentTask): Task
     }
 
+    DocumentService --> DocumentQuery : uses >
+    DocumentService --> User : uses >
+    DocumentService --> GenerateDocumentListSettings : uses >
+    DocumentService --> DocumentTask : uses >
+
+    DocumentService o-- Task : returns >
+
+    DocumentService --> DocumentRepository : uses >
+
     class DocumentTaskService {
       +updateProperty(task: Task): None
       +remove(task: Task): None
@@ -304,6 +513,10 @@ package "Digitization Planner" {
       +syncDigitizationState(task: Task): None
       +predictPageCount(task: Task): None
     }
+
+    DocumentService --> Task : uses >
+
+    DocumentTaskService --> DocumentRepository : uses >
 
     class CatalogRecordService {
       +runTask(query: CatalogRecordQuery, taskType: CatalogRecordTask): Task
@@ -348,194 +561,210 @@ package "Digitization Planner" {
     }
   }
 
-  package "Types" {
-    enum IdentifierType {
-      Barcode
-      SystemNumber
-      ISXN
-      Signature
+  package "API Controllers" {
+    class DocumentAdditionController {
+      +add(additions: List<DocumentAddition>): MessageResponse
+      +search(query: DocumentAdditionQuery): DocumentAdditionResponse
+      +delete(query: DocumentAdditionQuery): MessageResponse
+      +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): MessageResponse
+      +declineProposal(query: DocumentAdditionQuery): MessageResponse
     }
 
-    enum DocumentsTask {
-      UpdateProperty
-      Remove
-      DeclineDigitization
-      CancelDigitizationDeclination
-      GenerateDigitizationList
-      Reindex
-      SyncDigitizationState
-      SyncCatalogRecord
-      PredictPageCount
+    DocumentAdditionController --> DocumentAddition : uses >
+
+    DocumentAdditionController o-- ProcessedDocumentAddition : returns >
+    DocumentAdditionController o-- MessageResponse : returns >
+
+    DocumentAdditionController --> DocumentAdditionService : calls >
+    DocumentAdditionController --> DocumentAdditionTaskService : runs task >
+
+    class DocumentController {
+      +search(query: DocumentQuery): DocumentResponse
+      +export(query: DocumentQuery): CsvFile | TxtFile
+      +updateProperty(query: DocumentQuery, propertyName: String, propertyValue: String): Task
+      +generateList(query: DocumentQuery, settings: GenerateDocumentListSettings): Task
+      +getPrevGenerateListSetting(): List<GenerateDocumentListSettings>
+      +runTask(query: DocumentQuery, taskType: DocumentTask): Task
+      +planPeriodicTask(
+        query: DocumentQuery,
+        taskType: DocumentTask,
+        period: TaskPeriod,
+        name: String
+      ): PeriodicTask
+      +updatePeriodicTaskQuery(query: DocumentQuery, periodicTaskId: Integer): PeriodicTask
     }
 
-    enum CatalogRecordsTask {
-      IgnoreMissingAuthority
-      Reindex
-      Sync
-      ReevaluateDifferences
+    DocumentController --> DocumentQuery : uses >
+    DocumentController --> GenerateDocumentListSettings : uses >
+    DocumentController --> DocumentTask : uses >
+    DocumentController --> TaskPeriod : uses >
+
+    DocumentController o-- DocumentResponse : returns >
+    DocumentController o-- Task : returns >
+    DocumentController o-- GenerateDocumentListSettings : returns >
+    DocumentController o-- PeriodicTask : returns >
+
+    DocumentController --> DocumentRepository : calls >
+    DocumentController --> DocumentService : calls >
+    DocumentController --> WorkerService : starts tasks >
+
+    class CatalogRecordController {
+      +search(query: CatalogRecordQuery): CatalogRecordResponse
+      +runTask(query: CatalogRecordQuery, taskType: CatalogRecordTask): Task
+      +planPeriodicTask(
+        query: CatalogRecordQuery,
+        taskType: CatalogRecordTask,
+        period: TaskPeriod,
+        name: String
+      ): PeriodicTask
+      +updatePeriodicTaskQuery(query: DocumentQuery, periodicTaskId: Integer): PeriodicTask
+
+      +approveDifference(differenceId: Integer): ItemMessageResponse<CatalogRecord>
+      +rescindDifference(differenceId: Integer): ItemMessageResponse<CatalogRecord>
+
+      +createList(list: CatalogRecordListEdit): ItemMessageResponse<CatalogRecordList>
+      +updateList(listId: Integer, list: CatalogRecordListEdit): ItemMessageResponse<CatalogRecordList>
+      +deleteList(listId: Integer): MessageResponse
+      +getLists(): List<CatalogRecordList>
     }
 
-    enum CategoriesTask {
-      AddDocumentsUsingScript
+    CatalogRecordController --> CatalogRecordQuery : uses >
+    CatalogRecordController --> CatalogRecordTask : uses >
+    CatalogRecordController --> TaskPeriod : uses >
+    CatalogRecordController --> CatalogRecordListEdit : uses >
+
+    CatalogRecordController o-- CatalogRecordResponse : returns >
+    CatalogRecordController o-- Task : returns >
+    CatalogRecordController o-- PeriodicTask : returns >
+    CatalogRecordController o-- ItemMessageResponse : returns >
+    CatalogRecordController o-- CatalogRecord : returns >
+    CatalogRecordController o-- CatalogRecordList : returns >
+
+    CatalogRecordController --> CatalogRecordRepository : calls >
+    CatalogRecordController --> CatalogRecordService : calls >
+    CatalogRecordController --> WorkerService : starts tasks >
+
+    class CategoryController {
+      +create(category: CategoryEdit): MessageResponse
+      +update(categoryId: Integer, category: CategoryEdit): ItemMessageResponse<Category>
+      +changeParent(
+        categoryId: Integer,
+        fromParent: Integer | None,
+        toParent: Integer | None
+      ): MessageResponse
+      +delete(categoryId: Integer): MessageResponse
+      +search(query: CategoryQuery): CategoryResponse
+      +getScript(categoryId: Integer): ItemMessageResponse<Script>
+      +updateScript(categoryId: Integer, script: Script | None): MessageResponse
     }
 
-    enum SystemTask {
-      RecreateIndexes
-      GenerateBackup
-      LoadFromBackup
+    CategoryController --> CategoryEdit : uses >
+    CategoryController --> CategoryQuery : uses >
+    CategoryController --> Script : uses >
+
+    CategoryController o-- MessageResponse : returns >
+    CategoryController o-- ItemMessageResponse : returns >
+    CategoryController o-- Category : returns >
+    CategoryController o-- CategoryResponse : returns >
+    CategoryController o-- Script : returns >
+
+    CategoryController --> CategoryRepository : calls >
+    CategoryController --> CategoryService : calls >
+    CategoryController --> WorkerService : starts tasks >
+
+    class IntentionController {
+      +create(intention: IntentionEdit): MessageResponse
+      +update(intentionId: Integer, intention: IntentionEdit): ItemMessageResponse<Intention>
+      +delete(intentionId: Integer): MessageResponse
+
+      +createProject(intention: IntentionEdit): MessageResponse
+      +updateProject(intentionId: Integer, intention: IntentionEdit): ItemMessageResponse<Intention>
+      +deleteProject(intentionId: Integer): MessageResponse
+
+      +acceptProject(intentionId: Integer): MessageResponse
+      +declineProject(intentionId: Integer): MessageResponse
+      
+      +search(query: IntentionQuery): IntentionResponse
+    }
+
+    IntentionController --> IntentionEdit : uses >
+    IntentionController --> IntentionQuery : uses >
+
+    IntentionController o-- MessageResponse : returns >
+    IntentionController o-- ItemMessageResponse : returns >
+    IntentionController o-- Intention : returns >
+    IntentionController o-- IntentionResponse : returns >
+
+    IntentionController --> IntentionRepository : calls >
+
+    class DigitizationListController {
+      +create(query: DocumentQuery): ItemMessageResponse<Task>
+      +delete(digitizationListId: Integer): ItemMessageResponse<Task>
+      +addDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMessageResponse<Task>
+      +removeDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMesageResponse<Task>
+      +search(query: DigitizationListQuery): DigitizationListResponse
+    }
+
+    DigitizationListController --> DocumentQuery : uses >
+    DigitizationListController --> DigitizationListQuery : uses >
+
+    DigitizationListController o-- ItemMessageResponse : returns >
+    DigitizationListController o-- Task : returns >
+    DigitizationListController o-- DigitizationListResponse : returns >
+
+    DigitizationListController --> DigitizationListRepository : calls >
+
+    class TaskController {
+      +searchTasks(query: TaskQuery): TaskResponse
+      +searchTaskItems(query: TaskItemQuery): TaskItemResponse
+      +searchPeriodicTasks(query: PeriodicTaskQuery): PeriodicTaskResponse
+      +updatePeriodicTask(periodicTaskId: Integer, name: String, period: TaskPeriod): ItemMessageResponse<PeriodicTask>
+      +deletePeriodicTask(periodicTaskId: Integer): MessageResponse
+    }
+
+    TaskController --> TaskQuery : uses >
+    TaskController --> TaskItemQuery : uses >
+    TaskController --> PeriodicTaskQuery : uses >
+    TaskController --> TaskPeriod : uses >
+
+    TaskController o-- TaskResponse : returns >
+    TaskController o-- TaskItemResponse : returns >
+    TaskController o-- PeriodicTaskResponse : returns >
+    TaskController o-- ItemMessageResponse : returns >
+    TaskController o-- PeriodicTask : returns >
+    TaskController o-- MessageResponse : returns >
+
+    TaskController -d-> TaskRepository : calls >
+
+    class UserController {
+      +getNotifications(): UserNotifications
+      +getSettings(): UserSettings
+      +saveSettings(settings: UserSettings): MessageResponse
+    }
+
+    class SystemController {
+      +testEntityProperty(entityProperty: EntityProperty, recordId: Integer): String
+      +createEntityProperty(entityProperty: EntityProperty): UpdateMessageResponse<EntityProperty>
+      +updateEntityProperty(entityPropertyId: Integer, entityProperty: EntityProperty): UpdateMessageResponse<EntityProperty>
+      +deleteEntityProperty(entityPropertyId: Integer): MessageResponse
+      +getEntityProperties(): List<EntityProperty>
+
+      +runTask(taskType: SystemTask.RecreateIndexes | SystemTask.GenerateBackup): Task
+      +planPeriodicTask(taskType: SystemTask.RecreateIndexes | SystemTask.GenerateBackup): PeriodicTask
+      +loadFromBackup(file: BinFile): Task
+
+      +listBackups(): List<String>
+      +downloadBackup(name: String): BinFile
     }
   }
 
-  package "Repositories" {
+  package "Security" {
+    class Permission {}
 
-    package "Model" {
-      class DocumentAddition {
-        +identifierType: Enum<IdentifierType>
-        +identifierValue: String
-        +owner: String
-        +filename: String | None = None
-        +category: Integer
-        +priority: Integer [1-5] = 3
-        +ignoreDigitizationState: Boolean = False
-        +addAgainIfPresent: Boolean = False
-      }
-
-      class CatalogRecord {
-        +id: String
-        +base: String
-        +systemNumber: String
-        +marc: Binary
-        +unreachable: Boolean = False
-        +addedAt: Timestamp
-        +updatedAt: Timestamp
-        +hasAddedDocuments(): Boolean
-        +hasActiveDocuments(): Boolean
-        +isValid(): Boolean
-        +authoritiesRecordIds(): List<String>
-        +authoritiesMarc(): List<Marc>
-        +authoritiesDifference(): List<MarcDifference>
-        +authoritiesDifferenceFlags(): List<DifferenceFlag>
-      }
-
-      class CatalogRecordAuthority {
-        +mainId: String
-        +authorityBase: String
-        +isValid: Boolean = True
-        +hasDifferences: Boolean = False
-        +authorityId: String | None = None
-      }
-
-      class CatalogRecordDifference {
-        +id: Integer
-        +mainId: String
-        +authorityId: String
-      }
-
-      class Document {
-        +id: Integer
-        +recordId: String
-        +barcode: String | None
-        +volume: String | None
-        +volume_year: String | None
-        +bundle: String | None
-        +iteration: Integer | None
-        +issuanceType: Enum<IssuanceType>
-        +added_at: Timestamp = now
-        +added_by: String
-        +categoryId: Integer
-        +pageCountCatalog: Integer | None
-        +pageCountPredicted: Integer | None
-        +pageCountManual: Integer | None
-        +priority: Integer [1-5]
-        +digitizationListId: Integer | None
-        +pageCount(): Integer | None
-        +isExtractable(): Boolean
-        +categoryName(): String
-        +categoryIds(): List<Integer>
-        +extractedBy(): String | None
-        +extractedAt(): String | None
-      }
-
-      class Category {
-        +id: Integer
-        +name: String
-        +descripton: String | None
-        +parentId: Integer | None = None
-        +level: Integer = 0
-        +assignable: Boolean = False
-        +extractWhole: Boolean = False
-        +disabled: Boolean = False
-        +archived: Boolean = False
-        +sourceTask: BashScriptFile | None = None
-        +directlyAssignedTo: List<GroupName> | List<UserName> | None = None
-        +assignedTo(): List<GroupName> | List<UserName> | None = None
-        +totalPageCount(): Integer
-        +totalDocuments(): Integer
-        +extractablePageCount(): Integer
-        +extractableDocuments(): Integer
-        +extractedPageCount(): Integer
-        +extractedDocuments(): Integer
-      }
-
-      class Connector {
-        +name: String
-                
-      }
-
-      class EntityProperty {
-        +id: Integer
-        +entity: 
-        +name: String
-        +translations: JSON
-        +parseScript: ParseScript
-      }
-
-      class CategoriesDistribution {
-        +id: Integer
-        +name: String
-        +active: Boolean
-      }
-
-      class CategoryDistribution {
-        +categoryId: Integer
-        +distributionId: Integer
-        +percentage: Float
-      }
-    }
-
-    class DocumentAdditionRepository {
-      +get():
-      +save():
-      +index():
-      +search(DocumentAdditionsQuery): DocumentAdditionsResponse
-    }
-
-    class DocumentRepository {
-      +get():
-      +save():
-      +index():
-      +search(DocumentQuery): DocumentsResponse
-    }
-
-    class CatalogRecordsRepository {
-      +get():
-      +save():
-      +index():
-      +search(CatalogRecordsQuery): CatalogRecordsResponse
-    }
-
-    class CategoriesRepository {
-      +get():
-      +save():
-      +index():
-      +search(CategoriesQuery): CategoriesResponse
-    }
+    class OwnershipPermission {}
   }
 
   "API Controllers" --> "Security": Enforces permissions
-  "API Controllers" --> "Services": Uses
-  "API Controllers" --> "Repositories": Uses
-  "Services" --> "Repositories": Uses
 }
 
 package "Digitization Registry" {
@@ -567,15 +796,5 @@ package "MARC Comparator" {
   Service --> Repository : Uses
 }
 
-' Dependencies
-
-CatalogRecordsDatabase --> CatalogConnector : Fetches records
-CatalogRecordsDatabase --> MARCComparator : Compares records
-CatalogConnector --> Aleph_Z39_50 : Uses
-CatalogConnector --> Aleph_X_API : Uses
-CatalogConnector --> Aleph_OAI_API : Uses
-
-DigitizationRegistry --> RDConnector : Reads from
-DigitizationRegistry --> KrameriusConnector : Reads from
-
+' hide class "Digitization Planner"::"CatalogRecordController"
 @enduml
