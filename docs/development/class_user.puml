@@ -2,13 +2,26 @@
 
 skinparam classAttributeIconSize 0
 skinparam ranksep 150
-skinparam nodesep 10
+skinparam nodesep 150
 skinparam linetype ortho
 top to bottom direction
 
 package "Digitization Planner" {
 
   package "Types" {
+    enum Permission {
+
+    }
+
+    enum OwnershipScope {
+      Own
+      Group
+      All
+    }
+
+    enum OwnershipPermission {
+
+    }
 
     entity UserSettings extends JSON
   }
@@ -24,9 +37,14 @@ package "Digitization Planner" {
       +item: T | None
     }
 
+    entity Permissions {
+      +permissions: List<Permission>
+      +ownershipPermissions: List<Tuple<OwnershipPermission, OwnershipScope>>
+    }
+
     entity RoleEdit {
       +name: String
-      +description: String
+      +description: String | None
       +permissions: Permissions
     }
 
@@ -36,7 +54,7 @@ package "Digitization Planner" {
 
     entity GroupEdit {
       +name: String
-      +description: String
+      +description: String | None
       +users: List<String>
     }
 
@@ -51,6 +69,29 @@ package "Digitization Planner" {
       +groups: List<Group>
     }
 
+    entity UserNotifications {
+      +taskChanges: List<Task>
+      +enqueuedDocumentAdditions: Integer
+      +processedDocumentAdditions: Integer
+      +catalogRecordListsChanged: List<CatalogRecordList>
+    }
+
+    entity KeycloakSettings {
+      +serverUrl: String
+      +realmName: String
+      +clientId: String
+      +clientSecret: String
+      +issuerClientId: String
+      +usernameField: String | None
+      +roleNamesField: String | None
+    }
+
+    Permissions --> Permission : contains
+    Permissions --> OwnershipPermission : contains
+    Permissions --> OwnershipScope : contains
+
+    RoleEdit --> Permissions : has
+
     CurrentUser --> Role : has
     CurrentUser --> Group : belongs to
     CurrentUser --> UserSettings : has
@@ -63,19 +104,20 @@ package "Digitization Planner" {
       class RoleModel {
         +id: Integer
         +name: String
-        +description: String
+        +description: String | None
       }
 
       class GroupModel {
         +id: Integer
         +name: String
-        +description: String
+        +description: String | None
         +users(): List<UserModel>
       }
 
       class UserModel {
         +username: String
         +settings: JSON
+        +notificationsLastChecked: Timestamp
         +groups(): List<GroupModel>
       }
 
@@ -109,6 +151,13 @@ package "Digitization Planner" {
     GroupRepository --> GroupModel : manages
     GroupRepository --> UserGroupRelationship : manages
     UserRepository --> UserModel : manages
+
+    RoleModel --> Role : maps to
+    GroupModel --> Group : maps to
+
+    class DocumentAdditionRepository
+    class TaskRepository
+    class CatalogRecordRepository
   }
   
   package "Services" {
@@ -118,8 +167,36 @@ package "Digitization Planner" {
       +getNotifications(username: String): UserNotifications
     }
 
-    UserService --|> UserRepository : uses
-    UserService --|> TaskRepository : uses
+    interface AuthService {
+      +getUserInfo(token: String): Map<String, Object>
+      +parseUsername(userInfo: Map<String, Object>): String
+      +parseRoleNames(userInfo: Map<String, Object>): List<String>
+    }
+
+    class KeycloakService implements AuthService {
+      +KeycloakService(settings: KeycloakSettings)
+    }
+
+    KeycloakService --> KeycloakSettings : uses
+
+    UserService --> AuthService : calls
+    UserService --> UserRepository : calls
+    UserService --> DocumentAdditionRepository : get additions changes
+    UserService --> TaskRepository : get tasks changes
+    UserService --> CatalogRecordRepository : get catalog records lists changes
+
+    UserService --> CurrentUser : creates
+    UserService --> UserNotifications : creates
+  }
+
+  package "Security" {
+    class AccessControlEnforcer {
+      +AccessControlEnforcer(permission: Permission, token: String)
+    }
+
+    class OwnershipAccessControl {
+      +AccessControlEnforcer(permission: OwnershipPermission, token: String)
+    }
   }
   
   package "API Controllers" {
@@ -131,7 +208,7 @@ package "Digitization Planner" {
       +delete(roleId: Integer): MessageResponse
     }
 
-    RoleController --> RoleRepository : uses
+    RoleController --> RoleRepository : calls
 
     class GroupController {
       +getAll(): List<Group>
@@ -140,16 +217,17 @@ package "Digitization Planner" {
       +delete(groupId: Integer): MessageResponse
     }
 
-    GroupController --> GroupRepository : uses
+    GroupController --> GroupRepository : calls
 
     class UserController {
+      +getCurrentUser(): CurrentUser
       +getNotifications(): UserNotifications
       +getSettings(): UserSettings
       +saveSettings(settings: UserSettings): MessageResponse
     }
 
-    UserController --> UserService : uses
-    UserController --> UserRepository : uses
+    UserController --> UserService : calls
+    UserController --> UserRepository : calls
   }
 }
 

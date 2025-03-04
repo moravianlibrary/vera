@@ -1,7 +1,8 @@
-@startuml
+@startuml VERA - Documents class diagram
+
 skinparam classAttributeIconSize 0
 skinparam ranksep 150
-skinparam nodesep 10
+skinparam nodesep 150
 skinparam linetype ortho
 top to bottom direction
 
@@ -13,6 +14,26 @@ package "Digitization Planner" {
       SystemNumber
       ISXN
       Signature
+    }
+
+    enum DocumentProposalStatus {
+      Pending
+      Accepted
+      Declined
+    }
+
+    enum DocumentAdditionStatus {
+      Enqueued
+      Processing
+      ActiveDuplicate
+      FullyProcessedDuplicate
+      InDigitization
+      AmbiguousIssues
+      AllIssuesResolved
+      Completed
+      CatalogRecordFailure
+      DigitizationRegistryFailure
+      InternalFailure
     }
 
     enum DocumentTask {
@@ -30,30 +51,32 @@ package "Digitization Planner" {
 
   package "Schemas" {
     entity MessageResponse {
-      status: StatusCode,
-      message: String
+      +status: StatusCode
+      +message: String
     }
 
     entity ItemMessageResponse<T> extends MessageResponse {
-      item: T | None
+      +item: T | None
+    }
+
+    entity DocumentProposal {
+      +identifierType: IdentifierType
+      +identifierValue: String
     }
 
     entity DocumentAddition {
-      identifierType: IdentifierType
-      identifierValue: String
-      fileName: String | None
-      categoryId: Integer | None
-      priority: Integer [1-5] | None
-      ignoreDigitizationState: Boolean | None
-      addAgainIfPresent: Boolean | None
+      +fileName: String | None
+      +categoryId: Integer | None
+      +priority: Integer [1-5] | None
+      +ignoreDigitizationState: Boolean | None
+      +addAgainIfPresent: Boolean | None
     }
 
-    DocumentAddition --> IdentifierType : uses >
-
     entity ProcessedDocumentAddition extends DocumentAddition {
-      owner: String
-      record: Record | None
-      status: DocumentAdditionStatus
+      +id: Integer
+      +owner: String
+      +record: Record | None
+      +status: DocumentAdditionStatus
     }
 
     entity GenerateDocumentListSettings {
@@ -77,33 +100,53 @@ package "Digitization Planner" {
   package "Repositories" {
 
     package "Model" {
+
+      class DocumentProposalModel {
+        +id: Integer
+        +type: IdentifierType
+        +value: String
+        +createdBy: String
+        +createdAt: Timestamp = Timestamp::Now
+        +reasonMessage: String
+        +fileName: String | None = None
+        +status: DocumentProposalStatus = DocumentProposalStatus::Pending
+        +statusUpdatedBy: String | None = None
+        +statusUpdatedAt: Timestamp | None = None
+        +additionId: Integer | None = None
+        +isArchived: Boolean = False
+      }
+
       class DocumentAdditionModel {
         +id: Integer
-        +identifierType: Enum<IdentifierType>
-        +identifierValue: String
-        +owner: String
-        +filename: String | None = None
-        +category: Integer
+        +type: IdentifierType
+        +value: String
+        +createdBy: String
+        +createdAt: Timestamp = Timestamp::Now
+        +fileName: String | None = None
+        +categoryId: Integer
         +priority: Integer [1-5] = 3
-        +ignoreDigitizationState: Boolean = False
-        +addAgainIfPresent: Boolean = False
+        +ignoreDigitizationCheck: Boolean = False
+        +allowNewIteration: Boolean = False
+        +status: DocumentAdditionStatus = DocumentAdditionStatus::Enqueued
+        +errorMessage: String | None = None
+        +isArchived: Boolean = False
       }
 
       class DocumentModel {
         +id: Integer
         +recordId: String
         +barcode: String | None
-        +volume: String | None
-        +volume_year: String | None
+        +volumeNumber: String | None
+        +volumeYear: String | None
         +bundle: String | None
         +iteration: Integer | None
-        +issuanceType: Enum<IssuanceType>
-        +added_at: Timestamp = now
-        +added_by: String
+        +issuanceType: IssuanceType
+        +addedAt: Timestamp = Timestamp::Now
+        +addedBy: String
         +categoryId: Integer
-        +pageCountCatalog: Integer | None
-        +pageCountPredicted: Integer | None
-        +pageCountManual: Integer | None
+        +catalogPageCount: Integer | None
+        +predictedPageCount: Integer | None
+        +manualPageCount: Integer | None
         +priority: Integer [1-5]
         +digitizationListId: Integer | None
         +pageCount(): Integer | None
@@ -112,7 +155,16 @@ package "Digitization Planner" {
         +categoryIds(): List<Integer>
         +extractedBy(): String | None
         +extractedAt(): String | None
+        +isArchived(): Boolean = False
       }
+    }
+
+    class DocumentProposalRepository {
+      +get(additionId: Integer): DocumentAdditionModel
+      +save(addition: DocumentAdditionModel): DocumentAdditionModel
+      +delete(additionId: Integer): DocumentAdditionModel
+      +index(addition: DocumentAdditionModel): DocumentAdditionModel
+      +search(query: DocumentAdditionsQuery): DocumentProposalsResponse
     }
 
     class DocumentAdditionRepository {
@@ -120,12 +172,10 @@ package "Digitization Planner" {
       +save(addition: DocumentAdditionModel): DocumentAdditionModel
       +delete(additionId: Integer): DocumentAdditionModel
       +index(addition: DocumentAdditionModel): DocumentAdditionModel
-      +search(DocumentAdditionsQuery): DocumentAdditionsResponse
+      +search(query: DocumentAdditionsQuery): DocumentAdditionsResponse
     }
 
     DocumentAdditionRepository --> DocumentAdditionModel : uses >
-    DocumentAdditionRepository --> DocumentAddition : uses >
-    DocumentAdditionRepository --> DocumentAddition : uses >
 
     class DocumentRepository {
       +get(documentId: Integer): DocumentModel
@@ -139,16 +189,6 @@ package "Digitization Planner" {
 
   package "Services" {
 
-    class EnqueueDocumentAdditionResult {
-      +enqueued: Integer
-      +alreadyEnqueued: Integer
-    }
-
-    class DeleteDocumentAdditionResult {
-      +deleted: Integer
-      +alreadyDeleted: Integer
-    }
-
     class AcceptProposalResult {
       +accepted: Integer
       +acceptedDeclined: Integer
@@ -161,12 +201,27 @@ package "Digitization Planner" {
       +alreadyDeclined: Integer
     }
 
+    class DocumentProposalService {
+      +acceptProposal(query: DocumentProposalQuery, categoryId: Integer): AcceptProposalResult
+      +declineProposal(query: DocumentProposalQuery): DeclineProposalResult
+    }
+
+    class EnqueueDocumentAdditionResult {
+      +enqueued: Integer
+      +alreadyEnqueued: Integer
+    }
+
+    class DeleteDocumentAdditionResult {
+      +deleted: Integer
+      +alreadyDeleted: Integer
+    }
+
     class DocumentAdditionService {
       +enqueue(additions: List<DocumentAddition>): EnqueueDocumentAdditionResult
       +restrictQuery(query: DocumentAdditionQuery, user: User): DocumentAdditionQuery
+      +ignoreDigitizationCheck(query: DocumentAdditionQuery)
+      +allowNewIteration(query: DocumentAdditionQuery)
       +delete(query: DocumentAdditionQuery): DeleteDocumentAdditionResult
-      +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): AcceptProposalResult
-      +declineProposal(query: DocumentAdditionQuery): DeclineProposalResult
     }
 
     DocumentAdditionService --> DocumentAddition : uses >
@@ -223,12 +278,17 @@ package "Digitization Planner" {
   }
 
   package "API Controllers" {
+    
+    class DocumentProposalController {
+      create(proposal: DocumentProposalEdit): MessageResponse
+      +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): MessageResponse
+      +declineProposal(query: DocumentAdditionQuery): MessageResponse
+    }
+
     class DocumentAdditionController {
       +add(additions: List<DocumentAddition>): MessageResponse
       +search(query: DocumentAdditionQuery): DocumentAdditionResponse
       +delete(query: DocumentAdditionQuery): MessageResponse
-      +acceptProposal(query: DocumentAdditionQuery, categoryId: Integer): MessageResponse
-      +declineProposal(query: DocumentAdditionQuery): MessageResponse
     }
 
     DocumentAdditionController --> DocumentAddition : uses >
