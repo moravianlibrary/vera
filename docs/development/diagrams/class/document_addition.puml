@@ -1,10 +1,12 @@
-@startuml VERA - Class Diagram - Document Addition
+@startuml VERA - Class Diagram - Documents
 
 skinparam classAttributeIconSize 0
 skinparam ranksep 150
 skinparam nodesep 150
-skinparam linetype ortho
+' skinparam linetype ortho
 top to bottom direction
+
+!define ENTITY_REL #D3D3D3
 
 package "Digitization Planner" {
 
@@ -25,6 +27,7 @@ package "Digitization Planner" {
       ActiveDuplicate
       FullyProcessedDuplicate
       InDigitization
+      DigitizationForbidden
       AmbiguousIssues
       AllIssuesResolved
       Completed
@@ -32,6 +35,7 @@ package "Digitization Planner" {
       DigitizationRegistryFailure
       InternalFailure
     }
+
   }
 
   package "Schemas" {
@@ -43,6 +47,8 @@ package "Digitization Planner" {
       +fileName: String | None
       +categoryId: Integer | None
     }
+
+    DocumentProposalCreate -[ENTITY_REL]-> IdentifierType : contains
 
     entity DocumentProposal extends DocumentProposalCreate {
       +id: Integer
@@ -56,6 +62,9 @@ package "Digitization Planner" {
       +isArchived: Boolean
     }
 
+    DocumentProposal -[ENTITY_REL]-> DocumentAdditionStatus : contains
+    DocumentProposal -[ENTITY_REL]-> DocumentProposalStatus : contains
+
     entity DocumentAdditionCreate {
       +itentifierType: IdentifierType
       +identifierValue: String
@@ -63,6 +72,8 @@ package "Digitization Planner" {
       +categoryId: Integer
       +priority: Integer [1-5]
     }
+
+    DocumentAdditionCreate -[ENTITY_REL]-> IdentifierType : contains
 
     entity DocumentAddition extends DocumentAdditionCreate {
       +id: Integer
@@ -75,6 +86,34 @@ package "Digitization Planner" {
       +errorMessage: String | None
       +isArchived: Boolean
     }
+
+    DocumentAddition -[ENTITY_REL]-> DocumentAdditionStatus : contains
+
+    entity Document {
+      +id: Integer
+      +catalogBase: String
+      +systemNumber: String
+      +barcode: String | None
+      +volumeNumber: String | None
+      +volumeYear: String | None
+      +bundle: String | None
+      +issuanceType: IssuanceType
+      +pageCount: Dict<String, Integer>
+      +status: CatalogRecordStatus
+      +iteration: Integer
+      +addedAt: Timestamp = Timestamp::Now
+      +addedBy: String
+      +categoryId: Integer
+      +priority: Integer [1-5]
+      +digitizationListId: Integer | None
+      +isExtractable: Boolean
+      +categoryIds: List<Integer>
+      +extractedBy: String | None
+      +extractedAt: String | None
+      +isArchived: Boolean
+    }
+
+    Document -[ENTITY_REL]-> CatalogRecordStatus : contains
   }
 
   package "Repositories" {
@@ -155,6 +194,8 @@ package "Digitization Planner" {
       +search(query: DocumentAdditionsQuery): DocumentProposalsResponse
     }
 
+    DocumentProposalRepository -[ENTITY_REL]-> DocumentProposalModel : manages >
+
     class DocumentAdditionRepository {
       +get(additionId: Integer): DocumentAdditionModel
       +save(addition: DocumentAdditionModel): DocumentAdditionModel
@@ -163,16 +204,19 @@ package "Digitization Planner" {
       +search(query: DocumentAdditionsQuery): DocumentAdditionsResponse
     }
 
-    DocumentAdditionRepository --> DocumentAdditionModel : uses >
+    DocumentAdditionRepository -[ENTITY_REL]-> DocumentAdditionModel : manages >
 
     class DocumentRepository {
-      +get(documentId: Integer): DocumentModel
-      +getAll(): List<DocumentModel>
-      +save(document: DocumentModel): DocumentModel
-      +delete(additionId: Integer): DocumentAdditionModel
-      +index(document: DocumentModel): Document
+      +get(documentId: Integer): DocumentIterationModel
+      +getAll(): List<DocumentIterationModel>
+      +save(document: DocumentIterationModel): DocumentIterationModel
+      +delete(documentId: Integer): DocumentIterationModel
+      +index(document: DocumentModel): DocumentModel
       +search(DocumentQuery): DocumentsResponse
     }
+
+    DocumentRepository -[ENTITY_REL]-> DocumentModel : manages >
+    DocumentRepository -[ENTITY_REL]-> DocumentIterationModel : manages >
   }
 
   package "Services" {
@@ -190,11 +234,17 @@ package "Digitization Planner" {
     }
 
     class DocumentProposalService {
+      +enqueue(additions: List<DocumentProposalCreate>): EnqueueDocumentProposalResult
       +restrictQuery(query: DocumentProposalQuery, user: User): DocumentProposalQuery
       +acceptProposal(query: DocumentProposalQuery, categoryId: Integer): AcceptProposalResult
       +declineProposal(query: DocumentProposalQuery): DeclineProposalResult
     }
 
+    DocumentProposalService -[ENTITY_REL]-> DocumentProposalCreate : uses
+    DocumentProposalService -[ENTITY_REL]-> DocumentProposalQuery : uses
+    DocumentProposalService -[ENTITY_REL]-> User : uses
+
+    DocumentProposalController o-- EnqueueDocumentProposalResult : returns >
     DocumentProposalController o-- AcceptProposalResult : returns >
     DocumentProposalController o-- DeclineProposalResult : returns >
 
@@ -224,17 +274,21 @@ package "Digitization Planner" {
     }
 
     class DocumentAdditionService {
-      +enqueue(additions: List<DocumentAddition>): EnqueueDocumentAdditionResult
+      +enqueue(additions: List<DocumentAdditionCreate>): EnqueueDocumentAdditionResult
       +restrictQuery(query: DocumentAdditionQuery, user: User): DocumentAdditionQuery
       +ignoreDigitizationCheck(query: DocumentAdditionQuery): IgnoreDigitizationCheckResult
       +allowNewIteration(query: DocumentAdditionQuery): AllowNewIterationResult
       +delete(query: DocumentAdditionQuery): DeleteDocumentAdditionResult
     }
+
+    DocumentAdditionService -[ENTITY_REL]-> DocumentAdditionCreate : uses
+    DocumentAdditionService -[ENTITY_REL]-> DocumentAdditionQuery : uses
+    DocumentAdditionService -[ENTITY_REL]-> User : uses
     
-    DocumentAdditionController o-- EnqueueDocumentAdditionResult : returns >
-    DocumentAdditionController o-- IgnoreDigitizationCheckResult : returns >
-    DocumentAdditionController o-- AllowNewIterationResult : returns >
-    DocumentAdditionController o-- DeleteDocumentAdditionResult : returns >
+    DocumentAdditionService o-- EnqueueDocumentAdditionResult : returns >
+    DocumentAdditionService o-- IgnoreDigitizationCheckResult : returns >
+    DocumentAdditionService o-- AllowNewIterationResult : returns >
+    DocumentAdditionService o-- DeleteDocumentAdditionResult : returns >
 
     DocumentAdditionService --> DocumentAdditionRepository : uses >
     DocumentAdditionService --> DocumentRepository : uses >
@@ -260,15 +314,15 @@ package "Digitization Planner" {
       +delete(query: DocumentProposalQuery): MessageResponse
     }
 
+    DocumentProposalController --> DocumentProposalService : calls >
+    DocumentProposalController --> DocumentProposalRepository : calls >
+
     class DocumentAdditionController {
       +add(additions: List<DocumentAdditionCreate>): MessageResponse
       +search(query: DocumentAdditionQuery): DocumentAdditionResponse
       +archive(query: DocumentAdditionQuery): MessageResponse
       +delete(query: DocumentAdditionQuery): MessageResponse
     }
-
-    DocumentProposalController --> DocumentProposalService : calls >
-    DocumentProposalController --> DocumentProposalRepository : calls >
 
     DocumentAdditionController --> DocumentAdditionService : calls >
     DocumentAdditionController --> DocumentAdditionRepository : calls >
