@@ -1,0 +1,184 @@
+@startuml VERA - Class Diagram - Documents
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Types" {
+
+    enum IdentifierType {
+      Barcode
+      SystemNumber
+      ISXN
+      Signature
+    }
+
+    enum DocumentAdditionStatus {
+      Enqueued
+      Processing
+      NotEligibleForAddition
+      Completed
+    }
+
+    enum DocumentEligibilityStatus {
+      Ready
+      ActiveDuplicate
+      FullyProcessedDuplicate
+      InDigitization
+      DigitizationForbidden
+      AmbiguousIssues
+      AllIssuesResolved
+      CatalogRecordFailure
+      DigitizationRegistryFailure
+      InternalFailure
+    }
+  }
+
+  package "Schemas" {
+
+    entity DocumentAdditionCreate {
+      +identifierType: IdentifierType
+      +identifierValue: String
+      +fileName: String | None
+      +categoryId: Integer
+      +priority: Integer [1-5]
+    }
+
+    DocumentAdditionCreate --> IdentifierType : contains
+
+    entity DocumentAddition extends DocumentAdditionCreate {
+      +id: Integer
+      +createdBy: String
+      +createdAt: Timestamp
+      +fromProposal: Integer | None
+      +ignoreDigitizationCheck: Boolean
+      +allowNewIteration: Boolean
+      +status: DocumentAdditionStatus
+      +eligibilityStatus: DocumentEligibilityStatus | None
+      +errorMessage: String | None
+      +isArchived: Boolean
+    }
+
+    DocumentAddition --> DocumentAdditionStatus : contains
+    DocumentAddition --> DocumentEligibilityStatus : contains
+
+    entity DocumentAdditionQuery
+    entity DocumentAdditionResponse
+    DocumentAdditionResponse --> DocumentAddition : contains
+
+    entity CurrentUser {
+      +username: String
+      +settings: UserSettings
+      +role: Role
+      +groups: List<Group>
+    }
+    
+    entity MessageResponse
+  }
+
+  package "Repositories" {
+
+    package "Model" {
+
+      class DocumentAdditionModel {
+        +id: Integer
+        +identifierType: IdentifierType
+        +identifierValue: String
+        +createdBy: String
+        +createdAt: Timestamp = Timestamp::Now
+        +fileName: String | None = None
+        +fromProposal: Integer | None = None
+        +categoryId: Integer
+        +priority: Integer [1-5] = 3
+        +ignoreDigitizationCheck: Boolean = False
+        +allowNewIteration: Boolean = False
+        +status: DocumentAdditionStatus = DocumentAdditionStatus::Enqueued
+        +eligibilityStatus: DocumentEligibilityStatus | None = None
+        +errorMessage: String | None = None
+        +isArchived: Boolean = False
+      }
+
+      DocumentAdditionModel --> IdentifierType : contains
+      DocumentAdditionModel --> DocumentAdditionStatus : contains
+      DocumentAdditionModel --> DocumentEligibilityStatus : contains
+    }
+
+    class DocumentAdditionRepository {
+      +get(additionId: Integer): DocumentAdditionModel
+      +save(addition: DocumentAdditionModel): DocumentAdditionModel
+      +delete(additionId: Integer): DocumentAdditionModel
+      +index(addition: DocumentAdditionModel): DocumentAdditionModel
+      +search(query: DocumentAdditionsQuery): DocumentAdditionsResponse
+    }
+
+    DocumentAdditionRepository --> DocumentAdditionModel : manages >
+  }
+
+  package "Services" {
+    
+    entity EnqueueDocumentAdditionResult {
+      +enqueued: Integer
+      +alreadyEnqueued: Integer
+    }
+
+    entity IgnoreDigitizationCheckResult {
+      +numFound: Integer
+      +alreadyWithFlag: Integer
+      +reindexTask: Task
+    }
+
+    entity AllowNewIterationResult {
+      +numFound: Integer
+      +alreadyWithFlag: Integer
+      +reindexTask: Task
+    }
+
+    entity DeleteDocumentAdditionResult {
+      +deleted: Integer
+      +alreadyDeleted: Integer
+    }
+
+    class DocumentAdditionService {
+      +enqueue(additions: List<DocumentAdditionCreate>): EnqueueDocumentAdditionResult
+      +restrictQuery(query: DocumentAdditionQuery, user: CurrentUser): DocumentAdditionQuery
+      +ignoreDigitizationCheck(query: DocumentAdditionQuery): IgnoreDigitizationCheckResult
+      +allowNewIteration(query: DocumentAdditionQuery): AllowNewIterationResult
+      +delete(query: DocumentAdditionQuery): DeleteDocumentAdditionResult
+    }
+
+    DocumentAdditionService --> DocumentAdditionCreate : uses
+    DocumentAdditionService --> DocumentAdditionQuery : uses
+    DocumentAdditionService --> CurrentUser : uses
+    
+    DocumentAdditionService o-- EnqueueDocumentAdditionResult : returns >
+    DocumentAdditionService o-- IgnoreDigitizationCheckResult : returns >
+    DocumentAdditionService o-- AllowNewIterationResult : returns >
+    DocumentAdditionService o-- DeleteDocumentAdditionResult : returns >
+
+    DocumentAdditionService --> DocumentAdditionRepository : calls >
+  }
+
+  package "API Controllers" {
+
+    class DocumentAdditionController {
+      +add(additions: List<DocumentAdditionCreate>): MessageResponse
+      +search(query: DocumentAdditionQuery): DocumentAdditionResponse
+      +archive(query: DocumentAdditionQuery): MessageResponse
+      +delete(query: DocumentAdditionQuery): MessageResponse
+    }
+
+    DocumentAdditionController --> DocumentAdditionCreate : uses
+    DocumentAdditionController --> DocumentAdditionQuery : uses
+
+    DocumentAdditionController --> MessageResponse : returns >
+    DocumentAdditionController --> DocumentAdditionResponse : returns >
+
+    DocumentAdditionController --> DocumentAdditionService : calls >
+    DocumentAdditionController --> DocumentAdditionRepository : calls >
+  }
+}
+
+@enduml

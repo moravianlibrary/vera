@@ -1,0 +1,188 @@
+@startuml VERA - Class Diagram - Document Proposal Controller
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Types" {
+
+    enum IdentifierType {
+      Barcode
+      SystemNumber
+      ISXN
+      Signature
+    }
+
+    enum DocumentProposalStatus {
+      Enqueued
+      Processing
+      NotEligibleForProposal
+      Pending
+      Accepted
+      Declined
+    }
+
+    enum DocumentEligibilityStatus {
+      Ready
+      ActiveDuplicate
+      FullyProcessedDuplicate
+      InDigitization
+      DigitizationForbidden
+      AmbiguousIssues
+      AllIssuesResolved
+      CatalogRecordFailure
+      DigitizationRegistryFailure
+      InternalFailure
+    }
+  }
+
+  package "Schemas" {
+
+    entity DocumentProposalCreate {
+      +identifierType: IdentifierType
+      +identifierValue: String
+      +reasonMessage: String
+      +fileName: String | None
+      +categoryId: Integer | None
+    }
+
+    DocumentProposalCreate --> IdentifierType : contains
+
+    entity DocumentProposal extends DocumentProposalCreate {
+      +id: Integer
+      +createdBy: String
+      +createdAt: Timestamp
+      +status: DocumentProposalStatus
+      +eligibilityStatus: DocumentEligibilityStatus | None
+      +statusUpdatedBy: String | None
+      +statusUpdatedAt: Timestamp | None
+      +statusUpdateMessage: String | None
+      +isArchived: Boolean
+    }
+
+    DocumentProposal --> DocumentProposalStatus : contains
+    DocumentProposal --> DocumentEligibilityStatus : contains
+
+    entity DocumentProposalQuery
+    entity DocumentProposalResponse
+    DocumentProposalResponse --> DocumentProposal : contains
+
+    entity CurrentUser {
+      +username: String
+      +settings: UserSettings
+      +role: Role
+      +groups: List<Group>
+    }
+
+    entity MessageResponse
+  }
+
+  package "Repositories" {
+
+    package "Model" {
+
+      class DocumentProposalModel {
+        +id: Integer
+        +identifierType: IdentifierType
+        +identifierValue: String
+        +reasonMessage: String
+        +fileName: String | None = None
+        +categoryId: Integer | None = None
+        +createdBy: String
+        +createdAt: Timestamp = Timestamp::Now
+        +status: DocumentProposalStatus = DocumentProposalStatus::Enqueued
+        +eligibilityStatus: DocumentEligibilityStatus | None = None
+        +isArchived: Boolean = False
+      }
+
+      DocumentProposalModel --> IdentifierType : contains
+      DocumentProposalModel --> DocumentProposalStatus : contains
+      DocumentProposalModel --> DocumentEligibilityStatus : contains
+
+      class DocumentProposalStatusLog {
+        +proposalId: Integer
+        +newStatus: DocumentProposalStatus
+        +updatedBy: String
+        +updatedAt: Timestamp
+        +message: String | None
+      }
+
+      DocumentProposalStatusLog --> DocumentProposalStatus : contains
+    }
+
+    class DocumentProposalRepository {
+      +get(proposalId: Integer): DocumentProposalModel
+      +listAll(): List<DocumentProposalModel>
+      +save(proposal: DocumentProposalModel): DocumentProposalModel
+      +delete(proposalId: Integer): DocumentProposalModel
+      +index(proposal: DocumentProposalModel): DocumentProposalModel
+      +search(query: DocumentProposalQuery): DocumentProposalsResponse
+    }
+
+    DocumentProposalRepository --> DocumentProposalModel : manages >
+    DocumentProposalRepository --> DocumentProposalStatusLog : tracks changes >
+  }
+
+  package "Services" {
+
+    entity EnqueueDocumentProposalResult {
+      +enqueued: Integer
+      +alreadyEnqueued: Integer
+    }
+
+    entity AcceptProposalResult {
+      +accepted: Integer
+      +reaccepted: Integer
+      +alreadyAccepted: Integer
+    }
+
+    entity DeclineProposalResult {
+      +declined: Integer
+      +alreadyAccepted: Integer
+      +alreadyDeclined: Integer
+    }
+
+    class DocumentProposalService {
+      +enqueue(additions: List<DocumentProposalCreate>): EnqueueDocumentProposalResult
+      +restrictQuery(query: DocumentProposalQuery, user: CurrentUser): DocumentProposalQuery
+      +acceptProposal(query: DocumentProposalQuery, categoryId: Integer): AcceptProposalResult
+      +declineProposal(query: DocumentProposalQuery): DeclineProposalResult
+    }
+
+    DocumentProposalService --> DocumentProposalCreate : uses
+    DocumentProposalService --> DocumentProposalQuery : uses
+    DocumentProposalService --> CurrentUser : uses
+
+    DocumentProposalService o-- EnqueueDocumentProposalResult : returns >
+    DocumentProposalService o-- AcceptProposalResult : returns >
+    DocumentProposalService o-- DeclineProposalResult : returns >
+
+    DocumentProposalService --> DocumentProposalRepository : calls >
+  }
+
+  package "API Controllers" {
+    
+    class DocumentProposalController {
+      +create(proposals: List<DocumentProposalCreate>): MessageResponse
+      +search(query: DocumentProposalQuery): DocumentProposalResponse
+      +acceptProposals(query: DocumentProposalQuery, categoryId: Integer): MessageResponse
+      +declineProposals(query: DocumentProposalQuery): MessageResponse
+      +archive(query: DocumentProposalQuery): MessageResponse
+      +delete(query: DocumentProposalQuery): MessageResponse
+    }
+
+    DocumentProposalController --> DocumentProposalCreate : uses
+    DocumentProposalController --> DocumentProposalQuery : uses
+
+    DocumentProposalController --> MessageResponse : returns >
+    DocumentProposalController --> DocumentProposalResponse : returns >
+
+    DocumentProposalController --> DocumentProposalService : calls >
+    DocumentProposalController --> DocumentProposalRepository : calls >
+  }
+}
+
+@enduml

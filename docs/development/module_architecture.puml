@@ -125,44 +125,6 @@ package "Connectors" {
 
 package "Digitization Planner" {
 
-  package "Types" {
-    enum IdentifierType {
-      Barcode
-      SystemNumber
-      ISXN
-      Signature
-    }
-
-    enum DocumentTask {
-      UpdateProperty
-      Remove
-      DeclineDigitization
-      CancelDigitizationDeclination
-      GenerateDigitizationList
-      Reindex
-      SyncDigitizationState
-      SyncCatalogRecord
-      PredictPageCount
-    }
-
-    enum CatalogRecordTask {
-      IgnoreMissingAuthority
-      Reindex
-      Sync
-      ReevaluateDifferences
-    }
-
-    enum CategoryTask {
-      AddDocumentsUsingScript
-    }
-
-    enum SystemTask {
-      RecreateIndexes
-      GenerateBackup
-      LoadFromBackup
-    }
-  }
-
   package "Schemas" {
     entity MessageResponse {
       status: StatusCode,
@@ -189,13 +151,6 @@ package "Digitization Planner" {
       owner: String
       record: Record | None
       status: DocumentAdditionStatus
-    }
-
-    entity GenerateDocumentListSettings {
-      +targetPageCount: Integer | None
-      +targetPageCountThreshold: Float | None
-      +useCategoryDistributions: Boolean | None
-      +wholeCategoryThreshold: Float | None
     }
 
     entity Task {
@@ -486,13 +441,6 @@ package "Digitization Planner" {
       +processAdditions(): None
     }
 
-    class DocumentService {
-      +restrictQuery(query: DocumentQuery, user: User): DocumentQuery
-      +generateExport(query: DocumentQuery): pd.Dataframe
-      +planUpdatePropertyTask(query: DocumentQuery, propertyName: String, propertyValue: String): Task
-      +planGenerateListTask(query: DocumentQuery, settings: GenerateDocumentListSettings): Task
-      +planTask(query: DocumentQuery, task: DocumentTask): Task
-    }
 
     DocumentService --> DocumentQuery : uses >
     DocumentService --> User : uses >
@@ -577,36 +525,6 @@ package "Digitization Planner" {
 
     DocumentAdditionController --> DocumentAdditionService : calls >
     DocumentAdditionController --> DocumentAdditionTaskService : runs task >
-
-    class DocumentController {
-      +search(query: DocumentQuery): DocumentResponse
-      +export(query: DocumentQuery): CsvFile | TxtFile
-      +updateProperty(query: DocumentQuery, propertyName: String, propertyValue: String): Task
-      +generateList(query: DocumentQuery, settings: GenerateDocumentListSettings): Task
-      +getPrevGenerateListSetting(): List<GenerateDocumentListSettings>
-      +runTask(query: DocumentQuery, taskType: DocumentTask): Task
-      +planPeriodicTask(
-        query: DocumentQuery,
-        taskType: DocumentTask,
-        period: TaskPeriod,
-        name: String
-      ): PeriodicTask
-      +updatePeriodicTaskQuery(query: DocumentQuery, periodicTaskId: Integer): PeriodicTask
-    }
-
-    DocumentController --> DocumentQuery : uses >
-    DocumentController --> GenerateDocumentListSettings : uses >
-    DocumentController --> DocumentTask : uses >
-    DocumentController --> TaskPeriod : uses >
-
-    DocumentController o-- DocumentResponse : returns >
-    DocumentController o-- Task : returns >
-    DocumentController o-- GenerateDocumentListSettings : returns >
-    DocumentController o-- PeriodicTask : returns >
-
-    DocumentController --> DocumentRepository : calls >
-    DocumentController --> DocumentService : calls >
-    DocumentController --> WorkerService : starts tasks >
 
     class CatalogRecordController {
       +search(query: CatalogRecordQuery): CatalogRecordResponse

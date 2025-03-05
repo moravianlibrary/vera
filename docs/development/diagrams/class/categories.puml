@@ -193,6 +193,13 @@ package "Digitization Planner" {
     }
 
     DistributionRepository -[ENTITY_REL]-> DistributionModel : manages >
+
+    class DigitizationListRepository {
+      +get():
+      +save():
+      +index():
+      +search(CategoriesQuery): CategoriesResponse
+    }
   }
 
   package "Services" {
@@ -264,6 +271,16 @@ package "Digitization Planner" {
     IntentionController -[ENTITY_REL]-> IntentionQuery : uses
 
     IntentionController --> IntentionRepository : calls >
+
+    class DigitizationListController {
+      +create(query: DocumentQuery): ItemMessageResponse<Task>
+      +delete(digitizationListId: Integer): ItemMessageResponse<Task>
+      +addDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMessageResponse<Task>
+      +removeDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMesageResponse<Task>
+      +search(query: DigitizationListQuery): DigitizationListResponse
+    }
+
+    DigitizationListController --> DigitizationListRepository : calls >
   }
 }
 
