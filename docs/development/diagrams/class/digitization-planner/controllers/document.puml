@@ -1,4 +1,4 @@
-@startuml VERA - Class Diagram - Documents
+@startuml VERA - Class Diagram - Document Controller
 
 skinparam classAttributeIconSize 0
 skinparam ranksep 150
@@ -45,6 +45,7 @@ package "Digitization Planner" {
       +priority: Integer [1-5]
       +digitizationListId: Integer | None
       +categoryPath: List<DocumentCategory>
+      +inUsersList: List<String>
       +extractedBy: String | None
       +extractedAt: String | None
       +status: DocumentIterationStatus
@@ -54,7 +55,7 @@ package "Digitization Planner" {
     Document --> DocumentCategory : contains
     Document --> DocumentIterationStatus : contains
 
-    entity GenerateDocumentListSettings {
+    entity DocumentListGenerationSettings {
       +targetPageCount: Integer | None
       +targetPageCountThreshold: Float | None
       +useCategoryDistributions: Boolean | None
@@ -112,6 +113,7 @@ package "Digitization Planner" {
         +digitizationListId: Integer | None = None
         +document(): DocumentModel
         +category(): CategoryModel
+        +inUsersList(): List<DocumentIterationListModel>
         +isExtractable(): Boolean
         +extractedBy(): String | None
         +extractedAt(): String | None
@@ -119,8 +121,14 @@ package "Digitization Planner" {
         +isArchived(): Boolean
       }
 
+      class DocumentIterationListModel {
+        +iterationId: Integer
+        +username: String
+      }
+
       DocumentIterationModel --> DocumentModel : returns >
       DocumentIterationModel --> CategoryModel : returns >
+      DocumentIterationModel --> DocumentIterationListModel : returns >
       DocumentIterationModel --> DocumentIterationStatus : returns >
     }
 
@@ -161,11 +169,12 @@ package "Digitization Planner" {
       +restrictQuery(query: DocumentQuery, user: CurrentUser): DocumentQuery
       +generateExport(query: DocumentQuery): pd.Dataframe
       +planUpdatePropertyTask(query: DocumentQuery, propertyName: String, propertyValue: String): Task
-      +planGenerateListTask(query: DocumentQuery, settings: GenerateDocumentListSettings): Task
+      +planGenerateListTask(query: DocumentQuery, settings: DocumentListGenerationSettings): Task
     }
 
     DocumentService --> DocumentQuery : uses
     DocumentService --> CurrentUser : uses
+    DocumentService --> DocumentListGenerationSettings : uses
     
     DocumentService --> Task : returns >
 
@@ -181,12 +190,11 @@ package "Digitization Planner" {
       +search(query: DocumentQuery): DocumentResponse
       +export(query: DocumentQuery): CsvFile | TxtFile
       +updateProperty(query: DocumentQuery, propertyName: String, propertyValue: String): Task
-      +generateList(query: DocumentQuery, settings: GenerateDocumentListSettings): Task
-      +getPrevGenerateListSetting(): List<GenerateDocumentListSettings>
+      +generateList(query: DocumentQuery, settings: DocumentListGenerationSettings): Task
     }
 
     DocumentController --> DocumentQuery : uses
-    DocumentController --> GenerateDocumentListSettings : uses
+    DocumentController --> DocumentListGenerationSettings : uses
 
     DocumentController --> DocumentResponse : returns >
     DocumentController --> Task : returns >

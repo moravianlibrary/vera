@@ -1,0 +1,202 @@
+@startuml VERA - Class Diagram - Category Controller
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Schemas" {
+
+    entity CategoryEdit {
+      +name: String
+      +descripton: String | None
+      +assignable: Boolean
+      +extractWhole: Boolean
+      +disabled: Boolean
+    }
+
+    entity CategoryGroup {
+      +id: Integer
+      +name: String
+    }
+
+    entity CategoryDistribution {
+      +distributionId: Integer
+      +percentage: Float
+    }
+
+    entity Category extends CategoryEdit {
+      +id: Integer
+      +intentionId: Integer | None
+      +parentId: Integer | None
+      +level: Integer
+      +archived: Boolean
+      +assignedToGroups: List<CategoryGroup>
+      +assignedToUsers: List<String>
+      +hasScript: Boolean
+      +hasPeriodicTask: Boolean
+      +distributions: List<CategoryDistribution>
+      +countTotalPages: Integer
+      +countTotalDocuments: Integer
+      +countExtractablePages: Integer
+      +countExtractableDocuments: Integer
+      +countExtractedPages: Integer
+      +countExtractedDocuments: Integer
+    }
+
+    Category --> CategoryGroup : uses
+    Category --> CategoryDistribution : uses
+
+    entity CategoryScript {
+      +categoryId: Integer
+      +scriptFile: PythonFile
+      +periodicTaskId: Integer | None
+    }
+
+    entity CategoryDistributionEdit {
+      +categoryId: Integer
+      +percentage: Float
+    }
+
+    entity CategoryQuery
+    entity CategoryResponse
+    CategoryResponse --> Category : contains
+
+    entity MessageResponse
+    entity ItemMessageResponse
+  }
+
+  package "Repositories" {
+
+    package "Model" {
+
+      class GroupModel
+
+      class CategoryModel {
+        +id: Integer
+        +name: String
+        +descripton: String | None
+        +intentionId: Integer | None = None
+        +parentId: Integer | None = None
+        +level: Integer = 0
+        +assignable: Boolean = False
+        +extractWhole: Boolean = False
+        +disabled: Boolean = False
+        +archived: Boolean = False
+        +assignedToGroups(): List<GroupModel>
+        +assignedToUsers(): List<UserName>
+        +hasScript(): Boolean
+        +hasPeriodicTask(): Boolean
+        +totalPageCount(): Integer
+        +totalDocuments(): Integer
+        +extractablePageCount(): Integer
+        +extractableDocuments(): Integer
+        +extractedPageCount(): Integer
+        +extractedDocuments(): Integer
+      }
+
+      CategoryModel --> GroupModel : contains
+
+      class CategoryScriptModel {
+        +categoryId: Integer
+        +scriptFile: PythonFile
+        +periodicTaskId: Integer | None = None
+      }
+
+      class CategoryGroupModel {
+        +categoryId: Integer
+        +groupId: Integer
+      }
+
+      class CategoryUserModel {
+        +categoryId: Integer
+        +username: String
+      }
+
+      class DistributionModel
+
+      class CategoryDistributionModel {
+        +categoryId: Integer
+        +distributionId: Integer
+        +percentage: Float = 0
+      }
+
+    }
+
+    class CategoryRepository {
+      +get(categoryId: Integer): CategoryModel
+      +listAll(): List<CategoryModel>
+      +save(category: CategoryModel): CategoryModel
+      +index(category: CategoryModel): CategoryModel
+      +search(query: CategoryQuery): CategoryResponse
+    }
+
+    CategoryRepository --> CategoryQuery : uses
+
+    CategoryRepository --> CategoryModel : manages >
+    CategoryRepository --> CategoryScriptModel : manages >
+    CategoryRepository --> CategoryGroupModel : manages >
+    CategoryRepository --> CategoryUserModel : manages >
+    CategoryRepository --> DistributionModel : gets >
+    CategoryRepository --> CategoryDistributionModel : manages >
+
+    CategoryRepository --> CategoryResponse : returns >
+
+    class DistributionRepository
+
+  }
+
+  package "Services" {
+
+    class CategoryService {
+      +create(category: CategoryEdit): CategoryModel
+      +changeDistribution(categoryId: Integer, distributionId: Integer, distribution: List<CategoryDistributionEdit>): None
+      +changeParent(categoryId: Integer, fromParent: Integer | None, toParent: Integer | None): None
+      +updateScript(categoryId: Integer, script: CategoryScript | None): CategoryModel
+      +restrictQuery(query: CategoryQuery, user: User): CategoryQuery
+    }
+
+    CategoryService --> CategoryEdit : uses
+    CategoryService --> CategoryDistributionEdit : uses
+    CategoryService --> CategoryScript : uses
+    CategoryService --> CategoryQuery : uses
+
+    CategoryService --> CategoryModel : returns >
+
+    CategoryService --> CategoryRepository : calls >
+    CategoryService --> DistributionRepository : calls >
+
+  }
+
+  package "API Controllers" {    
+
+    class CategoryController {
+      +create(category: CategoryEdit): MessageResponse
+      +update(categoryId: Integer, category: CategoryEdit): ItemMessageResponse<Category>
+      +changeDistribution(categoryId: Integer, distributionId: Integer, distribution: List<CategoryDistributionEdit>): MessageResponse
+      +changeParent(categoryId: Integer, fromParent: Integer | None, toParent: Integer | None): MessageResponse
+      +archive(categoryId: Integer): MessageResponse
+      +delete(categoryId: Integer): MessageResponse
+      +search(query: CategoryQuery): CategoryResponse
+      +getScript(categoryId: Integer): CategoryScript
+      +updateScript(categoryId: Integer, script: CategoryScript | None): MessageResponse
+    }
+
+    CategoryController --> CategoryEdit : uses
+    CategoryController --> CategoryDistributionEdit : uses
+    CategoryController --> CategoryQuery : uses
+    CategoryController --> CategoryScript : uses
+
+    CategoryController --> Category : returns >
+    CategoryController --> MessageResponse : returns >
+    CategoryController --> ItemMessageResponse : returns >
+    CategoryController --> CategoryResponse : returns >
+
+    CategoryController --> CategoryService : calls >
+    CategoryController --> CategoryRepository : calls >
+  }
+}
+
+@enduml

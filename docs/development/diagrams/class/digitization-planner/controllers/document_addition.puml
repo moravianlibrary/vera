@@ -1,4 +1,4 @@
-@startuml VERA - Class Diagram - Documents
+@startuml VERA - Class Diagram - Document Addition Controller
 
 skinparam classAttributeIconSize 0
 skinparam ranksep 150

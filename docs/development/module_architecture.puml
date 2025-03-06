@@ -444,7 +444,7 @@ package "Digitization Planner" {
 
     DocumentService --> DocumentQuery : uses >
     DocumentService --> User : uses >
-    DocumentService --> GenerateDocumentListSettings : uses >
+    DocumentService --> DocumentListGenerationSettings : uses >
     DocumentService --> DocumentTask : uses >
 
     DocumentService o-- Task : returns >
@@ -619,7 +619,7 @@ package "Digitization Planner" {
       +create(query: DocumentQuery): ItemMessageResponse<Task>
       +delete(digitizationListId: Integer): ItemMessageResponse<Task>
       +addDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMessageResponse<Task>
-      +removeDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMesageResponse<Task>
+      +removeDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMessageResponse<Task>
       +search(query: DigitizationListQuery): DigitizationListResponse
     }
 

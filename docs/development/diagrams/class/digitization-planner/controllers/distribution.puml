@@ -1,0 +1,80 @@
+@startuml VERA - Class Diagram - Distribution Controller
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Schemas" {
+
+    entity DistributionEdit {
+      +name: String
+    }
+
+    entity Distribution extends DistributionEdit {
+      +id: Integer
+      +active: Boolean
+      +canEdit: Boolean
+    }
+
+    entity MessageResponse
+    entity ItemMessageResponse
+  }
+
+  package "Repositories" {
+
+    package "Model" {
+
+      class DistributionModel {
+        +id: Integer
+        +name: String
+        +active: Boolean = False
+        +canEdit: Boolean = False
+      }
+    }
+
+    class DistributionRepository {
+      +get(distributionId: Integer): DistributionModel
+      +listAll(): List<DistributionModel>
+      +save(distribution: DistributionModel): DistributionModel
+      +delete(distributionId: Integer): DistributionModel
+    }
+
+    DistributionRepository --> DistributionModel : manages >
+  }
+
+  package "Services" {
+
+    class DistributionService {
+      +setActive(distributionId: Integer): DistributionModel
+    }
+
+    DistributionService --> DistributionModel : returns >
+
+    DistributionService --> DistributionRepository : uses >
+  }
+
+  package "API Controllers" {
+
+    class DistributionController {
+      +create(distribution: DistributionCreate): MessageResponse
+      +update(distributionId: Integer, distribution: DistributionCreate): ItemMessageResponse<Distribution>
+      +setActive(distributionId: Integer): MessageResponse
+      +delete(distributionId: Integer): MessageResponse
+      +listAll(): List<Distribution>
+    }
+
+    DistributionController --> DistributionEdit : uses
+
+    DistributionController --> Distribution : returns >
+    DistributionController --> MessageResponse : returns >
+    DistributionController --> ItemMessageResponse : returns >
+
+    DistributionController --> DistributionService : calls >
+    DistributionController --> DistributionRepository : calls >
+  }
+}
+
+@enduml

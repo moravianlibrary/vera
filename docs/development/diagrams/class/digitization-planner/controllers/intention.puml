@@ -1,0 +1,150 @@
+@startuml VERA - Class Diagram - Intention Controller
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Types" {
+
+    enum IntentionStatus {
+      Proposed
+      Accepted
+      Declined
+    }
+  }
+
+  package "Schemas" {
+
+    entity IntentionEdit {
+      +name: String
+      +descripton: String | None
+      +targetPageCount: Integer | None
+      +startDate: Date | None
+      +endDate: Date | None
+    }
+
+    entity ProjectStatusLog {
+      +newStatus: IntentionStatus
+      +changedBy: String
+      +changedAt: Timestamp
+      +reason: String
+    }
+
+    ProjectStatusLog --> IntentionStatus : contains
+
+    entity Intention extends IntentionEdit {
+      +id: Integer
+      +isProject: Boolean
+      +projectOwner: String | None
+      +projectStatus: IntentionStatus | None
+      +projectStatusLog: List<ProjectStatusLog>
+      +isArchived: Boolean
+    }
+
+    Intention --> IntentionStatus : contains
+    Intention --> ProjectStatusLog : contains
+
+    entity IntentionQuery
+    entity IntentionResponse
+    IntentionResponse --> Intention : contains
+
+    entity MessageResponse
+    entity ItemMessageResponse
+  }
+
+  package "Repositories" {
+
+    package "Model" {
+
+      class ProjectStatusLogModel {
+        +intentionId: Integer
+        +newStatus: IntentionStatus
+        +changedBy: String
+        +changedAt: Timestamp
+        +reason: String
+      }
+
+      ProjectStatusLogModel --> IntentionStatus : contains
+
+      class IntentionModel {
+        +id: Integer
+        +name: String
+        +descripton: String | None = None
+        +targetPageCount: Integer | None = None
+        +startDate: Date | None = None
+        +endDate: Date | None = None
+        +isProject: Boolean = False
+        +projectOwner: String | None = None
+        +projectStatus: IntentionStatus | None = None
+        +isArchived: Boolean = False
+        +projectStatusLog(): List<ProjectStatusLogModel>
+      }
+
+      IntentionModel --> IntentionStatus : contains
+      IntentionModel --> ProjectStatusLogModel : returns >
+
+    }
+
+    class IntentionRepository {
+      +get(intentionId: Integer): IntentionModel
+      +listAll(): List<IntentionModel>
+      +save(intention: IntentionModel): IntentionModel
+      +saveProjectStatusLog(statusLog: ProjectStatusLogModel): ProjectStatusLogModel
+      +delete(intentionId: Integer): IntentionModel
+    }
+
+    class CategoryRepository
+
+    IntentionRepository --> IntentionModel : manages
+    IntentionRepository --> ProjectStatusLogModel : manages
+  }
+
+  package "Services" {
+
+    class IntentionService {
+      +acceptProject(intentionId: Integer): IntentionModel
+      +declineProject(intentionId: Integer): IntentionModel
+    }
+
+    IntentionService --> CategoryRepository : creates category for project >
+
+    IntentionService --> IntentionModel : returns >
+
+    IntentionService --> IntentionRepository : calls >
+  }
+
+  package "API Controllers" {
+
+    class IntentionController {
+      +create(intention: IntentionEdit): ItemMessageResponse<Intention>
+      +update(intentionId: Integer, intention: IntentionEdit): ItemMessageResponse<Intention>
+      +archive(intentionId: Integer): MessageResponse
+      +delete(intentionId: Integer): MessageResponse
+
+      +createProject(intention: IntentionEdit): MessageResponse
+      +updateProject(intentionId: Integer, intention: IntentionEdit): ItemMessageResponse<Intention>
+      +deleteProject(intentionId: Integer): MessageResponse
+
+      +acceptProject(intentionId: Integer): MessageResponse
+      +declineProject(intentionId: Integer): MessageResponse
+      
+      +search(query: IntentionQuery): IntentionResponse
+    }
+
+    IntentionController --> IntentionEdit : uses
+    IntentionController --> IntentionQuery : uses
+
+    IntentionController --> ItemMessageResponse : returns >
+    IntentionController --> MessageResponse : returns >
+    IntentionController --> Intention : returns >
+    IntentionController --> IntentionResponse : returns >
+
+    IntentionController --> IntentionService : calls >
+    IntentionController --> IntentionRepository : calls >
+  }
+}
+
+@enduml

@@ -3,10 +3,7 @@
 skinparam classAttributeIconSize 0
 skinparam ranksep 150
 skinparam nodesep 150
-' skinparam linetype ortho
 top to bottom direction
-
-!define ENTITY_REL #D3D3D3
 
 package "Digitization Planner" {
 
@@ -92,7 +89,7 @@ package "Digitization Planner" {
       +archived: Boolean
     }
 
-    ' DocumentProposalCreate -[ENTITY_REL]-> IdentifierType : contains
+    ' DocumentProposalCreate --> IdentifierType : contains
   }
 
   package "Repositories" {
@@ -178,12 +175,12 @@ package "Digitization Planner" {
       +search(CategoriesQuery): CategoriesResponse
     }
 
-    CategoryRepository -[ENTITY_REL]-> CategoryModel : manages >
-    CategoryRepository -[ENTITY_REL]-> CategoryScriptModel : manages >
-    CategoryRepository -[ENTITY_REL]-> CategoryGroupModel : manages >
-    CategoryRepository -[ENTITY_REL]-> CategoryUserModel : manages >
-    CategoryRepository -[ENTITY_REL]-> DistributionModel : gets >
-    CategoryRepository -[ENTITY_REL]-> CategoryDistributionModel : manages >
+    CategoryRepository --> CategoryModel : manages >
+    CategoryRepository --> CategoryScriptModel : manages >
+    CategoryRepository --> CategoryGroupModel : manages >
+    CategoryRepository --> CategoryUserModel : manages >
+    CategoryRepository --> DistributionModel : gets >
+    CategoryRepository --> CategoryDistributionModel : manages >
 
     class DistributionRepository {
       +get(distributionId: Integer): DistributionModel
@@ -192,7 +189,7 @@ package "Digitization Planner" {
       +delete(distributionId: Integer): DistributionModel
     }
 
-    DistributionRepository -[ENTITY_REL]-> DistributionModel : manages >
+    DistributionRepository --> DistributionModel : manages >
 
     class DigitizationListRepository {
       +get():
@@ -267,8 +264,8 @@ package "Digitization Planner" {
       +search(query: IntentionQuery): IntentionResponse
     }
 
-    IntentionController -[ENTITY_REL]-> IntentionEdit : uses
-    IntentionController -[ENTITY_REL]-> IntentionQuery : uses
+    IntentionController --> IntentionEdit : uses
+    IntentionController --> IntentionQuery : uses
 
     IntentionController --> IntentionRepository : calls >
 
@@ -276,7 +273,7 @@ package "Digitization Planner" {
       +create(query: DocumentQuery): ItemMessageResponse<Task>
       +delete(digitizationListId: Integer): ItemMessageResponse<Task>
       +addDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMessageResponse<Task>
-      +removeDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMesageResponse<Task>
+      +removeDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMessageResponse<Task>
       +search(query: DigitizationListQuery): DigitizationListResponse
     }
 
