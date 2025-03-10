@@ -1,0 +1,78 @@
+@startuml VERA - Class Diagram - Group Controller
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+skinparam linetype ortho
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Schemas" {
+
+    entity GroupEdit {
+      +name: String
+      +description: String | None
+      +users: List<String>
+    }
+
+    entity Group extends GroupEdit {
+      +id: Integer
+    }
+
+    entity MessageResponse
+    entity ItemMessageResponse
+  }
+  
+  package "Repositories" {
+  
+    package "Model" {
+    
+      class UserModel
+
+      class GroupModel {
+        +id: Integer
+        +name: String
+        +description: String | None
+        +users(): List<UserModel>
+      }
+
+      class GroupUserRelationship {
+        +groupId: Integer
+        +username: String
+      }
+
+      GroupModel --> UserModel : returns >
+    }
+
+    class GroupRepository {
+      +get(groupId: Integer): GroupModel
+      +save(group: GroupModel): GroupModel
+      +delete(groupId: Integer): GroupModel
+      +getAll(): List<GroupModel>
+    }
+
+    GroupRepository --> GroupModel : manages
+    GroupRepository --> GroupUserRelationship : manages
+  }
+  
+  package "API Controllers" {
+
+    class GroupController {
+      +getAll(): List<Group>
+      +create(group: GroupEdit): ItemMessageResponse<Group>
+      +update(groupId: Integer, group: GroupEdit): ItemMessageResponse<Group>
+      +delete(groupId: Integer): MessageResponse
+    }
+
+    GroupController --> GroupEdit : uses
+
+    GroupController --> Group : returns >
+    GroupController --> MessageResponse : returns >
+    GroupController --> ItemMessageResponse : returns >
+
+    GroupController --> GroupRepository : calls >
+  }
+}
+
+@enduml

@@ -500,10 +500,6 @@ package "Digitization Planner" {
       +approveDifference(differenceId: Integer): ItemMessageResponse<CatalogRecord>
       +rescindDifference(differenceId: Integer): ItemMessageResponse<CatalogRecord>
 
-      +createList(list: CatalogRecordListEdit): ItemMessageResponse<CatalogRecordList>
-      +updateList(listId: Integer, list: CatalogRecordListEdit): ItemMessageResponse<CatalogRecordList>
-      +deleteList(listId: Integer): MessageResponse
-      +getLists(): List<CatalogRecordList>
     }
 
     CatalogRecordController --> CatalogRecordQuery : uses >

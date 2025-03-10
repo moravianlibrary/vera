@@ -20,6 +20,12 @@ package "Digitization Planner" {
     entity CategoryGroup {
       +id: Integer
       +name: String
+      +inherited: Boolean
+    }
+
+    entity CategoryUser {
+      +username: String
+      +inherited: Boolean
     }
 
     entity CategoryDistribution {
@@ -34,7 +40,7 @@ package "Digitization Planner" {
       +level: Integer
       +archived: Boolean
       +assignedToGroups: List<CategoryGroup>
-      +assignedToUsers: List<String>
+      +assignedToUsers: List<CategoryUser>
       +hasScript: Boolean
       +hasPeriodicTask: Boolean
       +distributions: List<CategoryDistribution>
@@ -73,6 +79,7 @@ package "Digitization Planner" {
     package "Model" {
 
       class GroupModel
+      class UserModel
 
       class CategoryModel {
         +id: Integer
@@ -86,7 +93,7 @@ package "Digitization Planner" {
         +disabled: Boolean = False
         +archived: Boolean = False
         +assignedToGroups(): List<GroupModel>
-        +assignedToUsers(): List<UserName>
+        +assignedToUsers(): List<UserModel>
         +hasScript(): Boolean
         +hasPeriodicTask(): Boolean
         +totalPageCount(): Integer
@@ -98,6 +105,7 @@ package "Digitization Planner" {
       }
 
       CategoryModel --> GroupModel : contains
+      CategoryModel --> UserModel : contains
 
       class CategoryScriptModel {
         +categoryId: Integer

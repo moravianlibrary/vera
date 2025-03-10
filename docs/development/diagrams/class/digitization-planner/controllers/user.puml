@@ -1,0 +1,159 @@
+@startuml VERA - Class Diagram - User Controller
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+skinparam linetype ortho
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Schemas" {
+
+    entity Role
+    entity Group
+    entity UserSettings
+  
+    entity CurrentUser {
+      +username: String
+      +settings: UserSettings
+      +role: Role
+      +groups: List<Group>
+    }
+
+    entity UserNotifications {
+      +taskChanges: List<Task>
+      +enqueuedDocumentAdditions: Integer
+      +processedDocumentAdditions: Integer
+      +catalogRecordListsChanged: List<CatalogRecordList>
+    }
+
+    entity KeycloakSettings {
+      +serverUrl: String
+      +realmName: String
+      +clientId: String
+      +clientSecret: String
+      +issuerClientId: String
+      +usernameField: String | None
+      +roleNamesField: String | None
+    }
+
+    CurrentUser --> Role : has
+    CurrentUser --> Group : belongs to
+    CurrentUser --> UserSettings : has
+
+    entity MessageResponse
+    entity ItemMessageResponse
+  }
+  
+  package "Repositories" {
+  
+    package "Model" {
+
+      class GroupModel
+
+      class UserModel {
+        +username: String
+        +settings: UserSettings
+        +notificationsLastChecked: Timestamp
+        +groups(): List<GroupModel>
+      }
+
+      UserModel --> GroupModel : returns >
+    }
+
+    class UserRepository {
+      +get(username: String): UserModel
+      +save(user: UserModel): UserModel
+    }
+
+    UserRepository --> UserModel : manages
+
+    class DocumentAdditionRepository
+    class TaskRepository
+    class CatalogRecordRepository
+  }
+  
+  package "Services" {
+
+    class UserService {
+      +getCurrentUser(token: String): CurrentUser
+      +getNotifications(username: String): UserNotifications
+    }
+
+    package "Auth" {
+
+      interface AuthService {
+        +getUserInfo(token: String): Map<String, Object>
+        +parseUsername(userInfo: Map<String, Object>): String
+        +parseRoleNames(userInfo: Map<String, Object>): List<String>
+      }
+
+      class KeycloakService implements AuthService {
+        +KeycloakService(settings: KeycloakSettings)
+      }
+
+      class AuthServiceDispatcher implements AuthService {
+      }
+    }
+
+    KeycloakService --> KeycloakSettings : uses
+
+    UserService --> AuthService : calls
+    UserService --> UserRepository : calls
+    UserService --> DocumentAdditionRepository : get additions changes
+    UserService --> TaskRepository : get tasks changes
+    UserService --> CatalogRecordRepository : get catalog records lists changes
+
+    UserService --> CurrentUser : creates
+    UserService --> UserNotifications : creates
+  }
+
+  package "Security" {
+    class AccessControlEnforcer {
+      +AccessControlEnforcer(permission: Permission, token: String)
+    }
+
+    AccessControlEnforcer --> AuthService : calls >
+
+    class OwnershipAccessControl {
+      +OwnershipControlEnforcer(permission: OwnershipPermission, token: String)
+    }
+
+    OwnershipControlEnforcer --> AuthService : calls >
+  }
+  
+  package "API Controllers" {
+
+    class RoleController {
+      +getAll(): List<Role>
+      +create(role: RoleEdit): ItemMessageResponse<Role>
+      +update(roleId: Integer, role: RoleEdit): ItemMessageResponse<Role>
+      +delete(roleId: Integer): MessageResponse
+    }
+
+    RoleController --> RoleRepository : calls
+
+    class GroupController {
+      +getAll(): List<Group>
+      +create(group: GroupEdit): ItemMessageResponse<Group>
+      +update(groupId: Integer, group: GroupEdit): ItemMessageResponse<Group>
+      +delete(groupId: Integer): MessageResponse
+    }
+
+    GroupController --> GroupRepository : calls
+
+    class UserController {
+      +getCurrentUser(): CurrentUser
+      +getNotifications(): UserNotifications
+      +getSettings(): UserSettings
+      +saveSettings(settings: UserSettings): MessageResponse
+    }
+
+    UserController --> UserService : calls
+    UserController --> UserRepository : calls
+  }
+}
+
+@enduml
+
