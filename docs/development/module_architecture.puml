@@ -182,16 +182,6 @@ package "Digitization Planner" {
 
     entity DocumentResponse extends ElasticsearchResponse {}
 
-    entity CatalogRecord {}
-
-    entity CatalogRecordQuery extends ElasticsearchQuery {}
-
-    entity CatalogRecordResponse extends ElasticsearchResponse {}
-
-    entity CatalogRecordListEdit {}
-
-    entity CatalogRecordList extends CatalogRecordListEdit {}
-
     entity CategoryEdit {}
 
     entity Category extends CategoryEdit {}
@@ -234,36 +224,6 @@ package "Digitization Planner" {
         +addAgainIfPresent: Boolean = False
       }
 
-      class CatalogRecordModel {
-        +id: String
-        +base: String
-        +systemNumber: String
-        +marc: Binary
-        +unreachable: Boolean = False
-        +addedAt: Timestamp
-        +updatedAt: Timestamp
-        +hasAddedDocuments(): Boolean
-        +hasActiveDocuments(): Boolean
-        +isValid(): Boolean
-        +authoritiesRecordIds(): List<String>
-        +authoritiesMarc(): List<Marc>
-        +authoritiesDifference(): List<MarcDifference>
-        +authoritiesDifferenceFlags(): List<DifferenceFlag>
-      }
-
-      class CatalogRecordAuthorityModel {
-        +mainId: String
-        +authorityBase: String
-        +isValid: Boolean = True
-        +hasDifferences: Boolean = False
-        +authorityId: String | None = None
-      }
-
-      class CatalogRecordDifferenceModel {
-        +id: Integer
-        +mainId: String
-        +authorityId: String
-      }
 
       class DocumentModel {
         +id: Integer
