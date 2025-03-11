@@ -1,4 +1,4 @@
-@startuml VERA - Class Diagram - Catalog Record Controllers
+@startuml VERA - Class Diagram - Catalog Record Controller
 
 skinparam classAttributeIconSize 0
 skinparam ranksep 150
@@ -18,16 +18,13 @@ package "Digitization Planner" {
       Revived
     }
     
-    enum DifferenceStatus {
-      Undecided
-      PendingFix
-      Fixed
-      Approved
-      ApprovalRevoked
+    enum CatalogRecordTask {
+      IgnoreMissingAuthority
+      Reindex
+      Sync
+      ReevaluateDifferences
+      ArchiveInactive
     }
-
-    enum DifferenceType
-    enum DifferenceCategory
   }
 
   package "Schemas" {
@@ -54,18 +51,6 @@ package "Digitization Planner" {
 
     PrimaryRecordBase --> CatalogRecordStatus : contains
 
-    entity MarcDifference {
-      +type: DifferenceType
-      +category: DifferenceCategory
-      +field: String
-      +subfield: String | None
-      +currentStatus: DifferenceStatus
-    }
-
-    MarcDifference --> DifferenceType : contains
-    MarcDifference --> DifferenceCategory : contains
-    MarcDifference --> DifferenceStatus : contains
-
     entity AuthorityRecord extends AuthorityRecordBase {
       +differences: List<MarcDifference>
     }
@@ -77,24 +62,6 @@ package "Digitization Planner" {
     }
 
     PrimaryRecord --> AuthorityRecord : contains
-
-    entity MarcDifferenceStatusLog {
-      +status: DifferenceStatus
-      +changedBy: String
-      +changedAt: Timestamp
-    }
-
-    MarcDifferenceStatusLog --> DifferenceStatus : contains
-
-    entity MarcDifferenceDetails extends MarcDifference {
-      +indicator1: String | None
-      +indicator2: String | None
-      +value: String | None
-      +statusLog: List<MarcDifferenceStatusLog>
-      ' Also others configurable attributes
-    }
-
-    MarcDifferenceDetails --> MarcDifferenceStatusLog : contains
 
     entity CatalogRecordStatusLog {
       +status: CatalogRecordStatus
@@ -123,30 +90,10 @@ package "Digitization Planner" {
     entity CatalogRecordResponse
     CatalogRecordResponse --> PrimaryRecord : contains
 
-    entity CatalogRecordListGroup {
-      +id: Integer
-      +name: String
-    }
-
-    entity CatalogRecordListEdit {
-      +name: String
-      +description: String | None
-      +query: CatalogRecordQuery
-      +assignedToGroups: List<CatalogRecordListGroup>
-      +assignedToUsers: List<String>
-    }
-
-    CatalogRecordListEdit o-- CatalogRecordListGroup : contains 
-
-    entity CatalogRecordList extends CatalogRecordListEdit {
-      +id: Integer
-      +createdBy: String
-      +hasUndecidedDifferences: Boolean | None
-    }
-
     entity MessageResponse
     entity ItemMessageResponse
     entity Task
+    entity RecurringTask
   }
 
   package "Repositories" {
@@ -188,7 +135,7 @@ package "Digitization Planner" {
       PrimaryRecordModel --> AuthorityRecordModel : returns >
 
       class AuthorityRecordModel {
-        +mainId: String
+        +primaryId: String
         +authorityBase: String
         +authorityId: String | None = None
         +authorityRecord(): CatalogRecordModel | None
@@ -197,71 +144,15 @@ package "Digitization Planner" {
 
       AuthorityRecordModel --> CatalogRecordModel : returns >
       AuthorityRecordModel --> MarcDifferenceModel : returns >
-
-      class MarcDifferenceModel {
-        +id: Integer
-        +mainId: String
-        +authorityId: String
-        +field: String
-        +type: DifferenceType
-        +category: DifferenceCategory
-        +subfield: String | None = None
-        +indicator1: String | None = None
-        +indicator2: String | None = None
-        +value: String | None = None
-        +pendingFix: Boolean = False
-        +approved: Boolean = False
-        +statusLog(): List<DifferenceStatusLogModel>
-        +currentStatus(): List<DifferenceStatus>
-      }
-
-      MarcDifferenceModel --> DifferenceType : contains
-      MarcDifferenceModel --> DifferenceCategory: contains
-
-      MarcDifferenceModel --> DifferenceStatusLogModel : returns >
-      MarcDifferenceModel --> DifferenceStatus : returns >
-
-      class DifferenceStatusLogModel {
-        +id: Integer
-        +status: DifferenceStatus
-        +changedBy: String
-        +changedAt: Timestamp
-      }
-
-      DifferenceStatusLogModel --> DifferenceStatus : contains
-
-      class GroupModel
-      class UserModel
-
-      class CatalogRecordListModel {
-        +id: Integer
-        +name: String
-        +description: String | None = None
-        +query: CatalogRecordQuery
-        +createdBy: String
-        +hasUndecidedDifferences: Boolean | None = None
-        +assignedToGroups(): List<GroupModel>
-        +assignedToUsers(): List<UserModel>
-      }
-
-      class CatalogRecordListGroupModel {
-        +listId: Integer
-        +groupId: Integer
-      }
-
-      class CatalogRecordListUserModel {
-        +listId: Integer
-        +username: String
-      }
     }
 
     class CatalogRecordRepository {
-      +get(mainRecordId: String): PrimaryRecordModel
+      +getById(mainRecordId: String): PrimaryRecordModel | None
       +listAll(): List<PrimaryRecordModel>
+      +getInactiveRecords(): List<PrimaryRecordModel>
       +saveRecord(catalogRecord: CatalogRecordModel): CatalogRecordModel
       +savePrimaryRecord(mainRecord: PrimaryRecordModel): PrimaryRecordModel
       +saveAuthorityRecord(authorityRecord: AuthorityRecordModel): AuthorityRecordModel
-      +archive(mainRecordId: String): PrimaryRecordModel
       +delete(mainRecordId: String): PrimaryRecordModel
       +index(mainRecord: PrimaryRecordModel): PrimaryRecordModel
       +search(query: CatalogRecordQuery): CatalogRecordResponse
@@ -269,98 +160,77 @@ package "Digitization Planner" {
 
     CatalogRecordRepository --> CatalogRecordQuery : uses
 
-    CatalogRecordRepository --> PrimaryRecordModel : manages >
     CatalogRecordRepository --> CatalogRecordModel : manages >
     CatalogRecordRepository --> PrimaryRecordModel : manages >
     CatalogRecordRepository --> AuthorityRecordModel : manages >
 
     CatalogRecordRepository --> CatalogRecordResponse : returns >
-
-    class MarcDifferenceRepository {
-      +get(differenceId: Integer): MarcDifferenceModel
-      +getRecordDifferences(mainRecordId: String): List<MarcDifferenceModel>
-      +save(difference: MarcDifferenceModel): MarcDifferenceModel
-    }
-
-    MarcDifferenceRepository --> MarcDifferenceModel : manages >
-
-    class CatalogRecordListRepository {
-      +get(listId: Integer): CatalogRecordList
-      +listAll(): List<CatalogRecordList>
-      +save(listId: Integer, list: CatalogRecordListModel): CatalogRecordListModel
-      +delete(listId: Integer): CatalogRecordListModel
-    }
   }
 
-  package "Connectors" {
+  package "Adapters" {
     class CatalogsConnector
-    class MarcComparatorConnector
   }
 
   package "Services" {
+
     class CatalogRecordService {
       +syncCatalogRecord(catalogRecord: CatalogRecordModel): CatalogRecordModel
-      +syncPrimaryRecord(mainRecord: PrimaryRecordModel): PrimaryRecordModel
-      +archiveInactiveRecords(): None
+      +syncPrimaryRecord(primaryRecord: PrimaryRecordModel): PrimaryRecordModel
+      +ignoreMissingAuthority(authorityRecord: AuthorityRecordModel): AuthorityRecordModel
+      +reindex(primaryRecord: PrimaryRecordModel): PrimaryRecordModel
+      +reevaluateDifferences(primaryRecord: PrimaryRecordModel): PrimaryRecordModel
     }
 
-    CatalogRecordService ..>  CatalogRecordRepository : calls >
+    CatalogRecordService --> CatalogRecordModel : uses
+    CatalogRecordService --> PrimaryRecordModel : uses
+    CatalogRecordService --> AuthorityRecordModel : uses
+
+    CatalogRecordService ..> CatalogRecordRepository : calls >
+    CatalogRecordService ..> MarcDifferenceRepository : calls >
     CatalogRecordService ..> CatalogsConnector : calls >
-
-    class MarcDifferenceService {
-      +syncRecordDifferences(authorityRecord: AuthorityRecordModel): AuthorityRecordModel
-    }
-
-    MarcDifferenceService ..>  MarcDifferenceRepository : calls >
-    MarcDifferenceService ..>  MarcComparatorConnector : calls >
-
-    class CatalogRecordListService {
-      +syncUndecidedFlag(listId: Integer): None
-    }
-
-    CatalogRecordListService ..> CatalogRecordListRepository : calls >
   }
 
   package "API Controllers" {
+
+    entity ScheduleTaskParams {
+      +taskType: CatalogRecordTask
+      +query: CatalogRecordQuery | None = None
+      +base: String | None = None
+    }
+
+    ScheduleTaskParams --> CatalogRecordTask : contains
+    ScheduleTaskParams --> CatalogRecordQuery : contains
+
+    entity ScheduleRecurringTaskParams extends ScheduleTaskParams {
+      +cronExpression: String
+    }
+
+    entity UpdateRecurringTaskParams extends ScheduleRecurringTaskParams {
+      +recurringTaskId: Integer
+    }
 
     class CatalogRecordController {
       +search(query: CatalogRecordQuery): CatalogRecordResponse
       +getDetails(mainRecordId: String): PrimaryRecordDetails
       +delete(mainRecordId: String): MessageResponse
+      +scheduleTask(params: ScheduleTaskParams): ItemMessageResponse<Task>
+      +scheduleRecurringTask(params: ScheduleRecurringTaskParams): RecurringTask
+      +updateRecurringTask(params: UpdateRecurringTaskParams): RecurringTask
     }
 
     CatalogRecordController --> CatalogRecordQuery : uses
+    CatalogRecordController o-- CreateTaskParams : uses
+    CatalogRecordController o-- CreateRecurringTaskParams : uses
+    CatalogRecordController o-- UpdateRecurringTaskParams : uses
 
     CatalogRecordController --> CatalogRecordResponse : returns >
     CatalogRecordController --> PrimaryRecordDetails : returns >
-    CatalogRecordController --> CatalogRecordList : returns >
     CatalogRecordController --> MessageResponse : returns >
+    CatalogRecordController --> ItemMessageResponse : returns >
+    CatalogRecordController --> Task : returns >
+    CatalogRecordController --> RecurringTask : returns >
 
     CatalogRecordController ..> CatalogRecordRepository : calls >
-    CatalogRecordController ..> CatalogRecordTaskService : calls >
-
-    class MarcDifferenceController {
-      +setPendingFix(differenceId: Integer): ItemMessageResponse<PrimaryRecord, Task>
-      +unsetPendingFix(differenceId: Integer): ItemMessageResponse<PrimaryRecord, Task>
-      +approveDifference(differenceId: Integer): ItemMessageResponse<PrimaryRecord, Task>
-      +revokeDifferenceApproval(differenceId: Integer): ItemMessageResponse<PrimaryRecord, Task>
-    }
-
-    MarcDifferenceController --> ItemMessageResponse : returns >
-    MarcDifferenceController --> PrimaryRecord : returns >
-    MarcDifferenceController --> Task : returns >
-
-    class CatalogRecordListController {
-      +createList(list: CatalogRecordListEdit): ItemMessageResponse<CatalogRecordList>
-      +updateList(listId: Integer, list: CatalogRecordListEdit): ItemMessageResponse<CatalogRecordList>
-      +deleteList(listId: Integer): MessageResponse
-      +getLists(): List<CatalogRecordList>
-    }
-
-    CatalogRecordListController --> CatalogRecordListEdit : uses
-    CatalogRecordListController --> ItemMessageResponse : returns >
-    CatalogRecordListController --> PrimaryRecord : returns >
-    CatalogRecordListController --> Task : returns >
   }
 }
 

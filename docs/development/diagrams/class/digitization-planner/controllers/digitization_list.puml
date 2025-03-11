@@ -56,8 +56,10 @@ package "Digitization Planner" {
         +intentionId: Integer
       }
 
-      DigitizationListModel --> DocumentIterationModel : returns >
-      DigitizationListModel --> IntentionModel : returns >
+      DigitizationListModel *-- DocumentIterationModel : returns >
+      DigitizationListModel *-- IntentionModel : returns >
+
+      DigitizationListModel -- DigitizationListIntentionModel : "links intentions"
     }
 
     class DigitizationListRepository {
@@ -96,14 +98,14 @@ package "Digitization Planner" {
       +removeDocuments(digitizationListId: Integer, query: DocumentQuery): RemoveDocumentsResponse
     }
 
-    class DigitizationListTaskService
-
     DigitizationListService o-- AddDocumentsResponse : returns >
     DigitizationListService o-- RemoveDocumentsResponse : returns >
 
-    DigitizationListService --> DigitizationListTaskService : plans tasks >
-    DigitizationListService --> DigitizationListRepository : calls >
-    DigitizationListService --> DocumentRepository : calls >
+    DigitizationListService ..> DigitizationListRepository : calls >
+    DigitizationListService ..> DocumentRepository : calls >
+    DigitizationListService ..> DigitizationListTaskService : schedule documents reindex >
+
+    class TaskService
   }
 
   package "API Controllers" {
@@ -124,9 +126,9 @@ package "Digitization Planner" {
     DigitizationListController --> Task : returns >
     DigitizationListController --> DigitizationListResponse : returns >
 
-    DigitizationListController --> DigitizationListTaskService : plans tasks >
-    DigitizationListController --> DigitizationListService : calls >
-    DigitizationListController --> DigitizationListRepository : calls >
+    DigitizationListController ..> TaskService : schedule tasks >
+    DigitizationListController ..> DigitizationListService : calls >
+    DigitizationListController ..> DigitizationListRepository : calls >
   }
 }
 

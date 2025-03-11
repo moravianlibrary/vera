@@ -1,0 +1,218 @@
+@startuml VERA - Class Diagram - Task Related Services
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+skinparam linetype ortho
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Types" {
+
+    enum DocumentTask {
+      UpdateProperty
+      Remove
+      DeclineDigitization
+      CancelDigitizationDeclination
+      GenerateDigitizationList
+      Reindex
+      SyncDigitizationState
+      SyncCatalogRecord
+      PredictPageCount
+    }
+
+    enum CatalogRecordTask {
+      IgnoreMissingAuthority
+      Reindex
+      Sync
+      ReevaluateDifferences
+      ArchiveInactive
+    }
+
+    ' Max 1 running at a time
+    ' Max 1 planned at a time
+    enum CategoryTask {
+      Reindex
+      ' Can be planned
+      ExecuteScript
+    }
+
+    ' Max 1 running at a time
+    ' Max 1 planned at a time
+    enum SystemTask {
+      ' Can be planned
+      RecreateIndex
+      ' Can be planned
+      ResolveInconsistencies
+      ' Can be planned
+      GenerateBackup
+      LoadFromBackup
+    }
+
+    enum TaskState {
+      Initializing
+      Planned
+      Running
+      Finished
+      Failed
+      Killed
+    }
+  }
+
+  package "Schemas" {
+
+    entity Task {
+      +id: Integer
+      +taskType: TaskType
+      +owner: String
+      +name: String
+      +taskState: TaskState
+      +planned: Timestamp
+      +started: Timestamp | None
+      +finished: Timestamp | None
+      +totalItemsCount: Integer | None
+      +processedItemsCount: Integer | None
+      +errorItemsCount: Integer | None
+      +errorMessage: String | None
+    }
+  }
+  
+  package "Repositories" {
+  
+    package "Model" {
+
+      class DocumentIterationModel
+      class DocumentModel
+      class PrimaryRecordModel
+      class CategoryModel
+    
+      class TaskModel {
+        +id: Integer
+        +processId: Integer
+        +taskType: TaskType
+        +owner: String
+        +name: String
+        +query: ElasticsearchQuery | None = None
+        +taskState: TaskState = TaskState::Initializing
+        +planned: Timestamp
+        +started: Timestamp | None = None
+        +finished: Timestamp | None = None
+        +totalItemsCount: Integer | None = None
+        +processedItemsCount: Integer | None = None
+        +errorItemsCount: Integer | None = None
+        +errorMessage: String | None = None
+        +file(): BinFile | None
+        +documentIterations(): Generator<DocumentIterationModel>
+        +documents(): Generator<DocumentModel>
+        +primaryRecords(): Generator<PrimaryRecordModel>
+        +categories(): Generator<CategoryModel>
+      }
+
+      class TaskFileModel {
+        +taskId: Integer
+        +file: BinFile
+      }
+
+      class ErrorableModel {
+        +errorType: String | None = None
+        +errorMessage: String | None = None
+      }
+
+      class TaskDocumentModel extends ErrorableModel {
+        +taskId: Integer
+        +documentIterationId: Integer
+        +documentId: Integer
+      }
+
+      class TaskPrimaryRecordModel extends ErrorableModel {
+        +taskId: Integer
+        +primaryRecordId: String
+      }
+
+      class TaskCategoryModel extends ErrorableModel {
+        +taskId: Integer
+        +categoryId: Integer
+      }
+
+      TaskModel *-- DocumentIterationModel : "documentIterations"
+      TaskModel *-- DocumentModel : "documents"
+      TaskModel *-- PrimaryRecordModel : "primaryRecords"
+      TaskModel *-- CategoryModel : "categories"
+
+      TaskModel o-- TaskFileModel : "has file"
+
+      TaskModel -- TaskDocumentModel : "links documents"
+      TaskModel -- TaskPrimaryRecordModel : "links primary records"
+      TaskModel -- TaskCategoryModel : "links categories"
+
+      class RecurringTaskModel {
+        +id: Integer
+        +taskType: TaskType
+        +createdBy: String
+        +cronExpression: String
+        +query: ElasticsearchQuery | None = None
+      }
+
+      class RecurringTaskExecutionModel {
+        +recurringTaskId: Integer
+        +taskId: Integer
+      }
+
+      RecurringTaskModel *-- RecurringTaskExecutionModel : "has execution"
+    }
+
+    class TaskRepository {
+      +get(taskId: Integer): TaskModel
+      +listAll(): List<TaskModel>
+      +save(task: TaskModel): TaskModel
+      +delete(taskId: Integer): TaskModel
+    }
+
+    class RecurringTaskRepository {
+      +get(recurringTaskId: Integer): RecurringTaskModel | None
+      +getCountByTypeAndState(taskType: TaskType, taskState: TaskState): Integer
+      +listAll(): List<RecurringTaskModel>
+      +save(recurringTask: RecurringTaskModel): RecurringTaskModel
+      +delete(recurringTaskId: Integer): RecurringTaskModel
+    }
+
+    GroupRepository --> GroupModel : manages
+    GroupRepository --> GroupUserRelationship : manages
+  }
+
+  package "Services" {
+
+    entity DocumentIdentifiers {
+      +base: String | None
+      +systemNumber: String | None
+      +barcode: String | None
+      +volumeNumber: String | None
+      +volumeYear: String | None
+      +bundle: String | None
+    }
+
+    entity Cache
+
+    entity CreateTaskParams {
+      +taskType: TaskType
+      +owner: String
+      +name: String
+      +query: ElasticsearchQuery | None = None
+      +file: BinFile | None = None
+    }
+
+    class TaskService {
+      +createTask(params: CreateTaskParams): TaskModel
+    }
+
+    class TaskWorkerService {
+      +initializeTask(task: TaskModel): None
+      +startTask(task: TaskModel): None
+      +runTask(task: TaskModel): None
+    }
+  }
+}
+
+@enduml
+

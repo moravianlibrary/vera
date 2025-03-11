@@ -6,7 +6,7 @@ skinparam nodesep 150
 top to bottom direction
 
 package "Digitization Planner" {
-
+    
   package "Schemas" {
 
     entity CategoryEdit {
@@ -20,12 +20,6 @@ package "Digitization Planner" {
     entity CategoryGroup {
       +id: Integer
       +name: String
-      +inherited: Boolean
-    }
-
-    entity CategoryUser {
-      +username: String
-      +inherited: Boolean
     }
 
     entity CategoryDistribution {
@@ -40,9 +34,11 @@ package "Digitization Planner" {
       +level: Integer
       +archived: Boolean
       +assignedToGroups: List<CategoryGroup>
-      +assignedToUsers: List<CategoryUser>
+      +assignedToUsers: List<String>
+      +assignedIndirectlyToGroups: List<CategoryGroup>
+      +assignedIndirectlyToUsers: List<String>
       +hasScript: Boolean
-      +hasPeriodicTask: Boolean
+      +hasRecurringTask: Boolean
       +distributions: List<CategoryDistribution>
       +countTotalPages: Integer
       +countTotalDocuments: Integer
@@ -55,17 +51,6 @@ package "Digitization Planner" {
     Category --> CategoryGroup : uses
     Category --> CategoryDistribution : uses
 
-    entity CategoryScript {
-      +categoryId: Integer
-      +scriptFile: PythonFile
-      +periodicTaskId: Integer | None
-    }
-
-    entity CategoryDistributionEdit {
-      +categoryId: Integer
-      +percentage: Float
-    }
-
     entity CategoryQuery
     entity CategoryResponse
     CategoryResponse --> Category : contains
@@ -77,9 +62,6 @@ package "Digitization Planner" {
   package "Repositories" {
 
     package "Model" {
-
-      class GroupModel
-      class UserModel
 
       class CategoryModel {
         +id: Integer
@@ -94,23 +76,16 @@ package "Digitization Planner" {
         +archived: Boolean = False
         +assignedToGroups(): List<GroupModel>
         +assignedToUsers(): List<UserModel>
+        +assignedIndirectlyToGroups(): List<GroupModel>
+        +assignedIndirectlyToUsers(): List<UserModel>
         +hasScript(): Boolean
-        +hasPeriodicTask(): Boolean
+        +hasRecurringTask(): Boolean
         +totalPageCount(): Integer
         +totalDocuments(): Integer
         +extractablePageCount(): Integer
         +extractableDocuments(): Integer
         +extractedPageCount(): Integer
         +extractedDocuments(): Integer
-      }
-
-      CategoryModel --> GroupModel : contains
-      CategoryModel --> UserModel : contains
-
-      class CategoryScriptModel {
-        +categoryId: Integer
-        +scriptFile: PythonFile
-        +periodicTaskId: Integer | None = None
       }
 
       class CategoryGroupModel {
@@ -122,88 +97,83 @@ package "Digitization Planner" {
         +categoryId: Integer
         +username: String
       }
+      class GroupModel
+      class UserModel
 
-      class DistributionModel
+      CategoryModel *-- UserModel : assignedToUsers
+      CategoryModel *-- GroupModel : assignedToGroups
 
-      class CategoryDistributionModel {
-        +categoryId: Integer
-        +distributionId: Integer
-        +percentage: Float = 0
-      }
-
+      CategoryModel -- CatalogRecordListUserModel : "links users"
+      CategoryModel -- CatalogRecordListGroupModel : "links groups"
     }
 
     class CategoryRepository {
-      +get(categoryId: Integer): CategoryModel
+      +getById(categoryId: Integer): CategoryModel
       +listAll(): List<CategoryModel>
       +save(category: CategoryModel): CategoryModel
       +index(category: CategoryModel): CategoryModel
       +search(query: CategoryQuery): CategoryResponse
+      +delete(categoryId: Integer): CategoryModel
     }
 
     CategoryRepository --> CategoryQuery : uses
 
     CategoryRepository --> CategoryModel : manages >
-    CategoryRepository --> CategoryScriptModel : manages >
-    CategoryRepository --> CategoryGroupModel : manages >
     CategoryRepository --> CategoryUserModel : manages >
-    CategoryRepository --> DistributionModel : gets >
-    CategoryRepository --> CategoryDistributionModel : manages >
+    CategoryRepository --> CategoryGroupModel : manages >
 
     CategoryRepository --> CategoryResponse : returns >
 
     class DistributionRepository
-
+    class IntentionRepository
   }
 
   package "Services" {
 
     class CategoryService {
-      +create(category: CategoryEdit): CategoryModel
+      +create(parentId: Integer | None, category: CategoryEdit): CategoryModel
+      +createProjectCategory(projectId: Integer, category: CategoryEdit): CategoryModel
       +changeDistribution(categoryId: Integer, distributionId: Integer, distribution: List<CategoryDistributionEdit>): None
       +changeParent(categoryId: Integer, fromParent: Integer | None, toParent: Integer | None): None
-      +updateScript(categoryId: Integer, script: CategoryScript | None): CategoryModel
-      +restrictQuery(query: CategoryQuery, user: User): CategoryQuery
+      +restrictQuery(query: CategoryQuery, user: CurrentUser): CategoryQuery
     }
 
     CategoryService --> CategoryEdit : uses
     CategoryService --> CategoryDistributionEdit : uses
-    CategoryService --> CategoryScript : uses
     CategoryService --> CategoryQuery : uses
+    CategoryService --> CurrentUser : uses
 
     CategoryService --> CategoryModel : returns >
 
-    CategoryService --> CategoryRepository : calls >
-    CategoryService --> DistributionRepository : calls >
-
+    CategoryService ..> CategoryRepository : calls >
+    CategoryService ..> DistributionRepository : calls >
+    CategoryService ..> IntentionRepository : calls >
   }
 
   package "API Controllers" {    
 
     class CategoryController {
-      +create(category: CategoryEdit): MessageResponse
+      +create(parentId: Integer | None, category: CategoryEdit): MessageResponse
+      +createProjectCategory(projectId: Integer, category: CategoryEdit): MessageResponse
       +update(categoryId: Integer, category: CategoryEdit): ItemMessageResponse<Category>
       +changeDistribution(categoryId: Integer, distributionId: Integer, distribution: List<CategoryDistributionEdit>): MessageResponse
       +changeParent(categoryId: Integer, fromParent: Integer | None, toParent: Integer | None): MessageResponse
       +archive(categoryId: Integer): MessageResponse
       +delete(categoryId: Integer): MessageResponse
       +search(query: CategoryQuery): CategoryResponse
-      +getScript(categoryId: Integer): CategoryScript
-      +updateScript(categoryId: Integer, script: CategoryScript | None): MessageResponse
     }
 
     CategoryController --> CategoryEdit : uses
     CategoryController --> CategoryDistributionEdit : uses
     CategoryController --> CategoryQuery : uses
-    CategoryController --> CategoryScript : uses
 
     CategoryController --> Category : returns >
     CategoryController --> MessageResponse : returns >
     CategoryController --> ItemMessageResponse : returns >
     CategoryController --> CategoryResponse : returns >
 
-    CategoryController --> CategoryService : calls >
-    CategoryController --> CategoryRepository : calls >
+    CategoryController ..> CategoryService : calls >
+    CategoryController ..> CategoryRepository : calls >
   }
 }
 

@@ -145,6 +145,8 @@ package "Digitization Planner" {
       +alreadyDeclined: Integer
     }
 
+    class CatalogRecordService
+
     class DocumentProposalService {
       +enqueue(additions: List<DocumentProposalCreate>): EnqueueDocumentProposalResult
       +restrictQuery(query: DocumentProposalQuery, user: CurrentUser): DocumentProposalQuery
@@ -160,7 +162,8 @@ package "Digitization Planner" {
     DocumentProposalService o-- AcceptProposalResult : returns >
     DocumentProposalService o-- DeclineProposalResult : returns >
 
-    DocumentProposalService --> DocumentProposalRepository : calls >
+    DocumentProposalService ..> DocumentProposalRepository : calls >
+    DocumentAdditionService ..> CatalogRecordService : calls >
   }
 
   package "API Controllers" {
@@ -180,8 +183,8 @@ package "Digitization Planner" {
     DocumentProposalController --> MessageResponse : returns >
     DocumentProposalController --> DocumentProposalResponse : returns >
 
-    DocumentProposalController --> DocumentProposalService : calls >
-    DocumentProposalController --> DocumentProposalRepository : calls >
+    DocumentProposalController ..> DocumentProposalService : calls >
+    DocumentProposalController ..> DocumentProposalRepository : calls >
   }
 }
 

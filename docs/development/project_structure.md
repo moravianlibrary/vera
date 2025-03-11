@@ -4,10 +4,10 @@
 /vera
 │── /app
 │   ├── /ai
-│   ├── /catalog-connectors
+│   ├── /catalog-Adapters
 │   │   ├── /aleph
 │   │   │   ├── /z39.50
-│   │   ├── /other-connectors (if needed)
+│   │   ├── /other-Adapters (if needed)
 │   ├── /catalog-records
 │   ├── /database-migrations
 │   ├── /digitization-planner (vera / core)

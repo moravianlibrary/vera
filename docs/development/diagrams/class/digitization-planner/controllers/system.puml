@@ -1,0 +1,73 @@
+@startuml VERA - Class Diagram - System Controller
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+skinparam linetype ortho
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Types" {
+
+    enum SystemRecurringSchedulableTask {
+      ResolveInconsistencies
+      GenerateBackup
+    }
+
+    enum SystemSchedulableTask extends SystemRecurringSchedulableTask {
+      RecreateIndex
+    }
+
+    enum SystemTask extends SystemSchedulableTask {
+      LoadFromBackup
+    }
+  }
+
+  package "Schemas" {
+
+    entity Config
+    entity MessageResponse
+    entity ItemMessageResponse
+  }
+  
+  package "Repositories" {
+  
+    class ConfigRepository {
+      +get(name: String): Config
+    }
+
+    ConfigRepository --> Config : returns >
+
+    class RecurringTaskRepository
+  }
+
+  package "Services" {
+    class TaskService
+  }
+  
+  package "API Controllers" {
+
+    class SystemController {
+      +scheduleTask(taskType: SystemSchedulableTask): ItemMessageResponse<Task>
+      +scheduleRecurringTask(taskType: SystemRecurringSchedulableTask): ItemMessageResponse<RecurringTask>
+      +loadFromBackup(file: BinFile): Task
+      +listBackups(): List<String>
+      +downloadBackup(name: String): BinFile
+      +removeBackup(name: String): MessageResponse
+    }
+
+    SystemController --> SystemSchedulableTask : uses
+    SystemController --> SystemRecurringSchedulableTask : uses
+
+    SystemController --> Task : returns >
+    SystemController --> RecurringTask : returns >
+    SystemController --> MessageResponse : returns >
+    SystemController --> ItemMessageResponse : returns >
+
+    SystemController ..> TaskService : calls >
+    SystemController ..> RecurringTaskRepository : calls >
+  }
+}
+
+@enduml

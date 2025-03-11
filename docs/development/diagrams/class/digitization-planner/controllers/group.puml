@@ -46,10 +46,10 @@ package "Digitization Planner" {
     }
 
     class GroupRepository {
-      +get(groupId: Integer): GroupModel
+      +getById(groupId: Integer): GroupModel
+      +listAll(): List<GroupModel>
       +save(group: GroupModel): GroupModel
       +delete(groupId: Integer): GroupModel
-      +getAll(): List<GroupModel>
     }
 
     GroupRepository --> GroupModel : manages
@@ -71,7 +71,7 @@ package "Digitization Planner" {
     GroupController --> MessageResponse : returns >
     GroupController --> ItemMessageResponse : returns >
 
-    GroupController --> GroupRepository : calls >
+    GroupController ..> GroupRepository : calls >
   }
 }
 

@@ -38,12 +38,15 @@ package "Digitization Planner" {
       +roleNamesField: String | None
     }
 
+    entity AuthSettings {
+      +keycloakSettings: KeycloakSettings | None
+    }
+
     CurrentUser --> Role : has
     CurrentUser --> Group : belongs to
     CurrentUser --> UserSettings : has
 
     entity MessageResponse
-    entity ItemMessageResponse
   }
   
   package "Repositories" {
@@ -83,30 +86,36 @@ package "Digitization Planner" {
 
     package "Auth" {
 
-      interface AuthService {
+      interface AuthServiceInterface {
         +getUserInfo(token: String): Map<String, Object>
         +parseUsername(userInfo: Map<String, Object>): String
         +parseRoleNames(userInfo: Map<String, Object>): List<String>
       }
 
-      class KeycloakService implements AuthService {
+      class KeycloakService implements AuthServiceInterface {
         +KeycloakService(settings: KeycloakSettings)
       }
 
-      class AuthServiceDispatcher implements AuthService {
+      class AuthService implements AuthServiceInterface {
+        +AuthService(settings: AuthSettings)
       }
+
+      KeycloakService --> KeycloakSettings : uses
+      AuthService --> AuthSettings : uses
+
+      AuthService --> KeycloakService : manages >
     }
 
-    KeycloakService --> KeycloakSettings : uses
+    UserService --> CurrentUser : returns >
+    UserService --> UserNotifications : returns >
 
-    UserService --> AuthService : calls
-    UserService --> UserRepository : calls
-    UserService --> DocumentAdditionRepository : get additions changes
-    UserService --> TaskRepository : get tasks changes
-    UserService --> CatalogRecordRepository : get catalog records lists changes
+    UserService ..> UserRepository : calls >
 
-    UserService --> CurrentUser : creates
-    UserService --> UserNotifications : creates
+    UserService ..> AuthService : calls >
+    UserService ..> UserRepository : calls >
+    UserService ..> DocumentAdditionRepository : get additions changes >
+    UserService ..> TaskRepository : get tasks changes >
+    UserService ..> CatalogRecordRepository : get catalog records lists changes >
   }
 
   package "Security" {
@@ -116,32 +125,14 @@ package "Digitization Planner" {
 
     AccessControlEnforcer --> AuthService : calls >
 
-    class OwnershipAccessControl {
-      +OwnershipControlEnforcer(permission: OwnershipPermission, token: String)
+    class OwnershipAccessControlEnforcer {
+      +OwnershipControlEnforcerEnforcer(permission: OwnershipPermission, token: String)
     }
 
-    OwnershipControlEnforcer --> AuthService : calls >
+    OwnershipAccessControlEnforcer --> AuthService : calls >
   }
   
   package "API Controllers" {
-
-    class RoleController {
-      +getAll(): List<Role>
-      +create(role: RoleEdit): ItemMessageResponse<Role>
-      +update(roleId: Integer, role: RoleEdit): ItemMessageResponse<Role>
-      +delete(roleId: Integer): MessageResponse
-    }
-
-    RoleController --> RoleRepository : calls
-
-    class GroupController {
-      +getAll(): List<Group>
-      +create(group: GroupEdit): ItemMessageResponse<Group>
-      +update(groupId: Integer, group: GroupEdit): ItemMessageResponse<Group>
-      +delete(groupId: Integer): MessageResponse
-    }
-
-    GroupController --> GroupRepository : calls
 
     class UserController {
       +getCurrentUser(): CurrentUser
@@ -150,8 +141,13 @@ package "Digitization Planner" {
       +saveSettings(settings: UserSettings): MessageResponse
     }
 
-    UserController --> UserService : calls
-    UserController --> UserRepository : calls
+    UserController --> CurrentUser : returns >
+    UserController --> UserNotifications : returns >
+    UserController --> UserSettings : returns >
+    UserController --> MessageResponse : returns >
+
+    UserController ..> UserService : calls >
+    UserController ..> UserRepository : calls >
   }
 }
 

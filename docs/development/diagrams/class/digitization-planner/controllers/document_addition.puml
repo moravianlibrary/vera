@@ -2,7 +2,7 @@
 
 skinparam classAttributeIconSize 0
 skinparam ranksep 150
-skinparam nodesep 150
+skinparam nodesep 50
 top to bottom direction
 
 package "Digitization Planner" {
@@ -141,6 +141,8 @@ package "Digitization Planner" {
       +alreadyDeleted: Integer
     }
 
+    class CatalogRecordService
+
     class DocumentAdditionService {
       +enqueue(additions: List<DocumentAdditionCreate>): EnqueueDocumentAdditionResult
       +restrictQuery(query: DocumentAdditionQuery, user: CurrentUser): DocumentAdditionQuery
@@ -158,7 +160,8 @@ package "Digitization Planner" {
     DocumentAdditionService o-- AllowNewIterationResult : returns >
     DocumentAdditionService o-- DeleteDocumentAdditionResult : returns >
 
-    DocumentAdditionService --> DocumentAdditionRepository : calls >
+    DocumentAdditionService ..> DocumentAdditionRepository : calls >
+    DocumentAdditionService ..> CatalogRecordService : calls >
   }
 
   package "API Controllers" {
@@ -176,8 +179,8 @@ package "Digitization Planner" {
     DocumentAdditionController --> MessageResponse : returns >
     DocumentAdditionController --> DocumentAdditionResponse : returns >
 
-    DocumentAdditionController --> DocumentAdditionService : calls >
-    DocumentAdditionController --> DocumentAdditionRepository : calls >
+    DocumentAdditionController ..> DocumentAdditionService : calls >
+    DocumentAdditionController ..> DocumentAdditionRepository : calls >
   }
 }
 

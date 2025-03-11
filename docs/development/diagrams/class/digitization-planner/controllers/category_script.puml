@@ -1,0 +1,93 @@
+@startuml VERA - Class Diagram - Category Controller
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+top to bottom direction
+
+package "Digitization Planner" {
+    
+  package "Schemas" {
+
+    entity PythonScript
+    entity ScriptCache
+
+    entity CategoryScript {
+      +categoryId: Integer
+      +name: String
+      +script: PythonScript
+      +recurringTaskId: Integer | None
+    }
+
+    entity DocumentIdentifiers {
+      +base: String | None
+      +systemNumber: String | None
+      +barcode: String | None
+      +volumeNumber: String | None
+      +volumeYear: String | None
+      +bundle: String | None
+    }
+
+    entity MessageResponse
+    entity ItemMessageResponse
+  }
+
+  package "Repositories" {
+
+    package "Model" {
+
+      class CategoryScriptModel {
+        +categoryId: Integer
+        +name: String
+        +script: PythonScript
+        +recurringTaskId: Integer | None = None
+      }
+
+      CategoryScriptModel --> PythonScript : contains
+    }
+
+    class CategoryScriptRepository {
+      +getById(categoryId: Integer): CategoryScriptModel
+      +save(categoryScript: CategoryScriptModel): CategoryScriptModel
+      +delete(categoryId: Integer): CategoryScriptModel
+    }
+
+    CategoryScriptRepository --> CategoryScriptModel : manages >
+  }
+
+  package "Services" {
+
+    class CategoryScriptService {
+      +validate(script: PythonScript): None
+      +execute(script: PythonScript, cache: ScriptCache): Generator<DocumentIdentifiers>
+      +test(script: PythonScript): List<DocumentIdentifiers>
+    }
+
+    CategoryScriptService --> PythonScript : uses
+    CategoryScriptService --> ScriptCache : uses
+
+    CategoryService --> DocumentIdentifiers : returns >
+  }
+
+  package "API Controllers" {    
+
+    class CategoryScriptController {
+      +testScript(script: CategoryScript): List<DocumentIdentifiers>
+      +getScript(categoryId: Integer): ItemMessageResponse<CategoryScript>
+      +updateScript(categoryId: Integer, script: CategoryScript): MessageResponse
+      +removeScript(categoryId: Integer): MessageResponse
+    }
+
+    CategoryScriptController --> CategoryScript : uses
+
+    CategoryScriptController --> DocumentIdentifiers : returns >
+    CategoryScriptController --> MessageResponse : returns >
+    CategoryScriptController --> ItemMessageResponse : returns >
+
+    CategoryScriptController ..> CategoryRepository : calls >
+    CategoryScriptController ..> CategoryScriptRepository : calls >
+    CategoryScriptController ..> CategoryScriptService : calls >
+  }
+}
+
+@enduml

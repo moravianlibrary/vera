@@ -1,0 +1,122 @@
+@startuml VERA - Class Diagram - Catalog Record List Controller
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+top to bottom direction
+
+package "Digitization Planner" {
+
+  package "Schemas" {
+
+    entity CatalogRecordListGroup {
+      +id: Integer
+      +name: String
+    }
+
+    entity CatalogRecordListEdit {
+      +name: String
+      +description: String | None
+      +query: CatalogRecordQuery
+      +assignedToGroups: List<CatalogRecordListGroup>
+      +assignedToUsers: List<String>
+    }
+
+    CatalogRecordListEdit o-- CatalogRecordListGroup : contains 
+
+    entity CatalogRecordList extends CatalogRecordListEdit {
+      +id: Integer
+      +createdBy: String
+      +hasUndecidedDifferences: Boolean | None
+    }
+
+    entity CatalogRecordQuery
+
+    entity MessageResponse
+    entity ItemMessageResponse
+  }
+
+  package "Repositories" {
+
+    package "Model" {
+
+      class GroupModel
+      class UserModel
+
+      class CatalogRecordListModel {
+        +id: Integer
+        +name: String
+        +description: String | None = None
+        +query: CatalogRecordQuery
+        +createdBy: String
+        +lastChecked: Timestamp | None = None
+        +undecidedSinceLastCheck: Integer
+        +assignedToUsers(): List<UserModel>
+        +assignedToGroups(): List<GroupModel>
+      }
+
+      class CatalogRecordListUserModel {
+        +listId: Integer
+        +username: String
+      }
+
+      class CatalogRecordListGroupModel {
+        +listId: Integer
+        +groupId: Integer
+      }
+
+      CatalogRecordListModel *-- UserModel : assignedToUsers
+      CatalogRecordListModel *-- GroupModel : assignedToGroups
+      CatalogRecordListModel *-- CatalogRecordQuery : query
+
+      CatalogRecordListModel -- CatalogRecordListUserModel : "links users"
+      CatalogRecordListModel -- CatalogRecordListGroupModel : "links groups"
+    }
+
+    class CatalogRecordListRepository {
+      +getById(listId: Integer): CatalogRecordList | None
+      +getAssignedToUser(username: String): List<CatalogRecordListModel>
+      +getAssignedToGroup(groupId: Integer): List<CatalogRecordListModel>
+      +listAll(): List<CatalogRecordListModel>
+      +save(list: CatalogRecordListModel): CatalogRecordListModel
+      +delete(listId: Integer): CatalogRecordListModel
+    }
+    
+    CatalogRecordListRepository --> CatalogRecordListModel : manages >
+
+    class CatalogRecordRepository
+  }
+
+  package "Services" {
+
+    class CatalogRecordListService {
+      +getAssignedToUser(username: String): List<CatalogRecordListModel>
+      +syncUndecided(listId: Integer): None
+    }
+
+    CatalogRecordListService ..> CatalogRecordListRepository : calls >
+    CatalogRecordListService ..> CatalogRecordRepository : calls >
+  }
+
+  package "API Controllers" {
+
+    class CatalogRecordListController {
+      +createList(list: CatalogRecordListEdit): ItemMessageResponse<CatalogRecordList>
+      +updateList(listId: Integer, list: CatalogRecordListEdit): ItemMessageResponse<CatalogRecordList>
+      +deleteList(listId: Integer): MessageResponse
+      +getLists(): List<CatalogRecordList>
+    }
+
+    CatalogRecordListController --> CatalogRecordListEdit : uses
+
+    CatalogRecordListController --> MessageResponse : returns >
+    CatalogRecordListController --> ItemMessageResponse : returns >
+    CatalogRecordListController --> CatalogRecordList : returns >
+
+    CatalogRecordListController ..> CatalogRecordListRepository : calls >
+    CatalogRecordListController ..> CatalogRecordListService : calls >
+  }
+}
+
+@enduml
+

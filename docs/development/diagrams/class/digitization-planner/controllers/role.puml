@@ -63,8 +63,8 @@ package "Digitization Planner" {
     }
 
     class RoleRepository {
-      +get(roleId: Integer): RoleModel
-      +find(roleName: String): RoleModel
+      +getById(roleId: Integer): RoleModel
+      +findByName(roleName: String): RoleModel
       +getAll(): List<RoleModel>
       +save(role: RoleModel): RoleModel
       +delete(roleId: Integer): RoleModel
@@ -86,7 +86,7 @@ package "Digitization Planner" {
     RoleController --> MessageResponse : returns >
     RoleController --> ItemMessageResponse : returns >
 
-    RoleController --> RoleRepository : calls >
+    RoleController ..> RoleRepository : calls >
   }
 }
 

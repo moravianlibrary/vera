@@ -36,13 +36,15 @@ package "Digitization Planner" {
     }
 
     class DistributionRepository {
-      +get(distributionId: Integer): DistributionModel
+      +getById(distributionId: Integer): DistributionModel
       +listAll(): List<DistributionModel>
       +save(distribution: DistributionModel): DistributionModel
       +delete(distributionId: Integer): DistributionModel
     }
 
     DistributionRepository --> DistributionModel : manages >
+
+    class CategoryRepository
   }
 
   package "Services" {
@@ -53,14 +55,14 @@ package "Digitization Planner" {
 
     DistributionService --> DistributionModel : returns >
 
-    DistributionService --> DistributionRepository : uses >
+    DistributionService ..> DistributionRepository : calls >
   }
 
   package "API Controllers" {
 
     class DistributionController {
-      +create(distribution: DistributionCreate): MessageResponse
-      +update(distributionId: Integer, distribution: DistributionCreate): ItemMessageResponse<Distribution>
+      +create(distribution: DistributionEdit): MessageResponse
+      +update(distributionId: Integer, distribution: DistributionEdit): ItemMessageResponse<Distribution>
       +setActive(distributionId: Integer): MessageResponse
       +delete(distributionId: Integer): MessageResponse
       +listAll(): List<Distribution>
@@ -72,8 +74,9 @@ package "Digitization Planner" {
     DistributionController --> MessageResponse : returns >
     DistributionController --> ItemMessageResponse : returns >
 
-    DistributionController --> DistributionService : calls >
-    DistributionController --> DistributionRepository : calls >
+    DistributionController ..> DistributionService : calls >
+    DistributionController ..> DistributionRepository : calls >
+    DistributionController ..> CategoryRepository : calls >
   }
 }
 

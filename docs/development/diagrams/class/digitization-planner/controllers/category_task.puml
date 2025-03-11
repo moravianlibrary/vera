@@ -1,0 +1,74 @@
+@startuml VERA - Class Diagram - Category Controller
+
+skinparam classAttributeIconSize 0
+skinparam ranksep 150
+skinparam nodesep 150
+top to bottom direction
+
+package "Digitization Planner" {
+    
+  package "Types" {
+
+    enum CategoryTask {
+      Reindex
+      ExecuteScript
+    }
+  }
+
+  package "Schemas" {
+
+    entity CategoryQuery
+    entity Task
+    entity RecurringTask
+    entity ItemMessageResponse
+  }
+
+  package "Repositories" {
+    class CategoryRepository
+  }
+
+  package "Services" {
+    class TaskService
+    class RecurringTaskService
+  }
+
+  package "API Controllers" {    
+
+    entity ScheduleTaskParams {
+      +taskType: CategoryTask
+      +query: CategoryQuery | None = None
+      +base: String | None = None
+    }
+
+    ScheduleTaskParams --> CategoryTask : contains
+    ScheduleTaskParams --> CategoryQuery : contains
+
+    entity ScheduleRecurringTaskParams extends ScheduleTaskParams {
+      +cronExpression: String
+    }
+
+    entity UpdateRecurringTaskParams extends ScheduleRecurringTaskParams {
+      +recurringTaskId: Integer
+    }
+
+    class CategoryTaskController {
+      +scheduleTask(params: ScheduleTaskParams): ItemMessageResponse<Task>
+      +scheduleRecurringTask(params: ScheduleRecurringTaskParams): ItemMessageResponse<RecurringTask>
+      +updateRecurringTask(params: UpdateRecurringTaskParams): ItemMessageResponse<RecurringTask>
+    }
+
+    CategoryTaskController o-- ScheduleTaskParams : uses
+    CategoryTaskController o-- ScheduleRecurringTaskParams : uses
+    CategoryTaskController o-- UpdateRecurringTaskParams : uses
+
+    CategoryTaskController --> Task : returns >
+    CategoryTaskController --> ItemMessageResponse : returns >
+    CategoryTaskController --> RecurringTask : returns >
+
+    CategoryTaskController --> CategoryRepository : calls >
+    CategoryTaskController --> TaskService : calls >
+    CategoryTaskController --> RecurringTaskService : calls >
+  }
+}
+
+@enduml

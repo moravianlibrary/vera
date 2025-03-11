@@ -74,6 +74,7 @@ package "Digitization Planner" {
     }
     
     entity Task
+    entity ItemMessageResponse
   }
 
   package "Repositories" {
@@ -151,10 +152,10 @@ package "Digitization Planner" {
     DocumentRepository --> DocumentModel : manages >
 
     class DocumentIterationRepository {
-      +get(documentId: Integer, iteration: Integer): DocumentIterationModel
+      +getById(documentIterationId: Integer): DocumentIterationModel
       +listAll(): List<DocumentIterationModel>
       +save(document: DocumentIterationModel): DocumentIterationModel
-      +delete(documentId: Integer, iteration: Integer): DocumentIterationModel
+      +delete(documentIterationId: Integer): DocumentIterationModel
       +index(document: DocumentIterationModel): DocumentIterationModel
       +search(query: DocumentQuery): DocumentResponse
     }
@@ -178,8 +179,8 @@ package "Digitization Planner" {
     
     DocumentService --> Task : returns >
 
-    DocumentService --> DocumentRepository : calls >
-    DocumentService --> TaskService : plan tasks >
+    DocumentService ..> DocumentRepository : calls >
+    DocumentService ..> TaskService : schedule tasks >
 
     class TaskService
   }
@@ -189,8 +190,8 @@ package "Digitization Planner" {
     class DocumentController {
       +search(query: DocumentQuery): DocumentResponse
       +export(query: DocumentQuery): CsvFile | TxtFile
-      +updateProperty(query: DocumentQuery, propertyName: String, propertyValue: String): Task
-      +generateList(query: DocumentQuery, settings: DocumentListGenerationSettings): Task
+      +updateProperty(query: DocumentQuery, propertyName: String, propertyValue: String): ItemMessageResponse<Task>
+      +generateList(query: DocumentQuery, settings: DocumentListGenerationSettings): ItemMessageResponse<Task>
     }
 
     DocumentController --> DocumentQuery : uses
@@ -198,9 +199,10 @@ package "Digitization Planner" {
 
     DocumentController --> DocumentResponse : returns >
     DocumentController --> Task : returns >
+    DocumentController --> ItemMessageResponse : returns >
 
-    DocumentController --> DocumentRepository : calls >
-    DocumentController --> DocumentService : calls >
+    DocumentController ..> DocumentIterationRepository : calls >
+    DocumentController ..> DocumentService : calls >
   }
 }
 

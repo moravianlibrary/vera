@@ -66,15 +66,23 @@ package "Digitization Planner" {
       ReevaluateDifferences
     }
 
+    ' Max 1 running at a time
+    ' Max 1 planned at a time
     enum CategoryTask {
       Reindex
       ReindexAll
+      ' Can be planned
       ExecuteScript
     }
 
+    ' Max 1 running at a time
+    ' Max 1 planned at a time
     enum SystemTask {
+      ' Can be planned
       RecreateIndex
+      ' Can be planned
       ResolveInconsistencies
+      ' Can be planned
       GenerateBackup
       LoadFromBackup
     }
