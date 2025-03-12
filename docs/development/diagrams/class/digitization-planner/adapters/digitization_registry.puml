@@ -25,7 +25,7 @@ package "Adapters" {
     }
 
     entity DRAdapterResponse {
-      source: String | None
+      source: String
       id: String | None
       recordState: DRState | None
       issueState: DRState | None
