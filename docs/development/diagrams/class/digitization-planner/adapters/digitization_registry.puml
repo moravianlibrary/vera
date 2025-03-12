@@ -8,76 +8,6 @@ top to bottom direction
 
 package "Adapters" {
 
-  package "Catalog" {
-    enum CatalogFetchStatus {
-      CatalogUnavailable
-      CatalogRequestFailed
-      RecordNotFound
-      UnrecognizedBase
-      InvalidSystemNumber
-      Success
-    }
-
-    entity CatalogGetResponse {
-      record: Record | None
-      status: CatalogFetchStatus
-    }
-
-    entity CatalogSearchItem {
-      base: String
-      systemNumber: String
-      record: Record
-    }
-
-    entity CatalogSearchResponse {
-      items: List<CatalogSearchItem> | None
-      numFound: Integer
-      status: CatalogFetchStatus
-    }
-
-    interface CatalogConnector {
-      +getRecord(base: String, systemNumber: String): CatalogGetResponse
-      +search(
-        value: String,
-        base: String | None,
-        field: String | None,
-        page: Integer,
-        pageSize: Integer
-      ): CatalogSearchResponse
-    }
-
-    class AlephCatalogConnector extends CatalogConnector {
-      +loadConfig(config: AlephCatalogConnectorConfig): None
-    }
-
-    class AlephZ3950 {
-    }
-
-    class AlephXApi {
-    }
-
-    class AlephOaiApi {
-    }
-
-    class CatalogConnectorManager extends CatalogConnector {
-      +loadConfig(config: CatalogConnectorConfig): None
-      +findAuthoritySystemNumber(base: String, systemNumber: String, authorityBase: String): CatalogGetResponse
-    }
-
-    CatalogGetResponse --> CatalogFetchStatus : uses >
-    CatalogSearchResponse --> CatalogFetchStatus : uses >
-    CatalogSearchResponse o-- CatalogSearchItem : contains >
-
-    CatalogConnector o-- CatalogGetResponse : returns >
-    CatalogConnector o-- CatalogSearchResponse : returns >
-
-    AlephCatalogConnector --> AlephZ3950 : uses
-    AlephCatalogConnector --> AlephXApi : uses
-    AlephCatalogConnector --> AlephOaiApi : uses
-
-    CatalogConnectorManager *-- CatalogConnector : manages >
-  }
-
   package "Digitization Registry" {
     enum DRFetchStatus {
       Unavailable
@@ -94,32 +24,49 @@ package "Adapters" {
       Unknown
     }
 
-    entity DRConnectorResponse {
+    entity DRAdapterResponse {
       source: String | None
       id: String | None
-      state: DRState | None
+      recordState: DRState | None
+      issueState: DRState | None
       status: DRFetchStatus
     }
 
-    interface DRConnector {
-      +getRecord(recordId: String): DRConnectorResponse
-      +search(record: Record, issue: Issue): DRConnectorResponse
+    entity RDczConfig
+    entity KrameriusConfig
+    entity Record
+    entity Issue
+
+    DRAdapterResponse --> DRFetchStatus : uses >
+    DRAdapterResponse --> DRState : uses >
+
+    interface DRAdapterInterface {
+      +getRecord(recordId: String): DRAdapterResponse
+      +search(record: Record, issue: Issue): DRAdapterResponse
     }
 
-    class RDczConnector implements DRConnector
-    class DRKrameriusConnector implements DRConnector
+    DRAdapterInterface o-- DRAdapterResponse : returns >
+    DRAdapterInterface o-- DRAdapterResponse : returns >
 
-    class DRDispatcher {
-      +loadConfig(config: DRConnectorConfig): None
-      +getRecord(recordId: String): List<DRConnectorResponse>
-      +search(record: Record, issue: Issue): List<DRConnectorResponse>
+    class RDczAdapter implements DRAdapterInterface {
+      +RDczAdapter(config: RDczConfig)
     }
 
-    DRConnectorResponse --> DRFetchStatus : uses >
-    DRConnectorResponse --> DRState : uses >
+    RDczAdapter --> RDczConfig : uses
 
-    DRDispatcher o-- DRConnectorResponse : returns >
-    DRConnector o-- DRConnectorResponse : returns >
-    DRDispatcher *-- DRConnector : manages >
+    class DRKrameriusAdapter implements DRAdapterInterface {
+      +DRKrameriusAdapter(config: KrameriusConfig)
+    }
+
+    DRKrameriusAdapter --> KrameriusConfig : uses
+
+    class DRAdapter {
+      +loadConfig(config: DRAdapterConfig): None
+      +getRecord(recordId: String): List<DRAdapterResponse>
+      +search(record: Record, issue: Issue): List<DRAdapterResponse>
+    }
+
+    DRAdapter *-- RDczAdapter : manages >
+    DRAdapter *-- DRKrameriusAdapter : manages >
   }
 }
