@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from schemas import DRAdapterResponse, Record, Issue
+from schemas import DRAdapterResponse, MarcRecord, MarcIssue
 
 
 class DRAdapterInterface(ABC):
@@ -14,7 +14,9 @@ class DRAdapterInterface(ABC):
         pass
 
     @abstractmethod
-    def search(self, record: Record, issue: Issue) -> DRAdapterResponse:
+    def search(
+        self, record: MarcRecord, issue: MarcIssue
+    ) -> DRAdapterResponse:
         """
         Performs a search using a record and an issue.
 

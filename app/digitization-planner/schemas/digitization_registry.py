@@ -1,11 +1,13 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List
 from custom_types import DRFetchStatus, DRState
 
 
 class DRAdapterResponse(BaseModel):
     source: str
-    id: Optional[str] = None
-    recordState: Optional[DRState] = None
-    issueState: Optional[DRState] = None
+    recordId: str | None = None
+    recordState: List[DRState] | None = None
+    certainty: float | None = None
+    issueId: str | None = None
+    issueState: DRState | None = None
     status: DRFetchStatus

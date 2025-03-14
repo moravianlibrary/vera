@@ -3,8 +3,10 @@ from .catalog import (
     CatalogSearchItem,
     CatalogSearchResponse,
     CatalogSearchParams,
-    Record,
-    Issue,
+)
+from .marc import (
+    MarcRecord,
+    MarcIssue,
 )
 from .config import DRAdapterConfig, KrameriusConfig, RDczConfig
 from .digitization_registry import DRAdapterResponse
@@ -15,9 +17,9 @@ __all__ = [
     "CatalogSearchItem",
     "CatalogSearchResponse",
     "CatalogSearchParams",
-    "Record",
+    "MarcRecord",
+    "MarcIssue",
     "DRAdapterResponse",
-    "Issue",
     "DRAdapterConfig",
     "RDczConfig",
     "KrameriusConfig",
