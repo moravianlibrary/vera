@@ -1,4 +1,9 @@
 from aleph_nought import AlephOAIClient, AlephOAIConfig
+from vera_plugins import CatalogAdapterPlugin
+
+
+class AlephOAIAdapterPlugin(CatalogAdapterPlugin):
+    pass
 
 
 def main():

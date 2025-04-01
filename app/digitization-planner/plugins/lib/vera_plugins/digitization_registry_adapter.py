@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from enum import Enum
-from typing import List, NamedTuple, Tuple
+from typing import List, NamedTuple
 
 from marcdantic import MarcIssue, MarcRecord
 
@@ -63,11 +63,6 @@ class DigitizationRecord(NamedTuple):
     error_message: str | None = None
 
 
-Score = float
-
-FindResponse = List[Tuple[DigitizationRecord, Score]]
-
-
 class StateChangeError(Exception):
     """
     Exception raised when a state change operation fails.
@@ -118,7 +113,9 @@ class DigitizationRegistryAdapterPlugin(BaseResourcePlugin):
         pass
 
     @abstractmethod
-    def find_for_marc_record(self, marc_record: MarcRecord) -> FindResponse:
+    def find_for_marc_record(
+        self, marc_record: MarcRecord
+    ) -> DigitizationRecord | None:
         """
         Find digitization records matching a given MARC record.
 
@@ -129,16 +126,15 @@ class DigitizationRegistryAdapterPlugin(BaseResourcePlugin):
 
         Returns
         -------
-        FindResponse
-            A list of tuples containing digitization records
-            and their relevance scores.
+        DigitizationRecord | None
+            The digitization record if found, otherwise None.
         """
         pass
 
     @abstractmethod
     def find_for_marc_issue(
         self, record: MarcRecord, issue: MarcIssue
-    ) -> FindResponse:
+    ) -> DigitizationRecord | None:
         """
         Find digitization records matching a given MARC record and issue.
 
@@ -151,9 +147,8 @@ class DigitizationRegistryAdapterPlugin(BaseResourcePlugin):
 
         Returns
         -------
-        FindResponse
-            A list of tuples containing digitization records
-            and their relevance scores.
+        DigitizationRecord | None
+            The digitization record if found, otherwise None.
         """
         pass
 

@@ -6,6 +6,7 @@ PluginCode = str
 
 
 class PluginConfig(BaseModel):
+    source_url: str | None = None
     plugin_code: PluginCode
     python_version: str
     requirements: List[str]

@@ -21,4 +21,4 @@ scipy
 sqlalchemy
 typing-extensions==4.8.0
 uvicorn
-mzk_aleph
+/home/robert/repositories/work/vera/app/digitization-planner/plugins/lib/ 
