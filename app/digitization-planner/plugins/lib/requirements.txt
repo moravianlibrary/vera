@@ -1,0 +1,2 @@
+/home/robert/repositories/work/vera-modules/marcdantic
+pydantic
