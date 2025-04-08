@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from datetime import datetime
 from enum import Enum
-from typing import Generator, NamedTuple
+from typing import Any, Dict, Generator, List, NamedTuple
 
 from marcdantic import MarcRecord
 
@@ -51,18 +51,72 @@ class ListRecordResponse(NamedTuple):
     record: MarcRecord | None = None
 
 
+class SearchResult(NamedTuple):
+    """
+    Represents the result of a search operation.
+
+    Attributes
+    ----------
+    base : str
+        The base or catalog from which the record is fetched.
+    system_number : str
+        The unique identifier of the record within the base.
+    record : MarcRecord
+        The actual MARC record.
+    """
+
+    base: str
+    system_number: str
+    record: MarcRecord
+
+
+class SearchResultResponse(NamedTuple):
+    """
+    Represents the response returned from a search operation with pagination.
+
+    Attributes
+    ----------
+    records : List[SearchResult]
+        A list of search results (records).
+    num_found : int
+        The total number of records that matched the search query.
+    page : int
+        The current page of results.
+    page_size : int
+        The number of results per page.
+    """
+
+    records: List[SearchResult]
+    num_found: int
+    page: int
+    page_size: int
+
+
+class NotImplementedException(Exception):
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
 class CatalogAdapterPlugin(BaseResourcePlugin):
     """
-    Abstract interface for catalog adapter plugins. Defines the methods
-    that a catalog adapter plugin must implement for interacting with
-    bibliographic records.
+    Abstract base class for catalog adapter plugins.
+
+    At least one of the following method groups must be implemented:
+    - Both `get_query_schema()` and `search()`
+    - `fetch_changes()`
+
+    Plugins should override the appropriate methods based on their use case.
 
     Methods
     -------
     fetch:
         Fetch a specific record based on base and system number.
-    fetch_additions:
-        Fetch a list of additions since the last synchronization.
+    get_query_schema:
+        Return the expected schema for query parameters.
+    search:
+        Perform a paginated search (optional override).
+    fetch_changes:
+        Fetch records modified since the given timestamp.
     """
 
     @abstractmethod
@@ -80,27 +134,78 @@ class CatalogAdapterPlugin(BaseResourcePlugin):
         Returns
         -------
         Optional[MarcRecord]
-            The fetched MARC record, or None if not found.
+            The fetched MARC record, or None if the record is not found.
         """
         pass
 
-    @abstractmethod
-    def fetch_additions(
-        self, last_sync: datetime | None
-    ) -> Generator[ListRecordResponse, None, None]:
+    def get_query_schema(self) -> Dict[str, Any]:
         """
-        Fetch records that have been added since the last synchronization.
-
-        Parameters
-        ----------
-        last_sync : datetime | None
-            The timestamp of the last synchronization.
-            If None, fetch all records.
+        Return the query schema supported by this adapter.
 
         Returns
         -------
-        Generator[ListRecordResponse, None, None]
-            A generator that yields responses containing record details such as
-            the base, system number, status, and the actual record.
+        Optional[Dict[str, Any]]
+            Dictionary representing the query schema,
+            or None if the adapter does not support querying.
+
+        Raises
+        ------
+        NotImplementedException
+            If querying is not supported by the plugin.
         """
-        pass
+        raise NotImplementedException(
+            "get_query_schema not implemented in this plugin"
+        )
+
+    def search(
+        self, query: Dict[str, Any], page: int, page_size: int
+    ) -> SearchResultResponse:
+        """
+        Perform a search using given parameters.
+
+        Parameters
+        ----------
+        query : Dict[str, Any]
+            The query parameters.
+        page : int
+            Page number of the results.
+        page_size : int
+            Number of results per page.
+
+        Returns
+        -------
+        SearchResultResponse
+            An object containing the matched records and pagination metadata.
+
+        Raises
+        ------
+        NotImplementedException
+            If search is not supported by the plugin.
+        """
+        raise NotImplementedException("search not implemented in this plugin")
+
+    def fetch_changes(
+        self, last_sync: datetime | None
+    ) -> Generator[ListRecordResponse, None, None]:
+        """
+        Fetch records that have been changed since the last synchronization.
+
+        Parameters
+        ----------
+        last_sync : datetime or None
+            If provided, fetch only records changed after this timestamp.
+            If None, fetch all available records.
+
+        Yields
+        ------
+        ListRecordResponse
+            Changed record information.
+
+        Raises
+        ------
+        NotImplementedException
+            If change fetching is not supported by the plugin.
+        """
+        raise NotImplementedException(
+            "fetch_changes not implemented in this plugin"
+        )
