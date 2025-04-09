@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class DocumentEligibilityStatus(Enum):
-    Ready = "Ready"
+    Eligible = "Eligible"
     ActiveDuplicate = "ActiveDuplicate"
     FullyProcessedDuplicate = "FullyProcessedDuplicate"
     InDigitization = "InDigitization"

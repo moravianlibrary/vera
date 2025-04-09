@@ -2,23 +2,32 @@ from sqlalchemy import TIMESTAMP, Column, String, func
 from sqlalchemy.ext.declarative import declared_attr
 
 
-class CreatedAuditMixin:
+class CreatedTimestampMixin:
     """
-    Mixin for tracking the creation metadata of a record.
+    Mixin for tracking the creation timestamp of a record.
 
     Attributes
     ----------
     created_at : datetime
         Timestamp indicating when the record was created.
-        Defaults to the current time on the database server.
-
-    created_by : str
-        Identifier of the user or service that created the record.
+        Defaults to the current time on the database server
+        and should not be set manually.
     """
 
     @declared_attr
     def created_at(cls):
         return Column(TIMESTAMP, server_default=func.now())
+
+
+class CreatedAuditMixin(CreatedTimestampMixin):
+    """
+    Mixin for tracking the creation metadata of a record.
+
+    Attributes
+    ----------
+    created_by : str
+        Identifier of the user or service that created the record.
+    """
 
     @declared_attr
     def created_by(cls):

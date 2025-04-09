@@ -1,9 +1,12 @@
-from sqlalchemy import Boolean, Column, Enum, Integer, String, Timestamp
+from sqlalchemy import JSON, Boolean, Column, Enum, Integer, String
 
 from adapters.database import BaseModel
+from custom_types import PluginType
+
+from .mixins import CreatedAuditMixin, UpdatedAuditMixin
 
 
-class PluginModel(BaseModel):
+class PluginModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
     __tablename__ = "plugins"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -12,7 +15,7 @@ class PluginModel(BaseModel):
     name = Column(String, nullable=False)
 
     code = Column(String, nullable=False)
-    config = Column(String, nullable=True)
+    config = Column(JSON, nullable=True)
 
     run_in_safe_mode = Column(Boolean, default=False, nullable=False)
 

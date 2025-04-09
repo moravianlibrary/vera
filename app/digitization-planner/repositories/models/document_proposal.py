@@ -1,6 +1,5 @@
-from datetime import datetime
-
-from sqlalchemy import Boolean, Column, Enum, Integer, String, Timestamp
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
 from adapters.database import BaseModel
 from custom_types import (
@@ -9,8 +8,10 @@ from custom_types import (
     IdentifierType,
 )
 
+from .mixins import CreatedAuditMixin, UpdatedAuditLogMixin
 
-class DocumentProposalModel(BaseModel):
+
+class DocumentProposalModel(BaseModel, CreatedAuditMixin):
     __tablename__ = "document_proposals"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -22,9 +23,6 @@ class DocumentProposalModel(BaseModel):
     file_name = Column(String, nullable=True)
     category_id = Column(Integer, nullable=True)
 
-    created_by = Column(String, nullable=False)
-    created_at = Column(Timestamp, default=datetime.utcnow, nullable=False)
-
     status = Column(
         Enum(DocumentProposalStatus),
         default=DocumentProposalStatus.Enqueued,
@@ -33,3 +31,22 @@ class DocumentProposalModel(BaseModel):
     eligibility_status = Column(Enum(DocumentEligibilityStatus), nullable=True)
 
     is_archived = Column(Boolean, default=False, nullable=False)
+
+    status_logs = relationship(
+        "DocumentProposalStatusLog", backref="proposal", lazy="dynamic"
+    )
+
+    addition = relationship("DocumentAdditionModel", backref="proposal")
+
+
+class DocumentProposalStatusLogModel(BaseModel, UpdatedAuditLogMixin):
+    __tablename__ = "document_proposal_status_logs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    proposal_id = Column(
+        Integer, ForeignKey("document_proposals.id"), nullable=False
+    )
+    status = Column(Enum(DocumentProposalStatus), nullable=False)
+
+    proposal = relationship("DocumentProposal", backref="status_logs")
