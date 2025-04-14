@@ -1,11 +1,12 @@
-from .base import TestEndpointsBase
 from datatypes import ActionType
 from models import Role, User
+
+from .base import TestEndpointsBase
 
 
 class TestUsersEndpoints(TestEndpointsBase):
     def tearDown(self) -> None:
-        from routers.utils.access_emulation import emulated_users
+        from controllers.security.access_emulation import emulated_users
 
         super().tearDown()
         emulated_users.clear()

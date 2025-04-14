@@ -27,7 +27,7 @@ package "Digitization Planner" {
   package "Schemas" {
 
     entity Permissions {
-      +permissions: List<Permission>
+      +generalPermissions: List<Permission>
       +ownershipPermissions: List<Tuple<OwnershipPermission, OwnershipScope>>
     }
 

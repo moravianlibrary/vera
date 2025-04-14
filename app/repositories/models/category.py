@@ -63,14 +63,14 @@ class CategoryModel(BaseModel):
     )
 
     # Ownership relationships
-    groups: Mapped[List["GroupModel"]] = relationship(
+    assigned_groups: Mapped[List["GroupModel"]] = relationship(
         "GroupModel",
         secondary=category_group_association,
         back_populates="categories",
         lazy="joined",
         cascade="all, delete-orphan",
     )
-    users: Mapped[List["UserModel"]] = relationship(
+    assigned_users: Mapped[List["UserModel"]] = relationship(
         "UserModel",
         secondary=category_user_association,
         back_populates="categories",

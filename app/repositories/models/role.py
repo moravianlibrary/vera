@@ -9,7 +9,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from adapters.database import BaseModel
-from custom_types import OwnershipPermission, OwnershipScope, Permission
+from custom_types import GeneralPermission, OwnershipPermission, OwnershipScope
 
 
 class RoleModel(BaseModel):
@@ -19,19 +19,19 @@ class RoleModel(BaseModel):
     name = Column(String, unique=True, nullable=False)
     description = Column(String)
 
-    permissions = relationship(
-        "RolePermissionModel", back_populates="role", lazy="joined"
+    general_permissions = relationship(
+        "RoleGeneralPermissionModel", back_populates="role", lazy="joined"
     )
     ownership_permissions = relationship(
         "RoleOwnershipPermissionModel", back_populates="role", lazy="joined"
     )
 
 
-class RolePermissionModel(BaseModel):
-    __tablename__ = "role_permissions"
+class RoleGeneralPermissionModel(BaseModel):
+    __tablename__ = "role_general_permissions"
 
     role_id = Column(ForeignKey("roles.id"), nullable=False)
-    permission = Column(Enum(Permission), nullable=False)
+    permission = Column(Enum(GeneralPermission), nullable=False)
 
     role = relationship(
         "RoleModel", back_populates="permissions", lazy="joined"

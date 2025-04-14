@@ -1,12 +1,15 @@
-from datatypes import ActionType
-from schemas import CurrentUser
+from typing import Callable, List, Union
+
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
-from models import CategoryDepartments, Document, User
-from typing import Callable, List, Union
-from .dependencies import DependsOnCurrentUser
-from .access_emulation import can_emulate_access
+
+from datatypes import ActionType
 from exceptions import PermissionDeniedException
+from models import CategoryDepartments, Document, User
+from schemas import CurrentUser
+
+from ...controllers.security.access_emulation import can_emulate_access
+from .dependencies import DependsOnCurrentUser
 
 
 class OwnershipValidator:

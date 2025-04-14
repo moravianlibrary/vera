@@ -3,14 +3,13 @@ from typing import Any, Dict, List
 from pydantic import BaseModel
 
 from .group import Group
-from .role import Role
+from .role import Permissions, Role
 
 UserSettings = Dict[str, Any]
 
 
-class CurrentUser(BaseModel):
+class AuthenticatedUser(Permissions):
     username: str
-    settings: UserSettings
     roles: List[Role]
     groups: List[Group] = []
 

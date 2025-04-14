@@ -1,39 +1,15 @@
-from pydantic import (
-    BaseModel,
-    SerializeAsAny,
-    field_validator,
-    ValidationInfo,
-)
 from typing import List, Optional, Set
-from models import Category, Distribution
-from .base_es_model import BaseEsModel, Keyword, Integer, Text, Boolean
-from .departments import IndexDepartment
 
+from pydantic import BaseModel, SerializeAsAny, ValidationInfo, field_validator
+
+from models import Category, Distribution
 from services.exceptions import (
-    InvalidDistributionSumException,
     DistributionExcesiveSubcategoriesException,
+    InvalidDistributionSumException,
 )
 
-
-class CategoryCreate(BaseModel):
-    name: str
-    description: Optional[str] = None
-    assignable: bool = False
-    extract_whole: bool = False
-    disabled: bool = False
-    departments: List[int] = []
-
-    def load_to_model(
-        self, model: Category, parent_id: Optional[int] = None
-    ) -> Category:
-        model.name = self.name
-        model.description = self.description
-        model.assignable = self.assignable
-        model.extract_whole = self.extract_whole
-        model.disabled = self.disabled
-        if parent_id:
-            model.parent_id = parent_id
-        return model
+from .base_es_model import BaseEsModel, Boolean, Integer, Keyword, Text
+from .departments import IndexDepartment
 
 
 class CategoryResponse(CategoryCreate):

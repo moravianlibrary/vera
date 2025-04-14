@@ -3,19 +3,15 @@ from typing import List, Optional
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
 
+from custom_types import GeneralPermission
 from datatypes import DigitizationState, EsRoutingParams
 from exceptions import EmptyExtractionException
 from models import DigitizationList, Document
 from schemas import DigitizationList as DigitizationListSchema
 from schemas import EsSession, IndexDocument, Page
 
-from .utils.dependencies import (
-    DependsOnCallerUsername,
-    DependsOnDbSession,
-    DependsOnEsSession,
-)
-from .utils.permissions import CanExtract, CanManageDigitizationList
-from .utils.query_routing_parser import parse_query_routing
+from ._resources import DependsOnDbSession, DependsOnEsSession
+from .security import DependsOnCallerUsername, WithPermission
 
 router = APIRouter(prefix="/digitization-lists", tags=["Digitization lists"])
 
@@ -24,7 +20,7 @@ router = APIRouter(prefix="/digitization-lists", tags=["Digitization lists"])
 
 @router.post(
     "",
-    dependencies=[CanExtract],
+    dependencies=[WithPermission(GeneralPermission.CreateDigitizationLists)],
     response_model=DigitizationListSchema,
 )
 def create(
@@ -57,7 +53,7 @@ def create(
 
 @router.put(
     "/{digitization_list_id}/add-documents",
-    dependencies=[CanManageDigitizationList],
+    dependencies=[WithPermission(GeneralPermission.ManageDigitizationLists)],
     response_model=DigitizationListSchema,
 )
 def add_documents(
@@ -86,7 +82,7 @@ def add_documents(
 
 @router.put(
     "/{digitization_list_id}/remove-documents",
-    dependencies=[CanManageDigitizationList],
+    dependencies=[WithPermission(GeneralPermission.ManageDigitizationLists)],
     response_model=DigitizationListSchema,
 )
 def remove_documents(
@@ -112,7 +108,7 @@ def remove_documents(
 
 @router.post(
     "/{digitization_list_id}/archive",
-    dependencies=[CanManageDigitizationList],
+    dependencies=[WithPermission(GeneralPermission.ManageDigitizationLists)],
     response_model=DigitizationListSchema,
 )
 def archive(
@@ -125,7 +121,7 @@ def archive(
 
 @router.delete(
     "/{digitization_list_id}",
-    dependencies=[CanManageDigitizationList],
+    dependencies=[WithPermission(GeneralPermission.ManageDigitizationLists)],
     response_model=DigitizationListSchema,
 )
 def delete(
@@ -143,7 +139,7 @@ def delete(
 
 @router.post(
     "",
-    dependencies=[CanManageDigitizationList],
+    dependencies=[WithPermission(GeneralPermission.ReadDigitizationLists)],
     response_model=DigitizationListSchema,
 )
 def search(

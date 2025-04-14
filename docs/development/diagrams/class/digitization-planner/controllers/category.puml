@@ -153,14 +153,14 @@ package "Digitization Planner" {
   package "API Controllers" {    
 
     class CategoryController {
+      +search(query: CategoryQuery): CategoryResponse
       +create(parentId: Integer | None, category: CategoryEdit): MessageResponse
       +createProjectCategory(projectId: Integer, category: CategoryEdit): MessageResponse
       +update(categoryId: Integer, category: CategoryEdit): ItemMessageResponse<Category>
-      +changeDistribution(categoryId: Integer, distributionId: Integer, distribution: List<CategoryDistributionEdit>): MessageResponse
       +changeParent(categoryId: Integer, fromParent: Integer | None, toParent: Integer | None): MessageResponse
+      +changeDistribution(categoryId: Integer, distributionId: Integer, distribution: List<CategoryDistributionEdit>): MessageResponse
       +archive(categoryId: Integer): MessageResponse
       +delete(categoryId: Integer): MessageResponse
-      +search(query: CategoryQuery): CategoryResponse
     }
 
     CategoryController --> CategoryEdit : uses
