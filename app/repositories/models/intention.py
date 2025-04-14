@@ -1,13 +1,10 @@
-from sqlalchemy import TIMESTAMP, Boolean, Column, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import TIMESTAMP, Boolean, Column, ForeignKey, Integer, String
 
 from adapters.database import BaseModel
 
-from .mixins import UpdatedAuditLogMixin
 
-
-class ProjectModel(BaseModel):
-    __tablename__ = "projects"
+class IntentionModel(BaseModel):
+    __tablename__ = "intentions"
 
     id = Column(Integer, primary_key=True)
 
@@ -18,10 +15,6 @@ class ProjectModel(BaseModel):
     start_date = Column(TIMESTAMP)
     end_date = Column(TIMESTAMP)
 
-    status = Column(String, nullable=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
 
     is_archived = Column(Boolean, default=False, nullable=False)
-
-
-class ProjectStatusLogModel(BaseModel, UpdatedAuditLogMixin):
-    pass

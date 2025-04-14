@@ -20,7 +20,7 @@ class BaseOperationsModel(Base):
     __abstract__ = True
 
     @classmethod
-    def find(cls: Type[T], session: Session, item_id: int) -> Optional[T]:
+    def find(cls: Type[T], session: Session, item_id: IdType) -> Optional[T]:
         return session.query(cls).filter_by(id=item_id).first()
 
     @classmethod

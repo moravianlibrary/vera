@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class IntentionStatus(Enum):
+class ProjectStatus(Enum):
     Proposed = "Proposed"
     Accepted = "Accepted"
     Declined = "Declined"

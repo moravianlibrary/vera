@@ -22,3 +22,10 @@ group_user_association = Table(
     Column("group_id", ForeignKey("groups.id"), primary_key=True),
     Column("username", ForeignKey("users.username"), primary_key=True),
 )
+
+project_user_association = Table(
+    "project_user_associations",
+    BaseModel,
+    Column("project_id", ForeignKey("projects.id"), primary_key=True),
+    Column("username", ForeignKey("users.username"), primary_key=True),
+)

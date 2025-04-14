@@ -1,22 +1,23 @@
+from typing import List, Optional
+
 from fastapi import APIRouter, Path, Query
 from sqlalchemy.orm import Session
-from typing import Optional, List
+
+from datatypes import DigitizationState, EsRoutingParams
+from exceptions import EmptyExtractionException
 from models import DigitizationList, Document
-from schemas import DigitizationList as DigitizationListSchema, Page
-from .utils.permissions import CanExtract, CanManageDigitizationList
+from schemas import DigitizationList as DigitizationListSchema
+from schemas import EsSession, IndexDocument, Page
+
 from .utils.dependencies import (
-    DependsOnDbSession,
     DependsOnCallerUsername,
+    DependsOnDbSession,
     DependsOnEsSession,
 )
-from exceptions import EmptyExtractionException
-from schemas import IndexDocument, EsSession
-from datatypes import EsRoutingParams, DigitizationState
+from .utils.permissions import CanExtract, CanManageDigitizationList
 from .utils.query_routing_parser import parse_query_routing
 
-router = APIRouter(
-    prefix="/extractions/digitization", tags=["Digitization lists"]
-)
+router = APIRouter(prefix="/digitization-lists", tags=["Digitization lists"])
 
 # TODO: make documents index in dedicated process
 
@@ -26,7 +27,7 @@ router = APIRouter(
     dependencies=[CanExtract],
     response_model=DigitizationListSchema,
 )
-def create_extraction(
+def create(
     query_routing_params: EsRoutingParams,
     intention_id: Optional[int] = Query(None, description="Intention ID"),
     ignore_digitization_states: List[DigitizationState] = Query([]),
@@ -54,37 +55,12 @@ def create_extraction(
     return digitization_list
 
 
-@router.get(
-    "",
-    dependencies=[CanExtract],
-    response_model=Page[DigitizationListSchema],
-)
-def get_extractions(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
-    session: Session = DependsOnDbSession,
-):
-    return DigitizationList.get_page(session, page, page_size)
-
-
-@router.get(
-    "/{digitization_list_id}",
-    dependencies=[CanExtract],
-    response_model=DigitizationListSchema,
-)
-def get_extraction(
-    digitization_list_id: int = Path(...),
-    session: Session = DependsOnDbSession,
-):
-    return DigitizationList.get(session, digitization_list_id)
-
-
 @router.put(
-    "/{digitization_list_id}/add_documents",
+    "/{digitization_list_id}/add-documents",
     dependencies=[CanManageDigitizationList],
     response_model=DigitizationListSchema,
 )
-def add_documents_to_extraction(
+def add_documents(
     query_routing_params: EsRoutingParams,
     digitization_list_id: int = Path(...),
     ignore_digitization_states: List[DigitizationState] = Query([]),
@@ -109,11 +85,11 @@ def add_documents_to_extraction(
 
 
 @router.put(
-    "/{digitization_list_id}/remove_documents",
+    "/{digitization_list_id}/remove-documents",
     dependencies=[CanManageDigitizationList],
     response_model=DigitizationListSchema,
 )
-def remove_documents_from_extraction(
+def remove_documents(
     query_routing_params: EsRoutingParams,
     digitization_list_id: int = Path(...),
     session: Session = DependsOnDbSession,
@@ -134,12 +110,25 @@ def remove_documents_from_extraction(
     return digitization_list
 
 
+@router.post(
+    "/{digitization_list_id}/archive",
+    dependencies=[CanManageDigitizationList],
+    response_model=DigitizationListSchema,
+)
+def archive(
+    digitization_list_id: int = Path(...),
+    session: Session = DependsOnDbSession,
+    es_session: EsSession = DependsOnEsSession,
+):
+    pass
+
+
 @router.delete(
     "/{digitization_list_id}",
     dependencies=[CanManageDigitizationList],
     response_model=DigitizationListSchema,
 )
-def delete_extraction(
+def delete(
     digitization_list_id: int = Path(...),
     session: Session = DependsOnDbSession,
     es_session: EsSession = DependsOnEsSession,
@@ -150,3 +139,15 @@ def delete_extraction(
         IndexDocument.model_validate(document).save(es_session)
 
     return digitization_list.delete(session)
+
+
+@router.post(
+    "",
+    dependencies=[CanManageDigitizationList],
+    response_model=DigitizationListSchema,
+)
+def search(
+    session: Session = DependsOnDbSession,
+    es_session: EsSession = DependsOnEsSession,
+):
+    pass

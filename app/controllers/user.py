@@ -1,22 +1,18 @@
 from fastapi import APIRouter, Query
 from sqlalchemy.orm import Session
+
+from datatypes import JsonBase
+from models import Role, User
+from schemas import ActionList, CurrentUser, Page, UserResponse
+
 from .utils import access_emulation
 from .utils.dependencies import DependsOnCurrentUser, DependsOnDbSession
-from .utils.permissions import CanManageAccess, CanEmulateAccess
-from datatypes import JsonBase
-from schemas import (
-    CurrentUser,
-    ActionList,
-    UserResponse,
-    Page,
-)
-from models import Role, User
-
+from .utils.permissions import CanEmulateAccess, CanManageAccess
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.get("/current", response_model=CurrentUser)
+@router.get("/me", response_model=CurrentUser)
 def authorize_user(
     user: CurrentUser = DependsOnCurrentUser,
 ):
@@ -25,21 +21,15 @@ def authorize_user(
     return user
 
 
-@router.get(
-    "",
-    dependencies=[CanManageAccess],
-    response_model=Page[UserResponse],
-)
-def get_users(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
-    session: Session = DependsOnDbSession,
+@router.get("/me/notifications", response_model=CurrentUser)
+def list_notifications(
+    user: CurrentUser = DependsOnCurrentUser,
 ):
-    return User.get_page(session, page, page_size)
+    pass
 
 
-@router.post("/current/settings", response_model=CurrentUser)
-def set_user_settings(
+@router.post("/me/settings", response_model=CurrentUser)
+def save_user_settings(
     settings: JsonBase,
     user: CurrentUser = DependsOnCurrentUser,
     db: Session = DependsOnDbSession,
@@ -52,7 +42,7 @@ def set_user_settings(
 
 
 @router.post(
-    "/current/emulate",
+    "/me/emulate",
     dependencies=[CanEmulateAccess],
     response_model=CurrentUser,
 )
@@ -67,7 +57,7 @@ def emulate_access(
 
 
 @router.delete(
-    "/current/emulate",
+    "/me/emulate",
     dependencies=[CanEmulateAccess],
     response_model=CurrentUser,
 )
@@ -78,3 +68,16 @@ def stop_access_emulation(
     access_emulation.stop_emulating_access(user.username)
     user.actions = Role.get(db, user.role_id).actions
     return user
+
+
+@router.get(
+    "",
+    dependencies=[CanManageAccess],
+    response_model=Page[UserResponse],
+)
+def list_users(
+    page: int = Query(1, description="Page number"),
+    page_size: int = Query(50, description="Page size"),
+    session: Session = DependsOnDbSession,
+):
+    return User.get_page(session, page, page_size)

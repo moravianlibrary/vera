@@ -11,7 +11,7 @@ UserSettings = Dict[str, Any]
 class CurrentUser(BaseModel):
     username: str
     settings: UserSettings
-    role: Role
+    roles: List[Role]
     groups: List[Group] = []
 
 

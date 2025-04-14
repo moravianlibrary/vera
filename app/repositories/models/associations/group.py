@@ -15,3 +15,10 @@ category_group_association = Table(
     Column("category_id", ForeignKey("categories.id"), primary_key=True),
     Column("group_id", ForeignKey("groups.id"), primary_key=True),
 )
+
+project_group_association = Table(
+    "project_group_associations",
+    BaseModel,
+    Column("project_id", ForeignKey("projects.id"), primary_key=True),
+    Column("group_id", ForeignKey("groups.id"), primary_key=True),
+)

@@ -33,18 +33,3 @@ class UpdatedAuditMixin(UpdatedTimestampMixin):
     @declared_attr
     def updated_by(cls):
         return Column(String, nullable=False)
-
-
-class UpdatedAuditLogMixin(UpdatedAuditMixin):
-    """
-    Mixin for tracking the update metadata of a record with a log.
-
-    Attributes
-    ----------
-    message : str
-        Log message indicating the reason for the last update.
-    """
-
-    @declared_attr
-    def message(cls):
-        return Column(String, nullable=True)

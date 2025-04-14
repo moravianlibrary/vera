@@ -33,7 +33,10 @@ class DocumentProposalModel(BaseModel, CreatedAuditMixin):
     is_archived = Column(Boolean, default=False, nullable=False)
 
     status_logs = relationship(
-        "DocumentProposalStatusLog", backref="proposal", lazy="dynamic"
+        "DocumentProposalStatusLogModel",
+        backref="proposal",
+        cascade="all, delete-orphan",
+        lazy="dynamic",
     )
 
     addition = relationship("DocumentAdditionModel", backref="proposal")
@@ -49,4 +52,4 @@ class DocumentProposalStatusLogModel(BaseModel, UpdatedAuditLogMixin):
     )
     status = Column(Enum(DocumentProposalStatus), nullable=False)
 
-    proposal = relationship("DocumentProposal", backref="status_logs")
+    proposal = relationship("DocumentProposalModel", backref="status_logs")

@@ -6,6 +6,7 @@ from .document_proposal import DocumentProposalStatus
 from .identifier import IdentifierType
 from .permission import OwnershipPermission, OwnershipScope, Permission
 from .plugin import PluginType
+from .project import ProjectStatus
 
 __all__ = [
     "CatalogFetchStatus",
@@ -19,4 +20,5 @@ __all__ = [
     "OwnershipScope",
     "Permission",
     "PluginType",
+    "ProjectStatus",
 ]
