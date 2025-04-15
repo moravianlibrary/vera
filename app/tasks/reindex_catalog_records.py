@@ -1,8 +1,10 @@
 from sqlalchemy.orm import Session
+
+from adapters.elasticsearch import with_es_session
 from models import TaskItem
+from schemas import EsSession, IndexCatalogRecord, IndexDocument
+
 from .run_items_processing import run_items_processing_task
-from schemas import IndexCatalogRecord, IndexDocument, EsSession
-from services.elasticsearch import with_es_session
 
 
 @with_es_session

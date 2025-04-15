@@ -1,10 +1,11 @@
-from sqlalchemy.orm import Session
-from models import TaskItem, Document
-from tasks.run_items_processing import run_items_processing_task
-from schemas import IndexDocument, EsSession, AlephMzkRecord, AlephMzkIssue
-from services.predictor import Predictor
-from services.elasticsearch import with_es_session
 from mzk_aleph import MaterialType
+from sqlalchemy.orm import Session
+
+from adapters.elasticsearch import with_es_session
+from models import Document, TaskItem
+from schemas import AlephMzkIssue, AlephMzkRecord, EsSession, IndexDocument
+from services.predictor import Predictor
+from tasks.run_items_processing import run_items_processing_task
 
 
 @with_es_session

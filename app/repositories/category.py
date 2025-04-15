@@ -1,5 +1,8 @@
 from requests import Session
 
+from adapters.elasticsearch import EsSession
+from schemas import Category, EsQuery
+
 from ._base import BaseRepository
 from ._mixins import (
     DeleteMixin,
@@ -21,7 +24,7 @@ class CategoryRepository(
         super().__init__(db_session, CategoryModel, "Category")
 
     # TODO: Implement search method and move to SearchMixin
-    def search(self):
+    def search(self, query: EsQuery[Category]):
         pass
 
     def create(self, name: str, description: str) -> CategoryModel:

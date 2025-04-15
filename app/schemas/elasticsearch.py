@@ -1,8 +1,11 @@
 from typing import Any, Dict, TypeVar
 
+from pydantic import BaseModel
+
 Json = Dict[str, Any]
 
-ElasticsearchQuery = Json
 
-T = TypeVar("T")
-ElasticsearchResponse = Json
+Entity = TypeVar("Entity", bound=BaseModel)
+
+EsQuery = Json
+EsResponse = Json

@@ -167,8 +167,8 @@ package "Digitization Planner" {
   package "API Controllers" {
 
     class DocumentAdditionController {
-      +add(additions: List<DocumentAdditionCreate>): MessageResponse
       +search(query: DocumentAdditionQuery): DocumentAdditionResponse
+      +create(additions: List<DocumentAdditionCreate>): MessageResponse
       +archive(query: DocumentAdditionQuery): MessageResponse
       +delete(query: DocumentAdditionQuery): MessageResponse
     }

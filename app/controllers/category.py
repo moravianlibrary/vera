@@ -3,11 +3,12 @@ from fastapi import APIRouter, Path, Query
 from custom_types import GeneralPermission, OwnershipPermission
 from repositories import CategoryRepository
 from schemas import AuthenticatedUser, Category, CategoryEdit
+from services import CategoryService
 
-from ._resources import DependsOnCategoryRepository
+from ._resources import DependsOnCategoryRepository, DependsOnCategoryService
 from .security import DependsOnAuthenticatedUser, WithPermission
 
-router = APIRouter(prefix="/roles", tags=["Categorys"])
+router = APIRouter(prefix="/categories", tags=["Categories"])
 
 
 @router.post(
@@ -36,13 +37,7 @@ def create(
     service: CategoryService = DependsOnCategoryService,
 ):
     # TODO: Enforce that the user has access to the parent category
-    return service.create(
-        parent_id,
-        category.name,
-        category.description,
-        category.assignable,
-        category.disabled,
-    )
+    return service.create(parent_id, category)
 
 
 # TODO: Move to project controller
@@ -99,6 +94,7 @@ def change_parent(
 )
 def delete(
     category_id: int = Path(...),
-    repository: CategoryRepository = DependsOnCategoryRepository,
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: CategoryService = DependsOnCategoryService,
 ):
-    return repository.delete(repository.get_by_id(category_id))
+    return service.delete(category_id)

@@ -61,11 +61,11 @@ package "Digitization Planner" {
   package "API Controllers" {
 
     class DistributionController {
+      +listAll(): List<Distribution>
       +create(distribution: DistributionEdit): MessageResponse
       +update(distributionId: Integer, distribution: DistributionEdit): ItemMessageResponse<Distribution>
       +setActive(distributionId: Integer): MessageResponse
       +delete(distributionId: Integer): MessageResponse
-      +listAll(): List<Distribution>
     }
 
     DistributionController --> DistributionEdit : uses

@@ -13,7 +13,6 @@ package "Digitization Planner" {
       +name: String
       +descripton: String | None
       +assignable: Boolean
-      +extractWhole: Boolean
       +disabled: Boolean
     }
 

@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
-from services.elasticsearch import with_es_session
-from schemas import IndexCatalogRecord, IndexDocument, EsSession
+
+from adapters.elasticsearch import with_es_session
 from models import CatalogRecord, Document
+from schemas import EsSession, IndexCatalogRecord, IndexDocument
 
 
 @with_es_session

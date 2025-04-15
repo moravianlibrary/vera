@@ -1,8 +1,9 @@
+from typing import List
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
+
+from adapters.elasticsearch import get_es_session
 from vera import app
-from services.elasticsearch import get_es_session
-from typing import List
 
 
 class TestMockIndexer(TestCase):

@@ -1,10 +1,14 @@
-from typing import Generator, Any, Callable
-from exceptions import IndexIsNotAvailableException
 from functools import wraps
-from elasticsearch import Elasticsearch
-from config import VeraConfig
+from typing import Any, Callable, Generator
+
 import requests
+from elasticsearch import Elasticsearch
 from requests.exceptions import RequestException
+
+from config import VeraConfig
+from exceptions import IndexIsNotAvailableException
+
+type EsSession = Elasticsearch
 
 
 def is_indexer_available() -> bool:

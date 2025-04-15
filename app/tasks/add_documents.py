@@ -1,16 +1,16 @@
-from schemas import AddDocumentResponse, EsSession
-from services.elasticsearch import with_es_session
-from services.external.digitization_registry import (
-    DigitizationRegistryClient,
-)
-from services.predictor import Predictor
-from sqlalchemy.orm import Session
-from models import with_db_session
-from datatypes import AddDocumentResponseStatus
-from .subtasks.add_document import AddDocumentsProcessor
 import logging
-from config import VeraConfig
 
+from sqlalchemy.orm import Session
+
+from adapters.elasticsearch import with_es_session
+from config import VeraConfig
+from datatypes import AddDocumentResponseStatus
+from models import with_db_session
+from schemas import AddDocumentResponse, EsSession
+from services.external.digitization_registry import DigitizationRegistryClient
+from services.predictor import Predictor
+
+from .subtasks.add_document import AddDocumentsProcessor
 
 logger = logging.getLogger("uvicorn")
 

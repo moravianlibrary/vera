@@ -1,9 +1,11 @@
-from .subtasks import update_catalog_record
-from models import TaskItem
 from sqlalchemy.orm import Session
-from schemas import IndexCatalogRecord, IndexDocument, EsSession
-from services.elasticsearch import with_es_session
+
+from adapters.elasticsearch import with_es_session
+from models import TaskItem
+from schemas import EsSession, IndexCatalogRecord, IndexDocument
+
 from .run_items_processing import run_items_processing_task
+from .subtasks import update_catalog_record
 
 
 @with_es_session

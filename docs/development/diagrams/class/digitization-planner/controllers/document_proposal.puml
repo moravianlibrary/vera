@@ -19,7 +19,7 @@ package "Digitization Planner" {
     enum DocumentProposalStatus {
       Enqueued
       Processing
-      NotEligibleForProposal
+      NotEligible
       Pending
       Accepted
       Declined
@@ -28,35 +28,51 @@ package "Digitization Planner" {
     enum DocumentEligibilityStatus {
       Ready
       ActiveDuplicate
-      FullyProcessedDuplicate
-      InDigitization
       DigitizationForbidden
-      AmbiguousIssues
-      AllIssuesResolved
+
+      ' Ignorable status
+      InDigitization
+      FullyProcessedDuplicate
+
+      ' Failure status
       CatalogRecordFailure
       DigitizationRegistryFailure
       InternalFailure
+
+      ' Asynchronous status
+      AmbiguousIssues
+      AllIssuesResolved
     }
   }
 
   package "Schemas" {
 
     entity DocumentProposalCreate {
-      +identifierType: IdentifierType
-      +identifierValue: String
       +reasonMessage: String
-      +fileName: String | None
-      +categoryId: Integer | None
     }
 
-    DocumentProposalCreate --> IdentifierType : contains
+    entity DocumentProposalDirectCreate {
+      +catalogRecordId: String
+      +issueId: String
+    }
+    
+    entity DocumentProposalAsyncCreate {
+      +identifierType: IdentifierType
+      +identifierValue: String
+      +fileName: String | None
+    }
 
-    entity DocumentProposal extends DocumentProposalCreate {
+    DocumentProposalAsyncCreate --> IdentifierType : contains
+
+    entity DocumentProposal extends DocumentProposalDirectCreate, DocumentProposalAsyncCreate {
       +id: Integer
       +createdBy: String
       +createdAt: Timestamp
       +status: DocumentProposalStatus
       +eligibilityStatus: DocumentEligibilityStatus | None
+      +requestedException: Boolean | None
+      +exceptionRequestMessage: String | None
+      +exceptionStatus: DocumentProposalExceptionStatus | None
       +statusUpdatedBy: String | None
       +statusUpdatedAt: Timestamp | None
       +statusUpdateMessage: String | None
@@ -86,10 +102,15 @@ package "Digitization Planner" {
 
       class DocumentProposalModel {
         +id: Integer
-        +identifierType: IdentifierType
-        +identifierValue: String
-        +reasonMessage: String
+        +identifierType: IdentifierType | None = None
+        +identifierValue: String | None = None
         +fileName: String | None = None
+        +catalogRecordId: String | None = None
+        +issueId: String | None = None
+        +reasonMessage: String | None = None
+        +requestedException: Boolean | None = None
+        +exceptionRequestMessage: String | None = None
+        +projectId: Integer | None = None
         +categoryId: Integer | None = None
         +createdBy: String
         +createdAt: Timestamp = Timestamp::Now
@@ -115,11 +136,11 @@ package "Digitization Planner" {
 
     class DocumentProposalRepository {
       +get(proposalId: Integer): DocumentProposalModel
-      +listAll(): List<DocumentProposalModel>
       +save(proposal: DocumentProposalModel): DocumentProposalModel
       +delete(proposalId: Integer): DocumentProposalModel
-      +index(proposal: DocumentProposalModel): DocumentProposalModel
       +search(query: DocumentProposalQuery): DocumentProposalsResponse
+      +index(proposal: DocumentProposalModel): DocumentProposalModel
+      +recreateIndex(): None
     }
 
     DocumentProposalRepository --> DocumentProposalModel : manages >
@@ -148,7 +169,8 @@ package "Digitization Planner" {
     class CatalogRecordService
 
     class DocumentProposalService {
-      +enqueue(additions: List<DocumentProposalCreate>): EnqueueDocumentProposalResult
+      +propose(proposals: <DocumentProposalDirectCreate>): EnqueueDocumentProposalResult
+      +enqueue_proposals(proposals: List<DocumentProposalAsyncCreate>): EnqueueDocumentProposalResult
       +restrictQuery(query: DocumentProposalQuery, user: CurrentUser): DocumentProposalQuery
       +acceptProposal(query: DocumentProposalQuery, categoryId: Integer): AcceptProposalResult
       +declineProposal(query: DocumentProposalQuery): DeclineProposalResult
@@ -169,8 +191,9 @@ package "Digitization Planner" {
   package "API Controllers" {
     
     class DocumentProposalController {
-      +create(proposals: List<DocumentProposalCreate>): MessageResponse
       +search(query: DocumentProposalQuery): DocumentProposalResponse
+      +propose(proposals: <DocumentProposalDirectCreate>): MessageResponse
+      +enqueue_proposals(proposals: List<DocumentProposalAsyncCreate>): MessageResponse
       +acceptProposals(query: DocumentProposalQuery, categoryId: Integer): MessageResponse
       +declineProposals(query: DocumentProposalQuery): MessageResponse
       +archive(query: DocumentProposalQuery): MessageResponse

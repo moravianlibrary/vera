@@ -20,6 +20,18 @@ router = APIRouter(prefix="/digitization-lists", tags=["Digitization lists"])
 
 @router.post(
     "",
+    dependencies=[WithPermission(GeneralPermission.ReadDigitizationLists)],
+    response_model=DigitizationListSchema,
+)
+def search(
+    session: Session = DependsOnDbSession,
+    es_session: EsSession = DependsOnEsSession,
+):
+    pass
+
+
+@router.post(
+    "",
     dependencies=[WithPermission(GeneralPermission.CreateDigitizationLists)],
     response_model=DigitizationListSchema,
 )
@@ -135,15 +147,3 @@ def delete(
         IndexDocument.model_validate(document).save(es_session)
 
     return digitization_list.delete(session)
-
-
-@router.post(
-    "",
-    dependencies=[WithPermission(GeneralPermission.ReadDigitizationLists)],
-    response_model=DigitizationListSchema,
-)
-def search(
-    session: Session = DependsOnDbSession,
-    es_session: EsSession = DependsOnEsSession,
-):
-    pass

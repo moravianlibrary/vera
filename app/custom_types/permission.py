@@ -16,11 +16,16 @@ class GeneralPermission(Enum):
     ReviewCatalogRecords = "ReviewCatalogRecords"
     ManageCatalogRecordLists = "ManageCatalogRecordLists"
 
+    # Distributions
+    ReadDistributions = "ReadDistributions"
+    ManageDistributions = "ManageDistributions"
+
     # Projects
     CreateProjects = "CreateProjects"
 
     # Intentions
-    CreateIntentions = "CreateIntentions"
+    ReadIntentions = "ReadIntentions"
+    ManageIntentions = "ManageIntentions"
 
     # Digitization lists
     GenerateDocumentLists = "GenerateDocumentLists"
@@ -52,13 +57,10 @@ class OwnershipPermission(Enum):
     CreateCategories = "CreateCategories"
     ReadCategories = "ReadCategories"
     ManageCategories = "ManageCategories"
-    ManageCategoryDistribution = "ManageCategoryDistribution"
+    ManageCategoryDistributions = "ManageCategoryDistributions"
 
     ReadProjects = "ReadProjects"
     ManageProjects = "ManageProjects"
-
-    ReadIntentions = "ReadIntentions"
-    ManageIntentions = "ManageIntentions"
 
     ManageTasks = "ManageTasks"
 

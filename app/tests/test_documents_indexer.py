@@ -1,18 +1,19 @@
 from unittest import skipIf
-from tests.test_base_database import TestBaseDatabase
-from schemas import IndexDocument
-from services.elasticsearch import get_es_session
-from routers.utils.query_restrictions import (
-    restrict_query_params_for_username,
-    restrict_query_params_for_categories,
-)
-from tests.documents_bank import get_test_documents
+
+import elasticsearch
+import requests
+from requests.exceptions import RequestException
+
+from adapters.elasticsearch import get_es_session
 from config import VeraConfig
 from models import Document
-import elasticsearch
-from requests.exceptions import RequestException
-import requests
-
+from routers.utils.query_restrictions import (
+    restrict_query_params_for_categories,
+    restrict_query_params_for_username,
+)
+from schemas import IndexDocument
+from tests.documents_bank import get_test_documents
+from tests.test_base_database import TestBaseDatabase
 
 INDEX_NAME = "documents"
 

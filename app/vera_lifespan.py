@@ -1,27 +1,28 @@
 # pragma: exclude file
 import logging
-from fastapi import FastAPI
 from contextlib import asynccontextmanager
+from time import sleep
+
+from fastapi import FastAPI
+from sqlalchemy import or_, text, update
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
+
+from adapters.elasticsearch import is_indexer_available, with_es_session
+from config import VeraConfig
+from datatypes import TaskItemType, TaskState
 from models import (
     DatabaseUrl,
     Engine,
-    with_db_session,
-    Task,
-    PeriodicTask,
     Intention,
+    PeriodicTask,
     StartupTasks,
+    Task,
+    with_db_session,
 )
-from datatypes import TaskState, TaskItemType
-from time import sleep
-from sqlalchemy.orm import Session
-from sqlalchemy import update, or_, text
-from sqlalchemy.exc import OperationalError
-from config import VeraConfig
-from worker import run_task
-from vera_scheduler import vera_scheduler
 from schemas import AddDocumentResponse, EsSession
-from services.elasticsearch import with_es_session, is_indexer_available
-
+from vera_scheduler import vera_scheduler
+from worker import run_task
 
 logger = logging.getLogger("uvicorn")
 

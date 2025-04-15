@@ -1,11 +1,12 @@
+from mzk_aleph import AlephMzkIssue, AlephMzkRecord
 from sqlalchemy.orm import Session
-from models import CatalogRecord, TaskItem, Document
-from .subtasks import update_catalog_record
-from mzk_aleph import AlephMzkRecord
-from mzk_aleph import AlephMzkIssue
-from schemas import IndexDocument, EsSession
-from services.elasticsearch import with_es_session
+
+from adapters.elasticsearch import with_es_session
+from models import CatalogRecord, Document, TaskItem
+from schemas import EsSession, IndexDocument
+
 from .run_items_processing import run_items_processing_task
+from .subtasks import update_catalog_record
 
 
 @with_es_session
