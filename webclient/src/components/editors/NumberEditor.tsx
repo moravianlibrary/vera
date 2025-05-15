@@ -10,12 +10,20 @@ const NumberEditor: React.FC<EditorProps<number>> = ({
 }) => {
     const [currValue, setCurrValue] = useState<number>(value);
 
+    const handleKeyDown = (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            editorCallback(currValue);
+        }
+    };
+
     return (
         <div className="number-editor">
             <InputNumber
                 className="w-6rem"
                 value={currValue}
                 onChange={(e) => setCurrValue(e.value)}
+                onKeyDown={handleKeyDown}
             />
             <Button
                 key="submit"
