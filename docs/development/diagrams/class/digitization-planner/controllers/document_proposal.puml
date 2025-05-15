@@ -17,12 +17,18 @@ package "Digitization Planner" {
     }
 
     enum DocumentProposalStatus {
-      Enqueued
-      Processing
       NotEligible
       Pending
-      Accepted
-      Declined
+      Approved
+      Rejected
+    }
+
+    enum ProposalIntakeStatus {
+      Enqueued
+      Processing
+      AmbiguousIssues
+      AllIssuesResolved
+      Processed
     }
 
     enum DocumentEligibilityStatus {
@@ -38,44 +44,99 @@ package "Digitization Planner" {
       CatalogRecordFailure
       DigitizationRegistryFailure
       InternalFailure
+    }
 
-      ' Asynchronous status
-      AmbiguousIssues
-      AllIssuesResolved
+    enum ProposalSource {
+      Batch
+      Direct
     }
   }
 
   package "Schemas" {
 
-    entity DocumentProposalCreate {
+    entity ProposalCreate {
+      +catalogRecordId: String
+      +issueId: String | None
       +reasonMessage: String
     }
 
-    entity DocumentProposalDirectCreate {
-      +catalogRecordId: String
-      +issueId: String
-    }
-    
-    entity DocumentProposalAsyncCreate {
+    entity ProposalIntakeCreate {
       +identifierType: IdentifierType
       +identifierValue: String
-      +fileName: String | None
     }
 
-    DocumentProposalAsyncCreate --> IdentifierType : contains
+    ProposalIntakeCreate --> IdentifierType : contains
+    
+    entity Proposal {
+      +id: String 
 
-    entity DocumentProposal extends DocumentProposalDirectCreate, DocumentProposalAsyncCreate {
-      +id: Integer
+      +catalogRecordId: String
+      +issueId: String
+
+      +reasonMessage: String
       +createdBy: String
       +createdAt: Timestamp
-      +status: DocumentProposalStatus
+
       +eligibilityStatus: DocumentEligibilityStatus | None
+      +errorMessage: String | None
+      +digitizationRecords: List<DigitizationRecord> | None
+
       +requestedException: Boolean | None
       +exceptionRequestMessage: String | None
-      +exceptionStatus: DocumentProposalExceptionStatus | None
+
+      +status: DocumentProposalStatus
       +statusUpdatedBy: String | None
       +statusUpdatedAt: Timestamp | None
       +statusUpdateMessage: String | None
+
+      +isArchived: Boolean
+    }
+
+    entity ProposalIntake extends ProposalIntakeCreate {
+      +id: Integer
+      +status: ProposalIntakeStatus
+      +proposal: Proposal | None
+    }
+    
+    entity ProposalIntakeBatch {
+      +id: Integer
+      +name: String | None
+      +reasonMessage: String
+      +createdBy: String
+      +createdAt: Timestamp
+      +proposalIntakes: List<ProposalIntake>
+    }
+
+    ' unique ID (e.g. "intake-123" or "proposal-456")
+    entity UnifiedProposal {
+      +id: String
+      +source: ProposalSource
+
+      +reasonMessage: String
+      +createdBy: String
+      +createdAt: Timestamp
+
+      +proposalId: Integer | None
+      +catalogRecordId: String | None
+      +issueId: String | None
+
+      +batchId: Integer | None
+      +intakeId: Integer | None
+      +batchName: String | None
+      +intakeStatus: ProposalIntakeStatus | None
+
+      +eligibilityStatus: DocumentEligibilityStatus | None
+      +errorMessage: String | None
+      +digitizationRecords: List<DigitizationRecord> | None
+
+      +requestedException: Boolean | None
+      +exceptionRequestMessage: String | None
+
+      +status: DocumentProposalStatus
+      +statusUpdatedBy: String | None
+      +statusUpdatedAt: Timestamp | None
+      +statusUpdateMessage: String | None
+
       +isArchived: Boolean
     }
 
@@ -86,13 +147,7 @@ package "Digitization Planner" {
     entity DocumentProposalResponse
     DocumentProposalResponse --> DocumentProposal : contains
 
-    entity CurrentUser {
-      +username: String
-      +settings: UserSettings
-      +role: Role
-      +groups: List<Group>
-    }
-
+    entity CurrentUser
     entity MessageResponse
   }
 
@@ -100,30 +155,45 @@ package "Digitization Planner" {
 
     package "Model" {
 
-      class DocumentProposalModel {
+      class ProposalIntakeBatchModel {
         +id: Integer
-        +identifierType: IdentifierType | None = None
-        +identifierValue: String | None = None
-        +fileName: String | None = None
-        +catalogRecordId: String | None = None
-        +issueId: String | None = None
-        +reasonMessage: String | None = None
-        +requestedException: Boolean | None = None
-        +exceptionRequestMessage: String | None = None
-        +projectId: Integer | None = None
-        +categoryId: Integer | None = None
+        +name: String | None = None
+        +reasonMessage: String
         +createdBy: String
         +createdAt: Timestamp = Timestamp::Now
-        +status: DocumentProposalStatus = DocumentProposalStatus::Enqueued
+      }
+
+      class ProposalIntakeModel {
+        +id: Integer
+        +batchId: Integer
+        +identifierType: IdentifierType
+        +identifierValue: String
+        +status: ProposalIntakeStatus = ProposalIntakeStatus::Enqueued
         +eligibilityStatus: DocumentEligibilityStatus | None = None
+        +errorMessage: String | None = None
+        +digitizationRecords: List<DigitizationRecord> | None = None
+      }
+
+      ProposalIntakeModel --> IdentifierType : contains
+      ProposalIntakeModel --> ProposalIntakeStatus : contains
+      ProposalIntakeModel --> DocumentEligibilityStatus : contains
+
+      class ProposalModel {
+        +id: Integer
+        +catalogRecordId: String
+        +issueId: String | None
+        +reasonMessage: String
+        +createdBy: String
+        +createdAt: Timestamp = Timestamp::Now
+        +requestedException: Boolean = False
+        +exceptionRequestMessage: String | None = None
+        +status: DocumentProposalStatus = DocumentProposalStatus::Pending
         +isArchived: Boolean = False
       }
 
-      DocumentProposalModel --> IdentifierType : contains
-      DocumentProposalModel --> DocumentProposalStatus : contains
-      DocumentProposalModel --> DocumentEligibilityStatus : contains
+      ProposalModel --> DocumentProposalStatus : contains
 
-      class DocumentProposalStatusLog {
+      class ProposalStatusLog {
         +proposalId: Integer
         +newStatus: DocumentProposalStatus
         +updatedBy: String
@@ -131,7 +201,18 @@ package "Digitization Planner" {
         +message: String | None
       }
 
-      DocumentProposalStatusLog --> DocumentProposalStatus : contains
+      ProposalStatusLog --> ProposalStatus : contains
+
+      class IntakeProposalAssociation {
+        +proposalId: Integer
+        +intakeId: Integer
+      }
+
+      class ProjectProposalAssociation {
+        +proposalId: Integer
+        +projectId: Integer
+        +categoryId: Integer
+      }
     }
 
     class DocumentProposalRepository {
@@ -169,7 +250,7 @@ package "Digitization Planner" {
     class CatalogRecordService
 
     class DocumentProposalService {
-      +propose(proposals: <DocumentProposalDirectCreate>): EnqueueDocumentProposalResult
+      +propose(proposals: <ProposalCreate>): EnqueueDocumentProposalResult
       +enqueue_proposals(proposals: List<DocumentProposalAsyncCreate>): EnqueueDocumentProposalResult
       +restrictQuery(query: DocumentProposalQuery, user: CurrentUser): DocumentProposalQuery
       +acceptProposal(query: DocumentProposalQuery, categoryId: Integer): AcceptProposalResult
@@ -189,13 +270,18 @@ package "Digitization Planner" {
   }
 
   package "API Controllers" {
+
+    ' Set limits for the number of proposals
+    ' that can be created in a single request
+    ' or in a specific time period
     
     class DocumentProposalController {
       +search(query: DocumentProposalQuery): DocumentProposalResponse
-      +propose(proposals: <DocumentProposalDirectCreate>): MessageResponse
-      +enqueue_proposals(proposals: List<DocumentProposalAsyncCreate>): MessageResponse
-      +acceptProposals(query: DocumentProposalQuery, categoryId: Integer): MessageResponse
-      +declineProposals(query: DocumentProposalQuery): MessageResponse
+      +propose(proposals: <ProposalCreate>): MessageResponse
+      +enqueue_intakes_to_new_batch(intakes: List<ProposalIntakeCreate>, batchName: String | None, reasonMessage: String): MessageResponse
+      +enqueue_intakes(intakes: List<ProposalIntakeCreate>, batchId: Integer): MessageResponse
+      +approveProposals(query: DocumentProposalQuery, categoryId: Integer): MessageResponse
+      +rejectProposals(query: DocumentProposalQuery): MessageResponse
       +archive(query: DocumentProposalQuery): MessageResponse
       +delete(query: DocumentProposalQuery): MessageResponse
     }

@@ -10,11 +10,16 @@ from custom_types import (
 
 
 class DocumentProposalCreate(BaseModel):
+    catalog_record_id: str
+    issue_id: str
+    reasonMessage: str
+
+
+class DocumentProposalCreate2(BaseModel):
     identifierType: IdentifierType
     identifierValue: str
     reasonMessage: str
     fileName: str | None
-    categoryId: int | None
 
 
 class DocumentProposal(DocumentProposalCreate):

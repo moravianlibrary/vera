@@ -2,7 +2,7 @@ from fastapi import APIRouter, Path, Query
 
 from custom_types import GeneralPermission, OwnershipPermission
 from repositories import DistributionRepository
-from schemas import AuthenticatedUser, EsQuery, EsResponse
+from schemas import AuthenticatedUser, DocumentProposal, EsQuery, EsResponse
 from services import DistributionService
 
 from ._resources import (
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/document-proposals", tags=["Document Proposals"])
             GeneralPermission.ReviewDocumentProposals,
         )
     ],
-    response_model=EsResponse[],
+    response_model=EsResponse[DocumentProposal],
 )
 def search(
     query: EsQuery,
@@ -35,7 +35,7 @@ def search(
 @router.post(
     "/propose",
     dependencies=[WithPermission(GeneralPermission.ProposeDocuments)],
-    response_model=Distribution,
+    response_model=,
 )
 def propose(
     proposals: List[DirectDocumentProposal],
@@ -62,7 +62,7 @@ def enqueue_proposals(
     response_model=Task,
 )
 def approve(
-    query: EsQuery,
+    query: EsQuery[DocumentProposal],
     service: DocumentProposalService = DependsOnDocumentProposalService,
 ):
     return service.approve(query)
@@ -73,7 +73,10 @@ def approve(
     dependencies=[WithPermission(GeneralPermission.ReviewDocumentProposals)],
     response_model=Distribution,
 )
-def reject():
+def reject(
+    query: EsQuery[DocumentProposal],
+    service: DocumentProposalService = DependsOnDocumentProposalService,
+):
     pass
 
 
@@ -82,7 +85,10 @@ def reject():
     dependencies=[WithPermission(GeneralPermission.ReviewDocumentProposals)],
     response_model=Distribution,
 )
-def archive():
+def archive(
+    query: EsQuery[DocumentProposal],
+    service: DocumentProposalService = DependsOnDocumentProposalService,
+):
     pass
 
 
