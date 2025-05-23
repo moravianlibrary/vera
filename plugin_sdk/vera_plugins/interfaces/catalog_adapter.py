@@ -24,7 +24,7 @@ class RecordStatus(Enum):
     Failed = "Failed"
 
 
-class ListRecordResponse(NamedTuple):
+class ListRecordsResponse(NamedTuple):
     """
     Represents the response returned when fetching a list of records.
 
@@ -111,12 +111,12 @@ class CatalogAdapterPlugin(BaseResourcePlugin):
     -------
     fetch:
         Fetch a specific record based on base and system number.
+    fetch_changes:
+        Fetch records modified since the given timestamp.
     get_query_schema:
         Return the expected schema for query parameters.
     search:
         Perform a paginated search (optional override).
-    fetch_changes:
-        Fetch records modified since the given timestamp.
     """
 
     @abstractmethod
@@ -137,6 +137,32 @@ class CatalogAdapterPlugin(BaseResourcePlugin):
             The fetched MARC record, or None if the record is not found.
         """
         pass
+
+    def fetch_changes(
+        self, last_sync: datetime | None
+    ) -> Generator[ListRecordsResponse, None, None]:
+        """
+        Fetch records that have been changed since the last synchronization.
+
+        Parameters
+        ----------
+        last_sync : datetime or None
+            If provided, fetch only records changed after this timestamp.
+            If None, fetch all available records.
+
+        Yields
+        ------
+        ListRecordResponse
+            Changed record information.
+
+        Raises
+        ------
+        NotImplementedException
+            If change fetching is not supported by the plugin.
+        """
+        raise NotImplementedException(
+            "fetch_changes not implemented in this plugin"
+        )
 
     def get_query_schema(self) -> Dict[str, Any]:
         """
@@ -183,29 +209,3 @@ class CatalogAdapterPlugin(BaseResourcePlugin):
             If search is not supported by the plugin.
         """
         raise NotImplementedException("search not implemented in this plugin")
-
-    def fetch_changes(
-        self, last_sync: datetime | None
-    ) -> Generator[ListRecordResponse, None, None]:
-        """
-        Fetch records that have been changed since the last synchronization.
-
-        Parameters
-        ----------
-        last_sync : datetime or None
-            If provided, fetch only records changed after this timestamp.
-            If None, fetch all available records.
-
-        Yields
-        ------
-        ListRecordResponse
-            Changed record information.
-
-        Raises
-        ------
-        NotImplementedException
-            If change fetching is not supported by the plugin.
-        """
-        raise NotImplementedException(
-            "fetch_changes not implemented in this plugin"
-        )

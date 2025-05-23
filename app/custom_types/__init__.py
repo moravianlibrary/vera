@@ -5,7 +5,7 @@ from .document_eligibility import DocumentEligibilityStatus
 from .document_proposal import DocumentProposalStatus
 from .identifier import IdentifierType
 from .permission import GeneralPermission, OwnershipPermission, OwnershipScope
-from .plugin import PluginType
+from .plugin import PluginState, PluginType
 from .project import ProjectStatus
 
 __all__ = [
@@ -15,10 +15,11 @@ __all__ = [
     "DocumentAdditionStatus",
     "DocumentEligibilityStatus",
     "DocumentProposalStatus",
+    "GeneralPermission",
     "IdentifierType",
     "OwnershipPermission",
     "OwnershipScope",
-    "GeneralPermission",
+    "PluginState",
     "PluginType",
     "ProjectStatus",
 ]

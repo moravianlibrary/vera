@@ -1,7 +1,19 @@
-from sqlalchemy import JSON, Boolean, Column, Enum, Integer, String
+from typing import List
+
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    Enum,
+    ForeignKey,
+    Integer,
+    LargeBinary,
+    String,
+)
+from sqlalchemy.orm import Mapped, relationship
 
 from adapters.database import BaseModel
-from custom_types import PluginType
+from custom_types import PluginState, PluginType
 
 from .mixins import CreatedAuditMixin, UpdatedAuditMixin
 
@@ -11,12 +23,36 @@ class PluginModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
+    name = Column(String, nullable=False, unique=True)
     type = Column(Enum(PluginType), nullable=False)
-    name = Column(String, nullable=False)
 
-    code = Column(String, nullable=False)
+    meta = Column(JSON, nullable=False)
+
+    state = Column(Enum(PluginState), nullable=False)
+
+    zipped_code_data = Column(LargeBinary, nullable=False)
+
+    use_safe_mode = Column(Boolean, default=False, nullable=False)
+
+    instances: Mapped[List["PluginInstanceModel"]] = relationship(
+        "PluginInstanceModel", backref="plugin"
+    )
+
+
+class PluginInstanceModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
+    __tablename__ = "plugin_instances"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    plugin_id = Column(Integer, ForeignKey("plugins.id"), nullable=False)
+    instance_name = Column(String, nullable=False)
+
     config = Column(JSON, nullable=True)
 
-    run_in_safe_mode = Column(Boolean, default=False, nullable=False)
+    plugin: Mapped["PluginModel"] = relationship(
+        "PluginModel", backref="instances"
+    )
 
-    __table_args__ = (unique_constraint("name", "type"),)
+    @hybrid_property
+    def state(self) -> PluginState:
+        return

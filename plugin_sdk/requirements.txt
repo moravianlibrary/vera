@@ -1,0 +1,3 @@
+git+https://github.com/moravianlibrary/marcdantic.git
+pydantic
+pyyaml

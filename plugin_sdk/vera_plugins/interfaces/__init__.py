@@ -1,6 +1,7 @@
+from .base import PluginBase
 from .catalog_adapter import (
     CatalogAdapterPlugin,
-    ListRecordResponse,
+    ListRecordsResponse,
     RecordStatus,
 )
 from .digitization_registry_adapter import (
@@ -11,11 +12,12 @@ from .digitization_registry_adapter import (
 )
 
 __all__ = [
+    "PluginBase",
     "CatalogAdapterPlugin",
     "DigitizationRecord",
     "DigitizationRecordState",
     "DigitizationRegistryAdapterPlugin",
-    "ListRecordResponse",
+    "ListRecordsResponse",
     "RecordStatus",
     "StateChangeError",
 ]

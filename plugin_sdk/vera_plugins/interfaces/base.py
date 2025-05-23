@@ -2,7 +2,11 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, TypeVar
 
 
-class BaseResourcePlugin(ABC):
+class PluginBase(ABC):
+    pass
+
+
+class BaseResourcePlugin(PluginBase):
     """
     Abstract base class for resource-based plugins.
 
@@ -56,7 +60,7 @@ T = TypeVar("T")  # Input data type
 R = TypeVar("R")  # Output result type
 
 
-class BaseParserPlugin(ABC, Generic[T, R]):
+class BaseParserPlugin(PluginBase, Generic[T, R]):
     """
     Abstract base class for parser plugins.
 

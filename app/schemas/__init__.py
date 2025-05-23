@@ -12,6 +12,7 @@ from .group import Group, GroupEdit
 from .intention import Intention, IntentionEdit
 from .marc import MarcIssue, MarcRecord
 from .pagination import Page
+from .plugin import PluginInstanceConfig, PluginMeta
 from .role import Permissions, Role, RoleEdit
 from .user import AuthenticatedUser
 
@@ -34,6 +35,8 @@ __all__ = [
     "MarcRecord",
     "Page",
     "Permissions",
+    "PluginInstanceConfig",
+    "PluginMeta",
     "RDczConfig",
     "Role",
     "RoleEdit",

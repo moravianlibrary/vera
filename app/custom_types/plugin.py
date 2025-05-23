@@ -6,3 +6,9 @@ class PluginType(Enum):
     DigitizationRegistryAdapter = "DigitizationRegistryAdapter"
     CatalogRecordProperty = "CatalogRecordProperty"
     DocumentProperty = "DocumentProperty"
+
+
+class PluginState(Enum):
+    Ready = "Ready"
+    NewVersionAvailable = "NewVersionAvailable"
+    SourceUnavailable = "SourceUnavailable"
