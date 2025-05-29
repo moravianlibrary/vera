@@ -28,7 +28,7 @@ FROM nginx:alpine
 
 # Build args
 ENV ASSET_DIR=/var/www/html
-ENV APP_PREFIX=VERA_
+ENV APP_PREFIX=VERA_VITE_
 
 # Copy Nginx config
 COPY ./nginx.conf /etc/nginx/nginx.conf
