@@ -89,8 +89,9 @@ services:
       context: ./webclient
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "8080:8080"
     env_file:
+      - config/client.env
       - config/tz.env
     depends_on:
       - server

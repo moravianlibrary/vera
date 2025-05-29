@@ -1,10 +1,7 @@
-# Use an official Node.js runtime as the base image
-FROM node:14-alpine
+# Step 1: Build the app using Node
+FROM node:23-alpine as builder
 
-# Build args
-ARG REACT_APP_ENV
-
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
 # Copy package.json and package-lock.json to the working directory
@@ -15,32 +12,34 @@ COPY tsconfig.json ./
 
 # Install the app's dependencies
 RUN npm install
-RUN npm install -g serve
 
-# Copy the source code to the working directory
+# Copy the rest of the application code to the working directory
+COPY vite.config.ts .
+COPY index.html .
 COPY src/ ./src/
-
-# Copy the public assets to the working directory
 COPY public/ ./public/
-RUN ls -la /app/src
-RUN ls -la /app/src/pages/App.tsx
-RUN ls -la /app/src/data/factories/IntentionFactory.ts
+COPY .env .
 
 # Build the React app for production
-RUN if [ "$REACT_APP_ENV" = "main" ]; then \
-      npm run build:main; \
-    elif [ "$REACT_APP_ENV" = "test" ]; then \
-      npm run build:test; \
-	else \
-      npm run build; \
-    fi
+RUN npm run build
 
-# Clean up after build
-RUN rm -r package*.json src/ public/
+# Step 2: Use a lightweight Nginx container to serve the files
+FROM nginx:alpine
 
-# Expose port 3000 to the outside world
-EXPOSE 3000
+# Build args
+ENV ASSET_DIR=/var/www/html
+ENV APP_PREFIX=VERA_
 
-# Define the command to start the app when the container runs
-CMD ["serve", "-s", "build", "-l", "3000"]
+# Copy Nginx config
+COPY ./nginx.conf /etc/nginx/nginx.conf
 
+# Copy the built app from the builder stage
+COPY --from=builder /app/dist /var/www/html/
+
+# Copy the runtime injection script into the container
+COPY env.sh /docker-entrypoint.d/env.sh
+RUN chmod +x /docker-entrypoint.d/env.sh
+
+# Let Docker run your script before starting Nginx
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]

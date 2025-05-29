@@ -25,7 +25,7 @@ const RENDERERS = {
     ),
     img: ({ src, alt }) => (
         <img
-            src={`${process.env.PUBLIC_URL}/wiki/${language}/${src}`}
+            src={`/wiki/${language}/${src}`}
             alt={alt}
             style={{ display: "block" }}
         />
@@ -43,9 +43,7 @@ const Wiki: React.FC = () => {
         content: string
     ): Promise<string | null> => {
         try {
-            const response = await fetch(
-                `${process.env.PUBLIC_URL}/wiki/${language}/${content}`
-            );
+            const response = await fetch(`/wiki/${language}/${content}`);
             return await response.text();
         } catch (error) {
             console.error("Error fetching Markdown:", error);
@@ -54,9 +52,7 @@ const Wiki: React.FC = () => {
     };
 
     const fetchWikiLayout = async (language: string) => {
-        const response = await fetch(
-            `${process.env.PUBLIC_URL}/wiki/${language}/layout.json`
-        );
+        const response = await fetch(`/wiki/${language}/layout.json`);
         const layout: WikiSection[] = await response.json();
 
         const pages: Record<string, string> = {};

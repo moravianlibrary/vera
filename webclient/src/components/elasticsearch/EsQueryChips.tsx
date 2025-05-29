@@ -65,7 +65,7 @@ const EsQueryChips: React.FC<EsQueryChipsProps> = ({
                         value: queryParams["query"],
                     })}
                     removable={removeFilterCallback !== undefined}
-                    onRemove={() => removeFilterCallback("query")}
+                    onRemove={() => removeFilterCallback!("query")}
                 />
             )}
             {IndexSettingsDispatcher[queryParams.index_name].facet_attributes
@@ -85,7 +85,7 @@ const EsQueryChips: React.FC<EsQueryChipsProps> = ({
                                 fa.tType
                             )}
                             removable={removeFilterCallback !== undefined}
-                            onRemove={() => removeFilterCallback(fa.attribute)}
+                            onRemove={() => removeFilterCallback!(fa.attribute)}
                         />
                     ));
                 })}

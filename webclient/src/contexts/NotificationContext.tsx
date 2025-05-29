@@ -43,7 +43,9 @@ interface NotificationProviderProps {
     children: ReactNode;
 }
 
-const LATEST_VERSION_MD = `${process.env.PUBLIC_URL}/wiki/cs/Version_2024_11.md`;
+const LATEST_VERSION_MD = `${
+    import.meta.env.PUBLIC_URL
+}/wiki/cs/Version_2024_11.md`;
 
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     children,
@@ -145,11 +147,15 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
                             <span className="text-6xl">{t("new-version")}</span>
                             <div>
                                 <img
-                                    src={`${process.env.PUBLIC_URL}/partyy.png`}
+                                    src={`${
+                                        import.meta.env.PUBLIC_URL
+                                    }/partyy.png`}
                                     alt="Partyy"
                                 />
                                 <img
-                                    src={`${process.env.PUBLIC_URL}/partyy.png`}
+                                    src={`${
+                                        import.meta.env.PUBLIC_URL
+                                    }/partyy.png`}
                                     alt="Partyy"
                                 />
                             </div>

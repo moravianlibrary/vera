@@ -1,18 +1,17 @@
-import Keycloak from 'keycloak-js';
+import Keycloak from "keycloak-js";
+import config from "../config/config";
 
 const keycloakProperties = {
-    // url: process.env.REACT_APP_KEYCLOAK_SERVER_URL,
-    // realm: process.env.REACT_APP_KEYCLOAK_REALM,
-    // clientId: process.env.REACT_APP_KEYCLOAK_CLIENT_ID,
-    url: 'https://keycloak.osdd.mzk.cz',
-    realm: 'mzk',
-    clientId: 'vera',
+    url: config.keycloak.url,
+    realm: config.keycloak.realm,
+    clientId: config.keycloak.clientId,
 };
 
 export const keycloakInitOptions = {
-    // onLoad: 'check-sso',
-    // silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
-    pkceMethod: 'S256',
+    // onLoad: "check-sso",
+    // silentCheckSsoRedirectUri:
+    //     window.location.origin + "/silent-check-sso.html",
+    pkceMethod: "S256",
 };
 
 const keycloak = new Keycloak(keycloakProperties);

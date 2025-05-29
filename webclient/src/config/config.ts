@@ -1,3 +1,10 @@
-const env = process.env.REACT_APP_ENV || "local";
-const config = require(`./config.${env}.ts`);
+const config = {
+    apiUrl: import.meta.env.VITE_API_URL,
+    keycloak: {
+        url: import.meta.env.VITE_KEYCLOAK_URL,
+        realm: import.meta.env.VITE_KEYCLOAK_REALM,
+        clientId: import.meta.env.VITE_KEYCLOAK_CLIENT_ID,
+    },
+};
+
 export default config;

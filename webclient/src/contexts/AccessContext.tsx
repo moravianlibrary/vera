@@ -143,6 +143,7 @@ export const AccessProvider: React.FC<BaseProviderProps> = ({ children }) => {
     };
 
     const handleKeycloakEvent = (eventType, error) => {
+        console.info("Keycloak event:", eventType, error);
         if (eventType === "onReady" || eventType === "onAuthRefreshSuccess") {
             if (keycloak.authenticated && keycloak.token) {
                 localStorage.setItem("token", keycloak.token);

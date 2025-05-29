@@ -22,7 +22,7 @@ const NumberEditor: React.FC<EditorProps<number>> = ({
             <InputNumber
                 className="w-6rem"
                 value={currValue}
-                onChange={(e) => setCurrValue(e.value)}
+                onChange={(e) => e.value && setCurrValue(e.value)}
                 onKeyDown={handleKeyDown}
             />
             <Button
