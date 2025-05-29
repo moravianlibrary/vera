@@ -1,28 +1,51 @@
-from typing import Generator, Any, Callable
-from exceptions import IndexIsNotAvailableException
+import logging
 from functools import wraps
-from elasticsearch import Elasticsearch
-from config import VeraConfig
+from typing import Any, Callable, Generator
+
 import requests
+from elasticsearch import Elasticsearch
 from requests.exceptions import RequestException
+
+from config import VeraConfig
+from exceptions import IndexIsNotAvailableException
+
+logger = logging.getLogger("uvicorn")
 
 
 def is_indexer_available() -> bool:
     try:
         response = requests.get(VeraConfig.ElasticsearchUrl)
+        logger.debug(
+            f"HTTP GET {VeraConfig.ElasticsearchUrl} "
+            f"returned status code {response.status_code}"
+        )
         if response.status_code not in [200, 401]:
+            logger.warning(
+                "Elasticsearch endpoint responded with unexpected status code."
+            )
             return False
-    except RequestException:
+    except RequestException as e:
+        logger.error(f"Failed to reach Elasticsearch HTTP endpoint: {e}")
         return False
+
     try:
-        return Elasticsearch(
+        es = Elasticsearch(
             VeraConfig.ElasticsearchUrl,
             basic_auth=(
                 VeraConfig.ElasticsearchUsername,
                 VeraConfig.ElasticsearchPassword,
             ),
-        ).ping()
-    except Exception:
+        )
+        if es.ping():
+            logger.debug("Successfully pinged Elasticsearch.")
+            return True
+        else:
+            logger.warning("Elasticsearch ping returned False.")
+            es_info = es.info()
+            logger.warning(f"Elasticsearch info: {es_info}")
+            return False
+    except Exception as e:
+        logger.error(f"Exception occurred while pinging Elasticsearch: {e}")
         return False
 
 
