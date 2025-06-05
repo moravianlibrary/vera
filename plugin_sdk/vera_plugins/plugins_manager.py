@@ -1,6 +1,5 @@
-from custom_types import PluginType
+from definitions import PluginType
 from schemas import PluginInstanceConfig
-
 
 
 class PluginsManager:
