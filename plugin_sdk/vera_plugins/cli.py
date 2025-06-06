@@ -1,10 +1,8 @@
-import json
 from enum import Enum
 from pathlib import Path
 
 import pandas as pd
 import typer
-import yaml
 
 from .cli_schemas import (
     DiscoveryInstanceRow,
@@ -12,96 +10,8 @@ from .cli_schemas import (
     LintingInstanceRow,
     LintingMetaRow,
 )
-from .definitions import PluginNotFoundError
 from .tools.discovery import discover_plugin_instances, discover_plugins
 from .tools.validation import validate_instance, validate_plugin
-
-# vera-plugins functionality:
-
-# Common Input:
-# plugin_path can be:
-#   - a local directory containing one or more vera-plugin.yaml files
-#   - a git repository URL (http/https) with a vera-plugin.yaml file at root or in subdirectories
-#   - a git repository URL with optional branch and subdirectory (e.g., https://...@branch:subdir)
-#
-# Common Flags:
-#   --format json|yaml|table  # output format for results (default: table where applicable)
-
-# ------------------------------------------------------------------------------
-# Command: vera-plugins discover {plugin_path}
-# - Discover plugins from a directory or git repository.
-# - Return basic metadata for each discovered plugin.
-# - Output fields (per plugin):
-#     - plugin_path
-#     - plugin_name
-#     - plugin_type
-#     - plugin_version
-
-# ------------------------------------------------------------------------------
-# Command: vera-plugins lint {plugin_path} [plugin_name]
-# - Lint one or more plugins in the given path.
-# - If plugin_name is specified, only lint that plugin; otherwise lint all found plugins.
-# - Optionally supports:
-#     --meta-only       # only validate the vera-plugin.yaml file (skip code checks)
-# - Output structure:
-#     - header with plugin properties
-#     - list of linting issues:
-#         - severity (info/warning/error)
-#         - message or description
-#         - source (yaml/code)
-
-# ------------------------------------------------------------------------------
-# Command: vera-plugins describe {plugin_path} [plugin_name]
-# - Provide a detailed description of one or more plugins.
-# - If plugin_name is specified, only describe that plugin; otherwise describe all found plugins.
-# - Output (per plugin):
-#     - plugin_path
-#     - plugin_name
-#     - plugin_type
-#     - plugin_version
-#     - plugin_description
-#     - plugin_author
-#     - implemented_features
-
-# ------------------------------------------------------------------------------
-# Command: vera-plugins test {plugin_path} [plugin_name] [data]
-# - Test a plugin using a provided or default data set.
-# - If plugin_name is specified, only test that plugin.
-# - If data is provided, use it as input for the plugin's test run.
-# - If no data is provided, use default test data (defined per plugin type).
-# - Notes:
-#     - Some plugins may not require input data.
-#     - Data format may vary by plugin type.
-# - Output structure:
-#     - header with plugin properties
-#     - list of test cases and their results (e.g., passed/failed + output/diagnostics)
-
-# ------------------------------------------------------------------------------
-# Command: vera-plugins package {plugin_path} [plugin_name] [output_path]
-# - Package a plugin into a distributable archive (.zip).
-# - If plugin_name is not specified packages all plugins in the path
-# - If plugin_name is specified, only package that plugin.
-# - If output_path is not specified, default to current directory.
-# - output_path should be a valid directory where the package will be created.
-# - The naming convention for the package file is `{plugin_name}-{version}.zip`.
-# - Output:
-#     - Path to the created package file
-
-# ------------------------------------------------------------------------------
-# Command: vera-plugins init [target_dir]
-# - Initialize a new plugin project in the specified target directory.
-# - Take the user through a guided setup to create the necessary files:
-#   - Choose a plugin name
-#   - Choose a plugin type
-#   - Choose a plugin version
-# - Optional flags:
-#   - --non-interactive
-#   - --name <plugin_name>
-#   - --type <plugin_type>
-#   - --version <plugin_version>
-#   - --author <author_name>
-#   - --with-boilerplate
-
 
 app = typer.Typer(help="vera-plugins CLI tool")
 
@@ -147,42 +57,36 @@ def discover(
     """
     Discover plugins from a directory or git repository.
     """
-    metas_df = pd.DataFrame(
-        [
-            DiscoveryMetaRow.from_discovery(path, meta, err).model_dump()
-            for path, meta, err in discover_plugins(plugin_location)
-        ]
-    ).sort_values(
-        by=["path", "name", "version"], ascending=[True, True, False]
-    )
+    meta_rows = [
+        DiscoveryMetaRow.from_discovery(path, meta, err)
+        for path, meta, err in discover_plugins(plugin_location)
+    ]
 
-    if not metas_df.empty:
+    meta_rows.sort(key=lambda r: (r.path, r.name, r.version), reverse=False)
+
+    if meta_rows:
         typer.echo("Discovered Plugins:")
-        typer.echo(metas_df.to_markdown(index=False))
+        typer.echo("\n".join(repr(row) for row in meta_rows))
 
     if not include_instances:
-        if metas_df.empty:
+        if not meta_rows:
             typer.echo("No results found.")
         return
 
-    instances_df = pd.DataFrame(
-        [
-            DiscoveryInstanceRow.from_discovery(
-                path, instance, err
-            ).model_dump()
-            for path, instance, err in discover_plugin_instances(
-                plugin_location
-            )
-        ]
-        if include_instances
-        else []
-    ).sort_values(by=["path", "plugin_name", "instance_name"])
+    instance_rows = [
+        DiscoveryInstanceRow.from_discovery(path, instance, err)
+        for path, instance, err in discover_plugin_instances(plugin_location)
+    ]
 
-    if not instances_df.empty:
+    instance_rows.sort(
+        key=lambda r: (r.path, r.plugin_name, r.instance_name), reverse=False
+    )
+
+    if instance_rows:
         typer.echo("Discovered Plugin Instances:")
-        typer.echo(instances_df.to_markdown(index=False))
+        typer.echo("\n".join(repr(row) for row in instance_rows))
 
-    if metas_df.empty and instances_df.empty:
+    if not meta_rows and not instance_rows:
         typer.echo("No results found.")
 
 
@@ -353,7 +257,8 @@ def test(
 
 # @app.command()
 # def package(
-#     plugin_path: str = typer.Argument(..., help="Path or git URL to plugins"),
+#     plugin_path: str = typer.Argument(...,
+# help="Path or git URL to plugins"),
 #     plugin_name: Optional[str] = typer.Argument(
 #         None, help="Specific plugin name to package"
 #     ),
@@ -386,7 +291,8 @@ def test(
 #     version: Optional[str] = typer.Option(
 #         None, "--version", help="Plugin version"
 #     ),
-#     author: Optional[str] = typer.Option(None, "--author", help="Author name"),
+#     author: Optional[str] = typer.Option(None, "--author",
+# help="Author name"),
 #     with_boilerplate: bool = typer.Option(
 #         False, "--with-boilerplate", help="Include example code"
 #     ),
