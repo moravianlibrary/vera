@@ -1,6 +1,11 @@
+import re
 from enum import Enum
 from subprocess import CalledProcessError
-from typing import List, Mapping
+from typing import Dict, List, Literal, Mapping
+
+from pkg_resources import DistributionNotFound, VersionConflict
+from pydantic import ValidationError
+from yaml import YAMLError
 
 from .interfaces import (
     CatalogAdapterPlugin,
@@ -8,7 +13,8 @@ from .interfaces import (
     PluginBase,
 )
 
-PLUGIN_META_FILENAMES = [".veraplugin.yaml", ".veraplugin.yml"]
+PLUGIN_META_PATTERN = re.compile(r"\.veraplugin\.ya?ml$")
+PLUGIN_INSTANCES_PATTERN = re.compile(r"\.veraplugin\.instances\.ya?ml$")
 
 
 class PluginType(Enum):
@@ -16,6 +22,16 @@ class PluginType(Enum):
     DigitizationRegistryAdapter = "DigitizationRegistryAdapter"
     CatalogRecordProperty = "CatalogRecordProperty"
     DocumentProperty = "DocumentProperty"
+
+
+type PluginTypeCardinality = Literal["1", "0..1", "0..*", "1..*"]
+
+PLUGIN_TYPE_CARDINALITY: Dict[PluginType, PluginTypeCardinality] = {
+    PluginType.CatalogAdapter: "1",
+    PluginType.DigitizationRegistryAdapter: "1",
+    PluginType.CatalogRecordProperty: "0..*",
+    PluginType.DocumentProperty: "0..*",
+}
 
 
 class PluginState(Enum):
@@ -44,3 +60,57 @@ class GitCloneError(Exception):
         super().__init__(message)
         self.cmd = cmd
         self.error = error
+
+
+class UnimplementedFunctionsError(Exception):
+    """Raised when a required function is not implemented in a plugin."""
+
+    def __init__(
+        self,
+        plugin_name: str,
+        plugin_type: PluginType,
+        function_names: List[str],
+    ):
+        message = (
+            f"Plugin '{plugin_name}' of type '{plugin_type.value}' "
+            f"does not implement the following required functions: "
+            f"{', '.join(function_names)}."
+        )
+        super().__init__(message)
+        self.plugin_name = plugin_name
+        self.plugin_type = plugin_type
+        self.function_names = function_names
+
+
+class PluginNotFoundError(Exception):
+    """Raised when a plugin is not found."""
+
+    def __init__(self, plugin_name: str):
+        message = f"Plugin '{plugin_name}' not found in current context."
+        super().__init__(message)
+        self.plugin_name = plugin_name
+
+
+class PluginConfigMissingError(Exception):
+    def __init__(self, plugin_name: str, instance_name: str):
+        super().__init__(
+            f"Plugin '{plugin_name}' requires a config, "
+            f"but no config is provided in instance '{instance_name}'."
+        )
+
+
+class UnexpectedPluginConfigError(Exception):
+    def __init__(self, plugin_name: str, instance_name: str):
+        super().__init__(
+            f"Plugin '{plugin_name}' does not define a config schema, "
+            f"but a config was provided in instance '{instance_name}'."
+        )
+
+
+ParseConfigError = FileNotFoundError | OSError | YAMLError | ValidationError
+DiscoveryError = (
+    ParseConfigError | GitCloneError | FileNotFoundError | NotADirectoryError
+)
+ImplementationError = TypeError | ImportError | UnimplementedFunctionsError
+RequirementsError = DistributionNotFound | VersionConflict
+LintingError = DiscoveryError | ImplementationError | RequirementsError

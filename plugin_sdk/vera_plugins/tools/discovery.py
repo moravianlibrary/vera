@@ -2,71 +2,93 @@ import shutil
 import tempfile
 from os import walk
 from pathlib import Path
-from subprocess import PIPE, CalledProcessError, run
+from re import Pattern
+from typing import List, Type, TypeVar
 
-from ..definitions import PLUGIN_META_FILENAMES, GitCloneError
-from ..schemas import PluginsConfig
-from .parser import parse_git_http_url, parse_veraplugin_yaml
+from pydantic import BaseModel
+
+from ..definitions import (
+    PLUGIN_INSTANCES_PATTERN,
+    PLUGIN_META_PATTERN,
+    GitCloneError,
+)
+from ..schemas import (
+    DiscoveryResult,
+    InstanceDiscoveryResult,
+    MetaDiscoveryResult,
+    PluginInstance,
+    PluginMeta,
+)
+from .git import clone_git_repo
+from .parser import parse_git_http_url, parse_yaml_config_file
+
+T = TypeVar("T", bound=BaseModel)
 
 
-def discover_plugins_from_dir(dir: Path) -> PluginsConfig:
-    aggregated_config = PluginsConfig(plugins=[], instances=[])
+def _discover_in_dir(
+    dir: Path, model: Type[T], file_name_pattern: Pattern
+) -> List[DiscoveryResult]:
+    if not dir.exists():
+        raise FileNotFoundError(f"Path {dir} does not exist.")
+    if not dir.is_dir():
+        raise NotADirectoryError(f"Path {dir} is not a directory.")
+
+    results: List[DiscoveryResult] = []
 
     for root, _, files in walk(dir):
         for file_name in files:
-            if file_name not in PLUGIN_META_FILENAMES:
+            if not file_name_pattern.match(file_name):
                 continue
 
-            config_path = Path(root) / file_name
-            parsed_config = parse_veraplugin_yaml(config_path)
+            file_path = Path(root) / file_name
 
-            if parsed_config.plugins:
-                aggregated_config.plugins.extend(parsed_config.plugins)
-            if parsed_config.instances:
-                aggregated_config.instances.extend(parsed_config.instances)
+            items, errors = parse_yaml_config_file(file_path, model)
+            results.extend((file_path, item, None) for item in items)
+            results.extend((file_path, None, error) for error in errors)
 
-    return aggregated_config
+    return results
 
 
-def _clone_git_repo(
-    target_dir: Path,
-    repo_url: str,
-    branch: str | None = None,
-    subdir: str | None = None,
-) -> Path:
-
-    clone_cmd = ["git", "clone", "--depth", "1"]
-    if branch:
-        clone_cmd += ["--branch", branch]
-    clone_cmd += [repo_url, str(target_dir)]
-
-    try:
-        run(clone_cmd, check=True, stdout=PIPE, stderr=PIPE, text=True)
-    except CalledProcessError as e:
-        raise GitCloneError(clone_cmd, e) from e
-
-    if not subdir:
-        return target_dir
-
-    target_dir = target_dir / subdir
-
-    if not target_dir.exists():
-        raise FileNotFoundError(
-            f"Subdirectory '{subdir}' not found "
-            f"in the repository '{repo_url}'."
-        )
-
-    return target_dir
-
-
-def discover_plugins_from_git_http(url: str) -> PluginsConfig:
+def _discover_in_git_http(
+    url: str, model: Type[T], file_name_pattern: Pattern
+) -> List[DiscoveryResult]:
     repo_url, branch, subdir = parse_git_http_url(url)
     tmp_dir = Path(tempfile.mkdtemp())
 
     try:
-        target_dir = _clone_git_repo(tmp_dir, repo_url, branch, subdir)
-        plugins_config = discover_plugins_from_dir(target_dir)
+        target_dir = clone_git_repo(tmp_dir, repo_url, branch, subdir)
+        plugins_config = _discover_in_dir(target_dir, model, file_name_pattern)
     finally:
         shutil.rmtree(tmp_dir)
 
     return plugins_config
+
+
+def _discover_in_location(
+    location: str,
+    model: Type[T],
+    file_name_pattern: Pattern,
+) -> List[DiscoveryResult]:
+    try:
+        return (
+            _discover_in_git_http(location, model, file_name_pattern)
+            if location.startswith("http://")
+            or location.startswith("https://")
+            else _discover_in_dir(Path(location), model, file_name_pattern)
+        )
+    except (GitCloneError, FileNotFoundError, NotADirectoryError) as e:
+        return [DiscoveryResult(Path(location), None, e)]
+
+
+def discover_plugins(
+    location: str,
+) -> List[MetaDiscoveryResult]:
+    return _discover_in_location(location, PluginMeta, PLUGIN_META_PATTERN)
+
+
+def discover_plugin_instances(
+    location: str,
+) -> List[InstanceDiscoveryResult]:
+    return _discover_in_location(
+        location, PluginInstance, PLUGIN_INSTANCES_PATTERN
+    )

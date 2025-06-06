@@ -1,20 +1,31 @@
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Type, TypeVar
 
 import yaml
+from pydantic import BaseModel, ValidationError
 
-from ..schemas import PluginsConfig
+from ..definitions import ParseConfigError
+
+T = TypeVar("T", bound=BaseModel)
 
 
-def parse_veraplugin_yaml(path: Path) -> PluginsConfig:
-    plugins_config = None
-    with open(path, "r") as f:
-        plugins_config = PluginsConfig.model_validate(yaml.safe_load(f))
+def parse_yaml_config_file(
+    path: Path, model: Type[T]
+) -> Tuple[List[T], List[ParseConfigError]]:
+    items: List[T] = []
+    errors: List[ParseConfigError] = []
 
-    if plugins_config.plugins is None and plugins_config.instances is None:
-        raise ValueError(f"Empty plugins config in {path}")
+    try:
+        with open(path, "r") as f:
+            for item in yaml.safe_load_all(f):
+                try:
+                    items.append(model.model_validate(item))
+                except ValidationError as e:
+                    errors.append(e)
+    except (FileNotFoundError, OSError, yaml.YAMLError) as e:
+        errors.append((e, path))
 
-    return plugins_config
+    return items, errors
 
 
 def parse_requirements(path: Path) -> List[str]:
