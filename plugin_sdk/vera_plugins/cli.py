@@ -1,10 +1,14 @@
 from enum import Enum
 from pathlib import Path
+from typing import List
 
-import pandas as pd
 import typer
 
+from vera_plugins.schemas import MetaDiscoveryResult
+
 from .cli_schemas import (
+    BaseInstanceRow,
+    BaseMetaRow,
     DiscoveryInstanceRow,
     DiscoveryMetaRow,
     LintingInstanceRow,
@@ -49,6 +53,34 @@ OutputFormatOption = typer.Option(
 )
 
 
+def _echo_meta_rows(
+    meta_rows: List[BaseMetaRow], title: str, no_results_message: str
+):
+    if not meta_rows:
+        typer.echo(no_results_message)
+        return
+
+    meta_rows.sort(key=lambda r: (r.path, r.name, r.version), reverse=False)
+
+    typer.echo(f"{title}:\n")
+    typer.echo("\n".join(repr(row) for row in meta_rows))
+
+
+def _echo_instance_rows(
+    instance_rows: List[BaseInstanceRow], title: str, no_results_message: str
+):
+    if not instance_rows:
+        typer.echo(no_results_message)
+        return
+
+    instance_rows.sort(
+        key=lambda r: (r.path, r.plugin_name, r.instance_name), reverse=False
+    )
+
+    typer.echo(f"{title}:\n")
+    typer.echo("\n".join(repr(row) for row in instance_rows))
+
+
 @app.command()
 def discover(
     plugin_location: str = PluginLocationArgument,
@@ -57,37 +89,28 @@ def discover(
     """
     Discover plugins from a directory or git repository.
     """
-    meta_rows = [
-        DiscoveryMetaRow.from_discovery(path, meta, err)
-        for path, meta, err in discover_plugins(plugin_location)
-    ]
-
-    meta_rows.sort(key=lambda r: (r.path, r.name, r.version), reverse=False)
-
-    if meta_rows:
-        typer.echo("Discovered Plugins:")
-        typer.echo("\n".join(repr(row) for row in meta_rows))
-
-    if not include_instances:
-        if not meta_rows:
-            typer.echo("No results found.")
-        return
-
-    instance_rows = [
-        DiscoveryInstanceRow.from_discovery(path, instance, err)
-        for path, instance, err in discover_plugin_instances(plugin_location)
-    ]
-
-    instance_rows.sort(
-        key=lambda r: (r.path, r.plugin_name, r.instance_name), reverse=False
+    _echo_meta_rows(
+        [
+            DiscoveryMetaRow.from_discovery(path, meta, err)
+            for path, meta, err in discover_plugins(plugin_location)
+        ],
+        "Discovered Plugins",
+        "No plugins found.",
     )
 
-    if instance_rows:
-        typer.echo("Discovered Plugin Instances:")
-        typer.echo("\n".join(repr(row) for row in instance_rows))
+    if not include_instances:
+        return
 
-    if not meta_rows and not instance_rows:
-        typer.echo("No results found.")
+    _echo_instance_rows(
+        [
+            DiscoveryInstanceRow.from_discovery(path, instance, err)
+            for path, instance, err in discover_plugin_instances(
+                plugin_location
+            )
+        ],
+        "Discovered Plugin Instances",
+        "No plugin instances found.",
+    )
 
 
 @app.command()
@@ -99,103 +122,44 @@ def lint(
     """
     Lint one or more plugins.
     """
-    discovered_metas = discover_plugins(plugin_location)
+    discovered_metas = discover_plugins(plugin_location, plugin_name)
 
-    if plugin_name:
-        discovered_metas = [
-            dm
-            for dm in discovered_metas
-            if dm.item and dm.item.name == plugin_name
-        ]
-
-    results_df = pd.DataFrame(
-        (
-            dm.model_dump()
-            if dm.error
-            else LintingMetaRow.from_discovery(
+    _echo_meta_rows(
+        [
+            LintingMetaRow.from_discovery(
                 dm.file_path,
                 dm.item,
                 validate_plugin(
                     dm.item.type, Path(dm.file_path) / dm.item.primary_file
                 ),
-            ).model_dump()
-        )
-        for dm in discovered_metas
-    ).sort_values(
-        by=["path", "name", "version"], ascending=[True, True, False]
+            )
+            for dm in discovered_metas
+        ],
+        "Results of Plugin Linting",
+        "No plugins found.",
     )
 
-    if not results_df.empty:
-        typer.echo("Linting Plugins Results:\n")
-
-        headers = list(results_df.columns)
-
-        for row in results_df.to_dict(orient="records"):
-            typer.echo(
-                " | ".join(
-                    f"{h}: {row.get(h, '')}" for h in headers if h != "errors"
-                )
-            )
-
-            errors = row.get("errors") or []
-            if errors:
-                typer.echo("  Errors:")
-                for err in errors:
-                    typer.echo(f"  [X] NOK - {err}")
-            else:
-                typer.echo("  [✓] OK")
-
-            typer.echo("")
-
     if not include_instances:
-        if results_df.empty:
-            typer.echo("No results found.")
         return
 
-    discovered_instances = discover_plugin_instances(plugin_location)
-
-    if plugin_name:
-        discovered_instances = [
-            di
-            for di in discovered_instances
-            if di.item and di.item.plugin_name == plugin_name
-        ]
+    discovered_instances = discover_plugin_instances(
+        plugin_location, plugin_name
+    )
 
     candidate_metas = [meta.item for meta in discovered_metas if meta.item]
 
-    instances_df = pd.DataFrame(
-        (
-            di.model_dump()
-            if di.error
-            else LintingInstanceRow.from_discovery(
+    _echo_instance_rows(
+        [
+            LintingInstanceRow.from_discovery(
                 di.file_path,
                 di.item,
                 validate_instance(di.file_path, di.item, candidate_metas),
-            ).model_dump()
-        )
-        for di in discovered_instances
-    ).sort_values(by=["path", "plugin_name", "instance_name"])
-
-    if instances_df.empty:
-        typer.echo("No results found.")
-        return
-
-    typer.echo("Linting Plugin Instances Results:\n")
-
-    headers = list(results_df.columns)
-
-    for row in results_df.to_dict(orient="records"):
-        typer.echo(
-            " | ".join(
-                f"{h}: {row.get(h, '')}" for h in headers if h != "error"
             )
-        )
-
-        err = row.get("error")
-        if err:
-            typer.echo(f"  [X] NOK - {err}")
-        else:
-            typer.echo("  [✓] OK")
+            for di in discovered_instances
+        ],
+        "Results of Plugin Instance Linting",
+        "No plugin instances found.",
+    )
 
 
 @app.command()
@@ -203,13 +167,7 @@ def describe(
     plugin_location: str = PluginLocationArgument,
     plugin_name: str | None = PluginNameArgument,
 ):
-    discovered_metas = discover_plugins(plugin_location)
-    if plugin_name:
-        discovered_metas = [
-            dm
-            for dm in discovered_metas
-            if dm.item and dm.item.name == plugin_name
-        ]
+    discovered_metas = discover_plugins(plugin_location, plugin_name)
 
     if discovered_metas:
         typer.echo("No results found.")
@@ -220,7 +178,7 @@ def describe(
     for dm in discovered_metas:
         if dm.error:
             typer.echo(
-                f"Error discovering plugin at {dm.file_path}: {dm.error}"
+                f"Error discovering plugin at {dm.file_path}: {dm.error}\n"
             )
             continue
 

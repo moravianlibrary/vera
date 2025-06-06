@@ -90,6 +90,30 @@ class LintingMetaRow(BaseMetaRow):
         row.errors = errors
         return row
 
+    def __repr__(self):
+        # typer.echo("Linting Plugins Results:\n")
+
+        # headers = list(results_df.columns)
+
+        # for row in results_df.to_dict(orient="records"):
+        #     typer.echo(
+        #         " | ".join(
+        #             f"{h}: {row.get(h, '')}" for h in headers
+        #               if h != "errors"
+        #         )
+        #     )
+
+        #     errors = row.get("errors") or []
+        #     if errors:
+        #         typer.echo("  Errors:")
+        #         for err in errors:
+        #             typer.echo(f"  [X] NOK - {err}")
+        #     else:
+        #         typer.echo("  [✓] OK")
+
+        #     typer.echo("")
+        pass
+
 
 class LintingInstanceRow(BaseInstanceRow):
     error: LintingError | None = None
@@ -104,3 +128,17 @@ class LintingInstanceRow(BaseInstanceRow):
         row = super().from_discovery(path, instance, None)
         row.error = err
         return row
+
+    def __repr__(self):
+        # typer.echo(
+        #     " | ".join(
+        #         f"{h}: {row.get(h, '')}" for h in headers if h != "error"
+        #     )
+        # )
+
+        # err = row.get("error")
+        # if err:
+        #     typer.echo(f"  [X] NOK - {err}")
+        # else:
+        #     typer.echo("  [✓] OK")
+        pass

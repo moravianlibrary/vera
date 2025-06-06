@@ -81,14 +81,26 @@ def _discover_in_location(
 
 
 def discover_plugins(
-    location: str,
+    location: str, plugin_name: str | None = None
 ) -> List[MetaDiscoveryResult]:
-    return _discover_in_location(location, PluginMeta, PLUGIN_META_PATTERN)
+    metas = _discover_in_location(location, PluginMeta, PLUGIN_META_PATTERN)
+
+    return (
+        [m for m in metas if m.item and m.item.name == plugin_name]
+        if plugin_name
+        else metas
+    )
 
 
 def discover_plugin_instances(
-    location: str,
+    location: str, plugin_name: str
 ) -> List[InstanceDiscoveryResult]:
-    return _discover_in_location(
+    instances = _discover_in_location(
         location, PluginInstance, PLUGIN_INSTANCES_PATTERN
+    )
+
+    return (
+        [i for i in instances if i.item and i.item.plugin_name == plugin_name]
+        if plugin_name
+        else instances
     )
