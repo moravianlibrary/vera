@@ -8,7 +8,7 @@ from ..interfaces import (
     PluginBase,
 )
 from ..schemas import PluginInstance, PluginMeta
-from .loader import load_plugin
+from .loader import load_plugin_class
 from .packager import unpack_plugin
 
 PluginRegistryItem = Tuple[type[PluginBase], PluginInstance]
@@ -42,7 +42,7 @@ class PluginRegistry:
         instance: PluginInstance,
     ) -> None:
         self._validate_cardinality(meta)
-        PluginClass = load_plugin(meta.name, plugin_module_path)
+        PluginClass = load_plugin_class(meta.name, plugin_module_path)
         item = (PluginClass, instance)
 
         if PLUGIN_TYPE_CARDINALITY[meta.type] in ["1", "0..1"]:
