@@ -1,3 +1,4 @@
+import sys
 import tempfile
 from pathlib import Path
 from textwrap import dedent
@@ -110,3 +111,33 @@ class TestPluginLoader(TestCase):
             )
         finally:
             plugin_path.unlink()
+
+    def test_load_referenced_plugin(self):
+        plugin_code = dedent(
+            """
+            from vera_plugins.interfaces import PluginBase
+
+            class ReferencedPlugin(PluginBase):
+                def run(self):
+                    return "Hello from ReferencedPlugin"
+        """
+        )
+        plugin_path = self._write_temp_plugin(plugin_code)
+
+        entrypoint_code = dedent(
+            """
+            from {plugin_path} import ReferencedPlugin
+        """.format(
+                plugin_path=plugin_path.stem
+            )
+        )
+        entrypoint_path = self._write_temp_plugin(entrypoint_code)
+
+        sys.path.insert(0, str(plugin_path.parent))
+
+        try:
+            plugin_class = load_plugin("referencedplugin", entrypoint_path)
+            self.assertTrue(issubclass(plugin_class, PluginBase))
+            self.assertEqual(plugin_class.__name__, "ReferencedPlugin")
+        finally:
+            entrypoint_path.unlink()
