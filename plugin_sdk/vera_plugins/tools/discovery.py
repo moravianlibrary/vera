@@ -43,8 +43,11 @@ def _discover_in_dir(
             file_path = Path(root) / file_name
 
             items, errors = parse_yaml_config_file(file_path, model)
-            results.extend((file_path, item, None) for item in items)
-            results.extend((file_path, None, error) for error in errors)
+
+            for item in items:
+                results.append(DiscoveryResult(file_path, item, None))
+            for error in errors:
+                results.append(DiscoveryResult(file_path, None, error))
 
     return results
 
