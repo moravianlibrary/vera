@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from .definitions import DiscoveryError, PluginType
 
 
-# TODO: Validate and version (1.0.0-)
+# TODO: Validate version (1.0.0-)
 class PluginMeta(BaseModel):
     name: str
     type: PluginType
@@ -22,6 +22,7 @@ class PluginInstance(BaseModel):
     plugin_name: str
     instance_name: str
     config: Dict[str, Any] | None = None
+    test_dir: str | None = None
 
 
 class DiscoveryResult(NamedTuple):

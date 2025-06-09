@@ -5,7 +5,6 @@ from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from typing import List
 
-import pkg_resources
 from jsonschema.exceptions import SchemaError, ValidationError
 from jsonschema.validators import Draft202012Validator
 
@@ -16,7 +15,6 @@ from ..definitions import (
     PluginConfigMissingError,
     PluginNotFoundError,
     PluginType,
-    RequirementsError,
     UnexpectedPluginConfigError,
     UnimplementedFunctionsError,
 )
@@ -64,22 +62,6 @@ def _validate_plugin_implementation(
         f"No class implementing '{expected_interface.__name__}' "
         f"found in '{primary_file.name}'."
     )
-
-
-def _validate_requirements(
-    requirements: List[str] | str,
-) -> None | RequirementsError:
-    if isinstance(requirements, str):
-        with open(requirements, "r") as f:
-            requirements = f.read().splitlines()
-
-    try:
-        pkg_resources.require(requirements)
-    except (
-        pkg_resources.DistributionNotFound,
-        pkg_resources.VersionConflict,
-    ) as e:
-        return e
 
 
 def _validate_json_schema(path: Path) -> None:

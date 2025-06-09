@@ -4,7 +4,6 @@ from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Dict, List, Literal, Mapping
 
-from pkg_resources import DistributionNotFound, VersionConflict
 from pydantic import ValidationError
 from yaml import YAMLError
 
@@ -123,5 +122,4 @@ DiscoveryError = (
     ParseConfigError | GitCloneError | FileNotFoundError | NotADirectoryError
 )
 ImplementationError = TypeError | ImportError | UnimplementedFunctionsError
-RequirementsError = DistributionNotFound | VersionConflict
-LintingError = DiscoveryError | ImplementationError | RequirementsError
+LintingError = DiscoveryError | ImplementationError
