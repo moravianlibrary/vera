@@ -64,18 +64,6 @@ plugin_path can be:
 
 ---
 
-## Command: vera-plugins package {plugin_path} [plugin_name] [output_path]
-- Package a plugin into a distributable archive (.zip).
-- If plugin_name is not specified packages all plugins in the path
-- If plugin_name is specified, only package that plugin.
-- If output_path is not specified, default to current directory.
-- output_path should be a valid directory where the package will be created.
-- The naming convention for the package file is `{plugin_name}-{version}.zip`.
-- Output:
-  - Path to the created package file
-
----
-
 ## Command: vera-plugins init [target_dir]
 - Initialize a new plugin project in the specified target directory.
 - Take the user through a guided setup to create the necessary files:

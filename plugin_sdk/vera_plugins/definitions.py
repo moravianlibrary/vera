@@ -1,5 +1,6 @@
 import re
 from enum import Enum
+from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Dict, List, Literal, Mapping
 
@@ -24,6 +25,12 @@ class PluginType(Enum):
     DocumentProperty = "DocumentProperty"
 
 
+class PluginState(Enum):
+    Ready = "Ready"
+    NewVersionAvailable = "NewVersionAvailable"
+    SourceUnavailable = "SourceUnavailable"
+
+
 type PluginTypeCardinality = Literal["1", "0..1", "0..*", "1..*"]
 
 PLUGIN_TYPE_CARDINALITY: Dict[PluginType, PluginTypeCardinality] = {
@@ -33,17 +40,21 @@ PLUGIN_TYPE_CARDINALITY: Dict[PluginType, PluginTypeCardinality] = {
     PluginType.DocumentProperty: "0..*",
 }
 
-
-class PluginState(Enum):
-    Ready = "Ready"
-    NewVersionAvailable = "NewVersionAvailable"
-    SourceUnavailable = "SourceUnavailable"
-
-
-PLUGIN_TYPE_TO_DECLARATION: Mapping[PluginType, PluginBase] = {
+PLUGIN_TYPE_DECLARATION: Mapping[PluginType, PluginBase] = {
     PluginType.CatalogAdapter: CatalogAdapterPlugin,
     PluginType.DigitizationRegistryAdapter: DigitizationRegistryAdapterPlugin,
 }
+
+PLUGIN_TESTS_PATH = Path("tests")
+
+
+def patch_plugin(plugin_type: PluginType):
+    def decorator(fn):
+        fn.__is_plugin_test__ = True
+        fn.__plugin_type__ = plugin_type
+        return fn
+
+    return decorator
 
 
 class GitCloneError(Exception):

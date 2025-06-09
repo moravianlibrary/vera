@@ -4,8 +4,6 @@ from typing import List
 
 import typer
 
-from vera_plugins.schemas import MetaDiscoveryResult
-
 from .cli_schemas import (
     BaseInstanceRow,
     BaseMetaRow,
@@ -14,8 +12,9 @@ from .cli_schemas import (
     LintingInstanceRow,
     LintingMetaRow,
 )
+from .schemas import MetaDiscoveryResult
 from .tools.discovery import discover_plugin_instances, discover_plugins
-from .tools.validation import validate_instance, validate_plugin
+from .tools.validator import validate_instance, validate_plugin
 
 app = typer.Typer(help="vera-plugins CLI tool")
 
@@ -170,7 +169,7 @@ def describe(
     discovered_metas = discover_plugins(plugin_location, plugin_name)
 
     if discovered_metas:
-        typer.echo("No results found.")
+        typer.echo("No plugins found.")
         return
 
     typer.echo("Discovered Plugins:\n")
@@ -189,51 +188,59 @@ def describe(
 def test(
     plugin_location: str = PluginLocationArgument,
     plugin_name: str | None = PluginNameArgument,
+    tests_location: str = typer.Option(
+        None,
+        "--tests-location",
+        "-t",
+        help="Path to directory with tests for the plugin",
+    ),
     format: OutputFormat = OutputFormatOption,
 ):
-    discovered_metas = discover_plugins(plugin_location)
-    if plugin_name:
-        discovered_metas = [
-            dm
-            for dm in discovered_metas
-            if dm.item and dm.item.name == plugin_name
-        ]
+    discovered_metas = discover_plugins(plugin_location, plugin_name)
 
     if discovered_metas:
-        typer.echo("No results found.")
+        typer.echo("No plugins found.")
+        return
+
+    discovered_instances = discover_plugin_instances(
+        plugin_location, plugin_name
+    )
+
+    if not discovered_instances:
+        typer.echo("No plugin instances found.")
         return
 
     typer.echo("Discovered Plugins:\n")
+
+    errorless_metas: List[MetaDiscoveryResult] = []
 
     for dm in discovered_metas:
         if dm.error:
             typer.echo(
                 f"Error discovering plugin at {dm.file_path}: {dm.error}"
             )
+        else:
+            errorless_metas.append(dm)
+
+    for di in discovered_instances:
+        if di.error:
+            typer.echo(
+                f"Error discovering plugin instance at {di.file_path}: "
+                f"{di.error}"
+            )
             continue
 
+        meta = next(
+            (m for m in errorless_metas if m.item.name == di.item.plugin_name),
+            None,
+        )
 
-# @app.command()
-# def package(
-#     plugin_path: str = typer.Argument(...,
-# help="Path or git URL to plugins"),
-#     plugin_name: Optional[str] = typer.Argument(
-#         None, help="Specific plugin name to package"
-#     ),
-#     output_path: Optional[str] = typer.Argument(
-#         None, help="Directory to output package(s)"
-#     ),
-# ):
-#     """
-#     Package plugin(s) into distributable archives.
-#     """
-#     plugin_path = parse_plugin_path(plugin_path)
-#     output_path = output_path or "."
-#     typer.echo(
-#         f"Packaging plugin(s) in {plugin_path} "
-#         f"{'for ' + plugin_name if plugin_name else 'all plugins'} "
-#         f"into {output_path}"
-#     )
+        if not meta:
+            typer.echo(
+                f"Plugin {di.item.plugin_name} metadata "
+                f"for instance {di.item.instance_name} not found."
+            )
+            continue
 
 
 # @app.command()

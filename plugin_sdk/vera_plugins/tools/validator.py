@@ -10,7 +10,7 @@ from jsonschema.exceptions import SchemaError, ValidationError
 from jsonschema.validators import Draft202012Validator
 
 from ..definitions import (
-    PLUGIN_TYPE_TO_DECLARATION,
+    PLUGIN_TYPE_DECLARATION,
     ImplementationError,
     LintingError,
     PluginConfigMissingError,
@@ -27,7 +27,7 @@ def _validate_plugin_implementation(
     plugin_type: PluginType,
     primary_file: Path,
 ) -> None | ImplementationError:
-    expected_interface = PLUGIN_TYPE_TO_DECLARATION[plugin_type]
+    expected_interface = PLUGIN_TYPE_DECLARATION[plugin_type]
     module_name = f"_plugin_validate_{primary_file.stem}"
 
     spec = spec_from_file_location(module_name, primary_file)
@@ -107,12 +107,6 @@ def validate_plugin(dir: Path, meta: PluginMeta) -> List[LintingError]:
     if err:
         errors.append(err)
 
-    if isinstance(meta.requirements, str):
-        validate_file_exists(dir / meta.requirements, "Requirements file")
-    err = _validate_requirements(meta.requirements)
-    if err:
-        errors.append(RequirementsError)
-
     if meta.include_files:
         for include_file in meta.include_files:
             validate_file_exists(
@@ -123,6 +117,15 @@ def validate_plugin(dir: Path, meta: PluginMeta) -> List[LintingError]:
     err = _validate_json_schema(dir / meta.config_schema_path)
     if err:
         errors.append(err)
+
+    if meta.tests_path:
+        if not (dir / meta.tests_path).is_dir():
+            errors.append(
+                FileNotFoundError(
+                    f"Tests directory '{meta.tests_path}' not found "
+                    f"for plugin '{meta.name}' in directory '{dir}'."
+                )
+            )
 
     return errors
 

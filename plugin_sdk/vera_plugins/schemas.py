@@ -6,18 +6,16 @@ from pydantic import BaseModel
 from .definitions import DiscoveryError, PluginType
 
 
-# TODO: Validate python version (3.6-3.13) and version (1.0.0)
+# TODO: Validate and version (1.0.0-)
 class PluginMeta(BaseModel):
     name: str
     type: PluginType
-    python_version: str
-    requirements: List[str] | str
+    version: str
+    author: str | None = None
+    description: str | None = None
     primary_file: str
     include_files: List[str] | None = None
     config_schema_path: str | None = None
-    description: str | None = None
-    version: str | None = None
-    author: str | None = None
 
 
 class PluginInstance(BaseModel):

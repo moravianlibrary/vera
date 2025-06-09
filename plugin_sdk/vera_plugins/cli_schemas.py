@@ -80,14 +80,14 @@ class DiscoveryInstanceRow(BaseInstanceRow):
 
 
 class LintingMetaRow(BaseMetaRow):
-    errors: List[LintingError]
+    errors: List[str]
 
     @classmethod
     def from_discovery(
         cls, path: Path, meta: PluginMeta | None, errors: List[LintingError]
     ):
         row = super().from_discovery(path, meta)
-        row.errors = errors
+        row.errors = [str(err) for err in errors if err]
         return row
 
     def __repr__(self):
@@ -116,7 +116,7 @@ class LintingMetaRow(BaseMetaRow):
 
 
 class LintingInstanceRow(BaseInstanceRow):
-    error: LintingError | None = None
+    error: str | None = None
 
     @classmethod
     def from_discovery(
@@ -126,7 +126,7 @@ class LintingInstanceRow(BaseInstanceRow):
         err: LintingError | None,
     ):
         row = super().from_discovery(path, instance, None)
-        row.error = err
+        row.error = str(err) if err else None
         return row
 
     def __repr__(self):

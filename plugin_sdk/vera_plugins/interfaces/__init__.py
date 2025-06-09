@@ -3,6 +3,7 @@ from .catalog_adapter import (
     CatalogAdapterPlugin,
     ListRecordsResponse,
     RecordStatus,
+    SearchResultResponse,
 )
 from .digitization_registry_adapter import (
     DigitizationRecord,
@@ -19,5 +20,6 @@ __all__ = [
     "DigitizationRegistryAdapterPlugin",
     "ListRecordsResponse",
     "RecordStatus",
+    "SearchResultResponse",
     "StateChangeError",
 ]

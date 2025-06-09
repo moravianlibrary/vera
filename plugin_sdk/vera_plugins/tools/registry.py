@@ -1,15 +1,15 @@
 from pathlib import Path
 from typing import Dict, Tuple
 
-from .definitions import PLUGIN_TYPE_CARDINALITY, PluginType
-from .interfaces import (
+from ..definitions import PLUGIN_TYPE_CARDINALITY, PluginType
+from ..interfaces import (
     CatalogAdapterPlugin,
     DigitizationRegistryAdapterPlugin,
     PluginBase,
 )
-from .schemas import PluginInstance, PluginMeta
-from .tools.loader import load_plugin
-from .tools.packager import unpack_plugin
+from ..schemas import PluginInstance, PluginMeta
+from .loader import load_plugin
+from .packager import unpack_plugin
 
 PluginRegistryItem = Tuple[type[PluginBase], PluginInstance]
 PluginRegistryEntry = PluginRegistryItem | Dict[str, PluginRegistryItem]
