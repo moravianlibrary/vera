@@ -128,7 +128,8 @@ class TestPluginTester(TestCase):
                 def test_irrelevant(self, plugin): pass
 
                 @plugin_test(plugin_type="DigitizationRegistryAdapter")
-                def test_wrong_type(self, plugin): raise AssertionError("Should not be called")
+                def test_wrong_type(self, plugin):
+                    raise AssertionError("Should not be called")
             """,
         )
 
