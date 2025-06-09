@@ -28,27 +28,6 @@ def parse_yaml_config_file(
     return items, errors
 
 
-def parse_requirements(path: Path) -> List[str]:
-    requirements = []
-
-    with open(path, "r") as f:
-        for line in f:
-            line = line.strip()
-
-            if not line:
-                continue
-            if line.startswith("#"):
-                continue
-            if line.startswith("-r"):
-                requirements.extend(
-                    parse_requirements(path.parent / line[3:].strip())
-                )
-
-            requirements.append(line)
-
-    return requirements
-
-
 def parse_git_http_url(url: str) -> Tuple[str, str | None, str | None]:
     """
     Parses git url that can have optional '@branch'

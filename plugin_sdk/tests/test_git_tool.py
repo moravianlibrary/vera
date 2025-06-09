@@ -10,7 +10,7 @@ PUBLIC_REPO_FILE = "README.md"
 
 
 @skip("Skipping tests requiring git access.")
-class TestPluginDiscovery(TestCase):
+class TestGitTool(TestCase):
     def test_clone_git_repo(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             target_path = clone_git_repo(Path(tmpdir), PUBLIC_REPO_URL)

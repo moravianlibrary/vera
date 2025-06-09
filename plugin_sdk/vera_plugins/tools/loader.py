@@ -29,22 +29,29 @@ def load_plugin(
 
     Raises
     ------
+    FileNotFoundError
+        If the specified plugin module path does not exist.
     ImportError
         If the module cannot be loaded from the given path.
+    SyntaxError
+        If the module contains invalid Python syntax.
     ValueError
-        If no subclass of `PluginBase` is found in the loaded module.
+        If multiple PluginBase subclasses are found in the plugin module
+        or if no PluginBase subclass is found in the plugin module.
     """
     module_name = f"{plugin_name}_module"
 
     spec = util.spec_from_file_location(module_name, str(plugin_module_path))
     if spec is None or spec.loader is None:
         raise ImportError(
-            f"Could not load plugin module from {plugin_module_path}"
+            f"Could not load plugin module from {plugin_module_path}."
         )
 
     module = util.module_from_spec(spec)
     sys.modules[module_name] = module
     spec.loader.exec_module(module)
+
+    plugin_class = None
 
     for attr in dir(module):
         obj = getattr(module, attr)
@@ -53,6 +60,13 @@ def load_plugin(
             and issubclass(obj, PluginBase)
             and obj is not PluginBase
         ):
-            return obj
+            if plugin_class is not None:
+                raise ValueError(
+                    "Multiple PluginBase subclasses found in plugin module."
+                )
+            plugin_class = obj
 
-    raise ValueError("No valid PluginBase subclass found in plugin module.")
+    if plugin_class is None:
+        raise ValueError("No PluginBase subclass found in plugin module.")
+
+    return plugin_class
