@@ -140,4 +140,5 @@ class TestPluginLoader(TestCase):
             self.assertTrue(issubclass(plugin_class, PluginBase))
             self.assertEqual(plugin_class.__name__, "ReferencedPlugin")
         finally:
+            plugin_path.unlink()
             entrypoint_path.unlink()

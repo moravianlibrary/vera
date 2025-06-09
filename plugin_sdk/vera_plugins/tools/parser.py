@@ -4,7 +4,7 @@ from typing import List, Tuple, Type, TypeVar
 import yaml
 from pydantic import BaseModel, ValidationError
 
-from ..definitions import ParseConfigError
+from ..definitions import GIT_HTTP_URL_REGEX, ParseConfigError
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -23,7 +23,7 @@ def parse_yaml_config_file(
                 except ValidationError as e:
                     errors.append(e)
     except (FileNotFoundError, OSError, yaml.YAMLError) as e:
-        errors.append((e, path))
+        errors.append(e)
 
     return items, errors
 
@@ -38,13 +38,13 @@ def parse_git_http_url(url: str) -> Tuple[str, str | None, str | None]:
     - https://github.com/user/repo.git@develop
     - https://github.com/user/repo.git@develop:plugins/special
     """
-    if "@" not in url:
-        return url, None, None
+    match = GIT_HTTP_URL_REGEX.match(url)
 
-    base_url, rest = url.split("@", 1)
+    if not match:
+        raise ValueError(
+            f"Invalid Git HTTP(S) URL: {url}. Expected format: "
+            "'http[s]://<host>/<user>/<repo>.git[@<branch>][:<subdir>]'."
+        )
 
-    if ":" not in rest:
-        return base_url, rest, None
-
-    branch, subdir = rest.split(":", 1)
+    base_url, branch, subdir = match.groups()
     return base_url, branch, subdir

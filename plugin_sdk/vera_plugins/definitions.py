@@ -16,6 +16,10 @@ from .interfaces import (
 PLUGIN_META_PATTERN = re.compile(r"\.veraplugin\.ya?ml$")
 PLUGIN_INSTANCES_PATTERN = re.compile(r"\.veraplugin\.instances\.ya?ml$")
 
+GIT_HTTP_URL_REGEX = re.compile(
+    r"^(https?://[^@:\s]+\.git)(?:@([\w\-/\.]+))?(?::([\w\-/\.]+))?$"
+)
+
 
 class PluginType(Enum):
     CatalogAdapter = "CatalogAdapter"
