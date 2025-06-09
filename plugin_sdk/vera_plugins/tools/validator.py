@@ -43,7 +43,7 @@ def validate_plugin_implementation(
     unimplemented = getattr(plugin_class, "__abstractmethods__", set())
     if unimplemented:
         return UnimplementedFunctionsError(
-            plugin_class.__name__, list(unimplemented)
+            plugin_class.__name__, plugin_type, list(unimplemented)
         )
 
     return None
@@ -60,7 +60,7 @@ def _validate_json_schema(path: Path) -> None:
 def validate_plugin(dir: Path, meta: PluginMeta) -> List[LintingError]:
     errors: List[LintingError] = []
 
-    def validate_file_exists(file_path: Path, file_description: str):
+    def validate_file_exists(file_path: Path, file_description: str) -> bool:
         if not file_path.is_file():
             errors.append(
                 FileNotFoundError(
@@ -68,8 +68,9 @@ def validate_plugin(dir: Path, meta: PluginMeta) -> List[LintingError]:
                     f"for plugin '{meta.name}' in directory '{dir}'."
                 )
             )
+            return False
+        return True
 
-    validate_file_exists(dir / meta.primary_file, "Primary file")
     err = validate_plugin_implementation(meta.type, dir / meta.primary_file)
     if err:
         errors.append(err)
@@ -80,19 +81,11 @@ def validate_plugin(dir: Path, meta: PluginMeta) -> List[LintingError]:
                 dir / include_file, f"Include file '{include_file}'"
             )
 
-    validate_file_exists(dir / meta.config_schema_path, "Config schema file")
-    err = _validate_json_schema(dir / meta.config_schema_path)
-    if err:
-        errors.append(err)
-
-    if meta.tests_path:
-        if not (dir / meta.tests_path).is_dir():
-            errors.append(
-                FileNotFoundError(
-                    f"Tests directory '{meta.tests_path}' not found "
-                    f"for plugin '{meta.name}' in directory '{dir}'."
-                )
-            )
+    if meta.config_schema_path:
+        if validate_file_exists(
+            dir / meta.config_schema_path, "Config schema file"
+        ):
+            _validate_json_schema(dir / meta.config_schema_path)
 
     return errors
 

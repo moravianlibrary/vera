@@ -16,7 +16,6 @@ class PluginMeta(BaseModel):
     primary_file: str
     include_files: List[str] | None = None
     config_schema_path: str | None = None
-    tests_path: str | None = None
 
 
 class PluginInstance(BaseModel):

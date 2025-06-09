@@ -50,7 +50,6 @@ class TestPluginDiscovery(TestCase):
                 "  - extra_file_1.py\n"
                 "  - extra_file_2.py\n"
                 "config_schema_path: config_schema.yaml\n"
-                "tests_path: tests\n"
             )
 
             result = discover_plugins(tmpdir)
@@ -71,7 +70,6 @@ class TestPluginDiscovery(TestCase):
             self.assertEqual(
                 result[0].item.config_schema_path, "config_schema.yaml"
             )
-            self.assertEqual(result[0].item.tests_path, "tests")
 
     @patch("vera_plugins.tools.discovery.clone_git_repo")
     def test_discover_plugin_with_valid_config_from_git(self, mock_clone):

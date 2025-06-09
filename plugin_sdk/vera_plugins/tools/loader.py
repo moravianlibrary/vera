@@ -53,7 +53,9 @@ def load_plugin_class(plugin_name: str, file_path: Path) -> Type[PluginBase]:
     plugin_classes = [
         cls
         for _, cls in inspect.getmembers(module, inspect.isclass)
-        if issubclass(cls, PluginBase) and cls is not PluginBase
+        if cls.__module__ == module_name
+        and issubclass(cls, PluginBase)
+        and cls is not PluginBase
     ]
 
     if not plugin_classes:

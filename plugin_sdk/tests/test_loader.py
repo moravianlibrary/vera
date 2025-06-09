@@ -112,21 +112,23 @@ class TestPluginLoader(TestCase):
         finally:
             plugin_path.unlink()
 
-    def test_load_referenced_plugin(self):
+    def test_load_plugin_with_referenced_functionality(self):
         plugin_code = dedent(
             """
-            from vera_plugins.interfaces import PluginBase
-
-            class ReferencedPlugin(PluginBase):
-                def run(self):
-                    return "Hello from ReferencedPlugin"
+            def run():
+                return "Hello from run function"
         """
         )
         plugin_path = self._write_temp_plugin(plugin_code)
 
         entrypoint_code = dedent(
             """
-            from {plugin_path} import ReferencedPlugin
+            from vera_plugins.interfaces import PluginBase
+            from {plugin_path} import run
+
+            class TestPlugin(PluginBase):
+                def run(self):
+                    return run()
         """.format(
                 plugin_path=plugin_path.stem
             )
@@ -140,7 +142,8 @@ class TestPluginLoader(TestCase):
                 "referencedplugin", entrypoint_path
             )
             self.assertTrue(issubclass(plugin_class, PluginBase))
-            self.assertEqual(plugin_class.__name__, "ReferencedPlugin")
+            self.assertEqual(plugin_class.__name__, "TestPlugin")
+            self.assertEqual(plugin_class().run(), "Hello from run function")
         finally:
             plugin_path.unlink()
             entrypoint_path.unlink()
