@@ -7,7 +7,6 @@ from .definitions import DiscoveryError, LintingError
 from .schemas import PluginInstance, PluginMeta
 
 
-# TODO: Stringify errors to custom formats
 class BaseMetaRow(BaseModel):
     path: str
     name: str | None = None
@@ -29,6 +28,15 @@ class BaseMetaRow(BaseModel):
 
         return row
 
+    def __repr__(self):
+        return (
+            f"[PluginMeta] Path: {self.path} | "
+            f"Name: {self.name or '-'} | "
+            f"Type: {self.type or '-'} | "
+            f"Version: {self.version or '-'} | "
+            f"Author: {self.author or '-'}"
+        )
+
 
 class BaseInstanceRow(BaseModel):
     path: str
@@ -45,6 +53,13 @@ class BaseInstanceRow(BaseModel):
 
         return row
 
+    def __repr__(self):
+        return (
+            f"[PluginInstance] Path: {self.path} | "
+            f"Plugin: {self.plugin_name or '-'} | "
+            f"Instance: {self.instance_name or '-'}"
+        )
+
 
 class DiscoveryMetaRow(BaseMetaRow):
     error: str | None = None
@@ -59,6 +74,12 @@ class DiscoveryMetaRow(BaseMetaRow):
             row.error = str(err)
 
         return row
+
+    def __repr__(self):
+        base = super().__repr__()
+        if self.error:
+            return f"{base}\n  [X] {self.error}"
+        return f"{base}\n  [✓] OK"
 
 
 class DiscoveryInstanceRow(BaseInstanceRow):
@@ -78,6 +99,12 @@ class DiscoveryInstanceRow(BaseInstanceRow):
 
         return row
 
+    def __repr__(self):
+        base = super().__repr__()
+        if self.error:
+            return f"{base}\n  [X] {self.error}"
+        return f"{base}\n  [✓] OK"
+
 
 class LintingMetaRow(BaseMetaRow):
     errors: List[str]
@@ -91,28 +118,13 @@ class LintingMetaRow(BaseMetaRow):
         return row
 
     def __repr__(self):
-        # typer.echo("Linting Plugins Results:\n")
-
-        # headers = list(results_df.columns)
-
-        # for row in results_df.to_dict(orient="records"):
-        #     typer.echo(
-        #         " | ".join(
-        #             f"{h}: {row.get(h, '')}" for h in headers
-        #               if h != "errors"
-        #         )
-        #     )
-
-        #     errors = row.get("errors") or []
-        #     if errors:
-        #         typer.echo("  Errors:")
-        #         for err in errors:
-        #             typer.echo(f"  [X] NOK - {err}")
-        #     else:
-        #         typer.echo("  [✓] OK")
-
-        #     typer.echo("")
-        pass
+        base = super().__repr__()
+        if self.errors:
+            formatted_errors = "\n".join(
+                [f"  [X] {err}" for err in self.errors]
+            )
+            return f"{base}\n{formatted_errors}"
+        return f"{base}\n  [✓] OK"
 
 
 class LintingInstanceRow(BaseInstanceRow):
@@ -130,15 +142,7 @@ class LintingInstanceRow(BaseInstanceRow):
         return row
 
     def __repr__(self):
-        # typer.echo(
-        #     " | ".join(
-        #         f"{h}: {row.get(h, '')}" for h in headers if h != "error"
-        #     )
-        # )
-
-        # err = row.get("error")
-        # if err:
-        #     typer.echo(f"  [X] NOK - {err}")
-        # else:
-        #     typer.echo("  [✓] OK")
-        pass
+        base = super().__repr__()
+        if self.error:
+            return f"{base}\n  [X] {self.error}"
+        return f"{base}\n  [✓] Ok"
