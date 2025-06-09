@@ -1,7 +1,4 @@
-import inspect
 import json
-import sys
-from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
 from typing import List
 
@@ -19,49 +16,37 @@ from ..definitions import (
     UnimplementedFunctionsError,
 )
 from ..schemas import PluginInstance, PluginMeta
+from ..tools.loader import load_plugin_class
 
 
-def _validate_plugin_implementation(
+def validate_plugin_implementation(
     plugin_type: PluginType,
-    primary_file: Path,
+    primary_file_path: Path,
 ) -> None | ImplementationError:
     expected_interface = PLUGIN_TYPE_DECLARATION[plugin_type]
-    module_name = f"_plugin_validate_{primary_file.stem}"
-
-    spec = spec_from_file_location(module_name, primary_file)
-    if spec is None or spec.loader is None:
-        return ImportError(
-            f"Unable to load spec for plugin file: {primary_file}"
-        )
-
-    module = module_from_spec(spec)
-    sys.modules[module_name] = module
+    module_name = f"_plugin_validation_{primary_file_path.stem}"
 
     try:
-        spec.loader.exec_module(module)
-    except Exception as e:
-        return ImportError(f"Error loading module '{primary_file}': {e}")
+        plugin_class = load_plugin_class(module_name, primary_file_path)
+    except (FileNotFoundError, ImportError, SyntaxError, ValueError) as e:
+        return e
 
-    for _, cls in inspect.getmembers(module, inspect.isclass):
-        try:
-            if (
-                issubclass(cls, expected_interface)
-                and cls is not expected_interface
-            ):
-                unimplemented = getattr(cls, "__abstractmethods__", set())
-                if unimplemented:
-                    return UnimplementedFunctionsError(
-                        cls.__name__,
-                        list(unimplemented),
-                    )
-                return None
-        except TypeError:
-            continue
+    if (
+        not issubclass(plugin_class, expected_interface)
+        or plugin_class is expected_interface
+    ):
+        return TypeError(
+            f"Plugin class '{plugin_class.__name__}' does not implement "
+            f"expected interface '{expected_interface.__name__}'."
+        )
 
-    return TypeError(
-        f"No class implementing '{expected_interface.__name__}' "
-        f"found in '{primary_file.name}'."
-    )
+    unimplemented = getattr(plugin_class, "__abstractmethods__", set())
+    if unimplemented:
+        return UnimplementedFunctionsError(
+            plugin_class.__name__, list(unimplemented)
+        )
+
+    return None
 
 
 def _validate_json_schema(path: Path) -> None:
@@ -85,7 +70,7 @@ def validate_plugin(dir: Path, meta: PluginMeta) -> List[LintingError]:
             )
 
     validate_file_exists(dir / meta.primary_file, "Primary file")
-    err = _validate_plugin_implementation(meta.type, dir / meta.primary_file)
+    err = validate_plugin_implementation(meta.type, dir / meta.primary_file)
     if err:
         errors.append(err)
 
