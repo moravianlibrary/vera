@@ -3,21 +3,9 @@ from typing import Any, Dict, Generic, TypeVar
 
 
 class PluginBase(ABC):
-    pass
-
-
-class ResourcePluginBase(PluginBase):
     """
-    Abstract base class for resource-based plugins.
-
-    This class defines the interface for plugins
-    that interact with external resources,
-    such as databases, APIs, or other external services.
-
     Methods
     -------
-    is_available:
-        Check if the resource is available for interaction.
     get_config_schema:
         Retrieve the configuration schema or None if not available.
     """
@@ -38,6 +26,21 @@ class ResourcePluginBase(PluginBase):
             of the plugin configuration, or None if no configuration is needed.
         """
         pass
+
+
+class ResourcePluginBase(PluginBase):
+    """
+    Abstract base class for resource-based plugins.
+
+    This class defines the interface for plugins
+    that interact with external resources,
+    such as databases, APIs, or other external services.
+
+    Methods
+    -------
+    is_available:
+        Check if the resource is available for interaction.
+    """
 
     @abstractmethod
     def is_available(self) -> bool:

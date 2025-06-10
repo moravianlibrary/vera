@@ -28,6 +28,7 @@ class PluginType(Enum):
     DigitizationRegistryAdapter = "DigitizationRegistryAdapter"
     CatalogRecordProperty = "CatalogRecordProperty"
     DocumentProperty = "DocumentProperty"
+    IdentityProvider = "IdentityProvider"
 
 
 class PluginState(Enum):
@@ -43,6 +44,7 @@ PLUGIN_TYPE_CARDINALITY: Dict[PluginType, PluginTypeCardinality] = {
     PluginType.DigitizationRegistryAdapter: "1",
     PluginType.CatalogRecordProperty: "0..*",
     PluginType.DocumentProperty: "0..*",
+    PluginType.IdentityProvider: "1",
 }
 
 PLUGIN_TYPE_DECLARATION: Mapping[PluginType, PluginBase] = {
