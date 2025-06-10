@@ -24,14 +24,14 @@ class PluginRegistry:
 
         if cardinality in ["1", "0..1"] and meta.type in self._registry:
             raise ValueError(
-                f"Plugin of type {meta.type} is already registered."
+                f"Plugin of type '{meta.type.value}' is already registered."
             )
         if (
             meta.type in self._registry
             and meta.name in self._registry[meta.type]
         ):
             raise ValueError(
-                f"Plugin {meta.name} of type {meta.type} "
+                f"Plugin '{meta.name}' of type '{meta.type.value}' "
                 "is already registered."
             )
 
@@ -63,12 +63,14 @@ class PluginRegistry:
 
     def _load_single_plugin(self, plugin_type: PluginType) -> PluginBase:
         if plugin_type not in self._registry:
-            raise ValueError(f"No plugin registered for type '{plugin_type}'.")
+            raise ValueError(
+                f"No plugin registered for type '{plugin_type.value}'."
+            )
 
         entry = self._registry[plugin_type]
         if isinstance(entry, dict):
             raise ValueError(
-                f"Multiple plugins registered for type '{plugin_type}'. "
+                f"Multiple plugins registered for type '{plugin_type.value}'. "
                 f"Use 'load_named_plugin' instead."
             )
 
@@ -82,20 +84,20 @@ class PluginRegistry:
     ) -> PluginBase:
         if plugin_type not in self._registry:
             raise ValueError(
-                f"No plugins registered for type '{plugin_type}'."
+                f"No plugins registered for type '{plugin_type.value}'."
             )
 
         entry = self._registry[plugin_type]
         if not isinstance(entry, dict):
             raise ValueError(
-                f"Single plugin registered for type '{plugin_type}'. "
+                f"Single plugin registered for type '{plugin_type.value}'. "
                 f"Use 'load_single_plugin' instead."
             )
 
         if plugin_name not in entry:
             raise ValueError(
                 f"No plugin named '{plugin_name}' registered "
-                f"for type '{plugin_type}'."
+                f"for type '{plugin_type.value}'."
             )
 
         PluginClass, instance = entry[plugin_name]

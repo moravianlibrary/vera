@@ -46,7 +46,10 @@ class PluginTester:
                         continue
 
                     plugin_type = getattr(method, "__plugin_type__", None)
-                    if plugin_type is None or plugin_type != meta.type:
+                    if (
+                        plugin_type is None
+                        or PluginType(plugin_type) != meta.type
+                    ):
                         continue
 
                     plugin_instance = (

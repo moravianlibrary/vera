@@ -2,3 +2,4 @@
 omit =
     */tmp/*
     */temp/*
+    vera_plugins/interfaces/*

@@ -1,16 +1,15 @@
 from pathlib import Path
 from typing import Any, Dict, List, NamedTuple, Tuple
 
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 
-from .definitions import DiscoveryError, PluginType
+from .definitions import VERSION_PATTERN, DiscoveryError, PluginType
 
 
-# TODO: Validate version (1.0.0-)
 class PluginMeta(BaseModel):
     name: str
     type: PluginType
-    version: str
+    version: str = constr(pattern=VERSION_PATTERN)
     author: str | None = None
     description: str | None = None
     primary_file: str

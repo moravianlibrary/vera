@@ -1,7 +1,8 @@
 import tempfile
 from pathlib import Path
-from unittest import TestCase, skip
+from unittest import TestCase, skipIf
 
+from vera_plugins.definitions import GitCloneError
 from vera_plugins.tools.git import clone_git_repo
 
 PUBLIC_REPO_URL = "https://github.com/moravianlibrary/aleph-nought.git"
@@ -9,7 +10,7 @@ PUBLIC_REPO_SUBDIR = "tests"
 PUBLIC_REPO_FILE = "README.md"
 
 
-@skip("Skipping tests requiring git access.")
+@skipIf(False, "Skipping tests requiring git access.")
 class TestGitTool(TestCase):
     def test_clone_git_repo(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -62,3 +63,12 @@ class TestGitTool(TestCase):
             self.assertTrue(
                 "https://invalid.url/repo.git" in str(context.exception)
             )
+
+    def test_clone_non_existent_repo(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with self.assertRaises(GitCloneError) as context:
+                clone_git_repo(
+                    Path(tmpdir),
+                    "https://username:password@github.com/random/repo.git",
+                )
+            self.assertTrue("git clone" in str(context.exception))

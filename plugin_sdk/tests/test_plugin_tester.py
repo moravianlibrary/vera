@@ -2,6 +2,7 @@ import tempfile
 import textwrap
 from pathlib import Path
 from unittest import TestCase
+from unittest.mock import Mock, patch
 
 from vera_plugins.definitions import PluginType
 from vera_plugins.schemas import PluginInstance, PluginMeta
@@ -40,104 +41,87 @@ class TestPluginTester(TestCase):
         with self.assertRaises(FileNotFoundError):
             PluginTester(non_existent_path)
 
-    def test_loads_and_runs_decorated_tests(self):
+    @patch(
+        "vera_plugins.tools.registry.PluginRegistry.register_from_path",
+        return_value=None,
+    )
+    @patch(
+        "vera_plugins.tools.registry.PluginRegistry._load_single_plugin",
+        return_value="mock_plugin_instance",
+    )
+    def test_loads_and_runs_decorated_tests(
+        self, mock_load_single_plugin: Mock, mock_register_from_path: Mock
+    ):
         self._create_test_file(
             "test_plugin.py",
             """
             from unittest import TestCase
-
-            def plugin_test(plugin_type=None):
-                def wrapper(func):
-                    func.__is_plugin_test__ = True
-                    func.__plugin_type__ = plugin_type
-                    return func
-                return wrapper
+            from vera_plugins.definitions import patch_plugin
 
             class MyPluginTest(TestCase):
-                @plugin_test(plugin_type="CatalogAdapter")
+                @patch_plugin(plugin_type="CatalogAdapter")
                 def test_foo(self, plugin):
                     assert plugin == "mock_plugin_instance"
             """,
         )
 
-        # Patch registry to avoid loading actual plugins
-        from vera_plugins.tools.registry import PluginRegistry
+        tester = PluginTester(self.tests_dir)
+        tester(self._meta(), Path("/fake/path"), self._instance())
 
-        original_register = PluginRegistry.register_from_path
-        original_load = PluginRegistry._load_single_plugin
-
-        PluginRegistry.register_from_path = lambda self, meta, path, inst: None
-        PluginRegistry._load_single_plugin = (
-            lambda self: "mock_plugin_instance"
-        )
-
-        try:
-            tester = PluginTester(self.tests_dir)
-            tester(self._meta(), Path("/fake/path"), self._instance())
-        finally:
-            PluginRegistry.register_from_path = original_register
-            PluginRegistry._load_single_plugin = original_load
-
-    def test_skip_non_testcase_classes(self):
+    @patch(
+        "vera_plugins.tools.registry.PluginRegistry.register_from_path",
+        return_value=None,
+    )
+    @patch(
+        "vera_plugins.tools.registry.PluginRegistry._load_single_plugin",
+        return_value="mock_plugin_instance",
+    )
+    def test_skip_non_testcase_classes(
+        self, mock_load_single_plugin: Mock, mock_register_from_path: Mock
+    ):
         self._create_test_file(
             "test_plugin.py",
             """
             from unittest import TestCase
-
-            def plugin_test(plugin_type=None):
-                def wrapper(func):
-                    func.__is_plugin_test__ = True
-                    func.__plugin_type__ = plugin_type
-                    return func
-                return wrapper
+            from vera_plugins.definitions import patch_plugin
 
             class NotATest:
-                @plugin_test(plugin_type="CatalogAdapter")
+                @patch_plugin(plugin_type="CatalogAdapter")
                 def test_should_not_run(self, plugin): pass
 
             class MyPluginTest(TestCase):
-                @plugin_test(plugin_type="CatalogAdapter")
+                @patch_plugin(plugin_type="CatalogAdapter")
                 def test_should_run(self, plugin): pass
             """,
-        )
-
-        from vera_plugins.tools.registry import PluginRegistry
-
-        PluginRegistry.register_from_path = lambda self, meta, path, inst: None
-        PluginRegistry._load_single_plugin = (
-            lambda self: "mock_plugin_instance"
         )
 
         tester = PluginTester(self.tests_dir)
         tester(self._meta(), Path("/fake/path"), self._instance())
 
-    def test_skips_non_decorated_or_wrong_plugin_type_tests(self):
+    @patch(
+        "vera_plugins.tools.registry.PluginRegistry.register_from_path",
+        return_value=None,
+    )
+    @patch(
+        "vera_plugins.tools.registry.PluginRegistry._load_single_plugin",
+        return_value="mock_plugin_instance",
+    )
+    def test_skips_non_decorated_or_wrong_plugin_type_tests(
+        self, mock_load_single_plugin: Mock, mock_register_from_path: Mock
+    ):
         self._create_test_file(
             "test_plugin.py",
             """
             from unittest import TestCase
-
-            def plugin_test(plugin_type=None):
-                def wrapper(func):
-                    func.__is_plugin_test__ = True
-                    func.__plugin_type__ = plugin_type
-                    return func
-                return wrapper
+            from vera_plugins.definitions import patch_plugin
 
             class MyPluginTest(TestCase):
                 def test_irrelevant(self, plugin): pass
 
-                @plugin_test(plugin_type="DigitizationRegistryAdapter")
+                @patch_plugin(plugin_type="DigitizationRegistryAdapter")
                 def test_wrong_type(self, plugin):
                     raise AssertionError("Should not be called")
             """,
-        )
-
-        from vera_plugins.tools.registry import PluginRegistry
-
-        PluginRegistry.register_from_path = lambda self, meta, path, inst: None
-        PluginRegistry._load_single_plugin = (
-            lambda self: "mock_plugin_instance"
         )
 
         tester = PluginTester(self.tests_dir)

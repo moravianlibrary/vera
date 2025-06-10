@@ -4,7 +4,7 @@ from typing import List, Tuple, Type, TypeVar
 import yaml
 from pydantic import BaseModel, ValidationError
 
-from ..definitions import GIT_HTTP_URL_REGEX, ParseConfigError
+from ..definitions import GIT_HTTP_URL_PATTERN, ParseConfigError
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -38,7 +38,7 @@ def parse_git_http_url(url: str) -> Tuple[str, str | None, str | None]:
     - https://github.com/user/repo.git@develop
     - https://github.com/user/repo.git@develop:plugins/special
     """
-    match = GIT_HTTP_URL_REGEX.match(url)
+    match = GIT_HTTP_URL_PATTERN.match(url)
 
     if not match:
         raise ValueError(
