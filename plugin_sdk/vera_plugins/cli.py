@@ -13,8 +13,7 @@ from .cli_schemas import (
     LintingMetaRow,
 )
 from .schemas import MetaDiscoveryResult
-from .tools.discovery import discover_plugin_instances, discover_plugins
-from .tools.validator import validate_instance, validate_plugin
+from .tools import discovery, validator
 
 app = typer.Typer(help="vera-plugins CLI tool")
 
@@ -91,7 +90,7 @@ def discover(
     _echo_meta_rows(
         [
             DiscoveryMetaRow.from_discovery(path, meta, err)
-            for path, meta, err in discover_plugins(plugin_location)
+            for path, meta, err in discovery.discover_plugins(plugin_location)
         ],
         "Discovered Plugins",
         "No plugins found.",
@@ -103,7 +102,7 @@ def discover(
     _echo_instance_rows(
         [
             DiscoveryInstanceRow.from_discovery(path, instance, err)
-            for path, instance, err in discover_plugin_instances(
+            for path, instance, err in discovery.discover_plugin_instances(
                 plugin_location
             )
         ],
@@ -121,14 +120,14 @@ def lint(
     """
     Lint one or more plugins.
     """
-    discovered_metas = discover_plugins(plugin_location, plugin_name)
+    discovered_metas = discovery.discover_plugins(plugin_location, plugin_name)
 
     _echo_meta_rows(
         [
             LintingMetaRow.from_discovery(
                 dm.file_path,
                 dm.item,
-                validate_plugin(
+                discovery.validate_plugin(
                     dm.item.type, Path(dm.file_path) / dm.item.primary_file
                 ),
             )
@@ -141,7 +140,7 @@ def lint(
     if not include_instances:
         return
 
-    discovered_instances = discover_plugin_instances(
+    discovered_instances = discovery.discover_plugin_instances(
         plugin_location, plugin_name
     )
 
@@ -152,7 +151,9 @@ def lint(
             LintingInstanceRow.from_discovery(
                 di.file_path,
                 di.item,
-                validate_instance(di.file_path, di.item, candidate_metas),
+                validator.validate_instance(
+                    di.file_path, di.item, candidate_metas
+                ),
             )
             for di in discovered_instances
         ],
@@ -166,7 +167,7 @@ def describe(
     plugin_location: str = PluginLocationArgument,
     plugin_name: str | None = PluginNameArgument,
 ):
-    discovered_metas = discover_plugins(plugin_location, plugin_name)
+    discovered_metas = discovery.discover_plugins(plugin_location, plugin_name)
 
     if discovered_metas:
         typer.echo("No plugins found.")
@@ -196,13 +197,13 @@ def test(
     ),
     format: OutputFormat = OutputFormatOption,
 ):
-    discovered_metas = discover_plugins(plugin_location, plugin_name)
+    discovered_metas = discovery.discover_plugins(plugin_location, plugin_name)
 
     if discovered_metas:
         typer.echo("No plugins found.")
         return
 
-    discovered_instances = discover_plugin_instances(
+    discovered_instances = discovery.discover_plugin_instances(
         plugin_location, plugin_name
     )
 
