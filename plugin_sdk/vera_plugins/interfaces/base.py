@@ -6,7 +6,7 @@ class PluginBase(ABC):
     pass
 
 
-class BaseResourcePlugin(PluginBase):
+class ResourcePluginBase(PluginBase):
     """
     Abstract base class for resource-based plugins.
 

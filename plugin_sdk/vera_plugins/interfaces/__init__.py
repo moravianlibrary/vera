@@ -11,15 +11,28 @@ from .digitization_registry_adapter import (
     DigitizationRegistryAdapterPlugin,
     StateChangeError,
 )
+from .identity_provider import (
+    IdentityProviderError,
+    IdentityProviderPlugin,
+    InvalidTokenError,
+    UserFieldMissingError,
+    UserInfoExtractionError,
+)
 
 __all__ = [
-    "PluginBase",
     "CatalogAdapterPlugin",
     "DigitizationRecord",
     "DigitizationRecordState",
+    "DigitizationRecordState",
     "DigitizationRegistryAdapterPlugin",
+    "IdentityProviderError",
+    "IdentityProviderPlugin",
+    "InvalidTokenError",
     "ListRecordsResponse",
+    "PluginBase",
     "RecordStatus",
     "SearchResultResponse",
     "StateChangeError",
+    "UserFieldMissingError",
+    "UserInfoExtractionError",
 ]
