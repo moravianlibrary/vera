@@ -2,7 +2,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Generator
 
-from .base import ResourcePluginBase
+from .base import ExternalResourcePluginBase
 
 
 @dataclass(frozen=True)
@@ -44,7 +44,7 @@ class CatalogDocumentRef:
 DocumentPointer = DocumentRef | CatalogDocumentRef
 
 
-class DocumentDiscoveryPlugin(ResourcePluginBase):
+class DocumentDiscoveryPlugin(ExternalResourcePluginBase):
     @abstractmethod
     def discover_documents(self) -> Generator[DocumentPointer, None, None]:
         """

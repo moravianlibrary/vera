@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from ..definitions import PluginType, patch_plugin
-from ..interfaces import (
+from ..specs.catalog_adapter import (
     CatalogAdapterPlugin,
     ListRecordsResponse,
     SearchResultResponse,

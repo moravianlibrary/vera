@@ -4,7 +4,7 @@ from pathlib import Path
 from textwrap import dedent
 from unittest import TestCase
 
-from vera_plugins.interfaces import PluginBase
+from vera_plugins.specs.base import PluginBase
 from vera_plugins.tools.loader import load_plugin_class
 
 
@@ -20,7 +20,7 @@ class TestPluginLoader(TestCase):
     def test_load_valid_plugin(self):
         plugin_code = dedent(
             """
-            from vera_plugins.interfaces import PluginBase
+            from vera_plugins.specs.base import PluginBase
 
             class MyTestPlugin(PluginBase):
                 def run(self):
@@ -70,7 +70,7 @@ class TestPluginLoader(TestCase):
     def test_load_plugin_class_with_multiple_plugins(self):
         plugin_code = dedent(
             """
-            from vera_plugins.interfaces import PluginBase
+            from vera_plugins.specs.base import PluginBase
 
             class FirstPlugin(PluginBase):
                 def run(self):
@@ -95,7 +95,7 @@ class TestPluginLoader(TestCase):
     def test_load_plugin_class_with_invalid_file_extension(self):
         plugin_code = dedent(
             """
-            from vera_plugins.interfaces import PluginBase
+            from vera_plugins.specs.base import PluginBase
 
             class ValidPlugin(PluginBase):
                 def run(self):
@@ -123,7 +123,7 @@ class TestPluginLoader(TestCase):
 
         entrypoint_code = dedent(
             """
-            from vera_plugins.interfaces import PluginBase
+            from vera_plugins.specs.base import PluginBase
             from {plugin_path} import run
 
             class TestPlugin(PluginBase):

@@ -4,7 +4,7 @@ from importlib import util
 from pathlib import Path
 from typing import Type
 
-from ..interfaces import PluginBase
+from ..specs.base import PluginBase
 
 
 def load_plugin_class(plugin_name: str, file_path: Path) -> Type[PluginBase]:

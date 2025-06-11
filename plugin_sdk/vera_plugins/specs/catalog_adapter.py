@@ -5,7 +5,7 @@ from typing import Any, Dict, Generator, List, NamedTuple
 
 from marcdantic import MarcRecord
 
-from .base import ResourcePluginBase
+from .base import ExternalResourcePluginBase
 
 
 class RecordStatus(Enum):
@@ -97,7 +97,7 @@ class NotImplementedException(Exception):
         super().__init__(message)
 
 
-class CatalogAdapterPlugin(ResourcePluginBase):
+class CatalogAdapterPlugin(ExternalResourcePluginBase):
     """
     Abstract base class for catalog adapter plugins.
 

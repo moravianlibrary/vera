@@ -33,7 +33,9 @@ class TestPluginImplementationValidation(TestCase):
         file_path = self._write_temp_plugin(
             dedent(
                 """
-                from vera_plugins.interfaces import CatalogAdapterPlugin
+                from vera_plugins.specs.catalog_adapter import (
+                    CatalogAdapterPlugin
+                )
 
                 class TestPlugin(CatalogAdapterPlugin):
                     def fetch(self, base, system_number):
@@ -64,7 +66,9 @@ class TestPluginImplementationValidation(TestCase):
         file_path = self._write_temp_plugin(
             dedent(
                 """
-                from vera_plugins.interfaces import CatalogAdapterPlugin
+                from vera_plugins.specs.catalog_adapter import (
+                    CatalogAdapterPlugin
+                )
 
                 class TestPlugin(CatalogAdapterPlugin):
                     def fetch(self, base, system_number):
@@ -93,14 +97,13 @@ class TestPluginImplementationValidation(TestCase):
         file_path = self._write_temp_plugin(
             dedent(
                 """
-                from vera_plugins.interfaces import CatalogAdapterPlugin
+                from vera_plugins.specs.catalog_adapter import (
+                    CatalogAdapterPlugin
+                )
 
                 class TestPlugin(CatalogAdapterPlugin):
                     def fetch(self, base, system_number):
                         return None
-
-                    def is_available(self):
-                        return True
                 """
             )
         )
@@ -111,7 +114,7 @@ class TestPluginImplementationValidation(TestCase):
         self.assertIsInstance(err, UnimplementedFunctionsError)
         self.assertEqual(
             "Plugin 'TestPlugin' of type 'CatalogAdapter' does not implement "
-            "the following required functions: get_config_schema.",
+            "the following required functions: is_available.",
             str(err),
         )
 
@@ -123,7 +126,9 @@ class TestPluginValidation(TestCase):
             f.write(
                 dedent(
                     """
-                    from vera_plugins.interfaces import CatalogAdapterPlugin
+                    from vera_plugins.specs.catalog_adapter import (
+                        CatalogAdapterPlugin
+                    )
 
                     class TestPlugin(CatalogAdapterPlugin):
                         def fetch(self, base, system_number):

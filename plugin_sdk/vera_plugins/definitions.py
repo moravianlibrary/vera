@@ -7,10 +7,10 @@ from typing import Dict, List, Literal, Mapping
 from pydantic import ValidationError
 from yaml import YAMLError
 
-from .interfaces import (
-    CatalogAdapterPlugin,
+from .specs.base import PluginBase
+from .specs.catalog_adapter import CatalogAdapterPlugin
+from .specs.digitization_registry_adapter import (
     DigitizationRegistryAdapterPlugin,
-    PluginBase,
 )
 
 PLUGIN_META_PATTERN = re.compile(r"\.veraplugin\.ya?ml$")

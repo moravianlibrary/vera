@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Any, Dict, List
 
-from .base import ResourcePluginBase
+from .base import ExternalResourcePluginBase
 
 UserInfo = Dict[str, Any]
 
@@ -55,7 +55,7 @@ class UserFieldMissingError(IdentityProviderError):
         self.field = field
 
 
-class IdentityProviderPlugin(ResourcePluginBase):
+class IdentityProviderPlugin(ExternalResourcePluginBase):
     """
     Abstract interface for identity provider plugins.
 

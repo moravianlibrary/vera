@@ -2,12 +2,12 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 from ..definitions import PLUGIN_TYPE_CARDINALITY, PluginType
-from ..interfaces import (
-    CatalogAdapterPlugin,
-    DigitizationRegistryAdapterPlugin,
-    PluginBase,
-)
 from ..schemas import PluginInstance, PluginMeta
+from ..specs.base import PluginBase
+from ..specs.catalog_adapter import CatalogAdapterPlugin
+from ..specs.digitization_registry_adapter import (
+    DigitizationRegistryAdapterPlugin,
+)
 from .loader import load_plugin_class
 from .packager import unpack_plugin
 

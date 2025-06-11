@@ -4,7 +4,7 @@ from typing import List, NamedTuple
 
 from marcdantic import MarcIssue, MarcRecord
 
-from .base import ResourcePluginBase
+from .base import ExternalResourcePluginBase
 
 
 class DigitizationRecordState(Enum):
@@ -77,7 +77,7 @@ class StateChangeError(Exception):
         super().__init__(message)
 
 
-class DigitizationRegistryAdapterPlugin(ResourcePluginBase):
+class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
     """
     Abstract class for a plugin that interacts with a digitization registry.
 
