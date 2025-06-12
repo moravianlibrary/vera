@@ -4,7 +4,8 @@ from pathlib import Path
 from types import ModuleType
 from unittest import TestCase
 
-from ..definitions import PLUGIN_TESTS_PATH, PluginType
+from ..definitions.constants import PLUGIN_TESTS_PATH
+from ..definitions.plugin_types import PluginType
 from ..schemas import PluginInstance, PluginMeta
 from ..tools.registry import PluginRegistry
 

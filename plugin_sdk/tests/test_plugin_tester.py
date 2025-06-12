@@ -4,8 +4,8 @@ from pathlib import Path
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
-from vera_plugins.definitions import PluginType
-from vera_plugins.schemas import PluginInstance, PluginMeta
+from vera_plugins.definitions.plugin_types import PluginType
+from vera_plugins.schemas import CatalogAdapterPluginInstance, PluginMeta
 from vera_plugins.tools.tester import PluginTester
 
 
@@ -26,11 +26,11 @@ class TestPluginTester(TestCase):
             name="MockPlugin",
             type=PluginType.CatalogAdapter,
             version="1.0.0",
-            primary_file="plugin.py",
+            entrypoint_file="plugin.py",
         )
 
     def _instance(self):
-        return PluginInstance(
+        return CatalogAdapterPluginInstance(
             plugin_name="MockPlugin",
             instance_name="mock_instance",
             config=None,
@@ -56,7 +56,7 @@ class TestPluginTester(TestCase):
             "test_plugin.py",
             """
             from unittest import TestCase
-            from vera_plugins.definitions import patch_plugin
+            from vera_plugins.definitions.decorators import patch_plugin
 
             class MyPluginTest(TestCase):
                 @patch_plugin(plugin_type="CatalogAdapter")
@@ -83,7 +83,7 @@ class TestPluginTester(TestCase):
             "test_plugin.py",
             """
             from unittest import TestCase
-            from vera_plugins.definitions import patch_plugin
+            from vera_plugins.definitions.decorators import patch_plugin
 
             class NotATest:
                 @patch_plugin(plugin_type="CatalogAdapter")
@@ -113,7 +113,7 @@ class TestPluginTester(TestCase):
             "test_plugin.py",
             """
             from unittest import TestCase
-            from vera_plugins.definitions import patch_plugin
+            from vera_plugins.definitions.decorators import patch_plugin
 
             class MyPluginTest(TestCase):
                 def test_irrelevant(self, plugin): pass

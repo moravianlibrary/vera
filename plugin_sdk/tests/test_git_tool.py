@@ -2,7 +2,7 @@ import tempfile
 from pathlib import Path
 from unittest import TestCase, skipIf
 
-from vera_plugins.definitions import GitCloneError
+from vera_plugins.definitions.exceptions import GitCloneError
 from vera_plugins.tools.git import clone_git_repo
 
 PUBLIC_REPO_URL = "https://github.com/moravianlibrary/aleph-nought.git"

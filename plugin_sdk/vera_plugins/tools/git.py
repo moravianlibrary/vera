@@ -1,7 +1,7 @@
 from pathlib import Path
 from subprocess import PIPE, CalledProcessError, run
 
-from ..definitions import GitCloneError
+from ..definitions.exceptions import GitCloneError
 
 
 def clone_git_repo(

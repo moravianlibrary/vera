@@ -3,7 +3,7 @@ from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
 
-from vera_plugins.definitions import PluginType
+from vera_plugins.definitions.plugin_types import PluginType
 from vera_plugins.tools.discovery import (
     discover_plugin_instances,
     discover_plugins,
@@ -23,7 +23,7 @@ class TestPluginDiscovery(TestCase):
                 "name: TestPlugin\n"
                 "type: CatalogAdapter\n"
                 "version: 1.0.0\n"
-                "primary_file: test.py\n"
+                "entrypoint_file: test.py\n"
             )
 
             result = discover_plugins(tmpdir)
@@ -32,7 +32,7 @@ class TestPluginDiscovery(TestCase):
             self.assertEqual(result[0].item.name, "TestPlugin")
             self.assertEqual(result[0].item.type, PluginType.CatalogAdapter)
             self.assertEqual(result[0].item.version, "1.0.0")
-            self.assertEqual(result[0].item.primary_file, "test.py")
+            self.assertEqual(result[0].item.entrypoint_file, "test.py")
             self.assertIsNone(result[0].error)
 
     def test_discover_plugin_with_valid_maximal_config(self):
@@ -45,8 +45,8 @@ class TestPluginDiscovery(TestCase):
                 "version: 1.0.0\n"
                 "author: Test Author\n"
                 "description: A test plugin for discovery.\n"
-                "primary_file: test.py\n"
-                "include_files:\n"
+                "entrypoint_file: test.py\n"
+                "additional_files:\n"
                 "  - extra_file_1.py\n"
                 "  - extra_file_2.py\n"
                 "config_schema_path: config_schema.yaml\n"
@@ -62,9 +62,9 @@ class TestPluginDiscovery(TestCase):
             self.assertEqual(
                 result[0].item.description, "A test plugin for discovery."
             )
-            self.assertEqual(result[0].item.primary_file, "test.py")
+            self.assertEqual(result[0].item.entrypoint_file, "test.py")
             self.assertEqual(
-                result[0].item.include_files,
+                result[0].item.additional_files,
                 ["extra_file_1.py", "extra_file_2.py"],
             )
             self.assertEqual(
@@ -83,11 +83,11 @@ class TestPluginDiscovery(TestCase):
                 "name: TestPlugin\n"
                 "type: CatalogAdapter\n"
                 "version: 1.0.0\n"
-                "primary_file: test.py\n"
+                "entrypoint_file: test.py\n"
             )
 
-            primary_file = tmp_path / "test.py"
-            primary_file.write_text("# Test plugin primary file")
+            entrypoint_file = tmp_path / "test.py"
+            entrypoint_file.write_text("# Test plugin primary file")
 
             result = discover_plugins("https://example.com/repo.git")
 
@@ -95,7 +95,7 @@ class TestPluginDiscovery(TestCase):
             self.assertEqual(result[0].item.name, "TestPlugin")
             self.assertEqual(result[0].item.type, PluginType.CatalogAdapter)
             self.assertEqual(result[0].item.version, "1.0.0")
-            self.assertEqual(result[0].item.primary_file, "test.py")
+            self.assertEqual(result[0].item.entrypoint_file, "test.py")
             self.assertIsNone(result[0].error)
 
     def test_discover_plugin_with_invalid_config(self):
@@ -142,6 +142,7 @@ class TestPluginDiscovery(TestCase):
             config_file.write_text(
                 "plugin_name: TestPlugin\n"
                 "instance_name: TestInstance\n"
+                "plugin_type: DocumentDiscovery\n"
                 "config:\n"
                 "  key: value\n"
             )

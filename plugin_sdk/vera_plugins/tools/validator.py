@@ -5,8 +5,8 @@ from typing import List
 from jsonschema.exceptions import SchemaError, ValidationError
 from jsonschema.validators import Draft202012Validator
 
-from ..definitions import (
-    PLUGIN_TYPE_DECLARATION,
+from ..definitions.dispatchers import PLUGIN_TYPE_DECLARATION
+from ..definitions.exceptions import (
     ImplementationError,
     LintingError,
     PluginConfigMissingError,
@@ -21,13 +21,13 @@ from ..tools.loader import load_plugin_class
 
 def validate_plugin_implementation(
     plugin_type: PluginType,
-    primary_file_path: Path,
+    entrypoint_file_path: Path,
 ) -> None | ImplementationError:
     expected_interface = PLUGIN_TYPE_DECLARATION[plugin_type]
-    module_name = f"_plugin_validation_{primary_file_path.stem}"
+    module_name = f"_plugin_validation_{entrypoint_file_path.stem}"
 
     try:
-        plugin_class = load_plugin_class(module_name, primary_file_path)
+        plugin_class = load_plugin_class(module_name, entrypoint_file_path)
     except (FileNotFoundError, ImportError, SyntaxError, ValueError) as e:
         return e
 
@@ -71,12 +71,12 @@ def validate_plugin(dir: Path, meta: PluginMeta) -> List[LintingError]:
             return False
         return True
 
-    err = validate_plugin_implementation(meta.type, dir / meta.primary_file)
+    err = validate_plugin_implementation(meta.type, dir / meta.entrypoint_file)
     if err:
         errors.append(err)
 
-    if meta.include_files:
-        for include_file in meta.include_files:
+    if meta.additional_files:
+        for include_file in meta.additional_files:
             validate_file_exists(
                 dir / include_file, f"Include file '{include_file}'"
             )

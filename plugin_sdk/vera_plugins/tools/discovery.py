@@ -3,30 +3,29 @@ import tempfile
 from os import walk
 from pathlib import Path
 from re import Pattern
-from typing import List, Type, TypeVar
+from typing import List, Type
 
-from pydantic import BaseModel
-
-from ..definitions import (
+from ..definitions.exceptions import GitCloneError
+from ..definitions.patterns import (
     PLUGIN_INSTANCES_PATTERN,
     PLUGIN_META_PATTERN,
-    GitCloneError,
 )
 from ..schemas import (
     DiscoveryResult,
     InstanceDiscoveryResult,
     MetaDiscoveryResult,
-    PluginInstance,
+    PluginInstanceTypeAdapter,
     PluginMeta,
+    PluginModelType,
 )
 from .git import clone_git_repo
 from .parser import parse_git_http_url, parse_yaml_config_file
 
-T = TypeVar("T", bound=BaseModel)
-
 
 def _discover_in_dir(
-    dir: Path, model: Type[T], file_name_pattern: Pattern
+    dir: Path,
+    model: Type[PluginModelType],
+    file_name_pattern: Pattern,
 ) -> List[DiscoveryResult]:
     if not dir.exists():
         raise FileNotFoundError(f"Path {dir} does not exist.")
@@ -53,7 +52,7 @@ def _discover_in_dir(
 
 
 def _discover_in_git_http(
-    url: str, model: Type[T], file_name_pattern: Pattern
+    url: str, model: Type[PluginModelType], file_name_pattern: Pattern
 ) -> List[DiscoveryResult]:
     repo_url, branch, subdir = parse_git_http_url(url)
     tmp_dir = Path(tempfile.mkdtemp())
@@ -69,7 +68,7 @@ def _discover_in_git_http(
 
 def _discover_in_location(
     location: str,
-    model: Type[T],
+    model: Type[PluginModelType],
     file_name_pattern: Pattern,
 ) -> List[DiscoveryResult]:
     try:
@@ -96,10 +95,10 @@ def discover_plugins(
 
 
 def discover_plugin_instances(
-    location: str, plugin_name: str
+    location: str, plugin_name: str | None = None
 ) -> List[InstanceDiscoveryResult]:
     instances = _discover_in_location(
-        location, PluginInstance, PLUGIN_INSTANCES_PATTERN
+        location, PluginInstanceTypeAdapter, PLUGIN_INSTANCES_PATTERN
     )
 
     return (

@@ -83,14 +83,21 @@ class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
 
     Methods
     -------
-    fetch:
+    fetch(registry_issue_id: str) -> DigitizationRecord | None:
         Retrieve digitization information for a specific issue
         from the registry.
-    find_for_marc_record:
+
+    find_for_marc_record(record: MarcRecord) -> DigitizationRecord | None:
         Find digitization records matching a given MARC record.
-    find_for_marc_issue:
+
+    find_for_marc_issue(
+        record: MarcRecord, issue: MarcIssue
+    ) -> DigitizationRecord | None:
         Find digitization records matching a given MARC record and issue.
-    change_state:
+
+    change_state(
+        record_id: str, issue_id: str, state: DigitizationRecordState
+    ) -> None:
         Change the digitization state of a specific record and issue.
     """
 
@@ -114,7 +121,7 @@ class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
 
     @abstractmethod
     def find_for_marc_record(
-        self, marc_record: MarcRecord
+        self, record: MarcRecord
     ) -> DigitizationRecord | None:
         """
         Find digitization records matching a given MARC record.

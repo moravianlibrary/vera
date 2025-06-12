@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from .definitions import DiscoveryError, LintingError
+from .definitions.exceptions import DiscoveryError, LintingError
 from .schemas import PluginInstance, PluginMeta
 
 

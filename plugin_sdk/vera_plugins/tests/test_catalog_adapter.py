@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from ..definitions import PluginType, patch_plugin
+from ..definitions.decorators import patch_plugin
+from ..definitions.plugin_types import PluginType
 from ..specs.catalog_adapter import (
     CatalogAdapterPlugin,
     ListRecordsResponse,

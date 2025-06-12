@@ -1,25 +1,28 @@
 from pathlib import Path
-from typing import List, Tuple, Type, TypeVar
+from typing import List, Tuple, Type
 
 import yaml
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
-from ..definitions import GIT_HTTP_URL_PATTERN, ParseConfigError
-
-T = TypeVar("T", bound=BaseModel)
+from ..definitions.exceptions import ParseConfigError
+from ..definitions.patterns import GIT_HTTP_URL_PATTERN
+from ..schemas import PluginInstanceTypeAdapter, PluginModelType
 
 
 def parse_yaml_config_file(
-    path: Path, model: Type[T]
-) -> Tuple[List[T], List[ParseConfigError]]:
-    items: List[T] = []
+    path: Path, model: Type[PluginModelType]
+) -> Tuple[List[PluginModelType], List[ParseConfigError]]:
+    items: List[PluginModelType] = []
     errors: List[ParseConfigError] = []
 
     try:
         with open(path, "r") as f:
             for item in yaml.safe_load_all(f):
                 try:
-                    items.append(model.model_validate(item))
+                    if model is PluginInstanceTypeAdapter:
+                        items.append(model.validate_python(item))
+                    else:
+                        items.append(model.model_validate(item))
                 except ValidationError as e:
                     errors.append(e)
     except (FileNotFoundError, OSError, yaml.YAMLError) as e:

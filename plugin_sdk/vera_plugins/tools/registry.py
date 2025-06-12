@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import Dict, Tuple
 
-from ..definitions import PLUGIN_TYPE_CARDINALITY, PluginType
+from ..definitions.dispatchers import PLUGIN_TYPE_CARDINALITY
+from ..definitions.plugin_types import PluginType
 from ..schemas import PluginInstance, PluginMeta
 from ..specs.base import PluginBase
 from ..specs.catalog_adapter import CatalogAdapterPlugin
@@ -57,7 +58,7 @@ class PluginRegistry:
         self, meta: PluginMeta, plugin_package: bytes, instance: PluginInstance
     ) -> None:
         module_path = unpack_plugin(
-            meta.name, meta.primary_file, plugin_package
+            meta.name, meta.entrypoint_file, plugin_package
         )
         self.register_from_path(meta, module_path, instance)
 

@@ -2,8 +2,13 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, Mock, patch
 
-from vera_plugins.definitions import PluginType
-from vera_plugins.schemas import PluginInstance, PluginMeta
+from vera_plugins.definitions.plugin_types import PluginType
+from vera_plugins.schemas import (
+    CatalogAdapterPluginInstance,
+    CatalogPropertyPluginInstance,
+    DigitizationRegistryPluginInstance,
+    PluginMeta,
+)
 from vera_plugins.tools.registry import PluginRegistry
 
 
@@ -19,9 +24,9 @@ class TestPluginRegistry(unittest.TestCase):
         meta = PluginMeta(
             type=PluginType.CatalogAdapter,
             name="TestPlugin",
-            primary_file="test.py",
+            entrypoint_file="test.py",
         )
-        instance = PluginInstance(
+        instance = CatalogAdapterPluginInstance(
             plugin_name="TestPlugin", instance_name="TestInstance"
         )
 
@@ -41,18 +46,18 @@ class TestPluginRegistry(unittest.TestCase):
         meta1 = PluginMeta(
             type=PluginType.CatalogAdapter,
             name="TestPlugin1",
-            primary_file="test1.py",
+            entrypoint_file="test1.py",
         )
-        instance1 = PluginInstance(
+        instance1 = CatalogAdapterPluginInstance(
             plugin_name="TestPlugin1", instance_name="Instance1"
         )
 
         meta2 = PluginMeta(
             type=PluginType.CatalogAdapter,
             name="TestPlugin2",
-            primary_file="test2.py",
+            entrypoint_file="test2.py",
         )
-        instance2 = PluginInstance(
+        instance2 = CatalogAdapterPluginInstance(
             plugin_name="TestPlugin2", instance_name="Instance2"
         )
 
@@ -87,14 +92,20 @@ class TestPluginRegistry(unittest.TestCase):
         meta = PluginMeta(
             type=PluginType.CatalogRecordProperty,
             name="TestPlugin1",
-            primary_file="test1.py",
+            entrypoint_file="test1.py",
         )
 
-        instance1 = PluginInstance(
-            plugin_name="TestPlugin1", instance_name="Instance"
+        instance1 = CatalogPropertyPluginInstance(
+            plugin_name="TestPlugin1",
+            instance_name="Instance",
+            property_name="Property",
+            property_type={"type": "string"},
         )
-        instance2 = PluginInstance(
-            plugin_name="TestPlugin2", instance_name="Instance"
+        instance2 = CatalogPropertyPluginInstance(
+            plugin_name="TestPlugin2",
+            instance_name="Instance",
+            property_name="Property",
+            property_type={"type": "string"},
         )
 
         self.registry.register_from_path(meta, Path("/fake/path1"), instance1)
@@ -129,9 +140,9 @@ class TestPluginRegistry(unittest.TestCase):
         meta = PluginMeta(
             type=PluginType.CatalogAdapter,
             name="TestPlugin",
-            primary_file="test.py",
+            entrypoint_file="test.py",
         )
-        instance = PluginInstance(
+        instance = CatalogAdapterPluginInstance(
             plugin_name="TestPlugin", instance_name="Instance"
         )
 
@@ -149,9 +160,9 @@ class TestPluginRegistry(unittest.TestCase):
         meta = PluginMeta(
             type=PluginType.DigitizationRegistryAdapter,
             name="TestPlugin",
-            primary_file="test.py",
+            entrypoint_file="test.py",
         )
-        instance = PluginInstance(
+        instance = DigitizationRegistryPluginInstance(
             plugin_name="TestPlugin", instance_name="Instance"
         )
 
@@ -167,10 +178,13 @@ class TestPluginRegistry(unittest.TestCase):
         meta = PluginMeta(
             type=PluginType.CatalogRecordProperty,
             name="TestPlugin",
-            primary_file="test.py",
+            entrypoint_file="test.py",
         )
-        instance = PluginInstance(
-            plugin_name="TestPlugin", instance_name="Instance"
+        instance = CatalogPropertyPluginInstance(
+            plugin_name="TestPlugin",
+            instance_name="Instance",
+            property_name="Property",
+            property_type={"type": "string"},
         )
 
         self.registry.register_from_path(meta, Path("/fake/path"), instance)
@@ -197,11 +211,14 @@ class TestPluginRegistry(unittest.TestCase):
         meta = PluginMeta(
             type=PluginType.CatalogRecordProperty,
             name="TestPlugin",
-            primary_file="test.py",
+            entrypoint_file="test.py",
         )
 
-        instance = PluginInstance(
-            plugin_name="TestPlugin", instance_name="Instance"
+        instance = CatalogPropertyPluginInstance(
+            plugin_name="TestPlugin",
+            instance_name="Instance",
+            property_name="Property",
+            property_type={"type": "string"},
         )
 
         self.registry.register_from_path(meta, Path("/fake/path1"), instance)
@@ -228,13 +245,13 @@ class TestPluginRegistry(unittest.TestCase):
         self.registry._registry[PluginType.CatalogAdapter] = {
             "Plugin1": (
                 MagicMock(),
-                PluginInstance(
+                CatalogAdapterPluginInstance(
                     plugin_name="Plugin1", instance_name="Instance1"
                 ),
             ),
             "Plugin2": (
                 MagicMock(),
-                PluginInstance(
+                CatalogAdapterPluginInstance(
                     plugin_name="Plugin2", instance_name="Instance2"
                 ),
             ),
@@ -251,12 +268,17 @@ class TestPluginRegistry(unittest.TestCase):
     def test_load_multi_plugin_single_found(self):
         self.registry._registry[PluginType.CatalogRecordProperty] = (
             MagicMock(),
-            PluginInstance(plugin_name="Plugin1", instance_name="Instance1"),
+            CatalogPropertyPluginInstance(
+                plugin_name="Plugin",
+                instance_name="Instance",
+                property_name="Property",
+                property_type={"type": "string"},
+            ),
         )
 
         with self.assertRaises(ValueError) as context:
             self.registry._load_named_plugin(
-                PluginType.CatalogRecordProperty, "Plugin1"
+                PluginType.CatalogRecordProperty, "Plugin"
             )
 
         self.assertEqual(
@@ -276,9 +298,9 @@ class TestPluginRegistry(unittest.TestCase):
         meta = PluginMeta(
             type=PluginType.CatalogAdapter,
             name="PackagedPlugin",
-            primary_file="packaged.py",
+            entrypoint_file="packaged.py",
         )
-        instance = PluginInstance(
+        instance = CatalogAdapterPluginInstance(
             plugin_name="PackagedPlugin", instance_name="PackagedInstance"
         )
 

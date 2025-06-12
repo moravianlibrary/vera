@@ -68,10 +68,13 @@ class IdentityProviderPlugin(ExternalResourcePluginBase):
     -------
     extract_user_info(token: str) -> UserInfo
         Extract user information from the provided authentication token.
+
     get_user_id(user_info: UserInfo) -> str
         Retrieve the user ID from the extracted user information.
+
     get_username(user_info: UserInfo) -> str
         Retrieve the username from the extracted user information.
+
     get_user_roles(user_info: UserInfo) -> List[str]
         Retrieve the roles associated with the user from the extracted user
         information.

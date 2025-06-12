@@ -18,9 +18,14 @@ dynamic = ["dependencies", "description", "readme"]
 vera-plugins = "vera_plugins.cli:main"
 
 [tool.setuptools]
-packages = ["vera_plugins"]
+packages = [
+    "vera_plugins",
+    "vera_plugins.specs",
+    "vera_plugins.tests",
+    "vera_plugins.tools"
+]
 
 [tool.setuptools.dynamic]
-dependencies = {file = "requirements_install.txt"}
+dependencies = {file = "requirements.txt"}
 description = {file = "description.txt"}
 readme = {file = "README.md"}

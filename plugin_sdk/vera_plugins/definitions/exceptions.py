@@ -1,67 +1,10 @@
-import re
-from enum import Enum
-from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Dict, List, Literal, Mapping
+from typing import List
 
 from pydantic import ValidationError
 from yaml import YAMLError
 
-from .specs.base import PluginBase
-from .specs.catalog_adapter import CatalogAdapterPlugin
-from .specs.digitization_registry_adapter import (
-    DigitizationRegistryAdapterPlugin,
-)
-
-PLUGIN_META_PATTERN = re.compile(r"\.veraplugin\.ya?ml$")
-PLUGIN_INSTANCES_PATTERN = re.compile(r"\.veraplugin\.instances\.ya?ml$")
-
-GIT_HTTP_URL_PATTERN = re.compile(
-    r"^(https?://[^@:\s]+\.git)(?:@([\w\-/\.]+))?(?::([\w\-/\.]+))?$"
-)
-
-VERSION_PATTERN = r"^\d+\.\d+\.\d+(-\w+)?$"
-
-
-class PluginType(Enum):
-    CatalogAdapter = "CatalogAdapter"
-    DigitizationRegistryAdapter = "DigitizationRegistryAdapter"
-    CatalogRecordProperty = "CatalogRecordProperty"
-    DocumentProperty = "DocumentProperty"
-    IdentityProvider = "IdentityProvider"
-
-
-class PluginState(Enum):
-    Ready = "Ready"
-    NewVersionAvailable = "NewVersionAvailable"
-    SourceUnavailable = "SourceUnavailable"
-
-
-type PluginTypeCardinality = Literal["1", "0..1", "0..*", "1..*"]
-
-PLUGIN_TYPE_CARDINALITY: Dict[PluginType, PluginTypeCardinality] = {
-    PluginType.CatalogAdapter: "1",
-    PluginType.DigitizationRegistryAdapter: "1",
-    PluginType.CatalogRecordProperty: "0..*",
-    PluginType.DocumentProperty: "0..*",
-    PluginType.IdentityProvider: "1",
-}
-
-PLUGIN_TYPE_DECLARATION: Mapping[PluginType, PluginBase] = {
-    PluginType.CatalogAdapter: CatalogAdapterPlugin,
-    PluginType.DigitizationRegistryAdapter: DigitizationRegistryAdapterPlugin,
-}
-
-PLUGIN_TESTS_PATH = Path("tests")
-
-
-def patch_plugin(plugin_type: PluginType):
-    def decorator(fn):
-        fn.__is_plugin_test__ = True
-        fn.__plugin_type__ = plugin_type
-        return fn
-
-    return decorator
+from .plugin_types import PluginType
 
 
 class GitCloneError(Exception):

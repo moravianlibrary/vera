@@ -22,15 +22,15 @@ class TestPluginPackager(TestCase):
         self.test_dir.cleanup()
 
     def test_package_and_unpack_success(self):
-        include_files = ["file1.txt", "subdir/file3.txt"]
-        package_bytes = package_plugin(self.base_path, include_files)
+        additional_files = ["file1.txt", "subdir/file3.txt"]
+        package_bytes = package_plugin(self.base_path, additional_files)
         self.assertIsInstance(package_bytes, bytes)
         self.assertTrue(len(package_bytes) > 0)
 
         unpack_dir = unpack_plugin("testplugin", package_bytes)
         unpack_path = Path(unpack_dir)
 
-        for rel_file in include_files:
+        for rel_file in additional_files:
             file_path = unpack_path / rel_file
             self.assertTrue(file_path.exists())
             expected_content = (self.base_path / rel_file).read_text()
@@ -39,18 +39,18 @@ class TestPluginPackager(TestCase):
         shutil.rmtree(unpack_dir)
 
     def test_package_missing_file_raises(self):
-        include_files = ["file1.txt", "missing.txt"]
+        additional_files = ["file1.txt", "missing.txt"]
         with self.assertRaises(FileNotFoundError):
-            package_plugin(self.base_path, include_files)
+            package_plugin(self.base_path, additional_files)
 
     def test_package_with_directory_included_raises(self):
-        include_files = ["file1.txt", "subdir"]
+        additional_files = ["file1.txt", "subdir"]
         with self.assertRaises(FileNotFoundError):
-            package_plugin(self.base_path, include_files)
+            package_plugin(self.base_path, additional_files)
 
     def test_unpack_creates_temp_dir(self):
-        include_files = ["file1.txt"]
-        package_bytes = package_plugin(self.base_path, include_files)
+        additional_files = ["file1.txt"]
+        package_bytes = package_plugin(self.base_path, additional_files)
         unpack_dir = unpack_plugin("unpacktest", package_bytes)
         self.assertTrue(Path(unpack_dir).exists())
         self.assertTrue(Path(unpack_dir).is_dir())

@@ -6,14 +6,14 @@ from unittest import TestCase
 
 from jsonschema.exceptions import ValidationError
 
-from vera_plugins.definitions import (
+from vera_plugins.definitions.exceptions import (
     PluginConfigMissingError,
     PluginNotFoundError,
-    PluginType,
     UnexpectedPluginConfigError,
     UnimplementedFunctionsError,
 )
-from vera_plugins.schemas import PluginInstance, PluginMeta
+from vera_plugins.definitions.plugin_types import PluginType
+from vera_plugins.schemas import DocumentDiscoveryPluginInstance, PluginMeta
 from vera_plugins.tools.validator import (
     _validate_json_schema,
     validate_instance,
@@ -38,13 +38,10 @@ class TestPluginImplementationValidation(TestCase):
                 )
 
                 class TestPlugin(CatalogAdapterPlugin):
-                    def fetch(self, base, system_number):
-                        return None
-
                     def is_available(self):
                         return True
 
-                    def get_config_schema(self):
+                    def fetch(self, base, system_number):
                         return None
                 """
             )
@@ -71,13 +68,10 @@ class TestPluginImplementationValidation(TestCase):
                 )
 
                 class TestPlugin(CatalogAdapterPlugin):
-                    def fetch(self, base, system_number):
-                        return None
-
                     def is_available(self):
                         return True
 
-                    def get_config_schema(self):
+                    def fetch(self, base, system_number):
                         return None
                 """
             )
@@ -131,13 +125,10 @@ class TestPluginValidation(TestCase):
                     )
 
                     class TestPlugin(CatalogAdapterPlugin):
-                        def fetch(self, base, system_number):
-                            return None
-
                         def is_available(self):
                             return True
 
-                        def get_config_schema(self):
+                        def fetch(self, base, system_number):
                             return None
                     """
                 )
@@ -145,16 +136,16 @@ class TestPluginValidation(TestCase):
         return PluginMeta(
             name="TestPlugin",
             type=PluginType.CatalogAdapter,
-            primary_file="plugin.py",
+            entrypoint_file="plugin.py",
             version="1.0.0",
         )
 
-    def test_non_existent_primary_file(self):
+    def test_non_existent_entrypoint_file(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             meta = PluginMeta(
                 name="TestPlugin",
                 type=PluginType.CatalogAdapter,
-                primary_file="non_existent.py",
+                entrypoint_file="non_existent.py",
                 version="1.0.0",
             )
             err = validate_plugin(Path(tmpdir), meta)
@@ -162,12 +153,12 @@ class TestPluginValidation(TestCase):
             self.assertIsInstance(err[0], FileNotFoundError)
             self.assertIn("not found.", str(err[0]))
 
-    def test_missing_include_files(self):
+    def test_missing_additional_files(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             tmpdir_path = Path(tmpdir)
 
             meta = self.create_temp_valid_plugin(tmpdir_path)
-            meta.include_files = ["missing_file.py"]
+            meta.additional_files = ["missing_file.py"]
 
             err = validate_plugin(tmpdir_path, meta)
             self.assertEqual(len(err), 1)
@@ -224,12 +215,12 @@ class TestPluginInstanceValidation(TestCase):
             name=name,
             type=PluginType.CatalogAdapter,
             version="1.0.0",
-            primary_file="plugin.py",
+            entrypoint_file="plugin.py",
             config_schema_path=schema_file,
         )
 
     def test_plugin_not_found(self):
-        instance = PluginInstance(
+        instance = DocumentDiscoveryPluginInstance(
             plugin_name="missing_plugin", instance_name="example"
         )
         result = validate_instance(self.dir_path, instance, [])
@@ -240,7 +231,7 @@ class TestPluginInstanceValidation(TestCase):
         self._create_schema_file(schema_file, {"type": "object"})
         meta = self._plugin_meta("TestPlugin", schema_file)
 
-        instance = PluginInstance(
+        instance = DocumentDiscoveryPluginInstance(
             plugin_name="TestPlugin",
             instance_name="instance1",
             config=None,
@@ -250,7 +241,7 @@ class TestPluginInstanceValidation(TestCase):
 
     def test_config_provided_but_unexpected(self):
         meta = self._plugin_meta("TestPlugin", schema_file=None)
-        instance = PluginInstance(
+        instance = DocumentDiscoveryPluginInstance(
             plugin_name="TestPlugin",
             instance_name="instance1",
             config={"foo": "bar"},
@@ -270,7 +261,7 @@ class TestPluginInstanceValidation(TestCase):
         )
 
         meta = self._plugin_meta("TestPlugin", schema_file)
-        instance = PluginInstance(
+        instance = DocumentDiscoveryPluginInstance(
             plugin_name="TestPlugin",
             instance_name="instance1",
             config={"x": 123},
@@ -292,7 +283,7 @@ class TestPluginInstanceValidation(TestCase):
         )
 
         meta = self._plugin_meta("TestPlugin", schema_file)
-        instance = PluginInstance(
+        instance = DocumentDiscoveryPluginInstance(
             plugin_name="TestPlugin",
             instance_name="instance1",
             config={"x": "hello"},
@@ -303,7 +294,7 @@ class TestPluginInstanceValidation(TestCase):
 
     def test_valid_config_without_schema(self):
         meta = self._plugin_meta("TestPlugin")
-        instance = PluginInstance(
+        instance = DocumentDiscoveryPluginInstance(
             plugin_name="TestPlugin",
             instance_name="instance1",
         )

@@ -101,22 +101,26 @@ class CatalogAdapterPlugin(ExternalResourcePluginBase):
     """
     Abstract base class for catalog adapter plugins.
 
-    At least one of the following method groups must be implemented:
-    - Both `get_query_schema()` and `search()`
+    At least one of the following methods must be implemented:
     - `fetch_changes()`
+    - `search()`
 
     Plugins should override the appropriate methods based on their use case.
 
     Methods
     -------
-    fetch:
+    fetch(base: str, system_number: str) -> MarcRecord | None:
         Fetch a specific record based on base and system number.
-    fetch_changes:
+
+    fetch_changes(
+        last_sync: datetime | None
+    ) -> Generator[ListRecordsResponse, None, None]:
         Fetch records modified since the given timestamp.
-    get_query_schema:
-        Return the expected schema for query parameters.
-    search:
-        Perform a paginated search (optional override).
+
+    search(
+        query: Dict[str, Any], page: int, page_size: int
+    ) -> SearchResultResponse:
+        Perform a paginated search.
     """
 
     @abstractmethod
@@ -162,25 +166,6 @@ class CatalogAdapterPlugin(ExternalResourcePluginBase):
         """
         raise NotImplementedException(
             "fetch_changes not implemented in this plugin"
-        )
-
-    def get_query_schema(self) -> Dict[str, Any]:
-        """
-        Return the query schema supported by this adapter.
-
-        Returns
-        -------
-        Optional[Dict[str, Any]]
-            Dictionary representing the query schema,
-            or None if the adapter does not support querying.
-
-        Raises
-        ------
-        NotImplementedException
-            If querying is not supported by the plugin.
-        """
-        raise NotImplementedException(
-            "get_query_schema not implemented in this plugin"
         )
 
     def search(
