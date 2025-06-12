@@ -7,6 +7,8 @@ from vera_plugins.schemas import (
     CatalogAdapterPluginInstance,
     CatalogPropertyPluginInstance,
     DigitizationRegistryPluginInstance,
+    DocumentDiscoveryPluginInstance,
+    IdentityProviderPluginInstance,
     PluginMeta,
 )
 from vera_plugins.tools.registry import PluginRegistry
@@ -316,3 +318,83 @@ class TestPluginRegistry(unittest.TestCase):
                 1
             ].instance_name,
         )
+
+    @patch("vera_plugins.tools.registry.load_plugin_class")
+    def test_load_identity_provider(self, mock_load_plugin_class: Mock):
+        mock_load_plugin_class.return_value = MagicMock()
+
+        meta = PluginMeta(
+            type=PluginType.IdentityProvider,
+            name="TestPlugin",
+            entrypoint_file="test.py",
+        )
+        instance = IdentityProviderPluginInstance(
+            plugin_name="TestPlugin",
+            instance_name="Instance",
+        )
+
+        self.registry.register_from_path(meta, Path("/fake/path"), instance)
+
+        plugin = self.registry.identity_provider
+        self.assertIsNotNone(plugin)
+
+    @patch("vera_plugins.tools.registry.load_plugin_class")
+    def test_load_catalog_record_property(self, mock_load_plugin_class: Mock):
+        mock_load_plugin_class.return_value = MagicMock()
+
+        meta = PluginMeta(
+            type=PluginType.CatalogRecordProperty,
+            name="TestPlugin",
+            entrypoint_file="test.py",
+        )
+        instance = CatalogPropertyPluginInstance(
+            plugin_name="TestPlugin",
+            instance_name="Instance",
+            property_name="Property",
+            property_type={"type": "string"},
+        )
+
+        self.registry.register_from_path(meta, Path("/fake/path"), instance)
+
+        plugin = self.registry.catalog_record_property("TestPlugin")
+        self.assertIsNotNone(plugin)
+
+    @patch("vera_plugins.tools.registry.load_plugin_class")
+    def test_load_document_property(self, mock_load_plugin_class: Mock):
+        mock_load_plugin_class.return_value = MagicMock()
+
+        meta = PluginMeta(
+            type=PluginType.DocumentProperty,
+            name="TestPlugin",
+            entrypoint_file="test.py",
+        )
+        instance = DocumentDiscoveryPluginInstance(
+            plugin_name="TestPlugin",
+            instance_name="Instance",
+            property_name="Property",
+            property_type={"type": "string"},
+        )
+
+        self.registry.register_from_path(meta, Path("/fake/path"), instance)
+
+        plugin = self.registry.document_property("TestPlugin")
+        self.assertIsNotNone(plugin)
+
+    @patch("vera_plugins.tools.registry.load_plugin_class")
+    def test_load_document_discovery(self, mock_load_plugin_class: Mock):
+        mock_load_plugin_class.return_value = MagicMock()
+
+        meta = PluginMeta(
+            type=PluginType.DocumentDiscovery,
+            name="TestPlugin",
+            entrypoint_file="test.py",
+        )
+        instance = DocumentDiscoveryPluginInstance(
+            plugin_name="TestPlugin",
+            instance_name="Instance",
+        )
+
+        self.registry.register_from_path(meta, Path("/fake/path"), instance)
+
+        plugin = self.registry.document_discovery("TestPlugin")
+        self.assertIsNotNone(plugin)

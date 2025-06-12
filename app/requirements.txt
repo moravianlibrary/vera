@@ -5,7 +5,7 @@ cachetools
 celery
 coverage
 elasticsearch
-fastapi==0.103.2
+fastapi
 lxml
 openpyxl
 pandas
@@ -19,5 +19,6 @@ redis
 requests
 scipy
 sqlalchemy
-typing-extensions==4.8.0
+typing-extensions
 uvicorn
+../plugin_sdk

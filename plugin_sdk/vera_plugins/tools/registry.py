@@ -1,6 +1,10 @@
 from pathlib import Path
 from typing import Dict, Tuple
 
+from vera_plugins.specs.catalog_record_property import (
+    CatalogRecordPropertyPlugin,
+)
+
 from ..definitions.dispatchers import PLUGIN_TYPE_CARDINALITY
 from ..definitions.plugin_types import PluginType
 from ..schemas import PluginInstance, PluginMeta
@@ -9,6 +13,9 @@ from ..specs.catalog_adapter import CatalogAdapterPlugin
 from ..specs.digitization_registry_adapter import (
     DigitizationRegistryAdapterPlugin,
 )
+from ..specs.document_discovery import DocumentDiscoveryPlugin
+from ..specs.document_property import DocumentPropertyPlugin
+from ..specs.identity_provider import IdentityProviderPlugin
 from .loader import load_plugin_class
 from .packager import unpack_plugin
 
@@ -107,6 +114,10 @@ class PluginRegistry:
         )
 
     @property
+    def identity_provider(self) -> IdentityProviderPlugin:
+        return self._load_single_plugin(PluginType.IdentityProvider)
+
+    @property
     def catalog_adapter(self) -> CatalogAdapterPlugin:
         return self._load_single_plugin(PluginType.CatalogAdapter)
 
@@ -115,3 +126,20 @@ class PluginRegistry:
         self,
     ) -> DigitizationRegistryAdapterPlugin:
         return self._load_single_plugin(PluginType.DigitizationRegistryAdapter)
+
+    def catalog_record_property(
+        self, plugin_name: str
+    ) -> CatalogRecordPropertyPlugin:
+        return self._load_named_plugin(
+            PluginType.CatalogRecordProperty, plugin_name
+        )
+
+    def document_property(self, plugin_name: str) -> DocumentPropertyPlugin:
+        return self._load_named_plugin(
+            PluginType.DocumentProperty, plugin_name
+        )
+
+    def document_discovery(self, plugin_name: str) -> DocumentDiscoveryPlugin:
+        return self._load_named_plugin(
+            PluginType.DocumentDiscovery, plugin_name
+        )
