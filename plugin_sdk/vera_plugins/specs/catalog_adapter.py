@@ -1,9 +1,10 @@
 from abc import abstractmethod
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Generator, List, NamedTuple
+from typing import Generator, List, NamedTuple
 
 from marcdantic import MarcRecord
+from marcdantic.query import MarcSearchRequest
 
 from .base import ExternalResourcePluginBase
 
@@ -117,9 +118,7 @@ class CatalogAdapterPlugin(ExternalResourcePluginBase):
     ) -> Generator[ListRecordsResponse, None, None]:
         Fetch records modified since the given timestamp.
 
-    search(
-        query: Dict[str, Any], page: int, page_size: int
-    ) -> SearchResultResponse:
+    search(request: MarcSearchRequest) -> SearchResultResponse:
         Perform a paginated search.
     """
 
@@ -168,20 +167,14 @@ class CatalogAdapterPlugin(ExternalResourcePluginBase):
             "fetch_changes not implemented in this plugin"
         )
 
-    def search(
-        self, query: Dict[str, Any], page: int, page_size: int
-    ) -> SearchResultResponse:
+    def search(self, request: MarcSearchRequest) -> SearchResultResponse:
         """
         Perform a search using given parameters.
 
         Parameters
         ----------
-        query : Dict[str, Any]
-            The query parameters.
-        page : int
-            Page number of the results.
-        page_size : int
-            Number of results per page.
+        request : MarcSearchRequest
+            The search request containing the query and pagination parameters.
 
         Returns
         -------

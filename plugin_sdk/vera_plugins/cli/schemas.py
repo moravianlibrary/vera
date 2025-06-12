@@ -3,8 +3,8 @@ from typing import List
 
 from pydantic import BaseModel
 
-from .definitions.exceptions import DiscoveryError, LintingError
-from .schemas import PluginInstance, PluginMeta
+from ..definitions.exceptions import DiscoveryError, LintingError
+from ..schemas import PluginInstance, PluginMeta
 
 
 class BaseMetaRow(BaseModel):
@@ -79,7 +79,7 @@ class DiscoveryMetaRow(BaseMetaRow):
         base = super().__repr__()
         if self.error:
             return f"{base}\n  [X] {self.error}"
-        return f"{base}\n  [✓] OK"
+        return f"{base}"
 
 
 class DiscoveryInstanceRow(BaseInstanceRow):
@@ -107,7 +107,7 @@ class DiscoveryInstanceRow(BaseInstanceRow):
 
 
 class LintingMetaRow(BaseMetaRow):
-    errors: List[str]
+    errors: List[str] = []
 
     @classmethod
     def from_discovery(

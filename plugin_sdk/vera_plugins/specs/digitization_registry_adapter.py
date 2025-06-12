@@ -7,7 +7,7 @@ from marcdantic import MarcIssue, MarcRecord
 from .base import ExternalResourcePluginBase
 
 
-class DigitizationRecordState(Enum):
+class DigitizationRecordState(str, Enum):
     """
     Enumeration representing the possible states of digitization.
 
@@ -63,6 +63,20 @@ class DigitizationRecord(NamedTuple):
     error_message: str | None = None
 
 
+class RegistrationError(Exception):
+    """
+    Exception raised when a digitization record registration fails.
+
+    Parameters
+    ----------
+    message : str
+        The error message describing the failure.
+    """
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
 class StateChangeError(Exception):
     """
     Exception raised when a state change operation fails.
@@ -81,6 +95,9 @@ class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
     """
     Abstract class for a plugin that interacts with a digitization registry.
 
+    The methods `register_digitization` and `change_state` are optional.
+    They are not used if the plugin is configured as read-only.
+
     Methods
     -------
     fetch(registry_issue_id: str) -> DigitizationRecord | None:
@@ -94,6 +111,13 @@ class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
         record: MarcRecord, issue: MarcIssue
     ) -> DigitizationRecord | None:
         Find digitization records matching a given MARC record and issue.
+
+    register_digitization(
+        record: MarcRecord,
+        issue: MarcIssue | None,
+        state: DigitizationRecordState
+    ) -> DigitizationRecord:
+        Register a new digitization record in the registry.
 
     change_state(
         record_id: str, issue_id: str, state: DigitizationRecordState
@@ -159,7 +183,40 @@ class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
         """
         pass
 
-    @abstractmethod
+    def register_digitization(
+        self,
+        record: MarcRecord,
+        issue: MarcIssue | None,
+        state: DigitizationRecordState,
+    ) -> DigitizationRecord:
+        """
+        Register a new digitization record in the registry.
+
+        Parameters
+        ----------
+        record : MarcRecord
+            The MARC record to register for digitization.
+
+        issue : MarcIssue | None
+            Optional issue within the MARC record to register.
+
+        state : DigitizationRecordState
+            Initial digitization state to assign.
+
+        Returns
+        -------
+        DigitizationRecord
+            The newly created digitization record.
+
+        Raises
+        ------
+        RegistrationError
+            If the registration fails due to an error.
+        """
+        raise NotImplementedError(
+            "register_digitization not implemented in this plugin"
+        )
+
     def change_state(
         self, record_id: str, issue_id: str, state: DigitizationRecordState
     ) -> None:
@@ -180,4 +237,6 @@ class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
         StateChangeError
             If the state change operation fails.
         """
-        pass
+        raise NotImplementedError(
+            "change_state not implemented in this plugin"
+        )

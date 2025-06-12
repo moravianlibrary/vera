@@ -20,6 +20,8 @@ vera-plugins = "vera_plugins.cli:main"
 [tool.setuptools]
 packages = [
     "vera_plugins",
+    "vera_plugins.definitions",
+    "vera_plugins.skeletons",
     "vera_plugins.specs",
     "vera_plugins.tests",
     "vera_plugins.tools"

@@ -30,27 +30,30 @@ class TestPluginImplementationValidation(TestCase):
         return Path(tmp_file.name)
 
     def test_valid_plugin(self):
-        file_path = self._write_temp_plugin(
-            dedent(
-                """
-                from vera_plugins.specs.catalog_adapter import (
-                    CatalogAdapterPlugin
+        try:
+            file_path = self._write_temp_plugin(
+                dedent(
+                    """
+                    from vera_plugins.specs.catalog_adapter import (
+                        CatalogAdapterPlugin
+                    )
+
+                    class TestPlugin(CatalogAdapterPlugin):
+                        def is_available(self):
+                            return True
+
+                        def fetch(self, base, system_number):
+                            return None
+                    """
                 )
-
-                class TestPlugin(CatalogAdapterPlugin):
-                    def is_available(self):
-                        return True
-
-                    def fetch(self, base, system_number):
-                        return None
-                """
             )
-        )
 
-        err = validate_plugin_implementation(
-            PluginType.CatalogAdapter, file_path
-        )
-        self.assertIsNone(err)
+            err = validate_plugin_implementation(
+                PluginType.CatalogAdapter, file_path
+            )
+            self.assertIsNone(err)
+        finally:
+            file_path.unlink()
 
     def test_fetch_load_exceptions(self):
         fake_path = Path("/nonexistent/plugin.py")
@@ -60,57 +63,63 @@ class TestPluginImplementationValidation(TestCase):
         self.assertIsInstance(err, FileNotFoundError)
 
     def test_wrong_type(self):
-        file_path = self._write_temp_plugin(
-            dedent(
-                """
-                from vera_plugins.specs.catalog_adapter import (
-                    CatalogAdapterPlugin
+        try:
+            file_path = self._write_temp_plugin(
+                dedent(
+                    """
+                    from vera_plugins.specs.catalog_adapter import (
+                        CatalogAdapterPlugin
+                    )
+
+                    class TestPlugin(CatalogAdapterPlugin):
+                        def is_available(self):
+                            return True
+
+                        def fetch(self, base, system_number):
+                            return None
+                    """
                 )
-
-                class TestPlugin(CatalogAdapterPlugin):
-                    def is_available(self):
-                        return True
-
-                    def fetch(self, base, system_number):
-                        return None
-                """
             )
-        )
 
-        err = validate_plugin_implementation(
-            PluginType.DigitizationRegistryAdapter, file_path
-        )
-        self.assertIsInstance(err, TypeError)
-        self.assertEqual(
-            "Plugin class 'TestPlugin' does not implement "
-            "expected interface 'DigitizationRegistryAdapterPlugin'.",
-            str(err),
-        )
+            err = validate_plugin_implementation(
+                PluginType.DigitizationRegistryAdapter, file_path
+            )
+            self.assertIsInstance(err, TypeError)
+            self.assertEqual(
+                "Plugin class 'TestPlugin' does not implement "
+                "expected interface 'DigitizationRegistryAdapterPlugin'.",
+                str(err),
+            )
+        finally:
+            file_path.unlink()
 
     def test_unimplemented_functionality(self):
-        file_path = self._write_temp_plugin(
-            dedent(
-                """
-                from vera_plugins.specs.catalog_adapter import (
-                    CatalogAdapterPlugin
+        try:
+            file_path = self._write_temp_plugin(
+                dedent(
+                    """
+                    from vera_plugins.specs.catalog_adapter import (
+                        CatalogAdapterPlugin
+                    )
+
+                    class TestPlugin(CatalogAdapterPlugin):
+                        def fetch(self, base, system_number):
+                            return None
+                    """
                 )
-
-                class TestPlugin(CatalogAdapterPlugin):
-                    def fetch(self, base, system_number):
-                        return None
-                """
             )
-        )
 
-        err = validate_plugin_implementation(
-            PluginType.CatalogAdapter, file_path
-        )
-        self.assertIsInstance(err, UnimplementedFunctionsError)
-        self.assertEqual(
-            "Plugin 'TestPlugin' of type 'CatalogAdapter' does not implement "
-            "the following required functions: is_available.",
-            str(err),
-        )
+            err = validate_plugin_implementation(
+                PluginType.CatalogAdapter, file_path
+            )
+            self.assertIsInstance(err, UnimplementedFunctionsError)
+            self.assertEqual(
+                "Plugin 'TestPlugin' of type 'CatalogAdapter' does not "
+                "implement the following required functions: is_available.",
+                str(err),
+            )
+        finally:
+            file_path.unlink()
 
 
 class TestPluginValidation(TestCase):
@@ -127,7 +136,6 @@ class TestPluginValidation(TestCase):
                     class TestPlugin(CatalogAdapterPlugin):
                         def is_available(self):
                             return True
-
                         def fetch(self, base, system_number):
                             return None
                     """

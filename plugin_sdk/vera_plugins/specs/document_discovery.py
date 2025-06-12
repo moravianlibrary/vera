@@ -45,6 +45,19 @@ DocumentPointer = DocumentRef | CatalogDocumentRef
 
 
 class DocumentDiscoveryPlugin(ExternalResourcePluginBase):
+    """
+    Abstract base class for plugins that discover documents.
+
+    Designed for plugins that yield references to documents
+    to be added to the system, either as simple references or
+    as catalog references.
+
+    Methods
+    -------
+    discover_documents() -> Generator[DocumentPointer, None, None]
+        Yield references to documents to be added to the system.
+    """
+
     @abstractmethod
     def discover_documents(self) -> Generator[DocumentPointer, None, None]:
         """
@@ -53,6 +66,6 @@ class DocumentDiscoveryPlugin(ExternalResourcePluginBase):
         Returns
         -------
         Generator[DocumentPointer, None, None]
-            A generator of `DocumentRef` or `CatalogDocumentRef`.
+            Generator yielding `DocumentRef` or `CatalogDocumentRef` instances.
         """
         pass

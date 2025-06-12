@@ -11,24 +11,44 @@ from typing import (
     Union,
 )
 
-from pydantic import BaseModel, Field, TypeAdapter, constr
+from pydantic import BaseModel, Field, StringConstraints, TypeAdapter
 
 from .definitions.data_property import PropertyTypeSchema
 from .definitions.exceptions import DiscoveryError
 from .definitions.patterns import VERSION_PATTERN
 from .definitions.plugin_types import PluginType
 
+Version = Annotated[
+    str,
+    StringConstraints(pattern=VERSION_PATTERN),
+]
+
 
 # --- Plugin Metadata ---
 class PluginMeta(BaseModel):
     name: str
     type: PluginType
-    version: str = constr(pattern=VERSION_PATTERN)
+    version: str = Version
     author: str | None = None
     description: str | None = None
     entrypoint_file: str
     config_schema_path: str | None = None
     additional_files: List[str] | None = None
+
+    def __repr__(self):
+        additional_str = (
+            f"\n{"\n    - ".join(self.additional_files)}"
+            if self.additional_files
+            else None
+        )
+        return (
+            f"{self.type.value} Plugin '{self.name}:{self.version}':\n"
+            f"  - Author: {self.author or ''}\n"
+            f"  - Description: {self.description or ''}\n"
+            f"  - Entrypoint: {self.entrypoint_file}\n"
+            f"  - Config Schema: {self.config_schema_path or ''}\n"
+            f"  - Additional Files: {additional_str or ''}"
+        )
 
 
 PluginMetas = List[PluginMeta]
@@ -98,9 +118,9 @@ PluginInstance = Annotated[
 
 PluginInstances = List[PluginInstance]
 
+# --- Type Adapters ---
 PluginInstanceTypeAdapter = TypeAdapter(PluginInstance)
 
-# --- Type Adapters ---
 PluginModelType = TypeVar(
     "PluginModelType",
     bound=Union[PluginMeta, TypeAdapter[PluginInstance]],

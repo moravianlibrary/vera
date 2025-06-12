@@ -8,7 +8,7 @@ JSONType = JSONScalar | List["JSONType"] | Dict[str, "JSONType"]
 
 InputType = TypeVar("InputType")
 PropertyType = TypeVar("PropertyType", bound=JSONType)
-ExtractedProperties = Dict[str, PropertyType]
+ExtractedProperties = Dict[str, JSONType]
 
 
 # --- JSON Schema-like Type Definitions for Plugin Configs ---
