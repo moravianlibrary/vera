@@ -1,2 +1,0 @@
-class DocumentProposalRepository:
-    pass

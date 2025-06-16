@@ -112,7 +112,7 @@ package "Digitization Planner" {
 
     class DigitizationListController {
       +create(query: DocumentQuery): ItemMessageResponse<Task>
-      +archive(digitizationListId: Integer): ItemMessageResponse<Task>
+      ' +archive(digitizationListId: Integer): ItemMessageResponse<Task>
       +delete(digitizationListId: Integer): ItemMessageResponse<Task>
       +addDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMessageResponse<Task>
       +removeDocuments(digitizationListId: Integer, query: DocumentQuery): ItemMessageResponse<Task>

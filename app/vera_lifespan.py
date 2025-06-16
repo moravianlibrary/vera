@@ -8,7 +8,7 @@ from sqlalchemy import or_, text, update
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from adapters.elasticsearch import is_indexer_available, with_es_session
+from adapters.indexer import is_indexer_available, with_es_session
 from config import VeraConfig
 from datatypes import TaskItemType, TaskState
 from models import (

@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, List
 
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 
 from adapters.database import BaseModel
@@ -8,7 +8,6 @@ from adapters.database import BaseModel
 from .associations import category_group_association, category_user_association
 
 if TYPE_CHECKING:
-    from .distribution import CategoryProportionModel
     from .document_iteration import DocumentIterationModel
     from .group import GroupModel
     from .user import UserModel
@@ -23,17 +22,12 @@ class CategoryModel(BaseModel):
     description = Column(String)
     project_id = Column(Integer, ForeignKey("projects.id"))
     parent_id = Column(Integer, ForeignKey("categories.id"))
-    level = Column(Integer, default=0, nullable=False)
+    level = Column(Integer, nullable=False)
 
-    assignable = Column(Boolean, default=False, nullable=False)
-    extract_whole = Column(Boolean, default=False, nullable=False)
+    assignable = Column(Boolean, nullable=False)
+    extract_whole = Column(Boolean, nullable=False)
     disabled = Column(Boolean, default=False, nullable=False)
     archived = Column(Boolean, default=False, nullable=False)
-
-    generator_plugin_id = Column(Integer, ForeignKey("plugins.id"))
-    generator_recurring_task_id = Column(
-        Integer, ForeignKey("recurring_tasks.id")
-    )
 
     # Hierarchical relationship
     parent: Mapped["CategoryModel" | None] = relationship(
@@ -80,22 +74,22 @@ class CategoryModel(BaseModel):
 
     @property
     def indirect_groups(self) -> List["GroupModel"]:
-        _groups = set(self.groups)
+        _groups = set(self.assigned_groups)
 
         _category = self.parent
         while _category:
-            _groups.update(_category.groups)
+            _groups.update(_category.assigned_groups)
             _category = _category.parent
 
         return list(_groups)
 
     @property
     def indirect_users(self) -> List["UserModel"]:
-        _users = set(self.users)
+        _users = set(self.assigned_users)
 
         _category = self.parent
         while _category:
-            _users.update(_category.users)
+            _users.update(_category.assigned_users)
             _category = _category.parent
 
         return list(_users)
@@ -108,3 +102,44 @@ class CategoryModel(BaseModel):
     # +extractableDocuments(): Integer
     # +extractedPageCount(): Integer
     # +extractedDocuments(): Integer
+
+
+# TODO: Audits
+class DistributionModel(BaseModel):
+    __tablename__ = "distributions"
+
+    id = Column(Integer, primary_key=True)
+
+    name = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    is_active = Column(Boolean, default=False, nullable=False)
+
+    proportions: Mapped[List["CategoryProportionModel"]] = relationship(
+        "CategoryProportionModel",
+        back_populates="distribution",
+        lazy="joined",
+        cascade="all, delete-orphan",
+    )
+
+
+class CategoryProportionModel(BaseModel):
+    __tablename__ = "category_proportions"
+
+    category_id = Column(
+        Integer, ForeignKey("categories.id"), primary_key=True
+    )
+    distribution_id = Column(
+        Integer, ForeignKey("distributions.id"), primary_key=True
+    )
+    proportion = Column(Float)
+
+    categories: Mapped["CategoryModel"] = relationship(
+        "CategoryModel",
+        back_populates="proportions",
+        lazy="joined",
+    )
+    distribution: Mapped["DistributionModel"] = relationship(
+        "DistributionModel",
+        back_populates="proportions",
+        lazy="joined",
+    )

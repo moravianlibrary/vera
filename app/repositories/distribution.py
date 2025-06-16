@@ -1,6 +1,6 @@
 from requests import Session
 
-from schemas import DistributionEdit
+from schemas.category import DistributionEdit
 
 from ._base import BaseRepository
 from ._mixins import (
@@ -10,16 +10,16 @@ from ._mixins import (
     PaginationMixin,
     SaveMixin,
 )
-from .models import DistributionModel
+from .models.category import DistributionModel
 
 
 class DistributionRepository(
     BaseRepository,
-    DeleteMixin,
-    EnforceNameUniquenessMixin,
-    GetByIdMixin,
-    PaginationMixin,
-    SaveMixin,
+    DeleteMixin[DistributionModel],
+    EnforceNameUniquenessMixin[DistributionModel, int],
+    GetByIdMixin[DistributionModel, int],
+    PaginationMixin[DistributionModel],
+    SaveMixin[DistributionModel],
 ):
     def __init__(self, db_session: Session):
         super().__init__(db_session, DistributionModel, "Distribution")
@@ -31,7 +31,14 @@ class DistributionRepository(
         self.enforce_name_uniqueness(distribution.name)
         return self.save(
             DistributionModel(
-                name=distribution.name, description=distribution.description
+                name=distribution.name,
+                description=distribution.description,
+                is_active=(
+                    self._db_session.query(DistributionModel)
+                    .filter(DistributionModel.is_active.is_(True))
+                    .first()
+                    is None
+                ),
             )
         )
 
@@ -46,3 +53,16 @@ class DistributionRepository(
         role_model.name = distribution.name
         role_model.description = distribution.description
         return self.save(role_model)
+
+    def set_as_active(self, distribution_id: int) -> DistributionModel:
+        """
+        Set a distribution as active.
+        """
+        distribution_model = self.get_by_id(distribution_id)
+
+        self._db_session.query(DistributionModel).filter(
+            DistributionModel.is_active.is_(True)
+        ).update({"is_active": False})
+
+        distribution_model.is_active = True
+        return self.save(distribution_model)

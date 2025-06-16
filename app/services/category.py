@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from adapters.elasticsearch import EsSession
+from adapters.indexer import EsSession
 from schemas import CategoryEdit
 
 

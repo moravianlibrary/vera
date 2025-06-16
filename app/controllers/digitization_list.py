@@ -1,149 +1,107 @@
 from typing import List, Optional
 
 from fastapi import APIRouter, Path, Query
-from sqlalchemy.orm import Session
 
+from adapters.indexer import IndexerQuery, IndexerResponse
+from controllers._resources import (
+    DependsOnDigiListRepository,
+    DependsOnDigiListService,
+)
 from custom_types import GeneralPermission
 from datatypes import DigitizationState, EsRoutingParams
-from exceptions import EmptyExtractionException
-from models import DigitizationList, Document
-from schemas import DigitizationList as DigitizationListSchema
-from schemas import EsSession, IndexDocument, Page
+from repositories.digitization_list import DigiListRepository
+from schemas.message_response import TaskMessageResponse
+from schemas.user import AuthenticatedUser
+from services.digitization_list import DigiListService
 
-from ._resources import DependsOnDbSession, DependsOnEsSession
-from .security import DependsOnCallerUsername, WithPermission
+from ._security import DependsOnAuthenticatedUser, WithPermission
 
 router = APIRouter(prefix="/digitization-lists", tags=["Digitization lists"])
-
-# TODO: make documents index in dedicated process
 
 
 @router.post(
     "",
     dependencies=[WithPermission(GeneralPermission.ReadDigitizationLists)],
-    response_model=DigitizationListSchema,
+    response_model=IndexerResponse,
 )
 def search(
-    session: Session = DependsOnDbSession,
-    es_session: EsSession = DependsOnEsSession,
+    query: IndexerQuery,
+    repository: DigiListRepository = DependsOnDigiListRepository,
 ):
-    pass
+    return repository.search(query)
 
 
 @router.post(
     "",
     dependencies=[WithPermission(GeneralPermission.CreateDigitizationLists)],
-    response_model=DigitizationListSchema,
+    response_model=TaskMessageResponse,
 )
 def create(
     query_routing_params: EsRoutingParams,
-    intention_id: Optional[int] = Query(None, description="Intention ID"),
-    ignore_digitization_states: List[DigitizationState] = Query([]),
-    created_by: str = DependsOnCallerUsername,
-    session: Session = DependsOnDbSession,
-    es_session: EsSession = DependsOnEsSession,
+    intention_ids: List[int] = Query(default=[]),
+    ignore_digitization_states: List[DigitizationState] = Query(default=[]),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: DigiListService = DependsOnDigiListService,
 ):
-    document_ids = IndexDocument.search_source_ids(
-        es_session, parse_query_routing(query_routing_params)
-    )
-    if not document_ids:
-        raise EmptyExtractionException()
-
-    digitization_list = (
-        DigitizationList(intention_id=intention_id, created_by=created_by)
-        .save(session)
-        .add_documents(session, document_ids, ignore_digitization_states)
+    return service.create(
+        query_routing_params,
+        intention_ids,
+        ignore_digitization_states,
+        user.user_id,
     )
 
-    for document_id in document_ids:
-        IndexDocument.model_validate(Document.get(session, document_id)).save(
-            es_session
-        )
 
-    return digitization_list
+@router.put(
+    "/{digitization_list_id}",
+    dependencies=[WithPermission(GeneralPermission.ManageDigitizationLists)],
+    response_model=TaskMessageResponse,
+)
+def update(
+    digitization_list_id: int = Path(...),
+    intention_ids: Optional[List[int]] = Query(default=None),
+    service: DigiListService = DependsOnDigiListService,
+):
+    return service.update(digitization_list_id, intention_ids)
 
 
 @router.put(
     "/{digitization_list_id}/add-documents",
     dependencies=[WithPermission(GeneralPermission.ManageDigitizationLists)],
-    response_model=DigitizationListSchema,
+    response_model=TaskMessageResponse,
 )
 def add_documents(
     query_routing_params: EsRoutingParams,
     digitization_list_id: int = Path(...),
     ignore_digitization_states: List[DigitizationState] = Query([]),
-    session: Session = DependsOnDbSession,
-    es_session: EsSession = DependsOnEsSession,
+    service: DigiListService = DependsOnDigiListService,
 ):
-    document_ids = IndexDocument.search_source_ids(
-        es_session, parse_query_routing(query_routing_params)
+    return service.add_documents(
+        query_routing_params,
+        digitization_list_id,
+        ignore_digitization_states,
     )
-
-    digitization_list = DigitizationList.get(session, digitization_list_id)
-    digitization_list.add_documents(
-        session, document_ids, set(ignore_digitization_states)
-    )
-
-    for document_id in document_ids:
-        IndexDocument.model_validate(Document.get(session, document_id)).save(
-            es_session
-        )
-
-    return digitization_list
 
 
 @router.put(
     "/{digitization_list_id}/remove-documents",
     dependencies=[WithPermission(GeneralPermission.ManageDigitizationLists)],
-    response_model=DigitizationListSchema,
+    response_model=TaskMessageResponse,
 )
 def remove_documents(
     query_routing_params: EsRoutingParams,
     digitization_list_id: int = Path(...),
-    session: Session = DependsOnDbSession,
-    es_session: EsSession = DependsOnEsSession,
+    service: DigiListService = DependsOnDigiListService,
 ):
-    document_ids = IndexDocument.search_source_ids(
-        es_session, parse_query_routing(query_routing_params)
-    )
-
-    digitization_list = DigitizationList.get(session, digitization_list_id)
-    digitization_list.remove_documents(session, document_ids)
-
-    for document_id in document_ids:
-        IndexDocument.model_validate(Document.get(session, document_id)).save(
-            es_session
-        )
-
-    return digitization_list
-
-
-@router.post(
-    "/{digitization_list_id}/archive",
-    dependencies=[WithPermission(GeneralPermission.ManageDigitizationLists)],
-    response_model=DigitizationListSchema,
-)
-def archive(
-    digitization_list_id: int = Path(...),
-    session: Session = DependsOnDbSession,
-    es_session: EsSession = DependsOnEsSession,
-):
-    pass
+    return service.remove_documents(query_routing_params, digitization_list_id)
 
 
 @router.delete(
     "/{digitization_list_id}",
     dependencies=[WithPermission(GeneralPermission.ManageDigitizationLists)],
-    response_model=DigitizationListSchema,
+    response_model=TaskMessageResponse,
 )
 def delete(
     digitization_list_id: int = Path(...),
-    session: Session = DependsOnDbSession,
-    es_session: EsSession = DependsOnEsSession,
+    service: DigiListService = DependsOnDigiListService,
 ):
-    digitization_list = DigitizationList.get(session, digitization_list_id)
-
-    for document in digitization_list.documents:
-        IndexDocument.model_validate(document).save(es_session)
-
-    return digitization_list.delete(session)
+    return service.delete(digitization_list_id)

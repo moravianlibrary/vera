@@ -5,13 +5,13 @@ from repositories import IntentionRepository
 from schemas import Intention, IntentionEdit
 
 from ._resources import DependsOnIntentionRepository
-from .security import WithPermission
+from ._security import WithPermission
 
 router = APIRouter(prefix="/intentions", tags=["Intentions"])
 
 
-@router.get(
-    "",
+@router.post(
+    "/search",
     dependencies=[WithPermission(GeneralPermission.ReadIntentions)],
     response_model=Intention,
 )

@@ -3,10 +3,11 @@ from fastapi import APIRouter, Path, Query
 from custom_types import GeneralPermission
 from repositories import GroupRepository
 from repositories.models import GroupModel
-from schemas import Group, GroupEdit, Page
+from schemas.group import Group, GroupEdit
+from schemas.pagination import Page
 
 from ._resources import DependsOnGroupRepository
-from .security import WithPermission
+from ._security import WithPermission
 
 router = APIRouter(prefix="/groups", tags=["Groups"])
 
@@ -57,7 +58,7 @@ def update(
 
 
 @router.delete(
-    "/{department_id}",
+    "/{group_id}",
     dependencies=[WithPermission(GeneralPermission.ManageAccess)],
     response_model=Group,
 )

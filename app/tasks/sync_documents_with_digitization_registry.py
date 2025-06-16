@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from adapters.elasticsearch import with_es_session
+from adapters.indexer import with_es_session
 from models import Document, TaskItem
 from schemas import EsSession, IndexDocument
 from services.external.digitization_registry import (

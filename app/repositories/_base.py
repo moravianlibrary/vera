@@ -1,17 +1,36 @@
-from typing import Type, TypeVar
+from typing import Protocol, Type, TypeVar, Union
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import DeclarativeMeta
 
-EntityModel = TypeVar("T")
+from adapters.database import DatabaseSession
+from adapters.indexer import IndexerEntity, IndexerSession
+
+DatabaseEntity = TypeVar("DatabaseEntity", bound=DeclarativeMeta)
+IdType = TypeVar("IdType", bound=Union[str, int])
 
 
 class BaseRepository:
     def __init__(
-        self, db_session: Session, model: Type[EntityModel], entity_name: str
+        self,
+        entity_name: str,
+        database_session: DatabaseSession,
+        database_entity: Type[DatabaseEntity],
+        indexer_session: IndexerSession | None = None,
+        _indexer_entity: Type[IndexerEntity] | None = None,
     ):
         """
         Initialize repository with the session, model and entity name.
         """
-        self._db_session = db_session
-        self._model = model
         self._entity_name = entity_name
+        self._database_session = database_session
+        self._database_entity = database_entity
+        self._indexer_session = indexer_session
+        self._indexer_entity = _indexer_entity
+
+
+class RepositoryContext(Protocol[DatabaseEntity]):
+    _entity_name: str
+    _database_session: DatabaseSession
+    _database_entity: Type[DatabaseEntity]
+    _indexer_session: IndexerSession | None
+    _indexer_entity: Type[IndexerEntity] | None

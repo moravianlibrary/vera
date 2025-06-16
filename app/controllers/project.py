@@ -5,13 +5,13 @@ from repositories import ProjectRepository
 from schemas import Project, ProjectEdit
 
 from ._resources import DependsOnProjectRepository
-from .security import WithPermission
+from ._security import WithPermission
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
 
 @router.get(
-    "",
+    "/search",
     dependencies=[WithPermission(OwnershipPermission.ReadProjects)],
     response_model=Project,
 )

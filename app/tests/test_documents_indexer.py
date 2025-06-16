@@ -4,7 +4,7 @@ import elasticsearch
 import requests
 from requests.exceptions import RequestException
 
-from adapters.elasticsearch import get_es_session
+from adapters.indexer import get_es_session
 from config import VeraConfig
 from models import Document
 from routers.utils.query_restrictions import (

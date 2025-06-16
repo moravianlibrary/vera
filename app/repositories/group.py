@@ -1,5 +1,7 @@
 from requests import Session
 
+from schemas.group import GroupEdit
+
 from ._base import BaseRepository
 from ._mixins import (
     DeleteMixin,
@@ -8,7 +10,7 @@ from ._mixins import (
     PaginationMixin,
     SaveMixin,
 )
-from .models import GroupModel
+from .models.group import GroupModel
 
 
 class GroupRepository(
@@ -22,19 +24,21 @@ class GroupRepository(
     def __init__(self, db_session: Session):
         super().__init__(db_session, GroupModel, "Group")
 
-    def create(self, name: str, description: str) -> GroupModel:
+    def create(self, group: GroupEdit) -> GroupModel:
         """
         Create a new group.
         """
-        self.enforce_name_uniqueness(name)
-        return self.save(GroupModel(name=name, description=description))
+        self.enforce_name_uniqueness(group.name)
+        return self.save(
+            GroupModel(name=group.name, description=group.description)
+        )
 
-    def update(self, role_id: int, name: str, description: str) -> GroupModel:
+    def update(self, role_id: int, group: GroupEdit) -> GroupModel:
         """
         Update an existing role.
         """
         role_model: GroupModel = self.get_by_id(role_id)
-        self.enforce_name_uniqueness(name, role_id)
-        role_model.name = name
-        role_model.description = description
+        self.enforce_name_uniqueness(group.name, role_id)
+        role_model.name = group.name
+        role_model.description = group.description
         return self.save(role_model)

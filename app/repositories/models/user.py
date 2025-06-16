@@ -13,7 +13,8 @@ if TYPE_CHECKING:
 class UserModel(BaseModel):
     __tablename__ = "users"
 
-    username = Column(String, primary_key=True)
+    id = Column(String, primary_key=True)
+    username = Column(String, unique=True, nullable=False)
     settings = Column(JSON, default={}, nullable=False)
 
     group_associations: Mapped[List["GroupUserAssociation"]] = relationship(

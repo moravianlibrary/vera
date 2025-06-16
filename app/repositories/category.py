@@ -1,47 +1,86 @@
 from requests import Session
 
-from adapters.elasticsearch import EsSession
-from schemas import Category, EsQuery
+from adapters.indexer import IndexerSession
+from schemas.category import Category
 
 from ._base import BaseRepository
 from ._mixins import (
-    DeleteMixin,
+    ArchiveOnDeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
     SaveMixin,
+    SearchMixin,
 )
-from .models import CategoryModel
+from .models.category import CategoryModel
 
 
 class CategoryRepository(
     BaseRepository,
-    DeleteMixin,
+    ArchiveOnDeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
     SaveMixin,
+    SearchMixin[Category],
 ):
-    def __init__(self, db_session: Session, es_session: EsSession):
-        super().__init__(db_session, CategoryModel, "Category")
+    def __init__(self, db_session: Session, indexer_session: IndexerSession):
+        super().__init__(
+            db_session, CategoryModel, "Category", indexer_session
+        )
 
-    # TODO: Implement search method and move to SearchMixin
-    def search(self, query: EsQuery[Category]):
-        pass
-
-    def create(self, name: str, description: str) -> CategoryModel:
+    def create(
+        self,
+        name: str,
+        description: str,
+        project_id: int | None,
+        parent_id: int | None,
+        level: int,
+        assignable: bool,
+        extract_whole: bool,
+    ) -> CategoryModel:
         """
         Create a new group.
         """
         self.enforce_name_uniqueness(name)
-        return self.save(CategoryModel(name=name, description=description))
+        return self.save(
+            CategoryModel(
+                name=name,
+                description=description,
+                project_id=project_id,
+                parent_id=parent_id,
+                level=level,
+                assignable=assignable,
+                extract_whole=extract_whole,
+            )
+        )
 
     def update(
-        self, role_id: int, name: str, description: str
+        self,
+        category_id: int,
+        name: str,
+        description: str,
+        assignable: bool,
+        extract_whole: bool,
+        disabled: bool,
     ) -> CategoryModel:
         """
         Update an existing role.
         """
-        role_model: CategoryModel = self.get_by_id(role_id)
-        self.enforce_name_uniqueness(name, role_id)
-        role_model.name = name
-        role_model.description = description
-        return self.save(role_model)
+        category_model: CategoryModel = self.get_by_id(category_id)
+        self.enforce_name_uniqueness(name, category_id)
+        category_model.name = name
+        category_model.description = description
+        category_model.assignable = assignable
+        category_model.extract_whole = extract_whole
+        category_model.disabled = disabled
+        return self.save(category_model)
+
+    def update_parent(
+        self, category_id: int, parent_id: int | None, level: int
+    ) -> CategoryModel:
+        """
+        Update the parent of a category.
+        """
+        category_model: CategoryModel = self.get_by_id(category_id)
+        category_model.parent_id = parent_id
+        category_model.level = level
+        return self.save(category_model)

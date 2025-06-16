@@ -1,12 +1,18 @@
 from fastapi import APIRouter, Path, Query
 
+from adapters.indexer import IndexerQuery
 from custom_types import GeneralPermission, OwnershipPermission
 from repositories import CategoryRepository
-from schemas import AuthenticatedUser, Category, CategoryEdit
+from schemas.category import Category, CategoryEdit
+from schemas.user import AuthenticatedUser
 from services import CategoryService
 
-from ._resources import DependsOnCategoryRepository, DependsOnCategoryService
-from .security import DependsOnAuthenticatedUser, WithPermission
+from ._resources import (
+    DependsOnCategoryRepository,
+    DependsOnCategoryService,
+    RestrictedQuery,
+)
+from ._security import DependsOnAuthenticatedUser, WithPermission
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
 
@@ -17,11 +23,11 @@ router = APIRouter(prefix="/categories", tags=["Categories"])
     response_model=Category,
 )
 def search(
-    query,
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    query: IndexerQuery[Category] = RestrictedQuery(
+        OwnershipPermission.ReadCategories
+    ),
     repository: CategoryRepository = DependsOnCategoryRepository,
 ):
-    # TODO: Security - restrict query based on scope
     return repository.search(query)
 
 
@@ -36,24 +42,7 @@ def create(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    # TODO: Enforce that the user has access to the parent category
-    return service.create(parent_id, category)
-
-
-# TODO: Move to project controller
-@router.post(
-    "/p",
-    dependencies=[WithPermission(GeneralPermission.CreateProjects)],
-    response_model=Category,
-)
-def create_project_category(
-    project_id: int,
-    category_name: str,
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    service: CategoryService = DependsOnCategoryService,
-):
-    # TODO: Enforce that the user owns the project
-    return service.create_project_category(project_id, category_name, user)
+    return service.create(parent_id, category, user.user_id, user.group_ids)
 
 
 @router.put(
@@ -62,13 +51,12 @@ def create_project_category(
     response_model=Category,
 )
 def update(
-    role: CategoryEdit,
+    category: CategoryEdit,
     category_id: int = Path(...),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    # TODO: Enforce that the user owns the project
-    return service.update(category_id, role)
+    return service.update(category_id, category, user.user_id, user.group_ids)
 
 
 @router.put(
@@ -83,8 +71,9 @@ def change_parent(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    # TODO: Enforce that the user owns the project
-    return service.change_parent(category_id, from_parent_id, to_parent_id)
+    return service.change_parent(
+        category_id, from_parent_id, to_parent_id, user.user_id, user.group_ids
+    )
 
 
 @router.delete(
@@ -97,4 +86,4 @@ def delete(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.delete(category_id)
+    return service.delete(category_id, user.user_id, user.group_ids)

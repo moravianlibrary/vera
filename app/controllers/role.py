@@ -2,10 +2,11 @@ from fastapi import APIRouter, Path, Query
 
 from custom_types import GeneralPermission
 from repositories import RoleRepository
-from schemas import Page, Role, RoleEdit
+from schemas.pagination import Page
+from schemas.role import Role, RoleEdit
 
 from ._resources import DependsOnRoleRepository
-from .security import WithPermission
+from ._security import WithPermission
 
 router = APIRouter(prefix="/roles", tags=["Roles"])
 

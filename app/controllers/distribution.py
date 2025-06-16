@@ -2,24 +2,30 @@ from fastapi import APIRouter, Path, Query
 
 from custom_types import GeneralPermission, OwnershipPermission
 from repositories import DistributionRepository
-from schemas import Distribution, DistributionEdit
+from schemas.category import (
+    Distribution,
+    DistributionEdit,
+    DistributionEditWithProportions,
+)
+from schemas.pagination import Page
 from services import DistributionService
 
+from ._locking import WithCategoryWriteLock
 from ._resources import (
     DependsOnDistributionRepository,
     DependsOnDistributionService,
 )
-from .security import WithPermission
+from ._security import WithPermission
 
-router = APIRouter(prefix="/distributions", tags=["Distributions"])
+router = APIRouter(prefix="/categories/distributions", tags=["Distributions"])
 
 
 @router.get(
     "",
-    dependencies=[WithPermission(GeneralPermission.ReadDistributions)],
-    response_model=Distribution,
+    dependencies=[WithPermission(OwnershipPermission.ReadCategories)],
+    response_model=Page[Distribution],
 )
-def list(
+def paginate(
     page: int = Query(1, description="Page number"),
     page_size: int = Query(50, description="Page size"),
     repository: DistributionRepository = DependsOnDistributionRepository,
@@ -29,48 +35,48 @@ def list(
 
 @router.post(
     "",
-    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
+    dependencies=[
+        WithPermission(GeneralPermission.ManageDistributions),
+        WithCategoryWriteLock,
+    ],
     response_model=Distribution,
 )
 def create(
-    distribution: DistributionEdit,
-    source_id: int | None = Path(None),
-    initialize: bool = Path(False),
+    distribution: DistributionEditWithProportions,
     service: DistributionService = DependsOnDistributionService,
 ):
-    pass
+    return service.create(distribution)
 
 
 @router.put(
     "/{distribution_id}",
-    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
+    dependencies=[
+        WithPermission(GeneralPermission.ManageDistributions),
+        WithCategoryWriteLock,
+    ],
     response_model=Distribution,
 )
 def update(
+    distribution: DistributionEditWithProportions,
+    distribution_id: int = Path(...),
+    service: DistributionService = DependsOnDistributionService,
+):
+    return service.update(distribution_id, distribution)
+
+
+@router.put(
+    "/{distribution_id}/description",
+    dependencies=[
+        WithPermission(GeneralPermission.ManageDistributions),
+    ],
+    response_model=Distribution,
+)
+def update_description(
     distribution: DistributionEdit,
     distribution_id: int = Path(...),
     repository: DistributionRepository = DependsOnDistributionRepository,
 ):
     return repository.update(distribution_id, distribution)
-
-
-@router.post(
-    "/{source_id}/copy-to/{target_id}",
-    dependencies=[
-        WithPermission(GeneralPermission.ManageDistributions),
-        WithPermission(OwnershipPermission.ManageCategoryDistributions),
-    ],
-    response_model=Distribution,
-)
-def copy(
-    source_id: int = Path(..., description="ID of the source distribution"),
-    target_id: int = Path(..., description="ID of the target distribution"),
-    category_id: int | None = Query(
-        None, description="Optional category to filter the copy operation"
-    ),
-    service: DistributionService = DependsOnDistributionService,
-):
-    return service.copy(source_id, target_id, category_id=category_id)
 
 
 @router.put(
@@ -80,9 +86,9 @@ def copy(
 )
 def set_as_active(
     distribution_id: int = Path(...),
-    service: DistributionService = DependsOnDistributionService,
+    repository: DistributionRepository = DependsOnDistributionRepository,
 ):
-    return service.set_as_active(distribution_id)
+    return repository.set_as_active(distribution_id)
 
 
 @router.delete(

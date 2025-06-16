@@ -1,18 +1,19 @@
 from fastapi import APIRouter, Query
-from sqlalchemy.orm import Session
 
+from adapters.identity_provider import IdentityProvider
 from custom_types import GeneralPermission
-from datatypes import JsonBase
-from models import Role, User
-from schemas import ActionList, AuthenticatedUser, Page, UserResponse
-
-from ._resources import DependsOnDbSession
-from .security import (
-    DependsOnAuthenticatedUser,
-    WithPermission,
-    clear_emulated_access,
-    emulate_user_access,
+from repositories.user import UserRepository
+from schemas.pagination import Page
+from schemas.role import Permissions
+from schemas.user import (
+    AuthenticatedUser,
+    User,
+    UserNotifications,
+    UserSettings,
 )
+
+from ._resources import DependsOnIdentityProvider, DependsOnUserRepository
+from ._security import DependsOnAuthenticatedUser, WithPermission
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -24,31 +25,29 @@ def authorize_user(
     return user
 
 
-@router.get("/me/notifications", response_model=AuthenticatedUser)
+@router.get("/me/notifications", response_model=UserNotifications)
 def list_notifications(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
 ):
+    # TODO: Implement
     pass
 
 
-@router.get("/me/settings", response_model=AuthenticatedUser)
+@router.get("/me/settings", response_model=UserSettings)
 def get_user_settings(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    repository: UserRepository = DependsOnUserRepository,
 ):
-    pass
+    return repository.get_by_id(user.user_id).settings
 
 
 @router.post("/me/settings", response_model=AuthenticatedUser)
 def save_user_settings(
-    settings: JsonBase,
+    settings: UserSettings,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    db: Session = DependsOnDbSession,
+    repository: UserRepository = DependsOnUserRepository,
 ):
-    user_model = User.get(db, user.username)
-    user_model.settings = settings
-    user_model.save(db)
-    user.settings = settings
-    return user
+    return repository.update_settings(user, settings)
 
 
 @router.post(
@@ -56,12 +55,12 @@ def save_user_settings(
     dependencies=[WithPermission(GeneralPermission.EmulateAccess)],
     response_model=AuthenticatedUser,
 )
-def emulate_access(
-    actions: ActionList,
+def enable_emulated_permissions(
+    permissions: Permissions,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    identity_provider: IdentityProvider = DependsOnIdentityProvider,
 ):
-    user.actions = emulate_user_access(user.username, actions.actions)
-    return user
+    return identity_provider.enable_emulated_permissions(user, permissions)
 
 
 @router.delete(
@@ -69,23 +68,21 @@ def emulate_access(
     dependencies=[WithPermission(GeneralPermission.EmulateAccess)],
     response_model=AuthenticatedUser,
 )
-def stop_access_emulation(
+def disable_emulated_permissions(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    db: Session = DependsOnDbSession,
+    identity_provider: IdentityProvider = DependsOnIdentityProvider,
 ):
-    clear_emulated_access(user.username)
-    user.actions = Role.get(db, user.role_id).actions
-    return user
+    return identity_provider.disable_emulated_permissions(user)
 
 
 @router.get(
     "",
     dependencies=[WithPermission(GeneralPermission.ManageAccess)],
-    response_model=Page[UserResponse],
+    response_model=Page[User],
 )
 def list_users(
     page: int = Query(1, description="Page number"),
     page_size: int = Query(50, description="Page size"),
-    session: Session = DependsOnDbSession,
+    repository: UserRepository = DependsOnUserRepository,
 ):
-    return User.get_page(session, page, page_size)
+    return repository.paginate(page, page_size)

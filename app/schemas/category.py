@@ -14,9 +14,9 @@ class CategoryEdit(BaseModel):
 
 class Category(CategoryEdit):
     id: int
-    parentId: int | None
+    parent_id: int | None
     level: int
-    intentionId: int | None
+    intention_id: int | None
     archived: bool
     assigned_groups: List[GroupSummary]
     assigned_users: List[str]
@@ -31,3 +31,26 @@ class Category(CategoryEdit):
     # +countExtractableDocuments: Integer
     # +countExtractedPages: Integer
     # +countExtractedDocuments: Integer
+
+
+class CategoryProportion(BaseModel):
+    category_id: int
+    proportion: float
+
+
+class CategoryProportionNode(CategoryProportion):
+    children: List["CategoryProportionNode"] = []
+
+
+class DistributionEdit(BaseModel):
+    name: str
+    description: str | None = None
+
+
+class Distribution(DistributionEdit):
+    id: int
+    is_active: bool
+
+
+class DistributionEditWithProportions(DistributionEdit):
+    proportions: List[CategoryProportionNode]

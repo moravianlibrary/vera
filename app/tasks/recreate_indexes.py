@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from adapters.elasticsearch import with_es_session
+from adapters.indexer import with_es_session
 from models import CatalogRecord, Document
 from schemas import EsSession, IndexCatalogRecord, IndexDocument
 

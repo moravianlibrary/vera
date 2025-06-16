@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, List
 
 from associations import digitization_list_intention_association
-from sqlalchemy import Boolean, Column, Integer
+from sqlalchemy import Column, Integer
 from sqlalchemy.orm import Mapped, relationship
 
 from adapters.database import BaseModel
@@ -17,8 +17,6 @@ class DigitizationListModel(BaseModel, CreatedAuditMixin):
     __tablename__ = "digitization_lists"
 
     id = Column(Integer, primary_key=True)
-
-    is_archived = Column(Boolean, default=False, nullable=False)
 
     documents: Mapped[List["DocumentModel"]] = relationship(
         "DocumentModel",

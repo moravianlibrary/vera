@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy.orm import Session
 
-from adapters.elasticsearch import with_es_session
+from adapters.indexer import with_es_session
 from config import VeraConfig
 from datatypes import AddDocumentResponseStatus
 from models import with_db_session
