@@ -1,15 +1,10 @@
 from pymarc import List
 
 from adapters.indexer import IndexerQuery
-from definitions.addition import AdditionUpdateType
+from definitions.task import AdditionTask, TaskScope
 from repositories import AdditionRepository
-from schemas.addition import (
-    AdditionCreate,
-    ArchiveAdditionResponse,
-    DeleteAdditionResponse,
-    EnqueueAdditionResponse,
-    UpdateAdditionResponse,
-)
+from schemas.addition import AdditionCreate
+from schemas.task import Task
 from services import TaskService
 
 
@@ -22,71 +17,52 @@ class AdditionService:
         self._addition_repository = addition_repository
         self._task_service = task_service
 
-    def create(
-        self, additions: List[AdditionCreate], created_by: str
-    ) -> EnqueueAdditionResponse:
-        enqueued = []
+    def ingest(self, additions: List[AdditionCreate], created_by: str) -> Task:
+        return self._task_service.init_task_with_data(
+            TaskScope.Addition,
+            AdditionTask.Ingest,
+            f"Ingest {len(additions)} addition(s) by {created_by} "
+            f"in batch {additions[0].batch_name}",
+            created_by,
+            additions,
+        )
 
-        for addition in additions:
-            enqueued.append(
-                self._addition_repository.create(
-                    addition, created_by=created_by
-                )
-            )
+    def ignore_digitization_check(
+        self, query: IndexerQuery, created_by: str
+    ) -> Task:
+        return self._task_service.init_query_task(
+            TaskScope.Addition,
+            AdditionTask.IgnoreDigitizationCheck,
+            f"Ignore digitization check for additions by {created_by}",
+            created_by,
+            query,
+        )
 
-        if enqueued:
-            self._task_service.Additions.process(enqueued)
+    def allow_new_iteration(
+        self, query: IndexerQuery, created_by: str
+    ) -> Task:
+        return self._task_service.init_query_task(
+            TaskScope.Addition,
+            AdditionTask.AllowNewIteration,
+            f"Allow new iteration for additions by {created_by}",
+            created_by,
+            query,
+        )
 
-        return EnqueueAdditionResponse(enqueued=len(enqueued))
+    def archive(self, query: IndexerQuery, created_by: str) -> Task:
+        return self._task_service.init_query_task(
+            TaskScope.Addition,
+            AdditionTask.Archive,
+            f"Archive additions by {created_by}",
+            created_by,
+            query,
+        )
 
-    def update(
-        self, query: IndexerQuery, update_type: AdditionUpdateType
-    ) -> UpdateAdditionResponse:
-        updated = []
-
-        for addition in self._addition_repository.search(query).hits:
-            if (
-                update_type == AdditionUpdateType.IgnoreDigitizationCheck
-                and addition.ignore_digitization_check is False
-            ):
-                addition.ignore_digitization_check = True
-                updated.append(self._addition_repository.save(addition))
-            elif (
-                update_type == AdditionUpdateType.AllowNewIteration
-                and addition.allow_new_iteration is False
-            ):
-                addition.allow_new_iteration = True
-                updated.append(self._addition_repository.save(addition))
-
-        if updated:
-            self._task_service.Additions.process(updated)
-
-        return UpdateAdditionResponse(updated=len(updated))
-
-    def archive(self, query: IndexerQuery) -> ArchiveAdditionResponse:
-        archived = []
-
-        for addition in self._addition_repository.search(query):
-            if not addition.is_archived:
-                addition.is_archived = True
-                archived.append(self._addition_repository.save(addition))
-
-        if archived > 0:
-            self._task_service.Additions.reindex(archived)
-
-        return ArchiveAdditionResponse(archived=archived)
-
-    def delete(self, query: IndexerQuery) -> DeleteAdditionResponse:
-        deleted = []
-        ignored = 0
-
-        for addition in self._addition_repository.search(query):
-            if addition.is_archived:
-                deleted.append(self._addition_repository.delete(addition))
-            else:
-                ignored += 1
-
-        if deleted:
-            self._task_service.Additions.reindex(deleted)
-
-        return DeleteAdditionResponse(deleted=len(deleted), ignored=ignored)
+    def delete(self, query: IndexerQuery, created_by: str) -> Task:
+        return self._task_service.init_query_task(
+            TaskScope.Addition,
+            AdditionTask.Delete,
+            f"Delete additions by {created_by}",
+            created_by,
+            query,
+        )

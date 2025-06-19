@@ -34,7 +34,7 @@ class DistributionRepository(
                 name=distribution.name,
                 description=distribution.description,
                 is_active=(
-                    self._db_session.query(DistributionModel)
+                    self._database_session.query(DistributionModel)
                     .filter(DistributionModel.is_active.is_(True))
                     .first()
                     is None
@@ -60,7 +60,7 @@ class DistributionRepository(
         """
         distribution_model = self.get_by_id(distribution_id)
 
-        self._db_session.query(DistributionModel).filter(
+        self._database_session.query(DistributionModel).filter(
             DistributionModel.is_active.is_(True)
         ).update({"is_active": False})
 

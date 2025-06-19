@@ -16,9 +16,6 @@ class GeneralPermission(Enum):
     ManageCatalogRecords = "ManageCatalogRecords"
     ManageCatalogRecordLists = "ManageCatalogRecordLists"
 
-    # Distributions
-    ManageDistributions = "ManageDistributions"
-
     # Projects
     CreateProjects = "CreateProjects"
 
@@ -53,10 +50,8 @@ class OwnershipPermission(Enum):
     ReadDocuments = "ReadDocuments"
     ManageDocuments = "ManageDocuments"
 
-    CreateCategories = "CreateCategories"
     ReadCategories = "ReadCategories"
     ManageCategories = "ManageCategories"
-    ManageCategoryDistributions = "ManageCategoryDistributions"
 
     ReadProjects = "ReadProjects"
     ManageProjects = "ManageProjects"

@@ -1,3 +1,4 @@
+from repositories.category import CategoryRepository
 from repositories.category_proportion import CategoryProportionRepository
 from repositories.distribution import DistributionRepository
 from schemas.category import Distribution, DistributionEditWithProportions
@@ -6,23 +7,28 @@ from schemas.category import Distribution, DistributionEditWithProportions
 class DistributionService:
     def __init__(
         self,
-        distribution_r: DistributionRepository,
-        proportion_r: CategoryProportionRepository,
+        category_repository: CategoryRepository,
+        distribution_repository: DistributionRepository,
+        proportion_repository: CategoryProportionRepository,
     ):
-        self.distribution_r = distribution_r
-        self.proportion_r = proportion_r
+        self._category_repository = category_repository
+        self._distribution_repository = distribution_repository
+        self._proportion_repository = proportion_repository
 
     def create(
         self, distribution: DistributionEditWithProportions
     ) -> Distribution:
-        distribution_model = self.distribution_r.create(distribution)
+        distribution_model = self._distribution_repository.create(distribution)
+
         for proportion in distribution.proportions:
-            self.proportion_r.create(
+            self._proportion_repository.create(
                 distribution_model.id,
                 proportion.category_id,
                 proportion.proportion,
             )
-        # TODO: Reindex categories
+
+        self._category_repository.reindex_all()
+
         return distribution_model
 
     def update(
@@ -30,15 +36,18 @@ class DistributionService:
         distribution_id: int,
         distribution: DistributionEditWithProportions,
     ) -> Distribution:
-        distribution_model = self.distribution_r.update(
+        distribution_model = self._distribution_repository.update(
             distribution_id, distribution
         )
         distribution_model.proportions.clear()
+
         for proportion in distribution.proportions:
-            self.proportion_r.create(
+            self._proportion_repository.create(
                 distribution_model.id,
                 proportion.category_id,
                 proportion.proportion,
             )
-        # TODO: Reindex categories
+
+        self._category_repository.reindex_all()
+
         return distribution_model

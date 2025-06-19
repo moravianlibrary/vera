@@ -177,3 +177,88 @@ class SearchAllMixin(Generic[IndexerEntityType]):
                 break
 
         self._indexer_session.clear_scroll(scroll_id=scroll_id)
+
+
+class SaveAndIndexMixin(Generic[DatabaseEntity]):
+    def save_and_index(
+        self: RepositoryContext[DatabaseEntity],
+        entity: DatabaseEntity,
+        wait_for: bool = False,
+    ) -> DatabaseEntity:
+        """
+        Save a model to the database and index it.
+        """
+        self._database_session.add(entity)
+        self._database_session.commit()
+        self._database_session.refresh(entity)
+
+        indexer_entity = self._indexer_entity.model_validate(entity)
+
+        self._indexer_session.index(
+            index=self._indexer_entity.__index_name__,
+            id=indexer_entity.getattr(self._indexer_entity.__id_field__, None),
+            body=indexer_entity,
+            refresh="true" if wait_for else None,
+        )
+
+        return entity
+
+
+class DeleteAndUnindexMixin(Generic[DatabaseEntity]):
+    def delete_and_unindex(
+        self: RepositoryContext[DatabaseEntity],
+        entity: DatabaseEntity,
+        wait_for: bool = False,
+    ) -> DatabaseEntity:
+        """
+        Delete a model from the database and unindex it.
+        """
+        self._indexer_session.delete(
+            index=self._indexer_entity.__index_name__,
+            id=entity.getattr(self._indexer_entity.__id_field__, None),
+            refresh="true" if wait_for else None,
+        )
+
+        self._database_session.delete(entity)
+        self._database_session.commit()
+        return entity
+
+
+class ArchiveOnDeleteAndIndexMixin(Generic[DatabaseEntity]):
+    def delete_and_index(
+        self: RepositoryContext[DatabaseEntity],
+        entity: DatabaseEntity,
+        wait_for: bool = False,
+    ) -> DatabaseEntity:
+        """
+        Archive a model instead of deleting it and index it.
+        """
+        entity.archived = True
+        self._database_session.commit()
+        self._database_session.refresh(entity)
+
+        indexer_entity = self._indexer_entity.model_validate(entity)
+
+        self._indexer_session.index(
+            index=self._indexer_entity.__index_name__,
+            id=indexer_entity.getattr(self._indexer_entity.__id_field__, None),
+            body=indexer_entity,
+            refresh="true" if wait_for else None,
+        )
+
+        return indexer_entity
+
+
+class IndexerMixin:
+    def reindex_all(self: RepositoryContext) -> None:
+        """
+        Reindex all entities in the indexer.
+        """
+        for entity in self._database_session.query(
+            self._database_entity
+        ).all():
+            self._indexer_session.reindex(
+                index=self._indexer_entity.__index_name__,
+                id=entity.getattr(self._indexer_entity.__id_field__, None),
+                body=self._indexer_entity.model_validate(entity),
+            )

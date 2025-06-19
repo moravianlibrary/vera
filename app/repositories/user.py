@@ -11,7 +11,7 @@ from ._mixins import (
     PaginationMixin,
     SaveMixin,
 )
-from .models import UserModel
+from .models.user import UserModel
 
 
 class UserRepository(

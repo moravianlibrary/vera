@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Path, Query
 
-from custom_types import GeneralPermission, OwnershipPermission
+from definitions.permission import OwnershipPermission
 from repositories import DistributionRepository
 from schemas.category import (
     Distribution,
@@ -30,13 +30,13 @@ def paginate(
     page_size: int = Query(50, description="Page size"),
     repository: DistributionRepository = DependsOnDistributionRepository,
 ):
-    return repository.paginate(page=page, page_size=page_size)
+    return repository.paginate(page, page_size)
 
 
 @router.post(
     "",
     dependencies=[
-        WithPermission(GeneralPermission.ManageDistributions),
+        WithPermission(OwnershipPermission.ManageCategories),
         WithCategoryWriteLock,
     ],
     response_model=Distribution,
@@ -51,7 +51,7 @@ def create(
 @router.put(
     "/{distribution_id}",
     dependencies=[
-        WithPermission(GeneralPermission.ManageDistributions),
+        WithPermission(OwnershipPermission.ManageCategories),
         WithCategoryWriteLock,
     ],
     response_model=Distribution,
@@ -67,7 +67,7 @@ def update(
 @router.put(
     "/{distribution_id}/description",
     dependencies=[
-        WithPermission(GeneralPermission.ManageDistributions),
+        WithPermission(OwnershipPermission.ManageCategories),
     ],
     response_model=Distribution,
 )
@@ -81,7 +81,7 @@ def update_description(
 
 @router.put(
     "/{distribution_id}/set-as-active",
-    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
+    dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
     response_model=Distribution,
 )
 def set_as_active(
@@ -93,7 +93,7 @@ def set_as_active(
 
 @router.delete(
     "/{distribution_id}",
-    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
+    dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
     response_model=Distribution,
 )
 def delete(

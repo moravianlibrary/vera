@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Path, Query
 
 from adapters.indexer import IndexerQuery
-from custom_types import GeneralPermission, OwnershipPermission
+from definitions.permission import OwnershipPermission
 from repositories import CategoryRepository
-from schemas.category import Category, CategoryEdit
+from schemas.category import Category, CategoryAssignmentChange, CategoryEdit
 from schemas.user import AuthenticatedUser
 from services import CategoryService
 
@@ -42,7 +42,7 @@ def create(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.create(parent_id, category, user.user_id, user.group_ids)
+    return service.create(parent_id, category, user)
 
 
 @router.put(
@@ -56,12 +56,28 @@ def update(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.update(category_id, category, user.user_id, user.group_ids)
+    return service.update(category_id, category, user)
 
 
-@router.put(
+@router.patch(
+    "/{category_id}/change-assignment",
+    dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
+    response_model=Category,
+)
+def change_assignment(
+    category_assignment_change: CategoryAssignmentChange,
+    category_id: int = Path(...),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: CategoryService = DependsOnCategoryService,
+):
+    return service.change_assignment(
+        category_id, category_assignment_change, user
+    )
+
+
+@router.patch(
     "/{category_id}/change-parent",
-    dependencies=[WithPermission(GeneralPermission.ManageAccess)],
+    dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
     response_model=Category,
 )
 def change_parent(
@@ -72,13 +88,13 @@ def change_parent(
     service: CategoryService = DependsOnCategoryService,
 ):
     return service.change_parent(
-        category_id, from_parent_id, to_parent_id, user.user_id, user.group_ids
+        category_id, from_parent_id, to_parent_id, user
     )
 
 
 @router.delete(
     "/{category_id}",
-    dependencies=[WithPermission(GeneralPermission.ManageAccess)],
+    dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
     response_model=Category,
 )
 def delete(
@@ -86,4 +102,4 @@ def delete(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.delete(category_id, user.user_id, user.group_ids)
+    return service.delete(category_id, user)

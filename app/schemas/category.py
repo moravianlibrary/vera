@@ -10,6 +10,17 @@ class CategoryEdit(BaseModel):
     description: str | None = None
     assignable: bool = False
     disabled: bool = False
+    extract_whole: bool = False
+
+
+class CategoryAssignment(BaseModel):
+    user_ids: List[str] = []
+    group_ids: List[int] = []
+
+
+class CategoryAssignmentChange(CategoryEdit):
+    add: CategoryAssignment | None = None
+    remove: CategoryAssignment | None = None
 
 
 class Category(CategoryEdit):

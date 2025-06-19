@@ -13,8 +13,11 @@ class TaskState(str, Enum):
 
 
 class AdditionTask(str, Enum):
-    Process = "Process"
-    Reindex = "Reindex"
+    Ingest = "Ingest"
+    IgnoreDigitizationCheck = "IgnoreDigitizationCheck"
+    AllowNewIteration = "AllowNewIteration"
+    Archive = "Archive"
+    Delete = "Delete"
 
 
 class DocumentTask(str, Enum):
@@ -47,9 +50,55 @@ class SystemTask(str, Enum):
     ResolveInconsistencies = "ResolveInconsistencies"
 
 
-TaskKind = (
+class TaskScope(str, Enum):
+    Addition = "Addition"
+    Document = "Document"
+    CatalogRecord = "CatalogRecord"
+    Category = "Category"
+    System = "System"
+
+
+TaskType = (
     AdditionTask | DocumentTask | CatalogRecordTask | CategoryTask | SystemTask
 )
+
+
+class ScopedTaskType(str, Enum):
+    # Addition
+    Addition_Ingest = "Addition.Ingest"
+    Addition_IgnoreDigitizationCheck = "Addition.IgnoreDigitizationCheck"
+    Addition_AllowNewIteration = "Addition.AllowNewIteration"
+    Addition_Archive = "Addition.Archive"
+    Addition_Delete = "Addition.Delete"
+
+    # Document
+    Document_Reindex = "Document.Reindex"
+    Document_UpdateProperty = "Document.UpdateProperty"
+    Document_Remove = "Document.Remove"
+    Document_SyncDigitizationState = "Document.SyncDigitizationState"
+    Document_SyncCatalogRecord = "Document.SyncCatalogRecord"
+    Document_SyncProperty = "Document.SyncProperty"
+    Document_DeclineDigitization = "Document.DeclineDigitization"
+    Document_CancelDigitizationDeclination = (
+        "Document.CancelDigitizationDeclination"
+    )
+    Document_GenerateDigitizationList = "Document.GenerateDigitizationList"
+
+    # CatalogRecord
+    CatalogRecord_Reindex = "CatalogRecord.Reindex"
+    CatalogRecord_Sync = "CatalogRecord.Sync"
+    CatalogRecord_SetValid = "CatalogRecord.SetValid"
+    CatalogRecord_SetInvalid = "CatalogRecord.SetInvalid"
+    CatalogRecord_ArchiveInactive = "CatalogRecord.ArchiveInactive"
+
+    # Category
+    Category_Reindex = "Category.Reindex"
+    Category_ExecuteScript = "Category.ExecuteScript"
+
+    # System
+    System_RecreateIndex = "System.RecreateIndex"
+    System_ResolveInconsistencies = "System.ResolveInconsistencies"
+
 
 unlimited = -1
 

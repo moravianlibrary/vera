@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List
 
 from sqlalchemy import (
     JSON,
@@ -8,144 +8,151 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Integer,
+    LargeBinary,
     PrimaryKeyConstraint,
     String,
     func,
 )
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Query, Session, relationship
+from sqlalchemy.orm import relationship
 
+from adapters.database import BaseModel
+from definitions.task import ScopedTaskType, TaskScope, TaskState
 from vera_scheduler import vera_scheduler
 
-from ..._old.models.base import BaseModel
 
-
-class Task(BaseModel):
+class TaskModel(BaseModel):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True, unique=True)
     process_id = Column(Integer)
 
-    task_type = Column(Enum(TaskType), nullable=False, index=True)
-    owner = Column(String, nullable=False, index=True)
+    task_type = Column(Enum(ScopedTaskType), nullable=False, index=True)
+    name = Column(String, nullable=False)
+    created_by = Column(String, nullable=False)
 
     query = Column(JSON)
+    data = Column(JSON)
 
     task_state = Column(
-        Enum(TaskState), nullable=False, server_default=TaskState.Planned.value
+        Enum(TaskState), nullable=False, server_default=TaskState.Initializing
     )
 
-    planned = Column(TIMESTAMP, server_default=func.now())
+    planned = Column(TIMESTAMP, nullable=False, server_default=func.now())
     started = Column(TIMESTAMP)
     finished = Column(TIMESTAMP)
 
-    items = relationship("TaskItem", back_populates="task")
-    dataset = relationship("TaskDataset", back_populates="task", uselist=False)
+    result_message = Column(String)
+    log = Column(LargeBinary)
+
+    additions = relationship(
+        "TaskAddition",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    catalog_records = relationship(
+        "TaskCatalogRecord",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    documents = relationship(
+        "TaskDocument",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    categories = relationship(
+        "TaskCategory",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
 
     @hybrid_property
-    def processed_count(self):
+    def scope(self) -> TaskScope:
+        return TaskScope(self.task_type.split(".")[0])
+
+    @hybrid_property
+    def items(self) -> List["TaskItemMixin"]:
+        return (
+            self.additions
+            + self.catalog_records
+            + self.documents
+            + self.categories
+        )
+
+    @hybrid_property
+    def processed_count(self) -> int:
         return sum(1 for item in self.items if item.processed)
 
     @hybrid_property
-    def total_count(self):
+    def total_count(self) -> int:
         return len(self.items)
 
     @hybrid_property
-    def error_count(self):
-        return sum(1 for item in self.items if item.error_type)
-
-    @hybrid_property
-    def has_dataset(self):
-        return bool(self.dataset)
-
-    @hybrid_property
-    def dataset_error(self):
-        return self.dataset.error_message if self.dataset else None
+    def error_count(self) -> int:
+        return sum(1 for item in self.items if item.error_message)
 
 
-class TaskItem(BaseModel):
-    __tablename__ = "task_items"
+class TaskItemMixin:
+    @declared_attr
+    def task_id(cls):
+        return Column(Integer, ForeignKey("tasks.id"), index=True)
 
-    task_id = Column(Integer, ForeignKey("tasks.id"), index=True)
-    item_id = Column(String, index=True)
-    item_type = Column(Enum(TaskItemType), nullable=False)
-    deleted = Column(Boolean, server_default="false")
+    @declared_attr
+    def processed(cls):
+        return Column(Boolean, server_default="false")
 
-    processed = Column(Boolean, server_default="false")
-    error_type = Column(Enum(TaskItemErrorType))
-    error_message = Column(String)
+    @declared_attr
+    def error_message(cls):
+        return Column(String, nullable=True)
 
-    __table_args__ = (
-        PrimaryKeyConstraint("task_id", "item_id", "item_type"),
-        {},
+
+class TaskAdditionModel(BaseModel, TaskItemMixin):
+    __tablename__ = "task_additions"
+
+    addition_id = Column(Integer, ForeignKey("additions.id"), index=True)
+
+    __table_args__ = (PrimaryKeyConstraint("task_id", "addition_id"),)
+
+    task = relationship("Task", back_populates="additions")
+
+
+class TaskCatalogRecordModel(BaseModel, TaskItemMixin):
+    __tablename__ = "task_catalog_records"
+
+    catalog_record_id = Column(
+        Integer, ForeignKey("catalog_records.id"), index=True
     )
 
-    task = relationship("Task", back_populates="items")
-    catalog_record = relationship(
-        "CatalogRecord",
-        primaryjoin="and_(TaskItem.item_id == CatalogRecord.sysno, "
-        "TaskItem.item_type == 'CatalogRecord')",
-        foreign_keys=item_id,
-        viewonly=True,
-    )
-    document = relationship(
-        "Document",
-        primaryjoin="and_(TaskItem.item_id == Document.id, "
-        "TaskItem.item_type == 'Document')",
-        foreign_keys=item_id,
-        viewonly=True,
+    __table_args__ = (PrimaryKeyConstraint("task_id", "catalog_record_id"),)
+
+    task = relationship("Task", back_populates="catalog_records")
+
+
+class TaskDocumentModel(BaseModel, TaskItemMixin):
+    __tablename__ = "task_documents"
+
+    document_id = Column(
+        Integer, ForeignKey("document_iterations.id"), index=True
     )
 
-    @classmethod
-    def find(
-        cls, session: Session, task_id: int, item_id: str
-    ) -> Optional["TaskItem"]:
-        return (
-            session.query(cls)
-            .filter_by(task_id=task_id, item_id=item_id)
-            .first()
-        )
+    __table_args__ = (PrimaryKeyConstraint("task_id", "document_id"),)
 
-    @classmethod
-    def query_base(cls, session) -> Query:
-        return session.query(cls)
-
-    @classmethod
-    def get_page(
-        cls, session: Session, task_id: int, page=1, page_size=50
-    ) -> Tuple[List["TaskItem"], int]:
-        if page < 1:
-            raise InvalidPageNumberException()
-        if page_size < 1:
-            raise InvalidPageSizeException()
-
-        offset = (page - 1) * page_size
-        return (
-            TaskItem.query_base(session)
-            .filter_by(task_id=task_id)
-            .offset(offset)
-            .limit(page_size)
-            .all(),
-            TaskItem.query_base(session).filter_by(task_id=task_id).count(),
-        )
-
-    def is_persisted(self, session: Session) -> bool:
-        return self.find(session, self.task_id, self.item_id) is not None
+    task = relationship("Task", back_populates="documents")
 
 
-class TaskDataset(BaseModel):
-    __tablename__ = "task_datasets"
+class TaskCategoryModel(BaseModel, TaskItemMixin):
+    __tablename__ = "task_categories"
 
-    task_id = Column(
-        Integer,
-        ForeignKey("tasks.id"),
-        primary_key=True,
-        index=True,
-    )
-    data = Column(JSON)
-    error_message = Column(String)
+    category_id = Column(Integer, ForeignKey("categories.id"), index=True)
 
-    task = relationship("Task", back_populates="dataset")
+    __table_args__ = (PrimaryKeyConstraint("task_id", "category_id"),)
+
+    task = relationship("Task", back_populates="categories")
 
 
 class PeriodicTask(BaseModel):
@@ -153,7 +160,7 @@ class PeriodicTask(BaseModel):
 
     id = Column(Integer, primary_key=True, index=True, unique=True)
 
-    task_type = Column(Enum(TaskType), nullable=False)
+    task_type = Column(Enum(ScopedTaskType), nullable=False)
     query_params = Column(JSON)
     minute = Column(Integer, nullable=False)
     hour = Column(Integer)
@@ -163,7 +170,7 @@ class PeriodicTask(BaseModel):
     def schedule(self):
         from worker import run_periodic_task_instance
 
-        def parse_cron_value(value: Optional[str]) -> str:
+        def parse_cron_value(value: str | None) -> str:
             return value if value else "*"
 
         vera_scheduler.add_job(
