@@ -10,6 +10,11 @@ from .role import Permissions, Role
 UserSettings = JsonObject
 
 
+class UserAssignment(BaseModel):
+    user_id: str
+    group_ids: List[int] = []
+
+
 class AuthenticatedUser(Permissions):
     user_id: str
     username: str
@@ -19,6 +24,10 @@ class AuthenticatedUser(Permissions):
     @property
     def group_ids(self) -> List[int]:
         return [group.id for group in self.groups]
+
+    @property
+    def assignment(self) -> UserAssignment:
+        return UserAssignment(user_id=self.user_id, group_ids=self.group_ids)
 
     @classmethod
     def from_roles(cls, roles: List["Role"]) -> "Permissions":
@@ -44,5 +53,5 @@ class UserNotifications(BaseModel):
 
 
 class User(BaseModel):
-    user_id: str
+    id: str
     username: str

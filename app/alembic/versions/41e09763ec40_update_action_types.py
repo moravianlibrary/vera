@@ -36,7 +36,7 @@ def upgrade() -> None:
                 'ReadCategoriesDepartment',
                 'EditCategoriesAll',
                 'EditCategoriesDepartment',
-                'PlanTasks',
+                'ScheduleTasks',
                 'AdminTasks',
                 'EditAccess',
                 'Extract',

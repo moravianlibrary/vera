@@ -1,14 +1,22 @@
-from fastapi import APIRouter
+from typing import Annotated, List
 
-from adapters.indexer import IndexerQuery, IndexerResponse
-from custom_types import GeneralPermission
+from fastapi import APIRouter, Query
+
+from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
+from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import ProposalRepository
+from schemas.addition import IngestAdditionsParams
+from schemas.proposal import Proposal, ProposalBatchParams, ProposalCreate
+from schemas.task import Task
+from schemas.user import AuthenticatedUser
 from services import ProposalService
 
 from ._resources import (
+    DependsOnAuthenticatedUser,
     DependsOnProposalRepository,
     DependsOnProposalService,
     RestrictedQuery,
+    RestrictedSearchRequest,
 )
 from ._security import WithPermission
 
@@ -17,79 +25,93 @@ router = APIRouter(prefix="/proposals", tags=["Proposals"])
 
 @router.post(
     "/search",
-    dependencies=[
-        WithPermission(
-            GeneralPermission.ProposeDocuments,
-            GeneralPermission.ReviewDocumentProposals,
-        )
-    ],
-    response_model=IndexerResponse,
+    dependencies=[WithPermission(OwnershipPermission.ReadProposals)],
+    response_model=IndexerResponse[Proposal],
 )
 def search(
-    query: IndexerQuery = RestrictedQuery(),
+    request: IndexerRequest = RestrictedSearchRequest(
+        OwnershipPermission.ReadProposals
+    ),
     repository: ProposalRepository = DependsOnProposalRepository,
 ):
-    pass
+    return repository.search(request)
 
 
 @router.post(
-    "/propose",
+    "/ingest",
     dependencies=[WithPermission(GeneralPermission.ProposeDocuments)],
+    response_model=Task,
 )
-def propose(
-    # proposals: List[DirectProposal],
+def ingest(
+    proposals: List[ProposalCreate],
+    batch_params: Annotated[ProposalBatchParams, Query()],
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    pass
+    return service.ingest(proposals, batch_params, user.user_id)
 
 
 @router.post(
-    "/enqueue-proposals",
-    dependencies=[WithPermission(GeneralPermission.ProposeDocuments)],
+    "/reingest",
+    dependencies=[WithPermission(OwnershipPermission.ManageProposals)],
+    response_model=Task,
 )
-def enqueue_proposals(
-    # proposals: List[AsyncProposal],
+def reingest(
+    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageProposals),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    pass
+    return service.reingest(query, user.user_id)
 
 
 @router.post(
     "/approve",
     dependencies=[WithPermission(GeneralPermission.ReviewProposals)],
+    response_model=Task,
 )
 def approve(
-    query: IndexerQuery,
+    ingest_additions_params: Annotated[IngestAdditionsParams, Query()],
+    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageProposals),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    pass
+    return service.approve(query, ingest_additions_params, user.user_id)
 
 
 @router.post(
     "/reject",
     dependencies=[WithPermission(GeneralPermission.ReviewProposals)],
+    response_model=Task,
 )
 def reject(
-    query: IndexerQuery,
+    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageProposals),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    pass
+    return service.reject(query, user.user_id)
 
 
 @router.post(
     "/archive",
-    dependencies=[WithPermission(GeneralPermission.ReviewProposals)],
+    dependencies=[WithPermission(OwnershipPermission.ManageProposals)],
+    response_model=Task,
 )
 def archive(
-    query: IndexerQuery,
+    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageProposals),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    pass
+    return service.archive(query, user.user_id)
 
 
-@router.post(
-    "/delete",
-    dependencies=[WithPermission(GeneralPermission.ReviewProposals)],
+@router.delete(
+    "",
+    dependencies=[WithPermission(OwnershipPermission.ManageProposals)],
+    response_model=Task,
 )
-def delete():
-    pass
+def delete(
+    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageProposals),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: ProposalService = DependsOnProposalService,
+):
+    return service.delete(query, user.user_id)

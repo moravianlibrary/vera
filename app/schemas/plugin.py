@@ -2,7 +2,9 @@ from typing import Any, Dict, List
 
 from pydantic import BaseModel
 
-from custom_types import PluginType
+
+class PluginDiscoverParams(BaseModel):
+    url: str
 
 
 class PluginMetaBase(BaseModel):
@@ -24,3 +26,15 @@ class PluginInstanceConfig(BaseModel):
     plugin_name: str
     instance_name: str
     config: Dict[str, Any] | None = None
+
+
+class Plugin(BaseModel):
+    pass
+
+
+class PluginInstance(BaseModel):
+    pass
+
+
+class PluginInstanceSummary(BaseModel):
+    pass

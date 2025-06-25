@@ -5,8 +5,8 @@ import typer
 import yaml
 
 from ..definitions.constants import PLUGIN_META_PATH
-from ..definitions.dispatchers import get_plugin_type_skeleton
 from ..definitions.plugin_types import PluginType
+from ..dispatchers import get_plugin_type_skeleton
 from ..schemas import MetaDiscoveryResult, PluginMeta, Version
 from ..tools import discovery, parser, validator
 from .prompts import (

@@ -5,8 +5,8 @@ from vera_plugins.specs.catalog_record_property import (
     CatalogRecordPropertyPlugin,
 )
 
-from ..definitions.dispatchers import PLUGIN_TYPE_CARDINALITY
 from ..definitions.plugin_types import PluginType
+from ..dispatchers import PLUGIN_TYPE_CARDINALITY
 from ..schemas import PluginInstance, PluginMeta
 from ..specs.base import PluginBase
 from ..specs.catalog_adapter import CatalogAdapterPlugin

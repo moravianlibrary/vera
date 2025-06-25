@@ -1,11 +1,11 @@
 from typing import Callable, List, Union
 
-from fastapi import Depends, HTTPException
-from sqlalchemy.orm import Session
-
 from datatypes import ActionType
 from exceptions import PermissionDeniedException
+from fastapi import Depends, HTTPException
 from models import CategoryDepartments, Document, User
+from sqlalchemy.orm import Session
+
 from schemas import CurrentUser
 
 from ...controllers.security.access_emulation import can_emulate_access
@@ -248,7 +248,7 @@ CanExtract = PermissionValidator(ActionType.Extract)
 CanManageExtraction = PermissionValidator(ActionType.Extract)
 CanManageDigitizationList = PermissionValidator(ActionType.Extract)
 CanManageLocations = PermissionValidator(ActionType.AdminExtractions)
-CanPlanTask = PermissionValidator(ActionType.PlanTasks)
+CanPlanTask = PermissionValidator(ActionType.ScheduleTasks)
 CanManageTask = PermissionValidator(ActionType.AdminTasks)
 CanManageIntentions = PermissionValidator(ActionType.EditCategoriesAll)
 CanReadIntentions = PermissionValidator(

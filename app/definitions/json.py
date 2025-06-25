@@ -1,5 +1,5 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 
 JsonScalar = str | int | float | bool | None
-JsonObject = Dict[str, JsonScalar | "JsonObject" | "JsonArray"]
-JsonArray = List[JsonScalar | JsonObject | "JsonArray"]
+JsonObject = Dict[str, Union[JsonScalar, "JsonObject", "JsonArray"]]
+JsonArray = List[Union[JsonScalar, JsonObject, "JsonArray"]]

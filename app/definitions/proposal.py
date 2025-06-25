@@ -1,10 +1,8 @@
 from enum import Enum
 
 
-class DocumentProposalStatus(Enum):
+class ProposalStatus(Enum):
     Enqueued = "Enqueued"
-    Processing = "Processing"
-    NotEligibleForProposal = "NotEligibleForProposal"
     Pending = "Pending"
     Accepted = "Accepted"
     Declined = "Declined"

@@ -1,25 +1,25 @@
 from requests import Session
 
-from schemas import IntentionEdit
+from schemas.intention import Intention, IntentionEdit
 
 from ._base import BaseRepository
 from ._mixins import (
-    DeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
-    PaginationMixin,
+    GetByIdsMixin,
     SaveMixin,
+    SearchMixin,
 )
-from .models import IntentionModel
+from .models.intention import IntentionModel
 
 
 class IntentionRepository(
     BaseRepository,
-    DeleteMixin,
-    EnforceNameUniquenessMixin,
-    GetByIdMixin,
-    PaginationMixin,
-    SaveMixin,
+    EnforceNameUniquenessMixin[IntentionModel, int],
+    GetByIdMixin[IntentionModel, int],
+    GetByIdsMixin[IntentionModel, int],
+    SaveMixin[IntentionModel],
+    SearchMixin[Intention],
 ):
     def __init__(self, db_session: Session):
         super().__init__(db_session, IntentionModel, "Intention")
@@ -41,14 +41,12 @@ class IntentionRepository(
         )
 
     def update(
-        self, intention_id: int, intention: IntentionEdit
+        self, intention_model: IntentionModel, intention: IntentionEdit
     ) -> IntentionModel:
         """
         Update an existing role.
         """
-        intention_model: IntentionModel = self.get_by_id(intention_id)
-
-        self.enforce_name_uniqueness(intention.name, intention_id)
+        self.enforce_name_uniqueness(intention.name, intention_model.id)
 
         intention_model.name = intention.name
         intention_model.description = intention.description
@@ -57,3 +55,10 @@ class IntentionRepository(
         intention_model.end_date = intention.end_date
 
         return self.save(intention_model)
+
+    def delete(self, intention_model: IntentionModel) -> IntentionModel:
+        """
+        Delete an existing intention.
+        """
+        # TODO: Check if the intention is empty
+        return self.delete_model(intention_model)

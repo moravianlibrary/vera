@@ -1,68 +1,94 @@
-from pymarc import List
+from typing import List
 
 from adapters.indexer import IndexerQuery
 from definitions.task import AdditionTask, TaskScope
 from repositories import AdditionRepository
-from schemas.addition import AdditionCreate
-from schemas.task import Task
-from services import TaskService
+from repositories.models.task import TaskModel
+from schemas.addition import (
+    AdditionBatchParams,
+    AdditionCreate,
+    IngestAdditionsParams,
+    IngestAdditionsResponse,
+    IngestBatchAdditionsTaskData,
+    ReingestAdditionsTaskData,
+)
+from services.task import TaskBasedService, TaskService
 
 
-class AdditionService:
+class AdditionService(TaskBasedService):
+    _task_scope = TaskScope.Addition
+    _task_names_mapping = {
+        AdditionTask.Ingest: "Ingest additions",
+        AdditionTask.Reingest: "Reingest additions",
+        AdditionTask.Archive: "Archive additions",
+        AdditionTask.Delete: "Delete additions",
+    }
+
     def __init__(
         self,
         addition_repository: AdditionRepository,
         task_service: TaskService,
     ):
+        super().__init__(task_service)
         self._addition_repository = addition_repository
-        self._task_service = task_service
 
-    def ingest(self, additions: List[AdditionCreate], created_by: str) -> Task:
-        return self._task_service.init_task_with_data(
-            TaskScope.Addition,
+    def _ensure_batch(self, batch_params: AdditionBatchParams):
+        if batch_params.batch_id:
+            return self._addition_repository.get_batch_by_id(
+                batch_params.batch_id
+            )
+        return self._addition_repository.create_batch(
+            batch_params.batch_name, batch_params.file_name
+        )
+
+    def ingest(
+        self,
+        additions: List[AdditionCreate],
+        batch_params: AdditionBatchParams,
+        ingest_params: IngestAdditionsParams,
+        created_by: str,
+    ) -> IngestAdditionsResponse:
+        batch = self._ensure_batch(batch_params)
+
+        task = self._create_task(
             AdditionTask.Ingest,
-            f"Ingest {len(additions)} addition(s) by {created_by} "
-            f"in batch {additions[0].batch_name}",
             created_by,
-            additions,
+            data=IngestBatchAdditionsTaskData(
+                batch_id=batch.id,
+                additions=additions,
+                allow_new_iteration=ingest_params.allow_new_iteration,
+                ignore_digitization_check=(
+                    ingest_params.ignore_digitization_check
+                ),
+            ),
         )
 
-    def ignore_digitization_check(
-        self, query: IndexerQuery, created_by: str
-    ) -> Task:
-        return self._task_service.init_query_task(
-            TaskScope.Addition,
-            AdditionTask.IgnoreDigitizationCheck,
-            f"Ignore digitization check for additions by {created_by}",
+        return IngestAdditionsResponse(task=task, batch_id=batch.id)
+
+    def reingest(
+        self,
+        query: IndexerQuery,
+        ingest_params: IngestAdditionsParams,
+        created_by: str,
+    ) -> TaskModel:
+        return self._task_service.create_task(
+            AdditionTask.Reingest,
             created_by,
-            query,
+            data=ReingestAdditionsTaskData(
+                allow_new_iteration=ingest_params.allow_new_iteration,
+                ignore_digitization_check=(
+                    ingest_params.ignore_digitization_check
+                ),
+            ),
+            query=query,
         )
 
-    def allow_new_iteration(
-        self, query: IndexerQuery, created_by: str
-    ) -> Task:
-        return self._task_service.init_query_task(
-            TaskScope.Addition,
-            AdditionTask.AllowNewIteration,
-            f"Allow new iteration for additions by {created_by}",
-            created_by,
-            query,
+    def archive(self, query: IndexerQuery, created_by: str) -> TaskModel:
+        return self._task_service.init_task(
+            AdditionTask.Archive, created_by, query=query
         )
 
-    def archive(self, query: IndexerQuery, created_by: str) -> Task:
-        return self._task_service.init_query_task(
-            TaskScope.Addition,
-            AdditionTask.Archive,
-            f"Archive additions by {created_by}",
-            created_by,
-            query,
-        )
-
-    def delete(self, query: IndexerQuery, created_by: str) -> Task:
-        return self._task_service.init_query_task(
-            TaskScope.Addition,
-            AdditionTask.Delete,
-            f"Delete additions by {created_by}",
-            created_by,
-            query,
+    def delete(self, query: IndexerQuery, created_by: str) -> TaskModel:
+        return self._task_service.init_task(
+            AdditionTask.Delete, created_by, query=query
         )

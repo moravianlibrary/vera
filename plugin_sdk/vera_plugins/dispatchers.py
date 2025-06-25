@@ -1,16 +1,17 @@
 from pathlib import Path
 from typing import Dict, Mapping
 
-from ..specs.base import PluginBase
-from ..specs.catalog_adapter import CatalogAdapterPlugin
-from ..specs.catalog_record_property import CatalogRecordPropertyPlugin
-from ..specs.digitization_registry_adapter import (
+from vera_plugins.specs.base import PluginBase
+
+from .definitions.plugin_types import PluginType, PluginTypeCardinality
+from .specs.catalog_adapter import CatalogAdapterPlugin
+from .specs.catalog_record_property import CatalogRecordPropertyPlugin
+from .specs.digitization_registry_adapter import (
     DigitizationRegistryAdapterPlugin,
 )
-from ..specs.document_discovery import DocumentDiscoveryPlugin
-from ..specs.document_property import DocumentPropertyPlugin
-from ..specs.identity_provider import IdentityProviderPlugin
-from .plugin_types import PluginType, PluginTypeCardinality
+from .specs.document_discovery import DocumentDiscoveryPlugin
+from .specs.document_property import DocumentPropertyPlugin
+from .specs.identity_provider import IdentityProviderPlugin
 
 PLUGIN_TYPE_CARDINALITY: Dict[PluginType, PluginTypeCardinality] = {
     PluginType.IdentityProvider: "1",
@@ -43,7 +44,7 @@ PLUGIN_TYPE_SKELETON: Mapping[PluginType, str] = {
 def get_plugin_type_skeleton(plugin_type: PluginType, class_name: str) -> str:
     return (
         (
-            Path(__file__).resolve().parent.parent
+            Path(__file__).resolve().parent
             / "skeletons"
             / PLUGIN_TYPE_SKELETON[plugin_type]
         )

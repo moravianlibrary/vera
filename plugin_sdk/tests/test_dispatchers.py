@@ -5,7 +5,7 @@ from vera_plugins.definitions.plugin_types import PluginType
 
 class TestSkeletonDispatcher(unittest.TestCase):
     def test_dispatch(self):
-        from vera_plugins.definitions.dispatchers import (
+        from vera_plugins.dispatchers import (
             PLUGIN_TYPE_SKELETON,
             get_plugin_type_skeleton,
         )

@@ -8,6 +8,11 @@ class GroupEdit(BaseModel):
     description: str | None = None
 
 
+class GroupAssignmentChange(BaseModel):
+    add: List[str] | None = None
+    remove: List[str] | None = None
+
+
 class Group(GroupEdit):
     id: int
     usernames: List[str]

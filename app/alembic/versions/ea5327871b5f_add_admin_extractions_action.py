@@ -36,7 +36,7 @@ def upgrade() -> None:
                 'ReadCategoriesDepartment',
                 'EditCategoriesAll',
                 'EditCategoriesDepartment',
-                'PlanTasks',
+                'ScheduleTasks',
                 'AdminTasks',
                 'EditAccess',
                 'Extract',
@@ -83,7 +83,7 @@ def upgrade() -> None:
                     THEN 'EditCategoriesAll'::new_actiontype
                 WHEN action = 'EditCategoriesDepartment'
                     THEN 'EditCategoriesDepartment'::new_actiontype
-                WHEN action = 'PlanTasks' THEN 'PlanTasks'::new_actiontype
+                WHEN action = 'ScheduleTasks' THEN 'ScheduleTasks'::new_actiontype
                 WHEN action = 'AdminTasks' THEN 'AdminTasks'::new_actiontype
                 WHEN action = 'EditAccess' THEN 'EditAccess'::new_actiontype
                 WHEN action = 'Extract' THEN 'Extract'::new_actiontype
@@ -129,7 +129,7 @@ def downgrade() -> None:
                 'ReadCategoriesDepartment',
                 'EditCategoriesAll',
                 'EditCategoriesDepartment',
-                'PlanTasks',
+                'ScheduleTasks',
                 'AdminTasks',
                 'EditAccess',
                 'Extract',
@@ -175,7 +175,7 @@ def downgrade() -> None:
                     THEN 'EditCategoriesAll'::old_actiontype
                 WHEN action = 'EditCategoriesDepartment'
                     THEN 'EditCategoriesDepartment'::old_actiontype
-                WHEN action = 'PlanTasks' THEN 'PlanTasks'::old_actiontype
+                WHEN action = 'ScheduleTasks' THEN 'ScheduleTasks'::old_actiontype
                 WHEN action = 'AdminTasks' THEN 'AdminTasks'::old_actiontype
                 WHEN action = 'EditAccess' THEN 'EditAccess'::old_actiontype
                 WHEN action = 'Extract' THEN 'Extract'::old_actiontype

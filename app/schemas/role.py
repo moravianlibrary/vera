@@ -2,7 +2,11 @@ from typing import List, Tuple
 
 from pydantic import BaseModel
 
-from custom_types import GeneralPermission, OwnershipPermission, OwnershipScope
+from definitions.permission import (
+    GeneralPermission,
+    OwnershipPermission,
+    OwnershipScope,
+)
 
 GeneralPermissions = List[GeneralPermission]
 OwnershipPermissions = List[Tuple[OwnershipPermission, OwnershipScope]]

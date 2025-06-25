@@ -1,25 +1,25 @@
+from typing import Optional
+
 from requests import Session
 
-from schemas import ProjectEdit
+from schemas.project import Project, ProjectEdit
 
 from ._base import BaseRepository
 from ._mixins import (
-    DeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
-    PaginationMixin,
     SaveMixin,
+    SearchMixin,
 )
-from .models import ProjectModel
+from .models.project import ProjectModel, ProjectStatusLogModel
 
 
 class ProjectRepository(
     BaseRepository,
-    DeleteMixin,
-    EnforceNameUniquenessMixin,
-    GetByIdMixin,
-    PaginationMixin,
-    SaveMixin,
+    EnforceNameUniquenessMixin[ProjectModel, int],
+    GetByIdMixin[ProjectModel, int],
+    SaveMixin[ProjectModel],
+    SearchMixin[Project],
 ):
     def __init__(self, db_session: Session):
         super().__init__(db_session, ProjectModel, "Project")
@@ -40,13 +40,13 @@ class ProjectRepository(
             )
         )
 
-    def update(self, project_id: int, project: ProjectEdit) -> ProjectModel:
+    def update(
+        self, project_model: ProjectModel, project: ProjectEdit
+    ) -> ProjectModel:
         """
         Update an existing role.
         """
-        project_model: ProjectModel = self.get_by_id(project_id)
-
-        self.enforce_name_uniqueness(project.name, project_id)
+        self.enforce_name_uniqueness(project.name, project_model.id)
 
         project_model.name = project.name
         project_model.description = project.description
@@ -55,3 +55,35 @@ class ProjectRepository(
         project_model.end_date = project.end_date
 
         return self.save(project_model)
+
+    def update_status(
+        self,
+        project_model: ProjectModel,
+        status: str,
+        message: Optional[str],
+        updated_by: str,
+    ) -> ProjectModel:
+        """
+        Update the status of a project.
+        """
+        project_model.status = status
+
+        self._database_session.add(
+            ProjectStatusLogModel(
+                project_id=project_model.id,
+                status=status,
+                message=message,
+                updated_by=updated_by,
+            )
+        )
+
+        return self.save(project_model)
+
+    def delete(self, project_model: ProjectModel) -> ProjectModel:
+        """
+        Delete a project.
+        """
+        # TODO: Add check if has some documents
+        self._database_session.delete(project_model)
+        self._database_session.commit()
+        return project_model

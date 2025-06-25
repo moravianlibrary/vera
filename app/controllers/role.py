@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Path, Query
 
-from custom_types import GeneralPermission
+from definitions.permission import GeneralPermission
 from repositories import RoleRepository
 from schemas.pagination import Page
 from schemas.role import Role, RoleEdit
@@ -46,7 +46,7 @@ def update(
     role_id: int = Path(...),
     repository: RoleRepository = DependsOnRoleRepository,
 ):
-    return repository.update(role_id, role)
+    return repository.update(repository.get_by_id(role_id), role)
 
 
 @router.delete(

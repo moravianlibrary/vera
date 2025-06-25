@@ -12,12 +12,18 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, relationship
 
 from adapters.database import BaseModel
-from custom_types import ProjectStatus
+from definitions.project import ProjectStatus
 
-from .associations import project_group_association, project_user_association
-from .mixins import CreatedAuditMixin, UpdatedAuditLogMixin
+from .associations import (
+    project_category_association,
+    project_group_association,
+    project_user_association,
+)
+from .mixins.created_audit import CreatedAuditMixin
+from .mixins.updated_audit import UpdatedAuditMixin
 
 if TYPE_CHECKING:
+    from .category import CategoryModel
     from .group import GroupModel
     from .user import UserModel
 
@@ -47,6 +53,12 @@ class ProjectModel(BaseModel, CreatedAuditMixin):
         lazy="dynamic",
     )
 
+    categories: Mapped[List["CategoryModel"]] = relationship(
+        "CategoryModel",
+        secondary=project_category_association,
+        back_populates="projects",
+        lazy="joined",
+    )
     groups: Mapped[List["GroupModel"]] = relationship(
         "GroupModel",
         secondary=project_group_association,
@@ -61,12 +73,13 @@ class ProjectModel(BaseModel, CreatedAuditMixin):
     )
 
 
-class ProjectStatusLogModel(BaseModel, UpdatedAuditLogMixin):
+class ProjectStatusLogModel(BaseModel, UpdatedAuditMixin):
     __tablename__ = "project_status_logs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
     status = Column(Enum(ProjectStatus), nullable=False)
+    message = Column(String, nullable=True)
 
     project = relationship("ProjectModel", backref="status_logs")

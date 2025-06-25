@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Path, Query
 
-from custom_types import GeneralPermission
+from definitions.permission import GeneralPermission
 from repositories import GroupRepository
-from repositories.models import GroupModel
-from schemas.group import Group, GroupEdit
+from schemas.group import Group, GroupAssignmentChange, GroupEdit
 from schemas.pagination import Page
+from services.group import GroupService
 
-from ._resources import DependsOnGroupRepository
+from ._resources import DependsOnGroupRepository, DependsOnGroupService
 from ._security import WithPermission
 
 router = APIRouter(prefix="/groups", tags=["Groups"])
@@ -34,11 +34,7 @@ def create(
     group: GroupEdit,
     repository: GroupRepository = DependsOnGroupRepository,
 ):
-    if repository.find_by_name(group.name):
-        raise ValueError(f"Group with the name '{group.name}' already exists")
-    return repository.save(
-        GroupModel(name=group.name, description=group.description)
-    )
+    return repository.create(group)
 
 
 @router.put(
@@ -51,10 +47,20 @@ def update(
     group_id: int = Path(...),
     repository: GroupRepository = DependsOnGroupRepository,
 ):
-    group_model: GroupModel = repository.get_by_id(group_id)
-    group_model.name = group.name
-    group_model.description = group.description
-    return repository.save(group_model)
+    return repository.update(repository.get_by_id(group_id), group)
+
+
+@router.patch(
+    "/{group_id}/change-assignment",
+    dependencies=[WithPermission(GeneralPermission.ManageAccess)],
+    response_model=Group,
+)
+def change_assignment(
+    group_assignment_change: GroupAssignmentChange,
+    group_id: int = Path(...),
+    service: GroupService = DependsOnGroupService,
+):
+    return service.change_assignment(group_id, group_assignment_change)
 
 
 @router.delete(

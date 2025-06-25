@@ -8,7 +8,6 @@ from typing import (
     Generator,
     Generic,
     List,
-    Type,
     TypeVar,
     get_origin,
     get_type_hints,
@@ -45,8 +44,11 @@ Date = Annotated[datetime, EsDataType.Date]
 T = TypeVar("T", bound=Enum)
 
 
-def Enumerate(enum_type: Type[T]) -> Annotated[Type[T], EsDataType.Keyword]:
-    return Annotated[enum_type, EsDataType.Keyword]
+class Enumerate(Generic[T]):
+    def __class_getitem__(
+        cls, item: type[T]
+    ) -> Annotated[type[T], EsDataType.Keyword]:
+        return Annotated[item, EsDataType.Keyword]
 
 
 class IndexerEntity(BaseModel):
@@ -76,6 +78,9 @@ class IndexerEntity(BaseModel):
         }
 
 
+IndexerEntityType = TypeVar("IndexerEntityType", bound=IndexerEntity)
+
+
 class IndexerQuery(BaseModel):
     bool: Dict[str, Any] | None = None
     match: Dict[str, Any] | None = None
@@ -84,9 +89,6 @@ class IndexerQuery(BaseModel):
 
 class IndexerRequest(BaseModel):
     query: IndexerQuery
-
-
-IndexerEntityType = TypeVar("IndexerEntityType", bound=IndexerEntity)
 
 
 class Hit(BaseModel, Generic[IndexerEntityType]):

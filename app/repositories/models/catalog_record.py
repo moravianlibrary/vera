@@ -1,7 +1,7 @@
 from sqlalchemy import (
-    JSON,
     Boolean,
     Column,
+    Enum,
     ForeignKey,
     Integer,
     LargeBinary,
@@ -10,8 +10,10 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from adapters.database import BaseModel
+from definitions.identifier import IdentifierType
 
-from .mixins import CreatedTimestampMixin, UpdatedTimestampMixin
+from .mixins.created_audit import CreatedTimestampMixin
+from .mixins.updated_audit import UpdatedTimestampMixin
 
 
 class CatalogRecordModel(
@@ -29,6 +31,12 @@ class CatalogRecordModel(
     is_archived = Column(Boolean)
     is_valid = Column(Boolean)
 
+    identifiers = relationship(
+        "CatalogRecordIdentifierModel",
+        backref="catalog_record",
+        lazy="joined",
+        cascade="all, delete-orphan",
+    )
     status_logs = relationship(
         "CatalogRecordStatusLogModel",
         backref="catalog_record",
@@ -37,25 +45,18 @@ class CatalogRecordModel(
     )
 
 
-class CatalogRecordFieldDefinitionModel(BaseModel):
+class CatalogRecordIdentifierModel(BaseModel):
+    __tablename__ = "catalog_record_identifiers"
+
     id = Column(Integer, primary_key=True)
 
-    name = Column(String, unique=True, nullable=False)
-    labels = Column(JSON, nullable=False)
+    catalog_record_id = Column(
+        String, ForeignKey("catalog_records.id"), nullable=False, index=True
+    )
+    identifier_type = Column(Enum(IdentifierType), nullable=False)
+    identifier_value = Column(String, nullable=False)
 
-
-class CatalogRecordFieldValueModel(BaseModel):
-    pass
-
-
-# ## Catalog Record
-# - System should be able to store catalog records in a database
-# - System should be able log that the synchronization with the catalog record was not successful
-# - System should be able to log that the catalog record was archived ??
-# - System should be able to log the validity of the catalog record based on provided validation rules
-# - System should be able to parse custom fields from the MARC record and index them
-# - System should be able to fetch custom fields for catalog record, store them in the database and index them
-# - System should log changes of the catalog record status
+    catalog_record = relationship("CatalogRecordModel", backref="identifiers")
 
 
 class CatalogRecordStatusLogModel(BaseModel, UpdatedTimestampMixin):
@@ -69,3 +70,24 @@ class CatalogRecordStatusLogModel(BaseModel, UpdatedTimestampMixin):
     status = Column(String, nullable=False)
 
     catalog_record = relationship("CatalogRecordModel", backref="status_logs")
+
+
+# class CatalogRecordFieldDefinitionModel(BaseModel):
+#     id = Column(Integer, primary_key=True)
+
+#     name = Column(String, unique=True, nullable=False)
+#     labels = Column(JSON, nullable=False)
+
+
+# class CatalogRecordFieldValueModel(BaseModel):
+#     pass
+
+
+# ## Catalog Record
+# - System should be able to store catalog records in a database
+# - System should be able log that the synchronization with the catalog record was not successful
+# - System should be able to log that the catalog record was archived ??
+# - System should be able to log the validity of the catalog record based on provided validation rules
+# - System should be able to parse custom fields from the MARC record and index them
+# - System should be able to fetch custom fields for catalog record, store them in the database and index them
+# - System should log changes of the catalog record status

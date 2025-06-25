@@ -5,19 +5,29 @@ class GeneralPermission(Enum):
     # Catalog browsing
     SearchCatalog = "SearchCatalog"
 
-    # Documents
+    # Proposals
     ProposeDocuments = "ProposeDocuments"
+    ReviewProposals = "ReviewProposals"
+
+    # Additions
     AddDocuments = "AddDocuments"
-    ReviewDocumentProposals = "ReviewDocumentProposals"
+    IgnoreAdditionChecks = "IgnoreAdditionChecks"
+
+    # Documents
     DeclineDigitization = "DeclineDigitization"
 
     # Catalog records
     ReadCatalogRecords = "ReadCatalogRecords"
     ManageCatalogRecords = "ManageCatalogRecords"
+    ReviewCatalogRecords = "ReviewCatalogRecords"
     ManageCatalogRecordLists = "ManageCatalogRecordLists"
+
+    # Categories
+    ReadDocumentDiscoveryPlugins = "ReadDocumentDiscoveryPlugins"
 
     # Projects
     CreateProjects = "CreateProjects"
+    ReviewProjects = "ReviewProjects"
 
     # Intentions
     ReadIntentions = "ReadIntentions"
@@ -29,8 +39,13 @@ class GeneralPermission(Enum):
     CreateDigitizationLists = "CreateDigitizationLists"
     ManageDigitizationLists = "ManageDigitizationLists"
 
+    # Notifications
+    ReadWatchlists = "ReadWatchlists"
+    ManageWatchlists = "ManageWatchlists"
+
     # Tasks
-    PlanTasks = "PlanTasks"
+    ScheduleTasks = "ScheduleTasks"
+    ScheduleTasks = "ScheduleTasks"
 
     # Access control
     ReadUsersAndGroups = "ReadUsersAndGroups"
@@ -38,15 +53,17 @@ class GeneralPermission(Enum):
     EmulateAccess = "EmulateAccess"
 
     # System-level
-    ManageSystemSettings = "ManageSystemSettings"
     ManageSystem = "ManageSystem"
-    # TODO: decide
-    # ManageArchived = "ManageArchived"
-    # DeleteItems = "DeleteItems"
-    # DeleteArchivedItems = "DeleteArchivedItems"
+    UseSystemTasks = "UseSystemTasks"
 
 
 class OwnershipPermission(Enum):
+    ReadAdditions = "ReadAdditions"
+    ManageAdditions = "ManageAdditions"
+
+    ReadProposals = "ReadProposals"
+    ManageProposals = "ManageProposals"
+
     ReadDocuments = "ReadDocuments"
     ManageDocuments = "ManageDocuments"
 
@@ -56,6 +73,7 @@ class OwnershipPermission(Enum):
     ReadProjects = "ReadProjects"
     ManageProjects = "ManageProjects"
 
+    ReadTasks = "ReadTasks"
     ManageTasks = "ManageTasks"
 
 

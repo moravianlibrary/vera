@@ -1,3 +1,5 @@
+from typing import List
+
 from requests import Session
 
 from adapters.indexer import IndexerSession
@@ -20,7 +22,7 @@ class CategoryRepository(
     BaseRepository,
     ArchiveOnDeleteAndIndexMixin[CategoryModel],
     EnforceNameUniquenessMixin,
-    GetByIdMixin[CategoryModel],
+    GetByIdMixin[CategoryModel, int],
     SaveAndIndexMixin[CategoryModel],
     SearchMixin[Category],
 ):
@@ -74,7 +76,7 @@ class CategoryRepository(
 
     def update(
         self,
-        category_id: int,
+        category_model: CategoryModel,
         name: str,
         description: str,
         assignable: bool,
@@ -84,49 +86,39 @@ class CategoryRepository(
         """
         Update an existing role.
         """
-        category_model = self.get_by_id(category_id)
-        self.enforce_name_uniqueness(name, category_id)
+        self.enforce_name_uniqueness(name, category_model.id)
+
         category_model.name = name
         category_model.description = description
         category_model.assignable = assignable
         category_model.extract_whole = extract_whole
         category_model.disabled = disabled
+
         return self.save(category_model)
 
     def update_assignment(
         self,
-        category_id: int,
-        user_ids: list[str],
-        group_ids: list[int],
+        category_model: CategoryModel,
+        users: List[UserModel],
+        groups: List[GroupModel],
     ) -> CategoryModel:
         """
         Update the assignment of a category.
         """
-        category_model = self.get_by_id(category_id)
-
-        category_model.assigned_users = (
-            self._database_session.query(UserModel)
-            .filter(UserModel.id.in_(user_ids))
-            .all()
-        )
-
-        category_model.assigned_groups = (
-            self._database_session.query(GroupModel)
-            .filter(GroupModel.id.in_(group_ids))
-            .all()
-        )
+        category_model.assigned_users = users
+        category_model.assigned_groups = groups
 
         return self.save_and_refresh_subtree(category_model)
 
     def update_parent(
-        self, category_id: int, parent_id: int | None, level: int
+        self, category_model: CategoryModel, parent_id: int | None, level: int
     ) -> CategoryModel:
         """
         Update the parent of a category.
         """
-        category_model = self.get_by_id(category_id)
         category_model.parent_id = parent_id
         category_model.level = level
+
         self.save(category_model)
 
         subcategories = category_model.children
@@ -136,4 +128,5 @@ class CategoryRepository(
             self.save(child)
             subcategories.extend(child.children)
 
+        return category_model
         return category_model

@@ -16,7 +16,7 @@ class CreatedTimestampMixin:
 
     @declared_attr
     def created_at(cls):
-        return Column(TIMESTAMP, server_default=func.now())
+        return Column(TIMESTAMP, nullable=False, server_default=func.now())
 
 
 class CreatedAuditMixin(CreatedTimestampMixin):

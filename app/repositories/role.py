@@ -23,7 +23,7 @@ class RoleRepository(
     FindByNamesMixin[RoleModel],
     GetByIdMixin[RoleModel, int],
     PaginationMixin[RoleModel],
-    SaveMixin[RoleModel, int],
+    SaveMixin[RoleModel],
 ):
     def __init__(self, db_session: Session):
         super().__init__(db_session, RoleModel, "Role")
@@ -33,16 +33,18 @@ class RoleRepository(
         Create a new role.
         """
         self.enforce_name_uniqueness(role.name)
+
         return self.save(
             RoleModel(name=role.name, description=role.description)
         )
 
-    def update(self, role_id: int, role: RoleEdit) -> RoleModel:
+    def update(self, role_model: RoleModel, role: RoleEdit) -> RoleModel:
         """
         Update an existing role.
         """
-        role_model: RoleModel = self.get_by_id(role_id)
-        self.enforce_name_uniqueness(role.name, role_id)
+        self.enforce_name_uniqueness(role.name, role_model.id)
+
         role_model.name = role.name
         role_model.description = role.description
+
         return self.save(role_model)

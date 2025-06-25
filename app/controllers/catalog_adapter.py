@@ -7,11 +7,11 @@ from services.catalog_search import CatalogSearchService
 
 from ._security import WithPermission
 
-router = APIRouter(prefix="/catalog-search", tags=["Catalog Search"])
+router = APIRouter(prefix="/catalog", tags=["Catalog"])
 
 
 @router.post(
-    "",
+    "/search",
     dependencies=[WithPermission(GeneralPermission.SearchCatalog)],
     response_model=None,
 )
@@ -20,3 +20,14 @@ def search(
     service: CatalogSearchService = DependsOnCatalogSearchService,
 ):
     return service.search(request)
+
+
+@router.get(
+    "/{base}/{system_number}",
+)
+def get_record(
+    base: str,
+    system_number: str,
+    service: CatalogSearchService = DependsOnCatalogSearchService,
+):
+    return service.get_record(base, system_number)

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
@@ -30,7 +30,7 @@ class CategoryModel(BaseModel):
     archived = Column(Boolean, default=False, nullable=False)
 
     # Hierarchical relationship
-    parent: Mapped["CategoryModel" | None] = relationship(
+    parent: Mapped[Optional["CategoryModel"]] = relationship(
         "CategoryModel",
         remote_side=[id],
         backref="children",

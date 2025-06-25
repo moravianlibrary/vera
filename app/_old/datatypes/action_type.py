@@ -23,7 +23,7 @@ class ActionType(Enum):
     EditCategoriesAll = "EditCategoriesAll"
     EditCategoriesDepartment = "EditCategoriesDepartment"
 
-    PlanTasks = "PlanTasks"
+    ScheduleTasks = "ScheduleTasks"
     AdminTasks = "AdminTasks"
 
     EditAccess = "EditAccess"

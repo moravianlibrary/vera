@@ -36,7 +36,9 @@ def paginate(
 @router.post(
     "",
     dependencies=[
-        WithPermission(OwnershipPermission.ManageCategories),
+        WithPermission(
+            OwnershipPermission.ManageCategories, require_scope_all=True
+        ),
         WithCategoryWriteLock,
     ],
     response_model=Distribution,
@@ -51,7 +53,9 @@ def create(
 @router.put(
     "/{distribution_id}",
     dependencies=[
-        WithPermission(OwnershipPermission.ManageCategories),
+        WithPermission(
+            OwnershipPermission.ManageCategories, require_scope_all=True
+        ),
         WithCategoryWriteLock,
     ],
     response_model=Distribution,
@@ -67,7 +71,9 @@ def update(
 @router.put(
     "/{distribution_id}/description",
     dependencies=[
-        WithPermission(OwnershipPermission.ManageCategories),
+        WithPermission(
+            OwnershipPermission.ManageCategories, require_scope_all=True
+        ),
     ],
     response_model=Distribution,
 )
@@ -81,7 +87,11 @@ def update_description(
 
 @router.put(
     "/{distribution_id}/set-as-active",
-    dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
+    dependencies=[
+        WithPermission(
+            OwnershipPermission.ManageCategories, require_scope_all=True
+        )
+    ],
     response_model=Distribution,
 )
 def set_as_active(
@@ -93,7 +103,11 @@ def set_as_active(
 
 @router.delete(
     "/{distribution_id}",
-    dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
+    dependencies=[
+        WithPermission(
+            OwnershipPermission.ManageCategories, require_scope_all=True
+        )
+    ],
     response_model=Distribution,
 )
 def delete(

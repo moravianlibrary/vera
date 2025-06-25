@@ -1,8 +1,8 @@
-from tests.test_base_client import TestBaseClient
-from tests.test_base_database import TestBaseDatabase
-from tests.test_base_mocker import TestBaseMocker
-from tests.test_mock_indexer import TestMockIndexer
-from tests.test_mock_user import TestMockUser
+from _old_tests.test_base_client import TestBaseClient
+from _old_tests.test_base_database import TestBaseDatabase
+from _old_tests.test_base_mocker import TestBaseMocker
+from _old_tests.test_mock_indexer import TestMockIndexer
+from _old_tests.test_mock_user import TestMockUser
 
 
 class TestEndpointsBase(

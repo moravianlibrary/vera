@@ -19,3 +19,4 @@ def WithLock(
 
 
 WithCategoryWriteLock = WithLock("category_write")
+WithPluginWriteLock = WithLock("plugin_write")

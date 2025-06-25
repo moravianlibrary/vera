@@ -1,4 +1,7 @@
+from ...definitions.digitization_registry import DRFetchStatus, DRState
 from ...definitions.eligibility import DocumentEligibilityStatus
+from ...definitions.project import ProjectStatus
+from ...definitions.proposal import DocumentProposalStatus
 from ..definitions.identifier import IdentifierType
 from ..definitions.permission import (
     GeneralPermission,
@@ -6,11 +9,8 @@ from ..definitions.permission import (
     OwnershipScope,
 )
 from .catalog import CatalogFetchStatus
-from .digitization_registry import DRFetchStatus, DRState
 from .document_addition import DocumentAdditionStatus
-from .document_proposal import DocumentProposalStatus
 from .plugin import PluginState, PluginType
-from .project import ProjectStatus
 
 __all__ = [
     "CatalogFetchStatus",

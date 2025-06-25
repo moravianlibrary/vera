@@ -21,7 +21,7 @@ class UserRepository(
     FindByNameMixin[UserModel],
     GetByIdMixin[UserModel, str],
     PaginationMixin[UserModel],
-    SaveMixin[UserModel, str],
+    SaveMixin[UserModel],
 ):
     def __init__(self, db_session: Session):
         super().__init__(db_session, UserModel, "User")
@@ -33,19 +33,19 @@ class UserRepository(
         self.enforce_name_uniqueness(username)
         return self.save(UserModel(id=user_id, username=username))
 
-    def update_name(self, user_id: str, username: str) -> UserModel:
+    def update_name(self, user_model: UserModel, username: str) -> UserModel:
         """
         Update an existing role.
         """
-        user_model: UserModel = self.get_by_id(user_id)
-        self.enforce_name_uniqueness(username, user_id)
+        self.enforce_name_uniqueness(username, user_model.id)
         user_model.username = username
         return self.save(user_model)
 
-    def update_settings(self, user_id: str, settings: JsonObject) -> UserModel:
+    def update_settings(
+        self, user_model: UserModel, settings: JsonObject
+    ) -> UserModel:
         """
         Update an existing role.
         """
-        user_model: UserModel = self.get_by_id(user_id)
         user_model.settings = settings
         return self.save(user_model)

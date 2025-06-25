@@ -1,13 +1,23 @@
 from definitions.permission import OwnershipPermission, OwnershipScope
 from repositories.category import CategoryRepository
+from repositories.group import GroupRepository
 from repositories.models.category import CategoryModel
-from schemas.category import CategoryAssignmentChange, CategoryEdit
+from repositories.user import UserRepository
+from schemas.assignment import AssignmentChange
+from schemas.category import CategoryEdit, CategoryParentChangeParams
 from schemas.user import AuthenticatedUser
 
 
 class CategoryService:
-    def __init__(self, category_repository: CategoryRepository):
+    def __init__(
+        self,
+        category_repository: CategoryRepository,
+        group_repository: GroupRepository,
+        user_repository: UserRepository,
+    ):
         self._category_repository = category_repository
+        self._group_repository = group_repository
+        self._user_repository = user_repository
 
     def _enforce_ownership(
         target_category: CategoryModel | None,
@@ -86,7 +96,7 @@ class CategoryService:
         self._enforce_manage_ownership(target_category.parent, user)
 
         self._category_repository.update(
-            target_category.id,
+            target_category,
             category.name,
             category.description,
             category.assignable,
@@ -97,7 +107,7 @@ class CategoryService:
     def change_assignment(
         self,
         category_id: int,
-        category_assignment_change: CategoryAssignmentChange,
+        assignment_change: AssignmentChange,
         user: AuthenticatedUser,
     ) -> None:
         target_category = self._category_repository.get_by_id(category_id)
@@ -105,32 +115,36 @@ class CategoryService:
         self._enforce_manage_ownership(target_category.parent, user)
 
         user_ids = {u.id for u in target_category.assigned_users} | set(
-            category_assignment_change.add.user_ids
-        ) - set(category_assignment_change.remove.user_ids)
+            assignment_change.add.user_ids
+        ) - set(assignment_change.remove.user_ids)
 
         group_ids = {g.id for g in target_category.assigned_groups} | set(
-            category_assignment_change.add.group_ids
-        ) - set(category_assignment_change.remove.group_ids)
+            assignment_change.add.group_ids
+        ) - set(assignment_change.remove.group_ids)
 
-        self._category_repository.update_assingment(
-            target_category.id, user_ids, group_ids
+        self._category_repository.update_assignment(
+            target_category,
+            [
+                self._group_repository.get_by_id(group_id)
+                for group_id in group_ids
+            ],
+            [self._user_repository.get_by_id(user_id) for user_id in user_ids],
         )
 
-    def change_parent(
+    def parent(
         self,
         category_id: int,
-        from_parent_id: int | None,
-        to_parent_id: int | None,
+        params: CategoryParentChangeParams,
         user: AuthenticatedUser,
     ) -> None:
         from_category = (
-            CategoryRepository.get_by_id(from_parent_id)
-            if from_parent_id
+            CategoryRepository.get_by_id(params.from_parent_id)
+            if params.from_parent_id
             else None
         )
         to_category = (
-            CategoryRepository.get_by_id(to_parent_id)
-            if to_parent_id
+            CategoryRepository.get_by_id(params.to_parent_id)
+            if params.to_parent_id
             else None
         )
 
@@ -140,8 +154,8 @@ class CategoryService:
         target_category = self._category_repository.get_by_id(category_id)
 
         self._category_repository.update_parent(
-            target_category.id,
-            to_parent_id,
+            target_category,
+            params.to_parent_id,
             to_category.level + 1 if to_category else 0,
         )
 

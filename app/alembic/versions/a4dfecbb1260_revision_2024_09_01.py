@@ -6,9 +6,10 @@ Create Date: 2024-09-16 15:07:45.838983
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "a4dfecbb1260"
@@ -1033,7 +1034,7 @@ def downgrade() -> None:
                 "ReadCategoriesDepartment",
                 "EditCategoriesAll",
                 "EditCategoriesDepartment",
-                "PlanTasks",
+                "ScheduleTasks",
                 "AdminTasks",
                 "EditAccess",
                 "Extract",
@@ -1159,4 +1160,5 @@ def downgrade() -> None:
         op.f("ix_catalog_records_sysno"), table_name="catalog_records"
     )
     op.drop_table("catalog_records")
+    # ### end Alembic commands ###
     # ### end Alembic commands ###

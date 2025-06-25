@@ -2,13 +2,14 @@ from enum import Enum
 
 
 class EligibilityStatus(Enum):
-    Eligible = "Eligible"
+    CatalogFailure = "CatalogFailure"
+    RecordNotFound = "RecordNotFound"
+    MultipleRecordsFound = "MultipleRecordsFound"
+    IssueNotFound = "IssueNotFound"
+    AmbiguousIssues = "AmbiguousIssues"
+    DigitizationForbidden = "DigitizationForbidden"
+    DigitizationRegistryFailure = "DigitizationRegistryFailure"
     ActiveDuplicate = "ActiveDuplicate"
     FullyProcessedDuplicate = "FullyProcessedDuplicate"
     InDigitization = "InDigitization"
-    DigitizationForbidden = "DigitizationForbidden"
-    AmbiguousIssues = "AmbiguousIssues"
-    AllIssuesResolved = "AllIssuesResolved"
-    CatalogFailure = "CatalogFailure"
-    DigitizationRegistryFailure = "DigitizationRegistryFailure"
-    InternalFailure = "InternalFailure"
+    Eligible = "Eligible"

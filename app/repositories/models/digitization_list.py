@@ -1,15 +1,15 @@
 from typing import TYPE_CHECKING, List
 
-from associations import digitization_list_intention_association
 from sqlalchemy import Column, Integer
 from sqlalchemy.orm import Mapped, relationship
 
 from adapters.database import BaseModel
 
-from .mixins import CreatedAuditMixin
+from .associations import digitization_list_intention_association
+from .mixins.created_audit import CreatedAuditMixin
 
 if TYPE_CHECKING:
-    from .document import DocumentModel
+    from .document import DocumentIterationModel
     from .intention import IntentionModel
 
 
@@ -18,7 +18,7 @@ class DigitizationListModel(BaseModel, CreatedAuditMixin):
 
     id = Column(Integer, primary_key=True)
 
-    documents: Mapped[List["DocumentModel"]] = relationship(
+    document_iterations: Mapped[List["DocumentIterationModel"]] = relationship(
         "DocumentModel",
         back_populates="digitization_list",
         lazy="joined",

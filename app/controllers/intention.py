@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Path
 
-from custom_types import GeneralPermission
+from adapters.indexer import IndexerRequest, IndexerResponse
+from definitions.permission import GeneralPermission
 from repositories import IntentionRepository
-from schemas import Intention, IntentionEdit
+from schemas.intention import Intention, IntentionEdit
+from services.intention import IntentionService
 
-from ._resources import DependsOnIntentionRepository
+from ._resources import DependsOnIntentionRepository, DependsOnIntentionService
 from ._security import WithPermission
 
 router = APIRouter(prefix="/intentions", tags=["Intentions"])
@@ -13,12 +15,13 @@ router = APIRouter(prefix="/intentions", tags=["Intentions"])
 @router.post(
     "/search",
     dependencies=[WithPermission(GeneralPermission.ReadIntentions)],
-    response_model=Intention,
+    response_model=IndexerResponse[Intention],
 )
 def search(
+    request: IndexerRequest,
     repository: IntentionRepository = DependsOnIntentionRepository,
 ):
-    pass
+    return repository.search(request)
 
 
 @router.post(
@@ -42,8 +45,9 @@ def update(
     intention: IntentionEdit,
     intention_id: int = Path(...),
     repository: IntentionRepository = DependsOnIntentionRepository,
+    service: IntentionService = DependsOnIntentionService,
 ):
-    return repository.update(intention_id, intention)
+    return service.update(repository.get_by_id(intention_id), intention)
 
 
 @router.delete(
@@ -54,5 +58,6 @@ def update(
 def delete(
     intention_id: int = Path(...),
     repository: IntentionRepository = DependsOnIntentionRepository,
+    service: IntentionService = DependsOnIntentionService,
 ):
-    return repository.delete(repository.get_by_id(intention_id))
+    return service.delete(repository.get_by_id(intention_id))

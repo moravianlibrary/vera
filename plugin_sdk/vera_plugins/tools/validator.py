@@ -5,7 +5,6 @@ from typing import List
 from jsonschema.exceptions import SchemaError, ValidationError
 from jsonschema.validators import Draft202012Validator
 
-from ..definitions.dispatchers import PLUGIN_TYPE_DECLARATION
 from ..definitions.exceptions import (
     ImplementationError,
     LintingError,
@@ -15,6 +14,7 @@ from ..definitions.exceptions import (
     UnexpectedPluginConfigError,
     UnimplementedFunctionsError,
 )
+from ..dispatchers import PLUGIN_TYPE_DECLARATION
 from ..schemas import PluginInstance, PluginMeta
 from ..tools.loader import load_plugin_class
 

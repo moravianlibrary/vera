@@ -1,6 +1,6 @@
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 from .group import GroupSummary
 
@@ -13,14 +13,19 @@ class CategoryEdit(BaseModel):
     extract_whole: bool = False
 
 
-class CategoryAssignment(BaseModel):
-    user_ids: List[str] = []
-    group_ids: List[int] = []
+class CategoryParentChangeParams(BaseModel):
+    from_parent_id: int | None = None
+    to_parent_id: int | None = None
 
-
-class CategoryAssignmentChange(CategoryEdit):
-    add: CategoryAssignment | None = None
-    remove: CategoryAssignment | None = None
+    @model_validator(mode="after")
+    def validate_different_parents(
+        cls, model: "CategoryParentChangeParams"
+    ) -> "CategoryParentChangeParams":
+        if model.from_parent_id == model.to_parent_id:
+            raise ValueError(
+                "from_parent_id and to_parent_id must be different."
+            )
+        return model
 
 
 class Category(CategoryEdit):

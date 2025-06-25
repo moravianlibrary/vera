@@ -8,21 +8,16 @@ from sqlalchemy import or_, text, update
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-from adapters.indexer import is_indexer_available, with_es_session
-from config import VeraConfig
-from datatypes import TaskItemType, TaskState
-from models import (
+from adapters.database import (
+    DatabaseEngine,
     DatabaseUrl,
-    Engine,
-    Intention,
-    PeriodicTask,
-    StartupTasks,
-    Task,
-    with_db_session,
+    with_database_session,
 )
-from schemas import AddDocumentResponse, EsSession
+from adapters.indexer import is_indexer_available
+from config import VeraConfig
+from definitions.task import TaskState
+from repositories.models.task import PeriodicTask, TaskModel
 from vera_scheduler import vera_scheduler
-from worker import run_task
 
 logger = logging.getLogger("uvicorn")
 
@@ -31,7 +26,7 @@ def check_connection():
     retries = 5
     for attempt in range(retries):
         try:
-            with Engine.connect():
+            with DatabaseEngine.connect():
                 return True
         except OperationalError:
             logger.error(
@@ -59,7 +54,7 @@ def check_index_connection(retries: int = 5):
 
 def get_actual_revision():
     try:
-        with Engine.connect() as connection:
+        with DatabaseEngine.connect() as connection:
             result = connection.execute(
                 text("SELECT version_num FROM alembic_version;")
             )
@@ -90,17 +85,17 @@ def ensure_last_database_revision():
     )
 
 
-@with_db_session
+@with_database_session
 def set_failed_tasks_on_start(session: Session):
     logger.info(
         "Setting all tasks in Planned or Running state to Failed on startup."
     )
     session.execute(
-        update(Task)
+        update(TaskModel)
         .where(
             or_(
-                Task.task_state == TaskState.Planned,
-                Task.task_state == TaskState.Running,
+                TaskModel.task_state == TaskState.Planned,
+                TaskModel.task_state == TaskState.Running,
             )
         )
         .values(task_state=TaskState.Failed, finished=VeraConfig.Timestamp)
@@ -109,7 +104,7 @@ def set_failed_tasks_on_start(session: Session):
     logger.info("Tasks have been updated to Failed state on startup.")
 
 
-@with_db_session
+@with_database_session
 def setup_periodic_tasks_on_start(session: Session):
     logger.info("Setting up periodic tasks on startup.")
 
@@ -117,58 +112,6 @@ def setup_periodic_tasks_on_start(session: Session):
         periodic_task.schedule()
 
     logger.info("All periodic tasks have been set up.")
-
-
-@with_db_session
-def ensure_today_intention(session: Session):
-    Intention.ensure_intention_for_today(session)
-
-
-@with_es_session
-def recreate_add_documents_responses(es_session: EsSession):
-    logger.info("Recreating add documents responses index.")
-    AddDocumentResponse.recreate_index(es_session)
-
-
-@with_db_session
-def plan_startup_tasks(session: Session):
-    for startup_task in StartupTasks.all(session):
-        if startup_task.is_one_time_task and startup_task.has_run:
-            continue
-
-        logger.info(f"Planning start up task {startup_task.task_type.value}")
-        task = Task(
-            task_type=startup_task.task_type,
-            owner=VeraConfig.BotName,
-        ).save(session)
-
-        if startup_task.item_type == TaskItemType.CatalogRecord:
-            session.execute(
-                text(
-                    """
-                    INSERT INTO task_items (task_id, item_id, item_type)
-                    SELECT :task_id, sysno, 'CatalogRecord'
-                    FROM catalog_records
-                    """
-                ),
-                {"task_id": task.id},
-            )
-        elif startup_task.item_type == TaskItemType.Document:
-            session.execute(
-                text(
-                    """
-                    INSERT INTO task_items (task_id, item_id, item_type)
-                    SELECT :task_id, CAST(id AS VARCHAR), 'Document'
-                    FROM documents
-                    """
-                ),
-                {"task_id": task.id},
-            )
-
-        startup_task.has_run = True
-        startup_task.save(session)
-
-        run_task.delay(task_id=task.id)
 
 
 @asynccontextmanager
@@ -187,16 +130,11 @@ async def lifespan(app_: FastAPI):
 
     ensure_last_database_revision()
 
-    recreate_add_documents_responses()
-
     vera_scheduler.start()
 
     set_failed_tasks_on_start()
     # plan_startup_tasks()
     setup_periodic_tasks_on_start()
-    ensure_today_intention()
-
-    vera_scheduler.add_job(ensure_today_intention, "cron", hour=0)
 
     yield
 

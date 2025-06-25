@@ -1,29 +1,48 @@
-from fastapi import APIRouter, Path
+from typing import Annotated, List
 
-from custom_types import GeneralPermission, OwnershipPermission
-from repositories import ProjectRepository
-from schemas import Project, ProjectEdit
+from fastapi import APIRouter, Path, Query
 
-from ._resources import DependsOnProjectRepository
+from adapters.indexer import IndexerRequest, IndexerResponse
+from definitions.permission import GeneralPermission, OwnershipPermission
+from definitions.project import ProjectStatus
+from repositories.project import ProjectRepository
+from schemas.assignment import AssignmentChange
+from schemas.project import (
+    Project,
+    ProjectAdditionCreate,
+    ProjectBatchParams,
+    ProjectEdit,
+)
+from schemas.user import AuthenticatedUser
+from services.project import ProjectService
+
+from ._resources import (
+    DependsOnAuthenticatedUser,
+    DependsOnProjectRepository,
+    RestrictedSearchRequest,
+)
 from ._security import WithPermission
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
 
-@router.get(
+@router.post(
     "/search",
     dependencies=[WithPermission(OwnershipPermission.ReadProjects)],
-    response_model=Project,
+    response_model=IndexerResponse[Project],
 )
 def search(
+    request: IndexerRequest = RestrictedSearchRequest(
+        OwnershipPermission.ReadProjects
+    ),
     repository: ProjectRepository = DependsOnProjectRepository,
 ):
-    pass
+    return repository.search(request)
 
 
 @router.post(
     "",
-    dependencies=[WithPermission(OwnershipPermission.ManageProjects)],
+    dependencies=[WithPermission(GeneralPermission.CreateProjects)],
     response_model=Project,
 )
 def create(
@@ -43,7 +62,88 @@ def update(
     project_id: int = Path(...),
     repository: ProjectRepository = DependsOnProjectRepository,
 ):
-    return repository.update(project_id, project)
+    return repository.update(repository.get_by_id(project_id), project)
+
+
+@router.patch(
+    "/{project_id}/change-assignment",
+    dependencies=[WithPermission(OwnershipPermission.ManageProjects)],
+    response_model=Project,
+)
+def change_assignment(
+    assignment_change: AssignmentChange,
+    project_id: int = Path(...),
+    service: ProjectService = DependsOnProjectRepository,
+):
+    return service.change_assignment(project_id, assignment_change)
+
+
+@router.post(
+    "/{project_id}/add-documents",
+    dependencies=[WithPermission(OwnershipPermission.ReadProjects)],
+    response_model=Project,
+)
+def add_documents(
+    batch_params: Annotated[ProjectBatchParams, Query()],
+    additions: List[ProjectAdditionCreate] | None = None,
+    project_id: int = Path(...),
+    service: ProjectService = DependsOnProjectRepository,
+):
+    return service.add_documents(project_id, batch_params, additions)
+
+
+@router.patch(
+    "/{project_id}/change-categories-assignment",
+    dependencies=[
+        WithPermission(
+            OwnershipPermission.ManageProjects,
+            OwnershipPermission.ManageCategories,
+            GeneralPermission.ReviewProjects,
+        )
+    ],
+    response_model=Project,
+)
+def change_categories_assignment(
+    project_id: int = Path(...),
+    categories: List[int] | None = None,
+    repository: ProjectRepository = DependsOnProjectRepository,
+    service: ProjectService = DependsOnProjectRepository,
+):
+    return service.change_assigned_categories(
+        repository.get_by_id(project_id), categories
+    )
+
+
+@router.patch(
+    "/{project_id}/approve",
+    dependencies=[WithPermission(GeneralPermission.ReviewProjects)],
+    response_model=Project,
+)
+def approve(
+    message: str | None = None,
+    project_id: int = Path(...),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: ProjectService = DependsOnProjectRepository,
+):
+    return service.change_status(
+        project_id, ProjectStatus.Accepted, message, user
+    )
+
+
+@router.patch(
+    "/{project_id}/reject",
+    dependencies=[WithPermission(GeneralPermission.ReviewProjects)],
+    response_model=Project,
+)
+def reject(
+    message: str | None = None,
+    project_id: int = Path(...),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: ProjectService = DependsOnProjectRepository,
+):
+    return service.change_status(
+        project_id, ProjectStatus.Declined, message, user
+    )
 
 
 @router.delete(
@@ -56,27 +156,3 @@ def delete(
     repository: ProjectRepository = DependsOnProjectRepository,
 ):
     return repository.delete(repository.get_by_id(project_id))
-
-
-@router.post(
-    "/{project_id}/approve",
-    dependencies=[WithPermission(GeneralPermission.ManageProjects)],
-    response_model=Project,
-)
-def approve(
-    project_id: int = Path(...),
-    repository: ProjectRepository = DependsOnProjectRepository,
-):
-    pass
-
-
-@router.post(
-    "/{project_id}/reject",
-    dependencies=[WithPermission(GeneralPermission.ManageProjects)],
-    response_model=Project,
-)
-def reject(
-    project_id: int = Path(...),
-    repository: ProjectRepository = DependsOnProjectRepository,
-):
-    pass

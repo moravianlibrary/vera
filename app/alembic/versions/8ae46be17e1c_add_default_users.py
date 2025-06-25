@@ -29,7 +29,7 @@ def upgrade() -> None:
         "CommentOnDatatable",
         "ReadCategoriesAll",
         "EditCategoriesAll",
-        "PlanTasks",
+        "ScheduleTasks",
         "AdminTasks",
         "EditAccess",
         "Extract",
@@ -54,7 +54,7 @@ def upgrade() -> None:
         "CommentOnDatatable",
         "ReadCategoriesDepartment",
         "EditCategoriesDepartment",
-        "PlanTasks",
+        "ScheduleTasks",
     ]
     for action in actions:
         op.execute(
@@ -74,7 +74,7 @@ def upgrade() -> None:
         "InsertDatatable",
         "CommentOnDatatable",
         "ReadCategoriesDepartment",
-        "PlanTasks",
+        "ScheduleTasks",
     ]
     for action in actions:
         op.execute(

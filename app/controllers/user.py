@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query
 
 from adapters.identity_provider import IdentityProvider
-from custom_types import GeneralPermission
+from definitions.permission import GeneralPermission
 from repositories.user import UserRepository
 from schemas.pagination import Page
 from schemas.role import Permissions
@@ -28,9 +28,11 @@ def authorize_user(
 @router.get("/me/notifications", response_model=UserNotifications)
 def list_notifications(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    repository: UserRepository = DependsOnUserRepository,
 ):
-    # TODO: Implement
-    pass
+    return repository.read_new_notifications(
+        repository.get_by_id(user.user_id)
+    )
 
 
 @router.get("/me/settings", response_model=UserSettings)
@@ -47,7 +49,9 @@ def save_user_settings(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     repository: UserRepository = DependsOnUserRepository,
 ):
-    return repository.update_settings(user, settings)
+    return repository.update_settings(
+        repository.get_by_id(user.user_id), settings
+    )
 
 
 @router.post(
@@ -80,7 +84,7 @@ def disable_emulated_permissions(
     dependencies=[WithPermission(GeneralPermission.ManageAccess)],
     response_model=Page[User],
 )
-def list_users(
+def paginate(
     page: int = Query(1, description="Page number"),
     page_size: int = Query(50, description="Page size"),
     repository: UserRepository = DependsOnUserRepository,

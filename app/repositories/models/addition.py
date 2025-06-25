@@ -1,5 +1,7 @@
+from typing import List
+
 from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, relationship
 
 from adapters.database import BaseModel
 from definitions.addition import AdditionStatus
@@ -9,34 +11,49 @@ from definitions.identifier import IdentifierType
 from .mixins.created_audit import CreatedAuditMixin
 
 
-class AdditionModel(BaseModel, CreatedAuditMixin):
-    __tablename__ = "document_additions"
+class AdditionBatchModel(BaseModel, CreatedAuditMixin):
+    __tablename__ = "addition_batches"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
+    name = Column(String, nullable=True)
+    file_name = Column(String, nullable=True)
+
+    is_archived = Column(Boolean, default=False, nullable=False)
+
+    additions: Mapped[List["AdditionModel"]] = relationship(
+        "AdditionModel",
+        backref="batch",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+    )
+
+
+class AdditionModel(BaseModel):
+    __tablename__ = "additions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    batch_id = Column(Integer, ForeignKey("addition_batches.id"))
+
     identifier_type = Column(Enum(IdentifierType), nullable=False)
     identifier_value = Column(String, nullable=False)
-    batch_name = Column(String, nullable=False)
     category_id = Column(Integer, nullable=False)
     priority = Column(Integer, default=3, nullable=False)
 
-    proposal_id = Column(
-        Integer, ForeignKey("document_proposals.id"), nullable=True
-    )
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
+    proposal_id = Column(Integer, ForeignKey("proposals.id"), nullable=True)
 
-    ignore_digitization_check = Column(Boolean, default=False, nullable=False)
     allow_new_iteration = Column(Boolean, default=False, nullable=False)
+    ignore_digitization_check = Column(Boolean, default=False, nullable=False)
 
     status = Column(
         Enum(AdditionStatus), default=AdditionStatus.Enqueued, nullable=False
     )
     eligibility_status = Column(Enum(EligibilityStatus), nullable=True)
+    # TODO: maybe remove
     error_message = Column(String, nullable=True)
 
-    is_archived = Column(Boolean, default=False, nullable=False)
-
-    proposal = relationship(
-        "DocumentProposalModel",
-        backref="addition",
-        lazy="joined",
+    batch: Mapped["AdditionBatchModel"] = relationship(
+        "AdditionBatchModel", back_populates="additions", lazy="joined"
     )
+    proposal = relationship("ProposalModel", backref="addition", lazy="joined")

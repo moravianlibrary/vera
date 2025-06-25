@@ -1,4 +1,4 @@
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy import (
     JSON,
@@ -11,18 +11,27 @@ from sqlalchemy import (
     LargeBinary,
     PrimaryKeyConstraint,
     String,
-    func,
 )
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Mapped, relationship
 
-from adapters.database import BaseModel
+from adapters.database import BaseModel, DatabaseSession
 from definitions.task import ScopedTaskType, TaskScope, TaskState
+from repositories.models.mixins.created_audit import CreatedAuditMixin
 from vera_scheduler import vera_scheduler
 
+if TYPE_CHECKING:
+    from repositories.models.addition import AdditionModel
+    from repositories.models.catalog_record import CatalogRecordModel
+    from repositories.models.category import CategoryModel
+    from repositories.models.document import (
+        DocumentIterationModel,
+        DocumentModel,
+    )
 
-class TaskModel(BaseModel):
+
+class TaskModel(BaseModel, CreatedAuditMixin):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True, unique=True)
@@ -30,7 +39,6 @@ class TaskModel(BaseModel):
 
     task_type = Column(Enum(ScopedTaskType), nullable=False, index=True)
     name = Column(String, nullable=False)
-    created_by = Column(String, nullable=False)
 
     query = Column(JSON)
     data = Column(JSON)
@@ -39,15 +47,14 @@ class TaskModel(BaseModel):
         Enum(TaskState), nullable=False, server_default=TaskState.Initializing
     )
 
-    planned = Column(TIMESTAMP, nullable=False, server_default=func.now())
     started = Column(TIMESTAMP)
     finished = Column(TIMESTAMP)
 
     result_message = Column(String)
     log = Column(LargeBinary)
 
-    additions = relationship(
-        "TaskAddition",
+    additions: Mapped[List["TaskAdditionModel"]] = relationship(
+        "TaskAdditionModel",
         back_populates="task",
         cascade="all, delete-orphan",
         lazy="selectin",
@@ -74,6 +81,10 @@ class TaskModel(BaseModel):
     @hybrid_property
     def scope(self) -> TaskScope:
         return TaskScope(self.task_type.split(".")[0])
+
+    @hybrid_property
+    def unscoped_task_type(self) -> str:
+        return self.task_type.split(".")[1]
 
     @hybrid_property
     def items(self) -> List["TaskItemMixin"]:
@@ -118,7 +129,12 @@ class TaskAdditionModel(BaseModel, TaskItemMixin):
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "addition_id"),)
 
-    task = relationship("Task", back_populates="additions")
+    task: Mapped["TaskModel"] = relationship(
+        "TaskModel", back_populates="additions"
+    )
+    addition: Mapped["AdditionModel"] = relationship(
+        "Addition", back_populates="tasks"
+    )
 
 
 class TaskCatalogRecordModel(BaseModel, TaskItemMixin):
@@ -130,19 +146,46 @@ class TaskCatalogRecordModel(BaseModel, TaskItemMixin):
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "catalog_record_id"),)
 
-    task = relationship("Task", back_populates="catalog_records")
+    task: Mapped["TaskModel"] = relationship(
+        "TaskModel", back_populates="catalog_records"
+    )
+    catalog_record: Mapped["CatalogRecordModel"] = relationship(
+        "CatalogRecordModel", back_populates="tasks"
+    )
 
 
 class TaskDocumentModel(BaseModel, TaskItemMixin):
     __tablename__ = "task_documents"
 
-    document_id = Column(
-        Integer, ForeignKey("document_iterations.id"), index=True
-    )
+    document_id = Column(Integer, ForeignKey("documents.id"), index=True)
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "document_id"),)
 
-    task = relationship("Task", back_populates="documents")
+    task: Mapped["TaskModel"] = relationship(
+        "TaskModel", back_populates="documents"
+    )
+    document: Mapped["DocumentModel"] = relationship(
+        "DocumentModel", back_populates="tasks"
+    )
+
+
+class TaskDocumentIterationModel(BaseModel, TaskItemMixin):
+    __tablename__ = "task_document_iterations"
+
+    document_iteration_id = Column(
+        Integer, ForeignKey("document_iterations.id"), index=True
+    )
+
+    __table_args__ = (
+        PrimaryKeyConstraint("task_id", "document_iteration_id"),
+    )
+
+    task: Mapped["TaskModel"] = relationship(
+        "TaskModel", back_populates="documents"
+    )
+    document_iteration: Mapped["DocumentIterationModel"] = relationship(
+        "DocumentIterationModel", back_populates="tasks"
+    )
 
 
 class TaskCategoryModel(BaseModel, TaskItemMixin):
@@ -152,7 +195,12 @@ class TaskCategoryModel(BaseModel, TaskItemMixin):
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "category_id"),)
 
-    task = relationship("Task", back_populates="categories")
+    task: Mapped["TaskModel"] = relationship(
+        "TaskModel", back_populates="categories"
+    )
+    category: Mapped["CategoryModel"] = relationship(
+        "CategoryModel", back_populates="tasks"
+    )
 
 
 class PeriodicTask(BaseModel):
@@ -184,10 +232,10 @@ class PeriodicTask(BaseModel):
             day=parse_cron_value(self.day_of_month),
         )
 
-    def save(self, session: Session) -> "PeriodicTask":
+    def save(self, session: DatabaseSession) -> "PeriodicTask":
         super().save(session)
         self.schedule()
         return self
 
-    def validate_before_delete(self, session: Session) -> None:
+    def validate_before_delete(self, session: DatabaseSession) -> None:
         vera_scheduler.remove_job(str(self.id))

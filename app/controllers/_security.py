@@ -1,34 +1,20 @@
-from typing import Callable, Sequence, Union
+from typing import Callable, List, Sequence, Type, Union
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status
+from pydantic import BaseModel
 
-from adapters.identity_provider import AuthScheme, IdentityProvider
-from definitions.permission import GeneralPermission, OwnershipPermission
-from repositories import RoleRepository, UserRepository
-from schemas import AuthenticatedUser
-
-from ._resources import (
-    DependsOnIdentityProvider,
-    DependsOnRoleRepository,
-    DependsOnUserRepository,
+from definitions.permission import (
+    GeneralPermission,
+    OwnershipPermission,
+    OwnershipScope,
 )
+from schemas.task import TaskScheduleParams
+from schemas.user import AuthenticatedUser
+
+from ._resources import DependsOnAuthenticatedUser
 
 PermissionType = Union[GeneralPermission, OwnershipPermission]
 PermissionList = Union[PermissionType, Sequence[PermissionType]]
-
-
-def resolve_authenticated_user(
-    token: str = Depends(AuthScheme),
-    identity_provider: IdentityProvider = DependsOnIdentityProvider,
-    user_repository: UserRepository = DependsOnUserRepository,
-    role_repository: RoleRepository = DependsOnRoleRepository,
-) -> AuthenticatedUser:
-    return identity_provider.authenticate_user(
-        token, user_repository, role_repository
-    )
-
-
-DependsOnAuthenticatedUser = Depends(resolve_authenticated_user)
 
 
 class PermissionDeniedException(HTTPException):
@@ -39,10 +25,25 @@ class PermissionDeniedException(HTTPException):
         )
 
 
+def has_permission(
+    user: AuthenticatedUser,
+    permission: PermissionType,
+    require_scope_all: bool,
+) -> bool:
+    if isinstance(permission, GeneralPermission):
+        return permission in user.general_permissions
+    if isinstance(permission, OwnershipPermission):
+        return any(permission == p for p in user.ownership_permissions) and (
+            not require_scope_all
+            or user.get_scope(permission) == OwnershipScope.All
+        )
+
+
 def WithPermission(
     permissions: PermissionList,
     *,
-    require_all: bool = False,
+    require_scope_all: bool = False,
+    require_all: bool = True,
     exception: HTTPException = PermissionDeniedException,
 ) -> Callable:
     """
@@ -59,15 +60,60 @@ def WithPermission(
         else:
             perms = permissions
 
-        def has_permission(permission: PermissionType) -> bool:
-            return permission in user.general_permissions or any(
-                permission == p for p, _ in user.ownership_permissions
-            )
-
         if require_all:
-            if not all(has_permission(p) for p in perms):
+            if not all(
+                has_permission(user, p, require_scope_all) for p in perms
+            ):
                 raise exception
-        elif not any(has_permission(p) for p in perms):
+        elif not any(
+            has_permission(user, p, require_scope_all) for p in perms
+        ):
             raise exception
 
     return Depends(permission_validator)
+
+
+# TODO: move to params.. maybe rename to DependsOn..
+def WithRestrictedParams(
+    permission: PermissionType,
+    model: Type[BaseModel],
+    *,
+    restricted_fields: List[str] = [],
+    exception: HTTPException = HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="User does not have permission to use these parameters.",
+    ),
+) -> Callable:
+    def _restrict_params(
+        params: BaseModel = Depends(model),
+        user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    ):
+        if has_permission(user, permission):
+            return params
+
+        for field in restricted_fields or model.model_fields.keys():
+            default = model.model_fields[field].default
+            current = getattr(params, field)
+            if current != default:
+                raise exception
+
+    return Depends(_restrict_params)
+
+
+def resolve_schedule_params(
+    params: TaskScheduleParams = Depends(),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+):
+    if not params:
+        return None
+
+    if not has_permission(user, GeneralPermission.ScheduleTasks):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to schedule tasks.",
+        )
+
+    return params
+
+
+ResolveTaskScheduleParams = Depends(resolve_schedule_params)

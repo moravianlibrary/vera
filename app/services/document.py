@@ -1,81 +1,108 @@
+from typing import List
+
+from adapters.indexer import IndexerQuery
+from definitions.document import ExportFormat, Priority
+from definitions.task import DocumentTask, TaskScope
+from repositories.category import CategoryRepository
+from repositories.document import DocumentRepository
+from repositories.document_iteration import DocumentIterationRepository
+from repositories.models.task import TaskModel
+from services.task import TaskService
+
 XLSX_MIMETYPE = (
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
 
 
 class DocumentService:
-    pass
+    def __init__(
+        self,
+        document_repository: DocumentRepository,
+        document_iteration_repository: DocumentIterationRepository,
+        category_repository: CategoryRepository,
+        task_service: TaskService,
+    ):
+        self._document_repository = document_repository
+        self._document_iteration_repository = document_iteration_repository
+        self._category_repository = category_repository
+        self._task_service = task_service
 
     def export(
-        query: IndexerQuery = RestrictedQuery(
-            OwnershipPermission.ReadDocuments
-        ),
-        fields: List[str] = Query(default=DEFAULT_EXPORT_FIELDS),
-        filename: str = Query(DEFAULT_EXPORT_FILENAME),
-        export_format: ExportFormat = Query(ExportFormat.xlsx),
+        query: IndexerQuery,
+        fields: List[str],
+        filename: str,
+        export_format: ExportFormat,
     ):
-        df = pd.DataFrame(
-            hit["_source"]
-            for hit in query_documents(
-                parse_query_routing(query_routing_params), user, es_session
-            )["hits"]["hits"]
+        pass
+        # df = pd.DataFrame(
+        #     hit["_source"]
+        #     for hit in query_documents(
+        #         parse_query_routing(query_routing_params), user, es_session
+        #     )["hits"]["hits"]
+        # )
+
+        # with tempfile.NamedTemporaryFile(
+        #     suffix=".xlsx", delete=False
+        # ) as temp_excel:
+        #     df.to_excel(temp_excel.name, index=False)
+        #     temp_filename = temp_excel.name
+
+        # timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        # export_filename = f"vera-documents_{timestamp}.xlsx"
+
+        # return FileResponse(
+        #     temp_filename,
+        #     media_type=XLSX_MIMETYPE,
+        #     filename=export_filename,
+        #     headers={"Content-Disposition": "attachment"},
+        # )
+
+    def update_page_count(
+        self, document_id: int, page_count: int, user_id: str
+    ) -> TaskModel:
+        document_model = self._document_repository.get_by_id(document_id)
+
+        self._document_repository.update_page_count(
+            document_model, "manual", page_count
         )
 
-        with tempfile.NamedTemporaryFile(
-            suffix=".xlsx", delete=False
-        ) as temp_excel:
-            df.to_excel(temp_excel.name, index=False)
-            temp_filename = temp_excel.name
-
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        export_filename = f"vera-documents_{timestamp}.xlsx"
-
-        return FileResponse(
-            temp_filename,
-            media_type=XLSX_MIMETYPE,
-            filename=export_filename,
-            headers={"Content-Disposition": "attachment"},
+        return self._task_service.init_task(
+            TaskScope.Document,
+            DocumentTask.Reindex,
+            "Reindexing documents after page count update",
+            user_id,
+            data={"ids": [it.id for it in document_model.iterations]},
         )
 
-    def update_property(
-        query: IndexerQuery = RestrictedQuery(
-            OwnershipPermission.ManageDocuments
-        ),
-        property_name: str = Query(...),
-        property_value: str | None = Query(None),
-    ):
-        if (
-            not category_id
-            and not page_count_manual
-            and not extraction_priority
-        ):
-            return
-        for document_id in IndexDocument.search_source_ids(
-            es_session,
-            restrict_edit_query_params(
-                parse_query_routing(query_routing_params), user
-            ),
-        ):
-            document = Document.get(session, document_id)
-            if category_id:
-                document.category_id = category_id
-            if page_count_manual:
-                document.pages_count_manual = page_count_manual
-            if extraction_priority:
-                document.extraction_priority = extraction_priority
-            document.save(session)
-            IndexDocument.model_validate(document).save(es_session)
+    def set_category(
+        self, query: IndexerQuery, category_id: int, user_id: str
+    ) -> TaskModel:
+        return self._task_service.init_task(
+            TaskScope.Document,
+            DocumentTask.SetCategory,
+            "Setting category for documents",
+            user_id,
+            data={"category_id": category_id},
+            query=query,
+        )
 
-    def delete(
-        query: IndexerQuery = RestrictedQuery(
-            OwnershipPermission.ManageDocuments
-        ),
-    ):
-        for document_id in IndexDocument.search_source_ids(
-            es_session,
-            restrict_edit_query_params(
-                parse_query_routing(query_routing_params), user
-            ),
-        ):
-            Document.get(session, document_id).delete(session)
-            IndexDocument.delete(es_session, document_id)
+    def set_priority(
+        self, query: IndexerQuery, priority: Priority, user_id: str
+    ) -> TaskModel:
+        return self._task_service.init_task(
+            TaskScope.Document,
+            DocumentTask.SetPriority,
+            "Setting priority for documents",
+            user_id,
+            data={"priority": priority},
+            query=query,
+        )
+
+    def delete(self, query: IndexerQuery, user_id: str) -> TaskModel:
+        return self._task_service.init_task(
+            TaskScope.Document,
+            DocumentTask.Delete,
+            "Deleting documents",
+            user_id,
+            query=query,
+        )

@@ -1,5 +1,8 @@
+from typing import List
+
 from requests import Session
 
+from repositories.models.user import UserModel
 from schemas.group import GroupEdit
 
 from ._base import BaseRepository
@@ -15,11 +18,11 @@ from .models.group import GroupModel
 
 class GroupRepository(
     BaseRepository,
-    DeleteMixin,
-    EnforceNameUniquenessMixin,
-    GetByIdMixin,
-    PaginationMixin,
-    SaveMixin,
+    DeleteMixin[GroupModel],
+    EnforceNameUniquenessMixin[GroupModel, int],
+    GetByIdMixin[GroupModel, int],
+    PaginationMixin[GroupModel],
+    SaveMixin[GroupModel],
 ):
     def __init__(self, db_session: Session):
         super().__init__(db_session, GroupModel, "Group")
@@ -29,16 +32,28 @@ class GroupRepository(
         Create a new group.
         """
         self.enforce_name_uniqueness(group.name)
+
         return self.save(
             GroupModel(name=group.name, description=group.description)
         )
 
-    def update(self, role_id: int, group: GroupEdit) -> GroupModel:
+    def update(self, group_model: GroupModel, group: GroupEdit) -> GroupModel:
         """
-        Update an existing role.
+        Update an existing group.
         """
-        role_model: GroupModel = self.get_by_id(role_id)
-        self.enforce_name_uniqueness(group.name, role_id)
-        role_model.name = group.name
-        role_model.description = group.description
-        return self.save(role_model)
+        self.enforce_name_uniqueness(group.name, group_model.id)
+
+        group_model.name = group.name
+        group_model.description = group.description
+
+        return self.save(group_model)
+
+    def update_assingment(
+        self, group_model: GroupModel, users: List[UserModel]
+    ) -> GroupModel:
+        """
+        Update the assignment of users to a group.
+        """
+        group_model.users = users
+
+        return self.save(group_model)
