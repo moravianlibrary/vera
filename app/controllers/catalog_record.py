@@ -15,12 +15,13 @@ from schemas.user import AuthenticatedUser
 from schemas.watchlist import Watchlist, WatchlistParams
 from services.catalog_record import CatalogRecordService
 
-from ._resources import (
+from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnCatalogRecordRepository,
     DependsOnCatalogRecordService,
+    ResolveTaskScheduleParams,
+    WithPermission,
 )
-from ._security import ResolveTaskScheduleParams, WithPermission
 
 router = APIRouter(prefix="/catalog-records", tags=["Catalog records"])
 

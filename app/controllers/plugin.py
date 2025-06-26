@@ -3,12 +3,6 @@ from typing import Annotated
 from fastapi import APIRouter, Path, Query
 from vera_plugins.definitions.plugin_types import PluginType
 
-from controllers._resources import (
-    DependsOnPluginInstanceRepository,
-    DependsOnPluginInstanceService,
-    DependsOnPluginRepository,
-    DependsOnPluginService,
-)
 from definitions.permission import GeneralPermission
 from repositories.plugin import PluginInstanceRepository, PluginRepository
 from schemas.pagination import Page, PageParams
@@ -23,7 +17,13 @@ from schemas.plugin import (
 from schemas.task import Task
 from services.plugin import PluginInstanceService, PluginService
 
-from ._security import WithPermission
+from .resources import (
+    DependsOnPluginInstanceRepository,
+    DependsOnPluginInstanceService,
+    DependsOnPluginRepository,
+    DependsOnPluginService,
+    WithPermission,
+)
 
 router = APIRouter(prefix="/plugins", tags=["Plugins"])
 

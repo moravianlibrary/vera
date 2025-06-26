@@ -17,14 +17,15 @@ from schemas.task import Task, TaskScheduleParams
 from schemas.user import AuthenticatedUser
 from services.document import DocumentService
 
-from ._resources import (
+from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnDocumentRepository,
     DependsOnDocumentService,
+    ResolveTaskScheduleParams,
     RestrictedQuery,
-    RestrictedSearchRequest,
+    RestrictedSearch,
+    WithPermission,
 )
-from ._security import ResolveTaskScheduleParams, WithPermission
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
@@ -35,7 +36,7 @@ router = APIRouter(prefix="/documents", tags=["Documents"])
     response_model=IndexerResponse[Document],
 )
 def search(
-    request: IndexerRequest = RestrictedSearchRequest(
+    request: IndexerRequest = RestrictedSearch(
         OwnershipPermission.ReadDocuments
     ),
     repository: DocumentRepository = DependsOnDocumentRepository,

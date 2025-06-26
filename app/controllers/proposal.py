@@ -11,14 +11,14 @@ from schemas.task import Task
 from schemas.user import AuthenticatedUser
 from services import ProposalService
 
-from ._resources import (
+from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnProposalRepository,
     DependsOnProposalService,
     RestrictedQuery,
-    RestrictedSearchRequest,
+    RestrictedSearch,
+    WithPermission,
 )
-from ._security import WithPermission
 
 router = APIRouter(prefix="/proposals", tags=["Proposals"])
 
@@ -29,7 +29,7 @@ router = APIRouter(prefix="/proposals", tags=["Proposals"])
     response_model=IndexerResponse[Proposal],
 )
 def search(
-    request: IndexerRequest = RestrictedSearchRequest(
+    request: IndexerRequest = RestrictedSearch(
         OwnershipPermission.ReadProposals
     ),
     repository: ProposalRepository = DependsOnProposalRepository,

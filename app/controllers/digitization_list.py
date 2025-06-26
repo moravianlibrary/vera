@@ -11,8 +11,12 @@ from schemas.task import Task
 from schemas.user import AuthenticatedUser
 from services.digitization_list import DigiListService
 
-from ._resources import DependsOnDigiListRepository, DependsOnDigiListService
-from ._security import DependsOnAuthenticatedUser, WithPermission
+from .resources import (
+    DependsOnAuthenticatedUser,
+    DependsOnDigiListRepository,
+    DependsOnDigiListService,
+    WithPermission,
+)
 
 router = APIRouter(prefix="/digitization-lists", tags=["Digitization lists"])
 

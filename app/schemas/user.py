@@ -3,6 +3,11 @@ from typing import Any, Dict, List
 from pydantic import BaseModel, model_validator
 
 from definitions.json import JsonObject
+from definitions.permission import (
+    GeneralPermission,
+    OwnershipPermission,
+    PermissionType,
+)
 
 from .group import Group
 from .role import Permissions, Role
@@ -28,6 +33,16 @@ class AuthenticatedUser(Permissions):
     @property
     def assignment(self) -> UserAssignment:
         return UserAssignment(user_id=self.user_id, group_ids=self.group_ids)
+
+    def has_permission(
+        self,
+        permission: PermissionType,
+    ) -> bool:
+        if isinstance(permission, GeneralPermission):
+            return permission in self.general_permissions
+        if isinstance(permission, OwnershipPermission):
+            return any(permission == p for p in self.ownership_permissions)
+        raise ValueError(f"Unknown permission type: {type(permission)}. ")
 
     @classmethod
     def from_roles(cls, roles: List["Role"]) -> "Permissions":

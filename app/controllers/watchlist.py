@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Path, Query
 
-from controllers._resources import DependsOnWatchlistRepository
+from controllers.resources import DependsOnWatchlistRepository
 from definitions.permission import GeneralPermission
 from repositories.notification_list import WatchlistRepository
 from schemas.pagination import Page, PageParams
@@ -12,7 +12,7 @@ from schemas.watchlist import (
     WatchlistParams,
 )
 
-from ._security import WithPermission
+from .resources import WithPermission
 
 router = APIRouter(prefix="/watchlists", tags=["Watchlists"])
 

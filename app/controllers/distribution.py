@@ -12,11 +12,11 @@ from schemas.category import (
 from schemas.pagination import Page, PageParams
 from services import DistributionService
 
-from ._resources import (
+from .resources import (
     DependsOnDistributionRepository,
     DependsOnDistributionService,
+    WithPermission,
 )
-from ._security import WithPermission
 
 router = APIRouter(prefix="/categories/distributions", tags=["Distributions"])
 

@@ -16,12 +16,12 @@ from schemas.project import (
 from schemas.user import AuthenticatedUser
 from services.project import ProjectService
 
-from ._resources import (
+from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnProjectRepository,
-    RestrictedSearchRequest,
+    RestrictedSearch,
+    WithPermission,
 )
-from ._security import WithPermission
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
@@ -32,7 +32,7 @@ router = APIRouter(prefix="/projects", tags=["Projects"])
     response_model=IndexerResponse[Project],
 )
 def search(
-    request: IndexerRequest = RestrictedSearchRequest(
+    request: IndexerRequest = RestrictedSearch(
         OwnershipPermission.ReadProjects
     ),
     repository: ProjectRepository = DependsOnProjectRepository,

@@ -2,7 +2,7 @@ from typing import Callable
 
 from fastapi import Depends, Request
 
-from controllers._security import DependsOnAuthenticatedUser
+from controllers.resources.security import DependsOnAuthenticatedUser
 from schemas.user import AuthenticatedUser
 
 

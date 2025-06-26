@@ -8,8 +8,11 @@ from schemas.group import Group, GroupAssignmentChange, GroupEdit
 from schemas.pagination import Page, PageParams
 from services.group import GroupService
 
-from ._resources import DependsOnGroupRepository, DependsOnGroupService
-from ._security import WithPermission
+from .resources import (
+    DependsOnGroupRepository,
+    DependsOnGroupService,
+    WithPermission,
+)
 
 router = APIRouter(prefix="/groups", tags=["Groups"])
 

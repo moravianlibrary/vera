@@ -13,12 +13,12 @@ from schemas.system import (
     SystemStatus,
 )
 
-from ._resources import (
+from .resources import (
     DependsOnSystemHealthRepository,
     DependsOnSystemSettingsRepository,
     DependsOnSystemStatusRepository,
+    WithPermission,
 )
-from ._security import WithPermission
 
 router = APIRouter(prefix="/system", tags=["System"])
 

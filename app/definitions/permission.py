@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Union
 
 
 class GeneralPermission(Enum):
@@ -84,3 +85,6 @@ class OwnershipScope(Enum):
     Own = "Own"
     Group = "Group"
     All = "All"
+
+
+PermissionType = Union[GeneralPermission, OwnershipPermission]

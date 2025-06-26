@@ -15,8 +15,6 @@ class BaseRepository:
         entity_name: str,
         database_session: DatabaseSession,
         database_entity: Type[DatabaseEntity],
-        indexer_session: IndexerSession | None = None,
-        _indexer_entity: Type[IndexerEntity] | None = None,
     ):
         """
         Initialize repository with the session, model and entity name.
@@ -24,13 +22,28 @@ class BaseRepository:
         self._entity_name = entity_name
         self._database_session = database_session
         self._database_entity = database_entity
-        self._indexer_session = indexer_session
-        self._indexer_entity = _indexer_entity
 
 
 class RepositoryContext(Protocol[DatabaseEntity]):
     _entity_name: str
     _database_session: DatabaseSession
     _database_entity: Type[DatabaseEntity]
-    _indexer_session: IndexerSession | None
-    _indexer_entity: Type[IndexerEntity] | None
+
+
+class BaseIndexedRepository(BaseRepository):
+    def __init__(
+        self,
+        entity_name: str,
+        database_session: DatabaseSession,
+        database_entity: Type[DatabaseEntity],
+        indexer_session: IndexerSession,
+        indexer_entity: Type[IndexerEntity],
+    ):
+        self.super().__init__(entity_name, database_session, database_entity)
+        self._indexer_session = indexer_session
+        self._indexer_entity = indexer_entity
+
+
+class IndexedRepositoryContext(RepositoryContext[DatabaseEntity]):
+    _indexer_session: IndexerSession
+    _indexer_entity: Type[IndexerEntity]

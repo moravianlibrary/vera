@@ -16,16 +16,16 @@ from schemas.task import (
 from schemas.user import AuthenticatedUser
 from services.task import ScheduledTaskService, TaskService
 
-from ._resources import (
+from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnScheduledTaskRepository,
     DependsOnScheduledTaskService,
     DependsOnTaskItemRepository,
     DependsOnTaskService,
     RestrictedQuery,
-    RestrictedSearchRequest,
+    RestrictedSearch,
+    WithPermission,
 )
-from ._security import WithPermission
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -36,9 +36,7 @@ router = APIRouter(prefix="/tasks", tags=["Tasks"])
     response_model=IndexerResponse[Task],
 )
 def search_tasks(
-    request: IndexerRequest = RestrictedSearchRequest(
-        OwnershipPermission.ReadTasks
-    ),
+    request: IndexerRequest = RestrictedSearch(OwnershipPermission.ReadTasks),
     service: TaskService = DependsOnTaskService,
 ):
     return service.search(request)
@@ -93,9 +91,7 @@ def delete_tasks(
     response_model=IndexerResponse[ScheduledTask],
 )
 def search_scheduled_tasks(
-    request: IndexerRequest = RestrictedSearchRequest(
-        OwnershipPermission.ReadTasks
-    ),
+    request: IndexerRequest = RestrictedSearch(OwnershipPermission.ReadTasks),
     repository: ScheduledTaskRepository = DependsOnScheduledTaskRepository,
 ):
     return repository.search(request)

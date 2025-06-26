@@ -15,15 +15,13 @@ from schemas.task import Task
 from schemas.user import AuthenticatedUser
 from services import AdditionService
 
-from ._resources import (
+from .resources import (
     DependsOnAdditionRepository,
     DependsOnAdditionService,
-    RestrictedQuery,
-)
-from ._security import (
     DependsOnAuthenticatedUser,
+    RestrictedParams,
+    RestrictedQuery,
     WithPermission,
-    WithRestrictedParams,
 )
 
 router = APIRouter(prefix="/additions", tags=["Additions"])
@@ -62,7 +60,7 @@ def ingest(
     response_model=Task,
 )
 def reingest(
-    ingest_params: IngestAdditionsParams = WithRestrictedParams(
+    ingest_params: IngestAdditionsParams = RestrictedParams(
         GeneralPermission.IgnoreAdditionChecks, IngestAdditionsParams
     ),
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageAdditions),

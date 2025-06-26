@@ -6,8 +6,11 @@ from repositories import IntentionRepository
 from schemas.intention import Intention, IntentionEdit
 from services.intention import IntentionService
 
-from ._resources import DependsOnIntentionRepository, DependsOnIntentionService
-from ._security import WithPermission
+from .resources import (
+    DependsOnIntentionRepository,
+    DependsOnIntentionService,
+    WithPermission,
+)
 
 router = APIRouter(prefix="/intentions", tags=["Intentions"])
 

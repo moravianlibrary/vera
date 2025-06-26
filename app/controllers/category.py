@@ -11,15 +11,13 @@ from schemas.task import TaskScheduleParams
 from schemas.user import AuthenticatedUser
 from services import CategoryService
 
-from ._resources import (
+from .resources import (
+    DependsOnAuthenticatedUser,
     DependsOnCategoryRepository,
     DependsOnCategoryService,
-    RestrictedQuery,
-    RestrictedSearchRequest,
-)
-from ._security import (
-    DependsOnAuthenticatedUser,
     ResolveTaskScheduleParams,
+    RestrictedQuery,
+    RestrictedSearch,
     WithPermission,
 )
 
@@ -32,7 +30,7 @@ router = APIRouter(prefix="/categories", tags=["Categories"])
     response_model=IndexerResponse[Category],
 )
 def search(
-    query: IndexerRequest = RestrictedSearchRequest(
+    query: IndexerRequest = RestrictedSearch(
         OwnershipPermission.ReadCategories
     ),
     repository: CategoryRepository = DependsOnCategoryRepository,

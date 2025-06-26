@@ -14,8 +14,12 @@ from schemas.user import (
     UserSettings,
 )
 
-from ._resources import DependsOnIdentityProvider, DependsOnUserRepository
-from ._security import DependsOnAuthenticatedUser, WithPermission
+from .resources import (
+    DependsOnAuthenticatedUser,
+    DependsOnIdentityProvider,
+    DependsOnUserRepository,
+    WithPermission,
+)
 
 router = APIRouter(prefix="/users", tags=["Users"])
 

@@ -8,8 +8,11 @@ from repositories import RoleRepository
 from schemas.pagination import Page, PageParams
 from schemas.role import Role, RoleEdit
 
-from ._resources import DependsOnIdentityProvider, DependsOnRoleRepository
-from ._security import WithPermission
+from .resources import (
+    DependsOnIdentityProvider,
+    DependsOnRoleRepository,
+    WithPermission,
+)
 
 router = APIRouter(prefix="/roles", tags=["Roles"])
 
