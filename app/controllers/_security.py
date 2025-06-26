@@ -3,11 +3,7 @@ from typing import Callable, List, Sequence, Type, Union
 from fastapi import Depends, HTTPException, status
 from pydantic import BaseModel
 
-from definitions.permission import (
-    GeneralPermission,
-    OwnershipPermission,
-    OwnershipScope,
-)
+from definitions.permission import GeneralPermission, OwnershipPermission
 from schemas.task import TaskScheduleParams
 from schemas.user import AuthenticatedUser
 
@@ -28,21 +24,16 @@ class PermissionDeniedException(HTTPException):
 def has_permission(
     user: AuthenticatedUser,
     permission: PermissionType,
-    require_scope_all: bool,
 ) -> bool:
     if isinstance(permission, GeneralPermission):
         return permission in user.general_permissions
     if isinstance(permission, OwnershipPermission):
-        return any(permission == p for p in user.ownership_permissions) and (
-            not require_scope_all
-            or user.get_scope(permission) == OwnershipScope.All
-        )
+        return any(permission == p for p in user.ownership_permissions)
 
 
 def WithPermission(
     permissions: PermissionList,
     *,
-    require_scope_all: bool = False,
     require_all: bool = True,
     exception: HTTPException = PermissionDeniedException,
 ) -> Callable:
@@ -61,13 +52,9 @@ def WithPermission(
             perms = permissions
 
         if require_all:
-            if not all(
-                has_permission(user, p, require_scope_all) for p in perms
-            ):
+            if not all(has_permission(user, p) for p in perms):
                 raise exception
-        elif not any(
-            has_permission(user, p, require_scope_all) for p in perms
-        ):
+        elif not any(has_permission(user, p) for p in perms):
             raise exception
 
     return Depends(permission_validator)

@@ -80,13 +80,27 @@ def disable_emulated_permissions(
 
 
 @router.get(
-    "",
-    dependencies=[WithPermission(GeneralPermission.ManageAccess)],
+    "/internal",
+    dependencies=[WithPermission(GeneralPermission.ReadUsersAndGroups)],
     response_model=Page[User],
 )
-def paginate(
+def paginate_internal(
     page: int = Query(1, description="Page number"),
     page_size: int = Query(50, description="Page size"),
     repository: UserRepository = DependsOnUserRepository,
 ):
     return repository.paginate(page, page_size)
+
+
+@router.get(
+    "/from-identity-provider",
+    dependencies=[WithPermission(GeneralPermission.ReadUsersAndGroups)],
+    response_model=Page[User],
+)
+def paginate_identity_provider(
+    username: str | None = Query(None),
+    page: int = Query(1, description="Page number"),
+    page_size: int = Query(50, description="Page size"),
+    identity_provider: IdentityProvider = DependsOnIdentityProvider,
+):
+    return identity_provider.paginate_users(username, page, page_size)

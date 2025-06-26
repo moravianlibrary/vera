@@ -21,8 +21,9 @@ from services.plugin import PluginInstanceService, PluginService
 
 from ._security import WithPermission
 
-# TODO: With lock ?
 router = APIRouter(prefix="/plugins", tags=["Plugins"])
+instance_router = APIRouter(prefix="/instances", tags=["Plugin Instances"])
+router.include_router(instance_router)
 
 
 @router.get(
@@ -62,10 +63,6 @@ def discover_plugins(
     service: PluginService = DependsOnPluginService,
 ):
     return service.discover_plugins(discover_params)
-
-
-instance_router = APIRouter(prefix="/instances", tags=["Plugin Instances"])
-router.include_router(instance_router)
 
 
 @instance_router.get(

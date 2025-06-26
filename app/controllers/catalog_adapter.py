@@ -1,5 +1,9 @@
 from fastapi import APIRouter
 from marcdantic.query import MarcSearchRequest
+from vera_plugins.specs.catalog_adapter import (
+    SearchResult,
+    SearchResultResponse,
+)
 
 from controllers._resources import DependsOnCatalogSearchService
 from definitions.permission import GeneralPermission
@@ -13,7 +17,7 @@ router = APIRouter(prefix="/catalog", tags=["Catalog"])
 @router.post(
     "/search",
     dependencies=[WithPermission(GeneralPermission.SearchCatalog)],
-    response_model=None,
+    response_model=SearchResultResponse,
 )
 def search(
     request: MarcSearchRequest,
@@ -24,6 +28,8 @@ def search(
 
 @router.get(
     "/{base}/{system_number}",
+    dependencies=[WithPermission(GeneralPermission.SearchCatalog)],
+    response_model=SearchResult | None,
 )
 def get_record(
     base: str,

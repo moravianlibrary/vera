@@ -5,8 +5,8 @@ from fastapi import APIRouter, Path, Query
 from controllers._resources import DependsOnWatchlistRepository
 from definitions.permission import GeneralPermission
 from repositories.notification_list import WatchlistRepository
-from schemas.notifications_list import Watchlist, WatchlistParams
 from schemas.pagination import Page
+from schemas.watchlist import Watchlist, WatchlistParams
 
 from ._security import WithPermission
 

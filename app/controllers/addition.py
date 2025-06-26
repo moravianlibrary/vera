@@ -85,9 +85,14 @@ def archive(
     return service.archive(query, user.user_id)
 
 
-@router.delete(
-    "",
-    dependencies=[WithPermission(OwnershipPermission.ManageAdditions)],
+@router.post(
+    "/delete",
+    dependencies=[
+        WithPermission(
+            OwnershipPermission.ManageAdditions,
+            GeneralPermission.DeleteAdditions,
+        )
+    ],
     response_model=Task,
 )
 def delete(

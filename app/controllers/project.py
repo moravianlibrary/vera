@@ -66,7 +66,7 @@ def update(
 
 
 @router.patch(
-    "/{project_id}/change-assignment",
+    "/{project_id}/assignment",
     dependencies=[WithPermission(OwnershipPermission.ManageProjects)],
     response_model=Project,
 )
@@ -93,12 +93,11 @@ def add_documents(
 
 
 @router.patch(
-    "/{project_id}/change-categories-assignment",
+    "/{project_id}/categories-assignment",
     dependencies=[
         WithPermission(
-            OwnershipPermission.ManageProjects,
-            OwnershipPermission.ManageCategories,
             GeneralPermission.ReviewProjects,
+            OwnershipPermission.ManageCategories,
         )
     ],
     response_model=Project,

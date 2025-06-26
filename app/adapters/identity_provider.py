@@ -6,8 +6,9 @@ from vera_plugins.tools.registry import PluginRegistry
 from definitions.permission import GeneralPermission
 from repositories.role import RoleRepository
 from repositories.user import UserRepository
+from schemas.pagination import Page
 from schemas.role import Permissions
-from schemas.user import AuthenticatedUser
+from schemas.user import AuthenticatedUser, User
 
 AuthScheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
@@ -139,3 +140,55 @@ class IdentityProvider:
         user.ownership_permissions = original_permissions.ownership_permissions
 
         return user
+
+    def paginate_users(
+        self,
+        username: str | None,
+        page: int,
+        page_size: int,
+    ) -> Page[User]:
+        """
+        Paginate users from the identity provider.
+
+        Parameters
+        ----------
+        username : str | None
+            Optional filter for usernames.
+        page : int
+            The page number to retrieve.
+        page_size : int
+            The number of users per page.
+
+        Returns
+        -------
+        Page[User]
+            A paginated list of users from the identity provider.
+        """
+        pass
+        # return self._ip.paginate_users(username, page, page_size)
+
+    def paginate_roles(
+        self,
+        role_name: str | None,
+        page: int,
+        page_size: int,
+    ) -> Page[User]:
+        """
+        Paginate roles from the identity provider.
+
+        Parameters
+        ----------
+        role_name : str | None
+            Optional filter for role names.
+        page : int
+            The page number to retrieve.
+        page_size : int
+            The number of roles per page.
+
+        Returns
+        -------
+        Page[User]
+            A paginated list of roles from the identity provider.
+        """
+        pass
+        # return self._ip.paginate_roles(role_name, page, page_size)

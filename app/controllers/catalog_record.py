@@ -10,9 +10,9 @@ from schemas.catalog_records import (
     CatalogRecordDetails,
     CatalogRecordsSyncParams,
 )
-from schemas.notifications_list import Watchlist, WatchlistParams
 from schemas.task import Task, TaskScheduleParams
 from schemas.user import AuthenticatedUser
+from schemas.watchlist import Watchlist, WatchlistParams
 from services.catalog_record import CatalogRecordService
 
 from ._resources import (
@@ -124,15 +124,14 @@ def delete(
         WithPermission(
             GeneralPermission.ReadCatalogRecords,
             GeneralPermission.ManageWatchlists,
-            require_all=True,
         )
     ],
     response_model=Watchlist,
 )
-def create_notifications_list(
+def create_watchlist(
     query: IndexerQuery,
     list_params: Annotated[WatchlistParams, Query()],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return service.create_notifications_lists(query, list_params, user.user_id)
+    return service.create_watchlist(query, list_params, user.user_id)

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Path, Query
 
-from definitions.permission import OwnershipPermission
+from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import DistributionRepository
 from schemas.category import (
     Distribution,
@@ -10,7 +10,6 @@ from schemas.category import (
 from schemas.pagination import Page
 from services import DistributionService
 
-from ._locking import WithCategoryWriteLock
 from ._resources import (
     DependsOnDistributionRepository,
     DependsOnDistributionService,
@@ -35,12 +34,7 @@ def paginate(
 
 @router.post(
     "",
-    dependencies=[
-        WithPermission(
-            OwnershipPermission.ManageCategories, require_scope_all=True
-        ),
-        WithCategoryWriteLock,
-    ],
+    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
     response_model=Distribution,
 )
 def create(
@@ -52,12 +46,7 @@ def create(
 
 @router.put(
     "/{distribution_id}",
-    dependencies=[
-        WithPermission(
-            OwnershipPermission.ManageCategories, require_scope_all=True
-        ),
-        WithCategoryWriteLock,
-    ],
+    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
     response_model=Distribution,
 )
 def update(
@@ -70,11 +59,7 @@ def update(
 
 @router.put(
     "/{distribution_id}/description",
-    dependencies=[
-        WithPermission(
-            OwnershipPermission.ManageCategories, require_scope_all=True
-        ),
-    ],
+    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
     response_model=Distribution,
 )
 def update_description(
@@ -87,11 +72,7 @@ def update_description(
 
 @router.put(
     "/{distribution_id}/set-as-active",
-    dependencies=[
-        WithPermission(
-            OwnershipPermission.ManageCategories, require_scope_all=True
-        )
-    ],
+    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
     response_model=Distribution,
 )
 def set_as_active(
@@ -103,11 +84,7 @@ def set_as_active(
 
 @router.delete(
     "/{distribution_id}",
-    dependencies=[
-        WithPermission(
-            OwnershipPermission.ManageCategories, require_scope_all=True
-        )
-    ],
+    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
     response_model=Distribution,
 )
 def delete(

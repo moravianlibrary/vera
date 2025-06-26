@@ -106,7 +106,12 @@ def archive(
 
 @router.delete(
     "",
-    dependencies=[WithPermission(OwnershipPermission.ManageProposals)],
+    dependencies=[
+        WithPermission(
+            OwnershipPermission.ManageProposals,
+            GeneralPermission.DeleteProposals,
+        )
+    ],
     response_model=Task,
 )
 def delete(

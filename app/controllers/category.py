@@ -101,8 +101,7 @@ def change_parent(
     dependencies=[
         WithPermission(
             OwnershipPermission.ManageCategories,
-            GeneralPermission.ReadPlugins,
-            require_all=True,
+            GeneralPermission.ReadDocumentDiscoveryPlugins,
         )
     ],
     response_model=Category,
@@ -136,8 +135,7 @@ def reindex(
     dependencies=[
         WithPermission(
             OwnershipPermission.ManageCategories,
-            GeneralPermission.ReadPlugins,
-            require_all=True,
+            GeneralPermission.RunTasks,
         )
     ],
 )

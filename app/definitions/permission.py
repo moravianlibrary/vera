@@ -8,10 +8,12 @@ class GeneralPermission(Enum):
     # Proposals
     ProposeDocuments = "ProposeDocuments"
     ReviewProposals = "ReviewProposals"
+    DeleteProposals = "DeleteProposals"
 
     # Additions
     AddDocuments = "AddDocuments"
     IgnoreAdditionChecks = "IgnoreAdditionChecks"
+    DeleteAdditions = "DeleteAdditions"
 
     # Documents
     DeclineDigitization = "DeclineDigitization"
@@ -23,6 +25,7 @@ class GeneralPermission(Enum):
     ManageCatalogRecordLists = "ManageCatalogRecordLists"
 
     # Categories
+    ManageDistributions = "ManageDistributions"
     ReadDocumentDiscoveryPlugins = "ReadDocumentDiscoveryPlugins"
 
     # Projects
@@ -44,7 +47,7 @@ class GeneralPermission(Enum):
     ManageWatchlists = "ManageWatchlists"
 
     # Tasks
-    ScheduleTasks = "ScheduleTasks"
+    RunTasks = "RunTasks"
     ScheduleTasks = "ScheduleTasks"
 
     # Access control

@@ -120,9 +120,6 @@ def change_decline_digitization(
     return service.change_decline_digitization(query, decline, user.user_id)
 
 
-# TODO: maybe add update-property
-
-
 @router.post(
     "/reindex",
     dependencies=[WithPermission(OwnershipPermission.ManageDocuments)],
