@@ -1,9 +1,11 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Query
 
 from adapters.identity_provider import IdentityProvider
 from definitions.permission import GeneralPermission
 from repositories.user import UserRepository
-from schemas.pagination import Page
+from schemas.pagination import Page, PageParams
 from schemas.role import Permissions
 from schemas.user import (
     AuthenticatedUser,
@@ -85,11 +87,10 @@ def disable_emulated_permissions(
     response_model=Page[User],
 )
 def paginate_internal(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
+    page_params: Annotated[PageParams, Query()],
     repository: UserRepository = DependsOnUserRepository,
 ):
-    return repository.paginate(page, page_size)
+    return repository.paginate(page_params)
 
 
 @router.get(
@@ -98,9 +99,8 @@ def paginate_internal(
     response_model=Page[User],
 )
 def paginate_identity_provider(
+    page_params: Annotated[PageParams, Query()],
     username: str | None = Query(None),
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
     identity_provider: IdentityProvider = DependsOnIdentityProvider,
 ):
-    return identity_provider.paginate_users(username, page, page_size)
+    return identity_provider.paginate_users(page_params, username)

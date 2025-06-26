@@ -1,11 +1,14 @@
 from typing import Generator, Generic, List, Optional
 
+from pydantic import BaseModel
+
 from adapters.indexer import (
     IndexerEntityType,
     IndexerQuery,
     IndexerRequest,
     IndexerResponse,
 )
+from schemas.pagination import PageParams
 
 from ._base import DatabaseEntity, IdType, RepositoryContext
 
@@ -120,16 +123,22 @@ class GetByQueryMixin(Generic[IndexerEntityType]):
 
 class PaginationMixin(Generic[DatabaseEntity]):
     def paginate(
-        self: RepositoryContext[DatabaseEntity], page: int, page_size: int
+        self: RepositoryContext[DatabaseEntity],
+        page_params: PageParams,
+        filter_params: BaseModel | None = None,
     ) -> List[DatabaseEntity]:
         """
         List models with pagination.
         """
+        query = self._database_session.query(self._database_entity)
+        if filter_params:
+            query = query.filter_by(
+                **filter_params.model_dump(exclude_unset=True)
+            )
         return (
-            self._database_session.query(self._database_entity)
-            .sort(self._database_entity.id)
-            .offset((page - 1) * page_size)
-            .limit(page_size)
+            query.order_by(self._database_entity.id)
+            .offset(page_params.offset)
+            .limit(page_params.limit)
             .all()
         )
 
@@ -339,4 +348,5 @@ class ArchiveMixin(Generic[DatabaseEntity]):
 
         self.index(entity, wait_for)
 
+        return entity
         return entity

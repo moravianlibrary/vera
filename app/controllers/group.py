@@ -1,9 +1,11 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Path, Query
 
 from definitions.permission import GeneralPermission
 from repositories import GroupRepository
 from schemas.group import Group, GroupAssignmentChange, GroupEdit
-from schemas.pagination import Page
+from schemas.pagination import Page, PageParams
 from services.group import GroupService
 
 from ._resources import DependsOnGroupRepository, DependsOnGroupService
@@ -18,11 +20,10 @@ router = APIRouter(prefix="/groups", tags=["Groups"])
     response_model=Page[Group],
 )
 def paginate(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
+    page_params: Annotated[PageParams, Query()],
     repository: GroupRepository = DependsOnGroupRepository,
 ):
-    return repository.paginate(page=page, page_size=page_size)
+    return repository.paginate(page_params)
 
 
 @router.post(
@@ -72,4 +73,5 @@ def delete(
     group_id: int = Path(...),
     repository: GroupRepository = DependsOnGroupRepository,
 ):
+    return repository.delete(repository.get_by_id(group_id))
     return repository.delete(repository.get_by_id(group_id))

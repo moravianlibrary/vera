@@ -13,7 +13,7 @@ from definitions.task import (
 )
 
 from ._base import BaseRepository
-from ._mixins import GetByIdMixin, SaveMixin
+from ._mixins import GetByIdMixin, PaginationMixin, SaveMixin
 from .models.task import TaskModel
 
 
@@ -68,8 +68,7 @@ class TaskRepository(
 
 
 class TaskItemRepository(
-    BaseRepository,
-    SaveMixin[TaskModel],
+    BaseRepository, SaveMixin[TaskModel], PaginationMixin[TaskModel]
 ):
     pass
 

@@ -1,3 +1,5 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Path, Query
 
 from definitions.permission import GeneralPermission, OwnershipPermission
@@ -7,7 +9,7 @@ from schemas.category import (
     DistributionEdit,
     DistributionEditWithProportions,
 )
-from schemas.pagination import Page
+from schemas.pagination import Page, PageParams
 from services import DistributionService
 
 from ._resources import (
@@ -25,11 +27,10 @@ router = APIRouter(prefix="/categories/distributions", tags=["Distributions"])
     response_model=Page[Distribution],
 )
 def paginate(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
+    page_params: Annotated[PageParams, Query()],
     repository: DistributionRepository = DependsOnDistributionRepository,
 ):
-    return repository.paginate(page, page_size)
+    return repository.paginate(page_params)
 
 
 @router.post(

@@ -5,27 +5,29 @@ from fastapi import APIRouter, Path, Query
 from controllers._resources import DependsOnWatchlistRepository
 from definitions.permission import GeneralPermission
 from repositories.notification_list import WatchlistRepository
-from schemas.pagination import Page
-from schemas.watchlist import Watchlist, WatchlistParams
+from schemas.pagination import Page, PageParams
+from schemas.watchlist import (
+    FilterWatchlistsParams,
+    Watchlist,
+    WatchlistParams,
+)
 
 from ._security import WithPermission
 
 router = APIRouter(prefix="/watchlists", tags=["Watchlists"])
 
 
-# TODO: make page params and use them in all endpoints
 @router.get(
     "",
     dependencies=[WithPermission(GeneralPermission.ReadWatchlists)],
     response_model=Page[Watchlist],
 )
 def paginate(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
-    filter_by_user_id: str | None = Query(None),
+    page_params: Annotated[PageParams, Query()],
+    filter_params: Annotated[FilterWatchlistsParams | None, Query(None)],
     repository: WatchlistRepository = DependsOnWatchlistRepository,
 ):
-    return repository.paginate(page, page_size, filter_by_user_id)
+    return repository.paginate(page_params, filter_params)
 
 
 @router.put(
@@ -35,10 +37,12 @@ def paginate(
 )
 def update(
     watchlist_id: Annotated[int, Path(...)],
-    list_params: Annotated[WatchlistParams, Query()],
+    watchlist_params: Annotated[WatchlistParams, Query()],
     repository: WatchlistRepository = DependsOnWatchlistRepository,
 ):
-    return repository.update(repository.get_by_id(watchlist_id), list_params)
+    return repository.update(
+        repository.get_by_id(watchlist_id), watchlist_params
+    )
 
 
 @router.delete(

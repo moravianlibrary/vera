@@ -5,8 +5,14 @@ from fastapi import APIRouter, Path, Query
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories.task import ScheduledTaskRepository, TaskItemRepository
-from schemas.pagination import Page
-from schemas.task import ScheduledTask, Task, TaskItem, TaskScheduleParams
+from schemas.pagination import Page, PageParams
+from schemas.task import (
+    ScheduledTask,
+    Task,
+    TaskItem,
+    TaskItemsFilterParams,
+    TaskScheduleParams,
+)
 from schemas.user import AuthenticatedUser
 from services.task import ScheduledTaskService, TaskService
 
@@ -44,12 +50,11 @@ def search_tasks(
     response_model=Page[TaskItem],
 )
 def paginate_task_items(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
-    filter_has_error: bool | None = Query(None),
+    page_params: Annotated[PageParams, Query()],
+    filter_params: Annotated[TaskItemsFilterParams, Query()],
     repository: TaskItemRepository = DependsOnTaskItemRepository,
 ):
-    return repository.paginate(page, page_size, filter_has_error)
+    return repository.paginate(page_params, filter_params)
 
 
 @router.patch(

@@ -1,6 +1,12 @@
 from typing import Any, Dict, List
 
 from pydantic import BaseModel
+from vera_plugins.definitions.plugin_types import PluginType
+
+
+class PluginsFilterParams(BaseModel):
+    name: str | None = None
+    type: PluginType | None = None
 
 
 class PluginDiscoverParams(BaseModel):
@@ -32,9 +38,14 @@ class Plugin(BaseModel):
     pass
 
 
+class PluginInstanceEdit(BaseModel):
+    pass
+
+
 class PluginInstance(BaseModel):
     pass
 
 
 class PluginInstanceSummary(BaseModel):
+    pass
     pass

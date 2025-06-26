@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Query
+from typing import Annotated
+
+from fastapi import APIRouter, Path, Query
 from vera_plugins.definitions.plugin_types import PluginType
 
 from controllers._resources import (
@@ -9,12 +11,14 @@ from controllers._resources import (
 )
 from definitions.permission import GeneralPermission
 from repositories.plugin import PluginInstanceRepository, PluginRepository
-from schemas.pagination import Page
+from schemas.pagination import Page, PageParams
 from schemas.plugin import (
     Plugin,
     PluginDiscoverParams,
     PluginInstance,
+    PluginInstanceEdit,
     PluginInstanceSummary,
+    PluginsFilterParams,
 )
 from schemas.task import Task
 from services.plugin import PluginInstanceService, PluginService
@@ -22,8 +26,6 @@ from services.plugin import PluginInstanceService, PluginService
 from ._security import WithPermission
 
 router = APIRouter(prefix="/plugins", tags=["Plugins"])
-instance_router = APIRouter(prefix="/instances", tags=["Plugin Instances"])
-router.include_router(instance_router)
 
 
 @router.get(
@@ -32,12 +34,11 @@ router.include_router(instance_router)
     response_model=Page[Plugin],
 )
 def paginate_plugins(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
-    filter_by_type: PluginType | None = None,
+    page_params: Annotated[PageParams, Query()],
+    filter_params: Annotated[PluginsFilterParams | None, Query(None)],
     repository: PluginRepository = DependsOnPluginRepository,
 ):
-    return repository.paginate(page, page_size, filter_by_type)
+    return repository.paginate(page_params, filter_params)
 
 
 @router.delete(
@@ -65,36 +66,21 @@ def discover_plugins(
     return service.discover_plugins(discover_params)
 
 
-@instance_router.get(
-    "",
+@router.get(
+    "/instances",
     dependencies=[WithPermission(GeneralPermission.ManageSystem)],
     response_model=Page[PluginInstance],
 )
 def paginate_instances(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
+    page_params: Annotated[PageParams, Query()],
     filter_by_type: PluginType | None = None,
     repository: PluginInstanceRepository = DependsOnPluginInstanceRepository,
 ):
-    return repository.paginate(page, page_size, filter_by_type)
+    return repository.paginate(page_params, filter_by_type)
 
 
-@instance_router.post(
-    "",
-    dependencies=[WithPermission(GeneralPermission.ManageSystem)],
-    response_model=PluginInstance,
-)
-def create_instance(
-    plugin_name: str,
-    instance_name: str,
-    config: dict | None = None,
-    service: PluginInstanceService = DependsOnPluginInstanceService,
-):
-    return service.create(plugin_name, instance_name, config)
-
-
-@instance_router.put(
-    "/{instance_id}",
+@router.put(
+    "/instances/{instance_id}",
     dependencies=[WithPermission(GeneralPermission.ManageSystem)],
     response_model=PluginInstance,
 )
@@ -111,8 +97,22 @@ def update_instance(
     )
 
 
-@instance_router.delete(
-    "/{instance_id}",
+@router.post(
+    "/{plugin_id}/instances",
+    dependencies=[WithPermission(GeneralPermission.ManageSystem)],
+    response_model=PluginInstance,
+)
+def create_instance(
+    plugin_instance: PluginInstanceEdit,
+    plugin_id: int = Path(...),
+    repository: PluginRepository = DependsOnPluginRepository,
+    service: PluginInstanceService = DependsOnPluginInstanceService,
+):
+    return service.create(repository.get_by_id(plugin_id), plugin_instance)
+
+
+@router.delete(
+    "/instances/{instance_id}",
     dependencies=[WithPermission(GeneralPermission.ManageSystem)],
     response_model=PluginInstance,
 )
@@ -123,8 +123,8 @@ def delete_instance(
     return repository.delete(instance_id)
 
 
-@instance_router.post(
-    "/discover",
+@router.post(
+    "/instances/discover",
     dependencies=[WithPermission(GeneralPermission.ManageSystem)],
     response_model=Task,
 )
@@ -135,16 +135,15 @@ def discover_instances(
     return service.discover_plugins(discover_params)
 
 
-@instance_router.get(
-    "/summary/document-discovery",
+@router.get(
+    "/instances/summary/document-discovery",
     dependencies=[
         WithPermission(GeneralPermission.ReadDocumentDiscoveryPlugins)
     ],
     response_model=Page[PluginInstanceSummary],
 )
 def paginate_document_discovery_summary(
-    page: int = Query(1, description="Page number"),
-    page_size: int = Query(50, description="Page size"),
+    page_params: Annotated[PageParams, Query()],
     repository: PluginInstanceRepository = DependsOnPluginInstanceRepository,
 ):
-    return repository.paginate(page, page_size, PluginType.DocumentDiscovery)
+    return repository.paginate(page_params, PluginType.DocumentDiscovery)

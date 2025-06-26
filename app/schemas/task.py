@@ -24,6 +24,10 @@ class TaskScheduleParams(BaseModel):
         return model
 
 
+class TaskItemsFilterParams(BaseModel):
+    pass
+
+
 class Task(BaseModel):
     pass
 
