@@ -2,7 +2,13 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
+from adapters.indexer import Boolean, Date, IndexerEntity, Integer, Keyword
+from schemas.project import ProjectSummary
 
+
+# --------------------
+# - Request Payloads -
+# --------------------
 class IntentionEdit(BaseModel):
     name: str
     description: str | None = None
@@ -11,9 +17,20 @@ class IntentionEdit(BaseModel):
     end_date: datetime | None = None
 
 
-class Intention(IntentionEdit):
-    project_id: int | None = None
-    is_archived: bool = False
+# --------------------
+# - Indexer Entities -
+# --------------------
+class IntentionSummary(IndexerEntity):
+    id: Integer
+    name: Keyword
 
-    class Config:
-        from_attributes = True
+
+class Intention(IndexerEntity):
+    description: Keyword | None
+
+    target_page_count: Integer | None
+    start_date: Date | None
+    end_date: Date | None
+
+    project: ProjectSummary | None
+    is_archived: Boolean

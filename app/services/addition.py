@@ -71,7 +71,7 @@ class AdditionService(TaskBasedService):
         ingest_params: IngestAdditionsParams,
         created_by: str,
     ) -> TaskModel:
-        return self._task_service.create_task(
+        return self._create_task(
             AdditionTask.Reingest,
             created_by,
             data=ReingestAdditionsTaskData(
@@ -84,11 +84,7 @@ class AdditionService(TaskBasedService):
         )
 
     def archive(self, query: IndexerQuery, created_by: str) -> TaskModel:
-        return self._task_service.init_task(
-            AdditionTask.Archive, created_by, query=query
-        )
+        return self._create_task(AdditionTask.Archive, created_by, query=query)
 
     def delete(self, query: IndexerQuery, created_by: str) -> TaskModel:
-        return self._task_service.init_task(
-            AdditionTask.Delete, created_by, query=query
-        )
+        return self._create_task(AdditionTask.Delete, created_by, query=query)

@@ -68,5 +68,3 @@ class ProposalStatusLogModel(BaseModel, UpdatedAuditMixin):
     status = Column(Enum(ProposalStatus), nullable=False)
 
     proposal = relationship("ProposalModel", backref="status_logs")
-    proposal = relationship("ProposalModel", backref="status_logs")
-    proposal = relationship("ProposalModel", backref="status_logs")

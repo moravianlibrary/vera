@@ -5,13 +5,13 @@ from fastapi import APIRouter, Query
 from adapters.identity_provider import IdentityProvider
 from definitions.permission import GeneralPermission
 from repositories.user import UserRepository
-from schemas.pagination import Page, PageParams
+from schemas.common import Page, PageParams
 from schemas.role import Permissions
 from schemas.user import (
     AuthenticatedUser,
-    User,
     UserNotifications,
     UserSettings,
+    UserSummary,
 )
 
 from .resources import (
@@ -36,9 +36,7 @@ def list_notifications(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     repository: UserRepository = DependsOnUserRepository,
 ):
-    return repository.read_new_notifications(
-        repository.get_by_id(user.user_id)
-    )
+    return repository.read_new_notifications(repository.get_by_id(user.id))
 
 
 @router.get("/me/settings", response_model=UserSettings)
@@ -46,7 +44,7 @@ def get_user_settings(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     repository: UserRepository = DependsOnUserRepository,
 ):
-    return repository.get_by_id(user.user_id).settings
+    return repository.get_by_id(user.id).settings
 
 
 @router.post("/me/settings", response_model=AuthenticatedUser)
@@ -55,9 +53,7 @@ def save_user_settings(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     repository: UserRepository = DependsOnUserRepository,
 ):
-    return repository.update_settings(
-        repository.get_by_id(user.user_id), settings
-    )
+    return repository.update_settings(repository.get_by_id(user.id), settings)
 
 
 @router.post(
@@ -88,7 +84,7 @@ def disable_emulated_permissions(
 @router.get(
     "/internal",
     dependencies=[WithPermission(GeneralPermission.ReadUsersAndGroups)],
-    response_model=Page[User],
+    response_model=Page[UserSummary],
 )
 def paginate_internal(
     page_params: Annotated[PageParams, Query()],
@@ -100,7 +96,7 @@ def paginate_internal(
 @router.get(
     "/from-identity-provider",
     dependencies=[WithPermission(GeneralPermission.ReadUsersAndGroups)],
-    response_model=Page[User],
+    response_model=Page[UserSummary],
 )
 def paginate_identity_provider(
     page_params: Annotated[PageParams, Query()],

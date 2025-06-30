@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 
 from pydantic import BaseModel
 
@@ -8,18 +8,23 @@ from definitions.permission import (
     OwnershipScope,
 )
 
-GeneralPermissions = List[GeneralPermission]
-OwnershipPermissions = List[Tuple[OwnershipPermission, OwnershipScope]]
+
+# --------------------
+# - Request Payloads -
+# --------------------
+class ScopedOwnershipPermission(BaseModel):
+    permission: OwnershipPermission
+    scope: OwnershipScope
 
 
 class Permissions(BaseModel):
-    general_permissions: GeneralPermissions
-    ownership_permissions: OwnershipPermissions
+    general_permissions: List[GeneralPermission]
+    ownership_permissions: List[ScopedOwnershipPermission]
 
     def get_scope(self, permission: OwnershipPermission) -> OwnershipScope:
-        for perm, scope in self.ownership_permissions:
-            if perm == permission:
-                return scope
+        for p in self.ownership_permissions:
+            if p.permission == permission:
+                return p.scope
         raise ValueError(
             f"Ownership permission {permission} not found in permissions."
         )
@@ -42,8 +47,12 @@ class Permissions(BaseModel):
 class RoleEdit(Permissions):
     name: str
     description: str | None = None
+    permissions: Permissions
 
 
+# -----------------
+# - API Responses -
+# -----------------
 class Role(RoleEdit):
     class Config:
         from_attributes = True

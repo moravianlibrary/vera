@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Annotated, List, Optional
 
 from fastapi import APIRouter, Path, Query
 
@@ -6,7 +6,10 @@ from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.digitization_registry import DigitizationState
 from definitions.permission import GeneralPermission
 from repositories.digitization_list import DigiListRepository
-from schemas.digitization_list import DigitizationList
+from schemas.digitization_list import (
+    CreateDigitizationListParams,
+    DigitizationList,
+)
 from schemas.task import Task
 from schemas.user import AuthenticatedUser
 from services.digitization_list import DigiListService
@@ -40,18 +43,31 @@ def search(
 )
 def create(
     query: IndexerQuery,
-    intention_ids: List[int] = Query(default=[]),
-    include_digitization_states: List[DigitizationState] = Query(default=[]),
+    create_params: Annotated[CreateDigitizationListParams, Query()],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DigiListService = DependsOnDigiListService,
 ):
-    return service.create(
-        query, intention_ids, include_digitization_states, user.user_id
+    return service.create(query, create_params, user.id)
+
+
+@router.post(
+    "/{digitization_list_id}/state",
+    dependencies=[WithPermission(GeneralPermission.CreateDigitizationLists)],
+    response_model=Task,
+)
+def change_state(
+    digitization_list_id: int = Path(...),
+    state: Optional[DigitizationState] = Query(None),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: DigiListService = DependsOnDigiListService,
+):
+    return service.change_state(
+        digitization_list_id, state, user.id, user.general_permissions
     )
 
 
 @router.patch(
-    "/{digitization_list_id}/change-intentions",
+    "/{digitization_list_id}/intentions",
     dependencies=[WithPermission(GeneralPermission.ManageDigitizationLists)],
     response_model=DigitizationList,
 )
@@ -71,11 +87,11 @@ def change_intentions(
 def add_documents(
     query: IndexerQuery,
     digitization_list_id: int = Path(...),
-    include_digitization_states: List[DigitizationState] = Query([]),
+    skip_state_validation_for: List[DigitizationState] = Query([]),
     service: DigiListService = DependsOnDigiListService,
 ):
     return service.add_documents(
-        query, digitization_list_id, include_digitization_states
+        digitization_list_id, query, skip_state_validation_for
     )
 
 
@@ -89,7 +105,7 @@ def remove_documents(
     digitization_list_id: int = Path(...),
     service: DigiListService = DependsOnDigiListService,
 ):
-    return service.remove_documents(query, digitization_list_id)
+    return service.remove_documents(digitization_list_id, query)
 
 
 @router.post(

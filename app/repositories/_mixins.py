@@ -8,7 +8,7 @@ from adapters.indexer import (
     IndexerRequest,
     IndexerResponse,
 )
-from schemas.pagination import PageParams
+from schemas.common import PageParams
 
 from ._base import DatabaseEntity, IdType, RepositoryContext
 

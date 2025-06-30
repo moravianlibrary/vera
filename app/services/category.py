@@ -35,7 +35,7 @@ class CategoryService:
                 f"{permission} for any category."
             )
 
-        if any(user.user_id == u.id for u in target_category.indirect_users):
+        if any(user.id == u.id for u in target_category.indirect_users):
             return
 
         if user_scope == OwnershipScope.Own:

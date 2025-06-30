@@ -43,10 +43,6 @@ class GeneralPermission(Enum):
     CreateDigitizationLists = "CreateDigitizationLists"
     ManageDigitizationLists = "ManageDigitizationLists"
 
-    # Notifications
-    ReadWatchlists = "ReadWatchlists"
-    ManageWatchlists = "ManageWatchlists"
-
     # Tasks
     RunTasks = "RunTasks"
     ScheduleTasks = "ScheduleTasks"
@@ -60,31 +56,44 @@ class GeneralPermission(Enum):
     ManageSystem = "ManageSystem"
     UseSystemTasks = "UseSystemTasks"
 
+    CreateWatchlists = "CreateWatchlists"
+    ManageWatchlists = "ManageWatchlists"
+
 
 class OwnershipPermission(Enum):
+    # Additions
     ReadAdditions = "ReadAdditions"
     ManageAdditions = "ManageAdditions"
 
+    # Proposals
     ReadProposals = "ReadProposals"
     ManageProposals = "ManageProposals"
 
+    # Documents
     ReadDocuments = "ReadDocuments"
     ManageDocuments = "ManageDocuments"
 
+    # Categories
     ReadCategories = "ReadCategories"
     ManageCategories = "ManageCategories"
 
+    # Projects
     ReadProjects = "ReadProjects"
     ManageProjects = "ManageProjects"
 
+    # Tasks
     ReadTasks = "ReadTasks"
     ManageTasks = "ManageTasks"
 
+    # Watchlists
+    ReadWatchlists = "ReadWatchlists"
+    ManageWatchlists = "ManageWatchlists"
+
 
 class OwnershipScope(Enum):
-    Own = "Own"
+    User = "User"
     Group = "Group"
-    All = "All"
+    Global = "Global"
 
 
 PermissionType = Union[GeneralPermission, OwnershipPermission]

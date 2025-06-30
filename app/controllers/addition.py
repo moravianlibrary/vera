@@ -10,6 +10,7 @@ from schemas.addition import (
     AdditionBatchParams,
     AdditionCreate,
     IngestAdditionsParams,
+    IngestAdditionsResponse,
 )
 from schemas.task import Task
 from schemas.user import AuthenticatedUser
@@ -42,7 +43,7 @@ def search(
 @router.post(
     "/ingest",
     dependencies=[WithPermission(GeneralPermission.AddDocuments)],
-    response_model=Task,
+    response_model=IngestAdditionsResponse,
 )
 def ingest(
     additions: List[AdditionCreate],
@@ -51,7 +52,7 @@ def ingest(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: AdditionService = DependsOnAdditionService,
 ):
-    return service.ingest(additions, batch_params, ingest_params, user.user_id)
+    return service.ingest(additions, batch_params, ingest_params, user.id)
 
 
 @router.post(
@@ -67,7 +68,7 @@ def reingest(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: AdditionService = DependsOnAdditionService,
 ):
-    return service.reingest(query, ingest_params, user.user_id)
+    return service.reingest(query, ingest_params, user.id)
 
 
 @router.post(
@@ -80,7 +81,7 @@ def archive(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: AdditionService = DependsOnAdditionService,
 ):
-    return service.archive(query, user.user_id)
+    return service.archive(query, user.id)
 
 
 @router.post(
@@ -98,4 +99,4 @@ def delete(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: AdditionService = DependsOnAdditionService,
 ):
-    return service.delete(query, user.user_id)
+    return service.delete(query, user.id)

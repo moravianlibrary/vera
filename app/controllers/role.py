@@ -5,7 +5,7 @@ from fastapi import APIRouter, Path, Query
 from adapters.identity_provider import IdentityProvider
 from definitions.permission import GeneralPermission
 from repositories import RoleRepository
-from schemas.pagination import Page, PageParams
+from schemas.common import Page, PageParams
 from schemas.role import Role, RoleEdit
 
 from .resources import (
@@ -19,7 +19,7 @@ router = APIRouter(prefix="/roles", tags=["Roles"])
 
 @router.get(
     "",
-    dependencies=[WithPermission(GeneralPermission.ManageAccess)],
+    dependencies=[WithPermission(GeneralPermission.ReadUsersAndGroups)],
     response_model=Page[Role],
 )
 def paginate(
@@ -76,5 +76,4 @@ def delete(
     role_id: int = Path(...),
     repository: RoleRepository = DependsOnRoleRepository,
 ):
-    return repository.delete(repository.get_by_id(role_id))
     return repository.delete(repository.get_by_id(role_id))

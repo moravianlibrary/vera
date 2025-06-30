@@ -15,7 +15,6 @@ from repositories import (
     UserRepository,
 )
 from repositories.catalog_record import CatalogRecordRepository
-from repositories.notification_list import WatchlistRepository
 from repositories.plugin import PluginInstanceRepository, PluginRepository
 from repositories.project import ProjectRepository
 from repositories.system import (
@@ -28,6 +27,7 @@ from repositories.task import (
     TaskItemRepository,
     TaskRepository,
 )
+from repositories.watchlist import WatchlistRepository
 from services import (
     AdditionService,
     CatalogSearchService,
@@ -41,16 +41,18 @@ from services.group import GroupService
 from services.intention import IntentionService
 from services.project import ProjectService
 from services.proposal import ProposalService
+from services.task import ScheduledTaskService, TaskService
 from vera_state import get_catalog_adapter, get_identity_provider
 
 from .providers import provide_repository, provide_service
 from .resolvers import resolve_authenticated_user, resolve_schedule_params
 from .restricted import (
+    get_restricted_filter_params,
     get_restricted_params,
     get_restricted_query,
     get_restricted_search,
 )
-from .security import require_permission
+from .security import enforce_ownership, require_permission
 
 DependsOnDatabaseSession = Depends(get_database_session)
 DependsOnIndexerSession = Depends(get_indexer_session)
@@ -143,9 +145,9 @@ DependsOnProposalService = provide_service(
     DependsOnDocumentRepository,
     DependsOnIntentionRepository,
 )
-DependsOnTaskService = provide_service(TaskRepository, DependsOnTaskRepository)
+DependsOnTaskService = provide_service(TaskService, DependsOnTaskRepository)
 DependsOnScheduledTaskService = provide_service(
-    ScheduledTaskRepository,
+    ScheduledTaskService,
     DependsOnScheduledTaskRepository,
 )
 
@@ -156,5 +158,7 @@ ResolveTaskScheduleParams = Depends(resolve_schedule_params)
 RestrictedSearch = get_restricted_search
 RestrictedQuery = get_restricted_query
 RestrictedParams = get_restricted_params
+RestrictedFilterParams = get_restricted_filter_params
 
 WithPermission = require_permission
+WithEnforcedOwnership = enforce_ownership

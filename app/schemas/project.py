@@ -3,17 +3,32 @@ from typing import List
 
 from pydantic import BaseModel
 
+from adapters.indexer import (
+    Boolean,
+    Date,
+    Enumerate,
+    IndexerEntity,
+    Integer,
+    Keyword,
+)
 from definitions.identifier import IdentifierType
 from definitions.project import ProjectStatus
 from schemas.addition import AdditionBatchParams
+from schemas.category import CategorySummary
 from schemas.group import GroupSummary
-from schemas.user import User
+from schemas.user import UserSummary
 
 
+# --------------------
+# - Query Parameters -
+# --------------------
 class ProjectBatchParams(AdditionBatchParams):
     pass
 
 
+# --------------------
+# - Request Payloads -
+# --------------------
 class ProjectEdit(BaseModel):
     name: str
     description: str | None = None
@@ -28,24 +43,39 @@ class ProjectAdditionCreate(BaseModel):
     category_id: int | None = None
 
 
-class ProjectStatusLog(BaseModel):
-    status: ProjectStatus
-    message: str | None
-    updated_at: datetime
-    updated_by: str
+# --------------------
+# - Indexer Entities -
+# --------------------
+class ProjectStatusLog(IndexerEntity):
+    status: Enumerate[ProjectStatus]
+    message: Keyword | None
+    updated_at: Date
+    updated_by: Keyword
 
 
-class Project(ProjectEdit):
-    id: int
+class ProjectSummary(IndexerEntity):
+    id: Integer
 
-    created_at: datetime
-    created_by: str
+    name: Keyword
 
-    status: ProjectStatus
-    is_archived: bool
+    created_by: Keyword
 
-    status_logs: List[ProjectStatusLog]
+    status: Enumerate[ProjectStatus]
+    is_archived: Boolean
+
+
+class Project(ProjectSummary):
+    description: Keyword | None
+
+    target_page_count: Integer | None
+    start_date: Date | None
+    end_date: Date | None
+
+    created_at: Date
+
+    categories: List[CategorySummary]
 
     groups: List[GroupSummary]
-    users: List[User]
-    users: List[User]
+    users: List[UserSummary]
+
+    status_logs: List[ProjectStatusLog]

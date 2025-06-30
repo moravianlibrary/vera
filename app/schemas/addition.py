@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import List
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -17,6 +17,9 @@ from definitions.identifier import IdentifierType
 from schemas.task import Task
 
 
+# --------------------
+# - Query Parameters -
+# --------------------
 class AdditionBatchParams(BaseModel):
     batch_id: int | None = None
     batch_name: str | None = None
@@ -40,6 +43,9 @@ class IngestAdditionsParams(BaseModel):
     ignore_digitization_check: bool = False
 
 
+# --------------------
+# - Request Payloads -
+# --------------------
 class AdditionCreate(BaseModel):
     identifier_type: IdentifierType
     identifier_value: str
@@ -47,11 +53,61 @@ class AdditionCreate(BaseModel):
     priority: Priority = Field(3, ge=1, le=5)
 
 
+# -----------------
+# - API Responses -
+# -----------------
 class IngestAdditionsResponse(BaseModel):
     task: Task
     batch_id: int
 
 
+# --------------------
+# - Indexer Entities -
+# --------------------
+class AdditionProject(IndexerEntity):
+    id: Integer
+    name: Keyword
+    description: Keyword | None = None
+
+
+class AdditionProposal(IndexerEntity):
+    id: Integer
+
+    batch_id: Integer
+    batch_name: Keyword | None = None
+    file_name: Keyword | None = None
+
+    reason_message: Keyword | None = None
+
+
+class Addition(IndexerEntity):
+    id: Integer
+
+    batch_id: Integer
+    batch_name: Keyword | None = None
+    file_name: Keyword | None = None
+    created_by: Keyword
+    created_at: Date
+    is_archived: Boolean
+
+    identifier_type: Enumerate[IdentifierType]
+    identifier_value: Keyword
+    category_id: Integer
+    priority: Integer
+
+    allow_new_iteration: Boolean
+    ignore_digitization_check: Boolean
+
+    status: Enumerate[AdditionStatus]
+    eligibility_status: Enumerate[EligibilityStatus] | None
+
+    project: AdditionProject | None = None
+    proposal: AdditionProposal | None = None
+
+
+# -------------
+# - Task Data -
+# -------------
 class IngestBatchAdditionsTaskData(IngestAdditionsParams):
     batch_id: int
     additions: List[AdditionCreate]
@@ -65,39 +121,6 @@ class ReingestAdditionsTaskData(IngestAdditionsParams):
     pass
 
 
-class EnqueueAdditionResponse(BaseModel):
-    enqueued: int
-
-
-class UpdateAdditionResponse(BaseModel):
-    updated: int
-
-
-class ArchiveAdditionResponse(BaseModel):
-    archived: int
-
-
-class DeleteAdditionResponse(BaseModel):
-    deleted: int
-    ignored: int
-
-
-class Addition(IndexerEntity):
-    id: Integer
-
-    batch_name: str
-    porposal_id: Integer | None = None
-
-    ignore_digitization_check: Boolean
-    allow_new_iteration: Boolean
-
-    created_by: Keyword
-    created_at: Date
-
-    status: Enumerate[AdditionStatus]
-    eligibility_status: Enumerate[EligibilityStatus] | None
-    error_message: Keyword | None
-
-    is_archived: Boolean
-
-    proposal: Dict[str, Any] | None = None
+# ----------------
+# - Task Results -
+# ----------------

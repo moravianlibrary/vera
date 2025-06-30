@@ -2,7 +2,7 @@ from adapters.database import DatabaseSession
 from adapters.indexer import IndexerSession
 from definitions.addition import AdditionStatus
 from repositories.models.task import TaskAdditionModel, TaskModel
-from schemas.addition import ReIngestAdditionsTaskBaseData
+from schemas.addition import ReingestAdditionsTaskData
 
 from .ingest_base import IngestAdditionsTaskBase
 
@@ -16,7 +16,7 @@ class AdditionReingestTask(IngestAdditionsTaskBase):
         super().__init__(database_session, indexer_session)
 
     def init_task(self, task: TaskModel) -> None:
-        data = ReIngestAdditionsTaskBaseData.model_validate(task.data)
+        data = ReingestAdditionsTaskData.model_validate(task.data)
 
         for addition in self._addition_repository.get_by_query(task.query):
             if addition.status != AdditionStatus.NotEligibleForAddition:

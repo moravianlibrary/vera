@@ -6,7 +6,7 @@ from vera_plugins.tools.registry import PluginRegistry
 from definitions.permission import GeneralPermission
 from repositories.role import RoleRepository
 from repositories.user import UserRepository
-from schemas.pagination import Page
+from schemas.common import Page
 from schemas.role import Permissions
 from schemas.user import AuthenticatedUser, User
 
@@ -108,7 +108,7 @@ class IdentityProvider:
                 GeneralPermission.EmulateAccess
             )
 
-        self._emulated_permissions[user.user_id] = permissions
+        self._emulated_permissions[user.id] = permissions
         user.general_permissions = permissions.general_permissions
         user.ownership_permissions = permissions.ownership_permissions
 
@@ -133,7 +133,7 @@ class IdentityProvider:
         AuthenticatedUser
             The updated user with original, role-based permissions restored.
         """
-        self._emulated_permissions.pop(user.user_id, None)
+        self._emulated_permissions.pop(user.id, None)
 
         original_permissions = Permissions.from_roles(user.roles)
         user.general_permissions = original_permissions.general_permissions

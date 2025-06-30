@@ -48,7 +48,7 @@ def ingest(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    return service.ingest(proposals, batch_params, user.user_id)
+    return service.ingest(proposals, batch_params, user.id)
 
 
 @router.post(
@@ -61,7 +61,7 @@ def reingest(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    return service.reingest(query, user.user_id)
+    return service.reingest(query, user.id)
 
 
 @router.post(
@@ -75,7 +75,7 @@ def approve(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    return service.approve(query, ingest_additions_params, user.user_id)
+    return service.approve(query, ingest_additions_params, user.id)
 
 
 @router.post(
@@ -88,7 +88,7 @@ def reject(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    return service.reject(query, user.user_id)
+    return service.reject(query, user.id)
 
 
 @router.post(
@@ -101,7 +101,7 @@ def archive(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    return service.archive(query, user.user_id)
+    return service.archive(query, user.id)
 
 
 @router.delete(
@@ -119,4 +119,4 @@ def delete(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    return service.delete(query, user.user_id)
+    return service.delete(query, user.id)

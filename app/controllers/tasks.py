@@ -5,7 +5,7 @@ from fastapi import APIRouter, Path, Query
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories.task import ScheduledTaskRepository, TaskItemRepository
-from schemas.pagination import Page, PageParams
+from schemas.common import Page, PageParams
 from schemas.task import (
     ScheduledTask,
     Task,
@@ -65,7 +65,7 @@ def kill_task(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: TaskService = DependsOnTaskService,
 ):
-    return service.kill(task_id, user.user_id)
+    return service.kill(task_id, user.id)
 
 
 @router.post(
@@ -78,7 +78,7 @@ def delete_tasks(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: TaskService = DependsOnTaskService,
 ):
-    return service.delete(query, user.user_id)
+    return service.delete(query, user.id)
 
 
 @router.post(

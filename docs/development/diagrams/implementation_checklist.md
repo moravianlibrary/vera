@@ -1,6 +1,7 @@
 # Implementation checklist
 
 ## Controllers
+- [x] Resources
 - [x] Addition
 - [x] Catalog Adapter
 - [x] Catalog Records
@@ -18,25 +19,23 @@
 - [x] Tasks
 - [x] Users
 - [x] Watchlists
-- [ ] Resources
 
 ## Schemas
-- [ ] Addition
-- [ ] Catalog Adapter
+- [x] Addition
 - [ ] Catalog Records
-- [ ] Categories
-- [ ] Digitization Lists
-- [ ] Distributions
+- [x] Categories
+- [x] Digitization Lists
+- [x] Distributions
 - [ ] Documents
-- [ ] Groups
-- [ ] Intentions
+- [x] Groups
+- [x] Intentions
 - [ ] Plugin
-- [ ] Projects
-- [ ] Proposals
-- [ ] Role
+- [x] Projects
+- [x] Proposals
+- [x] Role
 - [ ] System
 - [ ] Tasks
-- [ ] Users
+- [x] Users
 - [ ] Watchlists
 
 ## Services

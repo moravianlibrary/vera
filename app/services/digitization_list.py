@@ -80,8 +80,8 @@ class DigiListService:
 
     def add_documents(
         self,
-        query: IndexerQuery,
         digitization_list_id: int,
+        query: IndexerQuery,
         ignored_states: List[DigitizationState],
     ) -> AddDocumentsResponse:
         digi_list_model = self._digi_list_repository.get_by_id(
@@ -126,7 +126,7 @@ class DigiListService:
         )
 
     def remove_documents(
-        self, query: IndexerQuery, digitization_list_id: int
+        self, digitization_list_id: int, query: IndexerQuery
     ) -> RemoveDocumentsResponse:
         digi_list_model = self._digi_list_repository.get_by_id(
             digitization_list_id

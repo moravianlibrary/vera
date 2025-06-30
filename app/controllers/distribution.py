@@ -4,12 +4,12 @@ from fastapi import APIRouter, Path, Query
 
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import DistributionRepository
-from schemas.category import (
+from schemas.common import Page, PageParams
+from schemas.distribution import (
     Distribution,
     DistributionEdit,
     DistributionEditWithProportions,
 )
-from schemas.pagination import Page, PageParams
 from services import DistributionService
 
 from .resources import (

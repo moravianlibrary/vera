@@ -1,15 +1,43 @@
-from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
+from adapters.indexer import Date, Enumerate, IndexerEntity, Integer, Keyword
+from definitions.digitization_registry import (
+    DigitizationListState,
+    DigitizationState,
+)
+from schemas.intention import IntentionSummary
 
-class DigitizationList(BaseModel):
-    id: int
-    created_at: datetime
-    created_by: str
+
+# --------------------
+# - Query Parameters -
+# --------------------
+class CreateDigitizationListParams(BaseModel):
+    intention_ids: List[int] = []
+    state: DigitizationListState | None = None
+    skip_state_validation_for: List[DigitizationState] = []
 
 
+# --------------------
+# - Indexer Entities -
+# --------------------
+class DigitizationList(IndexerEntity):
+    id: Integer
+
+    state: Enumerate[DigitizationState]
+    intentions: List[IntentionSummary]
+
+    count_documents: Integer
+    count_pages: Integer
+
+    created_at: Date
+    created_by: Keyword
+
+
+# ----------------
+# - Task Results -
+# ----------------
 class CreateDigitizationListResponse(BaseModel):
     digitization_list: Optional[DigitizationList]
     already_in_list: int

@@ -4,8 +4,8 @@ from fastapi import APIRouter, Path, Query
 
 from definitions.permission import GeneralPermission
 from repositories import GroupRepository
+from schemas.common import Page, PageParams
 from schemas.group import Group, GroupAssignmentChange, GroupEdit
-from schemas.pagination import Page, PageParams
 from services.group import GroupService
 
 from .resources import (
@@ -76,5 +76,4 @@ def delete(
     group_id: int = Path(...),
     repository: GroupRepository = DependsOnGroupRepository,
 ):
-    return repository.delete(repository.get_by_id(group_id))
     return repository.delete(repository.get_by_id(group_id))

@@ -1,7 +1,8 @@
-from typing import Any, Dict, List
+from typing import List
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel
 
+from adapters.indexer import IndexerEntity, Keyword
 from definitions.json import JsonObject
 from definitions.permission import (
     GeneralPermission,
@@ -12,27 +13,37 @@ from definitions.permission import (
 from .group import Group
 from .role import Permissions, Role
 
+# --------------------
+# - Request Payloads -
+# --------------------
 UserSettings = JsonObject
 
 
+# -----------------
+# - API Responses -
+# -----------------
 class UserAssignment(BaseModel):
     user_id: str
-    group_ids: List[int] = []
+    group_ids: List[int]
 
 
 class AuthenticatedUser(Permissions):
-    user_id: str
+    id: str
     username: str
     roles: List[Role]
-    groups: List[Group] = []
+    groups: List[Group]
 
     @property
     def group_ids(self) -> List[int]:
         return [group.id for group in self.groups]
 
     @property
+    def group_users_ids(self) -> List[str]:
+        return [user.id for group in self.groups for user in group.users]
+
+    @property
     def assignment(self) -> UserAssignment:
-        return UserAssignment(user_id=self.user_id, group_ids=self.group_ids)
+        return UserAssignment(user_id=self.id, group_ids=self.group_ids)
 
     def has_permission(
         self,
@@ -44,29 +55,14 @@ class AuthenticatedUser(Permissions):
             return any(permission == p for p in self.ownership_permissions)
         raise ValueError(f"Unknown permission type: {type(permission)}. ")
 
-    @classmethod
-    def from_roles(cls, roles: List["Role"]) -> "Permissions":
-        general_permissions = []
-        ownership_permissions = []
-
-        for role in roles:
-            general_permissions.extend(role.general_permissions)
-            ownership_permissions.extend(role.ownership_permissions)
-
-        return cls(
-            general_permissions=list(set(general_permissions)),
-            ownership_permissions=list(set(ownership_permissions)),
-        )
-
-    @model_validator(mode="before")
-    def validate_permissions(cls, values: Dict[str, Any]) -> Dict[str, Any]:
-        return values
-
 
 class UserNotifications(BaseModel):
     pass
 
 
-class User(BaseModel):
-    id: str
-    username: str
+# --------------------
+# - Indexer Entities -
+# --------------------
+class UserSummary(IndexerEntity):
+    id: Keyword
+    username: Keyword

@@ -59,5 +59,5 @@ class ProjectService:
             )
 
         return self._project_repository.update_status(
-            target_project, status, message, user.user_id
+            target_project, status, message, user.id
         )

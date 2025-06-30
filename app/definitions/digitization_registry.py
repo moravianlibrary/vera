@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import Literal
 
 
 class DigitizationState(Enum):
@@ -33,6 +34,14 @@ class DigitizationState(Enum):
     Ambiguous = "Ambiguous"
     NotAvailable = "NotAvailable"
     NotDigitized = "NotDigitized"
+
+
+DigitizationListState = Literal[
+    DigitizationState.Revision,
+    DigitizationState.Planned,
+    DigitizationState.InProgress,
+    DigitizationState.Finished,
+]
 
 
 class DRFetchStatus(Enum):

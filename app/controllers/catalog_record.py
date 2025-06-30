@@ -5,14 +5,13 @@ from fastapi import APIRouter, Path, Query
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission
 from repositories.catalog_record import CatalogRecordRepository
-from schemas.catalog_records import (
+from schemas.catalog_record import (
     CatalogRecord,
     CatalogRecordDetails,
     CatalogRecordsSyncParams,
 )
 from schemas.task import Task, TaskScheduleParams
 from schemas.user import AuthenticatedUser
-from schemas.watchlist import Watchlist, WatchlistParams
 from services.catalog_record import CatalogRecordService
 
 from .resources import (
@@ -61,7 +60,7 @@ def change_validity(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return service.set_validity(query, is_valid, user.user_id)
+    return service.set_validity(query, is_valid, user.id)
 
 
 @router.post(
@@ -75,7 +74,7 @@ def reindex(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return service.reindex(query, user.user_id, schedule_params)
+    return service.reindex(query, user.id, schedule_params)
 
 
 @router.post(
@@ -90,7 +89,7 @@ def sync(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return service.sync(query, sync_params, user.user_id, schedule_params)
+    return service.sync(query, sync_params, user.id, schedule_params)
 
 
 @router.post(
@@ -103,7 +102,7 @@ def archive_inactive(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return service.archive_inactive(user.user_id, schedule_params)
+    return service.archive_inactive(user.id, schedule_params)
 
 
 @router.post(
@@ -116,23 +115,4 @@ def delete(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return service.delete(query, user.user_id)
-
-
-@router.post(
-    "/watchlist",
-    dependencies=[
-        WithPermission(
-            GeneralPermission.ReadCatalogRecords,
-            GeneralPermission.ManageWatchlists,
-        )
-    ],
-    response_model=Watchlist,
-)
-def create_watchlist(
-    query: IndexerQuery,
-    list_params: Annotated[WatchlistParams, Query()],
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    service: CatalogRecordService = DependsOnCatalogRecordService,
-):
-    return service.create_watchlist(query, list_params, user.user_id)
+    return service.delete(query, user.id)

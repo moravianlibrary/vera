@@ -5,7 +5,7 @@ from vera_plugins.definitions.plugin_types import PluginType
 
 from definitions.permission import GeneralPermission
 from repositories.plugin import PluginInstanceRepository, PluginRepository
-from schemas.pagination import Page, PageParams
+from schemas.common import Page, PageParams
 from schemas.plugin import (
     Plugin,
     PluginDiscoverParams,

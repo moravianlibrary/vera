@@ -1,4 +1,4 @@
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
@@ -9,6 +9,10 @@ from definitions.eligibility import EligibilityStatus
 from definitions.identifier import IdentifierType
 
 from .mixins.created_audit import CreatedAuditMixin
+
+if TYPE_CHECKING:
+    from .project import ProjectModel
+    from .proposal import ProposalModel
 
 
 class AdditionBatchModel(BaseModel, CreatedAuditMixin):
@@ -50,10 +54,13 @@ class AdditionModel(BaseModel):
         Enum(AdditionStatus), default=AdditionStatus.Enqueued, nullable=False
     )
     eligibility_status = Column(Enum(EligibilityStatus), nullable=True)
-    # TODO: maybe remove
-    error_message = Column(String, nullable=True)
 
     batch: Mapped["AdditionBatchModel"] = relationship(
         "AdditionBatchModel", back_populates="additions", lazy="joined"
     )
-    proposal = relationship("ProposalModel", backref="addition", lazy="joined")
+    project: Mapped[ProjectModel] = relationship(
+        "ProjectModel", backref="additions", lazy="joined"
+    )
+    proposal: Mapped[ProposalModel] = relationship(
+        "ProposalModel", backref="addition", lazy="joined"
+    )

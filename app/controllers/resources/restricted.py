@@ -4,7 +4,12 @@ from fastapi import Depends, HTTPException, status
 from pydantic import BaseModel
 
 from adapters.indexer import IndexerQuery
-from definitions.permission import OwnershipPermission, PermissionType
+from definitions.permission import (
+    OwnershipPermission,
+    OwnershipScope,
+    PermissionType,
+)
+from schemas.common import FilterParams
 from schemas.user import AuthenticatedUser
 
 from .resolvers import resolve_authenticated_user
@@ -56,3 +61,32 @@ def get_restricted_params(
         return params
 
     return Depends(_restrict_params)
+
+
+def get_restricted_filter_params(
+    permission: OwnershipPermission,
+    model: Type[FilterParams],
+) -> Callable:
+    def _restrict_filter_params(
+        filter_params: FilterParams = Depends(model),
+        user: AuthenticatedUser = Depends(resolve_authenticated_user),
+    ):
+        scope = user.get_scope(permission)
+
+        if scope == OwnershipScope.Global:
+            return filter_params
+
+        if scope == OwnershipScope.Group:
+            if filter_params.created_by:
+                filter_params.created_by = list(
+                    set(filter_params.created_by) & set(user.group_users_ids)
+                ) or [user.id]
+            else:
+                filter_params.created_by = user.group_users_ids or [user.id]
+
+        elif scope == OwnershipScope.User:
+            filter_params.created_by = [user.id]
+
+        return filter_params
+
+    return Depends(_restrict_filter_params)

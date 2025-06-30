@@ -5,8 +5,8 @@ from fastapi import APIRouter, Path, Query
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import CategoryRepository
-from schemas.assignment import AssignmentChange
 from schemas.category import Category, CategoryEdit, CategoryParentChangeParams
+from schemas.common import AssignmentChange
 from schemas.task import TaskScheduleParams
 from schemas.user import AuthenticatedUser
 from services import CategoryService

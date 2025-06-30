@@ -1,6 +1,21 @@
+from typing import List
+
+from marcdantic import IssuanceType
 from pydantic import BaseModel, model_validator
+from sqlalchemy import Boolean
+
+from adapters.indexer import Enumerate, IndexerEntity, Integer, Keyword
+from definitions.digitization_registry import DigitizationState
+from definitions.document import (
+    DEFAULT_EXPORT_FIELDS,
+    DEFAULT_EXPORT_FILENAME,
+    ExportFormat,
+)
 
 
+# --------------------
+# - Query Parameters -
+# --------------------
 class DocumentsSyncParams(BaseModel):
     catalog_record: bool = False
     digitization_state: bool = False
@@ -19,5 +34,37 @@ class DocumentsSyncParams(BaseModel):
         return model
 
 
-class Document(BaseModel):
-    pass
+class DocumentExportParams(BaseModel):
+    fields: List[str] = DEFAULT_EXPORT_FIELDS
+    filename: str = DEFAULT_EXPORT_FILENAME
+    export_format: ExportFormat = ExportFormat.xlsx
+
+
+# --------------------
+# - Indexer Entities -
+# --------------------
+class Document(IndexerEntity):
+    id: Integer
+
+    catalog_record_id: Keyword
+    catalog_record_valid: Boolean
+
+    iteration_id: Integer
+    iteration: Integer
+
+    barcode: Keyword | None
+    volume_number: Keyword | None
+    volume_year: Keyword | None
+    bundle: Keyword | None
+    issuance_type: Enumerate[IssuanceType] | None
+
+    digitization_state: Enumerate[DigitizationState]
+    page_count: Integer | None
+
+    category_id: Integer
+    priority: Integer
+    digitization_list_id: Integer | None
+
+    can_be_extracted: Boolean
+
+    is_archived: Boolean

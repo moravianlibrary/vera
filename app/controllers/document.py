@@ -1,18 +1,17 @@
-from typing import Annotated, List, Optional
+from typing import Annotated
 
 from fastapi import APIRouter, Path, Query
 from starlette.responses import FileResponse
 
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
-from definitions.document import (
-    DEFAULT_EXPORT_FIELDS,
-    DEFAULT_EXPORT_FILENAME,
-    ExportFormat,
-    Priority,
-)
+from definitions.document import Priority
 from definitions.permission import OwnershipPermission
 from repositories import DocumentRepository
-from schemas.document import Document, DocumentsSyncParams
+from schemas.document import (
+    Document,
+    DocumentExportParams,
+    DocumentsSyncParams,
+)
 from schemas.task import Task, TaskScheduleParams
 from schemas.user import AuthenticatedUser
 from services.document import DocumentService
@@ -50,27 +49,25 @@ def search(
     response_model=FileResponse,
 )
 def export(
+    export_params: Annotated[DocumentExportParams, Query()],
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ReadDocuments),
-    fields: List[str] = Query(default=DEFAULT_EXPORT_FIELDS),
-    filename: str = Query(DEFAULT_EXPORT_FILENAME),
-    export_format: ExportFormat = Query(ExportFormat.xlsx),
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.export(query, fields, filename, export_format)
+    return service.export(query, export_params)
 
 
 @router.patch(
-    "/{document_id}/update-page-count",
+    "/{document_id}/page-count",
     dependencies=[WithPermission(OwnershipPermission.ManageDocuments)],
     response_model=Document,
 )
 def update_page_count(
     document_id: int = Path(...),
-    page_count: Optional[int] = Query(...),
+    page_count: int = Query(...),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.update_page_count(document_id, page_count, user.user_id)
+    return service.update_page_count(document_id, page_count, user.id)
 
 
 @router.post(
@@ -90,7 +87,7 @@ def change_category(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.set_category(query, category_id, user.user_id)
+    return service.set_category(query, category_id, user.id)
 
 
 @router.post(
@@ -104,7 +101,7 @@ def change_priority(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.set_priority(query, priority, user.user_id)
+    return service.set_priority(query, priority, user.id)
 
 
 @router.post(
@@ -118,7 +115,7 @@ def change_decline_digitization(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.change_decline_digitization(query, decline, user.user_id)
+    return service.change_decline_digitization(query, decline, user.id)
 
 
 @router.post(
@@ -132,7 +129,7 @@ def reindex(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.reindex(query, user.user_id, schedule_params)
+    return service.reindex(query, user.id, schedule_params)
 
 
 @router.post(
@@ -147,7 +144,7 @@ def sync(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.sync(query, sync_params, user.user_id, schedule_params)
+    return service.sync(query, sync_params, user.id, schedule_params)
 
 
 @router.post(
@@ -160,7 +157,7 @@ def delete(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.delete(query, user.user_id)
+    return service.delete(query, user.id)
 
 
 # TODO: Implement in some future release

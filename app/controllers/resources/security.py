@@ -1,8 +1,12 @@
-from typing import Callable, Sequence, Union
+from typing import Callable, Protocol, Sequence, TypeVar, Union
 
 from fastapi import Depends, HTTPException, status
 
-from definitions.permission import PermissionType
+from definitions.permission import (
+    OwnershipPermission,
+    OwnershipScope,
+    PermissionType,
+)
 from schemas.user import AuthenticatedUser
 
 from .resolvers import resolve_authenticated_user
@@ -37,3 +41,32 @@ def require_permission(
             raise exception
 
     return Depends(_check_permissions)
+
+
+class AuthoredModel(Protocol):
+    created_by: str
+
+
+AuthoredModelType = TypeVar("AuthoredModelType", bound=AuthoredModel)
+
+
+def enforce_ownership(
+    item: AuthoredModelType,
+    permission: OwnershipPermission,
+    user: AuthenticatedUser,
+    exception: HTTPException = PermissionDenied(),
+) -> AuthoredModelType:
+    scope = user.get_scope(permission)
+
+    if scope == OwnershipScope.Global:
+        return item
+
+    if scope == OwnershipScope.Group and any(
+        uid == item.created_by for uid in user.group_users_ids
+    ):
+        return item
+
+    if item.created_by == user.id:
+        return item
+
+    raise exception

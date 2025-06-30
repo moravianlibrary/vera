@@ -8,7 +8,7 @@ from adapters.database import BaseModel
 from .associations import category_group_association, category_user_association
 
 if TYPE_CHECKING:
-    from .document_iteration import DocumentIterationModel
+    from .document import DocumentIterationModel
     from .group import GroupModel
     from .user import UserModel
 

@@ -6,7 +6,7 @@ from adapters.indexer import IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from definitions.project import ProjectStatus
 from repositories.project import ProjectRepository
-from schemas.assignment import AssignmentChange
+from schemas.common import AssignmentChange
 from schemas.project import (
     Project,
     ProjectAdditionCreate,
