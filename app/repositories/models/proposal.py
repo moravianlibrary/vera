@@ -58,13 +58,11 @@ class ProposalModel(BaseModel):
 
 
 class ProposalStatusLogModel(BaseModel, UpdatedAuditMixin):
-    __tablename__ = "document_proposal_status_logs"
+    __tablename__ = "proposal_status_logs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    proposal_id = Column(
-        Integer, ForeignKey("document_proposals.id"), nullable=False
-    )
+    proposal_id = Column(Integer, ForeignKey("proposals.id"), nullable=False)
     status = Column(Enum(ProposalStatus), nullable=False)
 
     proposal = relationship("ProposalModel", backref="status_logs")

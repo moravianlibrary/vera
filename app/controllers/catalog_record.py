@@ -5,13 +5,13 @@ from fastapi import APIRouter, Path, Query
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission
 from repositories.catalog_record import CatalogRecordRepository
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.catalog_record import (
     CatalogRecord,
     CatalogRecordDetails,
     CatalogRecordsSyncParams,
 )
 from schemas.task import Task, TaskScheduleParams
-from schemas.user import AuthenticatedUser
 from services.catalog_record import CatalogRecordService
 
 from .resources import (

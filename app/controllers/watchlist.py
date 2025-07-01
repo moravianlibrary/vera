@@ -6,8 +6,8 @@ from adapters.indexer import IndexerQuery
 from definitions.permission import GeneralPermission, OwnershipPermission
 from definitions.watchlist import TARGET_PERMISSIONS
 from repositories.watchlist import WatchlistRepository
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import Assignment, AssignmentChange, Page, PageParams
-from schemas.user import AuthenticatedUser
 from schemas.watchlist import (
     SubscribedWatchlist,
     SubscribedWatchlistFilterParams,

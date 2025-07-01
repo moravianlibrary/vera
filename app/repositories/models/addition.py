@@ -58,9 +58,9 @@ class AdditionModel(BaseModel):
     batch: Mapped["AdditionBatchModel"] = relationship(
         "AdditionBatchModel", back_populates="additions", lazy="joined"
     )
-    project: Mapped[ProjectModel] = relationship(
+    project: Mapped["ProjectModel"] = relationship(
         "ProjectModel", backref="additions", lazy="joined"
     )
-    proposal: Mapped[ProposalModel] = relationship(
+    proposal: Mapped["ProposalModel"] = relationship(
         "ProposalModel", backref="addition", lazy="joined"
     )

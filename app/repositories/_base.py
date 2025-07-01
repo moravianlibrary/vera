@@ -39,7 +39,7 @@ class BaseIndexedRepository(BaseRepository):
         indexer_session: IndexerSession,
         indexer_entity: Type[IndexerEntity],
     ):
-        self.super().__init__(entity_name, database_session, database_entity)
+        super().__init__(entity_name, database_session, database_entity)
         self._indexer_session = indexer_session
         self._indexer_entity = indexer_entity
 

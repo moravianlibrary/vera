@@ -1,7 +1,6 @@
 from typing import List
 
-from requests import Session
-
+from adapters.database import DatabaseSession
 from repositories.models.user import UserModel
 from schemas.group import GroupEdit
 
@@ -24,7 +23,7 @@ class GroupRepository(
     PaginationMixin[GroupModel],
     SaveMixin[GroupModel],
 ):
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: DatabaseSession):
         super().__init__(db_session, GroupModel, "Group")
 
     def create(self, group: GroupEdit) -> GroupModel:

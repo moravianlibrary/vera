@@ -1,13 +1,14 @@
 from typing import TYPE_CHECKING, List
 
 from sqlalchemy import JSON, Column, String
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, relationship
 
 from adapters.database import BaseModel
 
+from .associations.user import group_user_association
+
 if TYPE_CHECKING:
-    from .group import GroupModel, GroupUserAssociation
+    from .group import GroupModel
 
 
 class UserModel(BaseModel):
@@ -17,13 +18,9 @@ class UserModel(BaseModel):
     username = Column(String, unique=True, nullable=False)
     settings = Column(JSON, default={}, nullable=False)
 
-    group_associations: Mapped[List["GroupUserAssociation"]] = relationship(
-        "GroupUserAssociation",
-        back_populates="user",
+    groups: Mapped[List["GroupModel"]] = relationship(
+        "GroupModel",
+        secondary=group_user_association,
+        back_populates="users",
         lazy="joined",
-        cascade="all, delete-orphan",
     )
-
-    @hybrid_property
-    def groups(self) -> List["GroupModel"]:
-        return [association.group for association in self.group_associations]

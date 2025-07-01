@@ -4,8 +4,8 @@ from definitions.project import ProjectStatus
 from repositories.group import GroupRepository
 from repositories.project import ProjectRepository
 from repositories.user import UserRepository
-from schemas.assignment import AssignmentChange
-from schemas.user import AuthenticatedUser
+from schemas.authenticated_user import AuthenticatedUser
+from schemas.common import AssignmentChange
 
 UpdateProjectStatus = Literal[ProjectStatus.Accepted, ProjectStatus.Declined]
 

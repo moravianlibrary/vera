@@ -1,24 +1,27 @@
 from unittest import TestCase
 
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from testcontainers.postgres import PostgresContainer
 
 from adapters.database import BaseModel, get_database_session
 from vera import app
 
-test_engine = create_engine(
-    "sqlite:///:memory:", connect_args={"check_same_thread": False}
-)
-TestSessionLocal = sessionmaker(
-    autocommit=False, autoflush=True, bind=test_engine
-)
+POSTGRES_IMAGE = "postgres:17"
 
 
 class TestIntegrationCase(TestCase):
     @classmethod
     def setUpClass(cls):
-        BaseModel.metadata.create_all(test_engine)
+        cls.postgres = PostgresContainer(POSTGRES_IMAGE)
+        cls.postgres.start()
+
+        cls.db_url = cls.postgres.get_connection_url()
+        cls.engine = create_engine(cls.db_url)
+        cls.SessionLocal = sessionmaker(bind=cls.engine)
+
+        BaseModel.metadata.create_all(cls.engine)
 
     def setUp(self):
         self.client = TestClient(app)
@@ -28,13 +31,12 @@ class TestIntegrationCase(TestCase):
             "Content-Type": "application/json",
         }
 
-        self.connection = test_engine.connect()
+        self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
-        self.session = TestSessionLocal(bind=self.connection)
-        self.session.execute(text("PRAGMA foreign_keys=ON;"))
+        self.session = self.SessionLocal(bind=self.connection)
 
         app.dependency_overrides[get_database_session] = (
-            lambda: TestSessionLocal(bind=self.connection)
+            lambda: self.SessionLocal(bind=self.connection)
         )
 
     def tearDown(self):
@@ -44,7 +46,8 @@ class TestIntegrationCase(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        BaseModel.metadata.drop_all(test_engine)
+        cls.engine.dispose()
+        cls.postgres.stop()
 
     def assertResponse(self, response, status_code, detail=None):
         if response.status_code != status_code:

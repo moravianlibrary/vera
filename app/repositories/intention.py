@@ -1,5 +1,4 @@
-from requests import Session
-
+from adapters.database import DatabaseSession
 from schemas.intention import Intention, IntentionEdit
 
 from ._base import BaseRepository
@@ -21,7 +20,7 @@ class IntentionRepository(
     SaveMixin[IntentionModel],
     SearchMixin[Intention],
 ):
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: DatabaseSession):
         super().__init__(db_session, IntentionModel, "Intention")
 
     def create(self, intention: IntentionEdit) -> IntentionModel:

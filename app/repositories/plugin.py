@@ -1,6 +1,5 @@
-from requests import Session
-
-from schemas.role import PluginInstanceEdit
+from adapters.database import DatabaseSession
+from schemas.plugin import PluginInstanceEdit
 
 from ._base import BaseRepository
 from ._mixins import (
@@ -31,29 +30,33 @@ class PluginInstanceRepository(
     PaginationMixin[PluginInstanceModel],
     SaveMixin[PluginInstanceModel],
 ):
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: DatabaseSession):
         super().__init__(db_session, PluginInstanceModel, "PluginInstance")
 
-    def create(self, role: PluginInstanceEdit) -> PluginInstanceModel:
+    def create(self, instance: PluginInstanceEdit) -> PluginInstanceModel:
         """
-        Create a new role.
+        Create a new instance.
         """
-        self.enforce_name_uniqueness(role.name)
+        self.enforce_name_uniqueness(instance.name)
 
         return self.save(
-            PluginInstanceModel(name=role.name, description=role.description)
+            PluginInstanceModel(
+                name=instance.name,
+                description=instance.description,
+            )
         )
 
     def update(
-        self, role_model: PluginInstanceModel, role: PluginInstanceEdit
+        self,
+        instance_model: PluginInstanceModel,
+        instance: PluginInstanceEdit,
     ) -> PluginInstanceModel:
         """
-        Update an existing role.
+        Update an existing instance.
         """
-        self.enforce_name_uniqueness(role.name, role_model.id)
+        self.enforce_name_uniqueness(instance.name, instance_model.id)
 
-        role_model.name = role.name
-        role_model.description = role.description
+        instance_model.name = instance.name
+        instance_model.description = instance.description
 
-        return self.save(role_model)
-        return self.save(role_model)
+        return self.save(instance_model)

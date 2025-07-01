@@ -71,6 +71,12 @@ class TaskModel(BaseModel, CreatedAuditMixin):
         cascade="all, delete-orphan",
         lazy="selectin",
     )
+    documents_iterations = relationship(
+        "TaskDocumentIteration",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
     categories = relationship(
         "TaskCategory",
         back_populates="task",
@@ -92,6 +98,7 @@ class TaskModel(BaseModel, CreatedAuditMixin):
             self.additions
             + self.catalog_records
             + self.documents
+            + self.documents_iterations
             + self.categories
         )
 
@@ -141,7 +148,7 @@ class TaskCatalogRecordModel(BaseModel, TaskItemMixin):
     __tablename__ = "task_catalog_records"
 
     catalog_record_id = Column(
-        Integer, ForeignKey("catalog_records.id"), index=True
+        String, ForeignKey("catalog_records.id"), index=True
     )
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "catalog_record_id"),)

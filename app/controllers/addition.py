@@ -12,8 +12,8 @@ from schemas.addition import (
     IngestAdditionsParams,
     IngestAdditionsResponse,
 )
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.task import Task
-from schemas.user import AuthenticatedUser
 from services import AdditionService
 
 from .resources import (

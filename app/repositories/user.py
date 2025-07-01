@@ -1,5 +1,4 @@
-from requests import Session
-
+from adapters.database import DatabaseSession
 from definitions.json import JsonObject
 
 from ._base import BaseRepository
@@ -23,7 +22,7 @@ class UserRepository(
     PaginationMixin[UserModel],
     SaveMixin[UserModel],
 ):
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: DatabaseSession):
         super().__init__(db_session, UserModel, "User")
 
     def create(self, user_id: str, username: str) -> UserModel:

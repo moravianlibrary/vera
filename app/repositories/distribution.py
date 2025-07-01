@@ -1,6 +1,5 @@
-from requests import Session
-
-from schemas.category import DistributionEdit
+from adapters.database import DatabaseSession
+from schemas.distribution import DistributionEdit
 
 from ._base import BaseRepository
 from ._mixins import (
@@ -21,7 +20,7 @@ class DistributionRepository(
     PaginationMixin[DistributionModel],
     SaveMixin[DistributionModel],
 ):
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: DatabaseSession):
         super().__init__(db_session, DistributionModel, "Distribution")
 
     def create(self, distribution: DistributionEdit) -> DistributionModel:

@@ -6,9 +6,9 @@ from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import ProposalRepository
 from schemas.addition import IngestAdditionsParams
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.proposal import Proposal, ProposalBatchParams, ProposalCreate
 from schemas.task import Task
-from schemas.user import AuthenticatedUser
 from services import ProposalService
 
 from .resources import (

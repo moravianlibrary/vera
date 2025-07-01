@@ -1,6 +1,6 @@
 from repositories.group import GroupRepository
 from repositories.user import UserRepository
-from schemas.assignment import AssignmentChange
+from schemas.common import AssignmentChange
 
 
 class GroupService:

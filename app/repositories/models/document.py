@@ -57,9 +57,16 @@ class DocumentPropertyModel(BaseModel):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
+    # plugin_instance_id = Column(
+    #     Integer, ForeignKey("plugin_instances.id"), nullable=False
+    # )
     document_id = Column(Integer, ForeignKey("documents.id"), nullable=False)
+
     key = Column(String, nullable=False)
     value = Column(String, nullable=True)
+    # property_type = Column(
+    #     Enum("string", "integer", "boolean"), nullable=False
+    # )
 
     document: Mapped["DocumentModel"] = relationship(
         "DocumentModel", backref="properties"

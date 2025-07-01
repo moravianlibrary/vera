@@ -1,4 +1,4 @@
-from typing import Callable, Protocol, Sequence, TypeVar, Union
+from typing import Callable, Protocol, TypeVar
 
 from fastapi import Depends, HTTPException, status
 
@@ -7,7 +7,7 @@ from definitions.permission import (
     OwnershipScope,
     PermissionType,
 )
-from schemas.user import AuthenticatedUser
+from schemas.authenticated_user import AuthenticatedUser
 
 from .resolvers import resolve_authenticated_user
 
@@ -21,23 +21,15 @@ class PermissionDenied(HTTPException):
 
 
 def require_permission(
-    permissions: Union[PermissionType, Sequence[PermissionType]],
-    *,
+    *permissions: PermissionType,
     require_all: bool = True,
     exception: HTTPException = PermissionDenied(),
 ) -> Callable:
     def _check_permissions(
         user: AuthenticatedUser = Depends(resolve_authenticated_user),
     ):
-        perms = (
-            permissions
-            if isinstance(permissions, (list, tuple))
-            else [permissions]
-        )
-
-        if require_all and not all(user.has_permission(p) for p in perms):
-            raise exception
-        if not require_all and not any(user.has_permission(p) for p in perms):
+        check = all if require_all else any
+        if not check(user.has_permission(p) for p in permissions):
             raise exception
 
     return Depends(_check_permissions)

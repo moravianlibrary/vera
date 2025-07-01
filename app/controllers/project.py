@@ -6,6 +6,7 @@ from adapters.indexer import IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from definitions.project import ProjectStatus
 from repositories.project import ProjectRepository
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import AssignmentChange
 from schemas.project import (
     Project,
@@ -13,7 +14,6 @@ from schemas.project import (
     ProjectBatchParams,
     ProjectEdit,
 )
-from schemas.user import AuthenticatedUser
 from services.project import ProjectService
 
 from .resources import (

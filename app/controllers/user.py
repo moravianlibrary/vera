@@ -5,14 +5,10 @@ from fastapi import APIRouter, Query
 from adapters.identity_provider import IdentityProvider
 from definitions.permission import GeneralPermission
 from repositories.user import UserRepository
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import Page, PageParams
 from schemas.role import Permissions
-from schemas.user import (
-    AuthenticatedUser,
-    UserNotifications,
-    UserSettings,
-    UserSummary,
-)
+from schemas.user import UserNotifications, UserSettings, UserSummary
 
 from .resources import (
     DependsOnAuthenticatedUser,

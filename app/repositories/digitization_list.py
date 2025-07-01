@@ -1,7 +1,6 @@
 from typing import List
 
-from requests import Session
-
+from adapters.database import DatabaseSession
 from repositories.models.intention import IntentionModel
 
 from ._base import BaseRepository
@@ -16,7 +15,7 @@ class DigiListRepository(
     SaveMixin[DigitizationListModel],
     SearchMixin[DigitizationListModel],
 ):
-    def __init__(self, database_session: Session):
+    def __init__(self, database_session: DatabaseSession):
         super().__init__(
             database_session, DigitizationListModel, "Digitization List"
         )

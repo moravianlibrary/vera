@@ -1,5 +1,6 @@
 from adapters.database import DatabaseSession
 from adapters.indexer import IndexerSession
+from schemas.proposal import Proposal
 
 from ._base import BaseRepository
 from ._mixins import GetByQueryMixin, SaveMixin, SearchAllMixin, SearchMixin

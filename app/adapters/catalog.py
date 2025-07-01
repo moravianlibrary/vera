@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Generator
 
+from marcdantic import MarcRecord
 from marcdantic.query import MarcSearchRequest
 from vera_plugins.schemas import CatalogAdapterPluginInstance
 from vera_plugins.specs.catalog_adapter import (
@@ -9,8 +10,6 @@ from vera_plugins.specs.catalog_adapter import (
     SearchResultResponse,
 )
 from vera_plugins.tools.registry import PluginRegistry
-
-from schemas.marc import MarcRecord
 
 
 class CatalogAdapter(CatalogAdapterPlugin):

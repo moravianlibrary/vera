@@ -36,7 +36,7 @@
 - [ ] System
 - [ ] Tasks
 - [x] Users
-- [ ] Watchlists
+- [x] Watchlists
 
 ## Services
 - [ ] Addition

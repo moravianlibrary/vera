@@ -6,12 +6,12 @@ from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.digitization_registry import DigitizationState
 from definitions.permission import GeneralPermission
 from repositories.digitization_list import DigiListRepository
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.digitization_list import (
     CreateDigitizationListParams,
     DigitizationList,
 )
 from schemas.task import Task
-from schemas.user import AuthenticatedUser
 from services.digitization_list import DigiListService
 
 from .resources import (

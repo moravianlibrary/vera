@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from functools import wraps
@@ -34,6 +35,7 @@ class EsDataType(str, Enum):
     Date = "date"
 
 
+# --- Scalar types ---
 Keyword = Annotated[str, EsDataType.Keyword]
 Text = Annotated[str, EsDataType.Text]
 Integer = Annotated[int, EsDataType.Integer]
@@ -41,16 +43,49 @@ Float = Annotated[float, EsDataType.Float]
 Boolean = Annotated[bool, EsDataType.Boolean]
 Date = Annotated[datetime, EsDataType.Date]
 
-T = TypeVar("T", bound=Enum)
+EnumType = TypeVar("EnumType", bound=Enum)
 
 
-class Enumerate(Generic[T]):
+class Enumerate(Generic[EnumType]):
     def __class_getitem__(
-        cls, item: type[T]
-    ) -> Annotated[type[T], EsDataType.Keyword]:
+        cls, item: type[EnumType]
+    ) -> Annotated[type[EnumType], EsDataType.Keyword]:
         return Annotated[item, EsDataType.Keyword]
 
 
+# --- Complex types metadata ---
+@dataclass
+class ObjectMeta:
+    model: type["IndexerEntity"]
+
+
+@dataclass
+class ArrayMeta:
+    item_type: Any
+
+
+# --- Complex types ---
+IndexerEntityType = TypeVar("IndexerEntityType", bound="IndexerEntity")
+
+
+class Object(Generic[IndexerEntityType]):
+    def __class_getitem__(
+        cls, item: type["IndexerEntity"]
+    ) -> Annotated[IndexerEntityType, ObjectMeta]:
+        return Annotated[item, ObjectMeta(item)]
+
+
+ArrayType = TypeVar("ArrayType")
+
+
+class Array(Generic[ArrayType]):
+    def __class_getitem__(
+        cls, item: Any
+    ) -> Annotated[List[ArrayType], ArrayMeta]:
+        return Annotated[List[item], ArrayMeta(item)]
+
+
+# --- Base entity class ---
 class IndexerEntity(BaseModel):
     __index_name__: str = "undefined"
     __id_field__: str = "id"
@@ -58,27 +93,44 @@ class IndexerEntity(BaseModel):
     __dynamic__: str = "strict"
 
     @classmethod
-    def es_schema(cls) -> dict:
+    def field_schema(cls, annotated_type):
+        origin = get_origin(annotated_type)
+        args = get_args(annotated_type)
+
+        if origin is Annotated and len(args) == 2:
+            _, meta = args
+
+            if isinstance(meta, EsDataType):
+                return {"type": meta.value}
+
+            elif isinstance(meta, ObjectMeta):
+                return {
+                    "type": "nested",
+                    "properties": meta.model.object_schema(),
+                }
+
+            elif isinstance(meta, ArrayMeta):
+                return cls.field_schema(meta.item_type)
+
+    @classmethod
+    def object_schema(cls) -> dict:
         props = {}
-
         hints = get_type_hints(cls, include_extras=True)
-        for field_name, annotated_type in hints.items():
-            origin = get_origin(annotated_type)
-            if origin is Annotated:
-                _, es_type = get_args(annotated_type)
-                if isinstance(es_type, EsDataType):
-                    props[field_name] = {"type": es_type.value}
 
+        for field_name, annotated_type in hints.items():
+            cls.field_schema(props, field_name, annotated_type)
+
+        return props
+
+    @classmethod
+    def es_schema(cls) -> dict:
         return {
             "mappings": {
                 "_meta": {"index.version": cls.__index_version__},
                 "dynamic": cls.__dynamic__,
-                "properties": props,
+                "properties": cls.object_schema(),
             }
         }
-
-
-IndexerEntityType = TypeVar("IndexerEntityType", bound=IndexerEntity)
 
 
 class IndexerQuery(BaseModel):

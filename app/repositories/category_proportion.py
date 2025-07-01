@@ -1,4 +1,4 @@
-from requests import Session
+from adapters.database import DatabaseSession
 
 from ._base import BaseRepository
 from ._mixins import SaveMixin
@@ -9,7 +9,7 @@ class CategoryProportionRepository(
     BaseRepository,
     SaveMixin[CategoryProportionModel],
 ):
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: DatabaseSession):
         super().__init__(
             db_session, CategoryProportionModel, "Category Proportion"
         )

@@ -9,8 +9,8 @@ from definitions.permission import (
     OwnershipScope,
     PermissionType,
 )
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import FilterParams
-from schemas.user import AuthenticatedUser
 
 from .resolvers import resolve_authenticated_user
 

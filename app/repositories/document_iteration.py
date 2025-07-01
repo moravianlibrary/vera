@@ -1,5 +1,4 @@
-from requests import Session
-
+from adapters.database import DatabaseSession
 from definitions.document import Priority
 from repositories.models.document import DocumentIterationModel
 
@@ -23,7 +22,7 @@ class DocumentIterationRepository(
     SaveAndIndexMixin[DocumentIterationModel],
     SearchMixin[DocumentIterationModel],
 ):
-    def __init__(self, database_session: Session):
+    def __init__(self, database_session: DatabaseSession):
         super().__init__(
             database_session, DocumentIterationModel, "Document Iteration"
         )

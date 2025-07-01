@@ -3,9 +3,9 @@ from repositories.category import CategoryRepository
 from repositories.group import GroupRepository
 from repositories.models.category import CategoryModel
 from repositories.user import UserRepository
-from schemas.assignment import AssignmentChange
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.category import CategoryEdit, CategoryParentChangeParams
-from schemas.user import AuthenticatedUser
+from schemas.common import AssignmentChange
 
 
 class CategoryService:

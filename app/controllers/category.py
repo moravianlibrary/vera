@@ -5,10 +5,10 @@ from fastapi import APIRouter, Path, Query
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import CategoryRepository
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.category import Category, CategoryEdit, CategoryParentChangeParams
 from schemas.common import AssignmentChange
 from schemas.task import TaskScheduleParams
-from schemas.user import AuthenticatedUser
 from services import CategoryService
 
 from .resources import (
@@ -95,7 +95,7 @@ def change_parent(
 
 
 @router.patch(
-    "/{category_id}/document-discovery/{plugin_instance_id}",
+    "/{category_id}/document-discovery",
     dependencies=[
         WithPermission(
             OwnershipPermission.ManageCategories,
@@ -106,7 +106,7 @@ def change_parent(
 )
 def change_document_discovery(
     category_id: Annotated[int, Path(...)],
-    plugin_instance_id: Annotated[int | None, Path(None)],
+    plugin_instance_id: Annotated[int | None, Query()],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):

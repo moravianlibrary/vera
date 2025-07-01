@@ -2,13 +2,6 @@ from sqlalchemy import Column, ForeignKey, Table
 
 from adapters.database import BaseModel
 
-catalog_record_list_user_association = Table(
-    "catalog_record_list_user_associations",
-    BaseModel.metadata,
-    Column("list_id", ForeignKey("catalog_record_lists.id"), primary_key=True),
-    Column("user_id", ForeignKey("users.id"), primary_key=True),
-)
-
 category_user_association = Table(
     "category_user_associations",
     BaseModel.metadata,

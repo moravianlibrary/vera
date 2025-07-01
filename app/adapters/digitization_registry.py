@@ -1,3 +1,5 @@
+from typing import List
+
 from marcdantic import MarcIssue, MarcRecord
 from vera_plugins.schemas import DigitizationRegistryPluginInstance
 from vera_plugins.specs.digitization_registry_adapter import (
@@ -17,17 +19,17 @@ class DigitizationRegistryAdapter(DigitizationRegistryAdapterPlugin):
         self._plugin_registry = plugin_registry
         self.instance = instance
 
-    def fetch(self, registry_issue_id: str) -> DigitizationRecord | None:
+    def fetch(self, registry_issue_id: str) -> DigitizationRecord:
         pass
 
     def find_for_marc_record(
         self, record: MarcRecord
-    ) -> DigitizationRecord | None:
+    ) -> List[DigitizationRecord] | None:
         pass
 
     def find_for_marc_issue(
         self, record: MarcRecord, issue: MarcIssue
-    ) -> DigitizationRecord | None:
+    ) -> List[DigitizationRecord] | None:
         pass
 
     def register_digitization(

@@ -1,13 +1,12 @@
 from typing import List
 
-from requests import Session
-
+from adapters.database import DatabaseSession
 from adapters.indexer import IndexerSession
 from repositories.models.group import GroupModel
 from repositories.models.user import UserModel
 from schemas.category import Category
 
-from ._base import BaseRepository
+from ._base import BaseIndexedRepository
 from ._mixins import (
     ArchiveOnDeleteAndIndexMixin,
     EnforceNameUniquenessMixin,
@@ -19,16 +18,18 @@ from .models.category import CategoryModel
 
 
 class CategoryRepository(
-    BaseRepository,
+    BaseIndexedRepository,
     ArchiveOnDeleteAndIndexMixin[CategoryModel],
     EnforceNameUniquenessMixin,
     GetByIdMixin[CategoryModel, int],
     SaveAndIndexMixin[CategoryModel],
     SearchMixin[Category],
 ):
-    def __init__(self, db_session: Session, indexer_session: IndexerSession):
+    def __init__(
+        self, db_session: DatabaseSession, indexer_session: IndexerSession
+    ):
         super().__init__(
-            db_session, CategoryModel, "Category", indexer_session
+            "Category", db_session, CategoryModel, indexer_session, Category
         )
 
     def create(

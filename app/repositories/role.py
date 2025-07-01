@@ -1,5 +1,4 @@
-from requests import Session
-
+from adapters.database import DatabaseSession
 from schemas.role import RoleEdit
 
 from ._base import BaseRepository
@@ -25,7 +24,7 @@ class RoleRepository(
     PaginationMixin[RoleModel],
     SaveMixin[RoleModel],
 ):
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: DatabaseSession):
         super().__init__(db_session, RoleModel, "Role")
 
     def create(self, role: RoleEdit) -> RoleModel:

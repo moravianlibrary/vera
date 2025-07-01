@@ -1,7 +1,6 @@
 from typing import Optional
 
-from requests import Session
-
+from adapters.database import DatabaseSession
 from schemas.project import Project, ProjectEdit
 
 from ._base import BaseRepository
@@ -21,7 +20,7 @@ class ProjectRepository(
     SaveMixin[ProjectModel],
     SearchMixin[Project],
 ):
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: DatabaseSession):
         super().__init__(db_session, ProjectModel, "Project")
 
     def create(self, project: ProjectEdit) -> ProjectModel:

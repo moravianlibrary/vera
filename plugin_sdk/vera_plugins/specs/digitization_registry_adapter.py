@@ -51,19 +51,45 @@ class DigitizationRecord(NamedTuple):
     issue_state : DigitizationRecordState | None
         The state of the specific issue within the digitization registry,
         or None if not found.
-    error_message : str | None, optional
-        An optional error message if the record retrieval
-        or processing encountered an issue.
+    link : str | None
+        An optional link to the digitization record in the registry,
+        which can be used to access more details about the digitization.
     """
 
     registry_record_id: str
     record_state: List[DigitizationRecordState]
     registry_issue_id: str | None
     issue_state: DigitizationRecordState | None
-    error_message: str | None = None
+    link: str | None = None
 
 
-class RegistrationError(Exception):
+class DigitizationRegistryError(Exception):
+    """
+    Base exception for errors related to the digitization registry.
+
+    This class serves as a base for more specific exceptions
+    related to digitization registry operations.
+    """
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class FetchError(DigitizationRegistryError):
+    """
+    Exception raised when fetching digitization records fails.
+
+    Parameters
+    ----------
+    message : str
+        The error message describing the failure.
+    """
+
+    def __init__(self, message: str):
+        super().__init__(message)
+
+
+class RegistrationError(DigitizationRegistryError):
     """
     Exception raised when a digitization record registration fails.
 
@@ -77,7 +103,7 @@ class RegistrationError(Exception):
         super().__init__(message)
 
 
-class StateChangeError(Exception):
+class StateChangeError(DigitizationRegistryError):
     """
     Exception raised when a state change operation fails.
 
@@ -104,12 +130,12 @@ class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
         Retrieve digitization information for a specific issue
         from the registry.
 
-    find_for_marc_record(record: MarcRecord) -> DigitizationRecord | None:
+    find_for_marc_record(record: MarcRecord) -> List[DigitizationRecord] | None
         Find digitization records matching a given MARC record.
 
     find_for_marc_issue(
         record: MarcRecord, issue: MarcIssue
-    ) -> DigitizationRecord | None:
+    ) -> List[DigitizationRecord] | None
         Find digitization records matching a given MARC record and issue.
 
     register_digitization(
@@ -140,13 +166,18 @@ class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
         -------
         DigitizationRecord | None
             The digitization record if found, otherwise None.
+
+        Raises
+        ------
+        FetchError
+            If the fetch operation fails due to an error.
         """
         pass
 
     @abstractmethod
     def find_for_marc_record(
         self, record: MarcRecord
-    ) -> DigitizationRecord | None:
+    ) -> List[DigitizationRecord] | None:
         """
         Find digitization records matching a given MARC record.
 
@@ -157,15 +188,21 @@ class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
 
         Returns
         -------
-        DigitizationRecord | None
-            The digitization record if found, otherwise None.
+        list of DigitizationRecord or None
+            A list of matching digitization records if found,
+            otherwise None.
+
+        Raises
+        ------
+        FetchError
+            If the fetch operation fails due to an error.
         """
         pass
 
     @abstractmethod
     def find_for_marc_issue(
         self, record: MarcRecord, issue: MarcIssue
-    ) -> DigitizationRecord | None:
+    ) -> List[DigitizationRecord] | None:
         """
         Find digitization records matching a given MARC record and issue.
 
@@ -178,8 +215,14 @@ class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
 
         Returns
         -------
-        DigitizationRecord | None
-            The digitization record if found, otherwise None.
+        list of DigitizationRecord or None
+            A list of matching digitization records if found,
+            otherwise None.
+
+        Raises
+        ------
+        FetchError
+            If the fetch operation fails due to an error.
         """
         pass
 

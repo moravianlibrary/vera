@@ -7,13 +7,13 @@ from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.document import Priority
 from definitions.permission import OwnershipPermission
 from repositories import DocumentRepository
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.document import (
     Document,
     DocumentExportParams,
     DocumentsSyncParams,
 )
 from schemas.task import Task, TaskScheduleParams
-from schemas.user import AuthenticatedUser
 from services.document import DocumentService
 
 from .resources import (
@@ -46,7 +46,7 @@ def search(
 @router.post(
     "/export",
     dependencies=[WithPermission(OwnershipPermission.ReadDocuments)],
-    response_model=FileResponse,
+    response_class=FileResponse,
 )
 def export(
     export_params: Annotated[DocumentExportParams, Query()],
@@ -109,13 +109,17 @@ def change_priority(
     dependencies=[WithPermission(OwnershipPermission.ManageDocuments)],
     response_model=Task,
 )
-def change_decline_digitization(
+def set_decline_digitization(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageDocuments),
-    decline: bool = Query(...),
+    decline: bool = Query(
+        ...,
+        description="Set to true to decline digitization, "
+        "false to cancel previous declination",
+    ),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.change_decline_digitization(query, decline, user.id)
+    return service.set_decline_digitization(query, decline, user.id)
 
 
 @router.post(

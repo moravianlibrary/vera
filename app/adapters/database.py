@@ -2,8 +2,7 @@ from functools import wraps
 from typing import Any, Callable
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from config import VeraConfig
 
@@ -29,7 +28,9 @@ DatabaseSessionFactory = sessionmaker(
     autocommit=False, autoflush=False, bind=DatabaseEngine
 )
 
-BaseModel: DeclarativeMeta = declarative_base()
+
+class BaseModel(DeclarativeBase):
+    pass
 
 
 def get_database_session():

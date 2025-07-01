@@ -93,11 +93,6 @@ class SearchResultResponse(NamedTuple):
     page_size: int
 
 
-class NotImplementedException(Exception):
-    def __init__(self, message: str):
-        super().__init__(message)
-
-
 class CatalogAdapterPlugin(ExternalResourcePluginBase):
     """
     Abstract base class for catalog adapter plugins.
@@ -163,7 +158,7 @@ class CatalogAdapterPlugin(ExternalResourcePluginBase):
         NotImplementedException
             If change fetching is not supported by the plugin.
         """
-        raise NotImplementedException(
+        raise NotImplementedError(
             "fetch_changes not implemented in this plugin"
         )
 
@@ -186,4 +181,4 @@ class CatalogAdapterPlugin(ExternalResourcePluginBase):
         NotImplementedException
             If search is not supported by the plugin.
         """
-        raise NotImplementedException("search not implemented in this plugin")
+        raise NotImplementedError("search not implemented in this plugin")

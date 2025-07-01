@@ -1,7 +1,7 @@
 from repositories.category import CategoryRepository
 from repositories.category_proportion import CategoryProportionRepository
 from repositories.distribution import DistributionRepository
-from schemas.category import Distribution, DistributionEditWithProportions
+from schemas.distribution import Distribution, DistributionEditWithProportions
 
 
 class DistributionService:

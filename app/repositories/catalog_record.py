@@ -1,8 +1,8 @@
 from typing import List
 
 from marcdantic import MarcRecord
-from requests import Session
 
+from adapters.database import DatabaseSession
 from definitions.identifier import IdentifierType
 
 from ._base import BaseRepository
@@ -18,7 +18,7 @@ class CatalogRecordRepository(
     SaveMixin[CatalogRecordModel],
     GetByIdMixin[CatalogRecordModel, str],
 ):
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: DatabaseSession):
         super().__init__(db_session, CatalogRecordModel, "Catalog Record")
 
     def create(

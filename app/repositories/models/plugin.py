@@ -11,11 +11,12 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy.orm import Mapped, relationship
+from vera_plugins.definitions.plugin_types import PluginState, PluginType
 
 from adapters.database import BaseModel
-from custom_types import PluginState, PluginType
 
-from .mixins import CreatedAuditMixin, UpdatedAuditMixin
+from .mixins.created_audit import CreatedAuditMixin
+from .mixins.updated_audit import UpdatedAuditMixin
 
 
 class PluginModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
@@ -53,6 +54,6 @@ class PluginInstanceModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
         "PluginModel", backref="instances"
     )
 
-    @hybrid_property
-    def state(self) -> PluginState:
-        return
+    # @hybrid_property
+    # def state(self) -> PluginState:
+    #     return

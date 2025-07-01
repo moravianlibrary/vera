@@ -5,6 +5,7 @@ from fastapi import APIRouter, Path, Query
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories.task import ScheduledTaskRepository, TaskItemRepository
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import Page, PageParams
 from schemas.task import (
     ScheduledTask,
@@ -13,7 +14,6 @@ from schemas.task import (
     TaskItemsFilterParams,
     TaskScheduleParams,
 )
-from schemas.user import AuthenticatedUser
 from services.task import ScheduledTaskService, TaskService
 
 from .resources import (

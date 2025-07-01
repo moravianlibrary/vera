@@ -3,6 +3,8 @@ from typing import Any, Dict, List
 from pydantic import BaseModel
 from vera_plugins.definitions.plugin_types import PluginType
 
+from adapters.indexer import Boolean, IndexerEntity, Integer, Keyword
+
 
 class PluginsFilterParams(BaseModel):
     name: str | None = None
@@ -48,4 +50,23 @@ class PluginInstance(BaseModel):
 
 class PluginInstanceSummary(BaseModel):
     pass
-    pass
+
+
+# --------------------
+# - Indexer Entities -
+# --------------------
+class PluginProperty(IndexerEntity):
+    plugin_instance_id: Keyword
+    name: Keyword
+
+
+class StringPluginProperty(PluginProperty):
+    value: Keyword | None = None
+
+
+class IntegerPluginProperty(PluginProperty):
+    value: Integer | None = None
+
+
+class BooleanPluginProperty(PluginProperty):
+    value: Boolean | None = None

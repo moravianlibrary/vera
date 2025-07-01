@@ -1,7 +1,6 @@
 from typing import Optional
 
-from requests import Session
-
+from adapters.database import DatabaseSession
 from adapters.indexer import IndexerQuery
 from config import VeraConfig
 from definitions.json import JsonArray, JsonObject
@@ -22,7 +21,7 @@ class TaskRepository(
     GetByIdMixin[TaskModel, int],
     SaveMixin[TaskModel],
 ):
-    def __init__(self, db_session: Session):
+    def __init__(self, db_session: DatabaseSession):
         super().__init__(db_session, TaskModel, "Task")
 
     def create(

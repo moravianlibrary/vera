@@ -6,9 +6,10 @@ from vera_plugins.tools.registry import PluginRegistry
 from definitions.permission import GeneralPermission
 from repositories.role import RoleRepository
 from repositories.user import UserRepository
+from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import Page
 from schemas.role import Permissions
-from schemas.user import AuthenticatedUser, User
+from schemas.user import UserSummary
 
 AuthScheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
@@ -146,7 +147,7 @@ class IdentityProvider:
         username: str | None,
         page: int,
         page_size: int,
-    ) -> Page[User]:
+    ) -> Page[UserSummary]:
         """
         Paginate users from the identity provider.
 
@@ -172,7 +173,7 @@ class IdentityProvider:
         role_name: str | None,
         page: int,
         page_size: int,
-    ) -> Page[User]:
+    ) -> Page[UserSummary]:
         """
         Paginate roles from the identity provider.
 
