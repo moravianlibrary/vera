@@ -1,14 +1,14 @@
 from typing import List, Optional, Set
 
+from models import Category, Distribution
 from pydantic import BaseModel, SerializeAsAny, ValidationInfo, field_validator
 
-from models import Category, Distribution
 from services.exceptions import (
     DistributionExcesiveSubcategoriesException,
     InvalidDistributionSumException,
 )
 
-from .base_es_model import BaseEsModel, Boolean, Integer, Keyword, Text
+from .base_es_model import BaseEsModel, Text, bool, int, str
 from .departments import IndexDepartment
 
 
@@ -43,18 +43,18 @@ class CategoryResponse(CategoryCreate):
 class IndexCategory(BaseEsModel):
     __index_name__ = "categories"
 
-    id: Integer
-    name: Keyword
+    id: int
+    name: str
     description: Optional[Text] = None
 
-    parent_id: Optional[Integer] = None
-    level: Integer
+    parent_id: Optional[int] = None
+    level: int
 
-    assignable: Boolean = False
-    disabled: Boolean = False
+    assignable: bool = False
+    disabled: bool = False
 
     assigned_to_department: Optional[IndexDepartment] = None
-    assigned_to_user: Optional[Keyword] = None
+    assigned_to_user: Optional[str] = None
 
 
 Categories = List[SerializeAsAny[CategoryResponse]]

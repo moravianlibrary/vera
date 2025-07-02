@@ -5,6 +5,7 @@ cachetools
 celery
 coverage
 elasticsearch
+pyesorm
 fastapi
 lxml
 openpyxl

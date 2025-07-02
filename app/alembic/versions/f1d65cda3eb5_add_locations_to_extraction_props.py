@@ -6,10 +6,10 @@ Create Date: 2024-04-30 15:10:01.051320
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import ARRAY
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "f1d65cda3eb5"
@@ -21,7 +21,7 @@ depends_on = None
 def upgrade() -> None:
     op.add_column(
         "generated_extractions",
-        sa.Column("location_ids", ARRAY(sa.Integer), server_default="{}"),
+        sa.Column("location_ids", ARRAY(sa.int), server_default="{}"),
     )
 
 

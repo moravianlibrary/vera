@@ -6,9 +6,9 @@ Create Date: 2024-07-02 16:00:52.447653
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "80a0a683bc0f"
@@ -29,7 +29,7 @@ def upgrade() -> None:
         "documents",
         sa.Column(
             "extraction_priority",
-            sa.Integer,
+            sa.int,
             nullable=False,
             server_default=sa.text("3"),
             comment="Priority of extraction (1-5)",

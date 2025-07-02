@@ -1,20 +1,20 @@
 from typing import List, Optional, Tuple
 
+from datatypes import IntentionClassification
 from sqlalchemy import (
-    Boolean,
     Column,
     Float,
     ForeignKey,
-    Integer,
     PrimaryKeyConstraint,
     String,
     UniqueConstraint,
+    bool,
     func,
+    int,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, Query, Session, relationship
 
-from datatypes import IntentionClassification
 from services.exceptions import (
     CategoryInDistributionDeletionException,
     EditingPreviousDistributionForbiddenException,
@@ -37,7 +37,7 @@ class CategoryModel(BaseModel):
     name = Column(String, nullable=False)
     description = Column(String)
     parent_id = Column(
-        Integer, ForeignKey("categories.id"), index=True, nullable=True
+        int, ForeignKey("categories.id"), index=True, nullable=True
     )
     level = Column(Integer, default=0, nullable=False)
     assignable = Column(Boolean, default=False, nullable=False)

@@ -1,13 +1,14 @@
 import re
 from typing import List
-from schemas import Frequency
+
+from datatypes import KrameriusModel, SolrField
 from kramerius.client import KrameriusApi
 from kramerius.document import KrameriusDocument
 from kramerius.search import KrameriusSearch, SearchQuery
-from datatypes import KrameriusModel, SolrField
 from predictions.frequency_parser import parse_frequency
-from services.csv_writer import CsvWriter
 
+from schemas import Frequency
+from services.csv_writer import CsvWriter
 
 NS_MODS = {"mods": "http://www.loc.gov/mods/v3"}
 
@@ -17,7 +18,7 @@ FL_PERIODICAL = [
     SolrField.PublishersFacet,
     SolrField.PublicationPlacesFacet,
     SolrField.LanguagesFacet,
-    SolrField.KeywordsFacet,
+    SolrField.strsFacet,
 ]
 
 FL_VOLUME = [
@@ -29,7 +30,7 @@ FL_VOLUME = [
     SolrField.PublishersFacet,
     SolrField.PublicationPlacesFacet,
     SolrField.LanguagesFacet,
-    SolrField.KeywordsFacet,
+    SolrField.strsFacet,
 ]
 
 FL_SUB_VOLUMES = [
@@ -37,14 +38,14 @@ FL_SUB_VOLUMES = [
     SolrField.Model,
     SolrField.PartNumberSort,
     SolrField.PagesCount,
-    SolrField.KeywordsFacet,
+    SolrField.strsFacet,
 ]
 
 FL_ITEM = [
     SolrField.Pid,
     SolrField.PartNumberSort,
     SolrField.PagesCount,
-    SolrField.KeywordsFacet,
+    SolrField.strsFacet,
 ]
 
 VOLUMES_CSV_HEADER = [
@@ -55,7 +56,7 @@ VOLUMES_CSV_HEADER = [
     "Publisher",
     "Publication place",
     "Language",
-    "Keywords",
+    "strs",
     "Pages count",
 ]
 
@@ -66,7 +67,7 @@ ITEMS_CSV_HEADER = [
     "Publisher",
     "Publication place",
     "Language",
-    "Keywords",
+    "strs",
     "Pages count",
 ]
 

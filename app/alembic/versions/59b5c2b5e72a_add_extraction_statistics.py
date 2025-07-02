@@ -6,9 +6,9 @@ Create Date: 2024-02-19 16:30:09.668694
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "59b5c2b5e72a"
@@ -21,19 +21,19 @@ def upgrade() -> None:
     op.add_column(
         "extractions",
         sa.Column(
-            "marked", sa.Boolean(), nullable=True, server_default=sa.false()
+            "marked", sa.bool(), nullable=True, server_default=sa.false()
         ),
     )
     op.add_column(
-        "extractions", sa.Column("target_pages", sa.Integer(), nullable=True)
+        "extractions", sa.Column("target_pages", sa.int(), nullable=True)
     )
     op.add_column(
         "extractions",
-        sa.Column("extracted_pages", sa.Integer(), nullable=True),
+        sa.Column("extracted_pages", sa.int(), nullable=True),
     )
     op.add_column(
         "extractions",
-        sa.Column("document_ids", sa.ARRAY(sa.Integer()), nullable=True),
+        sa.Column("document_ids", sa.ARRAY(sa.int()), nullable=True),
     )
 
 

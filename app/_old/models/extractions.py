@@ -1,17 +1,19 @@
+from typing import List
+
+from exceptions import EmptyExtractionException
 from sqlalchemy import (
+    JSON,
+    TIMESTAMP,
     Column,
     Float,
-    Integer,
-    String,
-    TIMESTAMP,
-    JSON,
     ForeignKey,
+    String,
+    func,
+    int,
 )
-from sqlalchemy import func
 from sqlalchemy.orm import relationship
+
 from .base import BaseModel
-from exceptions import EmptyExtractionException
-from typing import List
 
 
 class Extraction(BaseModel):
@@ -80,13 +82,13 @@ class ExtractionDocument(BaseModel):
     __tablename__ = "extraction_documents"
 
     extraction_id = Column(
-        Integer,
+        int,
         ForeignKey("generated_extractions.id"),
         primary_key=True,
         index=True,
     )
     document_id = Column(
-        Integer, ForeignKey("documents.id"), primary_key=True, index=True
+        int, ForeignKey("documents.id"), primary_key=True, index=True
     )
 
     extraction = relationship("Extraction", back_populates="documents")

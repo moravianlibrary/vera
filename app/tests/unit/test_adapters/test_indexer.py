@@ -1,0 +1,351 @@
+from unittest import IsolatedAsyncioTestCase
+from unittest.mock import AsyncMock
+
+from esorm import ESModel, es, setup_mappings
+
+from schemas.addition import Addition
+from schemas.category import Category
+from schemas.digitization_list import DigitizationList
+from schemas.document import Document
+from schemas.intention import Intention
+from schemas.project import Project
+from schemas.proposal import Proposal
+
+
+class TestIndexSchemaContext:
+    def __init__(self) -> None:
+        self.init_done: bool = False
+        self.num_indexes: int = 7
+
+    async def setUp(self):
+        if self.init_done:
+            return
+
+        self.mock_client = AsyncMock()
+
+        self.mock_client.indices.get_mapping = AsyncMock()
+        self.mock_client.indices.get_mapping.return_value = {}
+
+        self.mock_client.indices.create = AsyncMock()
+        self.mock_client.indices.put_mapping = AsyncMock()
+
+        es.set_client(self.mock_client)
+
+        await setup_mappings()
+
+        self.init_done = True
+
+
+class TestIndexSchema(IsolatedAsyncioTestCase):
+    context = TestIndexSchemaContext()
+
+    async def asyncSetUp(self):
+        await self.context.setUp()
+
+        self.assertEqual(
+            self.context.mock_client.indices.get_mapping.await_count,
+            self.context.num_indexes,
+        )
+        self.assertEqual(
+            self.context.mock_client.indices.create.await_count,
+            self.context.num_indexes,
+        )
+        self.context.mock_client.indices.put_mapping.assert_not_awaited()
+
+        self.maxDiff = None
+
+    async def assertEsSchema(self, schema_class: ESModel, expected_properties):
+        self.assertIsNotNone(
+            schema_class.ESConfig.index, "Index name must be defined"
+        )
+
+        called_kwargs = [
+            kwargs
+            for _, kwargs in (
+                self.context.mock_client.indices.create.call_args_list
+            )
+            if kwargs.get("index") == schema_class.ESConfig.index
+        ]
+
+        self.assertEqual(
+            len(called_kwargs),
+            1,
+            f"Index {schema_class.ESConfig.index} should be created once",
+        )
+        self.assertDictEqual(
+            called_kwargs[0]["mappings"]["properties"],
+            expected_properties,
+            "ES schema properties do not match expected properties",
+        )
+
+    async def test_addition_schema(self):
+        await self.assertEsSchema(
+            Addition,
+            {
+                "batch_id": {"type": "long"},
+                "batch_name": {"type": "keyword"},
+                "file_name": {"type": "keyword"},
+                "created_by": {"type": "keyword"},
+                "created_at": {"type": "date"},
+                "is_archived": {"type": "boolean"},
+                "identifier_type": {"type": "keyword"},
+                "identifier_value": {"type": "keyword"},
+                "category_id": {"type": "long"},
+                "priority": {"type": "keyword"},
+                "allow_new_iteration": {"type": "boolean"},
+                "ignore_digitization_check": {"type": "boolean"},
+                "status": {"type": "keyword"},
+                "eligibility_status": {"type": "keyword"},
+                "project": {
+                    "properties": {
+                        "id": {"type": "long"},
+                        "name": {"type": "keyword"},
+                        "description": {"type": "keyword"},
+                    }
+                },
+                "proposal": {
+                    "properties": {
+                        "id": {"type": "long"},
+                        "batch_id": {"type": "long"},
+                        "batch_name": {"type": "keyword"},
+                        "file_name": {"type": "keyword"},
+                        "reason_message": {"type": "keyword"},
+                    }
+                },
+            },
+        )
+
+    async def test_category_schema(self):
+        await self.assertEsSchema(
+            Category,
+            {
+                "name": {"type": "keyword"},
+                "description": {"type": "keyword"},
+                "parent_id": {"type": "long"},
+                "level": {"type": "keyword"},
+                "assignable": {"type": "boolean"},
+                "extract_whole": {"type": "boolean"},
+                "disabled": {"type": "boolean"},
+                "archived": {"type": "boolean"},
+                "assigned_groups": {
+                    "type": "nested",
+                    "properties": {
+                        "id": {"type": "long"},
+                        "name": {"type": "keyword"},
+                    },
+                },
+                "assigned_users": {
+                    "type": "nested",
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "username": {"type": "keyword"},
+                    },
+                },
+                "indirect_groups": {
+                    "type": "nested",
+                    "properties": {
+                        "id": {"type": "long"},
+                        "name": {"type": "keyword"},
+                    },
+                },
+                "indirect_users": {
+                    "type": "nested",
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "username": {"type": "keyword"},
+                    },
+                },
+                "proportions": {
+                    "type": "nested",
+                    "properties": {
+                        "distribution_id": {"type": "long"},
+                        "proportion": {"type": "double"},
+                        "overall_proportion": {"type": "double"},
+                    },
+                },
+                "count_total_pages": {"type": "long"},
+                "count_total_documents": {"type": "long"},
+                "count_extractable_pages": {"type": "long"},
+                "count_extractable_documents": {"type": "long"},
+                "count_extracted_pages": {"type": "long"},
+                "count_extracted_documents": {"type": "long"},
+                "document_discovery": {
+                    "properties": {
+                        "id": {"type": "long"},
+                        "scheduled_task_id": {"type": "long"},
+                    }
+                },
+            },
+        )
+
+    async def test_digitization_list_schema(self):
+        await self.assertEsSchema(
+            DigitizationList,
+            {
+                "state": {"type": "keyword"},
+                "intentions": {
+                    "type": "nested",
+                    "properties": {
+                        "id": {"type": "long"},
+                        "name": {"type": "keyword"},
+                    },
+                },
+                "count_documents": {"type": "long"},
+                "count_pages": {"type": "long"},
+                "created_at": {"type": "date"},
+                "created_by": {"type": "keyword"},
+            },
+        )
+
+    async def test_document_schema(self):
+        self.assertEsSchema(
+            Document,
+            {
+                "catalog_record_id": {"type": "keyword"},
+                "catalog_record_valid": {"type": "boolean"},
+                "iteration_id": {"type": "long"},
+                "iteration": {"type": "long"},
+                "barcode": {"type": "keyword"},
+                "volume_number": {"type": "keyword"},
+                "volume_year": {"type": "keyword"},
+                "bundle": {"type": "keyword"},
+                "issuance_type": {"type": "keyword"},
+                "digitization_state": {"type": "keyword"},
+                "digitization_records": {
+                    "type": "nested",
+                    "properties": {
+                        "registry_record_id": {"type": "keyword"},
+                        "record_state": {"type": "keyword"},
+                        "registry_issue_id": {"type": "keyword"},
+                        "issue_state": {"type": "keyword"},
+                        "link": {"type": "keyword"},
+                        "error_message": {"type": "keyword"},
+                    },
+                },
+                "page_count": {"type": "long"},
+                "page_count_manual": {"type": "long"},
+                "category_id": {"type": "long"},
+                "priority": {"type": "long"},
+                "digitization_list_id": {"type": "long"},
+                "can_be_extracted": {"type": "boolean"},
+                "is_archived": {"type": "boolean"},
+            },
+        )
+
+    async def test_intention_schema(self):
+        await self.assertEsSchema(
+            Intention,
+            {
+                "name": {"type": "keyword"},
+                "description": {"type": "keyword"},
+                "target_page_count": {"type": "long"},
+                "start_date": {"type": "date"},
+                "end_date": {"type": "date"},
+                "project": {
+                    "properties": {
+                        "id": {"type": "long"},
+                        "name": {"type": "keyword"},
+                        "created_by": {"type": "keyword"},
+                        "status": {"type": "keyword"},
+                        "is_archived": {"type": "boolean"},
+                    }
+                },
+                "is_archived": {"type": "boolean"},
+            },
+        )
+
+    async def test_project_schema(self):
+        await self.assertEsSchema(
+            Project,
+            {
+                "name": {"type": "keyword"},
+                "description": {"type": "keyword"},
+                "target_page_count": {"type": "long"},
+                "start_date": {"type": "date"},
+                "end_date": {"type": "date"},
+                "created_by": {"type": "keyword"},
+                "created_at": {"type": "date"},
+                "status": {"type": "keyword"},
+                "is_archived": {"type": "boolean"},
+                "categories": {
+                    "type": "nested",
+                    "properties": {
+                        "id": {"type": "long"},
+                        "name": {"type": "keyword"},
+                        "path_id": {"type": "long"},
+                        "path_name": {"type": "keyword"},
+                        "assignable": {"type": "boolean"},
+                        "disabled": {"type": "boolean"},
+                    },
+                },
+                "groups": {
+                    "type": "nested",
+                    "properties": {
+                        "id": {"type": "long"},
+                        "name": {"type": "keyword"},
+                    },
+                },
+                "users": {
+                    "type": "nested",
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "username": {"type": "keyword"},
+                    },
+                },
+                "status_log": {
+                    "type": "nested",
+                    "properties": {
+                        "status": {"type": "keyword"},
+                        "message": {"type": "keyword"},
+                        "updated_by": {"type": "keyword"},
+                        "updated_at": {"type": "date"},
+                    },
+                },
+            },
+        )
+
+    async def test_proposal_schema(self):
+        await self.assertEsSchema(
+            Proposal,
+            {
+                "batch_id": {"type": "long"},
+                "batch_name": {"type": "keyword"},
+                "file_name": {"type": "keyword"},
+                "created_by": {"type": "keyword"},
+                "created_at": {"type": "date"},
+                "is_archived": {"type": "boolean"},
+                "identifier_type": {"type": "keyword"},
+                "identifier_value": {"type": "keyword"},
+                "reason_message": {"type": "keyword"},
+                "category": {
+                    "properties": {
+                        "id": {"type": "long"},
+                        "name": {"type": "keyword"},
+                        "path_id": {"type": "long"},
+                        "path_name": {"type": "keyword"},
+                        "assignable": {"type": "boolean"},
+                        "disabled": {"type": "boolean"},
+                    }
+                },
+                "project": {
+                    "properties": {
+                        "id": {"type": "long"},
+                        "name": {"type": "keyword"},
+                        "created_by": {"type": "keyword"},
+                        "status": {"type": "keyword"},
+                        "is_archived": {"type": "boolean"},
+                    }
+                },
+                "status": {"type": "keyword"},
+                "eligibility_status": {"type": "keyword"},
+                "status_log": {
+                    "type": "nested",
+                    "properties": {
+                        "status": {"type": "keyword"},
+                        "message": {"type": "keyword"},
+                        "updated_by": {"type": "keyword"},
+                        "updated_at": {"type": "date"},
+                    },
+                },
+            },
+        )

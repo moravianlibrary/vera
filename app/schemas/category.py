@@ -1,8 +1,9 @@
 from typing import List
 
+from esorm import ESBaseModel, ESModel
 from pydantic import BaseModel, model_validator
 
-from adapters.indexer import Boolean, Float, IndexerEntity, Integer, Keyword
+from definitions.category import Level
 from schemas.group import GroupSummary
 from schemas.user import UserSummary
 
@@ -39,33 +40,43 @@ class CategoryEdit(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class CategoryProportion(IndexerEntity):
-    distribution_id: Integer
-    proportion: Float
-    overall_proportion: Float
+class CategorySummary(ESBaseModel):
+    id: int
+
+    name: str
+    path_id: List[int]
+    path_name: List[str]
+
+    assignable: bool
+    disabled: bool
 
 
-class DocumentDiscovery(IndexerEntity):
-    id: Integer
-    scheduled_task_id: Integer | None
+class CategoryProportion(ESBaseModel):
+    distribution_id: int
+    proportion: float
+    overall_proportion: float
 
 
-class CategorySummary(IndexerEntity):
-    id: Integer
-
-    name: Keyword
-    parent_id: Integer | None
-
-    assignable: Boolean
-    disabled: Boolean
+class DocumentDiscovery(ESBaseModel):
+    id: int
+    scheduled_task_id: int | None
 
 
-class Category(IndexerEntity):
-    description: Keyword | None
-    level: Integer
+class Category(ESModel):
+    class ESConfig:
+        index = "categories"
 
-    extract_whole: Boolean
-    archived: Boolean
+    id: int
+
+    name: str
+    description: str | None
+    parent_id: int | None
+    level: Level
+
+    assignable: bool
+    extract_whole: bool
+    disabled: bool
+    archived: bool
 
     assigned_groups: List[GroupSummary]
     assigned_users: List[UserSummary]
@@ -74,11 +85,11 @@ class Category(IndexerEntity):
 
     proportions: List[CategoryProportion]
 
-    count_total_pages: Integer
-    count_total_documents: Integer
-    count_extractable_pages: Integer
-    count_extractable_documents: Integer
-    count_extracted_pages: Integer
-    count_extracted_documents: Integer
+    count_total_pages: int
+    count_total_documents: int
+    count_extractable_pages: int
+    count_extractable_documents: int
+    count_extracted_pages: int
+    count_extracted_documents: int
 
     document_discovery: DocumentDiscovery | None

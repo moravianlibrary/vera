@@ -6,10 +6,11 @@ Create Date: 2024-05-30 10:14:43.833317
 
 """
 
-from alembic import op
-import sqlalchemy as sa
 from datetime import datetime, timedelta
 
+import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "e2c92e404c1a"
@@ -25,10 +26,10 @@ def upgrade() -> None:
 
     op.create_table(
         "intentions",
-        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.int(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
-        sa.Column("target_page_count", sa.Integer(), nullable=False),
+        sa.Column("target_page_count", sa.int(), nullable=False),
         sa.Column("start_date", sa.Date(), nullable=False),
         sa.Column("end_date", sa.Date(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
@@ -37,13 +38,13 @@ def upgrade() -> None:
         "distributions",
         sa.Column(
             "intention_id",
-            sa.Integer(),
+            sa.int(),
             sa.ForeignKey("intentions.id"),
             index=True,
         ),
         sa.Column(
             "category_id",
-            sa.Integer(),
+            sa.int(),
             sa.ForeignKey("categories.id"),
             index=True,
         ),

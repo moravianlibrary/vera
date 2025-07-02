@@ -1,15 +1,9 @@
+from datetime import datetime
 from typing import List
 
+from esorm import ESBaseModel, ESModel
 from pydantic import BaseModel, Field
 
-from adapters.indexer import (
-    Boolean,
-    Date,
-    Enumerate,
-    IndexerEntity,
-    Integer,
-    Keyword,
-)
 from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
 from definitions.identifier import IdentifierType
@@ -38,35 +32,39 @@ class ProposalCreate(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class ProposalStatusLog(IndexerEntity):
-    status: Enumerate[ProposalStatus]
-    updated_at: Date
-    updated_by: Keyword
+class ProposalStatusLog(ESBaseModel):
+    status: ProposalStatus
+    message: str | None = None
+    updated_by: str
+    updated_at: datetime
 
 
-class Proposal(IndexerEntity):
-    id: Integer
+class Proposal(ESModel):
+    class ESConfig:
+        index = "proposals"
 
-    batch_id: Integer
-    batch_name: Keyword | None = None
-    file_name: Keyword | None = None
-    created_by: Keyword
-    created_at: Date
-    is_archived: Boolean
+    id: int
 
-    identifier_type: Enumerate[IdentifierType]
-    identifier_value: Keyword
+    batch_id: int
+    batch_name: str | None
+    file_name: str | None
+    created_by: str
+    created_at: datetime
+    is_archived: bool
 
-    reason_message: Keyword | None
+    identifier_type: IdentifierType
+    identifier_value: str
+
+    reason_message: str | None
 
     category: CategorySummary | None
 
     project: ProjectSummary | None
 
-    status: Enumerate[ProposalStatus]
-    eligibility_status: Enumerate[EligibilityStatus] | None
+    status: ProposalStatus
+    eligibility_status: EligibilityStatus | None
 
-    status_logs: List[ProposalStatusLog]
+    status_log: List[ProposalStatusLog]
 
 
 # -------------

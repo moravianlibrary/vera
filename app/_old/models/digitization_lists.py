@@ -1,12 +1,12 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP
-from sqlalchemy import ForeignKey
-from sqlalchemy import func
-from sqlalchemy.orm import relationship, Session
-from sqlalchemy.ext.hybrid import hybrid_property
 from typing import List, Set
+
+from datatypes import DigitizationState
+from sqlalchemy import TIMESTAMP, Column, ForeignKey, Integer, String, func
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import Session, relationship
+
 from .base import BaseModel
 from .documents import Document
-from datatypes import DigitizationState
 
 
 class DigitizationList(BaseModel):

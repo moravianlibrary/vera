@@ -1,16 +1,9 @@
 from datetime import datetime
 from typing import List
 
+from esorm import ESBaseModel, ESModel
 from pydantic import BaseModel
 
-from adapters.indexer import (
-    Boolean,
-    Date,
-    Enumerate,
-    IndexerEntity,
-    Integer,
-    Keyword,
-)
 from definitions.identifier import IdentifierType
 from definitions.project import ProjectStatus
 from schemas.addition import AdditionBatchParams
@@ -46,36 +39,46 @@ class ProjectAdditionCreate(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class ProjectStatusLog(IndexerEntity):
-    status: Enumerate[ProjectStatus]
-    message: Keyword | None
-    updated_at: Date
-    updated_by: Keyword
+class ProjectStatusLog(ESBaseModel):
+    status: ProjectStatus
+    message: str | None
+    updated_at: datetime
+    updated_by: str
 
 
-class ProjectSummary(IndexerEntity):
-    id: Integer
+class ProjectSummary(ESBaseModel):
+    id: int
 
-    name: Keyword
+    name: str
 
-    created_by: Keyword
+    created_by: str
 
-    status: Enumerate[ProjectStatus]
-    is_archived: Boolean
+    status: ProjectStatus
+    is_archived: bool
 
 
-class Project(ProjectSummary):
-    description: Keyword | None
+class Project(ESModel):
+    class ESConfig:
+        index = "projects"
 
-    target_page_count: Integer | None
-    start_date: Date | None
-    end_date: Date | None
+    id: int
 
-    created_at: Date
+    name: str
+    description: str | None
+
+    target_page_count: int | None
+    start_date: datetime | None
+    end_date: datetime | None
+
+    created_by: str
+    created_at: datetime
+
+    status: ProjectStatus
+    is_archived: bool
 
     categories: List[CategorySummary]
 
     groups: List[GroupSummary]
     users: List[UserSummary]
 
-    status_logs: List[ProjectStatusLog]
+    status_log: List[ProjectStatusLog]

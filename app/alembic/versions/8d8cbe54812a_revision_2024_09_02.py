@@ -6,9 +6,10 @@ Create Date: 2024-09-30 16:51:39.443212
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "8d8cbe54812a"
@@ -69,7 +70,7 @@ def upgrade() -> None:
     op.alter_column(
         "digitization_lists",
         "intention_id",
-        existing_type=sa.INTEGER(),
+        existing_type=sa.int(),
         nullable=False,
     )
     op.alter_column(
@@ -112,7 +113,7 @@ def downgrade() -> None:
         "digitization_lists",
         sa.Column(
             "document_ids",
-            postgresql.ARRAY(sa.INTEGER()),
+            postgresql.ARRAY(sa.int()),
             autoincrement=False,
             nullable=True,
         ),
@@ -120,7 +121,7 @@ def downgrade() -> None:
     op.add_column(
         "digitization_lists",
         sa.Column(
-            "extracted_pages", sa.INTEGER(), autoincrement=False, nullable=True
+            "extracted_pages", sa.int(), autoincrement=False, nullable=True
         ),
     )
     op.alter_column(
@@ -132,7 +133,7 @@ def downgrade() -> None:
     op.alter_column(
         "digitization_lists",
         "intention_id",
-        existing_type=sa.INTEGER(),
+        existing_type=sa.int(),
         nullable=True,
     )
     op.drop_index(op.f("ix_departments_id"), table_name="departments")

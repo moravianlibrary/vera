@@ -3,7 +3,7 @@ from typing import Generator, Generic, List, Optional
 from pydantic import BaseModel
 
 from adapters.indexer import (
-    IndexerEntityType,
+    ESBaseModelType,
     IndexerQuery,
     IndexerRequest,
     IndexerResponse,
@@ -88,10 +88,10 @@ class GetByIdsMixin(Generic[DatabaseEntity, IdType]):
         )
 
 
-class GetByQueryMixin(Generic[IndexerEntityType]):
+class GetByQueryMixin(Generic[ESBaseModelType]):
     def get_by_query(
         self: RepositoryContext, query: IndexerQuery
-    ) -> Generator[IndexerEntityType, None, None]:
+    ) -> Generator[ESBaseModelType, None, None]:
         scroll_id = None
 
         while True:
@@ -201,17 +201,17 @@ class ArchiveOnDeleteMixin(Generic[DatabaseEntity]):
         return entity
 
 
-class SearchMixin(Generic[IndexerEntityType]):
+class SearchMixin(Generic[ESBaseModelType]):
     def search(
         self: RepositoryContext, request: IndexerRequest
     ) -> IndexerResponse:
         return self._indexer_session.search(request)
 
 
-class SearchAllMixin(Generic[IndexerEntityType]):
+class SearchAllMixin(Generic[ESBaseModelType]):
     def search_all(
         self: RepositoryContext, query: IndexerQuery
-    ) -> Generator[IndexerEntityType, None, None]:
+    ) -> Generator[ESBaseModelType, None, None]:
         scroll_id = None
 
         while True:

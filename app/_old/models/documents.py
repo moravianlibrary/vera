@@ -1,23 +1,6 @@
 from datetime import datetime
-from typing import Optional, List, Dict, Set
-from sqlalchemy.orm import relationship, Session, joinedload
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy import (
-    CheckConstraint,
-    Column,
-    Enum,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-    TIMESTAMP,
-    UniqueConstraint,
-    func,
-    or_,
-)
+from typing import Dict, List, Optional, Set
 
-from mzk_aleph import IssuanceType
-from services.external.digitization_registry import DigitizationState
 from exceptions import (
     CannotExtractDocumentWithInvalidCnb,
     CannotExtractDocumentWithInvalidMainRecord,
@@ -25,8 +8,27 @@ from exceptions import (
     DocumentAlreadyExtractedException,
     ExtractingDocumentsWithDigitizationStateDisabled,
 )
-from .catalog_records import CatalogRecord
+from mzk_aleph import IssuanceType
+from sqlalchemy import (
+    TIMESTAMP,
+    CheckConstraint,
+    Column,
+    Enum,
+    ForeignKey,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+    int,
+    or_,
+)
+from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import Session, joinedload, relationship
+
+from services.external.digitization_registry import DigitizationState
+
 from .base import BaseModel
+from .catalog_records import CatalogRecord
 
 
 class Document(BaseModel):
@@ -64,7 +66,7 @@ class Document(BaseModel):
 
     dedicated_scanner = Column(String)
     extraction_priority = Column(
-        Integer,
+        int,
         CheckConstraint(
             "extraction_priority >= 1 AND extraction_priority <= 5"
         ),
@@ -72,7 +74,7 @@ class Document(BaseModel):
         default=3,
     )
     digitization_list_id = Column(
-        Integer, ForeignKey("digitization_lists.id"), index=True
+        int, ForeignKey("digitization_lists.id"), index=True
     )
 
     catalog_record = relationship("CatalogRecord", back_populates="documents")
@@ -352,7 +354,7 @@ class DocumentComment(BaseModel):
 
     id = Column(Integer, primary_key=True, index=True)
     document_id = Column(
-        Integer, ForeignKey("documents.id", ondelete="CASCADE"), index=True
+        int, ForeignKey("documents.id", ondelete="CASCADE"), index=True
     )
     username = Column(String, index=True)
     text = Column(Text)

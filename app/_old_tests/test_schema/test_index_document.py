@@ -1,5 +1,6 @@
-from .base import TestSchemaBase
 from schemas import IndexDocument
+
+from .base import TestSchemaBase
 
 
 class TestIndexDocument(TestSchemaBase):
@@ -12,16 +13,16 @@ class TestIndexDocument(TestSchemaBase):
                     "_meta": {"index.version": "v2024.10-1"},
                     "dynamic": "strict",
                     "properties": {
-                        "id": {"type": "integer"},
+                        "id": {"type": "int"},
                         # Main identifiers
                         "sysno": {"type": "keyword"},
                         "barcode": {"type": "keyword"},
                         "volume": {"type": "keyword"},
-                        "volume_number": {"type": "integer"},
+                        "volume_number": {"type": "int"},
                         "volume_year": {"type": "keyword"},
-                        "volume_year_number": {"type": "integer"},
+                        "volume_year_number": {"type": "int"},
                         "bundle": {"type": "keyword"},
-                        "bundle_number": {"type": "integer"},
+                        "bundle_number": {"type": "int"},
                         # Librarian identifiers
                         "cnb": {"type": "keyword"},
                         "signature": {"type": "keyword"},
@@ -30,30 +31,30 @@ class TestIndexDocument(TestSchemaBase):
                         "added_at": {"type": "date"},
                         "indexed_at": {"type": "date"},
                         "added_by": {"type": "keyword"},
-                        "category_id": {"type": "integer"},
-                        "category_ids": {"type": "integer"},
+                        "category_id": {"type": "int"},
+                        "category_ids": {"type": "int"},
                         "category_path": {
                             "type": "nested",
                             "properties": {
-                                "category_id": {"type": "integer"},
+                                "category_id": {"type": "int"},
                                 "category_name": {"type": "keyword"},
                             },
                         },
                         "document_flags": {"type": "keyword"},
                         "skc_sysno": {"type": "keyword"},
                         "cnb_sysno": {"type": "keyword"},
-                        "digitization_registry_id": {"type": "integer"},
+                        "digitization_registry_id": {"type": "int"},
                         "digitization_state": {"type": "keyword"},
                         # Page count
-                        "page_count": {"type": "integer"},
-                        "page_count_catalog": {"type": "integer"},
-                        "page_count_predicted": {"type": "integer"},
-                        "page_count_manual": {"type": "integer"},
+                        "page_count": {"type": "int"},
+                        "page_count_catalog": {"type": "int"},
+                        "page_count_predicted": {"type": "int"},
+                        "page_count_manual": {"type": "int"},
                         # Extraction properties
                         "dedicated_scanner": {"type": "keyword"},
-                        "extraction_priority": {"type": "integer"},
-                        "extraction_ids": {"type": "integer"},
-                        "digitization_list_id": {"type": "integer"},
+                        "extraction_priority": {"type": "int"},
+                        "extraction_ids": {"type": "int"},
+                        "digitization_list_id": {"type": "int"},
                         # Other properties
                         "material_type": {"type": "keyword"},
                         "issuance_type": {"type": "keyword"},

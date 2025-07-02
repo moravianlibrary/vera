@@ -60,7 +60,7 @@ def upgrade_catalog_records_and_documents_tables() -> None:
     )
     op.create_table(
         "catalog_record_field_differences",
-        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.int(), nullable=False),
         sa.Column("sysno", sa.String(), nullable=True),
         sa.Column(
             "source",
@@ -84,7 +84,7 @@ def upgrade_catalog_records_and_documents_tables() -> None:
         sa.Column("approved_by", sa.String(), nullable=True),
         sa.Column("approved_at", sa.TIMESTAMP(), nullable=True),
         sa.Column(
-            "deleted", sa.Boolean(), server_default="false", nullable=False
+            "deleted", sa.bool(), server_default="false", nullable=False
         ),
         sa.ForeignKeyConstraint(
             ["sysno"],
@@ -124,12 +124,12 @@ def upgrade_catalog_records_and_documents_tables() -> None:
     )
     op.create_table(
         "catalog_record_subfield_differences",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("field_difference_id", sa.Integer(), nullable=True),
+        sa.Column("id", sa.int(), nullable=False),
+        sa.Column("field_difference_id", sa.int(), nullable=True),
         sa.Column("code", sa.String(), nullable=True),
         sa.Column("value", sa.String(), nullable=True),
         sa.Column("different_to", sa.String(), nullable=True),
-        sa.Column("differs", sa.Boolean(), nullable=True),
+        sa.Column("differs", sa.bool(), nullable=True),
         sa.ForeignKeyConstraint(
             ["field_difference_id"],
             ["catalog_record_field_differences.id"],
@@ -156,7 +156,7 @@ def upgrade_catalog_records_and_documents_tables() -> None:
     )
     op.add_column(
         "documents",
-        sa.Column("digitization_registry_id", sa.Integer(), nullable=True),
+        sa.Column("digitization_registry_id", sa.int(), nullable=True),
     )
     op.alter_column(
         "documents", "sysno", existing_type=sa.VARCHAR(), nullable=True
@@ -176,7 +176,7 @@ def upgrade_catalog_records_and_documents_tables() -> None:
     op.alter_column(
         "documents",
         "extraction_priority",
-        existing_type=sa.INTEGER(),
+        existing_type=sa.int(),
         comment=None,
         existing_comment="Priority of extraction (1-5)",
         existing_nullable=False,
@@ -258,7 +258,7 @@ def upgrade_catalog_records_and_documents_tables() -> None:
         "documents",
         "extraction_id",
         new_column_name="digitization_list_id",
-        existing_type=sa.Integer(),
+        existing_type=sa.int(),
         existing_nullable=True,
     )
     op.create_foreign_key(
@@ -344,7 +344,7 @@ def upgrade_digitization_lists() -> None:
 def upgrade_periodic_tasks() -> None:
     op.create_table(
         "periodic_tasks",
-        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.int(), nullable=False),
         sa.Column(
             "task_type",
             type_=postgresql.ENUM(
@@ -361,10 +361,10 @@ def upgrade_periodic_tasks() -> None:
             nullable=False,
         ),
         sa.Column("query_params", sa.JSON(), nullable=True),
-        sa.Column("minute", sa.Integer(), nullable=False),
-        sa.Column("hour", sa.Integer(), nullable=True),
-        sa.Column("day_of_week", sa.Integer(), nullable=True),
-        sa.Column("day_of_month", sa.Integer(), nullable=True),
+        sa.Column("minute", sa.int(), nullable=False),
+        sa.Column("hour", sa.int(), nullable=True),
+        sa.Column("day_of_week", sa.int(), nullable=True),
+        sa.Column("day_of_month", sa.int(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -464,7 +464,7 @@ def upgrade_categories() -> None:
         "categories", "name", existing_type=sa.VARCHAR(), nullable=False
     )
     op.alter_column(
-        "categories", "level", existing_type=sa.INTEGER(), nullable=False
+        "categories", "level", existing_type=sa.int(), nullable=False
     )
     op.alter_column(
         "categories", "assignable", existing_type=sa.BOOLEAN(), nullable=False
@@ -504,7 +504,7 @@ def upgrade_generated_extractions() -> None:
     op.alter_column(
         "generated_extractions",
         "document_ids",
-        existing_type=postgresql.ARRAY(sa.INTEGER()),
+        existing_type=postgresql.ARRAY(sa.int()),
         type_=sa.JSON(),
         existing_nullable=True,
         postgresql_using="int_array_to_jsonb(document_ids)",
@@ -512,7 +512,7 @@ def upgrade_generated_extractions() -> None:
     op.alter_column(
         "generated_extractions",
         "include_categories",
-        existing_type=postgresql.ARRAY(sa.INTEGER()),
+        existing_type=postgresql.ARRAY(sa.int()),
         type_=sa.JSON(),
         existing_nullable=True,
         postgresql_using="int_array_to_jsonb(include_categories)",
@@ -526,7 +526,7 @@ def upgrade_generated_extractions() -> None:
     op.alter_column(
         "generated_extractions",
         "location_ids",
-        existing_type=postgresql.ARRAY(sa.INTEGER()),
+        existing_type=postgresql.ARRAY(sa.int()),
         type_=sa.JSON(),
         existing_nullable=True,
         postgresql_using="int_array_to_jsonb(location_ids)",
@@ -598,9 +598,7 @@ def upgrade_roles() -> None:
 
 def upgrade_users() -> None:
     op.add_column("users", sa.Column("settings", sa.JSON(), nullable=True))
-    op.add_column(
-        "users", sa.Column("department_id", sa.Integer(), nullable=True)
-    )
+    op.add_column("users", sa.Column("department_id", sa.int(), nullable=True))
     op.drop_index("ix_users_username", table_name="users")
     op.create_index(
         op.f("ix_users_username"), "users", ["username"], unique=True
@@ -614,7 +612,7 @@ def upgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
     op.execute(
         """
-        CREATE OR REPLACE FUNCTION int_array_to_jsonb(arr integer[])
+        CREATE OR REPLACE FUNCTION int_array_to_jsonb(arr int[])
         RETURNS jsonb AS $$
         BEGIN
             RETURN to_jsonb(arr);
@@ -725,22 +723,22 @@ def downgrade() -> None:
         "generated_extractions",
         "location_ids",
         existing_type=sa.JSON(),
-        type_=postgresql.ARRAY(sa.INTEGER()),
+        type_=postgresql.ARRAY(sa.int()),
         existing_nullable=True,
-        existing_server_default=sa.text("'{}'::integer[]"),
+        existing_server_default=sa.text("'{}'::int[]"),
     )
     op.alter_column(
         "generated_extractions",
         "include_categories",
         existing_type=sa.JSON(),
-        type_=postgresql.ARRAY(sa.INTEGER()),
+        type_=postgresql.ARRAY(sa.int()),
         existing_nullable=True,
     )
     op.alter_column(
         "generated_extractions",
         "document_ids",
         existing_type=sa.JSON(),
-        type_=postgresql.ARRAY(sa.INTEGER()),
+        type_=postgresql.ARRAY(sa.int()),
         existing_nullable=True,
         using="document_ids::json",
     )
@@ -788,7 +786,7 @@ def downgrade() -> None:
     op.add_column(
         "documents",
         sa.Column(
-            "extraction_id", sa.INTEGER(), autoincrement=False, nullable=True
+            "extraction_id", sa.int(), autoincrement=False, nullable=True
         ),
     )
     op.add_column(
@@ -894,7 +892,7 @@ def downgrade() -> None:
     op.alter_column(
         "documents",
         "extraction_priority",
-        existing_type=sa.INTEGER(),
+        existing_type=sa.int(),
         comment="Priority of extraction (1-5)",
         existing_nullable=False,
         existing_server_default=sa.text("3"),
@@ -950,7 +948,7 @@ def downgrade() -> None:
         "categories", "assignable", existing_type=sa.BOOLEAN(), nullable=True
     )
     op.alter_column(
-        "categories", "level", existing_type=sa.INTEGER(), nullable=True
+        "categories", "level", existing_type=sa.int(), nullable=True
     )
     op.alter_column(
         "categories", "name", existing_type=sa.VARCHAR(), nullable=True
@@ -959,7 +957,7 @@ def downgrade() -> None:
         "categories_quotas",
         sa.Column(
             "id",
-            sa.INTEGER(),
+            sa.int(),
             server_default=sa.text(
                 "nextval('categories_quotas_id_seq'::regclass)"
             ),
@@ -970,9 +968,7 @@ def downgrade() -> None:
         sa.Column(
             "description", sa.VARCHAR(), autoincrement=False, nullable=True
         ),
-        sa.Column(
-            "pages_count", sa.INTEGER(), autoincrement=False, nullable=True
-        ),
+        sa.Column("pages_count", sa.int(), autoincrement=False, nullable=True),
         sa.Column("active", sa.BOOLEAN(), autoincrement=False, nullable=True),
         sa.PrimaryKeyConstraint("id", name="categories_quotas_pkey"),
         sa.UniqueConstraint("name", name="categories_quotas_name_key"),
@@ -983,18 +979,18 @@ def downgrade() -> None:
     )
     op.create_table(
         "digitization_extractions",
-        sa.Column("id", sa.INTEGER(), autoincrement=True, nullable=False),
+        sa.Column("id", sa.int(), autoincrement=True, nullable=False),
         sa.Column(
             "document_ids",
-            postgresql.ARRAY(sa.INTEGER()),
+            postgresql.ARRAY(sa.int()),
             autoincrement=False,
             nullable=True,
         ),
         sa.Column(
-            "extracted_pages", sa.INTEGER(), autoincrement=False, nullable=True
+            "extracted_pages", sa.int(), autoincrement=False, nullable=True
         ),
         sa.Column(
-            "intention_id", sa.INTEGER(), autoincrement=False, nullable=True
+            "intention_id", sa.int(), autoincrement=False, nullable=True
         ),
         sa.Column(
             "extractor", sa.VARCHAR(), autoincrement=False, nullable=True
@@ -1015,9 +1011,7 @@ def downgrade() -> None:
     )
     op.create_table(
         "actions",
-        sa.Column(
-            "role_id", sa.INTEGER(), autoincrement=False, nullable=False
-        ),
+        sa.Column("role_id", sa.int(), autoincrement=False, nullable=False),
         sa.Column(
             "action",
             postgresql.ENUM(
@@ -1052,7 +1046,7 @@ def downgrade() -> None:
     op.create_index("ix_actions_role_id", "actions", ["role_id"], unique=False)
     op.create_table(
         "celery_tasks",
-        sa.Column("id", sa.INTEGER(), autoincrement=False, nullable=False),
+        sa.Column("id", sa.int(), autoincrement=False, nullable=False),
         sa.Column(
             "task_id",
             sa.VARCHAR(length=155),
@@ -1087,7 +1081,7 @@ def downgrade() -> None:
             autoincrement=False,
             nullable=True,
         ),
-        sa.Column("retries", sa.INTEGER(), autoincrement=False, nullable=True),
+        sa.Column("retries", sa.int(), autoincrement=False, nullable=True),
         sa.Column(
             "queue", sa.VARCHAR(length=155), autoincrement=False, nullable=True
         ),
@@ -1096,7 +1090,7 @@ def downgrade() -> None:
     )
     op.create_table(
         "celery_groups",
-        sa.Column("id", sa.INTEGER(), autoincrement=False, nullable=False),
+        sa.Column("id", sa.int(), autoincrement=False, nullable=False),
         sa.Column(
             "taskset_id",
             sa.VARCHAR(length=155),

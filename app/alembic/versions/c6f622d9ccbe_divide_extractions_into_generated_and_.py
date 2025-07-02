@@ -6,10 +6,10 @@ Create Date: 2024-04-10 16:58:12.126534
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import text
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "c6f622d9ccbe"
@@ -21,11 +21,11 @@ depends_on = None
 def upgrade() -> None:
     op.create_table(
         "generated_extractions",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("document_ids", sa.ARRAY(sa.Integer()), nullable=True),
-        sa.Column("selected_pages", sa.Integer(), nullable=True),
-        sa.Column("target_pages", sa.Integer(), nullable=True),
-        sa.Column("include_categories", sa.ARRAY(sa.Integer()), nullable=True),
+        sa.Column("id", sa.int(), nullable=False),
+        sa.Column("document_ids", sa.ARRAY(sa.int()), nullable=True),
+        sa.Column("selected_pages", sa.int(), nullable=True),
+        sa.Column("target_pages", sa.int(), nullable=True),
+        sa.Column("include_categories", sa.ARRAY(sa.int()), nullable=True),
         sa.Column("target_pages_threshold", sa.Float(), nullable=True),
         sa.Column("whole_categories_threshold", sa.Float(), nullable=True),
         sa.Column("generated_by", sa.String(), nullable=True),
@@ -40,10 +40,10 @@ def upgrade() -> None:
 
     op.create_table(
         "digitization_extractions",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("document_ids", sa.ARRAY(sa.Integer()), nullable=True),
-        sa.Column("extracted_pages", sa.Integer(), nullable=True),
-        sa.Column("intention_id", sa.Integer(), nullable=True),
+        sa.Column("id", sa.int(), nullable=False),
+        sa.Column("document_ids", sa.ARRAY(sa.int()), nullable=True),
+        sa.Column("extracted_pages", sa.int(), nullable=True),
+        sa.Column("intention_id", sa.int(), nullable=True),
         sa.Column("extractor", sa.String(), nullable=True),
         sa.Column(
             "extracted_at",
@@ -65,7 +65,7 @@ def upgrade() -> None:
         include_categories, target_pages_threshold, whole_categories_threshold,
         generated_by, generated_at)
         SELECT id, document_ids, extracted_pages AS selected_pages,
-        target_pages, ARRAY[]::INTEGER[], 0.05, 0.05,
+        target_pages, ARRAY[]::int[], 0.05, 0.05,
         extractor AS generated_by, extracted_at AS generated_at
         FROM extractions
     """
@@ -110,7 +110,7 @@ def downgrade() -> None:
 
     op.create_table(
         "extractions",
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("id", sa.int(), autoincrement=True, nullable=False),
         sa.Column("extractor", sa.String(), nullable=True),
         sa.Column(
             "extracted_at",
@@ -118,12 +118,10 @@ def downgrade() -> None:
             server_default=sa.text("now()"),
             nullable=True,
         ),
-        sa.Column(
-            "marked", sa.Boolean(), server_default="false", nullable=True
-        ),
-        sa.Column("target_pages", sa.Integer(), nullable=True),
-        sa.Column("extracted_pages", sa.Integer(), nullable=True),
-        sa.Column("document_ids", sa.ARRAY(sa.Integer()), nullable=True),
+        sa.Column("marked", sa.bool(), server_default="false", nullable=True),
+        sa.Column("target_pages", sa.int(), nullable=True),
+        sa.Column("extracted_pages", sa.int(), nullable=True),
+        sa.Column("document_ids", sa.ARRAY(sa.int()), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
 

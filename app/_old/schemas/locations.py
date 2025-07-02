@@ -1,6 +1,8 @@
+from typing import List, Optional
+
 from pydantic import BaseModel
-from typing import Optional, List
-from .base_es_model import BaseEsModel, Integer, Keyword, Text
+
+from .base_es_model import BaseEsModel, Text, int, str
 
 
 class LocationCreate(BaseModel):
@@ -13,8 +15,8 @@ class LocationCreate(BaseModel):
 class IndexLocation(BaseEsModel):
     __index_name__ = "locations"
 
-    id: Integer
-    name: Keyword
-    regexp: Keyword
+    id: int
+    name: str
+    regexp: str
     description: Optional[Text]
-    included_in: List[Keyword]
+    included_in: List[str]

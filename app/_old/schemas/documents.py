@@ -1,30 +1,29 @@
-from pydantic import BaseModel
 from datetime import datetime
-from .base_es_model import BaseEsModel, Integer, Keyword, Date, List
-from pydantic import model_validator
 from typing import Any, Optional
+
+from datatypes import DigitizationState, DocumentFlag
 from models import Document
-from mzk_aleph import AlephMzkRecord, MaterialType, IssuanceType
+from mzk_aleph import AlephMzkRecord, IssuanceType, MaterialType
+from pydantic import BaseModel, model_validator
+
+from config import VeraConfig
+
+from .base_es_model import BaseEsModel, Date, List, int, str
 from .parsers.volume_parser import (
+    parse_bundle,
     parse_volume,
     parse_volume_year,
-    parse_bundle,
 )
-from datatypes import (
-    DocumentFlag,
-    DigitizationState,
-)
-from config import VeraConfig
 
 
 class CategoryPath(BaseEsModel):
-    category_id: Integer
-    category_name: Keyword
+    category_id: int
+    category_name: str
 
 
 class Frequency(BaseEsModel):
-    frequency: Keyword
-    date: Optional[Keyword]
+    frequency: str
+    date: Optional[str]
 
 
 class Comment(BaseModel):
@@ -59,8 +58,8 @@ def DocumentFlagsDispatcher(document: Document) -> List[str]:
 
 
 class IndexDocumentIntention(BaseEsModel):
-    id: Integer
-    name: Keyword
+    id: int
+    name: str
 
 
 class IndexDocument(BaseEsModel):
@@ -70,55 +69,55 @@ class IndexDocument(BaseEsModel):
     class Config:
         from_attributes = True
 
-    id: Integer
+    id: int
     # Main identifiers
-    sysno: Keyword
-    barcode: Optional[Keyword]
-    volume: Optional[Keyword]
-    volume_number: Optional[Integer]
-    volume_year: Optional[Keyword]
-    volume_year_number: Optional[Integer]
-    bundle: Optional[Keyword]
-    bundle_number: Optional[Integer]
+    sysno: str
+    barcode: Optional[str]
+    volume: Optional[str]
+    volume_number: Optional[int]
+    volume_year: Optional[str]
+    volume_year_number: Optional[int]
+    bundle: Optional[str]
+    bundle_number: Optional[int]
     # Librarian identifiers
-    cnb: Optional[Keyword]
-    signature: Optional[Keyword]
-    isxn: Optional[Keyword]
+    cnb: Optional[str]
+    signature: Optional[str]
+    isxn: Optional[str]
     # VERA properties
-    added_at: Date
-    added_by: Keyword
-    category_id: Integer
-    category_ids: List[Integer]  # Deprecated
+    added_at: datetime
+    added_by: str
+    category_id: int
+    category_ids: List[int]  # Deprecated
     category_path: List[CategoryPath]
     document_flags: List[DocumentFlag]
     # Catalogs properties
-    skc_sysno: Optional[Keyword]
-    cnb_sysno: Optional[Keyword]
-    digitization_registry_id: Optional[Integer]
+    skc_sysno: Optional[str]
+    cnb_sysno: Optional[str]
+    digitization_registry_id: Optional[int]
     digitization_state: DigitizationState
     # Page count
-    page_count: Optional[Integer]
-    page_count_catalog: Optional[Integer]
-    page_count_predicted: Optional[Integer]
-    page_count_manual: Optional[Integer]
+    page_count: Optional[int]
+    page_count_catalog: Optional[int]
+    page_count_predicted: Optional[int]
+    page_count_manual: Optional[int]
     # Extraction properties
-    dedicated_scanner: Optional[Keyword]
-    extraction_priority: Optional[Integer]
-    extraction_ids: List[Integer]
-    digitization_list_id: Optional[Integer]
+    dedicated_scanner: Optional[str]
+    extraction_priority: Optional[int]
+    extraction_ids: List[int]
+    digitization_list_id: Optional[int]
     # Other properties
     material_type: Optional[MaterialType]
     issuance_type: Optional[IssuanceType]
-    title: Optional[Keyword]
-    size: Optional[Keyword]
-    location_uri: Optional[Keyword]
+    title: Optional[str]
+    size: Optional[str]
+    location_uri: Optional[str]
     # Publication properties
-    publisher: Optional[Keyword]
-    publishing_place: Optional[Keyword]
-    publishing_year: Optional[Keyword]
-    languages: List[Keyword] = []
+    publisher: Optional[str]
+    publishing_place: Optional[str]
+    publishing_year: Optional[str]
+    languages: List[str] = []
     frequencies: List[Frequency]
-    indexed_at: Date
+    indexed_at: datetime
 
     @model_validator(mode="before")
     @classmethod

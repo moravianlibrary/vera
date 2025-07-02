@@ -6,9 +6,9 @@ Create Date: 2024-02-28 18:54:39.251836
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "a68b77addb27"
@@ -21,7 +21,7 @@ def upgrade() -> None:
     op.add_column(
         "task_documents",
         sa.Column(
-            "deleted", sa.Boolean(), nullable=False, server_default="false"
+            "deleted", sa.bool(), nullable=False, server_default="false"
         ),
     )
 
@@ -34,8 +34,8 @@ def upgrade() -> None:
     op.alter_column(
         "task_documents",
         "document_id",
-        existing_type=sa.Integer(),
-        type_=sa.Integer(),
+        existing_type=sa.int(),
+        type_=sa.int(),
     )
 
 

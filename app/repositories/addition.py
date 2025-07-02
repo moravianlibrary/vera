@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 from adapters.database import DatabaseSession
 from adapters.indexer import IndexerSession
 from definitions.addition import AdditionStatus

@@ -6,9 +6,10 @@ Create Date: 2024-10-04 11:33:25.135345
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "203a0c700404"
@@ -20,18 +21,16 @@ depends_on = None
 def upgrade() -> None:
     op.create_table(
         "task_items",
-        sa.Column("task_id", sa.Integer(), nullable=False),
+        sa.Column("task_id", sa.int(), nullable=False),
         sa.Column("item_id", sa.String(), nullable=False),
         sa.Column(
             "item_type",
             sa.Enum("CatalogRecord", "Document", name="taskitemtype"),
             nullable=False,
         ),
+        sa.Column("deleted", sa.bool(), server_default="false", nullable=True),
         sa.Column(
-            "deleted", sa.Boolean(), server_default="false", nullable=True
-        ),
-        sa.Column(
-            "processed", sa.Boolean(), server_default="false", nullable=True
+            "processed", sa.bool(), server_default="false", nullable=True
         ),
         sa.Column(
             "error_type",
@@ -177,11 +176,9 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.create_table(
         "task_documents",
+        sa.Column("task_id", sa.int(), autoincrement=False, nullable=False),
         sa.Column(
-            "task_id", sa.INTEGER(), autoincrement=False, nullable=False
-        ),
-        sa.Column(
-            "document_id", sa.INTEGER(), autoincrement=False, nullable=False
+            "document_id", sa.int(), autoincrement=False, nullable=False
         ),
         sa.Column(
             "processed",
@@ -241,7 +238,7 @@ def downgrade() -> None:
         )
         SELECT
             task_id,
-            CAST(item_id AS INTEGER) AS document_id,
+            CAST(item_id AS int) AS document_id,
             deleted,
             processed,
             CASE

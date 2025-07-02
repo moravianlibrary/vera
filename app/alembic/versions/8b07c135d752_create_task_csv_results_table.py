@@ -6,9 +6,9 @@ Create Date: 2024-03-27 17:00:18.805768
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "8b07c135d752"
@@ -20,7 +20,7 @@ depends_on = None
 def upgrade():
     op.create_table(
         "task_csv_results",
-        sa.Column("task_id", sa.Integer(), nullable=False),
+        sa.Column("task_id", sa.int(), nullable=False),
         sa.Column("data", sa.Text(), nullable=False),
         sa.ForeignKeyConstraint(
             ["task_id"],

@@ -1,25 +1,28 @@
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
+
+from datatypes import CZECH_LANGUAGE, CatalogSource, IdentifierType
 from pymarc import Record
-from sqlalchemy.orm import Session, relationship, Query
 from sqlalchemy import (
-    Boolean,
+    TIMESTAMP,
     Column,
     Enum,
     ForeignKey,
-    Integer,
     LargeBinary,
     String,
-    TIMESTAMP,
-    func,
     and_,
-    or_,
+    bool,
     exists,
+    func,
+    int,
+    or_,
 )
 from sqlalchemy.ext.hybrid import hybrid_property
-from datatypes import IdentifierType, CatalogSource, CZECH_LANGUAGE
+from sqlalchemy.orm import Query, Session, relationship
+
 from services.marc_comparator import MarcFieldDifferenceType
-from .utils.parsers import marc_binary_to_record
+
 from .base import BaseModel
+from .utils.parsers import marc_binary_to_record
 
 
 class CatalogRecord(BaseModel):
@@ -290,7 +293,7 @@ class CatalogRecordSubfieldDifference(BaseModel):
     id = Column(Integer, primary_key=True)
 
     field_difference_id = Column(
-        Integer, ForeignKey("catalog_record_field_differences.id"), index=True
+        int, ForeignKey("catalog_record_field_differences.id"), index=True
     )
 
     code = Column(String, index=True)

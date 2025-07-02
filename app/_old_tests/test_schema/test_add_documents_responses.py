@@ -1,5 +1,6 @@
-from .base import TestSchemaBase
 from schemas import AddDocumentResponse
+
+from .base import TestSchemaBase
 
 
 class TestAddDocumentsResponses(TestSchemaBase):
@@ -13,7 +14,7 @@ class TestAddDocumentsResponses(TestSchemaBase):
                     "dynamic": "strict",
                     "properties": {
                         "id": {"type": "keyword"},
-                        "document_id": {"type": "integer"},
+                        "document_id": {"type": "int"},
                         "document": {
                             "properties": {
                                 "cnb_sysno": {"type": "keyword"},
@@ -25,15 +26,15 @@ class TestAddDocumentsResponses(TestSchemaBase):
                                         "bundle": {"type": "keyword"},
                                         "can_digitize": {"type": "boolean"},
                                         "digitization_registry_id": {
-                                            "type": "integer"
+                                            "type": "int"
                                         },
                                         "digitization_state": {
                                             "type": "keyword"
                                         },
-                                        "document_id": {"type": "integer"},
+                                        "document_id": {"type": "int"},
                                         "issuance_type": {"type": "keyword"},
                                         "newly_added": {"type": "boolean"},
-                                        "page_count": {"type": "integer"},
+                                        "page_count": {"type": "int"},
                                         "processing": {"type": "boolean"},
                                         "signature": {"type": "keyword"},
                                         "volume": {"type": "keyword"},
@@ -52,9 +53,9 @@ class TestAddDocumentsResponses(TestSchemaBase):
                             "properties": {
                                 "identifier_type": {"type": "keyword"},
                                 "value": {"type": "keyword"},
-                                "category_id": {"type": "integer"},
-                                "extraction_priority": {"type": "integer"},
-                                "page_count_manual": {"type": "integer"},
+                                "category_id": {"type": "int"},
+                                "extraction_priority": {"type": "int"},
+                                "page_count_manual": {"type": "int"},
                             },
                             "type": "nested",
                         },

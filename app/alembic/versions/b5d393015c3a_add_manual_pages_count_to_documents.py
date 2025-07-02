@@ -6,9 +6,9 @@ Create Date: 2024-04-02 15:01:35.043466
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "b5d393015c3a"
@@ -20,7 +20,7 @@ depends_on = None
 def upgrade() -> None:
     op.add_column(
         "documents",
-        sa.Column("pages_count_manual", sa.Integer(), nullable=True),
+        sa.Column("pages_count_manual", sa.int(), nullable=True),
     )
 
 

@@ -6,9 +6,9 @@ Create Date: 2024-04-26 19:50:24.589465
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "b69cd89341e8"
@@ -25,16 +25,16 @@ def upgrade() -> None:
 
     op.create_table(
         "libraries",
-        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.int(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("name"),
     )
     op.create_table(
         "storages",
-        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.int(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
-        sa.Column("library_id", sa.Integer(), nullable=False),
+        sa.Column("library_id", sa.int(), nullable=False),
         sa.ForeignKeyConstraint(
             ["library_id"],
             ["libraries.id"],
@@ -50,7 +50,7 @@ def upgrade() -> None:
 
     op.create_table(
         "locations",
-        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.int(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("regexp", sa.String(), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
@@ -60,7 +60,7 @@ def upgrade() -> None:
             location_state_type,
             nullable=False,
         ),
-        sa.Column("storage_id", sa.Integer(), nullable=False),
+        sa.Column("storage_id", sa.int(), nullable=False),
         sa.ForeignKeyConstraint(
             ["storage_id"],
             ["storages.id"],
@@ -84,7 +84,7 @@ def downgrade() -> None:
     )
     op.create_table(
         "storages",
-        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.int(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("library_id", sa.String(), nullable=False),
         sa.ForeignKeyConstraint(
@@ -95,7 +95,7 @@ def downgrade() -> None:
     )
     op.create_table(
         "locations",
-        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.int(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("regexp", sa.String(), nullable=False),
         sa.Column("description", sa.String(), nullable=True),
@@ -105,7 +105,7 @@ def downgrade() -> None:
             sa.Enum("LocationState", name="location_state_type"),
             nullable=False,
         ),
-        sa.Column("storage_id", sa.Integer(), nullable=False),
+        sa.Column("storage_id", sa.int(), nullable=False),
         sa.ForeignKeyConstraint(
             ["storage_id"],
             ["storages.id"],

@@ -1,15 +1,16 @@
-from pydantic import BaseModel
-
-from typing import Dict, List, Optional
 from datetime import datetime
+from typing import Dict, List, Optional
+
 from datatypes import (
-    TaskState,
-    TaskType,
+    ElasticsearchParams,
     TaskItemErrorType,
     TaskItemType,
-    ElasticsearchParams,
+    TaskState,
+    TaskType,
 )
-from .base_es_model import BaseEsModel, Integer, Keyword, Date, Boolean, Text
+from pydantic import BaseModel
+
+from .base_es_model import BaseEsModel, Date, Text, bool, int, str
 
 
 # Dataset schema
@@ -82,28 +83,28 @@ class PeriodicTaskResponse(BaseModel):
 
 
 class IndexTask(BaseEsModel):
-    id: Integer
+    id: int
     task_type: TaskType
 
-    owner: Keyword
+    owner: str
 
     query_params: Optional[ElasticsearchParams]
 
     task_state: TaskState
-    planned: Date
+    planned: datetime
     started: Optional[Date]
     finished: Optional[Date]
 
-    total_items: Integer = 0
-    has_dataset: Boolean = False
+    total_items: int = 0
+    has_dataset: bool = False
     stacktrace: Optional[Text]
 
 
 class IndexTaskItem(BaseEsModel):
-    item_id: Keyword
+    item_id: str
     item_type: TaskItemType
-    deleted: Boolean
+    deleted: bool
 
-    processed: Boolean = False
+    processed: bool = False
     error_type: Optional[TaskItemErrorType] = None
     error_message: Optional[str] = None

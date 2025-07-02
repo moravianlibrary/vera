@@ -1,28 +1,31 @@
-from .base_es_model import BaseEsModel, Keyword, Date, Boolean, Integer
-from pydantic import model_validator, field_validator
-from typing import Any, List, Optional
-from .documents import Frequency
-from models import CatalogRecord
 from datetime import datetime
-from config import VeraConfig
-from datatypes import MarcFieldDifferenceType, SkcRecordFlag, CnbRecordFlag
+from typing import Any, List, Optional
+
+from datatypes import CnbRecordFlag, MarcFieldDifferenceType, SkcRecordFlag
+from models import CatalogRecord
 from mzk_aleph import AlephMzkRecord, MaterialType
+from pydantic import field_validator, model_validator
+
+from config import VeraConfig
+
+from .base_es_model import BaseEsModel, Date, bool, int, str
+from .documents import Frequency
 
 
 class MarcSubfield(BaseEsModel):
-    code: Keyword
-    value: Keyword
+    code: str
+    value: str
 
 
 class MarcFieldBase(BaseEsModel):
-    tag: Keyword
-    ind1: Optional[Keyword] = None
-    ind2: Optional[Keyword] = None
-    control_field: Boolean = False
+    tag: str
+    ind1: Optional[str] = None
+    ind2: Optional[str] = None
+    control_field: bool = False
 
 
 class MarcField(MarcFieldBase):
-    data: Optional[Keyword] = None
+    data: Optional[str] = None
     subfields: List[MarcSubfield] = []
 
 
@@ -30,7 +33,7 @@ class MarcRecord(BaseEsModel):
     class Config:
         from_attributes = True
 
-    leader: Keyword
+    leader: str
     fields: List[MarcField]
 
     # TODO: split into other models and specialize
@@ -78,22 +81,22 @@ class MarcSubfieldDifference(MarcSubfield):
     class Config:
         from_attributes = True
 
-    id: Integer
-    code: Optional[Keyword]
-    value: Optional[Keyword]
-    different_to: Optional[Keyword]
-    differs: Boolean
+    id: int
+    code: Optional[str]
+    value: Optional[str]
+    different_to: Optional[str]
+    differs: bool
 
 
 class MarcFieldDifference(MarcFieldBase):
     class Config:
         from_attributes = True
 
-    id: Integer
+    id: int
     difference_type: MarcFieldDifferenceType
     subfield_differences: List[MarcSubfieldDifference]
 
-    approved_by: Optional[Keyword]
+    approved_by: Optional[str]
     approved_at: Optional[Date]
 
     @field_validator("approved_at", mode="before")
@@ -110,45 +113,45 @@ class IndexCatalogRecord(BaseEsModel):
     class Config:
         from_attributes = True
 
-    id: Keyword  # sysno
+    id: str  # sysno
     main_record: MarcRecord
 
-    cnb: Optional[Keyword]
-    language: Keyword
-    signature: Optional[Keyword]
-    isxn: Optional[Keyword]
-    barcodes: List[Keyword]
+    cnb: Optional[str]
+    language: str
+    signature: Optional[str]
+    isxn: Optional[str]
+    barcodes: List[str]
 
-    skc_sysno: Optional[Keyword]
+    skc_sysno: Optional[str]
     skc_record: Optional[MarcRecord]
     skc_difference: List[MarcFieldDifference]
     skc_record_flags: List[SkcRecordFlag]
-    skc_difference_tag_facets: List[Keyword]
+    skc_difference_tag_facets: List[str]
 
-    cnb_sysno: Optional[Keyword]
+    cnb_sysno: Optional[str]
     cnb_record: Optional[MarcRecord]
     cnb_difference: List[MarcFieldDifference]
     cnb_record_flags: List[CnbRecordFlag]
-    cnb_difference_tag_facets: List[Keyword]
+    cnb_difference_tag_facets: List[str]
 
-    has_documents: Boolean
-    has_active_documents: Boolean
+    has_documents: bool
+    has_active_documents: bool
 
-    added_at: Date
-    updated_at: Date
-    indexed_at: Date
+    added_at: datetime
+    updated_at: datetime
+    indexed_at: datetime
 
     # Other properties
     material_type: Optional[MaterialType]
-    title: Optional[Keyword]
-    size: Optional[Keyword]
-    location_uri: Optional[Keyword]
+    title: Optional[str]
+    size: Optional[str]
+    location_uri: Optional[str]
 
     # Publication properties
-    publisher: Optional[Keyword]
-    publishing_place: Optional[Keyword]
-    publishing_year: Optional[Keyword]
-    languages: List[Keyword]
+    publisher: Optional[str]
+    publishing_place: Optional[str]
+    publishing_year: Optional[str]
+    languages: List[str]
     frequencies: List[Frequency]
 
     @model_validator(mode="before")
@@ -162,7 +165,7 @@ class IndexCatalogRecord(BaseEsModel):
 
         def extract_diff_type_facets(
             differences: List[MarcFieldDifference],
-        ) -> List[Keyword]:
+        ) -> List[str]:
             return (
                 list(
                     {
@@ -176,7 +179,7 @@ class IndexCatalogRecord(BaseEsModel):
 
         def extract_diff_tag_facets(
             differences: List[MarcFieldDifference],
-        ) -> List[Keyword]:
+        ) -> List[str]:
             return (
                 list({difference.tag for difference in differences})
                 if differences
@@ -185,7 +188,7 @@ class IndexCatalogRecord(BaseEsModel):
 
         def skc_record_flags(
             differences: List[MarcFieldDifference], found: bool, is_valid: bool
-        ) -> List[Keyword]:
+        ) -> List[str]:
             if not found:
                 return [SkcRecordFlag.NotFound]
             flags = extract_diff_type_facets(differences)
@@ -198,7 +201,7 @@ class IndexCatalogRecord(BaseEsModel):
             without_cnb: bool,
             found: bool,
             is_valid: bool,
-        ) -> List[Keyword]:
+        ) -> List[str]:
             if without_cnb and not found:
                 return [CnbRecordFlag.ShouldNotHaveCnb]
             if not found:

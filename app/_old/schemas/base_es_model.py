@@ -1,17 +1,25 @@
-from pydantic import BaseModel
-from typing import List, Dict, Generator, get_type_hints
-from elasticsearch import Elasticsearch
 from enum import Enum
-from typing import TypeVar, Union, get_origin, get_args
+from typing import (
+    Dict,
+    Generator,
+    List,
+    TypeVar,
+    Union,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
+from elasticsearch import Elasticsearch
+from pydantic import BaseModel
 
 type EsSession = Elasticsearch
 
-type Keyword = str
+type str = str
 type Text = str
-type Integer = int
+type int = int
 type Float = float
-type Boolean = bool
+type bool = bool
 type Date = str
 T = TypeVar("T")
 SingleOrList = Union[T, List[T]]

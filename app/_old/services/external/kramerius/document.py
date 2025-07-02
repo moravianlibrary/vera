@@ -1,4 +1,5 @@
 from typing import Dict, Optional
+
 from datatypes import SolrField
 
 
@@ -103,7 +104,7 @@ class KrameriusDocument:
 
     @property
     def keywords_facet(self):
-        return self.get_field_value(SolrField.KeywordsFacet)
+        return self.get_field_value(SolrField.strsFacet)
 
     def __str__(self) -> str:
         return (

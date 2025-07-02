@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, Boolean, Enum, asc
-from sqlalchemy.orm import Session, Query
-from datatypes import TaskType, TaskItemType
+from datatypes import TaskItemType, TaskType
+from sqlalchemy import Column, Enum, Integer, asc, bool
+from sqlalchemy.orm import Query, Session
+
 from .base import BaseModel
 
 

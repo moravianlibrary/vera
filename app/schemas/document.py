@@ -1,18 +1,14 @@
 from typing import List
 
+from esorm import ESBaseModel, ESModel
+from esorm.fields import keyword
 from marcdantic import IssuanceType
 from pydantic import BaseModel, model_validator
 from vera_plugins.specs.digitization_registry_adapter import (
     DigitizationRecordState,
 )
 
-from adapters.indexer import (
-    Boolean,
-    Enumerate,
-    IndexerEntity,
-    Integer,
-    Keyword,
-)
+from adapters.indexer import EnumList
 from definitions.digitization_registry import DigitizationState
 from definitions.document import (
     DEFAULT_EXPORT_FIELDS,
@@ -51,39 +47,47 @@ class DocumentExportParams(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class DocumentDigitizationRecord(IndexerEntity):
-    registry_record_id: Keyword
-    record_state: List[Enumerate[DigitizationRecordState]]
-    registry_issue_id: Keyword | None
-    issue_state: Enumerate[DigitizationRecordState] | None
-    link: Keyword | None = None
-    error_message: Keyword | None = None
+class DocumentDigitizationRecord(ESBaseModel):
+    registry_record_id: keyword
+    record_state: EnumList[DigitizationRecordState]
+    registry_issue_id: keyword | None
+    issue_state: DigitizationRecordState | None
+    link: keyword | None = None
+    error_message: keyword | None = None
 
 
-class Document(IndexerEntity):
-    id: Integer
+DocumentProperties = ESBaseModel
 
-    catalog_record_id: Keyword
-    catalog_record_valid: Boolean
 
-    iteration_id: Integer
-    iteration: Integer
+class Document(ESModel):
+    class ESConfig:
+        index = "documents"
 
-    barcode: Keyword | None
-    volume_number: Keyword | None
-    volume_year: Keyword | None
-    bundle: Keyword | None
-    issuance_type: Enumerate[IssuanceType] | None
+    id: int
 
-    digitization_state: Enumerate[DigitizationState]
+    catalog_record_id: str
+    catalog_record_valid: bool
+
+    iteration_id: int
+    iteration: int
+
+    barcode: str | None
+    volume_number: str | None
+    volume_year: str | None
+    bundle: str | None
+    issuance_type: IssuanceType | None
+
+    digitization_state: DigitizationState
     digitization_records: List[DocumentDigitizationRecord]
-    page_count: Integer | None
-    page_count_manual: Integer | None
+    page_count: int | None
+    page_count_manual: int | None
 
-    category_id: Integer
-    priority: Integer
-    digitization_list_id: Integer | None
+    properties: DocumentProperties | None
 
-    can_be_extracted: Boolean
+    category_id: int
+    priority: int
+    digitization_list_id: int | None
 
-    is_archived: Boolean
+    can_be_extracted: bool
+
+    is_archived: bool

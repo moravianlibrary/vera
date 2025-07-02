@@ -1,8 +1,8 @@
 from typing import List
 
+from esorm import ESBaseModel
 from pydantic import BaseModel
 
-from adapters.indexer import IndexerEntity, Keyword
 from definitions.json import JsonObject
 
 # --------------------
@@ -26,6 +26,6 @@ class UserNotifications(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class UserSummary(IndexerEntity):
-    id: Keyword
-    username: Keyword
+class UserSummary(ESBaseModel):
+    id: str
+    username: str

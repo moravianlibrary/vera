@@ -94,14 +94,14 @@ class CategoryModel(BaseModel):
 
         return list(_users)
 
-    # +hasScript(): Boolean
-    # +hasRecurringTask(): Boolean
-    # +totalPageCount(): Integer
-    # +totalDocuments(): Integer
-    # +extractablePageCount(): Integer
-    # +extractableDocuments(): Integer
-    # +extractedPageCount(): Integer
-    # +extractedDocuments(): Integer
+    # +hasScript(): bool
+    # +hasRecurringTask(): bool
+    # +totalPageCount(): int
+    # +totalDocuments(): int
+    # +extractablePageCount(): int
+    # +extractableDocuments(): int
+    # +extractedPageCount(): int
+    # +extractedDocuments(): int
 
 
 # TODO: Audits

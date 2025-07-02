@@ -1,7 +1,9 @@
 from typing import Dict, List
+
 from sqlalchemy import Column, Integer, String, asc
-from sqlalchemy.orm import relationship, Session, Query
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import Query, Session, relationship
+
 from .base import BaseModel
 from .users import User
 

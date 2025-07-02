@@ -1,8 +1,9 @@
+from datetime import datetime
 from typing import List, Optional
 
+from esorm import ESModel
 from pydantic import BaseModel
 
-from adapters.indexer import Date, Enumerate, IndexerEntity, Integer, Keyword
 from definitions.digitization_registry import (
     DigitizationListState,
     DigitizationState,
@@ -22,17 +23,17 @@ class CreateDigitizationListParams(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class DigitizationList(IndexerEntity):
-    id: Integer
+class DigitizationList(ESModel):
+    id: int
 
-    state: Enumerate[DigitizationState]
+    state: DigitizationState
     intentions: List[IntentionSummary]
 
-    count_documents: Integer
-    count_pages: Integer
+    count_documents: int
+    count_pages: int
 
-    created_at: Date
-    created_by: Keyword
+    created_at: datetime
+    created_by: str
 
 
 # ----------------

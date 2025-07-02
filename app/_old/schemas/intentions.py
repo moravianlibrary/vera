@@ -1,9 +1,11 @@
-from pydantic import BaseModel, model_validator
-from typing import Any, Optional
 from datetime import date
+from typing import Any, Optional
+
 from datatypes import IntentionClassification
 from models import Intention
-from .base_es_model import BaseEsModel, Integer, Keyword, Date, Text
+from pydantic import BaseModel, model_validator
+
+from .base_es_model import BaseEsModel, Date, Text, int, str
 
 
 class IntentionCreate(BaseModel):
@@ -19,11 +21,11 @@ class IntentionCreate(BaseModel):
 class IndexIntention(BaseEsModel):
     __index_name__ = "intentions"
 
-    id: Integer
-    name: Keyword
+    id: int
+    name: str
     description: Optional[Text] = None
 
-    target_page_count: Optional[Integer] = None
+    target_page_count: Optional[int] = None
     start_date: Optional[Date] = None
     end_date: Optional[Date] = None
 

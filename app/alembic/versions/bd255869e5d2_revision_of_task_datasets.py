@@ -6,9 +6,9 @@ Create Date: 2024-05-10 13:26:02.936121
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "bd255869e5d2"
@@ -23,7 +23,7 @@ def upgrade() -> None:
         "task_datasets",
         sa.Column(
             "task_id",
-            sa.Integer,
+            sa.int,
             sa.ForeignKey("tasks.id"),
             primary_key=True,
             index=True,
@@ -37,7 +37,7 @@ def downgrade() -> None:
     op.drop_table("task_datasets")
     op.create_table(
         "task_csv_results",
-        sa.Column("task_id", sa.Integer(), nullable=False),
+        sa.Column("task_id", sa.int(), nullable=False),
         sa.Column("data", sa.Text(), nullable=False),
         sa.ForeignKeyConstraint(
             ["task_id"],

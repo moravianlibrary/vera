@@ -6,9 +6,10 @@ Create Date: 2024-10-18 19:05:49.179771
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "bff6e9bf48c1"
@@ -20,8 +21,8 @@ depends_on = None
 def upgrade() -> None:
     op.create_table(
         "extraction_documents",
-        sa.Column("extraction_id", sa.Integer(), nullable=False),
-        sa.Column("document_id", sa.Integer(), nullable=False),
+        sa.Column("extraction_id", sa.int(), nullable=False),
+        sa.Column("document_id", sa.int(), nullable=False),
         sa.ForeignKeyConstraint(
             ["document_id"],
             ["documents.id"],
@@ -54,7 +55,7 @@ def upgrade() -> None:
         FROM (
             SELECT
                 ge.id AS extraction_id,
-                (json_array_elements_text(ge.document_ids))::INTEGER
+                (json_array_elements_text(ge.document_ids))::int
                     AS document_id
             FROM
                 generated_extractions ge

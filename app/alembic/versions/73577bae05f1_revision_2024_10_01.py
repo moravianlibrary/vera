@@ -6,9 +6,10 @@ Create Date: 2024-10-11 21:36:44.669082
 
 """
 
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "73577bae05f1"
@@ -119,7 +120,7 @@ def upgrade() -> None:
     # Create new startup tasks table
     op.create_table(
         "startup_tasks",
-        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.int(), nullable=False),
         sa.Column(
             "task_type",
             type_=postgresql.ENUM(
@@ -148,13 +149,11 @@ def upgrade() -> None:
         ),
         sa.Column(
             "is_one_time_task",
-            sa.Boolean(),
+            sa.bool(),
             server_default="false",
             nullable=True,
         ),
-        sa.Column(
-            "has_run", sa.Boolean(), server_default="false", nullable=True
-        ),
+        sa.Column("has_run", sa.bool(), server_default="false", nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
@@ -163,7 +162,7 @@ def upgrade() -> None:
     op.create_index(
         op.f("ix_tasks_task_type"), "tasks", ["task_type"], unique=False
     )
-    
+
     op.execute(
         """
         UPDATE users SET settings = '{}'

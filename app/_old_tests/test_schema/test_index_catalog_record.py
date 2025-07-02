@@ -1,5 +1,6 @@
-from .base import TestSchemaBase
 from schemas import IndexCatalogRecord
+
+from .base import TestSchemaBase
 
 
 class TestIndexCatalogRecord(TestSchemaBase):
@@ -67,7 +68,7 @@ class TestIndexCatalogRecord(TestSchemaBase):
                         },
                         "skc_difference": {
                             "properties": {
-                                "id": {"type": "integer"},
+                                "id": {"type": "int"},
                                 "tag": {"type": "keyword"},
                                 "ind1": {"type": "keyword"},
                                 "ind2": {"type": "keyword"},
@@ -77,7 +78,7 @@ class TestIndexCatalogRecord(TestSchemaBase):
                                 "approved_at": {"type": "date"},
                                 "subfield_differences": {
                                     "properties": {
-                                        "id": {"type": "integer"},
+                                        "id": {"type": "int"},
                                         "code": {"type": "keyword"},
                                         "value": {"type": "keyword"},
                                         "different_to": {"type": "keyword"},
@@ -116,7 +117,7 @@ class TestIndexCatalogRecord(TestSchemaBase):
                         },
                         "cnb_difference": {
                             "properties": {
-                                "id": {"type": "integer"},
+                                "id": {"type": "int"},
                                 "tag": {"type": "keyword"},
                                 "ind1": {"type": "keyword"},
                                 "ind2": {"type": "keyword"},
@@ -126,7 +127,7 @@ class TestIndexCatalogRecord(TestSchemaBase):
                                 "approved_at": {"type": "date"},
                                 "subfield_differences": {
                                     "properties": {
-                                        "id": {"type": "integer"},
+                                        "id": {"type": "int"},
                                         "code": {"type": "keyword"},
                                         "value": {"type": "keyword"},
                                         "different_to": {"type": "keyword"},

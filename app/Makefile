@@ -4,7 +4,6 @@ PYTHON := $(PYTHON_VENV)/bin/python
 PYTHON_PIP := $(PYTHON_VENV)/bin/pip
 PYTHON_DEPS := requirements.txt
 ADDITIONAL_LIBS := coverage testcontainers mypy
-TESTS_DIRS := tests/integration
 BROWSER_CMD := xdg-open
 
 .PHONY: generate-env remove-env regenerate-env test
@@ -21,8 +20,18 @@ remove-env:
 
 regenerate-env: remove-env generate-env
 
+test-unit:
+	$(PYTHON) -m coverage run -m unittest discover -s tests/unit \
+	&& $(PYTHON) -m coverage html \
+	&& $(PYTHON) -m coverage report
+
+test-integration:
+	$(PYTHON) -m coverage run -m unittest discover -s tests/integration \
+	&& $(PYTHON) -m coverage html \
+	&& $(PYTHON) -m coverage report
+
 test:
-	$(PYTHON) -m coverage run -m unittest discover -s $(TESTS_DIRS) \
+	$(PYTHON) -m coverage run -m unittest discover -s tests/unit tests/integration \
 	&& $(PYTHON) -m coverage html \
 	&& $(PYTHON) -m coverage report
 

@@ -9,6 +9,8 @@ from typing import (
     Generator,
     Generic,
     List,
+    Optional,
+    Type,
     TypeVar,
     get_origin,
     get_type_hints,
@@ -16,6 +18,7 @@ from typing import (
 
 import requests
 from elasticsearch import Elasticsearch
+from esorm import es
 from fastapi import HTTPException, status
 from pydantic import BaseModel
 from requests.exceptions import RequestException
@@ -26,67 +29,91 @@ from config import VeraConfig
 type IndexerSession = Elasticsearch
 
 
-class EsDataType(str, Enum):
-    Keyword = "keyword"
-    Text = "text"
-    Integer = "integer"
-    Float = "float"
-    Boolean = "boolean"
-    Date = "date"
+async def patch_es_meta():
+    original_put_mapping = es.indices.put_mapping
 
+    async def patched_put_mapping(*args, **kwargs):
+        kwargs.setdefault("dynamic", "strict")
+        kwargs.setdefault("meta", {"index.version": "1.0.0"})
+        return await original_put_mapping(*args, **kwargs)
 
-# --- Scalar types ---
-Keyword = Annotated[str, EsDataType.Keyword]
-Text = Annotated[str, EsDataType.Text]
-Integer = Annotated[int, EsDataType.Integer]
-Float = Annotated[float, EsDataType.Float]
-Boolean = Annotated[bool, EsDataType.Boolean]
-Date = Annotated[datetime, EsDataType.Date]
+    es.indices.put_mapping = patched_put_mapping
+
 
 EnumType = TypeVar("EnumType", bound=Enum)
 
 
-class Enumerate(Generic[EnumType]):
-    def __class_getitem__(
-        cls, item: type[EnumType]
-    ) -> Annotated[type[EnumType], EsDataType.Keyword]:
-        return Annotated[item, EsDataType.Keyword]
+class EnumList(Generic[EnumType]):
+    __es_type__ = "keyword"
+
+    def __init__(self, enum_cls: Type[EnumType]):
+        self.enum_cls = enum_cls
+
+    @classmethod
+    def __class_getitem__(cls, enum_cls: Type[EnumType]):
+        setattr(enum_cls, "__es_type__", cls.__es_type__)
+
+        class Wrapper(list):
+            __es_type__ = cls.__es_type__
+            __enum_type__ = enum_cls
+
+        Wrapper.__origin__ = list
+        Wrapper.__args__ = (enum_cls,)
+
+        return Wrapper
 
 
-# --- Complex types metadata ---
-@dataclass
-class ObjectMeta:
-    model: type["IndexerEntity"]
+class IndexerDataType(str, Enum):
+    str = "keyword"
+    Text = "text"
+    int = "int"
+    Float = "float"
+    bool = "boolean"
+    Date = "date"
 
 
-@dataclass
-class ArrayMeta:
-    item_type: Any
-
+# --- Scalar types ---
+str = Annotated[str, IndexerDataType.str]
+Text = Annotated[str, IndexerDataType.Text]
+int = Annotated[int, IndexerDataType.int]
+Float = Annotated[float, IndexerDataType.Float]
+bool = Annotated[bool, IndexerDataType.bool]
+Date = Annotated[datetime, IndexerDataType.Date]
 
 # --- Complex types ---
-IndexerEntityType = TypeVar("IndexerEntityType", bound="IndexerEntity")
+ESBaseModelType = TypeVar("ESBaseModelType", bound="ESBaseModel")
+EnumType = TypeVar("EnumType", bound=Enum)
+ItemType = str | Text | int | Float | bool | Date | ESBaseModelType
 
 
-class Object(Generic[IndexerEntityType]):
+@dataclass
+class ComplexMeta:
+    item_type: ItemType
+
+
+class Enumerate(Generic[EnumType]):
     def __class_getitem__(
-        cls, item: type["IndexerEntity"]
-    ) -> Annotated[IndexerEntityType, ObjectMeta]:
-        return Annotated[item, ObjectMeta(item)]
+        cls, enum_type: type[EnumType]
+    ) -> Annotated[type[EnumType], IndexerDataType.str]:
+        return Annotated[enum_type, IndexerDataType.str]
 
 
-ArrayType = TypeVar("ArrayType")
-
-
-class Array(Generic[ArrayType]):
+class Nullable(Generic[ESBaseModelType]):
     def __class_getitem__(
-        cls, item: Any
-    ) -> Annotated[List[ArrayType], ArrayMeta]:
-        return Annotated[List[item], ArrayMeta(item)]
+        cls, item_type: type["ESBaseModel"]
+    ) -> Annotated[ESBaseModelType, ComplexMeta]:
+        return Annotated[Optional[item_type], ComplexMeta(item_type)]
+
+
+class Array(Generic[ESBaseModelType]):
+    def __class_getitem__(
+        cls, item_type: type["ESBaseModelType"]
+    ) -> Annotated[List[ESBaseModelType], ComplexMeta]:
+        return Annotated[List[item_type], ComplexMeta(item_type)]
 
 
 # --- Base entity class ---
-class IndexerEntity(BaseModel):
+class ESBaseModel(BaseModel):
     __index_name__: str = "undefined"
     __id_field__: str = "id"
     __index_version__: str = "init"
@@ -98,19 +125,34 @@ class IndexerEntity(BaseModel):
         args = get_args(annotated_type)
 
         if origin is Annotated and len(args) == 2:
-            _, meta = args
+            type_, meta = args
 
-            if isinstance(meta, EsDataType):
-                return {"type": meta.value}
-
-            elif isinstance(meta, ObjectMeta):
+            if isinstance(type_, type) and issubclass(type_, ESBaseModel):
                 return {
                     "type": "nested",
-                    "properties": meta.model.object_schema(),
+                    "properties": type_.object_schema(),
                 }
 
-            elif isinstance(meta, ArrayMeta):
+            if isinstance(meta, IndexerDataType):
+                return {"type": meta.value}
+
+            if isinstance(meta, ComplexMeta):
                 return cls.field_schema(meta.item_type)
+
+            raise ValueError(f"Unsupported Annotated meta: {meta}")
+
+        elif isinstance(annotated_type, type) and issubclass(
+            annotated_type, ESBaseModel
+        ):
+            return {
+                "type": "nested",
+                "properties": annotated_type.object_schema(),
+            }
+
+        raise ValueError(
+            "Invalid type (neither Annotated nor ESBaseModel): "
+            f"{annotated_type}"
+        )
 
     @classmethod
     def object_schema(cls) -> dict:
@@ -118,12 +160,14 @@ class IndexerEntity(BaseModel):
         hints = get_type_hints(cls, include_extras=True)
 
         for field_name, annotated_type in hints.items():
-            cls.field_schema(props, field_name, annotated_type)
+            if field_name.startswith("__"):
+                continue
+            props[field_name] = cls.field_schema(annotated_type)
 
         return props
 
     @classmethod
-    def es_schema(cls) -> dict:
+    def index_schema(cls) -> dict:
         return {
             "mappings": {
                 "_meta": {"index.version": cls.__index_version__},
@@ -143,25 +187,25 @@ class IndexerRequest(BaseModel):
     query: IndexerQuery
 
 
-class Hit(BaseModel, Generic[IndexerEntityType]):
+class Hit(BaseModel, Generic[ESBaseModelType]):
     _index: str
     _type: str | None
     _id: str
     _score: float | None
-    _source: IndexerEntityType
+    _source: ESBaseModelType
 
 
-class Hits(BaseModel, Generic[IndexerEntityType]):
+class Hits(BaseModel, Generic[ESBaseModelType]):
     total: int | dict
     max_score: float | None
-    hits: List[Hit[IndexerEntityType]]
+    hits: List[Hit[ESBaseModelType]]
 
 
-class IndexerResponse(BaseModel, Generic[IndexerEntityType]):
+class IndexerResponse(BaseModel, Generic[ESBaseModelType]):
     took: int
     timed_out: bool
     _shards: Dict[str, Any]
-    hits: Hits[IndexerEntityType]
+    hits: Hits[ESBaseModelType]
 
 
 class IndexIsNotAvailableException(HTTPException):
@@ -173,6 +217,17 @@ class IndexIsNotAvailableException(HTTPException):
         )
 
 
+def _create_session() -> IndexerSession:
+    return Elasticsearch(
+        hosts=VeraConfig.ElasticsearchUrl,
+        basic_auth=(
+            VeraConfig.ElasticsearchUsername,
+            VeraConfig.ElasticsearchPassword,
+        ),
+        timeout=VeraConfig.RequestTimeout,
+    )
+
+
 def is_indexer_available() -> bool:
     try:
         response = requests.get(VeraConfig.ElasticsearchUrl)
@@ -181,13 +236,7 @@ def is_indexer_available() -> bool:
     except RequestException:
         return False
     try:
-        return Elasticsearch(
-            VeraConfig.ElasticsearchUrl,
-            basic_auth=(
-                VeraConfig.ElasticsearchUsername,
-                VeraConfig.ElasticsearchPassword,
-            ),
-        ).ping()
+        return _create_session().ping()
     except Exception:
         return False
 
@@ -195,14 +244,7 @@ def is_indexer_available() -> bool:
 def get_indexer_session() -> Generator[IndexerSession, None, None]:
     if not is_indexer_available():
         raise IndexIsNotAvailableException()
-    session = Elasticsearch(
-        hosts=VeraConfig.Elasticsearch.Url,
-        basic_auth=(
-            VeraConfig.Elasticsearch.Username,
-            VeraConfig.Elasticsearch.Password,
-        ),
-        timeout=VeraConfig.RequestTimeout,
-    )
+    session = _create_session()
     try:
         yield session
     finally:
@@ -215,48 +257,11 @@ def with_indexer_session(func: Callable) -> Callable:
         if not is_indexer_available():
             raise IndexIsNotAvailableException()
 
-        es_session = Elasticsearch(
-            hosts=VeraConfig.Elasticsearch.Url,
-            basic_auth=(
-                VeraConfig.Elasticsearch.Username,
-                VeraConfig.Elasticsearch.Password,
-            ),
-            timeout=VeraConfig.RequestTimeout,
-        )
+        session = _create_session()
 
         try:
-            return func(es_session, *args, **kwargs)
+            return func(session, *args, **kwargs)
         finally:
-            es_session.close()
+            session.close()
 
     return wrapper
-
-
-def has_current_version_schema(
-    index_name: str, index_version: str, indexer_session: IndexerSession
-) -> bool:
-    current_mapping = indexer_session.indices.get_mapping(
-        index=index_name
-    ).get(index_name, {})
-
-    if not current_mapping:
-        return False
-
-    return (
-        current_mapping.get("mappings", {})
-        .get("_meta", {})
-        .get("index.version", None)
-        == index_version
-    )
-
-
-def recreate_index(
-    index_name: str, schema: dict, indexer_session: IndexerSession
-):
-    if indexer_session.indices.exists(index=index_name):
-        indexer_session.indices.delete(index=index_name)
-    indexer_session.indices.create(index=index_name, body=schema)
-
-
-def refresh_index(index_name: str, indexer_session: IndexerSession):
-    indexer_session.indices.refresh(index=index_name)

@@ -1,8 +1,8 @@
 from datetime import datetime
 
+from esorm import ESBaseModel, ESModel
 from pydantic import BaseModel
 
-from adapters.indexer import Boolean, Date, IndexerEntity, Integer, Keyword
 from schemas.project import ProjectSummary
 
 
@@ -20,17 +20,23 @@ class IntentionEdit(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class IntentionSummary(IndexerEntity):
-    id: Integer
-    name: Keyword
+class IntentionSummary(ESBaseModel):
+    id: int
+    name: str
 
 
-class Intention(IndexerEntity):
-    description: Keyword | None
+class Intention(ESModel):
+    class ESConfig:
+        index = "intentions"
 
-    target_page_count: Integer | None
-    start_date: Date | None
-    end_date: Date | None
+    id: int
+
+    name: str
+    description: str | None
+
+    target_page_count: int | None
+    start_date: datetime | None
+    end_date: datetime | None
 
     project: ProjectSummary | None
-    is_archived: Boolean
+    is_archived: bool

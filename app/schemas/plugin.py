@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 from pydantic import BaseModel
 from vera_plugins.definitions.plugin_types import PluginType
 
-from adapters.indexer import Boolean, IndexerEntity, Integer, Keyword
+from adapters.indexer import ESBaseModel, bool, int, str
 
 
 class PluginsFilterParams(BaseModel):
@@ -55,18 +55,18 @@ class PluginInstanceSummary(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class PluginProperty(IndexerEntity):
-    plugin_instance_id: Keyword
-    name: Keyword
+class PluginProperty(ESBaseModel):
+    plugin_instance_id: str
+    name: str
 
 
 class StringPluginProperty(PluginProperty):
-    value: Keyword | None = None
+    value: str | None
 
 
-class IntegerPluginProperty(PluginProperty):
-    value: Integer | None = None
+class intPluginProperty(PluginProperty):
+    value: int | None = None
 
 
-class BooleanPluginProperty(PluginProperty):
-    value: Boolean | None = None
+class boolPluginProperty(PluginProperty):
+    value: bool | None = None

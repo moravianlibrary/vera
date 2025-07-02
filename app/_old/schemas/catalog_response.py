@@ -1,43 +1,37 @@
 from typing import List, Optional, Tuple
+from uuid import uuid4
+
 from datatypes import AddDocumentResponseStatus, IdentifierType
-from mzk_aleph import AlephMzkRecord
-from mzk_aleph import AlephMzkIssue
-from mzk_aleph import MaterialType, IssuanceType
+from models import CatalogRecord
+from mzk_aleph import AlephMzkIssue, AlephMzkRecord, IssuanceType, MaterialType
+from pydantic import Field
+
+from config import VeraConfig
 from services.external.digitization_registry import (
     DigitizationRegistryRecord,
+    DigitizationState,
 )
-from services.external.digitization_registry import DigitizationState
-from models import CatalogRecord
-from .base_es_model import (
-    BaseEsModel,
-    Keyword,
-    Boolean,
-    Integer,
-    Date,
-    EsSession,
-)
-from pydantic import Field
-from uuid import uuid4
-from config import VeraConfig
+
+from .base_es_model import BaseEsModel, Date, EsSession, bool, int, str
 
 
 class CatalogIssueResponse(BaseEsModel):
     issuance_type: Optional[IssuanceType] = None
-    barcode: Optional[Keyword] = None
-    volume: Optional[Keyword] = None
-    volume_year: Optional[Keyword] = None
-    bundle: Optional[Keyword] = None
-    signature: Optional[Keyword] = None
+    barcode: Optional[str] = None
+    volume: Optional[str] = None
+    volume_year: Optional[str] = None
+    bundle: Optional[str] = None
+    signature: Optional[str] = None
 
-    document_id: Optional[Integer] = None
-    page_count: Optional[Integer] = None
+    document_id: Optional[int] = None
+    page_count: Optional[int] = None
 
-    digitization_registry_id: Optional[Integer] = None
+    digitization_registry_id: Optional[int] = None
     digitization_state: DigitizationState = DigitizationState.NotDigitized
 
-    can_digitize: Boolean = True
-    newly_added: Boolean = False
-    processing: Boolean = False
+    can_digitize: bool = True
+    newly_added: bool = False
+    processing: bool = False
 
     @classmethod
     def from_aleph_issue(
@@ -90,15 +84,15 @@ class CatalogIssueResponse(BaseEsModel):
 
 
 class CatalogDocumentResponse(BaseEsModel):
-    sysno: Keyword
-    title: Keyword
+    sysno: str
+    title: str
     material_type: MaterialType
     issues: List[CatalogIssueResponse]
 
-    skc_sysno: Optional[Keyword] = None
-    has_valid_main_record: Boolean = False
-    cnb_sysno: Optional[Keyword] = None
-    has_valid_cnb: Boolean = False
+    skc_sysno: Optional[str] = None
+    has_valid_main_record: bool = False
+    cnb_sysno: Optional[str] = None
+    has_valid_cnb: bool = False
 
     @classmethod
     def from_records(
@@ -134,16 +128,16 @@ class CatalogDocumentResponse(BaseEsModel):
 
 class Identifier(BaseEsModel):
     identifier_type: IdentifierType
-    value: Keyword
+    value: str
 
 
 class IdentifierWithAttributes(Identifier):
     class Config:
         from_attributes = True
 
-    category_id: Integer
-    extraction_priority: Optional[Integer] = None
-    page_count_manual: Optional[Integer] = None
+    category_id: int
+    extraction_priority: Optional[int] = None
+    page_count_manual: Optional[int] = None
 
     @property
     def identifier_pair(self) -> Tuple[IdentifierType, str]:
@@ -157,13 +151,13 @@ class AddDocumentResponse(BaseEsModel):
     class Config:
         from_attributes = True
 
-    id: Keyword = Field(default_factory=lambda: str(uuid4()))
+    id: str = Field(default_factory=lambda: str(uuid4()))
     attributes: IdentifierWithAttributes
-    indexed_at: Date = VeraConfig.Timestamp.isoformat()
+    indexed_at: datetime = VeraConfig.Timestamp.isoformat()
     status: AddDocumentResponseStatus = AddDocumentResponseStatus.Unprocessed
     document: Optional[CatalogDocumentResponse] = None
-    added_by: Keyword
-    document_id: Optional[Integer] = None
+    added_by: str
+    document_id: Optional[int] = None
 
     def set_issue_processing(self, issue_barcode: str):
         if self.document and self.document.issues:

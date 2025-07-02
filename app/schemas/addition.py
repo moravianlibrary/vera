@@ -1,15 +1,9 @@
+from datetime import datetime
 from typing import List
 
+from esorm import ESBaseModel, ESModel
 from pydantic import BaseModel, Field, model_validator
 
-from adapters.indexer import (
-    Boolean,
-    Date,
-    Enumerate,
-    IndexerEntity,
-    Integer,
-    Keyword,
-)
 from definitions.addition import AdditionStatus
 from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
@@ -64,45 +58,45 @@ class IngestAdditionsResponse(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class AdditionProject(IndexerEntity):
-    id: Integer
-    name: Keyword
-    description: Keyword | None = None
+class AdditionProject(ESBaseModel):
+    id: int
+    name: str
+    description: str | None
 
 
-class AdditionProposal(IndexerEntity):
-    id: Integer
+class AdditionProposal(ESBaseModel):
+    id: int
 
-    batch_id: Integer
-    batch_name: Keyword | None = None
-    file_name: Keyword | None = None
+    batch_id: int
+    batch_name: str | None
+    file_name: str | None
 
-    reason_message: Keyword | None = None
+    reason_message: str | None
 
 
-class Addition(IndexerEntity):
-    id: Integer
+class Addition(ESModel):
+    id: int
 
-    batch_id: Integer
-    batch_name: Keyword | None = None
-    file_name: Keyword | None = None
-    created_by: Keyword
-    created_at: Date
-    is_archived: Boolean
+    batch_id: int
+    batch_name: str | None
+    file_name: str | None
+    created_by: str
+    created_at: datetime
+    is_archived: bool
 
-    identifier_type: Enumerate[IdentifierType]
-    identifier_value: Keyword
-    category_id: Integer
-    priority: Integer
+    identifier_type: IdentifierType
+    identifier_value: str
+    category_id: int
+    priority: Priority
 
-    allow_new_iteration: Boolean
-    ignore_digitization_check: Boolean
+    allow_new_iteration: bool
+    ignore_digitization_check: bool
 
-    status: Enumerate[AdditionStatus]
-    eligibility_status: Enumerate[EligibilityStatus] | None
+    status: AdditionStatus
+    eligibility_status: EligibilityStatus | None
 
-    project: AdditionProject | None = None
-    proposal: AdditionProposal | None = None
+    project: AdditionProject | None
+    proposal: AdditionProposal | None
 
 
 # -------------
