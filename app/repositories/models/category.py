@@ -1,9 +1,21 @@
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import Boolean, Column, Float, ForeignKey, Integer, String
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Tuple,
+    func,
+    select,
+)
 from sqlalchemy.orm import Mapped, relationship
 
-from adapters.database import BaseModel
+from adapters.database import BaseModel, DatabaseSession
+from definitions.category import CategoryDocumentFilter
+from repositories.models.document import DocumentModel
 
 from .associations import category_group_association, category_user_association
 
@@ -20,14 +32,22 @@ class CategoryModel(BaseModel):
 
     name = Column(String, unique=True, nullable=False)
     description = Column(String)
-    project_id = Column(Integer, ForeignKey("projects.id"))
-    parent_id = Column(Integer, ForeignKey("categories.id"))
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
+    parent_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     level = Column(Integer, nullable=False)
 
     assignable = Column(Boolean, nullable=False)
     extract_whole = Column(Boolean, nullable=False)
     disabled = Column(Boolean, default=False, nullable=False)
     archived = Column(Boolean, default=False, nullable=False)
+
+    # Document discovery
+    plugin_instance_id = Column(
+        Integer, ForeignKey("plugin_instances.id"), nullable=True
+    )
+    scheduled_task_id = Column(
+        Integer, ForeignKey("scheduled_tasks.id"), nullable=True
+    )
 
     # Hierarchical relationship
     parent: Mapped[Optional["CategoryModel"]] = relationship(
@@ -94,14 +114,35 @@ class CategoryModel(BaseModel):
 
         return list(_users)
 
-    # +hasScript(): bool
-    # +hasRecurringTask(): bool
-    # +totalPageCount(): int
-    # +totalDocuments(): int
-    # +extractablePageCount(): int
-    # +extractableDocuments(): int
-    # +extractedPageCount(): int
-    # +extractedDocuments(): int
+    def total_documents_and_pages(
+        self,
+        database_session: DatabaseSession,
+        filter: CategoryDocumentFilter = CategoryDocumentFilter.All,
+    ) -> Tuple[int, int]:
+        stmt = (
+            select(
+                func.count(DocumentModel.id),
+                func.sum(DocumentModel.page_count),
+            )
+            .join(
+                DocumentIterationModel,
+                DocumentModel.id == DocumentIterationModel.document_id,
+            )
+            .where(DocumentIterationModel.category_id == self.id)
+            .where(DocumentIterationModel.is_archived.is_(False))
+        )
+
+        if filter == CategoryDocumentFilter.Extractable:
+            stmt = stmt.where(DocumentModel.can_be_extracted.is_(True)).where(
+                DocumentIterationModel.digitization_list_id.is_(None)
+            )
+        elif filter == CategoryDocumentFilter.Extracted:
+            stmt = stmt.where(
+                DocumentIterationModel.digitization_list_id.is_not(None)
+            )
+
+        count, page_sum = database_session.execute(stmt).one()
+        return (count or 0, page_sum or 0)
 
 
 # TODO: Audits

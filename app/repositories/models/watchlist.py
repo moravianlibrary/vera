@@ -1,4 +1,4 @@
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy import Column, Enum, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -6,6 +6,9 @@ from sqlalchemy.orm import Mapped, relationship
 
 from adapters.database import BaseModel
 from definitions.watchlist import WatchlistMode, WatchlistTarget
+
+if TYPE_CHECKING:
+    from .user import UserModel
 
 
 class WatchlistModel(BaseModel):
@@ -43,4 +46,10 @@ class WatchlistSubscriptionModel(BaseModel):
         "WatchlistModel",
         back_populates="subscriptions",
         foreign_keys=[watchlist_id],
+    )
+
+    users: Mapped[List["UserModel"]] = relationship(
+        "UserModel",
+        back_populates="watchlist_subscriptions",
+        lazy="joined",
     )

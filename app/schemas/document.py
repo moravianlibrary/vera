@@ -1,18 +1,25 @@
 from typing import List
 
-from esorm import ESBaseModel, ESModel
-from esorm.fields import keyword
 from marcdantic import IssuanceType
 from pydantic import BaseModel, model_validator
 from vera_plugins.specs.digitization_registry_adapter import (
     DigitizationRecordState,
 )
 
-from adapters.indexer import EnumList
-from definitions.digitization_registry import DigitizationState
+from adapters.indexer import (
+    AdditionalPropertiesModel,
+    EnumList,
+    IndexerModel,
+    IndexerNestedModel,
+)
+from definitions.digitization_registry import (
+    DigitizationListState,
+    DigitizationState,
+)
 from definitions.document import (
     DEFAULT_EXPORT_FIELDS,
     DEFAULT_EXPORT_FILENAME,
+    DocumentStatus,
     ExportFormat,
 )
 
@@ -47,19 +54,33 @@ class DocumentExportParams(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class DocumentDigitizationRecord(ESBaseModel):
-    registry_record_id: keyword
+class DocumentDigitizationRecord(IndexerNestedModel):
+    registry_record_id: str
     record_state: EnumList[DigitizationRecordState]
-    registry_issue_id: keyword | None
+    registry_issue_id: str | None
     issue_state: DigitizationRecordState | None
-    link: keyword | None = None
-    error_message: keyword | None = None
+    link: str | None = None
+    error_message: str | None = None
 
 
-DocumentProperties = ESBaseModel
+class DocumentPageCount(IndexerNestedModel):
+    plugin_instance_id: int
+    key: str
+    page_count: int | None = None
+    priority: int
 
 
-class Document(ESModel):
+class DocumentCanBeExtracted(IndexerNestedModel):
+    plugin_instance_id: int
+    key: str
+    can_be_extracted: bool | None
+
+
+class DocumentAdditionalProperties(AdditionalPropertiesModel):
+    pass
+
+
+class Document(IndexerModel):
     class ESConfig:
         index = "documents"
 
@@ -77,17 +98,21 @@ class Document(ESModel):
     bundle: str | None
     issuance_type: IssuanceType | None
 
-    digitization_state: DigitizationState
+    digitization_state: EnumList[DigitizationState]
     digitization_records: List[DocumentDigitizationRecord]
-    page_count: int | None
-    page_count_manual: int | None
 
-    properties: DocumentProperties | None
+    page_count_manual: int | None
+    page_count_source: List[DocumentPageCount] | None
+    page_count: int | None
+
+    can_be_extracted_source: List[DocumentCanBeExtracted] | None
+
+    additional_properties: DocumentAdditionalProperties | None
 
     category_id: int
     priority: int
+
     digitization_list_id: int | None
+    digitization_list_state: DigitizationListState | None
 
-    can_be_extracted: bool
-
-    is_archived: bool
+    status: EnumList[DocumentStatus]

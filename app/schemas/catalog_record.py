@@ -1,4 +1,16 @@
+from datetime import datetime
+from typing import List
+
 from pydantic import BaseModel, model_validator
+
+from adapters.indexer import (
+    AdditionalPropertiesModel,
+    EnumList,
+    IndexerModel,
+    IndexerNestedModel,
+)
+from definitions.catalog_record import CatalogRecordStatus
+from definitions.identifier import IdentifierType
 
 
 class CatalogRecordsSyncParams(BaseModel):
@@ -14,8 +26,48 @@ class CatalogRecordsSyncParams(BaseModel):
         return model
 
 
-class CatalogRecord(BaseModel):
+class CatalogRecordIdentifier(IndexerNestedModel):
+    identifier_type: IdentifierType
+    identifier_value: str
+
+
+class CatalogRecordValidity(IndexerNestedModel):
+    plugin_instance_id: int
+    key: str
+    valid: bool | None
+
+
+class CatalogRecordStatusLog(IndexerNestedModel):
+    status: CatalogRecordStatus
+    updated_by: str
+    updated_at: datetime
+
+
+class CatalogRecordAdditionalProperties(AdditionalPropertiesModel):
     pass
+
+
+class CatalogRecord(IndexerModel):
+    class ESConfig:
+        index = "catalog_records"
+
+    id: str
+
+    base: str
+    system_number: str
+
+    marc: bytes
+
+    identifiers: List[CatalogRecordIdentifier]
+
+    set_valid: bool | None
+    validity_source: List[CatalogRecordValidity] | None
+    is_valid: bool
+
+    current_status: EnumList[CatalogRecordStatus]
+    status_log: List[CatalogRecordStatusLog]
+
+    additional_properties: CatalogRecordAdditionalProperties | None
 
 
 class CatalogRecordDetails(BaseModel):

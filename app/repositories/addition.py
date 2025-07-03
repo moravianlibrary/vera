@@ -7,7 +7,12 @@ from repositories.models.project import ProjectModel
 from schemas.addition import Addition, AdditionCreate
 
 from ._base import BaseRepository
-from ._mixins import GetByQueryMixin, SaveMixin, SearchAllMixin, SearchMixin
+from ._database_mixins import (
+    GetByQueryMixin,
+    SaveMixin,
+    SearchAllMixin,
+    SearchMixin,
+)
 from .models.addition import AdditionModel
 from .models.proposal import ProposalModel
 

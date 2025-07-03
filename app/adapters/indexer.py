@@ -1,43 +1,26 @@
-from dataclasses import dataclass
-from datetime import datetime
+from contextlib import asynccontextmanager
 from enum import Enum
 from functools import wraps
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generator,
-    Generic,
-    List,
-    Optional,
-    Type,
-    TypeVar,
-    get_origin,
-    get_type_hints,
-)
+from typing import Any, Callable, Dict, Generic, Optional, Type, TypeVar
 
-import requests
-from elasticsearch import Elasticsearch
-from esorm import es
+from aiohttp import ClientSession
+from elasticsearch import AsyncElasticsearch
+from esorm import ESBaseModel, ESModel, es
+from esorm.query import ESQuery
+from esorm.response import ESResponse
 from fastapi import HTTPException, status
-from pydantic import BaseModel
-from requests.exceptions import RequestException
-from typing_extensions import Annotated, get_args
+from pydantic.fields import FieldInfo
 
 from config import VeraConfig
 
-type IndexerSession = Elasticsearch
+type IndexerSession = AsyncElasticsearch
+IndexerModel = ESModel
+IndexerNestedModel = ESBaseModel
+IndexerRequest = ESQuery
+IndexerQuery = ESQuery
+IndexerResponse = ESResponse
 
-
-async def patch_es_meta():
-    original_put_mapping = es.indices.put_mapping
-
-    async def patched_put_mapping(*args, **kwargs):
-        kwargs.setdefault("dynamic", "strict")
-        kwargs.setdefault("meta", {"index.version": "1.0.0"})
-        return await original_put_mapping(*args, **kwargs)
-
-    es.indices.put_mapping = patched_put_mapping
+IndexerModelType = TypeVar("IndexerModelType", bound=IndexerModel)
 
 
 EnumType = TypeVar("EnumType", bound=Enum)
@@ -63,149 +46,59 @@ class EnumList(Generic[EnumType]):
         return Wrapper
 
 
-class IndexerDataType(str, Enum):
-    str = "keyword"
-    Text = "text"
-    int = "int"
-    Float = "float"
-    bool = "boolean"
-    Date = "date"
-
-
-# --- Scalar types ---
-str = Annotated[str, IndexerDataType.str]
-Text = Annotated[str, IndexerDataType.Text]
-int = Annotated[int, IndexerDataType.int]
-Float = Annotated[float, IndexerDataType.Float]
-bool = Annotated[bool, IndexerDataType.bool]
-Date = Annotated[datetime, IndexerDataType.Date]
-
-# --- Complex types ---
-ESBaseModelType = TypeVar("ESBaseModelType", bound="ESBaseModel")
-EnumType = TypeVar("EnumType", bound=Enum)
-ItemType = str | Text | int | Float | bool | Date | ESBaseModelType
-
-
-@dataclass
-class ComplexMeta:
-    item_type: ItemType
-
-
-class Enumerate(Generic[EnumType]):
-    def __class_getitem__(
-        cls, enum_type: type[EnumType]
-    ) -> Annotated[type[EnumType], IndexerDataType.str]:
-        return Annotated[enum_type, IndexerDataType.str]
-
-
-class Nullable(Generic[ESBaseModelType]):
-    def __class_getitem__(
-        cls, item_type: type["ESBaseModel"]
-    ) -> Annotated[ESBaseModelType, ComplexMeta]:
-        return Annotated[Optional[item_type], ComplexMeta(item_type)]
-
-
-class Array(Generic[ESBaseModelType]):
-    def __class_getitem__(
-        cls, item_type: type["ESBaseModelType"]
-    ) -> Annotated[List[ESBaseModelType], ComplexMeta]:
-        return Annotated[List[item_type], ComplexMeta(item_type)]
-
-
-# --- Base entity class ---
-class ESBaseModel(BaseModel):
-    __index_name__: str = "undefined"
-    __id_field__: str = "id"
-    __index_version__: str = "init"
-    __dynamic__: str = "strict"
-
+class AdditionalPropertiesModel(IndexerNestedModel):
     @classmethod
-    def field_schema(cls, annotated_type):
-        origin = get_origin(annotated_type)
-        args = get_args(annotated_type)
+    def add_fields(cls, **field_definitions: Any):
+        new_fields: Dict[str, FieldInfo] = {}
+        new_annotations: Dict[str, Optional[type]] = {}
 
-        if origin is Annotated and len(args) == 2:
-            type_, meta = args
+        for f_name, f_def in field_definitions.items():
+            if isinstance(f_def, tuple):
+                if len(f_def) != 2:
+                    raise TypeError(
+                        f"Field definition for '{f_name}' must be "
+                        "a tuple of (type, default), e.g., `str, 'hello'`. "
+                        "Tuples as default values "
+                        "are not supported in this format."
+                    )
+                f_annotation, f_value = f_def
+            else:
+                f_annotation, f_value = None, f_def
 
-            if isinstance(type_, type) and issubclass(type_, ESBaseModel):
-                return {
-                    "type": "nested",
-                    "properties": type_.object_schema(),
-                }
+            if f_annotation:
+                new_annotations[f_name] = f_annotation
 
-            if isinstance(meta, IndexerDataType):
-                return {"type": meta.value}
+            new_fields[f_name] = FieldInfo(
+                annotation=f_annotation, default=f_value
+            )
 
-            if isinstance(meta, ComplexMeta):
-                return cls.field_schema(meta.item_type)
+        cls.model_fields.update(new_fields)
+        cls.model_rebuild(force=True)
 
-            raise ValueError(f"Unsupported Annotated meta: {meta}")
 
-        elif isinstance(annotated_type, type) and issubclass(
-            annotated_type, ESBaseModel
-        ):
-            return {
-                "type": "nested",
-                "properties": annotated_type.object_schema(),
-            }
+def _patch_es_meta():
+    original_put_mapping = es.indices.put_mapping
 
-        raise ValueError(
-            "Invalid type (neither Annotated nor ESBaseModel): "
-            f"{annotated_type}"
+    async def patched_put_mapping(*args, **kwargs):
+        kwargs.setdefault("dynamic", "strict")
+        kwargs.setdefault("meta", {"index.version": "1.0.0"})
+        return await original_put_mapping(*args, **kwargs)
+
+    es.indices.put_mapping = patched_put_mapping
+
+
+async def connect():
+    es.set_client(
+        AsyncElasticsearch(
+            hosts=VeraConfig.ElasticsearchUrl,
+            basic_auth=(
+                VeraConfig.ElasticsearchUsername,
+                VeraConfig.ElasticsearchPassword,
+            ),
+            timeout=VeraConfig.RequestTimeout,
         )
-
-    @classmethod
-    def object_schema(cls) -> dict:
-        props = {}
-        hints = get_type_hints(cls, include_extras=True)
-
-        for field_name, annotated_type in hints.items():
-            if field_name.startswith("__"):
-                continue
-            props[field_name] = cls.field_schema(annotated_type)
-
-        return props
-
-    @classmethod
-    def index_schema(cls) -> dict:
-        return {
-            "mappings": {
-                "_meta": {"index.version": cls.__index_version__},
-                "dynamic": cls.__dynamic__,
-                "properties": cls.object_schema(),
-            }
-        }
-
-
-class IndexerQuery(BaseModel):
-    bool: Dict[str, Any] | None = None
-    match: Dict[str, Any] | None = None
-    term: Dict[str, Any] | None = None
-
-
-class IndexerRequest(BaseModel):
-    query: IndexerQuery
-
-
-class Hit(BaseModel, Generic[ESBaseModelType]):
-    _index: str
-    _type: str | None
-    _id: str
-    _score: float | None
-    _source: ESBaseModelType
-
-
-class Hits(BaseModel, Generic[ESBaseModelType]):
-    total: int | dict
-    max_score: float | None
-    hits: List[Hit[ESBaseModelType]]
-
-
-class IndexerResponse(BaseModel, Generic[ESBaseModelType]):
-    took: int
-    timed_out: bool
-    _shards: Dict[str, Any]
-    hits: Hits[ESBaseModelType]
+    )
+    _patch_es_meta()
 
 
 class IndexIsNotAvailableException(HTTPException):
@@ -217,51 +110,39 @@ class IndexIsNotAvailableException(HTTPException):
         )
 
 
-def _create_session() -> IndexerSession:
-    return Elasticsearch(
-        hosts=VeraConfig.ElasticsearchUrl,
-        basic_auth=(
-            VeraConfig.ElasticsearchUsername,
-            VeraConfig.ElasticsearchPassword,
-        ),
-        timeout=VeraConfig.RequestTimeout,
-    )
-
-
-def is_indexer_available() -> bool:
+async def is_indexer_available() -> bool:
     try:
-        response = requests.get(VeraConfig.ElasticsearchUrl)
-        if response.status_code not in [200, 401]:
-            return False
-    except RequestException:
+        async with ClientSession() as session:
+            async with session.get(VeraConfig.ElasticsearchUrl) as resp:
+                if resp.status not in [200, 401]:
+                    return False
+    except Exception:
         return False
     try:
-        return _create_session().ping()
+        await connect()
+        return await es.ping()
     except Exception:
         return False
 
 
-def get_indexer_session() -> Generator[IndexerSession, None, None]:
-    if not is_indexer_available():
+@asynccontextmanager
+async def get_indexer_session():
+    if not await is_indexer_available():
         raise IndexIsNotAvailableException()
-    session = _create_session()
     try:
-        yield session
+        yield es
     finally:
-        session.close()
+        await es.close()
 
 
 def with_indexer_session(func: Callable) -> Callable:
     @wraps(func)
-    def wrapper(*args, **kwargs) -> Any:
-        if not is_indexer_available():
+    async def wrapper(*args, **kwargs):
+        if not await is_indexer_available():
             raise IndexIsNotAvailableException()
-
-        session = _create_session()
-
         try:
-            return func(session, *args, **kwargs)
+            return await func(es, *args, **kwargs)
         finally:
-            session.close()
+            await es.close()
 
     return wrapper

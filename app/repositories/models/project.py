@@ -46,7 +46,7 @@ class ProjectModel(BaseModel, CreatedAuditMixin):
 
     is_archived = Column(Boolean, default=False, nullable=False)
 
-    status_logs = relationship(
+    status_log: Mapped[List["ProjectStatusLogModel"]] = relationship(
         "ProjectStatusLogModel",
         backref="project",
         cascade="all, delete-orphan",
@@ -82,4 +82,6 @@ class ProjectStatusLogModel(BaseModel, UpdatedAuditMixin):
     status = Column(Enum(ProjectStatus), nullable=False)
     message = Column(String, nullable=True)
 
-    project = relationship("ProjectModel", backref="status_logs")
+    project: Mapped["ProjectModel"] = relationship(
+        "ProjectModel", backref="status_log"
+    )

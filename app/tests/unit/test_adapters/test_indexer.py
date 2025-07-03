@@ -1,8 +1,14 @@
+from typing import List
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock
 
-from esorm import ESModel, es, setup_mappings
+from esorm import es, setup_mappings
 
+from adapters.indexer import (
+    AdditionalPropertiesModel,
+    IndexerModel,
+    IndexerNestedModel,
+)
 from schemas.addition import Addition
 from schemas.category import Category
 from schemas.digitization_list import DigitizationList
@@ -13,9 +19,10 @@ from schemas.proposal import Proposal
 
 
 class TestIndexSchemaContext:
-    def __init__(self) -> None:
+    def __init__(self, setup_mappings: bool = True) -> None:
+        self.setup_mappings = setup_mappings
         self.init_done: bool = False
-        self.num_indexes: int = 7
+        self.num_indexes: int = 8
 
     async def setUp(self):
         if self.init_done:
@@ -31,13 +38,14 @@ class TestIndexSchemaContext:
 
         es.set_client(self.mock_client)
 
-        await setup_mappings()
+        if self.setup_mappings:
+            await setup_mappings()
 
         self.init_done = True
 
 
-class TestIndexSchema(IsolatedAsyncioTestCase):
-    context = TestIndexSchemaContext()
+class TestIndexBase(IsolatedAsyncioTestCase):
+    context: TestIndexSchemaContext
 
     async def asyncSetUp(self):
         await self.context.setUp()
@@ -54,7 +62,9 @@ class TestIndexSchema(IsolatedAsyncioTestCase):
 
         self.maxDiff = None
 
-    async def assertEsSchema(self, schema_class: ESModel, expected_properties):
+    async def assertEsSchema(
+        self, schema_class: IndexerModel, expected_properties
+    ):
         self.assertIsNotNone(
             schema_class.ESConfig.index, "Index name must be defined"
         )
@@ -77,6 +87,10 @@ class TestIndexSchema(IsolatedAsyncioTestCase):
             expected_properties,
             "ES schema properties do not match expected properties",
         )
+
+
+class TestIndexSchema(TestIndexBase):
+    context = TestIndexSchemaContext()
 
     async def test_addition_schema(self):
         await self.assertEsSchema(
@@ -198,7 +212,7 @@ class TestIndexSchema(IsolatedAsyncioTestCase):
         )
 
     async def test_document_schema(self):
-        self.assertEsSchema(
+        await self.assertEsSchema(
             Document,
             {
                 "catalog_record_id": {"type": "keyword"},
@@ -224,6 +238,7 @@ class TestIndexSchema(IsolatedAsyncioTestCase):
                 },
                 "page_count": {"type": "long"},
                 "page_count_manual": {"type": "long"},
+                "additional_properties": {"properties": {}},
                 "category_id": {"type": "long"},
                 "priority": {"type": "long"},
                 "digitization_list_id": {"type": "long"},
@@ -346,6 +361,63 @@ class TestIndexSchema(IsolatedAsyncioTestCase):
                         "updated_by": {"type": "keyword"},
                         "updated_at": {"type": "date"},
                     },
+                },
+            },
+        )
+
+
+class TestIndexExtendPropertiesModel(TestIndexBase):
+    context = TestIndexSchemaContext(False)
+
+    async def asyncSetUp(self):
+        await self.context.setUp()
+
+        self.context.mock_client.indices.get_mapping.assert_not_awaited()
+        self.context.mock_client.indices.create.assert_not_awaited()
+        self.context.mock_client.indices.put_mapping.assert_not_awaited()
+
+        self.maxDiff = None
+
+    async def test_extend_properties_model(self):
+        class TestAdditionalProperties(AdditionalPropertiesModel):
+            pass
+
+        class TestModel(IndexerModel):
+            class ESConfig:
+                index = "test_index"
+
+            id: int
+            name: str
+            description: str | None
+            additional_properties: TestAdditionalProperties | None
+
+        class ExtraField(IndexerNestedModel):
+            name: str
+
+        TestAdditionalProperties.add_fields(
+            extra_field=(ExtraField, None),
+            extra_list_field=(List[ExtraField], None),
+            another_title=(str, None),
+        )
+
+        await setup_mappings()
+
+        await self.assertEsSchema(
+            TestModel,
+            {
+                "name": {"type": "keyword"},
+                "description": {"type": "keyword"},
+                "additional_properties": {
+                    "properties": {
+                        "another_title": {"type": "keyword"},
+                        "extra_field": {
+                            "properties": {"name": {"type": "keyword"}}
+                        },
+                        "extra_list_field": {
+                            "type": "nested",
+                            "properties": {"name": {"type": "keyword"}},
+                        },
+                    }
                 },
             },
         )

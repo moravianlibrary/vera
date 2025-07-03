@@ -15,4 +15,3 @@ class SystemSettings(BaseModel):
 
 class SystemSettingsEdit(BaseModel):
     pass
-    pass

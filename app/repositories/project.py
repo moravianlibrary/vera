@@ -4,7 +4,7 @@ from adapters.database import DatabaseSession
 from schemas.project import Project, ProjectEdit
 
 from ._base import BaseRepository
-from ._mixins import (
+from ._database_mixins import (
     EnforceNameUniquenessMixin,
     GetByIdMixin,
     SaveMixin,

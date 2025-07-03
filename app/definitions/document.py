@@ -13,3 +13,11 @@ class ExportFormat(str, Enum):
 
 
 Priority = Literal[1, 2, 3, 4, 5]
+
+
+class DocumentStatus(str, Enum):
+    Archived = "Archived"
+    AlreadyExtracted = "AlreadyExtracted"
+    CanBeExtracted = "CanBeExtracted"
+    CannotBeExtracted = "CannotBeExtracted"
+    MissingPageCount = "MissingPageCount"

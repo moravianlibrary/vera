@@ -3,7 +3,7 @@ from typing import Protocol, Type, TypeVar, Union
 from sqlalchemy.orm import DeclarativeMeta
 
 from adapters.database import DatabaseSession
-from adapters.indexer import ESBaseModel, IndexerSession
+from adapters.indexer import IndexerModel, IndexerSession
 
 DatabaseEntity = TypeVar("DatabaseEntity", bound=DeclarativeMeta)
 IdType = TypeVar("IdType", bound=Union[str, int])
@@ -37,7 +37,7 @@ class BaseIndexedRepository(BaseRepository):
         database_session: DatabaseSession,
         database_entity: Type[DatabaseEntity],
         indexer_session: IndexerSession,
-        indexer_entity: Type[ESBaseModel],
+        indexer_entity: Type[IndexerModel],
     ):
         super().__init__(entity_name, database_session, database_entity)
         self._indexer_session = indexer_session
@@ -78,4 +78,4 @@ class BaseIndexedRepository(BaseRepository):
 
 class IndexedRepositoryContext(RepositoryContext[DatabaseEntity]):
     _indexer_session: IndexerSession
-    _indexer_entity: Type[ESBaseModel]
+    _indexer_entity: Type[IndexerModel]

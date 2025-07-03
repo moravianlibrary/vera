@@ -12,7 +12,7 @@ from definitions.task import (
 )
 
 from ._base import BaseRepository
-from ._mixins import GetByIdMixin, PaginationMixin, SaveMixin
+from ._database_mixins import GetByIdMixin, PaginationMixin, SaveMixin
 from .models.task import TaskModel
 
 

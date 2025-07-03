@@ -1,8 +1,8 @@
 from typing import List
 
-from esorm import ESBaseModel
 from pydantic import BaseModel
 
+from adapters.indexer import IndexerNestedModel
 from schemas.user import UserSummary
 
 
@@ -35,6 +35,6 @@ class Group(GroupEdit):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class GroupSummary(ESBaseModel):
+class GroupSummary(IndexerNestedModel):
     id: int
     name: str

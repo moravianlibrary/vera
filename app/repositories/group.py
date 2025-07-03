@@ -5,7 +5,7 @@ from repositories.models.user import UserModel
 from schemas.group import GroupEdit
 
 from ._base import BaseRepository
-from ._mixins import (
+from ._database_mixins import (
     DeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,

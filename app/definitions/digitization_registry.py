@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import Literal
 
 
 class DigitizationState(Enum):
@@ -36,12 +35,26 @@ class DigitizationState(Enum):
     NotDigitized = "NotDigitized"
 
 
-DigitizationListState = Literal[
-    DigitizationState.Revision,
-    DigitizationState.Planned,
-    DigitizationState.InProgress,
-    DigitizationState.Finished,
-]
+class DigitizationListState(Enum):
+    """
+    Enumeration representing the possible states of a digitization list.
+
+    Attributes
+    ----------
+    Revision : str
+        The digitization list is under revision.
+    Planned : str
+        The digitization list is planned but has not started.
+    InProgress : str
+        The digitization list is currently in progress.
+    Finished : str
+        The digitization list process is completed.
+    """
+
+    Revision = "Revision"
+    Planned = "Planned"
+    InProgress = "InProgress"
+    Finished = "Finished"
 
 
 class DRFetchStatus(Enum):

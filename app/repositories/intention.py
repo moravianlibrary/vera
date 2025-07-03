@@ -2,7 +2,7 @@ from adapters.database import DatabaseSession
 from schemas.intention import Intention, IntentionEdit
 
 from ._base import BaseRepository
-from ._mixins import (
+from ._database_mixins import (
     EnforceNameUniquenessMixin,
     GetByIdMixin,
     GetByIdsMixin,

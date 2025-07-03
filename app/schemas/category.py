@@ -1,8 +1,8 @@
 from typing import List
 
-from esorm import ESBaseModel, ESModel
 from pydantic import BaseModel, model_validator
 
+from adapters.indexer import IndexerModel, IndexerNestedModel
 from definitions.category import Level
 from schemas.group import GroupSummary
 from schemas.user import UserSummary
@@ -40,7 +40,7 @@ class CategoryEdit(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class CategorySummary(ESBaseModel):
+class CategorySummary(IndexerNestedModel):
     id: int
 
     name: str
@@ -51,18 +51,18 @@ class CategorySummary(ESBaseModel):
     disabled: bool
 
 
-class CategoryProportion(ESBaseModel):
+class CategoryProportion(IndexerNestedModel):
     distribution_id: int
     proportion: float
     overall_proportion: float
 
 
-class DocumentDiscovery(ESBaseModel):
+class DocumentDiscovery(IndexerNestedModel):
     id: int
     scheduled_task_id: int | None
 
 
-class Category(ESModel):
+class Category(IndexerModel):
     class ESConfig:
         index = "categories"
 

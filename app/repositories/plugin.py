@@ -2,7 +2,7 @@ from adapters.database import DatabaseSession
 from schemas.plugin import PluginInstanceEdit
 
 from ._base import BaseRepository
-from ._mixins import (
+from ._database_mixins import (
     DeleteMixin,
     EnforceNameUniquenessMixin,
     FindByNameMixin,

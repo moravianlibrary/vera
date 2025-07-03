@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import List
 
-from esorm import ESBaseModel, ESModel
 from pydantic import BaseModel
 
+from adapters.indexer import IndexerModel, IndexerNestedModel
 from definitions.identifier import IdentifierType
 from definitions.project import ProjectStatus
 from schemas.addition import AdditionBatchParams
@@ -39,14 +39,14 @@ class ProjectAdditionCreate(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class ProjectStatusLog(ESBaseModel):
+class ProjectStatusLog(IndexerNestedModel):
     status: ProjectStatus
     message: str | None
     updated_at: datetime
     updated_by: str
 
 
-class ProjectSummary(ESBaseModel):
+class ProjectSummary(IndexerNestedModel):
     id: int
 
     name: str
@@ -57,7 +57,7 @@ class ProjectSummary(ESBaseModel):
     is_archived: bool
 
 
-class Project(ESModel):
+class Project(IndexerModel):
     class ESConfig:
         index = "projects"
 

@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import List
 
-from esorm import ESBaseModel, ESModel
 from pydantic import BaseModel, Field
 
+from adapters.indexer import IndexerModel, IndexerNestedModel
 from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
 from definitions.identifier import IdentifierType
@@ -32,14 +32,14 @@ class ProposalCreate(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class ProposalStatusLog(ESBaseModel):
+class ProposalStatusLog(IndexerNestedModel):
     status: ProposalStatus
     message: str | None = None
     updated_by: str
     updated_at: datetime
 
 
-class Proposal(ESModel):
+class Proposal(IndexerModel):
     class ESConfig:
         index = "proposals"
 

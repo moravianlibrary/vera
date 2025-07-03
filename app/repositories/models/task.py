@@ -36,6 +36,9 @@ class TaskModel(BaseModel, CreatedAuditMixin):
 
     id = Column(Integer, primary_key=True, index=True, unique=True)
     process_id = Column(Integer)
+    scheduled_task_id = Column(
+        Integer, ForeignKey("scheduled_tasks.id"), nullable=True
+    )
 
     task_type = Column(Enum(ScopedTaskType), nullable=False, index=True)
     name = Column(String, nullable=False)
@@ -52,6 +55,10 @@ class TaskModel(BaseModel, CreatedAuditMixin):
 
     result_message = Column(String)
     log = Column(LargeBinary)
+
+    scheduled_task: Mapped["ScheduledTask"] = relationship(
+        "ScheduledTask", back_populates="tasks", lazy="joined"
+    )
 
     additions: Mapped[List["TaskAdditionModel"]] = relationship(
         "TaskAdditionModel",
@@ -210,17 +217,25 @@ class TaskCategoryModel(BaseModel, TaskItemMixin):
     )
 
 
-class PeriodicTask(BaseModel):
-    __tablename__ = "periodic_tasks"
+class ScheduledTask(BaseModel):
+    __tablename__ = "scheduled_tasks"
 
     id = Column(Integer, primary_key=True, index=True, unique=True)
 
     task_type = Column(Enum(ScopedTaskType), nullable=False)
     query_params = Column(JSON)
+    # TODO: cron expression
     minute = Column(Integer, nullable=False)
     hour = Column(Integer)
     day_of_week = Column(Integer)
     day_of_month = Column(Integer)
+
+    tasks: Mapped[List[TaskModel]] = relationship(
+        "TaskModel",
+        back_populates="scheduled_task",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
 
     def schedule(self):
         from worker import run_periodic_task_instance

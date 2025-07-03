@@ -6,7 +6,7 @@ from adapters.database import DatabaseSession
 from definitions.identifier import IdentifierType
 
 from ._base import BaseRepository
-from ._mixins import GetByIdMixin, SaveMixin
+from ._database_mixins import GetByIdMixin, SaveMixin
 from .models.catalog_record import (
     CatalogRecordIdentifierModel,
     CatalogRecordModel,

@@ -9,7 +9,7 @@ def mock_repository(repository_class: Type[BaseRepository]):
     """
     Decorator for injecting a mocked repository into a test function.
     Usage:
-        @mock_repository(MyRepository, indexer_entity=MyESBaseModel)
+        @mock_repository(MyRepository, indexer_entity=MyIndexerNestedModel)
         def test_something(mock_repo):
             ...
     """

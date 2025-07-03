@@ -3,7 +3,7 @@ from definitions.document import Priority
 from repositories.models.document import DocumentIterationModel
 
 from ._base import BaseRepository
-from ._mixins import (
+from ._database_mixins import (
     ArchiveMixin,
     GetByIdMixin,
     GetByQueryMixin,

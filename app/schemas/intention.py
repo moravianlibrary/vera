@@ -1,8 +1,8 @@
 from datetime import datetime
 
-from esorm import ESBaseModel, ESModel
 from pydantic import BaseModel
 
+from adapters.indexer import IndexerModel, IndexerNestedModel
 from schemas.project import ProjectSummary
 
 
@@ -20,12 +20,12 @@ class IntentionEdit(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class IntentionSummary(ESBaseModel):
+class IntentionSummary(IndexerNestedModel):
     id: int
     name: str
 
 
-class Intention(ESModel):
+class Intention(IndexerModel):
     class ESConfig:
         index = "intentions"
 

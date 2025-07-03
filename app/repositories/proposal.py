@@ -3,7 +3,12 @@ from adapters.indexer import IndexerSession
 from schemas.proposal import Proposal
 
 from ._base import BaseRepository
-from ._mixins import GetByQueryMixin, SaveMixin, SearchAllMixin, SearchMixin
+from ._database_mixins import (
+    GetByQueryMixin,
+    SaveMixin,
+    SearchAllMixin,
+    SearchMixin,
+)
 from .models.proposal import ProposalModel
 
 

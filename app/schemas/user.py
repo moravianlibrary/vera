@@ -1,8 +1,8 @@
 from typing import List
 
-from esorm import ESBaseModel
 from pydantic import BaseModel
 
+from adapters.indexer import IndexerNestedModel
 from definitions.json import JsonObject
 
 # --------------------
@@ -26,6 +26,6 @@ class UserNotifications(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class UserSummary(ESBaseModel):
+class UserSummary(IndexerNestedModel):
     id: str
     username: str

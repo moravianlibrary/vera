@@ -2,7 +2,7 @@ from adapters.database import DatabaseSession
 from definitions.json import JsonObject
 
 from ._base import BaseRepository
-from ._mixins import (
+from ._database_mixins import (
     EnforceNameUniquenessMixin,
     FindByIdMixin,
     FindByNameMixin,

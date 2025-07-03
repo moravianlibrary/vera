@@ -4,7 +4,7 @@ from sqlalchemy import Column, Enum, Integer
 from sqlalchemy.orm import Mapped, relationship
 
 from adapters.database import BaseModel
-from definitions.digitization_registry import DigitizationState
+from definitions.digitization_registry import DigitizationListState
 
 from .associations import digitization_list_intention_association
 from .mixins.created_audit import CreatedAuditMixin
@@ -18,7 +18,7 @@ class DigitizationListModel(BaseModel, CreatedAuditMixin):
     __tablename__ = "digitization_lists"
 
     id = Column(Integer, primary_key=True)
-    state = Column(Enum(DigitizationState), nullable=False)
+    state = Column(Enum(DigitizationListState), nullable=False)
 
     document_iterations: Mapped[List["DocumentIterationModel"]] = relationship(
         "DocumentModel",

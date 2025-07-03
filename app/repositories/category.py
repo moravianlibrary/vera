@@ -7,7 +7,7 @@ from repositories.models.user import UserModel
 from schemas.category import Category
 
 from ._base import BaseIndexedRepository
-from ._mixins import (
+from ._database_mixins import (
     ArchiveOnDeleteAndIndexMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,

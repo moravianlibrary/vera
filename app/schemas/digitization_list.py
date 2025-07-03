@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import List, Optional
 
-from esorm import ESModel
 from pydantic import BaseModel
 
+from adapters.indexer import IndexerModel
 from definitions.digitization_registry import (
     DigitizationListState,
     DigitizationState,
@@ -23,7 +23,7 @@ class CreateDigitizationListParams(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class DigitizationList(ESModel):
+class DigitizationList(IndexerModel):
     id: int
 
     state: DigitizationState

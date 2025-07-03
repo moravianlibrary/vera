@@ -12,7 +12,7 @@ from schemas.watchlist import (
 )
 
 from ._base import BaseRepository
-from ._mixins import (
+from ._database_mixins import (
     DeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,

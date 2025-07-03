@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import List
 
-from esorm import ESBaseModel, ESModel
 from pydantic import BaseModel, Field, model_validator
 
+from adapters.indexer import IndexerModel, IndexerNestedModel
 from definitions.addition import AdditionStatus
 from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
@@ -58,13 +58,13 @@ class IngestAdditionsResponse(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class AdditionProject(ESBaseModel):
+class AdditionProject(IndexerNestedModel):
     id: int
     name: str
     description: str | None
 
 
-class AdditionProposal(ESBaseModel):
+class AdditionProposal(IndexerNestedModel):
     id: int
 
     batch_id: int
@@ -74,7 +74,7 @@ class AdditionProposal(ESBaseModel):
     reason_message: str | None
 
 
-class Addition(ESModel):
+class Addition(IndexerModel):
     id: int
 
     batch_id: int

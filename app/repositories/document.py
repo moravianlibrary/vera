@@ -6,7 +6,7 @@ from adapters.database import DatabaseSession
 from repositories.models.document import DocumentModel, DocumentPropertyModel
 
 from ._base import BaseRepository
-from ._mixins import DeleteMixin, GetByIdMixin, SaveMixin
+from ._database_mixins import DeleteMixin, GetByIdMixin, SaveMixin
 
 
 class DocumentRepository(

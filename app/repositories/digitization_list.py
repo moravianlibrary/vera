@@ -4,7 +4,7 @@ from adapters.database import DatabaseSession
 from repositories.models.intention import IntentionModel
 
 from ._base import BaseRepository
-from ._mixins import DeleteMixin, GetByIdMixin, SaveMixin, SearchMixin
+from ._database_mixins import DeleteMixin, GetByIdMixin, SaveMixin, SearchMixin
 from .models.digitization_list import DigitizationListModel
 
 

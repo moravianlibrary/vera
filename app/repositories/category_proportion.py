@@ -1,7 +1,7 @@
 from adapters.database import DatabaseSession
 
 from ._base import BaseRepository
-from ._mixins import SaveMixin
+from ._database_mixins import SaveMixin
 from .models.category import CategoryProportionModel
 
 
