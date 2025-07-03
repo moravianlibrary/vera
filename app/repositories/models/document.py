@@ -113,7 +113,7 @@ class DocumentPropertyModel(BaseModel):
 
     document_id = Column(Integer, ForeignKey("documents.id"), nullable=False)
     plugin_instance_id = Column(
-        int, ForeignKey("plugin_instances.id"), nullable=False
+        Integer, ForeignKey("plugin_instances.id"), nullable=False
     )
 
     value = Column(LargeBinary, nullable=True)

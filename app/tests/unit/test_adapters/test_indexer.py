@@ -238,12 +238,29 @@ class TestIndexSchema(TestIndexBase):
                 },
                 "page_count": {"type": "long"},
                 "page_count_manual": {"type": "long"},
+                "page_count_source": {
+                    "properties": {
+                        "key": {"type": "keyword"},
+                        "page_count": {"type": "long"},
+                        "plugin_instance_id": {"type": "long"},
+                        "priority": {"type": "long"},
+                    },
+                    "type": "nested",
+                },
+                "can_be_extracted_source": {
+                    "properties": {
+                        "can_be_extracted": {"type": "boolean"},
+                        "key": {"type": "keyword"},
+                        "plugin_instance_id": {"type": "long"},
+                    },
+                    "type": "nested",
+                },
                 "additional_properties": {"properties": {}},
                 "category_id": {"type": "long"},
                 "priority": {"type": "long"},
                 "digitization_list_id": {"type": "long"},
-                "can_be_extracted": {"type": "boolean"},
-                "is_archived": {"type": "boolean"},
+                "digitization_list_state": {"type": "keyword"},
+                "status": {"type": "keyword"},
             },
         )
 

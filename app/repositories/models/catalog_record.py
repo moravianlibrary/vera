@@ -84,7 +84,7 @@ class CatalogRecordPropertyModel(BaseModel):
         Integer, ForeignKey("catalog_records.id"), nullable=False
     )
     plugin_instance_id = Column(
-        int, ForeignKey("plugin_instances.id"), nullable=False
+        Integer, ForeignKey("plugin_instances.id"), nullable=False
     )
 
     value = Column(LargeBinary, nullable=True)
@@ -102,7 +102,7 @@ class CatalogRecordStatusLogModel(BaseModel, UpdatedAuditMixin):
     catalog_record_id = Column(
         String, ForeignKey("catalog_records.id"), nullable=False, index=True
     )
-    status = Column(CatalogRecordStatus, nullable=False)
+    status = Column(Enum(CatalogRecordStatus), nullable=False)
 
     catalog_record: Mapped["CatalogRecordModel"] = relationship(
         "CatalogRecordModel", backref="status_logs"
