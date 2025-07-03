@@ -37,12 +37,6 @@ class CatalogRecordValidity(IndexerNestedModel):
     valid: bool | None
 
 
-class CatalogRecordStatusLog(IndexerNestedModel):
-    status: CatalogRecordStatus
-    updated_by: str
-    updated_at: datetime
-
-
 class CatalogRecordAdditionalProperties(AdditionalPropertiesModel):
     pass
 
@@ -56,19 +50,26 @@ class CatalogRecord(IndexerModel):
     base: str
     system_number: str
 
-    marc: bytes
-
     identifiers: List[CatalogRecordIdentifier]
+    title: str | None
 
     set_valid: bool | None
     validity_source: List[CatalogRecordValidity] | None
     is_valid: bool
 
     current_status: EnumList[CatalogRecordStatus]
-    status_log: List[CatalogRecordStatusLog]
 
     additional_properties: CatalogRecordAdditionalProperties | None
 
 
+class CatalogRecordStatusLog(BaseModel):
+    status: CatalogRecordStatus
+    updated_by: str
+    updated_at: datetime
+
+
 class CatalogRecordDetails(BaseModel):
-    pass
+    id: str
+
+    marc: bytes
+    status_log: List[CatalogRecordStatusLog]

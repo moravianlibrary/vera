@@ -10,6 +10,7 @@ from adapters.indexer import (
     IndexerNestedModel,
 )
 from schemas.addition import Addition
+from schemas.catalog_record import CatalogRecord
 from schemas.category import Category
 from schemas.digitization_list import DigitizationList
 from schemas.document import Document
@@ -22,7 +23,7 @@ class TestIndexSchemaContext:
     def __init__(self, setup_mappings: bool = True) -> None:
         self.setup_mappings = setup_mappings
         self.init_done: bool = False
-        self.num_indexes: int = 8
+        self.num_indexes: int = 9
 
     async def setUp(self):
         if self.init_done:
@@ -126,6 +127,35 @@ class TestIndexSchema(TestIndexBase):
                         "reason_message": {"type": "keyword"},
                     }
                 },
+            },
+        )
+
+    async def test_catalog_record_schema(self):
+        await self.assertEsSchema(
+            CatalogRecord,
+            {
+                "base": {"type": "keyword"},
+                "system_number": {"type": "keyword"},
+                "identifiers": {
+                    "type": "nested",
+                    "properties": {
+                        "identifier_type": {"type": "keyword"},
+                        "identifier_value": {"type": "keyword"},
+                    },
+                },
+                "title": {"type": "keyword"},
+                "set_valid": {"type": "boolean"},
+                "validity_source": {
+                    "type": "nested",
+                    "properties": {
+                        "plugin_instance_id": {"type": "long"},
+                        "key": {"type": "keyword"},
+                        "valid": {"type": "boolean"},
+                    },
+                },
+                "is_valid": {"type": "boolean"},
+                "current_status": {"type": "keyword"},
+                "additional_properties": {"properties": {}},
             },
         )
 
