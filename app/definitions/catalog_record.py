@@ -2,14 +2,19 @@ from enum import Enum
 
 
 class CatalogRecordStatus(Enum):
-    # For these 3 log timestamp
+    # No audit log
     Synced = "Synced"
     Unreachable = "Unreachable"
     DeletedInCatalog = "DeletedInCatalog"
-    # For these 2 log timestamp
+
+    # Log with timestamp and bot user
     Valid = "Valid"
     Invalid = "Invalid"
-    # For these 3 also log timestamp and user
-    SetValid = "SetValid"
-    UnsetValid = "UnsetValid"
+
+    # Log with timestamp, user, and optional message
+    ForceValid = "ForceValid"
+    UnforceValid = "UnforceValid"
     Archived = "Archived"
+    Unarchived = "Unarchived"
+    MarkInReview = "MarkInReview"
+    UnmarkInReview = "UnmarkInReview"

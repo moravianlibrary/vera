@@ -23,7 +23,6 @@ class GeneralPermission(Enum):
     ReadCatalogRecords = "ReadCatalogRecords"
     ManageCatalogRecords = "ManageCatalogRecords"
     ReviewCatalogRecords = "ReviewCatalogRecords"
-    ManageCatalogRecordLists = "ManageCatalogRecordLists"
 
     # Categories
     ManageDistributions = "ManageDistributions"

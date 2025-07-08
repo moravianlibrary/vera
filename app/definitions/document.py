@@ -21,3 +21,6 @@ class DocumentStatus(str, Enum):
     CanBeExtracted = "CanBeExtracted"
     CannotBeExtracted = "CannotBeExtracted"
     MissingPageCount = "MissingPageCount"
+    CatalogRecordDeleted = "CatalogRecordDeleted"
+    CatalogRecordUnreachable = "CatalogRecordUnreachable"
+    CatalogRecordInvalid = "CatalogRecordInvalid"

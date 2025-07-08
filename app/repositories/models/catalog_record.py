@@ -1,4 +1,4 @@
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from sqlalchemy import (
     Boolean,
@@ -8,93 +8,90 @@ from sqlalchemy import (
     Integer,
     LargeBinary,
     String,
+    UniqueConstraint,
 )
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped, deferred, relationship
 
 from adapters.database import BaseModel
 from definitions.catalog_record import CatalogRecordStatus
-from definitions.identifier import IdentifierType
 
-from .mixins.created_audit import CreatedTimestampMixin
-from .mixins.updated_audit import UpdatedAuditMixin, UpdatedTimestampMixin
+from .mixins.created_audit import CreatedAuditMixin
+from .mixins.property import PropertyDataMixin
+from .mixins.updated_audit import UpdatedTimestampMixin
+
+if TYPE_CHECKING:
+    from .plugin import PluginInstanceModel
 
 
-class CatalogRecordModel(
-    BaseModel, CreatedTimestampMixin, UpdatedTimestampMixin
-):
+class CatalogRecordModel(BaseModel, UpdatedTimestampMixin):
     __tablename__ = "catalog_records"
 
     id = Column(String, primary_key=True)
+
     base = Column(String, nullable=False)
     system_number = Column(String, nullable=False)
 
-    marc = Column(LargeBinary, nullable=False)
+    marc = deferred(Column(LargeBinary, nullable=False))
 
     is_unreachable = Column(Boolean, default=False, nullable=False)
     is_deleted_in_catalog = Column(Boolean, default=False, nullable=False)
+
+    # TODO: setting if the syncs should be performed
+    # on records that have no added documents
+    has_added_documents = Column(Boolean, default=False, nullable=False)
+    is_valid = Column(Boolean, nullable=True)
+
+    force_valid = Column(Boolean, default=False, nullable=False)
     is_archived = Column(Boolean, default=False, nullable=False)
+    is_in_review = Column(Boolean, default=False, nullable=False)
 
-    set_validity = Column(Boolean, nullable=True)
-    is_valid = Column(Boolean, nullable=False)
-
-    identifiers: Mapped[List["CatalogRecordIdentifierModel"]] = relationship(
-        "CatalogRecordIdentifierModel",
-        backref="catalog_record",
-        lazy="joined",
-        cascade="all, delete-orphan",
-    )
     additional_properties: Mapped[List["CatalogRecordPropertyModel"]] = (
         relationship(
             "CatalogRecordPropertyModel",
-            backref="catalog_record",
+            back_populates="catalog_record",
             lazy="joined",
             cascade="all, delete-orphan",
         )
     )
     status_log: Mapped[List["CatalogRecordStatusLogModel"]] = relationship(
         "CatalogRecordStatusLogModel",
-        backref="catalog_record",
+        back_populates="catalog_record",
         lazy="joined",
         cascade="all, delete-orphan",
     )
 
 
-class CatalogRecordIdentifierModel(BaseModel):
-    __tablename__ = "catalog_record_identifiers"
-
-    id = Column(Integer, primary_key=True)
-
-    catalog_record_id = Column(
-        String, ForeignKey("catalog_records.id"), nullable=False, index=True
-    )
-    identifier_type = Column(Enum(IdentifierType), nullable=False)
-    identifier_value = Column(String, nullable=False)
-
-    catalog_record: Mapped["CatalogRecordModel"] = relationship(
-        "CatalogRecordModel", backref="properties"
-    )
-
-
-class CatalogRecordPropertyModel(BaseModel):
+class CatalogRecordPropertyModel(
+    BaseModel, PropertyDataMixin, UpdatedTimestampMixin
+):
     __tablename__ = "catalog_record_properties"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     catalog_record_id = Column(
-        Integer, ForeignKey("catalog_records.id"), nullable=False
+        String, ForeignKey("catalog_records.id"), nullable=False
     )
     plugin_instance_id = Column(
         Integer, ForeignKey("plugin_instances.id"), nullable=False
     )
 
-    value = Column(LargeBinary, nullable=True)
-
     catalog_record: Mapped["CatalogRecordModel"] = relationship(
-        "CatalogRecordModel", backref="additional_properties"
+        "CatalogRecordModel", back_populates="additional_properties"
+    )
+    plugin_instance: Mapped["PluginInstanceModel"] = relationship(
+        "PluginInstanceModel", back_populates="catalog_record_properties"
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "catalog_record_id",
+            "plugin_instance_id",
+            name="uq_catalog_record_property",
+        ),
     )
 
 
-class CatalogRecordStatusLogModel(BaseModel, UpdatedAuditMixin):
+class CatalogRecordStatusLogModel(BaseModel, CreatedAuditMixin):
     __tablename__ = "catalog_record_status_logs"
 
     id = Column(String, primary_key=True)
@@ -103,7 +100,8 @@ class CatalogRecordStatusLogModel(BaseModel, UpdatedAuditMixin):
         String, ForeignKey("catalog_records.id"), nullable=False, index=True
     )
     status = Column(Enum(CatalogRecordStatus), nullable=False)
+    message = Column(String, nullable=True)
 
     catalog_record: Mapped["CatalogRecordModel"] = relationship(
-        "CatalogRecordModel", backref="status_logs"
+        "CatalogRecordModel", back_populates="status_logs"
     )

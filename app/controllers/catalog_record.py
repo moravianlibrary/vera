@@ -50,7 +50,7 @@ def get_details(
 
 
 @router.post(
-    "/change-validity",
+    "/validity",
     dependencies=[WithPermission(GeneralPermission.ReviewCatalogRecords)],
     response_model=Task,
 )

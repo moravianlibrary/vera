@@ -6,3 +6,4 @@ class IdentifierType(Enum):
     SystemNumber = "SystemNumber"
     Signature = "Signature"
     ISXN = "ISXN"
+    NBN = "NBN"
