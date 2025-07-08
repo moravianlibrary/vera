@@ -13,7 +13,6 @@ from typing import (
 
 from pydantic import BaseModel, Field, StringConstraints, TypeAdapter
 
-from .definitions.data_property import PropertyTypeSchema
 from .definitions.exceptions import DiscoveryError
 from .definitions.patterns import VERSION_PATTERN
 from .definitions.plugin_types import PluginType
@@ -73,7 +72,6 @@ class CatalogPropertyPluginInstance(PluginInstanceBase):
         PluginType.CatalogRecordProperty
     )
     property_name: str
-    property_type: PropertyTypeSchema
     propagate_to_documents: bool = False
 
 
@@ -95,7 +93,6 @@ class DocumentPropertyPluginInstance(PluginInstanceBase):
         PluginType.DocumentProperty
     )
     property_name: str
-    property_type: PropertyTypeSchema
 
 
 class IdentityProviderPluginInstance(PluginInstanceBase):

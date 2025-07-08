@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Generic
+from typing import Generic, NamedTuple, Type, TypeVar
 
-from ..definitions.data_property import InputType, PropertyType
+from esorm import ESBaseModel
+from pydantic import BaseModel
 
 
 class PluginBase(ABC):
@@ -36,7 +37,45 @@ class ExternalResourcePluginBase(PluginBase):
         pass
 
 
-class DataPropertyPluginBase(PluginBase, Generic[InputType, PropertyType]):
+class PropertyData(NamedTuple):
+    """
+    Container for structured property data extracted by a plugin.
+
+    Attributes
+    ----------
+    search_data : ESBaseModel
+        Data intended for indexing and searching (Elasticsearch).
+    detailed_data : BaseModel
+        JSON-serializable data, typically for UI presentation.
+    internal_data : bytes
+        Raw internal data for backend use or plugin-specific processing. Could
+        be used for caching, serialization, or other internal operations.
+    """
+
+    search_data: ESBaseModel
+    detailed_data: BaseModel
+    internal_data: bytes
+
+
+class InputData(NamedTuple):
+    """
+    Container for input data passed to property plugins.
+
+    Attributes
+    ----------
+    prev_data : PropertyData or None
+        Previously extracted property data, if available.
+        This allows plugins to access earlier property results for incremental
+        updates or context-aware processing. None if no prior data exists.
+    """
+
+    prev_data: PropertyData | None
+
+
+InputDataType = TypeVar("InputDataType", bound=InputData)
+
+
+class DataPropertyPluginBase(PluginBase, Generic[InputDataType]):
     """
     Abstract base class for plugins that extract a property from input data.
 
@@ -45,37 +84,62 @@ class DataPropertyPluginBase(PluginBase, Generic[InputType, PropertyType]):
 
     Type Parameters
     ---------------
-    InputType : type
+    InputDataType : type
         The type of input data to parse.
-    PropertyType : type
-        The JSON-compatible type of the extracted property.
 
     Methods
     -------
-    parse(input_data: InputType) -> PropertyType
+    parse(input_data: InputDataType) -> PropertyData
         Extract a property from the given input data.
     """
 
     @abstractmethod
-    def parse(self, input_data: InputType) -> PropertyType:
+    def parse(self, input_data: InputDataType) -> PropertyData:
         """
         Extract a property from the given input data.
 
         Parameters
         ----------
-        input_data : InputType
+        input_data : InputDataType
             The input data from which to extract the property.
 
         Returns
         -------
-        PropertyType
-            The extracted property.
+        PropertyData
+            The extracted property data, which includes search data,
+            detailed data, and internal data.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def search_data_type(self) -> Type[ESBaseModel]:
+        """
+        The type of data intended for indexing and searching.
+
+        Returns
+        -------
+        Type[ESBaseModel]
+            The model class used for search data.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def detailed_data_type(self) -> Type[BaseModel]:
+        """
+        The type of data intended for detailed representation.
+
+        Returns
+        -------
+        Type[BaseModel]
+            The model class used for detailed dat
         """
         pass
 
 
 class ExternalDataPropertyPluginBase(
-    DataPropertyPluginBase[InputType, PropertyType], ExternalResourcePluginBase
+    DataPropertyPluginBase[InputDataType], ExternalResourcePluginBase
 ):
     """
     Abstract base class for plugins that extract properties using external
@@ -90,6 +154,6 @@ class ExternalDataPropertyPluginBase(
     is_available() -> bool
         Check if the external resource is available.
 
-    parse(input_data: InputType) -> PropertyType
+    parse(input_data: InputDataType) -> PropertyData
         Extract the property using both the input and external resources.
     """

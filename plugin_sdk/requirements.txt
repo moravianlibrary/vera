@@ -1,6 +1,7 @@
 marcdantic @ git+https://github.com/moravianlibrary/marcdantic.git
 jsonschema
 pydantic
+pyesorm
 pyyaml
 setuptools
 typer

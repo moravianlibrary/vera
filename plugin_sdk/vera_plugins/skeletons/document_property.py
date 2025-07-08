@@ -1,17 +1,20 @@
+from typing import Type
+
+from esorm import ESBaseModel
+from pydantic import BaseModel
+
+from vera_plugins.specs.base import PropertyData
 from vera_plugins.specs.document_property import (
     DocumentInput,
     DocumentPropertyPlugin,
     ExternalDocumentPropertyPlugin,
 )
 
-from ..definitions.data_property import PropertyType
-
 # Choose one of the following classes based on your use case:
 # - `Skeleton(DocumentPropertyPlugin)` for property extraction
 #   that does not require external resources.
 # - `Skeleton(ExternalDocumentPropertyPlugin)` for property extraction
 #   that requires external resources (e.g., API, database).
-# Replace return type PropertyType with the actual type you want to extract.
 
 
 class Skeleton(DocumentPropertyPlugin):
@@ -27,7 +30,7 @@ class Skeleton(DocumentPropertyPlugin):
         Extract a property from the given catalog record input.
     """
 
-    def parse(self, input_data: DocumentInput) -> PropertyType:
+    def parse(self, input_data: DocumentInput) -> PropertyData:
         """
         Extract a property from the document input data.
 
@@ -43,6 +46,32 @@ class Skeleton(DocumentPropertyPlugin):
         """
         raise NotImplementedError(
             "Implement the property extraction logic here."
+        )
+
+    @property
+    def search_data_type(self) -> Type[ESBaseModel]:
+        """
+        The type of data intended for indexing and searching.
+
+        Returns
+        -------
+        Type[ESBaseModel]
+            The model class used for search data.
+        """
+        raise NotImplementedError("Implement the search data type logic here.")
+
+    @property
+    def detailed_data_type(self) -> Type[BaseModel]:
+        """
+        The type of data intended for detailed representation.
+
+        Returns
+        -------
+        Type[BaseModel]
+            The model class used for detailed dat
+        """
+        raise NotImplementedError(
+            "Implement the detailed data type logic here."
         )
 
 
@@ -76,7 +105,7 @@ class Skeleton(ExternalDocumentPropertyPlugin):
             "Implement the availability check logic here."
         )
 
-    def parse(self, input_data: DocumentInput) -> PropertyType:
+    def parse(self, input_data: DocumentInput) -> PropertyData:
         """
         Extract a property from the document input data.
 
@@ -92,4 +121,30 @@ class Skeleton(ExternalDocumentPropertyPlugin):
         """
         raise NotImplementedError(
             "Implement the property extraction logic here."
+        )
+
+    @property
+    def search_data_type(self) -> Type[ESBaseModel]:
+        """
+        The type of data intended for indexing and searching.
+
+        Returns
+        -------
+        Type[ESBaseModel]
+            The model class used for search data.
+        """
+        raise NotImplementedError("Implement the search data type logic here.")
+
+    @property
+    def detailed_data_type(self) -> Type[BaseModel]:
+        """
+        The type of data intended for detailed representation.
+
+        Returns
+        -------
+        Type[BaseModel]
+            The model class used for detailed dat
+        """
+        raise NotImplementedError(
+            "Implement the detailed data type logic here."
         )

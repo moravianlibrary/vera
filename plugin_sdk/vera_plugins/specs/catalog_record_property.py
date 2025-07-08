@@ -1,26 +1,33 @@
-from typing import NamedTuple
-
 from marcdantic import MarcRecord
 
-from ..definitions.data_property import ExtractedProperties, PropertyType
-from .base import DataPropertyPluginBase, ExternalDataPropertyPluginBase
+from .base import (
+    DataPropertyPluginBase,
+    ExternalDataPropertyPluginBase,
+    InputData,
+)
 
 
-class CatalogRecordInput(NamedTuple):
-    marc_record: MarcRecord
-    properties: ExtractedProperties
+class CatalogRecordInput(InputData):
+    """
+    Input data for catalog record property plugins.
+
+    Parameters
+    ----------
+    record : MarcRecord
+        The MARC record representing the catalog record.
+    """
+
+    record: MarcRecord
 
 
-class CatalogRecordPropertyPlugin(
-    DataPropertyPluginBase[CatalogRecordInput, PropertyType]
-):
+class CatalogRecordPropertyPlugin(DataPropertyPluginBase[CatalogRecordInput]):
     """
     Base class for plugins that extract a property from a catalog record.
     """
 
 
 class ExternalCatalogRecordPropertyPlugin(
-    ExternalDataPropertyPluginBase[CatalogRecordInput, PropertyType],
+    ExternalDataPropertyPluginBase[CatalogRecordInput],
 ):
     """
     Base class for plugins that extract a property from a catalog record using

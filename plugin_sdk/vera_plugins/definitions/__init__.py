@@ -1,9 +1,3 @@
-from . import constants, data_property, decorators, patterns, plugin_types
+from . import constants, decorators, patterns, plugin_types
 
-__all__ = [
-    "constants",
-    "data_property",
-    "decorators",
-    "plugin_types",
-    "patterns",
-]
+__all__ = ["constants", "decorators", "plugin_types", "patterns"]

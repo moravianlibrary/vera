@@ -1,4 +1,9 @@
-from vera_plugins.definitions.data_property import PropertyType
+from typing import Type
+
+from esorm import ESBaseModel
+from pydantic import BaseModel
+
+from vera_plugins.specs.base import PropertyData
 from vera_plugins.specs.catalog_record_property import (
     CatalogRecordInput,
     CatalogRecordPropertyPlugin,
@@ -10,7 +15,6 @@ from vera_plugins.specs.catalog_record_property import (
 #   that does not require external resources.
 # - `Skeleton(ExternalCatalogRecordPropertyPlugin)` for property extraction
 #   that requires external resources (e.g., API, database).
-# Replace return type PropertyType with the actual type you want to extract.
 
 
 class Skeleton(CatalogRecordPropertyPlugin):
@@ -26,7 +30,7 @@ class Skeleton(CatalogRecordPropertyPlugin):
         Extract a property from the given catalog record input.
     """
 
-    def parse(self, input_data: CatalogRecordInput) -> PropertyType:
+    def parse(self, input_data: CatalogRecordInput) -> PropertyData:
         """
         Extract a property from the catalog record input data.
 
@@ -42,6 +46,32 @@ class Skeleton(CatalogRecordPropertyPlugin):
         """
         raise NotImplementedError(
             "Implement the property extraction logic here."
+        )
+
+    @property
+    def search_data_type(self) -> Type[ESBaseModel]:
+        """
+        The type of data intended for indexing and searching.
+
+        Returns
+        -------
+        Type[ESBaseModel]
+            The model class used for search data.
+        """
+        raise NotImplementedError("Implement the search data type logic here.")
+
+    @property
+    def detailed_data_type(self) -> Type[BaseModel]:
+        """
+        The type of data intended for detailed representation.
+
+        Returns
+        -------
+        Type[BaseModel]
+            The model class used for detailed dat
+        """
+        raise NotImplementedError(
+            "Implement the detailed data type logic here."
         )
 
 
@@ -75,7 +105,7 @@ class Skeleton(ExternalCatalogRecordPropertyPlugin):
             "Implement the availability check logic here."
         )
 
-    def parse(self, input_data: CatalogRecordInput) -> PropertyType:
+    def parse(self, input_data: CatalogRecordInput) -> PropertyData:
         """
         Extract a property from the catalog record input data.
 
@@ -91,4 +121,30 @@ class Skeleton(ExternalCatalogRecordPropertyPlugin):
         """
         raise NotImplementedError(
             "Implement the property extraction logic here."
+        )
+
+    @property
+    def search_data_type(self) -> Type[ESBaseModel]:
+        """
+        The type of data intended for indexing and searching.
+
+        Returns
+        -------
+        Type[ESBaseModel]
+            The model class used for search data.
+        """
+        raise NotImplementedError("Implement the search data type logic here.")
+
+    @property
+    def detailed_data_type(self) -> Type[BaseModel]:
+        """
+        The type of data intended for detailed representation.
+
+        Returns
+        -------
+        Type[BaseModel]
+            The model class used for detailed dat
+        """
+        raise NotImplementedError(
+            "Implement the detailed data type logic here."
         )

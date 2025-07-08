@@ -1,12 +1,13 @@
-from typing import NamedTuple
-
 from marcdantic import MarcIssue, MarcRecord
 
-from ..definitions.data_property import ExtractedProperties, PropertyType
-from .base import DataPropertyPluginBase, ExternalDataPropertyPluginBase
+from .base import (
+    DataPropertyPluginBase,
+    ExternalDataPropertyPluginBase,
+    InputData,
+)
 
 
-class DocumentInput(NamedTuple):
+class DocumentInput(InputData):
     """
     Input data for document property plugins.
 
@@ -16,33 +17,27 @@ class DocumentInput(NamedTuple):
         The MARC record.
     issue : MarcIssue | None
         The MARC issue, if the record has multiple issues.
-    catalog_properties : ExtractedProperties
-        Previously extracted properties from the catalog record.
-    document_properties : ExtractedProperties
-        Previously extracted properties from the document.
     """
 
     record: MarcRecord
     issue: MarcIssue | None
-    catalog_properties: ExtractedProperties
-    document_properties: ExtractedProperties
 
 
 class DocumentPropertyPlugin(
-    DataPropertyPluginBase[DocumentInput, PropertyType],
+    DataPropertyPluginBase[DocumentInput],
 ):
     """
     Base class for plugins that extract a property from document input.
 
     Methods
     -------
-    parse(input_data : DocumentInput) -> PropertyType
+    parse(input_data : DocumentInput) -> PropertyData
         Extract a property from the given catalog record input.
     """
 
 
 class ExternalDocumentPropertyPlugin(
-    ExternalDataPropertyPluginBase[DocumentInput, PropertyType]
+    ExternalDataPropertyPluginBase[DocumentInput]
 ):
     """
     Base class for plugins that extract a property from document input
@@ -53,7 +48,7 @@ class ExternalDocumentPropertyPlugin(
 
     Methods
     -------
-    parse(input_data : DocumentInput) -> PropertyType
+    parse(input_data : DocumentInput) -> PropertyData
         Extract the property using both the input and external resources.
     """
 
