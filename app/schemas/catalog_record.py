@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, List
 
-from esorm.fields import Keyword, Text, boolean
+from esorm.fields import boolean, keyword, text
 from marcdantic import MarcRecord
 from pydantic import BaseModel, model_validator
 from vera_plugins.definitions.plugin_types import PluginType
@@ -39,7 +39,7 @@ class CatalogRecordsSyncParams(BaseModel):
 # --------------------
 class CatalogRecordIdentifier(IndexerNestedModel):
     identifier_type: IdentifierType
-    identifier_value: Text
+    identifier_value: text
 
 
 class CatalogRecordAdditionalProperties(AdditionalPropertiesModel):
@@ -50,13 +50,13 @@ class CatalogRecord(IndexerModel):
     class ESConfig:
         index = "catalog_records"
 
-    id: Keyword
+    id: keyword
 
-    base: Keyword
-    system_number: Text
+    base: keyword
+    system_number: text
 
-    title: Text | None
-    subtitle: Text | None
+    title: text | None
+    subtitle: text | None
     identifiers: List[CatalogRecordIdentifier]
 
     force_valid: boolean
@@ -65,6 +65,8 @@ class CatalogRecord(IndexerModel):
     current_status: EnumList[CatalogRecordStatus]
 
     additional_properties: CatalogRecordAdditionalProperties | None
+
+    updated_at: datetime
 
     @model_validator(mode="before")
     @classmethod
@@ -165,8 +167,9 @@ class CatalogRecordAdditionalDetails(AdditionalDetailsModel):
 
 class CatalogRecordStatusLog(BaseModel):
     status: CatalogRecordStatus
-    updated_by: str
-    updated_at: datetime
+    message: str | None
+    created_by: str
+    created_at: datetime
 
 
 class CatalogRecordDetails(BaseModel):

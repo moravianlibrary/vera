@@ -21,6 +21,8 @@ from adapters.database import BaseModel
 from definitions.digitization_registry import DigitizationState
 
 from .mixins.created_audit import CreatedAuditMixin
+from .mixins.property import PropertyDataMixin
+from .mixins.updated_audit import UpdatedTimestampMixin
 
 if TYPE_CHECKING:
     from .catalog_record import CatalogRecordModel
@@ -29,7 +31,7 @@ if TYPE_CHECKING:
     from .plugin import PluginInstanceModel
 
 
-class DocumentModel(BaseModel):
+class DocumentModel(BaseModel, UpdatedTimestampMixin):
     __tablename__ = "documents"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -77,7 +79,7 @@ class DocumentModel(BaseModel):
         return any(it.digitization_list_id is None for it in self.iterations)
 
 
-class DocumentDigitizationRecordModel(BaseModel):
+class DocumentDigitizationRecordModel(BaseModel, UpdatedTimestampMixin):
     __tablename__ = "document_digitization_records"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -106,7 +108,9 @@ class DocumentDigitizationRecordModel(BaseModel):
         self._record_state = [state.value for state in value]
 
 
-class DocumentPropertyModel(BaseModel):
+class DocumentPropertyModel(
+    BaseModel, PropertyDataMixin, UpdatedTimestampMixin
+):
     __tablename__ = "document_properties"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -126,7 +130,9 @@ class DocumentPropertyModel(BaseModel):
     )
 
 
-class DocumentIterationModel(BaseModel, CreatedAuditMixin):
+class DocumentIterationModel(
+    BaseModel, CreatedAuditMixin, UpdatedTimestampMixin
+):
     __tablename__ = "document_iterations"
 
     id = Column(Integer, primary_key=True, autoincrement=True)

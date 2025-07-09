@@ -1,13 +1,16 @@
-from typing import List
+from datetime import datetime
+from typing import Any, List
 
-from esorm.fields import Integer, Keyword, Text, boolean
+from esorm.fields import boolean, integer, keyword, text
 from marcdantic import IssuanceType
 from pydantic import BaseModel, model_validator
+from vera_plugins.definitions.plugin_types import PluginType
 from vera_plugins.specs.digitization_registry_adapter import (
     DigitizationRecordState,
 )
 
 from adapters.indexer import EnumList, IndexerModel, IndexerNestedModel
+from adapters.plugin_registry import plugin_registry
 from definitions.digitization_registry import (
     DigitizationListState,
     DigitizationState,
@@ -18,6 +21,7 @@ from definitions.document import (
     DocumentStatus,
     ExportFormat,
 )
+from repositories.models.document import DocumentModel, DocumentPropertyModel
 
 from .additional_properties import (
     AdditionalDetailsModel,
@@ -56,9 +60,9 @@ class DocumentExportParams(BaseModel):
 # - Indexer Entities -
 # --------------------
 class DocumentDigitizationRecord(IndexerNestedModel):
-    registry_record_id: Keyword
+    registry_record_id: keyword
     record_state: EnumList[DigitizationRecordState]
-    registry_issue_id: Keyword | None
+    registry_issue_id: keyword | None
     issue_state: DigitizationRecordState | None
 
 
@@ -70,35 +74,39 @@ class Document(IndexerModel):
     class ESConfig:
         index = "documents"
 
-    id: Integer
+    id: integer
 
-    catalog_record_id: Text
+    catalog_record_id: text
     catalog_record_valid: boolean
 
-    iteration_id: Integer
-    iteration: Integer
+    iteration_id: integer
+    iteration: integer
 
-    barcode: Text | None
-    volume_number: Text | None
-    volume_year: Text | None
-    bundle: Text | None
+    barcode: text | None
+    volume_number: text | None
+    volume_year: text | None
+    bundle: text | None
     issuance_type: IssuanceType | None
 
     digitization_state: EnumList[DigitizationState]
     digitization_records: List[DocumentDigitizationRecord]
 
-    page_count_manual: Integer | None
-    page_count: Integer | None
+    page_count_manual: integer | None
+    page_count: integer | None
 
     additional_properties: DocumentAdditionalProperties | None
 
-    category_id: Integer
-    priority: Integer
+    category_id: integer
+    priority: integer
 
-    digitization_list_id: Integer | None
+    digitization_list_id: integer | None
     digitization_list_state: DigitizationListState | None
 
     status: EnumList[DocumentStatus]
+
+    created_by: text
+    created_at: datetime
+    updated_at: datetime
 
 
 # -----------------
@@ -111,6 +119,7 @@ class DocumentDigitizationRecordDetails(BaseModel):
     issue_state: DigitizationRecordState | None
     link: str | None
     error_message: str | None
+    updated_at: datetime
 
 
 class DocumentPageCount(BaseModel):
@@ -119,11 +128,40 @@ class DocumentPageCount(BaseModel):
     page_count: int | None = None
     priority: int
 
+    @classmethod
+    def load(
+        cls, property_name: str, model: DocumentPropertyModel, instance_id: int
+    ) -> "DocumentPageCount":
+        return (
+            cls(
+                plugin_instance_id=instance_id,
+                key=property_name,
+                page_count=model.detailed_data.get("page_count"),
+                priority=model.detailed_data.get("priority"),
+            )
+            if model.detailed_data
+            else cls(plugin_instance_id=instance_id, key=property_name)
+        )
+
 
 class DocumentCanBeExtracted(BaseModel):
     plugin_instance_id: int
     key: str
     can_be_extracted: bool | None
+
+    @classmethod
+    def load(
+        cls, property_name: str, model: DocumentPropertyModel, instance_id: int
+    ) -> "DocumentCanBeExtracted":
+        return (
+            cls(
+                plugin_instance_id=instance_id,
+                key=property_name,
+                can_be_extracted=model.detailed_data.get("can_be_extracted"),
+            )
+            if model.detailed_data
+            else cls(plugin_instance_id=instance_id, key=property_name)
+        )
 
 
 class DocumentAdditionalDetails(AdditionalDetailsModel):
@@ -135,7 +173,52 @@ class DocumentDetails(BaseModel):
 
     digitization_records: List[DocumentDigitizationRecordDetails]
 
-    page_count_source: List[DocumentPageCount] | None
-    can_be_extracted_source: List[DocumentCanBeExtracted] | None
+    page_count_sources: List[DocumentPageCount] | None
+    can_be_extracted_sources: List[DocumentCanBeExtracted] | None
 
     additional_details: DocumentAdditionalDetails | None
+
+    @model_validator(mode="before")
+    @classmethod
+    def from_model(cls, data: Any) -> Any:
+        if not isinstance(data, DocumentModel):
+            return data
+
+        page_count_sources = []
+        can_be_extracted_sources = []
+        additional_details = {}
+
+        for ap in data.additional_properties:
+            plugin_type = ap.plugin_instance.plugin.type
+            instance, config = plugin_registry.document_property(
+                ap.plugin_instance.id
+            )
+
+            if plugin_type == PluginType.DocumentPageCount:
+                page_count_sources.append(
+                    DocumentPageCount.load(
+                        config.property_name, ap, ap.plugin_instance.id
+                    )
+                )
+            elif plugin_type == PluginType.DocumentCanBeExtracted:
+                can_be_extracted_sources.append(
+                    DocumentCanBeExtracted.load(
+                        config.property_name, ap, ap.plugin_instance.id
+                    )
+                )
+            else:
+                additional_details[config.property_name] = (
+                    instance.detailed_data_type.model_validate(
+                        ap.detailed_data
+                    )
+                    if ap.detailed_data
+                    else None
+                )
+
+        return {
+            "id": data.id,
+            "digitization_records": data.digitization_records,
+            "page_count_sources": page_count_sources,
+            "can_be_extracted_sources": can_be_extracted_sources,
+            "additional_details": additional_details,
+        }
