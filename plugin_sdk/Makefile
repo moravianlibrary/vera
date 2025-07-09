@@ -6,6 +6,7 @@ PYTHON_DEPS := requirements.txt
 
 PYTHON_TESTS_LIB := coverage
 TESTS_DIR := tests
+BROWSER := xdg-open
 
 .PHONY: generate-env remove-env regenerate-env test
 
@@ -25,3 +26,6 @@ test:
 	$(PYTHON) -m coverage run -m unittest discover -s $(TESTS_DIR) \
 	&& $(PYTHON) -m coverage html \
 	&& $(PYTHON) -m coverage report
+
+open-report:
+	$(BROWSER) htmlcov/index.html

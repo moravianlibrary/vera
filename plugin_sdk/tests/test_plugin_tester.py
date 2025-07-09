@@ -46,11 +46,11 @@ class TestPluginTester(TestCase):
         return_value=None,
     )
     @patch(
-        "vera_plugins.tools.registry.PluginRegistry._load_single_plugin",
+        "vera_plugins.tools.registry.PluginRegistry._load_singleton_plugin",
         return_value="mock_plugin_instance",
     )
     def test_loads_and_runs_decorated_tests(
-        self, mock_load_single_plugin: Mock, mock_register_from_path: Mock
+        self, mock_load_singleton_plugin: Mock, mock_register_from_path: Mock
     ):
         self._create_test_file(
             "test_plugin.py",
@@ -73,11 +73,11 @@ class TestPluginTester(TestCase):
         return_value=None,
     )
     @patch(
-        "vera_plugins.tools.registry.PluginRegistry._load_single_plugin",
+        "vera_plugins.tools.registry.PluginRegistry._load_singleton_plugin",
         return_value="mock_plugin_instance",
     )
     def test_skip_non_testcase_classes(
-        self, mock_load_single_plugin: Mock, mock_register_from_path: Mock
+        self, mock_load_singleton_plugin: Mock, mock_register_from_path: Mock
     ):
         self._create_test_file(
             "test_plugin.py",
@@ -103,11 +103,11 @@ class TestPluginTester(TestCase):
         return_value=None,
     )
     @patch(
-        "vera_plugins.tools.registry.PluginRegistry._load_single_plugin",
+        "vera_plugins.tools.registry.PluginRegistry._load_singleton_plugin",
         return_value="mock_plugin_instance",
     )
     def test_skips_non_decorated_or_wrong_plugin_type_tests(
-        self, mock_load_single_plugin: Mock, mock_register_from_path: Mock
+        self, mock_load_singleton_plugin: Mock, mock_register_from_path: Mock
     ):
         self._create_test_file(
             "test_plugin.py",
