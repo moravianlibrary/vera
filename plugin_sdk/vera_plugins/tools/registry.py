@@ -37,6 +37,11 @@ class PluginInstance(NamedTuple, Generic[TPlugin, TConfig]):
     config: TConfig
 
 
+# TODO: Check propety names between:
+# - catalog properties
+# - document properties
+# - catalog properties with flag 'propagate to documents'
+#   and document properties
 class PluginRegistry:
     def __init__(self):
         self._singleton_plugins: Dict[PluginType, PluginInstance] = {}

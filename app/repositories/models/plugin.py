@@ -1,16 +1,9 @@
 from typing import List
 
-from sqlalchemy import (
-    JSON,
-    Column,
-    Enum,
-    ForeignKey,
-    Integer,
-    LargeBinary,
-    String,
-)
+from sqlalchemy import Column, Enum, ForeignKey, Integer, LargeBinary, String
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, relationship
-from vera_plugins.definitions.plugin_types import PluginState, PluginType
+from vera_plugins.definitions.plugin_types import PluginType
 
 from adapters.database import BaseModel
 
@@ -26,11 +19,9 @@ class PluginModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
     name = Column(String, nullable=False, unique=True)
     type = Column(Enum(PluginType), nullable=False)
 
-    meta = Column(JSON, nullable=False)
+    meta = Column(JSONB, nullable=False)
 
-    state = Column(Enum(PluginState), nullable=False)
-
-    zipped_code_data = Column(LargeBinary, nullable=False)
+    data = Column(LargeBinary, nullable=False)
 
     instances: Mapped[List["PluginInstanceModel"]] = relationship(
         "PluginInstanceModel", backref="plugin"
@@ -45,7 +36,7 @@ class PluginInstanceModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
     plugin_id = Column(Integer, ForeignKey("plugins.id"), nullable=False)
     name = Column(String, nullable=False)
 
-    config = Column(JSON, nullable=True)
+    config = Column(JSONB, nullable=True)
 
     plugin: Mapped["PluginModel"] = relationship(
         "PluginModel", backref="instances"

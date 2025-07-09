@@ -14,10 +14,4 @@ class PluginType(str, Enum):
     DocumentDiscovery = "DocumentDiscovery"
 
 
-class PluginState(Enum):
-    Ready = "Ready"
-    NewVersionAvailable = "NewVersionAvailable"
-    SourceUnavailable = "SourceUnavailable"
-
-
 type PluginTypeCardinality = Literal["1", "0..1", "0..*", "1..*"]

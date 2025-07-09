@@ -2,7 +2,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Path, Query
 from vera_plugins.definitions.plugin_types import PluginType
+from vera_plugins.schemas import PluginConfig
 
+from definitions.json import JsonObject
 from definitions.permission import GeneralPermission
 from repositories.plugin import PluginInstanceRepository, PluginRepository
 from schemas.common import Page, PageParams
@@ -10,7 +12,6 @@ from schemas.plugin import (
     Plugin,
     PluginDiscoverParams,
     PluginInstance,
-    PluginInstanceEdit,
     PluginInstanceSummary,
     PluginsFilterParams,
 )
@@ -41,6 +42,45 @@ def paginate_plugins(
     return repository.paginate(page_params, filter_params)
 
 
+@router.post(
+    "/discover",
+    dependencies=[WithPermission(GeneralPermission.ManageSystem)],
+    response_model=Task,
+)
+def discover_plugins(
+    discover_params: PluginDiscoverParams,
+    service: PluginService = DependsOnPluginService,
+):
+    return service.discover_plugins(discover_params)
+
+
+@router.get(
+    "/{plugin_id}/config-schema",
+    dependencies=[WithPermission(GeneralPermission.ManageSystem)],
+    response_model=JsonObject,
+)
+def get_plugin_config_schema(
+    plugin_id: int = Path(...),
+    repository: PluginRepository = DependsOnPluginRepository,
+    service: PluginService = DependsOnPluginService,
+):
+    return service.get_plugin_config_schema(repository.get_by_id(plugin_id))
+
+
+@router.post(
+    "/{plugin_id}/instance",
+    dependencies=[WithPermission(GeneralPermission.ManageSystem)],
+    response_model=PluginInstance,
+)
+def create_instance(
+    plugin_config: PluginConfig,
+    plugin_id: int = Path(...),
+    repository: PluginRepository = DependsOnPluginRepository,
+    service: PluginInstanceService = DependsOnPluginInstanceService,
+):
+    return service.create(repository.get_by_id(plugin_id), plugin_config)
+
+
 @router.delete(
     "/{plugin_id}",
     dependencies=[WithPermission(GeneralPermission.ManageSystem)],
@@ -55,28 +95,15 @@ def delete_plugin(
 
 
 @router.post(
-    "/discover",
+    "/instances/discover",
     dependencies=[WithPermission(GeneralPermission.ManageSystem)],
     response_model=Task,
 )
-def discover_plugins(
+def discover_instances(
     discover_params: PluginDiscoverParams,
-    service: PluginService = DependsOnPluginService,
+    service: PluginInstanceService = DependsOnPluginInstanceService,
 ):
     return service.discover_plugins(discover_params)
-
-
-@router.get(
-    "/instances",
-    dependencies=[WithPermission(GeneralPermission.ManageSystem)],
-    response_model=Page[PluginInstance],
-)
-def paginate_instances(
-    page_params: Annotated[PageParams, Query()],
-    filter_by_type: PluginType | None = None,
-    repository: PluginInstanceRepository = DependsOnPluginInstanceRepository,
-):
-    return repository.paginate(page_params, filter_by_type)
 
 
 @router.put(
@@ -86,29 +113,11 @@ def paginate_instances(
 )
 def update_instance(
     instance_id: int,
-    plugin_name: str,
-    instance_name: str,
-    config: dict | None = None,
+    plugin_config: PluginConfig,
     repository: PluginInstanceRepository = DependsOnPluginInstanceRepository,
     service: PluginInstanceService = DependsOnPluginInstanceService,
 ):
-    return service.update(
-        repository.get_by_id(instance_id), plugin_name, instance_name, config
-    )
-
-
-@router.post(
-    "/{plugin_id}/instances",
-    dependencies=[WithPermission(GeneralPermission.ManageSystem)],
-    response_model=PluginInstance,
-)
-def create_instance(
-    plugin_instance: PluginInstanceEdit,
-    plugin_id: int = Path(...),
-    repository: PluginRepository = DependsOnPluginRepository,
-    service: PluginInstanceService = DependsOnPluginInstanceService,
-):
-    return service.create(repository.get_by_id(plugin_id), plugin_instance)
+    return service.update(repository.get_by_id(instance_id), plugin_config)
 
 
 @router.delete(
@@ -119,20 +128,9 @@ def create_instance(
 def delete_instance(
     instance_id: int,
     repository: PluginInstanceRepository = DependsOnPluginInstanceRepository,
-):
-    return repository.delete(instance_id)
-
-
-@router.post(
-    "/instances/discover",
-    dependencies=[WithPermission(GeneralPermission.ManageSystem)],
-    response_model=Task,
-)
-def discover_instances(
-    discover_params: PluginDiscoverParams,
     service: PluginInstanceService = DependsOnPluginInstanceService,
 ):
-    return service.discover_plugins(discover_params)
+    return service.delete(repository.get_by_id(instance_id))
 
 
 @router.get(

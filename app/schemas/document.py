@@ -5,6 +5,10 @@ from esorm.fields import boolean, integer, keyword, text
 from marcdantic import IssuanceType
 from pydantic import BaseModel, model_validator
 from vera_plugins.definitions.plugin_types import PluginType
+from vera_plugins.schemas import (
+    DocumentCanBeExtractedConfig,
+    DocumentPageCountConfig,
+)
 from vera_plugins.specs.digitization_registry_adapter import (
     DigitizationRecordState,
 )
@@ -125,22 +129,25 @@ class DocumentDigitizationRecordDetails(BaseModel):
 class DocumentPageCount(BaseModel):
     plugin_instance_id: int
     key: str
-    page_count: int | None = None
     priority: int
+    page_count: int | None = None
 
     @classmethod
     def load(
-        cls, property_name: str, model: DocumentPropertyModel, instance_id: int
+        cls,
+        instance_id: int,
+        config: DocumentPageCountConfig,
+        model: DocumentPropertyModel | None,
     ) -> "DocumentPageCount":
-        return (
-            cls(
-                plugin_instance_id=instance_id,
-                key=property_name,
-                page_count=model.detailed_data.get("page_count"),
-                priority=model.detailed_data.get("priority"),
-            )
-            if model.detailed_data
-            else cls(plugin_instance_id=instance_id, key=property_name)
+        return cls(
+            plugin_instance_id=instance_id,
+            key=config.property_name,
+            priority=config.priority,
+            page_count=(
+                model.detailed_data.get("page_count")
+                if model.detailed_data
+                else None
+            ),
         )
 
 
@@ -151,16 +158,19 @@ class DocumentCanBeExtracted(BaseModel):
 
     @classmethod
     def load(
-        cls, property_name: str, model: DocumentPropertyModel, instance_id: int
+        cls,
+        instance_id: int,
+        config: DocumentCanBeExtractedConfig,
+        model: DocumentPropertyModel,
     ) -> "DocumentCanBeExtracted":
-        return (
-            cls(
-                plugin_instance_id=instance_id,
-                key=property_name,
-                can_be_extracted=model.detailed_data.get("can_be_extracted"),
-            )
-            if model.detailed_data
-            else cls(plugin_instance_id=instance_id, key=property_name)
+        return cls(
+            plugin_instance_id=instance_id,
+            key=config.property_name,
+            can_be_extracted=(
+                model.detailed_data.get("can_be_extracted")
+                if model.detailed_data
+                else None
+            ),
         )
 
 
@@ -190,30 +200,54 @@ class DocumentDetails(BaseModel):
 
         for ap in data.additional_properties:
             plugin_type = ap.plugin_instance.plugin.type
-            instance, config = plugin_registry.document_property(
-                ap.plugin_instance.id
-            )
 
             if plugin_type == PluginType.DocumentPageCount:
                 page_count_sources.append(
                     DocumentPageCount.load(
-                        config.property_name, ap, ap.plugin_instance.id
+                        ap.plugin_instance.id,
+                        plugin_registry.document_page_count(
+                            ap.plugin_instance.id
+                        ).config,
+                        ap,
                     )
                 )
+
             elif plugin_type == PluginType.DocumentCanBeExtracted:
                 can_be_extracted_sources.append(
                     DocumentCanBeExtracted.load(
-                        config.property_name, ap, ap.plugin_instance.id
+                        ap.plugin_instance.id,
+                        plugin_registry.document_can_be_extracted(
+                            ap.plugin_instance.id
+                        ).config,
+                        ap,
                     )
                 )
+
             else:
-                additional_details[config.property_name] = (
-                    instance.detailed_data_type.model_validate(
+                instance = plugin_registry.document_property(
+                    ap.plugin_instance.id
+                )
+                additional_details[instance.config.property_name] = (
+                    instance.plugin.detailed_data_type.model_validate(
                         ap.detailed_data
                     )
                     if ap.detailed_data
                     else None
                 )
+
+        for ap in data.catalog_record.additional_properties:
+            instance = plugin_registry.catalog_record_property(
+                ap.plugin_instance.id
+            )
+            if not instance.config.propagate_to_documents:
+                continue
+            additional_details[instance.config.property_name] = (
+                instance.plugin.detailed_data_type.model_validate(
+                    ap.detailed_data
+                )
+                if ap.detailed_data
+                else None
+            )
 
         return {
             "id": data.id,

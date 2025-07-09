@@ -5,12 +5,16 @@ from esorm.fields import boolean, keyword, text
 from marcdantic import MarcRecord
 from pydantic import BaseModel, model_validator
 from vera_plugins.definitions.plugin_types import PluginType
+from vera_plugins.schemas import CatalogRecordValidityConfig
 
 from adapters.indexer import EnumList, IndexerModel, IndexerNestedModel
 from adapters.plugin_registry import plugin_registry
 from definitions.catalog_record import CatalogRecordStatus
 from definitions.identifier import IdentifierType
-from repositories.models.catalog_record import CatalogRecordModel
+from repositories.models.catalog_record import (
+    CatalogRecordModel,
+    CatalogRecordPropertyModel,
+)
 
 from .additional_properties import (
     AdditionalDetailsModel,
@@ -160,6 +164,28 @@ class CatalogRecordValidity(IndexerNestedModel):
     valid: bool | None
     reason: str | None
 
+    @classmethod
+    def load(
+        cls,
+        instance_id: int,
+        config: CatalogRecordValidityConfig,
+        model: CatalogRecordPropertyModel | None,
+    ) -> "CatalogRecordValidity":
+        return cls(
+            plugin_instance_id=instance_id,
+            key=config.property_name,
+            valid=(
+                model.detailed_data.get("valid")
+                if model.detailed_data
+                else None
+            ),
+            reason=(
+                model.detailed_data.get("reason")
+                if model.detailed_data
+                else None
+            ),
+        )
+
 
 class CatalogRecordAdditionalDetails(AdditionalDetailsModel):
     pass
@@ -194,32 +220,22 @@ class CatalogRecordDetails(BaseModel):
             plugin_type = ap.plugin_instance.plugin.type
 
             if plugin_type == PluginType.CatalogRecordValidity:
-                instance, config = plugin_registry.catalog_record_validity(
-                    ap.plugin_instance.id
-                )
                 validity_sources.append(
-                    CatalogRecordValidity(
-                        plugin_instance_id=ap.plugin_instance.id,
-                        key=config.property_name,
-                        valid=(
-                            ap.detailed_data.get("valid")
-                            if ap.detailed_data
-                            else None
-                        ),
-                        reason=(
-                            ap.detailed_data.get("reason")
-                            if ap.detailed_data
-                            else None
-                        ),
+                    CatalogRecordValidity.load(
+                        ap.plugin_instance.id,
+                        plugin_registry.catalog_record_validity(
+                            ap.plugin_instance.id
+                        ).config,
+                        ap,
                     )
                 )
 
             else:
-                instance, config = plugin_registry.catalog_record_property(
+                instance = plugin_registry.catalog_record_property(
                     ap.plugin_instance.id
                 )
-                additional_details[config] = (
-                    instance.detailed_data_type.model_validate(
+                additional_details[instance.config.property_name] = (
+                    instance.plugin.detailed_data_type.model_validate(
                         ap.detailed_data
                     )
                     if ap.detailed_data
