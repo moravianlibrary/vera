@@ -6,16 +6,16 @@ from jsonschema.exceptions import SchemaError, ValidationError
 from jsonschema.validators import Draft202012Validator
 
 from ..definitions.exceptions import (
+    ConfigMissingError,
     ImplementationError,
     LintingError,
-    PluginConfigMissingError,
     PluginNotFoundError,
     PluginType,
-    UnexpectedPluginConfigError,
+    UnexpectedConfigError,
     UnimplementedFunctionsError,
 )
 from ..dispatchers import PLUGIN_TYPE_DECLARATION
-from ..schemas import PluginInstance, PluginMeta
+from ..schemas import PluginConfig, PluginMeta
 from ..tools.loader import load_plugin_class
 
 
@@ -81,43 +81,39 @@ def validate_plugin(dir: Path, meta: PluginMeta) -> List[LintingError]:
                 dir / include_file, f"Include file '{include_file}'"
             )
 
-    if meta.config_schema_path:
+    if meta.settings_schema_path:
         if validate_file_exists(
-            dir / meta.config_schema_path, "Config schema file"
+            dir / meta.settings_schema_path, "Config schema file"
         ):
-            _validate_json_schema(dir / meta.config_schema_path)
+            _validate_json_schema(dir / meta.settings_schema_path)
 
     return errors
 
 
 def validate_instance(
-    dir: Path, instance: PluginInstance, candidate_metas: List[PluginMeta]
+    dir: Path, config: PluginConfig, candidate_metas: List[PluginMeta]
 ) -> None | LintingError:
     meta = next(
-        (m for m in candidate_metas if m.name == instance.plugin_name),
+        (m for m in candidate_metas if m.name == config.plugin_name),
         None,
     )
 
     if not meta:
-        return PluginNotFoundError(instance.plugin_name)
+        return PluginNotFoundError(config.plugin_name)
 
-    if not instance.config:
-        if meta.config_schema_path is None:
+    if not config.plugin_settings:
+        if meta.settings_schema_path is None:
             return None
 
-        return PluginConfigMissingError(
-            instance.plugin_name, instance.instance_name
-        )
+        return ConfigMissingError(config.plugin_name, config.instance_name)
 
-    if not meta.config_schema_path:
-        return UnexpectedPluginConfigError(
-            instance.plugin_name, instance.instance_name
-        )
+    if not meta.settings_schema_path:
+        return UnexpectedConfigError(config.plugin_name, config.instance_name)
 
-    with open(dir / meta.config_schema_path, "r") as f:
+    with open(dir / meta.settings_schema_path, "r") as f:
         schema = json.load(f)
 
     try:
-        Draft202012Validator(schema).validate(instance.config)
+        Draft202012Validator(schema).validate(config.plugin_settings)
     except ValidationError as e:
         return e

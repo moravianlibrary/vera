@@ -7,13 +7,13 @@ from unittest import TestCase
 from jsonschema.exceptions import ValidationError
 
 from vera_plugins.definitions.exceptions import (
-    PluginConfigMissingError,
+    ConfigMissingError,
     PluginNotFoundError,
-    UnexpectedPluginConfigError,
+    UnexpectedConfigError,
     UnimplementedFunctionsError,
 )
 from vera_plugins.definitions.plugin_types import PluginType
-from vera_plugins.schemas import DocumentDiscoveryPluginInstance, PluginMeta
+from vera_plugins.schemas import DocumentDiscoveryConfig, PluginMeta
 from vera_plugins.tools.validator import (
     _validate_json_schema,
     validate_instance,
@@ -177,7 +177,7 @@ class TestPluginValidation(TestCase):
             tmpdir_path = Path(tmpdir)
 
             meta = self.create_temp_valid_plugin(tmpdir_path)
-            meta.config_schema_path = "missing_schema.json"
+            meta.settings_schema_path = "missing_schema.json"
 
             err = validate_plugin(tmpdir_path, meta)
             self.assertEqual(len(err), 1)
@@ -188,7 +188,7 @@ class TestPluginValidation(TestCase):
             tmpdir_path = Path(tmpdir)
 
             meta = self.create_temp_valid_plugin(tmpdir_path)
-            meta.config_schema_path = "valid_schema.json"
+            meta.settings_schema_path = "valid_schema.json"
 
             schema_content = {
                 "type": "object",
@@ -196,7 +196,7 @@ class TestPluginValidation(TestCase):
                 "required": ["example_property"],
             }
 
-            schema_file = tmpdir_path / meta.config_schema_path
+            schema_file = tmpdir_path / meta.settings_schema_path
             with schema_file.open("w") as f:
                 json.dump(schema_content, f)
 
@@ -204,7 +204,7 @@ class TestPluginValidation(TestCase):
             self.assertEqual(len(err), 0)
 
 
-class TestPluginInstanceValidation(TestCase):
+class TestConfigValidation(TestCase):
     def setUp(self):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.dir_path = Path(self.temp_dir.name)
@@ -224,11 +224,11 @@ class TestPluginInstanceValidation(TestCase):
             type=PluginType.CatalogAdapter,
             version="1.0.0",
             entrypoint_file="plugin.py",
-            config_schema_path=schema_file,
+            settings_schema_path=schema_file,
         )
 
     def test_plugin_not_found(self):
-        instance = DocumentDiscoveryPluginInstance(
+        instance = DocumentDiscoveryConfig(
             plugin_name="missing_plugin", instance_name="example"
         )
         result = validate_instance(self.dir_path, instance, [])
@@ -239,23 +239,23 @@ class TestPluginInstanceValidation(TestCase):
         self._create_schema_file(schema_file, {"type": "object"})
         meta = self._plugin_meta("TestPlugin", schema_file)
 
-        instance = DocumentDiscoveryPluginInstance(
+        instance = DocumentDiscoveryConfig(
             plugin_name="TestPlugin",
             instance_name="instance1",
             config=None,
         )
         result = validate_instance(self.dir_path, instance, [meta])
-        self.assertIsInstance(result, PluginConfigMissingError)
+        self.assertIsInstance(result, ConfigMissingError)
 
     def test_config_provided_but_unexpected(self):
         meta = self._plugin_meta("TestPlugin", schema_file=None)
-        instance = DocumentDiscoveryPluginInstance(
+        instance = DocumentDiscoveryConfig(
             plugin_name="TestPlugin",
             instance_name="instance1",
-            config={"foo": "bar"},
+            plugin_settings={"foo": "bar"},
         )
         result = validate_instance(self.dir_path, instance, [meta])
-        self.assertIsInstance(result, UnexpectedPluginConfigError)
+        self.assertIsInstance(result, UnexpectedConfigError)
 
     def test_invalid_config(self):
         schema_file = "schema.json"
@@ -269,10 +269,10 @@ class TestPluginInstanceValidation(TestCase):
         )
 
         meta = self._plugin_meta("TestPlugin", schema_file)
-        instance = DocumentDiscoveryPluginInstance(
+        instance = DocumentDiscoveryConfig(
             plugin_name="TestPlugin",
             instance_name="instance1",
-            config={"x": 123},
+            plugin_settings={"x": 123},
         )
 
         result = validate_instance(self.dir_path, instance, [meta])
@@ -291,10 +291,10 @@ class TestPluginInstanceValidation(TestCase):
         )
 
         meta = self._plugin_meta("TestPlugin", schema_file)
-        instance = DocumentDiscoveryPluginInstance(
+        instance = DocumentDiscoveryConfig(
             plugin_name="TestPlugin",
             instance_name="instance1",
-            config={"x": "hello"},
+            plugin_settings={"x": "hello"},
         )
 
         result = validate_instance(self.dir_path, instance, [meta])
@@ -302,7 +302,7 @@ class TestPluginInstanceValidation(TestCase):
 
     def test_valid_config_without_schema(self):
         meta = self._plugin_meta("TestPlugin")
-        instance = DocumentDiscoveryPluginInstance(
+        instance = DocumentDiscoveryConfig(
             plugin_name="TestPlugin",
             instance_name="instance1",
         )

@@ -31,7 +31,7 @@ class PluginMeta(BaseModel):
     author: str | None = None
     description: str | None = None
     entrypoint_file: str
-    config_schema_path: str | None = None
+    settings_schema_path: str | None = None
     additional_files: List[str] | None = None
 
     def __repr__(self):
@@ -45,7 +45,7 @@ class PluginMeta(BaseModel):
             f"  - Author: {self.author or ''}\n"
             f"  - Description: {self.description or ''}\n"
             f"  - Entrypoint: {self.entrypoint_file}\n"
-            f"  - Config Schema: {self.config_schema_path or ''}\n"
+            f"  - Settings Schema: {self.settings_schema_path or ''}\n"
             f"  - Additional Files: {additional_str or ''}"
         )
 
@@ -53,21 +53,41 @@ class PluginMeta(BaseModel):
 PluginMetas = List[PluginMeta]
 
 
-# --- Plugin Instances ---
-class PluginInstanceBase(BaseModel):
+# --- Plugin Configs ---
+class PluginConfigBase(BaseModel):
     plugin_name: str
     instance_name: str
-    config: Dict[str, Any] | None = None
+    plugin_settings: Dict[str, Any] | None = None
 
 
-class CatalogAdapterPluginInstance(PluginInstanceBase):
+class IdentityProviderConfig(PluginConfigBase):
+    plugin_type: Literal[PluginType.IdentityProvider] = (
+        PluginType.IdentityProvider
+    )
+
+
+class CatalogAdapterConfig(PluginConfigBase):
     plugin_type: Literal[PluginType.CatalogAdapter] = PluginType.CatalogAdapter
     query_schema: Dict[str, Any] | None = None
     fetch_changes: bool = False
     search: bool = False
 
 
-class CatalogPropertyPluginInstance(PluginInstanceBase):
+class DigitizationRegistryConfig(PluginConfigBase):
+    plugin_type: Literal[PluginType.DigitizationRegistryAdapter] = (
+        PluginType.DigitizationRegistryAdapter
+    )
+    change_state: bool = False
+
+
+class CatalogRecordValidityConfig(PluginConfigBase):
+    plugin_type: Literal[PluginType.CatalogRecordValidity] = (
+        PluginType.CatalogRecordValidity
+    )
+    property_name: str
+
+
+class CatalogRecordPropertyConfig(PluginConfigBase):
     plugin_type: Literal[PluginType.CatalogRecordProperty] = (
         PluginType.CatalogRecordProperty
     )
@@ -75,52 +95,57 @@ class CatalogPropertyPluginInstance(PluginInstanceBase):
     propagate_to_documents: bool = False
 
 
-class DigitizationRegistryPluginInstance(PluginInstanceBase):
-    plugin_type: Literal[PluginType.DigitizationRegistryAdapter] = (
-        PluginType.DigitizationRegistryAdapter
+class DocumentPageCountConfig(PluginConfigBase):
+    plugin_type: Literal[PluginType.DocumentPageCount] = (
+        PluginType.DocumentPageCount
     )
-    change_state: bool = False
+    property_name: str
+    priority: int
 
 
-class DocumentDiscoveryPluginInstance(PluginInstanceBase):
-    plugin_type: Literal[PluginType.DocumentDiscovery] = (
-        PluginType.DocumentDiscovery
+class DocumentCanBeExtractedConfig(PluginConfigBase):
+    plugin_type: Literal[PluginType.DocumentCanBeExtracted] = (
+        PluginType.DocumentCanBeExtracted
     )
+    property_name: str
 
 
-class DocumentPropertyPluginInstance(PluginInstanceBase):
+class DocumentPropertyConfig(PluginConfigBase):
     plugin_type: Literal[PluginType.DocumentProperty] = (
         PluginType.DocumentProperty
     )
     property_name: str
 
 
-class IdentityProviderPluginInstance(PluginInstanceBase):
-    plugin_type: Literal[PluginType.IdentityProvider] = (
-        PluginType.IdentityProvider
+class DocumentDiscoveryConfig(PluginConfigBase):
+    plugin_type: Literal[PluginType.DocumentDiscovery] = (
+        PluginType.DocumentDiscovery
     )
 
 
-PluginInstance = Annotated[
+PluginConfig = Annotated[
     Union[
-        CatalogAdapterPluginInstance,
-        CatalogPropertyPluginInstance,
-        DigitizationRegistryPluginInstance,
-        DocumentDiscoveryPluginInstance,
-        DocumentPropertyPluginInstance,
-        IdentityProviderPluginInstance,
+        IdentityProviderConfig,
+        CatalogAdapterConfig,
+        DigitizationRegistryConfig,
+        CatalogRecordValidityConfig,
+        CatalogRecordPropertyConfig,
+        DocumentPageCountConfig,
+        DocumentCanBeExtractedConfig,
+        DocumentPropertyConfig,
+        DocumentDiscoveryConfig,
     ],
     Field(discriminator="plugin_type"),
 ]
 
-PluginInstances = List[PluginInstance]
+Configs = List[PluginConfig]
 
 # --- Type Adapters ---
-PluginInstanceTypeAdapter = TypeAdapter(PluginInstance)
+ConfigTypeAdapter = TypeAdapter(PluginConfig)
 
 PluginModelType = TypeVar(
     "PluginModelType",
-    bound=Union[PluginMeta, TypeAdapter[PluginInstance]],
+    bound=Union[PluginMeta, TypeAdapter[PluginConfig]],
 )
 
 # --- Plugin Implementation ---
@@ -130,7 +155,7 @@ PluginImplementation = Tuple[Path, PluginMeta, bytes]
 # --- Discovery Results ---
 class DiscoveryResult(NamedTuple):
     file_path: Path
-    item: PluginMeta | PluginInstance | None
+    item: PluginMeta | PluginConfig | None
     error: DiscoveryError | None
 
 
@@ -142,5 +167,5 @@ class MetaDiscoveryResult(NamedTuple):
 
 class InstanceDiscoveryResult(NamedTuple):
     file_path: Path
-    item: PluginInstance | None
+    item: PluginConfig | None
     error: DiscoveryError | None

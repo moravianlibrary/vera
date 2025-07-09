@@ -372,7 +372,7 @@ def init_plugin(
             author=author or None,
             description=description or None,
             entrypoint_file=entrypoint,
-            config_schema_path=config_schema or None,
+            settings_schema_path=config_schema or None,
             additional_files=additional or None,
         )
     )

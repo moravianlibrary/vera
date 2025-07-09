@@ -4,7 +4,7 @@ from typing import List
 from pydantic import BaseModel
 
 from ..definitions.exceptions import DiscoveryError, LintingError
-from ..schemas import PluginInstance, PluginMeta
+from ..schemas import PluginConfig, PluginMeta
 
 
 class BaseMetaRow(BaseModel):
@@ -44,20 +44,20 @@ class BaseInstanceRow(BaseModel):
     instance_name: str | None = None
 
     @classmethod
-    def from_discovery(cls, path: Path, instance: PluginInstance | None):
+    def from_discovery(cls, path: Path, config: PluginConfig | None):
         row = cls(path=str(path))
 
-        if instance:
-            row.plugin_name = instance.plugin_name
-            row.instance_name = instance.instance_name
+        if config:
+            row.plugin_name = config.plugin_name
+            row.instance_name = config.instance_name
 
         return row
 
     def __repr__(self):
         return (
-            f"[PluginInstance] Path: {self.path} | "
+            f"[Config] Path: {self.path} | "
             f"Plugin: {self.plugin_name or '-'} | "
-            f"Instance: {self.instance_name or '-'}"
+            f"config: {self.instance_name or '-'}"
         )
 
 
@@ -89,10 +89,10 @@ class DiscoveryInstanceRow(BaseInstanceRow):
     def from_discovery(
         cls,
         path: Path,
-        instance: PluginInstance | None,
+        config: PluginConfig | None,
         err: DiscoveryError | None,
     ):
-        row = super().from_discovery(path, instance)
+        row = super().from_discovery(path, config)
 
         if err:
             row.error = str(err)
@@ -134,10 +134,10 @@ class LintingInstanceRow(BaseInstanceRow):
     def from_discovery(
         cls,
         path: Path,
-        instance: PluginInstance | None,
+        config: PluginConfig | None,
         err: LintingError | None,
     ):
-        row = super().from_discovery(path, instance, None)
+        row = super().from_discovery(path, config, None)
         row.error = str(err) if err else None
         return row
 

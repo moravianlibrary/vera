@@ -9,13 +9,13 @@ from vera_plugins.specs.catalog_record_property import (
 from ..definitions.plugin_types import PluginType
 from ..dispatchers import PLUGIN_TYPE_CARDINALITY
 from ..schemas import (
-    CatalogAdapterPluginInstance,
-    CatalogPropertyPluginInstance,
-    DigitizationRegistryPluginInstance,
-    DocumentDiscoveryPluginInstance,
-    DocumentPropertyPluginInstance,
-    IdentityProviderPluginInstance,
-    PluginInstance,
+    CatalogAdapterConfig,
+    CatalogRecordPropertyConfig,
+    DigitizationRegistryConfig,
+    DocumentDiscoveryConfig,
+    DocumentPropertyConfig,
+    IdentityProviderConfig,
+    PluginConfig,
     PluginMeta,
 )
 from ..specs.base import PluginBase
@@ -29,7 +29,7 @@ from ..specs.identity_provider import IdentityProviderPlugin
 from .loader import load_plugin_class
 from .packager import unpack_plugin
 
-PluginRegistryItem = Tuple[type[PluginBase], PluginInstance]
+PluginRegistryItem = Tuple[type[PluginBase], PluginConfig]
 
 
 class PluginRegistry:
@@ -78,12 +78,12 @@ class PluginRegistry:
         self,
         meta: PluginMeta,
         plugin_module_path: Path,
-        instance: PluginInstance,
+        config: PluginConfig,
         instance_id: int | None = None,
     ) -> None:
         self._validate_cardinality(meta)
         PluginClass = load_plugin_class(meta.name, plugin_module_path)
-        item = (PluginClass, instance)
+        item = (PluginClass, config)
 
         if PLUGIN_TYPE_CARDINALITY[meta.type] in ["1", "0..1"]:
             self._singleton_plugins[meta.type] = item
@@ -101,7 +101,7 @@ class PluginRegistry:
         self,
         meta: PluginMeta,
         plugin_package: bytes,
-        instance: PluginInstance,
+        instance: PluginConfig,
         instance_id: int | None = None,
     ) -> None:
         module_path = unpack_plugin(
@@ -111,16 +111,20 @@ class PluginRegistry:
 
     def _load_plugin(
         self, item: PluginRegistryItem
-    ) -> Tuple[PluginBase, PluginInstance]:
-        PluginClass, instance = item
+    ) -> Tuple[PluginBase, PluginConfig]:
+        PluginClass, config = item
         return (
-            PluginClass(instance.config) if instance.config else PluginClass(),
-            instance,
+            (
+                PluginClass(config.plugin_settings)
+                if config.plugin_settings
+                else PluginClass()
+            ),
+            config,
         )
 
     def _load_singleton_plugin(
         self, plugin_type: PluginType
-    ) -> Tuple[PluginBase, PluginInstance]:
+    ) -> Tuple[PluginBase, PluginConfig]:
         if plugin_type not in self._singleton_plugins:
             raise ValueError(
                 f"No plugin registered for type '{plugin_type.value}'."
@@ -129,7 +133,7 @@ class PluginRegistry:
 
     def _load_multi_plugin(
         self, plugin_type: PluginType, instance_id: int
-    ) -> Tuple[PluginBase, PluginInstance]:
+    ) -> Tuple[PluginBase, PluginConfig]:
         if instance_id not in self._multi_plugins[plugin_type]:
             raise ValueError(
                 f"No plugin registered for type '{plugin_type.value}' "
@@ -144,13 +148,13 @@ class PluginRegistry:
     @property
     def identity_provider(
         self,
-    ) -> Tuple[IdentityProviderPlugin, IdentityProviderPluginInstance]:
+    ) -> Tuple[IdentityProviderPlugin, IdentityProviderConfig]:
         return self._load_singleton_plugin(PluginType.IdentityProvider)
 
     @property
     def catalog_adapter(
         self,
-    ) -> Tuple[CatalogAdapterPlugin, CatalogAdapterPluginInstance]:
+    ) -> Tuple[CatalogAdapterPlugin, CatalogAdapterConfig]:
         return self._load_singleton_plugin(PluginType.CatalogAdapter)
 
     @property
@@ -158,29 +162,50 @@ class PluginRegistry:
         self,
     ) -> Tuple[
         DigitizationRegistryAdapterPlugin,
-        DigitizationRegistryPluginInstance,
+        DigitizationRegistryConfig,
     ]:
         return self._load_singleton_plugin(
             PluginType.DigitizationRegistryAdapter
         )
 
+    def catalog_record_validity(
+        self, instance_id: int
+    ) -> Tuple[CatalogRecordPropertyPlugin, CatalogRecordPropertyConfig]:
+        return self._load_multi_plugin(
+            PluginType.CatalogRecordValidity, instance_id
+        )
+
     def catalog_record_property(
         self, instance_id: int
-    ) -> Tuple[CatalogRecordPropertyPlugin, CatalogPropertyPluginInstance]:
+    ) -> Tuple[CatalogRecordPropertyPlugin, CatalogRecordPropertyConfig]:
         return self._load_multi_plugin(
             PluginType.CatalogRecordProperty, instance_id
         )
 
+    def document_page_count(
+        self, instance_id: int
+    ) -> Tuple[CatalogRecordPropertyPlugin, CatalogRecordPropertyConfig]:
+        return self._load_multi_plugin(
+            PluginType.DocumentPageCount, instance_id
+        )
+
+    def document_can_be_extracted(
+        self, instance_id: int
+    ) -> Tuple[CatalogRecordPropertyPlugin, CatalogRecordPropertyConfig]:
+        return self._load_multi_plugin(
+            PluginType.DocumentCanBeExtracted, instance_id
+        )
+
     def document_property(
         self, instance_id: int
-    ) -> Tuple[DocumentPropertyPlugin, DocumentPropertyPluginInstance]:
+    ) -> Tuple[DocumentPropertyPlugin, DocumentPropertyConfig]:
         return self._load_multi_plugin(
             PluginType.DocumentProperty, instance_id
         )
 
     def document_discovery(
         self, instance_id: int
-    ) -> Tuple[DocumentDiscoveryPlugin, DocumentDiscoveryPluginInstance]:
+    ) -> Tuple[DocumentDiscoveryPlugin, DocumentDiscoveryConfig]:
         return self._load_multi_plugin(
             PluginType.DocumentDiscovery, instance_id
         )

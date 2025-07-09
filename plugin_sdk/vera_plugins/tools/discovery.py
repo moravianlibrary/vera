@@ -11,10 +11,10 @@ from ..definitions.patterns import (
     PLUGIN_META_PATTERN,
 )
 from ..schemas import (
+    ConfigTypeAdapter,
     DiscoveryResult,
     InstanceDiscoveryResult,
     MetaDiscoveryResult,
-    PluginInstanceTypeAdapter,
     PluginMeta,
     PluginModelType,
 )
@@ -98,7 +98,7 @@ def discover_plugin_instances(
     location: str, plugin_name: str | None = None
 ) -> List[InstanceDiscoveryResult]:
     instances = _discover_in_location(
-        location, PluginInstanceTypeAdapter, PLUGIN_INSTANCES_PATTERN
+        location, ConfigTypeAdapter, PLUGIN_INSTANCES_PATTERN
     )
 
     return (

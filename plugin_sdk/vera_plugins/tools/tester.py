@@ -6,7 +6,7 @@ from unittest import TestCase
 
 from ..definitions.constants import PLUGIN_TESTS_PATH
 from ..definitions.plugin_types import PluginType
-from ..schemas import PluginInstance, PluginMeta
+from ..schemas import PluginConfig, PluginMeta
 from ..tools.registry import PluginRegistry
 
 
@@ -30,9 +30,9 @@ class PluginTester:
         spec.loader.exec_module(module)
         return module
 
-    def __call__(self, meta: PluginMeta, path: Path, instance: PluginInstance):
+    def __call__(self, meta: PluginMeta, path: Path, config: PluginConfig):
         registry = PluginRegistry()
-        registry.register_from_path(meta, path, instance)
+        registry.register_from_path(meta, path, config)
 
         for module in self._test_modules:
             for _, cls in inspect.getmembers(module, inspect.isclass):
@@ -61,7 +61,7 @@ class PluginTester:
                             PluginType.DigitizationRegistryAdapter,
                         ]
                         else registry._load_multi_plugin(
-                            meta.type, instance.instance_name
+                            meta.type, config.instance_name
                         )
                     )
 

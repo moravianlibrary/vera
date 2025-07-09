@@ -17,7 +17,10 @@ PLUGIN_TYPE_CARDINALITY: Dict[PluginType, PluginTypeCardinality] = {
     PluginType.IdentityProvider: "1",
     PluginType.CatalogAdapter: "1",
     PluginType.DigitizationRegistryAdapter: "1",
+    PluginType.CatalogRecordValidity: "0..*",
     PluginType.CatalogRecordProperty: "0..*",
+    PluginType.DocumentPageCount: "0..*",
+    PluginType.DocumentCanBeExtracted: "0..*",
     PluginType.DocumentProperty: "0..*",
     PluginType.DocumentDiscovery: "0..*",
 }
@@ -26,7 +29,10 @@ PLUGIN_TYPE_DECLARATION: Mapping[PluginType, PluginBase] = {
     PluginType.IdentityProvider: IdentityProviderPlugin,
     PluginType.CatalogAdapter: CatalogAdapterPlugin,
     PluginType.DigitizationRegistryAdapter: DigitizationRegistryAdapterPlugin,
+    PluginType.CatalogRecordValidity: CatalogRecordPropertyPlugin,
     PluginType.CatalogRecordProperty: CatalogRecordPropertyPlugin,
+    PluginType.DocumentPageCount: CatalogRecordPropertyPlugin,
+    PluginType.DocumentCanBeExtracted: CatalogRecordPropertyPlugin,
     PluginType.DocumentProperty: DocumentPropertyPlugin,
     PluginType.DocumentDiscovery: DocumentDiscoveryPlugin,
 }
@@ -35,7 +41,10 @@ PLUGIN_TYPE_SKELETON: Mapping[PluginType, str] = {
     PluginType.IdentityProvider: "identity_provider.py",
     PluginType.CatalogAdapter: "catalog_adapter.py",
     PluginType.DigitizationRegistryAdapter: "digitization_registry_adapter.py",
+    PluginType.CatalogRecordValidity: "catalog_record_property.py",
     PluginType.CatalogRecordProperty: "catalog_record_property.py",
+    PluginType.DocumentPageCount: "document_property.py",
+    PluginType.DocumentCanBeExtracted: "document_property.py",
     PluginType.DocumentProperty: "document_property.py",
     PluginType.DocumentDiscovery: "document_discovery.py",
 }

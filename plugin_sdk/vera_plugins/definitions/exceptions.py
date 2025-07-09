@@ -52,7 +52,7 @@ class PluginNotFoundError(Exception):
         self.plugin_name = plugin_name
 
 
-class PluginConfigMissingError(Exception):
+class ConfigMissingError(Exception):
     def __init__(self, plugin_name: str, instance_name: str):
         super().__init__(
             f"Plugin '{plugin_name}' requires a config, "
@@ -60,7 +60,7 @@ class PluginConfigMissingError(Exception):
         )
 
 
-class UnexpectedPluginConfigError(Exception):
+class UnexpectedConfigError(Exception):
     def __init__(self, plugin_name: str, instance_name: str):
         super().__init__(
             f"Plugin '{plugin_name}' does not define a config schema, "

@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from ..definitions.exceptions import ParseConfigError
 from ..definitions.patterns import GIT_HTTP_URL_PATTERN
-from ..schemas import PluginInstanceTypeAdapter, PluginModelType
+from ..schemas import ConfigTypeAdapter, PluginModelType
 
 
 def parse_yaml_config_file(
@@ -19,7 +19,7 @@ def parse_yaml_config_file(
         with open(path, "r") as f:
             for item in yaml.safe_load_all(f):
                 try:
-                    if model is PluginInstanceTypeAdapter:
+                    if model is ConfigTypeAdapter:
                         items.append(model.validate_python(item))
                     else:
                         items.append(model.model_validate(item))

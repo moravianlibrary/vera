@@ -5,7 +5,7 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from vera_plugins.definitions.plugin_types import PluginType
-from vera_plugins.schemas import CatalogAdapterPluginInstance, PluginMeta
+from vera_plugins.schemas import CatalogAdapterConfig, PluginMeta
 from vera_plugins.tools.tester import PluginTester
 
 
@@ -30,7 +30,7 @@ class TestPluginTester(TestCase):
         )
 
     def _instance(self):
-        return CatalogAdapterPluginInstance(
+        return CatalogAdapterConfig(
             plugin_name="MockPlugin",
             instance_name="mock_instance",
             config=None,

@@ -3,12 +3,15 @@ from typing import Literal
 
 
 class PluginType(str, Enum):
-    CatalogAdapter = "CatalogAdapter"
-    CatalogRecordProperty = "CatalogRecordProperty"
-    DigitizationRegistryAdapter = "DigitizationRegistryAdapter"
-    DocumentDiscovery = "DocumentDiscovery"
-    DocumentProperty = "DocumentProperty"
     IdentityProvider = "IdentityProvider"
+    CatalogAdapter = "CatalogAdapter"
+    DigitizationRegistryAdapter = "DigitizationRegistryAdapter"
+    CatalogRecordValidity = "CatalogRecordValidity"
+    CatalogRecordProperty = "CatalogRecordProperty"
+    DocumentPageCount = "DocumentPageCount"
+    DocumentCanBeExtracted = "DocumentCanBeExtracted"
+    DocumentProperty = "DocumentProperty"
+    DocumentDiscovery = "DocumentDiscovery"
 
 
 class PluginState(Enum):

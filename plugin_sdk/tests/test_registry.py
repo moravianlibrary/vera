@@ -4,11 +4,11 @@ from unittest.mock import MagicMock, Mock, patch
 
 from vera_plugins.definitions.plugin_types import PluginType
 from vera_plugins.schemas import (
-    CatalogAdapterPluginInstance,
-    CatalogPropertyPluginInstance,
-    DigitizationRegistryPluginInstance,
-    DocumentDiscoveryPluginInstance,
-    IdentityProviderPluginInstance,
+    CatalogAdapterConfig,
+    CatalogRecordPropertyConfig,
+    DigitizationRegistryConfig,
+    DocumentDiscoveryConfig,
+    IdentityProviderConfig,
     PluginMeta,
 )
 from vera_plugins.tools.registry import PluginRegistry
@@ -28,7 +28,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="TestPlugin",
             entrypoint_file="test.py",
         )
-        instance = CatalogAdapterPluginInstance(
+        instance = CatalogAdapterConfig(
             plugin_name="TestPlugin", instance_name="TestInstance"
         )
 
@@ -52,7 +52,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="TestPlugin1",
             entrypoint_file="test1.py",
         )
-        instance1 = CatalogAdapterPluginInstance(
+        instance1 = CatalogAdapterConfig(
             plugin_name="TestPlugin1", instance_name="Instance1"
         )
 
@@ -61,7 +61,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="TestPlugin2",
             entrypoint_file="test2.py",
         )
-        instance2 = CatalogAdapterPluginInstance(
+        instance2 = CatalogAdapterConfig(
             plugin_name="TestPlugin2", instance_name="Instance2"
         )
 
@@ -101,13 +101,13 @@ class TestPluginRegistry(unittest.TestCase):
             entrypoint_file="test1.py",
         )
 
-        instance1 = CatalogPropertyPluginInstance(
+        instance1 = CatalogRecordPropertyConfig(
             plugin_name="TestPlugin1",
             instance_name="Instance",
             property_name="Property",
             property_type={"type": "string"},
         )
-        instance2 = CatalogPropertyPluginInstance(
+        instance2 = CatalogRecordPropertyConfig(
             plugin_name="TestPlugin2",
             instance_name="Instance",
             property_name="Property",
@@ -151,7 +151,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="TestPlugin",
             entrypoint_file="test.py",
         )
-        instance = CatalogAdapterPluginInstance(
+        instance = CatalogAdapterConfig(
             plugin_name="TestPlugin", instance_name="Instance"
         )
 
@@ -171,7 +171,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="TestPlugin",
             entrypoint_file="test.py",
         )
-        instance = DigitizationRegistryPluginInstance(
+        instance = DigitizationRegistryConfig(
             plugin_name="TestPlugin", instance_name="Instance"
         )
 
@@ -189,7 +189,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="TestPlugin",
             entrypoint_file="test.py",
         )
-        instance = CatalogPropertyPluginInstance(
+        instance = CatalogRecordPropertyConfig(
             plugin_name="TestPlugin",
             instance_name="Instance",
             property_name="Property",
@@ -224,7 +224,7 @@ class TestPluginRegistry(unittest.TestCase):
             entrypoint_file="test.py",
         )
 
-        instance = CatalogPropertyPluginInstance(
+        instance = CatalogRecordPropertyConfig(
             plugin_name="TestPlugin",
             instance_name="Instance",
             property_name="Property",
@@ -264,7 +264,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="TestPlugin",
             entrypoint_file="test.py",
         )
-        instance = CatalogPropertyPluginInstance(
+        instance = CatalogRecordPropertyConfig(
             plugin_name="TestPlugin",
             instance_name="Instance",
             property_name="Property",
@@ -294,7 +294,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="PackagedPlugin",
             entrypoint_file="packaged.py",
         )
-        instance = CatalogAdapterPluginInstance(
+        instance = CatalogAdapterConfig(
             plugin_name="PackagedPlugin", instance_name="PackagedInstance"
         )
 
@@ -322,7 +322,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="TestPlugin",
             entrypoint_file="test.py",
         )
-        instance = IdentityProviderPluginInstance(
+        instance = IdentityProviderConfig(
             plugin_name="TestPlugin",
             instance_name="Instance",
         )
@@ -330,6 +330,27 @@ class TestPluginRegistry(unittest.TestCase):
         self.registry.register_from_path(meta, Path("/fake/path"), instance, 1)
 
         plugin = self.registry.identity_provider
+        self.assertIsNotNone(plugin)
+
+    @patch("vera_plugins.tools.registry.load_plugin_class")
+    def test_load_catalog_record_validity(self, mock_load_plugin_class: Mock):
+        mock_load_plugin_class.return_value = MagicMock()
+
+        meta = PluginMeta(
+            type=PluginType.CatalogRecordValidity,
+            name="TestPlugin",
+            entrypoint_file="test.py",
+        )
+        instance = CatalogRecordPropertyConfig(
+            plugin_name="TestPlugin",
+            instance_name="Instance",
+            property_name="Property",
+            property_type={"type": "string"},
+        )
+
+        self.registry.register_from_path(meta, Path("/fake/path"), instance, 1)
+
+        plugin = self.registry.catalog_record_validity(1)
         self.assertIsNotNone(plugin)
 
     @patch("vera_plugins.tools.registry.load_plugin_class")
@@ -341,7 +362,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="TestPlugin",
             entrypoint_file="test.py",
         )
-        instance = CatalogPropertyPluginInstance(
+        instance = CatalogRecordPropertyConfig(
             plugin_name="TestPlugin",
             instance_name="Instance",
             property_name="Property",
@@ -354,6 +375,50 @@ class TestPluginRegistry(unittest.TestCase):
         self.assertIsNotNone(plugin)
 
     @patch("vera_plugins.tools.registry.load_plugin_class")
+    def test_load_document_page_count(self, mock_load_plugin_class: Mock):
+        mock_load_plugin_class.return_value = MagicMock()
+
+        meta = PluginMeta(
+            type=PluginType.DocumentPageCount,
+            name="TestPlugin",
+            entrypoint_file="test.py",
+        )
+        instance = DocumentDiscoveryConfig(
+            plugin_name="TestPlugin",
+            instance_name="Instance",
+            property_name="Property",
+            property_type={"type": "string"},
+        )
+
+        self.registry.register_from_path(meta, Path("/fake/path"), instance, 1)
+
+        plugin = self.registry.document_page_count(1)
+        self.assertIsNotNone(plugin)
+
+    @patch("vera_plugins.tools.registry.load_plugin_class")
+    def test_load_document_can_be_extracted(
+        self, mock_load_plugin_class: Mock
+    ):
+        mock_load_plugin_class.return_value = MagicMock()
+
+        meta = PluginMeta(
+            type=PluginType.DocumentCanBeExtracted,
+            name="TestPlugin",
+            entrypoint_file="test.py",
+        )
+        instance = DocumentDiscoveryConfig(
+            plugin_name="TestPlugin",
+            instance_name="Instance",
+            property_name="Property",
+            property_type={"type": "string"},
+        )
+
+        self.registry.register_from_path(meta, Path("/fake/path"), instance, 1)
+
+        plugin = self.registry.document_can_be_extracted(1)
+        self.assertIsNotNone(plugin)
+
+    @patch("vera_plugins.tools.registry.load_plugin_class")
     def test_load_document_property(self, mock_load_plugin_class: Mock):
         mock_load_plugin_class.return_value = MagicMock()
 
@@ -362,7 +427,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="TestPlugin",
             entrypoint_file="test.py",
         )
-        instance = DocumentDiscoveryPluginInstance(
+        instance = DocumentDiscoveryConfig(
             plugin_name="TestPlugin",
             instance_name="Instance",
             property_name="Property",
@@ -383,7 +448,7 @@ class TestPluginRegistry(unittest.TestCase):
             name="TestPlugin",
             entrypoint_file="test.py",
         )
-        instance = DocumentDiscoveryPluginInstance(
+        instance = DocumentDiscoveryConfig(
             plugin_name="TestPlugin",
             instance_name="Instance",
         )

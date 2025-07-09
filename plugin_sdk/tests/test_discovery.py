@@ -49,7 +49,7 @@ class TestPluginDiscovery(TestCase):
                 "additional_files:\n"
                 "  - extra_file_1.py\n"
                 "  - extra_file_2.py\n"
-                "config_schema_path: config_schema.yaml\n"
+                "settings_schema_path: config_schema.yaml\n"
             )
 
             result = discover_plugins(tmpdir)
@@ -68,7 +68,7 @@ class TestPluginDiscovery(TestCase):
                 ["extra_file_1.py", "extra_file_2.py"],
             )
             self.assertEqual(
-                result[0].item.config_schema_path, "config_schema.yaml"
+                result[0].item.settings_schema_path, "config_schema.yaml"
             )
 
     @patch("vera_plugins.tools.discovery.clone_git_repo")
@@ -143,7 +143,7 @@ class TestPluginDiscovery(TestCase):
                 "plugin_name: TestPlugin\n"
                 "instance_name: TestInstance\n"
                 "plugin_type: DocumentDiscovery\n"
-                "config:\n"
+                "plugin_settings:\n"
                 "  key: value\n"
             )
 
@@ -152,5 +152,5 @@ class TestPluginDiscovery(TestCase):
             self.assertEqual(len(result), 1)
             self.assertEqual(result[0].item.plugin_name, "TestPlugin")
             self.assertEqual(result[0].item.instance_name, "TestInstance")
-            self.assertEqual(result[0].item.config, {"key": "value"})
+            self.assertEqual(result[0].item.plugin_settings, {"key": "value"})
             self.assertIsNone(result[0].error)

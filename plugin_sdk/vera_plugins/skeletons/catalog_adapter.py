@@ -7,7 +7,6 @@ from marcdantic.query import MarcSearchRequest
 from vera_plugins.specs.catalog_adapter import (
     CatalogAdapterPlugin,
     ListRecordsResponse,
-    NotImplementedException,
     SearchResultResponse,
 )
 
@@ -92,7 +91,7 @@ class Skeleton(CatalogAdapterPlugin):
         NotImplementedException
             If change fetching is not supported by the plugin.
         """
-        raise NotImplementedException(
+        raise NotImplementedError(
             "fetch_changes not implemented in this plugin"
         )
 
@@ -115,4 +114,4 @@ class Skeleton(CatalogAdapterPlugin):
         NotImplementedException
             If search is not supported by the plugin.
         """
-        raise NotImplementedException("search not implemented in this plugin")
+        raise NotImplementedError("search not implemented in this plugin")
