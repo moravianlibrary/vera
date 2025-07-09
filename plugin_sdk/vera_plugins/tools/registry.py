@@ -8,7 +8,16 @@ from vera_plugins.specs.catalog_record_property import (
 
 from ..definitions.plugin_types import PluginType
 from ..dispatchers import PLUGIN_TYPE_CARDINALITY
-from ..schemas import PluginInstance, PluginMeta
+from ..schemas import (
+    CatalogAdapterPluginInstance,
+    CatalogPropertyPluginInstance,
+    DigitizationRegistryPluginInstance,
+    DocumentDiscoveryPluginInstance,
+    DocumentPropertyPluginInstance,
+    IdentityProviderPluginInstance,
+    PluginInstance,
+    PluginMeta,
+)
 from ..specs.base import PluginBase
 from ..specs.catalog_adapter import CatalogAdapterPlugin
 from ..specs.digitization_registry_adapter import (
@@ -100,13 +109,18 @@ class PluginRegistry:
         )
         self.register_from_path(meta, module_path, instance, instance_id)
 
-    def _load_plugin(self, item: PluginRegistryItem) -> PluginBase:
+    def _load_plugin(
+        self, item: PluginRegistryItem
+    ) -> Tuple[PluginBase, PluginInstance]:
         PluginClass, instance = item
         return (
-            PluginClass(instance.config) if instance.config else PluginClass()
+            PluginClass(instance.config) if instance.config else PluginClass(),
+            instance,
         )
 
-    def _load_singleton_plugin(self, plugin_type: PluginType) -> PluginBase:
+    def _load_singleton_plugin(
+        self, plugin_type: PluginType
+    ) -> Tuple[PluginBase, PluginInstance]:
         if plugin_type not in self._singleton_plugins:
             raise ValueError(
                 f"No plugin registered for type '{plugin_type.value}'."
@@ -115,7 +129,7 @@ class PluginRegistry:
 
     def _load_multi_plugin(
         self, plugin_type: PluginType, instance_id: int
-    ) -> PluginBase:
+    ) -> Tuple[PluginBase, PluginInstance]:
         if instance_id not in self._multi_plugins[plugin_type]:
             raise ValueError(
                 f"No plugin registered for type '{plugin_type.value}' "
@@ -128,34 +142,45 @@ class PluginRegistry:
         self._multi_plugins_cache.cache_clear()
 
     @property
-    def identity_provider(self) -> IdentityProviderPlugin:
+    def identity_provider(
+        self,
+    ) -> Tuple[IdentityProviderPlugin, IdentityProviderPluginInstance]:
         return self._load_singleton_plugin(PluginType.IdentityProvider)
 
     @property
-    def catalog_adapter(self) -> CatalogAdapterPlugin:
+    def catalog_adapter(
+        self,
+    ) -> Tuple[CatalogAdapterPlugin, CatalogAdapterPluginInstance]:
         return self._load_singleton_plugin(PluginType.CatalogAdapter)
 
     @property
     def digitization_registry_adapter(
         self,
-    ) -> DigitizationRegistryAdapterPlugin:
+    ) -> Tuple[
+        DigitizationRegistryAdapterPlugin,
+        DigitizationRegistryPluginInstance,
+    ]:
         return self._load_singleton_plugin(
             PluginType.DigitizationRegistryAdapter
         )
 
     def catalog_record_property(
         self, instance_id: int
-    ) -> CatalogRecordPropertyPlugin:
+    ) -> Tuple[CatalogRecordPropertyPlugin, CatalogPropertyPluginInstance]:
         return self._load_multi_plugin(
             PluginType.CatalogRecordProperty, instance_id
         )
 
-    def document_property(self, instance_id: int) -> DocumentPropertyPlugin:
+    def document_property(
+        self, instance_id: int
+    ) -> Tuple[DocumentPropertyPlugin, DocumentPropertyPluginInstance]:
         return self._load_multi_plugin(
             PluginType.DocumentProperty, instance_id
         )
 
-    def document_discovery(self, instance_id: int) -> DocumentDiscoveryPlugin:
+    def document_discovery(
+        self, instance_id: int
+    ) -> Tuple[DocumentDiscoveryPlugin, DocumentDiscoveryPluginInstance]:
         return self._load_multi_plugin(
             PluginType.DocumentDiscovery, instance_id
         )

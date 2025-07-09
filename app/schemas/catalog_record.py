@@ -1,21 +1,26 @@
 from datetime import datetime
 from typing import Any, List
 
+from esorm.fields import Keyword, Text, boolean
 from marcdantic import MarcRecord
 from pydantic import BaseModel, model_validator
 from vera_plugins.definitions.plugin_types import PluginType
 
-from adapters.indexer import (
-    AdditionalPropertiesModel,
-    EnumList,
-    IndexerModel,
-    IndexerNestedModel,
-)
+from adapters.indexer import EnumList, IndexerModel, IndexerNestedModel
+from adapters.plugin_registry import plugin_registry
 from definitions.catalog_record import CatalogRecordStatus
 from definitions.identifier import IdentifierType
 from repositories.models.catalog_record import CatalogRecordModel
 
+from .additional_properties import (
+    AdditionalDetailsModel,
+    AdditionalPropertiesModel,
+)
 
+
+# --------------------
+# - Query Parameters -
+# --------------------
 class CatalogRecordsSyncParams(BaseModel):
     from_catalog: bool = False
     properties: bool = False
@@ -29,15 +34,12 @@ class CatalogRecordsSyncParams(BaseModel):
         return model
 
 
+# --------------------
+# - Indexer Entities -
+# --------------------
 class CatalogRecordIdentifier(IndexerNestedModel):
     identifier_type: IdentifierType
-    identifier_value: str
-
-
-class CatalogRecordValidity(IndexerNestedModel):
-    plugin_instance_id: int
-    key: str
-    valid: bool | None
+    identifier_value: Text
 
 
 class CatalogRecordAdditionalProperties(AdditionalPropertiesModel):
@@ -48,18 +50,17 @@ class CatalogRecord(IndexerModel):
     class ESConfig:
         index = "catalog_records"
 
-    id: str
+    id: Keyword
 
-    base: str
-    system_number: str
+    base: Keyword
+    system_number: Text
 
-    title: str | None
-    subtitle: str | None
+    title: Text | None
+    subtitle: Text | None
     identifiers: List[CatalogRecordIdentifier]
 
-    validity_sources: List[CatalogRecordValidity] | None
-    force_valid: bool
-    is_valid: bool | None
+    force_valid: boolean
+    is_valid: boolean | None
 
     current_status: EnumList[CatalogRecordStatus]
 
@@ -99,20 +100,8 @@ class CatalogRecord(IndexerModel):
         for field in marc_record.numbers_and_codes.nbn:
             _append_identifier(IdentifierType.NBN, field.active)
 
-        # Collect validity sources from additional properties
-        # TODO: do this on sql level
-        # TODO: Add catalog record validity plugin type
-        validity_sources = [
-            ap
-            for ap in data.additional_properties
-            if ap.plugin_instance.plugin.type
-            == PluginType.CatalogRecordValidity
-        ]
-
-        # Determine if the record is valid
-        is_valid = data.force_valid or (
-            all(vs.is_valid or vs.is_valid is None for vs in validity_sources)
-        )
+        # Resolve validity
+        is_valid = data.is_valid or data.force_valid
 
         # Determine the current status of the record
         current_status = [
@@ -133,6 +122,19 @@ class CatalogRecord(IndexerModel):
             if condition
         ]
 
+        # Collect validity sources and additional properties
+        additional_properties = {}
+
+        for ap in data.additional_properties:
+            instance, config = plugin_registry.catalog_record_property(
+                ap.plugin_instance.id
+            )
+            additional_properties[config.property_name] = (
+                instance.detailed_data_type.model_validate(ap.search_data)
+                if ap.search_data
+                else None
+            )
+
         return {
             "id": data.id,
             "base": data.base,
@@ -140,17 +142,25 @@ class CatalogRecord(IndexerModel):
             "title": marc_record.title_related.title_statement.title,
             "subtitle": marc_record.title_related.title_statement.subtitle,
             "identifiers": identifiers,
-            "validity_sources": validity_sources,
             "force_valid": data.force_valid,
             "is_valid": is_valid,
             "current_status": current_status,
-            "additional_properties": [
-                ap
-                for ap in data.additional_properties
-                if ap.plugin_instance.plugin.type
-                == PluginType.CatalogRecordProperty
-            ],
+            "additional_properties": additional_properties,
         }
+
+
+# -----------------
+# - API Responses -
+# -----------------
+class CatalogRecordValidity(IndexerNestedModel):
+    plugin_instance_id: int
+    key: str
+    valid: bool | None
+    reason: str | None
+
+
+class CatalogRecordAdditionalDetails(AdditionalDetailsModel):
+    pass
 
 
 class CatalogRecordStatusLog(BaseModel):
@@ -159,16 +169,15 @@ class CatalogRecordStatusLog(BaseModel):
     updated_at: datetime
 
 
-class CatalogRecordAdditionalDetails(BaseModel):
-    pass
-
-
 class CatalogRecordDetails(BaseModel):
     id: str
 
     marc: MarcRecord
-    status_log: List[CatalogRecordStatusLog]
+
+    validity_sources: List[CatalogRecordValidity]
     additional_details: CatalogRecordAdditionalDetails | None
+
+    status_log: List[CatalogRecordStatusLog]
 
     @model_validator(mode="before")
     @classmethod
@@ -176,14 +185,50 @@ class CatalogRecordDetails(BaseModel):
         if not isinstance(data, CatalogRecordModel):
             return data
 
+        validity_sources = []
+        additional_details = {}
+        for ap in data.additional_properties:
+            plugin_type = ap.plugin_instance.plugin.type
+
+            if plugin_type == PluginType.CatalogRecordValidity:
+                instance, config = plugin_registry.catalog_record_validity(
+                    ap.plugin_instance.id
+                )
+                validity_sources.append(
+                    CatalogRecordValidity(
+                        plugin_instance_id=ap.plugin_instance.id,
+                        key=config.property_name,
+                        valid=(
+                            ap.detailed_data.get("valid")
+                            if ap.detailed_data
+                            else None
+                        ),
+                        reason=(
+                            ap.detailed_data.get("reason")
+                            if ap.detailed_data
+                            else None
+                        ),
+                    )
+                )
+
+            else:
+                instance, config = plugin_registry.catalog_record_property(
+                    ap.plugin_instance.id
+                )
+                additional_details[config] = (
+                    instance.detailed_data_type.model_validate(
+                        ap.detailed_data
+                    )
+                    if ap.detailed_data
+                    else None
+                )
+
         return {
             "id": data.id,
             "marc": MarcRecord.from_mrc(data.marc),
+            "validity_sources": validity_sources,
+            "additional_details": (
+                additional_details if additional_details else None
+            ),
             "status_log": data.status_log,
-            "additional_details": [
-                ap.detailed_data
-                for ap in data.additional_properties
-                if ap.plugin_instance.plugin.type
-                == PluginType.CatalogRecordProperty
-            ],
         }

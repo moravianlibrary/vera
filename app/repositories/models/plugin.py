@@ -2,7 +2,6 @@ from typing import List
 
 from sqlalchemy import (
     JSON,
-    Boolean,
     Column,
     Enum,
     ForeignKey,
@@ -33,8 +32,6 @@ class PluginModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
 
     zipped_code_data = Column(LargeBinary, nullable=False)
 
-    use_safe_mode = Column(Boolean, default=False, nullable=False)
-
     instances: Mapped[List["PluginInstanceModel"]] = relationship(
         "PluginInstanceModel", backref="plugin"
     )
@@ -46,14 +43,10 @@ class PluginInstanceModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
     id = Column(Integer, primary_key=True, autoincrement=True)
 
     plugin_id = Column(Integer, ForeignKey("plugins.id"), nullable=False)
-    instance_name = Column(String, nullable=False)
+    name = Column(String, nullable=False)
 
     config = Column(JSON, nullable=True)
 
     plugin: Mapped["PluginModel"] = relationship(
         "PluginModel", backref="instances"
     )
-
-    # @hybrid_property
-    # def state(self) -> PluginState:
-    #     return
