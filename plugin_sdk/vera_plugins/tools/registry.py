@@ -11,8 +11,11 @@ from ..dispatchers import PLUGIN_TYPE_CARDINALITY
 from ..schemas import (
     CatalogAdapterConfig,
     CatalogRecordPropertyConfig,
+    CatalogRecordValidityConfig,
     DigitizationRegistryConfig,
+    DocumentCanBeExtractedConfig,
     DocumentDiscoveryConfig,
+    DocumentPageCountConfig,
     DocumentPropertyConfig,
     IdentityProviderConfig,
     PluginConfig,
@@ -170,7 +173,7 @@ class PluginRegistry:
 
     def catalog_record_validity(
         self, instance_id: int
-    ) -> Tuple[CatalogRecordPropertyPlugin, CatalogRecordPropertyConfig]:
+    ) -> Tuple[CatalogRecordPropertyPlugin, CatalogRecordValidityConfig]:
         return self._load_multi_plugin(
             PluginType.CatalogRecordValidity, instance_id
         )
@@ -184,14 +187,14 @@ class PluginRegistry:
 
     def document_page_count(
         self, instance_id: int
-    ) -> Tuple[CatalogRecordPropertyPlugin, CatalogRecordPropertyConfig]:
+    ) -> Tuple[DocumentPropertyPlugin, DocumentPageCountConfig]:
         return self._load_multi_plugin(
             PluginType.DocumentPageCount, instance_id
         )
 
     def document_can_be_extracted(
         self, instance_id: int
-    ) -> Tuple[CatalogRecordPropertyPlugin, CatalogRecordPropertyConfig]:
+    ) -> Tuple[DocumentPropertyPlugin, DocumentCanBeExtractedConfig]:
         return self._load_multi_plugin(
             PluginType.DocumentCanBeExtracted, instance_id
         )
