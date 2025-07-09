@@ -1,10 +1,6 @@
 from marcdantic import MarcIssue, MarcRecord
 
-from .base import (
-    DataPropertyPluginBase,
-    ExternalDataPropertyPluginBase,
-    InputData,
-)
+from .base import DataPropertyPluginBase, ExternalResourceMixin, InputData
 
 
 class DocumentInput(InputData):
@@ -37,7 +33,7 @@ class DocumentPropertyPlugin(
 
 
 class ExternalDocumentPropertyPlugin(
-    ExternalDataPropertyPluginBase[DocumentInput]
+    DataPropertyPluginBase[DocumentInput], ExternalResourceMixin
 ):
     """
     Base class for plugins that extract a property from document input
@@ -48,6 +44,9 @@ class ExternalDocumentPropertyPlugin(
 
     Methods
     -------
+    is_available() -> bool
+        Check whether the external resource is available.
+
     parse(input_data : DocumentInput) -> PropertyData
         Extract the property using both the input and external resources.
     """

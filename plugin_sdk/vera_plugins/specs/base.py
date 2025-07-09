@@ -11,12 +11,12 @@ class PluginBase(ABC):
     """
 
 
-class ExternalResourcePluginBase(PluginBase):
+class ExternalResourceMixin(PluginBase):
     """
-    Abstract base class for plugins that depend on external resources.
+    Mixin for plugins that interact with external resources.
 
-    Defines an interface for plugins that interact with external services
-    such as databases, APIs, or remote systems.
+    Provides the 'is_available' interface for checking external service
+    availability.
 
     Methods
     -------
@@ -136,24 +136,3 @@ class DataPropertyPluginBase(PluginBase, Generic[InputDataType]):
             The model class used for detailed dat
         """
         pass
-
-
-class ExternalDataPropertyPluginBase(
-    DataPropertyPluginBase[InputDataType], ExternalResourcePluginBase
-):
-    """
-    Abstract base class for plugins that extract properties using external
-    resources.
-
-    Combines the interfaces of `DataPropertyPluginBase` and
-    `ExternalResourcePluginBase` to support property extraction that depends
-    on external systems (e.g., APIs, databases).
-
-    Methods
-    -------
-    is_available() -> bool
-        Check if the external resource is available.
-
-    parse(input_data: InputDataType) -> PropertyData
-        Extract the property using both the input and external resources.
-    """

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Any, Dict, List
 
-from .base import ExternalResourcePluginBase
+from .base import ExternalResourceMixin, PluginBase
 
 UserInfo = Dict[str, Any]
 
@@ -55,7 +55,7 @@ class UserFieldMissingError(IdentityProviderError):
         self.field = field
 
 
-class IdentityProviderPlugin(ExternalResourcePluginBase):
+class IdentityProviderPlugin(PluginBase, ExternalResourceMixin):
     """
     Abstract interface for identity provider plugins.
 
@@ -66,6 +66,9 @@ class IdentityProviderPlugin(ExternalResourcePluginBase):
 
     Methods
     -------
+    is_available() -> bool
+        Check whether the external resource is available.
+
     extract_user_info(token: str) -> UserInfo
         Extract user information from the provided authentication token.
 

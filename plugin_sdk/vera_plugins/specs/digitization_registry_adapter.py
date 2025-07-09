@@ -4,7 +4,7 @@ from typing import List, NamedTuple
 
 from marcdantic import MarcIssue, MarcRecord
 
-from .base import ExternalResourcePluginBase
+from .base import ExternalResourceMixin, PluginBase
 
 
 class DigitizationRecordState(str, Enum):
@@ -117,7 +117,7 @@ class StateChangeError(DigitizationRegistryError):
         super().__init__(message)
 
 
-class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
+class DigitizationRegistryAdapterPlugin(PluginBase, ExternalResourceMixin):
     """
     Abstract class for a plugin that interacts with a digitization registry.
 
@@ -126,6 +126,9 @@ class DigitizationRegistryAdapterPlugin(ExternalResourcePluginBase):
 
     Methods
     -------
+    is_available() -> bool
+        Check whether the external resource is available.
+
     fetch(registry_issue_id: str) -> DigitizationRecord | None:
         Retrieve digitization information for a specific issue
         from the registry.

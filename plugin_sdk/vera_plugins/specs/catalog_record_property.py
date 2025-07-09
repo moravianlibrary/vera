@@ -1,10 +1,6 @@
 from marcdantic import MarcRecord
 
-from .base import (
-    DataPropertyPluginBase,
-    ExternalDataPropertyPluginBase,
-    InputData,
-)
+from .base import DataPropertyPluginBase, ExternalResourceMixin, InputData
 
 
 class CatalogRecordInput(InputData):
@@ -23,11 +19,16 @@ class CatalogRecordInput(InputData):
 class CatalogRecordPropertyPlugin(DataPropertyPluginBase[CatalogRecordInput]):
     """
     Base class for plugins that extract a property from a catalog record.
+
+    Methods
+    -------
+    parse(input_data : DocumentInput) -> PropertyData
+        Extract the property using both the input and external resources.
     """
 
 
 class ExternalCatalogRecordPropertyPlugin(
-    ExternalDataPropertyPluginBase[CatalogRecordInput],
+    DataPropertyPluginBase[CatalogRecordInput], ExternalResourceMixin
 ):
     """
     Base class for plugins that extract a property from a catalog record using
@@ -35,4 +36,12 @@ class ExternalCatalogRecordPropertyPlugin(
 
     Extends the catalog record property extraction by incorporating interaction
     with external resources such as APIs or remote services.
+
+    Methods
+    -------
+    is_available() -> bool
+        Check whether the external resource is available.
+
+    parse(input_data : DocumentInput) -> PropertyData
+        Extract the property using both the input and external resources.
     """

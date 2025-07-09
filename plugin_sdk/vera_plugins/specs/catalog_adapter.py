@@ -6,7 +6,7 @@ from typing import Generator, List, NamedTuple
 from marcdantic import MarcRecord
 from marcdantic.query import MarcSearchRequest
 
-from .base import ExternalResourcePluginBase
+from .base import ExternalResourceMixin, PluginBase
 
 
 class RecordStatus(Enum):
@@ -93,7 +93,7 @@ class SearchResultResponse(NamedTuple):
     page_size: int
 
 
-class CatalogAdapterPlugin(ExternalResourcePluginBase):
+class CatalogAdapterPlugin(PluginBase, ExternalResourceMixin):
     """
     Abstract base class for catalog adapter plugins.
 
@@ -105,6 +105,9 @@ class CatalogAdapterPlugin(ExternalResourcePluginBase):
 
     Methods
     -------
+    is_available() -> bool
+        Check whether the external resource is available.
+
     fetch(base: str, system_number: str) -> MarcRecord | None:
         Fetch a specific record based on base and system number.
 

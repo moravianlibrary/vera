@@ -2,7 +2,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from typing import Generator
 
-from .base import ExternalResourcePluginBase
+from .base import ExternalResourceMixin, PluginBase
 
 
 @dataclass(frozen=True)
@@ -44,7 +44,7 @@ class CatalogDocumentRef:
 DocumentPointer = DocumentRef | CatalogDocumentRef
 
 
-class DocumentDiscoveryPlugin(ExternalResourcePluginBase):
+class DocumentDiscoveryPlugin(PluginBase, ExternalResourceMixin):
     """
     Abstract base class for plugins that discover documents.
 
@@ -54,6 +54,9 @@ class DocumentDiscoveryPlugin(ExternalResourcePluginBase):
 
     Methods
     -------
+    is_available() -> bool
+        Check whether the external resource is available.
+
     discover_documents() -> Generator[DocumentPointer, None, None]
         Yield references to documents to be added to the system.
     """

@@ -1,10 +1,6 @@
 from pathlib import Path
 from typing import Dict, Generic, NamedTuple, Set, TypeVar
 
-from vera_plugins.specs.catalog_record_property import (
-    CatalogRecordPropertyPlugin,
-)
-
 from ..definitions.plugin_types import PluginType
 from ..dispatchers import PLUGIN_TYPE_CARDINALITY
 from ..schemas import (
@@ -22,6 +18,7 @@ from ..schemas import (
 )
 from ..specs.base import PluginBase
 from ..specs.catalog_adapter import CatalogAdapterPlugin
+from ..specs.catalog_record_property import CatalogRecordPropertyPlugin
 from ..specs.digitization_registry_adapter import (
     DigitizationRegistryAdapterPlugin,
 )
