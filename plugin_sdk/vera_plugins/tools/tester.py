@@ -54,13 +54,13 @@ class PluginTester:
                         continue
 
                     plugin_instance = (
-                        registry._load_singleton_plugin(meta.type)
+                        registry._get_singleton_plugin(meta.type)
                         if meta.type
                         in [
                             PluginType.CatalogAdapter,
                             PluginType.DigitizationRegistryAdapter,
                         ]
-                        else registry._load_multi_plugin(
+                        else registry._get_multi_plugin(
                             meta.type, config.instance_name
                         )
                     )

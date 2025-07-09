@@ -181,7 +181,7 @@ class TestPluginRegistry(unittest.TestCase):
         self.assertIsNotNone(plugin)
 
     @patch("vera_plugins.tools.registry.load_plugin_class")
-    def test_load_multi_plugin(self, mock_load_plugin_class: Mock):
+    def test_get_multi_plugin(self, mock_load_plugin_class: Mock):
         mock_load_plugin_class.return_value = MagicMock()
 
         meta = PluginMeta(
@@ -198,14 +198,14 @@ class TestPluginRegistry(unittest.TestCase):
 
         self.registry.register_from_path(meta, Path("/fake/path"), instance, 1)
 
-        plugin = self.registry._load_multi_plugin(
+        plugin = self.registry._get_multi_plugin(
             PluginType.CatalogRecordProperty, 1
         )
         self.assertIsNotNone(plugin)
 
-    def test_load_multi_plugin_type_not_found(self):
+    def test_get_multi_plugin_type_not_found(self):
         with self.assertRaises(ValueError) as context:
-            self.registry._load_multi_plugin(
+            self.registry._get_multi_plugin(
                 PluginType.CatalogRecordProperty, 1
             )
         self.assertEqual(
@@ -215,7 +215,7 @@ class TestPluginRegistry(unittest.TestCase):
         )
 
     @patch("vera_plugins.tools.registry.load_plugin_class")
-    def test_load_multi_plugin_not_found(self, mock_load_plugin_class: Mock):
+    def test_get_multi_plugin_not_found(self, mock_load_plugin_class: Mock):
         mock_load_plugin_class.return_value = MagicMock()
 
         meta = PluginMeta(
@@ -236,7 +236,7 @@ class TestPluginRegistry(unittest.TestCase):
         )
 
         with self.assertRaises(ValueError) as context:
-            self.registry._load_multi_plugin(
+            self.registry._get_multi_plugin(
                 PluginType.CatalogRecordProperty, 2
             )
         self.assertEqual(
@@ -245,9 +245,9 @@ class TestPluginRegistry(unittest.TestCase):
             "with instance ID 2.",
         )
 
-    def test_load_singleton_plugin_not_found(self):
+    def test_get_singleton_plugin_not_found(self):
         with self.assertRaises(ValueError) as context:
-            self.registry._load_singleton_plugin(PluginType.CatalogAdapter)
+            self.registry._get_singleton_plugin(PluginType.CatalogAdapter)
         self.assertEqual(
             str(context.exception),
             "No plugin registered for type 'CatalogAdapter'.",
@@ -457,41 +457,3 @@ class TestPluginRegistry(unittest.TestCase):
 
         plugin = self.registry.document_discovery(1)
         self.assertIsNotNone(plugin)
-
-    @patch("vera_plugins.tools.registry.PluginRegistry._load_plugin")
-    def test_load_singleton_plugin_from_cache(self, mock_load_plugin: Mock):
-        mock_plugin_instance = MagicMock()
-        mock_load_plugin.return_value = mock_plugin_instance
-
-        registry = PluginRegistry()
-
-        plugin_type = PluginType.CatalogAdapter
-        registry._singleton_plugins[plugin_type] = (MagicMock(), MagicMock())
-
-        result1 = registry._singleton_plugins_cache(plugin_type)
-        result2 = registry._singleton_plugins_cache(plugin_type)
-
-        mock_load_plugin.assert_called_once()
-
-        self.assertIs(result1, result2)
-
-    @patch("vera_plugins.tools.registry.PluginRegistry._load_plugin")
-    def test_clear_plugin_cache_resets_cache(self, mock_load_plugin: Mock):
-        mock_plugin_instance = MagicMock()
-        mock_load_plugin.return_value = mock_plugin_instance
-
-        registry = PluginRegistry()
-
-        plugin_type = PluginType.CatalogAdapter
-        registry._singleton_plugins[plugin_type] = (MagicMock(), MagicMock())
-
-        registry._singleton_plugins_cache(plugin_type)
-        registry._singleton_plugins_cache(plugin_type)
-        mock_load_plugin.assert_called_once()
-
-        registry.clear_plugin_cache()
-
-        registry._singleton_plugins_cache(plugin_type)
-        registry._singleton_plugins_cache(plugin_type)
-
-        self.assertEqual(mock_load_plugin.call_count, 2)
