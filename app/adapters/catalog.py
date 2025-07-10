@@ -3,7 +3,7 @@ from typing import Generator
 
 from marcdantic import MarcRecord
 from marcdantic.query import MarcSearchRequest
-from vera_plugins.schemas import CatalogAdapterPluginInstance
+from vera_plugins.schemas import CatalogAdapterConfig
 from vera_plugins.specs.catalog_adapter import (
     CatalogAdapterPlugin,
     ListRecordsResponse,
@@ -16,10 +16,10 @@ class CatalogAdapter(CatalogAdapterPlugin):
     def __init__(
         self,
         plugin_registry: PluginRegistry,
-        instance: CatalogAdapterPluginInstance,
+        config: CatalogAdapterConfig,
     ):
         self._plugin_registry = plugin_registry
-        self.instance = instance
+        self._config = config
 
     def fetch(self, base: str, system_number: str) -> MarcRecord | None:
         return self._plugin_registry.catalog_adapter.fetch(base, system_number)

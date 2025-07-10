@@ -23,9 +23,9 @@ from repositories.system import (
     SystemStatusRepository,
 )
 from repositories.task import (
-    ScheduledTaskRepository,
     TaskItemRepository,
     TaskRepository,
+    TaskScheduleRepository,
 )
 from repositories.watchlist import WatchlistRepository
 from services import (
@@ -41,7 +41,7 @@ from services.group import GroupService
 from services.intention import IntentionService
 from services.project import ProjectService
 from services.proposal import ProposalService
-from services.task import ScheduledTaskService, TaskService
+from services.task import TaskScheduleService, TaskService
 from vera_state import get_catalog_adapter, get_identity_provider
 
 from .providers import provide_repository, provide_service
@@ -82,7 +82,7 @@ DependsOnSystemSettingsRepository = provide_repository(
 DependsOnSystemStatusRepository = provide_repository(SystemStatusRepository)
 DependsOnTaskRepository = provide_repository(TaskRepository)
 DependsOnTaskItemRepository = provide_repository(TaskItemRepository)
-DependsOnScheduledTaskRepository = provide_repository(ScheduledTaskRepository)
+DependsOnTaskScheduleRepository = provide_repository(TaskScheduleRepository)
 DependsOnUserRepository = provide_repository(UserRepository)
 DependsOnWatchlistRepository = provide_repository(WatchlistRepository)
 
@@ -146,9 +146,9 @@ DependsOnProposalService = provide_service(
     DependsOnIntentionRepository,
 )
 DependsOnTaskService = provide_service(TaskService, DependsOnTaskRepository)
-DependsOnScheduledTaskService = provide_service(
-    ScheduledTaskService,
-    DependsOnScheduledTaskRepository,
+DependsOnTaskScheduleService = provide_service(
+    TaskScheduleService,
+    DependsOnTaskScheduleRepository,
 )
 
 DependsOnAuthenticatedUser = Depends(resolve_authenticated_user)

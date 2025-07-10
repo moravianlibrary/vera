@@ -66,3 +66,26 @@ def update_system_settings(
     repository: SystemSettingsRepository = DependsOnSystemSettingsRepository,
 ):
     return repository.update(settings)
+
+
+@router.post(
+    "/maintenance",
+    dependencies=[WithPermission(GeneralPermission.ManageSystem)],
+)
+def enable_maintenance_mode(
+    message: str,
+    repository: SystemStatusRepository = DependsOnSystemStatusRepository,
+):
+    repository.enable_maintenance_mode()
+    return {"message": "System maintenance mode enabled."}
+
+
+@router.delete(
+    "/maintenance",
+    dependencies=[WithPermission(GeneralPermission.ManageSystem)],
+)
+def disable_maintenance_mode(
+    repository: SystemStatusRepository = DependsOnSystemStatusRepository,
+):
+    repository.disable_maintenance_mode()
+    return {"message": "System maintenance mode disabled."}

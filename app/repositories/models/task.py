@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, List
 
 from sqlalchemy import (
-    JSON,
     TIMESTAMP,
     Boolean,
     Column,
@@ -12,23 +11,25 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     String,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped, relationship
 
-from adapters.database import BaseModel, DatabaseSession
+from adapters.database import BaseModel
 from definitions.task import ScopedTaskType, TaskScope, TaskState
 from repositories.models.mixins.created_audit import CreatedAuditMixin
-from vera_scheduler import vera_scheduler
 
 if TYPE_CHECKING:
     from repositories.models.addition import AdditionModel
     from repositories.models.catalog_record import CatalogRecordModel
     from repositories.models.category import CategoryModel
+    from repositories.models.digitization_list import DigitizationListModel
     from repositories.models.document import (
         DocumentIterationModel,
         DocumentModel,
     )
+    from repositories.models.proposal import ProposalModel
 
 
 class TaskModel(BaseModel, CreatedAuditMixin):
@@ -36,28 +37,28 @@ class TaskModel(BaseModel, CreatedAuditMixin):
 
     id = Column(Integer, primary_key=True, index=True, unique=True)
     process_id = Column(Integer)
-    scheduled_task_id = Column(
-        Integer, ForeignKey("scheduled_tasks.id"), nullable=True
+    task_schedule_id = Column(
+        Integer, ForeignKey("task_schedules.id"), nullable=True
     )
 
     task_type = Column(Enum(ScopedTaskType), nullable=False, index=True)
     name = Column(String, nullable=False)
 
-    query = Column(JSON)
-    data = Column(JSON)
+    query = Column(JSONB)
+    data = Column(JSONB)
 
     task_state = Column(
         Enum(TaskState), nullable=False, server_default=TaskState.Initializing
     )
 
-    started = Column(TIMESTAMP)
-    finished = Column(TIMESTAMP)
+    started_at = Column(TIMESTAMP)
+    finished_at = Column(TIMESTAMP)
 
-    result_message = Column(String)
+    result = Column(JSONB, nullable=True)
     log = Column(LargeBinary)
 
-    scheduled_task: Mapped["ScheduledTask"] = relationship(
-        "ScheduledTask", back_populates="tasks", lazy="joined"
+    task_schedule: Mapped["TaskScheduleModel"] = relationship(
+        "TaskScheduleModel", back_populates="tasks", lazy="joined"
     )
 
     additions: Mapped[List["TaskAdditionModel"]] = relationship(
@@ -72,8 +73,14 @@ class TaskModel(BaseModel, CreatedAuditMixin):
         cascade="all, delete-orphan",
         lazy="selectin",
     )
-    documents = relationship(
-        "TaskDocument",
+    categories = relationship(
+        "TaskCategory",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    digitization_lists = relationship(
+        "TaskDigitizationList",
         back_populates="task",
         cascade="all, delete-orphan",
         lazy="selectin",
@@ -84,8 +91,8 @@ class TaskModel(BaseModel, CreatedAuditMixin):
         cascade="all, delete-orphan",
         lazy="selectin",
     )
-    categories = relationship(
-        "TaskCategory",
+    proposals = relationship(
+        "TaskProposalModel",
         back_populates="task",
         cascade="all, delete-orphan",
         lazy="selectin",
@@ -104,7 +111,6 @@ class TaskModel(BaseModel, CreatedAuditMixin):
         return (
             self.additions
             + self.catalog_records
-            + self.documents
             + self.documents_iterations
             + self.categories
         )
@@ -147,7 +153,7 @@ class TaskAdditionModel(BaseModel, TaskItemMixin):
         "TaskModel", back_populates="additions"
     )
     addition: Mapped["AdditionModel"] = relationship(
-        "Addition", back_populates="tasks"
+        "Addition", back_populates="task_items"
     )
 
 
@@ -164,41 +170,7 @@ class TaskCatalogRecordModel(BaseModel, TaskItemMixin):
         "TaskModel", back_populates="catalog_records"
     )
     catalog_record: Mapped["CatalogRecordModel"] = relationship(
-        "CatalogRecordModel", back_populates="tasks"
-    )
-
-
-class TaskDocumentModel(BaseModel, TaskItemMixin):
-    __tablename__ = "task_documents"
-
-    document_id = Column(Integer, ForeignKey("documents.id"), index=True)
-
-    __table_args__ = (PrimaryKeyConstraint("task_id", "document_id"),)
-
-    task: Mapped["TaskModel"] = relationship(
-        "TaskModel", back_populates="documents"
-    )
-    document: Mapped["DocumentModel"] = relationship(
-        "DocumentModel", back_populates="tasks"
-    )
-
-
-class TaskDocumentIterationModel(BaseModel, TaskItemMixin):
-    __tablename__ = "task_document_iterations"
-
-    document_iteration_id = Column(
-        int, ForeignKey("document_iterations.id"), index=True
-    )
-
-    __table_args__ = (
-        PrimaryKeyConstraint("task_id", "document_iteration_id"),
-    )
-
-    task: Mapped["TaskModel"] = relationship(
-        "TaskModel", back_populates="documents"
-    )
-    document_iteration: Mapped["DocumentIterationModel"] = relationship(
-        "DocumentIterationModel", back_populates="tasks"
+        "CatalogRecordModel", back_populates="task_items"
     )
 
 
@@ -213,51 +185,86 @@ class TaskCategoryModel(BaseModel, TaskItemMixin):
         "TaskModel", back_populates="categories"
     )
     category: Mapped["CategoryModel"] = relationship(
-        "CategoryModel", back_populates="tasks"
+        "CategoryModel", back_populates="task_items"
     )
 
 
-class ScheduledTask(BaseModel):
-    __tablename__ = "scheduled_tasks"
+class TaskDigitizationList(BaseModel, TaskItemMixin):
+    __tablename__ = "task_digitization_lists"
+
+    digitization_list_id = Column(
+        Integer, ForeignKey("digitization_lists.id"), index=True
+    )
+
+    __table_args__ = (PrimaryKeyConstraint("task_id", "digitization_list_id"),)
+
+    task: Mapped["TaskModel"] = relationship(
+        "TaskModel", back_populates="digitization_lists"
+    )
+    digitization_list: Mapped["DigitizationListModel"] = relationship(
+        "DigitizationListModel", back_populates="task_items"
+    )
+
+
+class TaskDocumentIterationModel(BaseModel, TaskItemMixin):
+    __tablename__ = "task_document_iterations"
+
+    document_iteration_id = Column(
+        int, ForeignKey("document_iterations.id"), index=True
+    )
+    document_id = Column(Integer, ForeignKey("documents.id"), index=True)
+
+    __table_args__ = (
+        PrimaryKeyConstraint("task_id", "document_iteration_id"),
+    )
+
+    task: Mapped["TaskModel"] = relationship(
+        "TaskModel", back_populates="documents"
+    )
+    document_iteration: Mapped["DocumentIterationModel"] = relationship(
+        "DocumentIterationModel", back_populates="task_items"
+    )
+    document: Mapped["DocumentModel"] = relationship(
+        "DocumentModel", back_populates="task_items"
+    )
+
+
+class TaskProposalModel(BaseModel, TaskItemMixin):
+    __tablename__ = "task_proposals"
+
+    proposal_id = Column(Integer, ForeignKey("proposals.id"), index=True)
+
+    __table_args__ = (PrimaryKeyConstraint("task_id", "proposal_id"),)
+
+    task: Mapped["TaskModel"] = relationship(
+        "TaskModel", back_populates="proposals"
+    )
+    proposal: Mapped["ProposalModel"] = relationship(
+        "ProposalModel", back_populates="task_items"
+    )
+
+
+class TaskScheduleModel(BaseModel):
+    __tablename__ = "task_schedules"
 
     id = Column(Integer, primary_key=True, index=True, unique=True)
+    name = Column(String, nullable=False)
 
     task_type = Column(Enum(ScopedTaskType), nullable=False)
-    query_params = Column(JSON)
-    # TODO: cron expression
-    minute = Column(Integer, nullable=False)
-    hour = Column(Integer)
-    day_of_week = Column(Integer)
-    day_of_month = Column(Integer)
+    query = Column(JSONB)
+    cron_expression = Column(String, nullable=False)
 
-    tasks: Mapped[List[TaskModel]] = relationship(
+    tasks: Mapped[List["TaskModel"]] = relationship(
         "TaskModel",
-        back_populates="scheduled_task",
+        back_populates="task_schedule",
         cascade="all, delete-orphan",
         lazy="selectin",
     )
 
-    def schedule(self):
-        from worker import run_periodic_task_instance
+    @hybrid_property
+    def scope(self) -> TaskScope:
+        return TaskScope(self.task_type.split(".")[0])
 
-        def parse_cron_value(value: str | None) -> str:
-            return value if value else "*"
-
-        vera_scheduler.add_job(
-            func=lambda: run_periodic_task_instance.delay(self.id),
-            trigger="cron",
-            id=str(self.id),
-            replace_existing=True,
-            minute=self.minute,
-            hour=parse_cron_value(self.hour),
-            day_of_week=parse_cron_value(self.day_of_week),
-            day=parse_cron_value(self.day_of_month),
-        )
-
-    def save(self, session: DatabaseSession) -> "PeriodicTask":
-        super().save(session)
-        self.schedule()
-        return self
-
-    def validate_before_delete(self, session: DatabaseSession) -> None:
-        vera_scheduler.remove_job(str(self.id))
+    @hybrid_property
+    def unscoped_task_type(self) -> str:
+        return self.task_type.split(".")[1]

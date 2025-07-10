@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from enum import Enum
 
 
@@ -39,8 +38,7 @@ class AdditionTask(str, Enum):
 class CatalogRecordTask(str, Enum):
     Reindex = "Reindex"
     Sync = "Sync"
-    SetValid = "SetValid"
-    SetInvalid = "SetInvalid"
+    SetForcedValidity = "SetForcedValidity"
     ArchiveInactive = "ArchiveInactive"
     Delete = "Delete"
 
@@ -58,17 +56,22 @@ class DigitizationListTask(str, Enum):
 
 
 class DocumentTask(str, Enum):
-    Reindex = "Reindex"
-    UpdateProperty = "UpdateProperty"
-    Delete = "Delete"
-    SyncDigitizationState = "SyncDigitizationState"
-    SyncCatalogRecord = "SyncCatalogRecord"
-    SyncProperty = "SyncProperty"
+    GenerateList = "GenerateList"
     SetCategory = "SetCategory"
     SetPriority = "SetPriority"
-    DeclineDigitization = "DeclineDigitization"
-    CancelDigitizationDeclination = "CancelDigitizationDeclination"
-    GenerateDigitizationList = "GenerateDigitizationList"
+    SetDigitizationDecision = "SetDigitizationDecision"
+    Reindex = "Reindex"
+    Sync = "Sync"
+    Delete = "Delete"
+
+
+class ProposalTask(str, Enum):
+    Ingest = "Ingest"
+    Reingest = "Reingest"
+    Approve = "Approve"
+    Reject = "Reject"
+    Archive = "Archive"
+    Delete = "Delete"
 
 
 class SystemTask(str, Enum):
@@ -82,6 +85,7 @@ class TaskScope(str, Enum):
     Category = "Category"
     DigitizationListTask = "DigitizationListTask"
     Document = "Document"
+    Proposal = "Proposal"
     System = "System"
 
 
@@ -98,16 +102,14 @@ TaskType = (
 class ScopedTaskType(str, Enum):
     # Addition
     Addition_Ingest = "Addition.Ingest"
-    Addition_IgnoreDigitizationCheck = "Addition.IgnoreDigitizationCheck"
-    Addition_AllowNewIteration = "Addition.AllowNewIteration"
+    Addition_Reingest = "Addition.Reingest"
     Addition_Archive = "Addition.Archive"
     Addition_Delete = "Addition.Delete"
 
     # CatalogRecord
     CatalogRecord_Reindex = "CatalogRecord.Reindex"
     CatalogRecord_Sync = "CatalogRecord.Sync"
-    CatalogRecord_SetValid = "CatalogRecord.SetValid"
-    CatalogRecord_SetInvalid = "CatalogRecord.SetInvalid"
+    CatalogRecord_SetForcedValidity = "CatalogRecord.SetForcedValidity"
     CatalogRecord_ArchiveInactive = "CatalogRecord.ArchiveInactive"
 
     # Category
@@ -123,89 +125,22 @@ class ScopedTaskType(str, Enum):
     DigitizationListTask_Delete = "DigitizationListTask.Delete"
 
     # Document
+    Document_GenerateList = "Document.GenerateList"
+    Document_SetCategory = "Document.SetCategory"
+    Document_SetPriority = "Document.SetPriority"
+    Document_SetDigitizationDecision = "Document.SetDigitizationDecision"
     Document_Reindex = "Document.Reindex"
-    Document_UpdateProperty = "Document.UpdateProperty"
-    Document_Remove = "Document.Remove"
-    Document_SyncDigitizationState = "Document.SyncDigitizationState"
-    Document_SyncCatalogRecord = "Document.SyncCatalogRecord"
-    Document_SyncProperty = "Document.SyncProperty"
-    Document_DeclineDigitization = "Document.DeclineDigitization"
-    Document_CancelDigitizationDeclination = (
-        "Document.CancelDigitizationDeclination"
-    )
-    Document_GenerateDigitizationList = "Document.GenerateDigitizationList"
+    Document_Sync = "Document.Sync"
+    Document_Delete = "Document.Delete"
+
+    # Proposal
+    Proposal_Ingest = "Proposal.Ingest"
+    Proposal_Reingest = "Proposal.Reingest"
+    Proposal_Approve = "Proposal.Approve"
+    Proposal_Reject = "Proposal.Reject"
+    Proposal_Archive = "Proposal.Archive"
+    Proposal_Delete = "Proposal.Delete"
 
     # System
     System_RecreateIndex = "System.RecreateIndex"
     System_ResolveInconsistencies = "System.ResolveInconsistencies"
-
-
-unlimited = -1
-
-
-@dataclass(frozen=True)
-class TaskMetadata:
-    visible: bool = True
-    schedulable: bool = True
-    max_running: int = unlimited
-    max_planned: int = unlimited
-    blocking: bool = False
-
-
-# MANUAL_ONLY_TASKS = [
-#     AdditionTask.Process,
-#     AdditionTask.Reindex,
-#     DocumentTask.UpdateProperty,
-#     DocumentTask.Remove,
-#     DocumentTask.DeclineDigitization,
-#     DocumentTask.CancelDigitizationDeclination,
-#     DocumentTask.GenerateDigitizationList,
-#     CatalogRecordTask.SetValid,
-#     CatalogRecordTask.SetInvalid,
-# ]
-
-# HIDDEN_TASKS = [
-#     AdditionTask.Process,
-#     AdditionTask.Reindex,
-#     DocumentTask.DeclineDigitization,
-#     DocumentTask.CancelDigitizationDeclination,
-#     DocumentTask.GenerateDigitizationList,
-#     CatalogRecordTask.SetValid,
-#     CatalogRecordTask.SetInvalid,
-# ]
-
-# MAX_ONE_AT_A_TIME_TASKS = [
-#     SystemTask.RecreateIndex,
-#     SystemTask.ResolveInconsistencies,
-# ]
-
-# TASK_METADATA_REGISTRY = {
-#     AdditionTask.Process: TaskMetadata(
-#         visible=False,
-#         schedulable=False,
-#     ),
-#     AdditionTask.Reindex: TaskMetadata(
-#         visible=False,
-#         schedulable=False,
-#     ),
-#     DocumentTask.Reindex: TaskMetadata(),
-#     DocumentTask.UpdateProperty: TaskMetadata(schedulable=False),
-#     DocumentTask.Remove: TaskMetadata(schedulable=False),
-#     DocumentTask.SyncDigitizationState: TaskMetadata(),
-#     DocumentTask.SyncCatalogRecord: TaskMetadata(),
-#     DocumentTask.SyncProperty: TaskMetadata(),
-#     DocumentTask.DeclineDigitization: TaskMetadata(schedulable=False),
-#     DocumentTask.CancelDigitizationDeclination: TaskMetadata(
-#         schedulable=False
-#     ),
-#     DocumentTask.GenerateDigitizationList: TaskMetadata(schedulable=False),
-#     CatalogRecordTask.Reindex: TaskMetadata(),
-#     CatalogRecordTask.Sync: TaskMetadata(),
-#     CatalogRecordTask.SetValid: TaskMetadata(schedulable=False),
-#     CatalogRecordTask.SetInvalid: TaskMetadata(schedulable=False),
-#     CatalogRecordTask.ArchiveInactive: TaskMetadata(),
-#     CategoryTask.Reindex: TaskMetadata(),
-#     CategoryTask.ExecuteScript: TaskMetadata(),
-#     SystemTask.RecreateIndex: TaskMetadata(blocking=True),
-#     SystemTask.ResolveInconsistencies: TaskMetadata(),
-# }

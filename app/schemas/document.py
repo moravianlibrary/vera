@@ -3,7 +3,7 @@ from typing import Any, List
 
 from esorm.fields import boolean, integer, keyword, text
 from marcdantic import IssuanceType
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 from vera_plugins.definitions.plugin_types import PluginType
 from vera_plugins.schemas import (
     DocumentCanBeExtractedConfig,
@@ -55,9 +55,15 @@ class DocumentsSyncParams(BaseModel):
 
 
 class DocumentExportParams(BaseModel):
-    fields: List[str] = DEFAULT_EXPORT_FIELDS
+    fields: List[str] = Field(DEFAULT_EXPORT_FIELDS, alias="field")
     filename: str = DEFAULT_EXPORT_FILENAME
     export_format: ExportFormat = ExportFormat.xlsx
+
+
+class DocumentGenerateListParams(BaseModel):
+    use_distribution: bool
+    target_page_count: int
+    target_document_count: int | None = None
 
 
 # --------------------

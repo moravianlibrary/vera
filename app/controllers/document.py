@@ -11,6 +11,7 @@ from schemas.authenticated_user import AuthenticatedUser
 from schemas.document import (
     Document,
     DocumentExportParams,
+    DocumentGenerateListParams,
     DocumentsSyncParams,
 )
 from schemas.task import Task, TaskScheduleParams
@@ -54,6 +55,20 @@ def export(
     service: DocumentService = DependsOnDocumentService,
 ):
     return service.export(query, export_params)
+
+
+@router.post(
+    "/generate-list",
+    dependencies=[WithPermission(OwnershipPermission.ReadDocuments)],
+    response_model=Task,
+)
+def generate_list(
+    generate_list_params: Annotated[DocumentGenerateListParams, Query()],
+    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ReadDocuments),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: DocumentService = DependsOnDocumentService,
+):
+    return service.generate_list(query, generate_list_params, user.id)
 
 
 @router.patch(
@@ -105,11 +120,11 @@ def change_priority(
 
 
 @router.post(
-    "/decline-digitization",
+    "/digitization-decision",
     dependencies=[WithPermission(OwnershipPermission.ManageDocuments)],
     response_model=Task,
 )
-def set_decline_digitization(
+def set_digitization_decision(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageDocuments),
     decline: bool = Query(
         ...,
@@ -119,7 +134,7 @@ def set_decline_digitization(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.set_decline_digitization(query, decline, user.id)
+    return service.set_digitization_decision(query, decline, user.id)
 
 
 @router.post(

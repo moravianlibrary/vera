@@ -50,17 +50,17 @@ def get_details(
 
 
 @router.post(
-    "/validity",
+    "/forced-validity",
     dependencies=[WithPermission(GeneralPermission.ReviewCatalogRecords)],
     response_model=Task,
 )
-def change_validity(
+def set_forced_validity(
     query: IndexerQuery,
-    is_valid: bool = True,
+    validity: bool = True,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return service.set_validity(query, is_valid, user.id)
+    return service.set_forced_validity(query, validity, user.id)
 
 
 @router.post(

@@ -72,7 +72,7 @@ class TaskItemRepository(
     pass
 
 
-class ScheduledTaskRepository(
+class TaskScheduleRepository(
     BaseRepository,
     SaveMixin[TaskModel],
 ):

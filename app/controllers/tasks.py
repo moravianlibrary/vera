@@ -2,9 +2,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Path, Query
 
-from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
+from adapters.indexer import IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
-from repositories.task import ScheduledTaskRepository, TaskItemRepository
+from repositories.task import (
+    TaskItemRepository,
+    TaskRepository,
+    TaskScheduleRepository,
+)
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import Page, PageParams
 from schemas.task import (
@@ -14,15 +18,15 @@ from schemas.task import (
     TaskItemsFilterParams,
     TaskScheduleParams,
 )
-from services.task import ScheduledTaskService, TaskService
+from services.task import TaskScheduleService, TaskService
 
 from .resources import (
     DependsOnAuthenticatedUser,
-    DependsOnScheduledTaskRepository,
-    DependsOnScheduledTaskService,
     DependsOnTaskItemRepository,
+    DependsOnTaskRepository,
+    DependsOnTaskScheduleRepository,
+    DependsOnTaskScheduleService,
     DependsOnTaskService,
-    RestrictedQuery,
     RestrictedSearch,
     WithPermission,
 )
@@ -37,9 +41,22 @@ router = APIRouter(prefix="/tasks", tags=["Tasks"])
 )
 def search_tasks(
     request: IndexerRequest = RestrictedSearch(OwnershipPermission.ReadTasks),
+    repository: TaskScheduleRepository = DependsOnTaskScheduleRepository,
+):
+    return repository.search(request)
+
+
+@router.get(
+    "/{task_id}/log",
+    dependencies=[WithPermission(OwnershipPermission.ReadTasks)],
+)
+def get_task_log(
+    task_id: int = Path(...),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    repository: TaskRepository = DependsOnTaskRepository,
     service: TaskService = DependsOnTaskService,
 ):
-    return service.search(request)
+    return service.get_log(repository.get_by_id(task_id), user)
 
 
 @router.get(
@@ -63,26 +80,28 @@ def paginate_task_items(
 def kill_task(
     task_id: int = Path(...),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    repository: TaskRepository = DependsOnTaskRepository,
     service: TaskService = DependsOnTaskService,
 ):
-    return service.kill(task_id, user.id)
+    return service.kill(repository.get_by_id(task_id), user)
 
 
-@router.post(
-    "/delete",
+@router.delete(
+    "/{task_id}",
     dependencies=[WithPermission(OwnershipPermission.ManageTasks)],
-    response_model=IndexerResponse[Task],
+    response_model=Task,
 )
 def delete_tasks(
-    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageTasks),
+    task_id: int = Path(...),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    repository: TaskRepository = DependsOnTaskRepository,
     service: TaskService = DependsOnTaskService,
 ):
-    return service.delete(query, user.id)
+    return service.delete(repository.get_by_id(task_id), user)
 
 
 @router.post(
-    "/scheduled/search",
+    "/schedules/search",
     dependencies=[
         WithPermission(
             OwnershipPermission.ReadTasks, GeneralPermission.ScheduleTasks
@@ -90,15 +109,15 @@ def delete_tasks(
     ],
     response_model=IndexerResponse[ScheduledTask],
 )
-def search_scheduled_tasks(
+def search_task_schedules(
     request: IndexerRequest = RestrictedSearch(OwnershipPermission.ReadTasks),
-    repository: ScheduledTaskRepository = DependsOnScheduledTaskRepository,
+    repository: TaskScheduleRepository = DependsOnTaskScheduleRepository,
 ):
     return repository.search(request)
 
 
 @router.put(
-    "/scheduled/{task_id}",
+    "/schedules/{task_id}",
     dependencies=[
         WithPermission(
             OwnershipPermission.ManageTasks, GeneralPermission.ScheduleTasks
@@ -106,12 +125,12 @@ def search_scheduled_tasks(
     ],
     response_model=ScheduledTask,
 )
-def update_scheduled_task(
+def update_task_schedule(
     task_id: Annotated[int, Path()],
     params: Annotated[TaskScheduleParams, Query()],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: ScheduledTaskRepository = DependsOnScheduledTaskRepository,
-    service: ScheduledTaskService = DependsOnScheduledTaskService,
+    repository: TaskScheduleRepository = DependsOnTaskScheduleRepository,
+    service: TaskScheduleService = DependsOnTaskScheduleService,
 ):
     return service.update(
         repository.get_by_id(task_id), params, user.assignment
@@ -119,7 +138,7 @@ def update_scheduled_task(
 
 
 @router.delete(
-    "/scheduled/{task_id}",
+    "/schedules/{task_id}",
     dependencies=[
         WithPermission(
             OwnershipPermission.ManageTasks, GeneralPermission.ScheduleTasks
@@ -127,9 +146,9 @@ def update_scheduled_task(
     ],
     response_model=ScheduledTask,
 )
-def delete_scheduled_task(
+def delete_task_schedule(
     task_id: int = Path(...),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: ScheduledTaskRepository = DependsOnScheduledTaskRepository,
+    repository: TaskScheduleRepository = DependsOnTaskScheduleRepository,
 ):
     return repository.delete(task_id, user.assignment)
