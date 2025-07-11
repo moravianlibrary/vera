@@ -42,6 +42,7 @@ from services.intention import IntentionService
 from services.project import ProjectService
 from services.proposal import ProposalService
 from services.task import TaskScheduleService, TaskService
+from services.user import UserService
 from vera_state import get_catalog_adapter, get_identity_provider
 
 from .providers import provide_repository, provide_service
@@ -149,6 +150,16 @@ DependsOnTaskService = provide_service(TaskService, DependsOnTaskRepository)
 DependsOnTaskScheduleService = provide_service(
     TaskScheduleService,
     DependsOnTaskScheduleRepository,
+)
+DependsOnUserService = provide_service(
+    UserService,
+    DependsOnAdditionRepository,
+    DependsOnCatalogRecordRepository,
+    DependsOnCategoryRepository,
+    DependsOnDocumentRepository,
+    DependsOnProjectRepository,
+    DependsOnProposalRepository,
+    DependsOnWatchlistRepository,
 )
 
 DependsOnAuthenticatedUser = Depends(resolve_authenticated_user)

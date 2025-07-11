@@ -3,7 +3,6 @@ from adapters.indexer import IndexerSession
 from definitions.addition import AdditionStatus
 from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
-from repositories.models.project import ProjectModel
 from schemas.addition import Addition, AdditionCreate
 
 from ._base import BaseRepository
@@ -13,7 +12,9 @@ from ._database_mixins import (
     SearchAllMixin,
     SearchMixin,
 )
+from ._indexer_mixins import SearchCountMixin
 from .models.addition import AdditionModel
+from .models.project import ProjectModel
 from .models.proposal import ProposalModel
 
 
@@ -22,6 +23,7 @@ class AdditionRepository(
     GetByQueryMixin[AdditionModel],
     SaveMixin[AdditionModel],
     SearchMixin[Addition],
+    SearchCountMixin[Addition],
     SearchAllMixin[Addition],
 ):
     def __init__(

@@ -9,11 +9,13 @@ from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import Page, PageParams
 from schemas.role import Permissions
 from schemas.user import UserNotifications, UserSettings, UserSummary
+from services.user import UserService
 
 from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnIdentityProvider,
     DependsOnUserRepository,
+    DependsOnUserService,
     WithPermission,
 )
 
@@ -27,19 +29,12 @@ def authorize_user(
     return user
 
 
-@router.get("/me/notifications", response_model=UserNotifications)
-def list_notifications(
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: UserRepository = DependsOnUserRepository,
-):
-    return repository.read_new_notifications(repository.get_by_id(user.id))
-
-
 @router.get("/me/settings", response_model=UserSettings)
 def get_user_settings(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     repository: UserRepository = DependsOnUserRepository,
 ):
+    repository.get_by_id(user.id)
     return repository.get_by_id(user.id).settings
 
 
@@ -50,6 +45,15 @@ def save_user_settings(
     repository: UserRepository = DependsOnUserRepository,
 ):
     return repository.update_settings(repository.get_by_id(user.id), settings)
+
+
+@router.get("/me/notifications", response_model=UserNotifications)
+def list_notifications(
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    repository: UserRepository = DependsOnUserRepository,
+    service: UserService = DependsOnUserService,
+):
+    return service.read_notifications(repository.get_by_id(user.id))
 
 
 @router.post(

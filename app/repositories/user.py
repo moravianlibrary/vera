@@ -23,7 +23,7 @@ class UserRepository(
     SaveMixin[UserModel],
 ):
     def __init__(self, db_session: DatabaseSession):
-        super().__init__(db_session, UserModel, "User")
+        super().__init__("User", db_session, UserModel)
 
     def create(self, user_id: str, username: str) -> UserModel:
         """

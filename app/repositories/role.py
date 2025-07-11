@@ -25,7 +25,7 @@ class RoleRepository(
     SaveMixin[RoleModel],
 ):
     def __init__(self, db_session: DatabaseSession):
-        super().__init__(db_session, RoleModel, "Role")
+        super().__init__("Role", db_session, RoleModel)
 
     def create(self, role: RoleEdit) -> RoleModel:
         """

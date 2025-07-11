@@ -1,6 +1,14 @@
 from typing import TYPE_CHECKING, List
 
-from sqlalchemy import Column, Enum, ForeignKey, Integer, String
+from sqlalchemy import (
+    TIMESTAMP,
+    Boolean,
+    Column,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, relationship
 
@@ -38,8 +46,9 @@ class WatchlistSubscriptionModel(BaseModel):
     user_id = Column(String, ForeignKey("users.id"), primary_key=True)
 
     # Notification settings
+    read_resets_sent = Column(Boolean, nullable=False, default=False)
     cron_expression = Column(String, nullable=True)
-    include_report = Column(Integer, nullable=True)
+    include_report = Column(Boolean, nullable=True)
     return_fields = Column(JSONB, nullable=True)
 
     watchlist: Mapped["WatchlistModel"] = relationship(
@@ -52,4 +61,27 @@ class WatchlistSubscriptionModel(BaseModel):
         "UserModel",
         back_populates="watchlist_subscriptions",
         lazy="joined",
+    )
+
+
+class WatchlistNotificationModel(BaseModel):
+    __tablename__ = "watchlist_notifications"
+
+    id = Column(Integer, primary_key=True)
+
+    watchlist_id = Column(Integer, ForeignKey("watchlists.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+
+    last_read_at = Column(TIMESTAMP, nullable=False)
+    last_sent_at = Column(TIMESTAMP, nullable=False)
+
+    watchlist: Mapped["WatchlistModel"] = relationship(
+        "WatchlistModel",
+        back_populates="notifications",
+        foreign_keys=[watchlist_id],
+    )
+    user: Mapped["UserModel"] = relationship(
+        "UserModel",
+        back_populates="watchlist_notifications",
+        foreign_keys=[user_id],
     )

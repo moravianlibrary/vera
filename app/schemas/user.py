@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from adapters.indexer import IndexerNestedModel
 from definitions.json import JsonObject
+from schemas.watchlist import WatchlistNotification
 
 # --------------------
 # - Request Payloads -
@@ -20,7 +21,7 @@ class UserAssignment(BaseModel):
 
 
 class UserNotifications(BaseModel):
-    pass
+    watchlist: List[WatchlistNotification]
 
 
 # --------------------

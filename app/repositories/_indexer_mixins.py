@@ -77,6 +77,14 @@ class SearchAllMixin(Generic[IndexerModelType]):
         self._indexer_session.clear_scroll(scroll_id=scroll_id)
 
 
+class SearchCountMixin(Generic[IndexerModelType]):
+    def count(self: RepositoryContext, query: IndexerQuery) -> int:
+        response = self._indexer_session.count(
+            index=self._indexer_entity.__index_name__, body=query
+        )
+        return response["count"]
+
+
 class SaveAndIndexMixin(Generic[DatabaseEntity]):
     def save_and_index(
         self: RepositoryContext[DatabaseEntity],

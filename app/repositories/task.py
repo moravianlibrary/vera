@@ -22,7 +22,7 @@ class TaskRepository(
     SaveMixin[TaskModel],
 ):
     def __init__(self, db_session: DatabaseSession):
-        super().__init__(db_session, TaskModel, "Task")
+        super().__init__("Task", db_session, TaskModel)
 
     def create(
         self,
