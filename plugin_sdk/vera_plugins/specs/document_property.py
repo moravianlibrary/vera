@@ -50,16 +50,16 @@ class DocumentCanBeExtractedPlugin(
 
 
 class DocumentMarcIssuePropertyPlugin(
-    SpecificDataPropertyPluginBase[DocumentInput, str | None]
+    SpecificDataPropertyPluginBase[str | None, str | None]
 ):
     """
-    Base class for plugins that extract a string MARC issue property from a
-    document.
+    Base class for plugins that transform a MARC issue property
+    from one format to another.
 
     Methods
     -------
-    parse(input_data : DocumentInput) -> str | None
-        Extract the MARC property using the input data.
+    parse(input_data : str | None) -> str | None
+        Transform the MARC issue property using the input data.
     """
 
 

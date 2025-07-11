@@ -1,53 +1,34 @@
-from vera_plugins.specs.base import ExternalResourceMixin
 from vera_plugins.specs.document_property import (
-    DocumentInput,
     DocumentMarcIssuePropertyPlugin,
 )
 
-# If the plugin does require an external API/resource,
-# include the ExternalResourceMixin.
-# Otherwise, use DocumentCanMarcIssuePropertyPlugin without it.
 
-
-class Skeleton(DocumentMarcIssuePropertyPlugin, ExternalResourceMixin):
+class Skeleton(DocumentMarcIssuePropertyPlugin):
     """
-    Skeleton for plugins that extract a MARC issue property
-    from a document.
+    Skeleton for a MARC issue property plugin.
+    This class serves as a template for creating new plugins that
+    transform MARC issue properties from one format to another.
 
     Methods
     -------
-    parse(input_data: DocumentInput) -> bool | None
-        Determine if the document can be extracted using the input data.
-
-    is_available() -> bool
-        Check whether the external resource is available.
+    parse(input_data : str | None) -> str | None
+        Transform the MARC issue property using the input data.
     """
 
-    def parse(self, input_data: DocumentInput) -> str | None:
+    def parse(self, input_data: str | None) -> str | None:
         """
-        Extract the MARC issue property from the document input data.
+        Transform the MARC issue property using the input data.
 
         Parameters
         ----------
-        input_data : DocumentInput
-            The input data from which to extract the MARC issue property.
+        input_data : str | None
+            The input data to transform.
 
         Returns
         -------
         str | None
-            The extracted MARC issue property or None if not found.
+            The transformed MARC issue property or None if not applicable.
         """
         raise NotImplementedError(
-            "Implement the MARC issue property extraction logic here."
+            "The parse method must be implemented in the subclass."
         )
-
-    def is_available(self) -> bool:
-        """
-        Check whether the external resource is available.
-
-        Returns
-        -------
-        bool
-            True if the resource is available, False otherwise.
-        """
-        pass

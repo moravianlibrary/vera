@@ -34,16 +34,16 @@ class CatalogRecordValidityPlugin(
 
 
 class CatalogRecordMarcPropertyPlugin(
-    SpecificDataPropertyPluginBase[CatalogRecordInput, str | None]
+    SpecificDataPropertyPluginBase[str | None, str | None]
 ):
     """
-    Base class for plugins that extract a string MARC property from a catalog
-    record.
+    Base class for plugins that transform a MARC property
+    from one format to another.
 
     Methods
     -------
-    parse(input_data : CatalogRecordInput) -> str | None
-        Extract the MARC property using the input data.
+    parse(input_data : str | None) -> str | None
+        Transform the MARC property using the input data.
     """
 
 

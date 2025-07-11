@@ -1,53 +1,34 @@
-from vera_plugins.specs.base import ExternalResourceMixin
 from vera_plugins.specs.catalog_record_property import (
-    CatalogRecordInput,
     CatalogRecordMarcPropertyPlugin,
 )
 
-# If the plugin does require an external API/resource,
-# include the ExternalResourceMixin.
-# Otherwise, use CatalogRecordPropertyPlugin without it.
 
-
-class Skeleton(CatalogRecordMarcPropertyPlugin, ExternalResourceMixin):
+class Skeleton(CatalogRecordMarcPropertyPlugin):
     """
-    Skeleton for plugins that extract a string MARC property
-    from a catalog record.
+    Skeleton for a MARC property plugin.
+    This class serves as a template for creating new plugins that
+    transform MARC properties from one format to another.
 
     Methods
     -------
-    parse(input_data: CatalogRecordInput) -> str | None
-        Extract the MARC property using the input data.
-
-    is_available() -> bool
-        Check whether the external resource is available.
+    parse(input_data : str | None) -> str | None
+        Transform the MARC property using the input data.
     """
 
-    def parse(self, input_data: CatalogRecordInput) -> str | None:
+    def parse(self, input_data: str | None) -> str | None:
         """
-        Extract the MARC property from the catalog record input data.
+        Transform the MARC property using the input data.
 
         Parameters
         ----------
-        input_data : CatalogRecordInput
-            The input data from which to extract the MARC property.
+        input_data : str | None
+            The input data to transform.
 
         Returns
         -------
         str | None
-            The extracted MARC property or None if not found.
+            The transformed MARC property or None if not applicable.
         """
         raise NotImplementedError(
-            "Implement the MARC property extraction logic here."
+            "The parse method must be implemented in the subclass."
         )
-
-    def is_available(self) -> bool:
-        """
-        Check whether the external resource is available.
-
-        Returns
-        -------
-        bool
-            True if the resource is available, False otherwise.
-        """
-        pass
