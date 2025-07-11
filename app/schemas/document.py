@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, List
 
 from esorm.fields import boolean, integer, keyword, text
-from marcdantic import IssuanceType
+from marcdantic import MarcIssue
 from pydantic import BaseModel, Field, model_validator
 from vera_plugins.definitions.plugin_types import PluginType
 from vera_plugins.schemas import (
@@ -25,7 +25,11 @@ from definitions.document import (
     DocumentStatus,
     ExportFormat,
 )
-from repositories.models.document import DocumentModel, DocumentPropertyModel
+from repositories.models.document import (
+    DocumentIterationModel,
+    DocumentModel,
+    DocumentPropertyModel,
+)
 
 from .additional_properties import (
     AdditionalDetailsModel,
@@ -96,7 +100,8 @@ class Document(IndexerModel):
     volume_number: text | None
     volume_year: text | None
     bundle: text | None
-    issuance_type: IssuanceType | None
+    material_type: text | None
+    issuance_type: text | None
 
     digitization_state: EnumList[DigitizationState]
     digitization_records: List[DocumentDigitizationRecord]
@@ -112,11 +117,84 @@ class Document(IndexerModel):
     digitization_list_id: integer | None
     digitization_list_state: DigitizationListState | None
 
-    status: EnumList[DocumentStatus]
+    current_status: EnumList[DocumentStatus]
 
     created_by: text
     created_at: datetime
     updated_at: datetime
+
+    @model_validator(mode="before")
+    @classmethod
+    def from_model(cls, data: Any) -> Any:
+        if not isinstance(data, DocumentIterationModel):
+            return data
+
+        document = data.document
+        marc_issue = MarcIssue(field=document.marc_issue_data)
+        catalog_record = document.catalog_record
+
+        digitization_state = set(document.digitization_state)
+        digitization_records = []
+
+        for record in document.digitization_records:
+            digitization_state.add(record.issue_state)
+            digitization_records.append(
+                DocumentDigitizationRecord(
+                    registry_record_id=record.registry_record_id,
+                    record_state=record.record_state,
+                    registry_issue_id=record.registry_issue_id,
+                    issue_state=record.issue_state,
+                )
+            )
+
+        additional_properties = {}
+        for ap in document.additional_properties:
+            plugin_type = ap.plugin_instance.plugin.type
+            if plugin_type != PluginType.DocumentProperty:
+                continue
+
+            instance = plugin_registry.document_property(ap.plugin_instance.id)
+
+            additional_properties[instance.config.property_name] = (
+                instance.plugin.search_data_type.model_validate(ap.search_data)
+                if ap.search_data
+                else None
+            )
+
+        return {
+            "id": document.id,
+            "catalog_record_id": catalog_record.id,
+            "catalog_record_valid": (
+                catalog_record.is_valid or catalog_record.force_valid
+            ),
+            "iteration_id": data.id,
+            "iteration": data.iteration,
+            "barcode": marc_issue.barcode,
+            "volume_number": marc_issue.volume_number,
+            "volume_year": marc_issue.volume_year,
+            "bundle": marc_issue.bundle,
+            "material_type": catalog_record.material_type,
+            "issuance_type": marc_issue.issuance_type,
+            "digitization_state": list(digitization_state),
+            "digitization_records": digitization_records,
+            "page_count_manual": document.page_count_manual,
+            "page_count": document.page_count,
+            "additional_properties": additional_properties,
+            "category_id": data.category.id if data.category else None,
+            "priority": data.priority,
+            "digitization_list_id": (
+                data.digitization_list.id if data.digitization_list else None
+            ),
+            "digitization_list_state": (
+                data.digitization_list.state
+                if data.digitization_list and data.digitization_list.state
+                else None
+            ),
+            "current_status": data.current_status,
+            "created_by": data.created_by,
+            "created_at": data.created_at.isoformat(),
+            "updated_at": data.updated_at.isoformat(),
+        }
 
 
 # -----------------

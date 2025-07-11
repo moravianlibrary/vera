@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, List
 
-from marcdantic import IssuanceType
 from sqlalchemy import (
     Boolean,
     Column,
@@ -18,7 +17,9 @@ from vera_plugins.specs.digitization_registry_adapter import (
 )
 
 from adapters.database import BaseModel
+from definitions.catalog_record import CatalogRecordStatus
 from definitions.digitization_registry import DigitizationState
+from definitions.document import DocumentStatus
 
 from .mixins.created_audit import CreatedAuditMixin
 from .mixins.property import PropertyDataMixin
@@ -40,13 +41,13 @@ class DocumentModel(BaseModel, UpdatedTimestampMixin):
         String, ForeignKey("catalog_records.id"), nullable=False
     )
 
-    barcode = Column(String, nullable=True)
-    volume_number = Column(String, nullable=True)
-    volume_year = Column(String, nullable=True)
-    bundle = Column(String, nullable=True)
-    issuance_type = Column(Enum(IssuanceType), nullable=True)
+    marc_issue_data = Column(JSONB, nullable=True)
 
-    digitization_state = Column(Enum(DigitizationState))
+    digitization_state = Column(
+        Enum(DigitizationState),
+        nullable=False,
+        default=DigitizationState.Unknown,
+    )
 
     page_count_manual = Column(Integer, nullable=True)
     page_count = Column(Integer)
@@ -74,7 +75,7 @@ class DocumentModel(BaseModel, UpdatedTimestampMixin):
         "DocumentIterationModel", back_populates="document"
     )
 
-    @hybrid_property
+    @property
     def has_active_iteration(self) -> bool:
         return any(it.digitization_list_id is None for it in self.iterations)
 
@@ -160,9 +161,52 @@ class DocumentIterationModel(
         back_populates="document_iterations",
     )
 
-    @hybrid_property
+    @property
     def can_be_extracted(self) -> bool:
         return (
             self.document.can_be_extracted
             and self.digitization_list_id is None
         )
+
+    @property
+    def current_status(self) -> List[DocumentStatus]:
+        can_be_extracted = self.can_be_extracted
+        catalog_record_status = self.document.catalog_record.current_status
+        return [
+            status
+            for status, condition in [
+                (DocumentStatus.Archived, self.is_archived),
+                (
+                    DocumentStatus.AlreadyExtracted,
+                    self.digitization_list_id is not None,
+                ),
+                (DocumentStatus.CanBeExtracted, can_be_extracted),
+                (DocumentStatus.CannotBeExtracted, not can_be_extracted),
+                (
+                    DocumentStatus.MissingPageCount,
+                    self.document.page_count is None,
+                ),
+                (
+                    DocumentStatus.CatalogRecordSynced,
+                    CatalogRecordStatus.Synced in catalog_record_status,
+                ),
+                (
+                    DocumentStatus.CatalogRecordUnreachable,
+                    CatalogRecordStatus.Unreachable in catalog_record_status,
+                ),
+                (
+                    DocumentStatus.CatalogRecordDeleted,
+                    CatalogRecordStatus.DeletedInCatalog
+                    in catalog_record_status,
+                ),
+                (
+                    DocumentStatus.CatalogRecordValid,
+                    CatalogRecordStatus.Valid in catalog_record_status,
+                ),
+                (
+                    DocumentStatus.CatalogRecordInvalid,
+                    CatalogRecordStatus.Invalid in catalog_record_status,
+                ),
+            ]
+            if condition
+        ]

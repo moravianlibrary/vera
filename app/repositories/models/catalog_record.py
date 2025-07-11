@@ -33,6 +33,8 @@ class CatalogRecordModel(BaseModel, UpdatedTimestampMixin):
 
     marc = deferred(Column(LargeBinary, nullable=False))
 
+    material_type = Column(String, nullable=True)
+
     is_unreachable = Column(Boolean, default=False, nullable=False)
     is_deleted_in_catalog = Column(Boolean, default=False, nullable=False)
 
@@ -59,6 +61,27 @@ class CatalogRecordModel(BaseModel, UpdatedTimestampMixin):
         lazy="joined",
         cascade="all, delete-orphan",
     )
+
+    @property
+    def current_status(self) -> List[CatalogRecordStatus]:
+        is_valid = self.is_valid or self.force_valid
+        return [
+            status
+            for status, condition in [
+                (CatalogRecordStatus.Synced, not self.is_unreachable),
+                (CatalogRecordStatus.Unreachable, self.is_unreachable),
+                (
+                    CatalogRecordStatus.DeletedInCatalog,
+                    self.is_deleted_in_catalog,
+                ),
+                (CatalogRecordStatus.Valid, is_valid),
+                (CatalogRecordStatus.Invalid, not is_valid),
+                (CatalogRecordStatus.ForceValid, self.force_valid),
+                (CatalogRecordStatus.Archived, self.is_archived),
+                (CatalogRecordStatus.MarkInReview, self.is_in_review),
+            ]
+            if condition
+        ]
 
 
 class CatalogRecordPropertyModel(

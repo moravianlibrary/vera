@@ -15,6 +15,7 @@ class MarcField(BaseModel):
 
 
 class SearchSettings(BaseModel):
-    available_fields: List[MarcField]
+    available_fields: List[MarcFieldDefinition]
     # TODO: use MarcMapping from marcdantic
-    fields_mapping: dict[str, str]
+    local_fields_mapping: LocalFieldMapping
+    issue_mapping: IssueFieldMapping

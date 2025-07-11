@@ -59,6 +59,7 @@ class CatalogRecord(IndexerModel):
     base: keyword
     system_number: text
 
+    material_type: text | None
     title: text | None
     subtitle: text | None
     identifiers: List[CatalogRecordIdentifier]
@@ -83,60 +84,55 @@ class CatalogRecord(IndexerModel):
         # Collect identifiers from the MARC record
         identifiers: List[CatalogRecordIdentifier] = []
 
-        def _append_identifier(
-            identifier_type: IdentifierType, field_value: str
-        ):
+        def _append_identifier(identifier_type: IdentifierType, value: str):
             identifiers.append(
+                CatalogRecordIdentifier(
+                    identifier_type=identifier_type, identifier_value=value
+                )
+            )
+
+        def _extend_identifiers(
+            identifier_type: IdentifierType, field_values: List[str]
+        ):
+            identifiers.extend(
                 CatalogRecordIdentifier(
                     identifier_type=IdentifierType(identifier_type),
                     identifier_value=field_value,
                 )
+                for field_value in field_values
             )
 
-        for issue in marc_record.issues:
+        for issue in marc_record.issues.all():
             _append_identifier(IdentifierType.Barcode, issue.barcode)
-            if issue.local.signature:
-                _append_identifier(
-                    IdentifierType.Signature, issue.local.signature
-                )
-        for value in marc_record.local.signature:
-            _append_identifier(IdentifierType.Signature, value)
-        for field in marc_record.numbers_and_codes.isxn:
-            _append_identifier(IdentifierType.ISXN, field.active)
-        for field in marc_record.numbers_and_codes.nbn:
-            _append_identifier(IdentifierType.NBN, field.active)
+            _extend_identifiers(
+                IdentifierType.Signature, issue.local("signature")
+            )
 
-        # Resolve validity
-        is_valid = data.is_valid or data.force_valid
+        for identifier, values in [
+            (
+                IdentifierType.Signature,
+                marc_record.local_fields("signature", "active"),
+            ),
+            (IdentifierType.ISXN, marc_record.numbers_and_codes.isxn.active),
+            (IdentifierType.NBN, marc_record.numbers_and_codes.nbn.active),
+        ]:
+            _extend_identifiers(identifier, values)
 
-        # Determine the current status of the record
-        current_status = [
-            status
-            for status, condition in [
-                (CatalogRecordStatus.Synced, not data.is_unreachable),
-                (CatalogRecordStatus.Unreachable, data.is_unreachable),
-                (
-                    CatalogRecordStatus.DeletedInCatalog,
-                    data.is_deleted_in_catalog,
-                ),
-                (CatalogRecordStatus.Valid, is_valid),
-                (CatalogRecordStatus.Invalid, not is_valid),
-                (CatalogRecordStatus.ForceValid, data.force_valid),
-                (CatalogRecordStatus.Archived, data.is_archived),
-                (CatalogRecordStatus.MarkInReview, data.is_in_review),
-            ]
-            if condition
-        ]
-
-        # Collect validity sources and additional properties
+        # Collect additional properties
         additional_properties = {}
-
         for ap in data.additional_properties:
-            instance, config = plugin_registry.catalog_record_property(
+            plugin_type = ap.plugin_instance.plugin.type
+            if plugin_type != PluginType.CatalogRecordProperty:
+                continue
+
+            instance = plugin_registry.catalog_record_property(
                 ap.plugin_instance.id
             )
-            additional_properties[config.property_name] = (
-                instance.detailed_data_type.model_validate(ap.search_data)
+
+            additional_properties[instance.config.property_name] = (
+                instance.plugin.detailed_data_type.model_validate(
+                    ap.search_data
+                )
                 if ap.search_data
                 else None
             )
@@ -145,12 +141,13 @@ class CatalogRecord(IndexerModel):
             "id": data.id,
             "base": data.base,
             "system_number": data.system_number,
+            "material_type": data.material_type,
             "title": marc_record.title_related.title_statement.title,
             "subtitle": marc_record.title_related.title_statement.subtitle,
             "identifiers": identifiers,
             "force_valid": data.force_valid,
-            "is_valid": is_valid,
-            "current_status": current_status,
+            "is_valid": data.is_valid or data.force_valid,
+            "current_status": data.current_status,
             "additional_properties": additional_properties,
         }
 
