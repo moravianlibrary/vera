@@ -11,7 +11,7 @@ class PluginBase(ABC):
     """
 
 
-class ExternalResourceMixin(PluginBase):
+class ExternalResourceMixin(ABC):
     """
     Mixin for plugins that interact with external resources.
 
@@ -73,9 +73,48 @@ class InputData(NamedTuple):
 
 
 InputDataType = TypeVar("InputDataType", bound=InputData)
+OutputDataType = TypeVar("OutputDataType")
 
 
-class DataPropertyPluginBase(PluginBase, Generic[InputDataType]):
+class SpecificDataPropertyPluginBase(
+    PluginBase, Generic[InputDataType, OutputDataType]
+):
+    """
+    Abstract base class for plugins that extract
+    a specific property from input data.
+
+    Designed for plugins that derive a JSON-serializable property
+    from structured input.
+
+    Type Parameters
+    ---------------
+    InputDataType : type
+        The type of input data to parse.
+    OutputDataType : type
+        The type of output data produced by the plugin.
+    """
+
+    @abstractmethod
+    def parse(self, input_data: InputDataType) -> OutputDataType:
+        """
+        Extract a property from the given input data.
+
+        Parameters
+        ----------
+        input_data : InputDataType
+            The input data from which to extract the property.
+
+        Returns
+        -------
+        OutputDataType
+            The extracted property data.
+        """
+        pass
+
+
+class DataPropertyPluginBase(
+    SpecificDataPropertyPluginBase[InputDataType, PropertyData]
+):
     """
     Abstract base class for plugins that extract a property from input data.
 
@@ -89,27 +128,9 @@ class DataPropertyPluginBase(PluginBase, Generic[InputDataType]):
 
     Methods
     -------
-    parse(input_data: InputDataType) -> PropertyData
+    parse(input_data: InputDataType) -> OutputDataType
         Extract a property from the given input data.
     """
-
-    @abstractmethod
-    def parse(self, input_data: InputDataType) -> PropertyData:
-        """
-        Extract a property from the given input data.
-
-        Parameters
-        ----------
-        input_data : InputDataType
-            The input data from which to extract the property.
-
-        Returns
-        -------
-        PropertyData
-            The extracted property data, which includes search data,
-            detailed data, and internal data.
-        """
-        pass
 
     @property
     @abstractmethod

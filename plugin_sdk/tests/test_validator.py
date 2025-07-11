@@ -101,8 +101,13 @@ class TestPluginImplementationValidation(TestCase):
                     from vera_plugins.specs.catalog_adapter import (
                         CatalogAdapterPlugin
                     )
+                    from vera_plugins.specs.base import (
+                        ExternalResourceMixin
+                    )
 
-                    class TestPlugin(CatalogAdapterPlugin):
+                    class TestPlugin(
+                        CatalogAdapterPlugin, ExternalResourceMixin
+                    ):
                         def fetch(self, base, system_number):
                             return None
                     """

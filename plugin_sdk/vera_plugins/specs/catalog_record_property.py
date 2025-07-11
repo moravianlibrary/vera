@@ -1,6 +1,10 @@
 from marcdantic import MarcRecord
 
-from .base import DataPropertyPluginBase, ExternalResourceMixin, InputData
+from .base import (
+    DataPropertyPluginBase,
+    InputData,
+    SpecificDataPropertyPluginBase,
+)
 
 
 class CatalogRecordInput(InputData):
@@ -16,32 +20,39 @@ class CatalogRecordInput(InputData):
     record: MarcRecord
 
 
+class CatalogRecordValidityPlugin(
+    SpecificDataPropertyPluginBase[CatalogRecordInput, bool | None]
+):
+    """
+    Base class for plugins that determine the validity of a catalog record.
+
+    Methods
+    -------
+    parse(input_data : CatalogRecordInput) -> bool | None
+        Determine if the catalog record is valid using the input data.
+    """
+
+
+class CatalogRecordMarcPropertyPlugin(
+    SpecificDataPropertyPluginBase[CatalogRecordInput, str | None]
+):
+    """
+    Base class for plugins that extract a string MARC property from a catalog
+    record.
+
+    Methods
+    -------
+    parse(input_data : CatalogRecordInput) -> str | None
+        Extract the MARC property using the input data.
+    """
+
+
 class CatalogRecordPropertyPlugin(DataPropertyPluginBase[CatalogRecordInput]):
     """
     Base class for plugins that extract a property from a catalog record.
 
     Methods
     -------
-    parse(input_data : DocumentInput) -> PropertyData
-        Extract the property using both the input and external resources.
-    """
-
-
-class ExternalCatalogRecordPropertyPlugin(
-    DataPropertyPluginBase[CatalogRecordInput], ExternalResourceMixin
-):
-    """
-    Base class for plugins that extract a property from a catalog record using
-    external resources.
-
-    Extends the catalog record property extraction by incorporating interaction
-    with external resources such as APIs or remote services.
-
-    Methods
-    -------
-    is_available() -> bool
-        Check whether the external resource is available.
-
-    parse(input_data : DocumentInput) -> PropertyData
+    parse(input_data : CatalogRecordInput) -> PropertyData
         Extract the property using both the input and external resources.
     """

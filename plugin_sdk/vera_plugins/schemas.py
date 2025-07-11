@@ -15,7 +15,11 @@ from pydantic import BaseModel, Field, StringConstraints, TypeAdapter
 
 from .definitions.exceptions import DiscoveryError
 from .definitions.patterns import VERSION_PATTERN
-from .definitions.plugin_types import PluginType
+from .definitions.plugin_types import (
+    CatalogRecordMarcProperty,
+    DocumentMarcIssueProperty,
+    PluginType,
+)
 
 Version = Annotated[
     str,
@@ -87,6 +91,13 @@ class CatalogRecordValidityConfig(PluginConfigBase):
     property_name: str
 
 
+class CatalogRecordMarcPropertyConfig(PluginConfigBase):
+    plugin_type: Literal[PluginType.CatalogRecordMarcProperty] = (
+        PluginType.CatalogRecordMarcProperty
+    )
+    property_name: CatalogRecordMarcProperty
+
+
 class CatalogRecordPropertyConfig(PluginConfigBase):
     plugin_type: Literal[PluginType.CatalogRecordProperty] = (
         PluginType.CatalogRecordProperty
@@ -110,6 +121,13 @@ class DocumentCanBeExtractedConfig(PluginConfigBase):
     property_name: str
 
 
+class DocumentMarcIssuePropertyConfig(PluginConfigBase):
+    plugin_type: Literal[PluginType.DocumentMarcIssueProperty] = (
+        PluginType.DocumentMarcIssueProperty
+    )
+    property_name: DocumentMarcIssueProperty
+
+
 class DocumentPropertyConfig(PluginConfigBase):
     plugin_type: Literal[PluginType.DocumentProperty] = (
         PluginType.DocumentProperty
@@ -129,9 +147,11 @@ PluginConfig = Annotated[
         CatalogAdapterConfig,
         DigitizationRegistryConfig,
         CatalogRecordValidityConfig,
+        CatalogRecordMarcPropertyConfig,
         CatalogRecordPropertyConfig,
         DocumentPageCountConfig,
         DocumentCanBeExtractedConfig,
+        DocumentMarcIssuePropertyConfig,
         DocumentPropertyConfig,
         DocumentDiscoveryConfig,
     ],

@@ -1,6 +1,10 @@
 from marcdantic import MarcIssue, MarcRecord
 
-from .base import DataPropertyPluginBase, ExternalResourceMixin, InputData
+from .base import (
+    DataPropertyPluginBase,
+    InputData,
+    SpecificDataPropertyPluginBase,
+)
 
 
 class DocumentInput(InputData):
@@ -19,6 +23,46 @@ class DocumentInput(InputData):
     issue: MarcIssue | None
 
 
+class DocumentPageCountPlugin(
+    SpecificDataPropertyPluginBase[DocumentInput, int | None]
+):
+    """
+    Base class for plugins that extract the page count from a document.
+
+    Methods
+    -------
+    parse(input_data : DocumentInput) -> int | None
+        Extract the page count using the input data.
+    """
+
+
+class DocumentCanBeExtractedPlugin(
+    SpecificDataPropertyPluginBase[DocumentInput, bool | None]
+):
+    """
+    Base class for plugins that determine if a document can be extracted.
+
+    Methods
+    -------
+    parse(input_data : DocumentInput) -> bool | None
+        Determine if the document can be extracted using the input data.
+    """
+
+
+class DocumentMarcIssuePropertyPlugin(
+    SpecificDataPropertyPluginBase[DocumentInput, str | None]
+):
+    """
+    Base class for plugins that extract a string MARC issue property from a
+    document.
+
+    Methods
+    -------
+    parse(input_data : DocumentInput) -> str | None
+        Extract the MARC property using the input data.
+    """
+
+
 class DocumentPropertyPlugin(
     DataPropertyPluginBase[DocumentInput],
 ):
@@ -30,25 +74,3 @@ class DocumentPropertyPlugin(
     parse(input_data : DocumentInput) -> PropertyData
         Extract a property from the given catalog record input.
     """
-
-
-class ExternalDocumentPropertyPlugin(
-    DataPropertyPluginBase[DocumentInput], ExternalResourceMixin
-):
-    """
-    Base class for plugins that extract a property from document input
-    using external resources.
-
-    Extends the document property extraction by incorporating interaction
-    with external resources such as APIs or remote services.
-
-    Methods
-    -------
-    is_available() -> bool
-        Check whether the external resource is available.
-
-    parse(input_data : DocumentInput) -> PropertyData
-        Extract the property using both the input and external resources.
-    """
-
-    pass

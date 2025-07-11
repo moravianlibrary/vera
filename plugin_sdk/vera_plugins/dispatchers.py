@@ -5,12 +5,21 @@ from vera_plugins.specs.base import PluginBase
 
 from .definitions.plugin_types import PluginType, PluginTypeCardinality
 from .specs.catalog_adapter import CatalogAdapterPlugin
-from .specs.catalog_record_property import CatalogRecordPropertyPlugin
+from .specs.catalog_record_property import (
+    CatalogRecordMarcPropertyPlugin,
+    CatalogRecordPropertyPlugin,
+    CatalogRecordValidityPlugin,
+)
 from .specs.digitization_registry_adapter import (
     DigitizationRegistryAdapterPlugin,
 )
 from .specs.document_discovery import DocumentDiscoveryPlugin
-from .specs.document_property import DocumentPropertyPlugin
+from .specs.document_property import (
+    DocumentCanBeExtractedPlugin,
+    DocumentMarcIssuePropertyPlugin,
+    DocumentPageCountPlugin,
+    DocumentPropertyPlugin,
+)
 from .specs.identity_provider import IdentityProviderPlugin
 
 PLUGIN_TYPE_CARDINALITY: Dict[PluginType, PluginTypeCardinality] = {
@@ -18,9 +27,11 @@ PLUGIN_TYPE_CARDINALITY: Dict[PluginType, PluginTypeCardinality] = {
     PluginType.CatalogAdapter: "1",
     PluginType.DigitizationRegistryAdapter: "1",
     PluginType.CatalogRecordValidity: "0..*",
+    PluginType.CatalogRecordMarcProperty: "0..*",
     PluginType.CatalogRecordProperty: "0..*",
     PluginType.DocumentPageCount: "0..*",
     PluginType.DocumentCanBeExtracted: "0..*",
+    PluginType.DocumentMarcIssueProperty: "0..*",
     PluginType.DocumentProperty: "0..*",
     PluginType.DocumentDiscovery: "0..*",
 }
@@ -29,10 +40,12 @@ PLUGIN_TYPE_DECLARATION: Mapping[PluginType, PluginBase] = {
     PluginType.IdentityProvider: IdentityProviderPlugin,
     PluginType.CatalogAdapter: CatalogAdapterPlugin,
     PluginType.DigitizationRegistryAdapter: DigitizationRegistryAdapterPlugin,
-    PluginType.CatalogRecordValidity: CatalogRecordPropertyPlugin,
+    PluginType.CatalogRecordValidity: CatalogRecordValidityPlugin,
+    PluginType.CatalogRecordMarcProperty: CatalogRecordMarcPropertyPlugin,
     PluginType.CatalogRecordProperty: CatalogRecordPropertyPlugin,
-    PluginType.DocumentPageCount: CatalogRecordPropertyPlugin,
-    PluginType.DocumentCanBeExtracted: CatalogRecordPropertyPlugin,
+    PluginType.DocumentPageCount: DocumentPageCountPlugin,
+    PluginType.DocumentCanBeExtracted: DocumentCanBeExtractedPlugin,
+    PluginType.DocumentMarcIssueProperty: DocumentMarcIssuePropertyPlugin,
     PluginType.DocumentProperty: DocumentPropertyPlugin,
     PluginType.DocumentDiscovery: DocumentDiscoveryPlugin,
 }
@@ -41,10 +54,12 @@ PLUGIN_TYPE_SKELETON: Mapping[PluginType, str] = {
     PluginType.IdentityProvider: "identity_provider.py",
     PluginType.CatalogAdapter: "catalog_adapter.py",
     PluginType.DigitizationRegistryAdapter: "digitization_registry_adapter.py",
-    PluginType.CatalogRecordValidity: "catalog_record_property.py",
+    PluginType.CatalogRecordValidity: "catalog_record_validity.py",
+    PluginType.CatalogRecordMarcProperty: "catalog_record_marc_property.py",
     PluginType.CatalogRecordProperty: "catalog_record_property.py",
-    PluginType.DocumentPageCount: "document_property.py",
-    PluginType.DocumentCanBeExtracted: "document_property.py",
+    PluginType.DocumentPageCount: "document_page_count.py",
+    PluginType.DocumentCanBeExtracted: "document_can_be_extracted.py",
+    PluginType.DocumentMarcIssueProperty: "document_marc_issue_property.py",
     PluginType.DocumentProperty: "document_property.py",
     PluginType.DocumentDiscovery: "document_discovery.py",
 }
