@@ -36,7 +36,7 @@ router = APIRouter(prefix="/plugins", tags=["Plugins"])
 )
 def paginate_plugins(
     page_params: Annotated[PageParams, Query()],
-    filter_params: Annotated[PluginsFilterParams | None, Query(None)],
+    filter_params: Annotated[PluginsFilterParams, Query()],
     repository: PluginRepository = DependsOnPluginRepository,
 ):
     return repository.paginate(page_params, filter_params)

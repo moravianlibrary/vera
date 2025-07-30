@@ -1,172 +1,71 @@
 # pragma: exclude file
-from os import environ
-from datetime import tzinfo
-import pytz
+from datetime import datetime, tzinfo
 from typing import List
-from datetime import datetime
+
+import pytz
+from pydantic import AnyUrl, BaseModel, Field
 
 
-class staticproperty(property):
-    def __get__(self, owner_self, owner_cls):
-        return self.fget()
+class CorsConfig(BaseModel):
+    allow_origins: List[str] = Field(["*"], env="ALLOW_ORIGINS")
+    allow_credentials: bool = Field(True, env="ALLOW_CREDENTIALS")
+    allow_methods: List[str] = Field(["*"], env="ALLOW_METHODS")
+    allow_headers: List[str] = Field(["*"], env="ALLOW_HEADERS")
 
 
-class VeraConfig:
-    @staticproperty
-    def VeraUrl() -> str:
-        return environ.get("VERA_URL", "127.0.0.1")
+class PostgresConfig(BaseModel):
+    host: AnyUrl = Field("localhost", env="POSTGRES_HOST")
+    port: int = Field(5432, env="POSTGRES_PORT")
+    database_name: str = Field("qr", env="POSTGRES_DB")
+    user: str = Field("qrAdmin", env="POSTGRES_USER")
+    password: str = Field("POSTGRES_PASSWORD", env="POSTGRES_PASSWORD")
 
-    @staticproperty
-    def VeraPort() -> int:
-        return int(environ.get("VERA_PORT", "8000"))
+    pool_size: int = Field(20, env="POSTGRES_POOL_SIZE")
+    max_overflow: int = Field(0, env="POSTGRES_MAX_OVERFLOW")
+    pool_timeout: int = Field(30, env="POSTGRES_POOL_TIMEOUT")
+    pool_recycle: int = Field(1800, env="POSTGRES_POOL_RECYCLE")
 
-    @staticproperty
-    def LogLevel() -> str:
-        return environ.get("LOG_LEVEL", "info")
 
-    @staticproperty
-    def TimeZone() -> tzinfo:
-        return pytz.timezone(environ.get("TZ", "Europe/Prague"))
+class ElasticsearchConfig(BaseModel):
+    url: AnyUrl = Field("http://localhost:9200", env="ELASTICSEARCH_URL")
+    username: str = Field("elastic", env="ELASTICSEARCH_USERNAME")
+    password: str = Field("veraIndex", env="ELASTICSEARCH_PASSWORD")
 
-    @staticproperty
-    def Timestamp() -> datetime:
-        return datetime.now(tz=VeraConfig.TimeZone)
 
-    @staticproperty
-    def RequestTimeout() -> int:
-        return 30
+class BrokerConfig(BaseModel):
+    host: AnyUrl = Field("localhost", env="BROKER_HOST")
+    port: int = Field(6379, env="BROKER_PORT")
 
-    @staticproperty
-    def CatalogRecordsValidFor() -> int:
-        return 86400
+    @property
+    def url(self) -> str:
+        return f"redis://{self.host}:{self.port}/0"
 
-    @staticproperty
-    def AllowCorsOrigins() -> List[str]:
-        return (
-            environ.get("ALLOW_ORIGINS").split(",")
-            if environ.get("ALLOW_ORIGINS")
-            else []
-        )
 
-    @staticproperty
-    def ElasticsearchUrl() -> str:
-        return environ.get("ELASTICSEARCH_URL", "http://localhost:9200")
+class VeraConfig(BaseModel):
+    vera_url: AnyUrl = Field("127.0.0.1", env="VERA_URL")
+    vera_port: int = Field(8000, env="VERA_PORT")
+    cors: CorsConfig = CorsConfig()
 
-    @staticproperty
-    def ElasticsearchUsername() -> str:
-        return environ.get("ELASTICSEARCH_USERNAME", "elastic")
+    _timezone: str = Field("Europe/Prague", env="TIMEZONE")
+    log_level: str = Field("info", env="LOG_LEVEL")
 
-    @staticproperty
-    def ElasticsearchPassword() -> str:
-        return environ.get("ELASTICSEARCH_PASSWORD", "veraIndex")
+    postgres: PostgresConfig = PostgresConfig()
+    elasticsearch: ElasticsearchConfig = ElasticsearchConfig()
+    broker: BrokerConfig = BrokerConfig()
 
-    @staticproperty
-    def PredictorUrl() -> str:
-        return environ.get("PREDICTOR_URL", "http://localhost:5000")
+    bot_name: str = Field("VeraBot", env="BOT_NAME")
 
-    @staticproperty
-    def BotName() -> str:
-        return environ.get("BOT_NAME", "VeraBot")
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
 
-    class AlephMzk:
-        @staticproperty
-        def Host() -> str:
-            return environ.get("ALEPH_MZK_HOST", "https://aleph.mzk.cz")
+    @property
+    def timezone(self) -> tzinfo:
+        return pytz.timezone(self._timezone)
 
-        @staticproperty
-        def TTL() -> int:
-            return int(environ.get("ALEPH_MZK_TTL", "30"))
+    @property
+    def timestamp(self) -> datetime:
+        return datetime.now(tz=self.timezone)
 
-    class AlephNkp:
-        @staticproperty
-        def Url() -> str:
-            return environ.get("ALEPH_NKP_URL", "aleph.nkp.cz")
 
-        @staticproperty
-        def Port() -> int:
-            return int(environ.get("ALEPH_NKP_PORT", "9991"))
-
-        @staticproperty
-        def RateLimitMs() -> int:
-            return int(environ.get("ALEPH_NKP_RATE_LIMIT_MS", "1000"))
-
-        @staticproperty
-        def TTL() -> int:
-            return int(environ.get("ALEPH_NKP_TTL", "30"))
-
-    class Broker:
-        @staticproperty
-        def Url() -> str:
-            return (
-                f"redis://{VeraConfig.Broker.Host}:{VeraConfig.Broker.Port}/0"
-            )
-
-        @staticproperty
-        def Host() -> str:
-            return environ.get("BROKER_HOST", "redis")
-
-        @staticproperty
-        def Port() -> str:
-            return int(environ.get("BROKER_PORT", "6379"))
-
-    class Elasticsearch:
-        @staticproperty
-        def Url() -> str:
-            return environ.get("ELASTICSEARCH_URL", "http://localhost:9200")
-
-        @staticproperty
-        def Username() -> str:
-            return environ.get("ELASTICSEARCH_USERNAME", "elastic")
-
-        @staticproperty
-        def Password() -> str:
-            return environ.get("ELASTICSEARCH_PASSWORD", "veraIndex")
-
-        @staticproperty
-        def CatalogRecordsQueryFields() -> List[str]:
-            return environ.get(
-                "CATALOG_RECORDS_QUERY_FIELDS",
-                "id^3,skc_sysno,cnb_sysno,cnb,signature,isxn,barcodes,"
-                "publisher",
-            ).split(",")
-
-        @staticproperty
-        def CatalogRecordsQueryFuzziness() -> str:
-            return environ.get("CATALOG_RECORDS_QUERY_FUZZINESS", "AUTO:4,8")
-
-    class Postgres:
-        @staticproperty
-        def User() -> str:
-            return environ.get("POSTGRES_USER", "veraAdmin")
-
-        @staticproperty
-        def Password() -> str:
-            return environ.get("POSTGRES_PASSWORD", "password")
-
-        @staticproperty
-        def Host() -> str:
-            return environ.get("POSTGRES_HOST", "localhost")
-
-        @staticproperty
-        def Port() -> str:
-            return int(environ.get("POSTGRES_PORT", "5432"))
-
-        @staticproperty
-        def DatabaseName() -> str:
-            return environ.get("POSTGRES_NAME", "vera")
-
-        @staticproperty
-        def PoolSize() -> int:
-            return int(environ.get("POSTGRES_POOL_SIZE", "20"))
-
-        @staticproperty
-        def MaxOverflow() -> int:
-            return int(environ.get("POSTGRES_MAX_OVERFLOW", "0"))
-
-        @staticproperty
-        def PoolTimeout() -> int:
-            return int(environ.get("POSTGRES_POOL_TIMEOUT", "30"))
-
-        @staticproperty
-        def PoolRecycle() -> int:
-            return int(environ.get("POSTGRES_POOL_RECYCLE", "1800"))
+config = VeraConfig()
