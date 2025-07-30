@@ -11,9 +11,9 @@ lxml
 openpyxl
 pandas
 psycopg2-binary
-py2puml
 pydantic
 pyesorm
+pylint
 pymarc
 python-keycloak
 python-multipart

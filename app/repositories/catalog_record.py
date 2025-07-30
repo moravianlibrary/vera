@@ -1,15 +1,9 @@
-from typing import List
-
 from marcdantic import MarcRecord
 
 from adapters.database import DatabaseSession
-from definitions.identifier import IdentifierType
 
 from ._db_repository import DbRepository, GetByIdMixin, SaveMixin
-from .models.catalog_record import (
-    CatalogRecordIdentifierModel,
-    CatalogRecordModel,
-)
+from .models.catalog_record import CatalogRecordModel
 
 
 class CatalogRecordRepository(
@@ -34,20 +28,3 @@ class CatalogRecordRepository(
                 marc=marc_record.marc,
             )
         )
-
-    def find_by_identifier(
-        self, identifier_type: IdentifierType, identifier_value: str
-    ) -> List[CatalogRecordModel]:
-        return [
-            cri_model.catalog_record
-            for cri_model in (
-                self._database_session.query(CatalogRecordIdentifierModel)
-                .filter(
-                    CatalogRecordIdentifierModel.identifier_type
-                    == identifier_type,
-                    CatalogRecordIdentifierModel.identifier_value
-                    == identifier_value,
-                )
-                .all()
-            )
-        ]

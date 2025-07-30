@@ -4,7 +4,8 @@ from fastapi import Depends
 
 from adapters.database import DatabaseSession, get_database_session
 from adapters.indexer import IndexerSession, get_indexer_session
-from repositories._base import DbIndexedRepository, DbRepository
+from repositories._db_indexed_repository import DbIndexedRepository
+from repositories._db_repository import DbRepository
 
 RepositoryType = TypeVar("RepositoryType", bound=DbRepository)
 ServiceType = TypeVar("ServiceType")

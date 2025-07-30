@@ -210,7 +210,7 @@ class TaskDocumentIterationModel(BaseModel, TaskItemMixin):
     __tablename__ = "task_document_iterations"
 
     document_iteration_id = Column(
-        int, ForeignKey("document_iterations.id"), index=True
+        Integer, ForeignKey("document_iterations.id"), index=True
     )
     document_id = Column(Integer, ForeignKey("documents.id"), index=True)
 

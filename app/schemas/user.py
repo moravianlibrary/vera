@@ -1,10 +1,13 @@
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from pydantic import BaseModel
 
 from adapters.indexer import IndexerNestedModel
 from definitions.json import JsonObject
-from schemas.watchlist import WatchlistNotification
+
+if TYPE_CHECKING:
+    from schemas.watchlist import WatchlistNotification
+
 
 # --------------------
 # - Request Payloads -
@@ -21,7 +24,7 @@ class UserAssignment(BaseModel):
 
 
 class UserNotifications(BaseModel):
-    watchlist: List[WatchlistNotification]
+    watchlist: List["WatchlistNotification"]
 
 
 # --------------------

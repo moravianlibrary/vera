@@ -1,7 +1,7 @@
 from functools import wraps
 from typing import Any, Callable
 
-from sqlalchemy import create_engine
+from sqlalchemy import Column, ForeignKey, Table, create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from config import VeraConfig
@@ -30,7 +30,31 @@ DatabaseSessionFactory = sessionmaker(
 
 
 class BaseModel(DeclarativeBase):
-    pass
+    __abstract__ = True
+
+
+def AssociationTable(
+    left_entity_name: str,
+    right_entity_name: str,
+    left_key: str | None = None,
+    right_key: str | None = None,
+    left_fk: str | None = None,
+    right_fk: str | None = None,
+) -> Table:
+    return Table(
+        f"{left_entity_name}_{right_entity_name}_association",
+        BaseModel.metadata,
+        Column(
+            left_key or f"{left_entity_name}_id",
+            ForeignKey(left_fk or f"{left_entity_name}s.id"),
+            primary_key=True,
+        ),
+        Column(
+            right_key or f"{right_entity_name}_id",
+            ForeignKey(right_fk or f"{right_entity_name}s.id"),
+            primary_key=True,
+        ),
+    )
 
 
 def get_database_session():

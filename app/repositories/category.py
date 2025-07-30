@@ -6,7 +6,7 @@ from repositories.models.group import GroupModel
 from repositories.models.user import UserModel
 from schemas.category import Category
 
-from ._base import DbIndexedRepository
+from ._db_indexed_repository import DbIndexedRepository
 from ._db_repository import (
     ArchiveOnDeleteAndIndexMixin,
     EnforceNameUniquenessMixin,

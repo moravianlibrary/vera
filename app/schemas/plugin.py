@@ -17,6 +17,13 @@ class PluginDiscoverParams(BaseModel):
     url: str
 
 
+# --------------------
+# - Request Payloads -
+# --------------------
+class PluginInstanceEdit(BaseModel):
+    pass
+
+
 # -----------------
 # - API Responses -
 # -----------------
