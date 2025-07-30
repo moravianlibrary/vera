@@ -4,12 +4,9 @@ from unittest.mock import AsyncMock
 
 from esorm import es, setup_mappings
 
-from adapters.indexer import (
-    AdditionalPropertiesModel,
-    IndexerModel,
-    IndexerNestedModel,
-)
+from adapters.indexer import IndexerModel, IndexerNestedModel
 from schemas.addition import Addition
+from schemas.additional_properties import AdditionalProperties
 from schemas.catalog_record import CatalogRecord
 from schemas.category import Category
 from schemas.digitization_list import DigitizationList
@@ -23,7 +20,7 @@ class TestIndexSchemaContext:
     def __init__(self, setup_mappings: bool = True) -> None:
         self.setup_mappings = setup_mappings
         self.init_done: bool = False
-        self.num_indexes: int = 9
+        self.num_indexes: int = 11
 
     async def setUp(self):
         if self.init_done:
@@ -98,8 +95,8 @@ class TestIndexSchema(TestIndexBase):
             Addition,
             {
                 "batch_id": {"type": "long"},
-                "batch_name": {"type": "keyword"},
-                "file_name": {"type": "keyword"},
+                "batch_name": {"type": "text"},
+                "file_name": {"type": "text"},
                 "created_by": {"type": "keyword"},
                 "created_at": {"type": "date"},
                 "is_archived": {"type": "boolean"},
@@ -143,19 +140,14 @@ class TestIndexSchema(TestIndexBase):
                         "identifier_value": {"type": "keyword"},
                     },
                 },
-                "title": {"type": "keyword"},
-                "set_valid": {"type": "boolean"},
-                "validity_source": {
-                    "type": "nested",
-                    "properties": {
-                        "plugin_instance_id": {"type": "long"},
-                        "key": {"type": "keyword"},
-                        "valid": {"type": "boolean"},
-                    },
-                },
+                "material_type": {"type": "keyword"},
+                "title": {"type": "text"},
+                "subtitle": {"type": "text"},
+                "force_valid": {"type": "boolean"},
                 "is_valid": {"type": "boolean"},
                 "current_status": {"type": "keyword"},
                 "additional_properties": {"properties": {}},
+                "updated_at": {"type": "date"},
             },
         )
 
@@ -245,14 +237,15 @@ class TestIndexSchema(TestIndexBase):
         await self.assertEsSchema(
             Document,
             {
-                "catalog_record_id": {"type": "keyword"},
+                "catalog_record_id": {"type": "text"},
                 "catalog_record_valid": {"type": "boolean"},
                 "iteration_id": {"type": "long"},
-                "iteration": {"type": "long"},
+                "iteration": {"type": "integer"},
                 "barcode": {"type": "keyword"},
                 "volume_number": {"type": "keyword"},
                 "volume_year": {"type": "keyword"},
                 "bundle": {"type": "keyword"},
+                "material_type": {"type": "keyword"},
                 "issuance_type": {"type": "keyword"},
                 "digitization_state": {"type": "keyword"},
                 "digitization_records": {
@@ -262,35 +255,19 @@ class TestIndexSchema(TestIndexBase):
                         "record_state": {"type": "keyword"},
                         "registry_issue_id": {"type": "keyword"},
                         "issue_state": {"type": "keyword"},
-                        "link": {"type": "keyword"},
-                        "error_message": {"type": "keyword"},
                     },
                 },
-                "page_count": {"type": "long"},
-                "page_count_manual": {"type": "long"},
-                "page_count_source": {
-                    "properties": {
-                        "key": {"type": "keyword"},
-                        "page_count": {"type": "long"},
-                        "plugin_instance_id": {"type": "long"},
-                        "priority": {"type": "long"},
-                    },
-                    "type": "nested",
-                },
-                "can_be_extracted_source": {
-                    "properties": {
-                        "can_be_extracted": {"type": "boolean"},
-                        "key": {"type": "keyword"},
-                        "plugin_instance_id": {"type": "long"},
-                    },
-                    "type": "nested",
-                },
+                "page_count_manual": {"type": "integer"},
+                "page_count": {"type": "integer"},
                 "additional_properties": {"properties": {}},
                 "category_id": {"type": "long"},
-                "priority": {"type": "long"},
+                "priority": {"type": "integer"},
                 "digitization_list_id": {"type": "long"},
                 "digitization_list_state": {"type": "keyword"},
-                "status": {"type": "keyword"},
+                "current_status": {"type": "keyword"},
+                "created_by": {"type": "keyword"},
+                "created_at": {"type": "date"},
+                "updated_at": {"type": "date"},
             },
         )
 
@@ -426,7 +403,7 @@ class TestIndexExtendPropertiesModel(TestIndexBase):
         self.maxDiff = None
 
     async def test_extend_properties_model(self):
-        class TestAdditionalProperties(AdditionalPropertiesModel):
+        class TestAdditionalProperties(AdditionalProperties):
             pass
 
         class TestModel(IndexerModel):

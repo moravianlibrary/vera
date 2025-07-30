@@ -6,7 +6,7 @@ from pydantic.fields import FieldInfo
 from adapters.indexer import IndexerNestedModel
 
 
-class AdditionalPropertiesModel(IndexerNestedModel):
+class AdditionalProperties(IndexerNestedModel):
     @classmethod
     def add_fields(cls, **field_definitions: Any):
         new_fields: Dict[str, FieldInfo] = {}
@@ -36,7 +36,7 @@ class AdditionalPropertiesModel(IndexerNestedModel):
         cls.model_rebuild(force=True)
 
 
-class AdditionalDetailsModel(BaseModel):
+class AdditionalDetails(BaseModel):
     """Base model for dynamically adding additional details fields."""
 
     @classmethod

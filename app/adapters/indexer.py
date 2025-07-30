@@ -15,9 +15,14 @@ from config import config
 type IndexerSession = AsyncElasticsearch
 IndexerModel = ESModel
 IndexerNestedModel = ESBaseModel
-IndexerRequest = ESQuery
+# IndexerRequest = ESQuery
 IndexerQuery = ESQuery
 IndexerResponse = ESResponse
+
+
+class IndexerRequest(ESQuery):
+    pass
+
 
 IndexerModelType = TypeVar("IndexerModelType", bound=IndexerModel)
 

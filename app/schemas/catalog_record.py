@@ -16,10 +16,7 @@ from repositories.models.catalog_record import (
     CatalogRecordPropertyModel,
 )
 
-from .additional_properties import (
-    AdditionalDetailsModel,
-    AdditionalPropertiesModel,
-)
+from .additional_properties import AdditionalDetails, AdditionalProperties
 
 
 # --------------------
@@ -70,7 +67,7 @@ class CatalogRecordValidity(IndexerNestedModel):
         )
 
 
-class CatalogRecordAdditionalDetails(AdditionalDetailsModel):
+class CatalogRecordAdditionalDetails(AdditionalDetails):
     pass
 
 
@@ -141,10 +138,10 @@ class CatalogRecordDetails(BaseModel):
 # --------------------
 class CatalogRecordIdentifier(IndexerNestedModel):
     identifier_type: IdentifierType
-    identifier_value: text
+    identifier_value: keyword
 
 
-class CatalogRecordAdditionalProperties(AdditionalPropertiesModel):
+class CatalogRecordAdditionalProperties(AdditionalProperties):
     pass
 
 
@@ -155,9 +152,9 @@ class CatalogRecord(IndexerModel):
     id: keyword
 
     base: keyword
-    system_number: text
+    system_number: keyword
 
-    material_type: text | None
+    material_type: keyword | None
     title: text | None
     subtitle: text | None
     identifiers: List[CatalogRecordIdentifier]

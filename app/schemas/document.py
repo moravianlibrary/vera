@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, List
 
-from esorm.fields import boolean, integer, keyword, text
+from esorm.fields import boolean, integer, keyword, long, text
 from marcdantic import MarcIssue
 from pydantic import BaseModel, Field, model_validator
 from vera_plugins.definitions.plugin_types import PluginType
@@ -31,10 +31,7 @@ from repositories.models.document import (
     DocumentPropertyModel,
 )
 
-from .additional_properties import (
-    AdditionalDetailsModel,
-    AdditionalPropertiesModel,
-)
+from .additional_properties import AdditionalDetails, AdditionalProperties
 
 
 # --------------------
@@ -80,7 +77,7 @@ class DocumentDigitizationRecord(IndexerNestedModel):
     issue_state: DigitizationRecordState | None
 
 
-class DocumentAdditionalProperties(AdditionalPropertiesModel):
+class DocumentAdditionalProperties(AdditionalProperties):
     pass
 
 
@@ -88,20 +85,20 @@ class Document(IndexerModel):
     class ESConfig:
         index = "documents"
 
-    id: integer
+    id: long
 
     catalog_record_id: text
     catalog_record_valid: boolean
 
-    iteration_id: integer
+    iteration_id: long
     iteration: integer
 
-    barcode: text | None
-    volume_number: text | None
-    volume_year: text | None
-    bundle: text | None
-    material_type: text | None
-    issuance_type: text | None
+    barcode: keyword | None
+    volume_number: keyword | None
+    volume_year: keyword | None
+    bundle: keyword | None
+    material_type: keyword | None
+    issuance_type: keyword | None
 
     digitization_state: EnumList[DigitizationState]
     digitization_records: List[DocumentDigitizationRecord]
@@ -111,15 +108,15 @@ class Document(IndexerModel):
 
     additional_properties: DocumentAdditionalProperties | None
 
-    category_id: integer
+    category_id: long
     priority: integer
 
-    digitization_list_id: integer | None
+    digitization_list_id: long | None
     digitization_list_state: DigitizationListState | None
 
     current_status: EnumList[DocumentStatus]
 
-    created_by: text
+    created_by: keyword
     created_at: datetime
     updated_at: datetime
 
@@ -258,7 +255,7 @@ class DocumentCanBeExtracted(BaseModel):
         )
 
 
-class DocumentAdditionalDetails(AdditionalDetailsModel):
+class DocumentAdditionalDetails(AdditionalDetails):
     pass
 
 

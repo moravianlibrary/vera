@@ -43,7 +43,8 @@ class Task(IndexerModel):
     id: integer
     task_schedule_id: integer | None
 
-    task_type: TaskType
+    # TODO: Cant be Union
+    # task_type: TaskType
     task_scope: TaskScope
     unscoped_task_type: keyword
     name: keyword
@@ -60,18 +61,21 @@ class Task(IndexerModel):
     total_count: integer
     error_count: integer
 
-    query: IndexerQuery
+    # TODO: Cant be TypedDict
+    # query: IndexerQuery
     # TODO:
-    result: Dict[str, int] | None
+    # result: Dict[str, int] | None
 
 
 class ScheduledTask(IndexerModel):
     id: integer
     name: keyword
 
-    task_type: TaskType
+    # TODO:
+    # task_type: TaskType
     task_scope: TaskScope
     unscoped_task_type: keyword
 
-    query: IndexerQuery
+    # TODO:
+    # query: IndexerQuery
     cron_expression: keyword

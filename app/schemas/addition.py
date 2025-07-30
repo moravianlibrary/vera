@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import List
 
+from esorm.fields import keyword, long, text
 from pydantic import BaseModel, Field, model_validator
 
 from adapters.indexer import IndexerModel, IndexerNestedModel
@@ -75,18 +76,18 @@ class AdditionProposal(IndexerNestedModel):
 
 
 class Addition(IndexerModel):
-    id: int
+    id: long
 
-    batch_id: int
-    batch_name: str | None
-    file_name: str | None
-    created_by: str
+    batch_id: long
+    batch_name: text | None
+    file_name: text | None
+    created_by: keyword
     created_at: datetime
     is_archived: bool
 
     identifier_type: IdentifierType
-    identifier_value: str
-    category_id: int
+    identifier_value: keyword
+    category_id: long
     priority: Priority
 
     allow_new_iteration: bool
