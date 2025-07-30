@@ -4,23 +4,23 @@ from typing import Any, Callable
 from sqlalchemy import Column, ForeignKey, Table, create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
-from config import VeraConfig
+from config import config
 
 DatabaseSession = Session
 
 DatabaseUrl = (
     f"postgresql://"
-    f"{VeraConfig.Postgres.User}:{VeraConfig.Postgres.Password}"
-    f"@{VeraConfig.Postgres.Host}:{VeraConfig.Postgres.Port}"
-    f"/{VeraConfig.Postgres.DatabaseName}"
+    f"{config.postgres.user}:{config.postgres.password}"
+    f"@{config.postgres.host}:{config.postgres.port}"
+    f"/{config.postgres.database_name}"
 )
 
 DatabaseEngine = create_engine(
     url=DatabaseUrl,
-    pool_size=VeraConfig.Postgres.PoolSize,
-    max_overflow=VeraConfig.Postgres.MaxOverflow,
-    pool_timeout=VeraConfig.Postgres.PoolTimeout,
-    pool_recycle=VeraConfig.Postgres.PoolRecycle,
+    pool_size=config.postgres.pool_size,
+    max_overflow=config.postgres.max_overflow,
+    pool_timeout=config.postgres.pool_timeout,
+    pool_recycle=config.postgres.pool_recycle,
     pool_pre_ping=True,
 )
 

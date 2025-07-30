@@ -1,9 +1,11 @@
-# # pragma: exclude file
-# import logging
-# from contextlib import asynccontextmanager
+# pragma: exclude file
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
 # from time import sleep
 
-# from fastapi import FastAPI
 # from sqlalchemy import or_, text, update
 # from sqlalchemy.exc import OperationalError
 # from sqlalchemy.orm import Session
@@ -19,7 +21,7 @@
 # from repositories.models.task import PeriodicTask, TaskModel
 # from vera_scheduler import vera_scheduler
 
-# logger = logging.getLogger("uvicorn")
+logger = logging.getLogger("uvicorn")
 
 
 # def check_connection():
@@ -114,29 +116,29 @@
 #     logger.info("All periodic tasks have been set up.")
 
 
-# @asynccontextmanager
-# async def lifespan(app_: FastAPI):
-#     logger.info("Checking database connection.")
-#     if not check_connection():
-#         logger.info("Database connection failed. Exiting.")
-#         return
-#     logger.info("Database connection successfully established.")
+@asynccontextmanager
+async def lifespan(app_: FastAPI):
+    # logger.info("Checking database connection.")
+    # if not check_connection():
+    #     logger.info("Database connection failed. Exiting.")
+    #     return
+    # logger.info("Database connection successfully established.")
 
-#     logger.info("Checking index connection.")
-#     if not check_index_connection():
-#         logger.info("Index connection failed. Exiting.")
-#         return
-#     logger.info("Index connection successfully established.")
+    # logger.info("Checking index connection.")
+    # if not check_index_connection():
+    #     logger.info("Index connection failed. Exiting.")
+    #     return
+    # logger.info("Index connection successfully established.")
 
-#     ensure_last_database_revision()
+    # ensure_last_database_revision()
 
-#     vera_scheduler.start()
+    # vera_scheduler.start()
 
-#     set_failed_tasks_on_start()
-#     # plan_startup_tasks()
-#     setup_periodic_tasks_on_start()
+    # set_failed_tasks_on_start()
+    # plan_startup_tasks()
+    # setup_periodic_tasks_on_start()
 
-#     yield
+    yield
 
-#     vera_scheduler.shutdown()
-#     logger.info("Shutting down.")
+    # vera_scheduler.shutdown()
+    logger.info("Shutting down.")

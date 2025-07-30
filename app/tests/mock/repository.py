@@ -2,7 +2,7 @@ from functools import wraps
 from typing import Type
 from unittest.mock import MagicMock
 
-from repositories._base import DbRepository
+from repositories._db_repository import DbRepository
 
 
 def mock_repository(repository_class: Type[DbRepository]):

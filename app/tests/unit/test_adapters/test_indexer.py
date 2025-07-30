@@ -216,7 +216,7 @@ class TestIndexSchema(TestIndexBase):
                 "document_discovery": {
                     "properties": {
                         "id": {"type": "long"},
-                        "scheduled_task_id": {"type": "long"},
+                        "task_schedule_id": {"type": "long"},
                     }
                 },
             },

@@ -44,8 +44,8 @@ class CategoryModel(BaseModel):
     plugin_instance_id = Column(
         Integer, ForeignKey("plugin_instances.id"), nullable=True
     )
-    scheduled_task_id = Column(
-        Integer, ForeignKey("scheduled_tasks.id"), nullable=True
+    task_schedule_id = Column(
+        Integer, ForeignKey("task_schedules.id"), nullable=True
     )
 
     # Hierarchical relationship

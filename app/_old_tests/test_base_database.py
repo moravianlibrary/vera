@@ -1,9 +1,10 @@
 from unittest import TestCase
+
+from models.base_engine import Base, get_session
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from vera import app
-from models.base_engine import Base, get_session
 
+from app import app
 
 test_engine = create_engine(
     "sqlite:///:memory:", connect_args={"check_same_thread": False}

@@ -59,7 +59,7 @@ class CategoryProportion(IndexerNestedModel):
 
 class DocumentDiscovery(IndexerNestedModel):
     id: int
-    scheduled_task_id: int | None
+    task_schedule_id: int | None
 
 
 class Category(IndexerModel):

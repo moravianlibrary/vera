@@ -4,7 +4,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from config import VeraConfig
+from config import config
 
 # import routing controllers
 from controllers.addition import router as additions_router
@@ -23,27 +23,23 @@ from controllers.role import router as roles_router
 from controllers.system import router as system_router
 from controllers.task import router as tasks_router
 from controllers.user import router as users_router
-
-# from vera_lifespan import lifespan
+from lifespan import lifespan
 
 logger = logging.getLogger("uvicorn")
 
 
 # TODO: fix logging.
-# TODO: add support to logger editing of documents
-# TODO: add checking unique before insert and update
 
 
-app = FastAPI()
-# app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan)
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=(VeraConfig.AllowCorsOrigins),
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=(config.cors.allow_origins),
+    allow_credentials=config.cors.allow_credentials,
+    allow_methods=config.cors.allow_methods,
+    allow_headers=config.cors.allow_headers,
 )
 
 
@@ -70,7 +66,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         app,
-        host=VeraConfig.VeraUrl,
-        port=VeraConfig.VeraPort,
-        log_level=VeraConfig.LogLevel,
+        host=config.app_url,
+        port=config.app_port,
+        log_level=config.log_level,
     )

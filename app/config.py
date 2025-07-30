@@ -30,6 +30,7 @@ class ElasticsearchConfig(BaseModel):
     url: AnyUrl = Field("http://localhost:9200", env="ELASTICSEARCH_URL")
     username: str = Field("elastic", env="ELASTICSEARCH_USERNAME")
     password: str = Field("veraIndex", env="ELASTICSEARCH_PASSWORD")
+    request_timeout: int = Field(30, env="ELASTICSEARCH_REQUEST_TIMEOUT")
 
 
 class BrokerConfig(BaseModel):
@@ -41,12 +42,12 @@ class BrokerConfig(BaseModel):
         return f"redis://{self.host}:{self.port}/0"
 
 
-class VeraConfig(BaseModel):
-    vera_url: AnyUrl = Field("127.0.0.1", env="VERA_URL")
-    vera_port: int = Field(8000, env="VERA_PORT")
+class AppConfig(BaseModel):
+    app_url: AnyUrl = Field("127.0.0.1", env="APP_URL")
+    app_port: int = Field(8000, env="APP_PORT")
     cors: CorsConfig = CorsConfig()
 
-    _timezone: str = Field("Europe/Prague", env="TIMEZONE")
+    timezone_name: str = Field("Europe/Prague", env="TIMEZONE")
     log_level: str = Field("info", env="LOG_LEVEL")
 
     postgres: PostgresConfig = PostgresConfig()
@@ -61,11 +62,11 @@ class VeraConfig(BaseModel):
 
     @property
     def timezone(self) -> tzinfo:
-        return pytz.timezone(self._timezone)
+        return pytz.timezone(self.timezone_name)
 
     @property
     def timestamp(self) -> datetime:
         return datetime.now(tz=self.timezone)
 
 
-config = VeraConfig()
+config = AppConfig()

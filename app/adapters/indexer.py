@@ -10,7 +10,7 @@ from esorm.query import ESQuery
 from esorm.response import ESResponse
 from fastapi import HTTPException, status
 
-from config import VeraConfig
+from config import config
 
 type IndexerSession = AsyncElasticsearch
 IndexerModel = ESModel
@@ -59,12 +59,12 @@ def _patch_es_meta():
 async def connect():
     es.set_client(
         AsyncElasticsearch(
-            hosts=VeraConfig.ElasticsearchUrl,
+            hosts=config.elasticsearch.url,
             basic_auth=(
-                VeraConfig.ElasticsearchUsername,
-                VeraConfig.ElasticsearchPassword,
+                config.elasticsearch.username,
+                config.elasticsearch.password,
             ),
-            timeout=VeraConfig.RequestTimeout,
+            timeout=config.elasticsearch.request_timeout,
         )
     )
     _patch_es_meta()
@@ -75,14 +75,14 @@ class IndexIsNotAvailableException(HTTPException):
         super().__init__(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Elasticsearch index is not available "
-            f"({VeraConfig.ElasticsearchUrl})",
+            f"({config.elasticsearch.url})",
         )
 
 
 async def is_indexer_available() -> bool:
     try:
         async with ClientSession() as session:
-            async with session.get(VeraConfig.ElasticsearchUrl) as resp:
+            async with session.get(config.elasticsearch.url) as resp:
                 if resp.status not in [200, 401]:
                     return False
     except Exception:

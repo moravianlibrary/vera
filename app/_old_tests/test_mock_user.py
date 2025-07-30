@@ -1,8 +1,10 @@
 from unittest import TestCase
-from vera import app
-from schemas import CurrentUser
+
 from datatypes import ActionType
 from routers.utils.dependencies import get_current_user
+
+from app import app
+from schemas import CurrentUser
 
 
 class TestMockUser(TestCase):

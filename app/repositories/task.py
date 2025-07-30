@@ -2,7 +2,7 @@ from typing import Optional
 
 from adapters.database import DatabaseSession
 from adapters.indexer import IndexerQuery
-from config import VeraConfig
+from config import config
 from definitions.json import JsonArray, JsonObject
 from definitions.task import (
     TASK_STATE_PREDECESSORS,
@@ -58,9 +58,9 @@ class TaskRepository(
             raise Exception()
 
         if task_state == TaskState.Running:
-            task_model.started = VeraConfig.Timestamp
+            task_model.started = config.timestamp
         elif task_model.task_state == TaskState.Running:
-            task_model.finished = VeraConfig.Timestamp
+            task_model.finished = config.timestamp
 
         task_model.task_state = task_state
 

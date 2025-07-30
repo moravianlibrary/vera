@@ -47,7 +47,7 @@ class ProposalModel(BaseModel):
     identifier_value = Column(String, nullable=False)
 
     reason_message = Column(String, nullable=True)
-    category_id = Column(Integer, ForeignKey("category.id"), nullable=True)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
 
     status = Column(
