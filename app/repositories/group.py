@@ -4,8 +4,8 @@ from adapters.database import DatabaseSession
 from repositories.models.user import UserModel
 from schemas.group import GroupEdit
 
-from ._base import BaseRepository
-from ._database_mixins import (
+from ._db_repository import (
+    DbRepository,
     DeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
@@ -16,7 +16,7 @@ from .models.group import GroupModel
 
 
 class GroupRepository(
-    BaseRepository,
+    DbRepository,
     DeleteMixin[GroupModel],
     EnforceNameUniquenessMixin[GroupModel, int],
     GetByIdMixin[GroupModel, int],

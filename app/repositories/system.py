@@ -1,19 +1,19 @@
-from ._base import BaseRepository
+from ._db_repository import DbRepository
 
 
 class SystemHealthRepository(
-    BaseRepository,
+    DbRepository,
 ):
     pass
 
 
 class SystemStatusRepository(
-    BaseRepository,
+    DbRepository,
 ):
     pass
 
 
 class SystemSettingsRepository(
-    BaseRepository,
+    DbRepository,
 ):
     pass

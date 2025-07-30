@@ -3,8 +3,8 @@ from typing import Optional
 from adapters.database import DatabaseSession
 from schemas.project import Project, ProjectEdit
 
-from ._base import BaseRepository
-from ._database_mixins import (
+from ._db_repository import (
+    DbRepository,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
     SaveMixin,
@@ -14,7 +14,7 @@ from .models.project import ProjectModel, ProjectStatusLogModel
 
 
 class ProjectRepository(
-    BaseRepository,
+    DbRepository,
     EnforceNameUniquenessMixin[ProjectModel, int],
     GetByIdMixin[ProjectModel, int],
     SaveMixin[ProjectModel],

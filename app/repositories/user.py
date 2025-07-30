@@ -1,8 +1,8 @@
 from adapters.database import DatabaseSession
 from definitions.json import JsonObject
 
-from ._base import BaseRepository
-from ._database_mixins import (
+from ._db_repository import (
+    DbRepository,
     EnforceNameUniquenessMixin,
     FindByIdMixin,
     FindByNameMixin,
@@ -14,7 +14,7 @@ from .models.user import UserModel
 
 
 class UserRepository(
-    BaseRepository,
+    DbRepository,
     EnforceNameUniquenessMixin[UserModel, str],
     FindByIdMixin[UserModel, str],
     FindByNameMixin[UserModel],

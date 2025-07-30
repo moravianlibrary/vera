@@ -1,8 +1,8 @@
 from adapters.database import DatabaseSession
 from schemas.distribution import DistributionEdit
 
-from ._base import BaseRepository
-from ._database_mixins import (
+from ._db_repository import (
+    DbRepository,
     DeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
@@ -13,7 +13,7 @@ from .models.category import DistributionModel
 
 
 class DistributionRepository(
-    BaseRepository,
+    DbRepository,
     DeleteMixin[DistributionModel],
     EnforceNameUniquenessMixin[DistributionModel, int],
     GetByIdMixin[DistributionModel, int],

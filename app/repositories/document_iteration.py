@@ -2,9 +2,9 @@ from adapters.database import DatabaseSession
 from definitions.document import Priority
 from repositories.models.document import DocumentIterationModel
 
-from ._base import BaseRepository
-from ._database_mixins import (
+from ._db_repository import (
     ArchiveMixin,
+    DbRepository,
     GetByIdMixin,
     GetByQueryMixin,
     IndexMixin,
@@ -14,7 +14,7 @@ from ._database_mixins import (
 
 
 class DocumentIterationRepository(
-    BaseRepository,
+    DbRepository,
     ArchiveMixin[DocumentIterationModel],
     GetByIdMixin[DocumentIterationModel, int],
     GetByQueryMixin[DocumentIterationModel],

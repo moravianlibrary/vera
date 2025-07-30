@@ -5,21 +5,21 @@ from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
 from schemas.addition import Addition, AdditionCreate
 
-from ._base import BaseRepository
-from ._database_mixins import (
+from ._db_indexed_repository import SearchCountMixin
+from ._db_repository import (
+    DbRepository,
     GetByQueryMixin,
     SaveMixin,
     SearchAllMixin,
     SearchMixin,
 )
-from ._indexer_mixins import SearchCountMixin
 from .models.addition import AdditionModel
 from .models.project import ProjectModel
 from .models.proposal import ProposalModel
 
 
 class AdditionRepository(
-    BaseRepository,
+    DbRepository,
     GetByQueryMixin[AdditionModel],
     SaveMixin[AdditionModel],
     SearchMixin[Addition],

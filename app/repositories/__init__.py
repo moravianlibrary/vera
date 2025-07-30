@@ -1,4 +1,3 @@
-from ._base import BaseRepository
 from .addition import AdditionRepository
 from .catalog_record import CatalogRecordRepository
 from .category import CategoryRepository
@@ -12,7 +11,6 @@ from .role import RoleRepository
 from .user import UserRepository
 
 __all__ = [
-    "BaseRepository",
     "CatalogRecordRepository",
     "CategoryRepository",
     "DigiListRepository",

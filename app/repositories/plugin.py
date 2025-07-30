@@ -1,8 +1,8 @@
 from adapters.database import DatabaseSession
 from schemas.plugin import PluginInstanceEdit
 
-from ._base import BaseRepository
-from ._database_mixins import (
+from ._db_repository import (
+    DbRepository,
     DeleteMixin,
     EnforceNameUniquenessMixin,
     FindByNameMixin,
@@ -15,13 +15,13 @@ from .models.plugin import PluginInstanceModel
 
 
 class PluginRepository(
-    BaseRepository,
+    DbRepository,
 ):
     pass
 
 
 class PluginInstanceRepository(
-    BaseRepository,
+    DbRepository,
     DeleteMixin[PluginInstanceModel],
     EnforceNameUniquenessMixin[PluginInstanceModel, int],
     FindByNameMixin[PluginInstanceModel],

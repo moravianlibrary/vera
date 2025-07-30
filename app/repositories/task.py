@@ -11,13 +11,17 @@ from definitions.task import (
     TaskType,
 )
 
-from ._base import BaseRepository
-from ._database_mixins import GetByIdMixin, PaginationMixin, SaveMixin
+from ._db_repository import (
+    DbRepository,
+    GetByIdMixin,
+    PaginationMixin,
+    SaveMixin,
+)
 from .models.task import TaskModel
 
 
 class TaskRepository(
-    BaseRepository,
+    DbRepository,
     GetByIdMixin[TaskModel, int],
     SaveMixin[TaskModel],
 ):
@@ -67,13 +71,13 @@ class TaskRepository(
 
 
 class TaskItemRepository(
-    BaseRepository, SaveMixin[TaskModel], PaginationMixin[TaskModel]
+    DbRepository, SaveMixin[TaskModel], PaginationMixin[TaskModel]
 ):
     pass
 
 
 class TaskScheduleRepository(
-    BaseRepository,
+    DbRepository,
     SaveMixin[TaskModel],
 ):
     pass

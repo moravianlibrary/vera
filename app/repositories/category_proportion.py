@@ -1,12 +1,11 @@
 from adapters.database import DatabaseSession
 
-from ._base import BaseRepository
-from ._database_mixins import SaveMixin
+from ._db_repository import DbRepository, SaveMixin
 from .models.category import CategoryProportionModel
 
 
 class CategoryProportionRepository(
-    BaseRepository,
+    DbRepository,
     SaveMixin[CategoryProportionModel],
 ):
     def __init__(self, db_session: DatabaseSession):

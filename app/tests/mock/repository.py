@@ -2,10 +2,10 @@ from functools import wraps
 from typing import Type
 from unittest.mock import MagicMock
 
-from repositories._base import BaseRepository
+from repositories._base import DbRepository
 
 
-def mock_repository(repository_class: Type[BaseRepository]):
+def mock_repository(repository_class: Type[DbRepository]):
     """
     Decorator for injecting a mocked repository into a test function.
     Usage:

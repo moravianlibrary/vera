@@ -1,8 +1,8 @@
 from adapters.database import DatabaseSession
 from schemas.intention import Intention, IntentionEdit
 
-from ._base import BaseRepository
-from ._database_mixins import (
+from ._db_repository import (
+    DbRepository,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
     GetByIdsMixin,
@@ -13,7 +13,7 @@ from .models.intention import IntentionModel
 
 
 class IntentionRepository(
-    BaseRepository,
+    DbRepository,
     EnforceNameUniquenessMixin[IntentionModel, int],
     GetByIdMixin[IntentionModel, int],
     GetByIdsMixin[IntentionModel, int],

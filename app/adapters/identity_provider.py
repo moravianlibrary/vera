@@ -28,7 +28,9 @@ class IdentityProvider:
     """
 
     def __init__(self, plugin_registry: PluginRegistry):
-        self._ip = plugin_registry.identity_provider
+        instance = plugin_registry.identity_provider
+        self._plugin = instance.plugin
+        self._config = instance.config
         self._emulated_permissions: Dict[str, Permissions] = {}
 
     def authenticate_user(
@@ -54,11 +56,11 @@ class IdentityProvider:
         AuthenticatedUser
             The authenticated user enriched with roles and permissions.
         """
-        user_info = self._ip.extract_user_info(token)
+        user_info = self._plugin.extract_user_info(token)
 
-        user_id = self._ip.get_user_id(user_info)
-        username = self._ip.get_username(user_info)
-        user_roles = self._ip.get_user_roles(user_info)
+        user_id = self._plugin.get_user_id(user_info)
+        username = self._plugin.get_username(user_info)
+        user_roles = self._plugin.get_user_roles(user_info)
 
         user = user_repository.find_by_id(user_id)
         if user is None:
@@ -167,7 +169,7 @@ class IdentityProvider:
         """
         # TODO: Implement
         pass
-        # return self._ip.paginate_users(username, page, page_size)
+        # return self._plugin.paginate_users(username, page, page_size)
 
     def paginate_roles(
         self,
@@ -194,4 +196,4 @@ class IdentityProvider:
         """
         # TODO: Implement
         pass
-        # return self._ip.paginate_roles(role_name, page, page_size)
+        # return self._plugin.paginate_roles(role_name, page, page_size)

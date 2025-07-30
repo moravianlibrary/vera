@@ -1,18 +1,72 @@
-from typing import Generator, Generic
+from typing import Generator, Generic, Type
 
+from adapters.database import DatabaseSession
 from adapters.indexer import (
+    IndexerModel,
     IndexerModelType,
     IndexerQuery,
     IndexerRequest,
     IndexerResponse,
+    IndexerSession,
 )
 
-from ._base import DatabaseEntity, RepositoryContext
+from ._db_repository import DatabaseEntity, DbRepository, DbRepositoryContext
+
+
+class DbIndexedRepository(DbRepository):
+    def __init__(
+        self,
+        entity_name: str,
+        database_session: DatabaseSession,
+        database_entity: Type[DatabaseEntity],
+        indexer_session: IndexerSession,
+        indexer_entity: Type[IndexerModel],
+    ):
+        super().__init__(entity_name, database_session, database_entity)
+        self._indexer_session = indexer_session
+        self._indexer_entity = indexer_entity
+
+    def has_current_version_schema(self) -> bool:
+        current_mapping = self._indexer_session.indices.get_mapping(
+            index=self._indexer_entity.__index_name__
+        ).get(self._indexer_entity.__index_name__, {})
+
+        if not current_mapping:
+            return False
+
+        return (
+            current_mapping.get("mappings", {})
+            .get("_meta", {})
+            .get("index.version", None)
+            == self._indexer_entity.__index_version__
+        )
+
+    def recreate_index(self):
+        if self._indexer_session.indices.exists(
+            index=self._indexer_entity.__index_name__
+        ):
+            self._indexer_session.indices.delete(
+                index=self._indexer_entity.__index_name__
+            )
+        self._indexer_session.indices.create(
+            index=self._indexer_entity.__index_name__,
+            body=self._indexer_entity.es_schema(),
+        )
+
+    def refresh_index(self):
+        self._indexer_session.indices.refresh(
+            index=self._indexer_entity.__index_name__
+        )
+
+
+class DbIndexedRepositoryContext(DbRepositoryContext[DatabaseEntity]):
+    _indexer_session: IndexerSession
+    _indexer_entity: Type[IndexerModel]
 
 
 class GetByQueryMixin(Generic[IndexerModelType]):
     def get_by_query(
-        self: RepositoryContext, query: IndexerQuery
+        self: DbIndexedRepositoryContext, query: IndexerQuery
     ) -> Generator[IndexerModelType, None, None]:
         scroll_id = None
 
@@ -45,14 +99,14 @@ class GetByQueryMixin(Generic[IndexerModelType]):
 
 class SearchMixin(Generic[IndexerModelType]):
     def search(
-        self: RepositoryContext, request: IndexerRequest
+        self: DbIndexedRepositoryContext, request: IndexerRequest
     ) -> IndexerResponse:
         return self._indexer_session.search(request)
 
 
 class SearchAllMixin(Generic[IndexerModelType]):
     def search_all(
-        self: RepositoryContext, query: IndexerQuery
+        self: DbIndexedRepositoryContext, query: IndexerQuery
     ) -> Generator[IndexerModelType, None, None]:
         scroll_id = None
 
@@ -78,7 +132,7 @@ class SearchAllMixin(Generic[IndexerModelType]):
 
 
 class SearchCountMixin(Generic[IndexerModelType]):
-    def count(self: RepositoryContext, query: IndexerQuery) -> int:
+    def count(self: DbIndexedRepositoryContext, query: IndexerQuery) -> int:
         response = self._indexer_session.count(
             index=self._indexer_entity.__index_name__, body=query
         )
@@ -87,7 +141,7 @@ class SearchCountMixin(Generic[IndexerModelType]):
 
 class SaveAndIndexMixin(Generic[DatabaseEntity]):
     def save_and_index(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbIndexedRepositoryContext[DatabaseEntity],
         entity: DatabaseEntity,
         wait_for: bool = False,
     ) -> DatabaseEntity:
@@ -112,7 +166,7 @@ class SaveAndIndexMixin(Generic[DatabaseEntity]):
 
 class DeleteAndUnindexMixin(Generic[DatabaseEntity]):
     def delete(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbIndexedRepositoryContext[DatabaseEntity],
         entity: DatabaseEntity,
         wait_for: bool = False,
     ) -> DatabaseEntity:
@@ -132,7 +186,7 @@ class DeleteAndUnindexMixin(Generic[DatabaseEntity]):
 
 class ArchiveOnDeleteAndIndexMixin(Generic[DatabaseEntity]):
     def delete(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbIndexedRepositoryContext[DatabaseEntity],
         entity: DatabaseEntity,
         wait_for: bool = False,
     ) -> DatabaseEntity:
@@ -156,7 +210,7 @@ class ArchiveOnDeleteAndIndexMixin(Generic[DatabaseEntity]):
 
 
 class IndexerMixin:
-    def reindex_all(self: RepositoryContext) -> None:
+    def reindex_all(self: DbIndexedRepositoryContext) -> None:
         """
         Reindex all entities in the indexer.
         """
@@ -172,7 +226,7 @@ class IndexerMixin:
 
 class IndexMixin(Generic[DatabaseEntity]):
     def index(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbIndexedRepositoryContext[DatabaseEntity],
         entity: DatabaseEntity,
         wait_for: bool = False,
     ) -> None:
@@ -188,7 +242,7 @@ class IndexMixin(Generic[DatabaseEntity]):
 
 class ArchiveMixin(Generic[DatabaseEntity]):
     def archive(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbIndexedRepositoryContext[DatabaseEntity],
         entity: DatabaseEntity,
         wait_for: bool = False,
     ) -> DatabaseEntity:

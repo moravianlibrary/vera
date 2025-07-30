@@ -15,8 +15,8 @@ from schemas.watchlist import (
     WatchlistParams,
 )
 
-from ._base import BaseRepository
-from ._database_mixins import (
+from ._db_repository import (
+    DbRepository,
     DeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
@@ -26,7 +26,7 @@ from ._database_mixins import (
 
 
 class WatchlistRepository(
-    BaseRepository,
+    DbRepository,
     DeleteMixin[WatchlistModel],
     EnforceNameUniquenessMixin[WatchlistModel, int],
     GetByIdMixin[WatchlistModel, int],

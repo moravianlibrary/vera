@@ -4,9 +4,9 @@ from fastapi import Depends
 
 from adapters.database import DatabaseSession, get_database_session
 from adapters.indexer import IndexerSession, get_indexer_session
-from repositories._base import BaseIndexedRepository, BaseRepository
+from repositories._base import DbIndexedRepository, DbRepository
 
-RepositoryType = TypeVar("RepositoryType", bound=BaseRepository)
+RepositoryType = TypeVar("RepositoryType", bound=DbRepository)
 ServiceType = TypeVar("ServiceType")
 
 
@@ -17,7 +17,7 @@ def provide_repository(
         db: DatabaseSession = Depends(get_database_session),
         index: IndexerSession = Depends(get_indexer_session),
     ) -> RepositoryType:
-        if issubclass(cls, BaseIndexedRepository):
+        if issubclass(cls, DbIndexedRepository):
             return cls(db, index)
         return cls(db)
 

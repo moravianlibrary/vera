@@ -1,8 +1,8 @@
 from adapters.database import DatabaseSession
 from schemas.role import RoleEdit
 
-from ._base import BaseRepository
-from ._database_mixins import (
+from ._db_repository import (
+    DbRepository,
     DeleteMixin,
     EnforceNameUniquenessMixin,
     FindByNameMixin,
@@ -15,7 +15,7 @@ from .models.role import RoleModel
 
 
 class RoleRepository(
-    BaseRepository,
+    DbRepository,
     DeleteMixin[RoleModel],
     EnforceNameUniquenessMixin[RoleModel, int],
     FindByNameMixin[RoleModel],

@@ -1,124 +1,124 @@
-import logging
-from celery import Celery, signals
-from os import path
-from sys import path as sys_path
-from models.base_engine import DatabaseUrl, get_session
-from datatypes import TaskState
-from config import VeraConfig
-from models import Task, PeriodicTask
-from tasks import TaskDispatcher, add_documents
-import redis
-from redis.lock import Lock
-from contextlib import contextmanager
-from vera_scheduler import vera_scheduler
+# import logging
+# from celery import Celery, signals
+# from os import path
+# from sys import path as sys_path
+# from models.base_engine import DatabaseUrl, get_session
+# from datatypes import TaskState
+# from config import VeraConfig
+# from models import Task, PeriodicTask
+# from tasks import TaskDispatcher, add_documents
+# import redis
+# from redis.lock import Lock
+# from contextlib import contextmanager
+# from vera_scheduler import vera_scheduler
 
 
-sys_path.append(path.abspath("/app"))
+# sys_path.append(path.abspath("/app"))
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("Worker")
-
-
-celery_worker = Celery(
-    "tasks",
-    broker=VeraConfig.Broker.Url,
-    broker_connection_retry_on_startup=True,
-    result_backend=f"db+{DatabaseUrl}",
-    database_table_names={
-        "task": "celery_tasks",
-        "group": "celery_groups",
-    },
-    timezone=VeraConfig.TimeZone,
-)
-redis_client = redis.Redis(
-    host=VeraConfig.Broker.Host, port=VeraConfig.Broker.Port
-)
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger("Worker")
 
 
-@signals.celeryd_init.connect
-def worker_startup(**kwargs):
-    vera_scheduler.start()
+# celery_worker = Celery(
+#     "tasks",
+#     broker=VeraConfig.Broker.Url,
+#     broker_connection_retry_on_startup=True,
+#     result_backend=f"db+{DatabaseUrl}",
+#     database_table_names={
+#         "task": "celery_tasks",
+#         "group": "celery_groups",
+#     },
+#     timezone=VeraConfig.TimeZone,
+# )
+# redis_client = redis.Redis(
+#     host=VeraConfig.Broker.Host, port=VeraConfig.Broker.Port
+# )
 
 
-@celery_worker.task
-def run_periodic_task_instance(periodic_task_id: int):
-    logger.info(f"Running periodic task instance with id {periodic_task_id}.")
-
-    session = next(get_session())
-    periodic_task = PeriodicTask.find(session, periodic_task_id)
-    if periodic_task is None:
-        logger.warn(f"Periodic task with id {periodic_task_id} not found.")
-        return
-
-    logger.info(f"Creating new task for periodic task {periodic_task_id}.")
-    task = Task(
-        task_type=periodic_task.task_type,
-        owner=VeraConfig.BotName,
-        query_params=periodic_task.query_params,
-    ).save(session)
-
-    logger.info(
-        f"Task created with id {task.id} for periodic task {periodic_task_id}."
-    )
-    run_task.delay(task_id=task.id)
+# @signals.celeryd_init.connect
+# def worker_startup(**kwargs):
+#     vera_scheduler.start()
 
 
-@celery_worker.task
-def run_task(task_id: int):
-    logger.info(f"Running task with id {task_id}.")
+# @celery_worker.task
+# def run_periodic_task_instance(periodic_task_id: int):
+#     logger.info(f"Running periodic task instance with id {periodic_task_id}.")
 
-    session = next(get_session())
-    task = Task.find(session, task_id)
+#     session = next(get_session())
+#     periodic_task = PeriodicTask.find(session, periodic_task_id)
+#     if periodic_task is None:
+#         logger.warn(f"Periodic task with id {periodic_task_id} not found.")
+#         return
 
-    if not task:
-        logger.error(f"Task with id {task_id} not found.")
+#     logger.info(f"Creating new task for periodic task {periodic_task_id}.")
+#     task = Task(
+#         task_type=periodic_task.task_type,
+#         owner=VeraConfig.BotName,
+#         query_params=periodic_task.query_params,
+#     ).save(session)
 
-    task.started = VeraConfig.Timestamp
-    task.task_state = TaskState.Running
-    task.save(session)
-
-    try:
-        task_function = TaskDispatcher.get(task.task_type)
-        if task_function is None:
-            logger.error(
-                f"Task with id {task_id} failed "
-                f"due to unknown task type: {task.task_type}"
-            )
-            return
-
-        logger.info(f"Executing task function for task id {task_id}.")
-        task_function(session, task_id)
-
-        task.task_state = TaskState.Finished
-        logger.info(f"Task with id {task_id} has finished successfully.")
-    except Exception as e:
-        task.task_state = TaskState.Failed
-        logger.error(f"Task with id {task_id} failed due to error: {e}")
-    finally:
-        task.finished = VeraConfig.Timestamp
-        task.save(session)
+#     logger.info(
+#         f"Task created with id {task.id} for periodic task {periodic_task_id}."
+#     )
+#     run_task.delay(task_id=task.id)
 
 
-@contextmanager
-def one_at_a_time_lock(
-    lock_name: str,
-    blocking_timeout: int | None = 30,
-):
-    lock = Lock(redis_client, lock_name)
-    if lock.acquire(blocking=True, blocking_timeout=blocking_timeout):
-        logger.info(f"Lock '{lock_name}' acquired.")
-        try:
-            yield True
-        finally:
-            lock.release()
-            logger.info(f"Lock '{lock_name}' released.")
-    else:
-        logger.info(f"Lock '{lock_name}' could not be acquired.")
-        yield False
+# @celery_worker.task
+# def run_task(task_id: int):
+#     logger.info(f"Running task with id {task_id}.")
+
+#     session = next(get_session())
+#     task = Task.find(session, task_id)
+
+#     if not task:
+#         logger.error(f"Task with id {task_id} not found.")
+
+#     task.started = VeraConfig.Timestamp
+#     task.task_state = TaskState.Running
+#     task.save(session)
+
+#     try:
+#         task_function = TaskDispatcher.get(task.task_type)
+#         if task_function is None:
+#             logger.error(
+#                 f"Task with id {task_id} failed "
+#                 f"due to unknown task type: {task.task_type}"
+#             )
+#             return
+
+#         logger.info(f"Executing task function for task id {task_id}.")
+#         task_function(session, task_id)
+
+#         task.task_state = TaskState.Finished
+#         logger.info(f"Task with id {task_id} has finished successfully.")
+#     except Exception as e:
+#         task.task_state = TaskState.Failed
+#         logger.error(f"Task with id {task_id} failed due to error: {e}")
+#     finally:
+#         task.finished = VeraConfig.Timestamp
+#         task.save(session)
 
 
-@celery_worker.task
-def run_add_documents():
-    with one_at_a_time_lock("add_documents") as acquired:
-        if acquired:
-            add_documents()
+# @contextmanager
+# def one_at_a_time_lock(
+#     lock_name: str,
+#     blocking_timeout: int | None = 30,
+# ):
+#     lock = Lock(redis_client, lock_name)
+#     if lock.acquire(blocking=True, blocking_timeout=blocking_timeout):
+#         logger.info(f"Lock '{lock_name}' acquired.")
+#         try:
+#             yield True
+#         finally:
+#             lock.release()
+#             logger.info(f"Lock '{lock_name}' released.")
+#     else:
+#         logger.info(f"Lock '{lock_name}' could not be acquired.")
+#         yield False
+
+
+# @celery_worker.task
+# def run_add_documents():
+#     with one_at_a_time_lock("add_documents") as acquired:
+#         if acquired:
+#             add_documents()

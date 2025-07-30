@@ -6,8 +6,8 @@ from repositories.models.group import GroupModel
 from repositories.models.user import UserModel
 from schemas.category import Category
 
-from ._base import BaseIndexedRepository
-from ._database_mixins import (
+from ._base import DbIndexedRepository
+from ._db_repository import (
     ArchiveOnDeleteAndIndexMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
@@ -18,7 +18,7 @@ from .models.category import CategoryModel
 
 
 class CategoryRepository(
-    BaseIndexedRepository,
+    DbIndexedRepository,
     ArchiveOnDeleteAndIndexMixin[CategoryModel],
     EnforceNameUniquenessMixin,
     GetByIdMixin[CategoryModel, int],

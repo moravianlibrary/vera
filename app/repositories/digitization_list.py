@@ -3,13 +3,18 @@ from typing import List
 from adapters.database import DatabaseSession
 from repositories.models.intention import IntentionModel
 
-from ._base import BaseRepository
-from ._database_mixins import DeleteMixin, GetByIdMixin, SaveMixin, SearchMixin
+from ._db_repository import (
+    DbRepository,
+    DeleteMixin,
+    GetByIdMixin,
+    SaveMixin,
+    SearchMixin,
+)
 from .models.digitization_list import DigitizationListModel
 
 
 class DigiListRepository(
-    BaseRepository,
+    DbRepository,
     DeleteMixin[DigitizationListModel],
     GetByIdMixin[DigitizationListModel, int],
     SaveMixin[DigitizationListModel],

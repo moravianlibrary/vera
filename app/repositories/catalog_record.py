@@ -5,8 +5,7 @@ from marcdantic import MarcRecord
 from adapters.database import DatabaseSession
 from definitions.identifier import IdentifierType
 
-from ._base import BaseRepository
-from ._database_mixins import GetByIdMixin, SaveMixin
+from ._db_repository import DbRepository, GetByIdMixin, SaveMixin
 from .models.catalog_record import (
     CatalogRecordIdentifierModel,
     CatalogRecordModel,
@@ -14,7 +13,7 @@ from .models.catalog_record import (
 
 
 class CatalogRecordRepository(
-    BaseRepository,
+    DbRepository,
     SaveMixin[CatalogRecordModel],
     GetByIdMixin[CatalogRecordModel, str],
 ):

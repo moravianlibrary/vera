@@ -1,7 +1,18 @@
-from typing import Generator, Generic, List, Optional
+from typing import (
+    Generator,
+    Generic,
+    List,
+    Optional,
+    Protocol,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from pydantic import BaseModel
+from sqlalchemy.orm import DeclarativeMeta
 
+from adapters.database import DatabaseSession
 from adapters.indexer import (
     IndexerModelType,
     IndexerQuery,
@@ -10,12 +21,34 @@ from adapters.indexer import (
 )
 from schemas.common import PageParams
 
-from ._base import DatabaseEntity, IdType, RepositoryContext
+DatabaseEntity = TypeVar("DatabaseEntity", bound=DeclarativeMeta)
+IdType = TypeVar("IdType", bound=Union[str, int])
+
+
+class DbRepository:
+    def __init__(
+        self,
+        entity_name: str,
+        database_session: DatabaseSession,
+        database_entity: Type[DatabaseEntity],
+    ):
+        """
+        Initialize repository with the session, model and entity name.
+        """
+        self._entity_name = entity_name
+        self._database_session = database_session
+        self._database_entity = database_entity
+
+
+class DbRepositoryContext(Protocol[DatabaseEntity]):
+    _entity_name: str
+    _database_session: DatabaseSession
+    _database_entity: Type[DatabaseEntity]
 
 
 class FindByIdMixin(Generic[DatabaseEntity, IdType]):
     def find_by_id(
-        self: RepositoryContext[DatabaseEntity], entity_id: IdType
+        self: DbRepositoryContext[DatabaseEntity], entity_id: IdType
     ) -> Optional[DatabaseEntity]:
         """
         Find a model by its ID.
@@ -29,7 +62,7 @@ class FindByIdMixin(Generic[DatabaseEntity, IdType]):
 
 class FindByNameMixin(Generic[DatabaseEntity]):
     def find_by_name(
-        self: RepositoryContext[DatabaseEntity], name: str
+        self: DbRepositoryContext[DatabaseEntity], name: str
     ) -> Optional[DatabaseEntity]:
         """
         Find a model by its name.
@@ -43,7 +76,7 @@ class FindByNameMixin(Generic[DatabaseEntity]):
 
 class FindByNamesMixin(Generic[DatabaseEntity]):
     def find_by_names(
-        self: RepositoryContext[DatabaseEntity], names: List[str]
+        self: DbRepositoryContext[DatabaseEntity], names: List[str]
     ) -> List[DatabaseEntity]:
         """
         Find models by their names.
@@ -57,7 +90,7 @@ class FindByNamesMixin(Generic[DatabaseEntity]):
 
 class GetByIdMixin(Generic[DatabaseEntity, IdType]):
     def get_by_id(
-        self: RepositoryContext[DatabaseEntity], entity_id: IdType
+        self: DbRepositoryContext[DatabaseEntity], entity_id: IdType
     ) -> DatabaseEntity:
         """
         Get a model by its ID.
@@ -76,7 +109,7 @@ class GetByIdMixin(Generic[DatabaseEntity, IdType]):
 
 class GetByIdsMixin(Generic[DatabaseEntity, IdType]):
     def get_by_ids(
-        self: RepositoryContext[DatabaseEntity], entity_ids: List[IdType]
+        self: DbRepositoryContext[DatabaseEntity], entity_ids: List[IdType]
     ) -> List[DatabaseEntity]:
         """
         Get models by their IDs.
@@ -90,7 +123,7 @@ class GetByIdsMixin(Generic[DatabaseEntity, IdType]):
 
 class GetByQueryMixin(Generic[IndexerModelType]):
     def get_by_query(
-        self: RepositoryContext, query: IndexerQuery
+        self: DbRepositoryContext, query: IndexerQuery
     ) -> Generator[IndexerModelType, None, None]:
         scroll_id = None
 
@@ -123,7 +156,7 @@ class GetByQueryMixin(Generic[IndexerModelType]):
 
 class PaginationMixin(Generic[DatabaseEntity]):
     def paginate(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbRepositoryContext[DatabaseEntity],
         page_params: PageParams,
         filter_params: BaseModel | None = None,
     ) -> List[DatabaseEntity]:
@@ -145,7 +178,7 @@ class PaginationMixin(Generic[DatabaseEntity]):
 
 class EnforceNameUniquenessMixin(Generic[DatabaseEntity, IdType]):
     def enforce_name_uniqueness(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbRepositoryContext[DatabaseEntity],
         name: str,
         entity_id: IdType | None = None,
     ) -> None:
@@ -166,7 +199,7 @@ class EnforceNameUniquenessMixin(Generic[DatabaseEntity, IdType]):
 
 class SaveMixin(Generic[DatabaseEntity]):
     def save(
-        self: RepositoryContext[DatabaseEntity], entity: DatabaseEntity
+        self: DbRepositoryContext[DatabaseEntity], entity: DatabaseEntity
     ) -> DatabaseEntity:
         """
         Save a model to the database.
@@ -179,7 +212,7 @@ class SaveMixin(Generic[DatabaseEntity]):
 
 class DeleteMixin(Generic[DatabaseEntity]):
     def delete(
-        self: RepositoryContext[DatabaseEntity], entity: DatabaseEntity
+        self: DbRepositoryContext[DatabaseEntity], entity: DatabaseEntity
     ) -> DatabaseEntity:
         """
         Delete a model from the database.
@@ -191,7 +224,7 @@ class DeleteMixin(Generic[DatabaseEntity]):
 
 class ArchiveOnDeleteMixin(Generic[DatabaseEntity]):
     def delete(
-        self: RepositoryContext[DatabaseEntity], entity: DatabaseEntity
+        self: DbRepositoryContext[DatabaseEntity], entity: DatabaseEntity
     ) -> DatabaseEntity:
         """
         Archive a model instead of deleting it.
@@ -203,14 +236,14 @@ class ArchiveOnDeleteMixin(Generic[DatabaseEntity]):
 
 class SearchMixin(Generic[IndexerModelType]):
     def search(
-        self: RepositoryContext, request: IndexerRequest
+        self: DbRepositoryContext, request: IndexerRequest
     ) -> IndexerResponse:
         return self._indexer_session.search(request)
 
 
 class SearchAllMixin(Generic[IndexerModelType]):
     def search_all(
-        self: RepositoryContext, query: IndexerQuery
+        self: DbRepositoryContext, query: IndexerQuery
     ) -> Generator[IndexerModelType, None, None]:
         scroll_id = None
 
@@ -237,7 +270,7 @@ class SearchAllMixin(Generic[IndexerModelType]):
 
 class SaveAndIndexMixin(Generic[DatabaseEntity]):
     def save_and_index(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbRepositoryContext[DatabaseEntity],
         entity: DatabaseEntity,
         wait_for: bool = False,
     ) -> DatabaseEntity:
@@ -262,7 +295,7 @@ class SaveAndIndexMixin(Generic[DatabaseEntity]):
 
 class DeleteAndUnindexMixin(Generic[DatabaseEntity]):
     def delete(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbRepositoryContext[DatabaseEntity],
         entity: DatabaseEntity,
         wait_for: bool = False,
     ) -> DatabaseEntity:
@@ -282,7 +315,7 @@ class DeleteAndUnindexMixin(Generic[DatabaseEntity]):
 
 class ArchiveOnDeleteAndIndexMixin(Generic[DatabaseEntity]):
     def delete(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbRepositoryContext[DatabaseEntity],
         entity: DatabaseEntity,
         wait_for: bool = False,
     ) -> DatabaseEntity:
@@ -306,7 +339,7 @@ class ArchiveOnDeleteAndIndexMixin(Generic[DatabaseEntity]):
 
 
 class IndexerMixin:
-    def reindex_all(self: RepositoryContext) -> None:
+    def reindex_all(self: DbRepositoryContext) -> None:
         """
         Reindex all entities in the indexer.
         """
@@ -322,7 +355,7 @@ class IndexerMixin:
 
 class IndexMixin(Generic[DatabaseEntity]):
     def index(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbRepositoryContext[DatabaseEntity],
         entity: DatabaseEntity,
         wait_for: bool = False,
     ) -> None:
@@ -338,7 +371,7 @@ class IndexMixin(Generic[DatabaseEntity]):
 
 class ArchiveMixin(Generic[DatabaseEntity]):
     def archive(
-        self: RepositoryContext[DatabaseEntity],
+        self: DbRepositoryContext[DatabaseEntity],
         entity: DatabaseEntity,
         wait_for: bool = False,
     ) -> DatabaseEntity:

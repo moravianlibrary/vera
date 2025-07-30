@@ -1,7 +1,6 @@
 from typing import List
 
 from marcdantic import MarcIssue, MarcRecord
-from vera_plugins.schemas import DigitizationRegistryPluginInstance
 from vera_plugins.specs.digitization_registry_adapter import (
     DigitizationRecord,
     DigitizationRecordState,
@@ -11,26 +10,23 @@ from vera_plugins.tools.registry import PluginRegistry
 
 
 class DigitizationRegistryAdapter(DigitizationRegistryAdapterPlugin):
-    def __init__(
-        self,
-        plugin_registry: PluginRegistry,
-        instance: DigitizationRegistryPluginInstance,
-    ):
-        self._plugin_registry = plugin_registry
-        self.instance = instance
+    def __init__(self, plugin_registry: PluginRegistry):
+        instance = plugin_registry.digitization_registry_adapter
+        self._plugin = instance.plugin
+        self._config = instance.config
 
     def fetch(self, registry_issue_id: str) -> DigitizationRecord:
-        pass
+        return self._plugin.fetch(registry_issue_id)
 
     def find_for_marc_record(
         self, record: MarcRecord
     ) -> List[DigitizationRecord] | None:
-        pass
+        return self._plugin.find_for_marc_record(record)
 
     def find_for_marc_issue(
         self, record: MarcRecord, issue: MarcIssue
     ) -> List[DigitizationRecord] | None:
-        pass
+        return self._plugin.find_for_marc_issue(record, issue)
 
     def register_digitization(
         self,
@@ -38,9 +34,12 @@ class DigitizationRegistryAdapter(DigitizationRegistryAdapterPlugin):
         issue: MarcIssue | None,
         state: DigitizationRecordState,
     ) -> DigitizationRecord:
-        raise NotImplementedError(
-            "register_digitization not implemented in this plugin"
-        )
+        if not self._config.change_state:
+            raise NotImplementedError(
+                "Used digitization registry adapter "
+                "does not support changing digitization states."
+            )
+        return self._plugin.register_digitization(record, issue, state)
 
     def change_state(
         self,
@@ -48,6 +47,9 @@ class DigitizationRegistryAdapter(DigitizationRegistryAdapterPlugin):
         issue_id: str,
         state: DigitizationRecordState,
     ) -> None:
-        raise NotImplementedError(
-            "change_state not implemented in this plugin"
-        )
+        if not self._config.change_state:
+            raise NotImplementedError(
+                "Used digitization registry adapter "
+                "does not support changing digitization states."
+            )
+        return self._plugin.change_state(record_id, issue_id, state)
