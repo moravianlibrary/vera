@@ -5,7 +5,6 @@ from adapters.database import DatabaseSession
 from adapters.indexer import IndexerQuery
 from repositories.models.watchlist import (
     WatchlistModel,
-    WatchlistNotificationModel,
     WatchlistSubscriptionModel,
 )
 from schemas.common import UserAssignment, UserAssignmentChange
@@ -158,17 +157,17 @@ class WatchlistRepository(
         self._database_session.refresh(watchlist)
         return watchlist
 
-    def get_notifications(
-        self, user_id: str
-    ) -> List[WatchlistNotificationModel]:
-        return (
-            self._database_session.query(self._database_entity)
-            .filter(WatchlistNotificationModel.user_id == user_id)
-            .all()
-        )
+    # def get_notifications(
+    #     self, user_id: str
+    # ) -> List[WatchlistNotificationModel]:
+    #     return (
+    #         self._database_session.query(self._database_entity)
+    #         .filter(WatchlistNotificationModel.user_id == user_id)
+    #         .all()
+    #     )
 
-    def mark_notification_read(
-        self, notification: WatchlistNotificationModel
-    ) -> None:
-        notification.last_read_at = notification.last_sent_at = datetime.now()
-        self._database_session.commit()
+    # def mark_notification_read(
+    #     self, notification: WatchlistNotificationModel
+    # ) -> None:
+    #     notification.last_read_at = notification.last_sent_at = datetime.now()
+    #     self._database_session.commit()

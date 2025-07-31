@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 from adapters.indexer import IndexerQuery
 from definitions.watchlist import WatchlistMode, WatchlistTarget
-from repositories.models.watchlist import WatchlistNotificationModel
 from schemas.common import FilterParams
 from schemas.group import GroupSummary
 from schemas.user import UserSummary
@@ -78,19 +77,20 @@ class WatchlistNotification(WatchlistBase):
     last_read_at: datetime
     count_changes: int
 
-    @classmethod
-    def from_orm_with_count(
-        cls, notification: WatchlistNotificationModel, count_changes: int
-    ) -> "WatchlistNotification":
-        return cls(
-            id=notification.watchlist.id,
-            name=notification.watchlist.name,
-            target=notification.watchlist.target,
-            query=notification.watchlist.query,
-            mode=notification.watchlist.mode,
-            last_read_at=notification.last_read_at,
-            count_changes=count_changes,
-        )
+    # TODO:
+    # @classmethod
+    # def from_orm_with_count(
+    #     cls, notification: WatchlistNotificationModel, count_changes: int
+    # ) -> "WatchlistNotification":
+    #     return cls(
+    #         id=notification.watchlist.id,
+    #         name=notification.watchlist.name,
+    #         target=notification.watchlist.target,
+    #         query=notification.watchlist.query,
+    #         mode=notification.watchlist.mode,
+    #         last_read_at=notification.last_read_at,
+    #         count_changes=count_changes,
+    #     )
 
 
 class SubscribedWatchlist(WatchlistNotification):

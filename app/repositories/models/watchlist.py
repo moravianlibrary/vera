@@ -8,11 +8,12 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped
 
-from adapters.database import BaseModel
+from adapters.database import BaseModel, belongs_to, contains, has_one
 from definitions.watchlist import WatchlistMode, WatchlistTarget
 
 if TYPE_CHECKING:
@@ -30,10 +31,8 @@ class WatchlistModel(BaseModel):
     target = Column(Enum(WatchlistTarget), nullable=False)
     query = Column(JSONB, nullable=False)
 
-    subscriptions: Mapped[List["WatchlistSubscriptionModel"]] = relationship(
-        "WatchlistSubscriptionModel",
-        back_populates="watchlist",
-        cascade="all, delete-orphan",
+    subscriptions: Mapped[List["WatchlistSubscriptionModel"]] = contains(
+        "WatchlistSubscriptionModel", "watchlist"
     )
 
 
@@ -51,37 +50,11 @@ class WatchlistSubscriptionModel(BaseModel):
     include_report = Column(Boolean, nullable=True)
     return_fields = Column(JSONB, nullable=True)
 
-    watchlist: Mapped["WatchlistModel"] = relationship(
-        "WatchlistModel",
-        back_populates="subscriptions",
-        foreign_keys=[watchlist_id],
+    # Timestamps for tracking
+    last_read_at = Column(TIMESTAMP, nullable=False, default=func.now())
+    last_sent_at = Column(TIMESTAMP, nullable=False, default=func.now())
+
+    watchlist: Mapped["WatchlistModel"] = belongs_to(
+        "WatchlistModel", "subscriptions"
     )
-
-    users: Mapped[List["UserModel"]] = relationship(
-        "UserModel",
-        back_populates="watchlist_subscriptions",
-        lazy="joined",
-    )
-
-
-class WatchlistNotificationModel(BaseModel):
-    __tablename__ = "watchlist_notifications"
-
-    id = Column(Integer, primary_key=True)
-
-    watchlist_id = Column(Integer, ForeignKey("watchlists.id"), nullable=False)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)
-
-    last_read_at = Column(TIMESTAMP, nullable=False)
-    last_sent_at = Column(TIMESTAMP, nullable=False)
-
-    watchlist: Mapped["WatchlistModel"] = relationship(
-        "WatchlistModel",
-        back_populates="notifications",
-        foreign_keys=[watchlist_id],
-    )
-    user: Mapped["UserModel"] = relationship(
-        "UserModel",
-        back_populates="watchlist_notifications",
-        foreign_keys=[user_id],
-    )
+    user: Mapped["UserModel"] = has_one("UserModel", "watchlist_subscriptions")

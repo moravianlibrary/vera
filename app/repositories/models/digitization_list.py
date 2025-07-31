@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, List
 
 from sqlalchemy import Column, Enum, Integer
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped
 
-from adapters.database import BaseModel
+from adapters.database import BaseModel, connected_with, has_one
 from definitions.digitization_registry import DigitizationListState
 
 from .associations import digitization_list_intention_association
@@ -20,16 +20,11 @@ class DigitizationListModel(BaseModel, CreatedAuditMixin):
     id = Column(Integer, primary_key=True)
     state = Column(Enum(DigitizationListState), nullable=False)
 
-    document_iterations: Mapped[List["DocumentIterationModel"]] = relationship(
-        "DocumentModel",
-        back_populates="digitization_list",
-        lazy="joined",
-        cascade="all, delete-orphan",
+    document_iterations: Mapped[List["DocumentIterationModel"]] = has_one(
+        "DocumentIterationModel", "digitization_list"
     )
-    intentions: Mapped[List["IntentionModel"]] = relationship(
+    intentions: Mapped[List["IntentionModel"]] = connected_with(
         "IntentionModel",
-        secondary=digitization_list_intention_association,
-        back_populates="digitization_lists",
-        lazy="joined",
-        cascade="all, delete-orphan",
+        digitization_list_intention_association,
+        "digitization_lists",
     )

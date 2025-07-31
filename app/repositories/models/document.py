@@ -11,12 +11,18 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped
 from vera_plugins.specs.digitization_registry_adapter import (
     DigitizationRecordState,
 )
 
-from adapters.database import BaseModel
+from adapters.database import (
+    BaseModel,
+    belongs_to,
+    contains,
+    has_many,
+    has_one,
+)
 from definitions.catalog_record import CatalogRecordStatus
 from definitions.digitization_registry import DigitizationState
 from definitions.document import DocumentStatus
@@ -54,25 +60,17 @@ class DocumentModel(BaseModel, UpdatedTimestampMixin):
 
     can_be_extracted = Column(Boolean, default=False, nullable=False)
 
-    catalog_record: Mapped["CatalogRecordModel"] = relationship(
-        "CatalogRecordModel", backref="document"
+    catalog_record: Mapped["CatalogRecordModel"] = has_one(
+        "CatalogRecordModel", "documents"
     )
     digitization_records: Mapped[List["DocumentDigitizationRecordModel"]] = (
-        relationship(
-            "DocumentDigitizationRecordModel",
-            back_populates="document",
-            cascade="all, delete-orphan",
-        )
+        contains("DocumentDigitizationRecordModel", "document")
     )
-    additional_properties: Mapped[List["DocumentPropertyModel"]] = (
-        relationship(
-            "DocumentPropertyModel",
-            back_populates="document",
-            cascade="all, delete-orphan",
-        )
+    properties: Mapped[List["DocumentPropertyModel"]] = contains(
+        "DocumentPropertyModel", "document"
     )
-    iterations: Mapped[List["DocumentIterationModel"]] = relationship(
-        "DocumentIterationModel", back_populates="document"
+    iterations: Mapped[List["DocumentIterationModel"]] = has_many(
+        "DocumentIterationModel", "document"
     )
 
     @property
@@ -96,8 +94,8 @@ class DocumentDigitizationRecordModel(BaseModel, UpdatedTimestampMixin):
     link = Column(String, nullable=True)
     error_message = Column(String, nullable=True)
 
-    document: Mapped["DocumentModel"] = relationship(
-        "DocumentModel", backref="digitization_records"
+    document: Mapped["DocumentModel"] = belongs_to(
+        "DocumentModel", "digitization_records"
     )
 
     @hybrid_property
@@ -123,11 +121,11 @@ class DocumentPropertyModel(
 
     value = Column(LargeBinary, nullable=True)
 
-    document: Mapped["DocumentModel"] = relationship(
-        "DocumentModel", backref="properties"
+    document: Mapped["DocumentModel"] = belongs_to(
+        "DocumentModel", "properties"
     )
-    plugin_instance: Mapped["PluginInstanceModel"] = relationship(
-        "PluginInstanceModel", backref="document_properties"
+    plugin_instance: Mapped["PluginInstanceModel"] = has_one(
+        "PluginInstanceModel", back_populates="document_properties"
     )
 
 
@@ -150,15 +148,12 @@ class DocumentIterationModel(
 
     is_archived = Column(Boolean, default=False, nullable=False)
 
-    document: Mapped["DocumentModel"] = relationship(
-        "DocumentModel", backref="iterations"
+    document: Mapped["DocumentModel"] = has_one("DocumentModel", "iterations")
+    category: Mapped["CategoryModel"] = has_one(
+        "CategoryModel", "document_iterations"
     )
-    category: Mapped["CategoryModel"] = relationship(
-        "CategoryModel", backref="document_iterations"
-    )
-    digitization_list: Mapped["DigitizationListModel"] = relationship(
-        "DigitizationListModel",
-        back_populates="document_iterations",
+    digitization_list: Mapped["DigitizationListModel"] = has_many(
+        "DigitizationListModel", "document_iterations"
     )
 
     @property

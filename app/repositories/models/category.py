@@ -10,17 +10,30 @@ from sqlalchemy import (
     func,
     select,
 )
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped
 
-from adapters.database import BaseModel, DatabaseSession
+from adapters.database import (
+    BaseModel,
+    DatabaseSession,
+    belongs_to,
+    connected_with,
+    contains,
+    has_many,
+)
 from definitions.category import CategoryDocumentFilter
 from repositories.models.document import DocumentModel
 
-from .associations import category_group_association, category_user_association
+from .associations import (
+    category_group_association,
+    category_user_association,
+    project_category_association,
+)
 
 if TYPE_CHECKING:
     from .document import DocumentIterationModel
     from .group import GroupModel
+    from .project import ProjectModel
+    from .proposal import ProposalModel
     from .user import UserModel
 
 
@@ -49,46 +62,35 @@ class CategoryModel(BaseModel):
     )
 
     # Hierarchical relationship
-    parent: Mapped[Optional["CategoryModel"]] = relationship(
-        "CategoryModel",
-        remote_side=[id],
-        backref="children",
-        lazy="joined",
+    children: Mapped[List["CategoryModel"]] = contains(
+        "CategoryModel", "parent"
     )
-    children: Mapped[List["CategoryModel"]] = relationship(
-        "CategoryModel",
-        back_populates="parent",
-        lazy="joined",
-        cascade="all, delete-orphan",
+    parent: Mapped[Optional["CategoryModel"]] = belongs_to(
+        "CategoryModel", "children", remote_side=[id]
+    )
+
+    # Proportions for distributions
+    proportions: Mapped[List["CategoryProportionModel"]] = contains(
+        "CategoryProportionModel", "category"
     )
 
     # Relationships to other entities
-    proportions: Mapped[List["CategoryProportionModel"]] = relationship(
-        "CategoryProportionModel",
-        back_populates="categories",
-        lazy="joined",
-        cascade="all, delete-orphan",
+    document_iterations: Mapped[List["DocumentIterationModel"]] = has_many(
+        "DocumentIterationModel", "category"
     )
-    document_iterations: Mapped[List["DocumentIterationModel"]] = relationship(
-        "DocumentIterationModel",
-        back_populates="category",
-        lazy="joined",
+    projects: Mapped[List["ProjectModel"]] = connected_with(
+        "ProjectModel", project_category_association, "categories"
+    )
+    proposals: Mapped[List["ProposalModel"]] = has_many(
+        "ProposalModel", "category"
     )
 
     # Ownership relationships
-    assigned_groups: Mapped[List["GroupModel"]] = relationship(
-        "GroupModel",
-        secondary=category_group_association,
-        back_populates="categories",
-        lazy="joined",
-        cascade="all, delete-orphan",
+    assigned_groups: Mapped[List["GroupModel"]] = connected_with(
+        "GroupModel", category_group_association, "categories"
     )
-    assigned_users: Mapped[List["UserModel"]] = relationship(
-        "UserModel",
-        secondary=category_user_association,
-        back_populates="categories",
-        lazy="joined",
-        cascade="all, delete-orphan",
+    assigned_users: Mapped[List["UserModel"]] = connected_with(
+        "UserModel", category_user_association, "categories"
     )
 
     @property
@@ -154,11 +156,8 @@ class DistributionModel(BaseModel):
     description = Column(String, nullable=True)
     is_active = Column(Boolean, default=False, nullable=False)
 
-    proportions: Mapped[List["CategoryProportionModel"]] = relationship(
-        "CategoryProportionModel",
-        back_populates="distribution",
-        lazy="joined",
-        cascade="all, delete-orphan",
+    proportions: Mapped[List["CategoryProportionModel"]] = contains(
+        "CategoryProportionModel", "distribution"
     )
 
 
@@ -173,13 +172,9 @@ class CategoryProportionModel(BaseModel):
     )
     proportion = Column(Float)
 
-    categories: Mapped["CategoryModel"] = relationship(
-        "CategoryModel",
-        back_populates="proportions",
-        lazy="joined",
+    category: Mapped["CategoryModel"] = belongs_to(
+        "CategoryModel", "proportions"
     )
-    distribution: Mapped["DistributionModel"] = relationship(
-        "DistributionModel",
-        back_populates="proportions",
-        lazy="joined",
+    distribution: Mapped["DistributionModel"] = belongs_to(
+        "DistributionModel", "proportions"
     )

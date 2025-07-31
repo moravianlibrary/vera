@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, List
 
 from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped
 
-from adapters.database import BaseModel
+from adapters.database import BaseModel, belongs_to, contains, has_one
 from definitions.eligibility import EligibilityStatus
 from definitions.identifier import IdentifierType
 from definitions.proposal import ProposalStatus
@@ -27,11 +27,8 @@ class ProposalBatchModel(BaseModel, CreatedAuditMixin):
 
     is_archived = Column(Boolean, default=False, nullable=False)
 
-    proposals: Mapped[List["ProposalModel"]] = relationship(
-        "ProposalModel",
-        backref="batch",
-        lazy="selectin",
-        cascade="all, delete-orphan",
+    proposals: Mapped[List["ProposalModel"]] = contains(
+        "ProposalModel", "batch", "selectin"
     )
 
 
@@ -55,25 +52,16 @@ class ProposalModel(BaseModel):
     )
     eligibility_status = Column(Enum(EligibilityStatus), nullable=True)
 
-    batch: Mapped["ProposalBatchModel"] = relationship(
-        "ProposalBatchModel", back_populates="proposals", lazy="joined"
+    batch: Mapped["ProposalBatchModel"] = belongs_to(
+        "ProposalBatchModel", "proposals"
     )
-    category: Mapped["CategoryModel"] = relationship(
-        "CategoryModel", back_populates="proposals", lazy="joined"
-    )
-    project: Mapped["ProjectModel"] = relationship(
-        "ProjectModel", back_populates="proposals", lazy="joined"
-    )
+    category: Mapped["CategoryModel"] = has_one("CategoryModel", "proposals")
+    project: Mapped["ProjectModel"] = has_one("ProjectModel", "proposals")
 
-    addition: Mapped["AdditionModel"] = relationship(
-        "AdditionModel", backref="proposal"
-    )
+    addition: Mapped["AdditionModel"] = has_one("AdditionModel", "proposal")
 
-    status_log: Mapped[List["ProposalStatusLogModel"]] = relationship(
-        "ProposalStatusLogModel",
-        backref="proposal",
-        cascade="all, delete-orphan",
-        lazy="dynamic",
+    status_log: Mapped[List["ProposalStatusLogModel"]] = contains(
+        "ProposalStatusLogModel", "proposal", "dynamic"
     )
 
 
@@ -85,6 +73,6 @@ class ProposalStatusLogModel(BaseModel, UpdatedAuditMixin):
     proposal_id = Column(Integer, ForeignKey("proposals.id"), nullable=False)
     status = Column(Enum(ProposalStatus), nullable=False)
 
-    proposal: Mapped["ProposalModel"] = relationship(
-        "ProposalModel", backref="status_log"
+    proposal: Mapped["ProposalModel"] = belongs_to(
+        "ProposalModel", "status_log"
     )

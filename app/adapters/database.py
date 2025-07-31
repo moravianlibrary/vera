@@ -2,7 +2,8 @@ from functools import wraps
 from typing import Any, Callable
 
 from sqlalchemy import Column, ForeignKey, Table, create_engine
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Session, relationship, sessionmaker
+from sqlalchemy.orm.relationships import _ORMColCollectionArgument
 
 from config import config
 
@@ -54,6 +55,81 @@ def AssociationTable(
             ForeignKey(right_fk or f"{right_entity_name}s.id"),
             primary_key=True,
         ),
+    )
+
+
+def contains(target: str, back_populates: str, lazy: str = "joined") -> Any:
+    """
+    One-to-many relationship where the parent contains the children.
+    Children are deleted if orphaned.
+    """
+    return relationship(
+        target,
+        back_populates=back_populates,
+        lazy=lazy,
+        cascade="all, delete-orphan",
+        uselist=True,
+    )
+
+
+def belongs_to(
+    target: str,
+    back_populates: str,
+    lazy: str = "joined",
+    remote_side: _ORMColCollectionArgument | None = None,
+) -> Any:
+    """
+    Many-to-one relationship: this entity belongs to another.
+    """
+    return relationship(
+        target,
+        back_populates=back_populates,
+        lazy=lazy,
+        remote_side=remote_side,
+        uselist=False,
+    )
+
+
+def has_one(target: str, back_populates: str, lazy: str = "joined") -> Any:
+    """
+    One-to-one or many-to-one relationship
+    where this entity has one of another.
+    """
+    return relationship(
+        target,
+        back_populates=back_populates,
+        lazy=lazy,
+        uselist=False,
+    )
+
+
+def has_many(target: str, back_populates: str, lazy: str = "joined") -> Any:
+    """
+    One-to-many relationship where this entity has many of another.
+    """
+    return relationship(
+        target,
+        back_populates=back_populates,
+        lazy=lazy,
+        uselist=True,
+    )
+
+
+def connected_with(
+    target: str,
+    secondary: Any,
+    back_populates: str,
+    lazy: str = "select",
+) -> Any:
+    """
+    Many-to-many relationship using an association table.
+    """
+    return relationship(
+        target,
+        secondary=secondary,
+        back_populates=back_populates,
+        lazy=lazy,
+        uselist=True,
     )
 
 

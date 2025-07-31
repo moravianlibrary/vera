@@ -9,9 +9,16 @@ from sqlalchemy import (
     Integer,
     String,
 )
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped
 
-from adapters.database import BaseModel
+from adapters.database import (
+    BaseModel,
+    belongs_to,
+    connected_with,
+    contains,
+    has_many,
+    has_one,
+)
 from definitions.project import ProjectStatus
 
 from .associations import (
@@ -23,8 +30,11 @@ from .mixins.created_audit import CreatedAuditMixin
 from .mixins.updated_audit import UpdatedAuditMixin
 
 if TYPE_CHECKING:
+    from .addition import AdditionModel
     from .category import CategoryModel
     from .group import GroupModel
+    from .intention import IntentionModel
+    from .proposal import ProposalModel
     from .user import UserModel
 
 
@@ -46,30 +56,30 @@ class ProjectModel(BaseModel, CreatedAuditMixin):
 
     is_archived = Column(Boolean, default=False, nullable=False)
 
-    status_log: Mapped[List["ProjectStatusLogModel"]] = relationship(
-        "ProjectStatusLogModel",
-        backref="project",
-        cascade="all, delete-orphan",
-        lazy="dynamic",
+    status_log: Mapped[List["ProjectStatusLogModel"]] = contains(
+        "ProjectStatusLogModel", "project", "dynamic"
     )
 
-    categories: Mapped[List["CategoryModel"]] = relationship(
-        "CategoryModel",
-        secondary=project_category_association,
-        back_populates="projects",
-        lazy="joined",
+    # Relationships to other entities
+    additions: Mapped[List["AdditionModel"]] = has_many(
+        "AdditionModel", "project"
     )
-    groups: Mapped[List["GroupModel"]] = relationship(
-        "GroupModel",
-        secondary=project_group_association,
-        back_populates="projects",
-        lazy="joined",
+    categories: Mapped[List["CategoryModel"]] = connected_with(
+        "CategoryModel", project_category_association, "projects"
     )
-    users: Mapped[List["UserModel"]] = relationship(
+    intention: Mapped["IntentionModel"] = has_one("IntentionModel", "project")
+    proposals: Mapped[List["ProposalModel"]] = has_many(
+        "ProposalModel", "project"
+    )
+
+    # Ownership relationships
+    groups: Mapped[List["GroupModel"]] = connected_with(
+        "GroupModel", project_group_association, "projects"
+    )
+    users: Mapped[List["UserModel"]] = connected_with(
         "UserModel",
-        secondary=project_user_association,
-        back_populates="projects",
-        lazy="joined",
+        project_user_association,
+        "projects",
     )
 
 
@@ -82,6 +92,4 @@ class ProjectStatusLogModel(BaseModel, UpdatedAuditMixin):
     status = Column(Enum(ProjectStatus), nullable=False)
     message = Column(String, nullable=True)
 
-    project: Mapped["ProjectModel"] = relationship(
-        "ProjectModel", backref="status_log"
-    )
+    project: Mapped["ProjectModel"] = belongs_to("ProjectModel", "status_log")

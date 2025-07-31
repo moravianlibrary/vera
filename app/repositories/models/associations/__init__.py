@@ -1,4 +1,7 @@
-from .category import project_category_association
+from .category import (
+    project_category_association,
+    proposal_category_association,
+)
 from .group import category_group_association, project_group_association
 from .intention import digitization_list_intention_association
 from .user import (
@@ -15,4 +18,5 @@ __all__ = [
     "project_category_association",
     "project_group_association",
     "project_user_association",
+    "proposal_category_association",
 ]

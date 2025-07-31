@@ -14,9 +14,9 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped
 
-from adapters.database import BaseModel
+from adapters.database import BaseModel, belongs_to, contains, has_one
 from definitions.task import ScopedTaskType, TaskScope, TaskState
 from repositories.models.mixins.created_audit import CreatedAuditMixin
 
@@ -57,45 +57,27 @@ class TaskModel(BaseModel, CreatedAuditMixin):
     result = Column(JSONB, nullable=True)
     log = Column(LargeBinary)
 
-    task_schedule: Mapped["TaskScheduleModel"] = relationship(
-        "TaskScheduleModel", back_populates="tasks", lazy="joined"
+    task_schedule: Mapped["TaskScheduleModel"] = has_one(
+        "TaskScheduleModel", "tasks"
     )
 
-    additions: Mapped[List["TaskAdditionModel"]] = relationship(
-        "TaskAdditionModel",
-        back_populates="task",
-        cascade="all, delete-orphan",
-        lazy="selectin",
+    additions: Mapped[List["TaskAdditionModel"]] = contains(
+        "TaskAdditionModel", "task", "selectin"
     )
-    catalog_records = relationship(
-        "TaskCatalogRecord",
-        back_populates="task",
-        cascade="all, delete-orphan",
-        lazy="selectin",
+    catalog_records: Mapped[List["TaskCatalogRecordModel"]] = contains(
+        "TaskCatalogRecord", "task", "selectin"
     )
-    categories = relationship(
-        "TaskCategory",
-        back_populates="task",
-        cascade="all, delete-orphan",
-        lazy="selectin",
+    categories: Mapped[List["TaskCategoryModel"]] = contains(
+        "TaskCategory", "task", "selectin"
     )
-    digitization_lists = relationship(
-        "TaskDigitizationList",
-        back_populates="task",
-        cascade="all, delete-orphan",
-        lazy="selectin",
+    digitization_lists: Mapped[List["TaskDigitizationListModel"]] = contains(
+        "TaskDigitizationList", "task", "selectin"
     )
-    documents_iterations = relationship(
-        "TaskDocumentIteration",
-        back_populates="task",
-        cascade="all, delete-orphan",
-        lazy="selectin",
+    document_iterations: Mapped[List["TaskDocumentIterationModel"]] = contains(
+        "TaskDocumentIteration", "task", "selectin"
     )
-    proposals = relationship(
-        "TaskProposalModel",
-        back_populates="task",
-        cascade="all, delete-orphan",
-        lazy="selectin",
+    proposals: Mapped[List["TaskProposalModel"]] = contains(
+        "TaskProposalModel", "task", "selectin"
     )
 
     @hybrid_property
@@ -111,7 +93,7 @@ class TaskModel(BaseModel, CreatedAuditMixin):
         return (
             self.additions
             + self.catalog_records
-            + self.documents_iterations
+            + self.document_iterations
             + self.categories
         )
 
@@ -149,12 +131,8 @@ class TaskAdditionModel(BaseModel, TaskItemMixin):
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "addition_id"),)
 
-    task: Mapped["TaskModel"] = relationship(
-        "TaskModel", back_populates="additions"
-    )
-    addition: Mapped["AdditionModel"] = relationship(
-        "Addition", back_populates="task_items"
-    )
+    task: Mapped["TaskModel"] = belongs_to("TaskModel", "additions")
+    addition: Mapped["AdditionModel"] = belongs_to("Addition", "task_items")
 
 
 class TaskCatalogRecordModel(BaseModel, TaskItemMixin):
@@ -166,11 +144,9 @@ class TaskCatalogRecordModel(BaseModel, TaskItemMixin):
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "catalog_record_id"),)
 
-    task: Mapped["TaskModel"] = relationship(
-        "TaskModel", back_populates="catalog_records"
-    )
-    catalog_record: Mapped["CatalogRecordModel"] = relationship(
-        "CatalogRecordModel", back_populates="task_items"
+    task: Mapped["TaskModel"] = belongs_to("TaskModel", "catalog_records")
+    catalog_record: Mapped["CatalogRecordModel"] = belongs_to(
+        "CatalogRecordModel", "task_items"
     )
 
 
@@ -181,15 +157,13 @@ class TaskCategoryModel(BaseModel, TaskItemMixin):
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "category_id"),)
 
-    task: Mapped["TaskModel"] = relationship(
-        "TaskModel", back_populates="categories"
-    )
-    category: Mapped["CategoryModel"] = relationship(
-        "CategoryModel", back_populates="task_items"
+    task: Mapped["TaskModel"] = belongs_to("TaskModel", "categories")
+    category: Mapped["CategoryModel"] = belongs_to(
+        "CategoryModel", "task_items"
     )
 
 
-class TaskDigitizationList(BaseModel, TaskItemMixin):
+class TaskDigitizationListModel(BaseModel, TaskItemMixin):
     __tablename__ = "task_digitization_lists"
 
     digitization_list_id = Column(
@@ -198,11 +172,9 @@ class TaskDigitizationList(BaseModel, TaskItemMixin):
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "digitization_list_id"),)
 
-    task: Mapped["TaskModel"] = relationship(
-        "TaskModel", back_populates="digitization_lists"
-    )
-    digitization_list: Mapped["DigitizationListModel"] = relationship(
-        "DigitizationListModel", back_populates="task_items"
+    task: Mapped["TaskModel"] = belongs_to("TaskModel", "digitization_lists")
+    digitization_list: Mapped["DigitizationListModel"] = belongs_to(
+        "DigitizationListModel", "task_items"
     )
 
 
@@ -218,14 +190,12 @@ class TaskDocumentIterationModel(BaseModel, TaskItemMixin):
         PrimaryKeyConstraint("task_id", "document_iteration_id"),
     )
 
-    task: Mapped["TaskModel"] = relationship(
-        "TaskModel", back_populates="documents"
+    task: Mapped["TaskModel"] = belongs_to("TaskModel", "documents")
+    document_iteration: Mapped["DocumentIterationModel"] = belongs_to(
+        "DocumentIterationModel", "task_items"
     )
-    document_iteration: Mapped["DocumentIterationModel"] = relationship(
-        "DocumentIterationModel", back_populates="task_items"
-    )
-    document: Mapped["DocumentModel"] = relationship(
-        "DocumentModel", back_populates="task_items"
+    document: Mapped["DocumentModel"] = belongs_to(
+        "DocumentModel", "task_items"
     )
 
 
@@ -236,11 +206,9 @@ class TaskProposalModel(BaseModel, TaskItemMixin):
 
     __table_args__ = (PrimaryKeyConstraint("task_id", "proposal_id"),)
 
-    task: Mapped["TaskModel"] = relationship(
-        "TaskModel", back_populates="proposals"
-    )
-    proposal: Mapped["ProposalModel"] = relationship(
-        "ProposalModel", back_populates="task_items"
+    task: Mapped["TaskModel"] = belongs_to("TaskModel", "proposals")
+    proposal: Mapped["ProposalModel"] = belongs_to(
+        "ProposalModel", "task_items"
     )
 
 
@@ -254,11 +222,8 @@ class TaskScheduleModel(BaseModel):
     query = Column(JSONB)
     cron_expression = Column(String, nullable=False)
 
-    tasks: Mapped[List["TaskModel"]] = relationship(
-        "TaskModel",
-        back_populates="task_schedule",
-        cascade="all, delete-orphan",
-        lazy="selectin",
+    tasks: Mapped[List["TaskModel"]] = contains(
+        "TaskModel", "task_schedule", "selectin"
     )
 
     @hybrid_property

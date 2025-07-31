@@ -1,13 +1,19 @@
 from typing import TYPE_CHECKING, List
 
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped
 
-from adapters.database import BaseModel
+from adapters.database import BaseModel, connected_with
 
-from .associations import group_user_association
+from .associations import (
+    category_group_association,
+    group_user_association,
+    project_group_association,
+)
 
 if TYPE_CHECKING:
+    from .category import CategoryModel
+    from .project import ProjectModel
     from .user import UserModel
 
 
@@ -18,10 +24,13 @@ class GroupModel(BaseModel):
     name = Column(String, unique=True, nullable=False)
     description = Column(String)
 
-    users: Mapped[List["UserModel"]] = relationship(
-        "UserModel",
-        secondary=group_user_association,
-        back_populates="groups",
-        lazy="joined",
-        cascade="all, delete-orphan",
+    users: Mapped[List["UserModel"]] = connected_with(
+        "UserModel", group_user_association, "groups"
+    )
+
+    categories: Mapped[List["CategoryModel"]] = connected_with(
+        "CategoryModel", category_group_association, "assigned_groups"
+    )
+    projects: Mapped[List["ProjectModel"]] = connected_with(
+        "ProjectModel", project_group_association, "groups"
     )

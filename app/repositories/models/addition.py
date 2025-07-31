@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, List
 
 from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
-from sqlalchemy.orm import Mapped, relationship
+from sqlalchemy.orm import Mapped
 
-from adapters.database import BaseModel
+from adapters.database import BaseModel, belongs_to, contains, has_one
 from definitions.addition import AdditionStatus
 from definitions.eligibility import EligibilityStatus
 from definitions.identifier import IdentifierType
@@ -25,11 +25,8 @@ class AdditionBatchModel(BaseModel, CreatedAuditMixin):
 
     is_archived = Column(Boolean, default=False, nullable=False)
 
-    additions: Mapped[List["AdditionModel"]] = relationship(
-        "AdditionModel",
-        backref="batch",
-        lazy="selectin",
-        cascade="all, delete-orphan",
+    additions: Mapped[List["AdditionModel"]] = contains(
+        "AdditionModel", "batch"
     )
 
 
@@ -55,12 +52,8 @@ class AdditionModel(BaseModel):
     )
     eligibility_status = Column(Enum(EligibilityStatus), nullable=True)
 
-    batch: Mapped["AdditionBatchModel"] = relationship(
-        "AdditionBatchModel", back_populates="additions", lazy="joined"
+    batch: Mapped["AdditionBatchModel"] = belongs_to(
+        "AdditionBatchModel", "additions"
     )
-    project: Mapped["ProjectModel"] = relationship(
-        "ProjectModel", backref="additions", lazy="joined"
-    )
-    proposal: Mapped["ProposalModel"] = relationship(
-        "ProposalModel", backref="addition", lazy="joined"
-    )
+    project: Mapped["ProjectModel"] = has_one("ProjectModel", "additions")
+    proposal: Mapped["ProposalModel"] = has_one("ProposalModel", "addition")

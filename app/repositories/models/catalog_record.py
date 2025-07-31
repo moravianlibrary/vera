@@ -10,9 +10,15 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
 )
-from sqlalchemy.orm import Mapped, deferred, relationship
+from sqlalchemy.orm import Mapped, deferred
 
-from adapters.database import BaseModel
+from adapters.database import (
+    BaseModel,
+    belongs_to,
+    contains,
+    has_many,
+    has_one,
+)
 from definitions.catalog_record import CatalogRecordStatus
 
 from .mixins.created_audit import CreatedAuditMixin
@@ -20,6 +26,7 @@ from .mixins.property import PropertyDataMixin
 from .mixins.updated_audit import UpdatedTimestampMixin
 
 if TYPE_CHECKING:
+    from .document import DocumentModel
     from .plugin import PluginInstanceModel
 
 
@@ -47,19 +54,15 @@ class CatalogRecordModel(BaseModel, UpdatedTimestampMixin):
     is_archived = Column(Boolean, default=False, nullable=False)
     is_in_review = Column(Boolean, default=False, nullable=False)
 
-    additional_properties: Mapped[List["CatalogRecordPropertyModel"]] = (
-        relationship(
-            "CatalogRecordPropertyModel",
-            back_populates="catalog_record",
-            lazy="joined",
-            cascade="all, delete-orphan",
-        )
+    properties: Mapped[List["CatalogRecordPropertyModel"]] = contains(
+        "CatalogRecordPropertyModel", "catalog_record"
     )
-    status_log: Mapped[List["CatalogRecordStatusLogModel"]] = relationship(
-        "CatalogRecordStatusLogModel",
-        back_populates="catalog_record",
-        lazy="joined",
-        cascade="all, delete-orphan",
+
+    documents: Mapped[List["DocumentModel"]] = has_many(
+        "DocumentModel", "catalog_record"
+    )
+    status_log: Mapped[List["CatalogRecordStatusLogModel"]] = contains(
+        "CatalogRecordStatusLogModel", "catalog_record"
     )
 
     @property
@@ -98,11 +101,11 @@ class CatalogRecordPropertyModel(
         Integer, ForeignKey("plugin_instances.id"), nullable=False
     )
 
-    catalog_record: Mapped["CatalogRecordModel"] = relationship(
-        "CatalogRecordModel", back_populates="additional_properties"
+    catalog_record: Mapped["CatalogRecordModel"] = belongs_to(
+        "CatalogRecordModel", "properties"
     )
-    plugin_instance: Mapped["PluginInstanceModel"] = relationship(
-        "PluginInstanceModel", back_populates="catalog_record_properties"
+    plugin_instance: Mapped["PluginInstanceModel"] = has_one(
+        "PluginInstanceModel", "catalog_record_properties"
     )
 
     __table_args__ = (
@@ -125,6 +128,6 @@ class CatalogRecordStatusLogModel(BaseModel, CreatedAuditMixin):
     status = Column(Enum(CatalogRecordStatus), nullable=False)
     message = Column(String, nullable=True)
 
-    catalog_record: Mapped["CatalogRecordModel"] = relationship(
-        "CatalogRecordModel", back_populates="status_logs"
+    catalog_record: Mapped["CatalogRecordModel"] = belongs_to(
+        "CatalogRecordModel", "status_log"
     )

@@ -6,9 +6,11 @@ from .distribution import DistributionRepository
 from .document import DocumentRepository
 from .group import GroupRepository
 from .intention import IntentionRepository
+from .plugin import PluginRepository
 from .proposal import ProposalRepository
 from .role import RoleRepository
 from .user import UserRepository
+from .watchlist import WatchlistRepository
 
 __all__ = [
     "CatalogRecordRepository",
@@ -19,7 +21,9 @@ __all__ = [
     "AdditionRepository",
     "GroupRepository",
     "IntentionRepository",
+    "PluginRepository",
     "ProposalRepository",
     "RoleRepository",
     "UserRepository",
+    "WatchlistRepository",
 ]
