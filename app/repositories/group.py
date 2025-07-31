@@ -6,25 +6,21 @@ from schemas.group import GroupEdit
 
 from ._db_repository import (
     DbRepository,
-    DeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
     PaginationMixin,
-    SaveMixin,
 )
 from .models.group import GroupModel
 
 
 class GroupRepository(
-    DbRepository,
-    DeleteMixin[GroupModel],
-    EnforceNameUniquenessMixin[GroupModel, int],
+    DbRepository[GroupModel],
     GetByIdMixin[GroupModel, int],
     PaginationMixin[GroupModel],
-    SaveMixin[GroupModel],
+    EnforceNameUniquenessMixin[GroupModel, int],
 ):
     def __init__(self, db_session: DatabaseSession):
-        super().__init__(db_session, GroupModel, "Group")
+        super().__init__("Group", db_session, GroupModel)
 
     def create(self, group: GroupEdit) -> GroupModel:
         """

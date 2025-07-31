@@ -3,22 +3,15 @@ from typing import Optional
 from adapters.database import DatabaseSession
 from schemas.project import Project, ProjectEdit
 
-from ._db_repository import (
-    DbRepository,
-    EnforceNameUniquenessMixin,
-    GetByIdMixin,
-    SaveMixin,
-    SearchMixin,
-)
+from ._db_indexed_repository import DbIndexedRepository
+from ._db_repository import EnforceNameUniquenessMixin, GetByIdMixin
 from .models.project import ProjectModel, ProjectStatusLogModel
 
 
 class ProjectRepository(
-    DbRepository,
-    EnforceNameUniquenessMixin[ProjectModel, int],
+    DbIndexedRepository[ProjectModel, Project],
     GetByIdMixin[ProjectModel, int],
-    SaveMixin[ProjectModel],
-    SearchMixin[Project],
+    EnforceNameUniquenessMixin[ProjectModel, int],
 ):
     def __init__(self, db_session: DatabaseSession):
         super().__init__(db_session, ProjectModel, "Project")
@@ -78,11 +71,9 @@ class ProjectRepository(
 
         return self.save(project_model)
 
-    def delete(self, project_model: ProjectModel) -> ProjectModel:
+    def delete_with_check(self, project_model: ProjectModel) -> ProjectModel:
         """
         Delete a project.
         """
         # TODO: Add check if has some documents
-        self._database_session.delete(project_model)
-        self._database_session.commit()
-        return project_model
+        return self.delete(project_model)

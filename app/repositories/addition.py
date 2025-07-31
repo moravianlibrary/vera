@@ -6,24 +6,21 @@ from definitions.eligibility import EligibilityStatus
 from schemas.addition import Addition, AdditionCreate
 
 from ._db_indexed_repository import (
+    DbIndexedRepository,
     GetByQueryMixin,
     SearchAllMixin,
     SearchCountMixin,
-    SearchMixin,
 )
-from ._db_repository import DbRepository, SaveMixin
 from .models.addition import AdditionModel
 from .models.project import ProjectModel
 from .models.proposal import ProposalModel
 
 
 class AdditionRepository(
-    DbRepository,
-    GetByQueryMixin[AdditionModel],
-    SaveMixin[AdditionModel],
-    SearchMixin[Addition],
-    SearchCountMixin[Addition],
-    SearchAllMixin[Addition],
+    DbIndexedRepository[AdditionModel, Addition],
+    GetByQueryMixin[AdditionModel, Addition],
+    SearchAllMixin[AdditionModel, Addition],
+    SearchCountMixin[AdditionModel, Addition],
 ):
     def __init__(
         self,
@@ -47,7 +44,7 @@ class AdditionRepository(
         ignore_digitization_check: bool,
         project: ProjectModel | None = None,
     ) -> AdditionModel:
-        return self.save_and_index(
+        return self.save(
             AdditionModel(
                 batch_id=batch_id,
                 identifier_type=addition.identifier_type,
@@ -71,7 +68,7 @@ class AdditionRepository(
         allow_new_iteration: bool,
         ignore_digitization_check: bool,
     ) -> AdditionModel:
-        return self.save_and_index(
+        return self.save(
             AdditionModel(
                 batch_id=batch_id,
                 identifier_type=proposal.identifier_type,
@@ -94,4 +91,4 @@ class AdditionRepository(
     ) -> AdditionModel:
         addition.status = status
         addition.eligibility_status = eligibility_status
-        return self.save_and_index(addition)
+        return self.save(addition)

@@ -1,27 +1,28 @@
 from adapters.database import DatabaseSession
+from adapters.indexer import IndexerSession
 from schemas.intention import Intention, IntentionEdit
 
-from ._db_indexed_repository import SearchMixin
+from ._db_indexed_repository import DbIndexedRepository
 from ._db_repository import (
-    DbRepository,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
     GetByIdsMixin,
-    SaveMixin,
 )
 from .models.intention import IntentionModel
 
 
 class IntentionRepository(
-    DbRepository,
-    EnforceNameUniquenessMixin[IntentionModel, int],
+    DbIndexedRepository[IntentionModel, Intention],
     GetByIdMixin[IntentionModel, int],
     GetByIdsMixin[IntentionModel, int],
-    SaveMixin[IntentionModel],
-    SearchMixin[Intention],
+    EnforceNameUniquenessMixin[IntentionModel, int],
 ):
-    def __init__(self, db_session: DatabaseSession):
-        super().__init__(db_session, IntentionModel, "Intention")
+    def __init__(
+        self, db_session: DatabaseSession, indexer_session: IndexerSession
+    ):
+        super().__init__(
+            "Intention", db_session, IntentionModel, indexer_session, Intention
+        )
 
     def create(self, intention: IntentionEdit) -> IntentionModel:
         """
@@ -55,9 +56,11 @@ class IntentionRepository(
 
         return self.save(intention_model)
 
-    def delete(self, intention_model: IntentionModel) -> IntentionModel:
+    def delete_with_check(
+        self, intention_model: IntentionModel
+    ) -> IntentionModel:
         """
         Delete an existing intention.
         """
         # TODO: Check if the intention is empty
-        return self.delete_model(intention_model)
+        return self.delete(intention_model)

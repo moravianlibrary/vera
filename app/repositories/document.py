@@ -5,17 +5,15 @@ from marcdantic import MarcIssue
 from adapters.database import DatabaseSession
 from repositories.models.document import DocumentModel, DocumentPropertyModel
 
-from ._db_repository import DbRepository, DeleteMixin, GetByIdMixin, SaveMixin
+from ._db_repository import DbRepository, GetByIdMixin
 
 
 class DocumentRepository(
-    DbRepository,
-    DeleteMixin[DocumentModel],
+    DbRepository[DocumentModel],
     GetByIdMixin[DocumentModel, int],
-    SaveMixin[DocumentModel],
 ):
     def __init__(self, db_session: DatabaseSession):
-        super().__init__(db_session, DocumentModel, "Document")
+        super().__init__("Document", db_session, DocumentModel)
 
     def create(
         self,
@@ -41,10 +39,7 @@ class DocumentRepository(
     def update(
         self, document_model: DocumentModel, marc_issue: MarcIssue
     ) -> DocumentModel:
-        document_model.volume_number = marc_issue.volume_number
-        document_model.volume_year = marc_issue.volume_year
-        document_model.bundle = marc_issue.bundle
-        document_model.issuance_type = marc_issue.issuance_type
+        document_model.marc_issue_data = marc_issue.field
 
         return self.save(document_model)
 

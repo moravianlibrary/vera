@@ -3,25 +3,21 @@ from schemas.distribution import DistributionEdit
 
 from ._db_repository import (
     DbRepository,
-    DeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
     PaginationMixin,
-    SaveMixin,
 )
 from .models.category import DistributionModel
 
 
 class DistributionRepository(
     DbRepository,
-    DeleteMixin[DistributionModel],
-    EnforceNameUniquenessMixin[DistributionModel, int],
     GetByIdMixin[DistributionModel, int],
     PaginationMixin[DistributionModel],
-    SaveMixin[DistributionModel],
+    EnforceNameUniquenessMixin[DistributionModel, int],
 ):
     def __init__(self, db_session: DatabaseSession):
-        super().__init__(db_session, DistributionModel, "Distribution")
+        super().__init__("Distribution", db_session, DistributionModel)
 
     def create(self, distribution: DistributionEdit) -> DistributionModel:
         """

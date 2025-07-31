@@ -50,6 +50,7 @@ class ProjectModel(BaseModel, CreatedAuditMixin):
     start_date = Column(TIMESTAMP)
     end_date = Column(TIMESTAMP)
 
+    priority = Column(Integer, default=3, nullable=False)
     status = Column(
         Enum(ProjectStatus), default=ProjectStatus.Proposed, nullable=False
     )

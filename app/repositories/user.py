@@ -8,19 +8,17 @@ from ._db_repository import (
     FindByNameMixin,
     GetByIdMixin,
     PaginationMixin,
-    SaveMixin,
 )
 from .models.user import UserModel
 
 
 class UserRepository(
-    DbRepository,
-    EnforceNameUniquenessMixin[UserModel, str],
+    DbRepository[UserModel],
     FindByIdMixin[UserModel, str],
     FindByNameMixin[UserModel],
     GetByIdMixin[UserModel, str],
     PaginationMixin[UserModel],
-    SaveMixin[UserModel],
+    EnforceNameUniquenessMixin[UserModel, str],
 ):
     def __init__(self, db_session: DatabaseSession):
         super().__init__("User", db_session, UserModel)

@@ -12,7 +12,7 @@ from fastapi import HTTPException, status
 
 from config import config
 
-type IndexerSession = AsyncElasticsearch
+IndexerSession = AsyncElasticsearch
 IndexerModel = ESModel
 IndexerNestedModel = ESBaseModel
 # IndexerRequest = ESQuery

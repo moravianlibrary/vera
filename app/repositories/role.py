@@ -3,26 +3,22 @@ from schemas.role import RoleEdit
 
 from ._db_repository import (
     DbRepository,
-    DeleteMixin,
     EnforceNameUniquenessMixin,
     FindByNameMixin,
     FindByNamesMixin,
     GetByIdMixin,
     PaginationMixin,
-    SaveMixin,
 )
 from .models.role import RoleModel
 
 
 class RoleRepository(
-    DbRepository,
-    DeleteMixin[RoleModel],
-    EnforceNameUniquenessMixin[RoleModel, int],
+    DbRepository[RoleModel],
     FindByNameMixin[RoleModel],
     FindByNamesMixin[RoleModel],
     GetByIdMixin[RoleModel, int],
     PaginationMixin[RoleModel],
-    SaveMixin[RoleModel],
+    EnforceNameUniquenessMixin[RoleModel, int],
 ):
     def __init__(self, db_session: DatabaseSession):
         super().__init__("Role", db_session, RoleModel)

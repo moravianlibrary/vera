@@ -6,23 +6,19 @@ from repositories.models.group import GroupModel
 from repositories.models.user import UserModel
 from schemas.category import Category
 
-from ._db_indexed_repository import (
-    ArchiveOnDeleteAndIndexMixin,
-    DbIndexedRepository,
-    SaveAndIndexMixin,
-    SearchMixin,
+from ._db_indexed_repository import DbIndexedRepository
+from ._db_repository import (
+    DbRepository,
+    EnforceNameUniquenessMixin,
+    GetByIdMixin,
 )
-from ._db_repository import EnforceNameUniquenessMixin, GetByIdMixin
-from .models.category import CategoryModel
+from .models.category import CategoryModel, CategoryProportionModel
 
 
 class CategoryRepository(
-    DbIndexedRepository,
-    ArchiveOnDeleteAndIndexMixin[CategoryModel],
-    EnforceNameUniquenessMixin,
+    DbIndexedRepository[CategoryModel, Category],
     GetByIdMixin[CategoryModel, int],
-    SaveAndIndexMixin[CategoryModel],
-    SearchMixin[Category],
+    EnforceNameUniquenessMixin,
 ):
     def __init__(
         self, db_session: DatabaseSession, indexer_session: IndexerSession
@@ -129,3 +125,24 @@ class CategoryRepository(
             subcategories.extend(child.children)
 
         return category_model
+
+
+class CategoryProportionRepository(DbRepository[CategoryProportionModel]):
+    def __init__(self, db_session: DatabaseSession):
+        super().__init__(
+            "CategoryProportion", db_session, CategoryProportionModel
+        )
+
+    def create(
+        self, distribution_id: int, category_id: int, proportion: float
+    ) -> CategoryProportionModel:
+        """
+        Create a new category proportion.
+        """
+        return self.save(
+            CategoryProportionModel(
+                category_id=category_id,
+                distribution_id=distribution_id,
+                proportion=proportion,
+            )
+        )

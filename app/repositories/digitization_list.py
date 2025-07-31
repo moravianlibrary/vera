@@ -1,23 +1,30 @@
 from typing import List
 
 from adapters.database import DatabaseSession
+from adapters.indexer import IndexerSession
+from schemas.digitization_list import DigitizationList
 
-from ._db_indexed_repository import SearchMixin
-from ._db_repository import DbRepository, DeleteMixin, GetByIdMixin, SaveMixin
+from ._db_indexed_repository import DbIndexedRepository
+from ._db_repository import GetByIdMixin
 from .models.digitization_list import DigitizationListModel
 from .models.intention import IntentionModel
 
 
 class DigiListRepository(
-    DbRepository,
-    DeleteMixin[DigitizationListModel],
+    DbIndexedRepository[DigitizationListModel, DigitizationList],
     GetByIdMixin[DigitizationListModel, int],
-    SaveMixin[DigitizationListModel],
-    SearchMixin[DigitizationListModel],
 ):
-    def __init__(self, database_session: DatabaseSession):
+    def __init__(
+        self,
+        database_session: DatabaseSession,
+        indexer_session: IndexerSession,
+    ):
         super().__init__(
-            database_session, DigitizationListModel, "Digitization List"
+            "DigitizationList",
+            database_session,
+            DigitizationListModel,
+            indexer_session,
+            DigitizationList,
         )
 
     def create(

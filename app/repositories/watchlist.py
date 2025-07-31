@@ -16,21 +16,17 @@ from schemas.watchlist import (
 
 from ._db_repository import (
     DbRepository,
-    DeleteMixin,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
     PaginationMixin,
-    SaveMixin,
 )
 
 
 class WatchlistRepository(
-    DbRepository,
-    DeleteMixin[WatchlistModel],
-    EnforceNameUniquenessMixin[WatchlistModel, int],
+    DbRepository[WatchlistModel],
     GetByIdMixin[WatchlistModel, int],
     PaginationMixin[WatchlistModel],
-    SaveMixin[WatchlistModel],
+    EnforceNameUniquenessMixin[WatchlistModel, int],
 ):
     def __init__(self, database_session: DatabaseSession):
         super().__init__("Watchlist", database_session, WatchlistModel)

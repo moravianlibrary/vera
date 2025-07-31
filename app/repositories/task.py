@@ -10,20 +10,16 @@ from definitions.task import (
     TaskState,
     TaskType,
 )
+from schemas.task import Task
 
-from ._db_repository import (
-    DbRepository,
-    GetByIdMixin,
-    PaginationMixin,
-    SaveMixin,
-)
+from ._db_indexed_repository import DbIndexedRepository
+from ._db_repository import DbRepository, GetByIdMixin, PaginationMixin
 from .models.task import TaskModel
 
 
 class TaskRepository(
-    DbRepository,
+    DbIndexedRepository[TaskModel, Task],
     GetByIdMixin[TaskModel, int],
-    SaveMixin[TaskModel],
 ):
     def __init__(self, db_session: DatabaseSession):
         super().__init__("Task", db_session, TaskModel)
@@ -70,14 +66,11 @@ class TaskRepository(
         return self.save_and_index(task_model)
 
 
-class TaskItemRepository(
-    DbRepository, SaveMixin[TaskModel], PaginationMixin[TaskModel]
-):
+class TaskItemRepository(DbRepository[TaskModel], PaginationMixin[TaskModel]):
     pass
 
 
 class TaskScheduleRepository(
-    DbRepository,
-    SaveMixin[TaskModel],
+    DbRepository[TaskModel],
 ):
     pass

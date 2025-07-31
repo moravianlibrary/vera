@@ -1,30 +1,29 @@
 from adapters.database import DatabaseSession
+from adapters.indexer import IndexerSession
 from definitions.document import Priority
-from repositories.models.document import DocumentIterationModel
+from schemas.document import Document
 
-from ._db_repository import (
-    ArchiveMixin,
-    DbRepository,
-    GetByIdMixin,
-    GetByQueryMixin,
-    IndexMixin,
-    SaveAndIndexMixin,
-    SearchMixin,
-)
+from ._db_indexed_repository import DbIndexedRepository, GetByQueryMixin
+from ._db_repository import GetByIdMixin
+from .models.document import DocumentIterationModel
 
 
 class DocumentIterationRepository(
-    DbRepository,
-    ArchiveMixin[DocumentIterationModel],
+    DbIndexedRepository[DocumentIterationModel, Document],
     GetByIdMixin[DocumentIterationModel, int],
     GetByQueryMixin[DocumentIterationModel],
-    IndexMixin[DocumentIterationModel],
-    SaveAndIndexMixin[DocumentIterationModel],
-    SearchMixin[DocumentIterationModel],
 ):
-    def __init__(self, database_session: DatabaseSession):
+    def __init__(
+        self,
+        database_session: DatabaseSession,
+        indexer_session: IndexerSession,
+    ):
         super().__init__(
-            database_session, DocumentIterationModel, "Document Iteration"
+            "DocumentIteration",
+            database_session,
+            DocumentIterationModel,
+            indexer_session,
+            Document,
         )
 
     def create(
@@ -37,7 +36,7 @@ class DocumentIterationRepository(
             + 1
         )
 
-        return self.save_and_index(
+        return self.save(
             DocumentIterationModel(
                 document_id=document_id,
                 iteration=iteration,
@@ -52,7 +51,7 @@ class DocumentIterationRepository(
         category_id: int,
     ) -> DocumentIterationModel:
         document_iteration_model.category_id = category_id
-        return self.save_and_index(document_iteration_model)
+        return self.save(document_iteration_model)
 
     def update_priority(
         self,
@@ -60,7 +59,7 @@ class DocumentIterationRepository(
         priority: Priority,
     ) -> DocumentIterationModel:
         document_iteration_model.priority = priority
-        return self.save_and_index(document_iteration_model)
+        return self.save(document_iteration_model)
 
     def update_digitization_list(
         self,
@@ -68,4 +67,4 @@ class DocumentIterationRepository(
         digitization_list_id: int | None,
     ) -> DocumentIterationModel:
         document_iteration_model.digitization_list_id = digitization_list_id
-        return self.save_and_index(document_iteration_model)
+        return self.save(document_iteration_model)

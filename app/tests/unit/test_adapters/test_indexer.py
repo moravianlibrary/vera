@@ -20,7 +20,7 @@ class TestIndexSchemaContext:
     def __init__(self, setup_mappings: bool = True) -> None:
         self.setup_mappings = setup_mappings
         self.init_done: bool = False
-        self.num_indexes: int = 11
+        self.num_indexes: int = 12
 
     async def setUp(self):
         if self.init_done:

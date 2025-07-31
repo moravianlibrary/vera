@@ -6,9 +6,7 @@ from sqlalchemy import Boolean, Column, Integer, String
 
 from adapters.database import BaseModel, DatabaseSession
 from repositories._db_repository import (
-    ArchiveOnDeleteMixin,
     DbRepository,
-    DeleteMixin,
     EnforceNameUniquenessMixin,
     FindByIdMixin,
     FindByNameMixin,
@@ -16,13 +14,13 @@ from repositories._db_repository import (
     GetByIdMixin,
     GetByIdsMixin,
     PaginationMixin,
-    SaveMixin,
 )
 from schemas.common import PageParams
 
 
 class FakeEntity(BaseModel):
     __tablename__ = "fake_entity"
+
     id = Column(Integer, primary_key=True)
     name = Column(String)
     archived = Column(Boolean, default=False)
@@ -32,30 +30,54 @@ class FakeFilterParams(PydanticBaseModel):
     name: str
 
 
-class TestRepository(
-    DbRepository,
+class TestMixinsRepository(
+    DbRepository[FakeEntity],
     FindByIdMixin[FakeEntity, int],
     FindByNameMixin[FakeEntity],
     FindByNamesMixin[FakeEntity],
     GetByIdMixin[FakeEntity, int],
     GetByIdsMixin[FakeEntity, int],
-    SaveMixin[FakeEntity],
-    EnforceNameUniquenessMixin[FakeEntity, int],
     PaginationMixin[FakeEntity],
-    DeleteMixin[FakeEntity],
-    ArchiveOnDeleteMixin[FakeEntity],
+    EnforceNameUniquenessMixin[FakeEntity, int],
 ):
-    def delete(self, entity: FakeEntity, archive: bool = False) -> FakeEntity:
-        if archive:
-            return ArchiveOnDeleteMixin.delete(self, entity)
-        else:
-            return DeleteMixin.delete(self, entity)
+    pass
 
 
-class TestRepositoryMixins(unittest.TestCase):
+class TestDbRepository(unittest.TestCase):
     def setUp(self):
         self.db_session = create_autospec(DatabaseSession)
-        self.repo = TestRepository("FakeEntity", self.db_session, FakeEntity)
+        self.repo = DbRepository("FakeEntity", self.db_session, FakeEntity)
+        self.item = FakeEntity(id=1, name="TestName")
+
+    def test_save(self):
+        entity = self.item
+        result = self.repo.save(entity)
+        self.db_session.add.assert_called_with(entity)
+        self.db_session.commit.assert_called_once()
+        self.db_session.refresh.assert_called_with(entity)
+        self.assertEqual(result, entity)
+
+    def test_hard_delete(self):
+        entity = self.item
+        result = self.repo.delete(entity)
+        self.db_session.delete.assert_called_with(entity)
+        self.db_session.commit.assert_called_once()
+        self.assertEqual(result, entity)
+
+    def test_soft_delete(self):
+        entity = self.item
+        result = self.repo.delete(entity, soft_delete=True)
+        self.db_session.commit.assert_called_once()
+        self.assertTrue(result.archived)
+        self.db_session.refresh.assert_called_with(entity)
+
+
+class TestDbRepositoryMixins(unittest.TestCase):
+    def setUp(self):
+        self.db_session = create_autospec(DatabaseSession)
+        self.repo = TestMixinsRepository(
+            "FakeEntity", self.db_session, FakeEntity
+        )
         self.item = FakeEntity(id=1, name="TestName")
 
     def test_find_by_id(self):
@@ -94,14 +116,6 @@ class TestRepositoryMixins(unittest.TestCase):
         query_mock.filter.return_value.all.return_value = [self.item]
         result = self.repo.get_by_ids([1])
         self.assertEqual(len(result), 1)
-
-    def test_save(self):
-        entity = self.item
-        result = self.repo.save(entity)
-        self.db_session.add.assert_called_with(entity)
-        self.db_session.commit.assert_called_once()
-        self.db_session.refresh.assert_called_with(entity)
-        self.assertEqual(result, entity)
 
     def test_enforce_name_uniqueness_unique(self):
         query_mock = self.db_session.query.return_value
@@ -159,17 +173,3 @@ class TestRepositoryMixins(unittest.TestCase):
         self.assertEqual(results, [self.item])
 
         self.db_session.query.assert_called_with(FakeEntity)
-
-    def test_delete(self):
-        entity = self.item
-        result = self.repo.delete(entity)
-        self.db_session.delete.assert_called_with(entity)
-        self.db_session.commit.assert_called_once()
-        self.assertEqual(result, entity)
-
-    def test_archive_on_delete(self):
-        entity = self.item
-        result = self.repo.delete(entity, archive=True)
-        self.db_session.commit.assert_called_once()
-        self.assertTrue(result.archived)
-        self.db_session.refresh.assert_called_with(entity)

@@ -3,13 +3,11 @@ from schemas.plugin import PluginInstanceEdit
 
 from ._db_repository import (
     DbRepository,
-    DeleteMixin,
     EnforceNameUniquenessMixin,
     FindByNameMixin,
     FindByNamesMixin,
     GetByIdMixin,
     PaginationMixin,
-    SaveMixin,
 )
 from .models.plugin import PluginInstanceModel
 
@@ -21,14 +19,12 @@ class PluginRepository(
 
 
 class PluginInstanceRepository(
-    DbRepository,
-    DeleteMixin[PluginInstanceModel],
-    EnforceNameUniquenessMixin[PluginInstanceModel, int],
+    DbRepository[PluginInstanceModel],
     FindByNameMixin[PluginInstanceModel],
     FindByNamesMixin[PluginInstanceModel],
     GetByIdMixin[PluginInstanceModel, int],
     PaginationMixin[PluginInstanceModel],
-    SaveMixin[PluginInstanceModel],
+    EnforceNameUniquenessMixin[PluginInstanceModel, int],
 ):
     def __init__(self, db_session: DatabaseSession):
         super().__init__(db_session, PluginInstanceModel, "PluginInstance")
