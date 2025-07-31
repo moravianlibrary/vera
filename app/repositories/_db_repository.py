@@ -1,57 +1,78 @@
-from typing import (
-    Generator,
-    Generic,
-    List,
-    Optional,
-    Protocol,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Generic, List, Protocol, Type, TypeVar, Union
 
 from pydantic import BaseModel
 from sqlalchemy.orm import DeclarativeMeta
 
 from adapters.database import DatabaseSession
-from adapters.indexer import (
-    IndexerModelType,
-    IndexerQuery,
-    IndexerRequest,
-    IndexerResponse,
-)
 from schemas.common import PageParams
 
+# ------------------
+# - Type variables -
+# ------------------
 DatabaseEntity = TypeVar("DatabaseEntity", bound=DeclarativeMeta)
 IdType = TypeVar("IdType", bound=Union[str, int])
 
 
+# ----------------------------
+# - Base Database Repository -
+# ----------------------------
 class DbRepository:
+    """
+    Base repository providing access to the SQLAlchemy session and model.
+
+    Parameters
+    ----------
+    entity_name : str
+        Descriptive name of the entity (used for error messages).
+    database_session : DatabaseSession
+        Database session handler.
+    database_entity : Type[DatabaseEntity]
+        SQLAlchemy model class this repository operates on.
+    """
+
     def __init__(
         self,
         entity_name: str,
         database_session: DatabaseSession,
         database_entity: Type[DatabaseEntity],
     ):
-        """
-        Initialize repository with the session, model and entity name.
-        """
         self._entity_name = entity_name
         self._database_session = database_session
         self._database_entity = database_entity
 
 
+# ---------------------------------
+# - Protocol shared by all mixins -
+# ---------------------------------
 class DbRepositoryContext(Protocol[DatabaseEntity]):
     _entity_name: str
     _database_session: DatabaseSession
     _database_entity: Type[DatabaseEntity]
 
 
+# ---------------------
+# - Operations mixins -
+# ---------------------
 class FindByIdMixin(Generic[DatabaseEntity, IdType]):
+    """
+    Mixin for retrieving a single entity by its ID.
+    """
+
     def find_by_id(
         self: DbRepositoryContext[DatabaseEntity], entity_id: IdType
-    ) -> Optional[DatabaseEntity]:
+    ) -> DatabaseEntity | None:
         """
-        Find a model by its ID.
+        Fetch a single entity by its ID.
+
+        Parameters
+        ----------
+        entity_id : IdType
+            The primary key of the entity.
+
+        Returns
+        -------
+        DatabaseEntity | None
+            The entity if found, otherwise None.
         """
         return (
             self._database_session.query(self._database_entity)
@@ -61,11 +82,25 @@ class FindByIdMixin(Generic[DatabaseEntity, IdType]):
 
 
 class FindByNameMixin(Generic[DatabaseEntity]):
+    """
+    Mixin for retrieving a single entity by its name.
+    """
+
     def find_by_name(
         self: DbRepositoryContext[DatabaseEntity], name: str
-    ) -> Optional[DatabaseEntity]:
+    ) -> DatabaseEntity | None:
         """
-        Find a model by its name.
+        Fetch a single entity by its name.
+
+        Parameters
+        ----------
+        name : str
+            The name of the entity.
+
+        Returns
+        -------
+        DatabaseEntity | None
+            The entity if found, otherwise None.
         """
         return (
             self._database_session.query(self._database_entity)
@@ -75,11 +110,25 @@ class FindByNameMixin(Generic[DatabaseEntity]):
 
 
 class FindByNamesMixin(Generic[DatabaseEntity]):
+    """
+    Mixin for retrieving multiple entities by a list of names.
+    """
+
     def find_by_names(
         self: DbRepositoryContext[DatabaseEntity], names: List[str]
     ) -> List[DatabaseEntity]:
         """
-        Find models by their names.
+        Fetch multiple entities by a list of names.
+
+        Parameters
+        ----------
+        names : List[str]
+            A list of entity names.
+
+        Returns
+        -------
+        List[DatabaseEntity]
+            A list of matched entities.
         """
         return (
             self._database_session.query(self._database_entity)
@@ -89,11 +138,31 @@ class FindByNamesMixin(Generic[DatabaseEntity]):
 
 
 class GetByIdMixin(Generic[DatabaseEntity, IdType]):
+    """
+    Mixin for strictly retrieving a single entity by ID,
+    raising error if not found.
+    """
+
     def get_by_id(
         self: DbRepositoryContext[DatabaseEntity], entity_id: IdType
     ) -> DatabaseEntity:
         """
-        Get a model by its ID.
+        Fetch a single entity by its ID or raise an error if not found.
+
+        Parameters
+        ----------
+        entity_id : Union[str, int]
+            The primary key of the entity.
+
+        Returns
+        -------
+        DatabaseEntity
+            The found entity.
+
+        Raises
+        ------
+        ValueError
+            If the entity with the given ID does not exist.
         """
         entity = (
             self._database_session.query(self._database_entity)
@@ -108,11 +177,25 @@ class GetByIdMixin(Generic[DatabaseEntity, IdType]):
 
 
 class GetByIdsMixin(Generic[DatabaseEntity, IdType]):
+    """
+    Mixin for retrieving multiple entities by a list of IDs.
+    """
+
     def get_by_ids(
         self: DbRepositoryContext[DatabaseEntity], entity_ids: List[IdType]
     ) -> List[DatabaseEntity]:
         """
-        Get models by their IDs.
+        Fetch multiple entities by their IDs.
+
+        Parameters
+        ----------
+        entity_ids : List[Union[str, int]]
+            List of entity primary keys.
+
+        Returns
+        -------
+        List[DatabaseEntity]
+            List of found entities.
         """
         return (
             self._database_session.query(self._database_entity)
@@ -121,47 +204,30 @@ class GetByIdsMixin(Generic[DatabaseEntity, IdType]):
         )
 
 
-class GetByQueryMixin(Generic[IndexerModelType]):
-    def get_by_query(
-        self: DbRepositoryContext, query: IndexerQuery
-    ) -> Generator[IndexerModelType, None, None]:
-        scroll_id = None
-
-        while True:
-            response = (
-                self._indexer_session.scroll(scroll_id=scroll_id, scroll="1m")
-                if scroll_id
-                else self._indexer_session.search(
-                    index=self._indexer_entity.__index_name__,
-                    body=query,
-                    scroll="1m",
-                    fields=[self._indexer_entity.__id_field__],
-                )
-            )
-
-            for hit in response["hits"]["hits"]:
-                yield self._database_session.query(
-                    self._database_entity
-                ).filter(
-                    self._database_entity.getattr(
-                        self._indexer_entity.__id_field__
-                    )
-                    == hit["_source"][self._indexer_entity.__id_field__]
-                ).one()
-
-            scroll_id = response.get("_scroll_id")
-            if not scroll_id or response["hits"]["total"] == 0:
-                break
-
-
 class PaginationMixin(Generic[DatabaseEntity]):
+    """
+    Mixin providing paginated listing of entities with optional filtering.
+    """
+
     def paginate(
         self: DbRepositoryContext[DatabaseEntity],
         page_params: PageParams,
         filter_params: BaseModel | None = None,
     ) -> List[DatabaseEntity]:
         """
-        List models with pagination.
+        Return a paginated list of entities.
+
+        Parameters
+        ----------
+        page_params : PageParams
+            Pagination parameters (offset, limit).
+        filter_params : BaseModel, optional
+            Optional filter criteria as a Pydantic model.
+
+        Returns
+        -------
+        List[DatabaseEntity]
+            Paginated and optionally filtered results.
         """
         query = self._database_session.query(self._database_entity)
         if filter_params:
@@ -177,13 +243,29 @@ class PaginationMixin(Generic[DatabaseEntity]):
 
 
 class EnforceNameUniquenessMixin(Generic[DatabaseEntity, IdType]):
+    """
+    Mixin to ensure entity names are unique across the table.
+    """
+
     def enforce_name_uniqueness(
         self: DbRepositoryContext[DatabaseEntity],
         name: str,
         entity_id: IdType | None = None,
     ) -> None:
         """
-        Check if the role name is unique.
+        Raise an error if another entity with the same name exists.
+
+        Parameters
+        ----------
+        name : str
+            The name to check.
+        entity_id : Union[str, int], optional
+            ID to exclude from uniqueness check (for updates).
+
+        Raises
+        ------
+        ValueError
+            If another entity with the same name exists.
         """
         query = self._database_session.query(self._database_entity).filter(
             self._database_entity.name == name
@@ -198,11 +280,25 @@ class EnforceNameUniquenessMixin(Generic[DatabaseEntity, IdType]):
 
 
 class SaveMixin(Generic[DatabaseEntity]):
+    """
+    Mixin for saving (inserting or updating) an entity.
+    """
+
     def save(
         self: DbRepositoryContext[DatabaseEntity], entity: DatabaseEntity
     ) -> DatabaseEntity:
         """
-        Save a model to the database.
+        Persist the entity to the database.
+
+        Parameters
+        ----------
+        entity : DatabaseEntity
+            The entity to save.
+
+        Returns
+        -------
+        DatabaseEntity
+            The saved entity with refreshed state.
         """
         self._database_session.add(entity)
         self._database_session.commit()
@@ -211,11 +307,25 @@ class SaveMixin(Generic[DatabaseEntity]):
 
 
 class DeleteMixin(Generic[DatabaseEntity]):
+    """
+    Mixin for deleting an entity from the database.
+    """
+
     def delete(
         self: DbRepositoryContext[DatabaseEntity], entity: DatabaseEntity
     ) -> DatabaseEntity:
         """
-        Delete a model from the database.
+        Permanently delete the entity from the database.
+
+        Parameters
+        ----------
+        entity : DatabaseEntity
+            The entity to delete.
+
+        Returns
+        -------
+        DatabaseEntity
+            The deleted entity (now detached).
         """
         self._database_session.delete(entity)
         self._database_session.commit()
@@ -223,162 +333,27 @@ class DeleteMixin(Generic[DatabaseEntity]):
 
 
 class ArchiveOnDeleteMixin(Generic[DatabaseEntity]):
+    """
+    Mixin to soft-delete an entity by marking it as archived.
+    """
+
     def delete(
         self: DbRepositoryContext[DatabaseEntity], entity: DatabaseEntity
     ) -> DatabaseEntity:
         """
-        Archive a model instead of deleting it.
-        """
-        entity.archived = True
-        self._database_session.commit()
-        return entity
+        Mark the entity as archived instead of deleting it.
 
+        Parameters
+        ----------
+        entity : DatabaseEntity
+            The entity to archive.
 
-class SearchMixin(Generic[IndexerModelType]):
-    def search(
-        self: DbRepositoryContext, request: IndexerRequest
-    ) -> IndexerResponse:
-        return self._indexer_session.search(request)
-
-
-class SearchAllMixin(Generic[IndexerModelType]):
-    def search_all(
-        self: DbRepositoryContext, query: IndexerQuery
-    ) -> Generator[IndexerModelType, None, None]:
-        scroll_id = None
-
-        while True:
-            response = (
-                self._indexer_session.scroll(scroll_id=scroll_id, scroll="1m")
-                if scroll_id
-                else self._indexer_session.search(
-                    index=self._indexer_entity.__index_name__,
-                    body=query,
-                    scroll="1m",
-                )
-            )
-
-            for hit in response["hits"]["hits"]:
-                yield self._indexer_entity.model_validate(hit["_source"])
-
-            scroll_id = response.get("_scroll_id")
-            if not scroll_id or response["hits"]["total"] == 0:
-                break
-
-        self._indexer_session.clear_scroll(scroll_id=scroll_id)
-
-
-class SaveAndIndexMixin(Generic[DatabaseEntity]):
-    def save_and_index(
-        self: DbRepositoryContext[DatabaseEntity],
-        entity: DatabaseEntity,
-        wait_for: bool = False,
-    ) -> DatabaseEntity:
-        """
-        Save a model to the database and index it.
-        """
-        self._database_session.add(entity)
-        self._database_session.commit()
-        self._database_session.refresh(entity)
-
-        indexer_entity = self._indexer_entity.model_validate(entity)
-
-        self._indexer_session.index(
-            index=self._indexer_entity.__index_name__,
-            id=indexer_entity.getattr(self._indexer_entity.__id_field__, None),
-            body=indexer_entity,
-            refresh="true" if wait_for else None,
-        )
-
-        return entity
-
-
-class DeleteAndUnindexMixin(Generic[DatabaseEntity]):
-    def delete(
-        self: DbRepositoryContext[DatabaseEntity],
-        entity: DatabaseEntity,
-        wait_for: bool = False,
-    ) -> DatabaseEntity:
-        """
-        Delete a model from the database and unindex it.
-        """
-        self._indexer_session.delete(
-            index=self._indexer_entity.__index_name__,
-            id=entity.getattr(self._indexer_entity.__id_field__, None),
-            refresh="true" if wait_for else None,
-        )
-
-        self._database_session.delete(entity)
-        self._database_session.commit()
-        return entity
-
-
-class ArchiveOnDeleteAndIndexMixin(Generic[DatabaseEntity]):
-    def delete(
-        self: DbRepositoryContext[DatabaseEntity],
-        entity: DatabaseEntity,
-        wait_for: bool = False,
-    ) -> DatabaseEntity:
-        """
-        Archive a model instead of deleting it and index it.
+        Returns
+        -------
+        DatabaseEntity
+            The archived entity.
         """
         entity.archived = True
         self._database_session.commit()
         self._database_session.refresh(entity)
-
-        indexer_entity = self._indexer_entity.model_validate(entity)
-
-        self._indexer_session.index(
-            index=self._indexer_entity.__index_name__,
-            id=indexer_entity.getattr(self._indexer_entity.__id_field__, None),
-            body=indexer_entity,
-            refresh="true" if wait_for else None,
-        )
-
-        return indexer_entity
-
-
-class IndexerMixin:
-    def reindex_all(self: DbRepositoryContext) -> None:
-        """
-        Reindex all entities in the indexer.
-        """
-        for entity in self._database_session.query(
-            self._database_entity
-        ).all():
-            self._indexer_session.reindex(
-                index=self._indexer_entity.__index_name__,
-                id=entity.getattr(self._indexer_entity.__id_field__, None),
-                body=self._indexer_entity.model_validate(entity),
-            )
-
-
-class IndexMixin(Generic[DatabaseEntity]):
-    def index(
-        self: DbRepositoryContext[DatabaseEntity],
-        entity: DatabaseEntity,
-        wait_for: bool = False,
-    ) -> None:
-        indexer_entity = self._indexer_entity.model_validate(entity)
-
-        self._indexer_session.index(
-            index=self._indexer_entity.__index_name__,
-            id=indexer_entity.getattr(self._indexer_entity.__id_field__, None),
-            body=indexer_entity,
-            refresh="true" if wait_for else None,
-        )
-
-
-class ArchiveMixin(Generic[DatabaseEntity]):
-    def archive(
-        self: DbRepositoryContext[DatabaseEntity],
-        entity: DatabaseEntity,
-        wait_for: bool = False,
-    ) -> DatabaseEntity:
-        entity.is_archived = True
-        self._database_session.commit()
-        self._database_session.refresh(entity)
-
-        self.index(entity, wait_for)
-
         return entity

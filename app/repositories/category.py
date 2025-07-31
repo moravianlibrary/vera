@@ -6,14 +6,13 @@ from repositories.models.group import GroupModel
 from repositories.models.user import UserModel
 from schemas.category import Category
 
-from ._db_indexed_repository import DbIndexedRepository
-from ._db_repository import (
+from ._db_indexed_repository import (
     ArchiveOnDeleteAndIndexMixin,
-    EnforceNameUniquenessMixin,
-    GetByIdMixin,
+    DbIndexedRepository,
     SaveAndIndexMixin,
     SearchMixin,
 )
+from ._db_repository import EnforceNameUniquenessMixin, GetByIdMixin
 from .models.category import CategoryModel
 
 
@@ -129,5 +128,4 @@ class CategoryRepository(
             self.save(child)
             subcategories.extend(child.children)
 
-        return category_model
         return category_model

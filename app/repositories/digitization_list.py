@@ -1,16 +1,11 @@
 from typing import List
 
 from adapters.database import DatabaseSession
-from repositories.models.intention import IntentionModel
 
-from ._db_repository import (
-    DbRepository,
-    DeleteMixin,
-    GetByIdMixin,
-    SaveMixin,
-    SearchMixin,
-)
+from ._db_indexed_repository import SearchMixin
+from ._db_repository import DbRepository, DeleteMixin, GetByIdMixin, SaveMixin
 from .models.digitization_list import DigitizationListModel
+from .models.intention import IntentionModel
 
 
 class DigiListRepository(

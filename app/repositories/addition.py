@@ -5,14 +5,13 @@ from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
 from schemas.addition import Addition, AdditionCreate
 
-from ._db_indexed_repository import SearchCountMixin
-from ._db_repository import (
-    DbRepository,
+from ._db_indexed_repository import (
     GetByQueryMixin,
-    SaveMixin,
     SearchAllMixin,
+    SearchCountMixin,
     SearchMixin,
 )
+from ._db_repository import DbRepository, SaveMixin
 from .models.addition import AdditionModel
 from .models.project import ProjectModel
 from .models.proposal import ProposalModel

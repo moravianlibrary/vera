@@ -1,13 +1,13 @@
 from adapters.database import DatabaseSession
 from schemas.intention import Intention, IntentionEdit
 
+from ._db_indexed_repository import SearchMixin
 from ._db_repository import (
     DbRepository,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
     GetByIdsMixin,
     SaveMixin,
-    SearchMixin,
 )
 from .models.intention import IntentionModel
 
