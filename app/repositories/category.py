@@ -27,6 +27,10 @@ class CategoryRepository(
             "Category", db_session, CategoryModel, indexer_session, Category
         )
 
+    def serialize_entity(self, db_entity):
+        index_entity = super().serialize_entity(db_entity)
+        return index_entity
+
     def create(
         self,
         name: str,

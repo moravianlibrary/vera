@@ -23,6 +23,7 @@ class UserModel(BaseModel):
 
     id = Column(String, primary_key=True)
     username = Column(String, unique=True, nullable=False)
+    email = Column(String, unique=True, nullable=False)
     settings = Column(JSON, default={}, nullable=False)
 
     groups: Mapped[List["GroupModel"]] = connected_with(

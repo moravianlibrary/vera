@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 from sqlalchemy import (
     Boolean,
@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from .group import GroupModel
     from .project import ProjectModel
     from .proposal import ProposalModel
+    from .task import TaskCategoryModel
     from .user import UserModel
 
 
@@ -84,6 +85,9 @@ class CategoryModel(BaseModel):
     proposals: Mapped[List["ProposalModel"]] = has_many(
         "ProposalModel", "category"
     )
+    task_items: Mapped[List["TaskCategoryModel"]] = contains(
+        "TaskCategoryModel", "category"
+    )
 
     # Ownership relationships
     assigned_groups: Mapped[List["GroupModel"]] = connected_with(
@@ -92,6 +96,17 @@ class CategoryModel(BaseModel):
     assigned_users: Mapped[List["UserModel"]] = connected_with(
         "UserModel", category_user_association, "categories"
     )
+
+    @property
+    def path(self) -> List[Dict[str, int | str]]:
+        path = []
+        current_category = self
+        while current_category:
+            path.append(
+                {"id": current_category.id, "name": current_category.name}
+            )
+            current_category = current_category.parent
+        return path[::-1]
 
     @property
     def indirect_groups(self) -> List["GroupModel"]:

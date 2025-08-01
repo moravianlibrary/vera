@@ -13,6 +13,7 @@ from .mixins.created_audit import CreatedAuditMixin
 if TYPE_CHECKING:
     from .project import ProjectModel
     from .proposal import ProposalModel
+    from .task import TaskAdditionModel
 
 
 class AdditionBatchModel(BaseModel, CreatedAuditMixin):
@@ -57,3 +58,6 @@ class AdditionModel(BaseModel):
     )
     project: Mapped["ProjectModel"] = has_one("ProjectModel", "additions")
     proposal: Mapped["ProposalModel"] = has_one("ProposalModel", "addition")
+    task_items: Mapped[List["TaskAdditionModel"]] = contains(
+        "TaskAdditionModel", "addition"
+    )

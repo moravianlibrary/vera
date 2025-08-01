@@ -11,7 +11,7 @@ from .models.document import DocumentIterationModel
 class DocumentIterationRepository(
     DbIndexedRepository[DocumentIterationModel, Document],
     GetByIdMixin[DocumentIterationModel, int],
-    GetByQueryMixin[DocumentIterationModel],
+    GetByQueryMixin[DocumentIterationModel, Document],
 ):
     def __init__(
         self,

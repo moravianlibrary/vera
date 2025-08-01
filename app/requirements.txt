@@ -5,7 +5,7 @@ bs4
 cachetools
 celery
 coverage
-elasticsearch
+elasticsearch==8.14.0
 fastapi
 lxml
 openpyxl

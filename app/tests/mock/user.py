@@ -1,11 +1,15 @@
 from pydantic import model_validator
 
+from definitions.permission import OwnershipScope
 from schemas.authenticated_user import AuthenticatedUser
 
 
 class SuperUser(AuthenticatedUser):
     def has_permission(self, permission):
         return True
+
+    def get_scope(self, permission):
+        return OwnershipScope.Global
 
     @model_validator(mode="before")
     def validate_super_user(cls, values):

@@ -100,7 +100,10 @@ DependsOnCatalogSearchService = provide_service(
     DependsOnCatalogRecordRepository,
 )
 DependsOnCategoryService = provide_service(
-    CategoryService, DependsOnCategoryRepository
+    CategoryService,
+    DependsOnCategoryRepository,
+    DependsOnGroupRepository,
+    DependsOnUserRepository,
 )
 DependsOnDigiListService = provide_service(
     DigiListService,

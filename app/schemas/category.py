@@ -40,12 +40,16 @@ class CategoryEdit(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
+class PathNode(BaseModel):
+    id: int
+    name: str
+
+
 class CategorySummary(IndexerNestedModel):
     id: int
 
     name: str
-    path_id: List[int]
-    path_name: List[str]
+    path: List[PathNode]
 
     assignable: bool
     disabled: bool
@@ -57,21 +61,26 @@ class CategoryProportion(IndexerNestedModel):
     overall_proportion: float
 
 
+class CategoryStatistics(IndexerNestedModel):
+    count_total_pages: int
+    count_total_documents: int
+    count_extractable_pages: int
+    count_extractable_documents: int
+    count_extracted_pages: int
+    count_extracted_documents: int
+
+
 class DocumentDiscovery(IndexerNestedModel):
     id: int
     task_schedule_id: int | None
 
 
-class Category(IndexerModel):
-    class ESConfig:
-        index = "categories"
-
-    id: int
-
+class CategoryHit(IndexerModel):
     name: str
     description: str | None
     parent_id: int | None
     level: Level
+    path: List[PathNode]
 
     assignable: bool
     extract_whole: bool
@@ -85,11 +94,14 @@ class Category(IndexerModel):
 
     proportions: List[CategoryProportion]
 
-    count_total_pages: int
-    count_total_documents: int
-    count_extractable_pages: int
-    count_extractable_documents: int
-    count_extracted_pages: int
-    count_extracted_documents: int
+    statistics: CategoryStatistics | None = None
 
-    document_discovery: DocumentDiscovery | None
+    document_discovery: DocumentDiscovery | None = None
+
+
+class Category(CategoryHit):
+    class ESConfig:
+        index = "categories"
+        id_field = "id"
+
+    id: int

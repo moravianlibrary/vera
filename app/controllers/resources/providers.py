@@ -1,6 +1,7 @@
 from typing import Any, Callable, Type, TypeVar
 
 from fastapi import Depends
+from fastapi.params import Depends as DependsClass
 
 from adapters.database import DatabaseSession, get_database_session
 from adapters.indexer import IndexerSession, get_indexer_session
@@ -18,6 +19,9 @@ def provide_repository(
         db: DatabaseSession = Depends(get_database_session),
         index: IndexerSession = Depends(get_indexer_session),
     ) -> RepositoryType:
+        print(
+            f"Creating repository instance for {cls.__name__}, {db=}, {index=}"
+        )
         if issubclass(cls, DbIndexedRepository):
             return cls(db, index)
         return cls(db)
@@ -28,7 +32,18 @@ def provide_repository(
 def provide_service(
     cls: Type[ServiceType], *args: Any
 ) -> Callable[..., ServiceType]:
-    def _resolve_service() -> ServiceType:
-        return cls(*[arg() if callable(arg) else arg for arg in args])
+    def _resolve_service(*dependencies: Any) -> ServiceType:
+        return cls(*dependencies)
 
-    return Depends(_resolve_service)
+    dependency_params = [
+        arg if isinstance(arg, DependsClass) else Depends(arg) for arg in args
+    ]
+
+    def dependency_factory(*injected: Any) -> ServiceType:
+        return _resolve_service(*injected)
+
+    return Depends(
+        lambda: dependency_factory(
+            *[dep.dependency() for dep in dependency_params]
+        )
+    )

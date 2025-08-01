@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from .addition import AdditionModel
     from .category import CategoryModel
     from .project import ProjectModel
+    from .task import TaskProposalModel
 
 
 class ProposalBatchModel(BaseModel, CreatedAuditMixin):
@@ -59,6 +60,9 @@ class ProposalModel(BaseModel):
     project: Mapped["ProjectModel"] = has_one("ProjectModel", "proposals")
 
     addition: Mapped["AdditionModel"] = has_one("AdditionModel", "proposal")
+    task_items: Mapped[List["TaskProposalModel"]] = contains(
+        "TaskProposalModel", "proposal", "selectin"
+    )
 
     status_log: Mapped[List["ProposalStatusLogModel"]] = contains(
         "ProposalStatusLogModel", "proposal", "dynamic"

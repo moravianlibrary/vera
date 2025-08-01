@@ -1,14 +1,13 @@
-from contextlib import asynccontextmanager
 from enum import Enum
 from functools import wraps
-from typing import Callable, Generic, Type, TypeVar
+from typing import Callable, Dict, Generic, List, Type, TypeVar
 
 from aiohttp import ClientSession
 from elasticsearch import AsyncElasticsearch
-from esorm import ESBaseModel, ESModel, es
+from esorm import ESBaseModel, ESModel, aggs, es
 from esorm.query import ESQuery
-from esorm.response import ESResponse
 from fastapi import HTTPException, status
+from pydantic import BaseModel, Field
 
 from config import config
 
@@ -17,11 +16,67 @@ IndexerModel = ESModel
 IndexerNestedModel = ESBaseModel
 # IndexerRequest = ESQuery
 IndexerQuery = ESQuery
-IndexerResponse = ESResponse
+# IndexerResponse = ESResponse
 
 
 class IndexerRequest(ESQuery):
     pass
+
+
+SourceType = TypeVar("SourceType")
+
+
+class Hit(BaseModel, Generic[SourceType]):
+    """
+    Represents a single hit (result) from Elasticsearch.
+    """
+
+    index: str = Field(..., alias="_index")
+    """ The index the hit is from. """
+    id: str = Field(..., alias="_id")
+    """ The id of the hit. """
+    score: float | None = Field(..., alias="_score")
+    """ The score of the hit. """
+    source: SourceType = Field(..., alias="_source")
+    """ The source of the hit. """
+
+    class Config:
+        populate_by_name = True
+
+
+class HitsTotal(BaseModel):
+    value: int
+    relation: str
+
+
+class Hits(BaseModel, Generic[SourceType]):
+    """
+    Represents the hits section of the Elasticsearch response.
+    """
+
+    total: int | HitsTotal
+    """ The total number of hits. """
+    max_score: float | None
+    """ The maximum score of the hits. """
+    hits: List[Hit[SourceType]]
+    """ List of hits. """
+
+
+class IndexerResponse(BaseModel, Generic[SourceType]):
+    """
+    Represents the overall structure of an Elasticsearch response.
+    """
+
+    took: int
+    """ The time in milliseconds it took to execute the query. """
+    timed_out: bool
+    """ Whether the query timed out. """
+    shards: Dict[str, int] = Field(..., alias="_shards")
+    """ The number of shards the query was executed on. """
+    hits: Hits[SourceType]
+    """ The hits section of the response. """
+    aggregations: aggs.ESAggsResponse | None = None
+    """ The aggregations section of the response. """
 
 
 IndexerModelType = TypeVar("IndexerModelType", bound=IndexerModel)
@@ -69,7 +124,7 @@ async def connect():
                 config.elasticsearch.username,
                 config.elasticsearch.password,
             ),
-            timeout=config.elasticsearch.request_timeout,
+            request_timeout=config.elasticsearch.request_timeout,
         )
     )
     _patch_es_meta()
@@ -99,7 +154,6 @@ async def is_indexer_available() -> bool:
         return False
 
 
-@asynccontextmanager
 async def get_indexer_session():
     if not await is_indexer_available():
         raise IndexIsNotAvailableException()

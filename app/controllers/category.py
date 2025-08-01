@@ -6,7 +6,12 @@ from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import CategoryRepository
 from schemas.authenticated_user import AuthenticatedUser
-from schemas.category import Category, CategoryEdit, CategoryParentChangeParams
+from schemas.category import (
+    Category,
+    CategoryEdit,
+    CategoryHit,
+    CategoryParentChangeParams,
+)
 from schemas.common import AssignmentChange
 from schemas.task import TaskScheduleParams
 from services import CategoryService
@@ -27,15 +32,15 @@ router = APIRouter(prefix="/categories", tags=["Categories"])
 @router.post(
     "/search",
     dependencies=[WithPermission(OwnershipPermission.ReadCategories)],
-    response_model=IndexerResponse[Category],
+    response_model=IndexerResponse[CategoryHit],
 )
-def search(
+async def search(
     query: IndexerRequest = RestrictedSearch(
         OwnershipPermission.ReadCategories
     ),
     repository: CategoryRepository = DependsOnCategoryRepository,
 ):
-    return repository.search(query)
+    return await repository.search(query)
 
 
 @router.post(

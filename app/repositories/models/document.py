@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     from .category import CategoryModel
     from .digitization_list import DigitizationListModel
     from .plugin import PluginInstanceModel
+    from .task import TaskDocumentIterationModel
 
 
 class DocumentModel(BaseModel, UpdatedTimestampMixin):
@@ -71,6 +72,9 @@ class DocumentModel(BaseModel, UpdatedTimestampMixin):
     )
     iterations: Mapped[List["DocumentIterationModel"]] = has_many(
         "DocumentIterationModel", "document"
+    )
+    task_items: Mapped[List["TaskDocumentIterationModel"]] = contains(
+        "TaskDocumentIterationModel", "document", "selectin"
     )
 
     @property
@@ -154,6 +158,9 @@ class DocumentIterationModel(
     )
     digitization_list: Mapped["DigitizationListModel"] = has_many(
         "DigitizationListModel", "document_iterations"
+    )
+    task_items: Mapped[List["TaskDocumentIterationModel"]] = contains(
+        "TaskDocumentIterationModel", "document_iteration"
     )
 
     @property

@@ -15,18 +15,23 @@ class CategoryService:
         group_repository: GroupRepository,
         user_repository: UserRepository,
     ):
+        print("Initializing CategoryService")
+        print(f"CategoryRepository: {category_repository}")
+        print(f"GroupRepository: {group_repository}")
+        print(f"UserRepository: {user_repository}")
         self._category_repository = category_repository
         self._group_repository = group_repository
         self._user_repository = user_repository
 
     def _enforce_ownership(
+        self,
         target_category: CategoryModel | None,
         permission: OwnershipPermission,
         user: AuthenticatedUser,
     ) -> None:
         user_scope = user.get_scope(permission)
 
-        if user_scope == OwnershipScope.All:
+        if user_scope == OwnershipScope.Global:
             return
 
         if target_category is None:
@@ -38,7 +43,7 @@ class CategoryService:
         if any(user.id == u.id for u in target_category.indirect_users):
             return
 
-        if user_scope == OwnershipScope.Own:
+        if user_scope == OwnershipScope.User:
             raise ValueError(
                 f"User {user.username} does not have permission "
                 f"{permission} for category {target_category.id}."
@@ -59,7 +64,7 @@ class CategoryService:
         target_category: CategoryModel | None,
         user: AuthenticatedUser,
     ) -> None:
-        self._enforce_manage_ownership(
+        self._enforce_ownership(
             target_category, OwnershipPermission.ManageCategories, user
         )
 
@@ -83,7 +88,7 @@ class CategoryService:
             category.description,
             project_id,
             parent_id,
-            parent_category.level + 1 if parent_category else 0,
+            parent_category.level + 1 if parent_category else 1,
             category.assignable,
             category.extract_whole,
         )
@@ -131,7 +136,7 @@ class CategoryService:
             [self._user_repository.get_by_id(user_id) for user_id in user_ids],
         )
 
-    def parent(
+    def change_parent(
         self,
         category_id: int,
         params: CategoryParentChangeParams,

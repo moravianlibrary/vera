@@ -21,15 +21,12 @@ from definitions.task import ScopedTaskType, TaskScope, TaskState
 from repositories.models.mixins.created_audit import CreatedAuditMixin
 
 if TYPE_CHECKING:
-    from repositories.models.addition import AdditionModel
-    from repositories.models.catalog_record import CatalogRecordModel
-    from repositories.models.category import CategoryModel
-    from repositories.models.digitization_list import DigitizationListModel
-    from repositories.models.document import (
-        DocumentIterationModel,
-        DocumentModel,
-    )
-    from repositories.models.proposal import ProposalModel
+    from .addition import AdditionModel
+    from .catalog_record import CatalogRecordModel
+    from .category import CategoryModel
+    from .digitization_list import DigitizationListModel
+    from .document import DocumentIterationModel, DocumentModel
+    from .proposal import ProposalModel
 
 
 class TaskModel(BaseModel, CreatedAuditMixin):
@@ -65,16 +62,16 @@ class TaskModel(BaseModel, CreatedAuditMixin):
         "TaskAdditionModel", "task", "selectin"
     )
     catalog_records: Mapped[List["TaskCatalogRecordModel"]] = contains(
-        "TaskCatalogRecord", "task", "selectin"
+        "TaskCatalogRecordModel", "task", "selectin"
     )
     categories: Mapped[List["TaskCategoryModel"]] = contains(
-        "TaskCategory", "task", "selectin"
+        "TaskCategoryModel", "task", "selectin"
     )
     digitization_lists: Mapped[List["TaskDigitizationListModel"]] = contains(
-        "TaskDigitizationList", "task", "selectin"
+        "TaskDigitizationListModel", "task", "selectin"
     )
     document_iterations: Mapped[List["TaskDocumentIterationModel"]] = contains(
-        "TaskDocumentIteration", "task", "selectin"
+        "TaskDocumentIterationModel", "task", "selectin"
     )
     proposals: Mapped[List["TaskProposalModel"]] = contains(
         "TaskProposalModel", "task", "selectin"
@@ -132,7 +129,9 @@ class TaskAdditionModel(BaseModel, TaskItemMixin):
     __table_args__ = (PrimaryKeyConstraint("task_id", "addition_id"),)
 
     task: Mapped["TaskModel"] = belongs_to("TaskModel", "additions")
-    addition: Mapped["AdditionModel"] = belongs_to("Addition", "task_items")
+    addition: Mapped["AdditionModel"] = belongs_to(
+        "AdditionModel", "task_items"
+    )
 
 
 class TaskCatalogRecordModel(BaseModel, TaskItemMixin):
@@ -190,7 +189,7 @@ class TaskDocumentIterationModel(BaseModel, TaskItemMixin):
         PrimaryKeyConstraint("task_id", "document_iteration_id"),
     )
 
-    task: Mapped["TaskModel"] = belongs_to("TaskModel", "documents")
+    task: Mapped["TaskModel"] = belongs_to("TaskModel", "document_iterations")
     document_iteration: Mapped["DocumentIterationModel"] = belongs_to(
         "DocumentIterationModel", "task_items"
     )

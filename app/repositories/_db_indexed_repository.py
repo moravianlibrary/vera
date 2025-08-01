@@ -1,5 +1,5 @@
 import asyncio
-from typing import AsyncGenerator, Generator, Generic, Protocol, Type
+from typing import AsyncGenerator, Generic, Protocol, Type
 
 from esorm import setup_mappings
 
@@ -92,7 +92,9 @@ class DbIndexedRepository(
 
         await setup_mappings()
 
-    async def search(self, request: IndexerRequest) -> IndexerResponse:
+    async def search(
+        self, request: IndexerRequest
+    ) -> IndexerResponse[IndexerModelType]:
         """
         Perform a search using the indexer and return the raw response.
 
@@ -106,8 +108,28 @@ class DbIndexedRepository(
         IndexerResponse
             Raw response from the indexer search.
         """
-        return await self._indexer_session.search(
-            index=self._indexer_entity.ESConfig.index, body=request
+        return (
+            await self._indexer_session.search(
+                index=self._indexer_entity.ESConfig.index, body=request
+            )
+        ).body
+
+    def serialize_entity(self, entity: DatabaseEntityType) -> IndexerModelType:
+        """
+        Serialize a database entity to its indexer model representation.
+
+        Parameters
+        ----------
+        entity : DatabaseEntityType
+            The database entity to serialize.
+
+        Returns
+        -------
+        IndexerModelType
+            The serialized indexer model.
+        """
+        return self._indexer_entity.model_validate(
+            entity, from_attributes=True
         )
 
     async def save(
@@ -132,10 +154,7 @@ class DbIndexedRepository(
         self._database_session.commit()
         self._database_session.refresh(entity)
 
-        index_doc = self._indexer_entity.model_validate(
-            entity, from_attributes=True
-        )
-        await index_doc.save(wait_for=wait_for)
+        await self.serialize_entity(entity).save(wait_for=wait_for)
 
         return entity
 
@@ -144,9 +163,7 @@ class DbIndexedRepository(
 
         async def save_entity(entity):
             async with semaphore:
-                await self._indexer_entity.model_validate(
-                    entity, from_attributes=True
-                ).save()
+                await self.serialize_entity(entity).save()
 
         entities = self._database_session.query(
             self._database_entity
@@ -204,9 +221,7 @@ class DbIndexedRepository(
         self._database_session.delete(entity)
         self._database_session.commit()
 
-        await self._indexer_entity.model_validate(
-            entity, from_attributes=True
-        ).delete(wait_for=wait_for)
+        await self.serialize_entity(entity).delete(wait_for=wait_for)
 
         return entity
 
