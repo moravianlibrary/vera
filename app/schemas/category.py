@@ -61,6 +61,11 @@ class CategoryProportion(IndexerNestedModel):
     overall_proportion: float
 
 
+class DocumentDiscovery(IndexerNestedModel):
+    id: int
+    task_schedule_id: int | None
+
+
 class CategoryStatistics(IndexerNestedModel):
     count_total_pages: int
     count_total_documents: int
@@ -68,11 +73,6 @@ class CategoryStatistics(IndexerNestedModel):
     count_extractable_documents: int
     count_extracted_pages: int
     count_extracted_documents: int
-
-
-class DocumentDiscovery(IndexerNestedModel):
-    id: int
-    task_schedule_id: int | None
 
 
 class CategoryHit(IndexerModel):
@@ -87,16 +87,17 @@ class CategoryHit(IndexerModel):
     disabled: bool
     archived: bool
 
-    assigned_groups: List[GroupSummary]
-    assigned_users: List[UserSummary]
-    indirect_groups: List[GroupSummary]
-    indirect_users: List[UserSummary]
+    direct_groups: List[GroupSummary]
+    direct_users: List[UserSummary]
+    effective_groups: List[GroupSummary]
+    effective_users: List[UserSummary]
 
     proportions: List[CategoryProportion]
 
-    statistics: CategoryStatistics | None = None
-
+    # TODO:
     document_discovery: DocumentDiscovery | None = None
+
+    statistics: CategoryStatistics | None = None
 
 
 class Category(CategoryHit):

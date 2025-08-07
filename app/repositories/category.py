@@ -23,6 +23,7 @@ class CategoryRepository(
     def __init__(
         self, db_session: DatabaseSession, indexer_session: IndexerSession
     ):
+        print(db_session)
         super().__init__(
             "Category", db_session, CategoryModel, indexer_session, Category
         )
@@ -31,7 +32,7 @@ class CategoryRepository(
         index_entity = super().serialize_entity(db_entity)
         return index_entity
 
-    def create(
+    async def create(
         self,
         name: str,
         description: str,
@@ -45,7 +46,7 @@ class CategoryRepository(
         Create a new group.
         """
         self.enforce_name_uniqueness(name)
-        return self.save_and_index(
+        return await self.save(
             CategoryModel(
                 name=name,
                 description=description,
@@ -55,16 +56,16 @@ class CategoryRepository(
                 assignable=assignable,
                 extract_whole=extract_whole,
             ),
-            True,
+            wait_for=True,
         )
 
-    def save_and_refresh_subtree(
+    async def save_and_refresh_subtree(
         self, category_model: CategoryModel
     ) -> CategoryModel:
         """
         Save the category model and refresh its subtree in the indexer.
         """
-        saved_category = self.save(category_model)
+        saved_category = await self.save(category_model)
         reindex = [saved_category]
 
         while reindex:
@@ -74,7 +75,7 @@ class CategoryRepository(
 
         return saved_category
 
-    def update(
+    async def update(
         self,
         category_model: CategoryModel,
         name: str,
@@ -94,7 +95,7 @@ class CategoryRepository(
         category_model.extract_whole = extract_whole
         category_model.disabled = disabled
 
-        return self.save(category_model)
+        return await self.save(category_model)
 
     def update_assignment(
         self,
@@ -105,8 +106,8 @@ class CategoryRepository(
         """
         Update the assignment of a category.
         """
-        category_model.assigned_users = users
-        category_model.assigned_groups = groups
+        category_model.direct_users = users
+        category_model.direct_groups = groups
 
         return self.save_and_refresh_subtree(category_model)
 

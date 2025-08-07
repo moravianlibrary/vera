@@ -29,7 +29,7 @@ class GroupModel(BaseModel):
     )
 
     categories: Mapped[List["CategoryModel"]] = connected_with(
-        "CategoryModel", category_group_association, "assigned_groups"
+        "CategoryModel", category_group_association, "direct_groups"
     )
     projects: Mapped[List["ProjectModel"]] = connected_with(
         "ProjectModel", project_group_association, "groups"

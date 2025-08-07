@@ -235,7 +235,7 @@ class CategoryModel(BaseModel):
         )
 
     @classmethod
-    def is_assigned_to_department(
+    def is_direct_to_department(
         cls, category_id: int, department_id: int, session: Session
     ) -> bool:
         return (

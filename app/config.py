@@ -16,9 +16,9 @@ class CorsConfig(BaseModel):
 class PostgresConfig(BaseModel):
     host: AnyUrl = Field("localhost", env="POSTGRES_HOST")
     port: int = Field(5432, env="POSTGRES_PORT")
-    database_name: str = Field("qr", env="POSTGRES_DB")
-    user: str = Field("qrAdmin", env="POSTGRES_USER")
-    password: str = Field("POSTGRES_PASSWORD", env="POSTGRES_PASSWORD")
+    database_name: str = Field("vera", env="POSTGRES_DB")
+    user: str = Field("veraAdmin", env="POSTGRES_USER")
+    password: str = Field("replaceMe", env="POSTGRES_PASSWORD")
 
     pool_size: int = Field(20, env="POSTGRES_POOL_SIZE")
     max_overflow: int = Field(0, env="POSTGRES_MAX_OVERFLOW")

@@ -53,8 +53,8 @@ class IndexCategory(BaseEsModel):
     assignable: bool = False
     disabled: bool = False
 
-    assigned_to_department: Optional[IndexDepartment] = None
-    assigned_to_user: Optional[str] = None
+    direct_to_department: Optional[IndexDepartment] = None
+    direct_to_user: Optional[str] = None
 
 
 Categories = List[SerializeAsAny[CategoryResponse]]

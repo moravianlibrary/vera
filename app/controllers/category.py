@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Path, Query
+from fastapi import APIRouter, Path, Query, status
 
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
@@ -47,14 +47,15 @@ async def search(
     "",
     dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
     response_model=Category,
+    status_code=status.HTTP_201_CREATED,
 )
-def create(
+async def create(
     category: CategoryEdit,
     parent_id: int | None = Query(None),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.create(parent_id, category, user)
+    return await service.create(parent_id, category, user)
 
 
 @router.put(
@@ -62,13 +63,13 @@ def create(
     dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
     response_model=Category,
 )
-def update(
+async def update(
     category_id: Annotated[int, Path(...)],
     category: CategoryEdit,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.update(category_id, category, user)
+    return await service.update(category_id, category, user)
 
 
 @router.patch(

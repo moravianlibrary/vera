@@ -1,3 +1,4 @@
+import inspect
 from typing import Any, Callable, Type, TypeVar
 
 from fastapi import Depends
@@ -19,9 +20,6 @@ def provide_repository(
         db: DatabaseSession = Depends(get_database_session),
         index: IndexerSession = Depends(get_indexer_session),
     ) -> RepositoryType:
-        print(
-            f"Creating repository instance for {cls.__name__}, {db=}, {index=}"
-        )
         if issubclass(cls, DbIndexedRepository):
             return cls(db, index)
         return cls(db)
@@ -32,18 +30,28 @@ def provide_repository(
 def provide_service(
     cls: Type[ServiceType], *args: Any
 ) -> Callable[..., ServiceType]:
-    def _resolve_service(*dependencies: Any) -> ServiceType:
-        return cls(*dependencies)
-
+    # Wrap each argument in Depends if not already
     dependency_params = [
         arg if isinstance(arg, DependsClass) else Depends(arg) for arg in args
     ]
 
-    def dependency_factory(*injected: Any) -> ServiceType:
-        return _resolve_service(*injected)
-
-    return Depends(
-        lambda: dependency_factory(
-            *[dep.dependency() for dep in dependency_params]
+    # Create the parameter list for FastAPI to inspect
+    parameters = [
+        inspect.Parameter(
+            name=f"dep{i}",
+            kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
+            default=dep,
         )
-    )
+        for i, dep in enumerate(dependency_params)
+    ]
+
+    # Create a function that accepts the named parameters
+    def _dependency_factory(**kwargs: Any) -> ServiceType:
+        # Order injected dependencies by parameter name index (dep0, dep1, ...)
+        injected = [kwargs[f"dep{i}"] for i in range(len(dependency_params))]
+        return cls(*injected)
+
+    # Attach the signature so FastAPI knows how to inject
+    _dependency_factory.__signature__ = inspect.Signature(parameters)
+
+    return Depends(_dependency_factory)

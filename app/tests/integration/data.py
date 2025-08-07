@@ -1,7 +1,7 @@
 from typing import Dict, List, Type
 
 from adapters.database import DatabaseSession
-from adapters.indexer import IndexerModelType
+from adapters.indexer import IndexerModelType, IndexerSession
 from repositories._db_repository import DatabaseEntityType
 from repositories.models.category import (
     CategoryModel,
@@ -13,6 +13,14 @@ from repositories.models.project import ProjectModel
 from repositories.models.proposal import ProposalModel
 from repositories.models.user import UserModel
 from schemas.category import Category
+
+
+async def _index_entities(
+    entities: List[DatabaseEntityType],
+    indexer_model: Type[IndexerModelType],
+) -> List[IndexerModelType]:
+    for entity in entities:
+        await indexer_model.model_validate(entity, from_attributes=True).save()
 
 
 async def _persist_entities(
@@ -27,10 +35,7 @@ async def _persist_entities(
         db_session.refresh(entity)
 
     if indexer_model:
-        for entity in entities:
-            await indexer_model.model_validate(
-                entity, from_attributes=True
-            ).save()
+        await _index_entities(entities, indexer_model)
 
     return entities
 
@@ -204,20 +209,20 @@ async def seed_test_categories(
     )
 
     if groups:
-        level_1_cats[0].assigned_groups.append(groups[0])
-        level_2_cats[1].assigned_groups.extend(groups[1:3])
-        level_3_cats[0].assigned_groups.append(groups[0])
+        level_1_cats[0].direct_groups.append(groups[0])
+        level_2_cats[1].direct_groups.extend(groups[1:3])
+        level_3_cats[0].direct_groups.append(groups[0])
 
     if users:
-        level_2_cats[0].assigned_users.extend(users[:4])
-        level_3_cats[0].assigned_users.append(users[7])
-        level_3_cats[2].assigned_users.append(users[9])
+        level_2_cats[0].direct_users.extend(users[:4])
+        level_3_cats[0].direct_users.append(users[7])
+        level_3_cats[2].direct_users.append(users[9])
 
     db_session.commit()
 
     for cat in level_1_cats + level_2_cats + level_3_cats:
         db_session.refresh(cat)
 
-    print(db_session.query(CategoryModel).count(), "categories")
+    await _index_entities(level_1_cats + level_2_cats + level_3_cats, Category)
 
     return {1: level_1_cats, 2: level_2_cats, 3: level_3_cats}

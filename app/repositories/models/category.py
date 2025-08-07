@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -7,6 +7,8 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    and_,
+    distinct,
     func,
     select,
 )
@@ -19,19 +21,19 @@ from adapters.database import (
     connected_with,
     contains,
     has_many,
+    has_one,
 )
-from definitions.category import CategoryDocumentFilter
-from repositories.models.document import DocumentModel
 
 from .associations import (
     category_group_association,
     category_user_association,
     project_category_association,
 )
+from .document import DocumentIterationModel, DocumentModel
 
 if TYPE_CHECKING:
-    from .document import DocumentIterationModel
     from .group import GroupModel
+    from .plugin import PluginInstanceModel
     from .project import ProjectModel
     from .proposal import ProposalModel
     from .task import TaskCategoryModel
@@ -88,12 +90,16 @@ class CategoryModel(BaseModel):
     task_items: Mapped[List["TaskCategoryModel"]] = contains(
         "TaskCategoryModel", "category"
     )
+    # TODO:
+    # document_discovery: Mapped["PluginInstanceModel"] = has_one(
+    #     "PluginInstanceModel", "category"
+    # )
 
     # Ownership relationships
-    assigned_groups: Mapped[List["GroupModel"]] = connected_with(
+    direct_groups: Mapped[List["GroupModel"]] = connected_with(
         "GroupModel", category_group_association, "categories"
     )
-    assigned_users: Mapped[List["UserModel"]] = connected_with(
+    direct_users: Mapped[List["UserModel"]] = connected_with(
         "UserModel", category_user_association, "categories"
     )
 
@@ -109,56 +115,89 @@ class CategoryModel(BaseModel):
         return path[::-1]
 
     @property
-    def indirect_groups(self) -> List["GroupModel"]:
-        _groups = set(self.assigned_groups)
+    def effective_groups(self) -> List["GroupModel"]:
+        groups = list(self.direct_groups)
+        processed_groups = set(g.id for g in groups)
 
-        _category = self.parent
-        while _category:
-            _groups.update(_category.assigned_groups)
-            _category = _category.parent
+        category = self.parent
+        while category:
+            for group in category.direct_groups:
+                if group.id not in processed_groups:
+                    groups.append(group)
+                    processed_groups.add(group.id)
+            category = category.parent
 
-        return list(_groups)
+        return groups
 
     @property
-    def indirect_users(self) -> List["UserModel"]:
-        _users = set(self.assigned_users)
+    def effective_users(self) -> List["UserModel"]:
+        users = list(self.direct_users)
+        processed_user_ids = {u.id for u in users}
 
-        _category = self.parent
-        while _category:
-            _users.update(_category.assigned_users)
-            _category = _category.parent
+        category = self.parent
+        while category:
+            for user in category.direct_users:
+                if user.id not in processed_user_ids:
+                    users.append(user)
+                    processed_user_ids.add(user.id)
+            category = category.parent
 
-        return list(_users)
+        return users
 
-    def total_documents_and_pages(
-        self,
-        database_session: DatabaseSession,
-        filter: CategoryDocumentFilter = CategoryDocumentFilter.All,
-    ) -> Tuple[int, int]:
-        stmt = (
-            select(
-                func.count(DocumentModel.id),
-                func.sum(DocumentModel.page_count),
-            )
-            .join(
-                DocumentIterationModel,
-                DocumentModel.id == DocumentIterationModel.document_id,
-            )
-            .where(DocumentIterationModel.category_id == self.id)
-            .where(DocumentIterationModel.is_archived.is_(False))
+    def get_statistics(self, db_session: DatabaseSession) -> Dict[str, int]:
+        FILTER_TOTAL = DocumentIterationModel.is_archived.is_(False)
+        FILTER_EXTRACTABLE = and_(
+            FILTER_TOTAL,
+            DocumentModel.can_be_extracted.is_(True),
+            DocumentIterationModel.digitization_list_id.is_(None),
+        )
+        FILTER_EXTRACTED = and_(
+            FILTER_TOTAL,
+            DocumentIterationModel.digitization_list_id.isnot(None),
         )
 
-        if filter == CategoryDocumentFilter.Extractable:
-            stmt = stmt.where(DocumentModel.can_be_extracted.is_(True)).where(
-                DocumentIterationModel.digitization_list_id.is_(None)
+        stmt = (
+            select(
+                func.count(DocumentIterationModel.id)
+                .filter(FILTER_TOTAL)
+                .label("count_total_documents"),
+                func.coalesce(
+                    func.sum(DocumentModel.page_count).filter(FILTER_TOTAL),
+                    0,
+                ).label("count_total_pages"),
+                func.count(DocumentIterationModel.id)
+                .filter(FILTER_EXTRACTABLE)
+                .label("count_extractable_documents"),
+                func.coalesce(
+                    func.sum(DocumentModel.page_count).filter(
+                        FILTER_EXTRACTABLE
+                    ),
+                    0,
+                ).label("count_extractable_pages"),
+                func.count(distinct(DocumentIterationModel.document_id))
+                .filter(FILTER_EXTRACTED)
+                .label("count_extracted_documents"),
+                func.coalesce(
+                    func.sum(DocumentModel.page_count).filter(
+                        FILTER_EXTRACTED
+                    ),
+                    0,
+                ).label("count_extracted_pages"),
             )
-        elif filter == CategoryDocumentFilter.Extracted:
-            stmt = stmt.where(
-                DocumentIterationModel.digitization_list_id.is_not(None)
+            .select_from(CategoryModel)
+            .outerjoin(
+                DocumentIterationModel,
+                DocumentIterationModel.category_id == CategoryModel.id,
             )
+            .outerjoin(
+                DocumentModel,
+                DocumentModel.id == DocumentIterationModel.document_id,
+            )
+            .where(CategoryModel.id == self.id)
+            .group_by(CategoryModel.id)
+        )
 
-        count, page_sum = database_session.execute(stmt).one()
-        return (count or 0, page_sum or 0)
+        return db_session.execute(stmt).first()._mapping
 
 
 # TODO: Audits

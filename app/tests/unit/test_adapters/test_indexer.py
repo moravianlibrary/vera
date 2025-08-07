@@ -163,28 +163,28 @@ class TestIndexSchema(TestIndexBase):
                 "extract_whole": {"type": "boolean"},
                 "disabled": {"type": "boolean"},
                 "archived": {"type": "boolean"},
-                "assigned_groups": {
+                "direct_groups": {
                     "type": "nested",
                     "properties": {
                         "id": {"type": "long"},
                         "name": {"type": "keyword"},
                     },
                 },
-                "assigned_users": {
+                "direct_users": {
                     "type": "nested",
                     "properties": {
                         "id": {"type": "keyword"},
                         "username": {"type": "keyword"},
                     },
                 },
-                "indirect_groups": {
+                "effective_groups": {
                     "type": "nested",
                     "properties": {
                         "id": {"type": "long"},
                         "name": {"type": "keyword"},
                     },
                 },
-                "indirect_users": {
+                "effective_users": {
                     "type": "nested",
                     "properties": {
                         "id": {"type": "keyword"},

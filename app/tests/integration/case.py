@@ -1,12 +1,12 @@
 import asyncio
-from typing import Any, Dict, Set
+from typing import Any, Dict, Set, Tuple
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock, patch
 
 from esorm import connect, setup_mappings
 from fastapi import Response
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from testcontainers.elasticsearch import ElasticSearchContainer
 from testcontainers.postgres import PostgresContainer
@@ -65,6 +65,10 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
             message = await self.es.info()
             print(f"Elasticsearch is not ready yet: {message}")
 
+        indices = await self.es.indices.get(index="*")
+        for index in indices:
+            await self.es.indices.delete(index=index)
+
         await setup_mappings()
 
     def setUp(self):
@@ -79,28 +83,22 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
         }
 
         self.connection = self.engine.connect()
-        self.transaction = self.connection.begin()
         self.db_session = self.SessionLocal(bind=self.connection)
-        self.nested = self.db_session.begin_nested()
 
-        # Listen for session commits and restart savepoint
-        @event.listens_for(self.db_session, "after_transaction_end")
-        def restart_savepoint(sess, trans):
-            if trans.nested and not trans._parent.nested:
-                self.nested = self.db_session.begin_nested()
+        BaseModel.metadata.drop_all(bind=self.engine)
+        BaseModel.metadata.create_all(bind=self.engine)
 
         app.dependency_overrides[get_database_session] = (
-            lambda: self.SessionLocal(bind=self.connection)
+            lambda: self.db_session
         )
         app.dependency_overrides[resolve_authenticated_user] = (
             lambda: SuperUser()
         )
 
     def tearDown(self):
-        app.dependency_overrides.pop(get_database_session, None)
         app.dependency_overrides.pop(resolve_authenticated_user, None)
+        app.dependency_overrides.pop(get_database_session, None)
 
-        self.transaction.rollback()
         self.db_session.close()
         self.connection.close()
 
@@ -121,8 +119,48 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
         response: Response,
         status_code: int,
         expected_json: Dict[str, Any] | None = None,
-        exclude_keys: Set[str] = frozenset(),
+        exclude_paths: Set[Tuple[str, ...]] = frozenset(),
+        sort_lists_at_paths: Set[Tuple[str, ...]] = frozenset(),
     ) -> None:
+        def _delete_paths(obj: Dict[str, Any], path: Tuple[str, ...]) -> None:
+            if not path:
+                return
+
+            key = path[0]
+
+            if isinstance(obj, dict):
+                if key not in obj:
+                    return
+                if len(path) == 1:
+                    obj.pop(key, None)
+                else:
+                    _delete_paths(obj[key], path[1:])
+
+            elif isinstance(obj, list):
+                for item in obj:
+                    _delete_paths(item, path)
+
+        def _sort_list_field(
+            obj: Dict[str, Any], path: Tuple[str, ...]
+        ) -> None:
+            if not path:
+                return
+
+            key = path[0]
+
+            if isinstance(obj, dict):
+                if key not in obj:
+                    return
+                if len(path) == 1:
+                    if isinstance(obj[key], list):
+                        obj[key] = sorted(obj[key], key=lambda x: x.get("id"))
+                else:
+                    _sort_list_field(obj[key], path[1:])
+
+            elif isinstance(obj, list):
+                for item in obj:
+                    _sort_list_field(item, path)
+
         if response.status_code != status_code:
             raise AssertionError(
                 f"Expected status code {status_code}, "
@@ -132,9 +170,13 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
         if expected_json is not None:
             response_json = response.json()
 
-            for key in exclude_keys:
-                response_json.pop(key, None)
-                expected_json.pop(key, None)
+            for path in exclude_paths:
+                _delete_paths(response_json, path)
+                _delete_paths(expected_json, path)
+
+            for path in sort_lists_at_paths:
+                _sort_list_field(response_json, path)
+                _sort_list_field(expected_json, path)
 
             self.maxDiff = None
             self.assertDictEqual(expected_json, response_json)

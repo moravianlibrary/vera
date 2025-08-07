@@ -1,5 +1,4 @@
-from functools import wraps
-from typing import Any, Callable
+from typing import Any, Generator
 
 from sqlalchemy import Column, ForeignKey, Table, create_engine
 from sqlalchemy.orm import DeclarativeBase, Session, relationship, sessionmaker
@@ -133,21 +132,9 @@ def connected_with(
     )
 
 
-def get_database_session():
+def get_database_session() -> Generator[DatabaseSession, None, None]:
     session = DatabaseSessionFactory()
     try:
         yield session
     finally:
         session.close()
-
-
-def with_database_session(func: Callable) -> Callable:
-    @wraps(func)
-    def wrapper(*args, **kwargs) -> Any:
-        db_session = DatabaseSessionFactory()
-        try:
-            return func(db_session, *args, **kwargs)
-        finally:
-            db_session.close()
-
-    return wrapper

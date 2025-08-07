@@ -31,7 +31,7 @@ class UserModel(BaseModel):
     )
 
     categories: Mapped[List["CategoryModel"]] = connected_with(
-        "CategoryModel", category_user_association, "assigned_users"
+        "CategoryModel", category_user_association, "direct_users"
     )
     projects: Mapped[List["ProjectModel"]] = connected_with(
         "ProjectModel", project_user_association, "users"

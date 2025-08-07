@@ -12,6 +12,7 @@ from .mixins.updated_audit import UpdatedAuditMixin
 
 if TYPE_CHECKING:
     from .catalog_record import CatalogRecordPropertyModel
+    from .category import CategoryModel
     from .document import DocumentPropertyModel
 
 
@@ -50,3 +51,6 @@ class PluginInstanceModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
     document_properties: Mapped[List["DocumentPropertyModel"]] = has_many(
         "DocumentPropertyModel", "plugin_instance"
     )
+    # category: Mapped["CategoryModel"] = has_one(
+    #     "CategoryModel", "document_discovery"
+    # )

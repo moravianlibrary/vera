@@ -15,10 +15,6 @@ class CategoryService:
         group_repository: GroupRepository,
         user_repository: UserRepository,
     ):
-        print("Initializing CategoryService")
-        print(f"CategoryRepository: {category_repository}")
-        print(f"GroupRepository: {group_repository}")
-        print(f"UserRepository: {user_repository}")
         self._category_repository = category_repository
         self._group_repository = group_repository
         self._user_repository = user_repository
@@ -40,7 +36,7 @@ class CategoryService:
                 f"{permission} for any category."
             )
 
-        if any(user.id == u.id for u in target_category.indirect_users):
+        if any(user.id == u.id for u in target_category.effective_users):
             return
 
         if user_scope == OwnershipScope.User:
@@ -50,7 +46,7 @@ class CategoryService:
             )
 
         if any(
-            g.id in user.group_ids for g in target_category.indirect_groups
+            g.id in user.group_ids for g in target_category.effective_groups
         ):
             return
 
@@ -68,13 +64,13 @@ class CategoryService:
             target_category, OwnershipPermission.ManageCategories, user
         )
 
-    def create(
+    async def create(
         self,
         parent_id: int | None,
         category: CategoryEdit,
         user: AuthenticatedUser,
         project_id: int | None = None,
-    ) -> None:
+    ) -> CategoryModel:
         parent_category = (
             self._category_repository.get_by_id(parent_id)
             if parent_id
@@ -83,7 +79,7 @@ class CategoryService:
 
         self._enforce_manage_ownership(parent_category, user)
 
-        return self._category_repository.create(
+        return await self._category_repository.create(
             category.name,
             category.description,
             project_id,
@@ -95,12 +91,12 @@ class CategoryService:
 
     def update(
         self, category_id: int, category: CategoryEdit, user: AuthenticatedUser
-    ) -> None:
+    ) -> CategoryModel:
         target_category = self._category_repository.get_by_id(category_id)
 
         self._enforce_manage_ownership(target_category.parent, user)
 
-        self._category_repository.update(
+        return self._category_repository.update(
             target_category,
             category.name,
             category.description,
@@ -119,11 +115,11 @@ class CategoryService:
 
         self._enforce_manage_ownership(target_category.parent, user)
 
-        user_ids = {u.id for u in target_category.assigned_users} | set(
+        user_ids = {u.id for u in target_category.direct_users} | set(
             assignment_change.add.user_ids
         ) - set(assignment_change.remove.user_ids)
 
-        group_ids = {g.id for g in target_category.assigned_groups} | set(
+        group_ids = {g.id for g in target_category.direct_groups} | set(
             assignment_change.add.group_ids
         ) - set(assignment_change.remove.group_ids)
 

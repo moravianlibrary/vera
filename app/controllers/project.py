@@ -108,7 +108,7 @@ def change_categories_assignment(
     repository: ProjectRepository = DependsOnProjectRepository,
     service: ProjectService = DependsOnProjectRepository,
 ):
-    return service.change_assigned_categories(
+    return service.change_direct_categories(
         repository.get_by_id(project_id), categories
     )
 
