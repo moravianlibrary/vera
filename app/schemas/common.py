@@ -27,11 +27,11 @@ class FilterParams(BaseModel):
 # - Request Payloads -
 # --------------------
 class UserAssignment(BaseModel):
-    user_ids: List[str] = []
+    users: List[str] = []
 
 
 class Assignment(UserAssignment):
-    group_ids: List[int] = []
+    groups: List[int] = []
 
 
 class UserAssignmentChange(BaseModel):

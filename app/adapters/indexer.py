@@ -14,12 +14,14 @@ from config import config
 IndexerSession = AsyncElasticsearch
 IndexerModel = ESModel
 IndexerNestedModel = ESBaseModel
-# IndexerRequest = ESQuery
-IndexerQuery = ESQuery
-# IndexerResponse = ESResponse
 
 
-class IndexerRequest(ESQuery):
+class IndexerQuery(BaseModel):
+    class Config:
+        extra = "allow"
+
+
+class IndexerRequest(IndexerQuery):
     pass
 
 

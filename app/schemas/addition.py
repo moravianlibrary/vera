@@ -60,27 +60,25 @@ class IngestAdditionsResponse(BaseModel):
 # - Indexer Entities -
 # --------------------
 class AdditionProject(IndexerNestedModel):
-    id: int
-    name: str
-    description: str | None
+    id: long
+    name: keyword
+    description: text | None = None
 
 
 class AdditionProposal(IndexerNestedModel):
-    id: int
-
-    batch_id: int
-    batch_name: str | None
-    file_name: str | None
-
-    reason_message: str | None
-
-
-class Addition(IndexerModel):
     id: long
 
     batch_id: long
-    batch_name: text | None
-    file_name: text | None
+    batch_name: text | None = None
+    file_name: text | None = None
+
+    reason_message: text | None = None
+
+
+class AdditionHit(IndexerModel):
+    batch_id: long
+    batch_name: text | None = None
+    file_name: text | None = None
     created_by: keyword
     created_at: datetime
     is_archived: bool
@@ -94,10 +92,18 @@ class Addition(IndexerModel):
     ignore_digitization_check: bool
 
     status: AdditionStatus
-    eligibility_status: EligibilityStatus | None
+    eligibility_status: EligibilityStatus | None = None
 
-    project: AdditionProject | None
-    proposal: AdditionProposal | None
+    project: AdditionProject | None = None
+    proposal: AdditionProposal | None = None
+
+
+class Addition(AdditionHit):
+    class ESConfig:
+        index = "additions"
+        id_field = "id"
+
+    id: long
 
 
 # -------------

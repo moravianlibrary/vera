@@ -6,9 +6,9 @@ from adapters.indexer import IndexerQuery, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import AdditionRepository
 from schemas.addition import (
-    Addition,
     AdditionBatchParams,
     AdditionCreate,
+    AdditionHit,
     IngestAdditionsParams,
     IngestAdditionsResponse,
 )
@@ -31,13 +31,13 @@ router = APIRouter(prefix="/additions", tags=["Additions"])
 @router.post(
     "/search",
     dependencies=[WithPermission(OwnershipPermission.ReadAdditions)],
-    response_model=IndexerResponse[Addition],
+    response_model=IndexerResponse[AdditionHit],
 )
-def search(
+async def search(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ReadAdditions),
     repository: AdditionRepository = DependsOnAdditionRepository,
 ):
-    return repository.search(query)
+    return await repository.search(query)
 
 
 @router.post(
@@ -45,7 +45,7 @@ def search(
     dependencies=[WithPermission(GeneralPermission.AddDocuments)],
     response_model=IngestAdditionsResponse,
 )
-def ingest(
+async def ingest(
     additions: List[AdditionCreate],
     batch_params: Annotated[AdditionBatchParams, Query()],
     ingest_params: Annotated[IngestAdditionsParams, Query()],
@@ -60,7 +60,7 @@ def ingest(
     dependencies=[WithPermission(OwnershipPermission.ManageAdditions)],
     response_model=Task,
 )
-def reingest(
+async def reingest(
     ingest_params: IngestAdditionsParams = RestrictedParams(
         GeneralPermission.IgnoreAdditionChecks, IngestAdditionsParams
     ),
@@ -76,7 +76,7 @@ def reingest(
     dependencies=[WithPermission(OwnershipPermission.ManageAdditions)],
     response_model=Task,
 )
-def archive(
+async def archive(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageAdditions),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: AdditionService = DependsOnAdditionService,
@@ -94,7 +94,7 @@ def archive(
     ],
     response_model=Task,
 )
-def delete(
+async def delete(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageAdditions),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: AdditionService = DependsOnAdditionService,

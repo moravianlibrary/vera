@@ -35,7 +35,9 @@ class AdditionModel(BaseModel):
     __tablename__ = "additions"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    batch_id = Column(Integer, ForeignKey("addition_batches.id"))
+    batch_id = Column(
+        Integer, ForeignKey("addition_batches.id"), nullable=False
+    )
 
     identifier_type = Column(Enum(IdentifierType), nullable=False)
     identifier_value = Column(String, nullable=False)
@@ -61,3 +63,23 @@ class AdditionModel(BaseModel):
     task_items: Mapped[List["TaskAdditionModel"]] = contains(
         "TaskAdditionModel", "addition"
     )
+
+    @property
+    def batch_name(self) -> str:
+        return self.batch.name
+
+    @property
+    def file_name(self) -> str:
+        return self.batch.file_name
+
+    @property
+    def created_by(self) -> str:
+        return self.batch.created_by
+
+    @property
+    def created_at(self) -> str:
+        return self.batch.created_at
+
+    @property
+    def is_archived(self) -> bool:
+        return self.batch.is_archived

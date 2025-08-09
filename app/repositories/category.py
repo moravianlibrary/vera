@@ -2,6 +2,8 @@ from typing import List
 
 from adapters.database import DatabaseSession
 from adapters.indexer import IndexerSession
+from definitions.category import ALLOWED_LEVELS
+from errors.category import cycle_detected_error, invalid_level_error
 from repositories.models.group import GroupModel
 from repositories.models.user import UserModel
 from schemas.category import Category
@@ -23,7 +25,6 @@ class CategoryRepository(
     def __init__(
         self, db_session: DatabaseSession, indexer_session: IndexerSession
     ):
-        print(db_session)
         super().__init__(
             "Category", db_session, CategoryModel, indexer_session, Category
         )
@@ -65,15 +66,17 @@ class CategoryRepository(
         """
         Save the category model and refresh its subtree in the indexer.
         """
-        saved_category = await self.save(category_model)
-        reindex = [saved_category]
+        categories = [category_model]
 
-        while reindex:
-            current_category = reindex.pop()
-            self._indexer_session.index(current_category)
-            reindex.extend(current_category.children)
+        children = list(category_model.children)
+        while children:
+            current_child = children.pop()
+            categories.append(current_child)
+            children.extend(current_child.children)
 
-        return saved_category
+        await self.save_bulk(categories, wait_for=True)
+
+        return category_model
 
     async def update(
         self,
@@ -97,37 +100,65 @@ class CategoryRepository(
 
         return await self.save(category_model)
 
-    def update_assignment(
+    async def update_assignment(
         self,
         category_model: CategoryModel,
-        users: List[UserModel],
         groups: List[GroupModel],
+        users: List[UserModel],
     ) -> CategoryModel:
         """
         Update the assignment of a category.
         """
-        category_model.direct_users = users
         category_model.direct_groups = groups
+        category_model.direct_users = users
 
-        return self.save_and_refresh_subtree(category_model)
+        return await self.save_and_refresh_subtree(category_model)
 
-    def update_parent(
+    async def update_parent(
         self, category_model: CategoryModel, parent_id: int | None, level: int
     ) -> CategoryModel:
         """
-        Update the parent of a category.
+        Update the parent of a category
+        and propagate level changes to descendants.
+        Prevents cycles and enforces MAX_HEIGHT limit.
+        All changes are saved at the end.
         """
+        visited = set()
+        updated_models = []
+
+        # Assign new parent and level
         category_model.parent_id = parent_id
         category_model.level = level
+        updated_models.append(category_model)
+        visited.add(category_model.id)
 
-        self.save(category_model)
+        # DFS stack
+        stack = [(child, level + 1) for child in category_model.children]
 
-        subcategories = category_model.children
-        while subcategories:
-            child = subcategories.pop()
-            child.level = child.parent.level + 1
-            self.save(child)
-            subcategories.extend(child.children)
+        max_depth = level
+
+        while stack:
+            child, current_level = stack.pop()
+
+            if child.id in visited:
+                raise cycle_detected_error(category_model.id)
+
+            visited.add(child.id)
+
+            if current_level not in ALLOWED_LEVELS:
+                raise invalid_level_error(category_model.id, current_level)
+
+            child.level = current_level
+            updated_models.append(child)
+
+            stack.extend(
+                (grandchild, current_level + 1)
+                for grandchild in child.children
+            )
+
+            max_depth = max(max_depth, current_level)
+
+        await self.save_bulk(updated_models)
 
         return category_model
 

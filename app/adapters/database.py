@@ -57,7 +57,7 @@ def AssociationTable(
     )
 
 
-def contains(target: str, back_populates: str, lazy: str = "joined") -> Any:
+def contains(target: str, back_populates: str, lazy: str = "selectin") -> Any:
     """
     One-to-many relationship where the parent contains the children.
     Children are deleted if orphaned.
@@ -74,7 +74,7 @@ def contains(target: str, back_populates: str, lazy: str = "joined") -> Any:
 def belongs_to(
     target: str,
     back_populates: str,
-    lazy: str = "joined",
+    lazy: str = "select",
     remote_side: _ORMColCollectionArgument | None = None,
 ) -> Any:
     """
@@ -89,7 +89,7 @@ def belongs_to(
     )
 
 
-def has_one(target: str, back_populates: str, lazy: str = "joined") -> Any:
+def has_one(target: str, back_populates: str, lazy: str = "select") -> Any:
     """
     One-to-one or many-to-one relationship
     where this entity has one of another.
@@ -102,7 +102,7 @@ def has_one(target: str, back_populates: str, lazy: str = "joined") -> Any:
     )
 
 
-def has_many(target: str, back_populates: str, lazy: str = "joined") -> Any:
+def has_many(target: str, back_populates: str, lazy: str = "selectin") -> Any:
     """
     One-to-many relationship where this entity has many of another.
     """
@@ -118,7 +118,7 @@ def connected_with(
     target: str,
     secondary: Any,
     back_populates: str,
-    lazy: str = "select",
+    lazy: str = "selectin",
 ) -> Any:
     """
     Many-to-many relationship using an association table.

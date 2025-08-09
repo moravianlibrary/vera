@@ -1,4 +1,5 @@
 from definitions.permission import OwnershipPermission, OwnershipScope
+from errors.category import category_not_child_error
 from repositories.category import CategoryRepository
 from repositories.group import GroupRepository
 from repositories.models.category import CategoryModel
@@ -105,25 +106,27 @@ class CategoryService:
             category.disabled,
         )
 
-    def change_assignment(
+    async def change_assignment(
         self,
         category_id: int,
         assignment_change: AssignmentChange,
         user: AuthenticatedUser,
-    ) -> None:
+    ) -> CategoryModel:
         target_category = self._category_repository.get_by_id(category_id)
 
         self._enforce_manage_ownership(target_category.parent, user)
 
-        user_ids = {u.id for u in target_category.direct_users} | set(
-            assignment_change.add.user_ids
-        ) - set(assignment_change.remove.user_ids)
+        user_ids = (
+            {u.id for u in target_category.direct_users}
+            | set(assignment_change.add.users)
+        ) - set(assignment_change.remove.users)
 
-        group_ids = {g.id for g in target_category.direct_groups} | set(
-            assignment_change.add.group_ids
-        ) - set(assignment_change.remove.group_ids)
+        group_ids = (
+            {g.id for g in target_category.direct_groups}
+            | set(assignment_change.add.groups)
+        ) - set(assignment_change.remove.groups)
 
-        self._category_repository.update_assignment(
+        return await self._category_repository.update_assignment(
             target_category,
             [
                 self._group_repository.get_by_id(group_id)
@@ -132,19 +135,19 @@ class CategoryService:
             [self._user_repository.get_by_id(user_id) for user_id in user_ids],
         )
 
-    def change_parent(
+    async def change_parent(
         self,
         category_id: int,
         params: CategoryParentChangeParams,
         user: AuthenticatedUser,
-    ) -> None:
+    ) -> CategoryModel:
         from_category = (
-            CategoryRepository.get_by_id(params.from_parent_id)
+            self._category_repository.get_by_id(params.from_parent_id)
             if params.from_parent_id
             else None
         )
         to_category = (
-            CategoryRepository.get_by_id(params.to_parent_id)
+            self._category_repository.get_by_id(params.to_parent_id)
             if params.to_parent_id
             else None
         )
@@ -154,10 +157,13 @@ class CategoryService:
 
         target_category = self._category_repository.get_by_id(category_id)
 
-        self._category_repository.update_parent(
+        if target_category.parent != from_category:
+            raise category_not_child_error(category_id, params.from_parent_id)
+
+        return await self._category_repository.update_parent(
             target_category,
             params.to_parent_id,
-            to_category.level + 1 if to_category else 0,
+            to_category.level + 1 if to_category else 1,
         )
 
     def delete(self, category_id: int, user: AuthenticatedUser) -> None:

@@ -77,13 +77,15 @@ async def update(
     dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
     response_model=Category,
 )
-def change_assignment(
+async def change_assignment(
     category_id: Annotated[int, Path(...)],
     assignment_change: AssignmentChange,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.change_assignment(category_id, assignment_change, user)
+    return await service.change_assignment(
+        category_id, assignment_change, user
+    )
 
 
 @router.patch(
@@ -91,13 +93,13 @@ def change_assignment(
     dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
     response_model=Category,
 )
-def change_parent(
+async def change_parent(
     category_id: Annotated[int, Path(...)],
     params: Annotated[CategoryParentChangeParams, Query()],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.change_parent(category_id, params, user)
+    return await service.change_parent(category_id, params, user)
 
 
 @router.patch(

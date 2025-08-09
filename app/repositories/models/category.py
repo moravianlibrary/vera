@@ -30,6 +30,7 @@ from .associations import (
     project_category_association,
 )
 from .document import DocumentIterationModel, DocumentModel
+from .mixins.created_audit import CreatedTimestampMixin
 
 if TYPE_CHECKING:
     from .group import GroupModel
@@ -40,7 +41,7 @@ if TYPE_CHECKING:
     from .user import UserModel
 
 
-class CategoryModel(BaseModel):
+class CategoryModel(BaseModel, CreatedTimestampMixin):
     __tablename__ = "categories"
 
     id = Column(Integer, primary_key=True)

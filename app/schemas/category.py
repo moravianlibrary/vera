@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from pydantic import BaseModel, model_validator
@@ -77,8 +78,8 @@ class CategoryStatistics(IndexerNestedModel):
 
 class CategoryHit(IndexerModel):
     name: str
-    description: str | None
-    parent_id: int | None
+    description: str | None = None
+    parent_id: int | None = None
     level: Level
     path: List[PathNode]
 
@@ -98,6 +99,8 @@ class CategoryHit(IndexerModel):
     document_discovery: DocumentDiscovery | None = None
 
     statistics: CategoryStatistics | None = None
+
+    created_at: datetime
 
 
 class Category(CategoryHit):

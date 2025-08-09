@@ -1,6 +1,7 @@
 import asyncio
-from typing import AsyncGenerator, Generic, Protocol, Type
+from typing import AsyncGenerator, Generic, List, Protocol, Type
 
+from elasticsearch.helpers import async_bulk
 from esorm import setup_mappings
 
 from adapters.database import DatabaseSession
@@ -110,7 +111,8 @@ class DbIndexedRepository(
         """
         return (
             await self._indexer_session.search(
-                index=self._indexer_entity.ESConfig.index, body=request
+                index=self._indexer_entity.ESConfig.index,
+                body=request.model_dump(),
             )
         ).body
 
@@ -157,6 +159,42 @@ class DbIndexedRepository(
         await self.serialize_entity(entity).save(wait_for=wait_for)
 
         return entity
+
+    async def save_bulk(
+        self,
+        entities: List[DatabaseEntityType],
+        wait_for: bool = False,
+    ) -> List[DatabaseEntityType]:
+        self._database_session.add_all(entities)
+        self._database_session.commit()
+
+        docs = []
+        for entity in entities:
+            self._database_session.refresh(entity)
+            docs.append(self.serialize_entity(entity))
+
+        index_name = self._indexer_entity.ESConfig.index
+        id_field = self._indexer_entity.ESConfig.id_field
+        _, errors = await async_bulk(
+            self._indexer_session,
+            (
+                {
+                    "_op_type": "index",
+                    "_index": index_name,
+                    "_id": doc.__id__,
+                    "_source": doc.model_dump(
+                        mode="json", exclude={id_field}, exclude_none=True
+                    ),
+                }
+                for doc in docs
+            ),
+            refresh=wait_for,
+        )
+
+        if errors:
+            raise RuntimeError(f"Failed to index some documents: {errors}")
+
+        return entities
 
     async def index_all(self) -> None:
         semaphore = asyncio.BoundedSemaphore(10)

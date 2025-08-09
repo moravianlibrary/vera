@@ -1,57 +1,117 @@
 import asyncio
-from typing import Any, Dict, Set, Tuple
+import atexit
+import copy
+import logging
+import warnings
+from dataclasses import dataclass
+from typing import Any, Dict, List, Set, Tuple, Type
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import AsyncMock, patch
 
+from elasticsearch.helpers import async_bulk
 from esorm import connect, setup_mappings
 from fastapi import Response
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import create_engine
+from sqlalchemy import Table, create_engine, insert, text
 from sqlalchemy.orm import sessionmaker
 from testcontainers.elasticsearch import ElasticSearchContainer
 from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
-from adapters.database import BaseModel, get_database_session
-from adapters.indexer import _patch_es_meta
+from adapters.database import BaseModel, DatabaseSession, get_database_session
+from adapters.indexer import IndexerModelType, _patch_es_meta
 from app import app
 from config import config
 from controllers.resources.resolvers import resolve_authenticated_user
+from repositories._db_repository import DatabaseEntityType, IdType
 from tests.mock.user import SuperUser
+
+logging.basicConfig(level=logging.ERROR)
+
 
 POSTGRES_IMAGE = "postgres:17"
 ELASTICSEARCH_IMAGE = "elasticsearch:8.14.0"
 REDIS_IMAGE = "redis:8.0"
 
 
-class TestIntegrationCase(IsolatedAsyncioTestCase):
+@dataclass
+class TestIntegrationResources:
+    db_session: DatabaseSession
+    es_url: str
+    client: AsyncClient
+
+
+@dataclass
+class EntitySeed:
+    entities: List[DatabaseEntityType]
+    indexer_model: Type[IndexerModelType] | None = None
+
+
+@dataclass
+class AssociationSeed:
+    table: Table
+    assignment: Dict[IdType, List[IdType]]
+
+
+@dataclass
+class ReindexRequest:
+    db_model: Type[DatabaseEntityType]
+    indexer_model: Type[IndexerModelType]
+    ids: List[IdType]
+
+
+@dataclass
+class SequenceSyncRequest:
+    table: Table
+    target_id: int
+
+
+SeedData = EntitySeed | AssociationSeed | ReindexRequest | SequenceSyncRequest
+
+
+class TestIntegrationContext:
+    _resources: TestIntegrationResources | None = None
+    _started: bool = False
+    _lock = asyncio.Lock()
+
     @classmethod
-    def setUpClass(cls):
+    async def start(cls):
+        if cls._started:
+            return
+
+        await cls._lock.acquire()
+
+        if cls._started:
+            cls._lock.release()
+            return
+
+        # Database
         cls.postgres = PostgresContainer(POSTGRES_IMAGE)
-        cls.postgres.start()
+        await asyncio.to_thread(cls.postgres.start)
 
         cls.engine = create_engine(cls.postgres.get_connection_url())
         cls.SessionLocal = sessionmaker(bind=cls.engine)
-        BaseModel.metadata.create_all(cls.engine)
+        await asyncio.to_thread(BaseModel.metadata.create_all, cls.engine)
 
+        cls.connection = cls.engine.connect()
+        cls.db_session = cls.SessionLocal(bind=cls.connection)
+
+        app.dependency_overrides[get_database_session] = lambda: cls.db_session
+
+        # Indexer
         cls.elasticsearch = ElasticSearchContainer(ELASTICSEARCH_IMAGE)
         cls.elasticsearch.with_env("ES_JAVA_OPTS", "-Xms256m -Xmx256m")
         cls.elasticsearch.with_env("xpack.security.enabled", "false")
-        cls.elasticsearch.start()
+        await asyncio.to_thread(cls.elasticsearch.start)
 
-        cls._patch_is_indexer_available = patch(
+        cls.patch_is_indexer_available = patch(
             "adapters.indexer.is_indexer_available", new_callable=AsyncMock
         )
-        cls.mock_is_indexer_available = cls._patch_is_indexer_available.start()
+        cls.mock_is_indexer_available = cls.patch_is_indexer_available.start()
         cls.mock_is_indexer_available.return_value = True
 
-        cls.redis = RedisContainer(REDIS_IMAGE)
-        cls.redis.with_env("maxmemory", "64mb")
-        cls.redis.start()
-
-    async def asyncSetUp(self):
-        self.es = await connect(
-            hosts=self.elasticsearch.get_url(),
+        cls.es = await connect(
+            hosts=cls.elasticsearch.get_url(),
             basic_auth=(
                 config.elasticsearch.username,
                 config.elasticsearch.password,
@@ -60,59 +120,235 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
         )
         _patch_es_meta()
 
-        while not await self.es.ping():
-            await asyncio.sleep(0.5)
-            message = await self.es.info()
-            print(f"Elasticsearch is not ready yet: {message}")
-
-        indices = await self.es.indices.get(index="*")
-        for index in indices:
-            await self.es.indices.delete(index=index)
-
         await setup_mappings()
 
-    def setUp(self):
-        self.client = AsyncClient(
-            transport=ASGITransport(app=app),
-            base_url="http://testserver",
-        )
-        self.headers = {"Authorization": "Bearer test_token"}
-        self.json_headers = {
-            "Authorization": "Bearer test_token",
-            "Content-Type": "application/json",
-        }
+        await cls.es.close()
 
-        self.connection = self.engine.connect()
-        self.db_session = self.SessionLocal(bind=self.connection)
+        # Broker
+        cls.redis = RedisContainer(REDIS_IMAGE)
+        cls.redis.with_env("maxmemory", "64mb")
+        await asyncio.to_thread(cls.redis.start)
 
-        BaseModel.metadata.drop_all(bind=self.engine)
-        BaseModel.metadata.create_all(bind=self.engine)
-
-        app.dependency_overrides[get_database_session] = (
-            lambda: self.db_session
-        )
+        # User
         app.dependency_overrides[resolve_authenticated_user] = (
             lambda: SuperUser()
         )
 
-    def tearDown(self):
-        app.dependency_overrides.pop(resolve_authenticated_user, None)
-        app.dependency_overrides.pop(get_database_session, None)
+        # Client
+        cls.client = AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://testserver"
+        )
 
-        self.db_session.close()
-        self.connection.close()
+        cls._resources = TestIntegrationResources(
+            db_session=cls.db_session,
+            es_url=cls.elasticsearch.get_url(),
+            client=cls.client,
+        )
+        cls._started = True
 
-    async def asyncTearDown(self):
-        await self.client.aclose()
-        await self.es.close()
+        cls._lock.release()
 
     @classmethod
-    def tearDownClass(cls):
+    async def stop(cls):
+        if not cls._started:
+            return
+
+        await cls._lock.acquire()
+
+        if not cls._started:
+            cls._lock.release()
+            return
+
+        # Database
+        app.dependency_overrides.pop(get_database_session, None)
+
+        cls.db_session.close()
+        cls.connection.close()
+
+        BaseModel.metadata.drop_all(bind=cls.engine)
         cls.engine.dispose()
 
         cls.postgres.stop()
+
+        # Indexer
+        cls.patch_is_indexer_available.stop()
         cls.elasticsearch.stop()
+
+        # Broker
         cls.redis.stop()
+
+        # User
+        app.dependency_overrides.pop(resolve_authenticated_user, None)
+
+        # Client
+        await cls.client.aclose()
+
+        cls._resources = None
+        cls._started = False
+
+        cls._lock.release()
+
+    @classmethod
+    async def get_resources(cls) -> TestIntegrationResources:
+        await cls.start()
+        return cls._resources
+
+
+def _stop_sync():
+    asyncio.run(TestIntegrationContext.stop())
+
+
+atexit.register(_stop_sync)
+
+
+class TestIntegrationCase(IsolatedAsyncioTestCase):
+    @classmethod
+    def setUpClass(cls):
+        warnings.simplefilter("ignore", category=DeprecationWarning)
+
+    async def asyncSetUp(self):
+        resources = await TestIntegrationContext.get_resources()
+
+        self.db_session = resources.db_session
+        self.es = await connect(
+            hosts=resources.es_url,
+            basic_auth=(
+                config.elasticsearch.username,
+                config.elasticsearch.password,
+            ),
+            request_timeout=config.elasticsearch.request_timeout,
+        )
+        self.client = resources.client
+
+        # Reset database state before each test
+        tables = ", ".join(
+            table.name for table in BaseModel.metadata.sorted_tables
+        )
+        self.db_session.execute(
+            text(f"TRUNCATE {tables} RESTART IDENTITY CASCADE;")
+        )
+        self.db_session.commit()
+
+        # Reset indexer state before each test
+        await self.es.delete_by_query(
+            index="*",
+            body={"query": {"match_all": {}}},
+            wait_for_completion=True,
+            conflicts="proceed",
+        )
+
+    async def asyncTearDown(self):
+        await self.es.close()
+
+    async def bulk_index(
+        self,
+        entities: List[DatabaseEntityType],
+        indexer_model: Type[IndexerModelType],
+    ) -> None:
+        index_name = indexer_model.ESConfig.index
+        id_field = indexer_model.ESConfig.id_field
+
+        docs = [
+            indexer_model.model_validate(entity, from_attributes=True)
+            for entity in entities
+        ]
+
+        _, errors = await async_bulk(
+            self.es,
+            (
+                {
+                    "_op_type": "index",
+                    "_index": index_name,
+                    "_id": doc.__id__,
+                    "_source": doc.model_dump(
+                        mode="json", exclude={id_field}, exclude_none=True
+                    ),
+                }
+                for doc in docs
+            ),
+            refresh=True,
+        )
+
+        if errors:
+            raise RuntimeError(f"Some documents failed to index: {errors}")
+
+    async def _persist_entities(
+        self,
+        entities: List[DatabaseEntityType],
+        indexer_model: Type[IndexerModelType] | None = None,
+    ) -> List[DatabaseEntityType]:
+        self.db_session.add_all(entities)
+        self.db_session.commit()
+
+        for entity in entities:
+            self.db_session.refresh(entity)
+
+        if indexer_model:
+            await self.bulk_index(entities, indexer_model)
+
+    async def _persist_associations(
+        self, table: Table, assignment: Dict[IdType, List[IdType]]
+    ) -> None:
+        column_1_name = table.columns[0].name
+        column_2_name = table.columns[1].name
+        self.db_session.execute(
+            insert(table).values(
+                [
+                    {column_1_name: left_id, column_2_name: right_id}
+                    for left_id, right_ids in assignment.items()
+                    for right_id in right_ids
+                ]
+            )
+        )
+
+        self.db_session.commit()
+
+    async def _reindex(
+        self,
+        db_model: Type[DatabaseEntityType],
+        indexer_model: Type[IndexerModelType],
+        ids: List[IdType],
+    ) -> None:
+        await self.bulk_index(
+            self.db_session.query(db_model).filter(db_model.id.in_(ids)).all(),
+            indexer_model,
+        )
+
+    def _sync_sequence(
+        self,
+        table: Table,
+        target_id: int,
+    ) -> None:
+        table_name = table.name
+        seq_sql = text(
+            """
+            SELECT setval(
+                pg_get_serial_sequence(:table_name, 'id'),
+                :target_id,
+                false
+            )
+            """
+        )
+        self.db_session.execute(
+            seq_sql, {"table_name": table_name, "target_id": target_id}
+        )
+        self.db_session.commit()
+
+    async def seed_test_data(self, seed_data: List[SeedData]) -> None:
+        for seed in seed_data:
+            if isinstance(seed, EntitySeed):
+                await self._persist_entities(
+                    [copy.deepcopy(entity) for entity in seed.entities],
+                    seed.indexer_model,
+                )
+            elif isinstance(seed, AssociationSeed):
+                await self._persist_associations(seed.table, seed.assignment)
+            elif isinstance(seed, ReindexRequest):
+                await self._reindex(
+                    seed.db_model, seed.indexer_model, seed.ids
+                )
+            elif isinstance(seed, SequenceSyncRequest):
+                self._sync_sequence(seed.table, seed.target_id)
 
     def assertResponse(
         self,
