@@ -8,7 +8,7 @@ from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
 from definitions.identifier import IdentifierType
 from definitions.proposal import ProposalStatus
-from schemas.addition import AdditionBatchParams, IngestAdditionsParams
+from schemas.addition import AdditionsBatchParams, AdditionsSettingsParams
 from schemas.category import CategorySummary
 from schemas.project import ProjectSummary
 
@@ -16,7 +16,7 @@ from schemas.project import ProjectSummary
 # --------------------
 # - Query Parameters -
 # --------------------
-class ProposalBatchParams(AdditionBatchParams):
+class ProposalBatchParams(AdditionsBatchParams):
     pass
 
 
@@ -76,7 +76,7 @@ class IngestProposalsTaskData(BaseModel):
     project_id: int | None = None
 
 
-class AcceptProposalsTaskData(IngestAdditionsParams):
+class AcceptProposalsTaskData(AdditionsSettingsParams):
     additions_batch_id: int
     category_id: int
     priority: Priority = Field(3, ge=1, le=5)

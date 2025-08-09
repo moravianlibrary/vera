@@ -1,34 +1,23 @@
 # import logging
-# from celery import Celery, signals
-# from os import path
-# from sys import path as sys_path
-# from models.base_engine import DatabaseUrl, get_session
-# from datatypes import TaskState
-# from config import VeraConfig
-# from models import Task, PeriodicTask
-# from tasks import TaskDispatcher, add_documents
-# import redis
-# from redis.lock import Lock
-# from contextlib import contextmanager
-# from vera_scheduler import vera_scheduler
+# from celery import Celery
 
-
-# sys_path.append(path.abspath("/app"))
+# from adapters.database import DatabaseUrl
+# from config import AppConfig
 
 # logging.basicConfig(level=logging.INFO)
 # logger = logging.getLogger("Worker")
 
 
-# celery_worker = Celery(
+# worker = Celery(
 #     "tasks",
-#     broker=VeraConfig.Broker.Url,
+#     broker=AppConfig.broker.url,
 #     broker_connection_retry_on_startup=True,
 #     result_backend=f"db+{DatabaseUrl}",
 #     database_table_names={
 #         "task": "celery_tasks",
 #         "group": "celery_groups",
 #     },
-#     timezone=VeraConfig.TimeZone,
+#     timezone=AppConfig.timezone_name,
 # )
 # redis_client = redis.Redis(
 #     host=VeraConfig.Broker.Host, port=VeraConfig.Broker.Port

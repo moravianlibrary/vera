@@ -5,7 +5,7 @@ from fastapi import APIRouter, Query
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import ProposalRepository
-from schemas.addition import IngestAdditionsParams
+from schemas.addition import AdditionsSettingsParams
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.proposal import Proposal, ProposalBatchParams, ProposalCreate
 from schemas.task import Task
@@ -70,7 +70,7 @@ def reingest(
     response_model=Task,
 )
 def approve(
-    ingest_additions_params: Annotated[IngestAdditionsParams, Query()],
+    ingest_additions_params: Annotated[AdditionsSettingsParams, Query()],
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageProposals),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,

@@ -11,7 +11,8 @@ from ._db_indexed_repository import (
     SearchAllMixin,
     SearchCountMixin,
 )
-from .models.addition import AdditionModel
+from ._db_repository import DbRepository, GetByIdMixin
+from .models.addition import AdditionBatchModel, AdditionModel
 from .models.project import ProjectModel
 from .models.proposal import ProposalModel
 
@@ -92,3 +93,22 @@ class AdditionRepository(
         addition.status = status
         addition.eligibility_status = eligibility_status
         return self.save(addition)
+
+
+class AdditionBatchRepository(
+    DbRepository[AdditionBatchModel],
+    GetByIdMixin[AdditionBatchModel, int],
+):
+    def __init__(self, database_session: DatabaseSession):
+        super().__init__(
+            "Addition Batch", database_session, AdditionBatchModel
+        )
+
+    def create(
+        self, name: str, file_name: str, created_by: str
+    ) -> AdditionBatchModel:
+        return self.save(
+            AdditionBatchModel(
+                name=name, file_name=file_name, created_by=created_by
+            )
+        )

@@ -15,15 +15,15 @@ from schemas.task import Task
 # --------------------
 # - Query Parameters -
 # --------------------
-class AdditionBatchParams(BaseModel):
+class AdditionsBatchParams(BaseModel):
     batch_id: int | None = None
     batch_name: str | None = None
     file_name: str | None = None
 
     @model_validator(mode="after")
     def validate_either_id_or_name(
-        cls, model: "AdditionBatchParams"
-    ) -> "AdditionBatchParams":
+        cls, model: "AdditionsBatchParams"
+    ) -> "AdditionsBatchParams":
         if model.batch_id and (model.batch_name or model.file_name):
             raise ValueError(
                 "Either batch_id or batch_name/file_name must be provided,"
@@ -33,9 +33,26 @@ class AdditionBatchParams(BaseModel):
         return model
 
 
-class IngestAdditionsParams(BaseModel):
+class AdditionsSettingsParams(BaseModel):
     allow_new_iteration: bool = False
     ignore_digitization_check: bool = False
+
+
+class IngestAdditionsParams(AdditionsBatchParams, AdditionsSettingsParams):
+    @property
+    def batch(self) -> AdditionsBatchParams:
+        return AdditionsBatchParams(
+            batch_id=self.batch_id,
+            batch_name=self.batch_name,
+            file_name=self.file_name,
+        )
+
+    @property
+    def settings(self) -> AdditionsSettingsParams:
+        return AdditionsSettingsParams(
+            allow_new_iteration=self.allow_new_iteration,
+            ignore_digitization_check=self.ignore_digitization_check,
+        )
 
 
 # --------------------
@@ -109,7 +126,7 @@ class Addition(AdditionHit):
 # -------------
 # - Task Data -
 # -------------
-class IngestBatchAdditionsTaskData(IngestAdditionsParams):
+class IngestBatchAdditionsTaskData(AdditionsSettingsParams):
     batch_id: int
     additions: List[AdditionCreate]
 
@@ -118,7 +135,7 @@ class IngestProjectAdditionsTaskData(IngestBatchAdditionsTaskData):
     project_id: int
 
 
-class ReingestAdditionsTaskData(IngestAdditionsParams):
+class ReingestAdditionsTaskData(AdditionsSettingsParams):
     pass
 
 

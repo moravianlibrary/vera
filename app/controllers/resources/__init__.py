@@ -14,6 +14,7 @@ from repositories import (
     RoleRepository,
     UserRepository,
 )
+from repositories.addition import AdditionBatchRepository
 from repositories.catalog_record import CatalogRecordRepository
 from repositories.plugin import PluginInstanceRepository, PluginRepository
 from repositories.project import ProjectRepository
@@ -62,6 +63,7 @@ DependsOnCatalogAdapter = Depends(get_catalog_adapter)
 DependsOnIdentityProvider = Depends(get_identity_provider)
 
 DependsOnAdditionRepository = provide_repository(AdditionRepository)
+DependsOnAdditionBatchRepository = provide_repository(AdditionBatchRepository)
 DependsOnCatalogRecordRepository = provide_repository(CatalogRecordRepository)
 DependsOnCategoryRepository = provide_repository(CategoryRepository)
 DependsOnDigiListRepository = provide_repository(DigiListRepository)
@@ -88,7 +90,10 @@ DependsOnUserRepository = provide_repository(UserRepository)
 DependsOnWatchlistRepository = provide_repository(WatchlistRepository)
 
 DependsOnAdditionService = provide_service(
-    AdditionService, DependsOnAdditionRepository
+    AdditionService,
+    DependsOnAdditionRepository,
+    DependsOnAdditionBatchRepository,
+    DependsOnTaskRepository,
 )
 DependsOnCatalogRecordService = provide_service(
     CatalogRecordService,

@@ -65,11 +65,11 @@ class AdditionModel(BaseModel):
     )
 
     @property
-    def batch_name(self) -> str:
+    def batch_name(self) -> str | None:
         return self.batch.name
 
     @property
-    def file_name(self) -> str:
+    def file_name(self) -> str | None:
         return self.batch.file_name
 
     @property

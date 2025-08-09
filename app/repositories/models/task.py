@@ -78,7 +78,7 @@ class TaskModel(BaseModel, CreatedAuditMixin):
     )
 
     @hybrid_property
-    def scope(self) -> TaskScope:
+    def task_scope(self) -> TaskScope:
         return TaskScope(self.task_type.split(".")[0])
 
     @hybrid_property

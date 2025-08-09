@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from adapters.indexer import IndexerModel, IndexerNestedModel
 from definitions.identifier import IdentifierType
 from definitions.project import ProjectStatus
-from schemas.addition import AdditionBatchParams
+from schemas.addition import AdditionsBatchParams
 from schemas.category import CategorySummary
 from schemas.group import GroupSummary
 from schemas.user import UserSummary
@@ -15,7 +15,7 @@ from schemas.user import UserSummary
 # --------------------
 # - Query Parameters -
 # --------------------
-class ProjectBatchParams(AdditionBatchParams):
+class ProjectBatchParams(AdditionsBatchParams):
     pass
 
 

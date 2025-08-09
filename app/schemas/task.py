@@ -39,9 +39,8 @@ class TaskItem(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class Task(IndexerModel):
-    id: integer
-    task_schedule_id: integer | None
+class TaskHit(IndexerModel):
+    task_schedule_id: integer | None = None
 
     # TODO: Cant be Union
     # task_type: TaskType
@@ -54,17 +53,24 @@ class Task(IndexerModel):
     created_by: keyword
 
     created_at: datetime
-    started_at: datetime | None
-    finished_at: datetime | None
+    started_at: datetime | None = None
+    finished_at: datetime | None = None
 
     processed_count: integer
     total_count: integer
     error_count: integer
 
-    # TODO: Cant be TypedDict
-    # query: IndexerQuery
+    query: IndexerQuery | None = None
     # TODO:
     # result: Dict[str, int] | None
+
+
+class Task(TaskHit):
+    class ESConfig:
+        index = "tasks"
+        id_field = "id"
+
+    id: integer
 
 
 class ScheduledTask(IndexerModel):
@@ -76,6 +82,5 @@ class ScheduledTask(IndexerModel):
     task_scope: TaskScope
     unscoped_task_type: keyword
 
-    # TODO:
-    # query: IndexerQuery
+    query: IndexerQuery | None = None
     cron_expression: keyword

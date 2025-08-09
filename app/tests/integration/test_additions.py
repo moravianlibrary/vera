@@ -1,10 +1,14 @@
-from unittest import skip  # noF
+from unittest import skip
 
 from definitions.addition import AdditionStatus
 from repositories.models.addition import AdditionBatchModel, AdditionModel
 from repositories.models.user import UserModel
 from schemas.addition import Addition
-from tests.integration.case import EntitySeed, TestIntegrationCase
+from tests.integration.case import (
+    EntitySeed,
+    SequenceSyncRequest,
+    TestIntegrationCase,
+)
 
 TEST_DATA = [
     EntitySeed(
@@ -16,12 +20,19 @@ TEST_DATA = [
         ]
     ),
     EntitySeed(
+        [
+            UserModel(
+                id="superuser", username="superuser", email="superuser@mzk.cz"
+            )
+        ]
+    ),
+    EntitySeed(
         entities=[
             AdditionBatchModel(
                 id=i,
                 name=f"Batch {i}",
                 file_name=f"batch_{i}.json",
-                created_by=f"id-{i}",
+                created_by="id-1" if i == 1 else "superuser",
             )
             for i in range(1, 3)
         ]
@@ -47,6 +58,8 @@ TEST_DATA = [
         ],
         indexer_model=Addition,
     ),
+    SequenceSyncRequest(AdditionBatchModel.__table__, 3),
+    SequenceSyncRequest(AdditionModel.__table__, 7),
 ]
 
 
@@ -176,7 +189,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "batch_id": 2,
                                 "batch_name": "Batch 2",
                                 "category_id": 1,
-                                "created_by": "id-2",
+                                "created_by": "superuser",
                                 "eligibility_status": None,
                                 "file_name": "batch_2.json",
                                 "identifier_type": "ISXN",
@@ -198,7 +211,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "batch_id": 2,
                                 "batch_name": "Batch 2",
                                 "category_id": 1,
-                                "created_by": "id-2",
+                                "created_by": "superuser",
                                 "eligibility_status": None,
                                 "file_name": "batch_2.json",
                                 "identifier_type": "ISXN",
@@ -219,4 +232,80 @@ class TestIntegrationAdditions(TestIntegrationCase):
                 ("took",),
                 ("hits", "hits", "_source", "created_at"),
             },
+        )
+
+    async def test_ingest_new_batch(self):
+        self.assertResponse(
+            await self.client.post(
+                "/additions/ingest",
+                json=[
+                    {
+                        "identifier_type": "ISXN",
+                        "identifier_value": "978-3-16-148410-4",
+                        "category_id": 1,
+                        "priority": 2,
+                    }
+                ],
+                params={
+                    "file_name": "new_batch.txt",
+                },
+            ),
+            200,
+            {
+                "batch_id": 3,
+                "task": {
+                    "created_at": "2025-08-09T15:02:03.474003",
+                    "created_by": "superuser",
+                    "error_count": 0,
+                    "finished_at": None,
+                    "id": 1,
+                    "name": "Ingest additions",
+                    "processed_count": 0,
+                    "query": None,
+                    "started_at": None,
+                    "task_schedule_id": None,
+                    "task_scope": "Addition",
+                    "task_state": "Initializing",
+                    "total_count": 0,
+                    "unscoped_task_type": "Ingest",
+                },
+            },
+            exclude_paths={("task", "created_at")},
+        )
+
+    async def test_ingest_existing_batch(self):
+        self.assertResponse(
+            await self.client.post(
+                "/additions/ingest",
+                json=[
+                    {
+                        "identifier_type": "ISXN",
+                        "identifier_value": "978-3-16-148410-4",
+                        "category_id": 1,
+                        "priority": 2,
+                    }
+                ],
+                params={"batch_id": 2},
+            ),
+            200,
+            {
+                "batch_id": 2,
+                "task": {
+                    "created_at": "2025-08-09T15:02:03.474003",
+                    "created_by": "superuser",
+                    "error_count": 0,
+                    "finished_at": None,
+                    "id": 1,
+                    "name": "Ingest additions",
+                    "processed_count": 0,
+                    "query": None,
+                    "started_at": None,
+                    "task_schedule_id": None,
+                    "task_scope": "Addition",
+                    "task_state": "Initializing",
+                    "total_count": 0,
+                    "unscoped_task_type": "Ingest",
+                },
+            },
+            exclude_paths={("task", "created_at")},
         )

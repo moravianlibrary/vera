@@ -129,6 +129,10 @@ class TestIntegrationContext:
         cls.redis.with_env("maxmemory", "64mb")
         await asyncio.to_thread(cls.redis.start)
 
+        cls.patch_init_task_delay = patch("services.task.init_task.delay")
+        cls.mock_init_task_delay = cls.patch_init_task_delay.start()
+        cls.mock_init_task_delay.return_value = None
+
         # User
         app.dependency_overrides[resolve_authenticated_user] = (
             lambda: SuperUser()
@@ -175,6 +179,7 @@ class TestIntegrationContext:
         cls.elasticsearch.stop()
 
         # Broker
+        # cls.patch_init_task_delay.stop()
         cls.redis.stop()
 
         # User

@@ -14,7 +14,8 @@ from repositories.models.task import TaskModel, TaskScheduleModel
 from repositories.task import TaskRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import UserAssignment
-from schemas.task import TaskScheduleParams
+from schemas.task import Task, TaskScheduleParams
+from tasks.entrypoint import init_task
 
 
 class TaskService:
@@ -27,7 +28,10 @@ class TaskService:
     def _enforce_manage_ownership(self, task_id: int, user: str) -> TaskModel:
         pass
 
-    def create(
+    def serialize_entity(self, task: TaskModel) -> Task:
+        return self._task_repository.serialize_entity(task)
+
+    async def create(
         self,
         scope: TaskScope,
         task_type: TaskType,
@@ -36,18 +40,16 @@ class TaskService:
         data: BaseModel | None = None,
         query: IndexerQuery | None = None,
     ) -> TaskModel:
-        task = self._task_repository.create(
+        task = await self._task_repository.create(
             scope,
             task_type,
             name,
             created_by,
-            data.model_dump() if data else None,
+            data.model_dump(mode="json") if data else None,
             query,
         )
 
-        self._task_repository.index(task, True)
-
-        run_task.delay(task.id)
+        init_task.delay(task.id)
 
         return task
 
@@ -103,17 +105,17 @@ class TaskBasedService:
     _task_scope: TaskScope | None = None
     _task_names_mapping: Dict[TaskType, str] | None = None
 
-    def __init__(self, task_service: TaskService):
-        self._task_service = task_service
+    def __init__(self, task_repository: TaskRepository):
+        self._task_service = TaskService(task_repository)
 
-    def _create_task(
+    async def _create_task(
         self,
         task_type: TaskType,
         created_by: str,
         data: BaseModel | None = None,
         query: IndexerQuery | None = None,
     ) -> TaskModel:
-        return self._task_service.create(
+        return await self._task_service.create(
             self._task_scope,
             task_type,
             self._task_names_mapping[task_type],
@@ -121,3 +123,6 @@ class TaskBasedService:
             data,
             query,
         )
+
+    def _serialize_task(self, task: TaskModel) -> Task:
+        return self._task_service.serialize_entity(task)

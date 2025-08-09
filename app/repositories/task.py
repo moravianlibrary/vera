@@ -1,7 +1,7 @@
 from typing import Optional
 
 from adapters.database import DatabaseSession
-from adapters.indexer import IndexerQuery
+from adapters.indexer import IndexerQuery, IndexerSession
 from config import config
 from definitions.json import JsonArray, JsonObject
 from definitions.task import (
@@ -21,10 +21,12 @@ class TaskRepository(
     DbIndexedRepository[TaskModel, Task],
     GetByIdMixin[TaskModel, int],
 ):
-    def __init__(self, db_session: DatabaseSession):
-        super().__init__("Task", db_session, TaskModel)
+    def __init__(
+        self, db_session: DatabaseSession, indexer_session: IndexerSession
+    ):
+        super().__init__("Task", db_session, TaskModel, indexer_session, Task)
 
-    def create(
+    async def create(
         self,
         scope: TaskScope,
         task_type: TaskType,
@@ -33,10 +35,10 @@ class TaskRepository(
         data: JsonObject | JsonArray | None = None,
         query: IndexerQuery | None = None,
     ) -> TaskModel:
-        return self.save_and_index(
+        return await self.save(
             TaskModel(
-                task_type=f"{scope}.{task_type}",
-                taskname=name,
+                task_type=f"{scope.value}.{task_type.value}",
+                name=name,
                 created_by=created_by,
                 data=data,
                 query=query.to_dict() if query else None,
@@ -54,16 +56,16 @@ class TaskRepository(
             raise Exception()
 
         if task_state == TaskState.Running:
-            task_model.started = config.timestamp
+            task_model.started_at = config.timestamp
         elif task_model.task_state == TaskState.Running:
-            task_model.finished = config.timestamp
+            task_model.finished_at = config.timestamp
 
         task_model.task_state = task_state
 
         if result_message is not None:
             task_model.result_message = result_message
 
-        return self.save_and_index(task_model)
+        return self.save(task_model)
 
 
 class TaskItemRepository(DbRepository[TaskModel], PaginationMixin[TaskModel]):

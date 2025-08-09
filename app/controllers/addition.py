@@ -6,9 +6,9 @@ from adapters.indexer import IndexerQuery, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import AdditionRepository
 from schemas.addition import (
-    AdditionBatchParams,
     AdditionCreate,
     AdditionHit,
+    AdditionsSettingsParams,
     IngestAdditionsParams,
     IngestAdditionsResponse,
 )
@@ -47,12 +47,13 @@ async def search(
 )
 async def ingest(
     additions: List[AdditionCreate],
-    batch_params: Annotated[AdditionBatchParams, Query()],
-    ingest_params: Annotated[IngestAdditionsParams, Query()],
+    params: Annotated[IngestAdditionsParams, Query()],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: AdditionService = DependsOnAdditionService,
 ):
-    return service.ingest(additions, batch_params, ingest_params, user.id)
+    return await service.ingest(
+        additions, params.batch, params.settings, user.id
+    )
 
 
 @router.post(
@@ -61,8 +62,8 @@ async def ingest(
     response_model=Task,
 )
 async def reingest(
-    ingest_params: IngestAdditionsParams = RestrictedParams(
-        GeneralPermission.IgnoreAdditionChecks, IngestAdditionsParams
+    ingest_params: AdditionsSettingsParams = RestrictedParams(
+        GeneralPermission.IgnoreAdditionChecks, AdditionsSettingsParams
     ),
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageAdditions),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,

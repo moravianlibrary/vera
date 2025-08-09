@@ -9,6 +9,7 @@ from .intention import IntentionRepository
 from .plugin import PluginRepository
 from .proposal import ProposalRepository
 from .role import RoleRepository
+from .task import TaskRepository
 from .user import UserRepository
 from .watchlist import WatchlistRepository
 
@@ -24,6 +25,7 @@ __all__ = [
     "PluginRepository",
     "ProposalRepository",
     "RoleRepository",
+    "TaskRepository",
     "UserRepository",
     "WatchlistRepository",
 ]

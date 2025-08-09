@@ -5,7 +5,8 @@ from typing import Callable, Dict, Generic, List, Type, TypeVar
 from aiohttp import ClientSession
 from elasticsearch import AsyncElasticsearch
 from esorm import ESBaseModel, ESModel, aggs, es
-from esorm.query import ESQuery
+
+# from esorm.query import ESQuery
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
 
