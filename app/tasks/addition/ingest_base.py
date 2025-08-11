@@ -7,7 +7,7 @@ from repositories.addition import AdditionRepository
 from repositories.catalog_record import CatalogRecordRepository
 from repositories.document import DocumentRepository
 from repositories.models.task import TaskAdditionModel, TaskModel
-from services.catalog_search import CatalogSearchService
+from services.catalog_adapter import CatalogSearchService
 from tasks.base import BaseItemTask
 from tasks.mixins.eligibility_check import EligibilityCheckMixin
 

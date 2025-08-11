@@ -1,12 +1,11 @@
 from enum import Enum
 from functools import wraps
-from typing import Callable, Dict, Generic, List, Type, TypeVar
+from typing import Callable, Dict, Generic, List, TypeVar, Union
 
 from aiohttp import ClientSession
 from elasticsearch import AsyncElasticsearch
 from esorm import ESBaseModel, ESModel, aggs, es
-
-# from esorm.query import ESQuery
+from esorm.fields import Keyword
 from fastapi import HTTPException, status
 from pydantic import BaseModel, Field
 
@@ -89,23 +88,21 @@ EnumType = TypeVar("EnumType", bound=Enum)
 
 
 class EnumList(Generic[EnumType]):
-    __es_type__ = "keyword"
+    __type__: type
 
-    def __init__(self, enum_cls: Type[EnumType]):
-        self.enum_cls = enum_cls
+    def __class_getitem__(cls, item):
+        return Union[Keyword, List[item]]
 
-    @classmethod
-    def __class_getitem__(cls, enum_cls: Type[EnumType]):
-        setattr(enum_cls, "__es_type__", cls.__es_type__)
 
-        class Wrapper(list):
-            __es_type__ = cls.__es_type__
-            __enum_type__ = enum_cls
+class EnumUnion(Generic[EnumType]):
+    __type__: type
 
-        Wrapper.__origin__ = list
-        Wrapper.__args__ = (enum_cls,)
-
-        return Wrapper
+    def __class_getitem__(cls, item):
+        if isinstance(item, tuple):
+            inner = Union[item]
+        else:
+            inner = item
+        return Union[Keyword, inner]
 
 
 def _patch_es_meta():

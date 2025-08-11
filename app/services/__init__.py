@@ -1,5 +1,5 @@
 from .addition import AdditionService
-from .catalog_search import CatalogSearchService
+from .catalog_adapter import CatalogSearchService
 from .category import CategoryService
 from .digitization_list import DigiListService
 from .distribution import DistributionService

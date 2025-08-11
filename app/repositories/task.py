@@ -10,11 +10,11 @@ from definitions.task import (
     TaskState,
     TaskType,
 )
-from schemas.task import Task
+from schemas.task import Task, TaskSchedule
 
 from ._db_indexed_repository import DbIndexedRepository
 from ._db_repository import DbRepository, GetByIdMixin, PaginationMixin
-from .models.task import TaskModel
+from .models.task import TaskModel, TaskScheduleModel
 
 
 class TaskRepository(
@@ -32,16 +32,16 @@ class TaskRepository(
         task_type: TaskType,
         name: str,
         created_by: str,
-        data: JsonObject | JsonArray | None = None,
         query: IndexerQuery | None = None,
+        data: JsonObject | JsonArray | None = None,
     ) -> TaskModel:
         return await self.save(
             TaskModel(
                 task_type=f"{scope.value}.{task_type.value}",
                 name=name,
                 created_by=created_by,
+                query=query.model_dump() if query else None,
                 data=data,
-                query=query.to_dict() if query else None,
             )
         )
 
@@ -73,6 +73,48 @@ class TaskItemRepository(DbRepository[TaskModel], PaginationMixin[TaskModel]):
 
 
 class TaskScheduleRepository(
-    DbRepository[TaskModel],
+    DbIndexedRepository[TaskScheduleModel, TaskSchedule],
+    GetByIdMixin[TaskScheduleModel, int],
 ):
-    pass
+    def __init__(
+        self, db_session: DatabaseSession, indexer_session: IndexerSession
+    ):
+        super().__init__(
+            "Task Schedule",
+            db_session,
+            TaskScheduleModel,
+            indexer_session,
+            TaskSchedule,
+        )
+
+    async def create(
+        self,
+        scope: TaskScope,
+        task_type: TaskType,
+        name: str,
+        cron_expression: str,
+        created_by: str,
+        query: IndexerQuery | None,
+    ) -> TaskScheduleModel:
+        return await self.save(
+            TaskScheduleModel(
+                task_type=f"{scope.value}.{task_type.value}",
+                name=name,
+                cron_expression=cron_expression,
+                created_by=created_by,
+                query=query.model_dump() if query else None,
+            )
+        )
+
+    async def update(
+        self, task_schedule: TaskScheduleModel, name: str, cron_expression: str
+    ) -> TaskScheduleModel:
+        task_schedule.name = name
+        task_schedule.cron_expression = cron_expression
+        return await self.save(task_schedule)
+
+    async def update_query(
+        self, task_schedule: TaskScheduleModel, query: IndexerQuery | None
+    ) -> TaskScheduleModel:
+        task_schedule.query = query.model_dump() if query else None
+        return await self.save(task_schedule)

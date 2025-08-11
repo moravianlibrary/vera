@@ -3,7 +3,7 @@ from typing import List
 from adapters.database import DatabaseSession
 from adapters.indexer import IndexerSession
 from definitions.category import ALLOWED_LEVELS
-from errors.category import cycle_detected_error, invalid_level_error
+from errors.category import CycleDetectedError, InvalidLevelError
 from repositories.models.group import GroupModel
 from repositories.models.user import UserModel
 from schemas.category import Category
@@ -141,12 +141,12 @@ class CategoryRepository(
             child, current_level = stack.pop()
 
             if child.id in visited:
-                raise cycle_detected_error(category_model.id)
+                raise CycleDetectedError(category_model.id)
 
             visited.add(child.id)
 
             if current_level not in ALLOWED_LEVELS:
-                raise invalid_level_error(category_model.id, current_level)
+                raise InvalidLevelError(category_model.id, current_level)
 
             child.level = current_level
             updated_models.append(child)

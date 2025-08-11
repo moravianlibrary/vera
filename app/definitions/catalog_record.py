@@ -10,11 +10,10 @@ class CatalogRecordStatus(Enum):
     # Log with timestamp and bot user
     Valid = "Valid"
     Invalid = "Invalid"
+    Archived = "Archived"
 
     # Log with timestamp, user, and optional message
     ForceValid = "ForceValid"
-    UnforceValid = "UnforceValid"
-    Archived = "Archived"
-    Unarchived = "Unarchived"
+    RevertForceValid = "RevertForceValid"
     MarkInReview = "MarkInReview"
     UnmarkInReview = "UnmarkInReview"

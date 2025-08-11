@@ -10,7 +10,7 @@ from repositories.catalog_record import CatalogRecordRepository
 from repositories.document import DocumentRepository
 from repositories.models.catalog_record import CatalogRecordModel
 from repositories.models.document import DocumentModel
-from services.catalog_search import CatalogSearchService
+from services.catalog_adapter import CatalogSearchService
 
 
 class EligibilityCheckContext(Protocol):

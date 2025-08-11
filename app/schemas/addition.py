@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 
 from esorm.fields import keyword, long, text
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
 from adapters.indexer import IndexerModel, IndexerNestedModel
 from definitions.addition import AdditionStatus
@@ -19,18 +19,6 @@ class AdditionsBatchParams(BaseModel):
     batch_id: int | None = None
     batch_name: str | None = None
     file_name: str | None = None
-
-    @model_validator(mode="after")
-    def validate_either_id_or_name(
-        cls, model: "AdditionsBatchParams"
-    ) -> "AdditionsBatchParams":
-        if model.batch_id and (model.batch_name or model.file_name):
-            raise ValueError(
-                "Either batch_id or batch_name/file_name must be provided,"
-                " not both."
-            )
-
-        return model
 
 
 class AdditionsSettingsParams(BaseModel):
@@ -98,7 +86,7 @@ class AdditionHit(IndexerModel):
     file_name: text | None = None
     created_by: keyword
     created_at: datetime
-    is_archived: bool
+    archived: bool
 
     identifier_type: IdentifierType
     identifier_value: keyword

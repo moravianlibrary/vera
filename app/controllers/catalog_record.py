@@ -7,18 +7,19 @@ from definitions.permission import GeneralPermission
 from repositories.catalog_record import CatalogRecordRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.catalog_record import (
-    CatalogRecord,
     CatalogRecordDetails,
+    CatalogRecordHit,
     CatalogRecordsSyncParams,
+    MarkInReviewParams,
 )
-from schemas.task import Task, TaskScheduleParams
+from schemas.task import Task, TaskOrSchedule, TaskScheduleParams
 from services.catalog_record import CatalogRecordService
 
 from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnCatalogRecordRepository,
     DependsOnCatalogRecordService,
-    ResolveTaskScheduleParams,
+    RestrictedTaskScheduleParams,
     WithPermission,
 )
 
@@ -28,13 +29,13 @@ router = APIRouter(prefix="/catalog-records", tags=["Catalog records"])
 @router.post(
     "/search",
     dependencies=[WithPermission(GeneralPermission.ReadCatalogRecords)],
-    response_model=IndexerResponse[CatalogRecord],
+    response_model=IndexerResponse[CatalogRecordHit],
 )
-def search(
+async def search(
     request: IndexerRequest,
     repository: CatalogRecordRepository = DependsOnCatalogRecordRepository,
 ):
-    return repository.search(request)
+    return await repository.search(request)
 
 
 @router.get(
@@ -50,31 +51,17 @@ def get_details(
 
 
 @router.post(
-    "/forced-validity",
-    dependencies=[WithPermission(GeneralPermission.ReviewCatalogRecords)],
-    response_model=Task,
-)
-def set_forced_validity(
-    query: IndexerQuery,
-    validity: bool = True,
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    service: CatalogRecordService = DependsOnCatalogRecordService,
-):
-    return service.set_forced_validity(query, validity, user.id)
-
-
-@router.post(
     "/reindex",
     dependencies=[WithPermission(GeneralPermission.ManageCatalogRecords)],
-    response_model=Task,
+    response_model=TaskOrSchedule,
 )
-def reindex(
+async def reindex(
     query: IndexerQuery,
-    schedule_params: TaskScheduleParams | None = ResolveTaskScheduleParams,
+    schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return service.reindex(query, user.id, schedule_params)
+    return await service.reindex(query, user.id, schedule_params)
 
 
 @router.post(
@@ -82,14 +69,42 @@ def reindex(
     dependencies=[WithPermission(GeneralPermission.ManageCatalogRecords)],
     response_model=Task,
 )
-def sync(
+async def sync(
     query: IndexerQuery,
     sync_params: Annotated[CatalogRecordsSyncParams, Query()],
-    schedule_params: TaskScheduleParams | None = ResolveTaskScheduleParams,
+    schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return service.sync(query, sync_params, user.id, schedule_params)
+    return await service.sync(query, sync_params, user.id, schedule_params)
+
+
+@router.post(
+    "/forced-validity",
+    dependencies=[WithPermission(GeneralPermission.ReviewCatalogRecords)],
+    response_model=Task,
+)
+async def set_forced_validity(
+    query: IndexerQuery,
+    validity: bool = True,
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: CatalogRecordService = DependsOnCatalogRecordService,
+):
+    return await service.set_forced_validity(query, validity, user.id)
+
+
+@router.post(
+    "/mark-in-review",
+    dependencies=[WithPermission(GeneralPermission.ReviewCatalogRecords)],
+    response_model=Task,
+)
+async def mark_in_review(
+    query: IndexerQuery,
+    in_review_params: MarkInReviewParams,
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: CatalogRecordService = DependsOnCatalogRecordService,
+):
+    return await service.mark_in_review(query, in_review_params, user.id)
 
 
 @router.post(
@@ -97,12 +112,12 @@ def sync(
     dependencies=[WithPermission(GeneralPermission.ManageCatalogRecords)],
     response_model=Task,
 )
-def archive_inactive(
-    schedule_params: TaskScheduleParams | None = ResolveTaskScheduleParams,
+async def archive_inactive(
+    schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return service.archive_inactive(user.id, schedule_params)
+    return await service.archive_inactive(user.id, schedule_params)
 
 
 @router.post(
@@ -110,9 +125,9 @@ def archive_inactive(
     dependencies=[WithPermission(GeneralPermission.ManageCatalogRecords)],
     response_model=Task,
 )
-def delete(
+async def delete(
     query: IndexerQuery,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return service.delete(query, user.id)
+    return await service.delete(query, user.id)

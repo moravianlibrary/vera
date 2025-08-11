@@ -20,9 +20,9 @@ from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnCategoryRepository,
     DependsOnCategoryService,
-    ResolveTaskScheduleParams,
     RestrictedQuery,
     RestrictedSearch,
+    RestrictedTaskScheduleParams,
     WithPermission,
 )
 
@@ -130,7 +130,7 @@ def change_document_discovery(
 )
 def reindex(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ReadCategories),
-    schedule_params: TaskScheduleParams | None = ResolveTaskScheduleParams,
+    schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,
     service: CategoryService = DependsOnCategoryService,
 ):
     return service.reindex(query, schedule_params)
@@ -147,7 +147,7 @@ def reindex(
 )
 def init_document_discovery(
     category_id: Annotated[int, Path(...)],
-    schedule_params: TaskScheduleParams | None = ResolveTaskScheduleParams,
+    schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):

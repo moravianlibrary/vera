@@ -1,5 +1,3 @@
-from unittest import skip
-
 from repositories.models.associations.group import category_group_association
 from repositories.models.associations.user import (
     category_user_association,
@@ -153,13 +151,12 @@ TEST_DATA_SEED = [
 ]
 
 
-@skip
 class TestIntegrationCategories(TestIntegrationCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
         await self.seed_test_data(TEST_DATA_SEED)
 
-    async def test_search_categories(self):
+    async def test_search(self):
         hits = [
             {
                 "_id": "1",
@@ -503,7 +500,7 @@ class TestIntegrationCategories(TestIntegrationCase):
             exclude_paths={("created_at",)},
         )
 
-    async def test_update_category(self):
+    async def test_update(self):
         self.assertResponse(
             await self.client.put(
                 "/categories/1",

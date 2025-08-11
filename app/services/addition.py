@@ -1,5 +1,7 @@
 from typing import List
 
+from fastapi import HTTPException, status
+
 from adapters.indexer import IndexerQuery
 from definitions.task import AdditionTask, TaskScope
 from repositories import AdditionRepository, TaskRepository
@@ -39,6 +41,15 @@ class AdditionService(TaskBasedService):
     def _ensure_batch(
         self, batch_params: AdditionsBatchParams, created_by: str
     ) -> AdditionBatchModel:
+        if batch_params.batch_id and (
+            batch_params.batch_name or batch_params.file_name
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Either batch_id or batch_name/file_name "
+                "must be provided, not both.",
+            )
+
         if batch_params.batch_id is None:
             return self._batch_repository.create(
                 batch_params.batch_name, batch_params.file_name, created_by
@@ -79,13 +90,13 @@ class AdditionService(TaskBasedService):
             task=self._serialize_task(task), batch_id=batch.id
         )
 
-    def reingest(
+    async def reingest(
         self,
         query: IndexerQuery,
         ingest_params: AdditionsSettingsParams,
         created_by: str,
     ) -> TaskModel:
-        return self._create_task(
+        return await self._create_task(
             AdditionTask.Reingest,
             created_by,
             data=ReingestAdditionsTaskData(

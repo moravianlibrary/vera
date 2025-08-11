@@ -50,10 +50,10 @@ class CatalogRecordModel(BaseModel, UpdatedTimestampMixin):
     # on records that have no added documents
     has_added_documents = Column(Boolean, default=False, nullable=False)
     is_valid = Column(Boolean, nullable=True)
+    archived = Column(Boolean, default=False, nullable=False)
 
     force_valid = Column(Boolean, default=False, nullable=False)
-    is_archived = Column(Boolean, default=False, nullable=False)
-    is_in_review = Column(Boolean, default=False, nullable=False)
+    in_review = Column(Boolean, default=False, nullable=False)
 
     properties: Mapped[List["CatalogRecordPropertyModel"]] = contains(
         "CatalogRecordPropertyModel", "catalog_record"
@@ -84,8 +84,8 @@ class CatalogRecordModel(BaseModel, UpdatedTimestampMixin):
                 (CatalogRecordStatus.Valid, is_valid),
                 (CatalogRecordStatus.Invalid, not is_valid),
                 (CatalogRecordStatus.ForceValid, self.force_valid),
-                (CatalogRecordStatus.Archived, self.is_archived),
-                (CatalogRecordStatus.MarkInReview, self.is_in_review),
+                (CatalogRecordStatus.Archived, self.archived),
+                (CatalogRecordStatus.MarkInReview, self.in_review),
             ]
             if condition
         ]
@@ -124,7 +124,7 @@ class CatalogRecordPropertyModel(
 class CatalogRecordStatusLogModel(BaseModel, CreatedAuditMixin):
     __tablename__ = "catalog_record_status_logs"
 
-    id = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
     catalog_record_id = Column(
         String, ForeignKey("catalog_records.id"), nullable=False, index=True

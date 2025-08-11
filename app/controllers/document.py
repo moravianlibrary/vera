@@ -21,9 +21,9 @@ from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnDocumentRepository,
     DependsOnDocumentService,
-    ResolveTaskScheduleParams,
     RestrictedQuery,
     RestrictedSearch,
+    RestrictedTaskScheduleParams,
     WithPermission,
 )
 
@@ -144,7 +144,7 @@ def set_digitization_decision(
 )
 def reindex(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageDocuments),
-    schedule_params: TaskScheduleParams | None = ResolveTaskScheduleParams,
+    schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
@@ -159,7 +159,7 @@ def reindex(
 def sync(
     sync_params: Annotated[DocumentsSyncParams, Query()],
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageDocuments),
-    schedule_params: TaskScheduleParams | None = ResolveTaskScheduleParams,
+    schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):

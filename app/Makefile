@@ -6,6 +6,13 @@ PYTHON_DEPS := requirements.txt
 ADDITIONAL_LIBS := coverage testcontainers mypy
 BROWSER_CMD := xdg-open
 
+TESTS_KFLAG=
+ifeq ($(strip $(FILTER)),)
+	TESTS_KFLAG=
+else
+	TESTS_KFLAG=-k $(FILTER)
+endif
+
 .PHONY: generate-env remove-env regenerate-env test
 
 generate-env:
@@ -21,17 +28,17 @@ remove-env:
 regenerate-env: remove-env generate-env
 
 test-unit:
-	$(PYTHON) -m coverage run -m unittest discover -s tests/unit \
+	@ $(PYTHON) -m coverage run -m unittest discover -s tests/unit -v $(TESTS_KFLAG) \
 	&& $(PYTHON) -m coverage html \
 	&& $(PYTHON) -m coverage report
 
 test-integration:
-	$(PYTHON) -m coverage run -m unittest discover -s tests/integration \
+	@ $(PYTHON) -m coverage run -m unittest discover -s tests/integration -v $(TESTS_KFLAG) 	\
 	&& $(PYTHON) -m coverage html \
 	&& $(PYTHON) -m coverage report
 
 test:
-	$(PYTHON) -m coverage run -m unittest discover -s tests/unit tests/integration \
+	@ $(PYTHON) -m coverage run -m unittest discover -s tests -v $(TESTS_KFLAG) \
 	&& $(PYTHON) -m coverage html \
 	&& $(PYTHON) -m coverage report
 

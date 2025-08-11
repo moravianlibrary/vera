@@ -2,7 +2,7 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Query
 
-from adapters.indexer import IndexerQuery, IndexerResponse
+from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import AdditionRepository
 from schemas.addition import (
@@ -22,6 +22,7 @@ from .resources import (
     DependsOnAuthenticatedUser,
     RestrictedParams,
     RestrictedQuery,
+    RestrictedSearch,
     WithPermission,
 )
 
@@ -34,7 +35,9 @@ router = APIRouter(prefix="/additions", tags=["Additions"])
     response_model=IndexerResponse[AdditionHit],
 )
 async def search(
-    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ReadAdditions),
+    query: IndexerRequest = RestrictedSearch(
+        OwnershipPermission.ReadAdditions
+    ),
     repository: AdditionRepository = DependsOnAdditionRepository,
 ):
     return await repository.search(query)
@@ -62,14 +65,14 @@ async def ingest(
     response_model=Task,
 )
 async def reingest(
+    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageAdditions),
     ingest_params: AdditionsSettingsParams = RestrictedParams(
         GeneralPermission.IgnoreAdditionChecks, AdditionsSettingsParams
     ),
-    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageAdditions),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: AdditionService = DependsOnAdditionService,
 ):
-    return service.reingest(query, ingest_params, user.id)
+    return await service.reingest(query, ingest_params, user.id)
 
 
 @router.post(
@@ -82,7 +85,7 @@ async def archive(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: AdditionService = DependsOnAdditionService,
 ):
-    return service.archive(query, user.id)
+    return await service.archive(query, user.id)
 
 
 @router.post(
@@ -100,4 +103,4 @@ async def delete(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: AdditionService = DependsOnAdditionService,
 ):
-    return service.delete(query, user.id)
+    return await service.delete(query, user.id)

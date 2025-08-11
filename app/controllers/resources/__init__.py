@@ -1,7 +1,8 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException, status
 
 from adapters.database import get_database_session
 from adapters.indexer import get_indexer_session
+from definitions.permission import GeneralPermission
 from repositories import (
     AdditionRepository,
     CategoryRepository,
@@ -29,6 +30,7 @@ from repositories.task import (
     TaskScheduleRepository,
 )
 from repositories.watchlist import WatchlistRepository
+from schemas.task import TaskScheduleParams
 from services import (
     AdditionService,
     CatalogSearchService,
@@ -47,7 +49,7 @@ from services.user import UserService
 from vera_state import get_catalog_adapter, get_identity_provider
 
 from .providers import provide_repository, provide_service
-from .resolvers import resolve_authenticated_user, resolve_schedule_params
+from .resolvers import resolve_authenticated_user
 from .restricted import (
     get_restricted_filter_params,
     get_restricted_params,
@@ -98,6 +100,8 @@ DependsOnAdditionService = provide_service(
 DependsOnCatalogRecordService = provide_service(
     CatalogRecordService,
     DependsOnCatalogRecordRepository,
+    DependsOnTaskRepository,
+    DependsOnTaskScheduleRepository,
 )
 DependsOnCatalogSearchService = provide_service(
     CatalogSearchService,
@@ -154,7 +158,9 @@ DependsOnProposalService = provide_service(
     DependsOnDocumentRepository,
     DependsOnIntentionRepository,
 )
-DependsOnTaskService = provide_service(TaskService, DependsOnTaskRepository)
+DependsOnTaskService = provide_service(
+    TaskService, DependsOnTaskRepository, DependsOnTaskScheduleRepository
+)
 DependsOnTaskScheduleService = provide_service(
     TaskScheduleService,
     DependsOnTaskScheduleRepository,
@@ -172,12 +178,19 @@ DependsOnUserService = provide_service(
 
 DependsOnAuthenticatedUser = Depends(resolve_authenticated_user)
 
-ResolveTaskScheduleParams = Depends(resolve_schedule_params)
-
 RestrictedSearch = get_restricted_search
 RestrictedQuery = get_restricted_query
 RestrictedParams = get_restricted_params
 RestrictedFilterParams = get_restricted_filter_params
+
+RestrictedTaskScheduleParams = get_restricted_params(
+    GeneralPermission.ScheduleTasks,
+    TaskScheduleParams,
+    exception=HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="You do not have permission to schedule tasks.",
+    ),
+)
 
 WithPermission = require_permission
 WithEnforcedOwnership = enforce_ownership

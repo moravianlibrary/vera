@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel
 
 from adapters.indexer import IndexerModel, IndexerNestedModel
 from definitions.category import Level
@@ -15,16 +15,6 @@ from schemas.user import UserSummary
 class CategoryParentChangeParams(BaseModel):
     from_parent_id: int | None = None
     to_parent_id: int | None = None
-
-    @model_validator(mode="after")
-    def validate_different_parents(
-        cls, model: "CategoryParentChangeParams"
-    ) -> "CategoryParentChangeParams":
-        if model.from_parent_id == model.to_parent_id:
-            raise ValueError(
-                "from_parent_id and to_parent_id must be different."
-            )
-        return model
 
 
 # --------------------

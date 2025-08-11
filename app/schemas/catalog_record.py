@@ -26,13 +26,10 @@ class CatalogRecordsSyncParams(BaseModel):
     from_catalog: bool = False
     properties: bool = False
 
-    @model_validator(mode="after")
-    def validate(
-        cls, model: "CatalogRecordsSyncParams"
-    ) -> "CatalogRecordsSyncParams":
-        if not any([model.from_catalog, model.properties]):
-            raise ValueError("At least one sync parameter must be enabled.")
-        return model
+
+class MarkInReviewParams(BaseModel):
+    in_review: bool = True
+    message: str | None = None
 
 
 # -----------------
@@ -96,7 +93,7 @@ class CatalogRecordDetails(BaseModel):
 
         validity_sources = []
         additional_details = {}
-        for ap in data.additional_properties:
+        for ap in data.properties:
             plugin_type = ap.plugin_instance.plugin.type
 
             if plugin_type == PluginType.CatalogRecordValidity:
@@ -145,26 +142,21 @@ class CatalogRecordAdditionalProperties(AdditionalProperties):
     pass
 
 
-class CatalogRecord(IndexerModel):
-    class ESConfig:
-        index = "catalog_records"
-
-    id: keyword
-
+class CatalogRecordHit(IndexerModel):
     base: keyword
     system_number: keyword
 
-    material_type: keyword | None
-    title: text | None
-    subtitle: text | None
+    material_type: keyword | None = None
+    title: text | None = None
+    subtitle: text | None = None
     identifiers: List[CatalogRecordIdentifier]
 
     force_valid: boolean
-    is_valid: boolean | None
+    is_valid: boolean | None = None
 
     current_status: EnumList[CatalogRecordStatus]
 
-    additional_properties: CatalogRecordAdditionalProperties | None
+    properties: CatalogRecordAdditionalProperties | None
 
     updated_at: datetime
 
@@ -213,9 +205,9 @@ class CatalogRecord(IndexerModel):
         ]:
             _extend_identifiers(identifier, values)
 
-        # Collect additional properties
-        additional_properties = {}
-        for ap in data.additional_properties:
+        # Collect properties
+        properties = {}
+        for ap in data.properties:
             plugin_type = ap.plugin_instance.plugin.type
             if plugin_type != PluginType.CatalogRecordProperty:
                 continue
@@ -224,7 +216,7 @@ class CatalogRecord(IndexerModel):
                 ap.plugin_instance.id
             )
 
-            additional_properties[instance.config.property_name] = (
+            properties[instance.config.property_name] = (
                 instance.plugin.detailed_data_type.model_validate(
                     ap.search_data
                 )
@@ -243,12 +235,21 @@ class CatalogRecord(IndexerModel):
             "force_valid": data.force_valid,
             "is_valid": data.is_valid or data.force_valid,
             "current_status": data.current_status,
-            "additional_properties": additional_properties,
+            "properties": properties,
+            "updated_at": data.updated_at,
         }
+
+
+class CatalogRecord(CatalogRecordHit):
+    class ESConfig:
+        index = "catalog_records"
+        id_field = "id"
+
+    id: keyword
 
 
 # -------------
 # - Task Data -
 # -------------
 class CatalogRecordForceValidityData(BaseModel):
-    is_valid: bool
+    validity: bool

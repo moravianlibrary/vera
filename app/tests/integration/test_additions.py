@@ -1,7 +1,6 @@
-from unittest import skip
-
 from definitions.addition import AdditionStatus
 from repositories.models.addition import AdditionBatchModel, AdditionModel
+from repositories.models.task import TaskModel
 from repositories.models.user import UserModel
 from schemas.addition import Addition
 from tests.integration.case import (
@@ -12,7 +11,7 @@ from tests.integration.case import (
 
 TEST_DATA = [
     EntitySeed(
-        entities=[
+        [
             UserModel(
                 id=f"id-{i}", username=f"user{i}", email=f"user{i}@mzk.cz"
             )
@@ -27,7 +26,7 @@ TEST_DATA = [
         ]
     ),
     EntitySeed(
-        entities=[
+        [
             AdditionBatchModel(
                 id=i,
                 name=f"Batch {i}",
@@ -38,7 +37,7 @@ TEST_DATA = [
         ]
     ),
     EntitySeed(
-        entities=[
+        [
             AdditionModel(
                 id=i,
                 batch_id=1 if i <= 4 else 2,
@@ -63,7 +62,6 @@ TEST_DATA = [
 ]
 
 
-# @skip
 class TestIntegrationAdditions(TestIntegrationCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
@@ -107,7 +105,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-1",
                                 "ignore_digitization_check": False,
-                                "is_archived": False,
+                                "archived": False,
                                 "priority": 2,
                                 "project": None,
                                 "proposal": None,
@@ -129,7 +127,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-2",
                                 "ignore_digitization_check": False,
-                                "is_archived": False,
+                                "archived": False,
                                 "priority": 3,
                                 "project": None,
                                 "proposal": None,
@@ -151,7 +149,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-3",
                                 "ignore_digitization_check": True,
-                                "is_archived": False,
+                                "archived": False,
                                 "priority": 4,
                                 "project": None,
                                 "proposal": None,
@@ -173,7 +171,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-4",
                                 "ignore_digitization_check": False,
-                                "is_archived": False,
+                                "archived": False,
                                 "priority": 5,
                                 "project": None,
                                 "proposal": None,
@@ -195,7 +193,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-5",
                                 "ignore_digitization_check": False,
-                                "is_archived": False,
+                                "archived": False,
                                 "priority": 1,
                                 "project": None,
                                 "proposal": None,
@@ -217,7 +215,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-6",
                                 "ignore_digitization_check": True,
-                                "is_archived": False,
+                                "archived": False,
                                 "priority": 2,
                                 "project": None,
                                 "proposal": None,
@@ -254,20 +252,23 @@ class TestIntegrationAdditions(TestIntegrationCase):
             {
                 "batch_id": 3,
                 "task": {
-                    "created_at": "2025-08-09T15:02:03.474003",
-                    "created_by": "superuser",
-                    "error_count": 0,
-                    "finished_at": None,
                     "id": 1,
-                    "name": "Ingest additions",
-                    "processed_count": 0,
-                    "query": None,
-                    "started_at": None,
-                    "task_schedule_id": None,
+                    "task_type": "Addition.Ingest",
                     "task_scope": "Addition",
-                    "task_state": "Initializing",
-                    "total_count": 0,
                     "unscoped_task_type": "Ingest",
+                    "name": "Ingest additions",
+                    "task_schedule_id": None,
+                    "created_by": "superuser",
+                    "has_query": False,
+                    "has_data": True,
+                    "task_state": "Initializing",
+                    "created_at": "2025-08-09T15:02:03.474003",
+                    "started_at": None,
+                    "finished_at": None,
+                    "total_count": 0,
+                    "processed_count": 0,
+                    "error_count": 0,
+                    "result": None,
                 },
             },
             exclude_paths={("task", "created_at")},
@@ -291,21 +292,157 @@ class TestIntegrationAdditions(TestIntegrationCase):
             {
                 "batch_id": 2,
                 "task": {
-                    "created_at": "2025-08-09T15:02:03.474003",
-                    "created_by": "superuser",
-                    "error_count": 0,
-                    "finished_at": None,
                     "id": 1,
-                    "name": "Ingest additions",
-                    "processed_count": 0,
-                    "query": None,
-                    "started_at": None,
-                    "task_schedule_id": None,
+                    "task_type": "Addition.Ingest",
                     "task_scope": "Addition",
-                    "task_state": "Initializing",
-                    "total_count": 0,
                     "unscoped_task_type": "Ingest",
+                    "name": "Ingest additions",
+                    "task_schedule_id": None,
+                    "created_by": "superuser",
+                    "has_query": False,
+                    "has_data": True,
+                    "task_state": "Initializing",
+                    "created_at": "2025-08-09T15:02:03.474003",
+                    "started_at": None,
+                    "finished_at": None,
+                    "total_count": 0,
+                    "processed_count": 0,
+                    "error_count": 0,
+                    "result": None,
                 },
             },
             exclude_paths={("task", "created_at")},
+        )
+
+    async def test_fail_on_ingest_with_ambiguous_batch_params(self):
+        self.assertResponse(
+            await self.client.post(
+                "/additions/ingest",
+                json=[
+                    {
+                        "identifier_type": "ISXN",
+                        "identifier_value": "978-3-16-148410-4",
+                        "category_id": 1,
+                        "priority": 2,
+                    }
+                ],
+                params={"batch_id": 2, "batch_name": "Test Batch"},
+            ),
+            422,
+            {
+                "detail": "Either batch_id or batch_name/file_name "
+                "must be provided, not both."
+            },
+        )
+
+    async def test_reingest(self):
+        self.assertResponse(
+            await self.client.post(
+                "/additions/reingest",
+                json={"query": {"term": {"_id": "1"}}},
+                params={"allow_new_iteration": True},
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "Addition.Reingest",
+                "task_scope": "Addition",
+                "unscoped_task_type": "Reingest",
+                "name": "Reingest additions",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": True,
+                "has_data": True,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T08:34:25.543787",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+        self.assertEntityProperties(
+            AdditionModel,
+            1,
+            {"allow_new_iteration": False, "ignore_digitization_check": False},
+        )
+        self.assertEntityProperties(
+            TaskModel,
+            1,
+            {
+                "query": {"query": {"term": {"_id": "1"}}},
+                "data": {
+                    "allow_new_iteration": True,
+                    "ignore_digitization_check": False,
+                },
+            },
+        )
+
+    async def test_archive(self):
+        self.assertResponse(
+            await self.client.post(
+                "/additions/archive",
+                json={"query": {"term": {"_id": "4"}}},
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "Addition.Archive",
+                "task_scope": "Addition",
+                "unscoped_task_type": "Archive",
+                "name": "Archive additions",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": True,
+                "has_data": False,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T08:34:25.543787",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+        self.assertEntityProperties(AdditionBatchModel, 1, {"archived": False})
+        self.assertEntityProperties(
+            TaskModel, 1, {"query": {"query": {"term": {"_id": "4"}}}}
+        )
+
+    async def test_delete(self):
+        self.assertResponse(
+            await self.client.post(
+                "/additions/delete",
+                json={"query": {"term": {"_id": "4"}}},
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "Addition.Delete",
+                "task_scope": "Addition",
+                "unscoped_task_type": "Delete",
+                "name": "Delete additions",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": True,
+                "has_data": False,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T08:34:25.543787",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+        self.assertEntityProperties(AdditionBatchModel, 1, {"archived": False})
+        self.assertEntityProperties(
+            TaskModel, 1, {"query": {"query": {"term": {"_id": "4"}}}}
         )

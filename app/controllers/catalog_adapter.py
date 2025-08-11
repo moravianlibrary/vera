@@ -9,7 +9,7 @@ from vera_plugins.specs.catalog_adapter import (
 
 from controllers.resources import DependsOnCatalogSearchService
 from definitions.permission import GeneralPermission
-from services.catalog_search import CatalogSearchService
+from services.catalog_adapter import CatalogSearchService
 
 from .resources import WithPermission
 

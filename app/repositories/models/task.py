@@ -17,7 +17,13 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import Mapped
 
 from adapters.database import BaseModel, belongs_to, contains, has_one
-from definitions.task import ScopedTaskType, TaskScope, TaskState
+from definitions.task import (
+    SCOPE_TO_TYPE,
+    ScopedTaskType,
+    TaskScope,
+    TaskState,
+    TaskType,
+)
 from repositories.models.mixins.created_audit import CreatedAuditMixin
 
 if TYPE_CHECKING:
@@ -82,8 +88,16 @@ class TaskModel(BaseModel, CreatedAuditMixin):
         return TaskScope(self.task_type.split(".")[0])
 
     @hybrid_property
-    def unscoped_task_type(self) -> str:
-        return self.task_type.split(".")[1]
+    def unscoped_task_type(self) -> TaskType:
+        return SCOPE_TO_TYPE[self.task_scope][self.task_type.split(".")[1]]
+
+    @hybrid_property
+    def has_query(self) -> bool:
+        return self.query is not None
+
+    @hybrid_property
+    def has_data(self) -> bool:
+        return self.data is not None
 
     @hybrid_property
     def items(self) -> List["TaskItemMixin"]:
@@ -211,15 +225,18 @@ class TaskProposalModel(BaseModel, TaskItemMixin):
     )
 
 
-class TaskScheduleModel(BaseModel):
+class TaskScheduleModel(BaseModel, CreatedAuditMixin):
     __tablename__ = "task_schedules"
 
     id = Column(Integer, primary_key=True, index=True, unique=True)
-    name = Column(String, nullable=False)
 
     task_type = Column(Enum(ScopedTaskType), nullable=False)
-    query = Column(JSONB)
+
+    name = Column(String, nullable=False)
     cron_expression = Column(String, nullable=False)
+
+    query = Column(JSONB)
+    data = Column(JSONB)
 
     tasks: Mapped[List["TaskModel"]] = contains(
         "TaskModel", "task_schedule", "selectin"
@@ -232,3 +249,6 @@ class TaskScheduleModel(BaseModel):
     @hybrid_property
     def unscoped_task_type(self) -> str:
         return self.task_type.split(".")[1]
+
+
+TaskOrScheduleModel = TaskModel | TaskScheduleModel

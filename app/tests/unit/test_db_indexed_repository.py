@@ -153,15 +153,17 @@ class TestDbIndexedRepository(unittest.IsolatedAsyncioTestCase):
 
     async def test_search(self):
         request = MagicMock()
-        response = MagicMock()
-        self.indexer_session.search.return_value = response
+        request.model_dump.return_value = "expected_body"
+
+        index_response = MagicMock()
+        self.indexer_session.search.return_value = index_response
 
         result = await self.repo.search(request)
 
         self.indexer_session.search.assert_called_once_with(
-            index="fake-index", body=request
+            index="fake-index", body=request.model_dump.return_value
         )
-        self.assertEqual(result, response)
+        self.assertEqual(result, index_response.body)
 
     async def test_save(self):
         entity = self.item

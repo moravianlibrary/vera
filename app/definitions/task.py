@@ -39,6 +39,7 @@ class CatalogRecordTask(str, Enum):
     Reindex = "Reindex"
     Sync = "Sync"
     SetForcedValidity = "SetForcedValidity"
+    MarkInReview = "MarkInReview"
     ArchiveInactive = "ArchiveInactive"
     Delete = "Delete"
 
@@ -83,7 +84,7 @@ class TaskScope(str, Enum):
     Addition = "Addition"
     CatalogRecord = "CatalogRecord"
     Category = "Category"
-    DigitizationListTask = "DigitizationListTask"
+    DigitizationList = "DigitizationList"
     Document = "Document"
     Proposal = "Proposal"
     System = "System"
@@ -97,6 +98,17 @@ TaskType = (
     | DocumentTask
     | SystemTask
 )
+
+
+SCOPE_TO_TYPE = {
+    TaskScope.Addition: AdditionTask,
+    TaskScope.CatalogRecord: CatalogRecordTask,
+    TaskScope.Category: CategoryTask,
+    TaskScope.DigitizationList: DigitizationListTask,
+    TaskScope.Document: DocumentTask,
+    TaskScope.Proposal: ProposalTask,
+    TaskScope.System: SystemTask,
+}
 
 
 class ScopedTaskType(str, Enum):

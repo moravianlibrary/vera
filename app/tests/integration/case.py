@@ -425,3 +425,26 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
             raise AssertionError(
                 f"Expected empty response body, got {response.content}."
             )
+
+    def assertEntityProperties(
+        self,
+        db_entity_model: Type[DatabaseEntityType],
+        entity_id: IdType,
+        assert_properties: Dict[str, Any],
+    ) -> None:
+        db_entity = (
+            self.db_session.query(db_entity_model)
+            .filter_by(id=entity_id)
+            .one_or_none()
+        )
+        if not db_entity:
+            raise AssertionError(f"Entity not found: {entity_id}")
+
+        for key, expected_value in assert_properties.items():
+            actual_value = getattr(db_entity, key, None)
+            self.assertEqual(
+                actual_value,
+                expected_value,
+                f"Unexpected value for {key}: "
+                f"{actual_value} != {expected_value}",
+            )

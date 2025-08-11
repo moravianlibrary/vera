@@ -20,7 +20,7 @@ class TestIndexSchemaContext:
     def __init__(self, setup_mappings: bool = True) -> None:
         self.setup_mappings = setup_mappings
         self.init_done: bool = False
-        self.num_indexes: int = 12
+        self.num_indexes: int = 17
 
     async def setUp(self):
         if self.init_done:
@@ -99,7 +99,7 @@ class TestIndexSchema(TestIndexBase):
                 "file_name": {"type": "text"},
                 "created_by": {"type": "keyword"},
                 "created_at": {"type": "date"},
-                "is_archived": {"type": "boolean"},
+                "archived": {"type": "boolean"},
                 "identifier_type": {"type": "keyword"},
                 "identifier_value": {"type": "keyword"},
                 "category_id": {"type": "long"},
@@ -112,16 +112,16 @@ class TestIndexSchema(TestIndexBase):
                     "properties": {
                         "id": {"type": "long"},
                         "name": {"type": "keyword"},
-                        "description": {"type": "keyword"},
+                        "description": {"type": "text"},
                     }
                 },
                 "proposal": {
                     "properties": {
                         "id": {"type": "long"},
                         "batch_id": {"type": "long"},
-                        "batch_name": {"type": "keyword"},
-                        "file_name": {"type": "keyword"},
-                        "reason_message": {"type": "keyword"},
+                        "batch_name": {"type": "text"},
+                        "file_name": {"type": "text"},
+                        "reason_message": {"type": "text"},
                     }
                 },
             },
@@ -146,7 +146,7 @@ class TestIndexSchema(TestIndexBase):
                 "force_valid": {"type": "boolean"},
                 "is_valid": {"type": "boolean"},
                 "current_status": {"type": "keyword"},
-                "additional_properties": {"properties": {}},
+                "properties": {"properties": {}},
                 "updated_at": {"type": "date"},
             },
         )
@@ -163,6 +163,14 @@ class TestIndexSchema(TestIndexBase):
                 "extract_whole": {"type": "boolean"},
                 "disabled": {"type": "boolean"},
                 "archived": {"type": "boolean"},
+                "created_at": {"type": "date"},
+                "path": {
+                    "type": "nested",
+                    "properties": {
+                        "id": {"type": "long"},
+                        "name": {"type": "keyword"},
+                    },
+                },
                 "direct_groups": {
                     "type": "nested",
                     "properties": {
@@ -199,17 +207,21 @@ class TestIndexSchema(TestIndexBase):
                         "overall_proportion": {"type": "double"},
                     },
                 },
-                "count_total_pages": {"type": "long"},
-                "count_total_documents": {"type": "long"},
-                "count_extractable_pages": {"type": "long"},
-                "count_extractable_documents": {"type": "long"},
-                "count_extracted_pages": {"type": "long"},
-                "count_extracted_documents": {"type": "long"},
+                "statistics": {
+                    "properties": {
+                        "count_total_pages": {"type": "long"},
+                        "count_total_documents": {"type": "long"},
+                        "count_extractable_pages": {"type": "long"},
+                        "count_extractable_documents": {"type": "long"},
+                        "count_extracted_pages": {"type": "long"},
+                        "count_extracted_documents": {"type": "long"},
+                    },
+                },
                 "document_discovery": {
                     "properties": {
                         "id": {"type": "long"},
                         "task_schedule_id": {"type": "long"},
-                    }
+                    },
                 },
             },
         )
@@ -259,7 +271,7 @@ class TestIndexSchema(TestIndexBase):
                 },
                 "page_count_manual": {"type": "integer"},
                 "page_count": {"type": "integer"},
-                "additional_properties": {"properties": {}},
+                "properties": {"properties": {}},
                 "category_id": {"type": "long"},
                 "priority": {"type": "integer"},
                 "digitization_list_id": {"type": "long"},
@@ -311,8 +323,13 @@ class TestIndexSchema(TestIndexBase):
                     "properties": {
                         "id": {"type": "long"},
                         "name": {"type": "keyword"},
-                        "path_id": {"type": "long"},
-                        "path_name": {"type": "keyword"},
+                        "path": {
+                            "type": "nested",
+                            "properties": {
+                                "id": {"type": "long"},
+                                "name": {"type": "keyword"},
+                            },
+                        },
                         "assignable": {"type": "boolean"},
                         "disabled": {"type": "boolean"},
                     },
@@ -360,8 +377,13 @@ class TestIndexSchema(TestIndexBase):
                     "properties": {
                         "id": {"type": "long"},
                         "name": {"type": "keyword"},
-                        "path_id": {"type": "long"},
-                        "path_name": {"type": "keyword"},
+                        "path": {
+                            "type": "nested",
+                            "properties": {
+                                "id": {"type": "long"},
+                                "name": {"type": "keyword"},
+                            },
+                        },
                         "assignable": {"type": "boolean"},
                         "disabled": {"type": "boolean"},
                     }
@@ -413,7 +435,7 @@ class TestIndexExtendPropertiesModel(TestIndexBase):
             id: int
             name: str
             description: str | None
-            additional_properties: TestAdditionalProperties | None
+            properties: TestAdditionalProperties | None
 
         class ExtraField(IndexerNestedModel):
             name: str
@@ -431,7 +453,7 @@ class TestIndexExtendPropertiesModel(TestIndexBase):
             {
                 "name": {"type": "keyword"},
                 "description": {"type": "keyword"},
-                "additional_properties": {
+                "properties": {
                     "properties": {
                         "another_title": {"type": "keyword"},
                         "extra_field": {

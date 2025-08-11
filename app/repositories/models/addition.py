@@ -24,7 +24,7 @@ class AdditionBatchModel(BaseModel, CreatedAuditMixin):
     name = Column(String, nullable=True)
     file_name = Column(String, nullable=True)
 
-    is_archived = Column(Boolean, default=False, nullable=False)
+    archived = Column(Boolean, default=False, nullable=False)
 
     additions: Mapped[List["AdditionModel"]] = contains(
         "AdditionModel", "batch"
@@ -81,5 +81,5 @@ class AdditionModel(BaseModel):
         return self.batch.created_at
 
     @property
-    def is_archived(self) -> bool:
-        return self.batch.is_archived
+    def archived(self) -> bool:
+        return self.batch.archived

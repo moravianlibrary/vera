@@ -1,5 +1,5 @@
 from definitions.permission import OwnershipPermission, OwnershipScope
-from errors.category import category_not_child_error
+from errors.category import CategoryNotChildError, DifferentParentIDsException
 from repositories.category import CategoryRepository
 from repositories.group import GroupRepository
 from repositories.models.category import CategoryModel
@@ -141,6 +141,9 @@ class CategoryService:
         params: CategoryParentChangeParams,
         user: AuthenticatedUser,
     ) -> CategoryModel:
+        if params.from_parent_id == params.to_parent_id:
+            raise DifferentParentIDsException()
+
         from_category = (
             self._category_repository.get_by_id(params.from_parent_id)
             if params.from_parent_id
@@ -158,7 +161,7 @@ class CategoryService:
         target_category = self._category_repository.get_by_id(category_id)
 
         if target_category.parent != from_category:
-            raise category_not_child_error(category_id, params.from_parent_id)
+            raise CategoryNotChildError(category_id, params.from_parent_id)
 
         return await self._category_repository.update_parent(
             target_category,

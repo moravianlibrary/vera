@@ -2,7 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Path, Query
 
-from adapters.indexer import IndexerRequest, IndexerResponse
+from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
+from definitions.json import JsonObject
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories.task import (
     TaskItemRepository,
@@ -12,10 +13,10 @@ from repositories.task import (
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import Page, PageParams
 from schemas.task import (
-    ScheduledTask,
     Task,
     TaskItem,
     TaskItemsFilterParams,
+    TaskSchedule,
     TaskScheduleParams,
 )
 from services.task import TaskScheduleService, TaskService
@@ -47,16 +48,39 @@ def search_tasks(
 
 
 @router.get(
+    "/{task_id}/query",
+    dependencies=[WithPermission(OwnershipPermission.ReadTasks)],
+    response_model=IndexerQuery,
+)
+def get_task_query(
+    task_id: int = Path(...),
+    service: TaskService = DependsOnTaskService,
+):
+    return service.get_query(task_id)
+
+
+@router.get(
+    "/{task_id}/data",
+    dependencies=[WithPermission(OwnershipPermission.ReadTasks)],
+    response_model=JsonObject,
+)
+def get_task_data(
+    task_id: int = Path(...),
+    service: TaskService = DependsOnTaskService,
+):
+    return service.get_data(task_id)
+
+
+@router.get(
     "/{task_id}/log",
     dependencies=[WithPermission(OwnershipPermission.ReadTasks)],
 )
 def get_task_log(
     task_id: int = Path(...),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: TaskRepository = DependsOnTaskRepository,
     service: TaskService = DependsOnTaskService,
 ):
-    return service.get_log(repository.get_by_id(task_id), user)
+    return service.get_log(task_id, user)
 
 
 @router.get(
@@ -107,7 +131,7 @@ def delete_tasks(
             OwnershipPermission.ReadTasks, GeneralPermission.ScheduleTasks
         )
     ],
-    response_model=IndexerResponse[ScheduledTask],
+    response_model=IndexerResponse[TaskSchedule],
 )
 def search_task_schedules(
     request: IndexerRequest = RestrictedSearch(OwnershipPermission.ReadTasks),
@@ -123,7 +147,7 @@ def search_task_schedules(
             OwnershipPermission.ManageTasks, GeneralPermission.ScheduleTasks
         )
     ],
-    response_model=ScheduledTask,
+    response_model=TaskSchedule,
 )
 def update_task_schedule(
     task_id: Annotated[int, Path()],
@@ -144,7 +168,7 @@ def update_task_schedule(
             OwnershipPermission.ManageTasks, GeneralPermission.ScheduleTasks
         )
     ],
-    response_model=ScheduledTask,
+    response_model=TaskSchedule,
 )
 def delete_task_schedule(
     task_id: int = Path(...),

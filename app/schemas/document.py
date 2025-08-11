@@ -106,7 +106,7 @@ class Document(IndexerModel):
     page_count_manual: integer | None
     page_count: integer | None
 
-    additional_properties: DocumentAdditionalProperties | None
+    properties: DocumentAdditionalProperties | None
 
     category_id: long
     priority: integer
@@ -144,15 +144,15 @@ class Document(IndexerModel):
                 )
             )
 
-        additional_properties = {}
-        for ap in document.additional_properties:
+        properties = {}
+        for ap in document.properties:
             plugin_type = ap.plugin_instance.plugin.type
             if plugin_type != PluginType.DocumentProperty:
                 continue
 
             instance = plugin_registry.document_property(ap.plugin_instance.id)
 
-            additional_properties[instance.config.property_name] = (
+            properties[instance.config.property_name] = (
                 instance.plugin.search_data_type.model_validate(ap.search_data)
                 if ap.search_data
                 else None
@@ -176,7 +176,7 @@ class Document(IndexerModel):
             "digitization_records": digitization_records,
             "page_count_manual": document.page_count_manual,
             "page_count": document.page_count,
-            "additional_properties": additional_properties,
+            "properties": properties,
             "category_id": data.category.id if data.category else None,
             "priority": data.priority,
             "digitization_list_id": (
@@ -279,7 +279,7 @@ class DocumentDetails(BaseModel):
         can_be_extracted_sources = []
         additional_details = {}
 
-        for ap in data.additional_properties:
+        for ap in data.properties:
             plugin_type = ap.plugin_instance.plugin.type
 
             if plugin_type == PluginType.DocumentPageCount:
@@ -316,7 +316,7 @@ class DocumentDetails(BaseModel):
                     else None
                 )
 
-        for ap in data.catalog_record.additional_properties:
+        for ap in data.catalog_record.properties:
             instance = plugin_registry.catalog_record_property(
                 ap.plugin_instance.id
             )
