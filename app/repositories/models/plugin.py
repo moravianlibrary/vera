@@ -8,7 +8,7 @@ from vera_plugins.definitions.plugin_types import PluginType
 from adapters.database import BaseModel, has_many, has_one
 
 from .mixins.created_audit import CreatedAuditMixin
-from .mixins.updated_audit import UpdatedAuditMixin
+from .mixins.updated_audit import UpdatedTimestampMixin
 
 if TYPE_CHECKING:
     from .catalog_record import CatalogRecordPropertyModel
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from .document import DocumentPropertyModel
 
 
-class PluginModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
+class PluginModel(BaseModel, UpdatedTimestampMixin):
     __tablename__ = "plugins"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -33,7 +33,7 @@ class PluginModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
     )
 
 
-class PluginInstanceModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
+class PluginInstanceModel(BaseModel, CreatedAuditMixin, UpdatedTimestampMixin):
     __tablename__ = "plugin_instances"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -51,6 +51,6 @@ class PluginInstanceModel(BaseModel, CreatedAuditMixin, UpdatedAuditMixin):
     document_properties: Mapped[List["DocumentPropertyModel"]] = has_many(
         "DocumentPropertyModel", "plugin_instance"
     )
-    # category: Mapped["CategoryModel"] = has_one(
-    #     "CategoryModel", "document_discovery"
-    # )
+    categories: Mapped[List["CategoryModel"]] = has_many(
+        "CategoryModel", "document_discovery"
+    )

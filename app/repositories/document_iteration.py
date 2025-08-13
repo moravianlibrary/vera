@@ -1,5 +1,3 @@
-from adapters.database import DatabaseSession
-from adapters.indexer import IndexerSession
 from definitions.document import Priority
 from schemas.document import Document
 
@@ -13,18 +11,9 @@ class DocumentIterationRepository(
     GetByIdMixin[DocumentIterationModel, int],
     GetByQueryMixin[DocumentIterationModel, Document],
 ):
-    def __init__(
-        self,
-        database_session: DatabaseSession,
-        indexer_session: IndexerSession,
-    ):
-        super().__init__(
-            "DocumentIteration",
-            database_session,
-            DocumentIterationModel,
-            indexer_session,
-            Document,
-        )
+    _entity_name = "DocumentIteration"
+    _db_model = DocumentIterationModel
+    _indexer_model = Document
 
     def create(
         self, document_id: int, category_id: int, priority: Priority

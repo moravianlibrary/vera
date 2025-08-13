@@ -2,7 +2,6 @@ from typing import Optional
 
 from marcdantic import MarcIssue
 
-from adapters.database import DatabaseSession
 from repositories.models.document import DocumentModel, DocumentPropertyModel
 
 from ._db_repository import DbRepository, GetByIdMixin
@@ -12,8 +11,8 @@ class DocumentRepository(
     DbRepository[DocumentModel],
     GetByIdMixin[DocumentModel, int],
 ):
-    def __init__(self, db_session: DatabaseSession):
-        super().__init__("Document", db_session, DocumentModel)
+    _entity_name = "Document"
+    _db_model = DocumentModel
 
     def create(
         self,

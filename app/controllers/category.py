@@ -13,7 +13,7 @@ from schemas.category import (
     CategoryParentChangeParams,
 )
 from schemas.common import AssignmentChange
-from schemas.task import TaskScheduleParams
+from schemas.task import TaskOrSchedule, TaskScheduleParams
 from services import CategoryService
 
 from .resources import (
@@ -112,13 +112,13 @@ async def change_parent(
     ],
     response_model=Category,
 )
-def change_document_discovery(
+async def change_document_discovery(
     category_id: Annotated[int, Path(...)],
     plugin_instance_id: Annotated[int | None, Query()],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.change_document_discovery(
+    return await service.change_document_discovery(
         category_id, plugin_instance_id, user
     )
 
@@ -126,32 +126,36 @@ def change_document_discovery(
 @router.post(
     "/reindex",
     dependencies=[WithPermission(OwnershipPermission.ReadCategories)],
-    response_model=IndexerResponse[Category],
+    response_model=TaskOrSchedule,
 )
-def reindex(
+async def reindex(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ReadCategories),
     schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.reindex(query, schedule_params)
+    return await service.reindex(query, user.id, schedule_params)
 
 
 @router.post(
-    "/{category_id}/document-discovery",
+    "/{category_id}/run-document-discovery",
     dependencies=[
         WithPermission(
             OwnershipPermission.ManageCategories,
             GeneralPermission.RunTasks,
         )
     ],
+    response_model=TaskOrSchedule,
 )
-def init_document_discovery(
+async def run_document_discovery(
     category_id: Annotated[int, Path(...)],
     schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.init_document_discovery(category_id, user, schedule_params)
+    return await service.run_document_discovery(
+        category_id, user.id, schedule_params
+    )
 
 
 @router.delete(
@@ -159,9 +163,9 @@ def init_document_discovery(
     dependencies=[WithPermission(OwnershipPermission.ManageCategories)],
     response_model=Category,
 )
-def delete(
+async def delete(
     category_id: int = Path(...),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CategoryService = DependsOnCategoryService,
 ):
-    return service.delete(category_id, user)
+    return await service.delete(category_id, user)

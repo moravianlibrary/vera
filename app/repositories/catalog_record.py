@@ -1,7 +1,5 @@
 from marcdantic import MarcRecord
 
-from adapters.database import DatabaseSession
-from adapters.indexer import IndexerSession
 from schemas.catalog_record import CatalogRecord
 
 from ._db_indexed_repository import DbIndexedRepository
@@ -13,16 +11,9 @@ class CatalogRecordRepository(
     DbIndexedRepository[CatalogRecordModel, CatalogRecord],
     GetByIdMixin[CatalogRecordModel, str],
 ):
-    def __init__(
-        self, db_session: DatabaseSession, indexer_session: IndexerSession
-    ):
-        super().__init__(
-            "CatalogRecord",
-            db_session,
-            CatalogRecordModel,
-            indexer_session,
-            CatalogRecord,
-        )
+    _entity_name = "CatalogRecord"
+    _db_model = CatalogRecordModel
+    _indexer_model = CatalogRecord
 
     def create(
         self,

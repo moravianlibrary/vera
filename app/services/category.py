@@ -1,21 +1,41 @@
+from adapters.indexer import IndexerQuery
 from definitions.permission import OwnershipPermission, OwnershipScope
+from definitions.task import CategoryTask, TaskScope
 from errors.category import CategoryNotChildError, DifferentParentIDsException
 from repositories.category import CategoryRepository
 from repositories.group import GroupRepository
 from repositories.models.category import CategoryModel
+from repositories.task import TaskRepository, TaskScheduleRepository
 from repositories.user import UserRepository
 from schemas.authenticated_user import AuthenticatedUser
-from schemas.category import CategoryEdit, CategoryParentChangeParams
+from schemas.category import (
+    CategoryEdit,
+    CategoryParentChangeParams,
+    DocumentDiscoveryTaskData,
+)
 from schemas.common import AssignmentChange
+from schemas.task import TaskScheduleParams
+from services.task import TaskAndScheduleBasedService
+
+TASK_TYPE_NAMES_MAPPING = {
+    CategoryTask.Reindex: "Reindex categories",
+    CategoryTask.DocumentDiscovery: "Run document discovery",
+}
 
 
-class CategoryService:
+class CategoryService(TaskAndScheduleBasedService):
+    _task_scope = TaskScope.Category
+    _task_names_mapping = TASK_TYPE_NAMES_MAPPING
+
     def __init__(
         self,
         category_repository: CategoryRepository,
         group_repository: GroupRepository,
         user_repository: UserRepository,
+        task_repository: TaskRepository,
+        task_schedule_repository: TaskScheduleRepository,
     ):
+        super().__init__(task_repository, task_schedule_repository)
         self._category_repository = category_repository
         self._group_repository = group_repository
         self._user_repository = user_repository
@@ -169,9 +189,55 @@ class CategoryService:
             to_category.level + 1 if to_category else 1,
         )
 
-    def delete(self, category_id: int, user: AuthenticatedUser) -> None:
+    async def change_document_discovery(
+        self,
+        category_id: int,
+        plugin_instance_id: int | None,
+        user: AuthenticatedUser,
+    ) -> CategoryModel:
         target_category = self._category_repository.get_by_id(category_id)
 
         self._enforce_manage_ownership(target_category.parent, user)
 
-        return self._category_repository.delete(target_category, True, True)
+        return await self._category_repository.change_document_discovery(
+            target_category, plugin_instance_id
+        )
+
+    async def reindex(
+        self,
+        query: IndexerQuery,
+        created_by: str,
+        schedule_params: TaskScheduleParams,
+    ):
+        return await self._create_or_schedule_task(
+            CategoryTask.Reindex, created_by, schedule_params, query
+        )
+
+    async def run_document_discovery(
+        self,
+        category_id: int,
+        created_by: str,
+        schedule_params: TaskScheduleParams,
+    ):
+        target_category = self._category_repository.get_by_id(category_id)
+
+        return await self._create_or_schedule_task(
+            CategoryTask.DocumentDiscovery,
+            created_by,
+            schedule_params,
+            data=DocumentDiscoveryTaskData(
+                category_id=category_id,
+                plugin_instance_id=target_category.document_discovery_id,
+            ),
+        )
+
+    async def delete(
+        self, category_id: int, user: AuthenticatedUser
+    ) -> CategoryModel:
+        target_category = self._category_repository.get_by_id(category_id)
+
+        self._enforce_manage_ownership(target_category.parent, user)
+
+        return await self._category_repository.delete(
+            target_category, True, True
+        )

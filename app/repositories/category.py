@@ -1,12 +1,10 @@
 from typing import List
 
-from adapters.database import DatabaseSession
-from adapters.indexer import IndexerSession
 from definitions.category import ALLOWED_LEVELS
 from errors.category import CycleDetectedError, InvalidLevelError
 from repositories.models.group import GroupModel
 from repositories.models.user import UserModel
-from schemas.category import Category
+from schemas.category import Category, CategoryStatistics, DocumentDiscovery
 
 from ._db_indexed_repository import DbIndexedRepository
 from ._db_repository import (
@@ -22,15 +20,23 @@ class CategoryRepository(
     GetByIdMixin[CategoryModel, int],
     EnforceNameUniquenessMixin,
 ):
-    def __init__(
-        self, db_session: DatabaseSession, indexer_session: IndexerSession
-    ):
-        super().__init__(
-            "Category", db_session, CategoryModel, indexer_session, Category
+    _entity_name = "Category"
+    _db_model = CategoryModel
+    _indexer_model = Category
+
+    def serialize_entity(self, db_entity: CategoryModel) -> Category:
+        index_entity = super().serialize_entity(db_entity)
+
+        if db_entity.document_discovery_id:
+            index_entity.document_discovery = DocumentDiscovery(
+                id=db_entity.document_discovery_id,
+                schedule_id=db_entity.document_discovery_schedule_id,
+            )
+
+        index_entity.statistics = CategoryStatistics(
+            **db_entity.get_statistics(self._database_session)
         )
 
-    def serialize_entity(self, db_entity):
-        index_entity = super().serialize_entity(db_entity)
         return index_entity
 
     async def create(
@@ -109,6 +115,7 @@ class CategoryRepository(
         """
         Update the assignment of a category.
         """
+        # TODO: Create reindex process
         category_model.direct_groups = groups
         category_model.direct_users = users
 
@@ -123,6 +130,7 @@ class CategoryRepository(
         Prevents cycles and enforces MAX_HEIGHT limit.
         All changes are saved at the end.
         """
+        # TODO: Create reindex process
         visited = set()
         updated_models = []
 
@@ -162,12 +170,20 @@ class CategoryRepository(
 
         return category_model
 
+    async def change_document_discovery(
+        self, category_model: CategoryModel, document_discovery_id: int | None
+    ) -> CategoryModel:
+        """
+        Change the document discovery settings for a category.
+        """
+        # TODO: Create reindex process
+        category_model.document_discovery_id = document_discovery_id
+        return await self.save(category_model)
+
 
 class CategoryProportionRepository(DbRepository[CategoryProportionModel]):
-    def __init__(self, db_session: DatabaseSession):
-        super().__init__(
-            "CategoryProportion", db_session, CategoryProportionModel
-        )
+    _entity_name = "CategoryProportion"
+    _db_model = CategoryProportionModel
 
     def create(
         self, distribution_id: int, category_id: int, proportion: float

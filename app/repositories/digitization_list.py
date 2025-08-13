@@ -1,7 +1,5 @@
 from typing import List
 
-from adapters.database import DatabaseSession
-from adapters.indexer import IndexerSession
 from schemas.digitization_list import DigitizationList
 
 from ._db_indexed_repository import DbIndexedRepository
@@ -14,18 +12,9 @@ class DigiListRepository(
     DbIndexedRepository[DigitizationListModel, DigitizationList],
     GetByIdMixin[DigitizationListModel, int],
 ):
-    def __init__(
-        self,
-        database_session: DatabaseSession,
-        indexer_session: IndexerSession,
-    ):
-        super().__init__(
-            "DigitizationList",
-            database_session,
-            DigitizationListModel,
-            indexer_session,
-            DigitizationList,
-        )
+    _entity_name = "DigitizationList"
+    _db_model = DigitizationListModel
+    _indexer_model = DigitizationList
 
     def create(
         self, created_by: str, intentions: List[IntentionModel]

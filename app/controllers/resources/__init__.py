@@ -113,6 +113,8 @@ DependsOnCategoryService = provide_service(
     DependsOnCategoryRepository,
     DependsOnGroupRepository,
     DependsOnUserRepository,
+    DependsOnTaskRepository,
+    DependsOnTaskScheduleRepository,
 )
 DependsOnDigiListService = provide_service(
     DigiListService,

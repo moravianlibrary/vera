@@ -1,9 +1,8 @@
 from typing import Generic, List, Protocol, Type, TypeVar, Union
 
-from pydantic import BaseModel
 from sqlalchemy.orm import DeclarativeMeta
 
-from adapters.database import DatabaseSession
+from adapters.database import BaseModel, DatabaseSession
 from schemas.common import PageParams
 
 # ------------------
@@ -24,21 +23,17 @@ class DbRepository(Generic[DatabaseEntityType]):
     ----------
     entity_name : str
         Descriptive name of the entity (used for error messages).
-    database_session : DatabaseSession
-        Database session handler.
     database_entity : Type[DatabaseEntityType]
         SQLAlchemy model class this repository operates on.
+    database_session : DatabaseSession
+        Database session handler.
     """
 
-    def __init__(
-        self,
-        entity_name: str,
-        database_session: DatabaseSession,
-        database_entity: Type[DatabaseEntityType],
-    ):
-        self._entity_name = entity_name
+    _entity_name: str = "Change me"
+    _db_model: Type[DatabaseEntityType] = BaseModel
+
+    def __init__(self, database_session: DatabaseSession):
         self._database_session = database_session
-        self._database_entity = database_entity
 
     def save(self, entity: DatabaseEntityType) -> DatabaseEntityType:
         """
@@ -100,14 +95,14 @@ class DbRepositoryContext(Protocol[DatabaseEntityType]):
         The name of the entity managed by the repository.
     _database_session : DatabaseSession
         The database session used for performing database operations.
-    _database_entity : Type[DatabaseEntityType]
+    _db_model : Type[DatabaseEntityType]
         The class type of the database entity (e.g., SQLAlchemy model)
         managed by the repository.
     """
 
     _entity_name: str
     _database_session: DatabaseSession
-    _database_entity: Type[DatabaseEntityType]
+    _db_model: Type[DatabaseEntityType]
 
 
 # ---------------------
@@ -135,8 +130,8 @@ class FindByIdMixin(Generic[DatabaseEntityType, IdType]):
             The entity if found, otherwise None.
         """
         return (
-            self._database_session.query(self._database_entity)
-            .filter(self._database_entity.id == entity_id)
+            self._database_session.query(self._db_model)
+            .filter(self._db_model.id == entity_id)
             .first()
         )
 
@@ -163,8 +158,8 @@ class FindByNameMixin(Generic[DatabaseEntityType]):
             The entity if found, otherwise None.
         """
         return (
-            self._database_session.query(self._database_entity)
-            .filter(self._database_entity.name == name)
+            self._database_session.query(self._db_model)
+            .filter(self._db_model.name == name)
             .first()
         )
 
@@ -191,8 +186,8 @@ class FindByNamesMixin(Generic[DatabaseEntityType]):
             A list of matched entities.
         """
         return (
-            self._database_session.query(self._database_entity)
-            .filter(self._database_entity.name.in_(names))
+            self._database_session.query(self._db_model)
+            .filter(self._db_model.name.in_(names))
             .all()
         )
 
@@ -225,8 +220,8 @@ class GetByIdMixin(Generic[DatabaseEntityType, IdType]):
             If the entity with the given ID does not exist.
         """
         entity = (
-            self._database_session.query(self._database_entity)
-            .filter(self._database_entity.id == entity_id)
+            self._database_session.query(self._db_model)
+            .filter(self._db_model.id == entity_id)
             .first()
         )
         if not entity:
@@ -258,8 +253,8 @@ class GetByIdsMixin(Generic[DatabaseEntityType, IdType]):
             List of found entities.
         """
         return (
-            self._database_session.query(self._database_entity)
-            .filter(self._database_entity.id.in_(entity_ids))
+            self._database_session.query(self._db_model)
+            .filter(self._db_model.id.in_(entity_ids))
             .all()
         )
 
@@ -289,13 +284,13 @@ class PaginationMixin(Generic[DatabaseEntityType]):
         List[DatabaseEntityType]
             Paginated and optionally filtered results.
         """
-        query = self._database_session.query(self._database_entity)
+        query = self._database_session.query(self._db_model)
         if filter_params:
             query = query.filter_by(
                 **filter_params.model_dump(exclude_unset=True)
             )
         return (
-            query.order_by(self._database_entity.id)
+            query.order_by(self._db_model.id)
             .offset(page_params.offset)
             .limit(page_params.limit)
             .all()
@@ -327,11 +322,11 @@ class EnforceNameUniquenessMixin(Generic[DatabaseEntityType, IdType]):
         ValueError
             If another entity with the same name exists.
         """
-        query = self._database_session.query(self._database_entity).filter(
-            self._database_entity.name == name
+        query = self._database_session.query(self._db_model).filter(
+            self._db_model.name == name
         )
         if entity_id:
-            query = query.filter(self._database_entity.id != entity_id)
+            query = query.filter(self._db_model.id != entity_id)
         if query.first() is not None:
             # TODO: Use a custom exception
             raise ValueError(

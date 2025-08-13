@@ -40,13 +40,14 @@ class TestMixinsRepository(
     PaginationMixin[FakeEntity],
     EnforceNameUniquenessMixin[FakeEntity, int],
 ):
-    pass
+    _entity_name = "FakeEntity"
+    _db_model = FakeEntity
 
 
 class TestDbRepository(unittest.TestCase):
     def setUp(self):
         self.db_session = create_autospec(DatabaseSession)
-        self.repo = DbRepository("FakeEntity", self.db_session, FakeEntity)
+        self.repo = DbRepository(self.db_session)
         self.item = FakeEntity(id=1, name="TestName")
 
     def test_save(self):
@@ -75,9 +76,7 @@ class TestDbRepository(unittest.TestCase):
 class TestDbRepositoryMixins(unittest.TestCase):
     def setUp(self):
         self.db_session = create_autospec(DatabaseSession)
-        self.repo = TestMixinsRepository(
-            "FakeEntity", self.db_session, FakeEntity
-        )
+        self.repo = TestMixinsRepository(self.db_session)
         self.item = FakeEntity(id=1, name="TestName")
 
     def test_find_by_id(self):

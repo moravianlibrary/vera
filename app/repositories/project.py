@@ -1,6 +1,5 @@
 from typing import Optional
 
-from adapters.database import DatabaseSession
 from schemas.project import Project, ProjectEdit
 
 from ._db_indexed_repository import DbIndexedRepository
@@ -13,8 +12,9 @@ class ProjectRepository(
     GetByIdMixin[ProjectModel, int],
     EnforceNameUniquenessMixin[ProjectModel, int],
 ):
-    def __init__(self, db_session: DatabaseSession):
-        super().__init__(db_session, ProjectModel, "Project")
+    _entity_name = "Project"
+    _db_model = ProjectModel
+    _indexer_model = Project
 
     def create(self, project: ProjectEdit) -> ProjectModel:
         """

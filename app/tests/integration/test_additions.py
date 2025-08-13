@@ -16,14 +16,14 @@ TEST_DATA = [
                 id=f"id-{i}", username=f"user{i}", email=f"user{i}@mzk.cz"
             )
             for i in range(1, 4)
-        ]
+        ],
     ),
     EntitySeed(
         [
             UserModel(
                 id="superuser", username="superuser", email="superuser@mzk.cz"
             )
-        ]
+        ],
     ),
     EntitySeed(
         [
@@ -34,7 +34,7 @@ TEST_DATA = [
                 created_by="id-1" if i == 1 else "superuser",
             )
             for i in range(1, 3)
-        ]
+        ],
     ),
     EntitySeed(
         [
@@ -55,7 +55,7 @@ TEST_DATA = [
             )
             for i in range(1, 7)
         ],
-        indexer_model=Addition,
+        Addition,
     ),
     SequenceSyncRequest(AdditionBatchModel.__table__, 3),
     SequenceSyncRequest(AdditionModel.__table__, 7),

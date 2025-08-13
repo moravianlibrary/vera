@@ -58,10 +58,10 @@ class CategoryModel(BaseModel, CreatedTimestampMixin):
     archived = Column(Boolean, default=False, nullable=False)
 
     # Document discovery
-    plugin_instance_id = Column(
+    document_discovery_id = Column(
         Integer, ForeignKey("plugin_instances.id"), nullable=True
     )
-    task_schedule_id = Column(
+    document_discovery_schedule_id = Column(
         Integer, ForeignKey("task_schedules.id"), nullable=True
     )
 
@@ -91,10 +91,9 @@ class CategoryModel(BaseModel, CreatedTimestampMixin):
     task_items: Mapped[List["TaskCategoryModel"]] = contains(
         "TaskCategoryModel", "category"
     )
-    # TODO:
-    # document_discovery: Mapped["PluginInstanceModel"] = has_one(
-    #     "PluginInstanceModel", "category"
-    # )
+    document_discovery: Mapped["PluginInstanceModel"] = has_one(
+        "PluginInstanceModel", "categories"
+    )
 
     # Ownership relationships
     direct_groups: Mapped[List["GroupModel"]] = connected_with(

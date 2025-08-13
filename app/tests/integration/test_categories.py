@@ -1,3 +1,5 @@
+from vera_plugins.definitions.plugin_types import PluginType
+
 from repositories.models.associations.group import category_group_association
 from repositories.models.associations.user import (
     category_user_association,
@@ -5,6 +7,8 @@ from repositories.models.associations.user import (
 )
 from repositories.models.category import CategoryModel
 from repositories.models.group import GroupModel
+from repositories.models.plugin import PluginInstanceModel, PluginModel
+from repositories.models.task import TaskModel
 from repositories.models.user import UserModel
 from schemas.category import Category
 from tests.integration.case import (
@@ -33,7 +37,7 @@ TEST_DATA_SEED = [
                 ),
             )
             for i in range(1, 11)
-        ]
+        ],
     ),
     EntitySeed(
         [
@@ -43,7 +47,7 @@ TEST_DATA_SEED = [
                 description=f"Description for group {i}",
             )
             for i in range(1, 6)
-        ]
+        ],
     ),
     AssociationSeed(
         group_user_association,
@@ -53,6 +57,20 @@ TEST_DATA_SEED = [
             3: ["id-2", "id-5", "id-6", "id-9"],
             5: ["id-8", "id-9", "id-10"],
         },
+    ),
+    EntitySeed(
+        PluginModel(
+            id=1,
+            name="Test Plugin",
+            type=PluginType.DocumentDiscovery,
+            meta={},
+            data=b"test data",
+        ),
+    ),
+    EntitySeed(
+        PluginInstanceModel(
+            plugin_id=1, name="Test Plugin Instance", created_by="superuser"
+        ),
     ),
     EntitySeed(
         [
@@ -137,6 +155,7 @@ TEST_DATA_SEED = [
                 assignable=True,
                 extract_whole=False,
                 parent_id=5,
+                document_discovery_id=1,
             ),
         ],
         Category,
@@ -146,7 +165,7 @@ TEST_DATA_SEED = [
         category_user_association,
         {3: [f"id-{i}" for i in range(1, 5)], 6: ["id-8"], 8: ["id-10"]},
     ),
-    ReindexRequest(CategoryModel, Category, [1, 3, 4, 6, 7, 8]),
+    ReindexRequest(CategoryModel, Category, list(range(1, 9))),
     SequenceSyncRequest(CategoryModel.__table__, 9),
 ]
 
@@ -375,7 +394,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                     "direct_users": [{"id": "id-10", "username": "user10"}],
                     "description": "Child of Category Level 2 - B1",
                     "disabled": False,
-                    "document_discovery": None,
+                    "document_discovery": {"id": 1, "schedule_id": None},
                     "extract_whole": False,
                     "effective_groups": [],
                     "effective_users": [{"id": "id-10", "username": "user10"}],
@@ -708,6 +727,184 @@ class TestIntegrationCategories(TestIntegrationCase):
             {
                 "detail": "Category level 5 exceeds allowed limits "
                 "while updating parent for category id 1."
+            },
+            exclude_paths={("created_at",)},
+        )
+
+    async def test_change_document_discovery(self):
+        self.assertResponse(
+            await self.client.patch(
+                "/categories/1/document-discovery",
+                params={"plugin_instance_id": 1},
+            ),
+            200,
+            {
+                "id": 1,
+                "name": "Category Level 1 - A",
+                "description": "Top level category A",
+                "parent_id": None,
+                "level": 1,
+                "path": [{"id": 1, "name": "Category Level 1 - A"}],
+                "assignable": False,
+                "extract_whole": False,
+                "disabled": False,
+                "archived": False,
+                "direct_groups": [{"id": 1, "name": "Group 1"}],
+                "direct_users": [],
+                "effective_groups": [{"id": 1, "name": "Group 1"}],
+                "effective_users": [],
+                "proportions": [],
+                "statistics": None,
+                "document_discovery": {"id": 1, "schedule_id": None},
+            },
+            exclude_paths={("created_at",)},
+        )
+
+    async def test_reindex(self):
+        self.assertResponse(
+            await self.client.post(
+                "/categories/reindex",
+                json={"query": {"match_all": {}}},
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "Category.Reindex",
+                "task_scope": "Category",
+                "unscoped_task_type": "Reindex",
+                "name": "Reindex categories",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": True,
+                "has_data": False,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T15:38:49.321818",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+        self.assertEntityProperties(
+            TaskModel,
+            1,
+            {
+                "query": {"query": {"match_all": {}}},
+                "data": None,
+            },
+        )
+
+    async def test_schedule_reindex(self):
+        self.assertResponse(
+            await self.client.post(
+                "/categories/reindex",
+                json={"query": {"match_all": {}}},
+                params={
+                    "schedule_name": "Reindex categories every midnight",
+                    "cron_expression": "0 0 * * *",
+                },
+            ),
+            200,
+            {
+                "id": 1,
+                "name": "Reindex categories every midnight",
+                "cron_expression": "0 0 * * *",
+                "task_type": "Category.Reindex",
+                "query": {"query": {"match_all": {}}},
+                "data": None,
+                "task_scope": "Category",
+                "unscoped_task_type": "Reindex",
+            },
+        )
+
+    async def test_run_document_discovery(self):
+        self.assertResponse(
+            await self.client.post(
+                "/categories/8/run-document-discovery",
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "Category.DocumentDiscovery",
+                "task_scope": "Category",
+                "unscoped_task_type": "DocumentDiscovery",
+                "name": "Run document discovery",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": False,
+                "has_data": True,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T15:38:49.321818",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+        self.assertEntityProperties(
+            TaskModel,
+            1,
+            {
+                "query": None,
+                "data": {"category_id": 8, "plugin_instance_id": 1},
+            },
+        )
+
+    async def test_schedule_document_discovery(self):
+        self.assertResponse(
+            await self.client.post(
+                "/categories/8/run-document-discovery",
+                params={
+                    "schedule_name": "Document Discovery for Category 8",
+                    "cron_expression": "0 0 * * *",
+                },
+            ),
+            200,
+            {
+                "id": 1,
+                "name": "Document Discovery for Category 8",
+                "cron_expression": "0 0 * * *",
+                "task_type": "Category.DocumentDiscovery",
+                "query": None,
+                "data": {"category_id": 8, "plugin_instance_id": 1},
+                "task_scope": "Category",
+                "unscoped_task_type": "DocumentDiscovery",
+            },
+        )
+
+    async def test_delete(self):
+        self.assertResponse(
+            await self.client.delete("/categories/8"),
+            200,
+            {
+                "name": "Category Level 3 - B1A",
+                "description": "Child of Category Level 2 - B1",
+                "parent_id": 5,
+                "level": 3,
+                "path": [
+                    {"id": 2, "name": "Category Level 1 - B"},
+                    {"id": 5, "name": "Category Level 2 - B1"},
+                    {"id": 8, "name": "Category Level 3 - B1A"},
+                ],
+                "assignable": True,
+                "extract_whole": False,
+                "disabled": False,
+                "archived": True,
+                "direct_groups": [],
+                "direct_users": [{"id": "id-10", "username": "user10"}],
+                "effective_groups": [],
+                "effective_users": [{"id": "id-10", "username": "user10"}],
+                "proportions": [],
+                "document_discovery": {"id": 1, "schedule_id": None},
+                "statistics": None,
+                "created_at": "2025-08-13T14:54:23.748535",
+                "id": 8,
             },
             exclude_paths={("created_at",)},
         )

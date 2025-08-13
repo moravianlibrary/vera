@@ -179,6 +179,7 @@ class TestIntegrationContext:
         cls.elasticsearch.stop()
 
         # Broker
+        # TODO:
         # cls.patch_init_task_delay.stop()
         cls.redis.stop()
 
@@ -235,6 +236,7 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
         self.db_session.commit()
 
         # Reset indexer state before each test
+        await self.es.indices.refresh(index="*")
         await self.es.delete_by_query(
             index="*",
             body={"query": {"match_all": {}}},
@@ -243,6 +245,12 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
         )
 
     async def asyncTearDown(self):
+        await self.es.delete_by_query(
+            index="*",
+            body={"query": {"match_all": {}}},
+            wait_for_completion=True,
+            conflicts="proceed",
+        )
         await self.es.close()
 
     async def bulk_index(
@@ -343,7 +351,14 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
         for seed in seed_data:
             if isinstance(seed, EntitySeed):
                 await self._persist_entities(
-                    [copy.deepcopy(entity) for entity in seed.entities],
+                    [
+                        copy.deepcopy(entity)
+                        for entity in (
+                            seed.entities
+                            if isinstance(seed.entities, list)
+                            else [seed.entities]
+                        )
+                    ],
                     seed.indexer_model,
                 )
             elif isinstance(seed, AssociationSeed):
@@ -428,12 +443,12 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
 
     def assertEntityProperties(
         self,
-        db_entity_model: Type[DatabaseEntityType],
+        db_db_model: Type[DatabaseEntityType],
         entity_id: IdType,
         assert_properties: Dict[str, Any],
     ) -> None:
         db_entity = (
-            self.db_session.query(db_entity_model)
+            self.db_session.query(db_db_model)
             .filter_by(id=entity_id)
             .one_or_none()
         )

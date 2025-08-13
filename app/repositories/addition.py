@@ -1,5 +1,3 @@
-from adapters.database import DatabaseSession
-from adapters.indexer import IndexerSession
 from definitions.addition import AdditionStatus
 from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
@@ -23,18 +21,9 @@ class AdditionRepository(
     SearchAllMixin[AdditionModel, Addition],
     SearchCountMixin[AdditionModel, Addition],
 ):
-    def __init__(
-        self,
-        database_session: DatabaseSession,
-        indexer_session: IndexerSession,
-    ):
-        super().__init__(
-            "Addition",
-            database_session,
-            AdditionModel,
-            indexer_session,
-            Addition,
-        )
+    _entity_name = "Addition"
+    _db_model = AdditionModel
+    _indexer_model = Addition
 
     def create(
         self,
@@ -99,10 +88,8 @@ class AdditionBatchRepository(
     DbRepository[AdditionBatchModel],
     GetByIdMixin[AdditionBatchModel, int],
 ):
-    def __init__(self, database_session: DatabaseSession):
-        super().__init__(
-            "Addition Batch", database_session, AdditionBatchModel
-        )
+    _entity_name = "Addition Batch"
+    _db_model = AdditionBatchModel
 
     def create(
         self, name: str, file_name: str, created_by: str

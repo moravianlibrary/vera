@@ -54,7 +54,7 @@ class CategoryProportion(IndexerNestedModel):
 
 class DocumentDiscovery(IndexerNestedModel):
     id: int
-    task_schedule_id: int | None
+    schedule_id: int | None = None
 
 
 class CategoryStatistics(IndexerNestedModel):
@@ -85,7 +85,6 @@ class CategoryHit(IndexerModel):
 
     proportions: List[CategoryProportion]
 
-    # TODO:
     document_discovery: DocumentDiscovery | None = None
 
     statistics: CategoryStatistics | None = None
@@ -99,3 +98,8 @@ class Category(CategoryHit):
         id_field = "id"
 
     id: int
+
+
+class DocumentDiscoveryTaskData(BaseModel):
+    category_id: int
+    plugin_instance_id: int

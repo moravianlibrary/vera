@@ -12,13 +12,15 @@ from adapters.indexer import (
 )
 from definitions.task import ScopedTaskType, TaskScope, TaskState, TaskType
 
+InputStringField = Field(None, min_length=1, max_length=256)
+
 
 # --------------------
 # - Query Parameters -
 # --------------------
 class TaskScheduleParams(BaseModel):
-    name: str | None = Field(None, min_length=1, max_length=50)
-    cron_expression: str | None = Field(None, min_length=1, max_length=100)
+    schedule_name: str | None = InputStringField
+    cron_expression: str | None = InputStringField
 
 
 class TaskItemsFilterParams(BaseModel):
@@ -82,15 +84,21 @@ class Task(TaskHit):
     id: integer
 
 
+class TaskData(IndexerNestedModel):
+    class Config:
+        extra = "allow"
+
+
 class TaskScheduleHit(IndexerModel):
     name: keyword
+    cron_expression: keyword
 
     task_type: ScopedTaskType
+    query: IndexerQuery | None = None
+    data: TaskData | None = None
+
     task_scope: TaskScope
     unscoped_task_type: EnumUnion[TaskType]
-
-    query: IndexerQuery | None = None
-    cron_expression: keyword
 
 
 class TaskSchedule(TaskScheduleHit):

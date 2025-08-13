@@ -1,6 +1,5 @@
 from typing import List
 
-from adapters.database import DatabaseSession
 from repositories.models.user import UserModel
 from schemas.group import GroupEdit
 
@@ -19,8 +18,8 @@ class GroupRepository(
     PaginationMixin[GroupModel],
     EnforceNameUniquenessMixin[GroupModel, int],
 ):
-    def __init__(self, db_session: DatabaseSession):
-        super().__init__("Group", db_session, GroupModel)
+    _entity_name = "Group"
+    _db_model = GroupModel
 
     def create(self, group: GroupEdit) -> GroupModel:
         """

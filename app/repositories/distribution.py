@@ -1,4 +1,3 @@
-from adapters.database import DatabaseSession
 from schemas.distribution import DistributionEdit
 
 from ._db_repository import (
@@ -16,8 +15,8 @@ class DistributionRepository(
     PaginationMixin[DistributionModel],
     EnforceNameUniquenessMixin[DistributionModel, int],
 ):
-    def __init__(self, db_session: DatabaseSession):
-        super().__init__("Distribution", db_session, DistributionModel)
+    _entity_name = "Distribution"
+    _db_model = DistributionModel
 
     def create(self, distribution: DistributionEdit) -> DistributionModel:
         """

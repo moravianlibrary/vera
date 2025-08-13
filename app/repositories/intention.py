@@ -1,5 +1,3 @@
-from adapters.database import DatabaseSession
-from adapters.indexer import IndexerSession
 from schemas.intention import Intention, IntentionEdit
 
 from ._db_indexed_repository import DbIndexedRepository
@@ -17,12 +15,9 @@ class IntentionRepository(
     GetByIdsMixin[IntentionModel, int],
     EnforceNameUniquenessMixin[IntentionModel, int],
 ):
-    def __init__(
-        self, db_session: DatabaseSession, indexer_session: IndexerSession
-    ):
-        super().__init__(
-            "Intention", db_session, IntentionModel, indexer_session, Intention
-        )
+    _entity_name = "Intention"
+    _db_model = IntentionModel
+    _indexer_model = Intention
 
     def create(self, intention: IntentionEdit) -> IntentionModel:
         """

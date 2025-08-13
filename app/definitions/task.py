@@ -46,7 +46,7 @@ class CatalogRecordTask(str, Enum):
 
 class CategoryTask(str, Enum):
     Reindex = "Reindex"
-    ExecuteScript = "ExecuteScript"
+    DocumentDiscovery = "DocumentDiscovery"
 
 
 class DigitizationListTask(str, Enum):
@@ -122,19 +122,19 @@ class ScopedTaskType(str, Enum):
     CatalogRecord_Reindex = "CatalogRecord.Reindex"
     CatalogRecord_Sync = "CatalogRecord.Sync"
     CatalogRecord_SetForcedValidity = "CatalogRecord.SetForcedValidity"
+    CatalogRecord_MarkInReview = "CatalogRecord.MarkInReview"
     CatalogRecord_ArchiveInactive = "CatalogRecord.ArchiveInactive"
+    CatalogRecord_Delete = "CatalogRecord.Delete"
 
     # Category
     Category_Reindex = "Category.Reindex"
-    Category_ExecuteScript = "Category.ExecuteScript"
+    Category_DocumentDiscovery = "Category.DocumentDiscovery"
 
-    # DigitizationListTask
-    DigitizationListTask_Create = "DigitizationListTask.Create"
-    DigitizationListTask_AddDocuments = "DigitizationListTask.AddDocuments"
-    DigitizationListTask_RemoveDocuments = (
-        "DigitizationListTask.RemoveDocuments"
-    )
-    DigitizationListTask_Delete = "DigitizationListTask.Delete"
+    # DigitizationList
+    DigitizationList_Create = "DigitizationList.Create"
+    DigitizationList_AddDocuments = "DigitizationList.AddDocuments"
+    DigitizationList_RemoveDocuments = "DigitizationList.RemoveDocuments"
+    DigitizationList_Delete = "DigitizationList.Delete"
 
     # Document
     Document_GenerateList = "Document.GenerateList"

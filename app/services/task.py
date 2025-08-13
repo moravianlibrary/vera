@@ -48,12 +48,7 @@ class TaskService:
         data: BaseModel | None = None,
     ) -> TaskModel:
         task = await self._task_repository.create(
-            scope,
-            task_type,
-            name,
-            created_by,
-            query,
-            data.model_dump(mode="json") if data else None,
+            scope, task_type, name, created_by, query, data
         )
 
         init_task.delay(task.id)
@@ -112,14 +107,16 @@ class TaskScheduleService:
         schedule_params: TaskScheduleParams,
         created_by: str,
         query: IndexerQuery | None,
+        data: BaseModel | None,
     ):
-        return self._task_schedule_repository.create(
+        return await self._task_schedule_repository.create(
             scope,
             task_type,
-            schedule_params.name,
+            schedule_params.schedule_name,
             schedule_params.cron_expression,
             created_by,
             query,
+            data,
         )
 
 
@@ -177,7 +174,7 @@ class TaskAndScheduleBasedService(TaskBasedService):
             schedule_params,
             created_by,
             query,
-            data.model_dump(mode="json") if data else None,
+            data,
         )
 
     async def _create_or_schedule_task(
@@ -188,16 +185,16 @@ class TaskAndScheduleBasedService(TaskBasedService):
         query: IndexerQuery | None = None,
         data: BaseModel | None = None,
     ) -> TaskOrScheduleModel:
-        if schedule_params.name and schedule_params.cron_expression:
+        if schedule_params.schedule_name and schedule_params.cron_expression:
             return await self._schedule_task(
-                task_type, created_by, schedule_params, query
+                task_type, created_by, schedule_params, query, data
             )
         elif (
-            schedule_params.name is None
+            schedule_params.schedule_name is None
             and schedule_params.cron_expression is None
         ):
             return await self._create_task(task_type, created_by, query, data)
-        elif schedule_params.name is None:
+        elif schedule_params.schedule_name is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Task name must be provided when scheduling a task.",

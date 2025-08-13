@@ -62,7 +62,12 @@ class CatalogRecordService(TaskAndScheduleBasedService):
         if not sync_params.from_catalog and not sync_params.properties:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="At least one sync parameter must be enabled.",
+                detail=(
+                    "No synchronization target selected. "
+                    "Enable 'from_catalog' to sync documents "
+                    "from the catalog, "
+                    "or 'properties' to sync additional properties."
+                ),
             )
         return await self._create_or_schedule_task(
             CatalogRecordTask.Sync,
@@ -91,16 +96,16 @@ class CatalogRecordService(TaskAndScheduleBasedService):
     async def mark_in_review(
         self,
         query: IndexerQuery,
-        in_review_params: MarkInReviewParams,
+        review_params: MarkInReviewParams,
         created_by: str,
     ) -> TaskModel:
         return await self._create_task(
             CatalogRecordTask.MarkInReview,
             created_by,
             query,
-            in_review_params,
+            review_params,
             self._task_names_mapping[CatalogRecordTask.MarkInReview][
-                in_review_params.in_review
+                review_params.in_review
             ],
         )
 

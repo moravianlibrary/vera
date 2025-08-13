@@ -67,7 +67,7 @@ async def reindex(
 @router.post(
     "/sync",
     dependencies=[WithPermission(GeneralPermission.ManageCatalogRecords)],
-    response_model=Task,
+    response_model=TaskOrSchedule,
 )
 async def sync(
     query: IndexerQuery,
@@ -100,17 +100,17 @@ async def set_forced_validity(
 )
 async def mark_in_review(
     query: IndexerQuery,
-    in_review_params: MarkInReviewParams,
+    review_params: Annotated[MarkInReviewParams, Query()],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
-    return await service.mark_in_review(query, in_review_params, user.id)
+    return await service.mark_in_review(query, review_params, user.id)
 
 
 @router.post(
     "/archive-inactive",
     dependencies=[WithPermission(GeneralPermission.ManageCatalogRecords)],
-    response_model=Task,
+    response_model=TaskOrSchedule,
 )
 async def archive_inactive(
     schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,

@@ -49,17 +49,15 @@ class DbIndexedRepository(
         Refreshes the index to make recent changes searchable.
     """
 
+    _indexer_model: Type[IndexerModelType]
+
     def __init__(
         self,
-        entity_name: str,
         database_session: DatabaseSession,
-        database_entity: Type[DatabaseEntityType],
         indexer_session: IndexerSession,
-        indexer_entity: Type[IndexerModelType],
     ):
-        super().__init__(entity_name, database_session, database_entity)
+        super().__init__(database_session)
         self._indexer_session = indexer_session
-        self._indexer_entity = indexer_entity
 
     def has_current_version_schema(self) -> bool:
         """
@@ -71,7 +69,7 @@ class DbIndexedRepository(
             True if the index schema matches the expected version;
             False otherwise.
         """
-        index = self._indexer_entity.ESConfig.index
+        index = self._indexer_model.ESConfig.index
 
         mapping = self._indexer_session.indices.get_mapping(index=index).get(
             index, {}
@@ -79,14 +77,14 @@ class DbIndexedRepository(
 
         return mapping.get("mappings", {}).get("_meta", {}).get(
             "index.version"
-        ) == getattr(self._indexer_entity.ESConfig, "version", None)
+        ) == getattr(self._indexer_model.ESConfig, "version", None)
 
     async def recreate_index(self):
         """
         Delete and recreate the index
         using the schema defined by the indexer entity.
         """
-        index = self._indexer_entity.ESConfig.index
+        index = self._indexer_model.ESConfig.index
 
         if self._indexer_session.indices.exists(index=index):
             self._indexer_session.indices.delete(index=index)
@@ -111,7 +109,7 @@ class DbIndexedRepository(
         """
         return (
             await self._indexer_session.search(
-                index=self._indexer_entity.ESConfig.index,
+                index=self._indexer_model.ESConfig.index,
                 body=request.model_dump(),
             )
         ).body
@@ -130,8 +128,29 @@ class DbIndexedRepository(
         IndexerModelType
             The serialized indexer model.
         """
-        return self._indexer_entity.model_validate(
-            entity, from_attributes=True
+        return self._indexer_model.model_validate(entity, from_attributes=True)
+
+    async def index(
+        self, entity: DatabaseEntityType, wait_for: bool = False
+    ) -> None:
+        """
+        Index a database entity.
+
+        Parameters
+        ----------
+        entity : DatabaseEntityType
+            The database entity to index.
+        wait_for: bool, optional
+            Whether to wait for the indexing to refresh.
+        """
+        id_field = self._indexer_model.ESConfig.id_field
+        await self._indexer_session.index(
+            index=self._indexer_model.ESConfig.index,
+            id=entity.id,
+            body=self.serialize_entity(entity).model_dump(
+                mode="json", exclude={id_field}, exclude_none=True
+            ),
+            refresh="wait_for" if wait_for else None,
         )
 
     async def save(
@@ -156,25 +175,28 @@ class DbIndexedRepository(
         self._database_session.commit()
         self._database_session.refresh(entity)
 
-        await self.serialize_entity(entity).save(wait_for=wait_for)
+        await self.index(entity)
 
         return entity
 
-    async def save_bulk(
-        self,
-        entities: List[DatabaseEntityType],
-        wait_for: bool = False,
-    ) -> List[DatabaseEntityType]:
-        self._database_session.add_all(entities)
-        self._database_session.commit()
+    async def index_bulk(
+        self, entities: List[DatabaseEntityType], wait_for: bool = False
+    ) -> None:
+        """
+        Index multiple database entities in bulk.
 
+        Parameters
+        ----------
+        entities : List[DatabaseEntityType]
+            The database entities to index.
+        """
         docs = []
         for entity in entities:
-            self._database_session.refresh(entity)
             docs.append(self.serialize_entity(entity))
 
-        index_name = self._indexer_entity.ESConfig.index
-        id_field = self._indexer_entity.ESConfig.id_field
+        index_name = self._indexer_model.ESConfig.index
+        id_field = self._indexer_model.ESConfig.id_field
+
         _, errors = await async_bulk(
             self._indexer_session,
             (
@@ -188,14 +210,27 @@ class DbIndexedRepository(
                 }
                 for doc in docs
             ),
-            refresh=wait_for,
+            refresh="wait_for" if wait_for else None,
         )
 
         if errors:
             raise RuntimeError(f"Failed to index some documents: {errors}")
 
+    async def save_bulk(
+        self,
+        entities: List[DatabaseEntityType],
+        wait_for: bool = False,
+    ) -> List[DatabaseEntityType]:
+        self._database_session.add_all(entities)
+        self._database_session.commit()
+        for entity in entities:
+            self._database_session.refresh(entity)
+
+        await self.index_bulk(entities, wait_for)
+
         return entities
 
+    # TODO:
     async def index_all(self) -> None:
         semaphore = asyncio.BoundedSemaphore(10)
 
@@ -203,9 +238,7 @@ class DbIndexedRepository(
             async with semaphore:
                 await self.serialize_entity(entity).save()
 
-        entities = self._database_session.query(
-            self._database_entity
-        ).yield_per(1000)
+        entities = self._database_session.query(self._db_model).yield_per(1000)
 
         # gather tasks incrementally
         tasks = set()
@@ -279,19 +312,19 @@ class DbIndexedRepositoryContext(
         The name of the entity managed by the repository.
     _database_session : DatabaseSession
         The database session used for performing database operations.
-    _database_entity : Type[DatabaseEntityType]
+    _db_model : Type[DatabaseEntityType]
         The class type of the database entity.
     _indexer_session : IndexerSession
         The indexer session used for search, scroll, and count operations.
-    _indexer_entity : Type[IndexerModelType]
+    _indexer_model : Type[IndexerModelType]
         The index document class used by the repository.
     """
 
     _entity_name: str
     _database_session: DatabaseSession
-    _database_entity: Type[DatabaseEntityType]
+    _db_model: Type[DatabaseEntityType]
     _indexer_session: IndexerSession
-    _indexer_entity: Type[IndexerModelType]
+    _indexer_model: Type[IndexerModelType]
 
 
 # ---------------------
@@ -320,9 +353,9 @@ class GetByQueryMixin(Generic[DatabaseEntityType, IndexerModelType]):
             Each matching entity found in the database by ID
             from the indexer hits.
         """
-        index = self._indexer_entity.ESConfig.index
-        id_field = self._indexer_entity.ESConfig.id_field
-        db_id_column = getattr(self._database_entity, id_field)
+        index = self._indexer_model.ESConfig.index
+        id_field = self._indexer_model.ESConfig.id_field
+        db_id_column = getattr(self._db_model, id_field)
 
         scroll_id = None
 
@@ -338,9 +371,9 @@ class GetByQueryMixin(Generic[DatabaseEntityType, IndexerModelType]):
             )
 
             for hit in response["hits"]["hits"]:
-                yield self._database_session.query(
-                    self._database_entity
-                ).filter(db_id_column == hit["_source"][id_field]).one()
+                yield self._database_session.query(self._db_model).filter(
+                    db_id_column == hit["_source"][id_field]
+                ).one()
 
             scroll_id = response.get("_scroll_id")
             if not scroll_id or not response["hits"]["hits"]:
@@ -371,7 +404,7 @@ class SearchAllMixin(Generic[DatabaseEntityType, IndexerModelType]):
         IndexerModelType
             Each parsed document from index results.
         """
-        index = self._indexer_entity.ESConfig.index
+        index = self._indexer_model.ESConfig.index
 
         scroll_id = None
 
@@ -387,7 +420,7 @@ class SearchAllMixin(Generic[DatabaseEntityType, IndexerModelType]):
             )
 
             for hit in response["hits"]["hits"]:
-                yield self._indexer_entity.model_validate(hit["_source"])
+                yield self._indexer_model.model_validate(hit["_source"])
 
             scroll_id = response.get("_scroll_id")
             if not scroll_id or response["hits"]["total"] == 0:
@@ -420,6 +453,6 @@ class SearchCountMixin(Generic[DatabaseEntityType, IndexerModelType]):
         """
 
         response = await self._indexer_session.count(
-            index=self._indexer_entity.ESConfig.index, body=query
+            index=self._indexer_model.ESConfig.index, body=query
         )
         return response.get("count", 0)

@@ -26,7 +26,7 @@ class TaskType(Enum):
 
     # Category Tasks
     Category_Reindex = "Category_Reindex"
-    Category_ExecuteScript = "Category_ExecuteScript"
+    Category_DocumentDiscovery = "Category_DocumentDiscovery"
 
     # System Tasks
     System_RecreateIndex = "System_RecreateIndex"

@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import List
 
-from adapters.database import DatabaseSession
 from adapters.indexer import IndexerQuery
 from repositories.models.watchlist import (
     WatchlistModel,
@@ -28,8 +27,8 @@ class WatchlistRepository(
     PaginationMixin[WatchlistModel],
     EnforceNameUniquenessMixin[WatchlistModel, int],
 ):
-    def __init__(self, database_session: DatabaseSession):
-        super().__init__("Watchlist", database_session, WatchlistModel)
+    _entity_name = "Watchlist"
+    _db_model = WatchlistModel
 
     def create(self, watchlist: WatchlistCreate) -> WatchlistModel:
         self.enforce_name_uniqueness(watchlist.name)
@@ -83,7 +82,7 @@ class WatchlistRepository(
         user_id: str,
     ) -> WatchlistSubscriptionModel | None:
         return (
-            self._database_session.query(self._database_entity)
+            self._database_session.query(self._db_model)
             .filter(
                 WatchlistSubscriptionModel.watchlist_id == watchlist_id,
                 WatchlistSubscriptionModel.user_id == user_id,
@@ -132,7 +131,7 @@ class WatchlistRepository(
         settings: WatchlistNotificationSettings,
         assignment: UserAssignment,
     ) -> WatchlistModel:
-        self._database_session.query(self._database_entity).filter(
+        self._database_session.query(self._db_model).filter(
             WatchlistSubscriptionModel.watchlist_id == watchlist.id,
             WatchlistSubscriptionModel.user_id.in_(assignment.user_ids),
         ).update(
@@ -157,7 +156,7 @@ class WatchlistRepository(
     #     self, user_id: str
     # ) -> List[WatchlistNotificationModel]:
     #     return (
-    #         self._database_session.query(self._database_entity)
+    #         self._database_session.query(self._db_model)
     #         .filter(WatchlistNotificationModel.user_id == user_id)
     #         .all()
     #     )

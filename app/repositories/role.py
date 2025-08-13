@@ -1,4 +1,3 @@
-from adapters.database import DatabaseSession
 from schemas.role import RoleEdit
 
 from ._db_repository import (
@@ -20,8 +19,8 @@ class RoleRepository(
     PaginationMixin[RoleModel],
     EnforceNameUniquenessMixin[RoleModel, int],
 ):
-    def __init__(self, db_session: DatabaseSession):
-        super().__init__("Role", db_session, RoleModel)
+    _entity_name = "Role"
+    _db_model = RoleModel
 
     def create(self, role: RoleEdit) -> RoleModel:
         """

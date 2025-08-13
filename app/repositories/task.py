@@ -1,9 +1,9 @@
 from typing import Optional
 
-from adapters.database import DatabaseSession
-from adapters.indexer import IndexerQuery, IndexerSession
+from pydantic import BaseModel
+
+from adapters.indexer import IndexerQuery
 from config import config
-from definitions.json import JsonArray, JsonObject
 from definitions.task import (
     TASK_STATE_PREDECESSORS,
     TaskScope,
@@ -21,10 +21,9 @@ class TaskRepository(
     DbIndexedRepository[TaskModel, Task],
     GetByIdMixin[TaskModel, int],
 ):
-    def __init__(
-        self, db_session: DatabaseSession, indexer_session: IndexerSession
-    ):
-        super().__init__("Task", db_session, TaskModel, indexer_session, Task)
+    _entity_name = "Task"
+    _db_model = TaskModel
+    _indexer_model = Task
 
     async def create(
         self,
@@ -33,15 +32,15 @@ class TaskRepository(
         name: str,
         created_by: str,
         query: IndexerQuery | None = None,
-        data: JsonObject | JsonArray | None = None,
+        data: BaseModel | None = None,
     ) -> TaskModel:
         return await self.save(
             TaskModel(
                 task_type=f"{scope.value}.{task_type.value}",
                 name=name,
                 created_by=created_by,
-                query=query.model_dump() if query else None,
-                data=data,
+                query=query.model_dump(mode="json") if query else None,
+                data=data.model_dump(mode="json") if data else None,
             )
         )
 
@@ -76,16 +75,9 @@ class TaskScheduleRepository(
     DbIndexedRepository[TaskScheduleModel, TaskSchedule],
     GetByIdMixin[TaskScheduleModel, int],
 ):
-    def __init__(
-        self, db_session: DatabaseSession, indexer_session: IndexerSession
-    ):
-        super().__init__(
-            "Task Schedule",
-            db_session,
-            TaskScheduleModel,
-            indexer_session,
-            TaskSchedule,
-        )
+    _entity_name = "Task Schedule"
+    _db_model = TaskScheduleModel
+    _indexer_model = TaskSchedule
 
     async def create(
         self,
@@ -94,7 +86,8 @@ class TaskScheduleRepository(
         name: str,
         cron_expression: str,
         created_by: str,
-        query: IndexerQuery | None,
+        query: IndexerQuery | None = None,
+        data: BaseModel | None = None,
     ) -> TaskScheduleModel:
         return await self.save(
             TaskScheduleModel(
@@ -102,7 +95,8 @@ class TaskScheduleRepository(
                 name=name,
                 cron_expression=cron_expression,
                 created_by=created_by,
-                query=query.model_dump() if query else None,
+                query=query.model_dump(mode="json") if query else None,
+                data=data.model_dump(mode="json") if data else None,
             )
         )
 

@@ -1,4 +1,3 @@
-from adapters.database import DatabaseSession
 from definitions.json import JsonObject
 
 from ._db_repository import (
@@ -20,8 +19,8 @@ class UserRepository(
     PaginationMixin[UserModel],
     EnforceNameUniquenessMixin[UserModel, str],
 ):
-    def __init__(self, db_session: DatabaseSession):
-        super().__init__("User", db_session, UserModel)
+    _entity_name = "User"
+    _db_model = UserModel
 
     def create(self, user_id: str, username: str) -> UserModel:
         """

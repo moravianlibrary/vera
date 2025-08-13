@@ -1,4 +1,3 @@
-from adapters.database import DatabaseSession
 from schemas.plugin import PluginInstanceEdit
 
 from ._db_repository import (
@@ -9,13 +8,14 @@ from ._db_repository import (
     GetByIdMixin,
     PaginationMixin,
 )
-from .models.plugin import PluginInstanceModel
+from .models.plugin import PluginInstanceModel, PluginModel
 
 
 class PluginRepository(
     DbRepository,
 ):
-    pass
+    _entity_name = "Plugin"
+    _db_model = PluginModel
 
 
 class PluginInstanceRepository(
@@ -26,8 +26,8 @@ class PluginInstanceRepository(
     PaginationMixin[PluginInstanceModel],
     EnforceNameUniquenessMixin[PluginInstanceModel, int],
 ):
-    def __init__(self, db_session: DatabaseSession):
-        super().__init__(db_session, PluginInstanceModel, "PluginInstance")
+    _entity_name = "PluginInstance"
+    _db_model = PluginInstanceModel
 
     def create(self, instance: PluginInstanceEdit) -> PluginInstanceModel:
         """

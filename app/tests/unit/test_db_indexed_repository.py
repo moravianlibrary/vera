@@ -43,7 +43,9 @@ class TestRepository(
     SearchAllMixin[FakeEntity, FakeModel],
     SearchCountMixin[FakeEntity, FakeModel],
 ):
-    pass
+    _entity_name = "FakeEntity"
+    _db_model = FakeEntity
+    _indexer_model = FakeModel
 
 
 class TestDbIndexedRepository(unittest.IsolatedAsyncioTestCase):
@@ -95,13 +97,7 @@ class TestDbIndexedRepository(unittest.IsolatedAsyncioTestCase):
         self.mock_es.clear_scroll = self.indexer_session.clear_scroll
         self.mock_es.count = self.indexer_session.count
 
-        self.repo = TestRepository(
-            "FakeEntity",
-            self.db_session,
-            FakeEntity,
-            self.indexer_session,
-            FakeModel,
-        )
+        self.repo = TestRepository(self.db_session, self.indexer_session)
 
         self.item = FakeEntity(id=1, name="TestName")
 
@@ -175,11 +171,9 @@ class TestDbIndexedRepository(unittest.IsolatedAsyncioTestCase):
 
         self.indexer_session.index.assert_called_once_with(
             index="fake-index",
-            document={"name": "TestName", "archived": False},
+            body={"id": 1, "name": "TestName", "archived": False},
             id=1,
-            routing=None,
-            refresh="wait_for",
-            request_timeout=60,
+            refresh=None,
         )
 
         self.assertEqual(result, entity)
