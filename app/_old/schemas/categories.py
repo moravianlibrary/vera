@@ -41,7 +41,7 @@ class CategoryResponse(CategoryCreate):
 
 
 class IndexCategory(BaseEsModel):
-    __index_name__ = "categories"
+    __index__ = "categories"
 
     id: int
     name: str

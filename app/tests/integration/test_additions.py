@@ -1,5 +1,6 @@
 from definitions.addition import AdditionStatus
 from repositories.models.addition import AdditionBatchModel, AdditionModel
+from repositories.models.category import CategoryModel
 from repositories.models.task import TaskModel
 from repositories.models.user import UserModel
 from schemas.addition import Addition
@@ -19,11 +20,19 @@ TEST_DATA = [
         ],
     ),
     EntitySeed(
-        [
-            UserModel(
-                id="superuser", username="superuser", email="superuser@mzk.cz"
-            )
-        ],
+        UserModel(
+            id="superuser", username="superuser", email="superuser@mzk.cz"
+        )
+    ),
+    EntitySeed(
+        CategoryModel(
+            id=1,
+            name="Category 1",
+            description="Description for Category 1",
+            level=1,
+            assignable=True,
+            extract_whole=False,
+        )
     ),
     EntitySeed(
         [

@@ -58,6 +58,8 @@ class DbIndexedRepository(
     ):
         super().__init__(database_session)
         self._indexer_session = indexer_session
+        self._index = self._indexer_model.ESConfig.index
+        self._id_field = self._indexer_model.ESConfig.id_field
 
     def has_current_version_schema(self) -> bool:
         """
@@ -69,11 +71,9 @@ class DbIndexedRepository(
             True if the index schema matches the expected version;
             False otherwise.
         """
-        index = self._indexer_model.ESConfig.index
-
-        mapping = self._indexer_session.indices.get_mapping(index=index).get(
-            index, {}
-        )
+        mapping = self._indexer_session.indices.get_mapping(
+            index=self._index
+        ).get(self._index, {})
 
         return mapping.get("mappings", {}).get("_meta", {}).get(
             "index.version"
@@ -84,10 +84,8 @@ class DbIndexedRepository(
         Delete and recreate the index
         using the schema defined by the indexer entity.
         """
-        index = self._indexer_model.ESConfig.index
-
-        if self._indexer_session.indices.exists(index=index):
-            self._indexer_session.indices.delete(index=index)
+        if self._indexer_session.indices.exists(index=self._index):
+            self._indexer_session.indices.delete(index=self._index)
 
         await setup_mappings()
 
@@ -109,12 +107,13 @@ class DbIndexedRepository(
         """
         return (
             await self._indexer_session.search(
-                index=self._indexer_model.ESConfig.index,
-                body=request.model_dump(),
+                index=self._index, body=request.model_dump()
             )
         ).body
 
-    def serialize_entity(self, entity: DatabaseEntityType) -> IndexerModelType:
+    def serialize_entity(
+        self, db_entity: DatabaseEntityType
+    ) -> IndexerModelType:
         """
         Serialize a database entity to its indexer model representation.
 
@@ -128,7 +127,15 @@ class DbIndexedRepository(
         IndexerModelType
             The serialized indexer model.
         """
-        return self._indexer_model.model_validate(entity, from_attributes=True)
+        if hasattr(self._indexer_model, "model_validate_with_views"):
+            views = db_entity.collect_views(self._database_session)
+            return self._indexer_model.model_validate_with_views(
+                db_entity, views
+            )
+        else:
+            return self._indexer_model.model_validate(
+                db_entity, from_attributes=True
+            )
 
     async def index(
         self, entity: DatabaseEntityType, wait_for: bool = False
@@ -143,12 +150,11 @@ class DbIndexedRepository(
         wait_for: bool, optional
             Whether to wait for the indexing to refresh.
         """
-        id_field = self._indexer_model.ESConfig.id_field
         await self._indexer_session.index(
-            index=self._indexer_model.ESConfig.index,
+            index=self._index,
             id=entity.id,
             body=self.serialize_entity(entity).model_dump(
-                mode="json", exclude={id_field}, exclude_none=True
+                mode="json", exclude={self._id_field}, exclude_none=True
             ),
             refresh="wait_for" if wait_for else None,
         )
@@ -194,18 +200,17 @@ class DbIndexedRepository(
         for entity in entities:
             docs.append(self.serialize_entity(entity))
 
-        index_name = self._indexer_model.ESConfig.index
-        id_field = self._indexer_model.ESConfig.id_field
-
         _, errors = await async_bulk(
             self._indexer_session,
             (
                 {
                     "_op_type": "index",
-                    "_index": index_name,
+                    "_index": self._index,
                     "_id": doc.__id__,
                     "_source": doc.model_dump(
-                        mode="json", exclude={id_field}, exclude_none=True
+                        mode="json",
+                        exclude={self._id_field},
+                        exclude_none=True,
                     ),
                 }
                 for doc in docs
@@ -325,6 +330,8 @@ class DbIndexedRepositoryContext(
     _db_model: Type[DatabaseEntityType]
     _indexer_session: IndexerSession
     _indexer_model: Type[IndexerModelType]
+    _index: str
+    _id_field: str
 
 
 # ---------------------
@@ -353,9 +360,7 @@ class GetByQueryMixin(Generic[DatabaseEntityType, IndexerModelType]):
             Each matching entity found in the database by ID
             from the indexer hits.
         """
-        index = self._indexer_model.ESConfig.index
-        id_field = self._indexer_model.ESConfig.id_field
-        db_id_column = getattr(self._db_model, id_field)
+        db_id_column = getattr(self._db_model, self._id_field)
 
         scroll_id = None
 
@@ -366,13 +371,16 @@ class GetByQueryMixin(Generic[DatabaseEntityType, IndexerModelType]):
                 )
                 if scroll_id
                 else await self._indexer_session.search(
-                    index=index, body=query, scroll="1m", fields=[id_field]
+                    index=self._index,
+                    body=query,
+                    scroll="1m",
+                    fields=[self._id_field],
                 )
             )
 
             for hit in response["hits"]["hits"]:
                 yield self._database_session.query(self._db_model).filter(
-                    db_id_column == hit["_source"][id_field]
+                    db_id_column == hit["_source"][self._id_field]
                 ).one()
 
             scroll_id = response.get("_scroll_id")
@@ -453,6 +461,6 @@ class SearchCountMixin(Generic[DatabaseEntityType, IndexerModelType]):
         """
 
         response = await self._indexer_session.count(
-            index=self._indexer_model.ESConfig.index, body=query
+            index=self._index, body=query
         )
         return response.get("count", 0)

@@ -171,7 +171,7 @@ class TestDbIndexedRepository(unittest.IsolatedAsyncioTestCase):
 
         self.indexer_session.index.assert_called_once_with(
             index="fake-index",
-            body={"id": 1, "name": "TestName", "archived": False},
+            body={"name": "TestName", "archived": False},
             id=1,
             refresh=None,
         )

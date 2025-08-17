@@ -13,7 +13,7 @@ class LocationCreate(BaseModel):
 
 
 class IndexLocation(BaseEsModel):
-    __index_name__ = "locations"
+    __index__ = "locations"
 
     id: int
     name: str

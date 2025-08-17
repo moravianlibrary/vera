@@ -73,8 +73,8 @@ class DocumentGenerateListParams(BaseModel):
 class DocumentDigitizationRecord(IndexerNestedModel):
     registry_record_id: keyword
     record_state: EnumList[DigitizationRecordState]
-    registry_issue_id: keyword | None
-    issue_state: DigitizationRecordState | None
+    registry_issue_id: keyword | None = None
+    issue_state: DigitizationRecordState | None = None
 
 
 class DocumentAdditionalProperties(AdditionalProperties):
@@ -84,6 +84,7 @@ class DocumentAdditionalProperties(AdditionalProperties):
 class Document(IndexerModel):
     class ESConfig:
         index = "documents"
+        id_field = "id"
 
     id: long
 
@@ -93,26 +94,26 @@ class Document(IndexerModel):
     iteration_id: long
     iteration: integer
 
-    barcode: keyword | None
-    volume_number: keyword | None
-    volume_year: keyword | None
-    bundle: keyword | None
-    material_type: keyword | None
-    issuance_type: keyword | None
+    barcode: keyword | None = None
+    volume_number: keyword | None = None
+    volume_year: keyword | None = None
+    bundle: keyword | None = None
+    material_type: keyword | None = None
+    issuance_type: keyword | None = None
 
     digitization_state: EnumList[DigitizationState]
     digitization_records: List[DocumentDigitizationRecord]
 
-    page_count_manual: integer | None
-    page_count: integer | None
+    page_count_manual: integer | None = None
+    page_count: integer | None = None
 
-    properties: DocumentAdditionalProperties | None
+    properties: DocumentAdditionalProperties | None = None
 
     category_id: long
     priority: integer
 
-    digitization_list_id: long | None
-    digitization_list_state: DigitizationListState | None
+    digitization_list_id: long | None = None
+    digitization_list_state: DigitizationListState | None = None
 
     current_status: EnumList[DocumentStatus]
 
@@ -127,10 +128,9 @@ class Document(IndexerModel):
             return data
 
         document = data.document
-        marc_issue = MarcIssue(field=document.marc_issue_data)
         catalog_record = document.catalog_record
 
-        digitization_state = set(document.digitization_state)
+        digitization_state = set([document.digitization_state])
         digitization_records = []
 
         for record in document.digitization_records:
@@ -158,7 +158,7 @@ class Document(IndexerModel):
                 else None
             )
 
-        return {
+        doc = {
             "id": document.id,
             "catalog_record_id": catalog_record.id,
             "catalog_record_valid": (
@@ -166,12 +166,7 @@ class Document(IndexerModel):
             ),
             "iteration_id": data.id,
             "iteration": data.iteration,
-            "barcode": marc_issue.barcode,
-            "volume_number": marc_issue.volume_number,
-            "volume_year": marc_issue.volume_year,
-            "bundle": marc_issue.bundle,
             "material_type": catalog_record.material_type,
-            "issuance_type": marc_issue.issuance_type,
             "digitization_state": list(digitization_state),
             "digitization_records": digitization_records,
             "page_count_manual": document.page_count_manual,
@@ -192,6 +187,22 @@ class Document(IndexerModel):
             "created_at": data.created_at.isoformat(),
             "updated_at": data.updated_at.isoformat(),
         }
+
+        if document.marc_issue_data is None:
+            return doc
+
+        marc_issue = MarcIssue(field=document.marc_issue_data)
+        doc.update(
+            {
+                "barcode": marc_issue.barcode,
+                "volume_number": marc_issue.volume_number,
+                "volume_year": marc_issue.volume_year,
+                "bundle": marc_issue.bundle,
+                "issuance_type": marc_issue.issuance_type,
+            }
+        )
+
+        return doc
 
 
 # -----------------

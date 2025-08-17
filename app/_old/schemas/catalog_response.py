@@ -145,7 +145,7 @@ class IdentifierWithAttributes(Identifier):
 
 
 class AddDocumentResponse(BaseEsModel):
-    __index_name__ = "add_documents_responses"
+    __index__ = "add_documents_responses"
     __index_version__ = "v2024.10-1"
 
     class Config:

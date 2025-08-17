@@ -3,6 +3,7 @@ from typing import List
 
 from pydantic import BaseModel
 
+from adapters.database import ModelValidateWithViewsMixin
 from adapters.indexer import IndexerModel, IndexerNestedModel
 from definitions.category import Level
 from schemas.group import GroupSummary
@@ -52,20 +53,6 @@ class CategoryProportion(IndexerNestedModel):
     overall_proportion: float
 
 
-class DocumentDiscovery(IndexerNestedModel):
-    id: int
-    schedule_id: int | None = None
-
-
-class CategoryStatistics(IndexerNestedModel):
-    count_total_pages: int
-    count_total_documents: int
-    count_extractable_pages: int
-    count_extractable_documents: int
-    count_extracted_pages: int
-    count_extracted_documents: int
-
-
 class CategoryHit(IndexerModel):
     name: str
     description: str | None = None
@@ -78,21 +65,27 @@ class CategoryHit(IndexerModel):
     disabled: bool
     archived: bool
 
+    document_discovery_id: int | None = None
+    document_discovery_schedule_id: int | None = None
+
+    proportions: List[CategoryProportion]
+
+    count_total_pages: int
+    count_total_documents: int
+    count_extractable_pages: int
+    count_extractable_documents: int
+    count_extracted_pages: int
+    count_extracted_documents: int
+
     direct_groups: List[GroupSummary]
     direct_users: List[UserSummary]
     effective_groups: List[GroupSummary]
     effective_users: List[UserSummary]
 
-    proportions: List[CategoryProportion]
-
-    document_discovery: DocumentDiscovery | None = None
-
-    statistics: CategoryStatistics | None = None
-
     created_at: datetime
 
 
-class Category(CategoryHit):
+class Category(CategoryHit, ModelValidateWithViewsMixin):
     class ESConfig:
         index = "categories"
         id_field = "id"

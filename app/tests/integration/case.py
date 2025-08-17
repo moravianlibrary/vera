@@ -261,10 +261,20 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
         index_name = indexer_model.ESConfig.index
         id_field = indexer_model.ESConfig.id_field
 
-        docs = [
-            indexer_model.model_validate(entity, from_attributes=True)
-            for entity in entities
-        ]
+        docs = []
+        if hasattr(indexer_model, "model_validate_with_views"):
+            for db_entity in entities:
+                views = db_entity.collect_views(self.db_session)
+                docs.append(
+                    indexer_model.model_validate_with_views(db_entity, views)
+                )
+        else:
+            for db_entity in entities:
+                docs.append(
+                    indexer_model.model_validate(
+                        db_entity, from_attributes=True
+                    )
+                )
 
         _, errors = await async_bulk(
             self.es,

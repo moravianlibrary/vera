@@ -32,7 +32,7 @@ class BaseEsModel(BaseModel):
     into Elasticsearch schemas.
     """
 
-    __index_name__: str = "undefined"
+    __index__: str = "undefined"
     __id_field__: str = "id"
     __index_version__: str = "init"
     __dynamic__: str = "strict"
@@ -83,9 +83,9 @@ class BaseEsModel(BaseModel):
 
     @classmethod
     def has_current_version_schema(cls, session: EsSession):
-        current_mapping = session.indices.get_mapping(
-            index=cls.__index_name__
-        ).get(cls.__index_name__, {})
+        current_mapping = session.indices.get_mapping(index=cls.__index__).get(
+            cls.__index__, {}
+        )
 
         if not current_mapping:
             return False
@@ -99,19 +99,19 @@ class BaseEsModel(BaseModel):
 
     @classmethod
     def recreate_index(cls, session: EsSession):
-        if session.indices.exists(index=cls.__index_name__):
-            session.indices.delete(index=cls.__index_name__)
-        session.indices.create(index=cls.__index_name__, body=cls._es_schema())
+        if session.indices.exists(index=cls.__index__):
+            session.indices.delete(index=cls.__index__)
+        session.indices.create(index=cls.__index__, body=cls._es_schema())
 
     @classmethod
     def refresh_index(cls, session: EsSession):
-        session.indices.refresh(index=cls.__index_name__)
+        session.indices.refresh(index=cls.__index__)
 
     @classmethod
     def search(
         cls, session: EsSession, query_params: Dict[str, any]
     ) -> Generator[Dict, None, None]:
-        return session.search(index=cls.__index_name__, body=query_params)
+        return session.search(index=cls.__index__, body=query_params)
 
     @classmethod
     def search_source_ids(
@@ -125,7 +125,7 @@ class BaseEsModel(BaseModel):
                 response = session.scroll(scroll_id=scroll_id, scroll="1m")
             else:
                 response = session.search(
-                    index=cls.__index_name__, body=query_params, scroll="1m"
+                    index=cls.__index__, body=query_params, scroll="1m"
                 )
 
             hits = response["hits"]["hits"]
@@ -143,21 +143,21 @@ class BaseEsModel(BaseModel):
 
     @classmethod
     def get(cls, session: EsSession, source_id: str):
-        return session.get(index=cls.__index_name__, id=source_id)["_source"]
+        return session.get(index=cls.__index__, id=source_id)["_source"]
 
     @classmethod
     def delete(
         cls, session: EsSession, source_id: str, wait_for: bool = False
     ):
         session.delete(
-            index=cls.__index_name__,
+            index=cls.__index__,
             id=source_id,
             refresh="true" if wait_for else None,
         )
 
     def save(self, session: EsSession, wait_for: bool = False):
         session.index(
-            index=self.__index_name__,
+            index=self.__index__,
             id=self.id,
             document=self.model_dump_json(exclude_none=True),
             refresh="true" if wait_for else None,

@@ -20,6 +20,7 @@ from adapters.database import (
     belongs_to,
     connected_with,
     contains,
+    db_view,
     has_many,
     has_one,
 )
@@ -144,6 +145,7 @@ class CategoryModel(BaseModel, CreatedTimestampMixin):
 
         return users
 
+    @db_view
     def get_statistics(self, db_session: DatabaseSession) -> Dict[str, int]:
         FILTER_TOTAL = DocumentIterationModel.is_archived.is_(False)
         FILTER_EXTRACTABLE = and_(

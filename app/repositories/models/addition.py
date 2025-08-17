@@ -41,7 +41,7 @@ class AdditionModel(BaseModel):
 
     identifier_type = Column(Enum(IdentifierType), nullable=False)
     identifier_value = Column(String, nullable=False)
-    category_id = Column(Integer, nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     priority = Column(Integer, default=3, nullable=False)
 
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)

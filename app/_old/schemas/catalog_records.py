@@ -107,7 +107,7 @@ class MarcFieldDifference(MarcFieldBase):
 
 
 class IndexCatalogRecord(BaseEsModel):
-    __index_name__ = "catalog_records"
+    __index__ = "catalog_records"
     __index_version__ = "v2024.10-1"
 
     class Config:

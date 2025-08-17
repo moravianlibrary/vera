@@ -20,7 +20,6 @@ class TestIndexSchemaContext:
     def __init__(self, setup_mappings: bool = True) -> None:
         self.setup_mappings = setup_mappings
         self.init_done: bool = False
-        self.num_indexes: int = 17
 
     async def setUp(self):
         if self.init_done:
@@ -50,11 +49,7 @@ class TestIndexBase(IsolatedAsyncioTestCase):
 
         self.assertEqual(
             self.context.mock_client.indices.get_mapping.await_count,
-            self.context.num_indexes,
-        )
-        self.assertEqual(
             self.context.mock_client.indices.create.await_count,
-            self.context.num_indexes,
         )
         self.context.mock_client.indices.put_mapping.assert_not_awaited()
 
@@ -171,6 +166,22 @@ class TestIndexSchema(TestIndexBase):
                         "name": {"type": "keyword"},
                     },
                 },
+                "proportions": {
+                    "type": "nested",
+                    "properties": {
+                        "distribution_id": {"type": "long"},
+                        "proportion": {"type": "double"},
+                        "overall_proportion": {"type": "double"},
+                    },
+                },
+                "document_discovery_id": {"type": "long"},
+                "document_discovery_schedule_id": {"type": "long"},
+                "count_total_pages": {"type": "long"},
+                "count_total_documents": {"type": "long"},
+                "count_extractable_pages": {"type": "long"},
+                "count_extractable_documents": {"type": "long"},
+                "count_extracted_pages": {"type": "long"},
+                "count_extracted_documents": {"type": "long"},
                 "direct_groups": {
                     "type": "nested",
                     "properties": {
@@ -197,30 +208,6 @@ class TestIndexSchema(TestIndexBase):
                     "properties": {
                         "id": {"type": "keyword"},
                         "username": {"type": "keyword"},
-                    },
-                },
-                "proportions": {
-                    "type": "nested",
-                    "properties": {
-                        "distribution_id": {"type": "long"},
-                        "proportion": {"type": "double"},
-                        "overall_proportion": {"type": "double"},
-                    },
-                },
-                "statistics": {
-                    "properties": {
-                        "count_total_pages": {"type": "long"},
-                        "count_total_documents": {"type": "long"},
-                        "count_extractable_pages": {"type": "long"},
-                        "count_extractable_documents": {"type": "long"},
-                        "count_extracted_pages": {"type": "long"},
-                        "count_extracted_documents": {"type": "long"},
-                    },
-                },
-                "document_discovery": {
-                    "properties": {
-                        "id": {"type": "long"},
-                        "schedule_id": {"type": "long"},
                     },
                 },
             },

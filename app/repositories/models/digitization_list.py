@@ -1,16 +1,22 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Dict, List
 
-from sqlalchemy import Column, Enum, Integer
+from sqlalchemy import Column, Enum, Integer, func, select
 from sqlalchemy.orm import Mapped
 
-from adapters.database import BaseModel, connected_with, contains, has_one
+from adapters.database import (
+    BaseModel,
+    DatabaseSession,
+    connected_with,
+    contains,
+    db_view,
+)
 from definitions.digitization_registry import DigitizationListState
 
 from .associations import digitization_list_intention_association
+from .document import DocumentIterationModel, DocumentModel
 from .mixins.created_audit import CreatedAuditMixin
 
 if TYPE_CHECKING:
-    from .document import DocumentIterationModel
     from .intention import IntentionModel
     from .task import TaskDigitizationListModel
 
@@ -21,7 +27,7 @@ class DigitizationListModel(BaseModel, CreatedAuditMixin):
     id = Column(Integer, primary_key=True)
     state = Column(Enum(DigitizationListState), nullable=False)
 
-    document_iterations: Mapped[List["DocumentIterationModel"]] = has_one(
+    document_iterations: Mapped[List["DocumentIterationModel"]] = contains(
         "DocumentIterationModel", "digitization_list"
     )
     intentions: Mapped[List["IntentionModel"]] = connected_with(
@@ -32,3 +38,24 @@ class DigitizationListModel(BaseModel, CreatedAuditMixin):
     task_items: Mapped[List["TaskDigitizationListModel"]] = contains(
         "TaskDigitizationListModel", "digitization_list"
     )
+
+    @db_view
+    def get_statistics(self, db_session: DatabaseSession) -> Dict[str, int]:
+        stmt = (
+            select(
+                func.count(DocumentIterationModel.id).label("count_documents"),
+                func.coalesce(
+                    func.sum(
+                        DocumentModel.page_count,
+                    ),
+                    0,
+                ).label("count_pages"),
+            )
+            .join(
+                DocumentModel,
+                DocumentIterationModel.document_id == DocumentModel.id,
+            )
+            .filter(DocumentIterationModel.digitization_list_id == self.id)
+        )
+
+        return db_session.execute(stmt).first()._mapping

@@ -5,10 +5,12 @@ from errors.category import CategoryNotChildError, DifferentParentIDsException
 from repositories.category import CategoryRepository
 from repositories.group import GroupRepository
 from repositories.models.category import CategoryModel
+from repositories.models.task import TaskOrScheduleModel
 from repositories.task import TaskRepository, TaskScheduleRepository
 from repositories.user import UserRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.category import (
+    Category,
     CategoryEdit,
     CategoryParentChangeParams,
     DocumentDiscoveryTaskData,
@@ -91,7 +93,7 @@ class CategoryService(TaskAndScheduleBasedService):
         category: CategoryEdit,
         user: AuthenticatedUser,
         project_id: int | None = None,
-    ) -> CategoryModel:
+    ) -> Category:
         parent_category = (
             self._category_repository.get_by_id(parent_id)
             if parent_id
@@ -100,30 +102,34 @@ class CategoryService(TaskAndScheduleBasedService):
 
         self._enforce_manage_ownership(parent_category, user)
 
-        return await self._category_repository.create(
-            category.name,
-            category.description,
-            project_id,
-            parent_id,
-            parent_category.level + 1 if parent_category else 1,
-            category.assignable,
-            category.extract_whole,
+        return self._category_repository.serialize_entity(
+            await self._category_repository.create(
+                category.name,
+                category.description,
+                project_id,
+                parent_id,
+                parent_category.level + 1 if parent_category else 1,
+                category.assignable,
+                category.extract_whole,
+            )
         )
 
-    def update(
+    async def update(
         self, category_id: int, category: CategoryEdit, user: AuthenticatedUser
-    ) -> CategoryModel:
+    ) -> Category:
         target_category = self._category_repository.get_by_id(category_id)
 
         self._enforce_manage_ownership(target_category.parent, user)
 
-        return self._category_repository.update(
-            target_category,
-            category.name,
-            category.description,
-            category.assignable,
-            category.extract_whole,
-            category.disabled,
+        return self._category_repository.serialize_entity(
+            await self._category_repository.update(
+                target_category,
+                category.name,
+                category.description,
+                category.assignable,
+                category.extract_whole,
+                category.disabled,
+            )
         )
 
     async def change_assignment(
@@ -131,7 +137,7 @@ class CategoryService(TaskAndScheduleBasedService):
         category_id: int,
         assignment_change: AssignmentChange,
         user: AuthenticatedUser,
-    ) -> CategoryModel:
+    ) -> Category:
         target_category = self._category_repository.get_by_id(category_id)
 
         self._enforce_manage_ownership(target_category.parent, user)
@@ -146,13 +152,18 @@ class CategoryService(TaskAndScheduleBasedService):
             | set(assignment_change.add.groups)
         ) - set(assignment_change.remove.groups)
 
-        return await self._category_repository.update_assignment(
-            target_category,
-            [
-                self._group_repository.get_by_id(group_id)
-                for group_id in group_ids
-            ],
-            [self._user_repository.get_by_id(user_id) for user_id in user_ids],
+        return self._category_repository.serialize_entity(
+            await self._category_repository.update_assignment(
+                target_category,
+                [
+                    self._group_repository.get_by_id(group_id)
+                    for group_id in group_ids
+                ],
+                [
+                    self._user_repository.get_by_id(user_id)
+                    for user_id in user_ids
+                ],
+            )
         )
 
     async def change_parent(
@@ -160,7 +171,7 @@ class CategoryService(TaskAndScheduleBasedService):
         category_id: int,
         params: CategoryParentChangeParams,
         user: AuthenticatedUser,
-    ) -> CategoryModel:
+    ) -> Category:
         if params.from_parent_id == params.to_parent_id:
             raise DifferentParentIDsException()
 
@@ -183,10 +194,12 @@ class CategoryService(TaskAndScheduleBasedService):
         if target_category.parent != from_category:
             raise CategoryNotChildError(category_id, params.from_parent_id)
 
-        return await self._category_repository.update_parent(
-            target_category,
-            params.to_parent_id,
-            to_category.level + 1 if to_category else 1,
+        return self._category_repository.serialize_entity(
+            await self._category_repository.update_parent(
+                target_category,
+                params.to_parent_id,
+                to_category.level + 1 if to_category else 1,
+            )
         )
 
     async def change_document_discovery(
@@ -194,13 +207,15 @@ class CategoryService(TaskAndScheduleBasedService):
         category_id: int,
         plugin_instance_id: int | None,
         user: AuthenticatedUser,
-    ) -> CategoryModel:
+    ) -> Category:
         target_category = self._category_repository.get_by_id(category_id)
 
         self._enforce_manage_ownership(target_category.parent, user)
 
-        return await self._category_repository.change_document_discovery(
-            target_category, plugin_instance_id
+        return self._category_repository.serialize_entity(
+            await self._category_repository.change_document_discovery(
+                target_category, plugin_instance_id
+            )
         )
 
     async def reindex(
@@ -208,7 +223,7 @@ class CategoryService(TaskAndScheduleBasedService):
         query: IndexerQuery,
         created_by: str,
         schedule_params: TaskScheduleParams,
-    ):
+    ) -> TaskOrScheduleModel:
         return await self._create_or_schedule_task(
             CategoryTask.Reindex, created_by, schedule_params, query
         )
@@ -218,7 +233,7 @@ class CategoryService(TaskAndScheduleBasedService):
         category_id: int,
         created_by: str,
         schedule_params: TaskScheduleParams,
-    ):
+    ) -> TaskOrScheduleModel:
         target_category = self._category_repository.get_by_id(category_id)
 
         return await self._create_or_schedule_task(
@@ -233,11 +248,11 @@ class CategoryService(TaskAndScheduleBasedService):
 
     async def delete(
         self, category_id: int, user: AuthenticatedUser
-    ) -> CategoryModel:
+    ) -> Category:
         target_category = self._category_repository.get_by_id(category_id)
 
         self._enforce_manage_ownership(target_category.parent, user)
 
-        return await self._category_repository.delete(
-            target_category, True, True
+        return self._category_repository.serialize_entity(
+            await self._category_repository.delete(target_category, True, True)
         )

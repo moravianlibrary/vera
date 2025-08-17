@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Type
 
 from schemas.digitization_list import DigitizationList
 
@@ -14,25 +14,21 @@ class DigiListRepository(
 ):
     _entity_name = "DigitizationList"
     _db_model = DigitizationListModel
-    _indexer_model = DigitizationList
+    _indexer_model: Type[DigitizationList] = DigitizationList
 
     def create(
         self, created_by: str, intentions: List[IntentionModel]
     ) -> DigitizationListModel:
-        digi_list_model = self.save(
-            DigitizationListModel(created_by=created_by)
-        )
-        digi_list_model.intentions = intentions
+        digitization_list = DigitizationListModel(created_by=created_by)
+        digitization_list.intentions = intentions
 
-        self._database_session.commit()
-
-        return digi_list_model
+        return self.save(digitization_list)
 
     def change_intentions(
         self,
-        digitization_list_model: DigitizationListModel,
+        digitization_list: DigitizationListModel,
         intentions: List[IntentionModel],
     ) -> DigitizationListModel:
-        digitization_list_model.intentions = intentions
-        self._database_session.commit()
-        return digitization_list_model
+        digitization_list.intentions = intentions
+
+        return self.save(digitization_list)

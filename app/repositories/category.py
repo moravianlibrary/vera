@@ -4,7 +4,7 @@ from definitions.category import ALLOWED_LEVELS
 from errors.category import CycleDetectedError, InvalidLevelError
 from repositories.models.group import GroupModel
 from repositories.models.user import UserModel
-from schemas.category import Category, CategoryStatistics, DocumentDiscovery
+from schemas.category import Category
 
 from ._db_indexed_repository import DbIndexedRepository
 from ._db_repository import (
@@ -23,21 +23,6 @@ class CategoryRepository(
     _entity_name = "Category"
     _db_model = CategoryModel
     _indexer_model = Category
-
-    def serialize_entity(self, db_entity: CategoryModel) -> Category:
-        index_entity = super().serialize_entity(db_entity)
-
-        if db_entity.document_discovery_id:
-            index_entity.document_discovery = DocumentDiscovery(
-                id=db_entity.document_discovery_id,
-                schedule_id=db_entity.document_discovery_schedule_id,
-            )
-
-        index_entity.statistics = CategoryStatistics(
-            **db_entity.get_statistics(self._database_session)
-        )
-
-        return index_entity
 
     async def create(
         self,

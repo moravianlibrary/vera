@@ -57,7 +57,7 @@ class DocumentModel(BaseModel, UpdatedTimestampMixin):
     )
 
     page_count_manual = Column(Integer, nullable=True)
-    page_count = Column(Integer)
+    page_count = Column(Integer, nullable=True)
 
     can_be_extracted = Column(Boolean, default=False, nullable=False)
 
@@ -156,7 +156,7 @@ class DocumentIterationModel(
     category: Mapped["CategoryModel"] = has_one(
         "CategoryModel", "document_iterations"
     )
-    digitization_list: Mapped["DigitizationListModel"] = has_many(
+    digitization_list: Mapped["DigitizationListModel"] = belongs_to(
         "DigitizationListModel", "document_iterations"
     )
     task_items: Mapped[List["TaskDocumentIterationModel"]] = contains(

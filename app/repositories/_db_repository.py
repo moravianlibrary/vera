@@ -1,15 +1,12 @@
 from typing import Generic, List, Protocol, Type, TypeVar, Union
 
-from sqlalchemy.orm import DeclarativeMeta
-
-from adapters.database import BaseModel, DatabaseSession
+from adapters.database import BaseModel, DatabaseEntityType, DatabaseSession
 from schemas.common import PageParams
 
 # ------------------
 # - Type variables -
 # ------------------
 IdType = TypeVar("IdType", bound=Union[str, int])
-DatabaseEntityType = TypeVar("DatabaseEntityType", bound=DeclarativeMeta)
 
 
 # ----------------------------

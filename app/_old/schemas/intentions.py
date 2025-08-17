@@ -19,7 +19,7 @@ class IntentionCreate(BaseModel):
 
 
 class IndexIntention(BaseEsModel):
-    __index_name__ = "intentions"
+    __index__ = "intentions"
 
     id: int
     name: str

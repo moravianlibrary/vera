@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
+from adapters.database import ModelValidateWithViewsMixin
 from adapters.indexer import IndexerModel
 from definitions.digitization_registry import (
     DigitizationListState,
@@ -23,10 +24,8 @@ class CreateDigitizationListParams(BaseModel):
 # --------------------
 # - Indexer Entities -
 # --------------------
-class DigitizationList(IndexerModel):
-    id: int
-
-    state: DigitizationState
+class DigitizationListHit(IndexerModel):
+    state: DigitizationListState
     intentions: List[IntentionSummary]
 
     count_documents: int
@@ -34,6 +33,14 @@ class DigitizationList(IndexerModel):
 
     created_at: datetime
     created_by: str
+
+
+class DigitizationList(DigitizationListHit, ModelValidateWithViewsMixin):
+    class ESConfig:
+        index = "digitization_lists"
+        id_field = "id"
+
+    id: int
 
 
 # ----------------

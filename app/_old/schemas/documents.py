@@ -63,7 +63,7 @@ class IndexDocumentIntention(BaseEsModel):
 
 
 class IndexDocument(BaseEsModel):
-    __index_name__ = "documents"
+    __index__ = "documents"
     __index_version__ = "v2024.10-1"
 
     class Config:
