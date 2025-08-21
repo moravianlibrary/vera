@@ -3,7 +3,7 @@ from fastapi import APIRouter, Path
 from adapters.indexer import IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission
 from repositories import IntentionRepository
-from schemas.intention import Intention, IntentionEdit
+from schemas.intention import Intention, IntentionEdit, IntentionHit
 from services.intention import IntentionService
 
 from .resources import (
@@ -18,13 +18,13 @@ router = APIRouter(prefix="/intentions", tags=["Intentions"])
 @router.post(
     "/search",
     dependencies=[WithPermission(GeneralPermission.ReadIntentions)],
-    response_model=IndexerResponse[Intention],
+    response_model=IndexerResponse[IntentionHit],
 )
-def search(
+async def search(
     request: IndexerRequest,
     repository: IntentionRepository = DependsOnIntentionRepository,
 ):
-    return repository.search(request)
+    return await repository.search(request)
 
 
 @router.post(
@@ -32,11 +32,11 @@ def search(
     dependencies=[WithPermission(GeneralPermission.ManageIntentions)],
     response_model=Intention,
 )
-def create(
+async def create(
     intention: IntentionEdit,
-    repository: IntentionRepository = DependsOnIntentionRepository,
+    service: IntentionService = DependsOnIntentionService,
 ):
-    return repository.create(intention)
+    return await service.create(intention)
 
 
 @router.put(
@@ -44,13 +44,12 @@ def create(
     dependencies=[WithPermission(GeneralPermission.ManageIntentions)],
     response_model=Intention,
 )
-def update(
-    intention: IntentionEdit,
+async def update(
+    intention_edit: IntentionEdit,
     intention_id: int = Path(...),
-    repository: IntentionRepository = DependsOnIntentionRepository,
     service: IntentionService = DependsOnIntentionService,
 ):
-    return service.update(repository.get_by_id(intention_id), intention)
+    return await service.update(intention_id, intention_edit)
 
 
 @router.delete(
@@ -58,9 +57,8 @@ def update(
     dependencies=[WithPermission(GeneralPermission.ManageIntentions)],
     response_model=Intention,
 )
-def delete(
+async def delete(
     intention_id: int = Path(...),
-    repository: IntentionRepository = DependsOnIntentionRepository,
     service: IntentionService = DependsOnIntentionService,
 ):
-    return service.delete(repository.get_by_id(intention_id))
+    return await service.delete(intention_id)

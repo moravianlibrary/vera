@@ -4,22 +4,26 @@ from fastapi import APIRouter, Path, Query, status
 
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
-from repositories import CategoryRepository
+from repositories import CategoryRepository, DistributionRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.category import (
     Category,
     CategoryEdit,
     CategoryHit,
     CategoryParentChangeParams,
+    Distribution,
+    DistributionInfoEdit,
+    DistributionProportionsEdit,
 )
-from schemas.common import AssignmentChange
-from schemas.task import TaskOrSchedule, TaskScheduleParams
+from schemas.common import AssignmentChange, Page, PageParams
+from schemas.task import Task, TaskOrSchedule, TaskScheduleParams
 from services import CategoryService
 
 from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnCategoryRepository,
     DependsOnCategoryService,
+    DependsOnDistributionRepository,
     RestrictedQuery,
     RestrictedSearch,
     RestrictedTaskScheduleParams,
@@ -169,3 +173,81 @@ async def delete(
     service: CategoryService = DependsOnCategoryService,
 ):
     return await service.delete(category_id, user)
+
+
+@router.get(
+    "/distributions",
+    dependencies=[WithPermission(OwnershipPermission.ReadCategories)],
+    response_model=Page[Distribution],
+)
+def paginate_distributions(
+    page_params: Annotated[PageParams, Query()],
+    repository: DistributionRepository = DependsOnDistributionRepository,
+):
+    return repository.paginate(page_params)
+
+
+@router.post(
+    "/distributions",
+    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
+    response_model=Distribution,
+)
+def create_distribution(
+    info: DistributionInfoEdit,
+    repository: DistributionRepository = DependsOnDistributionRepository,
+):
+    return repository.create(info)
+
+
+@router.put(
+    "/distributions/{distribution_id}/info",
+    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
+    response_model=Distribution,
+)
+def update_distribution(
+    info: DistributionInfoEdit,
+    distribution_id: int = Path(...),
+    repository: DistributionRepository = DependsOnDistributionRepository,
+):
+    return repository.update_info(repository.get_by_id(distribution_id), info)
+
+
+@router.put(
+    "/distributions/{distribution_id}/set-as-active",
+    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
+    response_model=Distribution,
+)
+def set_distribution_as_active(
+    distribution_id: int = Path(...),
+    repository: DistributionRepository = DependsOnDistributionRepository,
+):
+    return repository.set_as_active(distribution_id)
+
+
+@router.put(
+    "/distributions/{distribution_id}/proportions",
+    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
+    response_model=Task,
+)
+async def update_proportions(
+    proportions: DistributionProportionsEdit,
+    distribution_id: int = Path(...),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: CategoryService = DependsOnCategoryService,
+):
+    return await service.update_proportions(
+        distribution_id, proportions, user.id
+    )
+
+
+@router.delete(
+    "/distributions/{distribution_id}",
+    dependencies=[WithPermission(GeneralPermission.ManageDistributions)],
+    response_model=Task,
+)
+async def delete_distribution(
+    distribution_id: int = Path(...),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: CategoryService = DependsOnCategoryService,
+):
+    return await service.delete_distribution(distribution_id, user.id)

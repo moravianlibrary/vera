@@ -13,6 +13,7 @@ from repositories._db_repository import (
     FindByNamesMixin,
     GetByIdMixin,
     GetByIdsMixin,
+    PaginatedResult,
     PaginationMixin,
 )
 from schemas.common import PageParams
@@ -151,10 +152,12 @@ class TestDbRepositoryMixins(unittest.TestCase):
         limited = offset.limit.return_value
         limited.all.return_value = [self.item]
 
+        filter_mock.count.return_value = 1
+
         filter_params = FakeFilterParams(name="TestName")
         page_params = PageParams(offset=0, limit=10)
         results = self.repo.paginate(page_params, filter_params)
-        self.assertEqual(results, [self.item])
+        self.assertEqual(results, PaginatedResult([self.item], 1))
 
         self.db_session.query.assert_called_with(FakeEntity)
         query_mock.filter_by.assert_called_with(name="TestName")
@@ -167,8 +170,10 @@ class TestDbRepositoryMixins(unittest.TestCase):
         limited = offset.limit.return_value
         limited.all.return_value = [self.item]
 
+        query_mock.count.return_value = 1
+
         page_params = PageParams(offset=0, limit=5)
         results = self.repo.paginate(page_params)
-        self.assertEqual(results, [self.item])
+        self.assertEqual(results, PaginatedResult([self.item], 1))
 
         self.db_session.query.assert_called_with(FakeEntity)

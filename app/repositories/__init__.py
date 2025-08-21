@@ -1,8 +1,7 @@
 from .addition import AdditionRepository
 from .catalog_record import CatalogRecordRepository
-from .category import CategoryRepository
+from .category import CategoryRepository, DistributionRepository
 from .digitization_list import DigiListRepository
-from .distribution import DistributionRepository
 from .document import DocumentRepository
 from .group import GroupRepository
 from .intention import IntentionRepository
@@ -16,8 +15,9 @@ from .watchlist import WatchlistRepository
 __all__ = [
     "CatalogRecordRepository",
     "CategoryRepository",
-    "DigiListRepository",
+    "CategoryProportionRepository",
     "DistributionRepository",
+    "DigiListRepository",
     "DocumentRepository",
     "AdditionRepository",
     "GroupRepository",

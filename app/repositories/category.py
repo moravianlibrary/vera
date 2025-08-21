@@ -4,15 +4,24 @@ from definitions.category import ALLOWED_LEVELS
 from errors.category import CycleDetectedError, InvalidLevelError
 from repositories.models.group import GroupModel
 from repositories.models.user import UserModel
-from schemas.category import Category
+from schemas.category import (
+    Category,
+    CategoryProportionNode,
+    DistributionInfoEdit,
+)
 
 from ._db_indexed_repository import DbIndexedRepository
 from ._db_repository import (
     DbRepository,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
+    PaginationMixin,
 )
-from .models.category import CategoryModel, CategoryProportionModel
+from .models.category import (
+    CategoryModel,
+    CategoryProportionModel,
+    DistributionModel,
+)
 
 
 class CategoryRepository(
@@ -161,25 +170,84 @@ class CategoryRepository(
         """
         Change the document discovery settings for a category.
         """
-        # TODO: Create reindex process
         category_model.document_discovery_id = document_discovery_id
         return await self.save(category_model)
 
 
-class CategoryProportionRepository(DbRepository[CategoryProportionModel]):
-    _entity_name = "CategoryProportion"
-    _db_model = CategoryProportionModel
+class DistributionRepository(
+    DbRepository,
+    GetByIdMixin[DistributionModel, int],
+    PaginationMixin[DistributionModel],
+    EnforceNameUniquenessMixin[DistributionModel, int],
+):
+    _entity_name = "Distribution"
+    _db_model = DistributionModel
 
-    def create(
-        self, distribution_id: int, category_id: int, proportion: float
-    ) -> CategoryProportionModel:
-        """
-        Create a new category proportion.
-        """
+    def create(self, info: DistributionInfoEdit) -> DistributionModel:
+        self.enforce_name_uniqueness(info.name)
         return self.save(
-            CategoryProportionModel(
-                category_id=category_id,
-                distribution_id=distribution_id,
-                proportion=proportion,
+            DistributionModel(
+                name=info.name,
+                description=info.description,
+                is_active=(
+                    self._database_session.query(DistributionModel)
+                    .filter(DistributionModel.is_active.is_(True))
+                    .first()
+                    is None
+                ),
             )
         )
+
+    def update_info(
+        self, distribution: DistributionModel, info: DistributionInfoEdit
+    ) -> DistributionModel:
+        self.enforce_name_uniqueness(info.name, distribution.id)
+
+        distribution.name = info.name
+        distribution.description = info.description
+
+        return self.save(distribution)
+
+    def set_as_active(self, distribution_id: int) -> DistributionModel:
+        """
+        Set a distribution as active.
+        """
+        distribution_model = self.get_by_id(distribution_id)
+
+        if distribution_model.is_active:
+            return distribution_model
+
+        self._database_session.query(DistributionModel).filter(
+            DistributionModel.is_active.is_(True)
+        ).update({"is_active": False})
+
+        distribution_model.is_active = True
+        return self.save(distribution_model)
+
+    def update_proportions(
+        self,
+        distribution: DistributionModel,
+        proportions: List[CategoryProportionNode],
+    ) -> DistributionModel:
+        def _flatten_nodes(
+            nodes: List[CategoryProportionNode],
+        ) -> List[CategoryProportionNode]:
+            result = []
+            stack = nodes.copy()
+            while stack:
+                node = stack.pop(0)
+                result.append(node)
+                if node.children:
+                    stack.extend(node.children)
+            return result
+
+        distribution.proportions = [
+            CategoryProportionModel(
+                distribution_id=distribution.id,
+                category_id=node.category_id,
+                proportion=node.proportion,
+            )
+            for node in _flatten_nodes(proportions)
+        ]
+
+        return self.save(distribution)

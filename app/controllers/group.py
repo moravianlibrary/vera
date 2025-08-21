@@ -55,7 +55,7 @@ def update(
 
 
 @router.patch(
-    "/{group_id}/change-assignment",
+    "/{group_id}/assignment",
     dependencies=[WithPermission(GeneralPermission.ManageAccess)],
     response_model=Group,
 )

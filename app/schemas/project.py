@@ -57,12 +57,7 @@ class ProjectSummary(IndexerNestedModel):
     is_archived: bool
 
 
-class Project(IndexerModel):
-    class ESConfig:
-        index = "projects"
-
-    id: int
-
+class ProjectHit(IndexerModel):
     name: str
     description: str | None
 
@@ -82,3 +77,10 @@ class Project(IndexerModel):
     users: List[UserSummary]
 
     status_log: List[ProjectStatusLog]
+
+
+class Project(ProjectHit):
+    class ESConfig:
+        index = "projects"
+
+    id: int

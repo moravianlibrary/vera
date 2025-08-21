@@ -1,6 +1,6 @@
-from typing import Any, Generic, List, TypeVar
+from typing import Generic, List, TypeVar
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
 
 # --------------------
@@ -51,15 +51,5 @@ Item = TypeVar("Item", bound=BaseModel)
 
 
 class Page(BaseModel, Generic[Item]):
-    class Config:
-        from_attibutes = True
-
     items: List[Item]
     num_found: int
-
-    @model_validator(mode="before")
-    @classmethod
-    def flatten_tuple(cls, data: Any) -> Any:
-        if isinstance(data, tuple):
-            return cls(items=data[0], num_found=data[1])
-        return data

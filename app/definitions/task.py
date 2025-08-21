@@ -51,6 +51,7 @@ class CategoryTask(str, Enum):
 
 class DigitizationListTask(str, Enum):
     Create = "Create"
+    ChangeState = "ChangeState"
     AddDocuments = "AddDocuments"
     RemoveDocuments = "RemoveDocuments"
     Delete = "Delete"
@@ -132,6 +133,7 @@ class ScopedTaskType(str, Enum):
 
     # DigitizationList
     DigitizationList_Create = "DigitizationList.Create"
+    DigitizationList_ChangeState = "DigitizationList.ChangeState"
     DigitizationList_AddDocuments = "DigitizationList.AddDocuments"
     DigitizationList_RemoveDocuments = "DigitizationList.RemoveDocuments"
     DigitizationList_Delete = "DigitizationList.Delete"

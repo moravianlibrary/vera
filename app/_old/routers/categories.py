@@ -16,8 +16,8 @@ from schemas import (
 )
 
 from .mappers.categories import (
+    map_to_category,
     map_to_category_digitization,
-    map_to_category_distribution,
     map_to_category_extraction,
     map_to_category_with_sub_categories,
 )

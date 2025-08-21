@@ -16,19 +16,26 @@ class DigiListRepository(
     _db_model = DigitizationListModel
     _indexer_model: Type[DigitizationList] = DigitizationList
 
-    def create(
+    async def create(
         self, created_by: str, intentions: List[IntentionModel]
     ) -> DigitizationListModel:
         digitization_list = DigitizationListModel(created_by=created_by)
         digitization_list.intentions = intentions
 
-        return self.save(digitization_list)
+        return await self.save(digitization_list)
 
-    def change_intentions(
+    async def change_state(
+        self, digitization_list: DigitizationListModel, state: str
+    ) -> DigitizationListModel:
+        digitization_list.state = state
+
+        return await self.save(digitization_list)
+
+    async def change_intentions(
         self,
         digitization_list: DigitizationListModel,
         intentions: List[IntentionModel],
     ) -> DigitizationListModel:
         digitization_list.intentions = intentions
 
-        return self.save(digitization_list)
+        return await self.save(digitization_list)

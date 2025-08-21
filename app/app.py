@@ -11,8 +11,8 @@ from controllers.addition import router as additions_router
 from controllers.catalog_adapter import router as catalog_adapter_router
 from controllers.catalog_record import router as catalog_records_router
 from controllers.category import router as categories_router
+from controllers.category import router as distributions_router
 from controllers.digitization_list import router as digitization_lists_router
-from controllers.distribution import router as distributions_router
 from controllers.document import router as documents_router
 from controllers.group import router as groups_router
 from controllers.intention import router as intentions_router

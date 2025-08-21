@@ -5,7 +5,7 @@ from repositories.models.associations.user import (
     category_user_association,
     group_user_association,
 )
-from repositories.models.category import CategoryModel
+from repositories.models.category import CategoryModel, DistributionModel
 from repositories.models.group import GroupModel
 from repositories.models.plugin import PluginInstanceModel, PluginModel
 from repositories.models.task import TaskModel
@@ -19,7 +19,7 @@ from tests.integration.case import (
     TestIntegrationCase,
 )
 
-TEST_DATA_SEED = [
+BASE_TEST_DATA_SEED = [
     EntitySeed(
         [
             UserModel(
@@ -168,12 +168,25 @@ TEST_DATA_SEED = [
     ReindexRequest(CategoryModel, Category, list(range(1, 9))),
     SequenceSyncRequest(CategoryModel.__table__, 9),
 ]
+DISTRIBUTIONS_TEST_DATA = [
+    EntitySeed(
+        [
+            DistributionModel(
+                name=f"Distribution {i}",
+                description=f"Description for Distribution {i}",
+                is_active=(i == 2),
+            )
+            for i in range(1, 4)
+        ]
+    ),
+    SequenceSyncRequest(DistributionModel.__table__, 4),
+]
 
 
 class TestIntegrationCategories(TestIntegrationCase):
     async def asyncSetUp(self):
         await super().asyncSetUp()
-        await self.seed_test_data(TEST_DATA_SEED)
+        await self.seed_test_data(BASE_TEST_DATA_SEED)
 
     async def test_search(self):
         hits = [
@@ -1008,4 +1021,223 @@ class TestIntegrationCategories(TestIntegrationCase):
                 "effective_users": [{"id": "id-10", "username": "user10"}],
             },
             exclude_paths={("created_at",)},
+        )
+
+
+class TestIntegrationCategoryDistributionsEmpty(TestIntegrationCase):
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.seed_test_data(BASE_TEST_DATA_SEED)
+
+    async def test_create_first(self):
+        self.assertResponse(
+            await self.client.post(
+                "/categories/distributions",
+                json={
+                    "name": "First Distribution",
+                    "description": "Description for First Distribution",
+                },
+            ),
+            200,
+            {
+                "id": 1,
+                "name": "First Distribution",
+                "description": "Description for First Distribution",
+                "is_active": True,
+            },
+        )
+
+
+class TestIntegrationCategoryDistributions(TestIntegrationCase):
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        await self.seed_test_data(
+            BASE_TEST_DATA_SEED + DISTRIBUTIONS_TEST_DATA
+        )
+
+    async def test_paginate(self):
+        self.assertResponse(
+            await self.client.get("/categories/distributions"),
+            200,
+            {
+                "items": [
+                    {
+                        "id": 1,
+                        "name": "Distribution 1",
+                        "description": "Description for Distribution 1",
+                        "is_active": False,
+                    },
+                    {
+                        "id": 2,
+                        "name": "Distribution 2",
+                        "description": "Description for Distribution 2",
+                        "is_active": True,
+                    },
+                    {
+                        "id": 3,
+                        "name": "Distribution 3",
+                        "description": "Description for Distribution 3",
+                        "is_active": False,
+                    },
+                ],
+                "num_found": 3,
+            },
+        )
+
+    async def test_create(self):
+        self.assertResponse(
+            await self.client.post(
+                "/categories/distributions",
+                json={
+                    "name": "New Distribution",
+                    "description": "Description for New Distribution",
+                },
+            ),
+            200,
+            {
+                "id": 4,
+                "name": "New Distribution",
+                "description": "Description for New Distribution",
+                "is_active": False,
+            },
+        )
+
+    async def test_update_info(self):
+        self.assertResponse(
+            await self.client.put(
+                "/categories/distributions/1/info",
+                json={
+                    "name": "Updated Distribution 1",
+                    "description": "Updated Description for Distribution 1",
+                },
+            ),
+            200,
+            {
+                "id": 1,
+                "name": "Updated Distribution 1",
+                "description": "Updated Description for Distribution 1",
+                "is_active": False,
+            },
+        )
+
+    async def test_set_as_active(self):
+        self.assertResponse(
+            await self.client.put(
+                "/categories/distributions/1/set-as-active",
+            ),
+            200,
+            {
+                "id": 1,
+                "name": "Distribution 1",
+                "description": "Description for Distribution 1",
+                "is_active": True,
+            },
+        )
+
+    async def test_update_proportions(self):
+        self.assertResponse(
+            await self.client.put(
+                "/categories/distributions/1/proportions",
+                json={
+                    "root_proportions": [
+                        {"category_id": 1, "proportion": "0.2"},
+                        {"category_id": 2, "proportion": "0.8"},
+                    ]
+                },
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "Category.Reindex",
+                "task_scope": "Category",
+                "unscoped_task_type": "Reindex",
+                "name": "Reindex categories after updating proportions",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": True,
+                "has_data": False,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T15:38:49.321818",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+
+    async def test_update_proportions_invalid_sum(self):
+        self.assertResponse(
+            await self.client.put(
+                "/categories/distributions/1/proportions",
+                json={
+                    "root_proportions": [
+                        {"category_id": 1, "proportion": "0.2"},
+                        {"category_id": 2, "proportion": "0.7"},
+                    ]
+                },
+            ),
+            400,
+            {
+                "detail": (
+                    "Invalid top-level proportions: "
+                    "sum must be 0.0 or 1.0, got 0.9000"
+                )
+            },
+        )
+
+    async def test_update_proportions_invalid_parent(self):
+        self.assertResponse(
+            await self.client.put(
+                "/categories/distributions/1/proportions",
+                json={
+                    "root_proportions": [
+                        {"category_id": 1, "proportion": "0.2"},
+                        {"category_id": 2, "proportion": "0.5"},
+                        {"category_id": 3, "proportion": "0.3"},
+                    ]
+                },
+            ),
+            400,
+            {
+                "detail": (
+                    "Category with ID 3 "
+                    "is not a child of the root category."
+                )
+            },
+        )
+
+    async def test_delete(self):
+        self.assertResponse(
+            await self.client.delete("/categories/distributions/1"),
+            200,
+            {
+                "id": 1,
+                "task_type": "Category.Reindex",
+                "task_scope": "Category",
+                "unscoped_task_type": "Reindex",
+                "name": "Reindex categories after deleting distribution",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": True,
+                "has_data": False,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T15:38:49.321818",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+
+    async def test_delete_fail_on_active(self):
+        self.assertResponse(
+            await self.client.delete("/categories/distributions/2"),
+            400,
+            {"detail": "Cannot delete an active distribution."},
         )

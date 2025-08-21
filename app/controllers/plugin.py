@@ -42,16 +42,17 @@ def paginate_plugins(
     return repository.paginate(page_params, filter_params)
 
 
-@router.post(
-    "/discover",
-    dependencies=[WithPermission(GeneralPermission.ManageSystem)],
-    response_model=Task,
-)
-def discover_plugins(
-    discover_params: PluginDiscoverParams,
-    service: PluginService = DependsOnPluginService,
-):
-    return service.discover_plugins(discover_params)
+# TODO:
+# @router.post(
+#     "/discover",
+#     dependencies=[WithPermission(GeneralPermission.ManageSystem)],
+#     response_model=Task,
+# )
+# def discover_plugins(
+#     discover_params: PluginDiscoverParams,
+#     service: PluginService = DependsOnPluginService,
+# ):
+#     return service.discover_plugins(discover_params)
 
 
 @router.get(

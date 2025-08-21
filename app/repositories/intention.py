@@ -19,13 +19,13 @@ class IntentionRepository(
     _db_model = IntentionModel
     _indexer_model = Intention
 
-    def create(self, intention: IntentionEdit) -> IntentionModel:
+    async def create(self, intention: IntentionEdit) -> IntentionModel:
         """
         Create a new intention.
         """
         self.enforce_name_uniqueness(intention.name)
 
-        return self.save(
+        return await self.save(
             IntentionModel(
                 name=intention.name,
                 description=intention.description,
@@ -35,7 +35,7 @@ class IntentionRepository(
             )
         )
 
-    def update(
+    async def update(
         self, intention_model: IntentionModel, intention: IntentionEdit
     ) -> IntentionModel:
         """
@@ -49,13 +49,4 @@ class IntentionRepository(
         intention_model.start_date = intention.start_date
         intention_model.end_date = intention.end_date
 
-        return self.save(intention_model)
-
-    def delete_with_check(
-        self, intention_model: IntentionModel
-    ) -> IntentionModel:
-        """
-        Delete an existing intention.
-        """
-        # TODO: Check if the intention is empty
-        return self.delete(intention_model)
+        return await self.save(intention_model)

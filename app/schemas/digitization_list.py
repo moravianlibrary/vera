@@ -13,11 +13,22 @@ from schemas.intention import IntentionSummary
 
 
 # --------------------
+# - Request Payloads -
+# --------------------
+class ChangeStateRequest(BaseModel):
+    state: DigitizationListState
+
+
+# --------------------
 # - Query Parameters -
 # --------------------
 class CreateDigitizationListParams(BaseModel):
     intention_ids: List[int] = []
     state: DigitizationListState | None = None
+    skip_state_validation_for: List[DigitizationState] = []
+
+
+class AddDocumentsToListParams(BaseModel):
     skip_state_validation_for: List[DigitizationState] = []
 
 
@@ -41,6 +52,25 @@ class DigitizationList(DigitizationListHit, ModelValidateWithViewsMixin):
         id_field = "id"
 
     id: int
+
+
+# -------------
+# - Task Data -
+# -------------
+class ChangeStateData(ChangeStateRequest):
+    digitization_list_id: int
+
+
+class AddDocumentsToListData(AddDocumentsToListParams):
+    digitization_list_id: int
+
+
+class RemoveDocumentsFromListData(BaseModel):
+    digitization_list_id: int
+
+
+class DeleteDigitizationListData(BaseModel):
+    digitization_list_id: int
 
 
 # ----------------

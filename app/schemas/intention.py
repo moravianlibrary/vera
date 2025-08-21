@@ -25,18 +25,20 @@ class IntentionSummary(IndexerNestedModel):
     name: str
 
 
-class Intention(IndexerModel):
+class IntentionHit(IndexerModel):
+    name: str
+    description: str | None = None
+
+    target_page_count: int | None = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+
+    project: ProjectSummary | None = None
+    is_archived: bool
+
+
+class Intention(IntentionHit):
     class ESConfig:
         index = "intentions"
 
     id: int
-
-    name: str
-    description: str | None
-
-    target_page_count: int | None
-    start_date: datetime | None
-    end_date: datetime | None
-
-    project: ProjectSummary | None
-    is_archived: bool

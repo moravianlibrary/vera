@@ -1,11 +1,20 @@
+from decimal import Decimal
+from typing import List
+
 from adapters.indexer import IndexerQuery
 from definitions.permission import OwnershipPermission, OwnershipScope
 from definitions.task import CategoryTask, TaskScope
-from errors.category import CategoryNotChildError, DifferentParentIDsException
-from repositories.category import CategoryRepository
+from errors.category import (
+    ActiveDistributionDeletionError,
+    CategoryNotChildError,
+    DifferentParentIDsException,
+    InvalidChildProportionsError,
+    InvalidTopLevelProportionsError,
+)
+from repositories.category import CategoryRepository, DistributionRepository
 from repositories.group import GroupRepository
 from repositories.models.category import CategoryModel
-from repositories.models.task import TaskOrScheduleModel
+from repositories.models.task import TaskModel, TaskOrScheduleModel
 from repositories.task import TaskRepository, TaskScheduleRepository
 from repositories.user import UserRepository
 from schemas.authenticated_user import AuthenticatedUser
@@ -13,6 +22,8 @@ from schemas.category import (
     Category,
     CategoryEdit,
     CategoryParentChangeParams,
+    CategoryProportionNode,
+    DistributionProportionsEdit,
     DocumentDiscoveryTaskData,
 )
 from schemas.common import AssignmentChange
@@ -23,6 +34,12 @@ TASK_TYPE_NAMES_MAPPING = {
     CategoryTask.Reindex: "Reindex categories",
     CategoryTask.DocumentDiscovery: "Run document discovery",
 }
+REINDEX_AFTER_UPDATING_PROPORTIONS = (
+    "Reindex categories after updating proportions"
+)
+REINDEX_AFTER_DELETING_DISTRIBUTION = (
+    "Reindex categories after deleting distribution"
+)
 
 
 class CategoryService(TaskAndScheduleBasedService):
@@ -32,6 +49,7 @@ class CategoryService(TaskAndScheduleBasedService):
     def __init__(
         self,
         category_repository: CategoryRepository,
+        distribution_repository: DistributionRepository,
         group_repository: GroupRepository,
         user_repository: UserRepository,
         task_repository: TaskRepository,
@@ -39,6 +57,7 @@ class CategoryService(TaskAndScheduleBasedService):
     ):
         super().__init__(task_repository, task_schedule_repository)
         self._category_repository = category_repository
+        self._distribution_repository = distribution_repository
         self._group_repository = group_repository
         self._user_repository = user_repository
 
@@ -255,4 +274,68 @@ class CategoryService(TaskAndScheduleBasedService):
 
         return self._category_repository.serialize_entity(
             await self._category_repository.delete(target_category, True, True)
+        )
+
+    async def update_proportions(
+        self,
+        distribution_id: int,
+        proportions: DistributionProportionsEdit,
+        created_by: str,
+    ) -> TaskModel:
+        distribution = self._distribution_repository.get_by_id(distribution_id)
+
+        def _validate_proportions(
+            nodes: List[CategoryProportionNode], parent_id: int | None = None
+        ):
+            print(nodes)
+            total = Decimal("0.0000")
+            for node in nodes:
+                print(node)
+                category = self._category_repository.get_by_id(
+                    node.category_id
+                )
+                if category.parent_id != parent_id:
+                    raise CategoryNotChildError(node.category_id, parent_id)
+
+                total += node.proportion
+
+            if total != Decimal("0.0000") and total != Decimal("1.0000"):
+                if parent_id is None:
+                    raise InvalidTopLevelProportionsError(total)
+                raise InvalidChildProportionsError(parent_id, total)
+
+            for node in nodes:
+                if node.children:
+                    _validate_proportions(
+                        node.children, parent_id=node.category_id
+                    )
+
+        _validate_proportions(proportions.root_proportions)
+
+        self._distribution_repository.update_proportions(
+            distribution, proportions.root_proportions
+        )
+
+        return await self._create_task(
+            CategoryTask.Reindex,
+            created_by,
+            IndexerQuery.model_validate({"query": {"match_all": {}}}),
+            name=REINDEX_AFTER_UPDATING_PROPORTIONS,
+        )
+
+    async def delete_distribution(
+        self, distribution_id: int, created_by: str
+    ) -> TaskModel:
+        distribution = self._distribution_repository.get_by_id(distribution_id)
+
+        if distribution.is_active:
+            raise ActiveDistributionDeletionError()
+
+        self._distribution_repository.delete(distribution)
+
+        return await self._create_task(
+            CategoryTask.Reindex,
+            created_by,
+            IndexerQuery.model_validate({"query": {"match_all": {}}}),
+            name=REINDEX_AFTER_DELETING_DISTRIBUTION,
         )

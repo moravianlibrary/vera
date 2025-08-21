@@ -31,13 +31,13 @@ router = APIRouter(prefix="/projects", tags=["Projects"])
     dependencies=[WithPermission(OwnershipPermission.ReadProjects)],
     response_model=IndexerResponse[Project],
 )
-def search(
+async def search(
     request: IndexerRequest = RestrictedSearch(
         OwnershipPermission.ReadProjects
     ),
     repository: ProjectRepository = DependsOnProjectRepository,
 ):
-    return repository.search(request)
+    return await repository.search(request)
 
 
 @router.post(
@@ -45,11 +45,11 @@ def search(
     dependencies=[WithPermission(GeneralPermission.CreateProjects)],
     response_model=Project,
 )
-def create(
+async def create(
     project: ProjectEdit,
     repository: ProjectRepository = DependsOnProjectRepository,
 ):
-    return repository.create(project)
+    return await repository.create(project)
 
 
 @router.put(
@@ -57,12 +57,12 @@ def create(
     dependencies=[WithPermission(OwnershipPermission.ManageProjects)],
     response_model=Project,
 )
-def update(
+async def update(
     project: ProjectEdit,
     project_id: int = Path(...),
     repository: ProjectRepository = DependsOnProjectRepository,
 ):
-    return repository.update(repository.get_by_id(project_id), project)
+    return await repository.update(repository.get_by_id(project_id), project)
 
 
 @router.patch(
@@ -70,12 +70,12 @@ def update(
     dependencies=[WithPermission(OwnershipPermission.ManageProjects)],
     response_model=Project,
 )
-def change_assignment(
+async def change_assignment(
     assignment_change: AssignmentChange,
     project_id: int = Path(...),
     service: ProjectService = DependsOnProjectRepository,
 ):
-    return service.change_assignment(project_id, assignment_change)
+    return await service.change_assignment(project_id, assignment_change)
 
 
 @router.post(
@@ -83,13 +83,13 @@ def change_assignment(
     dependencies=[WithPermission(OwnershipPermission.ReadProjects)],
     response_model=Project,
 )
-def add_documents(
+async def add_documents(
     batch_params: Annotated[ProjectBatchParams, Query()],
     additions: List[ProjectAdditionCreate] | None = None,
     project_id: int = Path(...),
     service: ProjectService = DependsOnProjectRepository,
 ):
-    return service.add_documents(project_id, batch_params, additions)
+    return await service.add_documents(project_id, batch_params, additions)
 
 
 @router.patch(
@@ -102,13 +102,13 @@ def add_documents(
     ],
     response_model=Project,
 )
-def change_categories_assignment(
+async def change_categories_assignment(
     project_id: int = Path(...),
     categories: List[int] | None = None,
     repository: ProjectRepository = DependsOnProjectRepository,
     service: ProjectService = DependsOnProjectRepository,
 ):
-    return service.change_direct_categories(
+    return await service.change_direct_categories(
         repository.get_by_id(project_id), categories
     )
 
@@ -118,13 +118,13 @@ def change_categories_assignment(
     dependencies=[WithPermission(GeneralPermission.ReviewProjects)],
     response_model=Project,
 )
-def approve(
+async def approve(
     message: str | None = None,
     project_id: int = Path(...),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProjectService = DependsOnProjectRepository,
 ):
-    return service.change_status(
+    return await service.change_status(
         project_id, ProjectStatus.Accepted, message, user
     )
 
@@ -134,13 +134,13 @@ def approve(
     dependencies=[WithPermission(GeneralPermission.ReviewProjects)],
     response_model=Project,
 )
-def reject(
+async def reject(
     message: str | None = None,
     project_id: int = Path(...),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProjectService = DependsOnProjectRepository,
 ):
-    return service.change_status(
+    return await service.change_status(
         project_id, ProjectStatus.Declined, message, user
     )
 
@@ -150,8 +150,8 @@ def reject(
     dependencies=[WithPermission(OwnershipPermission.ManageProjects)],
     response_model=Project,
 )
-def delete(
+async def delete(
     project_id: int = Path(...),
     repository: ProjectRepository = DependsOnProjectRepository,
 ):
-    return repository.delete(repository.get_by_id(project_id))
+    return await repository.delete(repository.get_by_id(project_id))

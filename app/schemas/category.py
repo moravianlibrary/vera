@@ -1,7 +1,8 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from adapters.database import ModelValidateWithViewsMixin
 from adapters.indexer import IndexerModel, IndexerNestedModel
@@ -27,6 +28,32 @@ class CategoryEdit(BaseModel):
     assignable: bool = False
     disabled: bool = False
     extract_whole: bool = False
+
+
+class CategoryProportionEdit(BaseModel):
+    category_id: int
+    proportion: Decimal = Field(..., gt=0, lt=1, decimal_places=4)
+
+
+class CategoryProportionNode(CategoryProportionEdit):
+    children: List["CategoryProportionNode"] = []
+
+
+class DistributionInfoEdit(BaseModel):
+    name: str
+    description: str | None = None
+
+
+class DistributionProportionsEdit(BaseModel):
+    root_proportions: List[CategoryProportionNode]
+
+
+# -----------------
+# - API Responses -
+# -----------------
+class Distribution(DistributionInfoEdit):
+    id: int
+    is_active: bool
 
 
 # --------------------

@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 from sqlalchemy import (
     Boolean,
     Column,
-    Float,
     ForeignKey,
     Integer,
+    Numeric,
     String,
     and_,
     distinct,
@@ -208,7 +208,7 @@ class DistributionModel(BaseModel):
 
     id = Column(Integer, primary_key=True)
 
-    name = Column(String, nullable=False)
+    name = Column(String, nullable=False, unique=True)
     description = Column(String, nullable=True)
     is_active = Column(Boolean, default=False, nullable=False)
 
@@ -226,7 +226,7 @@ class CategoryProportionModel(BaseModel):
     distribution_id = Column(
         Integer, ForeignKey("distributions.id"), primary_key=True
     )
-    proportion = Column(Float)
+    proportion = Column(Numeric(5, 4), nullable=False)
 
     category: Mapped["CategoryModel"] = belongs_to(
         "CategoryModel", "proportions"

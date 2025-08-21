@@ -36,7 +36,6 @@ from services import (
     CatalogSearchService,
     CategoryService,
     DigiListService,
-    DistributionService,
     DocumentService,
 )
 from services.catalog_record import CatalogRecordService
@@ -111,6 +110,7 @@ DependsOnCatalogSearchService = provide_service(
 DependsOnCategoryService = provide_service(
     CategoryService,
     DependsOnCategoryRepository,
+    DependsOnDistributionRepository,
     DependsOnGroupRepository,
     DependsOnUserRepository,
     DependsOnTaskRepository,
@@ -121,11 +121,7 @@ DependsOnDigiListService = provide_service(
     DependsOnDigiListRepository,
     DependsOnDocumentRepository,
     DependsOnIntentionRepository,
-)
-DependsOnDistributionService = provide_service(
-    DistributionService,
-    DependsOnDistributionRepository,
-    DependsOnCategoryRepository,
+    DependsOnTaskRepository,
 )
 DependsOnDocumentService = provide_service(
     DocumentService,

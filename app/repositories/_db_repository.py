@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Generic, List, Protocol, Type, TypeVar, Union
 
 from adapters.database import BaseModel, DatabaseEntityType, DatabaseSession
@@ -7,6 +8,12 @@ from schemas.common import PageParams
 # - Type variables -
 # ------------------
 IdType = TypeVar("IdType", bound=Union[str, int])
+
+
+@dataclass
+class PaginatedResult(Generic[DatabaseEntityType]):
+    items: List[DatabaseEntityType]
+    num_found: int
 
 
 # ----------------------------
@@ -248,12 +255,26 @@ class GetByIdsMixin(Generic[DatabaseEntityType, IdType]):
         -------
         List[DatabaseEntityType]
             List of found entities.
+
+        Raises
+        ------
+        EntityNotFoundError
+            If any of the requested IDs were not found.
         """
-        return (
+        results = (
             self._database_session.query(self._db_model)
             .filter(self._db_model.id.in_(entity_ids))
             .all()
         )
+
+        if len(results) == len(entity_ids):
+            return results
+
+        found_ids = {getattr(r, "id") for r in results}
+        missing_ids = set(entity_ids) - found_ids
+
+        # TODO: Use http exception
+        raise ValueError(f"Entities with IDs {missing_ids} not found.")
 
 
 class PaginationMixin(Generic[DatabaseEntityType]):
@@ -265,7 +286,7 @@ class PaginationMixin(Generic[DatabaseEntityType]):
         self: DbRepositoryContext[DatabaseEntityType],
         page_params: PageParams,
         filter_params: BaseModel | None = None,
-    ) -> List[DatabaseEntityType]:
+    ) -> PaginatedResult[DatabaseEntityType]:
         """
         Return a paginated list of entities.
 
@@ -282,15 +303,18 @@ class PaginationMixin(Generic[DatabaseEntityType]):
             Paginated and optionally filtered results.
         """
         query = self._database_session.query(self._db_model)
+
         if filter_params:
             query = query.filter_by(
                 **filter_params.model_dump(exclude_unset=True)
             )
-        return (
-            query.order_by(self._db_model.id)
+
+        return PaginatedResult(
+            items=query.order_by(self._db_model.id)
             .offset(page_params.offset)
             .limit(page_params.limit)
-            .all()
+            .all(),
+            num_found=query.count(),
         )
 
 

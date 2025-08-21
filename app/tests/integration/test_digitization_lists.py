@@ -3,6 +3,8 @@ from repositories.models.catalog_record import CatalogRecordModel
 from repositories.models.category import CategoryModel
 from repositories.models.digitization_list import DigitizationListModel
 from repositories.models.document import DocumentIterationModel, DocumentModel
+from repositories.models.intention import IntentionModel
+from repositories.models.task import TaskModel
 from schemas.digitization_list import DigitizationList
 from schemas.document import Document
 from tests.integration.case import (
@@ -38,6 +40,15 @@ TEST_DATA_SEED = [
             assignable=True,
             extract_whole=False,
         )
+    ),
+    EntitySeed(
+        [
+            IntentionModel(
+                id=i,
+                name=f"Intention {i}",
+            )
+            for i in range(1, 3)
+        ]
     ),
     EntitySeed(
         [
@@ -132,5 +143,275 @@ class TestIntegrationDigitizationLists(TestIntegrationCase):
             exclude_paths={
                 ("took",),
                 ("hits", "hits", "_source", "created_at"),
+            },
+        )
+
+    async def test_create(self):
+        self.assertResponse(
+            await self.client.post(
+                "/digitization-lists",
+                json={"query": {"ids": {"values": ["3"]}}},
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "DigitizationList.Create",
+                "task_scope": "DigitizationList",
+                "unscoped_task_type": "Create",
+                "name": "Create digitization list",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": True,
+                "has_data": True,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T15:38:49.321818",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+        self.assertEntityProperties(
+            TaskModel,
+            1,
+            {
+                "query": {"query": {"ids": {"values": ["3"]}}},
+                "data": {
+                    "state": "InProgress",
+                    "intention_ids": [],
+                    "skip_state_validation_for": [],
+                },
+            },
+        )
+
+    async def test_create_with_params(self):
+        self.assertResponse(
+            await self.client.post(
+                "/digitization-lists",
+                json={
+                    "query": {"match_all": {}},
+                },
+                params={
+                    "state": "Planned",
+                    "intention_ids": [1],
+                    "skip_state_validation_for": ["Planned"],
+                },
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "DigitizationList.Create",
+                "task_scope": "DigitizationList",
+                "unscoped_task_type": "Create",
+                "name": "Create digitization list",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": True,
+                "has_data": True,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T15:38:49.321818",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+        self.assertEntityProperties(
+            TaskModel,
+            1,
+            {
+                "query": {"query": {"match_all": {}}},
+                "data": {
+                    "state": "Planned",
+                    "intention_ids": [1],
+                    "skip_state_validation_for": ["Planned"],
+                },
+            },
+        )
+
+    async def test_change_state(self):
+        self.assertResponse(
+            await self.client.post(
+                "/digitization-lists/1/state",
+                json={"state": "Finished"},
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "DigitizationList.ChangeState",
+                "task_scope": "DigitizationList",
+                "unscoped_task_type": "ChangeState",
+                "name": "Change digitization list state",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": False,
+                "has_data": True,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T15:38:49.321818",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+        self.assertEntityProperties(
+            TaskModel,
+            1,
+            {
+                "data": {"digitization_list_id": 1, "state": "Finished"},
+            },
+        )
+
+    async def test_change_intentions(self):
+        self.assertResponse(
+            await self.client.patch(
+                "/digitization-lists/1/intentions",
+                params={"intention_ids": [1, 2]},
+            ),
+            200,
+            {
+                "id": 1,
+                "state": "InProgress",
+                "intentions": [
+                    {"id": 1, "name": "Intention 1"},
+                    {"id": 2, "name": "Intention 2"},
+                ],
+                "count_documents": 2,
+                "count_pages": 26,
+                "created_at": "2025-08-21T12:03:23.638059",
+                "created_by": "test_user",
+            },
+            exclude_paths={("created_at",)},
+        )
+
+    async def test_add_documents(self):
+        self.assertResponse(
+            await self.client.post(
+                "/digitization-lists/1/add-documents",
+                json={"query": {"match_all": {}}},
+                params={
+                    "skip_state_validation_for": [
+                        "Revision",
+                        "Planned",
+                        "NotAvailable",
+                    ]
+                },
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "DigitizationList.AddDocuments",
+                "task_scope": "DigitizationList",
+                "unscoped_task_type": "AddDocuments",
+                "name": "Add documents to digitization list",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": True,
+                "has_data": True,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T15:38:49.321818",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+        self.assertEntityProperties(
+            TaskModel,
+            1,
+            {
+                "query": {"query": {"match_all": {}}},
+                "data": {
+                    "digitization_list_id": 1,
+                    "skip_state_validation_for": [
+                        "Revision",
+                        "Planned",
+                        "NotAvailable",
+                    ],
+                },
+            },
+        )
+
+    async def test_remove_documents(self):
+        self.assertResponse(
+            await self.client.post(
+                "/digitization-lists/1/remove-documents",
+                json={"query": {"match_all": {}}},
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "DigitizationList.RemoveDocuments",
+                "task_scope": "DigitizationList",
+                "unscoped_task_type": "RemoveDocuments",
+                "name": "Remove documents from digitization list",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": True,
+                "has_data": True,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T15:38:49.321818",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+        self.assertEntityProperties(
+            TaskModel,
+            1,
+            {
+                "query": {"query": {"match_all": {}}},
+                "data": {"digitization_list_id": 1},
+            },
+        )
+
+    async def test_delete(self):
+        self.assertResponse(
+            await self.client.post(
+                "/digitization-lists/1/delete",
+            ),
+            200,
+            {
+                "id": 1,
+                "task_type": "DigitizationList.Delete",
+                "task_scope": "DigitizationList",
+                "unscoped_task_type": "Delete",
+                "name": "Delete digitization list",
+                "task_schedule_id": None,
+                "created_by": "superuser",
+                "has_query": False,
+                "has_data": True,
+                "task_state": "Initializing",
+                "created_at": "2025-08-11T15:38:49.321818",
+                "started_at": None,
+                "finished_at": None,
+                "processed_count": 0,
+                "total_count": 0,
+                "error_count": 0,
+                "result": None,
+            },
+            exclude_paths={("created_at",)},
+        )
+        self.assertEntityProperties(
+            TaskModel,
+            1,
+            {
+                "data": {"digitization_list_id": 1},
             },
         )

@@ -39,12 +39,7 @@ class ProposalStatusLog(IndexerNestedModel):
     updated_at: datetime
 
 
-class Proposal(IndexerModel):
-    class ESConfig:
-        index = "proposals"
-
-    id: int
-
+class ProposalHit(IndexerModel):
     batch_id: int
     batch_name: str | None
     file_name: str | None
@@ -65,6 +60,13 @@ class Proposal(IndexerModel):
     eligibility_status: EligibilityStatus | None
 
     status_log: List[ProposalStatusLog]
+
+
+class Proposal(ProposalHit):
+    class ESConfig:
+        index = "proposals"
+
+    id: int
 
 
 # -------------
