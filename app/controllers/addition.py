@@ -76,19 +76,6 @@ async def reingest(
 
 
 @router.post(
-    "/archive",
-    dependencies=[WithPermission(OwnershipPermission.ManageAdditions)],
-    response_model=Task,
-)
-async def archive(
-    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageAdditions),
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    service: AdditionService = DependsOnAdditionService,
-):
-    return await service.archive(query, user.id)
-
-
-@router.post(
     "/delete",
     dependencies=[
         WithPermission(

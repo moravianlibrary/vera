@@ -37,7 +37,6 @@ if TYPE_CHECKING:
     from .group import GroupModel
     from .plugin import PluginInstanceModel
     from .project import ProjectModel
-    from .proposal import ProposalModel
     from .task import TaskCategoryModel
     from .user import UserModel
 
@@ -85,9 +84,6 @@ class CategoryModel(BaseModel, CreatedTimestampMixin):
     )
     projects: Mapped[List["ProjectModel"]] = connected_with(
         "ProjectModel", project_category_association, "categories"
-    )
-    proposals: Mapped[List["ProposalModel"]] = has_many(
-        "ProposalModel", "category"
     )
     task_items: Mapped[List["TaskCategoryModel"]] = contains(
         "TaskCategoryModel", "category"

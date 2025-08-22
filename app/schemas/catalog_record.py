@@ -39,7 +39,7 @@ class CatalogRecordValidity(IndexerNestedModel):
     plugin_instance_id: int
     key: str
     valid: bool | None
-    reason: str | None
+    justification: str | None
 
     @classmethod
     def load(
@@ -56,8 +56,8 @@ class CatalogRecordValidity(IndexerNestedModel):
                 if model.detailed_data
                 else None
             ),
-            reason=(
-                model.detailed_data.get("reason")
+            justification=(
+                model.detailed_data.get("justification")
                 if model.detailed_data
                 else None
             ),

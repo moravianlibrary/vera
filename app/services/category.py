@@ -287,10 +287,8 @@ class CategoryService(TaskAndScheduleBasedService):
         def _validate_proportions(
             nodes: List[CategoryProportionNode], parent_id: int | None = None
         ):
-            print(nodes)
             total = Decimal("0.0000")
             for node in nodes:
-                print(node)
                 category = self._category_repository.get_by_id(
                     node.category_id
                 )

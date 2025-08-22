@@ -1,7 +1,12 @@
 from definitions.addition import AdditionStatus
-from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
-from schemas.addition import Addition, AdditionCreate
+from schemas.addition import (
+    Addition,
+    AdditionCreate,
+    AdditionsBatchParams,
+    AdditionsSettingsParams,
+)
+from schemas.proposal import ApproveProposalsParams
 
 from ._db_indexed_repository import (
     DbIndexedRepository,
@@ -11,8 +16,27 @@ from ._db_indexed_repository import (
 )
 from ._db_repository import DbRepository, GetByIdMixin
 from .models.addition import AdditionBatchModel, AdditionModel
-from .models.project import ProjectModel
 from .models.proposal import ProposalModel
+
+
+class AdditionBatchRepository(
+    DbRepository[AdditionBatchModel],
+    GetByIdMixin[AdditionBatchModel, int],
+):
+    _entity_name = "Addition Batch"
+    _db_model = AdditionBatchModel
+
+    def create(
+        self, batch_params: AdditionsBatchParams, created_by: str
+    ) -> AdditionBatchModel:
+        return self.save(
+            AdditionBatchModel(
+                name=batch_params.batch_name,
+                file_name=batch_params.file_name,
+                project_id=batch_params.project_id,
+                created_by=created_by,
+            )
+        )
 
 
 class AdditionRepository(
@@ -27,12 +51,9 @@ class AdditionRepository(
 
     def create(
         self,
-        addition: AdditionCreate,
         batch_id: int,
-        created_by: str,
-        allow_new_iteration: bool,
-        ignore_digitization_check: bool,
-        project: ProjectModel | None = None,
+        addition: AdditionCreate,
+        settings: AdditionsSettingsParams,
     ) -> AdditionModel:
         return self.save(
             AdditionModel(
@@ -40,36 +61,28 @@ class AdditionRepository(
                 identifier_type=addition.identifier_type,
                 identifier_value=addition.identifier_value,
                 category_id=addition.category_id,
-                priority=project.priority if project else addition.priority,
-                project_id=project.id if project else None,
-                created_by=created_by,
-                allow_new_iteration=allow_new_iteration,
-                ignore_digitization_check=ignore_digitization_check,
+                priority=addition.priority,
+                allow_new_iteration=settings.allow_new_iteration,
+                ignore_digitization_check=settings.ignore_digitization_check,
             )
         )
 
     def create_from_proposal(
         self,
-        proposal: ProposalModel,
         batch_id: int,
-        category_id: int,
-        priority: Priority,
-        created_by: str,
-        allow_new_iteration: bool,
-        ignore_digitization_check: bool,
+        proposal: ProposalModel,
+        params: ApproveProposalsParams,
     ) -> AdditionModel:
         return self.save(
             AdditionModel(
                 batch_id=batch_id,
                 identifier_type=proposal.identifier_type,
                 identifier_value=proposal.identifier_value,
-                category_id=category_id,
-                priority=priority,
-                project_id=proposal.project_id,
+                category_id=params.category_id,
+                priority=params.priority,
                 proposal_id=proposal.id,
-                created_by=created_by,
-                allow_new_iteration=allow_new_iteration,
-                ignore_digitization_check=ignore_digitization_check,
+                allow_new_iteration=params.allow_new_iteration,
+                ignore_digitization_check=params.ignore_digitization_check,
             )
         )
 
@@ -81,21 +94,5 @@ class AdditionRepository(
     ) -> AdditionModel:
         addition.status = status
         addition.eligibility_status = eligibility_status
+
         return self.save(addition)
-
-
-class AdditionBatchRepository(
-    DbRepository[AdditionBatchModel],
-    GetByIdMixin[AdditionBatchModel, int],
-):
-    _entity_name = "Addition Batch"
-    _db_model = AdditionBatchModel
-
-    def create(
-        self, name: str, file_name: str, created_by: str
-    ) -> AdditionBatchModel:
-        return self.save(
-            AdditionBatchModel(
-                name=name, file_name=file_name, created_by=created_by
-            )
-        )

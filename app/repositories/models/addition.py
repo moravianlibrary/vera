@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped
@@ -23,9 +23,11 @@ class AdditionBatchModel(BaseModel, CreatedAuditMixin):
 
     name = Column(String, nullable=True)
     file_name = Column(String, nullable=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
 
-    archived = Column(Boolean, default=False, nullable=False)
-
+    project: Mapped["ProjectModel"] = has_one(
+        "ProjectModel", "addition_batches"
+    )
     additions: Mapped[List["AdditionModel"]] = contains(
         "AdditionModel", "batch"
     )
@@ -44,7 +46,6 @@ class AdditionModel(BaseModel):
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
     priority = Column(Integer, default=3, nullable=False)
 
-    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
     proposal_id = Column(Integer, ForeignKey("proposals.id"), nullable=True)
 
     allow_new_iteration = Column(Boolean, default=False, nullable=False)
@@ -58,7 +59,6 @@ class AdditionModel(BaseModel):
     batch: Mapped["AdditionBatchModel"] = belongs_to(
         "AdditionBatchModel", "additions"
     )
-    project: Mapped["ProjectModel"] = has_one("ProjectModel", "additions")
     proposal: Mapped["ProposalModel"] = has_one("ProposalModel", "addition")
     task_items: Mapped[List["TaskAdditionModel"]] = contains(
         "TaskAdditionModel", "addition"
@@ -73,13 +73,13 @@ class AdditionModel(BaseModel):
         return self.batch.file_name
 
     @property
+    def project(self) -> Optional["ProjectModel"]:
+        return self.batch.project
+
+    @property
     def created_by(self) -> str:
         return self.batch.created_by
 
     @property
     def created_at(self) -> str:
         return self.batch.created_at
-
-    @property
-    def archived(self) -> bool:
-        return self.batch.archived

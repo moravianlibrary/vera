@@ -94,7 +94,6 @@ class TestIndexSchema(TestIndexBase):
                 "file_name": {"type": "text"},
                 "created_by": {"type": "keyword"},
                 "created_at": {"type": "date"},
-                "archived": {"type": "boolean"},
                 "identifier_type": {"type": "keyword"},
                 "identifier_value": {"type": "keyword"},
                 "category_id": {"type": "long"},
@@ -116,7 +115,7 @@ class TestIndexSchema(TestIndexBase):
                         "batch_id": {"type": "long"},
                         "batch_name": {"type": "text"},
                         "file_name": {"type": "text"},
-                        "reason_message": {"type": "text"},
+                        "justification": {"type": "text"},
                     }
                 },
             },
@@ -356,25 +355,9 @@ class TestIndexSchema(TestIndexBase):
                 "file_name": {"type": "keyword"},
                 "created_by": {"type": "keyword"},
                 "created_at": {"type": "date"},
-                "is_archived": {"type": "boolean"},
                 "identifier_type": {"type": "keyword"},
                 "identifier_value": {"type": "keyword"},
-                "reason_message": {"type": "keyword"},
-                "category": {
-                    "properties": {
-                        "id": {"type": "long"},
-                        "name": {"type": "keyword"},
-                        "path": {
-                            "type": "nested",
-                            "properties": {
-                                "id": {"type": "long"},
-                                "name": {"type": "keyword"},
-                            },
-                        },
-                        "assignable": {"type": "boolean"},
-                        "disabled": {"type": "boolean"},
-                    }
-                },
+                "justification": {"type": "keyword"},
                 "project": {
                     "properties": {
                         "id": {"type": "long"},

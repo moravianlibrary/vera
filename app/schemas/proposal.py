@@ -9,15 +9,44 @@ from definitions.eligibility import EligibilityStatus
 from definitions.identifier import IdentifierType
 from definitions.proposal import ProposalStatus
 from schemas.addition import AdditionsBatchParams, AdditionsSettingsParams
-from schemas.category import CategorySummary
 from schemas.project import ProjectSummary
+from schemas.task import Task
 
 
 # --------------------
 # - Query Parameters -
 # --------------------
-class ProposalBatchParams(AdditionsBatchParams):
+class ProposalsBatchParams(AdditionsBatchParams):
     pass
+
+
+class ProposalsSettingsParams(AdditionsSettingsParams):
+    category_id: int
+    priority: Priority = Field(3, ge=1, le=5)
+
+
+class ApproveProposalsParams(ProposalsBatchParams, ProposalsSettingsParams):
+    @property
+    def batch(self) -> ProposalsBatchParams:
+        return ProposalsBatchParams(
+            batch_id=self.batch_id,
+            batch_name=self.batch_name,
+            file_name=self.file_name,
+            project_id=self.project_id,
+        )
+
+    @property
+    def settings(self) -> ProposalsSettingsParams:
+        return ProposalsSettingsParams(
+            allow_new_iteration=self.allow_new_iteration,
+            ignore_digitization_check=self.ignore_digitization_check,
+            category_id=self.category_id,
+            priority=self.priority,
+        )
+
+
+class RejectProposalsParams(BaseModel):
+    message: str | None = None
 
 
 # --------------------
@@ -26,7 +55,15 @@ class ProposalBatchParams(AdditionsBatchParams):
 class ProposalCreate(BaseModel):
     identifier_type: IdentifierType
     identifier_value: str
-    reasonMessage: str
+    justification: str | None = None
+
+
+# -----------------
+# - API Responses -
+# -----------------
+class IngestProposalsResponse(BaseModel):
+    task: Task
+    batch_id: int
 
 
 # --------------------
@@ -41,23 +78,19 @@ class ProposalStatusLog(IndexerNestedModel):
 
 class ProposalHit(IndexerModel):
     batch_id: int
-    batch_name: str | None
-    file_name: str | None
+    batch_name: str | None = None
+    file_name: str | None = None
     created_by: str
     created_at: datetime
-    is_archived: bool
 
     identifier_type: IdentifierType
     identifier_value: str
+    justification: str | None = None
 
-    reason_message: str | None
-
-    category: CategorySummary | None
-
-    project: ProjectSummary | None
+    project: ProjectSummary | None = None
 
     status: ProposalStatus
-    eligibility_status: EligibilityStatus | None
+    eligibility_status: EligibilityStatus | None = None
 
     status_log: List[ProposalStatusLog]
 
@@ -75,10 +108,8 @@ class Proposal(ProposalHit):
 class IngestProposalsTaskData(BaseModel):
     batch_id: int
     proposals: List[ProposalCreate]
-    project_id: int | None = None
 
 
-class AcceptProposalsTaskData(AdditionsSettingsParams):
-    additions_batch_id: int
-    category_id: int
-    priority: Priority = Field(3, ge=1, le=5)
+class ApproveProposalsTaskData(BaseModel):
+    batch_id: int
+    settings: ProposalsSettingsParams

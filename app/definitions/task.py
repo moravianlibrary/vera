@@ -31,7 +31,6 @@ TASK_STATE_PREDECESSORS = {
 class AdditionTask(str, Enum):
     Ingest = "Ingest"
     Reingest = "Reingest"
-    Archive = "Archive"
     Delete = "Delete"
 
 
@@ -72,7 +71,6 @@ class ProposalTask(str, Enum):
     Reingest = "Reingest"
     Approve = "Approve"
     Reject = "Reject"
-    Archive = "Archive"
     Delete = "Delete"
 
 
@@ -116,7 +114,6 @@ class ScopedTaskType(str, Enum):
     # Addition
     Addition_Ingest = "Addition.Ingest"
     Addition_Reingest = "Addition.Reingest"
-    Addition_Archive = "Addition.Archive"
     Addition_Delete = "Addition.Delete"
 
     # CatalogRecord
@@ -152,7 +149,6 @@ class ScopedTaskType(str, Enum):
     Proposal_Reingest = "Proposal.Reingest"
     Proposal_Approve = "Proposal.Approve"
     Proposal_Reject = "Proposal.Reject"
-    Proposal_Archive = "Proposal.Archive"
     Proposal_Delete = "Proposal.Delete"
 
     # System

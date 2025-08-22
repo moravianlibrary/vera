@@ -5,9 +5,15 @@ from fastapi import APIRouter, Query
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from repositories import ProposalRepository
-from schemas.addition import AdditionsSettingsParams
 from schemas.authenticated_user import AuthenticatedUser
-from schemas.proposal import Proposal, ProposalBatchParams, ProposalCreate
+from schemas.proposal import (
+    ApproveProposalsParams,
+    IngestProposalsResponse,
+    ProposalCreate,
+    ProposalHit,
+    ProposalsBatchParams,
+    RejectProposalsParams,
+)
 from schemas.task import Task
 from services import ProposalService
 
@@ -26,29 +32,29 @@ router = APIRouter(prefix="/proposals", tags=["Proposals"])
 @router.post(
     "/search",
     dependencies=[WithPermission(OwnershipPermission.ReadProposals)],
-    response_model=IndexerResponse[Proposal],
+    response_model=IndexerResponse[ProposalHit],
 )
-def search(
+async def search(
     request: IndexerRequest = RestrictedSearch(
         OwnershipPermission.ReadProposals
     ),
     repository: ProposalRepository = DependsOnProposalRepository,
 ):
-    return repository.search(request)
+    return await repository.search(request)
 
 
 @router.post(
     "/ingest",
     dependencies=[WithPermission(GeneralPermission.ProposeDocuments)],
-    response_model=Task,
+    response_model=IngestProposalsResponse,
 )
-def ingest(
+async def ingest(
     proposals: List[ProposalCreate],
-    batch_params: Annotated[ProposalBatchParams, Query()],
+    batch_params: Annotated[ProposalsBatchParams, Query()],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    return service.ingest(proposals, batch_params, user.id)
+    return await service.ingest(proposals, batch_params, user.id)
 
 
 @router.post(
@@ -56,12 +62,12 @@ def ingest(
     dependencies=[WithPermission(OwnershipPermission.ManageProposals)],
     response_model=Task,
 )
-def reingest(
+async def reingest(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageProposals),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    return service.reingest(query, user.id)
+    return await service.reingest(query, user.id)
 
 
 @router.post(
@@ -69,13 +75,13 @@ def reingest(
     dependencies=[WithPermission(GeneralPermission.ReviewProposals)],
     response_model=Task,
 )
-def approve(
-    ingest_additions_params: Annotated[AdditionsSettingsParams, Query()],
+async def approve(
+    approve_params: Annotated[ApproveProposalsParams, Query()],
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageProposals),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    return service.approve(query, ingest_additions_params, user.id)
+    return await service.approve(query, approve_params, user.id)
 
 
 @router.post(
@@ -83,29 +89,17 @@ def approve(
     dependencies=[WithPermission(GeneralPermission.ReviewProposals)],
     response_model=Task,
 )
-def reject(
+async def reject(
+    reject_params: Annotated[RejectProposalsParams, Query()],
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageProposals),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    return service.reject(query, user.id)
+    return await service.reject(query, reject_params, user.id)
 
 
 @router.post(
-    "/archive",
-    dependencies=[WithPermission(OwnershipPermission.ManageProposals)],
-    response_model=Task,
-)
-def archive(
-    query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageProposals),
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    service: ProposalService = DependsOnProposalService,
-):
-    return service.archive(query, user.id)
-
-
-@router.delete(
-    "",
+    "/delete",
     dependencies=[
         WithPermission(
             OwnershipPermission.ManageProposals,
@@ -114,9 +108,9 @@ def archive(
     ],
     response_model=Task,
 )
-def delete(
+async def delete(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageProposals),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):
-    return service.delete(query, user.id)
+    return await service.delete(query, user.id)

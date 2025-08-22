@@ -19,6 +19,7 @@ class AdditionsBatchParams(BaseModel):
     batch_id: int | None = None
     batch_name: str | None = None
     file_name: str | None = None
+    project_id: int | None = None
 
 
 class AdditionsSettingsParams(BaseModel):
@@ -33,6 +34,7 @@ class IngestAdditionsParams(AdditionsBatchParams, AdditionsSettingsParams):
             batch_id=self.batch_id,
             batch_name=self.batch_name,
             file_name=self.file_name,
+            project_id=self.project_id,
         )
 
     @property
@@ -77,7 +79,7 @@ class AdditionProposal(IndexerNestedModel):
     batch_name: text | None = None
     file_name: text | None = None
 
-    reason_message: text | None = None
+    justification: text | None = None
 
 
 class AdditionHit(IndexerModel):
@@ -86,7 +88,6 @@ class AdditionHit(IndexerModel):
     file_name: text | None = None
     created_by: keyword
     created_at: datetime
-    archived: bool
 
     identifier_type: IdentifierType
     identifier_value: keyword

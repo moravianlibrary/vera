@@ -1,9 +1,8 @@
 from typing import List
 
-from fastapi import HTTPException, status
-
 from adapters.indexer import IndexerQuery
 from definitions.task import AdditionTask, TaskScope
+from errors.common import BatchParamsConflictError, BatchPermissionDeniedError
 from repositories import AdditionRepository, TaskRepository
 from repositories.addition import AdditionBatchRepository
 from repositories.models.addition import AdditionBatchModel
@@ -24,7 +23,6 @@ class AdditionService(TaskBasedService):
     _task_names_mapping = {
         AdditionTask.Ingest: "Ingest additions",
         AdditionTask.Reingest: "Reingest additions",
-        AdditionTask.Archive: "Archive additions",
         AdditionTask.Delete: "Delete additions",
     }
 
@@ -44,23 +42,15 @@ class AdditionService(TaskBasedService):
         if batch_params.batch_id and (
             batch_params.batch_name or batch_params.file_name
         ):
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Either batch_id or batch_name/file_name "
-                "must be provided, not both.",
-            )
+            raise BatchParamsConflictError()
 
         if batch_params.batch_id is None:
-            return self._batch_repository.create(
-                batch_params.batch_name, batch_params.file_name, created_by
-            )
+            return self._batch_repository.create(batch_params, created_by)
 
         batch = self._batch_repository.get_by_id(batch_params.batch_id)
 
         if batch.created_by != created_by:
-            raise PermissionError(
-                "You do not have permission to access this batch."
-            )
+            raise BatchPermissionDeniedError()
 
         return batch
 
@@ -99,17 +89,14 @@ class AdditionService(TaskBasedService):
         return await self._create_task(
             AdditionTask.Reingest,
             created_by,
-            data=ReingestAdditionsTaskData(
+            query,
+            ReingestAdditionsTaskData(
                 allow_new_iteration=ingest_params.allow_new_iteration,
                 ignore_digitization_check=(
                     ingest_params.ignore_digitization_check
                 ),
             ),
-            query=query,
         )
 
-    def archive(self, query: IndexerQuery, created_by: str) -> TaskModel:
-        return self._create_task(AdditionTask.Archive, created_by, query=query)
-
     def delete(self, query: IndexerQuery, created_by: str) -> TaskModel:
-        return self._create_task(AdditionTask.Delete, created_by, query=query)
+        return self._create_task(AdditionTask.Delete, created_by, query)

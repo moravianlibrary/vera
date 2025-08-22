@@ -8,11 +8,7 @@ from repositories import RoleRepository
 from schemas.common import Page, PageParams
 from schemas.role import Role, RoleEdit
 
-from .resources import (
-    DependsOnIdentityProvider,
-    DependsOnRoleRepository,
-    WithPermission,
-)
+from .resources import DependsOnRoleRepository, WithPermission
 
 router = APIRouter(prefix="/roles", tags=["Roles"])
 
@@ -29,17 +25,19 @@ def paginate(
     return repository.paginate(page_params)
 
 
-@router.get(
-    "/from-identity-provider",
-    dependencies=[WithPermission(GeneralPermission.ReadUsersAndGroups)],
-    response_model=Page[Role],
-)
-def paginate_identity_provider(
-    page_params: Annotated[PageParams, Query()],
-    role_name: str | None = Query(None),
-    identity_provider: IdentityProvider = DependsOnIdentityProvider,
-):
-    return identity_provider.paginate_roles(page_params, role_name)
+# TODO: Implement this endpoint
+#       after implementing IdentityProvider.paginate_roles
+# @router.get(
+#     "/from-identity-provider",
+#     dependencies=[WithPermission(GeneralPermission.ReadUsersAndGroups)],
+#     response_model=Page[Role],
+# )
+# def paginate_identity_provider(
+#     page_params: Annotated[PageParams, Query()],
+#     role_name: str | None = Query(None),
+#     identity_provider: IdentityProvider = DependsOnIdentityProvider,
+# ):
+#     return identity_provider.paginate_roles(page_params, role_name)
 
 
 @router.post(

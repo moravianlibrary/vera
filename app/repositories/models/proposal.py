@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
+from sqlalchemy import Column, Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped
 
 from adapters.database import BaseModel, belongs_to, contains, has_one
@@ -13,7 +13,6 @@ from .mixins.updated_audit import UpdatedAuditMixin
 
 if TYPE_CHECKING:
     from .addition import AdditionModel
-    from .category import CategoryModel
     from .project import ProjectModel
     from .task import TaskProposalModel
 
@@ -25,11 +24,13 @@ class ProposalBatchModel(BaseModel, CreatedAuditMixin):
 
     name = Column(String, nullable=True)
     file_name = Column(String, nullable=True)
+    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
 
-    is_archived = Column(Boolean, default=False, nullable=False)
-
+    project: Mapped["ProjectModel"] = has_one(
+        "ProjectModel", "proposal_batches"
+    )
     proposals: Mapped[List["ProposalModel"]] = contains(
-        "ProposalModel", "batch", "selectin"
+        "ProposalModel", "batch"
     )
 
 
@@ -43,10 +44,7 @@ class ProposalModel(BaseModel):
 
     identifier_type = Column(Enum(IdentifierType), nullable=False)
     identifier_value = Column(String, nullable=False)
-
-    reason_message = Column(String, nullable=True)
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
-    project_id = Column(Integer, ForeignKey("projects.id"), nullable=True)
+    justification = Column(String, nullable=True)
 
     status = Column(
         Enum(ProposalStatus), default=ProposalStatus.Enqueued, nullable=False
@@ -56,8 +54,6 @@ class ProposalModel(BaseModel):
     batch: Mapped["ProposalBatchModel"] = belongs_to(
         "ProposalBatchModel", "proposals"
     )
-    category: Mapped["CategoryModel"] = has_one("CategoryModel", "proposals")
-    project: Mapped["ProjectModel"] = has_one("ProjectModel", "proposals")
 
     addition: Mapped["AdditionModel"] = has_one("AdditionModel", "proposal")
     task_items: Mapped[List["TaskProposalModel"]] = contains(
@@ -68,6 +64,26 @@ class ProposalModel(BaseModel):
         "ProposalStatusLogModel", "proposal", "dynamic"
     )
 
+    @property
+    def batch_name(self) -> str | None:
+        return self.batch.name
+
+    @property
+    def file_name(self) -> str | None:
+        return self.batch.file_name
+
+    @property
+    def project(self) -> Optional["ProjectModel"]:
+        return self.batch.project
+
+    @property
+    def created_by(self) -> str:
+        return self.batch.created_by
+
+    @property
+    def created_at(self) -> str:
+        return self.batch.created_at
+
 
 class ProposalStatusLogModel(BaseModel, UpdatedAuditMixin):
     __tablename__ = "proposal_status_logs"
@@ -76,6 +92,7 @@ class ProposalStatusLogModel(BaseModel, UpdatedAuditMixin):
 
     proposal_id = Column(Integer, ForeignKey("proposals.id"), nullable=False)
     status = Column(Enum(ProposalStatus), nullable=False)
+    message = Column(String, nullable=True)
 
     proposal: Mapped["ProposalModel"] = belongs_to(
         "ProposalModel", "status_log"

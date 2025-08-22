@@ -114,7 +114,6 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-1",
                                 "ignore_digitization_check": False,
-                                "archived": False,
                                 "priority": 2,
                                 "project": None,
                                 "proposal": None,
@@ -136,7 +135,6 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-2",
                                 "ignore_digitization_check": False,
-                                "archived": False,
                                 "priority": 3,
                                 "project": None,
                                 "proposal": None,
@@ -158,7 +156,6 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-3",
                                 "ignore_digitization_check": True,
-                                "archived": False,
                                 "priority": 4,
                                 "project": None,
                                 "proposal": None,
@@ -180,7 +177,6 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-4",
                                 "ignore_digitization_check": False,
-                                "archived": False,
                                 "priority": 5,
                                 "project": None,
                                 "proposal": None,
@@ -202,7 +198,6 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-5",
                                 "ignore_digitization_check": False,
-                                "archived": False,
                                 "priority": 1,
                                 "project": None,
                                 "proposal": None,
@@ -224,7 +219,6 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-6",
                                 "ignore_digitization_check": True,
-                                "archived": False,
                                 "priority": 2,
                                 "project": None,
                                 "proposal": None,
@@ -339,8 +333,11 @@ class TestIntegrationAdditions(TestIntegrationCase):
             ),
             422,
             {
-                "detail": "Either batch_id or batch_name/file_name "
-                "must be provided, not both."
+                "detail": (
+                    "You cannot provide both a batch ID "
+                    "and a batch name or file name. "
+                    "Please provide only one option."
+                )
             },
         )
 
@@ -390,39 +387,6 @@ class TestIntegrationAdditions(TestIntegrationCase):
             },
         )
 
-    async def test_archive(self):
-        self.assertResponse(
-            await self.client.post(
-                "/additions/archive",
-                json={"query": {"term": {"_id": "4"}}},
-            ),
-            200,
-            {
-                "id": 1,
-                "task_type": "Addition.Archive",
-                "task_scope": "Addition",
-                "unscoped_task_type": "Archive",
-                "name": "Archive additions",
-                "task_schedule_id": None,
-                "created_by": "superuser",
-                "has_query": True,
-                "has_data": False,
-                "task_state": "Initializing",
-                "created_at": "2025-08-11T08:34:25.543787",
-                "started_at": None,
-                "finished_at": None,
-                "processed_count": 0,
-                "total_count": 0,
-                "error_count": 0,
-                "result": None,
-            },
-            exclude_paths={("created_at",)},
-        )
-        self.assertEntityProperties(AdditionBatchModel, 1, {"archived": False})
-        self.assertEntityProperties(
-            TaskModel, 1, {"query": {"query": {"term": {"_id": "4"}}}}
-        )
-
     async def test_delete(self):
         self.assertResponse(
             await self.client.post(
@@ -451,7 +415,6 @@ class TestIntegrationAdditions(TestIntegrationCase):
             },
             exclude_paths={("created_at",)},
         )
-        self.assertEntityProperties(AdditionBatchModel, 1, {"archived": False})
         self.assertEntityProperties(
             TaskModel, 1, {"query": {"query": {"term": {"_id": "4"}}}}
         )

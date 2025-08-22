@@ -20,6 +20,7 @@ from adapters.database import (
     has_one,
 )
 from definitions.project import ProjectStatus
+from repositories.models.addition import AdditionBatchModel
 
 from .associations import (
     project_category_association,
@@ -30,11 +31,10 @@ from .mixins.created_audit import CreatedAuditMixin
 from .mixins.updated_audit import UpdatedAuditMixin
 
 if TYPE_CHECKING:
-    from .addition import AdditionModel
     from .category import CategoryModel
     from .group import GroupModel
     from .intention import IntentionModel
-    from .proposal import ProposalModel
+    from .proposal import ProposalBatchModel
     from .user import UserModel
 
 
@@ -62,16 +62,16 @@ class ProjectModel(BaseModel, CreatedAuditMixin):
     )
 
     # Relationships to other entities
-    additions: Mapped[List["AdditionModel"]] = has_many(
-        "AdditionModel", "project"
+    addition_batches: Mapped[List["AdditionBatchModel"]] = has_many(
+        "AdditionBatchModel", "project"
+    )
+    proposal_batches: Mapped[List["ProposalBatchModel"]] = has_many(
+        "ProposalBatchModel", "project"
     )
     categories: Mapped[List["CategoryModel"]] = connected_with(
         "CategoryModel", project_category_association, "projects"
     )
     intention: Mapped["IntentionModel"] = has_one("IntentionModel", "project")
-    proposals: Mapped[List["ProposalModel"]] = has_many(
-        "ProposalModel", "project"
-    )
 
     # Ownership relationships
     groups: Mapped[List["GroupModel"]] = connected_with(

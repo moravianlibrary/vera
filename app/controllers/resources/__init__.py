@@ -19,6 +19,7 @@ from repositories.addition import AdditionBatchRepository
 from repositories.catalog_record import CatalogRecordRepository
 from repositories.plugin import PluginInstanceRepository, PluginRepository
 from repositories.project import ProjectRepository
+from repositories.proposal import ProposalBatchRepository
 from repositories.system import (
     SystemHealthRepository,
     SystemSettingsRepository,
@@ -78,6 +79,7 @@ DependsOnPluginInstanceRepository = provide_repository(
 )
 DependsOnProjectRepository = provide_repository(ProjectRepository)
 DependsOnProposalRepository = provide_repository(ProposalRepository)
+DependsOnProposalBatchRepository = provide_repository(ProposalBatchRepository)
 DependsOnRoleRepository = provide_repository(RoleRepository)
 DependsOnSystemHealthRepository = provide_repository(SystemHealthRepository)
 DependsOnSystemSettingsRepository = provide_repository(
@@ -153,8 +155,8 @@ DependsOnProjectService = provide_service(
 DependsOnProposalService = provide_service(
     ProposalService,
     DependsOnProposalRepository,
-    DependsOnDocumentRepository,
-    DependsOnIntentionRepository,
+    DependsOnProposalBatchRepository,
+    DependsOnTaskRepository,
 )
 DependsOnTaskService = provide_service(
     TaskService, DependsOnTaskRepository, DependsOnTaskScheduleRepository

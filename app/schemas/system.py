@@ -24,9 +24,9 @@ class HealthCheckLevel(str, Enum):
 
 
 class HealthCheck(BaseModel):
-    target: str
-    plugin_name: str | None = None
+    target: HealthCheckTarget
     level: HealthCheckLevel
+    plugin_name: str | None = None
     details: str | None = None
     last_checked: datetime | None = None
 
@@ -36,8 +36,13 @@ class SystemHealth(BaseModel):
     status: HealthCheckLevel
 
 
+class SystemMaintenanceType(str, Enum):
+    RecreateIndexes = "RecreateIndexes"
+    Custom = "Custom"
+
+
 class SystemMaintenance(BaseModel):
-    enabled: bool = False
+    type: SystemMaintenanceType
     message: str | None = None
 
 
@@ -45,8 +50,7 @@ class SystemStatus(BaseModel):
     version: str
     uptime: timedelta
     info_message: str | None
-    maintenance: SystemMaintenance
-    recreating_indexes: bool | None
+    maintenance: List[SystemMaintenance]
 
 
 class SystemSettingsEdit(BaseModel):
