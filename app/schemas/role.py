@@ -47,7 +47,6 @@ class Permissions(BaseModel):
 class RoleEdit(Permissions):
     name: str
     description: str | None = None
-    permissions: Permissions
 
 
 # -----------------
@@ -58,3 +57,7 @@ class Role(RoleEdit):
         from_attributes = True
 
     id: int
+
+
+class RoleSummary(BaseModel):
+    name: str

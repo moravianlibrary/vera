@@ -1,6 +1,7 @@
 from abc import abstractmethod
+from dataclasses import dataclass
 from enum import Enum
-from typing import List, NamedTuple
+from typing import List
 
 from marcdantic import MarcIssue, MarcRecord
 
@@ -32,7 +33,8 @@ class DigitizationRecordState(str, Enum):
     Unknown = "Unknown"
 
 
-class DigitizationRecord(NamedTuple):
+@dataclass
+class DigitizationRecord:
     """
     A record representing the digitization status of a catalog record
     or catalog record issue.

@@ -4,11 +4,16 @@ from fastapi import APIRouter, Path, Query
 
 from adapters.identity_provider import IdentityProvider
 from definitions.permission import GeneralPermission
+from errors.role import AdminRoleDeletionError, AdminRoleModificationError
 from repositories import RoleRepository
 from schemas.common import Page, PageParams
-from schemas.role import Role, RoleEdit
+from schemas.role import Role, RoleEdit, RoleSummary
 
-from .resources import DependsOnRoleRepository, WithPermission
+from .resources import (
+    DependsOnIdentityProvider,
+    DependsOnRoleRepository,
+    WithPermission,
+)
 
 router = APIRouter(prefix="/roles", tags=["Roles"])
 
@@ -25,31 +30,16 @@ def paginate(
     return repository.paginate(page_params)
 
 
-# TODO: Implement this endpoint
-#       after implementing IdentityProvider.paginate_roles
-# @router.get(
-#     "/from-identity-provider",
-#     dependencies=[WithPermission(GeneralPermission.ReadUsersAndGroups)],
-#     response_model=Page[Role],
-# )
-# def paginate_identity_provider(
-#     page_params: Annotated[PageParams, Query()],
-#     role_name: str | None = Query(None),
-#     identity_provider: IdentityProvider = DependsOnIdentityProvider,
-# ):
-#     return identity_provider.paginate_roles(page_params, role_name)
-
-
 @router.post(
     "",
     dependencies=[WithPermission(GeneralPermission.ManageAccess)],
     response_model=Role,
 )
 def create(
-    role: RoleEdit,
+    role_edit: RoleEdit,
     repository: RoleRepository = DependsOnRoleRepository,
 ):
-    return repository.create(role.name, role.description)
+    return repository.create(role_edit)
 
 
 @router.put(
@@ -58,11 +48,13 @@ def create(
     response_model=Role,
 )
 def update(
-    role: RoleEdit,
+    role_edit: RoleEdit,
     role_id: int = Path(...),
     repository: RoleRepository = DependsOnRoleRepository,
 ):
-    return repository.update(repository.get_by_id(role_id), role)
+    if role_id == 1:
+        raise AdminRoleModificationError()
+    return repository.update(repository.get_by_id(role_id), role_edit)
 
 
 @router.delete(
@@ -74,4 +66,19 @@ def delete(
     role_id: int = Path(...),
     repository: RoleRepository = DependsOnRoleRepository,
 ):
+    if role_id == 1:
+        raise AdminRoleDeletionError()
     return repository.delete(repository.get_by_id(role_id))
+
+
+@router.get(
+    "/from-identity-provider",
+    dependencies=[WithPermission(GeneralPermission.ReadUsersAndGroups)],
+    response_model=Page[RoleSummary],
+)
+def paginate_identity_provider(
+    page_params: Annotated[PageParams, Query()],
+    role_name: str | None = Query(None),
+    identity_provider: IdentityProvider = DependsOnIdentityProvider,
+):
+    return identity_provider.paginate_roles(page_params, role_name)

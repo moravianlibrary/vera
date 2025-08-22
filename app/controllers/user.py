@@ -8,7 +8,12 @@ from repositories.user import UserRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import Page, PageParams
 from schemas.role import Permissions
-from schemas.user import UserNotifications, UserSettings, UserSummary
+from schemas.user import (
+    FilteredPageParams,
+    UserNotifications,
+    UserOverview,
+    UserSettings,
+)
 from services.user import UserService
 
 from .resources import (
@@ -34,17 +39,18 @@ def get_user_settings(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     repository: UserRepository = DependsOnUserRepository,
 ):
-    repository.get_by_id(user.id)
     return repository.get_by_id(user.id).settings
 
 
-@router.post("/me/settings", response_model=AuthenticatedUser)
+@router.post("/me/settings", response_model=UserSettings)
 def save_user_settings(
     settings: UserSettings,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     repository: UserRepository = DependsOnUserRepository,
 ):
-    return repository.update_settings(repository.get_by_id(user.id), settings)
+    return repository.update_settings(
+        repository.get_by_id(user.id), settings
+    ).settings
 
 
 @router.get("/me/notifications", response_model=UserNotifications)
@@ -82,11 +88,11 @@ def disable_emulated_permissions(
 
 
 @router.get(
-    "/internal",
+    "",
     dependencies=[WithPermission(GeneralPermission.ReadUsersAndGroups)],
-    response_model=Page[UserSummary],
+    response_model=Page[UserOverview],
 )
-def paginate_internal(
+def paginate(
     page_params: Annotated[PageParams, Query()],
     repository: UserRepository = DependsOnUserRepository,
 ):
@@ -96,11 +102,12 @@ def paginate_internal(
 @router.get(
     "/from-identity-provider",
     dependencies=[WithPermission(GeneralPermission.ReadUsersAndGroups)],
-    response_model=Page[UserSummary],
+    response_model=Page[UserOverview],
 )
 def paginate_identity_provider(
-    page_params: Annotated[PageParams, Query()],
-    username: str | None = Query(None),
+    page_params: Annotated[FilteredPageParams, Query()],
     identity_provider: IdentityProvider = DependsOnIdentityProvider,
 ):
-    return identity_provider.paginate_users(page_params, username)
+    return identity_provider.paginate_users(
+        page_params.page, page_params.page_size, page_params.username
+    )

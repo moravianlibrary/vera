@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Generic, NamedTuple, Type, TypeVar
+from dataclasses import dataclass
+from typing import Generic, Type, TypeVar
 
 from esorm import ESBaseModel
 from pydantic import BaseModel
@@ -37,7 +38,8 @@ class ExternalResourceMixin(ABC):
         pass
 
 
-class PropertyData(NamedTuple):
+@dataclass
+class PropertyData:
     """
     Container for structured property data extracted by a plugin.
 
@@ -57,7 +59,8 @@ class PropertyData(NamedTuple):
     internal_data: bytes
 
 
-class InputData(NamedTuple):
+@dataclass
+class InputData:
     """
     Container for input data passed to property plugins.
 

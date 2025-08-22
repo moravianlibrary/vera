@@ -14,6 +14,7 @@ from .user import UserAssignment
 class AuthenticatedUser(Permissions):
     id: str
     username: str
+    email: str
     roles: List[Role]
     groups: List[Group]
 

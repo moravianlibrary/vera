@@ -1,7 +1,8 @@
 from abc import abstractmethod
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Generator, List, NamedTuple
+from typing import Generator, List
 
 from marcdantic import MarcRecord
 from marcdantic.query import MarcSearchRequest
@@ -25,7 +26,8 @@ class RecordStatus(Enum):
     Failed = "Failed"
 
 
-class ListRecordsResponse(NamedTuple):
+@dataclass
+class ListRecordsResponse:
     """
     Represents the response returned when fetching a list of records.
 
@@ -52,7 +54,8 @@ class ListRecordsResponse(NamedTuple):
     record: MarcRecord | None = None
 
 
-class SearchResult(NamedTuple):
+@dataclass
+class SearchResult:
     """
     Represents the result of a search operation.
 
@@ -71,7 +74,8 @@ class SearchResult(NamedTuple):
     record: MarcRecord
 
 
-class SearchResultResponse(NamedTuple):
+@dataclass
+class SearchResultResponse:
     """
     Represents the response returned from a search operation with pagination.
 

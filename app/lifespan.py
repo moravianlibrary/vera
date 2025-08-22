@@ -3,6 +3,9 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from vera_plugins.tools.registry import PluginRegistry
+
+from adapters.identity_provider import IdentityProvider
 
 # from time import sleep
 
@@ -137,6 +140,9 @@ async def lifespan(app_: FastAPI):
     # set_failed_tasks_on_start()
     # plan_startup_tasks()
     # setup_periodic_tasks_on_start()
+    plugin_registry = PluginRegistry()
+    app_.state.plugin_registry = plugin_registry
+    app_.state.identity_provider = IdentityProvider(plugin_registry)
 
     yield
 

@@ -3,16 +3,25 @@ from typing import TYPE_CHECKING, List
 from pydantic import BaseModel
 
 from adapters.indexer import IndexerNestedModel
-from definitions.json import JsonObject
+from schemas.common import PageParams
 
 if TYPE_CHECKING:
     from schemas.watchlist import WatchlistNotification
 
 
 # --------------------
+# - Query Parameters -
+# --------------------
+class FilteredPageParams(PageParams):
+    username: str | None = None
+
+
+# --------------------
 # - Request Payloads -
 # --------------------
-UserSettings = JsonObject
+class UserSettings(BaseModel):
+    class Config:
+        extra = "allow"
 
 
 # -----------------
@@ -25,6 +34,12 @@ class UserAssignment(BaseModel):
 
 class UserNotifications(BaseModel):
     watchlist: List["WatchlistNotification"]
+
+
+class UserOverview(BaseModel):
+    id: str
+    username: str
+    email: str
 
 
 # --------------------

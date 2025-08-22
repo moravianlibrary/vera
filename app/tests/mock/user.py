@@ -15,6 +15,7 @@ class SuperUser(AuthenticatedUser):
     def validate_super_user(cls, values):
         values["id"] = values.get("id", "superuser")
         values["username"] = values.get("username", "superuser")
+        values["email"] = values.get("email", "superuser@mzk.cz")
         values["roles"] = values.get("roles", [])
         values["groups"] = values.get("groups", [])
         values["general_permissions"] = values.get("general_permissions", [])

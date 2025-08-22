@@ -1,9 +1,31 @@
 from abc import abstractmethod
-from typing import Any, Dict, List
+from dataclasses import dataclass
+from typing import Any, Dict, Generic, List, TypeVar
 
 from .base import ExternalResourceMixin, PluginBase
 
 UserInfo = Dict[str, Any]
+
+
+@dataclass
+class UserSummary:
+    id: str
+    username: str
+    email: str
+
+
+@dataclass
+class RoleSummary:
+    name: str
+
+
+T = TypeVar("T")
+
+
+@dataclass
+class Page(Generic[T]):
+    items: List[T]
+    total: int
 
 
 class IdentityProviderError(Exception):
@@ -81,6 +103,12 @@ class IdentityProviderPlugin(PluginBase, ExternalResourceMixin):
     get_user_roles(user_info: UserInfo) -> List[str]
         Retrieve the roles associated with the user from the extracted user
         information.
+
+    paginate_users(page: int, per_page: int) -> List[UserSummary]
+        Paginate through users from the identity provider.
+
+    paginate_roles(page: int, per_page: int) -> List[RoleSummary]
+        Paginate through roles from the identity provider.
     """
 
     @abstractmethod
@@ -152,6 +180,28 @@ class IdentityProviderPlugin(PluginBase, ExternalResourceMixin):
         pass
 
     @abstractmethod
+    def get_user_email(self, user_info: UserInfo) -> str:
+        """
+        Retrieve the user's email address from extracted user information.
+
+        Parameters
+        ----------
+        user_info : UserInfo
+            A dictionary containing user information.
+
+        Returns
+        -------
+        str
+            The email address of the user.
+
+        Raises
+        ------
+        UserFieldMissingError
+            If the email field is missing in the user info dictionary.
+        """
+        pass
+
+    @abstractmethod
     def get_user_roles(self, user_info: UserInfo) -> List[str]:
         """
         Retrieve the list of roles or permissions assigned to the user.
@@ -172,3 +222,72 @@ class IdentityProviderPlugin(PluginBase, ExternalResourceMixin):
             If the roles field is missing in the user info dictionary.
         """
         pass
+
+    def paginate_users(
+        self,
+        page: int,
+        per_page: int,
+        filter: str | None,
+    ) -> Page[UserSummary]:
+        """
+        Optional method to paginate through users from the identity provider.
+
+        This method can be overridden by plugins that support user listing
+        and pagination. The default implementation raises NotImplementedError.
+
+        Parameters
+        ----------
+        page : int
+            The page number to retrieve (1-based index).
+        per_page : int
+            The number of users to include per page.
+        filter : str | None
+            An optional filter string to apply to the user list
+            (e.g., by username or email).
+
+        Returns
+        -------
+        Page[UserSummary]
+            A paginated list of user summaries for the requested page.
+
+        Raises
+        ------
+        NotImplementedError
+            If the plugin does not support user pagination.
+        """
+        raise NotImplementedError(
+            "User pagination is not implemented for this plugin."
+        )
+
+    def paginate_roles(
+        self, page: int, per_page: int, filter: str | None
+    ) -> Page[RoleSummary]:
+        """
+        Optional method to paginate through roles from the identity provider.
+
+        This method can be overridden by plugins that support role listing
+        and pagination. The default implementation raises NotImplementedError.
+
+        Parameters
+        ----------
+        page : int
+            The page number to retrieve (1-based index).
+        per_page : int
+            The number of roles to include per page.
+        filter : str | None
+            An optional filter string to apply to the role list
+            (e.g., by role name).
+
+        Returns
+        -------
+        Page[RoleSummary]
+            A paginated list of role summaries for the requested page.
+
+        Raises
+        ------
+        NotImplementedError
+            If the plugin does not support role pagination.
+        """
+        raise NotImplementedError(
+            "Role pagination is not implemented for this plugin."
+        )
