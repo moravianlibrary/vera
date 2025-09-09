@@ -10,6 +10,7 @@ from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
 from definitions.identifier import IdentifierType
 from schemas.task import Task
+from schemas.watchlist import WatchlistSummary
 
 
 # --------------------
@@ -102,6 +103,8 @@ class AdditionHit(IndexerModel):
 
     project: AdditionProject | None = None
     proposal: AdditionProposal | None = None
+
+    watchlists: List[WatchlistSummary] = []
 
 
 class Addition(AdditionHit):

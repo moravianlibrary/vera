@@ -77,6 +77,7 @@ class ProposalTask(str, Enum):
 class SystemTask(str, Enum):
     RecreateIndex = "RecreateIndex"
     ResolveInconsistencies = "ResolveInconsistencies"
+    WatchlistChange = "WatchlistChange"
 
 
 class TaskScope(str, Enum):
@@ -154,3 +155,4 @@ class ScopedTaskType(str, Enum):
     # System
     System_RecreateIndex = "System.RecreateIndex"
     System_ResolveInconsistencies = "System.ResolveInconsistencies"
+    System_WatchlistChange = "System.WatchlistChange"

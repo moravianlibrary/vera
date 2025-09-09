@@ -85,6 +85,7 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "project": None,
                                 "status": "Pending",
                                 "status_log": [],
+                                "watchlists": [],
                             },
                         },
                         {
@@ -104,6 +105,7 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "project": None,
                                 "status": "Accepted",
                                 "status_log": [],
+                                "watchlists": [],
                             },
                         },
                         {
@@ -123,6 +125,7 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "project": None,
                                 "status": "Declined",
                                 "status_log": [],
+                                "watchlists": [],
                             },
                         },
                         {
@@ -142,6 +145,7 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "project": None,
                                 "status": "Enqueued",
                                 "status_log": [],
+                                "watchlists": [],
                             },
                         },
                         {
@@ -161,6 +165,7 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "project": None,
                                 "status": "Pending",
                                 "status_log": [],
+                                "watchlists": [],
                             },
                         },
                         {
@@ -180,6 +185,7 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "project": None,
                                 "status": "Accepted",
                                 "status_log": [],
+                                "watchlists": [],
                             },
                         },
                     ],

@@ -55,7 +55,8 @@ class GeneralPermission(Enum):
     ManageSystem = "ManageSystem"
     UseSystemTasks = "UseSystemTasks"
 
-    CreateWatchlists = "CreateWatchlists"
+    # Watchlists
+    ReadWatchlists = "ReadWatchlists"
     ManageWatchlists = "ManageWatchlists"
 
 
@@ -83,10 +84,6 @@ class OwnershipPermission(Enum):
     # Tasks
     ReadTasks = "ReadTasks"
     ManageTasks = "ManageTasks"
-
-    # Watchlists
-    ReadWatchlists = "ReadWatchlists"
-    ManageWatchlists = "ManageWatchlists"
 
 
 class OwnershipScope(Enum):

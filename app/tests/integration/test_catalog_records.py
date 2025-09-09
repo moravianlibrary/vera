@@ -122,6 +122,7 @@ class TestIntegrationCatalogRecords(TestIntegrationCase):
                                 "current_status": ["Synced", "Invalid"],
                                 "properties": {},
                                 "updated_at": "2025-08-11T14:26:23.868322",
+                                "watchlists": [],
                             },
                         },
                         {
@@ -144,6 +145,7 @@ class TestIntegrationCatalogRecords(TestIntegrationCase):
                                 ],
                                 "properties": {},
                                 "updated_at": "2025-08-11T14:26:23.868322",
+                                "watchlists": [],
                             },
                         },
                         {
@@ -166,6 +168,7 @@ class TestIntegrationCatalogRecords(TestIntegrationCase):
                                 ],
                                 "properties": {},
                                 "updated_at": "2025-08-11T14:26:23.868322",
+                                "watchlists": [],
                             },
                         },
                         {
@@ -188,6 +191,7 @@ class TestIntegrationCatalogRecords(TestIntegrationCase):
                                 ],
                                 "properties": {},
                                 "updated_at": "2025-08-11T14:26:23.868322",
+                                "watchlists": [],
                             },
                         },
                     ],

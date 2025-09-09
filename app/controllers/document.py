@@ -5,8 +5,10 @@ from starlette.responses import FileResponse
 
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.document import Priority
-from definitions.permission import OwnershipPermission
+from definitions.permission import GeneralPermission, OwnershipPermission
+from definitions.watchlist import WatchlistTarget
 from repositories import DocumentRepository
+from repositories.watchlist import WatchlistRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.document import (
     Document,
@@ -15,15 +17,18 @@ from schemas.document import (
     DocumentsSyncParams,
 )
 from schemas.task import Task, TaskScheduleParams
+from schemas.watchlist import Watchlist, WatchlistPropertiesParams
 from services.document import DocumentService
 
 from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnDocumentRepository,
     DependsOnDocumentService,
+    DependsOnWatchlistRepository,
     RestrictedQuery,
     RestrictedSearch,
     RestrictedTaskScheduleParams,
+    WithGlobalPermission,
     WithPermission,
 )
 
@@ -177,6 +182,22 @@ def delete(
     service: DocumentService = DependsOnDocumentService,
 ):
     return service.delete(query, user.id)
+
+
+@router.post(
+    "/watchlist",
+    dependencies=[
+        WithPermission(GeneralPermission.ManageWatchlists),
+        WithGlobalPermission(OwnershipPermission.ReadDocuments),
+    ],
+    response_model=Watchlist,
+)
+async def create_watchlist(
+    query: IndexerQuery,
+    params: Annotated[WatchlistPropertiesParams, Query()],
+    repository: WatchlistRepository = DependsOnWatchlistRepository,
+):
+    return await repository.create(params, WatchlistTarget.Documents, query)
 
 
 # TODO: Implement in some future release

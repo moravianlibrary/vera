@@ -19,7 +19,6 @@ class PageParams(BaseModel):
         return self.page_size
 
 
-# TODO: remove ?
 class FilterParams(BaseModel):
     created_by: List[str] = []
 

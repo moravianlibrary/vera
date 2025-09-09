@@ -57,5 +57,6 @@ class SystemSettingsEdit(BaseModel):
     pass
 
 
+# TODO: Set maximum number of watchlists per target type in settings
 class SystemSettings(SystemSettingsEdit):
     pass

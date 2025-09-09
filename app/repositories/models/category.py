@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     from .project import ProjectModel
     from .task import TaskCategoryModel
     from .user import UserModel
+    from .watchlist import WatchlistCategoryModel
 
 
 class CategoryModel(BaseModel, CreatedTimestampMixin):
@@ -85,11 +86,15 @@ class CategoryModel(BaseModel, CreatedTimestampMixin):
     projects: Mapped[List["ProjectModel"]] = connected_with(
         "ProjectModel", project_category_association, "categories"
     )
+    document_discovery: Mapped["PluginInstanceModel"] = has_one(
+        "PluginInstanceModel", "categories"
+    )
+
     task_items: Mapped[List["TaskCategoryModel"]] = contains(
         "TaskCategoryModel", "category"
     )
-    document_discovery: Mapped["PluginInstanceModel"] = has_one(
-        "PluginInstanceModel", "categories"
+    watchlists: Mapped[List["WatchlistCategoryModel"]] = contains(
+        "WatchlistCategoryModel", "category"
     )
 
     # Ownership relationships

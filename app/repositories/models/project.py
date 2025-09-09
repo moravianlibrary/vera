@@ -20,7 +20,6 @@ from adapters.database import (
     has_one,
 )
 from definitions.project import ProjectStatus
-from repositories.models.addition import AdditionBatchModel
 
 from .associations import (
     project_category_association,
@@ -31,17 +30,19 @@ from .mixins.created_audit import CreatedAuditMixin
 from .mixins.updated_audit import UpdatedAuditMixin
 
 if TYPE_CHECKING:
+    from .addition import AdditionBatchModel
     from .category import CategoryModel
     from .group import GroupModel
     from .intention import IntentionModel
     from .proposal import ProposalBatchModel
     from .user import UserModel
+    from .watchlist import WatchlistProjectModel
 
 
 class ProjectModel(BaseModel, CreatedAuditMixin):
     __tablename__ = "projects"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
 
     name = Column(String, unique=True, nullable=False)
     description = Column(String)
@@ -72,6 +73,10 @@ class ProjectModel(BaseModel, CreatedAuditMixin):
         "CategoryModel", project_category_association, "projects"
     )
     intention: Mapped["IntentionModel"] = has_one("IntentionModel", "project")
+
+    watchlists: Mapped[List["WatchlistProjectModel"]] = contains(
+        "WatchlistProjectModel", "project"
+    )
 
     # Ownership relationships
     groups: Mapped[List["GroupModel"]] = connected_with(

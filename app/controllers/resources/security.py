@@ -35,6 +35,25 @@ def require_permission(
     return Depends(_check_permissions)
 
 
+def require_global_permission(
+    *permissions: OwnershipPermission,
+    require_all: bool = True,
+    exception: HTTPException = PermissionDenied(),
+):
+    def _check_permissions(
+        user: AuthenticatedUser = Depends(resolve_authenticated_user),
+    ):
+        check = all if require_all else any
+        if not check(
+            user.has_permission(p)
+            and user.get_scope(p) == OwnershipScope.Global
+            for p in permissions
+        ):
+            raise exception
+
+    return Depends(_check_permissions)
+
+
 class AuthoredModel(Protocol):
     created_by: str
 

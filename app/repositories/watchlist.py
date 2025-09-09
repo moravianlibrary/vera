@@ -2,15 +2,15 @@ from datetime import datetime
 from typing import List
 
 from adapters.indexer import IndexerQuery
+from definitions.watchlist import WatchlistTarget
 from repositories.models.watchlist import (
     WatchlistModel,
     WatchlistSubscriptionModel,
 )
-from schemas.common import UserAssignment, UserAssignmentChange
 from schemas.watchlist import (
-    WatchlistCreate,
     WatchlistNotificationSettings,
-    WatchlistParams,
+    WatchlistProperties,
+    WatchlistPropertiesParams,
 )
 
 from ._db_repository import (
@@ -30,50 +30,28 @@ class WatchlistRepository(
     _entity_name = "Watchlist"
     _db_model = WatchlistModel
 
-    def create(self, watchlist: WatchlistCreate) -> WatchlistModel:
-        self.enforce_name_uniqueness(watchlist.name)
+    def create(
+        self,
+        params: WatchlistPropertiesParams,
+        target: WatchlistTarget,
+        query: IndexerQuery,
+    ) -> WatchlistModel:
+        self.enforce_name_uniqueness(params.name)
+        # TODO: enforce short name uniqueness
         return self.save(
             WatchlistModel(
-                name=watchlist.name,
-                mode=watchlist.mode,
-                target=watchlist.target,
-                query=watchlist.query,
+                name=params.name,
+                short_name=params.short_name,
+                target=target,
+                query=query,
             )
         )
 
     def update_properties(
-        self, watchlist: WatchlistModel, properties: WatchlistParams
+        self, watchlist: WatchlistModel, properties: WatchlistProperties
     ) -> WatchlistModel:
         watchlist.name = properties.name
-        watchlist.mode = properties.mode
-        return self.save(watchlist)
-
-    def update_query(
-        self, watchlist: WatchlistModel, query: IndexerQuery
-    ) -> WatchlistModel:
-        watchlist.query = query
-        return self.save(watchlist)
-
-    def update_assignment(
-        self,
-        watchlist: WatchlistModel,
-        assignment_change: UserAssignmentChange,
-    ) -> WatchlistModel:
-        user_ids = {sub.user_id for sub in watchlist.subscriptions}
-
-        if assignment_change.add:
-            user_ids |= set(assignment_change.add.user_ids)
-        if assignment_change.remove:
-            user_ids -= set(assignment_change.remove.user_ids)
-
-        watchlist.subscriptions = [
-            WatchlistSubscriptionModel(
-                watchlist_id=watchlist.id,
-                user_id=user_id,
-            )
-            for user_id in user_ids
-        ]
-
+        watchlist.short_name = properties.short_name
         return self.save(watchlist)
 
     def _find_subscription(
@@ -129,28 +107,28 @@ class WatchlistRepository(
         self,
         watchlist: WatchlistModel,
         settings: WatchlistNotificationSettings,
-        assignment: UserAssignment,
     ) -> WatchlistModel:
-        self._database_session.query(self._db_model).filter(
-            WatchlistSubscriptionModel.watchlist_id == watchlist.id,
-            WatchlistSubscriptionModel.user_id.in_(assignment.user_ids),
-        ).update(
-            {
-                WatchlistSubscriptionModel.cron_expression: (
-                    settings.cron_expression
-                ),
-                WatchlistSubscriptionModel.include_report: (
-                    settings.include_report
-                ),
-                WatchlistSubscriptionModel.return_fields: (
-                    settings.return_fields
-                ),
-            }
-        )
-        self._database_session.commit()
+        pass
+        # self._database_session.query(self._db_model).filter(
+        #     WatchlistSubscriptionModel.watchlist_id == watchlist.id,
+        #     WatchlistSubscriptionModel.user_id.in_(assignment.user_ids),
+        # ).update(
+        #     {
+        #         WatchlistSubscriptionModel.cron_expression: (
+        #             settings.cron_expression
+        #         ),
+        #         WatchlistSubscriptionModel.include_report: (
+        #             settings.include_report
+        #         ),
+        #         WatchlistSubscriptionModel.return_fields: (
+        #             settings.return_fields
+        #         ),
+        #     }
+        # )
+        # self._database_session.commit()
 
-        self._database_session.refresh(watchlist)
-        return watchlist
+        # self._database_session.refresh(watchlist)
+        # return watchlist
 
     # def get_notifications(
     #     self, user_id: str

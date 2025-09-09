@@ -9,6 +9,7 @@ from adapters.indexer import IndexerModel, IndexerNestedModel
 from definitions.category import Level
 from schemas.group import GroupSummary
 from schemas.user import UserSummary
+from schemas.watchlist import WatchlistSummary
 
 
 # --------------------
@@ -110,6 +111,8 @@ class CategoryHit(IndexerModel):
     effective_users: List[UserSummary]
 
     created_at: datetime
+
+    watchlists: List[WatchlistSummary] = []
 
 
 class Category(CategoryHit, ModelValidateWithViewsMixin):

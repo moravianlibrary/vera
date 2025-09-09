@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from .digitization_list import DigitizationListModel
     from .plugin import PluginInstanceModel
     from .task import TaskDocumentIterationModel
+    from .watchlist import WatchlistDocumentIterationModel
 
 
 class DocumentModel(BaseModel, UpdatedTimestampMixin):
@@ -159,8 +160,12 @@ class DocumentIterationModel(
     digitization_list: Mapped["DigitizationListModel"] = belongs_to(
         "DigitizationListModel", "document_iterations"
     )
+
     task_items: Mapped[List["TaskDocumentIterationModel"]] = contains(
         "TaskDocumentIterationModel", "document_iteration"
+    )
+    watchlists: Mapped[List["WatchlistDocumentIterationModel"]] = contains(
+        "WatchlistDocumentIterationModel", "document_iteration"
     )
 
     @property

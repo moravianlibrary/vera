@@ -4,7 +4,9 @@ from fastapi import APIRouter, Path, Query, status
 
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
+from definitions.watchlist import WatchlistTarget
 from repositories import CategoryRepository, DistributionRepository
+from repositories.watchlist import WatchlistRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.category import (
     Category,
@@ -17,6 +19,7 @@ from schemas.category import (
 )
 from schemas.common import AssignmentChange, Page, PageParams
 from schemas.task import Task, TaskOrSchedule, TaskScheduleParams
+from schemas.watchlist import Watchlist, WatchlistPropertiesParams
 from services import CategoryService
 
 from .resources import (
@@ -24,9 +27,11 @@ from .resources import (
     DependsOnCategoryRepository,
     DependsOnCategoryService,
     DependsOnDistributionRepository,
+    DependsOnWatchlistRepository,
     RestrictedQuery,
     RestrictedSearch,
     RestrictedTaskScheduleParams,
+    WithGlobalPermission,
     WithPermission,
 )
 
@@ -251,3 +256,19 @@ async def delete_distribution(
     service: CategoryService = DependsOnCategoryService,
 ):
     return await service.delete_distribution(distribution_id, user.id)
+
+
+@router.post(
+    "/watchlist",
+    dependencies=[
+        WithPermission(GeneralPermission.ManageWatchlists),
+        WithGlobalPermission(OwnershipPermission.ReadCategories),
+    ],
+    response_model=Watchlist,
+)
+async def create_watchlist(
+    query: IndexerQuery,
+    params: Annotated[WatchlistPropertiesParams, Query()],
+    repository: WatchlistRepository = DependsOnWatchlistRepository,
+):
+    return await repository.create(params, WatchlistTarget.Categories, query)

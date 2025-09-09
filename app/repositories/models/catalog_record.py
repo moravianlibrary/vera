@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     from .document import DocumentModel
     from .plugin import PluginInstanceModel
     from .task import TaskCatalogRecordModel
+    from .watchlist import WatchlistCatalogRecordModel
 
 
 class CatalogRecordModel(BaseModel, UpdatedTimestampMixin):
@@ -62,9 +63,14 @@ class CatalogRecordModel(BaseModel, UpdatedTimestampMixin):
     documents: Mapped[List["DocumentModel"]] = has_many(
         "DocumentModel", "catalog_record"
     )
+
     task_items: Mapped[List["TaskCatalogRecordModel"]] = contains(
         "TaskCatalogRecordModel", "catalog_record"
     )
+    watchlists: Mapped[List["WatchlistCatalogRecordModel"]] = contains(
+        "WatchlistCatalogRecordModel", "catalog_record"
+    )
+
     status_log: Mapped[List["CatalogRecordStatusLogModel"]] = contains(
         "CatalogRecordStatusLogModel", "catalog_record"
     )

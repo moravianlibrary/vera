@@ -11,6 +11,7 @@ from definitions.proposal import ProposalStatus
 from schemas.addition import AdditionsBatchParams, AdditionsSettingsParams
 from schemas.project import ProjectSummary
 from schemas.task import Task
+from schemas.watchlist import WatchlistSummary
 
 
 # --------------------
@@ -93,6 +94,8 @@ class ProposalHit(IndexerModel):
     eligibility_status: EligibilityStatus | None = None
 
     status_log: List[ProposalStatusLog]
+
+    watchlists: List[WatchlistSummary] = []
 
 
 class Proposal(ProposalHit):

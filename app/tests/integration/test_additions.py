@@ -118,6 +118,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "project": None,
                                 "proposal": None,
                                 "status": "NotEligibleForAddition",
+                                "watchlists": [],
                             },
                         },
                         {
@@ -139,6 +140,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "project": None,
                                 "proposal": None,
                                 "status": "Completed",
+                                "watchlists": [],
                             },
                         },
                         {
@@ -160,6 +162,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "project": None,
                                 "proposal": None,
                                 "status": "Enqueued",
+                                "watchlists": [],
                             },
                         },
                         {
@@ -181,6 +184,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "project": None,
                                 "proposal": None,
                                 "status": "NotEligibleForAddition",
+                                "watchlists": [],
                             },
                         },
                         {
@@ -202,6 +206,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "project": None,
                                 "proposal": None,
                                 "status": "Completed",
+                                "watchlists": [],
                             },
                         },
                         {
@@ -223,6 +228,7 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "project": None,
                                 "proposal": None,
                                 "status": "Enqueued",
+                                "watchlists": [],
                             },
                         },
                     ],

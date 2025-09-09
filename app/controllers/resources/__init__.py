@@ -46,6 +46,7 @@ from services.project import ProjectService
 from services.proposal import ProposalService
 from services.task import TaskScheduleService, TaskService
 from services.user import UserService
+from services.watchlist import WatchlistService
 from vera_state import get_catalog_adapter, get_identity_provider
 
 from .providers import provide_repository, provide_service
@@ -56,7 +57,7 @@ from .restricted import (
     get_restricted_query,
     get_restricted_search,
 )
-from .security import enforce_ownership, require_permission
+from .security import require_global_permission, require_permission
 
 DependsOnDatabaseSession = Depends(get_database_session)
 DependsOnIndexerSession = Depends(get_indexer_session)
@@ -175,6 +176,10 @@ DependsOnUserService = provide_service(
     DependsOnProposalRepository,
     DependsOnWatchlistRepository,
 )
+DependsOnWatchlistService = provide_service(
+    WatchlistService,
+    DependsOnWatchlistRepository,
+)
 
 DependsOnAuthenticatedUser = Depends(resolve_authenticated_user)
 
@@ -193,4 +198,4 @@ RestrictedTaskScheduleParams = get_restricted_params(
 )
 
 WithPermission = require_permission
-WithEnforcedOwnership = enforce_ownership
+WithGlobalPermission = require_global_permission

@@ -4,7 +4,9 @@ from fastapi import APIRouter, Path, Query
 
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission
+from definitions.watchlist import WatchlistTarget
 from repositories.catalog_record import CatalogRecordRepository
+from repositories.watchlist import WatchlistRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.catalog_record import (
     CatalogRecordDetails,
@@ -13,12 +15,14 @@ from schemas.catalog_record import (
     MarkInReviewParams,
 )
 from schemas.task import Task, TaskOrSchedule, TaskScheduleParams
+from schemas.watchlist import Watchlist, WatchlistPropertiesParams
 from services.catalog_record import CatalogRecordService
 
 from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnCatalogRecordRepository,
     DependsOnCatalogRecordService,
+    DependsOnWatchlistRepository,
     RestrictedTaskScheduleParams,
     WithPermission,
 )
@@ -131,3 +135,23 @@ async def delete(
     service: CatalogRecordService = DependsOnCatalogRecordService,
 ):
     return await service.delete(query, user.id)
+
+
+@router.post(
+    "/watchlist",
+    dependencies=[
+        WithPermission(
+            GeneralPermission.ManageWatchlists,
+            GeneralPermission.ReadCatalogRecords,
+        ),
+    ],
+    response_model=Watchlist,
+)
+async def create_watchlist(
+    query: IndexerQuery,
+    params: Annotated[WatchlistPropertiesParams, Query()],
+    repository: WatchlistRepository = DependsOnWatchlistRepository,
+):
+    return await repository.create(
+        params, WatchlistTarget.CatalogRecords, query
+    )

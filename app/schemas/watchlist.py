@@ -1,46 +1,44 @@
 from datetime import datetime
 from typing import List
 
+from esorm.fields import keyword, long, text
 from pydantic import BaseModel
 
-from adapters.indexer import IndexerQuery
-from definitions.watchlist import WatchlistMode, WatchlistTarget
-from schemas.common import FilterParams
-from schemas.group import GroupSummary
+from adapters.indexer import IndexerNestedModel, IndexerQuery
+from definitions.watchlist import WatchlistEvent, WatchlistTarget
+from schemas.common import PageParams
 from schemas.user import UserSummary
 
 
 # --------------------
 # - Query Parameters -
 # --------------------
-class WatchlistParams(BaseModel):
+class WatchlistPropertiesParams(BaseModel):
     name: str
-    mode: WatchlistMode
+    short_name: str
 
 
-class SubscribedWatchlistFilterParams(BaseModel):
+class WatchlistFilterParams(BaseModel):
     target: WatchlistTarget | None = None
-    mode: WatchlistMode | None = None
 
 
-class WatchlistFilterParams(SubscribedWatchlistFilterParams, FilterParams):
-    subscribed_by: str | None = None
+class WatchlistPaginateParams(PageParams, WatchlistFilterParams):
+    pass
 
-    @classmethod
-    def from_subscribed_filter(
-        cls, filter_: "SubscribedWatchlistFilterParams", user_id: str
-    ):
-        return cls(
-            target=filter_.target, mode=filter_.mode, subscribed_by=user_id
-        )
+    @property
+    def page_params(self) -> PageParams:
+        return PageParams(page=self.page, page_size=self.page_size)
+
+    @property
+    def filter_params(self) -> WatchlistFilterParams:
+        return WatchlistFilterParams(target=self.target)
 
 
 # --------------------
 # - Request Payloads -
 # --------------------
-class WatchlistCreate(WatchlistParams):
-    target: WatchlistTarget
-    query: IndexerQuery
+class WatchlistProperties(WatchlistPropertiesParams):
+    pass
 
 
 class WatchlistNotificationSettings(BaseModel):
@@ -60,12 +58,11 @@ class WatchlistBase(BaseModel):
 
     target: WatchlistTarget
     query: IndexerQuery
-    mode: WatchlistMode
+    mode: WatchlistEvent
 
 
 class WatchlistSubscription(BaseModel):
-    user: UserSummary | None
-    group: GroupSummary | None
+    user: UserSummary
     settings: WatchlistNotificationSettings | None
 
 
@@ -95,3 +92,22 @@ class WatchlistNotification(WatchlistBase):
 
 class SubscribedWatchlist(WatchlistNotification):
     settings: WatchlistNotificationSettings | None
+
+
+# --------------------
+# - Indexer Entities -
+# --------------------
+class WatchlistSummary(IndexerNestedModel):
+    id: long
+    name: text
+    short_name: keyword
+    entered_at: datetime
+    exited_at: datetime | None = None
+    active: bool
+
+
+# -------------
+# - Task Data -
+# -------------
+class WatchlistChangeTaskData(BaseModel):
+    watchlist_id: int

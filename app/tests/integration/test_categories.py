@@ -217,6 +217,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                     "direct_users": [],
                     "effective_groups": [{"id": 1, "name": "Group 1"}],
                     "effective_users": [],
+                    "watchlists": [],
                 },
             },
             {
@@ -246,6 +247,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                     "direct_users": [],
                     "effective_groups": [],
                     "effective_users": [],
+                    "watchlists": [],
                 },
             },
             {
@@ -288,6 +290,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                         {"id": "id-3", "username": "user3"},
                         {"id": "id-4", "username": "user4"},
                     ],
+                    "watchlists": [],
                 },
             },
             {
@@ -327,6 +330,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                         {"id": 1, "name": "Group 1"},
                     ],
                     "effective_users": [],
+                    "watchlists": [],
                 },
             },
             {
@@ -359,6 +363,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                     "direct_users": [],
                     "effective_groups": [],
                     "effective_users": [],
+                    "watchlists": [],
                 },
             },
             {
@@ -398,6 +403,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                         {"id": "id-3", "username": "user3"},
                         {"id": "id-4", "username": "user4"},
                     ],
+                    "watchlists": [],
                 },
             },
             {
@@ -436,6 +442,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                         {"id": "id-3", "username": "user3"},
                         {"id": "id-4", "username": "user4"},
                     ],
+                    "watchlists": [],
                 },
             },
             {
@@ -469,6 +476,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                     "direct_users": [{"id": "id-10", "username": "user10"}],
                     "effective_groups": [],
                     "effective_users": [{"id": "id-10", "username": "user10"}],
+                    "watchlists": [],
                 },
             },
         ]
@@ -542,6 +550,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                 "direct_users": [],
                 "effective_groups": [],
                 "effective_users": [],
+                "watchlists": [],
             },
             exclude_paths={("created_at",)},
         )
@@ -588,6 +597,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                 "direct_users": [],
                 "effective_groups": [{"id": 1, "name": "Group 1"}],
                 "effective_users": [],
+                "watchlists": [],
             },
             exclude_paths={("created_at",)},
         )
@@ -629,6 +639,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                 "direct_users": [],
                 "effective_groups": [{"id": 1, "name": "Group 1"}],
                 "effective_users": [],
+                "watchlists": [],
             },
             exclude_paths={("created_at",)},
         )
@@ -685,6 +696,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                     {"id": "id-5", "username": "user5"},
                     {"id": "id-6", "username": "user6"},
                 ],
+                "watchlists": [],
             },
             exclude_paths={("created_at",)},
         )
@@ -733,6 +745,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                     {"id": "id-3", "username": "user3"},
                     {"id": "id-4", "username": "user4"},
                 ],
+                "watchlists": [],
             },
             exclude_paths={("created_at",)},
         )
@@ -778,6 +791,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                     {"id": "id-3", "username": "user3"},
                     {"id": "id-4", "username": "user4"},
                 ],
+                "watchlists": [],
             },
             exclude_paths={("created_at",)},
         )
@@ -816,6 +830,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                 "direct_users": [],
                 "effective_groups": [{"id": 1, "name": "Group 1"}],
                 "effective_users": [],
+                "watchlists": [],
             },
             exclude_paths={("created_at",)},
         )
@@ -865,6 +880,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                 "direct_users": [],
                 "effective_groups": [{"id": 1, "name": "Group 1"}],
                 "effective_users": [],
+                "watchlists": [],
             },
             exclude_paths={("created_at",)},
         )
@@ -1019,6 +1035,7 @@ class TestIntegrationCategories(TestIntegrationCase):
                 "direct_users": [{"id": "id-10", "username": "user10"}],
                 "effective_groups": [],
                 "effective_users": [{"id": "id-10", "username": "user10"}],
+                "watchlists": [],
             },
             exclude_paths={("created_at",)},
         )

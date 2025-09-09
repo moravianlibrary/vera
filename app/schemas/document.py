@@ -30,6 +30,7 @@ from repositories.models.document import (
     DocumentModel,
     DocumentPropertyModel,
 )
+from schemas.watchlist import WatchlistSummary
 
 from .additional_properties import AdditionalDetails, AdditionalProperties
 
@@ -121,6 +122,8 @@ class Document(IndexerModel):
     created_at: datetime
     updated_at: datetime
 
+    watchlists: List[WatchlistSummary] = []
+
     @model_validator(mode="before")
     @classmethod
     def from_model(cls, data: Any) -> Any:
@@ -186,6 +189,7 @@ class Document(IndexerModel):
             "created_by": data.created_by,
             "created_at": data.created_at.isoformat(),
             "updated_at": data.updated_at.isoformat(),
+            "watchlists": data.watchlists,
         }
 
         if document.marc_issue_data is None:

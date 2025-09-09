@@ -1,28 +1,25 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Path, Query
+from fastapi import APIRouter, Body, Path, Query
 
-from adapters.indexer import IndexerQuery
-from definitions.permission import GeneralPermission, OwnershipPermission
-from definitions.watchlist import TARGET_PERMISSIONS
+from definitions.permission import GeneralPermission
 from repositories.watchlist import WatchlistRepository
 from schemas.authenticated_user import AuthenticatedUser
-from schemas.common import Assignment, AssignmentChange, Page, PageParams
+from schemas.common import Page
+from schemas.task import Task
 from schemas.watchlist import (
     SubscribedWatchlist,
-    SubscribedWatchlistFilterParams,
     Watchlist,
-    WatchlistCreate,
-    WatchlistFilterParams,
     WatchlistNotificationSettings,
-    WatchlistParams,
+    WatchlistPaginateParams,
+    WatchlistProperties,
 )
+from services.watchlist import WatchlistService
 
 from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnWatchlistRepository,
-    RestrictedFilterParams,
-    WithEnforcedOwnership,
+    DependsOnWatchlistService,
     WithPermission,
 )
 
@@ -31,220 +28,92 @@ router = APIRouter(prefix="/watchlists", tags=["Watchlists"])
 
 @router.get(
     "",
-    dependencies=[WithPermission(OwnershipPermission.ReadWatchlists)],
+    dependencies=[WithPermission(GeneralPermission.ReadWatchlists)],
     response_model=Page[Watchlist],
 )
 def paginate(
-    page_params: Annotated[PageParams, Query()],
-    filter_params: WatchlistFilterParams | None = RestrictedFilterParams(
-        OwnershipPermission.ReadWatchlists, WatchlistFilterParams
-    ),
+    params: Annotated[WatchlistPaginateParams, Query()],
     repository: WatchlistRepository = DependsOnWatchlistRepository,
 ):
-    return repository.paginate(page_params, filter_params)
+    return repository.paginate(params.page_params, params.filter_params)
 
 
-@router.post(
-    "",
-    dependencies=[WithPermission(OwnershipPermission.ManageWatchlists)],
+@router.patch(
+    "/{watchlist_id}/properties",
+    dependencies=[WithPermission(GeneralPermission.ManageWatchlists)],
     response_model=Watchlist,
 )
-def create(
-    watchlist: WatchlistCreate,
+async def update_properties(
+    watchlist_id: Annotated[int, Path(...)],
+    properties: Annotated[WatchlistProperties, Body(...)],
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: WatchlistService = DependsOnWatchlistService,
+):
+    return await service.update_properties(watchlist_id, properties, user.id)
+
+
+@router.delete(
+    "/{watchlist_id}",
+    dependencies=[WithPermission(GeneralPermission.ManageWatchlists)],
+    response_model=Task,
+)
+async def delete(
+    watchlist_id: Annotated[int, Path(...)],
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: WatchlistService = DependsOnWatchlistService,
+):
+    return await service.delete(watchlist_id, user.id)
+
+
+@router.get(
+    "/subscriptions",
+    dependencies=[WithPermission(GeneralPermission.ReadWatchlists)],
+    response_model=Page[SubscribedWatchlist],
+)
+def paginate_subscriptions(
+    params: Annotated[WatchlistPaginateParams, Query()],
     repository: WatchlistRepository = DependsOnWatchlistRepository,
 ):
-    WithPermission(TARGET_PERMISSIONS[watchlist.target])
-    return repository.create(watchlist)
+    return repository.paginate_subscriptions(
+        params.page_params, params.filter_params
+    )
 
 
 @router.patch(
     "/{watchlist_id}/subscribe",
-    dependencies=[WithPermission(OwnershipPermission.ReadWatchlists)],
+    dependencies=[WithPermission(GeneralPermission.ReadWatchlists)],
     response_model=SubscribedWatchlist,
 )
 def subscribe(
     watchlist_id: Annotated[int, Path(...)],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: WatchlistRepository = DependsOnWatchlistRepository,
+    service: WatchlistService = DependsOnWatchlistService,
 ):
-    return repository.subscribe(
-        WithEnforcedOwnership(
-            repository.get_by_id(watchlist_id),
-            OwnershipPermission.ReadWatchlists,
-            user,
-        ),
-        user.id,
-    )
-
-
-@router.get(
-    "/subscribed",
-    dependencies=[WithPermission(OwnershipPermission.ReadWatchlists)],
-    response_model=Page[SubscribedWatchlist],
-)
-def paginate_subscribed(
-    page_params: Annotated[PageParams, Query()],
-    filter_params: Annotated[SubscribedWatchlistFilterParams, Query()],
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: WatchlistRepository = DependsOnWatchlistRepository,
-):
-    return repository.paginate(
-        page_params,
-        WatchlistFilterParams.from_subscribed_filter(filter_params, user.id),
-    )
+    return service.subscribe(watchlist_id, user.id)
 
 
 @router.patch(
-    "/subscribed/{watchlist_id}/unsubscribe",
-    dependencies=[WithPermission(OwnershipPermission.ReadWatchlists)],
+    "/{watchlist_id}/unsubscribe",
+    dependencies=[WithPermission(GeneralPermission.ReadWatchlists)],
     response_model=SubscribedWatchlist,
 )
 def unsubscribe(
     watchlist_id: Annotated[int, Path(...)],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: WatchlistRepository = DependsOnWatchlistRepository,
+    service: WatchlistService = DependsOnWatchlistService,
 ):
-    return repository.unsubscribe(
-        WithEnforcedOwnership(
-            repository.get_by_id(watchlist_id),
-            OwnershipPermission.ReadWatchlists,
-            user,
-        ),
-        user.id,
-    )
+    return service.unsubscribe(watchlist_id, user.id)
 
 
 @router.patch(
-    "/subscribed/{watchlist_id}/notifications",
-    dependencies=[WithPermission(OwnershipPermission.ReadWatchlists)],
+    "/{watchlist_id}/notifications",
+    dependencies=[WithPermission(GeneralPermission.ReadWatchlists)],
     response_model=SubscribedWatchlist,
 )
-def update_own_notifications(
+def update_notifications(
     watchlist_id: Annotated[int, Path(...)],
-    settings: Annotated[WatchlistNotificationSettings | None, Query(None)],
+    settings: Annotated[WatchlistNotificationSettings, Query()],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: WatchlistRepository = DependsOnWatchlistRepository,
+    service: WatchlistService = DependsOnWatchlistService,
 ):
-    return repository.update_notifications(
-        WithEnforcedOwnership(
-            repository.get_by_id(watchlist_id),
-            OwnershipPermission.ReadWatchlists,
-            user,
-        ),
-        settings,
-        Assignment(user_ids=[user.id]),
-    )
-
-
-@router.put(
-    "/{watchlist_id}/notifications",
-    dependencies=[
-        WithPermission(
-            OwnershipPermission.ManageWatchlists,
-            GeneralPermission.ReadUsersAndGroups,
-        )
-    ],
-    response_model=Watchlist,
-)
-def update_notifications_for_assignees(
-    assignment: Assignment,
-    watchlist_id: Annotated[int, Path(...)],
-    settings: Annotated[WatchlistNotificationSettings | None, Query(None)],
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: WatchlistRepository = DependsOnWatchlistRepository,
-):
-    return repository.update_email_notifications(
-        WithEnforcedOwnership(
-            repository.get_by_id(watchlist_id),
-            OwnershipPermission.ManageWatchlists,
-            user,
-        ),
-        settings,
-        assignment,
-    )
-
-
-@router.patch(
-    "/{watchlist_id}/properties",
-    dependencies=[WithPermission(OwnershipPermission.ManageWatchlists)],
-    response_model=Watchlist,
-)
-def update_properties(
-    watchlist_id: Annotated[int, Path(...)],
-    params: Annotated[WatchlistParams, Query()],
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: WatchlistRepository = DependsOnWatchlistRepository,
-):
-    return repository.update_properties(
-        WithEnforcedOwnership(
-            repository.get_by_id(watchlist_id),
-            OwnershipPermission.ManageWatchlists,
-            user,
-        ),
-        params,
-    )
-
-
-@router.patch(
-    "/{watchlist_id}/query",
-    dependencies=[WithPermission(OwnershipPermission.ManageWatchlists)],
-    response_model=Watchlist,
-)
-def update_query(
-    query: IndexerQuery,
-    watchlist_id: Annotated[int, Path(...)],
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: WatchlistRepository = DependsOnWatchlistRepository,
-):
-    watchlist = WithEnforcedOwnership(
-        repository.get_by_id(watchlist_id),
-        OwnershipPermission.ManageWatchlists,
-        user,
-    )
-    WithPermission(TARGET_PERMISSIONS[watchlist.target])
-    return repository.update_query(watchlist, query)
-
-
-@router.patch(
-    "/{watchlist_id}/assignment",
-    dependencies=[
-        WithPermission(
-            OwnershipPermission.ManageWatchlists,
-            GeneralPermission.ReadUsersAndGroups,
-        )
-    ],
-    response_model=Watchlist,
-)
-def update_assignment(
-    change: AssignmentChange,
-    watchlist_id: Annotated[int, Path(...)],
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: WatchlistRepository = DependsOnWatchlistRepository,
-):
-    return repository.update_assignment(
-        WithEnforcedOwnership(
-            repository.get_by_id(watchlist_id),
-            OwnershipPermission.ManageWatchlists,
-            user,
-        ),
-        change,
-    )
-
-
-@router.delete(
-    "/{watchlist_id}",
-    dependencies=[WithPermission(OwnershipPermission.ManageWatchlists)],
-    response_model=Watchlist,
-)
-def delete(
-    watchlist_id: Annotated[int, Path(...)],
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: WatchlistRepository = DependsOnWatchlistRepository,
-):
-    return repository.delete(
-        WithEnforcedOwnership(
-            repository.get_by_id(watchlist_id),
-            OwnershipPermission.ManageWatchlists,
-            user,
-        )
-    )
+    return service.update_notifications(watchlist_id, settings, user.id)

@@ -4,7 +4,9 @@ from fastapi import APIRouter, Query
 
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
+from definitions.watchlist import WatchlistTarget
 from repositories import ProposalRepository
+from repositories.watchlist import WatchlistRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.proposal import (
     ApproveProposalsParams,
@@ -15,14 +17,17 @@ from schemas.proposal import (
     RejectProposalsParams,
 )
 from schemas.task import Task
+from schemas.watchlist import Watchlist, WatchlistPropertiesParams
 from services import ProposalService
 
 from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnProposalRepository,
     DependsOnProposalService,
+    DependsOnWatchlistRepository,
     RestrictedQuery,
     RestrictedSearch,
+    WithGlobalPermission,
     WithPermission,
 )
 
@@ -114,3 +119,19 @@ async def delete(
     service: ProposalService = DependsOnProposalService,
 ):
     return await service.delete(query, user.id)
+
+
+@router.post(
+    "/watchlist",
+    dependencies=[
+        WithPermission(GeneralPermission.ManageWatchlists),
+        WithGlobalPermission(OwnershipPermission.ReadProjects),
+    ],
+    response_model=Watchlist,
+)
+async def create_watchlist(
+    query: IndexerQuery,
+    params: Annotated[WatchlistPropertiesParams, Query()],
+    repository: WatchlistRepository = DependsOnWatchlistRepository,
+):
+    return await repository.create(params, WatchlistTarget.Proposals, query)

@@ -15,6 +15,7 @@ from repositories.models.catalog_record import (
     CatalogRecordModel,
     CatalogRecordPropertyModel,
 )
+from schemas.watchlist import WatchlistSummary
 
 from .additional_properties import AdditionalDetails, AdditionalProperties
 
@@ -159,6 +160,8 @@ class CatalogRecordHit(IndexerModel):
     properties: CatalogRecordAdditionalProperties | None
 
     updated_at: datetime
+
+    watchlists: List[WatchlistSummary] = []
 
     @model_validator(mode="before")
     @classmethod

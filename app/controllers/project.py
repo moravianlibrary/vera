@@ -2,10 +2,12 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Path, Query
 
-from adapters.indexer import IndexerRequest, IndexerResponse
+from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
 from definitions.project import ProjectStatus
+from definitions.watchlist import WatchlistTarget
 from repositories.project import ProjectRepository
+from repositories.watchlist import WatchlistRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.common import AssignmentChange
 from schemas.project import (
@@ -14,12 +16,15 @@ from schemas.project import (
     ProjectBatchParams,
     ProjectEdit,
 )
+from schemas.watchlist import Watchlist, WatchlistPropertiesParams
 from services.project import ProjectService
 
 from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnProjectRepository,
+    DependsOnWatchlistRepository,
     RestrictedSearch,
+    WithGlobalPermission,
     WithPermission,
 )
 
@@ -155,3 +160,19 @@ async def delete(
     repository: ProjectRepository = DependsOnProjectRepository,
 ):
     return await repository.delete(repository.get_by_id(project_id))
+
+
+@router.post(
+    "/watchlist",
+    dependencies=[
+        WithPermission(GeneralPermission.ManageWatchlists),
+        WithGlobalPermission(OwnershipPermission.ReadProjects),
+    ],
+    response_model=Watchlist,
+)
+async def create_watchlist(
+    query: IndexerQuery,
+    params: Annotated[WatchlistPropertiesParams, Query()],
+    repository: WatchlistRepository = DependsOnWatchlistRepository,
+):
+    return await repository.create(params, WatchlistTarget.Projects, query)

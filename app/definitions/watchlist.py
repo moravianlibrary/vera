@@ -1,7 +1,5 @@
 from enum import Enum
 
-from definitions.permission import GeneralPermission, OwnershipPermission
-
 
 class WatchlistTarget(str, Enum):
     Additions = "Additions"
@@ -12,15 +10,7 @@ class WatchlistTarget(str, Enum):
     Proposals = "Proposals"
 
 
-class WatchlistMode(str, Enum):
-    Addition = "Addition"
-
-
-TARGET_PERMISSIONS = {
-    WatchlistTarget.Additions: OwnershipPermission.ReadAdditions,
-    WatchlistTarget.CatalogRecords: GeneralPermission.ReadCatalogRecords,
-    WatchlistTarget.Categories: OwnershipPermission.ReadCategories,
-    WatchlistTarget.Documents: OwnershipPermission.ReadDocuments,
-    WatchlistTarget.Projects: OwnershipPermission.ReadProjects,
-    WatchlistTarget.Proposals: OwnershipPermission.ReadProposals,
-}
+class WatchlistEvent(str, Enum):
+    Entered = "Entered"
+    Changed = "Changed"
+    Exited = "Exited"

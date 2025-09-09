@@ -118,6 +118,17 @@ class TestIndexSchema(TestIndexBase):
                         "justification": {"type": "text"},
                     }
                 },
+                "watchlists": {
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "name": {"type": "keyword"},
+                        "short_name": {"type": "keyword"},
+                        "entered_at": {"type": "date"},
+                        "exited_at": {"type": "date"},
+                        "active": {"type": "boolean"},
+                    },
+                    "type": "nested",
+                },
             },
         )
 
@@ -142,6 +153,17 @@ class TestIndexSchema(TestIndexBase):
                 "current_status": {"type": "keyword"},
                 "properties": {"properties": {}},
                 "updated_at": {"type": "date"},
+                "watchlists": {
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "name": {"type": "keyword"},
+                        "short_name": {"type": "keyword"},
+                        "entered_at": {"type": "date"},
+                        "exited_at": {"type": "date"},
+                        "active": {"type": "boolean"},
+                    },
+                    "type": "nested",
+                },
             },
         )
 
@@ -209,6 +231,17 @@ class TestIndexSchema(TestIndexBase):
                         "username": {"type": "keyword"},
                     },
                 },
+                "watchlists": {
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "name": {"type": "keyword"},
+                        "short_name": {"type": "keyword"},
+                        "entered_at": {"type": "date"},
+                        "exited_at": {"type": "date"},
+                        "active": {"type": "boolean"},
+                    },
+                    "type": "nested",
+                },
             },
         )
 
@@ -266,6 +299,17 @@ class TestIndexSchema(TestIndexBase):
                 "created_by": {"type": "keyword"},
                 "created_at": {"type": "date"},
                 "updated_at": {"type": "date"},
+                "watchlists": {
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "name": {"type": "keyword"},
+                        "short_name": {"type": "keyword"},
+                        "entered_at": {"type": "date"},
+                        "exited_at": {"type": "date"},
+                        "active": {"type": "boolean"},
+                    },
+                    "type": "nested",
+                },
             },
         )
 
@@ -343,6 +387,17 @@ class TestIndexSchema(TestIndexBase):
                         "updated_at": {"type": "date"},
                     },
                 },
+                "watchlists": {
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "name": {"type": "keyword"},
+                        "short_name": {"type": "keyword"},
+                        "entered_at": {"type": "date"},
+                        "exited_at": {"type": "date"},
+                        "active": {"type": "boolean"},
+                    },
+                    "type": "nested",
+                },
             },
         )
 
@@ -377,6 +432,17 @@ class TestIndexSchema(TestIndexBase):
                         "updated_by": {"type": "keyword"},
                         "updated_at": {"type": "date"},
                     },
+                },
+                "watchlists": {
+                    "properties": {
+                        "id": {"type": "keyword"},
+                        "name": {"type": "keyword"},
+                        "short_name": {"type": "keyword"},
+                        "entered_at": {"type": "date"},
+                        "exited_at": {"type": "date"},
+                        "active": {"type": "boolean"},
+                    },
+                    "type": "nested",
                 },
             },
         )

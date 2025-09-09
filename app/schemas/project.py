@@ -10,6 +10,7 @@ from schemas.addition import AdditionsBatchParams
 from schemas.category import CategorySummary
 from schemas.group import GroupSummary
 from schemas.user import UserSummary
+from schemas.watchlist import WatchlistSummary
 
 
 # --------------------
@@ -77,6 +78,8 @@ class ProjectHit(IndexerModel):
     users: List[UserSummary]
 
     status_log: List[ProjectStatusLog]
+
+    watchlists: List[WatchlistSummary] = []
 
 
 class Project(ProjectHit):
