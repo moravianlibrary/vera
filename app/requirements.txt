@@ -24,3 +24,4 @@ scipy
 sqlalchemy
 typing-extensions
 uvicorn
+weasyprint

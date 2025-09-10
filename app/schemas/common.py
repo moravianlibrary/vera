@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Generic, List, TypeVar
 
 from pydantic import BaseModel, Field
@@ -21,6 +22,10 @@ class PageParams(BaseModel):
 
 class FilterParams(BaseModel):
     created_by: List[str] = []
+
+
+class UserIdFilterParams(BaseModel):
+    user_id: str
 
 
 # --------------------
@@ -53,3 +58,13 @@ Item = TypeVar("Item", bound=BaseModel)
 class Page(BaseModel, Generic[Item]):
     items: List[Item]
     num_found: int
+
+
+class Notification(BaseModel):
+    id: int
+    created_at: datetime
+    read_at: datetime | None
+
+
+class Count(BaseModel):
+    count: int

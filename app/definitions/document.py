@@ -1,7 +1,8 @@
 from enum import Enum
 from typing import Literal
 
-DEFAULT_EXPORT_FIELDS = []
+from pydantic import Field
+
 DEFAULT_EXPORT_FILENAME = "vera-documents"
 
 
@@ -12,7 +13,20 @@ class ExportFormat(str, Enum):
     pdf = "pdf"
 
 
+EXPORT_MEDIA_TYPE = {
+    ExportFormat.xlsx: (
+        "application/vnd."
+        "openxmlformats-officedocument."
+        "spreadsheetml."
+        "sheet"
+    ),
+    ExportFormat.csv: "text/csv",
+    ExportFormat.txt: "text/plain",
+    ExportFormat.pdf: "application/pdf",
+}
+
 Priority = Literal[1, 2, 3, 4, 5]
+PriorityField = Field(3, ge=1, le=5)
 
 
 class DocumentStatus(str, Enum):

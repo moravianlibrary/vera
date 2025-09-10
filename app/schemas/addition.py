@@ -83,7 +83,13 @@ class AdditionProposal(IndexerNestedModel):
     justification: text | None = None
 
 
-class AdditionHit(IndexerModel):
+class Addition(IndexerModel):
+    class ESConfig:
+        index = "additions"
+        id_field = "id"
+
+    id: long
+
     batch_id: long
     batch_name: text | None = None
     file_name: text | None = None
@@ -105,14 +111,6 @@ class AdditionHit(IndexerModel):
     proposal: AdditionProposal | None = None
 
     watchlists: List[WatchlistSummary] = []
-
-
-class Addition(AdditionHit):
-    class ESConfig:
-        index = "additions"
-        id_field = "id"
-
-    id: long
 
 
 # -------------

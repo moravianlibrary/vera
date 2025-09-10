@@ -125,7 +125,12 @@ def AssociationTable(
     )
 
 
-def contains(target: str, back_populates: str, lazy: str = "selectin") -> Any:
+def contains(
+    target: str,
+    back_populates: str,
+    lazy: str = "selectin",
+    order_by: Any | None = None,
+) -> Any:
     """
     One-to-many relationship where the parent contains the children.
     Children are deleted if orphaned.
@@ -136,6 +141,7 @@ def contains(target: str, back_populates: str, lazy: str = "selectin") -> Any:
         lazy=lazy,
         cascade="all, delete-orphan",
         uselist=True,
+        order_by=order_by,
     )
 
 
@@ -170,7 +176,12 @@ def has_one(target: str, back_populates: str, lazy: str = "select") -> Any:
     )
 
 
-def has_many(target: str, back_populates: str, lazy: str = "selectin") -> Any:
+def has_many(
+    target: str,
+    back_populates: str,
+    lazy: str = "selectin",
+    order_by: Any | None = None,
+) -> Any:
     """
     One-to-many relationship where this entity has many of another.
     """
@@ -179,6 +190,7 @@ def has_many(target: str, back_populates: str, lazy: str = "selectin") -> Any:
         back_populates=back_populates,
         lazy=lazy,
         uselist=True,
+        order_by=order_by,
     )
 
 
@@ -187,6 +199,7 @@ def connected_with(
     secondary: Any,
     back_populates: str,
     lazy: str = "selectin",
+    order_by: Any | None = None,
 ) -> Any:
     """
     Many-to-many relationship using an association table.
@@ -197,6 +210,7 @@ def connected_with(
         back_populates=back_populates,
         lazy=lazy,
         uselist=True,
+        order_by=order_by,
     )
 
 

@@ -2,9 +2,11 @@ from datetime import datetime
 from typing import List
 
 from adapters.indexer import IndexerQuery
+from config import config
 from definitions.watchlist import WatchlistTarget
 from repositories.models.watchlist import (
     WatchlistModel,
+    WatchlistNotificationModel,
     WatchlistSubscriptionModel,
 )
 from schemas.watchlist import (
@@ -17,6 +19,7 @@ from ._db_repository import (
     DbRepository,
     EnforceNameUniquenessMixin,
     GetByIdMixin,
+    NotificationOperationsMixin,
     PaginationMixin,
 )
 
@@ -30,20 +33,19 @@ class WatchlistRepository(
     _entity_name = "Watchlist"
     _db_model = WatchlistModel
 
-    def create(
+    async def create(
         self,
         params: WatchlistPropertiesParams,
         target: WatchlistTarget,
         query: IndexerQuery,
     ) -> WatchlistModel:
         self.enforce_name_uniqueness(params.name)
-        # TODO: enforce short name uniqueness
         return self.save(
             WatchlistModel(
                 name=params.name,
-                short_name=params.short_name,
+                description=params.description,
                 target=target,
-                query=query,
+                query=query.model_dump(mode="json") if query else None,
             )
         )
 
@@ -51,7 +53,7 @@ class WatchlistRepository(
         self, watchlist: WatchlistModel, properties: WatchlistProperties
     ) -> WatchlistModel:
         watchlist.name = properties.name
-        watchlist.short_name = properties.short_name
+        watchlist.description = properties.description
         return self.save(watchlist)
 
     def _find_subscription(
@@ -144,3 +146,13 @@ class WatchlistRepository(
     # ) -> None:
     #     notification.last_read_at = notification.last_sent_at = datetime.now()
     #     self._database_session.commit()
+
+
+class WatchlistNotificationRepository(
+    DbRepository[WatchlistNotificationModel],
+    GetByIdMixin[WatchlistNotificationModel, int],
+    PaginationMixin[WatchlistNotificationModel],
+    NotificationOperationsMixin[WatchlistNotificationModel, int],
+):
+    _entity_name = "Watchlist Notification"
+    _db_model = WatchlistNotificationModel

@@ -24,7 +24,9 @@ from definitions.task import (
     TaskState,
     TaskType,
 )
-from repositories.models.mixins.created_audit import CreatedAuditMixin
+
+from .mixins.created_audit import CreatedAuditMixin
+from .mixins.notification import NotificationMixin
 
 if TYPE_CHECKING:
     from .addition import AdditionModel
@@ -33,6 +35,7 @@ if TYPE_CHECKING:
     from .digitization_list import DigitizationListModel
     from .document import DocumentIterationModel, DocumentModel
     from .proposal import ProposalModel
+    from .user import UserModel
 
 
 class TaskModel(BaseModel, CreatedAuditMixin):
@@ -62,6 +65,9 @@ class TaskModel(BaseModel, CreatedAuditMixin):
 
     task_schedule: Mapped["TaskScheduleModel"] = has_one(
         "TaskScheduleModel", "tasks"
+    )
+    notifications: Mapped[List["TaskNotificationModel"]] = contains(
+        "TaskNotificationModel", "task", "selectin"
     )
 
     additions: Mapped[List["TaskAdditionModel"]] = contains(
@@ -252,3 +258,14 @@ class TaskScheduleModel(BaseModel, CreatedAuditMixin):
 
 
 TaskOrScheduleModel = TaskModel | TaskScheduleModel
+
+
+class TaskNotificationModel(BaseModel, NotificationMixin):
+    __tablename__ = "task_notifications"
+
+    task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
+    previous_state = Column(Enum(TaskState), nullable=False)
+    new_state = Column(Enum(TaskState), nullable=False)
+
+    task: Mapped["TaskModel"] = belongs_to("TaskModel", "notifications")
+    user: Mapped["UserModel"] = belongs_to("UserModel", "task_notifications")

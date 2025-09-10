@@ -42,29 +42,12 @@ class DocumentRepository(
 
         return self.save(document_model)
 
-    def update_page_count(
+    def update_manual_page_count(
         self,
         document_model: DocumentModel,
-        source: str,
         page_count: Optional[int],
-        top_priority: bool,
     ) -> DocumentModel:
-        document_model.page_count_sources[source] = page_count
-
-        if top_priority:
-            document_model.page_count = page_count
-
-        return self.save(document_model)
-
-    def use_page_count_source(
-        self, document_model: DocumentModel, source: str
-    ) -> DocumentModel:
-        if source not in document_model.page_count_sources:
-            raise ValueError(
-                f"Source '{source}' not found in page count sources."
-            )
-
-        document_model.page_count = document_model.page_count_sources[source]
+        document_model.page_count_manual = page_count
         return self.save(document_model)
 
     def update_property(

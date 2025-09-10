@@ -12,5 +12,4 @@ class WatchlistTarget(str, Enum):
 
 class WatchlistEvent(str, Enum):
     Entered = "Entered"
-    Changed = "Changed"
     Exited = "Exited"

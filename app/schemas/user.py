@@ -1,12 +1,9 @@
-from typing import TYPE_CHECKING, List
+from typing import List
 
 from pydantic import BaseModel
 
 from adapters.indexer import IndexerNestedModel
 from schemas.common import PageParams
-
-if TYPE_CHECKING:
-    from schemas.watchlist import WatchlistNotification
 
 
 # --------------------
@@ -30,10 +27,6 @@ class UserSettings(BaseModel):
 class UserAssignment(BaseModel):
     user_id: str
     group_ids: List[int]
-
-
-class UserNotifications(BaseModel):
-    watchlist: List["WatchlistNotification"]
 
 
 class UserOverview(BaseModel):

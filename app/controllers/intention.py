@@ -18,7 +18,7 @@ router = APIRouter(prefix="/intentions", tags=["Intentions"])
 @router.post(
     "/search",
     dependencies=[WithPermission(GeneralPermission.ReadIntentions)],
-    response_model=IndexerResponse[IntentionHit],
+    response_model=IndexerResponse,
 )
 async def search(
     request: IndexerRequest,

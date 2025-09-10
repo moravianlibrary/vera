@@ -3,6 +3,7 @@ from repositories.models.addition import AdditionBatchModel, AdditionModel
 from repositories.models.category import CategoryModel
 from repositories.models.task import TaskModel
 from repositories.models.user import UserModel
+from repositories.models.watchlist import WatchlistModel
 from schemas.addition import Addition
 from tests.integration.case import (
     EntitySeed,
@@ -109,14 +110,11 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "batch_name": "Batch 1",
                                 "category_id": 1,
                                 "created_by": "id-1",
-                                "eligibility_status": None,
                                 "file_name": "batch_1.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-1",
                                 "ignore_digitization_check": False,
                                 "priority": 2,
-                                "project": None,
-                                "proposal": None,
                                 "status": "NotEligibleForAddition",
                                 "watchlists": [],
                             },
@@ -131,14 +129,11 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "batch_name": "Batch 1",
                                 "category_id": 1,
                                 "created_by": "id-1",
-                                "eligibility_status": None,
                                 "file_name": "batch_1.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-2",
                                 "ignore_digitization_check": False,
                                 "priority": 3,
-                                "project": None,
-                                "proposal": None,
                                 "status": "Completed",
                                 "watchlists": [],
                             },
@@ -153,14 +148,11 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "batch_name": "Batch 1",
                                 "category_id": 1,
                                 "created_by": "id-1",
-                                "eligibility_status": None,
                                 "file_name": "batch_1.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-3",
                                 "ignore_digitization_check": True,
                                 "priority": 4,
-                                "project": None,
-                                "proposal": None,
                                 "status": "Enqueued",
                                 "watchlists": [],
                             },
@@ -175,14 +167,11 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "batch_name": "Batch 1",
                                 "category_id": 1,
                                 "created_by": "id-1",
-                                "eligibility_status": None,
                                 "file_name": "batch_1.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-4",
                                 "ignore_digitization_check": False,
                                 "priority": 5,
-                                "project": None,
-                                "proposal": None,
                                 "status": "NotEligibleForAddition",
                                 "watchlists": [],
                             },
@@ -197,14 +186,11 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "batch_name": "Batch 2",
                                 "category_id": 1,
                                 "created_by": "superuser",
-                                "eligibility_status": None,
                                 "file_name": "batch_2.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-5",
                                 "ignore_digitization_check": False,
                                 "priority": 1,
-                                "project": None,
-                                "proposal": None,
                                 "status": "Completed",
                                 "watchlists": [],
                             },
@@ -219,14 +205,11 @@ class TestIntegrationAdditions(TestIntegrationCase):
                                 "batch_name": "Batch 2",
                                 "category_id": 1,
                                 "created_by": "superuser",
-                                "eligibility_status": None,
                                 "file_name": "batch_2.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-6",
                                 "ignore_digitization_check": True,
                                 "priority": 2,
-                                "project": None,
-                                "proposal": None,
                                 "status": "Enqueued",
                                 "watchlists": [],
                             },
@@ -423,4 +406,32 @@ class TestIntegrationAdditions(TestIntegrationCase):
         )
         self.assertEntityProperties(
             TaskModel, 1, {"query": {"query": {"term": {"_id": "4"}}}}
+        )
+
+    async def test_create_watchlist(self):
+        self.assertResponse(
+            await self.client.post(
+                "/additions/watchlist",
+                json={"query": {"match_all": {}}},
+                params={"name": "Additions"},
+            ),
+            200,
+            {
+                "id": 1,
+                "name": "Additions",
+                "description": None,
+                "query": {"query": {"match_all": {}}},
+                "subscriptions": [],
+                "target": "Additions",
+            },
+        )
+        self.assertEntityProperties(
+            WatchlistModel,
+            1,
+            {
+                "name": "Additions",
+                "description": None,
+                "target": "Additions",
+                "query": {"query": {"match_all": {}}},
+            },
         )

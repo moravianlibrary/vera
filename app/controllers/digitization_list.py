@@ -29,7 +29,7 @@ router = APIRouter(prefix="/digitization-lists", tags=["Digitization lists"])
 @router.post(
     "/search",
     dependencies=[WithPermission(GeneralPermission.ReadDigitizationLists)],
-    response_model=IndexerResponse[DigitizationListHit],
+    response_model=IndexerResponse,
 )
 async def search(
     request: IndexerRequest,

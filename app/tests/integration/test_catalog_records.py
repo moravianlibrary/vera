@@ -4,6 +4,7 @@ from repositories.models.catalog_record import (
     CatalogRecordStatusLogModel,
 )
 from repositories.models.task import TaskModel
+from repositories.models.watchlist import WatchlistModel
 from schemas.catalog_record import CatalogRecord
 from tests.integration.case import (
     EntitySeed,
@@ -114,8 +115,6 @@ class TestIntegrationCatalogRecords(TestIntegrationCase):
                                 "base": "MZK01",
                                 "system_number": "1",
                                 "material_type": "Book",
-                                "title": None,
-                                "subtitle": None,
                                 "identifiers": [],
                                 "force_valid": False,
                                 "is_valid": False,
@@ -133,8 +132,6 @@ class TestIntegrationCatalogRecords(TestIntegrationCase):
                                 "base": "MZK01",
                                 "system_number": "2",
                                 "material_type": "Book",
-                                "title": None,
-                                "subtitle": None,
                                 "identifiers": [],
                                 "force_valid": True,
                                 "is_valid": True,
@@ -156,8 +153,6 @@ class TestIntegrationCatalogRecords(TestIntegrationCase):
                                 "base": "MZK01",
                                 "system_number": "3",
                                 "material_type": "Book",
-                                "title": None,
-                                "subtitle": None,
                                 "identifiers": [],
                                 "force_valid": False,
                                 "is_valid": False,
@@ -179,8 +174,6 @@ class TestIntegrationCatalogRecords(TestIntegrationCase):
                                 "base": "MZK01",
                                 "system_number": "4",
                                 "material_type": "Book",
-                                "title": None,
-                                "subtitle": None,
                                 "identifiers": [],
                                 "force_valid": False,
                                 "is_valid": False,
@@ -640,4 +633,35 @@ class TestIntegrationCatalogRecords(TestIntegrationCase):
         )
         self.assertEntityProperties(
             TaskModel, 1, {"query": {"query": {"match_all": {}}}, "data": None}
+        )
+
+    async def test_create_watchlist(self):
+        self.assertResponse(
+            await self.client.post(
+                "/catalog-records/watchlist",
+                json={"query": {"match": {"material_type": "Book"}}},
+                params={
+                    "name": "In Review",
+                    "description": "All books currently in review",
+                },
+            ),
+            200,
+            {
+                "id": 1,
+                "name": "In Review",
+                "description": "All books currently in review",
+                "query": {"query": {"match": {"material_type": "Book"}}},
+                "subscriptions": [],
+                "target": "CatalogRecords",
+            },
+        )
+        self.assertEntityProperties(
+            WatchlistModel,
+            1,
+            {
+                "name": "In Review",
+                "description": "All books currently in review",
+                "target": "CatalogRecords",
+                "query": {"query": {"match": {"material_type": "Book"}}},
+            },
         )

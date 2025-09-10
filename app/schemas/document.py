@@ -3,7 +3,7 @@ from typing import Any, List
 
 from esorm.fields import boolean, integer, keyword, long, text
 from marcdantic import MarcIssue
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, model_validator
 from vera_plugins.definitions.plugin_types import PluginType
 from vera_plugins.schemas import (
     DocumentCanBeExtractedConfig,
@@ -20,10 +20,10 @@ from definitions.digitization_registry import (
     DigitizationState,
 )
 from definitions.document import (
-    DEFAULT_EXPORT_FIELDS,
     DEFAULT_EXPORT_FILENAME,
     DocumentStatus,
     ExportFormat,
+    Priority,
 )
 from repositories.models.document import (
     DocumentIterationModel,
@@ -57,13 +57,12 @@ class DocumentsSyncParams(BaseModel):
 
 
 class DocumentExportParams(BaseModel):
-    fields: List[str] = Field(DEFAULT_EXPORT_FIELDS, alias="field")
     filename: str = DEFAULT_EXPORT_FILENAME
     export_format: ExportFormat = ExportFormat.xlsx
 
 
 class DocumentGenerateListParams(BaseModel):
-    use_distribution: bool
+    use_distribution: bool = True
     target_page_count: int
     target_document_count: int | None = None
 
@@ -82,13 +81,7 @@ class DocumentAdditionalProperties(AdditionalProperties):
     pass
 
 
-class Document(IndexerModel):
-    class ESConfig:
-        index = "documents"
-        id_field = "id"
-
-    id: long
-
+class DocumentHit(IndexerModel):
     catalog_record_id: text
     catalog_record_valid: boolean
 
@@ -123,6 +116,13 @@ class Document(IndexerModel):
     updated_at: datetime
 
     watchlists: List[WatchlistSummary] = []
+
+
+class Document(DocumentHit):
+    class ESConfig:
+        index = "documents"
+
+    id: long
 
     @model_validator(mode="before")
     @classmethod
@@ -212,6 +212,12 @@ class Document(IndexerModel):
 # -----------------
 # - API Responses -
 # -----------------
+class UpdatePageCountResponse(BaseModel):
+    document_id: int
+    new_page_count: int | None = None
+    iterations_updated: int
+
+
 class DocumentDigitizationRecordDetails(BaseModel):
     registry_record_id: str
     record_state: List[DigitizationRecordState]
@@ -352,3 +358,18 @@ class DocumentDetails(BaseModel):
             "can_be_extracted_sources": can_be_extracted_sources,
             "additional_details": additional_details,
         }
+
+
+# -------------
+# - Task Data -
+# -------------
+class SetDocumentsCategoryTaskData(BaseModel):
+    category_id: int
+
+
+class SetDocumentsPriorityTaskData(BaseModel):
+    priority: Priority
+
+
+class SetDigitizationDecisionTaskData(BaseModel):
+    decline: bool

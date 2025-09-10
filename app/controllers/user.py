@@ -1,19 +1,16 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Path, Query
 
 from adapters.identity_provider import IdentityProvider
+from definitions.notification import NotificationType
 from definitions.permission import GeneralPermission
 from repositories.user import UserRepository
 from schemas.authenticated_user import AuthenticatedUser
-from schemas.common import Page, PageParams
+from schemas.common import Count, Page, PageParams
+from schemas.notification import Notification, NotificationsSummary
 from schemas.role import Permissions
-from schemas.user import (
-    FilteredPageParams,
-    UserNotifications,
-    UserOverview,
-    UserSettings,
-)
+from schemas.user import FilteredPageParams, UserOverview, UserSettings
 from services.user import UserService
 
 from .resources import (
@@ -53,13 +50,53 @@ def save_user_settings(
     ).settings
 
 
-@router.get("/me/notifications", response_model=UserNotifications)
-def list_notifications(
+@router.get("/me/notifications/summary", response_model=NotificationsSummary)
+def get_notification_counts(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    repository: UserRepository = DependsOnUserRepository,
     service: UserService = DependsOnUserService,
 ):
-    return service.read_notifications(repository.get_by_id(user.id))
+    return service.get_notifications_summary(user.id)
+
+
+@router.get(
+    "/me/notifications/{notification_type}", response_model=Page[Notification]
+)
+def paginate_notifications(
+    notification_type: Annotated[NotificationType, Path()],
+    page_params: Annotated[PageParams, Query()],
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: UserService = DependsOnUserService,
+):
+    return service.paginate_notifications(
+        user.id, notification_type, page_params
+    )
+
+
+@router.get(
+    "/me/notifications/{notification_type}/{notification_id}/mark-as-read",
+    response_model=Notification,
+)
+def mark_notification_as_read(
+    notification_type: Annotated[NotificationType, Path()],
+    notification_id: Annotated[int, Path()],
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: UserService = DependsOnUserService,
+):
+    return service.mark_notification_as_read(
+        user.id, notification_type, notification_id
+    )
+
+
+@router.get(
+    "/me/notifications/{notification_type}/mark-all-as-read",
+    response_model=Count,
+)
+def mark_all_notifications_as_read(
+    notification_type: Annotated[NotificationType, Path()],
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: UserService = DependsOnUserService,
+):
+    return service.mark_all_notifications_as_read(user.id, notification_type)
 
 
 @router.post(

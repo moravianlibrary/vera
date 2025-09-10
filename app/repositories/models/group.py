@@ -25,7 +25,10 @@ class GroupModel(BaseModel):
     description = Column(String)
 
     users: Mapped[List["UserModel"]] = connected_with(
-        "UserModel", group_user_association, "groups"
+        "UserModel",
+        group_user_association,
+        "groups",
+        order_by="UserModel.username",
     )
 
     categories: Mapped[List["CategoryModel"]] = connected_with(

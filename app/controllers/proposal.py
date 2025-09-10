@@ -37,7 +37,7 @@ router = APIRouter(prefix="/proposals", tags=["Proposals"])
 @router.post(
     "/search",
     dependencies=[WithPermission(OwnershipPermission.ReadProposals)],
-    response_model=IndexerResponse[ProposalHit],
+    response_model=IndexerResponse,
 )
 async def search(
     request: IndexerRequest = RestrictedSearch(

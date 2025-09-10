@@ -9,7 +9,6 @@ from repositories import AdditionRepository
 from repositories.watchlist import WatchlistRepository
 from schemas.addition import (
     AdditionCreate,
-    AdditionHit,
     AdditionsSettingsParams,
     IngestAdditionsParams,
     IngestAdditionsResponse,
@@ -37,7 +36,7 @@ router = APIRouter(prefix="/additions", tags=["Additions"])
 @router.post(
     "/search",
     dependencies=[WithPermission(OwnershipPermission.ReadAdditions)],
-    response_model=IndexerResponse[AdditionHit],
+    response_model=IndexerResponse,
 )
 async def search(
     query: IndexerRequest = RestrictedSearch(

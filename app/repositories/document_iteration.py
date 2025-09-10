@@ -1,7 +1,11 @@
 from definitions.document import Priority
 from schemas.document import Document
 
-from ._db_indexed_repository import DbIndexedRepository, GetByQueryMixin
+from ._db_indexed_repository import (
+    DbIndexedRepository,
+    GetByQueryMixin,
+    SearchAllMixin,
+)
 from ._db_repository import GetByIdMixin
 from .models.document import DocumentIterationModel
 
@@ -10,6 +14,7 @@ class DocumentIterationRepository(
     DbIndexedRepository[DocumentIterationModel, Document],
     GetByIdMixin[DocumentIterationModel, int],
     GetByQueryMixin[DocumentIterationModel, Document],
+    SearchAllMixin[DocumentIterationModel, Document],
 ):
     _entity_name = "DocumentIteration"
     _db_model = DocumentIterationModel

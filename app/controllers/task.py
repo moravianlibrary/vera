@@ -38,7 +38,7 @@ router = APIRouter(prefix="/tasks", tags=["Tasks"])
 @router.post(
     "/search",
     dependencies=[WithPermission(OwnershipPermission.ReadTasks)],
-    response_model=IndexerResponse[Task],
+    response_model=IndexerResponse,
 )
 def search_tasks(
     request: IndexerRequest = RestrictedSearch(OwnershipPermission.ReadTasks),
@@ -131,7 +131,7 @@ def delete_tasks(
             OwnershipPermission.ReadTasks, GeneralPermission.ScheduleTasks
         )
     ],
-    response_model=IndexerResponse[TaskSchedule],
+    response_model=IndexerResponse,
 )
 def search_task_schedules(
     request: IndexerRequest = RestrictedSearch(OwnershipPermission.ReadTasks),

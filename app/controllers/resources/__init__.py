@@ -17,6 +17,7 @@ from repositories import (
 )
 from repositories.addition import AdditionBatchRepository
 from repositories.catalog_record import CatalogRecordRepository
+from repositories.document_iteration import DocumentIterationRepository
 from repositories.plugin import PluginInstanceRepository, PluginRepository
 from repositories.project import ProjectRepository
 from repositories.proposal import ProposalBatchRepository
@@ -27,10 +28,14 @@ from repositories.system import (
 )
 from repositories.task import (
     TaskItemRepository,
+    TaskNotificationRepository,
     TaskRepository,
     TaskScheduleRepository,
 )
-from repositories.watchlist import WatchlistRepository
+from repositories.watchlist import (
+    WatchlistNotificationRepository,
+    WatchlistRepository,
+)
 from schemas.task import TaskScheduleParams
 from services import (
     AdditionService,
@@ -72,6 +77,9 @@ DependsOnCategoryRepository = provide_repository(CategoryRepository)
 DependsOnDigiListRepository = provide_repository(DigiListRepository)
 DependsOnDistributionRepository = provide_repository(DistributionRepository)
 DependsOnDocumentRepository = provide_repository(DocumentRepository)
+DependsOnDocumentIterationRepository = provide_repository(
+    DocumentIterationRepository
+)
 DependsOnGroupRepository = provide_repository(GroupRepository)
 DependsOnIntentionRepository = provide_repository(IntentionRepository)
 DependsOnPluginRepository = provide_repository(PluginRepository)
@@ -90,8 +98,14 @@ DependsOnSystemStatusRepository = provide_repository(SystemStatusRepository)
 DependsOnTaskRepository = provide_repository(TaskRepository)
 DependsOnTaskItemRepository = provide_repository(TaskItemRepository)
 DependsOnTaskScheduleRepository = provide_repository(TaskScheduleRepository)
+DependsOnTaskNotificationRepository = provide_repository(
+    TaskNotificationRepository
+)
 DependsOnUserRepository = provide_repository(UserRepository)
 DependsOnWatchlistRepository = provide_repository(WatchlistRepository)
+DependsOnWatchlistNotificationRepository = provide_repository(
+    WatchlistNotificationRepository
+)
 
 DependsOnAdditionService = provide_service(
     AdditionService,
@@ -129,6 +143,10 @@ DependsOnDigiListService = provide_service(
 DependsOnDocumentService = provide_service(
     DocumentService,
     DependsOnDocumentRepository,
+    DependsOnDocumentIterationRepository,
+    DependsOnCategoryRepository,
+    DependsOnTaskRepository,
+    DependsOnTaskScheduleRepository,
 )
 DependsOnGroupService = provide_service(
     GroupService,
@@ -168,13 +186,9 @@ DependsOnTaskScheduleService = provide_service(
 )
 DependsOnUserService = provide_service(
     UserService,
-    DependsOnAdditionRepository,
-    DependsOnCatalogRecordRepository,
-    DependsOnCategoryRepository,
-    DependsOnDocumentRepository,
-    DependsOnProjectRepository,
-    DependsOnProposalRepository,
-    DependsOnWatchlistRepository,
+    DependsOnUserRepository,
+    DependsOnTaskNotificationRepository,
+    DependsOnWatchlistNotificationRepository,
 )
 DependsOnWatchlistService = provide_service(
     WatchlistService,

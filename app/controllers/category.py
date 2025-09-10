@@ -41,7 +41,7 @@ router = APIRouter(prefix="/categories", tags=["Categories"])
 @router.post(
     "/search",
     dependencies=[WithPermission(OwnershipPermission.ReadCategories)],
-    response_model=IndexerResponse[CategoryHit],
+    response_model=IndexerResponse,
 )
 async def search(
     query: IndexerRequest = RestrictedSearch(

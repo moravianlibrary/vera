@@ -11,6 +11,7 @@ from adapters.indexer import (
     IndexerQuery,
 )
 from definitions.task import ScopedTaskType, TaskScope, TaskState, TaskType
+from schemas.common import Notification
 
 InputStringField = Field(None, min_length=1, max_length=256)
 
@@ -41,6 +42,22 @@ class TaskItem(BaseModel):
 
     processed: bool
     error_message: str | None
+
+
+class TaskNotificationSummary(BaseModel):
+    id: int
+    task_type: ScopedTaskType
+    name: str
+    created_at: datetime
+    started_at: datetime | None
+    finished_at: datetime | None
+    result: List["TaskResult"] | None
+
+
+class TaskNotification(Notification):
+    previous_state: TaskState
+    new_state: TaskState
+    task: TaskNotificationSummary
 
 
 # --------------------

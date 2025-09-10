@@ -13,8 +13,13 @@ from definitions.task import (
 from schemas.task import Task, TaskSchedule
 
 from ._db_indexed_repository import DbIndexedRepository
-from ._db_repository import DbRepository, GetByIdMixin, PaginationMixin
-from .models.task import TaskModel, TaskScheduleModel
+from ._db_repository import (
+    DbRepository,
+    GetByIdMixin,
+    NotificationOperationsMixin,
+    PaginationMixin,
+)
+from .models.task import TaskModel, TaskNotificationModel, TaskScheduleModel
 
 
 class TaskRepository(
@@ -112,3 +117,13 @@ class TaskScheduleRepository(
     ) -> TaskScheduleModel:
         task_schedule.query = query.model_dump() if query else None
         return await self.save(task_schedule)
+
+
+class TaskNotificationRepository(
+    DbRepository[TaskNotificationModel],
+    GetByIdMixin[TaskNotificationModel, int],
+    PaginationMixin[TaskNotificationModel],
+    NotificationOperationsMixin[TaskNotificationModel, int],
+):
+    _entity_name = "Task Notification"
+    _db_model = TaskNotificationModel

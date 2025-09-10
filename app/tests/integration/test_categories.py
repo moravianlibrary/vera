@@ -10,6 +10,7 @@ from repositories.models.group import GroupModel
 from repositories.models.plugin import PluginInstanceModel, PluginModel
 from repositories.models.task import TaskModel
 from repositories.models.user import UserModel
+from repositories.models.watchlist import WatchlistModel
 from schemas.category import Category
 from tests.integration.case import (
     AssociationSeed,
@@ -197,15 +198,12 @@ class TestIntegrationCategories(TestIntegrationCase):
                 "_source": {
                     "name": "Category Level 1 - A",
                     "description": "Top level category A",
-                    "parent_id": None,
                     "level": 1,
                     "path": [{"id": 1, "name": "Category Level 1 - A"}],
                     "assignable": False,
                     "extract_whole": False,
                     "disabled": False,
                     "archived": False,
-                    "document_discovery_id": None,
-                    "document_discovery_schedule_id": None,
                     "proportions": [],
                     "count_total_documents": 0,
                     "count_total_pages": 0,
@@ -227,15 +225,12 @@ class TestIntegrationCategories(TestIntegrationCase):
                 "_source": {
                     "name": "Category Level 1 - B",
                     "description": "Top level category B",
-                    "parent_id": None,
                     "level": 1,
                     "path": [{"id": 2, "name": "Category Level 1 - B"}],
                     "assignable": False,
                     "extract_whole": False,
                     "disabled": False,
                     "archived": False,
-                    "document_discovery_id": None,
-                    "document_discovery_schedule_id": None,
                     "proportions": [],
                     "count_total_documents": 0,
                     "count_total_pages": 0,
@@ -267,8 +262,6 @@ class TestIntegrationCategories(TestIntegrationCase):
                     "extract_whole": False,
                     "disabled": False,
                     "archived": False,
-                    "document_discovery_id": None,
-                    "document_discovery_schedule_id": None,
                     "proportions": [],
                     "count_total_documents": 0,
                     "count_total_pages": 0,
@@ -310,8 +303,6 @@ class TestIntegrationCategories(TestIntegrationCase):
                     "extract_whole": False,
                     "disabled": False,
                     "archived": False,
-                    "document_discovery_id": None,
-                    "document_discovery_schedule_id": None,
                     "proportions": [],
                     "count_total_documents": 0,
                     "count_total_pages": 0,
@@ -350,8 +341,6 @@ class TestIntegrationCategories(TestIntegrationCase):
                     "extract_whole": True,
                     "disabled": False,
                     "archived": False,
-                    "document_discovery_id": None,
-                    "document_discovery_schedule_id": None,
                     "proportions": [],
                     "count_total_documents": 0,
                     "count_total_pages": 0,
@@ -384,8 +373,6 @@ class TestIntegrationCategories(TestIntegrationCase):
                     "extract_whole": True,
                     "disabled": False,
                     "archived": False,
-                    "document_discovery_id": None,
-                    "document_discovery_schedule_id": None,
                     "proportions": [],
                     "count_total_documents": 0,
                     "count_total_pages": 0,
@@ -424,8 +411,6 @@ class TestIntegrationCategories(TestIntegrationCase):
                     "extract_whole": False,
                     "disabled": False,
                     "archived": False,
-                    "document_discovery_id": None,
-                    "document_discovery_schedule_id": None,
                     "proportions": [],
                     "count_total_documents": 0,
                     "count_total_pages": 0,
@@ -464,7 +449,6 @@ class TestIntegrationCategories(TestIntegrationCase):
                     "disabled": False,
                     "archived": False,
                     "document_discovery_id": 1,
-                    "document_discovery_schedule_id": None,
                     "proportions": [],
                     "count_total_documents": 0,
                     "count_total_pages": 0,
@@ -1257,4 +1241,32 @@ class TestIntegrationCategoryDistributions(TestIntegrationCase):
             await self.client.delete("/categories/distributions/2"),
             400,
             {"detail": "Cannot delete an active distribution."},
+        )
+
+    async def test_create_watchlist(self):
+        self.assertResponse(
+            await self.client.post(
+                "/categories/watchlist",
+                json={"query": {"match": {"parent": 1}}},
+                params={"name": "My watchlist"},
+            ),
+            200,
+            {
+                "id": 1,
+                "name": "My watchlist",
+                "description": None,
+                "query": {"query": {"match": {"parent": 1}}},
+                "subscriptions": [],
+                "target": "Categories",
+            },
+        )
+        self.assertEntityProperties(
+            WatchlistModel,
+            1,
+            {
+                "name": "My watchlist",
+                "description": None,
+                "target": "Categories",
+                "query": {"query": {"match": {"parent": 1}}},
+            },
         )

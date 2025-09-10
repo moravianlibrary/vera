@@ -8,13 +8,14 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
-    func,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped
 
 from adapters.database import BaseModel, belongs_to, contains, has_one
 from definitions.watchlist import WatchlistEvent, WatchlistTarget
+from repositories.models.mixins.notification import NotificationMixin
 
 from .mixins.created_audit import CreatedTimestampMixin
 from .mixins.watchlist_item import WatchlistItemMixin
@@ -145,23 +146,46 @@ class WatchlistProposalModel(BaseModel, WatchlistItemMixin):
 class WatchlistSubscriptionModel(BaseModel):
     __tablename__ = "watchlist_subscriptions"
 
-    watchlist_id = Column(
-        Integer, ForeignKey("watchlists.id"), primary_key=True
-    )
-    user_id = Column(String, ForeignKey("users.id"), primary_key=True)
-    event = Column(Enum(WatchlistEvent), nullable=False)
+    id = Column(Integer, primary_key=True)
 
-    # Notification settings
+    watchlist_id = Column(Integer, ForeignKey("watchlists.id"), index=True)
+    user_id = Column(String, ForeignKey("users.id"), index=True)
+
+    # Email notifications settings
     read_resets_sent = Column(Boolean, nullable=False, default=False)
     cron_expression = Column(String, nullable=True)
     include_report = Column(Boolean, nullable=False, default=True)
     return_fields = Column(JSONB, nullable=True)
 
-    # Timestamps for tracking
-    last_read_at = Column(TIMESTAMP, nullable=False, default=func.now())
-    last_sent_at = Column(TIMESTAMP, nullable=False, default=func.now())
+    __table_args__ = (UniqueConstraint("watchlist_id", "user_id"),)
 
     watchlist: Mapped["WatchlistModel"] = belongs_to(
         "WatchlistModel", "subscriptions"
     )
     user: Mapped["UserModel"] = has_one("UserModel", "watchlist_subscriptions")
+    notifications: Mapped[List["WatchlistNotificationModel"]] = contains(
+        "WatchlistNotificationModel", "watchlist_subscription"
+    )
+
+
+class WatchlistNotificationModel(BaseModel, NotificationMixin):
+    __tablename__ = "watchlist_notifications"
+
+    watchlist_subscription_id = Column(
+        Integer, ForeignKey("watchlist_subscriptions.id"), nullable=False
+    )
+    event = Column(Enum(WatchlistEvent), nullable=False)
+    count = Column(Integer, nullable=False, default=1)
+
+    sent_via_email_at = Column(TIMESTAMP, nullable=True)
+
+    watchlist_subscription: Mapped["WatchlistSubscriptionModel"] = belongs_to(
+        "WatchlistSubscriptionModel", "notifications"
+    )
+    user: Mapped["UserModel"] = belongs_to(
+        "UserModel", "watchlist_notifications"
+    )
+
+    @property
+    def watchlist(self) -> WatchlistModel:
+        return self.watchlist_subscription.watchlist

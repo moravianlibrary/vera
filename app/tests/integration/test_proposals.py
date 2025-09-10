@@ -2,6 +2,7 @@ from definitions.proposal import ProposalStatus
 from repositories.models.project import ProjectModel
 from repositories.models.proposal import ProposalBatchModel, ProposalModel
 from repositories.models.task import TaskModel
+from repositories.models.watchlist import WatchlistModel
 from schemas.proposal import Proposal
 from tests.integration.case import (
     EntitySeed,
@@ -77,12 +78,9 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "batch_name": "Batch 1",
                                 "created_at": "2025-08-22T08:20:09.918106",
                                 "created_by": "id-1",
-                                "eligibility_status": None,
                                 "file_name": "batch_1.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-1",
-                                "justification": None,
-                                "project": None,
                                 "status": "Pending",
                                 "status_log": [],
                                 "watchlists": [],
@@ -97,12 +95,9 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "batch_name": "Batch 1",
                                 "created_at": "2025-08-22T08:20:09.918106",
                                 "created_by": "id-1",
-                                "eligibility_status": None,
                                 "file_name": "batch_1.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-2",
-                                "justification": None,
-                                "project": None,
                                 "status": "Accepted",
                                 "status_log": [],
                                 "watchlists": [],
@@ -117,12 +112,9 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "batch_name": "Batch 1",
                                 "created_at": "2025-08-22T08:20:09.918106",
                                 "created_by": "id-1",
-                                "eligibility_status": None,
                                 "file_name": "batch_1.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-3",
-                                "justification": None,
-                                "project": None,
                                 "status": "Declined",
                                 "status_log": [],
                                 "watchlists": [],
@@ -137,12 +129,9 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "batch_name": "Batch 1",
                                 "created_at": "2025-08-22T08:20:09.918106",
                                 "created_by": "id-1",
-                                "eligibility_status": None,
                                 "file_name": "batch_1.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-4",
-                                "justification": None,
-                                "project": None,
                                 "status": "Enqueued",
                                 "status_log": [],
                                 "watchlists": [],
@@ -157,12 +146,9 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "batch_name": "Batch 2",
                                 "created_at": "2025-08-22T08:20:09.918106",
                                 "created_by": "superuser",
-                                "eligibility_status": None,
                                 "file_name": "batch_2.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-5",
-                                "justification": None,
-                                "project": None,
                                 "status": "Pending",
                                 "status_log": [],
                                 "watchlists": [],
@@ -177,12 +163,9 @@ class TestIntegrationProposals(TestIntegrationCase):
                                 "batch_name": "Batch 2",
                                 "created_at": "2025-08-22T08:20:09.918106",
                                 "created_by": "superuser",
-                                "eligibility_status": None,
                                 "file_name": "batch_2.json",
                                 "identifier_type": "ISXN",
                                 "identifier_value": "978-3-16-148410-6",
-                                "justification": None,
-                                "project": None,
                                 "status": "Accepted",
                                 "status_log": [],
                                 "watchlists": [],
@@ -454,4 +437,32 @@ class TestIntegrationProposals(TestIntegrationCase):
             TaskModel,
             1,
             {"query": {"query": {"term": {"_id": "1"}}}},
+        )
+
+    async def test_create_watchlist(self):
+        self.assertResponse(
+            await self.client.post(
+                "/proposals/watchlist",
+                json={"query": {"match_all": {}}},
+                params={"name": "Additions"},
+            ),
+            200,
+            {
+                "id": 1,
+                "name": "Additions",
+                "description": None,
+                "query": {"query": {"match_all": {}}},
+                "subscriptions": [],
+                "target": "Proposals",
+            },
+        )
+        self.assertEntityProperties(
+            WatchlistModel,
+            1,
+            {
+                "name": "Additions",
+                "description": None,
+                "target": "Proposals",
+                "query": {"query": {"match_all": {}}},
+            },
         )

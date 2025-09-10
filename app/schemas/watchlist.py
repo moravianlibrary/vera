@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from adapters.indexer import IndexerNestedModel, IndexerQuery
 from definitions.watchlist import WatchlistEvent, WatchlistTarget
-from schemas.common import PageParams
+from schemas.common import Notification, PageParams
 from schemas.user import UserSummary
 
 
@@ -15,7 +15,7 @@ from schemas.user import UserSummary
 # --------------------
 class WatchlistPropertiesParams(BaseModel):
     name: str
-    short_name: str
+    description: str | None = None
 
 
 class WatchlistFilterParams(BaseModel):
@@ -55,10 +55,10 @@ class WatchlistBase(BaseModel):
     id: int
 
     name: str
+    description: str | None
 
     target: WatchlistTarget
     query: IndexerQuery
-    mode: WatchlistEvent
 
 
 class WatchlistSubscription(BaseModel):
@@ -70,28 +70,22 @@ class Watchlist(WatchlistBase):
     subscriptions: List[WatchlistSubscription]
 
 
-class WatchlistNotification(WatchlistBase):
-    last_read_at: datetime
-    count_changes: int
-
-    # TODO:
-    # @classmethod
-    # def from_orm_with_count(
-    #     cls, notification: WatchlistNotificationModel, count_changes: int
-    # ) -> "WatchlistNotification":
-    #     return cls(
-    #         id=notification.watchlist.id,
-    #         name=notification.watchlist.name,
-    #         target=notification.watchlist.target,
-    #         query=notification.watchlist.query,
-    #         mode=notification.watchlist.mode,
-    #         last_read_at=notification.last_read_at,
-    #         count_changes=count_changes,
-    #     )
+# class SubscribedWatchlist(WatchlistNotification):
+# settings: WatchlistNotificationSettings | None
 
 
-class SubscribedWatchlist(WatchlistNotification):
-    settings: WatchlistNotificationSettings | None
+class WatchlistNotificationSummary(BaseModel):
+    id: int
+    name: str
+
+
+class WatchlistNotification(Notification):
+    event: WatchlistEvent
+    count: int
+
+    sent_via_email_at: datetime | None
+
+    watchlist: WatchlistNotificationSummary
 
 
 # --------------------
@@ -99,8 +93,8 @@ class SubscribedWatchlist(WatchlistNotification):
 # --------------------
 class WatchlistSummary(IndexerNestedModel):
     id: long
-    name: text
-    short_name: keyword
+    name: keyword
+    description: text | None = None
     entered_at: datetime
     exited_at: datetime | None = None
     active: bool

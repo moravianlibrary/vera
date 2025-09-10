@@ -2,6 +2,9 @@ from dataclasses import dataclass
 from typing import Generic, List, Protocol, Type, TypeVar, Union
 
 from adapters.database import BaseModel, DatabaseEntityType, DatabaseSession
+from config import config
+from errors.common import EntityNotFoundError
+from repositories.models.mixins.notification import NotificationMixin
 from schemas.common import PageParams
 
 # ------------------
@@ -228,10 +231,10 @@ class GetByIdMixin(Generic[DatabaseEntityType, IdType]):
             .filter(self._db_model.id == entity_id)
             .first()
         )
+
         if not entity:
-            raise ValueError(
-                f"{self._entity_name} with ID '{entity_id}' not found"
-            )
+            raise EntityNotFoundError(self._entity_name, entity_id)
+
         return entity
 
 
@@ -353,3 +356,124 @@ class EnforceNameUniquenessMixin(Generic[DatabaseEntityType, IdType]):
             raise ValueError(
                 f"{self._entity_name} with the name '{name}' already exists"
             )
+
+
+NotificationEntityType = TypeVar(
+    "NotificationEntityType", bound=NotificationMixin
+)
+
+
+class NotificationOperationsMixin(Generic[NotificationEntityType, IdType]):
+    """
+    Mixin providing common operations for notification entities.
+    """
+
+    def get_unread_count(
+        self: DbRepositoryContext[NotificationEntityType], user_id: str
+    ) -> int:
+        """
+        Count the number of unread notifications for the specified user.
+
+        Parameters
+        ----------
+        user_id : str
+            The ID of the user.
+
+        Returns
+        -------
+        int
+            The count of unread notifications for the user.
+        """
+        return (
+            self._database_session.query(self._db_model)
+            .filter(
+                self._db_model.user_id == user_id,
+                self._db_model.read_at.is_(None),
+            )
+            .count()
+        )
+
+    def get_unpushed(
+        self: DbRepositoryContext[NotificationEntityType], user_id: str
+    ) -> List[NotificationEntityType]:
+        """
+        Retrieve up to n (defined in system settings) unpushed notifications
+        for the specified user. Then mark all unpushed notifications as pushed.
+
+        Parameters
+        ----------
+        user_id : str
+            The ID of the user.
+
+        Returns
+        -------
+        List[NotificationEntityType]
+            List of unpushed notifications for the user.
+        """
+        notifications = (
+            self._database_session.query(self._db_model)
+            .filter(
+                self._db_model.user_id == user_id,
+                self._db_model.push_sent.is_(False),
+            )
+            .order_by(self._db_model.created_at.desc())
+            .limit(10)  # TODO: from system settings
+            .all()
+        )
+
+        self._database_session.query(self._db_model).filter(
+            self._db_model.user_id == user_id,
+            self._db_model.push_sent.is_(False),
+        ).update({self._db_model.push_sent: True})
+        self._database_session.commit()
+
+        return notifications
+
+    def mark_as_read(
+        self: DbRepositoryContext[NotificationEntityType],
+        notification: NotificationEntityType,
+    ) -> NotificationEntityType:
+        """
+        Mark the specified notification as read.
+
+        Parameters
+        ----------
+        notification : NotificationEntityType
+            The notification to mark as read.
+
+        Returns
+        -------
+        NotificationEntityType
+            The updated notification.
+        """
+        notification.read_at = config.timestamp
+
+        return self.save(notification)
+
+    def mark_all_as_read(
+        self: DbRepositoryContext[NotificationEntityType], user_id: str
+    ) -> int:
+        """
+        Mark all notifications for the specified user as read.
+
+        Parameters
+        ----------
+        user_id : str
+            The ID of the user.
+
+        Returns
+        -------
+        int
+            The number of notifications marked as read.
+        """
+        updated_count = (
+            self._database_session.query(self._db_model)
+            .filter(
+                self._db_model.user_id == user_id,
+                self._db_model.read_at.is_(None),
+            )
+            .update({self._db_model.read_at: config.timestamp})
+        )
+        self._database_session.commit()
+
+        return updated_count

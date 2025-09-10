@@ -77,9 +77,9 @@ class TestIntegrationGroups(TestIntegrationCase):
                         "name": "Group 2",
                         "description": "Description for group 2",
                         "users": [
+                            {"id": "id-10", "username": "user10"},
                             {"id": "id-2", "username": "user2"},
                             {"id": "id-4", "username": "user4"},
-                            {"id": "id-10", "username": "user10"},
                         ],
                     },
                     {
@@ -104,9 +104,9 @@ class TestIntegrationGroups(TestIntegrationCase):
                         "name": "Group 5",
                         "description": "Description for group 5",
                         "users": [
+                            {"id": "id-10", "username": "user10"},
                             {"id": "id-8", "username": "user8"},
                             {"id": "id-9", "username": "user9"},
-                            {"id": "id-10", "username": "user10"},
                         ],
                     },
                 ],
@@ -129,6 +129,28 @@ class TestIntegrationGroups(TestIntegrationCase):
                 "name": "New Group",
                 "description": "A new group for testing",
                 "users": [],
+            },
+        )
+
+    async def test_update(self):
+        self.assertResponse(
+            await self.client.put(
+                "/groups/1",
+                json={
+                    "name": "Updated Group 1",
+                    "description": "Updated description for group 1",
+                },
+            ),
+            200,
+            {
+                "id": 1,
+                "name": "Updated Group 1",
+                "description": "Updated description for group 1",
+                "users": [
+                    {"id": "id-1", "username": "user1"},
+                    {"id": "id-2", "username": "user2"},
+                    {"id": "id-5", "username": "user5"},
+                ],
             },
         )
 

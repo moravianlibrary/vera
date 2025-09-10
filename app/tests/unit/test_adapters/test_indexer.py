@@ -120,9 +120,9 @@ class TestIndexSchema(TestIndexBase):
                 },
                 "watchlists": {
                     "properties": {
-                        "id": {"type": "keyword"},
+                        "id": {"type": "long"},
                         "name": {"type": "keyword"},
-                        "short_name": {"type": "keyword"},
+                        "description": {"type": "text"},
                         "entered_at": {"type": "date"},
                         "exited_at": {"type": "date"},
                         "active": {"type": "boolean"},
@@ -155,9 +155,9 @@ class TestIndexSchema(TestIndexBase):
                 "updated_at": {"type": "date"},
                 "watchlists": {
                     "properties": {
-                        "id": {"type": "keyword"},
+                        "id": {"type": "long"},
                         "name": {"type": "keyword"},
-                        "short_name": {"type": "keyword"},
+                        "description": {"type": "text"},
                         "entered_at": {"type": "date"},
                         "exited_at": {"type": "date"},
                         "active": {"type": "boolean"},
@@ -233,9 +233,9 @@ class TestIndexSchema(TestIndexBase):
                 },
                 "watchlists": {
                     "properties": {
-                        "id": {"type": "keyword"},
+                        "id": {"type": "long"},
                         "name": {"type": "keyword"},
-                        "short_name": {"type": "keyword"},
+                        "description": {"type": "text"},
                         "entered_at": {"type": "date"},
                         "exited_at": {"type": "date"},
                         "active": {"type": "boolean"},
@@ -301,9 +301,9 @@ class TestIndexSchema(TestIndexBase):
                 "updated_at": {"type": "date"},
                 "watchlists": {
                     "properties": {
-                        "id": {"type": "keyword"},
+                        "id": {"type": "long"},
                         "name": {"type": "keyword"},
-                        "short_name": {"type": "keyword"},
+                        "description": {"type": "text"},
                         "entered_at": {"type": "date"},
                         "exited_at": {"type": "date"},
                         "active": {"type": "boolean"},
@@ -389,9 +389,9 @@ class TestIndexSchema(TestIndexBase):
                 },
                 "watchlists": {
                     "properties": {
-                        "id": {"type": "keyword"},
+                        "id": {"type": "long"},
                         "name": {"type": "keyword"},
-                        "short_name": {"type": "keyword"},
+                        "description": {"type": "text"},
                         "entered_at": {"type": "date"},
                         "exited_at": {"type": "date"},
                         "active": {"type": "boolean"},
@@ -435,9 +435,9 @@ class TestIndexSchema(TestIndexBase):
                 },
                 "watchlists": {
                     "properties": {
-                        "id": {"type": "keyword"},
+                        "id": {"type": "long"},
                         "name": {"type": "keyword"},
-                        "short_name": {"type": "keyword"},
+                        "description": {"type": "text"},
                         "entered_at": {"type": "date"},
                         "exited_at": {"type": "date"},
                         "active": {"type": "boolean"},

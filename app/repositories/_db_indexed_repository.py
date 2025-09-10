@@ -12,6 +12,7 @@ from adapters.indexer import (
     IndexerResponse,
     IndexerSession,
 )
+from definitions.json import JsonObject
 
 from ._db_repository import DatabaseEntityType, DbRepository
 
@@ -89,9 +90,7 @@ class DbIndexedRepository(
 
         await setup_mappings()
 
-    async def search(
-        self, request: IndexerRequest
-    ) -> IndexerResponse[IndexerModelType]:
+    async def search(self, request: IndexerRequest) -> IndexerResponse:
         """
         Perform a search using the indexer and return the raw response.
 
@@ -398,7 +397,7 @@ class SearchAllMixin(Generic[DatabaseEntityType, IndexerModelType]):
     async def search_all(
         self: DbIndexedRepositoryContext[DatabaseEntityType, IndexerModelType],
         query: IndexerQuery,
-    ) -> AsyncGenerator[IndexerModelType, None]:
+    ) -> AsyncGenerator[JsonObject, None]:
         """
         Yield all matching indexer entities for a query using scroll.
 
@@ -413,28 +412,34 @@ class SearchAllMixin(Generic[DatabaseEntityType, IndexerModelType]):
             Each parsed document from index results.
         """
         index = self._indexer_model.ESConfig.index
-
         scroll_id = None
 
-        while True:
-            response = (
-                await self._indexer_session.scroll(
-                    scroll_id=scroll_id, scroll="1m"
+        try:
+            while True:
+                response = (
+                    await self._indexer_session.scroll(
+                        scroll_id=scroll_id, scroll="1m"
+                    )
+                    if scroll_id
+                    else await self._indexer_session.search(
+                        index=index,
+                        body=query.model_dump(mode="json"),
+                        scroll="1m",
+                    )
                 )
-                if scroll_id
-                else await self._indexer_session.search(
-                    index=index, body=query, scroll="1m"
-                )
-            )
 
-            for hit in response["hits"]["hits"]:
-                yield self._indexer_model.model_validate(hit["_source"])
+                hits = response["hits"]["hits"]
+                if not hits:
+                    break
 
-            scroll_id = response.get("_scroll_id")
-            if not scroll_id or response["hits"]["total"] == 0:
-                break
+                for hit in hits:
+                    yield hit["_source"]
 
-        await self._indexer_session.clear_scroll(scroll_id=scroll_id)
+                scroll_id = response.get("_scroll_id")
+
+        finally:
+            if scroll_id:
+                await self._indexer_session.clear_scroll(scroll_id=scroll_id)
 
 
 class SearchCountMixin(Generic[DatabaseEntityType, IndexerModelType]):

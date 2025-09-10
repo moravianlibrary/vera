@@ -33,7 +33,7 @@ router = APIRouter(prefix="/catalog-records", tags=["Catalog records"])
 @router.post(
     "/search",
     dependencies=[WithPermission(GeneralPermission.ReadCatalogRecords)],
-    response_model=IndexerResponse[CatalogRecordHit],
+    response_model=IndexerResponse,
 )
 async def search(
     request: IndexerRequest,

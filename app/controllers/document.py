@@ -1,20 +1,19 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Path, Query
+from fastapi import APIRouter, BackgroundTasks, Path, Query
 from starlette.responses import FileResponse
 
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
-from definitions.document import Priority
 from definitions.permission import GeneralPermission, OwnershipPermission
 from definitions.watchlist import WatchlistTarget
-from repositories import DocumentRepository
+from repositories.document_iteration import DocumentIterationRepository
 from repositories.watchlist import WatchlistRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.document import (
-    Document,
     DocumentExportParams,
     DocumentGenerateListParams,
     DocumentsSyncParams,
+    UpdatePageCountResponse,
 )
 from schemas.task import Task, TaskScheduleParams
 from schemas.watchlist import Watchlist, WatchlistPropertiesParams
@@ -22,7 +21,7 @@ from services.document import DocumentService
 
 from .resources import (
     DependsOnAuthenticatedUser,
-    DependsOnDocumentRepository,
+    DependsOnDocumentIterationRepository,
     DependsOnDocumentService,
     DependsOnWatchlistRepository,
     RestrictedQuery,
@@ -38,15 +37,17 @@ router = APIRouter(prefix="/documents", tags=["Documents"])
 @router.post(
     "/search",
     dependencies=[WithPermission(OwnershipPermission.ReadDocuments)],
-    response_model=IndexerResponse[Document],
+    response_model=IndexerResponse,
 )
-def search(
+async def search(
     request: IndexerRequest = RestrictedSearch(
         OwnershipPermission.ReadDocuments
     ),
-    repository: DocumentRepository = DependsOnDocumentRepository,
+    repository: DocumentIterationRepository = (
+        DependsOnDocumentIterationRepository
+    ),
 ):
-    return repository.search(request)
+    return await repository.search(request)
 
 
 @router.post(
@@ -54,12 +55,13 @@ def search(
     dependencies=[WithPermission(OwnershipPermission.ReadDocuments)],
     response_class=FileResponse,
 )
-def export(
+async def export(
+    background_tasks: BackgroundTasks,
     export_params: Annotated[DocumentExportParams, Query()],
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ReadDocuments),
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.export(query, export_params)
+    return await service.export(query, export_params, background_tasks)
 
 
 @router.post(
@@ -67,27 +69,26 @@ def export(
     dependencies=[WithPermission(OwnershipPermission.ReadDocuments)],
     response_model=Task,
 )
-def generate_list(
+async def generate_list(
     generate_list_params: Annotated[DocumentGenerateListParams, Query()],
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ReadDocuments),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.generate_list(query, generate_list_params, user.id)
+    return await service.generate_list(query, generate_list_params, user.id)
 
 
 @router.patch(
     "/{document_id}/page-count",
     dependencies=[WithPermission(OwnershipPermission.ManageDocuments)],
-    response_model=Document,
+    response_model=UpdatePageCountResponse,
 )
-def update_page_count(
+async def update_page_count(
     document_id: int = Path(...),
-    page_count: int = Query(...),
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    page_count: int = Query(..., ge=1, le=10000),
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.update_page_count(document_id, page_count, user.id)
+    return await service.update_page_count(document_id, page_count)
 
 
 @router.post(
@@ -101,13 +102,13 @@ def update_page_count(
     ],
     response_model=Task,
 )
-def change_category(
+async def set_category(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageDocuments),
     category_id: int = Query(...),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.set_category(query, category_id, user.id)
+    return await service.set_category(query, category_id, user.id)
 
 
 @router.post(
@@ -115,13 +116,13 @@ def change_category(
     dependencies=[WithPermission(OwnershipPermission.ManageDocuments)],
     response_model=Task,
 )
-def change_priority(
+async def set_priority(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageDocuments),
-    priority: Priority = Query(...),
+    priority: int = Query(..., ge=1, le=5),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.set_priority(query, priority, user.id)
+    return await service.set_priority(query, priority, user.id)
 
 
 @router.post(
@@ -129,7 +130,7 @@ def change_priority(
     dependencies=[WithPermission(OwnershipPermission.ManageDocuments)],
     response_model=Task,
 )
-def set_digitization_decision(
+async def set_digitization_decision(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageDocuments),
     decline: bool = Query(
         ...,
@@ -139,7 +140,7 @@ def set_digitization_decision(
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.set_digitization_decision(query, decline, user.id)
+    return await service.set_digitization_decision(query, decline, user.id)
 
 
 @router.post(
@@ -147,13 +148,13 @@ def set_digitization_decision(
     dependencies=[WithPermission(OwnershipPermission.ManageDocuments)],
     response_model=Task,
 )
-def reindex(
+async def reindex(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageDocuments),
     schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.reindex(query, user.id, schedule_params)
+    return await service.reindex(query, user.id, schedule_params)
 
 
 @router.post(
@@ -161,14 +162,14 @@ def reindex(
     dependencies=[WithPermission(OwnershipPermission.ManageDocuments)],
     response_model=Task,
 )
-def sync(
+async def sync(
     sync_params: Annotated[DocumentsSyncParams, Query()],
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageDocuments),
     schedule_params: TaskScheduleParams = RestrictedTaskScheduleParams,
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.sync(query, sync_params, user.id, schedule_params)
+    return await service.sync(query, sync_params, user.id, schedule_params)
 
 
 @router.post(
@@ -176,12 +177,12 @@ def sync(
     dependencies=[WithPermission(OwnershipPermission.ManageDocuments)],
     response_model=Task,
 )
-def delete(
+async def delete(
     query: IndexerQuery = RestrictedQuery(OwnershipPermission.ManageDocuments),
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: DocumentService = DependsOnDocumentService,
 ):
-    return service.delete(query, user.id)
+    return await service.delete(query, user.id)
 
 
 @router.post(

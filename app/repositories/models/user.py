@@ -15,7 +15,11 @@ if TYPE_CHECKING:
     from .category import CategoryModel
     from .group import GroupModel
     from .project import ProjectModel
-    from .watchlist import WatchlistSubscriptionModel
+    from .task import TaskNotificationModel
+    from .watchlist import (
+        WatchlistNotificationModel,
+        WatchlistSubscriptionModel,
+    )
 
 
 class UserModel(BaseModel):
@@ -38,4 +42,11 @@ class UserModel(BaseModel):
     )
     watchlist_subscriptions: Mapped[List["WatchlistSubscriptionModel"]] = (
         has_many("WatchlistSubscriptionModel", "user")
+    )
+
+    task_notifications: Mapped[List["TaskNotificationModel"]] = has_many(
+        "TaskNotificationModel", "user"
+    )
+    watchlist_notifications: Mapped[List["WatchlistNotificationModel"]] = (
+        has_many("WatchlistNotificationModel", "user")
     )

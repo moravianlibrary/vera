@@ -473,3 +473,25 @@ class TestIntegrationCase(IsolatedAsyncioTestCase):
                 f"Unexpected value for {key}: "
                 f"{actual_value} != {expected_value}",
             )
+
+    def assertEntityPropertiesPresent(
+        self,
+        db_db_model: Type[DatabaseEntityType],
+        entity_id: IdType,
+        assert_properties: Set[str],
+    ) -> None:
+        db_entity = (
+            self.db_session.query(db_db_model)
+            .filter_by(id=entity_id)
+            .one_or_none()
+        )
+        if not db_entity:
+            raise AssertionError(f"Entity not found: {entity_id}")
+
+        for key in assert_properties:
+            if not hasattr(db_entity, key):
+                raise AssertionError(f"Property not found: {key}")
+
+            actual_value = getattr(db_entity, key, None)
+            if actual_value is None:
+                raise AssertionError(f"Property is None: {key}")

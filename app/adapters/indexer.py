@@ -1,6 +1,6 @@
 from enum import Enum
 from functools import wraps
-from typing import Callable, Dict, Generic, List, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, List, TypeVar, Union
 
 from aiohttp import ClientSession
 from elasticsearch import AsyncElasticsearch
@@ -25,10 +25,7 @@ class IndexerRequest(IndexerQuery):
     pass
 
 
-SourceType = TypeVar("SourceType")
-
-
-class Hit(BaseModel, Generic[SourceType]):
+class Hit(BaseModel):
     """
     Represents a single hit (result) from Elasticsearch.
     """
@@ -39,7 +36,7 @@ class Hit(BaseModel, Generic[SourceType]):
     """ The id of the hit. """
     score: float | None = Field(..., alias="_score")
     """ The score of the hit. """
-    source: SourceType = Field(..., alias="_source")
+    source: Any = Field(..., alias="_source")
     """ The source of the hit. """
 
     class Config:
@@ -51,7 +48,7 @@ class HitsTotal(BaseModel):
     relation: str
 
 
-class Hits(BaseModel, Generic[SourceType]):
+class Hits(BaseModel):
     """
     Represents the hits section of the Elasticsearch response.
     """
@@ -60,11 +57,11 @@ class Hits(BaseModel, Generic[SourceType]):
     """ The total number of hits. """
     max_score: float | None
     """ The maximum score of the hits. """
-    hits: List[Hit[SourceType]]
+    hits: List[Hit]
     """ List of hits. """
 
 
-class IndexerResponse(BaseModel, Generic[SourceType]):
+class IndexerResponse(BaseModel):
     """
     Represents the overall structure of an Elasticsearch response.
     """
@@ -75,7 +72,7 @@ class IndexerResponse(BaseModel, Generic[SourceType]):
     """ Whether the query timed out. """
     shards: Dict[str, int] = Field(..., alias="_shards")
     """ The number of shards the query was executed on. """
-    hits: Hits[SourceType]
+    hits: Hits
     """ The hits section of the response. """
     aggregations: aggs.ESAggsResponse | None = None
     """ The aggregations section of the response. """
