@@ -140,9 +140,10 @@ async def lifespan(app_: FastAPI):
     # set_failed_tasks_on_start()
     # plan_startup_tasks()
     # setup_periodic_tasks_on_start()
-    plugin_registry = PluginRegistry()
-    app_.state.plugin_registry = plugin_registry
-    app_.state.identity_provider = IdentityProvider(plugin_registry)
+    # TODO: Enable
+    # plugin_registry = PluginRegistry()
+    # app_.state.plugin_registry = plugin_registry
+    # app_.state.identity_provider = IdentityProvider(plugin_registry)
 
     yield
 
