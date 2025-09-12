@@ -1,4 +1,4 @@
-../plugin_sdk
+../sdk
 alembic
 apscheduler
 bs4
