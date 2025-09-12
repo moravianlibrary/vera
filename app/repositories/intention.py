@@ -44,9 +44,6 @@ class IntentionRepository(
         """
         self.enforce_name_uniqueness(intention.name, intention_model.id)
 
-        intention_model.name = intention.name
-        intention_model.description = intention.description
-
         if intention_model.project_id is not None and (
             intention_model.target_page_count != intention.target_page_count
             or intention_model.start_date != intention.start_date
@@ -54,6 +51,8 @@ class IntentionRepository(
         ):
             raise IntentionLinkedToProjectError()
 
+        intention_model.name = intention.name
+        intention_model.description = intention.description
         intention_model.target_page_count = intention.target_page_count
         intention_model.start_date = intention.start_date
         intention_model.end_date = intention.end_date
