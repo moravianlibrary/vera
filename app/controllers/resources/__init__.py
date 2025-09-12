@@ -170,6 +170,9 @@ DependsOnProjectService = provide_service(
     DependsOnProjectRepository,
     DependsOnGroupRepository,
     DependsOnUserRepository,
+    DependsOnProposalBatchRepository,
+    DependsOnAdditionBatchRepository,
+    DependsOnTaskRepository,
 )
 DependsOnProposalService = provide_service(
     ProposalService,

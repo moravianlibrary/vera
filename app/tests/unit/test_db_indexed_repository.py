@@ -6,7 +6,7 @@ from esorm.fields import boolean, keyword, long
 from sqlalchemy import Boolean, Column, Integer, String
 
 from adapters.database import BaseModel, DatabaseSession
-from adapters.indexer import IndexerModel, IndexerSession
+from adapters.indexer import IndexerModel, IndexerQuery, IndexerSession
 from repositories._db_indexed_repository import (
     DbIndexedRepository,
     GetByQueryMixin,
@@ -307,17 +307,17 @@ class TestDbIndexedRepository(unittest.IsolatedAsyncioTestCase):
             },
         }
 
-        query = {"query": {"match_all": {}}}
+        query = IndexerQuery.model_validate({"query": {"match_all": {}}})
         results = []
         async for item in self.repo.search_all(query):
             results.append(item)
 
         self.assertEqual(len(results), 2)
-        self.assertEqual(results[0], FakeModel(id=1, name="a", archived=False))
-        self.assertEqual(results[1], FakeModel(id=2, name="b", archived=False))
+        self.assertEqual(results[0], {"id": 1, "name": "a", "archived": False})
+        self.assertEqual(results[1], {"id": 2, "name": "b", "archived": False})
 
         self.repo._indexer_session.search.assert_called_once_with(
-            index="fake-index", body=query, scroll="1m"
+            index="fake-index", body=query.model_dump(), scroll="1m"
         )
         self.repo._indexer_session.scroll.assert_called_once_with(
             scroll_id="scroll123", scroll="1m"

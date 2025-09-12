@@ -160,6 +160,7 @@ class DocumentIterationModel(
     digitization_list: Mapped["DigitizationListModel"] = belongs_to(
         "DigitizationListModel", "document_iterations"
     )
+    # TODO: Document intentions?
 
     task_items: Mapped[List["TaskDocumentIterationModel"]] = contains(
         "TaskDocumentIterationModel", "document_iteration"

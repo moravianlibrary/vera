@@ -24,6 +24,17 @@ class BatchPermissionDeniedError(HTTPException):
         )
 
 
+class BatchProjectMismatchError(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=(
+                "The batch does not belong to the specified project. "
+                "Please check the project ID."
+            ),
+        )
+
+
 class EntityNotFoundError(HTTPException):
     def __init__(self, entity_name: str, entity_id: int | str):
         super().__init__(

@@ -88,7 +88,7 @@ class CatalogRecordService(TaskAndScheduleBasedService):
             created_by,
             query,
             CatalogRecordForceValidityData(validity=validity),
-            self._task_names_mapping[CatalogRecordTask.SetForcedValidity][
+            name=self._task_names_mapping[CatalogRecordTask.SetForcedValidity][
                 validity
             ],
         )
@@ -104,7 +104,7 @@ class CatalogRecordService(TaskAndScheduleBasedService):
             created_by,
             query,
             review_params,
-            self._task_names_mapping[CatalogRecordTask.MarkInReview][
+            name=self._task_names_mapping[CatalogRecordTask.MarkInReview][
                 review_params.in_review
             ],
         )

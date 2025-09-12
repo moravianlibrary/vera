@@ -62,7 +62,8 @@ def get_task_query(
 @router.get(
     "/{task_id}/data",
     dependencies=[WithPermission(OwnershipPermission.ReadTasks)],
-    response_model=JsonObject,
+    # TODO:
+    # response_model=JsonObject,
 )
 def get_task_data(
     task_id: int = Path(...),

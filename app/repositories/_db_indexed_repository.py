@@ -51,6 +51,7 @@ class DbIndexedRepository(
     """
 
     _indexer_model: Type[IndexerModelType]
+    _wait_for_index_refresh: bool = False
 
     def __init__(
         self,
@@ -155,7 +156,11 @@ class DbIndexedRepository(
             body=self.serialize_entity(entity).model_dump(
                 mode="json", exclude={self._id_field}, exclude_none=True
             ),
-            refresh="wait_for" if wait_for else None,
+            refresh=(
+                "wait_for"
+                if self._wait_for_index_refresh or wait_for
+                else None
+            ),
         )
 
     async def save(
@@ -180,7 +185,7 @@ class DbIndexedRepository(
         self._database_session.commit()
         self._database_session.refresh(entity)
 
-        await self.index(entity)
+        await self.index(entity, wait_for)
 
         return entity
 
@@ -214,7 +219,11 @@ class DbIndexedRepository(
                 }
                 for doc in docs
             ),
-            refresh="wait_for" if wait_for else None,
+            refresh=(
+                "wait_for"
+                if self._wait_for_index_refresh or wait_for
+                else None
+            ),
         )
 
         if errors:
@@ -296,7 +305,9 @@ class DbIndexedRepository(
         self._database_session.delete(entity)
         self._database_session.commit()
 
-        await self.serialize_entity(entity).delete(wait_for=wait_for)
+        await self.serialize_entity(entity).delete(
+            wait_for=self._wait_for_index_refresh or wait_for
+        )
 
         return entity
 

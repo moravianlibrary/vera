@@ -9,6 +9,7 @@ from definitions.addition import AdditionStatus
 from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
 from definitions.identifier import IdentifierType
+from schemas.common import BatchParams
 from schemas.task import Task
 from schemas.watchlist import WatchlistSummary
 
@@ -16,26 +17,18 @@ from schemas.watchlist import WatchlistSummary
 # --------------------
 # - Query Parameters -
 # --------------------
-class AdditionsBatchParams(BaseModel):
-    batch_id: int | None = None
-    batch_name: str | None = None
-    file_name: str | None = None
-    project_id: int | None = None
-
-
 class AdditionsSettingsParams(BaseModel):
     allow_new_iteration: bool = False
     ignore_digitization_check: bool = False
 
 
-class IngestAdditionsParams(AdditionsBatchParams, AdditionsSettingsParams):
+class IngestAdditionsParams(BatchParams, AdditionsSettingsParams):
     @property
-    def batch(self) -> AdditionsBatchParams:
-        return AdditionsBatchParams(
+    def batch(self) -> BatchParams:
+        return BatchParams(
             batch_id=self.batch_id,
             batch_name=self.batch_name,
             file_name=self.file_name,
-            project_id=self.project_id,
         )
 
     @property
@@ -116,13 +109,9 @@ class Addition(IndexerModel):
 # -------------
 # - Task Data -
 # -------------
-class IngestBatchAdditionsTaskData(AdditionsSettingsParams):
+class IngestAdditionsTaskData(AdditionsSettingsParams):
     batch_id: int
     additions: List[AdditionCreate]
-
-
-class IngestProjectAdditionsTaskData(IngestBatchAdditionsTaskData):
-    project_id: int
 
 
 class ReingestAdditionsTaskData(AdditionsSettingsParams):

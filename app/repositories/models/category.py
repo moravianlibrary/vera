@@ -25,18 +25,13 @@ from adapters.database import (
     has_one,
 )
 
-from .associations import (
-    category_group_association,
-    category_user_association,
-    project_category_association,
-)
+from .associations import category_group_association, category_user_association
 from .document import DocumentIterationModel, DocumentModel
 from .mixins.created_audit import CreatedTimestampMixin
 
 if TYPE_CHECKING:
     from .group import GroupModel
     from .plugin import PluginInstanceModel
-    from .project import ProjectModel
     from .task import TaskCategoryModel
     from .user import UserModel
     from .watchlist import WatchlistCategoryModel
@@ -82,9 +77,6 @@ class CategoryModel(BaseModel, CreatedTimestampMixin):
     # Relationships to other entities
     document_iterations: Mapped[List["DocumentIterationModel"]] = has_many(
         "DocumentIterationModel", "category"
-    )
-    projects: Mapped[List["ProjectModel"]] = connected_with(
-        "ProjectModel", project_category_association, "categories"
     )
     document_discovery: Mapped["PluginInstanceModel"] = has_one(
         "PluginInstanceModel", "categories"

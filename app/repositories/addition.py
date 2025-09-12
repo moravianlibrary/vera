@@ -1,10 +1,16 @@
 from definitions.addition import AdditionStatus
 from definitions.eligibility import EligibilityStatus
+from definitions.project import ProjectStatus
+from errors.common import (
+    BatchParamsConflictError,
+    BatchPermissionDeniedError,
+    BatchProjectMismatchError,
+)
 from schemas.addition import (
     Addition,
     AdditionCreate,
-    AdditionsBatchParams,
     AdditionsSettingsParams,
+    BatchParams,
 )
 from schemas.proposal import ApproveProposalsParams
 
@@ -26,15 +32,34 @@ class AdditionBatchRepository(
     _entity_name = "Addition Batch"
     _db_model = AdditionBatchModel
 
-    def create(
-        self, batch_params: AdditionsBatchParams, created_by: str
+    def get_or_create(
+        self,
+        batch_params: BatchParams,
+        created_by: str,
+        project_id: int | None = None,
     ) -> AdditionBatchModel:
+        if batch_params.batch_id and (
+            batch_params.batch_name or batch_params.file_name
+        ):
+            raise BatchParamsConflictError()
+
+        if batch_params.batch_id is not None:
+            batch = self.get_by_id(batch_params.batch_id)
+
+            if batch.created_by != created_by:
+                raise BatchPermissionDeniedError()
+
+            if batch.project_id != project_id:
+                raise BatchProjectMismatchError()
+
+            return batch
+
         return self.save(
             AdditionBatchModel(
                 name=batch_params.batch_name,
                 file_name=batch_params.file_name,
-                project_id=batch_params.project_id,
                 created_by=created_by,
+                project_id=project_id,
             )
         )
 
@@ -73,6 +98,15 @@ class AdditionRepository(
         proposal: ProposalModel,
         params: ApproveProposalsParams,
     ) -> AdditionModel:
+        if (
+            proposal.project is not None
+            and proposal.project.status != ProjectStatus.Approved
+        ):
+            raise ValueError(
+                "Can only create additions "
+                "from proposals in approved projects."
+            )
+
         return self.save(
             AdditionModel(
                 batch_id=batch_id,

@@ -8,7 +8,8 @@ from definitions.document import Priority
 from definitions.eligibility import EligibilityStatus
 from definitions.identifier import IdentifierType
 from definitions.proposal import ProposalStatus
-from schemas.addition import AdditionsBatchParams, AdditionsSettingsParams
+from schemas.addition import AdditionsSettingsParams
+from schemas.common import BatchParams
 from schemas.project import ProjectSummary
 from schemas.task import Task
 from schemas.watchlist import WatchlistSummary
@@ -17,23 +18,18 @@ from schemas.watchlist import WatchlistSummary
 # --------------------
 # - Query Parameters -
 # --------------------
-class ProposalsBatchParams(AdditionsBatchParams):
-    pass
-
-
 class ProposalsSettingsParams(AdditionsSettingsParams):
     category_id: int
     priority: Priority = Field(3, ge=1, le=5)
 
 
-class ApproveProposalsParams(ProposalsBatchParams, ProposalsSettingsParams):
+class ApproveProposalsParams(BatchParams, ProposalsSettingsParams):
     @property
-    def batch(self) -> ProposalsBatchParams:
-        return ProposalsBatchParams(
+    def batch(self) -> BatchParams:
+        return BatchParams(
             batch_id=self.batch_id,
             batch_name=self.batch_name,
             file_name=self.file_name,
-            project_id=self.project_id,
         )
 
     @property

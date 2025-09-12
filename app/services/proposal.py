@@ -1,17 +1,15 @@
 from adapters.indexer import IndexerQuery
 from definitions.task import ProposalTask, TaskScope
-from errors.common import BatchParamsConflictError, BatchPermissionDeniedError
-from repositories.models.proposal import ProposalBatchModel
 from repositories.models.task import TaskModel
 from repositories.proposal import ProposalBatchRepository, ProposalRepository
 from repositories.task import TaskRepository
+from schemas.common import BatchParams
 from schemas.proposal import (
     ApproveProposalsParams,
     ApproveProposalsTaskData,
     IngestProposalsResponse,
     IngestProposalsTaskData,
     ProposalCreate,
-    ProposalsBatchParams,
     RejectProposalsParams,
 )
 
@@ -40,31 +38,13 @@ class ProposalService(TaskBasedService):
         self._proposal_repository = proposal_repository
         self._batch_repository = batch_repository
 
-    def _ensure_batch(
-        self, batch_params: ProposalsBatchParams, created_by: str
-    ) -> ProposalBatchModel:
-        if batch_params.batch_id and (
-            batch_params.batch_name or batch_params.file_name
-        ):
-            raise BatchParamsConflictError()
-
-        if batch_params.batch_id is None:
-            return self._batch_repository.create(batch_params, created_by)
-
-        batch = self._batch_repository.get_by_id(batch_params.batch_id)
-
-        if batch.created_by != created_by:
-            raise BatchPermissionDeniedError()
-
-        return batch
-
     async def ingest(
         self,
         proposals: ProposalCreate,
-        batch_params: ProposalsBatchParams,
+        batch_params: BatchParams,
         created_by: str,
     ) -> TaskModel:
-        batch = self._ensure_batch(batch_params, created_by)
+        batch = self._batch_repository.get_or_create(batch_params, created_by)
 
         task = await self._create_task(
             ProposalTask.Ingest,
@@ -93,7 +73,9 @@ class ProposalService(TaskBasedService):
         approve_params: ApproveProposalsParams,
         created_by: str,
     ) -> TaskModel:
-        batch = self._ensure_batch(approve_params.batch, created_by)
+        batch = self._batch_repository.get_or_create(
+            approve_params.batch, created_by
+        )
 
         return await self._create_task(
             ProposalTask.Approve,

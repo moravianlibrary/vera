@@ -3,6 +3,8 @@ from typing import Generic, List, TypeVar
 
 from pydantic import BaseModel, Field
 
+from definitions.document import Priority, PriorityField
+
 
 # --------------------
 # - Query Parameters -
@@ -28,6 +30,12 @@ class UserIdFilterParams(BaseModel):
     user_id: str
 
 
+class BatchParams(BaseModel):
+    batch_id: int | None = None
+    batch_name: str | None = None
+    file_name: str | None = None
+
+
 # --------------------
 # - Request Payloads -
 # --------------------
@@ -47,6 +55,14 @@ class UserAssignmentChange(BaseModel):
 class AssignmentChange(BaseModel):
     add: Assignment | None = None
     remove: Assignment | None = None
+
+
+class Message(BaseModel):
+    message: str
+
+
+class PriorityChange(BaseModel):
+    priority: Priority = PriorityField
 
 
 # -----------------

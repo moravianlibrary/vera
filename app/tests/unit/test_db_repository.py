@@ -5,6 +5,7 @@ from pydantic import BaseModel as PydanticBaseModel
 from sqlalchemy import Boolean, Column, Integer, String
 
 from adapters.database import BaseModel, DatabaseSession
+from errors.common import EntityNotFoundError
 from repositories._db_repository import (
     DbRepository,
     EnforceNameUniquenessMixin,
@@ -108,7 +109,7 @@ class TestDbRepositoryMixins(unittest.TestCase):
     def test_get_by_id_not_found(self):
         query_mock = self.db_session.query.return_value
         query_mock.filter.return_value.first.return_value = None
-        with self.assertRaises(ValueError):
+        with self.assertRaises(EntityNotFoundError):
             self.repo.get_by_id(999)
 
     def test_get_by_ids(self):

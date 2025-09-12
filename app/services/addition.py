@@ -2,19 +2,17 @@ from typing import List
 
 from adapters.indexer import IndexerQuery
 from definitions.task import AdditionTask, TaskScope
-from errors.common import BatchParamsConflictError, BatchPermissionDeniedError
 from repositories import AdditionRepository, TaskRepository
 from repositories.addition import AdditionBatchRepository
-from repositories.models.addition import AdditionBatchModel
 from repositories.models.task import TaskModel
 from schemas.addition import (
     AdditionCreate,
-    AdditionsBatchParams,
     AdditionsSettingsParams,
     IngestAdditionsResponse,
-    IngestBatchAdditionsTaskData,
+    IngestAdditionsTaskData,
     ReingestAdditionsTaskData,
 )
+from schemas.common import BatchParams
 from services.task import TaskBasedService
 
 
@@ -36,37 +34,19 @@ class AdditionService(TaskBasedService):
         self._addition_repository = addition_repository
         self._batch_repository = batch_repository
 
-    def _ensure_batch(
-        self, batch_params: AdditionsBatchParams, created_by: str
-    ) -> AdditionBatchModel:
-        if batch_params.batch_id and (
-            batch_params.batch_name or batch_params.file_name
-        ):
-            raise BatchParamsConflictError()
-
-        if batch_params.batch_id is None:
-            return self._batch_repository.create(batch_params, created_by)
-
-        batch = self._batch_repository.get_by_id(batch_params.batch_id)
-
-        if batch.created_by != created_by:
-            raise BatchPermissionDeniedError()
-
-        return batch
-
     async def ingest(
         self,
         additions: List[AdditionCreate],
-        batch_params: AdditionsBatchParams,
+        batch_params: BatchParams,
         ingest_params: AdditionsSettingsParams,
         created_by: str,
     ) -> IngestAdditionsResponse:
-        batch = self._ensure_batch(batch_params, created_by)
+        batch = self._batch_repository.get_or_create(batch_params, created_by)
 
         task = await self._create_task(
             AdditionTask.Ingest,
             created_by,
-            data=IngestBatchAdditionsTaskData(
+            data=IngestAdditionsTaskData(
                 batch_id=batch.id,
                 additions=additions,
                 allow_new_iteration=ingest_params.allow_new_iteration,

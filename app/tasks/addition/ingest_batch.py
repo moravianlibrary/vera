@@ -1,7 +1,7 @@
 from adapters.database import DatabaseSession
 from adapters.indexer import IndexerSession
 from repositories.models.task import TaskAdditionModel, TaskModel
-from schemas.addition import IngestBatchAdditionsTaskData
+from schemas.addition import IngestAdditionsTaskData
 
 from .ingest_base import IngestAdditionsTaskBase
 
@@ -15,7 +15,7 @@ class IngestBatchAdditionsTask(IngestAdditionsTaskBase):
         super().__init__(database_session, indexer_session)
 
     def init_task(self, task: TaskModel) -> None:
-        data = IngestBatchAdditionsTaskData(task.data)
+        data = IngestAdditionsTaskData(task.data)
 
         for addition_create in data.additions:
             task.additions.append(

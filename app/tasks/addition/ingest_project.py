@@ -1,8 +1,9 @@
 from adapters.database import DatabaseSession
 from adapters.indexer import IndexerSession
+from repositories.addition import AdditionBatchRepository
 from repositories.models.task import TaskAdditionModel, TaskModel
 from repositories.project import ProjectRepository
-from schemas.addition import IngestProjectAdditionsTaskData
+from schemas.addition import IngestAdditionsTaskData
 
 from .ingest_base import IngestAdditionsTaskBase
 
@@ -14,13 +15,16 @@ class IngestProjectAdditionsTask(IngestAdditionsTaskBase):
         indexer_session: IndexerSession,
     ):
         super().__init__(database_session, indexer_session)
+        self._batch_repository = AdditionBatchRepository(database_session)
         self._project_repository = ProjectRepository(
             database_session, indexer_session
         )
 
     def init_task(self, task: TaskModel) -> None:
-        data = IngestProjectAdditionsTaskData(task.data)
-        project = self._project_repository.get_by_id(data.project_id)
+        data = IngestAdditionsTaskData(task.data)
+
+        batch = self._batch_repository.get_by_id(data.batch_id)
+        project = self._project_repository.get_by_id(batch.project_id)
 
         for addition_create in data.additions:
             task.additions.append(
@@ -28,7 +32,7 @@ class IngestProjectAdditionsTask(IngestAdditionsTaskBase):
                     task=task,
                     addition=self._addition_repository.create(
                         addition_create,
-                        data.batch_id,
+                        batch.id,
                         task.created_by,
                         data.allow_new_iteration,
                         data.ignore_digitization_check,

@@ -186,7 +186,7 @@ class TestIntegrationIntentions(TestIntegrationCase):
     async def test_update(self):
         self.assertResponse(
             await self.client.put(
-                "/intentions/1",
+                "/intentions/3",
                 json={
                     "name": "Updated Intention",
                     "description": "Updated intention description",
@@ -197,20 +197,35 @@ class TestIntegrationIntentions(TestIntegrationCase):
             ),
             200,
             {
-                "id": 1,
+                "id": 3,
                 "name": "Updated Intention",
                 "description": "Updated intention description",
                 "target_page_count": 15000,
                 "start_date": "2025-01-01T00:00:00",
                 "end_date": "2025-12-01T00:00:00",
-                "project": {
-                    "created_by": "some_user",
-                    "id": 1,
-                    "is_archived": False,
-                    "name": "Test Project",
-                    "status": "Proposed",
-                },
+                "project": None,
                 "is_archived": False,
+            },
+        )
+
+    async def test_update_fail_on_project_linked(self):
+        self.assertResponse(
+            await self.client.put(
+                "/intentions/1",
+                json={
+                    "name": "Updated Intention",
+                    "description": "Updated intention description",
+                    "target_page_count": 15000,
+                    "start_date": "2025-01-01",
+                    "end_date": "2025-12-01",
+                },
+            ),
+            400,
+            {
+                "detail": (
+                    "Cannot change the target page count, start date"
+                    "or end date of an intention that is linked to a project."
+                )
             },
         )
 

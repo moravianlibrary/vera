@@ -346,24 +346,9 @@ class TestIndexSchema(TestIndexBase):
                 "end_date": {"type": "date"},
                 "created_by": {"type": "keyword"},
                 "created_at": {"type": "date"},
+                "priority": {"type": "keyword"},
                 "status": {"type": "keyword"},
                 "is_archived": {"type": "boolean"},
-                "categories": {
-                    "type": "nested",
-                    "properties": {
-                        "id": {"type": "long"},
-                        "name": {"type": "keyword"},
-                        "path": {
-                            "type": "nested",
-                            "properties": {
-                                "id": {"type": "long"},
-                                "name": {"type": "keyword"},
-                            },
-                        },
-                        "assignable": {"type": "boolean"},
-                        "disabled": {"type": "boolean"},
-                    },
-                },
                 "groups": {
                     "type": "nested",
                     "properties": {

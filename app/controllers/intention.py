@@ -3,7 +3,7 @@ from fastapi import APIRouter, Path
 from adapters.indexer import IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission
 from repositories import IntentionRepository
-from schemas.intention import Intention, IntentionEdit, IntentionHit
+from schemas.intention import Intention, IntentionEdit
 from services.intention import IntentionService
 
 from .resources import (

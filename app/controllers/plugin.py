@@ -58,7 +58,8 @@ def paginate_plugins(
 @router.get(
     "/{plugin_id}/config-schema",
     dependencies=[WithPermission(GeneralPermission.ManageSystem)],
-    response_model=JsonObject,
+    # TODO:
+    # response_model=JsonObject,
 )
 def get_plugin_config_schema(
     plugin_id: int = Path(...),

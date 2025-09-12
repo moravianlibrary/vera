@@ -10,10 +10,9 @@ from repositories.watchlist import WatchlistRepository
 from schemas.authenticated_user import AuthenticatedUser
 from schemas.proposal import (
     ApproveProposalsParams,
+    BatchParams,
     IngestProposalsResponse,
     ProposalCreate,
-    ProposalHit,
-    ProposalsBatchParams,
     RejectProposalsParams,
 )
 from schemas.task import Task
@@ -55,7 +54,7 @@ async def search(
 )
 async def ingest(
     proposals: List[ProposalCreate],
-    batch_params: Annotated[ProposalsBatchParams, Query()],
+    batch_params: Annotated[BatchParams, Query()],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
     service: ProposalService = DependsOnProposalService,
 ):

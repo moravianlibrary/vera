@@ -21,17 +21,12 @@ from adapters.database import (
 )
 from definitions.project import ProjectStatus
 
-from .associations import (
-    project_category_association,
-    project_group_association,
-    project_user_association,
-)
+from .associations import project_group_association, project_user_association
 from .mixins.created_audit import CreatedAuditMixin
 from .mixins.updated_audit import UpdatedAuditMixin
 
 if TYPE_CHECKING:
     from .addition import AdditionBatchModel
-    from .category import CategoryModel
     from .group import GroupModel
     from .intention import IntentionModel
     from .proposal import ProposalBatchModel
@@ -59,7 +54,7 @@ class ProjectModel(BaseModel, CreatedAuditMixin):
     is_archived = Column(Boolean, default=False, nullable=False)
 
     status_log: Mapped[List["ProjectStatusLogModel"]] = contains(
-        "ProjectStatusLogModel", "project", "dynamic"
+        "ProjectStatusLogModel", "project"
     )
 
     # Relationships to other entities
@@ -68,9 +63,6 @@ class ProjectModel(BaseModel, CreatedAuditMixin):
     )
     proposal_batches: Mapped[List["ProposalBatchModel"]] = has_many(
         "ProposalBatchModel", "project"
-    )
-    categories: Mapped[List["CategoryModel"]] = connected_with(
-        "CategoryModel", project_category_association, "projects"
     )
     intention: Mapped["IntentionModel"] = has_one("IntentionModel", "project")
 

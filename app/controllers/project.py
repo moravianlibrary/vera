@@ -1,6 +1,7 @@
 from typing import Annotated, List
 
 from fastapi import APIRouter, Path, Query
+from fastapi.params import Body
 
 from adapters.indexer import IndexerQuery, IndexerRequest, IndexerResponse
 from definitions.permission import GeneralPermission, OwnershipPermission
@@ -8,20 +9,27 @@ from definitions.project import ProjectStatus
 from definitions.watchlist import WatchlistTarget
 from repositories.project import ProjectRepository
 from repositories.watchlist import WatchlistRepository
-from schemas.authenticated_user import AuthenticatedUser
-from schemas.common import AssignmentChange
-from schemas.project import (
-    Project,
-    ProjectAdditionCreate,
-    ProjectBatchParams,
-    ProjectEdit,
+from schemas.addition import (
+    AdditionCreate,
+    IngestAdditionsParams,
+    IngestAdditionsResponse,
 )
+from schemas.authenticated_user import AuthenticatedUser
+from schemas.common import (
+    AssignmentChange,
+    BatchParams,
+    Message,
+    PriorityChange,
+)
+from schemas.project import Project, ProjectEdit
+from schemas.proposal import IngestProposalsResponse, ProposalCreate
 from schemas.watchlist import Watchlist, WatchlistPropertiesParams
 from services.project import ProjectService
 
 from .resources import (
     DependsOnAuthenticatedUser,
     DependsOnProjectRepository,
+    DependsOnProjectService,
     DependsOnWatchlistRepository,
     RestrictedSearch,
     WithGlobalPermission,
@@ -52,9 +60,10 @@ async def search(
 )
 async def create(
     project: ProjectEdit,
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
     repository: ProjectRepository = DependsOnProjectRepository,
 ):
-    return await repository.create(project)
+    return await repository.create(project, user.id)
 
 
 @router.put(
@@ -78,75 +87,53 @@ async def update(
 async def change_assignment(
     assignment_change: AssignmentChange,
     project_id: int = Path(...),
-    service: ProjectService = DependsOnProjectRepository,
+    service: ProjectService = DependsOnProjectService,
 ):
     return await service.change_assignment(project_id, assignment_change)
 
 
 @router.post(
-    "/{project_id}/add-documents",
-    dependencies=[WithPermission(OwnershipPermission.ReadProjects)],
-    response_model=Project,
-)
-async def add_documents(
-    batch_params: Annotated[ProjectBatchParams, Query()],
-    additions: List[ProjectAdditionCreate] | None = None,
-    project_id: int = Path(...),
-    service: ProjectService = DependsOnProjectRepository,
-):
-    return await service.add_documents(project_id, batch_params, additions)
-
-
-@router.patch(
-    "/{project_id}/categories-assignment",
+    "/{project_id}/propose-documents",
     dependencies=[
         WithPermission(
-            GeneralPermission.ReviewProjects,
-            OwnershipPermission.ManageCategories,
+            OwnershipPermission.ReadProjects,
+            GeneralPermission.ProposeDocuments,
         )
     ],
-    response_model=Project,
+    response_model=IngestProposalsResponse,
 )
-async def change_categories_assignment(
-    project_id: int = Path(...),
-    categories: List[int] | None = None,
-    repository: ProjectRepository = DependsOnProjectRepository,
-    service: ProjectService = DependsOnProjectRepository,
+async def propose_documents(
+    project_id: Annotated[int, Path(...)],
+    batch_params: Annotated[BatchParams, Query()],
+    proposals: Annotated[List[ProposalCreate], Body(min_length=1)],
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: ProjectService = DependsOnProjectService,
 ):
-    return await service.change_direct_categories(
-        repository.get_by_id(project_id), categories
+    return await service.propose_documents(
+        project_id, batch_params, proposals, user.id
     )
 
 
-@router.patch(
-    "/{project_id}/approve",
-    dependencies=[WithPermission(GeneralPermission.ReviewProjects)],
-    response_model=Project,
+@router.post(
+    "/{project_id}/add-documents",
+    dependencies=[
+        WithPermission(
+            OwnershipPermission.ReadProjects,
+            GeneralPermission.AddDocuments,
+            OwnershipPermission.ReadCategories,
+        )
+    ],
+    response_model=IngestAdditionsResponse,
 )
-async def approve(
-    message: str | None = None,
-    project_id: int = Path(...),
+async def add_documents(
+    project_id: Annotated[int, Path(...)],
+    ingest_params: Annotated[IngestAdditionsParams, Query()],
+    additions: Annotated[List[AdditionCreate], Body(min_length=1)],
     user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    service: ProjectService = DependsOnProjectRepository,
+    service: ProjectService = DependsOnProjectService,
 ):
-    return await service.change_status(
-        project_id, ProjectStatus.Accepted, message, user
-    )
-
-
-@router.patch(
-    "/{project_id}/reject",
-    dependencies=[WithPermission(GeneralPermission.ReviewProjects)],
-    response_model=Project,
-)
-async def reject(
-    message: str | None = None,
-    project_id: int = Path(...),
-    user: AuthenticatedUser = DependsOnAuthenticatedUser,
-    service: ProjectService = DependsOnProjectRepository,
-):
-    return await service.change_status(
-        project_id, ProjectStatus.Declined, message, user
+    return await service.add_documents(
+        project_id, ingest_params, additions, user.id
     )
 
 
@@ -160,6 +147,51 @@ async def delete(
     repository: ProjectRepository = DependsOnProjectRepository,
 ):
     return await repository.delete(repository.get_by_id(project_id))
+
+
+@router.patch(
+    "/{project_id}/priority",
+    dependencies=[WithPermission(GeneralPermission.ReviewProjects)],
+    response_model=Project,
+)
+async def change_priority(
+    priority: PriorityChange,
+    project_id: int = Path(...),
+    service: ProjectService = DependsOnProjectService,
+):
+    return await service.change_priority(project_id, priority)
+
+
+@router.patch(
+    "/{project_id}/approve",
+    dependencies=[WithPermission(GeneralPermission.ReviewProjects)],
+    response_model=Project,
+)
+async def approve(
+    message: Message | None = None,
+    project_id: int = Path(...),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: ProjectService = DependsOnProjectService,
+):
+    return await service.change_status(
+        project_id, ProjectStatus.Approved, message, user
+    )
+
+
+@router.patch(
+    "/{project_id}/reject",
+    dependencies=[WithPermission(GeneralPermission.ReviewProjects)],
+    response_model=Project,
+)
+async def reject(
+    message: Message | None = None,
+    project_id: int = Path(...),
+    user: AuthenticatedUser = DependsOnAuthenticatedUser,
+    service: ProjectService = DependsOnProjectService,
+):
+    return await service.change_status(
+        project_id, ProjectStatus.Rejected, message, user
+    )
 
 
 @router.post(

@@ -133,10 +133,11 @@ class TaskBasedService:
         created_by: str,
         query: IndexerQuery | None = None,
         data: BaseModel | None = None,
+        task_scope: TaskScope | None = None,
         name: str | None = None,
     ) -> TaskModel:
         return await self._task_service.create(
-            self._task_scope,
+            task_scope or self._task_scope,
             task_type,
             name or self._task_names_mapping[task_type],
             created_by,
