@@ -22,7 +22,6 @@ import type { WatchlistSummary } from "../models/watchlist";
 // -------------------------
 // Queries
 // -------------------------
-
 export const useSearchProjects = (request: EsRequest, enabled = true) =>
     useQuery<EsProjectResponse>({
         queryKey: ["projects", "search", request],
@@ -33,7 +32,6 @@ export const useSearchProjects = (request: EsRequest, enabled = true) =>
 // -------------------------
 // Mutations
 // -------------------------
-
 export const useCreateProject = () => {
     const queryClient = useQueryClient();
     return useMutation<Project, Error, ProjectEdit>({

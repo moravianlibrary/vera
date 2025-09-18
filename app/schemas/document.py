@@ -1,18 +1,6 @@
 from datetime import datetime
 from typing import Any, List
 
-from esorm.fields import boolean, integer, keyword, long, text
-from marcdantic import MarcIssue
-from pydantic import BaseModel, model_validator
-from vera_plugins.definitions.plugin_types import PluginType
-from vera_plugins.schemas import (
-    DocumentCanBeExtractedConfig,
-    DocumentPageCountConfig,
-)
-from vera_plugins.specs.digitization_registry_adapter import (
-    DigitizationRecordState,
-)
-
 from adapters.indexer import EnumList, IndexerModel, IndexerNestedModel
 from adapters.plugin_registry import plugin_registry
 from definitions.digitization_registry import (
@@ -25,11 +13,23 @@ from definitions.document import (
     ExportFormat,
     Priority,
 )
+from esorm.fields import boolean, integer, keyword, long, text
+from marcdantic import MarcIssue
+from pydantic import BaseModel, model_validator
 from repositories.models.document import (
     DocumentIterationModel,
     DocumentModel,
     DocumentPropertyModel,
 )
+from vera_plugins.definitions.plugin_types import PluginType
+from vera_plugins.schemas import (
+    DocumentCanBeExtractedConfig,
+    DocumentPageCountConfig,
+)
+from vera_plugins.specs.digitization_registry_adapter import (
+    DigitizationRecordState,
+)
+
 from schemas.watchlist import WatchlistSummary
 
 from .additional_properties import AdditionalDetails, AdditionalProperties
@@ -83,16 +83,18 @@ class DocumentAdditionalProperties(AdditionalProperties):
 
 class DocumentHit(IndexerModel):
     catalog_record_id: text
-    catalog_record_valid: boolean
-
-    iteration_id: long
+    document_id: long
     iteration: integer
+
+    material_type: keyword
+    title: text
+    subtitle: text | None = None
+    identifiers: List[CatalogRecordIdentifier]
 
     barcode: keyword | None = None
     volume_number: keyword | None = None
     volume_year: keyword | None = None
     bundle: keyword | None = None
-    material_type: keyword | None = None
     issuance_type: keyword | None = None
 
     digitization_state: EnumList[DigitizationState]

@@ -1,50 +1,93 @@
-import { z, type ZodType } from "zod";
+import { z } from "zod";
 
-const EsQuerySchema = z.any();
-type EsQuery = z.infer<typeof EsQuerySchema>;
-
-const EsRequestSchema = z.object({
-    query: EsQuerySchema,
-    from: z.number().min(0).optional(),
-    size: z.number().min(1).max(1000).optional(),
-    sort: z
-        .array(
-            z.object({
-                field: z.string(),
-                order: z.enum(["asc", "desc"]).default("asc"),
-            })
-        )
+export const EsTermsAggRequestSchema = z.object({
+    field: z.string(),
+    size: z.number().optional(),
+    include: z.union([z.string(), z.array(z.string())]).optional(),
+    exclude: z.union([z.string(), z.array(z.string())]).optional(),
+    order: z
+        .object({ _count: z.literal("desc").or(z.literal("asc")).optional() })
         .optional(),
 });
-type EsRequest = z.infer<typeof EsRequestSchema>;
+export type EsTermsAggRequest = z.infer<typeof EsTermsAggRequestSchema>;
 
-const createEsHitSchema = <T extends ZodType<any>>(sourceSchema: T) =>
-    z.object({
-        _index: z.string(),
-        _id: z.string(),
-        _score: z.number().optional(),
-        _source: sourceSchema,
-    });
+export const EsRangeAggRequestSchema = z.object({
+    field: z.string(),
+    ranges: z.array(
+        z.object({
+            key: z.string().optional(),
+            from: z.number().nullable().optional(),
+            to: z.number().nullable().optional(),
+        })
+    ),
+});
+export type EsRangeAggRequest = z.infer<typeof EsRangeAggRequestSchema>;
 
-const createEsHitsSchema = <T extends ZodType<any>>(sourceSchema: T) =>
-    z.object({
-        total: z.object({ value: z.number() }),
-        hits: z.array(createEsHitSchema(sourceSchema)),
-    });
+export const EsDateRangeAggRequestSchema = z.object({
+    field: z.string(),
+    format: z.string().optional(),
+    ranges: z.array(
+        z.object({
+            key: z.string().optional(),
+            from: z.union([z.string(), z.number()]).nullable().optional(),
+            to: z.union([z.string(), z.number()]).nullable().optional(),
+        })
+    ),
+});
+export type EsDateRangeAggRequest = z.infer<typeof EsDateRangeAggRequestSchema>;
 
-const createEsResponseSchema = <T extends ZodType<any>>(sourceSchema: T) =>
-    z.object({
-        took: z.number(),
-        timed_out: z.boolean(),
-        _shards: z.any(),
-        hits: createEsHitsSchema(sourceSchema),
-    });
+export const EsAggregationsRequestSchema = z.union([
+    z.object({ terms: EsTermsAggRequestSchema }),
+    z.object({ range: EsRangeAggRequestSchema }),
+    z.object({ date_range: EsDateRangeAggRequestSchema }),
+]);
+export type EsAggregationsRequest = z.infer<typeof EsAggregationsRequestSchema>;
 
-export {
-    EsQuerySchema,
-    EsRequestSchema,
-    createEsHitSchema,
-    createEsHitsSchema,
-    createEsResponseSchema,
-};
-export type { EsQuery, EsRequest };
+//
+//
+//
+//
+
+export const EsFilterTypeSchema = z.enum([
+    "terms",
+    "range",
+    "date-range",
+    "search",
+]);
+export type EsFilterType = z.infer<typeof EsFilterTypeSchema>;
+
+export interface EsTermsFilterConfig {
+    field: string;
+    type: "terms";
+    size?: number;
+    sizeOptions?: number[];
+    include?: string[] | string;
+    exclude?: string[] | string;
+    order?: { _count: "asc" | "desc" };
+    searchable?: boolean;
+    renderBucketKey?: (key: string) => React.ReactNode;
+    displayOrder?: string[];
+}
+
+export interface EsRangeFilterConfig {
+    field: string;
+    type: "range";
+    min?: number;
+    max?: number;
+}
+
+export interface EsDateRangeFilterConfig {
+    field: string;
+    type: "date-range";
+}
+
+export interface EsSearchFilterConfig {
+    field: string;
+    type: "search";
+}
+
+export type EsFilterConfig =
+    | EsTermsFilterConfig
+    | EsRangeFilterConfig
+    | EsDateRangeFilterConfig
+    | EsSearchFilterConfig;

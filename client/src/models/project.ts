@@ -3,7 +3,7 @@ import { GroupSummarySchema } from "./group";
 import { UserSummarySchema } from "./user";
 import { WatchlistSummarySchema } from "./watchlist";
 import { PrioritySchema } from "./common";
-import { createEsResponseSchema } from "./es";
+import { createEsResponseSchema } from "./api/responses/es";
 
 const ProjectEditSchema = z.object({
     name: z.string(),

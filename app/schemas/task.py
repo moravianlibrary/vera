@@ -86,9 +86,9 @@ class TaskHit(IndexerModel):
     started_at: datetime | None = None
     finished_at: datetime | None = None
 
-    processed_count: integer
-    total_count: integer
-    error_count: integer
+    progress: float = 0.0
+    processed_count: integer = 0
+    total_count: integer = 0
 
     result: List[TaskResult] | None = None
 

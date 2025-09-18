@@ -8,6 +8,9 @@ import {
     CardHeader,
     CardTitle,
     Content,
+    Divider,
+    Flex,
+    FlexItem,
     Gallery,
     PageSection,
     Pagination,
@@ -16,12 +19,17 @@ import type { Project } from "../models/project";
 import PriorityLabel from "../components/PriorityLabel";
 import ProjectStatusLabel from "../components/ProjectStatusLabel";
 
-interface ProjectGalleryProps {
-    projects: Project[];
+interface ProjectCardProps {
+    project: Project;
+    showDescription?: boolean;
     showCreator?: boolean;
 }
 
-const ProjectCard = ({ project }: { project: Project }) => {
+const ProjectCard = ({
+    project,
+    showDescription,
+    showCreator,
+}: ProjectCardProps) => {
     return (
         <Card key={project.id}>
             <CardHeader
@@ -37,15 +45,28 @@ const ProjectCard = ({ project }: { project: Project }) => {
             // }}
             ></CardHeader>
             <CardTitle>
-                <span>{project.name}</span>
-                <ProjectStatusLabel status={project.status!} />
+                <Flex
+                    alignItems={{ default: "alignItemsCenter" }}
+                    justifyContent={{ default: "justifyContentSpaceBetween" }}
+                >
+                    <FlexItem>
+                        <strong>{project.name}</strong>
+                    </FlexItem>
+                    <FlexItem>
+                        <ProjectStatusLabel status={project.status!} />
+                    </FlexItem>
+                </Flex>
+                {/* <span>{project.name}</span>
+                <ProjectStatusLabel status={project.status!} /> */}
             </CardTitle>
+            <Divider />
             <CardBody>
                 <Content>
+                    {showDescription && <p>{project.description}</p>}
                     <p>Target Pages: {project.target_page_count}</p>
                     <p>
-                        Dates: {project.start_date.toLocaleDateString()} –{" "}
-                        {new Date(project.end_date).toLocaleDateString()}
+                        Dates: {project.start_date?.toLocaleDateString() || ""}{" "}
+                        – {project.end_date?.toLocaleDateString() || ""}
                     </p>
                     <PriorityLabel
                         priority={project.priority || 0}
@@ -54,7 +75,12 @@ const ProjectCard = ({ project }: { project: Project }) => {
                 </Content>
             </CardBody>
             <CardFooter>
-                <p>Created by: {project.created_by}</p>
+                {showCreator && (
+                    <p>
+                        Created by: {project.created_by} (
+                        {project.created_at.toLocaleDateString()})
+                    </p>
+                )}
             </CardFooter>
         </Card>
     );
@@ -93,7 +119,12 @@ const ProjectsContainer = (): ReactElement => {
                             ...h._source,
                         })) || []
                     ).map((p) => (
-                        <ProjectCard key={p.id} project={p as Project} />
+                        <ProjectCard
+                            key={p.id}
+                            project={p as Project}
+                            showDescription
+                            showCreator
+                        />
                     ))}
                 </Gallery>
             </PageSection>

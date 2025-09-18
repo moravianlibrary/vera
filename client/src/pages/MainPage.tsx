@@ -1,7 +1,13 @@
 import { useState, type ReactElement } from "react";
 import "@patternfly/react-core/dist/styles/base.css";
 
-import { Routes, Route } from "react-router-dom";
+import {
+    Routes,
+    Route,
+    Link,
+    useNavigate,
+    useLocation,
+} from "react-router-dom";
 import {
     Page,
     Masthead,
@@ -22,11 +28,75 @@ import {
     MastheadContent,
     PageSidebarBody,
     Card,
+    NavExpandable,
 } from "@patternfly/react-core";
-import { BarsIcon } from "@patternfly/react-icons";
 import ProjectsContainer from "../containers/ProjectsContainer";
-// import { DashboardContainer } from "../containers/DashboardContainer";
-// import { AdditionsContainer } from "../containers/AdditionsContainer";
+import { useTranslation } from "react-i18next";
+import DocumentsSection from "./DocumentsSection";
+
+interface NavigationItem {
+    key: string;
+    to: string;
+}
+
+interface NavigationSection {
+    section: string;
+    items: NavigationItem[];
+}
+
+const NAVIGATION_CONFIG: (NavigationSection | NavigationItem)[] = [
+    { key: "home", to: "/" },
+    {
+        section: "documents",
+        items: [
+            { key: "documents", to: "/documents" },
+            { key: "document-proposals", to: "/documents/proposals" },
+            { key: "document-additions", to: "/documents/additions" },
+            { key: "catalog-records", to: "/catalog-records" },
+        ],
+    },
+    {
+        section: "organization-and-planning",
+        items: [
+            { key: "categories", to: "/categories" },
+            { key: "intentions", to: "/intentions" },
+            { key: "projects", to: "/projects" },
+        ],
+    },
+    { key: "digitization-lists", to: "/digitization-lists" },
+    { key: "tasks", to: "/tasks" },
+    {
+        section: "administration",
+        items: [
+            { key: "users", to: "/users" },
+            { key: "groups", to: "/groups" },
+            { key: "roles", to: "/roles" },
+        ],
+    },
+    {
+        section: "system",
+        items: [
+            { key: "watchlists", to: "/watchlists" },
+            { key: "plugins", to: "/plugins" },
+            { key: "settings", to: "/settings" },
+            { key: "maintenance", to: "/maintenance" },
+        ],
+    },
+];
+
+interface NavigationItemReverse extends NavigationItem {
+    section: string;
+}
+
+const NAVIGATION_ITEMS: NavigationItemReverse[] = NAVIGATION_CONFIG.flatMap(
+    (section) =>
+        "items" in section
+            ? section.items.map((item) => ({
+                  ...item,
+                  section: section.section,
+              }))
+            : [{ ...section, section: "n/a" }]
+).filter((item) => item.key !== "home");
 
 interface NavOnSelectProps {
     groupId: number | string;
@@ -35,14 +105,28 @@ interface NavOnSelectProps {
 }
 
 const MainPage = (): ReactElement => {
-    const [activeItem, setActiveItem] = useState(1);
+    const { t } = useTranslation();
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const initItem = NAVIGATION_ITEMS.filter((item) =>
+        location.pathname.startsWith(item.to)
+    ).sort((a, b) => b.to.length - a.to.length)[0];
+
+    const [activeGroup, setActiveGroup] = useState<string>(
+        initItem?.section || "n/a"
+    );
+    const [activeItem, setActiveItem] = useState<string>(
+        initItem?.key || "home"
+    );
 
     const onNavSelect = (
         _event: React.FormEvent<HTMLInputElement>,
         selectedItem: NavOnSelectProps
     ) => {
-        setActiveItem(selectedItem.itemId as number);
-        console.log("selected item", selectedItem);
+        _event.preventDefault();
+        setActiveItem(selectedItem.itemId as string);
+        navigate(selectedItem.to);
     };
 
     const masthead = (
@@ -70,24 +154,41 @@ const MainPage = (): ReactElement => {
         </Masthead>
     );
 
+    const navItem = (item: NavigationItem) => {
+        return (
+            <NavItem
+                key={item.key}
+                itemId={item.key}
+                to={item.to}
+                isActive={activeItem === item.key}
+            >
+                {t(`navbar.item.${item.key}`)}
+            </NavItem>
+        );
+    };
+
+    const navSection = (section: NavigationSection) => {
+        return (
+            <NavExpandable
+                key={section.section}
+                groupId={section.section}
+                isActive={activeGroup === section.section}
+                isExpanded={activeGroup === section.section}
+                title={t(`navbar.section.${section.section}`)}
+            >
+                {section.items.map(navItem)}
+            </NavExpandable>
+        );
+    };
+
+    // TODO: This is compact version of sidebar, make also expanded version and toggle between them
+    // Expanded version should have Sections instead of Expandables
     const pageNav = (
         <Nav onSelect={onNavSelect}>
             <NavList>
-                <NavItem itemId={0} isActive={activeItem === 0} to="/projects">
-                    Projects
-                </NavItem>
-                <NavItem itemId={1} isActive={activeItem === 1} to="/">
-                    Policy
-                </NavItem>
-                <NavItem itemId={2} isActive={activeItem === 2} to="#auth">
-                    Authentication
-                </NavItem>
-                <NavItem itemId={3} isActive={activeItem === 3} to="#network">
-                    Network services
-                </NavItem>
-                <NavItem itemId={4} isActive={activeItem === 4} to="#server">
-                    Server
-                </NavItem>
+                {NAVIGATION_CONFIG.map((entry) =>
+                    "section" in entry ? navSection(entry) : navItem(entry)
+                )}
             </NavList>
         </Nav>
     );
@@ -102,7 +203,7 @@ const MainPage = (): ReactElement => {
         <Page masthead={masthead} sidebar={sidebar} isManagedSidebar>
             <PageSection aria-labelledby="main-title">
                 <Routes>
-                    {/* <Route path="/dashboard" element={<DashboardContainer />} /> */}
+                    <Route path="/documents" element={<DocumentsSection />} />
                     <Route path="/projects" element={<ProjectsContainer />} />
                 </Routes>
             </PageSection>

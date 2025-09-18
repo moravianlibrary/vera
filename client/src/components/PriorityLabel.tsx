@@ -1,6 +1,6 @@
 import { Trans } from "react-i18next";
 import type { Priority } from "../models/common";
-import { Card, Icon, Label, type LabelProps } from "@patternfly/react-core";
+import { Icon, Label, type LabelProps } from "@patternfly/react-core";
 import {
     PriorityHighestIcon,
     PriorityHighIcon,
@@ -8,6 +8,7 @@ import {
     PriorityLowIcon,
     PriorityMediumIcon,
 } from "./PriorityIcons";
+import type { JSX } from "react";
 
 interface PriorityLabelProps {
     priority: Priority;
@@ -15,6 +16,7 @@ interface PriorityLabelProps {
 }
 
 // TODO: Palettes with divisions
+// TODO: Use classes instead of inline styles
 const priorityColors: { [key in Priority]: LabelProps["color"] } = {
     1: "blue", // blue - cold
     2: "teal", // light blue
@@ -35,19 +37,19 @@ const PriorityLabel = ({
     withKeyword = false,
 }: PriorityLabelProps) => {
     return (
-        <Card
+        <Label
             color={priorityColors[priority]}
+            icon={<Icon>{priorityIcon[priority]}</Icon>}
             style={{
                 fontWeight: "bold",
             }}
         >
-            <Icon>{priorityIcon[priority]}</Icon>
             <Trans
                 i18nKey={`project.priority.${
                     withKeyword && "with-keyword."
                 }${priority}`}
             />
-        </Card>
+        </Label>
     );
 };
 

@@ -1,65 +1,59 @@
-import { Factory, Model, Response, Server } from "miragejs";
+import { Factory, Response, Server } from "miragejs";
 import type { Project, ProjectEdit, ProjectStatus } from "../models/project";
 import type { EsQuery, EsRequest } from "../models/es";
 import type { ProposalCreate } from "../models/proposal";
 import type { AdditionCreate } from "../models/addition";
 
-export const projectModels = {
-    project: Model,
-};
-
 // Factory producing exact Project objects
-export const projectFactories = {
-    project: Factory.extend<Project>({
-        id(i) {
-            return i + 1;
-        },
-        name(i) {
-            return `Project ${i + 1}`;
-        },
-        description() {
-            return "This is a mocked project description";
-        },
-        target_page_count() {
-            return 100;
-        },
-        start_date() {
-            return new Date();
-        },
-        end_date() {
-            return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-        },
-        created_by() {
-            return "user1";
-        },
-        created_at() {
-            return new Date();
-        },
-        priority() {
-            return 3;
-        },
-        status() {
-            return ["Proposed", "Approved", "Rejected"][
-                Math.floor(Math.random() * 3)
-            ] as ProjectStatus;
-        },
-        is_archived() {
-            return false;
-        },
-        groups() {
-            return [];
-        },
-        users() {
-            return [];
-        },
-        status_log() {
-            return [];
-        },
-        watchlists() {
-            return [];
-        },
-    }),
-};
+export const projectFactory = Factory.extend<Project>({
+    id(i) {
+        return i + 1;
+    },
+    name(i) {
+        return `Project ${i + 1}`;
+    },
+    description() {
+        return "This is a mocked project description";
+    },
+    target_page_count() {
+        return 100;
+    },
+    start_date() {
+        return new Date();
+    },
+    end_date() {
+        return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    },
+    created_by() {
+        return "user1";
+    },
+    created_at() {
+        return new Date();
+    },
+    priority() {
+        return 3;
+    },
+    status() {
+        return ["Proposed", "Approved", "Rejected"][
+            Math.floor(Math.random() * 3)
+        ] as ProjectStatus;
+    },
+    is_archived() {
+        return false;
+    },
+    groups() {
+        return [];
+    },
+    users() {
+        return [];
+    },
+    status_log() {
+        return [];
+    },
+    watchlists() {
+        return [];
+    },
+});
 
 // Seeds with exact Project objects
 export function projectSeeds(server: Server) {
