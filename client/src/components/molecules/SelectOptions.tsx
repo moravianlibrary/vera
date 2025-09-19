@@ -9,19 +9,23 @@ import {
 import { TimesIcon } from "@patternfly/react-icons";
 import { useState } from "react";
 
-interface OptionsSelectProps {
+interface SelectOptionsProps {
     options: string[];
+    icon: React.ReactNode;
     placeholder: string;
-    selected?: string;
+    compact?: boolean;
+    selected: string;
     onSelect: (value?: string) => void;
 }
 
-const OptionsSelect = ({
+const SelectOptions = ({
     options,
+    icon,
     placeholder,
+    compact,
     selected,
     onSelect,
-}: OptionsSelectProps) => {
+}: SelectOptionsProps) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const onSelectChange = (value: string | undefined) => {
@@ -39,11 +43,12 @@ const OptionsSelect = ({
             toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                 <MenuToggle
                     ref={toggleRef}
+                    icon={icon}
                     onClick={() => setIsOpen(!isOpen)}
                     isExpanded={isOpen}
                 >
-                    {selected || placeholder}
-                    {selected && (
+                    {!compact && (selected || placeholder)}
+                    {!compact && selected && (
                         <Button
                             variant="plain"
                             onClick={() => onSelectChange(undefined)}
@@ -66,4 +71,4 @@ const OptionsSelect = ({
     );
 };
 
-export default OptionsSelect;
+export default SelectOptions;

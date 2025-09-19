@@ -37,6 +37,9 @@ export const PrioritySchema = z
     .max(5, { message: "Priority cannot exceed 5" });
 export type Priority = z.infer<typeof PrioritySchema>;
 
+export const UUIDSchema = z.uuid();
+export type UUID = z.infer<typeof UUIDSchema>;
+
 // -------------------------
 // Enums
 // -------------------------
