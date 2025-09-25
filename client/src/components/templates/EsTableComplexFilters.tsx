@@ -1,35 +1,37 @@
 import { Fragment } from "react/jsx-runtime";
 import EsHitsTable from "../molecules/EsTable";
 import {
-    Button,
-    Divider,
     Flex,
-    FlexItem,
     Pagination,
     SearchInput,
+    Toolbar,
+    ToolbarContent,
+    ToolbarGroup,
+    ToolbarItem,
     type PerPageOptions,
 } from "@patternfly/react-core";
 import BulkSelector from "../molecules/BulkSelector";
 import EsFilters, { type EsFilterState } from "../organisms/EsFilters";
-import { FilterIcon, TimesIcon } from "@patternfly/react-icons";
-import { useState } from "react";
+import { use, useState } from "react";
 import type { EsFilterConfig } from "../../models/es";
 import type { TableColumnConfig } from "../../models/config";
-import type {
-    EsAggregation,
-    EsAggregationBucket,
-} from "../../models/api/responses/es_aggregations";
+import type { EsAggregation } from "../../models/api/responses/es_aggregations";
 import type { EsHit } from "../../models/api/responses/es";
-import EsFilterPresetsDropdown from "../organisms/EsFilterPresetsDropdown";
+import EsFilterPresetsDropdown from "../molecules/EsFilterPresetsDropdown";
 import SelectOptions from "../molecules/SelectOptions";
 import { SortingIcon } from "../atoms/Icons";
 import ActionsMenu from "../molecules/ActionsMenu";
+import type { ActionConfig } from "../../models/ui/config";
+import ToggleFiltersButton from "../molecules/ToggleFiltersButton";
+import { FilterIcon } from "@patternfly/react-icons";
+import { useTranslation } from "react-i18next";
 
 interface EsTableComplexFiltersProps<T> {
     // config
     columnConfigs: TableColumnConfig<T>[];
     columnOrder?: string[];
     filterConfigs: EsFilterConfig[];
+    actionsConfig: ActionConfig[];
     perPageOptions?: PerPageOptions[];
     uiConfig?: any;
     i18nPrefix: string;
@@ -72,6 +74,7 @@ const EsTableComplexFilters = <T,>({
     columnConfigs,
     columnOrder,
     filterConfigs,
+    actionsConfig,
     perPageOptions,
     uiConfig,
     i18nPrefix,
@@ -98,6 +101,8 @@ const EsTableComplexFilters = <T,>({
     onSelectAll,
     onToggleSelect,
 }: EsTableComplexFiltersProps<T>) => {
+    const { t } = useTranslation();
+
     const [isSearchExpanded, setIsSearchExpanded] = useState<boolean>(false);
     const [isFiltersExpanded, setIsFiltersExpanded] = useState<boolean>(false);
 
@@ -122,81 +127,145 @@ const EsTableComplexFilters = <T,>({
     // TODO: Paginator at the bottom floating above the table
     // TODO: Sorting options somewhere
 
+    const bulkSelector = (
+        <ToolbarItem>
+            <BulkSelector
+                selectedCount={isAllSelected ? totalItems : selectedIds.size}
+                onPageCount={hits.length}
+                totalCount={totalItems}
+                onSelectNone={onSelectNone}
+                onSelectPage={onSelectPage}
+                onSelectAll={onSelectAll}
+                labels={{
+                    selectNone: t("common.controls.select-none"),
+                    selectPage: (values) =>
+                        t("common.controls.select-page", values),
+                    selectAll: (values) =>
+                        t("common.controls.select-all", values),
+                    selectedCount: (values) =>
+                        t("common.controls.selected-count", values),
+                }}
+            />
+        </ToolbarItem>
+    );
+
+    const actionsMenu = (
+        <ToolbarItem>
+            <ActionsMenu
+                config={actionsConfig}
+                label={t("documents.controls.actions-menu-label")}
+            />
+        </ToolbarItem>
+    );
+
+    const bulkActionsControls = (
+        <ToolbarGroup key="bulk-actions" align={{ default: "alignStart" }}>
+            {bulkSelector}
+            {actionsMenu}
+        </ToolbarGroup>
+    );
+
+    const searchBar = (
+        <ToolbarItem>
+            <SearchInput
+                placeholder={t("documents.controls.search-placeholder")}
+                value={searchTerm}
+                onChange={(_event, value) => onSearchChange(value)}
+                onClear={onSearchClear}
+                onSearch={onSearchSubmit}
+            />
+        </ToolbarItem>
+    );
+
+    const searchControls = (
+        <ToolbarGroup key="search" align={{ default: "alignCenter" }}>
+            {searchBar}
+        </ToolbarGroup>
+    );
+
+    const toggleFiltersButton = (
+        <ToggleFiltersButton
+            label={t("common.controls.show-filters")}
+            icon={<FilterIcon />}
+            labelExpanded={t("common.controls.hide-filters")}
+            expanded={isFiltersExpanded}
+            onToggle={() => setIsFiltersExpanded(!isFiltersExpanded)}
+        />
+    );
+
+    const filterPresets = (
+        <EsFilterPresetsDropdown
+            systemPresets={[
+                {
+                    id: "1",
+                    name: "System preset 1",
+                    filters: {},
+                },
+                {
+                    id: "2",
+                    name: "System preset 2",
+                    filters: {},
+                },
+            ]}
+            userPresets={[
+                { id: "3", name: "User preset 1", filters: {} },
+                { id: "4", name: "User preset 2", filters: {} },
+            ]}
+            hasActiveFilters={false}
+            labels={{
+                placeholder: t("documents.controls.filter-presets.placeholder"),
+                favoriteGroup: t(
+                    "documents.controls.filter-presets.favorite-group"
+                ),
+                systemPresetsGroup: t(
+                    "documents.controls.filter-presets.system-group"
+                ),
+                userPresetsGroup: t(
+                    "documents.controls.filter-presets.user-group"
+                ),
+                actionsGroup: t(
+                    "documents.controls.filter-presets.actions-group"
+                ),
+                saveCurrentAction: t(
+                    "documents.controls.filter-presets.save-current-action"
+                ),
+                saveCurrentPrompt: t(
+                    "documents.controls.filter-presets.save-current-prompt"
+                ),
+            }}
+            onSelect={() => {}}
+            onSave={() => {}}
+            onDelete={() => {}}
+            onToggleFavorite={() => {}}
+        />
+    );
+
+    const sorting = (
+        <SelectOptions
+            options={["Option 1", "Option 2", "Option 3"]}
+            icon={<SortingIcon />}
+            selected="Option 1"
+            placeholder={t("common.controls.sorting.placeholder")}
+            onSelect={() => {}}
+        />
+    );
+
+    const filterControls = (
+        <ToolbarGroup key="filters" align={{ default: "alignEnd" }}>
+            {toggleFiltersButton}
+            {filterPresets}
+            {sorting}
+        </ToolbarGroup>
+    );
+
     const controls = (
-        <Flex>
-            <FlexItem spacer={{ default: "spacerMd" }}>
-                <SearchInput
-                    placeholder="Search using catalog..."
-                    value={searchTerm}
-                    onChange={(_event, value) => onSearchChange(value)}
-                    onClear={onSearchClear}
-                    onSearch={onSearchSubmit}
-                    expandableInput={{
-                        isExpanded: isSearchExpanded,
-                        onToggleExpand: () =>
-                            setIsSearchExpanded(!isSearchExpanded),
-                        toggleAriaLabel: "Expandable search input toggle",
-                        hasAnimations: true,
-                    }}
-                />
-            </FlexItem>
-            <FlexItem spacer={{ default: "spacerMd" }}>
-                {/* TODO: If both buttons will by used, make molecule out of them */}
-                <Button
-                    variant="plain"
-                    icon={<FilterIcon />}
-                    onClick={() => setIsFiltersExpanded(!isFiltersExpanded)}
-                />
-                {isFiltersExpanded && (
-                    <Button
-                        variant="plain"
-                        icon={<TimesIcon />}
-                        onClick={() => setIsFiltersExpanded(false)}
-                    />
-                )}
-            </FlexItem>
-            <FlexItem>
-                <EsFilterPresetsDropdown
-                    systemPresets={[
-                        {
-                            id: "1",
-                            name: "System preset 1",
-                            filters: {},
-                        },
-                        {
-                            id: "2",
-                            name: "System preset 2",
-                            filters: {},
-                        },
-                    ]}
-                    userPresets={[
-                        { id: "3", name: "User preset 1", filters: {} },
-                        { id: "4", name: "User preset 2", filters: {} },
-                    ]}
-                    hasActiveFilters={false}
-                    onSelect={() => {}}
-                    onSave={() => {}}
-                    onDelete={() => {}}
-                    onToggleFavorite={() => {}}
-                />
-            </FlexItem>
-            <FlexItem>
-                <SelectOptions
-                    options={["Option 1", "Option 2", "Option 3"]}
-                    icon={<SortingIcon />}
-                    placeholder="Select an option"
-                    compact
-                    selected="Option 1"
-                    onSelect={() => {}}
-                />
-            </FlexItem>
-            {/* <TypeheadSelect
-                        options={["Option 1", "Option 2", "Option 3"]}
-                        placeholder="Select an option"
-                        onSelect={() => {}}
-                    /> */}
-            {/* Also add sorting options here */}
-        </Flex>
+        <Toolbar>
+            <ToolbarContent>
+                {bulkActionsControls}
+                {searchControls}
+                {filterControls}
+            </ToolbarContent>
+        </Toolbar>
     );
 
     const filters = (
@@ -210,27 +279,6 @@ const EsTableComplexFilters = <T,>({
                 category_id: { selected: [], query: "" },
             }}
         />
-    );
-
-    const bulkActions = (
-        <Flex>
-            <FlexItem>
-                <BulkSelector
-                    selectedCount={
-                        isAllSelected ? totalItems : selectedIds.size
-                    }
-                    onPageCount={hits.length}
-                    totalCount={totalItems}
-                    onSelectNone={onSelectNone}
-                    onSelectPage={onSelectPage}
-                    onSelectAll={onSelectAll}
-                />
-            </FlexItem>
-            <ActionsMenu
-                config={[]}
-                disabled={!isAllSelected && !selectedIds.size}
-            />
-        </Flex>
     );
 
     const table = <EsHitsTable columns={columnConfigs} hits={hits} />;
@@ -260,7 +308,6 @@ const EsTableComplexFilters = <T,>({
             {isFiltersExpanded && filters}
             {!isFiltersExpanded && (
                 <Fragment>
-                    {bulkActions}
                     {table}
                     {paginator}
                 </Fragment>

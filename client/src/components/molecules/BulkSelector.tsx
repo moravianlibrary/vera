@@ -6,7 +6,14 @@ import {
     MenuToggleCheckbox,
 } from "@patternfly/react-core";
 import { useState } from "react";
-import { Trans } from "react-i18next";
+import type { DynamicI18n, I18n } from "../../models/ui/config";
+
+interface BulkSelectorLabels {
+    selectNone: I18n;
+    selectPage: DynamicI18n;
+    selectAll: DynamicI18n;
+    selectedCount: DynamicI18n;
+}
 
 interface BulkSelectorProps {
     selectedCount: number;
@@ -15,13 +22,13 @@ interface BulkSelectorProps {
     onSelectNone: () => void;
     onSelectPage: () => void;
     onSelectAll: () => void;
-    i18nPrefix?: string;
+    labels: BulkSelectorLabels;
 }
 
 interface SelectCallbackItem {
     key: string;
+    label: string;
     onClick: () => void;
-    count: number;
 }
 
 const BulkSelector = ({
@@ -31,15 +38,27 @@ const BulkSelector = ({
     onSelectNone,
     onSelectPage,
     onSelectAll,
-    i18nPrefix,
+    labels,
 }: BulkSelectorProps) => {
     const anySelected = selectedCount > 0;
     const allSelected = selectedCount === totalCount;
 
     const selectOptions: SelectCallbackItem[] = [
-        { key: "select-none", onClick: onSelectNone, count: 0 },
-        { key: "select-page", onClick: onSelectPage, count: onPageCount },
-        { key: "select-all", onClick: onSelectAll, count: totalCount },
+        {
+            key: "select-none",
+            label: labels.selectNone,
+            onClick: onSelectNone,
+        },
+        {
+            key: "select-page",
+            label: labels.selectPage({ count: onPageCount }),
+            onClick: onSelectPage,
+        },
+        {
+            key: "select-all",
+            label: labels.selectAll({ count: totalCount }),
+            onClick: onSelectAll,
+        },
     ];
 
     const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -54,16 +73,10 @@ const BulkSelector = ({
                     ref={toggleRef}
                     isExpanded={anySelected}
                     onClick={() => setIsOpen(!isOpen)}
-                    aria-label="Select cards"
                     splitButtonItems={[
                         <MenuToggleCheckbox
                             id="split-dropdown-checkbox"
                             key="split-dropdown-checkbox"
-                            aria-label={
-                                anySelected
-                                    ? "Deselect all cards"
-                                    : "Select all cards"
-                            }
                             isChecked={
                                 allSelected ? true : anySelected ? null : false
                             }
@@ -72,21 +85,17 @@ const BulkSelector = ({
                                 allSelected ? onSelectNone() : onSelectAll();
                             }}
                         >
-                            {selectedCount !== 0 && `${selectedCount} selected`}
+                            {selectedCount !== 0 &&
+                                labels.selectedCount({ count: selectedCount })}
                         </MenuToggleCheckbox>,
                     ]}
                 />
             )}
         >
             <DropdownList>
-                {selectOptions.map(({ key, onClick, count }) => (
+                {selectOptions.map(({ key, label, onClick }) => (
                     <DropdownItem key={key} onClick={onClick}>
-                        <Trans
-                            i18nKey={`${
-                                i18nPrefix ? `${i18nPrefix}.` : ""
-                            }${key}`}
-                            values={{ count }}
-                        />
+                        {label}
                     </DropdownItem>
                 ))}
             </DropdownList>

@@ -19,6 +19,17 @@ import {
     TimesIcon,
     TrashIcon,
 } from "@patternfly/react-icons";
+import type { I18n } from "../../models/ui/config";
+
+interface EsFilterPresetsDropdownLabels {
+    placeholder: I18n;
+    favoriteGroup: I18n;
+    systemPresetsGroup: I18n;
+    userPresetsGroup: I18n;
+    actionsGroup: I18n;
+    saveCurrentAction: I18n;
+    saveCurrentPrompt: I18n;
+}
 
 interface EsFilterPresetsDropdownProps {
     // data
@@ -27,6 +38,7 @@ interface EsFilterPresetsDropdownProps {
     favorite?: UUID;
     active?: UUID;
     hasActiveFilters: boolean;
+    labels: EsFilterPresetsDropdownLabels;
 
     // callbacks
     onSelect: (id: UUID) => void;
@@ -41,6 +53,7 @@ const EsFilterPresetsDropdown: React.FC<EsFilterPresetsDropdownProps> = ({
     favorite,
     active,
     hasActiveFilters,
+    labels,
     onSelect,
     onSave,
     onDelete,
@@ -64,7 +77,7 @@ const EsFilterPresetsDropdown: React.FC<EsFilterPresetsDropdownProps> = ({
             onClick={() => setIsOpen(!isOpen)}
             isExpanded={isOpen}
         >
-            Choose preset
+            {labels.placeholder}
         </MenuToggle>
     );
 
@@ -81,7 +94,9 @@ const EsFilterPresetsDropdown: React.FC<EsFilterPresetsDropdownProps> = ({
     );
 
     const favoriteSection = (preset: EsFilterPreset) => (
-        <DropdownGroup label="Favorite">{presetItem(preset)}</DropdownGroup>
+        <DropdownGroup label={labels.favoriteGroup}>
+            {presetItem(preset)}
+        </DropdownGroup>
     );
 
     const deleteAction = (preset: EsFilterPreset) =>
@@ -138,7 +153,7 @@ const EsFilterPresetsDropdown: React.FC<EsFilterPresetsDropdownProps> = ({
     );
 
     const systemPresetsSection = (presets: EsFilterPreset[]) => (
-        <DropdownGroup label="System presets">
+        <DropdownGroup label={labels.systemPresetsGroup}>
             {presets.map((preset) =>
                 presetItem(preset, favoriteAction(preset))
             )}
@@ -146,7 +161,7 @@ const EsFilterPresetsDropdown: React.FC<EsFilterPresetsDropdownProps> = ({
     );
 
     const userPresetsSection = (presets: EsFilterPreset[]) => (
-        <DropdownGroup label="Your presets">
+        <DropdownGroup label={labels.userPresetsGroup}>
             {presets.map((preset) =>
                 presetItem(
                     preset,
@@ -160,18 +175,18 @@ const EsFilterPresetsDropdown: React.FC<EsFilterPresetsDropdownProps> = ({
     );
 
     const saveCurrentAction = (
-        <DropdownGroup label="Actions">
+        <DropdownGroup label={labels.actionsGroup}>
             <DropdownItem
                 key="save_current"
                 icon={<SaveIcon />}
                 onClick={() => {
-                    const name = prompt("Enter name for the new preset");
+                    const name = prompt(labels.saveCurrentPrompt);
                     if (name) {
                         onSave(name as Name);
                     }
                 }}
             >
-                Save current filters
+                {labels.saveCurrentAction}
             </DropdownItem>
         </DropdownGroup>
     );

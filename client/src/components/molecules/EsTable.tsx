@@ -1,6 +1,6 @@
 import { Table, Thead, Tr, Th, Tbody, Td } from "@patternfly/react-table";
-import type { EsHit } from "../../models/es";
 import type { TableColumnConfig } from "../../models/config";
+import type { EsHit } from "../../models/api/responses/es";
 
 interface EsHitsTableProps<T> {
     columns: TableColumnConfig<T>[];

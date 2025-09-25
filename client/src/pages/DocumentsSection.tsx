@@ -128,6 +128,57 @@ const DocumentsSection = (): ReactElement => {
             columnConfigs={columnConfigs}
             columnOrder={[]}
             filterConfigs={filterConfigs}
+            actionsConfig={[
+                {
+                    label: "export",
+                    actions: [
+                        { label: "CSV", onClick: () => {} },
+                        { label: "Excel", onClick: () => {} },
+                    ],
+                },
+                {
+                    label: "change-category",
+                    actions: [
+                        {
+                            label: "Category 1",
+                            actions: [
+                                {
+                                    label: "Subcategory 1.1",
+                                    actions: [
+                                        {
+                                            label: "Subcategory 1.1.1",
+                                            onClick: () => {},
+                                        },
+                                        {
+                                            label: "Subcategory 1.1.2",
+                                            actions: [
+                                                {
+                                                    label: "Subcategory 1.1.2.1",
+                                                    onClick: () => {},
+                                                },
+                                                {
+                                                    label: "Subcategory 1.1.2.2",
+                                                    onClick: () => {},
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                },
+                                { label: "Subcategory 1.2", onClick: () => {} },
+                                { label: "Subcategory 1.3", onClick: () => {} },
+                            ],
+                        },
+                        {
+                            label: "Category 2",
+                            actions: [
+                                { label: "Subcategory 2.1", onClick: () => {} },
+                                { label: "Subcategory 2.2", onClick: () => {} },
+                            ],
+                        },
+                        { label: "Category 3", onClick: () => {} },
+                    ],
+                },
+            ]}
             uiConfig={{}}
             i18nPrefix=""
             hits={data?.hits.hits}

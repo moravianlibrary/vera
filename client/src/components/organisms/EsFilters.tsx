@@ -4,7 +4,6 @@ import type { EsFilterConfig } from "../../models/es";
 import { useTranslation } from "react-i18next";
 import EsTermsFilter from "../molecules/EsFacetFilter";
 import type { EsAggregationBucket } from "../../models/api/responses/es_aggregations";
-import { NameSchema, type Name } from "../../models/common";
 
 interface EsFacetFilterState {
     selected: string[];
