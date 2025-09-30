@@ -19,6 +19,7 @@ export function makeServer() {
             projectSeeds(server);
         },
         routes() {
+            this.passthrough("/locales/**");
             this.namespace = "api";
             documentRoutes.call(this);
             projectRoutes.call(this);

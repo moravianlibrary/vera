@@ -107,7 +107,7 @@ export const DocumentSchema = z.object({
     // TODO: ?
     digitization_list_state: DigitizationListStateSchema.optional().nullable(),
 
-    current_status: z.array(DocumentStatusSchema),
+    status: z.array(DocumentStatusSchema),
 
     created_by: z.string(),
     created_at: z.string().transform((s) => new Date(s)),

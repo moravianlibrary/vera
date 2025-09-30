@@ -1,7 +1,6 @@
 import { Fragment } from "react/jsx-runtime";
 import EsHitsTable from "../molecules/EsTable";
 import {
-    Flex,
     Pagination,
     SearchInput,
     Toolbar,
@@ -10,117 +9,120 @@ import {
     ToolbarItem,
     type PerPageOptions,
 } from "@patternfly/react-core";
-import BulkSelector from "../molecules/BulkSelector";
-import EsFilters, { type EsFilterState } from "../organisms/EsFilters";
-import { use, useState } from "react";
+import BulkSelector, {
+    type BulkSelectorTexts,
+} from "../molecules/BulkSelector";
+import EsFilters from "../organisms/EsFilters";
+import { useEffect, useReducer, useState } from "react";
 import type { EsFilterConfig } from "../../models/es";
 import type { TableColumnConfig } from "../../models/config";
-import type { EsAggregation } from "../../models/api/responses/es_aggregations";
-import type { EsHit } from "../../models/api/responses/es";
-import EsFilterPresetsDropdown from "../molecules/EsFilterPresetsDropdown";
-import SelectOptions from "../molecules/SelectOptions";
+import EsFilterPresetsDropdown, {
+    type EsFilterPresetsDropdownTexts,
+} from "../molecules/EsFilterPresetsDropdown";
 import { SortingIcon } from "../atoms/Icons";
 import ActionsMenu from "../molecules/ActionsMenu";
-import type { ActionConfig } from "../../models/ui/config";
+import type {
+    ActionConfig,
+    EsSortOption,
+    StaticUiText,
+} from "../../models/ui/config";
 import ToggleFiltersButton from "../molecules/ToggleFiltersButton";
 import { FilterIcon } from "@patternfly/react-icons";
-import { useTranslation } from "react-i18next";
+import { requestReducer } from "../../store/reducers/es";
+import type { EsRequest } from "../../models/api/requests/es";
+import { selectPage, selectPerPage } from "../../store/selectors/es";
+import type { EsSearchConfig } from "../../store/domains/es";
+import type { UseQueryResult } from "@tanstack/react-query";
+import type { EsDocumentResponse } from "../../models/document";
+import SingleSelect from "../molecules/SingleSelect";
+import LoadingState from "../atoms/LoadingState";
+import NoMatchFoundState from "../atoms/NoMatchFoundState";
 
-interface EsTableComplexFiltersProps<T> {
+interface EsTableComplexFiltersProps {
     // config
-    columnConfigs: TableColumnConfig<T>[];
-    columnOrder?: string[];
+    columnConfigs: TableColumnConfig[];
+    searchConfig: EsSearchConfig;
     filterConfigs: EsFilterConfig[];
+    sortOptions: EsSortOption[];
     actionsConfig: ActionConfig[];
     perPageOptions?: PerPageOptions[];
     uiConfig?: any;
-    i18nPrefix: string;
-
-    // loading state
-    isLoading: boolean;
-    isError: boolean;
-    error: Error | null;
-
-    // data
-    hits?: Array<EsHit<T>>;
-    totalItems?: number;
-    aggregations?: Record<string, EsAggregation>;
-
-    // state
-    page?: number;
-    perPage?: number;
-    searchTerm: string;
-    filterStates?: EsFilterState;
-    predefinedFilters?: Record<string, EsFilterState>;
-
-    isAllSelected: boolean;
-    selectedIds: Set<string>;
-
-    // callbacks
-    onPageChange: (page: number, perPage: number) => void;
-    onSearchChange: (value: string) => void;
-    onSearchClear: () => void;
-    onSearchSubmit: () => void;
-    onFilterChange: (field: string, newState: EsFilterState) => void;
-
-    // callbacks - selection
-    onToggleSelect: (id: string) => void;
-    onSelectNone: () => void;
-    onSelectPage: () => void;
-    onSelectAll: () => void;
+    initState: any;
+    useItemsSource: (
+        requests: EsRequest[]
+    ) => UseQueryResult<EsDocumentResponse, unknown>[];
+    texts: {
+        bulkSelector: BulkSelectorTexts;
+        actionsMenuLabel: StaticUiText;
+        searchBarPlaceholder: StaticUiText;
+        filters: {
+            label: StaticUiText;
+            labelExpanded?: StaticUiText;
+        };
+        filterPresets: EsFilterPresetsDropdownTexts;
+        paginator: {
+            perPageSuffix: StaticUiText;
+            ofWord: StaticUiText;
+        };
+    };
 }
 
-const EsTableComplexFilters = <T,>({
+const EsTableComplexFilters = ({
     columnConfigs,
-    columnOrder,
     filterConfigs,
+    sortOptions,
     actionsConfig,
     perPageOptions,
     uiConfig,
-    i18nPrefix,
-    isLoading,
-    isError,
-    error,
-    hits,
-    totalItems,
-    aggregations,
-    page,
-    perPage,
-    searchTerm,
-    filterStates,
-    predefinedFilters,
-    isAllSelected,
-    selectedIds,
-    onPageChange,
-    onSearchChange,
-    onSearchClear,
-    onSearchSubmit,
-    onFilterChange,
-    onSelectNone,
-    onSelectPage,
-    onSelectAll,
-    onToggleSelect,
-}: EsTableComplexFiltersProps<T>) => {
-    const { t } = useTranslation();
+    initState,
+    searchConfig,
+    useItemsSource,
+    texts,
+}: EsTableComplexFiltersProps) => {
+    const [state, dispatch] = useReducer(requestReducer, initState);
 
-    const [isSearchExpanded, setIsSearchExpanded] = useState<boolean>(false);
     const [isFiltersExpanded, setIsFiltersExpanded] = useState<boolean>(false);
 
-    if (isLoading) {
-        return <>Loading...</>;
-    }
+    const { data, isLoading, isError, error } = useItemsSource(
+        state.requests
+    ).reduce(
+        (acc, result) => {
+            if (result.isLoading) {
+                acc.isLoading = true;
+            }
+            if (result.isError) {
+                acc.isError = true;
+                acc.error = result.error as Error;
+            }
+            if (result.data) {
+                acc.data = result.data;
+            }
+            return acc;
+        },
+        {
+            data: undefined as EsDocumentResponse | undefined,
+            isLoading: false,
+            isError: false,
+            error: null as Error | null,
+        }
+    );
 
-    if (isError) {
-        return <>Error: {error?.message}</>;
-    }
+    const hits = data?.hits.hits || [];
+    const totalItems = data?.hits.total.value || 0;
+    const aggregations = data?.aggregations || {};
+    const page = selectPage(state);
+    const perPage = selectPerPage(state);
+    const searchTerm = state.searchTerm;
+    const filterStates = state.filterStates;
+    const hasActiveFilters =
+        searchTerm || Object.values(filterStates ?? {}).length > 0;
+    const selectedIds = state.selectedIds;
+    const isAllSelected = state.isAllSelected;
+    const columnStates = state.columnStates;
 
-    if (!hits || !totalItems || !aggregations || !page || !perPage) {
-        throw new Error(
-            `EsTableComplexFilters: Missing required data. ` +
-                `Debug info — hits: ${!!hits}, totalItems: ${!!totalItems}, ` +
-                `aggregations: ${!!aggregations}, page: ${!!page}, perPage: ${!!perPage}`
-        );
-    }
+    // useEffect(() => {
+    //     dispatch({ type: "setPageIds", ids: hits?.map((h) => h._id) || [] });
+    // }, [hits]);
 
     // TODO: Columns settings button that will switch table or filters view to columns settings view
     // TODO: Predefined columns sets - either under settings button or as a dropdown
@@ -128,68 +130,59 @@ const EsTableComplexFilters = <T,>({
     // TODO: Sorting options somewhere
 
     const bulkSelector = (
-        <ToolbarItem>
-            <BulkSelector
-                selectedCount={isAllSelected ? totalItems : selectedIds.size}
-                onPageCount={hits.length}
-                totalCount={totalItems}
-                onSelectNone={onSelectNone}
-                onSelectPage={onSelectPage}
-                onSelectAll={onSelectAll}
-                labels={{
-                    selectNone: t("common.controls.select-none"),
-                    selectPage: (values) =>
-                        t("common.controls.select-page", values),
-                    selectAll: (values) =>
-                        t("common.controls.select-all", values),
-                    selectedCount: (values) =>
-                        t("common.controls.selected-count", values),
-                }}
-            />
-        </ToolbarItem>
+        <BulkSelector
+            selectedCount={isAllSelected ? totalItems : selectedIds.size}
+            onPageCount={hits.length}
+            totalCount={totalItems}
+            onSelectNone={() => dispatch({ type: "clearSelection" })}
+            onSelectPage={() => dispatch({ type: "selectPage" })}
+            onSelectAll={() => dispatch({ type: "selectAll" })}
+            texts={texts.bulkSelector}
+        />
     );
 
     const actionsMenu = (
-        <ToolbarItem>
-            <ActionsMenu
-                config={actionsConfig}
-                label={t("documents.controls.actions-menu-label")}
-            />
-        </ToolbarItem>
+        <ActionsMenu
+            config={actionsConfig}
+            label={texts.actionsMenuLabel}
+            disabled={selectedIds?.size === 0}
+        />
     );
 
     const bulkActionsControls = (
         <ToolbarGroup key="bulk-actions" align={{ default: "alignStart" }}>
-            {bulkSelector}
-            {actionsMenu}
+            <ToolbarItem>{bulkSelector}</ToolbarItem>
+            <ToolbarItem>{actionsMenu}</ToolbarItem>
         </ToolbarGroup>
     );
 
     const searchBar = (
-        <ToolbarItem>
-            <SearchInput
-                placeholder={t("documents.controls.search-placeholder")}
-                value={searchTerm}
-                onChange={(_event, value) => onSearchChange(value)}
-                onClear={onSearchClear}
-                onSearch={onSearchSubmit}
-            />
-        </ToolbarItem>
+        <SearchInput
+            placeholder={texts.searchBarPlaceholder}
+            value={searchTerm}
+            onChange={(_event, value) =>
+                dispatch({ type: "setSearchTerm", value })
+            }
+            onClear={() => dispatch({ type: "clearSearch" })}
+            onSearch={() =>
+                dispatch({ type: "submitSearch", config: searchConfig })
+            }
+        />
     );
 
     const searchControls = (
         <ToolbarGroup key="search" align={{ default: "alignCenter" }}>
-            {searchBar}
+            <ToolbarItem>{searchBar}</ToolbarItem>
         </ToolbarGroup>
     );
 
     const toggleFiltersButton = (
         <ToggleFiltersButton
-            label={t("common.controls.show-filters")}
             icon={<FilterIcon />}
-            labelExpanded={t("common.controls.hide-filters")}
             expanded={isFiltersExpanded}
             onToggle={() => setIsFiltersExpanded(!isFiltersExpanded)}
+            label={texts.filters.label}
+            labelExpanded={texts.filters.labelExpanded}
         />
     );
 
@@ -212,55 +205,45 @@ const EsTableComplexFilters = <T,>({
                 { id: "4", name: "User preset 2", filters: {} },
             ]}
             hasActiveFilters={false}
-            labels={{
-                placeholder: t("documents.controls.filter-presets.placeholder"),
-                favoriteGroup: t(
-                    "documents.controls.filter-presets.favorite-group"
-                ),
-                systemPresetsGroup: t(
-                    "documents.controls.filter-presets.system-group"
-                ),
-                userPresetsGroup: t(
-                    "documents.controls.filter-presets.user-group"
-                ),
-                actionsGroup: t(
-                    "documents.controls.filter-presets.actions-group"
-                ),
-                saveCurrentAction: t(
-                    "documents.controls.filter-presets.save-current-action"
-                ),
-                saveCurrentPrompt: t(
-                    "documents.controls.filter-presets.save-current-prompt"
-                ),
-            }}
             onSelect={() => {}}
             onSave={() => {}}
             onDelete={() => {}}
             onToggleFavorite={() => {}}
+            // onFilterChange={(field, newState) => {
+            //     dispatch({ type: "setFilter", field, newState });
+            // }}
+            texts={texts.filterPresets}
         />
     );
 
     const sorting = (
-        <SelectOptions
-            options={["Option 1", "Option 2", "Option 3"]}
+        <SingleSelect
             icon={<SortingIcon />}
-            selected="Option 1"
-            placeholder={t("common.controls.sorting.placeholder")}
-            onSelect={() => {}}
+            options={sortOptions.map((opt) => opt.label as string)}
+            selected={state.sortBy?.label || sortOptions[0].label}
+            onSelect={(label) =>
+                dispatch({
+                    type: "setSortBy",
+                    option: sortOptions.find((o) => o.label === label)!,
+                })
+            }
         />
     );
 
     const filterControls = (
         <ToolbarGroup key="filters" align={{ default: "alignEnd" }}>
-            {toggleFiltersButton}
-            {filterPresets}
-            {sorting}
+            <ToolbarItem>{toggleFiltersButton}</ToolbarItem>
+            <ToolbarItem>{filterPresets}</ToolbarItem>
+            <ToolbarItem>{sorting}</ToolbarItem>
         </ToolbarGroup>
     );
 
     const controls = (
-        <Toolbar>
-            <ToolbarContent>
+        <Toolbar
+            isSticky
+            style={{ marginTop: 0, marginLeft: 30, marginRight: 30 }}
+        >
+            <ToolbarContent rowWrap={{ default: "nowrap" }}>
                 {bulkActionsControls}
                 {searchControls}
                 {filterControls}
@@ -271,35 +254,88 @@ const EsTableComplexFilters = <T,>({
     const filters = (
         <EsFilters
             filtersConfig={filterConfigs}
-            i18nFieldPrefix={`${i18nPrefix}.fields`}
-            // aggregations={aggregations}
-            buckets={{}}
+            i18nFieldPrefix=""
+            aggregations={aggregations}
             state={{
                 status: { selected: ["new"], query: "" },
                 category_id: { selected: [], query: "" },
             }}
+            onToggleTerm={(field, bucketKey) =>
+                dispatch({ type: "toggleTerm", field, bucketKey })
+            }
+            onSetRange={(field, from, to) =>
+                dispatch({ type: "setRange", field, from, to })
+            }
+            onSetDateRange={(field, from, to) =>
+                dispatch({ type: "setDateRange", field, from, to })
+            }
+            onSetFieldQuery={(field, query) =>
+                dispatch({ type: "setFieldQuery", field, query })
+            }
+            onApplyFilters={() => setIsFiltersExpanded(false)}
+            onClearFilters={(field) =>
+                dispatch({ type: "clearFilters", field })
+            }
         />
     );
 
-    const table = <EsHitsTable columns={columnConfigs} hits={hits} />;
+    const getTableState = () => {
+        if (isLoading) {
+            return <LoadingState title="Loading results..." />;
+        }
+        if (totalItems === 0 && hasActiveFilters) {
+            return (
+                <NoMatchFoundState
+                    titleText="No results found"
+                    bodyText="Try adjusting your search or filter to find what you're looking for."
+                    clearFiltersText="Clear all filters"
+                    onClearFilters={() => dispatch({ type: "clearFilters" })}
+                />
+            );
+        }
+    };
+
+    const table = (
+        <EsHitsTable
+            columns={columnConfigs}
+            columnStates={columnStates}
+            tableState={getTableState()}
+            hits={hits}
+            selectedIds={selectedIds}
+            onToggleSelect={(id) =>
+                dispatch({ type: "toggleSelection", id: id })
+            }
+        />
+    );
 
     const paginator = (
-        <Flex>
-            <Pagination
-                perPageOptions={perPageOptions}
-                itemCount={totalItems}
-                page={page}
-                perPage={perPage}
-                onSetPage={(_event, newPage, newPerPage) => {
-                    onPageChange(newPage, newPerPage || perPage);
-                }}
-                onPerPageSelect={(_event, newPerPage, newPage) => {
-                    onPageChange(newPage, newPerPage);
-                }}
-                variant="top"
-                isSticky
-            />
-        </Flex>
+        <Pagination
+            style={{ marginLeft: 30, marginRight: 30 }}
+            perPageOptions={perPageOptions}
+            itemCount={totalItems}
+            page={page}
+            perPage={perPage}
+            onSetPage={(_event, newPage, newPerPage) => {
+                dispatch({
+                    type: "setPaginationParams",
+                    page: newPage,
+                    perPage: newPerPage || perPage || 0,
+                });
+            }}
+            onPerPageSelect={(_event, newPerPage, newPage) => {
+                dispatch({
+                    type: "setPaginationParams",
+                    page: newPage,
+                    perPage: newPerPage,
+                });
+            }}
+            variant="bottom"
+            isSticky
+            titles={{
+                perPageSuffix: texts.paginator.perPageSuffix,
+                ofWord: texts.paginator.ofWord,
+            }}
+        />
     );
 
     return (

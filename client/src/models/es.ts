@@ -1,4 +1,8 @@
 import { z } from "zod";
+import type {
+    EsAggregation,
+    EsTermsAggregation,
+} from "./api/responses/es_aggregations";
 
 export const EsTermsAggRequestSchema = z.object({
     field: z.string(),
@@ -57,8 +61,9 @@ export const EsFilterTypeSchema = z.enum([
 export type EsFilterType = z.infer<typeof EsFilterTypeSchema>;
 
 export interface EsTermsFilterConfig {
-    field: string;
     type: "terms";
+    field: string;
+    displayType?: "labels" | "tree";
     size?: number;
     sizeOptions?: number[];
     include?: string[] | string;
@@ -70,20 +75,20 @@ export interface EsTermsFilterConfig {
 }
 
 export interface EsRangeFilterConfig {
-    field: string;
     type: "range";
+    field: string;
     min?: number;
     max?: number;
 }
 
 export interface EsDateRangeFilterConfig {
-    field: string;
     type: "date-range";
+    field: string;
 }
 
 export interface EsSearchFilterConfig {
-    field: string;
     type: "search";
+    field: string;
 }
 
 export type EsFilterConfig =

@@ -1,4 +1,9 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+    useMutation,
+    useQueries,
+    useQuery,
+    type UseQueryResult,
+} from "@tanstack/react-query";
 import { documentApi } from "../services/api/document";
 import type {
     DigitizationDecision,
@@ -17,10 +22,21 @@ import type { EsQuery } from "../models/api/requests/es_query";
 // -------------------------
 // Queries
 // -------------------------
+export const useSearchDocumentsBatch = (
+    requests: EsRequest[] = [],
+    enabled = true
+): UseQueryResult<EsDocumentResponse, unknown>[] =>
+    useQueries({
+        queries: requests.map((request, idx) => ({
+            queryKey: ["documents", "search", idx, request],
+            queryFn: () => documentApi.search(request),
+            enabled,
+        })),
+    });
+
 export const useSearchDocuments = (request: EsRequest, enabled = true) =>
     useQuery<EsDocumentResponse>({
         queryKey: ["documents", "search", request],
-        queryFn: () => documentApi.search(request),
         enabled,
     });
 

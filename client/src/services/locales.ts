@@ -1,26 +1,19 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import HttpBackend from "i18next-http-backend";
 
-i18n.use(initReactI18next).init({
-    lng: "en",
-    fallbackLng: "en",
-    resources: {
-        en: {
-            navigation: {
-                home: "Home",
-                projects: "Projects",
-            },
+i18n.use(HttpBackend)
+    .use(initReactI18next)
+    .init({
+        lng: "cs",
+        fallbackLng: "cs",
+        ns: ["common", "documents", "navbar"],
+        defaultNS: "common",
+        backend: {
+            loadPath: "/locales/{{lng}}/{{ns}}.json",
         },
-        cs: {
-            navigation: {
-                home: "Domů",
-                projects: "Projekty",
-            },
-        },
-    },
-    ns: ["navigation"],
-    defaultNS: "navigation",
-    interpolation: { escapeValue: false },
-});
+        // debug: true,
+        interpolation: { escapeValue: false },
+    });
 
 export default i18n;

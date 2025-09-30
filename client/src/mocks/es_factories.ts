@@ -3,6 +3,14 @@ export function buildTermsAggregation(field: string, models: any[]) {
 
     models.forEach((m) => {
         const key = m.attrs[field] ?? "undefined";
+
+        if (Array.isArray(key)) {
+            key.forEach((k) => {
+                counts[k] = (counts[k] || 0) + 1;
+            });
+            return;
+        }
+
         counts[key] = (counts[key] || 0) + 1;
     });
 

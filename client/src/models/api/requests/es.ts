@@ -46,17 +46,28 @@ export type EsAggregationsRequest = z.infer<typeof EsAggregationsRequestSchema>;
 
 /* --- Request schema --- */
 
+export const EsSortOrderSchema = z.enum(["asc", "desc"]).default("desc");
+export type EsSortOrder = z.infer<typeof EsSortOrderSchema>;
+
+export const EsSortBySchema = z.array(
+    z.object({
+        field: z.string(),
+        order: EsSortOrderSchema,
+    })
+);
+export type EsSortBy = z.infer<typeof EsSortBySchema>;
+
 export const EsRequestSchema = z.object({
     query: EsQuerySchema,
     from: z.number().min(0).optional(),
     size: z.number().min(1).max(1000).optional(),
-    sort: z
-        .array(
-            z.object({
-                field: z.string(),
-                order: z.enum(["asc", "desc"]).default("asc"),
-            })
-        )
+    sort: EsSortBySchema.optional(),
+    _source: z
+        .object({
+            includes: z.array(z.string()).optional(),
+            excludes: z.array(z.string()).optional(),
+        })
         .optional(),
+    aggs: z.record(z.string(), EsAggregationsRequestSchema).optional(),
 });
 export type EsRequest = z.infer<typeof EsRequestSchema>;

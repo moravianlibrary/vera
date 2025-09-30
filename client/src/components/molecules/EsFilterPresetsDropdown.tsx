@@ -19,16 +19,16 @@ import {
     TimesIcon,
     TrashIcon,
 } from "@patternfly/react-icons";
-import type { I18n } from "../../models/ui/config";
+import type { StaticUiText } from "../../models/ui/config";
 
-interface EsFilterPresetsDropdownLabels {
-    placeholder: I18n;
-    favoriteGroup: I18n;
-    systemPresetsGroup: I18n;
-    userPresetsGroup: I18n;
-    actionsGroup: I18n;
-    saveCurrentAction: I18n;
-    saveCurrentPrompt: I18n;
+export interface EsFilterPresetsDropdownTexts {
+    placeholder: StaticUiText;
+    favoriteGroup: StaticUiText;
+    systemPresetsGroup: StaticUiText;
+    userPresetsGroup: StaticUiText;
+    actionsGroup: StaticUiText;
+    saveCurrentAction: StaticUiText;
+    saveCurrentPrompt: StaticUiText;
 }
 
 interface EsFilterPresetsDropdownProps {
@@ -38,7 +38,7 @@ interface EsFilterPresetsDropdownProps {
     favorite?: UUID;
     active?: UUID;
     hasActiveFilters: boolean;
-    labels: EsFilterPresetsDropdownLabels;
+    texts: EsFilterPresetsDropdownTexts;
 
     // callbacks
     onSelect: (id: UUID) => void;
@@ -53,7 +53,7 @@ const EsFilterPresetsDropdown: React.FC<EsFilterPresetsDropdownProps> = ({
     favorite,
     active,
     hasActiveFilters,
-    labels,
+    texts,
     onSelect,
     onSave,
     onDelete,
@@ -77,7 +77,7 @@ const EsFilterPresetsDropdown: React.FC<EsFilterPresetsDropdownProps> = ({
             onClick={() => setIsOpen(!isOpen)}
             isExpanded={isOpen}
         >
-            {labels.placeholder}
+            {texts.placeholder}
         </MenuToggle>
     );
 
@@ -94,7 +94,7 @@ const EsFilterPresetsDropdown: React.FC<EsFilterPresetsDropdownProps> = ({
     );
 
     const favoriteSection = (preset: EsFilterPreset) => (
-        <DropdownGroup label={labels.favoriteGroup}>
+        <DropdownGroup label={texts.favoriteGroup}>
             {presetItem(preset)}
         </DropdownGroup>
     );
@@ -152,22 +152,41 @@ const EsFilterPresetsDropdown: React.FC<EsFilterPresetsDropdownProps> = ({
         />
     );
 
+    const followAction = (preset: EsFilterPreset) => (
+        <Button
+            variant="plain"
+            icon={<CheckIcon />}
+            isDisabled={preset.id === active}
+            onClick={(e) => {
+                e.stopPropagation();
+                onSelect(preset.id);
+            }}
+        />
+    );
+
     const systemPresetsSection = (presets: EsFilterPreset[]) => (
-        <DropdownGroup label={labels.systemPresetsGroup}>
+        <DropdownGroup label={texts.systemPresetsGroup}>
             {presets.map((preset) =>
-                presetItem(preset, favoriteAction(preset))
+                presetItem(
+                    preset,
+                    <Fragment>
+                        {favoriteAction(preset)}
+                        {followAction(preset)}
+                    </Fragment>
+                )
             )}
         </DropdownGroup>
     );
 
     const userPresetsSection = (presets: EsFilterPreset[]) => (
-        <DropdownGroup label={labels.userPresetsGroup}>
+        <DropdownGroup label={texts.userPresetsGroup}>
             {presets.map((preset) =>
                 presetItem(
                     preset,
                     <Fragment>
                         {deleteAction(preset)}
                         {favoriteAction(preset)}
+                        {followAction(preset)}
                     </Fragment>
                 )
             )}
@@ -175,18 +194,18 @@ const EsFilterPresetsDropdown: React.FC<EsFilterPresetsDropdownProps> = ({
     );
 
     const saveCurrentAction = (
-        <DropdownGroup label={labels.actionsGroup}>
+        <DropdownGroup label={texts.actionsGroup}>
             <DropdownItem
                 key="save_current"
                 icon={<SaveIcon />}
                 onClick={() => {
-                    const name = prompt(labels.saveCurrentPrompt);
+                    const name = prompt(texts.saveCurrentPrompt);
                     if (name) {
                         onSave(name as Name);
                     }
                 }}
             >
-                {labels.saveCurrentAction}
+                {texts.saveCurrentAction}
             </DropdownItem>
         </DropdownGroup>
     );

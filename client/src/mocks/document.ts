@@ -73,13 +73,13 @@ export const documentFactory = Factory.extend<Document>({
 
     properties: () => ({ language: "en", notes: faker.lorem.words(5) }),
 
-    category_id: fakeId,
+    category_id: () => fakeId({ min: 1, max: 10 }),
     priority: () => faker.number.int({ min: 1, max: 5 }),
 
     digitization_list_id: () => null,
     digitization_list_state: () => null,
 
-    current_status: () =>
+    status: () =>
         faker.helpers.arrayElements(DocumentStatusSchema.options, {
             min: 1,
             max: 2,

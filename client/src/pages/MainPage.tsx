@@ -49,7 +49,7 @@ const NAVIGATION_CONFIG: (NavigationSection | NavigationItem)[] = [
     {
         section: "documents",
         items: [
-            { key: "documents", to: "/documents" },
+            { key: "document-list", to: "/documents" },
             { key: "document-proposals", to: "/documents/proposals" },
             { key: "document-additions", to: "/documents/additions" },
             { key: "catalog-records", to: "/catalog-records" },
@@ -63,22 +63,25 @@ const NAVIGATION_CONFIG: (NavigationSection | NavigationItem)[] = [
             { key: "projects", to: "/projects" },
         ],
     },
-    { key: "digitization-lists", to: "/digitization-lists" },
-    { key: "tasks", to: "/tasks" },
     {
-        section: "administration",
+        section: "digitization",
+        items: [{ key: "lists", to: "/digitization-lists" }],
+    },
+    { key: "tasks", to: "/tasks" },
+    { key: "watchdogs", to: "/watchdogs" },
+    {
+        section: "access-management",
         items: [
-            { key: "users", to: "/users" },
             { key: "groups", to: "/groups" },
             { key: "roles", to: "/roles" },
         ],
     },
     {
-        section: "system",
+        section: "system-management",
         items: [
-            { key: "watchlists", to: "/watchlists" },
-            { key: "plugins", to: "/plugins" },
             { key: "settings", to: "/settings" },
+            { key: "plugins", to: "/plugins" },
+            { key: "watchdogs", to: "/system-watchdogs" },
             { key: "maintenance", to: "/maintenance" },
         ],
     },
@@ -154,7 +157,7 @@ const MainPage = (): ReactElement => {
         </Masthead>
     );
 
-    const navItem = (item: NavigationItem) => {
+    const navItem = (item: NavigationItem, section?: string) => {
         return (
             <NavItem
                 key={item.key}
@@ -162,7 +165,9 @@ const MainPage = (): ReactElement => {
                 to={item.to}
                 isActive={activeItem === item.key}
             >
-                {t(`navbar.item.${item.key}`)}
+                {section
+                    ? t(`navbar:${section}.${item.key}`)
+                    : t(`navbar:${item.key}`)}
             </NavItem>
         );
     };
@@ -174,9 +179,9 @@ const MainPage = (): ReactElement => {
                 groupId={section.section}
                 isActive={activeGroup === section.section}
                 isExpanded={activeGroup === section.section}
-                title={t(`navbar.section.${section.section}`)}
+                title={t(`navbar:${section.section}.section-title`)}
             >
-                {section.items.map(navItem)}
+                {section.items.map((item) => navItem(item, section.section))}
             </NavExpandable>
         );
     };
@@ -201,12 +206,10 @@ const MainPage = (): ReactElement => {
 
     return (
         <Page masthead={masthead} sidebar={sidebar} isManagedSidebar>
-            <PageSection aria-labelledby="main-title">
-                <Routes>
-                    <Route path="/documents" element={<DocumentsSection />} />
-                    <Route path="/projects" element={<ProjectsContainer />} />
-                </Routes>
-            </PageSection>
+            <Routes>
+                <Route path="/documents" element={<DocumentsSection />} />
+                <Route path="/projects" element={<ProjectsContainer />} />
+            </Routes>
         </Page>
     );
 };

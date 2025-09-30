@@ -1,3 +1,4 @@
+import type { EsQuery } from "../../models/api/requests/es_query";
 import type { EsPageState, EsRequestAction } from "../domains/es";
 
 function weightedFields(
@@ -49,18 +50,107 @@ function buildSearchQueries(
     ];
 }
 
+function isQueryBoolEmpty(query: EsQuery) {
+    const { bool } = query;
+    return (
+        (!bool.must || bool.must.length === 0) &&
+        (!bool.should || bool.should.length === 0) &&
+        (!bool.filter || bool.filter.length === 0) &&
+        (!bool.must_not || bool.must_not.length === 0)
+    );
+}
+
+function toggleTerm(query: EsQuery, field: string, bucketKey: string) {
+    const newQuery = { ...query };
+    if (!newQuery.bool) {
+        newQuery.bool = {};
+    }
+    if (!newQuery.bool.filter) {
+        newQuery.bool.filter = [];
+    }
+
+    const existingTermIndex = newQuery.bool.filter.findIndex(
+        (clause) =>
+            "term" in clause &&
+            Object.keys(clause.term)[0] === field &&
+            clause.term[field] === bucketKey
+    );
+
+    if (existingTermIndex >= 0) {
+        // Remove existing term filter
+        newQuery.bool.filter.splice(existingTermIndex, 1);
+    } else {
+        // Add new term filter
+        newQuery.bool.filter.push({ term: { [field]: bucketKey } });
+    }
+
+    if (newQuery.bool.filter.length === 0) {
+        newQuery.bool.filter = undefined;
+    }
+
+    if (isQueryBoolEmpty(newQuery)) {
+        return { match_all: {} };
+    }
+
+    return newQuery;
+}
+
 export function requestReducer(
     state: EsPageState,
     action: EsRequestAction
 ): EsPageState {
     switch (action.type) {
-        case "set-search-value":
+        case "setPaginationParams":
             return {
                 ...state,
-                searchInput: action.value,
+                request: {
+                    ...state.request,
+                    from: (action.page - 1) * action.perPage,
+                    size: action.perPage,
+                },
             };
-
-        case "submit-search":
+        case "setSearchTerm":
+            return {
+                ...state,
+                searchTerm: action.value,
+            };
+        case "clearSearch":
+            const newQuery = {
+                ...state.request.query,
+                bool: {
+                    ...state.request.query.bool,
+                    must: undefined,
+                },
+            };
+            return {
+                ...state,
+                searchTerm: "",
+                request: {
+                    ...state.request,
+                    query: isQueryBoolEmpty(newQuery)
+                        ? { match_all: {} }
+                        : newQuery,
+                },
+            };
+        case "submitSearch":
+            if (!state.searchTerm) {
+                const newQuery = {
+                    ...state.request.query,
+                    bool: {
+                        ...state.request.query.bool,
+                        must: undefined,
+                    },
+                };
+                return {
+                    ...state,
+                    request: {
+                        ...state.request,
+                        query: isQueryBoolEmpty(newQuery)
+                            ? { match_all: {} }
+                            : newQuery,
+                    },
+                };
+            }
             return {
                 ...state,
                 request: {
@@ -71,12 +161,12 @@ export function requestReducer(
                             must: {
                                 dis_max: {
                                     queries: buildSearchQueries(
-                                        action.value,
-                                        action.fields,
-                                        action.phraseWeights,
-                                        action.prefixWeights,
-                                        action.fuzziness,
-                                        action.fuzzyWeights
+                                        state.searchTerm,
+                                        action.config.fields,
+                                        action.config.phraseBoosts,
+                                        action.config.prefixBoosts,
+                                        state.searchFuzziness,
+                                        action.config.fuzzyBoosts
                                     ),
                                     tie_breaker: 0.0,
                                 },
@@ -85,19 +175,61 @@ export function requestReducer(
                     },
                 },
             };
-
-        case "clear-search":
+        case "toggleTerm":
+            const currentTerms =
+                state.filterStates?.[action.field]?.selected || [];
+        case "clearFilters":
             return {
                 ...state,
-                query: {
-                    ...state.query,
-                    bool: {
-                        ...state.query.bool,
-                        must: undefined,
-                    },
+                filterStates: {},
+            };
+        case "setSortBy":
+            return {
+                ...state,
+                sortBy: action.option,
+                request: {
+                    ...state.request,
+                    sort: action.option.value,
                 },
             };
-
+        case "setPageIds":
+            return {
+                ...state,
+                pageIds: action.ids,
+                selectedIds: new Set<string>(
+                    state.isAllSelected ? action.ids : []
+                ),
+            };
+        case "toggleSelection":
+            const newSelectedIds = new Set(state.selectedIds);
+            if (newSelectedIds.has(action.id)) {
+                newSelectedIds.delete(action.id);
+            } else {
+                newSelectedIds.add(action.id);
+            }
+            return {
+                ...state,
+                selectedIds: newSelectedIds,
+                isAllSelected: false,
+            };
+        case "clearSelection":
+            return {
+                ...state,
+                selectedIds: new Set<string>(),
+                isAllSelected: false,
+            };
+        case "selectPage":
+            return {
+                ...state,
+                selectedIds: new Set(state.pageIds),
+                isAllSelected: false,
+            };
+        case "selectAll":
+            return {
+                ...state,
+                selectedIds: new Set<string>(state.pageIds),
+                isAllSelected: true,
+            };
         default:
             return state;
     }

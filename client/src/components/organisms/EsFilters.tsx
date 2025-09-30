@@ -1,107 +1,140 @@
-import { Content, Divider } from "@patternfly/react-core";
+import {
+    Button,
+    Divider,
+    Flex,
+    FlexItem,
+    Stack,
+    StackItem,
+    Title,
+} from "@patternfly/react-core";
 import { Fragment } from "react/jsx-runtime";
-import type { EsFilterConfig } from "../../models/es";
+import type {
+    EsDateRangeFilterConfig,
+    EsFilterConfig,
+    EsRangeFilterConfig,
+    EsSearchFilterConfig,
+    EsTermsFilterConfig,
+} from "../../models/es";
 import { useTranslation } from "react-i18next";
 import EsTermsFilter from "../molecules/EsFacetFilter";
-import type { EsAggregationBucket } from "../../models/api/responses/es_aggregations";
-
-interface EsFacetFilterState {
-    selected: string[];
-}
-
-interface EsRangeFilterState {
-    from?: number;
-    to?: number;
-}
-
-interface EsDateRangeFilterState {
-    from?: string;
-    to?: string;
-}
-
-interface EsSearchFilterState {
-    query: string;
-}
-
-export interface EsFilterState {
-    [field: string]:
-        | EsFacetFilterState
-        | EsRangeFilterState
-        | EsDateRangeFilterState
-        | EsSearchFilterState;
-}
+import type { EsAggregation } from "../../models/api/responses/es_aggregations";
+import type { EsAggregationsRequest } from "../../models/api/requests/es";
 
 interface EsFiltersProps {
     filtersConfig: EsFilterConfig[];
     i18nFieldPrefix: string;
-    buckets: Record<string, EsAggregationBucket[]>;
-    state: EsFilterState;
-    onChange?: (action: EsFilterAction) => void;
+    aggregations: Record<string, EsAggregation>;
+    state: EsAggregationsRequest;
+    onToggleTerm: (field: string, key: string) => void;
+    onSetRange: (field: string, from?: number, to?: number) => void;
+    onSetDateRange: (field: string, from?: string, to?: string) => void;
+    onSetFieldQuery: (field: string, query: string) => void;
+    onApplyFilters: () => void;
+    onClearFilters: (field?: string) => void;
 }
-
-type EsFilterAction =
-    | { type: "toggle_facet"; field: string; key: string }
-    | { type: "set_range"; field: string; from?: number; to?: number }
-    | { type: "set_date_range"; field: string; from?: string; to?: string }
-    | { type: "set_query"; field: string; query: string }
-    | { type: "clear"; field?: string };
-
-const renderFilter = (
-    filterConfig: EsFilterConfig,
-    buckets: EsAggregationBucket[],
-    state: EsFilterState
-) => {
-    switch (filterConfig.type) {
-        case "terms":
-            return (
-                <EsTermsFilter
-                    key={filterConfig.field}
-                    config={filterConfig}
-                    buckets={buckets}
-                    selected={
-                        (state[filterConfig.field] as EsFacetFilterState)
-                            .selected
-                    }
-                    onToggle={() => {}}
-                />
-            );
-        case "range":
-            return <div>Range filter</div>;
-        case "date-range":
-            return <div>Date range filter</div>;
-        case "search":
-            return <div>Search filter</div>;
-        default:
-            return null;
-    }
-};
 
 const EsFilters = ({
     filtersConfig,
     i18nFieldPrefix,
-    buckets,
+    aggregations,
     state,
+    onToggleTerm,
+    onSetRange,
+    onSetDateRange,
+    onSetFieldQuery,
+    onApplyFilters,
+    onClearFilters,
 }: EsFiltersProps) => {
     const { t } = useTranslation();
 
+    console.log(aggregations);
+
+    const renderTermsFilter = (filterConfig: EsTermsFilterConfig) => {
+        return (
+            <EsTermsFilter
+                key={filterConfig.field}
+                config={filterConfig}
+                buckets={aggregations[filterConfig.field]?.buckets || []}
+                selected={
+                    (state[filterConfig.field] as EsTermsFilterState)
+                        ?.selected ?? []
+                }
+                onToggle={(bucketKey) =>
+                    onToggleTerm(filterConfig.field, bucketKey)
+                }
+            />
+        );
+    };
+
+    const renderRangeFilter = (filterConfig: EsRangeFilterConfig) => {
+        return <div>Range filter</div>;
+    };
+
+    const renderDateRangeFilter = (filterConfig: EsDateRangeFilterConfig) => {
+        return <div>Date range filter</div>;
+    };
+
+    const renderSearchFilter = (filterConfig: EsSearchFilterConfig) => {
+        return <div>Search filter</div>;
+    };
+
+    const renderFilter = (filterConfig: EsFilterConfig) => {
+        switch (filterConfig.type) {
+            case "terms":
+                return renderTermsFilter(filterConfig);
+            case "range":
+                return renderRangeFilter(filterConfig);
+            case "date-range":
+                return renderDateRangeFilter(filterConfig);
+            case "search":
+                return renderSearchFilter(filterConfig);
+        }
+    };
+
     return (
-        <Fragment>
+        <Stack
+            style={{
+                marginLeft: 30,
+                marginRight: 30,
+                marginTop: 20,
+                marginBottom: 20,
+            }}
+            hasGutter
+        >
             {filtersConfig
-                .filter((filterConfig) => buckets[filterConfig.field])
+                .filter((filterConfig) => aggregations[filterConfig.field])
                 .map((filterConfig) => (
                     <Fragment key={filterConfig.field}>
-                        <Content component="h3">
-                            {t(`${i18nFieldPrefix}.${filterConfig.field}`)}
-                        </Content>
-                        <Divider />
-                        {renderFilter(
-                            filterConfig,
-                            buckets[filterConfig.field],
-                            state
-                        )}
+                        <StackItem>
+                            <Title headingLevel="h3">
+                                {t(`${i18nFieldPrefix}.${filterConfig.field}`)}
+                            </Title>
+                            <Divider />
+                        </StackItem>
+                        <StackItem>{renderFilter(filterConfig)}</StackItem>
                     </Fragment>
                 ))}
-        </Fragment>
+            <StackItem>
+                <Divider />
+            </StackItem>
+            <StackItem>
+                <Flex>
+                    <FlexItem>
+                        <Button variant="primary" onClick={onApplyFilters}>
+                            {t("common:actions.apply-filters")}
+                        </Button>
+                    </FlexItem>
+                    <FlexItem>
+                        <Button
+                            variant="secondary"
+                            onClick={() => onClearFilters()}
+                        >
+                            {t("common:actions.clear-all-filters")}
+                        </Button>
+                    </FlexItem>
+                </Flex>
+            </StackItem>
+        </Stack>
     );
 };
 

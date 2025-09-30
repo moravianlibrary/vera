@@ -6,13 +6,13 @@ import {
     MenuToggleCheckbox,
 } from "@patternfly/react-core";
 import { useState } from "react";
-import type { DynamicI18n, I18n } from "../../models/ui/config";
+import type { DynamicUiText, StaticUiText } from "../../models/ui/config";
 
-interface BulkSelectorLabels {
-    selectNone: I18n;
-    selectPage: DynamicI18n;
-    selectAll: DynamicI18n;
-    selectedCount: DynamicI18n;
+export interface BulkSelectorTexts {
+    selectNone: StaticUiText;
+    selectPage: DynamicUiText;
+    selectAll: DynamicUiText;
+    selectedCount: DynamicUiText;
 }
 
 interface BulkSelectorProps {
@@ -22,7 +22,7 @@ interface BulkSelectorProps {
     onSelectNone: () => void;
     onSelectPage: () => void;
     onSelectAll: () => void;
-    labels: BulkSelectorLabels;
+    texts: BulkSelectorTexts;
 }
 
 interface SelectCallbackItem {
@@ -38,25 +38,25 @@ const BulkSelector = ({
     onSelectNone,
     onSelectPage,
     onSelectAll,
-    labels,
+    texts,
 }: BulkSelectorProps) => {
     const anySelected = selectedCount > 0;
-    const allSelected = selectedCount === totalCount;
+    const allSelected = selectedCount > 0 && selectedCount === totalCount;
 
     const selectOptions: SelectCallbackItem[] = [
         {
             key: "select-none",
-            label: labels.selectNone,
+            label: texts.selectNone,
             onClick: onSelectNone,
         },
         {
             key: "select-page",
-            label: labels.selectPage({ count: onPageCount }),
+            label: texts.selectPage({ count: onPageCount }),
             onClick: onSelectPage,
         },
         {
             key: "select-all",
-            label: labels.selectAll({ count: totalCount }),
+            label: texts.selectAll({ count: totalCount }),
             onClick: onSelectAll,
         },
     ];
@@ -85,8 +85,12 @@ const BulkSelector = ({
                                 allSelected ? onSelectNone() : onSelectAll();
                             }}
                         >
-                            {selectedCount !== 0 &&
-                                labels.selectedCount({ count: selectedCount })}
+                            <span style={{ whiteSpace: "nowrap" }}>
+                                {selectedCount !== 0 &&
+                                    texts.selectedCount({
+                                        count: selectedCount,
+                                    })}
+                            </span>
                         </MenuToggleCheckbox>,
                     ]}
                 />

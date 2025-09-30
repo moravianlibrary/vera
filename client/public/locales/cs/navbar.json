@@ -1,0 +1,34 @@
+{
+    "home": "Domov",
+    "documents": {
+        "section-title": "Dokumenty",
+        "document-list": "Seznam dokumentů",
+        "document-proposals": "Návrhy k digitalizaci",
+        "document-additions": "Historie přidání dokumentů",
+        "catalog-records": "Katalogové záznamy"
+    },
+    "organization-and-planning": {
+        "section-title": "Organizace a plánování",
+        "categories": "Kategorie",
+        "intentions": "Zámery",
+        "projects": "Projekty"
+    },
+    "digitization": {
+        "section-title": "Digitalizace",
+        "lists": "Seznamy k digitalizaci"
+    },
+    "tasks": "Úkoly",
+    "watchdogs": "Hlídači",
+    "access-management": {
+        "section-title": "Správa přístupu",
+        "groups": "Skupiny",
+        "roles": "Role"
+    },
+    "system-management": {
+        "section-title": "Správa systému",
+        "settings": "Nastavení",
+        "plugins": "Pluginy",
+        "watchdogs": "Hlídači",
+        "maintenance": "Údržba"
+    }
+}

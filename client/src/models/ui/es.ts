@@ -8,3 +8,30 @@ export const EsFilterPresetSchema = z.object({
     filters: z.record(z.string(), z.any()),
 });
 export type EsFilterPreset = z.infer<typeof EsFilterPresetSchema>;
+
+export interface EsTermsFilterState {
+    size: number;
+    include: string | string[];
+}
+
+export interface EsRangeFilterState {
+    from?: number;
+    to?: number;
+}
+
+export interface EsDateRangeFilterState {
+    from?: string | number;
+    to?: string | number;
+}
+
+export interface EsSearchFilterState {
+    value: string;
+}
+
+export type EsFilterState =
+    | EsTermsFilterState
+    | EsRangeFilterState
+    | EsDateRangeFilterState
+    | EsSearchFilterState;
+
+export type EsFilterStates = Record<string, EsFilterState>;

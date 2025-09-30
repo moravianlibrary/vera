@@ -1,12 +1,21 @@
 import type { ReactElement } from "react";
 
-export interface TableColumnConfig<T> {
+export interface TableColumnConfig {
     key: string;
-    render: (data: Partial<T>) => ReactElement;
+    fields: string[];
+    label: string;
+    render?: (data: any) => ReactElement;
     visibleByDefault?: boolean;
     alwaysShow?: boolean;
+}
+
+export interface TableColumnState {
+    visible: boolean;
+    order: number;
 }
 
 export interface FilterOptionConfig {
     key: string;
 }
+
+export type SelectionType = Set<string> | "page" | "all";

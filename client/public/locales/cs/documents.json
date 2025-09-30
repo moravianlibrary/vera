@@ -1,0 +1,19 @@
+{
+    "controls": {
+        "actions-menu-label": "Akce",
+        "search-placeholder": "Hledat...",
+        "bulk-actions": {
+            "export": {
+                "label": "Uložit do souboru",
+                "csv": "Uložit jako CSV",
+                "xlsx": "Uložit jako XLSX"
+            },
+            "change-category": "Změnit kategorii"
+        }
+    },
+    "properties": {
+        "catalog-record-id": "ID záznamu",
+        "document-type": "Typ dokumentu",
+        "title": "Název"
+    }
+}

@@ -6,28 +6,29 @@ import {
     type MenuToggleElement,
 } from "@patternfly/react-core";
 import { useState } from "react";
+import type { UiText } from "../../models/ui/config";
 
-interface SelectOptionsProps {
-    options: string[];
+interface SingleSelectProps {
+    options: UiText[];
     icon: React.ReactNode;
     compact?: boolean;
-    selected: string;
-    placeholder: string;
-    onSelect: (value?: string) => void;
+    selected: UiText;
+    onSelect: (option: UiText) => void;
 }
 
-const SelectOptions = ({
+const SingleSelect = ({
     options,
     icon,
     compact,
     selected,
-    placeholder,
     onSelect,
-}: SelectOptionsProps) => {
+}: SingleSelectProps) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const onSelectChange = (value: string | undefined) => {
-        onSelect(value);
+        if (value) {
+            onSelect(value);
+        }
         setIsOpen(false);
     };
 
@@ -45,15 +46,15 @@ const SelectOptions = ({
                     onClick={() => setIsOpen(!isOpen)}
                     isExpanded={isOpen}
                 >
-                    {!compact && (selected || placeholder)}
+                    {!compact && selected.toString()}
                 </MenuToggle>
             )}
             shouldFocusToggleOnSelect
         >
             <SelectList>
                 {options.map((option) => (
-                    <SelectOption key={option} value={option}>
-                        {option}
+                    <SelectOption key={option.toString()} value={option}>
+                        {option.toString()}
                     </SelectOption>
                 ))}
             </SelectList>
@@ -61,4 +62,4 @@ const SelectOptions = ({
     );
 };
 
-export default SelectOptions;
+export default SingleSelect;
