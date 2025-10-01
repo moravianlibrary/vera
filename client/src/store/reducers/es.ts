@@ -1,5 +1,5 @@
 import type { EsQuery } from "../../models/api/requests/es_query";
-import type { EsPageState, EsRequestAction } from "../domains/es";
+import type { EsRequestAction, EsSessionState } from "../domains/es";
 
 function weightedFields(
     fields: string[],
@@ -96,18 +96,31 @@ function toggleTerm(query: EsQuery, field: string, bucketKey: string) {
 }
 
 export function requestReducer(
-    state: EsPageState,
+    state: EsSessionState,
     action: EsRequestAction
-): EsPageState {
+): EsSessionState {
     switch (action.type) {
+        case "setData":
+            return {
+                ...state,
+                hits: action.data?.hits.hits,
+                totalItems: action.data?.hits.total.value || 0,
+                aggregations: action.data?.aggregations,
+            };
         case "setPaginationParams":
             return {
                 ...state,
-                request: {
-                    ...state.request,
-                    from: (action.page - 1) * action.perPage,
-                    size: action.perPage,
-                },
+                page: action.page,
+                perPage: action.perPage,
+                requests: state.requests.map((req, index) =>
+                    index === 0
+                        ? {
+                              ...req,
+                              from: (action.page - 1) * action.perPage,
+                              size: action.perPage,
+                          }
+                        : req
+                ),
             };
         case "setSearchTerm":
             return {
@@ -115,66 +128,67 @@ export function requestReducer(
                 searchTerm: action.value,
             };
         case "clearSearch":
-            const newQuery = {
-                ...state.request.query,
-                bool: {
-                    ...state.request.query.bool,
-                    must: undefined,
-                },
-            };
             return {
                 ...state,
-                searchTerm: "",
-                request: {
-                    ...state.request,
-                    query: isQueryBoolEmpty(newQuery)
-                        ? { match_all: {} }
-                        : newQuery,
-                },
+                searchTerm: undefined,
+                // requests: [],
             };
+        // const newQuery = {
+        //     ...state.request.query,
+        // };
+        // return {
+        //     ...state,
+        //     searchTerm: "",
+        //     request: {
+        //         ...state.request,
+        //         query: isQueryBoolEmpty(newQuery)
+        //             ? { match_all: {} }
+        //             : newQuery,
+        //     },
+        // };
         case "submitSearch":
-            if (!state.searchTerm) {
-                const newQuery = {
-                    ...state.request.query,
-                    bool: {
-                        ...state.request.query.bool,
-                        must: undefined,
-                    },
-                };
-                return {
-                    ...state,
-                    request: {
-                        ...state.request,
-                        query: isQueryBoolEmpty(newQuery)
-                            ? { match_all: {} }
-                            : newQuery,
-                    },
-                };
-            }
-            return {
-                ...state,
-                request: {
-                    ...state.request,
-                    query: {
-                        bool: {
-                            ...state.request.query.bool,
-                            must: {
-                                dis_max: {
-                                    queries: buildSearchQueries(
-                                        state.searchTerm,
-                                        action.config.fields,
-                                        action.config.phraseBoosts,
-                                        action.config.prefixBoosts,
-                                        state.searchFuzziness,
-                                        action.config.fuzzyBoosts
-                                    ),
-                                    tie_breaker: 0.0,
-                                },
-                            },
-                        },
-                    },
-                },
-            };
+        // if (!state.searchTerm) {
+        //     const newQuery = {
+        //         ...state.request.query,
+        //         bool: {
+        //             ...state.request.query.bool,
+        //             must: undefined,
+        //         },
+        //     };
+        //     return {
+        //         ...state,
+        //         request: {
+        //             ...state.request,
+        //             query: isQueryBoolEmpty(newQuery)
+        //                 ? { match_all: {} }
+        //                 : newQuery,
+        //         },
+        //     };
+        // }
+        // return {
+        //     ...state,
+        //     request: {
+        //         ...state.request,
+        //         query: {
+        //             bool: {
+        //                 ...state.request.query.bool,
+        //                 must: {
+        //                     dis_max: {
+        //                         queries: buildSearchQueries(
+        //                             state.searchTerm,
+        //                             action.config.fields,
+        //                             action.config.phraseBoosts,
+        //                             action.config.prefixBoosts,
+        //                             state.searchFuzziness,
+        //                             action.config.fuzzyBoosts
+        //                         ),
+        //                         tie_breaker: 0.0,
+        //                     },
+        //                 },
+        //             },
+        //         },
+        //     },
+        // };
         case "toggleTerm":
             const currentTerms =
                 state.filterStates?.[action.field]?.selected || [];

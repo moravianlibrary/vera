@@ -18,13 +18,13 @@ import type {
 import { useTranslation } from "react-i18next";
 import EsTermsFilter from "../molecules/EsFacetFilter";
 import type { EsAggregation } from "../../models/api/responses/es_aggregations";
-import type { EsAggregationsRequest } from "../../models/api/requests/es";
+import type { EsFilterStates, EsTermsFilterState } from "../../models/ui/es";
 
 interface EsFiltersProps {
     filtersConfig: EsFilterConfig[];
     i18nFieldPrefix: string;
     aggregations: Record<string, EsAggregation>;
-    state: EsAggregationsRequest;
+    state?: EsFilterStates;
     onToggleTerm: (field: string, key: string) => void;
     onSetRange: (field: string, from?: number, to?: number) => void;
     onSetDateRange: (field: string, from?: string, to?: string) => void;
@@ -56,8 +56,8 @@ const EsFilters = ({
                 config={filterConfig}
                 buckets={aggregations[filterConfig.field]?.buckets || []}
                 selected={
-                    (state[filterConfig.field] as EsTermsFilterState)
-                        ?.selected ?? []
+                    (state?.[filterConfig.field] as EsTermsFilterState)
+                        ?.include ?? []
                 }
                 onToggle={(bucketKey) =>
                     onToggleTerm(filterConfig.field, bucketKey)

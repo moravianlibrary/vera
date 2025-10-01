@@ -1,13 +1,10 @@
 import { type ReactElement } from "react";
 import type { EsFilterConfig } from "../models/es";
-import {
-    useSearchDocuments,
-    useSearchDocumentsBatch,
-} from "../hooks/useDocuments";
+import { useSearchDocumentsBatch } from "../hooks/useDocuments";
 import EsTableComplexFilters from "../components/templates/EsTableComplexFilters";
 import type { TableColumnConfig } from "../models/config";
 import type { Document } from "../models/document";
-import { initEsPageState, type EsSearchConfig } from "../store/domains/es";
+import { initEsSessionState, type EsSearchConfig } from "../store/domains/es";
 import { useTranslation } from "react-i18next";
 import type { ActionConfig, EsSortOption } from "../models/ui/config";
 import { type TFunction } from "i18next";
@@ -26,6 +23,7 @@ function getColumnConfigs(t: TFunction): TableColumnConfig[] {
         },
         {
             key: "document-type",
+            fields: ["material_type", "issuance_type"],
             label: t("documents:properties.document-type"),
             render: (data: Partial<Document>) => <>{data.material_type}</>,
             visibleByDefault: true,
@@ -142,6 +140,7 @@ const filterConfigs: EsFilterConfig[] = [
 function getSortOptions(t: TFunction): EsSortOption[] {
     return [
         {
+            key: "relevance",
             label: t("common:controls.sort-by.relevance"),
             value: [
                 { field: "_score", order: "desc" },
@@ -149,22 +148,27 @@ function getSortOptions(t: TFunction): EsSortOption[] {
             ],
         },
         {
+            key: "created-desc",
             label: t("common:controls.sort-by.created-desc"),
             value: [{ field: "created_at", order: "desc" }],
         },
         {
+            key: "created-asc",
             label: t("common:controls.sort-by.created-asc"),
             value: [{ field: "created_at", order: "asc" }],
         },
         {
+            key: "updated-desc",
             label: t("common:controls.sort-by.updated-desc"),
             value: [{ field: "updated_at", order: "desc" }],
         },
         {
+            key: "updated-asc",
             label: t("common:controls.sort-by.updated-asc"),
             value: [{ field: "updated_at", order: "asc" }],
         },
         {
+            key: "title-asc",
             label: t("common:controls.sort-by.title-asc"),
             value: [
                 { field: "title", order: "asc" },
@@ -174,6 +178,7 @@ function getSortOptions(t: TFunction): EsSortOption[] {
             ],
         },
         {
+            key: "title-desc",
             label: t("common:controls.sort-by.title-desc"),
             value: [
                 { field: "title", order: "desc" },
@@ -235,10 +240,12 @@ const DocumentsSection = (): ReactElement => {
             filterConfigs={filterConfigs}
             sortOptions={sortOptions}
             actionsConfig={getBulkActionsConfig(t, [])}
-            initState={initEsPageState(
+            initState={initEsSessionState(
                 columnConfigs,
+                10,
+                searchConfig,
                 filterConfigs,
-                sortOptions[0]
+                sortOptions
             )}
             useItemsSource={useSearchDocumentsBatch}
             texts={{

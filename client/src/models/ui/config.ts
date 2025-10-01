@@ -15,8 +15,9 @@ export interface ActionSectionConfig {
 export type ActionConfig = ActionItemConfig | ActionSectionConfig;
 
 export interface EsSortOption {
+    key: string;
     label: UiText;
-    value: EsSortBy[];
+    value: EsSortBy;
 }
 
 // ------- ______ Not used

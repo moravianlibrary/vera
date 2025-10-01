@@ -11,7 +11,7 @@ export type EsFilterPreset = z.infer<typeof EsFilterPresetSchema>;
 
 export interface EsTermsFilterState {
     size: number;
-    include: string | string[];
+    include: string[];
 }
 
 export interface EsRangeFilterState {

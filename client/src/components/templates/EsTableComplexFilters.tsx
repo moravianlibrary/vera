@@ -30,7 +30,6 @@ import ToggleFiltersButton from "../molecules/ToggleFiltersButton";
 import { FilterIcon } from "@patternfly/react-icons";
 import { requestReducer } from "../../store/reducers/es";
 import type { EsRequest } from "../../models/api/requests/es";
-import { selectPage, selectPerPage } from "../../store/selectors/es";
 import type { EsSearchConfig } from "../../store/domains/es";
 import type { UseQueryResult } from "@tanstack/react-query";
 import type { EsDocumentResponse } from "../../models/document";
@@ -107,11 +106,15 @@ const EsTableComplexFilters = ({
         }
     );
 
+    useEffect(() => {
+        dispatch({ type: "setData", data });
+    }, [data]);
+
     const hits = data?.hits.hits || [];
     const totalItems = data?.hits.total.value || 0;
     const aggregations = data?.aggregations || {};
-    const page = selectPage(state);
-    const perPage = selectPerPage(state);
+    const page = state.page;
+    const perPage = state.perPage;
     const searchTerm = state.searchTerm;
     const filterStates = state.filterStates;
     const hasActiveFilters =
@@ -256,10 +259,7 @@ const EsTableComplexFilters = ({
             filtersConfig={filterConfigs}
             i18nFieldPrefix=""
             aggregations={aggregations}
-            state={{
-                status: { selected: ["new"], query: "" },
-                category_id: { selected: [], query: "" },
-            }}
+            state={filterStates}
             onToggleTerm={(field, bucketKey) =>
                 dispatch({ type: "toggleTerm", field, bucketKey })
             }

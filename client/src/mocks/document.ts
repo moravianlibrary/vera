@@ -15,8 +15,8 @@ import {
     DigitizationStateSchema,
 } from "../models/digitization";
 import { fakeCatalogRecordId, fakeId } from "./faker";
-import type { EsRequest } from "../models/es";
 import { buildTermsAggregation } from "./es_factories";
+import type { EsRequest } from "../models/api/requests/es";
 
 export const identifierFactory = () => ({
     type: faker.helpers.arrayElement(IdentiferTypeSchema.options),
@@ -39,9 +39,9 @@ export const digitizationRecordFactory = (): DocumentDigitizationRecord => ({
 });
 
 export const documentFactory = Factory.extend<Document>({
-    id: fakeId,
+    id: () => fakeId(),
     catalog_record_id: () => fakeCatalogRecordId(),
-    document_id: fakeId,
+    document_id: () => fakeId(),
     iteration: () => faker.number.int({ min: 1, max: 3 }),
 
     material_type: () => faker.helpers.arrayElement(MaterialTypeSchema.options),
@@ -100,12 +100,12 @@ export function documentRoutes(this: any) {
     this.post("/documents/search", (schema: any, request: any) => {
         const esRequest = JSON.parse(request.requestBody) as EsRequest;
 
-        const { query, aggs } = esRequest;
+        const { query, from, size, aggs } = esRequest;
 
         const hits = schema
             .all("document")
             .models.filter((p: any) => query.match_all)
-            .slice(query.from || 0, (query.from || 0) + (esRequest.size || 10))
+            .slice(from || 0, (from || 0) + (size || 10))
             .map((p: any) => {
                 const { id, ...rest } = p.attrs;
                 return {
