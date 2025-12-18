@@ -7,7 +7,7 @@ from .record import DigitizationRegistryRecord
 
 PAGINATE_PAGE_SIZE = 10
 REGISTER_SEARCH_ENDPOINT = (
-    "https://registrdigitalizace.cz/rdcz/search/rdcz/"
+    "https://registrdigitalizace.cz/search/rdcz/"
     "select?q={QUERY}&start={START}&rows={ROWS}"
 )
 
