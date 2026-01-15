@@ -12,7 +12,7 @@ function createCnbLink(sysno: string) {
 }
 
 function createDigitizationRegistryLink(id: number) {
-    return `https://registrdigitalizace.cz/rdcz/results;q=id:${id}`;
+    return `https://registrdigitalizace.cz/results;q=id:${id}`;
 }
 
 export {
