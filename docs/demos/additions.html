@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERA - Additions</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .sidebar { width: 3.5rem; transition: width 0.2s ease; }
+  .sidebar.expanded { width: 14rem; }
+  .sidebar .nav-label { opacity: 0; transition: opacity 0.15s ease; white-space: nowrap; overflow: hidden; }
+  .sidebar.expanded .nav-label { opacity: 1; }
+  .sidebar-link { color: #94a3b8; }
+  .sidebar-link.active { background: rgba(255,255,255,0.15); color: #fff; }
+  .sidebar-link:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+  .task-tracker { display: none; }
+  .sidebar.expanded .task-tracker { display: block; }
+  .task-badge { display: flex; }
+  .sidebar.expanded .task-badge { display: none; }
+    .sidebar-badge { display: flex; }
+    .sidebar.expanded .sidebar-badge { display: none; }
+  .toggle-icon { transition: transform 0.2s ease; }
+  .sidebar.expanded .toggle-icon { transform: rotate(180deg); }
+  .view-btn.active { background: #0f172a; color: #fff; }
+</style>
+</head>
+<body class="bg-white text-slate-900 h-screen flex overflow-hidden">
+
+<!-- Sidebar -->
+<aside class="sidebar bg-slate-900 flex flex-col py-3 flex-shrink-0 overflow-hidden">
+  <!-- Logo -->
+  <div class="px-3 mb-2 flex items-center gap-3 h-10 flex-shrink-0">
+    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+      <span class="text-slate-900 text-sm font-black tracking-tight">V</span>
+    </div>
+    <span class="nav-label text-white font-semibold text-base">VERA</span>
+  </div>
+
+  <div class="px-2 mb-3 flex-shrink-0">
+    <button onclick="toggleSidebar()" class="sidebar-link flex items-center justify-center w-full h-8 rounded-lg" title="Toggle sidebar">
+      <svg class="toggle-icon w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="flex-1 flex flex-col gap-0.5 px-2 overflow-y-auto">
+    <a href="documents.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Documents">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Do</span>
+      <span class="nav-label text-sm font-medium">Documents</span>
+    </a>
+    <a href="proposals.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Proposals">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pr</span>
+      <span class="nav-label text-sm font-medium">Proposals</span>
+    </a>
+    <a href="additions.html" class="sidebar-link active flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold text-white" title="Additions">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ad</span>
+      <span class="nav-label text-sm font-medium">Additions</span>
+    </a>
+    <a href="projects.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Projects">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pj</span>
+      <span class="nav-label text-sm font-medium">Projects</span>
+    </a>
+    <a href="categories.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Categories">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ca</span>
+      <span class="nav-label text-sm font-medium">Categories</span>
+    </a>
+    <a href="intentions.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Intentions">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">In</span>
+      <span class="nav-label text-sm font-medium">Intentions</span>
+    </a>
+    <a href="digitization-lists.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Dig. Lists">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">DL</span>
+      <span class="nav-label text-sm font-medium">Dig. Lists</span>
+    </a>
+    <a href="tasks.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Tasks">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ta</span>
+      <span class="nav-label text-sm font-medium">Tasks</span>
+    </a>
+    <a href="plugins.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Plugins">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pl</span>
+      <span class="nav-label text-sm font-medium">Plugins</span>
+    </a>
+    <a href="hooks.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Hooks">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Hk</span>
+      <span class="nav-label text-sm font-medium">Hooks</span>
+    </a>
+        <div class="mt-2 mb-1 border-t border-slate-700"></div>
+        <button onclick="toggleWatchlistPanel()" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold w-full" title="Watchlists">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0 relative">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center sidebar-badge">19</span>
+          </span>
+          <span class="nav-label text-sm font-medium">Watchlists</span>
+          <span class="nav-label ml-auto bg-red-500 text-white text-[10px] rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold">19</span>
+        </button>
+      </nav>
+
+  <!-- Task tracker -->
+  <div class="px-2 mb-1 flex-shrink-0" id="taskSection">
+    <!-- Collapsed: badge only -->
+    <div class="task-badge items-center justify-center px-2 h-9">
+      <span class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</span>
+    </div>
+    <!-- Expanded: task list -->
+    <div class="task-tracker px-2 py-2 rounded-lg bg-slate-800">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-slate-300">Tasks running</span>
+        <span class="text-xs text-slate-400 font-mono">2</span>
+      </div>
+      <div class="space-y-2">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-slate-300 truncate">Proposal.Ingest #412</span>
+            <span class="text-xs text-slate-400">67%</span>
+          </div>
+          <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:67%"></div></div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-slate-300 truncate">Catalog.Sync</span>
+            <span class="text-xs text-slate-400">23%</span>
+          </div>
+          <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:23%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout -->
+  <div class="px-2 pt-2 border-t border-slate-700 flex-shrink-0">
+    <button class="sidebar-link flex items-center gap-3 w-full h-9 px-2 rounded-lg text-xs font-bold" title="Logout">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </span>
+      <span class="nav-label text-sm font-medium">Jan Novak</span>
+    </button>
+  </div>
+</aside>
+
+<!-- Main content -->
+<main class="flex-1 flex flex-col overflow-hidden">
+
+  <!-- Top bar -->
+  <div class="border-b border-slate-200 px-6 py-3 flex items-center gap-4">
+    <h1 class="text-lg font-semibold mr-4">Additions</h1>
+
+    <!-- View toggle -->
+    <div class="flex bg-slate-100 rounded-lg p-0.5 gap-0.5">
+      <button onclick="switchView('curator')" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" data-view="curator">Curator</button>
+      <button onclick="switchView('admin')" class="view-btn active px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" data-view="admin">Admin</button>
+    </div>
+
+    <div class="flex-1"></div>
+
+    <button onclick="openWizard()" class="bg-slate-900 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-800">Submit Additions</button>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="border-b border-slate-200 px-6 py-2.5 flex items-center gap-2 flex-wrap">
+    <span class="text-xs font-semibold text-slate-500 uppercase mr-1">Filters</span>
+    <div id="filterChips-admin">
+      <span class="inline-flex items-center gap-1 bg-slate-100 rounded-full px-2.5 py-1 text-xs font-medium text-slate-700">
+        Status: All
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </span>
+    </div>
+    <div id="filterChips-curator" class="hidden">
+      <span class="inline-flex items-center gap-1 bg-slate-100 rounded-full px-2.5 py-1 text-xs font-medium text-slate-700">
+        Created by: Me
+      </span>
+    </div>
+    <select class="border border-slate-300 rounded-md px-2 py-1 text-xs text-slate-600 bg-white">
+      <option>+ Add Filter</option>
+      <option>Status</option>
+      <option>Project</option>
+      <option>Batch Name</option>
+      <option>Category</option>
+      <option>Priority</option>
+      <option>Eligibility Status</option>
+      <option>Created By</option>
+      <option>Identifier Type</option>
+    </select>
+    <div class="flex-1"></div>
+    <button class="text-xs font-medium text-slate-600 border border-slate-300 rounded-lg px-2.5 py-1 hover:bg-slate-50">Save as Watchlist</button>
+  </div>
+
+  <!-- Content area -->
+  <div class="flex-1 overflow-hidden">
+
+    <!-- ===== CURATOR VIEW ===== -->
+    <div id="view-curator" class="hidden h-full overflow-auto">
+      <div class="p-6">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200">
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Identifier</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Status</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Eligibility</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Category</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Priority</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Project</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Batch</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb003456789</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Completed</span></td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">-</td>
+              <td class="py-2.5 px-3 text-sm">Periodicals</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">High</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Periodika</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">batch-2026-05-10</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">10 May 2026</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb004567890</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Completed</span></td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">-</td>
+              <td class="py-2.5 px-3 text-sm">Monographs</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Normal</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Monografie</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">batch-2026-05-07</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">7 May 2026</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">ISSN:</span> 1210-5678</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">Not Eligible</span></td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">Already digitized</span></td>
+              <td class="py-2.5 px-3 text-sm">Periodicals</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Medium</span></td>
+              <td class="py-2.5 px-3 text-sm">VISK 7</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">periodika-kveten</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">9 May 2026</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb008901234</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Enqueued</span></td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Pending</span></td>
+              <td class="py-2.5 px-3 text-sm">Monographs</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Normal</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Monografie</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">batch-2026-05-14</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">14 May 2026</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="mt-3 text-sm text-slate-500">
+          <span>Completed additions: </span>
+          <a href="documents.html" class="text-blue-600 hover:underline">View resulting Documents</a>
+          <span class="mx-2">&middot;</span>
+          <a href="proposals.html" class="text-blue-600 hover:underline">View source Proposals</a>
+        </div>
+        <div class="flex items-center justify-between mt-4 text-sm text-slate-500">
+          <span>Showing 1-4 of 4 additions</span>
+          <div class="flex gap-1">
+            <button class="px-3 py-1 border border-slate-300 rounded-md text-xs hover:bg-slate-50 opacity-50" disabled>&laquo; Prev</button>
+            <button class="px-3 py-1 border border-slate-300 rounded-md text-xs hover:bg-slate-50 opacity-50" disabled>Next &raquo;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ADMIN VIEW ===== -->
+    <div id="view-admin" class="h-full overflow-auto">
+      <div class="p-6">
+        <!-- Selection toolbar -->
+        <div id="selectionToolbar" class="hidden mb-4 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 flex items-center gap-3">
+          <span class="text-sm font-medium text-blue-800" id="selectionCount">0 selected</span>
+          <div class="h-4 w-px bg-blue-300"></div>
+          <button onclick="showReingestModal('selected items')" class="text-sm font-medium text-blue-700 hover:text-blue-900">Reingest</button>
+          <button onclick="showDeleteModal('selected items')" class="text-sm font-medium text-red-600 hover:text-red-800">Delete</button>
+        </div>
+
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200">
+              <th class="py-2.5 px-3 bg-slate-50 w-10">
+                <div class="relative">
+                  <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" class="rounded border-slate-300">
+                  <select id="bulkSelector" onchange="handleBulkSelect(this.value)" class="absolute inset-0 opacity-0 cursor-pointer w-full">
+                    <option value="">Bulk select...</option>
+                    <option value="none">Select none</option>
+                    <option value="page">Select page</option>
+                    <option value="all">Select all (156 additions)</option>
+                  </select>
+                </div>
+              </th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Identifier</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Status</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Eligibility</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Category</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Priority</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Project</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Batch</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Created By</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Created</th>
+            </tr>
+          </thead>
+          <tbody id="adminTableBody">
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3"><input type="checkbox" class="admin-row-cb rounded border-slate-300" onchange="updateSelection()"></td>
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb003456789</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Completed</span></td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">-</td>
+              <td class="py-2.5 px-3 text-sm">Periodicals</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">High</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Periodika</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">batch-2026-05-10</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">Jana Novaková</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">10 May</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3"><input type="checkbox" class="admin-row-cb rounded border-slate-300" onchange="updateSelection()"></td>
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb004567890</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Completed</span></td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">-</td>
+              <td class="py-2.5 px-3 text-sm">Monographs</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Normal</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Monografie</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">batch-2026-05-07</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">Petr Dvorak</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">7 May</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3"><input type="checkbox" class="admin-row-cb rounded border-slate-300" onchange="updateSelection()"></td>
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">ISSN:</span> 1210-5678</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">Not Eligible</span></td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">Already digitized</span></td>
+              <td class="py-2.5 px-3 text-sm">Periodicals</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Medium</span></td>
+              <td class="py-2.5 px-3 text-sm">VISK 7</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">periodika-kveten</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">Marie Cerná</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">9 May</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3"><input type="checkbox" class="admin-row-cb rounded border-slate-300" onchange="updateSelection()"></td>
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb008901234</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Enqueued</span></td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Pending</span></td>
+              <td class="py-2.5 px-3 text-sm">Monographs</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Normal</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Monografie</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">batch-2026-05-14</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">Jana Novaková</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">14 May</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3"><input type="checkbox" class="admin-row-cb rounded border-slate-300" onchange="updateSelection()"></td>
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb009012345</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Completed</span></td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">-</td>
+              <td class="py-2.5 px-3 text-sm">Periodicals</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">High</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Periodika</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">batch-2026-05-12</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">Tomas Kral</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">12 May</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3"><input type="checkbox" class="admin-row-cb rounded border-slate-300" onchange="updateSelection()"></td>
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb010123456</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Completed</span></td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">-</td>
+              <td class="py-2.5 px-3 text-sm">Monographs</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Medium</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Monografie</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">batch-2026-05-11</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">Lucie Horakova</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">11 May</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3"><input type="checkbox" class="admin-row-cb rounded border-slate-300" onchange="updateSelection()"></td>
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">ISSN:</span> 0862-4321</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Enqueued</span></td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Pending</span></td>
+              <td class="py-2.5 px-3 text-sm">Periodicals</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">High</span></td>
+              <td class="py-2.5 px-3 text-sm">VISK 7</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">periodika-kveten-2</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">Marie Cerná</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">14 May</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3"><input type="checkbox" class="admin-row-cb rounded border-slate-300" onchange="updateSelection()"></td>
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb011234567</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">Not Eligible</span></td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">Record not found</span></td>
+              <td class="py-2.5 px-3 text-sm">Maps</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Low</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Monografie</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">batch-2026-05-13</td>
+              <td class="py-2.5 px-3 text-sm text-slate-600">Petr Dvorak</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">13 May</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Cross-links -->
+        <div class="mt-3 text-sm text-slate-500">
+          <span>Pipeline: </span>
+          <a href="proposals.html" class="text-blue-600 hover:underline">Proposals</a>
+          <span class="mx-1">&rarr;</span>
+          <span class="font-medium text-slate-700">Additions</span>
+          <span class="mx-1">&rarr;</span>
+          <a href="documents.html" class="text-blue-600 hover:underline">Documents</a>
+        </div>
+
+        <div class="flex items-center justify-between mt-4 text-sm text-slate-500">
+          <span>Showing 1-8 of 156 additions</span>
+          <div class="flex gap-1">
+            <button class="px-3 py-1 border border-slate-300 rounded-md text-xs hover:bg-slate-50 opacity-50" disabled>&laquo; Prev</button>
+            <button class="px-3 py-1 border border-slate-300 rounded-md text-xs hover:bg-slate-50">Next &raquo;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Submission Wizard -->
+<div id="wizardDialog" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+    <div class="p-6 border-b border-slate-200">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Submit Additions</h3>
+        <button onclick="closeModals()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+      </div>
+      <!-- Steps -->
+      <div class="flex items-center gap-2 mt-4">
+        <div class="flex items-center gap-1.5" id="step1indicator">
+          <span class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-medium">1</span>
+          <span class="text-sm font-medium">Identifiers</span>
+        </div>
+        <div class="w-8 h-px bg-slate-300"></div>
+        <div class="flex items-center gap-1.5" id="step2indicator">
+          <span class="w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs flex items-center justify-center font-medium">2</span>
+          <span class="text-sm text-slate-500">Metadata</span>
+        </div>
+        <div class="w-8 h-px bg-slate-300"></div>
+        <div class="flex items-center gap-1.5" id="step3indicator">
+          <span class="w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs flex items-center justify-center font-medium">3</span>
+          <span class="text-sm text-slate-500">Review & Submit</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex-1 overflow-y-auto p-6" id="wizardContent">
+      <!-- Step 1: Identifiers -->
+      <div id="wizardStep1">
+        <p class="text-sm text-slate-600 mb-4">Enter identifiers for the documents you want to add.</p>
+        <div class="flex gap-2 mb-3">
+          <button class="px-3 py-1.5 text-sm font-medium bg-slate-900 text-white rounded-lg">Manual Entry</button>
+          <button class="px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50">Paste List</button>
+          <button class="px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50">File Upload</button>
+        </div>
+        <div class="flex gap-2 mb-4">
+          <select class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            <option>CNBID</option>
+            <option>ISSN</option>
+            <option>ISBN</option>
+            <option>OCLC</option>
+          </select>
+          <input type="text" placeholder="Enter identifier value..." class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          <button class="border border-slate-300 rounded-lg px-3 py-2 text-sm hover:bg-slate-50">+ Add</button>
+        </div>
+        <div class="border border-slate-200 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead><tr class="bg-slate-50 border-b border-slate-200"><th class="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Type</th><th class="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Value</th><th class="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Status</th></tr></thead>
+            <tbody>
+              <tr class="border-b border-slate-100"><td class="px-3 py-2">CNBID</td><td class="px-3 py-2 font-mono">cnb003456789</td><td class="px-3 py-2"><span class="rounded-full px-2 py-0.5 text-xs bg-green-100 text-green-700">Valid</span></td></tr>
+              <tr class="border-b border-slate-100"><td class="px-3 py-2">ISBN</td><td class="px-3 py-2 font-mono">978-80-7325-123-4</td><td class="px-3 py-2"><span class="rounded-full px-2 py-0.5 text-xs bg-green-100 text-green-700">Valid</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm text-slate-500 mt-2">2 identifiers ready</p>
+      </div>
+
+      <!-- Step 2: Metadata -->
+      <div id="wizardStep2" class="hidden">
+        <p class="text-sm text-slate-600 mb-4">Provide metadata for this additions batch.</p>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Batch Name</label>
+            <input id="wizardBatchName" type="text" value="additions-2026-05-28" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Project</label>
+            <select id="wizardProject" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              <option>NDK Monografie</option>
+              <option>NDK Periodika</option>
+              <option>VISK 7</option>
+              <option>Kramerius+</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Source</label>
+            <select id="wizardSource" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              <option>Catalog Import</option>
+              <option>Manual Entry</option>
+              <option>External System</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Notes <span class="text-slate-400">(optional)</span></label>
+            <textarea id="wizardNotes" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm h-24" placeholder="Additional notes..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Review & Submit -->
+      <div id="wizardStep3" class="hidden">
+        <p class="text-sm text-slate-600 mb-4">Review your additions before submitting.</p>
+        <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm border border-slate-200 rounded-lg p-4 mb-4">
+          <div><span class="text-slate-500">Identifiers:</span> <span class="font-medium" id="reviewCount">2</span></div>
+          <div><span class="text-slate-500">Batch Name:</span> <span class="font-medium" id="reviewBatch">additions-2026-05-28</span></div>
+          <div><span class="text-slate-500">Project:</span> <span class="font-medium" id="reviewProject">NDK Monografie</span></div>
+          <div><span class="text-slate-500">Source:</span> <span class="font-medium" id="reviewSource">Catalog Import</span></div>
+        </div>
+        <div class="border border-slate-200 rounded-lg overflow-hidden mb-4">
+          <table class="w-full text-sm">
+            <thead><tr class="bg-slate-50 border-b border-slate-200"><th class="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Type</th><th class="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Value</th></tr></thead>
+            <tbody>
+              <tr class="border-b border-slate-100"><td class="px-3 py-2">CNBID</td><td class="px-3 py-2 font-mono">cnb003456789</td></tr>
+              <tr class="border-b border-slate-100"><td class="px-3 py-2">ISBN</td><td class="px-3 py-2 font-mono">978-80-7325-123-4</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <button onclick="closeModals()" class="w-full bg-green-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700">Submit Additions</button>
+      </div>
+    </div>
+    <div class="p-6 border-t border-slate-200 flex justify-between">
+      <button id="wizardBackBtn" onclick="goToWizardStep(wizardStep - 1)" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50 opacity-50" disabled>Back</button>
+      <button id="wizardNextBtn" onclick="goToWizardStep(wizardStep + 1)" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800">Next</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reingest Confirmation Modal -->
+<div id="reingestModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold mb-4">Reingest Addition</h3>
+    <p class="text-sm text-slate-600 mb-3">This will re-run the ingestion pipeline for this addition. Any existing document data will be refreshed from the catalog.</p>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 mb-6 text-sm">
+      <span class="text-slate-500">Identifier:</span> <span class="font-medium font-mono" id="reingestIdent"></span>
+    </div>
+    <div class="flex justify-end gap-2">
+      <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+      <button onclick="closeModals()" class="bg-amber-500 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-amber-600">Reingest</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold mb-4">Delete Addition</h3>
+    <p class="text-sm text-red-600 mb-3">This action cannot be undone. The addition and all associated data will be permanently removed.</p>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 mb-4 text-sm">
+      <span class="text-slate-500">Identifier:</span> <span class="font-medium font-mono" id="deleteIdent"></span>
+    </div>
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-slate-700 mb-1">Type <span class="font-mono font-bold">DELETE</span> to confirm</label>
+      <input type="text" id="deleteConfirmInput" oninput="document.getElementById('deleteConfirmBtn').disabled = this.value !== 'DELETE'; document.getElementById('deleteConfirmBtn').classList.toggle('opacity-50', this.value !== 'DELETE')" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="DELETE">
+    </div>
+    <div class="flex justify-end gap-2">
+      <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+      <button id="deleteConfirmBtn" onclick="closeModals()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 opacity-50" disabled>Delete</button>
+    </div>
+  </div>
+</div>
+  <!-- Watchlist Panel -->
+  <div id="watchlistPanel" class="hidden fixed left-14 bottom-16 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 flex flex-col max-h-[28rem]">
+    <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+      <span class="text-sm font-semibold">Watchlists</span>
+      <button onclick="toggleWatchlistPanel()" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+    </div>
+    <div class="py-1 overflow-y-auto flex-1">
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Documents</div>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>High priority pending</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>My rejected documents</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Periodicals queue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Proposals</div>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Pending from NDK project</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Declined proposals</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Additions</div>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed additions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>NDK batch completions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Projects</div>
+      <a href="projects.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Overdue milestones</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Digitization Lists</div>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Planned lists - MZK</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Revision overdue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Finished this month</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Tasks</div>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed tasks today</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Long-running tasks</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Scheduled overdue</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+    </div>
+    <div class="border-t border-slate-100 px-4 py-2.5 flex-shrink-0">
+      <a href="#" class="text-xs text-blue-600 hover:underline">Manage Watchlists</a>
+    </div>
+  </div>
+
+<script>
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('expanded');
+}
+    function toggleWatchlistPanel() {
+      document.getElementById('watchlistPanel').classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('watchlistPanel');
+      if (!panel.classList.contains('hidden') && !e.target.closest('#watchlistPanel') && !e.target.closest('[title="Watchlists"]')) {
+        panel.classList.add('hidden');
+      }
+    });
+
+function switchView(view) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-view="${view}"]`).classList.add('active');
+  document.getElementById('view-curator').classList.toggle('hidden', view !== 'curator');
+  document.getElementById('view-admin').classList.toggle('hidden', view !== 'admin');
+  document.getElementById('filterChips-admin').classList.toggle('hidden', view !== 'admin');
+  document.getElementById('filterChips-curator').classList.toggle('hidden', view !== 'curator');
+}
+
+
+function updateSelection() {
+  const checked = document.querySelectorAll('.admin-row-cb:checked');
+  const toolbar = document.getElementById('selectionToolbar');
+  toolbar.classList.toggle('hidden', checked.length === 0);
+  document.getElementById('selectionCount').textContent = checked.length + ' selected';
+}
+
+function toggleSelectAll() {
+  const checked = document.getElementById('selectAllCheckbox').checked;
+  document.querySelectorAll('.admin-row-cb').forEach(cb => cb.checked = checked);
+  updateSelection();
+}
+
+function handleBulkSelect(value) {
+  if (value === 'none') {
+    document.querySelectorAll('.admin-row-cb').forEach(cb => cb.checked = false);
+    document.getElementById('selectAllCheckbox').checked = false;
+  } else if (value === 'page' || value === 'all') {
+    document.querySelectorAll('.admin-row-cb').forEach(cb => cb.checked = true);
+    document.getElementById('selectAllCheckbox').checked = true;
+  }
+  updateSelection();
+  document.getElementById('bulkSelector').value = '';
+}
+
+function closeModals() {
+  document.querySelectorAll('[id$="Modal"], [id$="Dialog"], #wizardDialog').forEach(m => m.classList.add('hidden'));
+}
+
+function openWizard() {
+  wizardStep = 1;
+  goToWizardStep(1);
+  document.getElementById('wizardDialog').classList.remove('hidden');
+}
+
+let wizardStep = 1;
+function goToWizardStep(step) {
+  if (step < 1 || step > 3) return;
+  wizardStep = step;
+  document.getElementById('wizardStep1').classList.toggle('hidden', step !== 1);
+  document.getElementById('wizardStep2').classList.toggle('hidden', step !== 2);
+  document.getElementById('wizardStep3').classList.toggle('hidden', step !== 3);
+
+  const indicators = [
+    { el: 'step1indicator', active: step >= 1 },
+    { el: 'step2indicator', active: step >= 2 },
+    { el: 'step3indicator', active: step >= 3 },
+  ];
+  indicators.forEach(ind => {
+    const el = document.getElementById(ind.el);
+    const circle = el.querySelector('span:first-child');
+    const label = el.querySelector('span:last-child');
+    if (ind.active) {
+      circle.className = 'w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-medium';
+      label.className = 'text-sm font-medium';
+    } else {
+      circle.className = 'w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs flex items-center justify-center font-medium';
+      label.className = 'text-sm text-slate-500';
+    }
+  });
+
+  document.getElementById('wizardBackBtn').disabled = step === 1;
+  document.getElementById('wizardBackBtn').classList.toggle('opacity-50', step === 1);
+  document.getElementById('wizardNextBtn').classList.toggle('hidden', step === 3);
+
+  if (step === 3) {
+    document.getElementById('reviewBatch').textContent = document.getElementById('wizardBatchName').value;
+    document.getElementById('reviewProject').textContent = document.getElementById('wizardProject').value;
+    document.getElementById('reviewSource').textContent = document.getElementById('wizardSource').value;
+  }
+}
+
+function showReingestModal(ident) {
+  document.getElementById('reingestIdent').textContent = ident;
+  document.getElementById('reingestModal').classList.remove('hidden');
+}
+
+function showDeleteModal(ident) {
+  document.getElementById('deleteIdent').textContent = ident;
+  document.getElementById('deleteConfirmInput').value = '';
+  document.getElementById('deleteConfirmBtn').disabled = true;
+  document.getElementById('deleteConfirmBtn').classList.add('opacity-50');
+  document.getElementById('deleteModal').classList.remove('hidden');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VERA - Hooks</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .sidebar { width: 3.5rem; transition: width 0.2s ease; }
+    .sidebar.expanded { width: 14rem; }
+    .sidebar .nav-label { opacity: 0; transition: opacity 0.15s ease; white-space: nowrap; overflow: hidden; }
+    .sidebar.expanded .nav-label { opacity: 1; }
+    .sidebar-link { color: #94a3b8; }
+    .sidebar-link.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .view-btn.active { background: #0f172a; color: #fff; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+    .task-tracker { display: none; }
+    .sidebar.expanded .task-tracker { display: block; }
+    .task-badge { display: flex; }
+    .sidebar.expanded .task-badge { display: none; }
+    .sidebar-badge { display: flex; }
+    .sidebar.expanded .sidebar-badge { display: none; }
+    .toggle-icon { transition: transform 0.2s ease; }
+    .sidebar.expanded .toggle-icon { transform: rotate(180deg); }
+  </style>
+</head>
+<body class="bg-white text-slate-900">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="sidebar bg-slate-900 flex flex-col py-3 flex-shrink-0 overflow-hidden">
+      <!-- Logo -->
+      <div class="px-3 mb-2 flex items-center gap-3 h-10 flex-shrink-0">
+        <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+          <span class="text-slate-900 text-sm font-black tracking-tight">V</span>
+        </div>
+        <span class="nav-label text-white font-semibold text-base">VERA</span>
+      </div>
+
+      <div class="px-2 mb-3 flex-shrink-0">
+        <button onclick="toggleSidebar()" class="sidebar-link flex items-center justify-center w-full h-8 rounded-lg" title="Toggle sidebar">
+          <svg class="toggle-icon w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 flex flex-col gap-0.5 px-2 overflow-y-auto">
+        <a href="documents.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Documents">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Do</span>
+          <span class="nav-label text-sm font-medium">Documents</span>
+        </a>
+        <a href="proposals.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Proposals">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pr</span>
+          <span class="nav-label text-sm font-medium">Proposals</span>
+        </a>
+        <a href="additions.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Additions">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ad</span>
+          <span class="nav-label text-sm font-medium">Additions</span>
+        </a>
+        <a href="projects.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Projects">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pj</span>
+          <span class="nav-label text-sm font-medium">Projects</span>
+        </a>
+        <a href="categories.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Categories">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ca</span>
+          <span class="nav-label text-sm font-medium">Categories</span>
+        </a>
+        <a href="intentions.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Intentions">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">In</span>
+          <span class="nav-label text-sm font-medium">Intentions</span>
+        </a>
+        <a href="digitization-lists.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Dig. Lists">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">DL</span>
+          <span class="nav-label text-sm font-medium">Dig. Lists</span>
+        </a>
+        <a href="tasks.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Tasks">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ta</span>
+          <span class="nav-label text-sm font-medium">Tasks</span>
+        </a>
+        <a href="plugins.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Plugins">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pl</span>
+          <span class="nav-label text-sm font-medium">Plugins</span>
+        </a>
+        <a href="hooks.html" class="sidebar-link active text-white flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Hooks">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Hk</span>
+          <span class="nav-label text-sm font-medium">Hooks</span>
+        </a>
+        <div class="mt-2 mb-1 border-t border-slate-700"></div>
+        <button onclick="toggleWatchlistPanel()" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold w-full" title="Watchlists">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0 relative">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center sidebar-badge">19</span>
+          </span>
+          <span class="nav-label text-sm font-medium">Watchlists</span>
+          <span class="nav-label ml-auto bg-red-500 text-white text-[10px] rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold">19</span>
+        </button>
+      </nav>
+
+      <!-- Task tracker -->
+      <div class="px-2 mb-1 flex-shrink-0" id="taskSection">
+        <!-- Collapsed: badge only -->
+        <div class="task-badge items-center justify-center px-2 h-9">
+          <span class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</span>
+        </div>
+        <!-- Expanded: task list -->
+        <div class="task-tracker px-2 py-2 rounded-lg bg-slate-800">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-300">Tasks running</span>
+            <span class="text-xs text-slate-400 font-mono">2</span>
+          </div>
+          <div class="space-y-2">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-slate-300 truncate">Proposal.Ingest #412</span>
+                <span class="text-xs text-slate-400">67%</span>
+              </div>
+              <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:67%"></div></div>
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-slate-300 truncate">Catalog.Sync</span>
+                <span class="text-xs text-slate-400">23%</span>
+              </div>
+              <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:23%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <div class="px-2 pt-2 border-t border-slate-700 flex-shrink-0">
+        <button class="sidebar-link flex items-center gap-3 w-full h-9 px-2 rounded-lg text-xs font-bold" title="Logout">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </span>
+          <span class="nav-label text-sm font-medium">Jan Novak</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top bar -->
+        <div class="border-b border-slate-200 px-6 py-3 flex items-center gap-4">
+          <h1 class="text-lg font-semibold mr-4">Hooks</h1>
+          <div class="flex bg-slate-100 rounded-lg p-0.5 gap-0.5" id="hookTabs">
+            <button onclick="switchTab('instances')" class="view-btn active px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" id="tab-instances" data-view="instances">Hook Instances</button>
+            <button onclick="switchTab('log')" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" id="tab-log" data-view="log">Execution Log</button>
+            <button onclick="switchTab('dead')" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" id="tab-dead" data-view="dead">Dead Letters <span class="inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold bg-red-600 text-white ml-1">3</span></button>
+          </div>
+          <div class="flex-1"></div>
+        </div>
+
+        <!-- Filter bar: Instances -->
+        <div id="filter-instances" class="border-b border-slate-200 px-6 py-2.5 flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-semibold text-slate-500 uppercase mr-1">Filters</span>
+            <span class="inline-flex items-center gap-1 bg-slate-100 rounded-full px-2.5 py-1 text-xs font-medium text-slate-700">
+              Hook Type: All
+              <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">&times;</button>
+            </span>
+            <select class="border border-slate-300 rounded-md px-2 py-1 text-xs text-slate-600 bg-white">
+              <option>+ Add Filter</option>
+              <option>Hook Type</option>
+              <option>Entity Type</option>
+            </select>
+            <div class="flex-1"></div>
+            <input type="text" placeholder="Search by name..." class="px-2.5 py-1 text-xs border border-slate-300 rounded-lg bg-white w-48">
+        </div>
+
+        <!-- Filter bar: Log -->
+        <div id="filter-log" class="hidden border-b border-slate-200 px-6 py-2.5 flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-semibold text-slate-500 uppercase mr-1">Filters</span>
+            <span class="inline-flex items-center gap-1 bg-slate-100 rounded-full px-2.5 py-1 text-xs font-medium text-slate-700">
+              Status: All
+              <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">&times;</button>
+            </span>
+            <select class="border border-slate-300 rounded-md px-2 py-1 text-xs text-slate-600 bg-white">
+              <option>+ Add Filter</option>
+              <option>Hook Instance</option>
+              <option>Entity Type</option>
+              <option>Status</option>
+              <option>Date Range</option>
+            </select>
+            <div class="flex-1"></div>
+        </div>
+
+        <!-- Filter bar: Dead -->
+        <div id="filter-dead" class="hidden border-b border-slate-200 px-6 py-2.5 flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-semibold text-slate-500 uppercase mr-1">Filters</span>
+            <span class="inline-flex items-center gap-1 bg-slate-100 rounded-full px-2.5 py-1 text-xs font-medium text-slate-700">
+              Hook Instance: All
+              <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">&times;</button>
+            </span>
+            <select class="border border-slate-300 rounded-md px-2 py-1 text-xs text-slate-600 bg-white">
+              <option>+ Add Filter</option>
+              <option>Hook Instance</option>
+              <option>Date Range</option>
+            </select>
+            <div class="flex-1"></div>
+            <button class="px-2.5 py-1 text-xs font-medium border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50" id="btn-retry-selected" disabled>Retry Selected</button>
+            <button class="px-2.5 py-1 text-xs font-medium border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50" id="btn-resolve-selected" disabled>Resolve Selected</button>
+        </div>
+
+      <div class="flex-1 overflow-y-auto">
+      <div class="p-6">
+        <!-- Hook Instances Tab -->
+        <div id="section-instances">
+
+          <!-- Hook Instances table -->
+          <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                  <th class="px-4 py-3 text-left font-medium w-8"></th>
+                  <th class="px-4 py-3 text-left font-medium">Name</th>
+                  <th class="px-4 py-3 text-left font-medium">Type</th>
+                  <th class="px-4 py-3 text-left font-medium">Plugin</th>
+                  <th class="px-4 py-3 text-left font-medium">Subscriptions</th>
+                  <th class="px-4 py-3 text-left font-medium">Failure Mode</th>
+                  <th class="px-4 py-3 text-left font-medium">Dead Letters</th>
+                  <th class="px-4 py-3 text-left font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                <!-- Row 1 - expanded -->
+                <tr class="hover:bg-slate-50 cursor-pointer bg-slate-50" onclick="toggleHookRow('hook1')">
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-hook1">&#9660;</td>
+                  <td class="px-4 py-3 text-sm font-medium">Slack #digitalizace</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">External Hook</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-500">SlackNotifier</td>
+                  <td class="px-4 py-3 text-sm">3</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Retry</span></td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">2</span></td>
+                  <td class="px-4 py-3 text-sm">
+                    <div class="flex gap-1" onclick="event.stopPropagation()">
+                      <button onclick="openModal('configureHookModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Configure</button>
+                      <button onclick="openModal('codeModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Code</button>
+                      <button onclick="openModal('testHookModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Test</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="detail-hook1">
+                  <td colspan="8" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="text-xs font-medium text-slate-500 uppercase">Subscriptions</span>
+                      <button onclick="openModal('subscriptionModal')" class="px-2 py-1 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">Add Subscription</button>
+                    </div>
+                    <table class="w-full border-collapse border border-slate-200 rounded">
+                      <thead>
+                        <tr class="bg-white text-slate-500 text-xs uppercase">
+                          <th class="px-3 py-2 text-left font-medium">Entity Type</th>
+                          <th class="px-3 py-2 text-left font-medium">Event Types</th>
+                          <th class="px-3 py-2 text-left font-medium">Priority</th>
+                          <th class="px-3 py-2 text-left font-medium">Filters</th>
+                          <th class="px-3 py-2 text-left font-medium">View Config</th>
+                          <th class="px-3 py-2 text-left font-medium">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-100 text-sm">
+                        <tr>
+                          <td class="px-3 py-2">Document</td>
+                          <td class="px-3 py-2">
+                            <span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-600 mr-1">STATUS_CHANGED</span>
+                            <span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-600">CREATED</span>
+                          </td>
+                          <td class="px-3 py-2">10</td>
+                          <td class="px-3 py-2"><span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-100 text-slate-500">2 filters</span></td>
+                          <td class="px-3 py-2 text-xs text-slate-500">4 fields, 1 relation</td>
+                          <td class="px-3 py-2">
+                            <div class="flex gap-1">
+                              <button onclick="openModal('subscriptionModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                              <button onclick="openModal('deleteSubscriptionModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="px-3 py-2">Proposal</td>
+                          <td class="px-3 py-2">
+                            <span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-600 mr-1">STATUS_CHANGED</span>
+                          </td>
+                          <td class="px-3 py-2">20</td>
+                          <td class="px-3 py-2"><span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-100 text-slate-500">1 filter</span></td>
+                          <td class="px-3 py-2 text-xs text-slate-500">3 fields, 0 relations</td>
+                          <td class="px-3 py-2">
+                            <div class="flex gap-1">
+                              <button onclick="openModal('subscriptionModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                              <button onclick="openModal('deleteSubscriptionModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="px-3 py-2">DigitizationList</td>
+                          <td class="px-3 py-2">
+                            <span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-600">STATUS_CHANGED</span>
+                          </td>
+                          <td class="px-3 py-2">10</td>
+                          <td class="px-3 py-2 text-slate-400 text-xs">--</td>
+                          <td class="px-3 py-2 text-xs text-slate-500">2 fields, 1 relation</td>
+                          <td class="px-3 py-2">
+                            <div class="flex gap-1">
+                              <button onclick="openModal('subscriptionModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                              <button onclick="openModal('deleteSubscriptionModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Row 2 -->
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('hook2')">
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-hook2">&#9654;</td>
+                  <td class="px-4 py-3 text-sm font-medium">Slack #chyby-systemu</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">External Hook</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-500">SlackNotifier</td>
+                  <td class="px-4 py-3 text-sm">1</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Fire & Forget</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                  <td class="px-4 py-3 text-sm">
+                    <div class="flex gap-1" onclick="event.stopPropagation()">
+                      <button onclick="openModal('configureHookModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Configure</button>
+                      <button onclick="openModal('codeModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Code</button>
+                      <button onclick="openModal('testHookModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Test</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="detail-hook2" class="hidden">
+                  <td colspan="8" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="text-xs font-medium text-slate-500 uppercase">Subscriptions</span>
+                      <button onclick="openModal('subscriptionModal')" class="px-2 py-1 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">Add Subscription</button>
+                    </div>
+                    <table class="w-full border-collapse border border-slate-200 rounded">
+                      <thead>
+                        <tr class="bg-white text-slate-500 text-xs uppercase">
+                          <th class="px-3 py-2 text-left font-medium">Entity Type</th>
+                          <th class="px-3 py-2 text-left font-medium">Event Types</th>
+                          <th class="px-3 py-2 text-left font-medium">Priority</th>
+                          <th class="px-3 py-2 text-left font-medium">Filters</th>
+                          <th class="px-3 py-2 text-left font-medium">View Config</th>
+                          <th class="px-3 py-2 text-left font-medium">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-100 text-sm">
+                        <tr>
+                          <td class="px-3 py-2">Addition</td>
+                          <td class="px-3 py-2"><span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-600">FAILED</span></td>
+                          <td class="px-3 py-2">5</td>
+                          <td class="px-3 py-2 text-slate-400 text-xs">--</td>
+                          <td class="px-3 py-2 text-xs text-slate-500">2 fields, 0 relations</td>
+                          <td class="px-3 py-2">
+                            <div class="flex gap-1">
+                              <button onclick="openModal('subscriptionModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                              <button onclick="openModal('deleteSubscriptionModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Row 3 - Data Hook -->
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('hook3')">
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-hook3">&#9654;</td>
+                  <td class="px-4 py-3 text-sm font-medium">Auto-kategorizace dokumentu</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700">Data Hook</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-500">DocumentAutoTagger</td>
+                  <td class="px-4 py-3 text-sm">2</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Retry</span></td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">1</span></td>
+                  <td class="px-4 py-3 text-sm">
+                    <div class="flex gap-1" onclick="event.stopPropagation()">
+                      <button onclick="openModal('configureHookModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Configure</button>
+                      <button onclick="openModal('codeModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Code</button>
+                      <button onclick="openModal('testHookModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Test</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="detail-hook3" class="hidden">
+                  <td colspan="8" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="text-xs font-medium text-slate-500 uppercase">Subscriptions</span>
+                      <button onclick="openModal('subscriptionModal')" class="px-2 py-1 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">Add Subscription</button>
+                    </div>
+                    <table class="w-full border-collapse border border-slate-200 rounded">
+                      <thead>
+                        <tr class="bg-white text-slate-500 text-xs uppercase">
+                          <th class="px-3 py-2 text-left font-medium">Entity Type</th>
+                          <th class="px-3 py-2 text-left font-medium">Event Types</th>
+                          <th class="px-3 py-2 text-left font-medium">Priority</th>
+                          <th class="px-3 py-2 text-left font-medium">Filters</th>
+                          <th class="px-3 py-2 text-left font-medium">View Config</th>
+                          <th class="px-3 py-2 text-left font-medium">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-100 text-sm">
+                        <tr>
+                          <td class="px-3 py-2">Document</td>
+                          <td class="px-3 py-2"><span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-600">CREATED</span></td>
+                          <td class="px-3 py-2">5</td>
+                          <td class="px-3 py-2"><span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-100 text-slate-500">1 filter</span></td>
+                          <td class="px-3 py-2 text-xs text-slate-500">6 fields, 2 relations</td>
+                          <td class="px-3 py-2">
+                            <div class="flex gap-1">
+                              <button onclick="openModal('subscriptionModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                              <button onclick="openModal('deleteSubscriptionModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="px-3 py-2">Document</td>
+                          <td class="px-3 py-2"><span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-600">UPDATED</span></td>
+                          <td class="px-3 py-2">5</td>
+                          <td class="px-3 py-2 text-slate-400 text-xs">--</td>
+                          <td class="px-3 py-2 text-xs text-slate-500">6 fields, 2 relations</td>
+                          <td class="px-3 py-2">
+                            <div class="flex gap-1">
+                              <button onclick="openModal('subscriptionModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                              <button onclick="openModal('deleteSubscriptionModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Row 4 - Data Hook -->
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('hook4')">
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-hook4">&#9654;</td>
+                  <td class="px-4 py-3 text-sm font-medium">Validace navrhu</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700">Data Hook</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-500">ProposalValidator</td>
+                  <td class="px-4 py-3 text-sm">1</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Fire & Forget</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                  <td class="px-4 py-3 text-sm">
+                    <div class="flex gap-1" onclick="event.stopPropagation()">
+                      <button onclick="openModal('configureHookModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Configure</button>
+                      <button onclick="openModal('codeModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Code</button>
+                      <button onclick="openModal('testHookModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Test</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="detail-hook4" class="hidden">
+                  <td colspan="8" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="text-xs font-medium text-slate-500 uppercase">Subscriptions</span>
+                      <button onclick="openModal('subscriptionModal')" class="px-2 py-1 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">Add Subscription</button>
+                    </div>
+                    <table class="w-full border-collapse border border-slate-200 rounded">
+                      <thead>
+                        <tr class="bg-white text-slate-500 text-xs uppercase">
+                          <th class="px-3 py-2 text-left font-medium">Entity Type</th>
+                          <th class="px-3 py-2 text-left font-medium">Event Types</th>
+                          <th class="px-3 py-2 text-left font-medium">Priority</th>
+                          <th class="px-3 py-2 text-left font-medium">Filters</th>
+                          <th class="px-3 py-2 text-left font-medium">View Config</th>
+                          <th class="px-3 py-2 text-left font-medium">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-100 text-sm">
+                        <tr>
+                          <td class="px-3 py-2">Proposal</td>
+                          <td class="px-3 py-2">
+                            <span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-600 mr-1">CREATED</span>
+                            <span class="rounded-full px-1.5 py-0.5 text-[10px] bg-slate-200 text-slate-600">UPDATED</span>
+                          </td>
+                          <td class="px-3 py-2">1</td>
+                          <td class="px-3 py-2 text-slate-400 text-xs">--</td>
+                          <td class="px-3 py-2 text-xs text-slate-500">5 fields, 1 relation</td>
+                          <td class="px-3 py-2">
+                            <div class="flex gap-1">
+                              <button onclick="openModal('subscriptionModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                              <button onclick="openModal('deleteSubscriptionModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Execution Log Tab -->
+        <div id="section-log" class="hidden">
+          <!-- Retention notice -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-4 text-sm text-blue-700">
+            Execution logs are retained for 30 days.
+          </div>
+
+          <!-- Execution Log table -->
+          <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                  <th class="px-4 py-3 text-left font-medium w-8"></th>
+                  <th class="px-4 py-3 text-left font-medium">Timestamp</th>
+                  <th class="px-4 py-3 text-left font-medium">Hook Instance</th>
+                  <th class="px-4 py-3 text-left font-medium">Entity</th>
+                  <th class="px-4 py-3 text-left font-medium">Event Type</th>
+                  <th class="px-4 py-3 text-left font-medium">Status</th>
+                  <th class="px-4 py-3 text-left font-medium">Duration</th>
+                  <th class="px-4 py-3 text-left font-medium">Error</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('log1')">
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-log1">&#9654;</td>
+                  <td class="px-4 py-3 text-sm text-slate-500">2026-05-28 09:45:12</td>
+                  <td class="px-4 py-3 text-sm">Slack #digitalizace</td>
+                  <td class="px-4 py-3 text-sm">Document #4521</td>
+                  <td class="px-4 py-3 text-sm">STATUS_CHANGED</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">success</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-500">120ms</td>
+                  <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                </tr>
+                <tr id="detail-log1" class="hidden">
+                  <td colspan="8" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <span class="text-xs font-medium text-slate-500 uppercase block mb-2">Event Data</span>
+                        <pre class="bg-white border border-slate-200 rounded p-3 text-xs font-mono overflow-x-auto">{
+  "entity_type": "Document",
+  "entity_id": 4521,
+  "event_type": "STATUS_CHANGED",
+  "changes": { "status": "Archived" },
+  "timestamp": "2026-05-28T09:45:12Z"
+}</pre>
+                      </div>
+                      <div>
+                        <span class="text-xs font-medium text-slate-500 uppercase block mb-2">Result</span>
+                        <pre class="bg-white border border-slate-200 rounded p-3 text-xs font-mono overflow-x-auto">{
+  "message": "Notification sent to #digitalizace",
+  "data": { "slack_ts": "1748425512.001234" }
+}</pre>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('log2')">
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-log2">&#9654;</td>
+                  <td class="px-4 py-3 text-sm text-slate-500">2026-05-28 09:44:58</td>
+                  <td class="px-4 py-3 text-sm">Auto-kategorizace dokumentu</td>
+                  <td class="px-4 py-3 text-sm">Document #4521</td>
+                  <td class="px-4 py-3 text-sm">CREATED</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">success</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-500">340ms</td>
+                  <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                </tr>
+                <tr id="detail-log2" class="hidden">
+                  <td colspan="8" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <span class="text-xs font-medium text-slate-500 uppercase block mb-2">Event Data</span>
+                        <pre class="bg-white border border-slate-200 rounded p-3 text-xs font-mono overflow-x-auto">{
+  "entity_type": "Document",
+  "entity_id": 4521,
+  "event_type": "CREATED"
+}</pre>
+                      </div>
+                      <div>
+                        <span class="text-xs font-medium text-slate-500 uppercase block mb-2">Result</span>
+                        <pre class="bg-white border border-slate-200 rounded p-3 text-xs font-mono overflow-x-auto">{
+  "changes": {
+    "categories": ["Periodika", "Noviny"]
+  }
+}</pre>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('log3')">
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-log3">&#9654;</td>
+                  <td class="px-4 py-3 text-sm text-slate-500">2026-05-28 09:30:05</td>
+                  <td class="px-4 py-3 text-sm">Slack #digitalizace</td>
+                  <td class="px-4 py-3 text-sm">Document #4518</td>
+                  <td class="px-4 py-3 text-sm">STATUS_CHANGED</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">failed</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-500">5,023ms</td>
+                  <td class="px-4 py-3 text-sm text-red-600 truncate max-w-xs">ConnectionError: Slack API timeout</td>
+                </tr>
+                <tr id="detail-log3" class="hidden">
+                  <td colspan="8" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <span class="text-xs font-medium text-slate-500 uppercase block mb-2">Event Data</span>
+                        <pre class="bg-white border border-slate-200 rounded p-3 text-xs font-mono overflow-x-auto">{
+  "entity_type": "Document",
+  "entity_id": 4518,
+  "event_type": "STATUS_CHANGED",
+  "changes": { "status": "InProgress" }
+}</pre>
+                      </div>
+                      <div>
+                        <span class="text-xs font-medium text-slate-500 uppercase block mb-2">Error Message</span>
+                        <pre class="bg-red-50 border border-red-200 rounded p-3 text-xs font-mono text-red-700 overflow-x-auto">ConnectionError: Slack API timeout after 5000ms
+  at SlackNotifier.send_notification (line 42)
+  at HookExecutor.execute (line 18)</pre>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('log4')">
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-log4">&#9654;</td>
+                  <td class="px-4 py-3 text-sm text-slate-500">2026-05-28 08:15:22</td>
+                  <td class="px-4 py-3 text-sm">Validace navrhu</td>
+                  <td class="px-4 py-3 text-sm">Proposal #892</td>
+                  <td class="px-4 py-3 text-sm">CREATED</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">success</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-500">45ms</td>
+                  <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                </tr>
+                <tr id="detail-log4" class="hidden">
+                  <td colspan="8" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <p class="text-sm text-slate-500">Validation passed. No changes applied.</p>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('log5')">
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-log5">&#9654;</td>
+                  <td class="px-4 py-3 text-sm text-slate-500">2026-05-28 07:00:01</td>
+                  <td class="px-4 py-3 text-sm">Slack #digitalizace</td>
+                  <td class="px-4 py-3 text-sm">DigitizationList #1042</td>
+                  <td class="px-4 py-3 text-sm">STATUS_CHANGED</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">timeout</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-500">30,000ms</td>
+                  <td class="px-4 py-3 text-sm text-amber-600 truncate max-w-xs">Execution timeout exceeded (30s)</td>
+                </tr>
+                <tr id="detail-log5" class="hidden">
+                  <td colspan="8" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <p class="text-sm text-amber-600">Execution timed out after 30 seconds.</p>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('log6')">
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-log6">&#9654;</td>
+                  <td class="px-4 py-3 text-sm text-slate-500">2026-05-27 22:10:45</td>
+                  <td class="px-4 py-3 text-sm">Auto-kategorizace dokumentu</td>
+                  <td class="px-4 py-3 text-sm">Document #4515</td>
+                  <td class="px-4 py-3 text-sm">UPDATED</td>
+                  <td class="px-4 py-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">skipped</span></td>
+                  <td class="px-4 py-3 text-sm text-slate-500">2ms</td>
+                  <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                </tr>
+                <tr id="detail-log6" class="hidden">
+                  <td colspan="8" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <p class="text-sm text-slate-500">Skipped: document already has categories assigned.</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex items-center justify-between mt-4">
+            <p class="text-sm text-slate-500">Showing 1-6 of 248 results</p>
+            <div class="flex gap-1">
+              <button class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50" disabled>Previous</button>
+              <button class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50">Next</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dead Letters Tab -->
+        <div id="section-dead" class="hidden">
+
+          <!-- Dead Letters table -->
+          <div class="border border-slate-200 rounded-lg overflow-hidden">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                  <th class="px-4 py-3 text-left font-medium w-8"><input type="checkbox" class="rounded" onchange="toggleAllDeadLetters(this)"></th>
+                  <th class="px-4 py-3 text-left font-medium w-8"></th>
+                  <th class="px-4 py-3 text-left font-medium">Created</th>
+                  <th class="px-4 py-3 text-left font-medium">Hook Instance</th>
+                  <th class="px-4 py-3 text-left font-medium">Entity</th>
+                  <th class="px-4 py-3 text-left font-medium">Event Type</th>
+                  <th class="px-4 py-3 text-left font-medium">Attempts</th>
+                  <th class="px-4 py-3 text-left font-medium">Error</th>
+                  <th class="px-4 py-3 text-left font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200">
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('dead1')">
+                  <td class="px-4 py-3" onclick="event.stopPropagation()"><input type="checkbox" class="rounded dead-letter-cb" onchange="updateBulkButtons()"></td>
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-dead1">&#9654;</td>
+                  <td class="px-4 py-3 text-sm text-slate-500">2026-05-28 09:30:05</td>
+                  <td class="px-4 py-3 text-sm">Slack #digitalizace</td>
+                  <td class="px-4 py-3 text-sm">Document #4518</td>
+                  <td class="px-4 py-3 text-sm">STATUS_CHANGED</td>
+                  <td class="px-4 py-3 text-sm">3</td>
+                  <td class="px-4 py-3 text-sm text-red-600 truncate max-w-xs">ConnectionError: Slack API timeout</td>
+                  <td class="px-4 py-3 text-sm">
+                    <div class="flex gap-1" onclick="event.stopPropagation()">
+                      <button class="px-2 py-1 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">Retry</button>
+                      <button class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Resolve</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="detail-dead1" class="hidden">
+                  <td colspan="9" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <span class="text-xs font-medium text-slate-500 uppercase block mb-2">Event Data</span>
+                        <pre class="bg-white border border-slate-200 rounded p-3 text-xs font-mono overflow-x-auto">{
+  "entity_type": "Document",
+  "entity_id": 4518,
+  "event_type": "STATUS_CHANGED",
+  "changes": { "status": "InProgress" }
+}</pre>
+                      </div>
+                      <div>
+                        <span class="text-xs font-medium text-slate-500 uppercase block mb-2">Error / Traceback</span>
+                        <pre class="bg-red-50 border border-red-200 rounded p-3 text-xs font-mono text-red-700 overflow-x-auto">ConnectionError: Slack API timeout after 5000ms
+
+Traceback:
+  File "slack_notifier.py", line 42, in send_notification
+    response = self.clients["slack"].post(...)
+  File "vera_plugins/hooks.py", line 18, in execute
+    result = hook.run(event)</pre>
+                        <p class="text-xs text-slate-500 mt-2">Attempts: 3 (backoff: 5s, 30s, 120s)</p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('dead2')">
+                  <td class="px-4 py-3" onclick="event.stopPropagation()"><input type="checkbox" class="rounded dead-letter-cb" onchange="updateBulkButtons()"></td>
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-dead2">&#9654;</td>
+                  <td class="px-4 py-3 text-sm text-slate-500">2026-05-28 07:00:01</td>
+                  <td class="px-4 py-3 text-sm">Slack #digitalizace</td>
+                  <td class="px-4 py-3 text-sm">DigitizationList #1042</td>
+                  <td class="px-4 py-3 text-sm">STATUS_CHANGED</td>
+                  <td class="px-4 py-3 text-sm">3</td>
+                  <td class="px-4 py-3 text-sm text-red-600 truncate max-w-xs">TimeoutError: Execution timeout exceeded</td>
+                  <td class="px-4 py-3 text-sm">
+                    <div class="flex gap-1" onclick="event.stopPropagation()">
+                      <button class="px-2 py-1 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">Retry</button>
+                      <button class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Resolve</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="detail-dead2" class="hidden">
+                  <td colspan="9" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <p class="text-sm text-red-600">TimeoutError: Execution timeout exceeded (30s)</p>
+                  </td>
+                </tr>
+
+                <tr class="hover:bg-slate-50 cursor-pointer" onclick="toggleHookRow('dead3')">
+                  <td class="px-4 py-3" onclick="event.stopPropagation()"><input type="checkbox" class="rounded dead-letter-cb" onchange="updateBulkButtons()"></td>
+                  <td class="px-4 py-3 text-sm text-slate-400" id="arrow-dead3">&#9654;</td>
+                  <td class="px-4 py-3 text-sm text-slate-500">2026-05-27 14:22:10</td>
+                  <td class="px-4 py-3 text-sm">Auto-kategorizace dokumentu</td>
+                  <td class="px-4 py-3 text-sm">Document #4510</td>
+                  <td class="px-4 py-3 text-sm">CREATED</td>
+                  <td class="px-4 py-3 text-sm">3</td>
+                  <td class="px-4 py-3 text-sm text-red-600 truncate max-w-xs">ValueError: Unknown document type 'map_series'</td>
+                  <td class="px-4 py-3 text-sm">
+                    <div class="flex gap-1" onclick="event.stopPropagation()">
+                      <button class="px-2 py-1 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">Retry</button>
+                      <button class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Resolve</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr id="detail-dead3" class="hidden">
+                  <td colspan="9" class="px-8 py-4 bg-slate-50 border-t border-slate-100">
+                    <pre class="bg-red-50 border border-red-200 rounded p-3 text-xs font-mono text-red-700 overflow-x-auto">ValueError: Unknown document type 'map_series'
+
+Traceback:
+  File "document_auto_tagger.py", line 28, in categorize
+    category = self.type_map[doc.type]
+  KeyError: 'map_series'</pre>
+                    <p class="text-xs text-slate-500 mt-2">Attempts: 3 (backoff: 5s, 30s, 120s)</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex items-center justify-between mt-4">
+            <p class="text-sm text-slate-500">Showing 1-3 of 3 results</p>
+            <div class="flex gap-1">
+              <button class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50" disabled>Previous</button>
+              <button class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50" disabled>Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configure Hook Modal -->
+  <div id="configureHookModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <h2 class="text-lg font-semibold mb-4">Configure Hook</h2>
+      <div class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 mb-5 text-sm text-slate-600">Hook: Slack #digitalizace (External Hook)</div>
+
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-slate-700">HTTP Clients</h3>
+        <button class="px-2 py-1 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">Add Client</button>
+      </div>
+      <div class="border border-slate-200 rounded-lg p-4 mb-5 space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Client Name</label>
+            <input type="text" value="slack" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Base URL</label>
+            <input type="text" value="https://hooks.slack.com" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">Headers</label>
+          <div class="flex gap-2 items-center">
+            <input type="text" value="Authorization" class="flex-1 px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+            <input type="text" value="********" class="flex-1 px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Timeout (s)</label>
+            <input type="number" value="30" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Rate Limit Key</label>
+            <input type="text" value="slack-global" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Rate Limit Max Requests</label>
+            <input type="number" value="50" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">Rate Limit Window (s)</label>
+          <input type="number" value="60" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg max-w-[200px]">
+        </div>
+      </div>
+
+      <h3 class="text-sm font-semibold text-slate-700 mb-3">Failure Mode</h3>
+      <div class="space-y-3 mb-5">
+        <div class="flex items-center gap-4">
+          <label class="flex items-center gap-2 text-sm"><input type="radio" name="failureMode" value="fire_and_forget"> Fire and Forget</label>
+          <label class="flex items-center gap-2 text-sm"><input type="radio" name="failureMode" value="retry" checked> Retry with Dead Letter</label>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Max Attempts</label>
+            <input type="number" value="3" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Backoff Schedule</label>
+            <input type="text" value="5, 30, 120" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Execution Timeout (s)</label>
+            <input type="number" value="30" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 border-t border-slate-200 pt-4">
+        <button onclick="closeModals()" class="px-4 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50">Cancel</button>
+        <button onclick="closeModals()" class="px-4 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Modal -->
+  <div id="codeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <h2 class="text-lg font-semibold mb-4">Plugin Code &mdash; Slack #digitalizace</h2>
+      <textarea rows="12" class="w-full px-3 py-2 text-sm font-mono border border-slate-300 rounded-lg mb-3">import json
+from vera_plugins.hooks import ExternalHookProtocol, HookEvent, HookResult
+
+class SlackNotifier(ExternalHookProtocol):
+    def execute(self, event: HookEvent, clients: dict) -> HookResult:
+        payload = {
+            "text": f"{event.entity_type} #{event.entity_id}: {event.event_type}"
+        }
+        response = clients["slack"].post("/services/T00/B00/xxx", json=payload)
+        return HookResult(message="Notification sent", data={"status": response.status_code})</textarea>
+      <div class="flex items-center gap-2 mb-4">
+        <button class="px-3 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Upload .py file</button>
+        <button class="px-3 py-1.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Validate</button>
+      </div>
+      <details class="mb-4">
+        <summary class="text-xs font-medium text-slate-500 cursor-pointer hover:text-slate-700">Allowed Imports</summary>
+        <p class="text-xs text-slate-500 mt-2 pl-2">json, re, datetime, hashlib, hmac, urllib.parse, collections, dataclasses, typing, vera_plugins.hooks</p>
+      </details>
+      <div class="flex justify-end gap-2 border-t border-slate-200 pt-4">
+        <button onclick="closeModals()" class="px-4 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50">Cancel</button>
+        <button onclick="closeModals()" class="px-4 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800 disabled:opacity-50" disabled>Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test Hook Modal -->
+  <div id="testHookModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+      <h2 class="text-lg font-semibold mb-4">Test Hook</h2>
+      <div class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 mb-5 text-sm text-slate-600">Hook: Slack #digitalizace</div>
+      <div class="space-y-3 mb-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">Subscription</label>
+          <select class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white">
+            <option>Document — STATUS_CHANGED, CREATED</option>
+            <option>Proposal — STATUS_CHANGED</option>
+            <option>DigitizationList — STATUS_CHANGED</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">Entity ID</label>
+          <input type="number" placeholder="e.g., 4521" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">Event Type</label>
+          <select class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white">
+            <option>STATUS_CHANGED</option>
+            <option>CREATED</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">Changes (JSON)</label>
+          <textarea rows="3" class="w-full px-3 py-1.5 font-mono text-xs border border-slate-300 rounded-lg">{"status": "Archived"}</textarea>
+        </div>
+      </div>
+      <button onclick="document.getElementById('testResult').classList.remove('hidden')" class="px-4 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800 mb-2">Run Dry Run</button>
+      <div id="testResult" class="hidden mt-4 border-t border-slate-200 pt-4">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">success</span>
+          <span class="text-xs text-slate-500">120ms</span>
+        </div>
+        <pre class="bg-slate-50 border border-slate-200 rounded p-3 text-xs font-mono">{"message": "Notification sent", "data": {"status": 200}}</pre>
+      </div>
+      <div class="flex justify-end gap-2 border-t border-slate-200 pt-4 mt-4">
+        <button onclick="closeModals()" class="px-4 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscription Modal -->
+  <div id="subscriptionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+      <h2 class="text-lg font-semibold mb-4">Subscription</h2>
+      <div class="space-y-3 mb-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">Entity Type</label>
+          <select class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white">
+            <option>Document</option>
+            <option>Proposal</option>
+            <option>Addition</option>
+            <option>Project</option>
+            <option>Category</option>
+            <option>DigitizationList</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">Event Types</label>
+          <div class="flex flex-wrap gap-3">
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox" checked> CREATED</label>
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox"> UPDATED</label>
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox"> DELETED</label>
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox" checked> STATUS_CHANGED</label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">Priority</label>
+          <input type="number" value="10" class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-medium text-slate-500">Filters</label>
+            <button class="px-2 py-0.5 text-xs border border-slate-300 rounded hover:bg-slate-50">Add Filter</button>
+          </div>
+          <div class="flex gap-2 items-center">
+            <input type="text" value="status" class="w-32 px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+            <select class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg bg-white">
+              <option>=</option>
+              <option>!=</option>
+              <option>in</option>
+              <option>&gt;</option>
+              <option>&lt;</option>
+              <option>&gt;=</option>
+              <option>&lt;=</option>
+              <option>like</option>
+            </select>
+            <input type="text" value="Archived" class="w-32 px-3 py-1.5 text-sm border border-slate-300 rounded-lg">
+            <button class="text-red-500 hover:text-red-700 text-lg px-1">&times;</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">View Config &mdash; Fields</label>
+          <div class="flex flex-wrap gap-3">
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox" checked> id</label>
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox" checked> title</label>
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox" checked> status</label>
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox"> created_at</label>
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox"> updated_at</label>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-500 mb-1">View Config &mdash; Relations</label>
+          <div class="flex flex-wrap gap-3">
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox" checked> categories</label>
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox"> projects</label>
+            <label class="flex items-center gap-1.5 text-sm"><input type="checkbox"> intentions</label>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 border-t border-slate-200 pt-4">
+        <button onclick="closeModals()" class="px-4 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50">Cancel</button>
+        <button onclick="closeModals()" class="px-4 py-2 text-sm bg-slate-900 text-white rounded-lg hover:bg-slate-800">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Subscription Modal -->
+  <div id="deleteSubscriptionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
+      <h2 class="text-lg font-semibold mb-4">Delete Subscription</h2>
+      <p class="text-sm text-slate-600 mb-3">This will remove the subscription. The hook will no longer be triggered for these events.</p>
+      <div class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 mb-5 text-sm text-slate-600">Document &mdash; STATUS_CHANGED, CREATED (Priority: 10)</div>
+      <div class="flex justify-end gap-2 border-t border-slate-200 pt-4">
+        <button onclick="closeModals()" class="px-4 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50">Cancel</button>
+        <button onclick="closeModals()" class="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Watchlist Panel -->
+  <div id="watchlistPanel" class="hidden fixed left-14 bottom-16 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 flex flex-col max-h-[28rem]">
+    <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+      <span class="text-sm font-semibold">Watchlists</span>
+      <button onclick="toggleWatchlistPanel()" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+    </div>
+    <div class="py-1 overflow-y-auto flex-1">
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Documents</div>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>High priority pending</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>My rejected documents</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Periodicals queue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Proposals</div>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Pending from NDK project</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Declined proposals</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Additions</div>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed additions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>NDK batch completions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Projects</div>
+      <a href="projects.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Overdue milestones</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Digitization Lists</div>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Planned lists - MZK</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Revision overdue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Finished this month</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Tasks</div>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed tasks today</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Long-running tasks</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Scheduled overdue</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+    </div>
+    <div class="border-t border-slate-100 px-4 py-2.5 flex-shrink-0">
+      <a href="#" class="text-xs text-blue-600 hover:underline">Manage Watchlists</a>
+    </div>
+  </div>
+
+  <script>
+    function toggleSidebar() {
+      document.querySelector('.sidebar').classList.toggle('expanded');
+    }
+    function toggleWatchlistPanel() {
+      document.getElementById('watchlistPanel').classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('watchlistPanel');
+      if (!panel.classList.contains('hidden') && !e.target.closest('#watchlistPanel') && !e.target.closest('[title="Watchlists"]')) {
+        panel.classList.add('hidden');
+      }
+    });
+
+    function switchTab(tab) {
+      document.getElementById('section-instances').classList.toggle('hidden', tab !== 'instances');
+      document.getElementById('section-log').classList.toggle('hidden', tab !== 'log');
+      document.getElementById('section-dead').classList.toggle('hidden', tab !== 'dead');
+      document.getElementById('filter-instances').classList.toggle('hidden', tab !== 'instances');
+      document.getElementById('filter-log').classList.toggle('hidden', tab !== 'log');
+      document.getElementById('filter-dead').classList.toggle('hidden', tab !== 'dead');
+      document.querySelectorAll('#hookTabs .view-btn').forEach(btn => {
+        if (btn.dataset.view === tab) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function toggleHookRow(rowId) {
+      const detail = document.getElementById('detail-' + rowId);
+      const arrow = document.getElementById('arrow-' + rowId);
+      if (!detail || !arrow) return;
+      if (detail.classList.contains('hidden')) {
+        detail.classList.remove('hidden');
+        arrow.innerHTML = '&#9660;';
+      } else {
+        detail.classList.add('hidden');
+        arrow.innerHTML = '&#9654;';
+      }
+    }
+
+    function toggleAllDeadLetters(masterCb) {
+      document.querySelectorAll('.dead-letter-cb').forEach(cb => { cb.checked = masterCb.checked; });
+      updateBulkButtons();
+    }
+
+    function updateBulkButtons() {
+      const anyChecked = [...document.querySelectorAll('.dead-letter-cb')].some(cb => cb.checked);
+      document.getElementById('btn-retry-selected').disabled = !anyChecked;
+      document.getElementById('btn-resolve-selected').disabled = !anyChecked;
+    }
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModals() { document.querySelectorAll('[id$="Modal"]').forEach(m => m.classList.add('hidden')); }
+  </script>
+</body>
+</html>

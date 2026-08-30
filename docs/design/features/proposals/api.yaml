@@ -1,0 +1,112 @@
+openapi: 3.0.3
+info:
+  title: Proposals API
+  version: 0.1.0
+paths:
+  /api/v1/proposals:
+    get:
+      summary: List proposals
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [submitted, pending, accepted, declined, enqueued]
+        - name: source
+          in: query
+          schema:
+            type: string
+          description: Filter by source (VERA or plugin name)
+        - name: project
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Paginated list of proposals
+
+  /api/v1/proposals/batch:
+    post:
+      summary: Submit a batch of proposals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [identifiers, project, justification]
+              properties:
+                identifiers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum: [cnbid, issn, isbn, oclc]
+                      value:
+                        type: string
+                batch_name:
+                  type: string
+                project:
+                  type: string
+                justification:
+                  type: string
+                priority:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                  default: 3
+      responses:
+        '201':
+          description: Batch created
+
+  /api/v1/proposals/{id}/approve:
+    post:
+      summary: Approve a proposal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category]
+              properties:
+                category:
+                  type: string
+                priority:
+                  type: integer
+                allow_new_iteration:
+                  type: boolean
+                ignore_digitization_check:
+                  type: boolean
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Proposal approved
+
+  /api/v1/proposals/{id}/reject:
+    post:
+      summary: Reject a proposal
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Proposal rejected

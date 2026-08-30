@@ -1,0 +1,93 @@
+title: Proposals — Reviewer View
+layout: split
+
+toolbar:
+  - label: Submit Proposals
+    color: dark
+    modal: submit-wizard
+
+list:
+  header: 3 Pending
+  items:
+    - id: p1
+      title: "CNBID: cnb002345678"
+      subtitle: cnb002345678
+      badges:
+        - { text: Pending, color: amber }
+      meta: VERA
+      selected: true
+
+    - id: p2
+      title: "CNBID: cnb001987654"
+      subtitle: cnb001987654
+      badges:
+        - { text: Pending, color: amber }
+      meta: CatalogHarvester
+      metaColor: purple
+
+    - id: p3
+      title: "ISSN: 1801-1234"
+      subtitle: 1801-1234
+      badges:
+        - { text: Pending, color: amber }
+      meta: ExternalImporter
+      metaColor: purple
+
+detail:
+  title: "CNBID: cnb002345678"
+  badges:
+    - { text: Pending, color: amber }
+  meta: "Jana Novaková · 14 May 2026"
+  actions:
+    - { label: Approve, color: green, modal: approve-modal }
+    - { label: Reject, color: red, modal: reject-modal }
+  sections:
+    - type: grid
+      cols: 2
+      items:
+        - { label: Project, value: NDK Monografie }
+        - { label: Batch, value: batch-2026-05-14 }
+        - { label: Source, value: VERA }
+        - { label: Eligibility, value: Eligible, color: green }
+    - type: text
+      label: Justification
+      content: Important for local history research. This title covers the Brno region events of the 1920s and is frequently requested by researchers.
+    - type: log
+      label: Status Log
+      entries:
+        - { text: Pending review, time: "14 May 2026, 10:15", color: amber }
+        - { text: Eligibility check passed, time: "14 May 2026, 10:14", color: green }
+        - { text: Proposal submitted, time: "14 May 2026, 10:12", color: slate }
+
+modals:
+  approve-modal:
+    title: Approve Proposal
+    fields:
+      - { name: category, label: Category, type: select, required: true, options: [Monographs, Periodicals, Maps, Music] }
+      - { name: priority, label: Priority, type: select, options: ["1 - Lowest", "2 - Low", "3 - Normal", "4 - High", "5 - Highest"], default: "3 - Normal" }
+      - { name: allow_new, label: Allow new iteration, type: checkbox }
+      - { name: ignore_dig, label: Ignore digitization check, type: checkbox }
+    submit: { label: Approve, color: green }
+
+  reject-modal:
+    title: Reject Proposal
+    fields:
+      - { name: reason, label: Rejection reason, type: textarea, placeholder: "Reason for rejection..." }
+    submit: { label: Reject, color: red }
+
+  submit-wizard:
+    title: Submit Proposals
+    type: wizard
+    steps:
+      - name: Identifiers
+        fields:
+          - { name: id_type, label: Identifier Type, type: select, options: [CNBID, ISSN, ISBN, OCLC] }
+          - { name: id_value, label: Identifier Value, type: text, placeholder: "Enter identifier..." }
+      - name: Metadata
+        fields:
+          - { name: batch, label: Batch Name, type: text, default: "batch-2026-06" }
+          - { name: project, label: Project, type: select, options: [NDK Monografie, NDK Periodika, VISK 7, "Kramerius+"] }
+          - { name: justification, label: Justification, type: textarea, required: true, placeholder: "Why should these be digitized?" }
+          - { name: priority, label: Priority, type: select, options: ["1 - Lowest", "2 - Low", "3 - Normal", "4 - High", "5 - Highest"], default: "3 - Normal" }
+      - name: Review & Submit
+        summary: true

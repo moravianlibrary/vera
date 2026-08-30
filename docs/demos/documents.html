@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERA - Documents</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .sidebar { width: 3.5rem; transition: width 0.2s ease; }
+  .sidebar.expanded { width: 14rem; }
+  .sidebar .nav-label { opacity: 0; transition: opacity 0.15s ease; white-space: nowrap; overflow: hidden; }
+  .sidebar.expanded .nav-label { opacity: 1; }
+  .sidebar-link { color: #94a3b8; }
+  .sidebar-link.active { background: rgba(255,255,255,0.15); color: #fff; }
+  .sidebar-link:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+  .view-btn.active { background: #0f172a; color: #fff; }
+  .nav-item.active { background: #f1f5f9; border-left: 3px solid #0f172a; }
+  .nav-item:hover { background: #f8fafc; }
+  .task-tracker { display: none; }
+  .sidebar.expanded .task-tracker { display: block; }
+  .task-badge { display: flex; }
+  .sidebar.expanded .task-badge { display: none; }
+    .sidebar-badge { display: flex; }
+    .sidebar.expanded .sidebar-badge { display: none; }
+  .toggle-icon { transition: transform 0.2s ease; }
+  .sidebar.expanded .toggle-icon { transform: rotate(180deg); }
+</style>
+</head>
+<body class="bg-white text-slate-900 h-screen flex overflow-hidden">
+
+<!-- Sidebar -->
+<aside class="sidebar bg-slate-900 flex flex-col py-3 flex-shrink-0 overflow-hidden">
+  <!-- Logo + Toggle -->
+  <div class="px-3 mb-2 flex items-center gap-3 h-10 flex-shrink-0">
+    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+      <span class="text-slate-900 text-sm font-black tracking-tight">V</span>
+    </div>
+    <span class="nav-label text-white font-semibold text-base">VERA</span>
+  </div>
+  <div class="px-2 mb-3 flex-shrink-0">
+    <button onclick="toggleSidebar()" class="sidebar-link flex items-center justify-center w-full h-8 rounded-lg" title="Toggle sidebar">
+      <svg class="toggle-icon w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="flex-1 flex flex-col gap-0.5 px-2 overflow-y-auto">
+    <a href="documents.html" class="sidebar-link active flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Documents">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Do</span>
+      <span class="nav-label text-sm font-medium">Documents</span>
+    </a>
+    <a href="proposals.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Proposals">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pr</span>
+      <span class="nav-label text-sm font-medium">Proposals</span>
+    </a>
+    <a href="additions.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Additions">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ad</span>
+      <span class="nav-label text-sm font-medium">Additions</span>
+    </a>
+    <a href="projects.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Projects">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pj</span>
+      <span class="nav-label text-sm font-medium">Projects</span>
+    </a>
+    <a href="categories.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Categories">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ca</span>
+      <span class="nav-label text-sm font-medium">Categories</span>
+    </a>
+    <a href="intentions.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Intentions">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">In</span>
+      <span class="nav-label text-sm font-medium">Intentions</span>
+    </a>
+    <a href="digitization-lists.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Dig. Lists">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">DL</span>
+      <span class="nav-label text-sm font-medium">Dig. Lists</span>
+    </a>
+    <a href="tasks.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Tasks">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ta</span>
+      <span class="nav-label text-sm font-medium">Tasks</span>
+    </a>
+    <a href="plugins.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Plugins">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pl</span>
+      <span class="nav-label text-sm font-medium">Plugins</span>
+    </a>
+    <a href="hooks.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Hooks">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Hk</span>
+      <span class="nav-label text-sm font-medium">Hooks</span>
+    </a>
+        <div class="mt-2 mb-1 border-t border-slate-700"></div>
+        <button onclick="toggleWatchlistPanel()" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold w-full" title="Watchlists">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0 relative">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center sidebar-badge">19</span>
+          </span>
+          <span class="nav-label text-sm font-medium">Watchlists</span>
+          <span class="nav-label ml-auto bg-red-500 text-white text-[10px] rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold">19</span>
+        </button>
+      </nav>
+
+  <!-- Task tracker -->
+  <div class="px-2 mb-1 flex-shrink-0" id="taskSection">
+    <!-- Collapsed: badge only -->
+    <div class="task-badge items-center justify-center px-2 h-9">
+      <span class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</span>
+    </div>
+    <!-- Expanded: task list -->
+    <div class="task-tracker px-2 py-2 rounded-lg bg-slate-800">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-slate-300">Tasks running</span>
+        <span class="text-xs text-slate-400 font-mono">2</span>
+      </div>
+      <div class="space-y-2">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-slate-300 truncate">Proposal.Ingest #412</span>
+            <span class="text-xs text-slate-400">67%</span>
+          </div>
+          <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:67%"></div></div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-slate-300 truncate">Catalog.Sync</span>
+            <span class="text-xs text-slate-400">23%</span>
+          </div>
+          <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:23%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout -->
+  <div class="px-2 pt-2 border-t border-slate-700 flex-shrink-0">
+    <button class="sidebar-link flex items-center gap-3 w-full h-9 px-2 rounded-lg text-xs font-bold" title="Logout">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </span>
+      <span class="nav-label text-sm font-medium">Jan Novak</span>
+    </button>
+  </div>
+</aside>
+
+<!-- Main content -->
+<main class="flex-1 flex flex-col overflow-hidden">
+
+  <!-- Top bar -->
+  <div class="border-b border-slate-200 px-6 py-3 flex items-center gap-4">
+    <h1 class="text-lg font-semibold mr-4">Documents</h1>
+
+    <!-- View toggle -->
+    <div class="flex bg-slate-100 rounded-lg p-0.5 gap-0.5" id="viewToggle">
+      <button onclick="switchView('requestor')" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" data-view="requestor">Requestor</button>
+      <button onclick="switchView('validator')" class="view-btn active px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" data-view="validator">Validator</button>
+      <button onclick="switchView('digitization')" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" data-view="digitization">Digitization</button>
+    </div>
+
+    <div class="flex-1"></div>
+
+    <!-- Generate List (digitization only) -->
+    <button id="generateListBtn" onclick="showGenerateListModal()" class="hidden flex items-center gap-1.5 bg-blue-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-blue-700">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456z"/></svg>
+      Generate List
+    </button>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="border-b border-slate-200 px-6 py-2.5 flex items-center gap-2 flex-wrap">
+    <!-- Search -->
+    <div class="relative w-56 flex-shrink-0">
+      <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      <input type="text" id="searchInput" placeholder="Search title, ID, barcode..." class="w-full pl-8 pr-7 py-1 border border-slate-300 rounded-full text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      <button onclick="document.getElementById('searchInput').value=''; this.classList.add('hidden')" id="searchClear" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm leading-none">&times;</button>
+    </div>
+    <script>
+      document.getElementById('searchInput').addEventListener('input', function() {
+        document.getElementById('searchClear').classList.toggle('hidden', !this.value);
+      });
+    </script>
+
+    <div class="h-4 w-px bg-slate-300"></div>
+
+    <div id="filterChips">
+      <!-- Validator default filters -->
+      <span class="inline-flex items-center gap-1 bg-slate-100 rounded-full px-2.5 py-1 text-xs font-medium text-slate-700" data-filter="status-invalid">
+        Status: Invalid
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </span>
+      <span class="inline-flex items-center gap-1 bg-slate-100 rounded-full px-2.5 py-1 text-xs font-medium text-slate-700 ml-1" data-filter="priority-high">
+        Priority: High
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </span>
+    </div>
+
+    <select class="border border-slate-300 rounded-md px-2 py-1 text-xs text-slate-600 bg-white">
+      <option>+ Add Filter</option>
+      <option>Status</option>
+      <option>Dig. State (App)</option>
+      <option>Dig. State (Registries)</option>
+      <option>Category</option>
+      <option>Material Type</option>
+      <option>Catalog Record Status</option>
+      <option>Priority</option>
+    </select>
+
+    <div class="flex-1"></div>
+    <button class="text-xs font-medium text-slate-600 border border-slate-300 rounded-lg px-2.5 py-1 hover:bg-slate-50">Save as Watchlist</button>
+  </div>
+
+  <!-- Content area -->
+  <div class="flex-1 overflow-hidden">
+
+    <!-- ===== REQUESTOR VIEW ===== -->
+    <div id="view-requestor" class="hidden h-full overflow-auto">
+      <div class="p-6">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200">
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Title</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Status</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Dig. (App)</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Dig. (Registries)</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Category</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Priority</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3 text-sm">Lidove noviny (1918-1925)</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Ready</span></td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">In Progress</span></td><td class="py-2.5 px-3"><div class="flex flex-col gap-0.5"><span class="rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-100 text-green-700">NDK: Finished</span><span class="rounded-full px-2 py-0.5 text-[10px] font-medium bg-purple-100 text-purple-700">Kram.: Published</span></div></td><td class="py-2.5 px-3 text-sm text-slate-600">Periodicals</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">High</span></td><td class="py-2.5 px-3 text-sm text-slate-500">2 hours ago</td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3 text-sm">Pravo lidu (1926)</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Ready</span></td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Planned</span></td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3 text-sm text-slate-600">Periodicals</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Medium</span></td><td class="py-2.5 px-3 text-sm text-slate-500">5 hours ago</td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3 text-sm">Hasek, Jaroslav: Osudy dobreho vojaka Svejka</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Ready</span></td><td class="py-2.5 px-3"><div class="flex items-center gap-1"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Finished</span><span class="text-[10px] text-amber-500" title="Previous iteration">prev.</span></div></td><td class="py-2.5 px-3"><div class="flex flex-col gap-0.5"><span class="rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-100 text-green-700">NDK: Finished</span><span class="rounded-full px-2 py-0.5 text-[10px] font-medium bg-purple-100 text-purple-700">Kram.: Published</span></div></td><td class="py-2.5 px-3 text-sm text-slate-600">Monographs</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Normal</span></td><td class="py-2.5 px-3 text-sm text-slate-500">1 day ago</td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3 text-sm">Moravsky zemsky archiv: Sbirka map</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-700 text-white">Forbidden</span></td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3 text-sm text-slate-600">Maps</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Low</span></td><td class="py-2.5 px-3 text-sm text-slate-500">2 days ago</td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3 text-sm">Brnensky denik (1930-1935)</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Review Needed</span></td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3 text-sm text-slate-600">Periodicals</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">High</span></td><td class="py-2.5 px-3 text-sm text-slate-500">3 days ago</td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3 text-sm">Capek, Karel: Valka s mloky</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">Approved</span></td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Planned</span></td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3 text-sm text-slate-600">Monographs</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Normal</span></td><td class="py-2.5 px-3 text-sm text-slate-500">5 days ago</td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3 text-sm">Neruda, Jan: Povidky malostranske</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">Denied</span></td><td class="py-2.5 px-3"><div class="flex items-center gap-1"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Finished</span><span class="text-[10px] text-amber-500">prev.</span></div></td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-[10px] font-medium bg-purple-100 text-purple-700">Kram.: Published</span></td><td class="py-2.5 px-3 text-sm text-slate-600">Monographs</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Medium</span></td><td class="py-2.5 px-3 text-sm text-slate-500">5 days ago</td></tr>
+          </tbody>
+        </table>
+        <div class="flex items-center justify-between mt-4 text-sm text-slate-500">
+          <span>Showing 1-7 of 7 documents</span>
+          <div class="flex gap-1">
+            <button class="px-3 py-1 border border-slate-300 rounded-md text-xs hover:bg-slate-50 opacity-50" disabled>&laquo; Prev</button>
+            <button class="px-3 py-1 border border-slate-300 rounded-md text-xs hover:bg-slate-50 opacity-50" disabled>Next &raquo;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== VALIDATOR VIEW (split layout) ===== -->
+    <div id="view-validator" class="flex h-full">
+      <!-- Left nav list -->
+      <div class="w-1/4 border-r border-slate-200 overflow-y-auto bg-white">
+        <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+          <span class="text-xs font-semibold text-slate-500 uppercase">8 Documents</span>
+          <div class="relative">
+            <button onclick="toggleColumnsPanel('validator')" id="valColumnsBtn" class="text-slate-400 hover:text-slate-600 p-0.5 rounded hover:bg-slate-100" title="Customize columns">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15M4.5 9h15M4.5 15h15"/></svg>
+            </button>
+            <div id="valColumnsPanel" class="hidden absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-50 py-2">
+              <div class="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase">Visible columns</div>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs"><input type="checkbox" checked disabled class="rounded border-slate-300"> Title</label>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" checked class="rounded border-slate-300"> Status</label>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" checked class="rounded border-slate-300"> Category</label>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" checked class="rounded border-slate-300"> Priority</label>
+              <div class="border-t border-slate-100 mt-1 pt-1">
+                <div class="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase">Available</div>
+                <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" class="rounded border-slate-300"> ID</label>
+                <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" class="rounded border-slate-300"> Catalog Record Status</label>
+                <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" class="rounded border-slate-300"> Material Type</label>
+                <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" class="rounded border-slate-300"> Page Count</label>
+                <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" class="rounded border-slate-300"> Size</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="navList">
+          <div class="nav-item active cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectDoc(0)">
+            <div class="text-xs text-slate-400 font-mono">MZK01-001284756</div>
+            <div class="text-sm font-medium truncate">Lidove noviny (1918-1925)</div>
+            <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 mt-1 inline-block">Ready</span>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectDoc(1)">
+            <div class="text-xs text-slate-400 font-mono">MZK01-001198432</div>
+            <div class="text-sm font-medium truncate">Pravo lidu (1926)</div>
+            <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 mt-1 inline-block">Ready</span>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectDoc(2)">
+            <div class="text-xs text-slate-400 font-mono">MZK01-001056789</div>
+            <div class="text-sm font-medium truncate">Moravske noviny (1905)</div>
+            <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 mt-1 inline-block">Ready</span>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectDoc(3)">
+            <div class="text-xs text-slate-400 font-mono">MZK01-001387654</div>
+            <div class="text-sm font-medium truncate">Hasek, J.: Osudy dobreho vojaka</div>
+            <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 mt-1 inline-block">Ready</span>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectDoc(4)">
+            <div class="text-xs text-slate-400 font-mono">MZK01-001445231</div>
+            <div class="text-sm font-medium truncate">Brnensky denik (1930-1935)</div>
+            <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 mt-1 inline-block">Review Needed</span>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectDoc(5)">
+            <div class="text-xs text-slate-400 font-mono">MZK01-001532876</div>
+            <div class="text-sm font-medium truncate">Capek, K.: Valka s mloky</div>
+            <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 mt-1 inline-block">Approved</span>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectDoc(6)">
+            <div class="text-xs text-slate-400 font-mono">MZK01-001667543</div>
+            <div class="text-sm font-medium truncate">Rovnost (1900-1910)</div>
+            <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 mt-1 inline-block">Ready</span>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectDoc(7)">
+            <div class="text-xs text-slate-400 font-mono">MZK01-001778901</div>
+            <div class="text-sm font-medium truncate">Neruda, J.: Povidky malostranske</div>
+            <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700 mt-1 inline-block">Denied</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right detail panel -->
+      <div class="w-3/4 overflow-y-auto" id="detailPanel">
+        <div class="p-6">
+          <!-- Header -->
+          <div class="flex items-start justify-between mb-6">
+            <div>
+              <h2 class="text-xl font-semibold" id="detailTitle">Lidove noviny (1918-1925)</h2>
+              <p class="text-sm text-slate-500 mt-1" id="detailSubtitle">MZK01-001284756 &middot; Periodical &middot; Added 14 May 2026</p>
+            </div>
+            <div class="flex gap-2" id="validationActions"></div>
+          </div>
+
+          <!-- Metadata grid -->
+          <div class="grid grid-cols-3 gap-4 mb-6" id="metadataGrid">
+            <div class="border border-slate-200 rounded-lg p-3" id="statusCard">
+              <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Status</div>
+              <div id="statusDisplay"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Ready</span></div>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-3" id="categoryCard">
+              <div class="flex items-center justify-between mb-1">
+                <div class="text-xs font-semibold text-slate-500 uppercase">Category</div>
+                <button onclick="toggleEditField('category')" class="text-[10px] text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+              </div>
+              <div id="categoryDisplay" class="text-sm font-medium">Periodicals</div>
+              <div id="categoryEdit" class="hidden">
+                <select id="categoryInput" class="w-full border border-slate-300 rounded px-2 py-1 text-sm">
+                  <option value="Periodicals">Periodicals</option>
+                  <option value="Monographs">Monographs</option>
+                  <option value="Maps">Maps</option>
+                  <option value="Music">Music</option>
+                  <option value="Manuscripts">Manuscripts</option>
+                </select>
+                <div class="flex gap-1 mt-1">
+                  <button onclick="saveField('category')" class="text-[10px] text-white bg-blue-600 rounded px-2 py-0.5 hover:bg-blue-700">Save</button>
+                  <button onclick="toggleEditField('category')" class="text-[10px] text-slate-500 border border-slate-300 rounded px-2 py-0.5 hover:bg-slate-50">Cancel</button>
+                </div>
+              </div>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-3" id="priorityCard">
+              <div class="flex items-center justify-between mb-1">
+                <div class="text-xs font-semibold text-slate-500 uppercase">Priority</div>
+                <button onclick="toggleEditField('priority')" class="text-[10px] text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+              </div>
+              <div id="priorityDisplay"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">High</span></div>
+              <div id="priorityEdit" class="hidden">
+                <select id="priorityInput" class="w-full border border-slate-300 rounded px-2 py-1 text-sm">
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Normal">Normal</option>
+                  <option value="Low">Low</option>
+                </select>
+                <div class="flex gap-1 mt-1">
+                  <button onclick="saveField('priority')" class="text-[10px] text-white bg-blue-600 rounded px-2 py-0.5 hover:bg-blue-700">Save</button>
+                  <button onclick="toggleEditField('priority')" class="text-[10px] text-slate-500 border border-slate-300 rounded px-2 py-0.5 hover:bg-slate-50">Cancel</button>
+                </div>
+              </div>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-3" id="pageCountCard">
+              <div class="flex items-center justify-between mb-1">
+                <div class="text-xs font-semibold text-slate-500 uppercase">Page Count</div>
+                <button onclick="toggleEditField('pageCount')" class="text-[10px] text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+              </div>
+              <div id="pageCountDisplay" class="text-sm font-medium">2,847</div>
+              <div id="pageCountEdit" class="hidden">
+                <input type="number" id="pageCountInput" class="w-full border border-slate-300 rounded px-2 py-1 text-sm" value="2847">
+                <div class="flex gap-1 mt-1">
+                  <button onclick="saveField('pageCount')" class="text-[10px] text-white bg-blue-600 rounded px-2 py-0.5 hover:bg-blue-700">Save</button>
+                  <button onclick="toggleEditField('pageCount')" class="text-[10px] text-slate-500 border border-slate-300 rounded px-2 py-0.5 hover:bg-slate-50">Cancel</button>
+                </div>
+              </div>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-3" id="sizeCard">
+              <div class="flex items-center justify-between mb-1">
+                <div class="text-xs font-semibold text-slate-500 uppercase">Size</div>
+                <button onclick="toggleEditField('size')" class="text-[10px] text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+              </div>
+              <div id="sizeDisplay" class="text-sm font-medium">A2</div>
+              <div id="sizeEdit" class="hidden">
+                <select id="sizeInput" class="w-full border border-slate-300 rounded px-2 py-1 text-sm">
+                  <option value="">— not set —</option>
+                  <option value="A2">A2</option>
+                  <option value="A3">A3</option>
+                  <option value="A4">A4</option>
+                  <option value="A5">A5</option>
+                </select>
+                <div class="flex gap-1 mt-1">
+                  <button onclick="saveField('size')" class="text-[10px] text-white bg-blue-600 rounded px-2 py-0.5 hover:bg-blue-700">Save</button>
+                  <button onclick="toggleEditField('size')" class="text-[10px] text-slate-500 border border-slate-300 rounded px-2 py-0.5 hover:bg-slate-50">Cancel</button>
+                </div>
+              </div>
+            </div>
+            <div class="border border-slate-200 rounded-lg p-3">
+              <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Barcode</div>
+              <div class="text-sm font-medium font-mono">MZK-2801-000147</div>
+            </div>
+          </div>
+
+          <!-- Digitization State -->
+          <div class="border border-slate-200 rounded-lg p-4 mb-6" id="digStateSection">
+            <div class="text-xs font-semibold text-slate-500 uppercase mb-3">Digitization State</div>
+            <!-- App state -->
+            <div class="mb-2">
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1 px-1">App</div>
+              <div id="digStateApp">
+                <div class="flex items-center justify-between py-1.5 px-3 bg-slate-50 rounded-lg">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-medium text-slate-500">VERA</span>
+                    <span class="text-xs text-slate-400">(current)</span>
+                  </div>
+                  <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">In Progress</span>
+                </div>
+              </div>
+            </div>
+            <!-- Registry states -->
+            <div>
+              <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1 px-1">Registries</div>
+              <div class="space-y-1" id="digStateRegistries">
+                <div class="flex items-center justify-between py-1.5 px-3 bg-slate-50 rounded-lg">
+                  <span class="text-xs font-medium text-slate-500">NDK Registry</span>
+                  <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Finished</span>
+                </div>
+                <div class="flex items-center justify-between py-1.5 px-3 bg-slate-50 rounded-lg">
+                  <span class="text-xs font-medium text-slate-500">Kramerius</span>
+                  <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-700">Published</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metadata issues (invalid documents only) -->
+          <div id="metadataIssuesSection" class="hidden border border-red-200 bg-red-50 rounded-lg p-4 mb-6">
+            <h3 class="text-sm font-semibold text-red-800 mb-2">Metadata Issues</h3>
+            <p class="text-xs text-red-700 mb-3">Detected by pipeline validation plugins:</p>
+            <ul id="metadataIssuesList" class="text-sm text-red-800 space-y-1.5 list-disc list-inside"></ul>
+          </div>
+
+          <!-- Catalog record -->
+          <div class="border border-slate-200 rounded-lg p-4 mb-6">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold text-slate-700">Linked Catalog Record</h3>
+              <a href="#" class="text-xs text-blue-600 hover:underline">Open in Catalog &#8599;</a>
+            </div>
+            <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+              <div><span class="text-slate-500">Title:</span> <span class="font-medium">Lidove noviny</span></div>
+              <div><span class="text-slate-500">Author:</span> <span class="font-medium">-</span></div>
+              <div><span class="text-slate-500">Year:</span> <span class="font-medium">1918-1925</span></div>
+              <div><span class="text-slate-500">Language:</span> <span class="font-medium">Czech</span></div>
+              <div><span class="text-slate-500">Format:</span> <span class="font-medium">Periodical / Newspaper</span></div>
+              <div><span class="text-slate-500">Sync Status:</span> <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Synced</span></div>
+            </div>
+          </div>
+
+          <!-- Provenance -->
+          <div class="border border-slate-200 rounded-lg p-4 mb-6">
+            <h3 class="text-sm font-semibold text-slate-700 mb-3">Provenance</h3>
+            <div class="text-sm space-y-1">
+              <div><span class="text-slate-500">Added via:</span> <a href="additions.html" class="text-blue-600 hover:underline">Addition #1042</a></div>
+              <div><span class="text-slate-500">Proposed by:</span> <a href="proposals.html" class="text-blue-600 hover:underline">Proposal #789</a></div>
+            </div>
+          </div>
+
+          <!-- Status log -->
+          <div class="border border-slate-200 rounded-lg p-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-3">Status Log</h3>
+            <div id="statusLog" class="space-y-3">
+              <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-sm font-medium">Metadata validated</div>
+                  <div class="text-xs text-slate-500">14 May 2026, 09:32 &middot; CatalogValidity plugin</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-sm font-medium">Catalog record synced</div>
+                  <div class="text-xs text-slate-500">14 May 2026, 09:30 &middot; System</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-sm font-medium">Document created from Addition #1042</div>
+                  <div class="text-xs text-slate-500">14 May 2026, 09:28 &middot; Jana Novaková</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-sm font-medium">Proposal #789 approved</div>
+                  <div class="text-xs text-slate-500">13 May 2026, 15:10 &middot; Martin Svoboda</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DIGITIZATION WORKER VIEW ===== -->
+    <div id="view-digitization" class="hidden h-full overflow-auto">
+      <div class="p-6">
+        <!-- Selection toolbar -->
+        <div id="selectionToolbar" class="hidden mb-4 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2.5 flex items-center gap-3">
+          <span class="text-sm font-medium text-blue-800" id="selectionCount">0 selected</span>
+          <div class="h-4 w-px bg-blue-300"></div>
+          <button class="text-sm font-medium text-blue-700 hover:text-blue-900">Add to List</button>
+          <button class="text-sm font-medium text-slate-400 cursor-not-allowed" title="Enable when filtering by list">Remove from List</button>
+          <button class="text-sm font-medium text-blue-700 hover:text-blue-900">New List from Selection</button>
+          <button class="text-sm font-medium text-blue-700 hover:text-blue-900">Export</button>
+        </div>
+
+        <div class="flex items-center justify-end mb-2">
+          <div class="relative">
+            <button onclick="toggleColumnsPanel('digitization')" id="digColumnsBtn" class="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded-md px-2 py-1 hover:bg-slate-50" title="Customize columns">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5v15m6-15v15M4.5 9h15M4.5 15h15"/></svg>
+              Columns
+            </button>
+            <div id="digColumnsPanel" class="hidden absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-xl z-50 py-2">
+              <div class="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase">Visible columns</div>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs"><input type="checkbox" checked disabled class="rounded border-slate-300"> Title</label>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" checked class="rounded border-slate-300"> Signature</label>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" checked class="rounded border-slate-300"> Pages</label>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" checked class="rounded border-slate-300"> Size</label>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" checked class="rounded border-slate-300"> Material Type</label>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" checked class="rounded border-slate-300"> Dig. (App)</label>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" checked class="rounded border-slate-300"> Dig. (Registries)</label>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" checked class="rounded border-slate-300"> Project</label>
+              <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" checked class="rounded border-slate-300"> Priority</label>
+              <div class="border-t border-slate-100 mt-1 pt-1">
+                <div class="px-3 py-1 text-[10px] font-semibold text-slate-400 uppercase">Available</div>
+                <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" class="rounded border-slate-300"> Category</label>
+                <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" class="rounded border-slate-300"> ID</label>
+                <label class="flex items-center gap-2 px-3 py-1 text-xs cursor-pointer hover:bg-slate-50"><input type="checkbox" class="rounded border-slate-300"> Updated</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200">
+              <th class="py-2.5 px-3 bg-slate-50 w-10">
+                <div class="relative">
+                  <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" class="rounded border-slate-300">
+                  <select id="bulkSelector" onchange="handleBulkSelect(this.value)" class="absolute inset-0 opacity-0 cursor-pointer w-full">
+                    <option value="">Bulk select...</option>
+                    <option value="none">Select none</option>
+                    <option value="page">Select page</option>
+                    <option value="all">Select all (312 documents)</option>
+                  </select>
+                </div>
+              </th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Title</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Signature</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Pages</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Size</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Material Type</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Dig. (App)</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Dig. (Registries)</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Project</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Priority</th>
+            </tr>
+          </thead>
+          <tbody id="digTableBody">
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3"><input type="checkbox" class="dig-row-cb rounded border-slate-300" onchange="updateSelection()"></td><td class="py-2.5 px-3 text-sm">Lidove noviny (1918-1925)</td><td class="py-2.5 px-3 text-sm font-mono text-slate-600">ST1-0032</td><td class="py-2.5 px-3 text-sm">2,847</td><td class="py-2.5 px-3 text-sm text-slate-500">A2</td><td class="py-2.5 px-3 text-sm">Periodical</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">In Progress</span></td><td class="py-2.5 px-3"><div class="flex flex-col gap-0.5"><span class="rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-100 text-green-700">NDK: Finished</span><span class="rounded-full px-2 py-0.5 text-[10px] font-medium bg-purple-100 text-purple-700">Kram.: Published</span></div></td><td class="py-2.5 px-3 text-sm">NDK Periodika</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">High</span></td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3"><input type="checkbox" class="dig-row-cb rounded border-slate-300" onchange="updateSelection()"></td><td class="py-2.5 px-3 text-sm">Pravo lidu (1926)</td><td class="py-2.5 px-3 text-sm font-mono text-slate-600">ST2-0187</td><td class="py-2.5 px-3 text-sm">456</td><td class="py-2.5 px-3 text-sm text-slate-500">A3</td><td class="py-2.5 px-3 text-sm">Periodical</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Planned</span></td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3 text-sm">NDK Periodika</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Medium</span></td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3"><input type="checkbox" class="dig-row-cb rounded border-slate-300" onchange="updateSelection()"></td><td class="py-2.5 px-3 text-sm">Brnensky denik (1930-1935)</td><td class="py-2.5 px-3 text-sm font-mono text-slate-600">ST1-0045</td><td class="py-2.5 px-3 text-sm">3,210</td><td class="py-2.5 px-3 text-sm text-slate-500">A2</td><td class="py-2.5 px-3 text-sm">Periodical</td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3 text-sm">NDK Periodika</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">High</span></td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3"><input type="checkbox" class="dig-row-cb rounded border-slate-300" onchange="updateSelection()"></td><td class="py-2.5 px-3 text-sm">Hasek, J.: Osudy dobreho vojaka Svejka</td><td class="py-2.5 px-3 text-sm font-mono text-slate-600">ST3-0421</td><td class="py-2.5 px-3 text-sm">328</td><td class="py-2.5 px-3 text-sm text-slate-500">A4</td><td class="py-2.5 px-3 text-sm">Monograph</td><td class="py-2.5 px-3"><div class="flex items-center gap-1"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Finished</span><span class="text-[10px] text-amber-500">prev.</span></div></td><td class="py-2.5 px-3"><div class="flex flex-col gap-0.5"><span class="rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-100 text-green-700">NDK: Finished</span><span class="rounded-full px-2 py-0.5 text-[10px] font-medium bg-purple-100 text-purple-700">Kram.: Published</span></div></td><td class="py-2.5 px-3 text-sm">NDK Monografie</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Normal</span></td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3"><input type="checkbox" class="dig-row-cb rounded border-slate-300" onchange="updateSelection()"></td><td class="py-2.5 px-3 text-sm">Capek, K.: Valka s mloky</td><td class="py-2.5 px-3 text-sm font-mono text-slate-600">ST3-0298</td><td class="py-2.5 px-3 text-sm">214</td><td class="py-2.5 px-3 text-sm text-slate-500">A5</td><td class="py-2.5 px-3 text-sm">Monograph</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Planned</span></td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3 text-sm">NDK Monografie</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Normal</span></td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3"><input type="checkbox" class="dig-row-cb rounded border-slate-300" onchange="updateSelection()"></td><td class="py-2.5 px-3 text-sm">Rovnost (1900-1910)</td><td class="py-2.5 px-3 text-sm font-mono text-slate-600">ST1-0067</td><td class="py-2.5 px-3 text-sm">4,103</td><td class="py-2.5 px-3 text-sm text-slate-500">A2</td><td class="py-2.5 px-3 text-sm">Periodical</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Planned</span></td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3 text-sm">VISK 7</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">High</span></td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3"><input type="checkbox" class="dig-row-cb rounded border-slate-300" onchange="updateSelection()"></td><td class="py-2.5 px-3 text-sm">Neruda, J.: Povidky malostranske</td><td class="py-2.5 px-3 text-sm font-mono text-slate-600">ST3-0156</td><td class="py-2.5 px-3 text-sm">186</td><td class="py-2.5 px-3 text-sm text-slate-500">A5</td><td class="py-2.5 px-3 text-sm">Monograph</td><td class="py-2.5 px-3"><div class="flex items-center gap-1"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Finished</span><span class="text-[10px] text-amber-500">prev.</span></div></td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-[10px] font-medium bg-purple-100 text-purple-700">Kram.: Published</span></td><td class="py-2.5 px-3 text-sm">NDK Monografie</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Medium</span></td></tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50"><td class="py-2.5 px-3"><input type="checkbox" class="dig-row-cb rounded border-slate-300" onchange="updateSelection()"></td><td class="py-2.5 px-3 text-sm">Moravske noviny (1905)</td><td class="py-2.5 px-3 text-sm font-mono text-slate-600">ST2-0312</td><td class="py-2.5 px-3 text-sm">892</td><td class="py-2.5 px-3 text-sm text-slate-500">A3</td><td class="py-2.5 px-3 text-sm">Periodical</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Planned</span></td><td class="py-2.5 px-3"><span class="text-xs text-slate-400">—</span></td><td class="py-2.5 px-3 text-sm">VISK 7</td><td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Medium</span></td></tr>
+          </tbody>
+        </table>
+        <div class="flex items-center justify-between mt-4 text-sm text-slate-500">
+          <span>Showing 1-8 of 312 documents</span>
+          <span id="digStats" class="text-slate-400">Total pages in selection: 0</span>
+          <div class="flex gap-1">
+            <button class="px-3 py-1 border border-slate-300 rounded-md text-xs hover:bg-slate-50 opacity-50" disabled>&laquo; Prev</button>
+            <button class="px-3 py-1 border border-slate-300 rounded-md text-xs hover:bg-slate-50">Next &raquo;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Approve Modal -->
+<div id="approveModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold mb-2">Approve Document</h3>
+    <p class="text-sm text-slate-600 mb-4">Override pipeline validation and approve this document despite detected metadata issues.</p>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 mb-4">
+      <span class="text-sm font-medium" id="approveDocTitle"></span>
+    </div>
+    <label class="block text-sm font-medium text-slate-700 mb-1">Approval notes (optional)</label>
+    <textarea class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm mb-4 resize-none" rows="3" placeholder="Explain why the metadata issues can be ignored..."></textarea>
+    <div class="flex justify-end gap-2">
+      <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
+      <button onclick="closeModals()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">Approve</button>
+    </div>
+  </div>
+</div>
+
+<!-- Revoke Approval Modal -->
+<div id="revokeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold mb-2">Revoke Approval</h3>
+    <p class="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4">The document will return to invalid status and pipeline metadata issues will block digitization again.</p>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 mb-4">
+      <span class="text-sm font-medium" id="revokeDocTitle"></span>
+    </div>
+    <label class="block text-sm font-medium text-slate-700 mb-1">Reason (optional)</label>
+    <textarea class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm mb-4 resize-none" rows="3" placeholder="Why is the approval being revoked..."></textarea>
+    <div class="flex justify-end gap-2">
+      <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
+      <button onclick="closeModals()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700">Revoke Approval</button>
+    </div>
+  </div>
+</div>
+
+<!-- Deny Digitization Modal -->
+<div id="denyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold mb-2">Deny Digitization</h3>
+    <p class="text-sm text-slate-600 mb-4">Mark this document as denied for digitization. It will no longer appear in digitization work queues.</p>
+    <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 mb-4">
+      <span class="text-sm font-medium" id="denyDocTitle"></span>
+    </div>
+    <label class="block text-sm font-medium text-slate-700 mb-1">Reason (required)</label>
+    <textarea class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm mb-4 resize-none" rows="3" placeholder="Explain why digitization is being denied..."></textarea>
+    <div class="flex justify-end gap-2">
+      <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
+      <button onclick="closeModals()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700">Deny Digitization</button>
+    </div>
+  </div>
+</div>
+
+<!-- Generate List Modal -->
+<div id="generateListModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
+    <h3 class="text-lg font-semibold mb-1">Generate Digitization List</h3>
+    <p class="text-sm text-slate-500 mb-4">Use a generator plugin to create a digitization list from documents matching the current filters.</p>
+
+    <!-- Generator selection -->
+    <label class="block text-sm font-medium text-slate-700 mb-1">Generator</label>
+    <div class="space-y-2 mb-4">
+      <label class="flex items-start gap-3 border border-slate-200 rounded-lg p-3 cursor-pointer hover:bg-slate-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+        <input type="radio" name="generator" value="ai" checked class="mt-0.5 text-blue-600">
+        <div>
+          <div class="text-sm font-medium flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
+            AI Generator
+          </div>
+          <div class="text-xs text-slate-500 mt-0.5">Describe what you need and AI will select the best documents for digitization.</div>
+        </div>
+      </label>
+      <label class="flex items-start gap-3 border border-slate-200 rounded-lg p-3 cursor-pointer hover:bg-slate-50 has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50">
+        <input type="radio" name="generator" value="rule" class="mt-0.5 text-blue-600">
+        <div>
+          <div class="text-sm font-medium">Rule-based Generator</div>
+          <div class="text-xs text-slate-500 mt-0.5">Fill a list based on rules: priority order, page count limits, material type batching.</div>
+        </div>
+      </label>
+    </div>
+
+    <!-- AI prompt -->
+    <div id="aiPromptSection">
+      <label class="block text-sm font-medium text-slate-700 mb-1">Prompt</label>
+      <textarea class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm mb-1 resize-none" rows="3" placeholder="e.g. Create a batch of A2 periodicals from NDK Periodika project, max 10,000 pages total, highest priority first..."></textarea>
+      <p class="text-[11px] text-slate-400 mb-4">The generator will use current filters as a starting constraint.</p>
+    </div>
+
+    <!-- Rule config (shown when rule-based is selected) -->
+    <div id="ruleConfigSection" class="hidden">
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Max pages</label>
+          <input type="number" value="10000" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Max documents</label>
+          <input type="number" value="50" class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Sort by</label>
+          <select class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+            <option>Priority (highest first)</option>
+            <option>Page count (lowest first)</option>
+            <option>Created (oldest first)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Group by</label>
+          <select class="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+            <option>None</option>
+            <option>Material type</option>
+            <option>Size</option>
+            <option>Project</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- List name -->
+    <label class="block text-sm font-medium text-slate-700 mb-1">List name</label>
+    <input type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm mb-4" placeholder="e.g. NDK Periodika — June 2026 batch">
+
+    <div class="flex justify-end gap-2">
+      <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">Cancel</button>
+      <button onclick="closeModals()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">Generate</button>
+    </div>
+  </div>
+</div>
+
+  <!-- Watchlist Panel -->
+  <div id="watchlistPanel" class="hidden fixed left-14 bottom-16 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 flex flex-col max-h-[28rem]">
+    <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+      <span class="text-sm font-semibold">Watchlists</span>
+      <button onclick="toggleWatchlistPanel()" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+    </div>
+    <div class="py-1 overflow-y-auto flex-1">
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Documents</div>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>High priority pending</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>My rejected documents</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Periodicals queue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Proposals</div>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Pending from NDK project</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Declined proposals</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Additions</div>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed additions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>NDK batch completions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Projects</div>
+      <a href="projects.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Overdue milestones</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Digitization Lists</div>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Planned lists - MZK</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Revision overdue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Finished this month</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Tasks</div>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed tasks today</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Long-running tasks</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Scheduled overdue</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+    </div>
+    <div class="border-t border-slate-100 px-4 py-2.5 flex-shrink-0">
+      <a href="#" class="text-xs text-blue-600 hover:underline">Manage Watchlists</a>
+    </div>
+  </div>
+
+<script>
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('expanded');
+}
+    function toggleWatchlistPanel() {
+      document.getElementById('watchlistPanel').classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('watchlistPanel');
+      if (!panel.classList.contains('hidden') && !e.target.closest('#watchlistPanel') && !e.target.closest('[title="Watchlists"]')) {
+        panel.classList.add('hidden');
+      }
+    });
+
+const digStateColor = {
+  'Planned': 'slate', 'In Progress': 'blue', 'Revision': 'amber', 'Finished': 'green', 'Published': 'purple', 'Denied': 'red'
+};
+
+const docs = [
+  { id: 'MZK01-001284756', title: 'Lidove noviny (1918-1925)', type: 'Periodical', date: '14 May 2026', status: 'Ready', category: 'Periodicals', priority: 'High', prioColor: 'red', pages: '2,847', size: 'A2', barcode: 'MZK-2801-000147',
+    appDigState: { state: 'In Progress', iteration: 'current' },
+    registryDigStates: [
+      { source: 'NDK Registry', state: 'Finished' },
+      { source: 'Kramerius', state: 'Published' }
+    ],
+    catalogTitle: 'Lidove noviny', author: '-', year: '1918-1925', language: 'Czech', format: 'Periodical / Newspaper', syncStatus: 'Synced', metadataIssues: [], statusLog: [
+    { color: 'green', title: 'Metadata validated', detail: '14 May 2026, 09:32 · CatalogValidity plugin' },
+    { color: 'green', title: 'Catalog record synced', detail: '14 May 2026, 09:30 · System' },
+    { color: 'blue', title: 'Document created from Addition #1042', detail: '14 May 2026, 09:28 · Jana Novaková' },
+    { color: 'slate', title: 'Proposal #789 approved', detail: '13 May 2026, 15:10 · Martin Svoboda' }
+  ]},
+  { id: 'MZK01-001198432', title: 'Pravo lidu (1926)', type: 'Periodical', date: '12 May 2026', status: 'Ready', category: 'Periodicals', priority: 'Medium', prioColor: 'amber', pages: '456', size: 'A3', barcode: 'MZK-2801-000203',
+    appDigState: { state: 'Planned', iteration: 'current' },
+    registryDigStates: [],
+    catalogTitle: 'Pravo lidu', author: '-', year: '1926', language: 'Czech', format: 'Periodical / Newspaper', syncStatus: 'Synced', metadataIssues: [], statusLog: [
+    { color: 'green', title: 'Metadata validated', detail: '12 May 2026, 11:05 · PageCount plugin' },
+    { color: 'green', title: 'Catalog record synced', detail: '12 May 2026, 11:03 · System' },
+    { color: 'blue', title: 'Document created from Addition #1038', detail: '12 May 2026, 11:00 · Petr Svoboda' }
+  ]},
+  { id: 'MZK01-001056789', title: 'Moravske noviny (1905)', type: 'Periodical', date: '10 May 2026', status: 'Ready', category: 'Periodicals', priority: 'Medium', prioColor: 'amber', pages: '892', size: 'A3', barcode: 'MZK-2801-000089',
+    appDigState: { state: 'Planned', iteration: 'current' },
+    registryDigStates: [
+      { source: 'NDK Registry', state: null }
+    ],
+    catalogTitle: 'Moravske noviny', author: '-', year: '1905', language: 'Czech', format: 'Periodical / Newspaper', syncStatus: 'Synced', metadataIssues: [], statusLog: [
+    { color: 'green', title: 'Metadata validated', detail: '10 May 2026, 14:20 · CatalogValidity plugin' },
+    { color: 'green', title: 'Catalog record synced', detail: '10 May 2026, 14:18 · System' }
+  ]},
+  { id: 'MZK01-001387654', title: 'Hasek, J.: Osudy dobreho vojaka Svejka', type: 'Monograph', date: '9 May 2026', status: 'Ready', category: 'Monographs', priority: 'Normal', prioColor: 'slate', pages: '328', size: 'A4', barcode: 'MZK-2801-000341',
+    appDigState: { state: 'Finished', iteration: 'previous' },
+    registryDigStates: [
+      { source: 'NDK Registry', state: 'Finished' },
+      { source: 'Kramerius', state: 'Published' }
+    ],
+    catalogTitle: 'Osudy dobreho vojaka Svejka za svetove valky', author: 'Hasek, Jaroslav (1883-1923)', year: '1921', language: 'Czech', format: 'Monograph / Book', syncStatus: 'Synced', metadataIssues: [], statusLog: [
+    { color: 'green', title: 'Metadata validated', detail: '9 May 2026, 08:45 · MARC Property plugin' },
+    { color: 'green', title: 'Catalog record synced', detail: '9 May 2026, 08:43 · System' }
+  ]},
+  { id: 'MZK01-001445231', title: 'Brnensky denik (1930-1935)', type: 'Periodical', date: '8 May 2026', status: 'Review Needed', category: 'Periodicals', priority: 'High', prioColor: 'red', pages: '3,210', size: 'A2', barcode: 'MZK-2801-000412',
+    appDigState: null,
+    registryDigStates: [],
+    catalogTitle: 'Brnensky denik', author: '-', year: '1930-1935', language: 'Czech', format: 'Periodical / Newspaper', syncStatus: 'Synced', metadataIssues: [
+    'Year range mismatch: document says 1930-1935, catalog record has 1930-1934',
+    'Page count discrepancy: estimated 3,210 pages, catalog holds 2,890 pages'
+  ], statusLog: [
+    { color: 'red', title: 'Metadata validation failed', detail: '8 May 2026, 16:12 · CatalogValidity plugin' },
+    { color: 'green', title: 'Catalog record synced', detail: '8 May 2026, 16:10 · System' },
+    { color: 'blue', title: 'Document created from Addition #1031', detail: '8 May 2026, 16:08 · Jana Novaková' }
+  ]},
+  { id: 'MZK01-001532876', title: 'Capek, K.: Valka s mloky', type: 'Monograph', date: '7 May 2026', status: 'Approved', category: 'Monographs', priority: 'Normal', prioColor: 'slate', pages: '214', size: 'A5', barcode: 'MZK-2801-000298',
+    appDigState: { state: 'Planned', iteration: 'current' },
+    registryDigStates: [
+      { source: 'Kramerius', state: null }
+    ],
+    catalogTitle: 'Valka s mloky', author: 'Capek, Karel (1890-1938)', year: '1936', language: 'Czech', format: 'Monograph / Book', syncStatus: 'Synced', metadataIssues: [], statusLog: [
+    { color: 'blue', title: 'Approved despite metadata issues', detail: '7 May 2026, 10:15 · Martin Svoboda' },
+    { color: 'red', title: 'Metadata validation failed', detail: '7 May 2026, 09:50 · MARC Property plugin' },
+    { color: 'green', title: 'Catalog record synced', detail: '7 May 2026, 09:48 · System' }
+  ]},
+  { id: 'MZK01-001667543', title: 'Rovnost (1900-1910)', type: 'Periodical', date: '6 May 2026', status: 'Ready', category: 'Periodicals', priority: 'High', prioColor: 'red', pages: '4,103', size: 'A2', barcode: 'MZK-2801-000567',
+    appDigState: { state: 'Planned', iteration: 'current' },
+    registryDigStates: [
+      { source: 'NDK Registry', state: null },
+      { source: 'Kramerius', state: null }
+    ],
+    catalogTitle: 'Rovnost', author: '-', year: '1900-1910', language: 'Czech', format: 'Periodical / Newspaper', syncStatus: 'Synced', metadataIssues: [], statusLog: [
+    { color: 'green', title: 'Metadata validated', detail: '6 May 2026, 13:00 · PageCount plugin' },
+    { color: 'green', title: 'Catalog record synced', detail: '6 May 2026, 12:58 · System' }
+  ]},
+  { id: 'MZK01-001778901', title: 'Neruda, J.: Povidky malostranske', type: 'Monograph', date: '5 May 2026', status: 'Denied', category: 'Monographs', priority: 'Medium', prioColor: 'amber', pages: '186', size: 'A5', barcode: 'MZK-2801-000678',
+    appDigState: { state: 'Finished', iteration: 'previous' },
+    registryDigStates: [
+      { source: 'Kramerius', state: 'Published' }
+    ],
+    catalogTitle: 'Povidky malostranske', author: 'Neruda, Jan (1834-1891)', year: '1878', language: 'Czech', format: 'Monograph / Book', syncStatus: 'Synced', metadataIssues: [
+    'Author name format: catalog uses "Neruda, Jan" but MARC 100 field has "Neruda, Jan (1834-1891)" — normalization failed'
+  ], statusLog: [
+    { color: 'red', title: 'Metadata validation failed', detail: '5 May 2026, 11:30 · MARC Property plugin' },
+    { color: 'green', title: 'Catalog record synced', detail: '5 May 2026, 11:28 · System' }
+  ]}
+];
+
+function switchView(view) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-view="${view}"]`).classList.add('active');
+  document.getElementById('view-requestor').classList.toggle('hidden', view !== 'requestor');
+  document.getElementById('view-validator').classList.toggle('hidden', view !== 'validator');
+  document.getElementById('view-digitization').classList.toggle('hidden', view !== 'digitization');
+  // Show/hide view-specific top bar controls
+  document.getElementById('generateListBtn').classList.toggle('hidden', view !== 'digitization');
+}
+
+function digStateBadge(state) {
+  if (!state) return '<span class="text-xs text-slate-400 italic">Not found</span>';
+  const c = digStateColor[state] || 'slate';
+  const colorMap = { slate: 'bg-slate-100 text-slate-600', blue: 'bg-blue-100 text-blue-700', amber: 'bg-amber-100 text-amber-700', green: 'bg-green-100 text-green-700', purple: 'bg-purple-100 text-purple-700', red: 'bg-red-100 text-red-700' };
+  return `<span class="rounded-full px-2 py-0.5 text-xs font-medium ${colorMap[c]}">${state}</span>`;
+}
+
+function selectDoc(idx) {
+  const d = docs[idx];
+  document.getElementById('detailTitle').textContent = d.title;
+  document.getElementById('detailSubtitle').textContent = `${d.id} \u00b7 ${d.type} \u00b7 Added ${d.date}`;
+
+  const statusColorMap = { 'Ready': 'bg-green-100 text-green-700', 'Review Needed': 'bg-amber-100 text-amber-700', 'Approved': 'bg-blue-100 text-blue-700', 'Denied': 'bg-red-100 text-red-700', 'Forbidden': 'bg-slate-700 text-white' };
+  const colorMap = { amber: 'bg-amber-100 text-amber-700', red: 'bg-red-100 text-red-700', green: 'bg-green-100 text-green-700', blue: 'bg-blue-100 text-blue-700', slate: 'bg-slate-100 text-slate-600', purple: 'bg-purple-100 text-purple-700' };
+  const dotColorMap = { green: 'bg-green-400', red: 'bg-red-400', blue: 'bg-blue-400', amber: 'bg-amber-400', slate: 'bg-slate-300', purple: 'bg-purple-400' };
+
+  // Validation actions — contextual based on status
+  const actions = document.getElementById('validationActions');
+  let actionsHtml = '';
+  if (d.status === 'Review Needed') {
+    actionsHtml += '<button onclick="showApproveModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">Approve</button>';
+  } else if (d.status === 'Approved') {
+    actionsHtml += '<button onclick="showRevokeModal()" class="border border-red-300 text-red-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-50">Revoke Approval</button>';
+  }
+  if (d.status !== 'Denied' && d.status !== 'Forbidden') {
+    actionsHtml += ' <button onclick="showDenyModal()" class="border border-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">Deny Digitization</button>';
+  }
+  actions.innerHTML = actionsHtml;
+
+  // Metadata issues
+  const issuesSection = document.getElementById('metadataIssuesSection');
+  const issuesList = document.getElementById('metadataIssuesList');
+  if (d.metadataIssues.length > 0) {
+    issuesSection.classList.remove('hidden');
+    issuesList.innerHTML = d.metadataIssues.map(i => `<li>${i}</li>`).join('');
+  } else {
+    issuesSection.classList.add('hidden');
+    issuesList.innerHTML = '';
+  }
+
+  // Update metadata cards
+  const panel = document.getElementById('detailPanel');
+
+  // Status (read-only, computed automatically)
+  document.getElementById('statusDisplay').innerHTML = `<span class="rounded-full px-2 py-0.5 text-xs font-medium ${statusColorMap[d.status] || 'bg-slate-100 text-slate-600'}">${d.status}</span>`;
+
+  // Category (editable)
+  document.getElementById('categoryDisplay').textContent = d.category;
+  document.getElementById('categoryInput').value = d.category;
+  document.getElementById('categoryEdit').classList.add('hidden');
+  document.getElementById('categoryDisplay').classList.remove('hidden');
+
+  // Priority (editable)
+  const prioColorMap = { High: 'bg-red-100 text-red-700', Medium: 'bg-amber-100 text-amber-700', Normal: 'bg-slate-100 text-slate-600', Low: 'bg-slate-100 text-slate-600' };
+  document.getElementById('priorityDisplay').innerHTML = `<span class="rounded-full px-2 py-0.5 text-xs font-medium ${prioColorMap[d.priority] || 'bg-slate-100 text-slate-600'}">${d.priority}</span>`;
+  document.getElementById('priorityInput').value = d.priority;
+  document.getElementById('priorityEdit').classList.add('hidden');
+  document.getElementById('priorityDisplay').classList.remove('hidden');
+
+  // Page Count (editable)
+  document.getElementById('pageCountDisplay').textContent = d.pages;
+  document.getElementById('pageCountInput').value = d.pages.replace(/,/g, '');
+  document.getElementById('pageCountEdit').classList.add('hidden');
+  document.getElementById('pageCountDisplay').classList.remove('hidden');
+
+  // Size (editable)
+  document.getElementById('sizeDisplay').textContent = d.size || '—';
+  document.getElementById('sizeInput').value = d.size || '';
+  document.getElementById('sizeEdit').classList.add('hidden');
+  document.getElementById('sizeDisplay').classList.remove('hidden');
+
+  // Barcode
+  const barcodeCard = document.getElementById('metadataGrid').querySelector(':scope > div:last-child');
+  if (barcodeCard) barcodeCard.innerHTML = `<div class="text-xs font-semibold text-slate-500 uppercase mb-1">Barcode</div><div class="text-sm font-medium font-mono">${d.barcode}</div>`;
+
+  // Digitization state section — App
+  const digSection = document.getElementById('digStateSection');
+  const digApp = document.getElementById('digStateApp');
+  const digReg = document.getElementById('digStateRegistries');
+
+  if (!d.appDigState && d.registryDigStates.length === 0) {
+    digSection.classList.add('hidden');
+  } else {
+    digSection.classList.remove('hidden');
+
+    // App state
+    if (d.appDigState) {
+      const iterLabel = d.appDigState.iteration === 'current' ? '<span class="text-xs text-slate-400">(current)</span>'
+        : d.appDigState.iteration === 'previous' ? '<span class="text-xs text-amber-500">(previous iteration)</span>' : '';
+      digApp.innerHTML = `<div class="flex items-center justify-between py-1.5 px-3 bg-slate-50 rounded-lg">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-medium text-slate-500">VERA</span>
+          ${iterLabel}
+        </div>
+        ${digStateBadge(d.appDigState.state)}
+      </div>`;
+    } else {
+      digApp.innerHTML = '<div class="py-1.5 px-3 text-xs text-slate-400 italic">No app state</div>';
+    }
+
+    // Registry states
+    if (d.registryDigStates.length === 0) {
+      digReg.innerHTML = '<div class="py-1.5 px-3 text-xs text-slate-400 italic">No registries checked</div>';
+    } else {
+      digReg.innerHTML = d.registryDigStates.map(s =>
+        `<div class="flex items-center justify-between py-1.5 px-3 bg-slate-50 rounded-lg">
+          <span class="text-xs font-medium text-slate-500">${s.source}</span>
+          ${digStateBadge(s.state)}
+        </div>`
+      ).join('');
+    }
+  }
+
+  // Catalog record
+  const catalogGrid = panel.querySelector('.border.border-slate-200.rounded-lg.p-4.mb-6 .grid');
+  if (catalogGrid) {
+    catalogGrid.innerHTML = `
+      <div><span class="text-slate-500">Title:</span> <span class="font-medium">${d.catalogTitle}</span></div>
+      <div><span class="text-slate-500">Author:</span> <span class="font-medium">${d.author}</span></div>
+      <div><span class="text-slate-500">Year:</span> <span class="font-medium">${d.year}</span></div>
+      <div><span class="text-slate-500">Language:</span> <span class="font-medium">${d.language}</span></div>
+      <div><span class="text-slate-500">Format:</span> <span class="font-medium">${d.format}</span></div>
+      <div><span class="text-slate-500">Sync Status:</span> <span class="rounded-full px-2 py-0.5 text-xs font-medium ${colorMap[d.syncStatus === 'Invalid' ? 'red' : 'green']}">${d.syncStatus}</span></div>
+    `;
+  }
+
+  // Status log
+  document.getElementById('statusLog').innerHTML = d.statusLog.map(entry => `
+    <div class="flex items-start gap-3">
+      <div class="w-2 h-2 rounded-full ${dotColorMap[entry.color]} mt-1.5 flex-shrink-0"></div>
+      <div>
+        <div class="text-sm font-medium">${entry.title}</div>
+        <div class="text-xs text-slate-500">${entry.detail}</div>
+      </div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.nav-item').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+}
+
+
+function updateSelection() {
+  const cbs = document.querySelectorAll('.dig-row-cb');
+  const checked = document.querySelectorAll('.dig-row-cb:checked');
+  const toolbar = document.getElementById('selectionToolbar');
+  toolbar.classList.toggle('hidden', checked.length === 0);
+  document.getElementById('selectionCount').textContent = checked.length + ' selected';
+
+  const pages = [2847, 456, 3210, 328, 214, 4103, 186, 892];
+  let total = 0;
+  cbs.forEach((cb, i) => { if (cb.checked) total += pages[i]; });
+  document.getElementById('digStats').textContent = 'Total pages in selection: ' + total.toLocaleString();
+}
+
+function toggleSelectAll() {
+  const checked = document.getElementById('selectAllCheckbox').checked;
+  document.querySelectorAll('.dig-row-cb').forEach(cb => cb.checked = checked);
+  updateSelection();
+}
+
+function handleBulkSelect(value) {
+  if (value === 'none') {
+    document.querySelectorAll('.dig-row-cb').forEach(cb => cb.checked = false);
+    document.getElementById('selectAllCheckbox').checked = false;
+  } else if (value === 'page' || value === 'all') {
+    document.querySelectorAll('.dig-row-cb').forEach(cb => cb.checked = true);
+    document.getElementById('selectAllCheckbox').checked = true;
+  }
+  updateSelection();
+  document.getElementById('bulkSelector').value = '';
+}
+
+let currentDocIdx = 0;
+
+// Wrap selectDoc to track current index
+const _origSelectDoc = selectDoc;
+selectDoc = function(idx) {
+  currentDocIdx = idx;
+  _origSelectDoc(idx);
+};
+
+function showApproveModal() {
+  document.getElementById('approveDocTitle').textContent = docs[currentDocIdx].title;
+  document.getElementById('approveModal').classList.remove('hidden');
+}
+
+function showRevokeModal() {
+  document.getElementById('revokeDocTitle').textContent = docs[currentDocIdx].title;
+  document.getElementById('revokeModal').classList.remove('hidden');
+}
+
+function showDenyModal() {
+  document.getElementById('denyDocTitle').textContent = docs[currentDocIdx].title;
+  document.getElementById('denyModal').classList.remove('hidden');
+}
+
+function showGenerateListModal() {
+  document.getElementById('generateListModal').classList.remove('hidden');
+}
+
+function toggleColumnsPanel(view) {
+  const panelId = view === 'validator' ? 'valColumnsPanel' : 'digColumnsPanel';
+  const panel = document.getElementById(panelId);
+  // Close other panel first
+  const otherId = view === 'validator' ? 'digColumnsPanel' : 'valColumnsPanel';
+  document.getElementById(otherId).classList.add('hidden');
+  panel.classList.toggle('hidden');
+}
+
+// Close columns panels on outside click
+document.addEventListener('click', function(e) {
+  const valPanel = document.getElementById('valColumnsPanel');
+  const digPanel = document.getElementById('digColumnsPanel');
+  if (!valPanel.classList.contains('hidden') && !e.target.closest('#valColumnsBtn') && !e.target.closest('#valColumnsPanel')) {
+    valPanel.classList.add('hidden');
+  }
+  if (!digPanel.classList.contains('hidden') && !e.target.closest('#digColumnsBtn') && !e.target.closest('#digColumnsPanel')) {
+    digPanel.classList.add('hidden');
+  }
+});
+
+// Toggle AI prompt vs rule config in generate modal
+document.querySelectorAll('input[name="generator"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    document.getElementById('aiPromptSection').classList.toggle('hidden', this.value !== 'ai');
+    document.getElementById('ruleConfigSection').classList.toggle('hidden', this.value !== 'rule');
+  });
+});
+
+function closeModals() {
+  document.getElementById('approveModal').classList.add('hidden');
+  document.getElementById('revokeModal').classList.add('hidden');
+  document.getElementById('denyModal').classList.add('hidden');
+  document.getElementById('generateListModal').classList.add('hidden');
+}
+
+function toggleEditField(field) {
+  const display = document.getElementById(field + 'Display');
+  const edit = document.getElementById(field + 'Edit');
+  display.classList.toggle('hidden');
+  edit.classList.toggle('hidden');
+}
+
+function saveField(field) {
+  const input = document.getElementById(field + 'Input');
+  const display = document.getElementById(field + 'Display');
+  if (field === 'pageCount') {
+    const val = parseInt(input.value);
+    display.textContent = val ? val.toLocaleString() : '—';
+  } else if (field === 'priority') {
+    const prioColorMap = { High: 'bg-red-100 text-red-700', Medium: 'bg-amber-100 text-amber-700', Normal: 'bg-slate-100 text-slate-600', Low: 'bg-slate-100 text-slate-600' };
+    const v = input.value;
+    display.innerHTML = `<span class="rounded-full px-2 py-0.5 text-xs font-medium ${prioColorMap[v] || 'bg-slate-100 text-slate-600'}">${v}</span>`;
+  } else {
+    display.textContent = input.value || '—';
+  }
+  toggleEditField(field);
+}
+
+selectDoc(0);
+switchView('validator');
+</script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VERA - Plugins</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    .sidebar { width: 3.5rem; transition: width 0.2s ease; }
+    .sidebar.expanded { width: 14rem; }
+    .sidebar .nav-label { opacity: 0; transition: opacity 0.15s ease; white-space: nowrap; overflow: hidden; }
+    .sidebar.expanded .nav-label { opacity: 1; }
+    .sidebar-link { color: #94a3b8; }
+    .sidebar-link.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+    .task-tracker { display: none; }
+    .sidebar.expanded .task-tracker { display: block; }
+    .task-badge { display: flex; }
+    .sidebar.expanded .task-badge { display: none; }
+    .sidebar-badge { display: flex; }
+    .sidebar.expanded .sidebar-badge { display: none; }
+    .toggle-icon { transition: transform 0.2s ease; }
+    .sidebar.expanded .toggle-icon { transform: rotate(180deg); }
+  </style>
+</head>
+<body class="bg-white text-slate-900">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="sidebar bg-slate-900 flex flex-col py-3 flex-shrink-0 overflow-hidden">
+      <!-- Logo -->
+      <div class="px-3 mb-2 flex items-center gap-3 h-10 flex-shrink-0">
+        <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+          <span class="text-slate-900 text-sm font-black tracking-tight">V</span>
+        </div>
+        <span class="nav-label text-white font-semibold text-base">VERA</span>
+      </div>
+
+      <div class="px-2 mb-3 flex-shrink-0">
+        <button onclick="toggleSidebar()" class="sidebar-link flex items-center justify-center w-full h-8 rounded-lg" title="Toggle sidebar">
+          <svg class="toggle-icon w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 flex flex-col gap-0.5 px-2 overflow-y-auto">
+        <a href="documents.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Documents">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Do</span>
+          <span class="nav-label text-sm font-medium">Documents</span>
+        </a>
+        <a href="proposals.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Proposals">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pr</span>
+          <span class="nav-label text-sm font-medium">Proposals</span>
+        </a>
+        <a href="additions.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Additions">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ad</span>
+          <span class="nav-label text-sm font-medium">Additions</span>
+        </a>
+        <a href="projects.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Projects">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pj</span>
+          <span class="nav-label text-sm font-medium">Projects</span>
+        </a>
+        <a href="categories.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Categories">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ca</span>
+          <span class="nav-label text-sm font-medium">Categories</span>
+        </a>
+        <a href="intentions.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Intentions">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">In</span>
+          <span class="nav-label text-sm font-medium">Intentions</span>
+        </a>
+        <a href="digitization-lists.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Dig. Lists">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">DL</span>
+          <span class="nav-label text-sm font-medium">Dig. Lists</span>
+        </a>
+        <a href="tasks.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Tasks">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ta</span>
+          <span class="nav-label text-sm font-medium">Tasks</span>
+        </a>
+        <a href="plugins.html" class="sidebar-link active text-white flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Plugins">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pl</span>
+          <span class="nav-label text-sm font-medium">Plugins</span>
+        </a>
+        <a href="hooks.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Hooks">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Hk</span>
+          <span class="nav-label text-sm font-medium">Hooks</span>
+        </a>
+        <div class="mt-2 mb-1 border-t border-slate-700"></div>
+        <button onclick="toggleWatchlistPanel()" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold w-full" title="Watchlists">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0 relative">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center sidebar-badge">19</span>
+          </span>
+          <span class="nav-label text-sm font-medium">Watchlists</span>
+          <span class="nav-label ml-auto bg-red-500 text-white text-[10px] rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold">19</span>
+        </button>
+      </nav>
+
+      <!-- Task tracker -->
+      <div class="px-2 mb-1 flex-shrink-0" id="taskSection">
+        <!-- Collapsed: badge only -->
+        <div class="task-badge items-center justify-center px-2 h-9">
+          <span class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</span>
+        </div>
+        <!-- Expanded: task list -->
+        <div class="task-tracker px-2 py-2 rounded-lg bg-slate-800">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold text-slate-300">Tasks running</span>
+            <span class="text-xs text-slate-400 font-mono">2</span>
+          </div>
+          <div class="space-y-2">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-slate-300 truncate">Proposal.Ingest #412</span>
+                <span class="text-xs text-slate-400">67%</span>
+              </div>
+              <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:67%"></div></div>
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-slate-300 truncate">Catalog.Sync</span>
+                <span class="text-xs text-slate-400">23%</span>
+              </div>
+              <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:23%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <div class="px-2 pt-2 border-t border-slate-700 flex-shrink-0">
+        <button class="sidebar-link flex items-center gap-3 w-full h-9 px-2 rounded-lg text-xs font-bold" title="Logout">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </span>
+          <span class="nav-label text-sm font-medium">Jan Novak</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Top bar -->
+      <div class="border-b border-slate-200 px-6 py-3 flex items-center gap-4">
+        <h1 class="text-lg font-semibold mr-4">Plugins</h1>
+        <div class="flex-1"></div>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="border-b border-slate-200 px-6 py-2.5 flex items-center gap-2 flex-wrap">
+        <span class="text-xs font-semibold text-slate-500 uppercase mr-1">Filters</span>
+        <span class="inline-flex items-center gap-1 bg-slate-100 rounded-full px-2.5 py-1 text-xs font-medium text-slate-700">
+          Type: All
+          <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">&times;</button>
+        </span>
+        <select class="border border-slate-300 rounded-md px-2 py-1 text-xs text-slate-600 bg-white">
+          <option>+ Add Filter</option>
+          <option>Type</option>
+        </select>
+        <div class="flex-1"></div>
+        <input type="text" placeholder="Search by name..." class="px-2.5 py-1 text-xs border border-slate-300 rounded-lg bg-white w-48">
+      </div>
+
+      <!-- Scrollable content -->
+      <div class="flex-1 overflow-y-auto">
+        <div class="p-6">
+        <!-- Plugin groups table -->
+        <div class="border border-slate-200 rounded-lg overflow-hidden">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                <th class="px-4 py-3 text-left font-medium">Name</th>
+                <th class="px-4 py-3 text-left font-medium">Config Summary</th>
+                <th class="px-4 py-3 text-left font-medium">Linked Entities</th>
+                <th class="px-4 py-3 text-left font-medium">Created By</th>
+                <th class="px-4 py-3 text-left font-medium">Created</th>
+                <th class="px-4 py-3 text-left font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              <!-- Group 1: AlephCatalogAdapter -->
+              <tr class="bg-slate-100 border-t-2 border-slate-300">
+                <td colspan="5" class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <span class="font-semibold text-sm">AlephCatalogAdapter</span>
+                    <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700">Catalog Adapter</span>
+                    <span class="text-xs text-slate-500">v2.4.1</span>
+                    <span class="text-xs text-slate-400 ml-2">Adapter for Aleph ILS catalog system. Supports Z39.50 and REST API.</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <button onclick="openModal('newInstanceModal')" class="px-3 py-1.5 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">New Instance</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-sm pl-8">MZK Aleph</td>
+                <td class="px-4 py-3 text-sm text-slate-500 truncate max-w-xs">base_url=aleph.mzk.cz, protocol=REST, timeout=30s</td>
+                <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                <td class="px-4 py-3 text-sm">Petr Svoboda</td>
+                <td class="px-4 py-3 text-sm text-slate-500">2026-01-15</td>
+                <td class="px-4 py-3 text-sm">
+                  <div class="flex gap-1">
+                    <button onclick="openModal('editInstanceModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                    <button onclick="openModal('deleteInstanceModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-sm pl-8">NKP Aleph</td>
+                <td class="px-4 py-3 text-sm text-slate-500 truncate max-w-xs">base_url=aleph.nkp.cz, protocol=Z39.50, timeout=45s</td>
+                <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                <td class="px-4 py-3 text-sm">Petr Svoboda</td>
+                <td class="px-4 py-3 text-sm text-slate-500">2026-01-15</td>
+                <td class="px-4 py-3 text-sm">
+                  <div class="flex gap-1">
+                    <button onclick="openModal('editInstanceModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                    <button onclick="openModal('deleteInstanceModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-sm pl-8">VKOL Aleph</td>
+                <td class="px-4 py-3 text-sm text-slate-500 truncate max-w-xs">base_url=aleph.vkol.cz, protocol=REST, timeout=30s</td>
+                <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                <td class="px-4 py-3 text-sm">Martin Dvorak</td>
+                <td class="px-4 py-3 text-sm text-slate-500">2026-02-20</td>
+                <td class="px-4 py-3 text-sm">
+                  <div class="flex gap-1">
+                    <button onclick="openModal('editInstanceModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                    <button onclick="openModal('deleteInstanceModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Group 2: KrameriusRegistry -->
+              <tr class="bg-slate-100 border-t-2 border-slate-300">
+                <td colspan="5" class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <span class="font-semibold text-sm">KrameriusRegistry</span>
+                    <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-100 text-emerald-700">Digitization Registry</span>
+                    <span class="text-xs text-slate-500">v1.2.0</span>
+                    <span class="text-xs text-slate-400 ml-2">Connector for Kramerius digital library registry.</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <button onclick="openModal('newInstanceModal')" class="px-3 py-1.5 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">New Instance</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-sm pl-8">Kramerius MZK</td>
+                <td class="px-4 py-3 text-sm text-slate-500 truncate max-w-xs">api_url=kramerius.mzk.cz/search/api/v5.0, auth=token</td>
+                <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                <td class="px-4 py-3 text-sm">Jana Novakova</td>
+                <td class="px-4 py-3 text-sm text-slate-500">2026-01-20</td>
+                <td class="px-4 py-3 text-sm">
+                  <div class="flex gap-1">
+                    <button onclick="openModal('editInstanceModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                    <button onclick="openModal('deleteInstanceModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-sm pl-8">Kramerius NKP</td>
+                <td class="px-4 py-3 text-sm text-slate-500 truncate max-w-xs">api_url=kramerius.nkp.cz/search/api/v5.0, auth=basic</td>
+                <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                <td class="px-4 py-3 text-sm">Jana Novakova</td>
+                <td class="px-4 py-3 text-sm text-slate-500">2026-02-05</td>
+                <td class="px-4 py-3 text-sm">
+                  <div class="flex gap-1">
+                    <button onclick="openModal('editInstanceModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                    <button onclick="openModal('deleteInstanceModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Group 3: OCRPageCount -->
+              <tr class="bg-slate-100 border-t-2 border-slate-300">
+                <td colspan="5" class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <span class="font-semibold text-sm">OCRPageCount</span>
+                    <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Page Count</span>
+                    <span class="text-xs text-slate-500">v1.0.3</span>
+                    <span class="text-xs text-slate-400 ml-2">Extracts page count from OCR metadata of digitized documents.</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <button onclick="openModal('newInstanceModal')" class="px-3 py-1.5 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">New Instance</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-sm pl-8">OCR Page Counter (default)</td>
+                <td class="px-4 py-3 text-sm text-slate-500 truncate max-w-xs">source=alto_xml, fallback=mets, include_blank=false</td>
+                <td class="px-4 py-3 text-sm"><span class="text-xs text-slate-500">12 properties</span></td>
+                <td class="px-4 py-3 text-sm">Petr Svoboda</td>
+                <td class="px-4 py-3 text-sm text-slate-500">2026-03-10</td>
+                <td class="px-4 py-3 text-sm">
+                  <div class="flex gap-1">
+                    <button onclick="openModal('editInstanceModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                    <button onclick="openModal('deleteInstanceModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Group 4: SlackNotifier (External Hook) -->
+              <tr class="bg-slate-100 border-t-2 border-slate-300">
+                <td colspan="5" class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <span class="font-semibold text-sm">SlackNotifier</span>
+                    <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">External Hook</span>
+                    <span class="text-xs text-slate-500">v1.1.0</span>
+                    <span class="text-xs text-slate-400 ml-2">Sends notifications to Slack channels on lifecycle events.</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <button onclick="openModal('newInstanceModal')" class="px-3 py-1.5 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">New Instance</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-sm pl-8">Slack #digitalizace</td>
+                <td class="px-4 py-3 text-sm text-slate-500 truncate max-w-xs">channel=#digitalizace, webhook=https://hooks.slack.com/...</td>
+                <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                <td class="px-4 py-3 text-sm">Martin Dvorak</td>
+                <td class="px-4 py-3 text-sm text-slate-500">2026-04-01</td>
+                <td class="px-4 py-3 text-sm">
+                  <div class="flex gap-1">
+                    <button onclick="openModal('editInstanceModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                    <button onclick="openModal('deleteInstanceModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                  </div>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-sm pl-8">Slack #chyby-systemu</td>
+                <td class="px-4 py-3 text-sm text-slate-500 truncate max-w-xs">channel=#chyby-systemu, webhook=https://hooks.slack.com/...</td>
+                <td class="px-4 py-3 text-sm text-slate-400">--</td>
+                <td class="px-4 py-3 text-sm">Lucie Kralova</td>
+                <td class="px-4 py-3 text-sm text-slate-500">2026-04-15</td>
+                <td class="px-4 py-3 text-sm">
+                  <div class="flex gap-1">
+                    <button onclick="openModal('editInstanceModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                    <button onclick="openModal('deleteInstanceModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Group 5: CategoryDocumentDiscovery -->
+              <tr class="bg-slate-100 border-t-2 border-slate-300">
+                <td colspan="5" class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <span class="font-semibold text-sm">CategoryDocumentDiscovery</span>
+                    <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-cyan-100 text-cyan-700">Document Discovery</span>
+                    <span class="text-xs text-slate-500">v2.0.0</span>
+                    <span class="text-xs text-slate-400 ml-2">Discovers documents for categories based on catalog queries.</span>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <button onclick="openModal('newInstanceModal')" class="px-3 py-1.5 text-xs bg-slate-900 text-white rounded hover:bg-slate-800">New Instance</button>
+                </td>
+              </tr>
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 text-sm pl-8">Periodika MZK</td>
+                <td class="px-4 py-3 text-sm text-slate-500 truncate max-w-xs">query_template=type:periodical AND library:mzk, schedule=daily</td>
+                <td class="px-4 py-3 text-sm">
+                  <span class="inline-block rounded-full px-2 py-0.5 text-xs bg-slate-100 text-slate-700">Periodika</span>
+                  <span class="inline-block rounded-full px-2 py-0.5 text-xs bg-slate-100 text-slate-700 ml-1">Noviny</span>
+                </td>
+                <td class="px-4 py-3 text-sm">Jana Novakova</td>
+                <td class="px-4 py-3 text-sm text-slate-500">2026-03-20</td>
+                <td class="px-4 py-3 text-sm">
+                  <div class="flex gap-1">
+                    <button onclick="openModal('editInstanceModal')" class="px-2 py-1 text-xs border border-slate-300 rounded hover:bg-slate-50">Edit</button>
+                    <button onclick="openModal('deleteInstanceModal')" class="px-2 py-1 text-xs bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Create Instance Modal -->
+  <div id="newInstanceModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+      <h3 class="text-lg font-semibold mb-4">Create Plugin Instance</h3>
+      <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 mb-4 text-sm"><span class="text-slate-500">Plugin:</span> <span class="font-medium">AlephCatalogAdapter</span> <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-700 ml-1">Catalog Adapter</span></div>
+      <div class="space-y-3 mb-6">
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Name <span class="text-red-500">*</span></label><input type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="Instance name"></div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Base URL</label><input type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="e.g., https://aleph.mzk.cz"></div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Protocol</label><select class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"><option>REST</option><option>Z39.50</option></select></div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Timeout (s)</label><input type="number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" value="30"></div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+        <button onclick="closeModals()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Instance Modal -->
+  <div id="editInstanceModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+      <h3 class="text-lg font-semibold mb-4">Edit Plugin Instance</h3>
+      <div class="space-y-3 mb-6">
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Name</label><input type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" value="MZK Aleph"></div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Base URL</label><input type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" value="aleph.mzk.cz"></div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Protocol</label><select class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"><option selected>REST</option><option>Z39.50</option></select></div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Timeout (s)</label><input type="number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" value="30"></div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+        <button onclick="closeModals()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Instance Modal -->
+  <div id="deleteInstanceModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+      <h3 class="text-lg font-semibold mb-4">Delete Plugin Instance</h3>
+      <p class="text-sm text-red-600 mb-3">This will permanently delete this plugin instance and all associated configuration.</p>
+      <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 mb-6 text-sm"><span class="text-slate-500">Instance:</span> <span class="font-medium">MZK Aleph</span></div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+        <button onclick="closeModals()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Plugin Modal -->
+  <div id="deletePluginModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+      <h3 class="text-lg font-semibold mb-4">Delete Plugin Definition</h3>
+      <p class="text-sm text-red-600 mb-3">This will remove the plugin definition. This cannot be undone.</p>
+      <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 mb-3 text-sm"><span class="text-slate-500">Plugin:</span> <span class="font-medium">AlephCatalogAdapter</span></div>
+      <p class="text-xs text-amber-600 mb-6">Plugin has 3 instances — delete all instances first.</p>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+        <button class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 opacity-50" disabled>Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Watchlist Panel -->
+  <div id="watchlistPanel" class="hidden fixed left-14 bottom-16 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 flex flex-col max-h-[28rem]">
+    <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+      <span class="text-sm font-semibold">Watchlists</span>
+      <button onclick="toggleWatchlistPanel()" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+    </div>
+    <div class="py-1 overflow-y-auto flex-1">
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Documents</div>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>High priority pending</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>My rejected documents</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Periodicals queue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Proposals</div>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Pending from NDK project</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Declined proposals</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Additions</div>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed additions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>NDK batch completions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Projects</div>
+      <a href="projects.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Overdue milestones</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Digitization Lists</div>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Planned lists - MZK</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Revision overdue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Finished this month</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Tasks</div>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed tasks today</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Long-running tasks</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Scheduled overdue</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+    </div>
+    <div class="border-t border-slate-100 px-4 py-2.5 flex-shrink-0">
+      <a href="#" class="text-xs text-blue-600 hover:underline">Manage Watchlists</a>
+    </div>
+  </div>
+
+<script>
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('expanded');
+}
+    function toggleWatchlistPanel() {
+      document.getElementById('watchlistPanel').classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('watchlistPanel');
+      if (!panel.classList.contains('hidden') && !e.target.closest('#watchlistPanel') && !e.target.closest('[title="Watchlists"]')) {
+        panel.classList.add('hidden');
+      }
+    });
+
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModals() { document.querySelectorAll('[id$="Modal"]').forEach(m => m.classList.add('hidden')); }
+</script>
+</body>
+</html>

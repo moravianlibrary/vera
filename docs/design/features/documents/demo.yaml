@@ -1,0 +1,70 @@
+title: Documents — Validator View
+layout: split
+
+toolbar:
+  - label: Export CSV
+    color: light
+    action: alert:Export started
+  stats:
+    - { text: 12 pending, color: amber }
+    - { text: 84 approved, color: green }
+
+list:
+  header: Pending Validation
+  items:
+    - id: d1
+      title: "Kronika města Brna, sv. 3"
+      subtitle: "cnb002345678 · NDK Monografie"
+      badges:
+        - { text: Validated, color: green }
+      selected: true
+
+    - id: d2
+      title: "Lidové noviny, roč. 1925"
+      subtitle: "cnb001987654 · NDK Periodika"
+      badges:
+        - { text: Needs Review, color: amber }
+
+    - id: d3
+      title: "Moravské noviny, 1918-1920"
+      subtitle: "1801-1234 · VISK 7"
+      badges:
+        - { text: Validating, color: blue }
+
+detail:
+  title: "Kronika města Brna, sv. 3"
+  badges:
+    - { text: Validated, color: green }
+  meta: "Priority 4 · NDK Monografie"
+  actions:
+    - { label: Approve, color: green, modal: approve-doc }
+    - { label: Reject, color: red, modal: reject-doc }
+  sections:
+    - type: grid
+      cols: 2
+      items:
+        - { label: Identifier, value: cnb002345678 }
+        - { label: Category, value: Monographs }
+        - { label: Created from, value: "Proposal #1247" }
+        - { label: Iterations, value: "1" }
+        - { label: Validator, value: Petr Dvořák }
+        - { label: Assigned, value: "12 May 2026" }
+    - type: log
+      label: Validation Checks
+      entries:
+        - { text: "Catalog record verified", time: "12 May, 09:30", color: green }
+        - { text: "No duplicate digitization found", time: "12 May, 09:31", color: green }
+        - { text: "Physical condition: good", time: "12 May, 09:35", color: green }
+
+modals:
+  approve-doc:
+    title: Approve Document
+    fields:
+      - { name: notes, label: Notes (optional), type: textarea, placeholder: "Any notes for the digitization team..." }
+    submit: { label: Approve, color: green }
+
+  reject-doc:
+    title: Reject Document
+    fields:
+      - { name: reason, label: Reason, type: textarea, required: true, placeholder: "Why is this document being rejected?" }
+    submit: { label: Reject, color: red }

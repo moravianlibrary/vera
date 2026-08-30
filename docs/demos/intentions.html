@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VERA - Intentions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .sidebar { width: 3.5rem; transition: width 0.2s ease; }
+    .sidebar.expanded { width: 14rem; }
+    .sidebar .nav-label { opacity: 0; transition: opacity 0.15s ease; white-space: nowrap; overflow: hidden; }
+    .sidebar.expanded .nav-label { opacity: 1; }
+    .sidebar-link { color: #94a3b8; }
+    .sidebar-link.active { background: rgba(255,255,255,0.15); color: #fff; }
+    .view-btn.active { background: #0f172a; color: #fff; }
+    .sidebar-link:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+    .task-tracker { display: none; }
+    .sidebar.expanded .task-tracker { display: block; }
+    .task-badge { display: flex; }
+    .sidebar.expanded .task-badge { display: none; }
+    .sidebar-badge { display: flex; }
+    .sidebar.expanded .sidebar-badge { display: none; }
+    .toggle-icon { transition: transform 0.2s ease; }
+    .sidebar.expanded .toggle-icon { transform: rotate(180deg); }
+  </style>
+</head>
+<body class="bg-white text-slate-900 h-screen flex overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="sidebar bg-slate-900 flex flex-col py-3 flex-shrink-0 overflow-hidden">
+    <!-- Logo -->
+    <div class="px-3 mb-2 flex items-center gap-3 h-10 flex-shrink-0">
+      <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+        <span class="text-slate-900 text-sm font-black tracking-tight">V</span>
+      </div>
+      <span class="nav-label text-white font-semibold text-base">VERA</span>
+    </div>
+
+    <div class="px-2 mb-3 flex-shrink-0">
+      <button onclick="toggleSidebar()" class="sidebar-link flex items-center justify-center w-full h-8 rounded-lg" title="Toggle sidebar">
+        <svg class="toggle-icon w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 flex flex-col gap-0.5 px-2 overflow-y-auto">
+      <a href="documents.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Documents">
+        <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Do</span>
+        <span class="nav-label text-sm font-medium">Documents</span>
+      </a>
+      <a href="proposals.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Proposals">
+        <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pr</span>
+        <span class="nav-label text-sm font-medium">Proposals</span>
+      </a>
+      <a href="additions.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Additions">
+        <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ad</span>
+        <span class="nav-label text-sm font-medium">Additions</span>
+      </a>
+      <a href="projects.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Projects">
+        <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pj</span>
+        <span class="nav-label text-sm font-medium">Projects</span>
+      </a>
+      <a href="categories.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Categories">
+        <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ca</span>
+        <span class="nav-label text-sm font-medium">Categories</span>
+      </a>
+      <a href="intentions.html" class="sidebar-link active flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold text-white" title="Intentions">
+        <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">In</span>
+        <span class="nav-label text-sm font-medium">Intentions</span>
+      </a>
+      <a href="digitization-lists.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Dig. Lists">
+        <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">DL</span>
+        <span class="nav-label text-sm font-medium">Dig. Lists</span>
+      </a>
+      <a href="tasks.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Tasks">
+        <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ta</span>
+        <span class="nav-label text-sm font-medium">Tasks</span>
+      </a>
+      <a href="plugins.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Plugins">
+        <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pl</span>
+        <span class="nav-label text-sm font-medium">Plugins</span>
+      </a>
+      <a href="hooks.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Hooks">
+        <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Hk</span>
+        <span class="nav-label text-sm font-medium">Hooks</span>
+      </a>
+        <div class="mt-2 mb-1 border-t border-slate-700"></div>
+        <button onclick="toggleWatchlistPanel()" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold w-full" title="Watchlists">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0 relative">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center sidebar-badge">19</span>
+          </span>
+          <span class="nav-label text-sm font-medium">Watchlists</span>
+          <span class="nav-label ml-auto bg-red-500 text-white text-[10px] rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold">19</span>
+        </button>
+      </nav>
+
+    <!-- Task tracker -->
+    <div class="px-2 mb-1 flex-shrink-0" id="taskSection">
+      <!-- Collapsed: badge only -->
+      <div class="task-badge items-center justify-center px-2 h-9">
+        <span class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</span>
+      </div>
+      <!-- Expanded: task list -->
+      <div class="task-tracker px-2 py-2 rounded-lg bg-slate-800">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-slate-300">Tasks running</span>
+          <span class="text-xs text-slate-400 font-mono">2</span>
+        </div>
+        <div class="space-y-2">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs text-slate-300 truncate">Proposal.Ingest #412</span>
+              <span class="text-xs text-slate-400">67%</span>
+            </div>
+            <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:67%"></div></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs text-slate-300 truncate">Catalog.Sync</span>
+              <span class="text-xs text-slate-400">23%</span>
+            </div>
+            <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:23%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="px-2 pt-2 border-t border-slate-700 flex-shrink-0">
+      <button class="sidebar-link flex items-center gap-3 w-full h-9 px-2 rounded-lg text-xs font-bold" title="Logout">
+        <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        </span>
+        <span class="nav-label text-sm font-medium">Jan Novak</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+
+    <!-- Top bar -->
+    <div class="border-b border-slate-200 px-6 py-3 flex items-center justify-between flex-shrink-0">
+      <div class="flex items-center gap-4">
+        <h1 class="text-lg font-semibold">Intentions</h1>
+        <!-- Classification toggle -->
+        <div class="flex bg-slate-100 rounded-lg p-0.5 gap-0.5" id="classToggle">
+          <button onclick="filterCards('all')" id="btn-all" class="view-btn active px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" data-view="all">All</button>
+          <button onclick="filterCards('current')" id="btn-current" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" data-view="current">Current</button>
+          <button onclick="filterCards('upcoming')" id="btn-upcoming" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" data-view="upcoming">Upcoming</button>
+          <button onclick="filterCards('previous')" id="btn-previous" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" data-view="previous">Previous</button>
+        </div>
+      </div>
+      <button onclick="openModal('createIntentionModal')" class="bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-slate-800 transition-colors">+ Create Intention</button>
+    </div>
+
+    <!-- Card area -->
+    <div class="flex-1 overflow-y-auto scrollbar-thin">
+      <div class="max-w-4xl mx-auto p-6 space-y-6">
+
+        <!-- Overall Intention -->
+        <div class="card-overall" data-class="overall">
+          <div class="bg-white border-2 border-slate-900 rounded-lg p-6 shadow-sm">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="inline-flex items-center rounded-full bg-slate-900 text-white text-xs font-medium px-2.5 py-0.5">ACTIVE BASELINE</span>
+                </div>
+                <h2 class="text-xl font-semibold">Celkova digitalizace MZK</h2>
+              </div>
+              <div class="flex items-center gap-2">
+                <button class="border border-slate-300 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-50">Edit Proportions</button>
+                <button class="border border-slate-300 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-50">Edit</button>
+              </div>
+            </div>
+            <p class="text-sm text-slate-600">Zakladni rozdeleni digitalizacnich kapacit mezi kategorie fondu Moravske zemske knihovny. Pouziva se, kdyz neni aktivni zadna casove omezena intence.</p>
+          </div>
+        </div>
+
+        <!-- Current Section -->
+        <div data-class="current">
+          <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Current</h3>
+          <div class="space-y-4">
+
+            <!-- Current card 1 -->
+            <div class="bg-white border-2 border-green-300 rounded-lg p-6 shadow-sm">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="inline-flex items-center rounded-full bg-green-100 text-green-700 text-xs font-medium px-2.5 py-0.5">CURRENT</span>
+                  </div>
+                  <h2 class="text-lg font-semibold">Digitalizace H1 2026</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="bg-slate-900 text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-800">Documents</button>
+                  <button onclick="openModal('proportionsModal')" class="border border-slate-300 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-50">Edit Proportions</button>
+                  <button onclick="openModal('editIntentionModal')" class="border border-slate-300 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-50">Edit</button>
+                </div>
+              </div>
+              <p class="text-sm text-slate-600 mb-4">Planovana digitalizace pro prvni pololeti 2026. Zamereni na periodika a monografie 19. stoleti.</p>
+              <div class="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <div class="text-xs text-slate-500">Target</div>
+                  <div class="text-sm font-semibold">12,000 pages</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Period</div>
+                  <div class="text-sm font-semibold">2026-01-01 &mdash; 2026-06-30</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Project</div>
+                  <div class="text-sm font-semibold text-blue-600 hover:underline cursor-pointer">Digitalizace periodik MZK 2026</div>
+                </div>
+              </div>
+              <!-- Progress -->
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm text-slate-600">Progress</span>
+                  <span class="text-sm font-medium">7,340 / 12,000 <span class="text-slate-400">(61%)</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3">
+                  <div class="bg-green-500 h-3 rounded-full transition-all" style="width: 61%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Current card 2 -->
+            <div class="bg-white border-2 border-green-300 rounded-lg p-6 shadow-sm">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="inline-flex items-center rounded-full bg-green-100 text-green-700 text-xs font-medium px-2.5 py-0.5">CURRENT</span>
+                  </div>
+                  <h2 class="text-lg font-semibold">Mapy Moravy - specialni projekt</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="bg-slate-900 text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-800">Documents</button>
+                  <button onclick="openModal('proportionsModal')" class="border border-slate-300 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-50">Edit Proportions</button>
+                  <button onclick="openModal('editIntentionModal')" class="border border-slate-300 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-50">Edit</button>
+                </div>
+              </div>
+              <p class="text-sm text-slate-600 mb-4">Digitalizace historickych map Moravy v ramci grantoveho projektu NAKI III.</p>
+              <div class="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <div class="text-xs text-slate-500">Target</div>
+                  <div class="text-sm font-semibold">3,500 pages</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Period</div>
+                  <div class="text-sm font-semibold">2026-03-01 &mdash; 2026-08-31</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Project</div>
+                  <div class="text-sm font-semibold text-blue-600 hover:underline cursor-pointer">Mapy Moravy - grant NAKI</div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm text-slate-600">Progress</span>
+                  <span class="text-sm font-medium">1,820 / 3,500 <span class="text-slate-400">(52%)</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3">
+                  <div class="bg-green-500 h-3 rounded-full transition-all" style="width: 52%"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Upcoming Section -->
+        <div data-class="upcoming">
+          <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Upcoming</h3>
+          <div class="space-y-4">
+
+            <!-- Upcoming card -->
+            <div class="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 text-xs font-medium px-2.5 py-0.5">UPCOMING</span>
+                  </div>
+                  <h2 class="text-lg font-semibold">Digitalizace H2 2026</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="openModal('proportionsModal')" class="border border-slate-300 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-50">Edit Proportions</button>
+                  <button onclick="openModal('editIntentionModal')" class="border border-slate-300 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-50">Edit</button>
+                  <button onclick="openModal('deleteIntentionModal')" class="bg-red-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-red-700">Delete</button>
+                </div>
+              </div>
+              <p class="text-sm text-slate-600 mb-4">Planovana digitalizace pro druhe pololeti 2026. Vetsi duraz na stare tisky a hudebniny.</p>
+              <div class="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <div class="text-xs text-slate-500">Target</div>
+                  <div class="text-sm font-semibold">15,000 pages</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Period</div>
+                  <div class="text-sm font-semibold">2026-07-01 &mdash; 2026-12-31</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Project</div>
+                  <div class="text-sm text-slate-400">None</div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm text-slate-600">Progress</span>
+                  <span class="text-sm font-medium">0 / 15,000 <span class="text-slate-400">(0%)</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3">
+                  <div class="bg-blue-400 h-3 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upcoming card 2 -->
+            <div class="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 text-xs font-medium px-2.5 py-0.5">UPCOMING</span>
+                  </div>
+                  <h2 class="text-lg font-semibold">Stare tisky - specialni fond</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="openModal('proportionsModal')" class="border border-slate-300 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-50">Edit Proportions</button>
+                  <button onclick="openModal('editIntentionModal')" class="border border-slate-300 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-50">Edit</button>
+                  <button onclick="openModal('deleteIntentionModal')" class="bg-red-600 text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-red-700">Delete</button>
+                </div>
+              </div>
+              <p class="text-sm text-slate-600 mb-4">Digitalizace vzacnych starych tisku ze specialniho fondu MZK, vcetne prvotisku.</p>
+              <div class="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <div class="text-xs text-slate-500">Target</div>
+                  <div class="text-sm font-semibold">2,000 pages</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Period</div>
+                  <div class="text-sm font-semibold">2026-09-01 &mdash; 2027-02-28</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Project</div>
+                  <div class="text-sm font-semibold text-blue-600 hover:underline cursor-pointer">Stare tisky - restaurovani</div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm text-slate-600">Progress</span>
+                  <span class="text-sm font-medium">0 / 2,000 <span class="text-slate-400">(0%)</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3">
+                  <div class="bg-blue-400 h-3 rounded-full transition-all" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Previous Section -->
+        <div data-class="previous">
+          <h3 class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Previous</h3>
+          <div class="space-y-4">
+
+            <!-- Previous card 1 -->
+            <div class="bg-white border border-slate-200 rounded-lg p-6 shadow-sm opacity-60">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-600 text-xs font-medium px-2.5 py-0.5">PREVIOUS</span>
+                  </div>
+                  <h2 class="text-lg font-semibold">Digitalizace H2 2025</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="bg-slate-900 text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-800">Documents</button>
+                </div>
+              </div>
+              <p class="text-sm text-slate-600 mb-4">Digitalizace pro druhe pololeti 2025. Uspesne dokonceno.</p>
+              <div class="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <div class="text-xs text-slate-500">Target</div>
+                  <div class="text-sm font-semibold">10,000 pages</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Period</div>
+                  <div class="text-sm font-semibold">2025-07-01 &mdash; 2025-12-31</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Project</div>
+                  <div class="text-sm text-slate-400">None</div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm text-slate-600">Progress</span>
+                  <span class="text-sm font-medium">9,876 / 10,000 <span class="text-slate-400">(99%)</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3">
+                  <div class="bg-slate-400 h-3 rounded-full transition-all" style="width: 99%"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Previous card 2 -->
+            <div class="bg-white border border-slate-200 rounded-lg p-6 shadow-sm opacity-60">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-600 text-xs font-medium px-2.5 py-0.5">PREVIOUS</span>
+                  </div>
+                  <h2 class="text-lg font-semibold">Digitalizace H1 2025</h2>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button class="bg-slate-900 text-white text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-slate-800">Documents</button>
+                </div>
+              </div>
+              <p class="text-sm text-slate-600 mb-4">Digitalizace pro prvni pololeti 2025. Dokonceno s mirnym previsem.</p>
+              <div class="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <div class="text-xs text-slate-500">Target</div>
+                  <div class="text-sm font-semibold">8,000 pages</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Period</div>
+                  <div class="text-sm font-semibold">2025-01-01 &mdash; 2025-06-30</div>
+                </div>
+                <div>
+                  <div class="text-xs text-slate-500">Project</div>
+                  <div class="text-sm text-slate-400">None</div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm text-slate-600">Progress</span>
+                  <span class="text-sm font-medium">8,234 / 8,000 <span class="text-green-600">(103%)</span></span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-3">
+                  <div class="bg-slate-400 h-3 rounded-full transition-all" style="width: 100%"></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Intention Modal -->
+  <div id="createIntentionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
+      <h3 class="text-lg font-semibold mb-4">Create Intention</h3>
+      <div class="space-y-3 mb-6">
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Name <span class="text-red-500">*</span></label><input type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="Intention name"></div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Type</label>
+          <div class="flex gap-4 mt-1"><label class="flex items-center gap-2 text-sm"><input type="radio" name="intentionType" value="overall" class="text-slate-600" onchange="document.getElementById('timeBoundFields').classList.add('hidden')"> Overall (baseline)</label><label class="flex items-center gap-2 text-sm"><input type="radio" name="intentionType" value="timebound" checked class="text-slate-600" onchange="document.getElementById('timeBoundFields').classList.remove('hidden')"> Time-bound</label></div>
+        </div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Description</label><textarea class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm h-16" placeholder="Description..."></textarea></div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Target Pages</label><input type="number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="12000"></div>
+        <div id="timeBoundFields" class="grid grid-cols-2 gap-3">
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Start Date</label><input type="date" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">End Date</label><input type="date" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"></div>
+        </div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Project (optional)</label><select class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"><option>None</option><option>Digitalizace periodik MZK 2026</option><option>Stare tisky - restaurovani</option><option>Mapy Moravy - grant NAKI</option></select></div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+        <button onclick="closeModals()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800">Create Intention</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Intention Modal -->
+  <div id="editIntentionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
+      <h3 class="text-lg font-semibold mb-4">Edit Intention</h3>
+      <div class="space-y-3 mb-6">
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Name</label><input type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" value="Digitalizace H1 2026"></div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Description</label><textarea class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm h-16">Planovana digitalizace pro prvni pololeti 2026.</textarea></div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Target Pages</label><input type="number" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" value="12000"></div>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">Start Date</label><input type="date" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" value="2026-01-01"></div>
+          <div><label class="block text-sm font-medium text-slate-700 mb-1">End Date</label><input type="date" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" value="2026-06-30"></div>
+        </div>
+        <div><label class="block text-sm font-medium text-slate-700 mb-1">Project</label><select class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"><option>None</option><option selected>Digitalizace periodik MZK 2026</option><option>Stare tisky - restaurovani</option><option>Mapy Moravy - grant NAKI</option></select></div>
+      </div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+        <button onclick="closeModals()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Intention Modal -->
+  <div id="deleteIntentionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+      <h3 class="text-lg font-semibold mb-4">Delete Intention</h3>
+      <p class="text-sm text-red-600 mb-3">This action cannot be undone. The intention and its proportions will be permanently removed.</p>
+      <div class="mb-6"><label class="block text-sm font-medium text-slate-700 mb-1">Type <span class="font-mono font-bold">DELETE</span> to confirm</label><input type="text" oninput="document.getElementById('delIntBtn').disabled=this.value!=='DELETE'" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="DELETE"></div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+        <button id="delIntBtn" onclick="closeModals()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 opacity-50" disabled>Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Proportions Editor Modal -->
+  <div id="proportionsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
+      <h3 class="text-lg font-semibold mb-4">Edit Proportions</h3>
+      <div class="text-xs text-slate-500 mb-3">Category proportions for this intention</div>
+      <div class="space-y-2 mb-4">
+        <div class="flex items-center gap-3"><span class="text-sm w-36 truncate font-medium">Periodika</span><input type="number" step="0.01" min="0" max="1" value="0.45" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-24"><div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-slate-900 h-2 rounded-full" style="width:45%"></div></div></div>
+        <div class="flex items-center gap-3"><span class="text-sm w-36 truncate">Monografie</span><input type="number" step="0.01" min="0" max="1" value="0.30" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-24"><div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-slate-400 h-2 rounded-full" style="width:30%"></div></div></div>
+        <div class="flex items-center gap-3"><span class="text-sm w-36 truncate">Mapy</span><input type="number" step="0.01" min="0" max="1" value="0.10" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-24"><div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-slate-400 h-2 rounded-full" style="width:10%"></div></div></div>
+        <div class="flex items-center gap-3"><span class="text-sm w-36 truncate">Stare tisky</span><input type="number" step="0.01" min="0" max="1" value="0.10" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-24"><div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-slate-400 h-2 rounded-full" style="width:10%"></div></div></div>
+        <div class="flex items-center gap-3"><span class="text-sm w-36 truncate">Hudebniny</span><input type="number" step="0.01" min="0" max="1" value="0.05" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm w-24"><div class="flex-1 bg-slate-100 rounded-full h-2"><div class="bg-slate-400 h-2 rounded-full" style="width:5%"></div></div></div>
+      </div>
+      <div class="flex items-center justify-between text-sm border-t border-slate-100 pt-2 mb-6"><span class="text-slate-500">Sum</span><span class="font-medium text-green-600">1.00</span></div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModals()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+        <button onclick="closeModals()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800">Save Proportions</button>
+      </div>
+    </div>
+  </div>
+  <!-- Watchlist Panel -->
+  <div id="watchlistPanel" class="hidden fixed left-14 bottom-16 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 flex flex-col max-h-[28rem]">
+    <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+      <span class="text-sm font-semibold">Watchlists</span>
+      <button onclick="toggleWatchlistPanel()" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+    </div>
+    <div class="py-1 overflow-y-auto flex-1">
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Documents</div>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>High priority pending</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>My rejected documents</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Periodicals queue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Proposals</div>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Pending from NDK project</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Declined proposals</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Additions</div>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed additions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>NDK batch completions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Projects</div>
+      <a href="projects.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Overdue milestones</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Digitization Lists</div>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Planned lists - MZK</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Revision overdue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Finished this month</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Tasks</div>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed tasks today</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Long-running tasks</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Scheduled overdue</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+    </div>
+    <div class="border-t border-slate-100 px-4 py-2.5 flex-shrink-0">
+      <a href="#" class="text-xs text-blue-600 hover:underline">Manage Watchlists</a>
+    </div>
+  </div>
+
+  <script>
+    function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+    function closeModals() { document.querySelectorAll('[id$="Modal"]').forEach(m => m.classList.add('hidden')); }
+
+    function toggleSidebar() {
+      document.querySelector('.sidebar').classList.toggle('expanded');
+    }
+    function toggleWatchlistPanel() {
+      document.getElementById('watchlistPanel').classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('watchlistPanel');
+      if (!panel.classList.contains('hidden') && !e.target.closest('#watchlistPanel') && !e.target.closest('[title="Watchlists"]')) {
+        panel.classList.add('hidden');
+      }
+    });
+
+    const buttons = ['all', 'current', 'upcoming', 'previous'];
+
+    function filterCards(filter) {
+      // Update toggle buttons
+      document.querySelectorAll('#classToggle .view-btn').forEach(btn => {
+        if (btn.dataset.view === filter) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Show/hide card sections
+      const sections = document.querySelectorAll('[data-class]');
+      sections.forEach(section => {
+        const cls = section.getAttribute('data-class');
+        if (filter === 'all') {
+          section.style.display = '';
+        } else if (cls === 'overall') {
+          // Overall is always shown
+          section.style.display = '';
+        } else if (cls === filter) {
+          section.style.display = '';
+        } else {
+          section.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VERA - Proposals</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+  .sidebar { width: 3.5rem; transition: width 0.2s ease; }
+  .sidebar.expanded { width: 14rem; }
+  .sidebar .nav-label { opacity: 0; transition: opacity 0.15s ease; white-space: nowrap; overflow: hidden; }
+  .sidebar.expanded .nav-label { opacity: 1; }
+  .sidebar-link { color: #94a3b8; }
+  .sidebar-link.active { background: rgba(255,255,255,0.15); color: #fff; }
+  .sidebar-link:hover { background: rgba(255,255,255,0.1); color: #e2e8f0; }
+  .task-tracker { display: none; }
+  .sidebar.expanded .task-tracker { display: block; }
+  .task-badge { display: flex; }
+  .sidebar.expanded .task-badge { display: none; }
+    .sidebar-badge { display: flex; }
+    .sidebar.expanded .sidebar-badge { display: none; }
+  .toggle-icon { transition: transform 0.2s ease; }
+  .sidebar.expanded .toggle-icon { transform: rotate(180deg); }
+  .view-btn.active { background: #0f172a; color: #fff; }
+  .nav-item.active { background: #f1f5f9; border-left: 3px solid #0f172a; }
+  .nav-item:hover { background: #f8fafc; }
+  .wizard-overlay { background: rgba(0,0,0,0.5); }
+</style>
+</head>
+<body class="bg-white text-slate-900 h-screen flex overflow-hidden">
+
+<!-- Sidebar -->
+<aside class="sidebar bg-slate-900 flex flex-col py-3 flex-shrink-0 overflow-hidden">
+  <!-- Logo -->
+  <div class="px-3 mb-2 flex items-center gap-3 h-10 flex-shrink-0">
+    <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+      <span class="text-slate-900 text-sm font-black tracking-tight">V</span>
+    </div>
+    <span class="nav-label text-white font-semibold text-base">VERA</span>
+  </div>
+
+  <div class="px-2 mb-3 flex-shrink-0">
+    <button onclick="toggleSidebar()" class="sidebar-link flex items-center justify-center w-full h-8 rounded-lg" title="Toggle sidebar">
+      <svg class="toggle-icon w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="flex-1 flex flex-col gap-0.5 px-2 overflow-y-auto">
+    <a href="documents.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Documents">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Do</span>
+      <span class="nav-label text-sm font-medium">Documents</span>
+    </a>
+    <a href="proposals.html" class="sidebar-link active flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold text-white" title="Proposals">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pr</span>
+      <span class="nav-label text-sm font-medium">Proposals</span>
+    </a>
+    <a href="additions.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Additions">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ad</span>
+      <span class="nav-label text-sm font-medium">Additions</span>
+    </a>
+    <a href="projects.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Projects">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pj</span>
+      <span class="nav-label text-sm font-medium">Projects</span>
+    </a>
+    <a href="categories.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Categories">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ca</span>
+      <span class="nav-label text-sm font-medium">Categories</span>
+    </a>
+    <a href="intentions.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Intentions">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">In</span>
+      <span class="nav-label text-sm font-medium">Intentions</span>
+    </a>
+    <a href="digitization-lists.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Dig. Lists">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">DL</span>
+      <span class="nav-label text-sm font-medium">Dig. Lists</span>
+    </a>
+    <a href="tasks.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Tasks">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Ta</span>
+      <span class="nav-label text-sm font-medium">Tasks</span>
+    </a>
+    <a href="plugins.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Plugins">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Pl</span>
+      <span class="nav-label text-sm font-medium">Plugins</span>
+    </a>
+    <a href="hooks.html" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold" title="Hooks">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">Hk</span>
+      <span class="nav-label text-sm font-medium">Hooks</span>
+    </a>
+        <div class="mt-2 mb-1 border-t border-slate-700"></div>
+        <button onclick="toggleWatchlistPanel()" class="sidebar-link flex items-center gap-3 h-9 px-2 rounded-lg text-xs font-bold w-full" title="Watchlists">
+          <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0 relative">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] text-white font-bold flex items-center justify-center sidebar-badge">19</span>
+          </span>
+          <span class="nav-label text-sm font-medium">Watchlists</span>
+          <span class="nav-label ml-auto bg-red-500 text-white text-[10px] rounded-full px-1.5 py-0.5 min-w-[18px] text-center font-bold">19</span>
+        </button>
+      </nav>
+
+  <!-- Task tracker -->
+  <div class="px-2 mb-1 flex-shrink-0" id="taskSection">
+    <!-- Collapsed: badge only -->
+    <div class="task-badge items-center justify-center px-2 h-9">
+      <span class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">2</span>
+    </div>
+    <!-- Expanded: task list -->
+    <div class="task-tracker px-2 py-2 rounded-lg bg-slate-800">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-slate-300">Tasks running</span>
+        <span class="text-xs text-slate-400 font-mono">2</span>
+      </div>
+      <div class="space-y-2">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-slate-300 truncate">Proposal.Ingest #412</span>
+            <span class="text-xs text-slate-400">67%</span>
+          </div>
+          <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:67%"></div></div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs text-slate-300 truncate">Catalog.Sync</span>
+            <span class="text-xs text-slate-400">23%</span>
+          </div>
+          <div class="h-1 bg-slate-700 rounded-full"><div class="h-1 bg-blue-400 rounded-full" style="width:23%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout -->
+  <div class="px-2 pt-2 border-t border-slate-700 flex-shrink-0">
+    <button class="sidebar-link flex items-center gap-3 w-full h-9 px-2 rounded-lg text-xs font-bold" title="Logout">
+      <span class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </span>
+      <span class="nav-label text-sm font-medium">Jan Novak</span>
+    </button>
+  </div>
+</aside>
+
+<!-- Main content -->
+<main class="flex-1 flex flex-col overflow-hidden">
+
+  <!-- Top bar -->
+  <div class="border-b border-slate-200 px-6 py-3 flex items-center gap-4">
+    <h1 class="text-lg font-semibold mr-4">Proposals</h1>
+
+    <!-- View toggle -->
+    <div class="flex bg-slate-100 rounded-lg p-0.5 gap-0.5" id="viewToggle">
+      <button onclick="switchView('requestor')" class="view-btn px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" data-view="requestor">Requestor</button>
+      <button onclick="switchView('reviewer')" class="view-btn active px-3 py-1.5 rounded-md text-sm font-medium text-slate-600 transition-colors" data-view="reviewer">Reviewer</button>
+    </div>
+
+    <div class="flex-1"></div>
+
+    <button onclick="openWizard()" class="bg-slate-900 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-slate-800">Submit Proposals</button>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="border-b border-slate-200 px-6 py-2.5 flex items-center gap-2 flex-wrap">
+    <span class="text-xs font-semibold text-slate-500 uppercase mr-1">Filters</span>
+    <div id="filterChips">
+      <span class="inline-flex items-center gap-1 bg-slate-100 rounded-full px-2.5 py-1 text-xs font-medium text-slate-700">
+        Status: Pending
+        <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </span>
+    </div>
+    <select class="border border-slate-300 rounded-md px-2 py-1 text-xs text-slate-600 bg-white">
+      <option>+ Add Filter</option>
+      <option>Status</option>
+      <option>Project</option>
+      <option>Batch Name</option>
+      <option>Eligibility Status</option>
+      <option>Identifier Type</option>
+      <option>Source</option>
+    </select>
+    <div class="flex-1"></div>
+    <button class="text-xs font-medium text-slate-600 border border-slate-300 rounded-lg px-2.5 py-1 hover:bg-slate-50">Save as Watchlist</button>
+  </div>
+
+  <!-- Content area -->
+  <div class="flex-1 overflow-hidden">
+
+    <!-- ===== REQUESTOR VIEW ===== -->
+    <div id="view-requestor" class="hidden h-full overflow-auto">
+      <div class="p-6">
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200">
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Identifier</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Status</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Eligibility</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Project</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Batch</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Source</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Justification</th>
+              <th class="text-left py-2.5 px-3 text-xs font-semibold text-slate-500 uppercase bg-slate-50">Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb003456789</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Accepted</span></td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Eligible</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Periodika</td>
+              <td class="py-2.5 px-3 text-sm"><span class="inline-flex items-center gap-1 text-xs font-medium text-slate-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>VERA</span></td>
+              <td class="py-2.5 px-3 text-sm text-slate-500 truncate max-w-[200px]">Requested by regional library...</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">10 May 2026</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb002345678</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Pending</span></td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Eligible</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Monografie</td>
+              <td class="py-2.5 px-3 text-sm"><span class="inline-flex items-center gap-1 text-xs font-medium text-slate-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>VERA</span></td>
+              <td class="py-2.5 px-3 text-sm text-slate-500 truncate max-w-[200px]">Important for local history...</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">14 May 2026</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">ISSN:</span> 1234-5678</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">Declined</span></td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-red-100 text-red-700">Not Eligible</span></td>
+              <td class="py-2.5 px-3 text-sm">VISK 7</td>
+              <td class="py-2.5 px-3 text-sm"><span class="inline-flex items-center gap-1 text-xs font-medium text-purple-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1 2 2 0 110-4 1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>CatalogHarvester</span></td>
+              <td class="py-2.5 px-3 text-sm text-slate-500 truncate max-w-[200px]">Already digitized by NK...</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">8 May 2026</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb001987654</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Enqueued</span></td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">Pending</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Periodika</td>
+              <td class="py-2.5 px-3 text-sm"><span class="inline-flex items-center gap-1 text-xs font-medium text-purple-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1 2 2 0 110-4 1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>CatalogHarvester</span></td>
+              <td class="py-2.5 px-3 text-sm text-slate-500 truncate max-w-[200px]">Part of systematic coverage...</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">14 May 2026</td>
+            </tr>
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="py-2.5 px-3 text-sm"><span class="text-slate-400 text-xs">CNBID:</span> cnb004567890</td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Accepted</span></td>
+              <td class="py-2.5 px-3"><span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700">Eligible</span></td>
+              <td class="py-2.5 px-3 text-sm">NDK Monografie</td>
+              <td class="py-2.5 px-3 text-sm"><span class="inline-flex items-center gap-1 text-xs font-medium text-slate-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>VERA</span></td>
+              <td class="py-2.5 px-3 text-sm text-slate-500 truncate max-w-[200px]">Rare first edition, fragile...</td>
+              <td class="py-2.5 px-3 text-sm text-slate-500">7 May 2026</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="mt-3 text-sm text-slate-500">
+          <span>Accepted proposals: </span>
+          <a href="additions.html" class="text-blue-600 hover:underline">View resulting Additions</a>
+          <span class="mx-2">&middot;</span>
+          <a href="documents.html" class="text-blue-600 hover:underline">View resulting Documents</a>
+        </div>
+        <div class="flex items-center justify-between mt-4 text-sm text-slate-500">
+          <span>Showing 1-5 of 5 proposals</span>
+          <div class="flex gap-1">
+            <button class="px-3 py-1 border border-slate-300 rounded-md text-xs hover:bg-slate-50 opacity-50" disabled>&laquo; Prev</button>
+            <button class="px-3 py-1 border border-slate-300 rounded-md text-xs hover:bg-slate-50 opacity-50" disabled>Next &raquo;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== REVIEWER VIEW (split layout) ===== -->
+    <div id="view-reviewer" class="flex h-full">
+      <!-- Left nav list -->
+      <div class="w-1/4 border-r border-slate-200 overflow-y-auto bg-white">
+        <div class="px-4 py-3 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">6 Proposals</div>
+        <div id="navList">
+          <div class="nav-item active cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectProposal(0)">
+            <div class="text-xs text-slate-400 font-mono">cnb002345678</div>
+            <div class="text-sm font-medium truncate">CNBID: cnb002345678</div>
+            <div class="flex items-center gap-1.5 mt-1">
+              <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Pending</span>
+              <span class="text-[10px] text-slate-400">VERA</span>
+            </div>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectProposal(1)">
+            <div class="text-xs text-slate-400 font-mono">cnb001987654</div>
+            <div class="text-sm font-medium truncate">CNBID: cnb001987654</div>
+            <div class="flex items-center gap-1.5 mt-1">
+              <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Pending</span>
+              <span class="inline-flex items-center gap-0.5 text-[10px] text-purple-500"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1 2 2 0 110-4 1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>CatalogHarvester</span>
+            </div>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectProposal(2)">
+            <div class="text-xs text-slate-400 font-mono">cnb005678901</div>
+            <div class="text-sm font-medium truncate">CNBID: cnb005678901</div>
+            <div class="flex items-center gap-1.5 mt-1">
+              <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Pending</span>
+              <span class="text-[10px] text-slate-400">VERA</span>
+            </div>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectProposal(3)">
+            <div class="text-xs text-slate-400 font-mono">1801-1234</div>
+            <div class="text-sm font-medium truncate">ISSN: 1801-1234</div>
+            <div class="flex items-center gap-1.5 mt-1">
+              <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Pending</span>
+              <span class="inline-flex items-center gap-0.5 text-[10px] text-purple-500"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1 2 2 0 110-4 1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>CatalogHarvester</span>
+            </div>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectProposal(4)">
+            <div class="text-xs text-slate-400 font-mono">cnb006789012</div>
+            <div class="text-sm font-medium truncate">CNBID: cnb006789012</div>
+            <div class="flex items-center gap-1.5 mt-1">
+              <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Pending</span>
+              <span class="text-[10px] text-slate-400">VERA</span>
+            </div>
+          </div>
+          <div class="nav-item cursor-pointer px-4 py-3 border-b border-slate-100" onclick="selectProposal(5)">
+            <div class="text-xs text-slate-400 font-mono">cnb007890123</div>
+            <div class="text-sm font-medium truncate">CNBID: cnb007890123</div>
+            <div class="flex items-center gap-1.5 mt-1">
+              <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">Pending</span>
+              <span class="inline-flex items-center gap-0.5 text-[10px] text-purple-500"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1 2 2 0 110-4 1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>ExternalImporter</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right detail panel -->
+      <div class="w-3/4 overflow-y-auto" id="detailPanel">
+        <div class="p-6">
+          <!-- Header -->
+          <div class="flex items-start justify-between mb-6">
+            <div>
+              <h2 class="text-xl font-semibold" id="detailIdent">CNBID: cnb002345678</h2>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700" id="detailStatusBadge">Pending</span>
+                <span class="text-sm text-slate-500" id="detailMeta">Submitted by Jana Novaková &middot; 14 May 2026</span>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="showApproveDialog()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">Approve</button>
+              <button onclick="showRejectDialog()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700">Reject</button>
+            </div>
+          </div>
+
+          <!-- Justification -->
+          <div class="border border-slate-200 rounded-lg p-4 mb-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-2">Justification</h3>
+            <p class="text-sm text-slate-600" id="detailJustification">Important for local history research. This title covers the Brno region events of the 1920s and is frequently requested by researchers at the Moravian Library reading room. No digital copy currently exists in any Czech digital library.</p>
+          </div>
+
+          <!-- Batch info -->
+          <div class="border border-slate-200 rounded-lg p-4 mb-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-2">Batch Info</h3>
+            <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+              <div><span class="text-slate-500">Batch name:</span> <span class="font-medium" id="detailBatch">batch-2026-05-14</span></div>
+              <div><span class="text-slate-500">Project:</span> <span class="font-medium" id="detailProject">NDK Monografie</span></div>
+              <div><span class="text-slate-500">Submitted by:</span> <span class="font-medium" id="detailSubmitter">Jana Novaková</span></div>
+              <div><span class="text-slate-500">Date:</span> <span class="font-medium" id="detailDate">14 May 2026</span></div>
+              <div class="col-span-2"><span class="text-slate-500">Source:</span> <span class="font-medium inline-flex items-center gap-1" id="detailSource"><svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>VERA</span></div>
+            </div>
+          </div>
+
+          <!-- Eligibility -->
+          <div class="border border-slate-200 rounded-lg p-4 mb-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-2">Eligibility</h3>
+            <div class="flex items-center gap-2">
+              <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700" id="detailEligBadge">Eligible</span>
+              <span class="text-sm text-slate-600" id="detailEligText">Catalog record found, not previously digitized, no digitization in progress.</span>
+            </div>
+          </div>
+
+          <!-- Status log -->
+          <div class="border border-slate-200 rounded-lg p-4 mb-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-3">Status Log</h3>
+            <div class="space-y-3">
+              <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-amber-400 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-sm font-medium">Pending review</div>
+                  <div class="text-xs text-slate-500">14 May 2026, 10:15 &middot; System</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-sm font-medium">Eligibility check passed</div>
+                  <div class="text-xs text-slate-500">14 May 2026, 10:14 &middot; System</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <div class="w-2 h-2 rounded-full bg-slate-300 mt-1.5 flex-shrink-0"></div>
+                <div>
+                  <div class="text-sm font-medium">Proposal submitted</div>
+                  <div class="text-xs text-slate-500">14 May 2026, 10:12 &middot; Jana Novaková</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cross-links -->
+          <div class="border border-slate-200 rounded-lg p-4">
+            <h3 class="text-sm font-semibold text-slate-700 mb-2">Pipeline</h3>
+            <div class="text-sm space-y-1">
+              <div><span class="text-slate-500">Addition:</span> <span class="text-slate-400 italic">Not yet created</span></div>
+              <div><span class="text-slate-500">Document:</span> <span class="text-slate-400 italic">Not yet created</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Approve dialog -->
+<div id="approveDialog" class="hidden fixed inset-0 wizard-overlay z-50 flex items-center justify-center">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold mb-4">Approve Proposal</h3>
+    <div class="space-y-3 mb-6">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Category <span class="text-red-500">*</span></label>
+        <select class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          <option>Select category...</option>
+          <option>Monographs</option>
+          <option>Periodicals</option>
+          <option>Maps</option>
+          <option>Music</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Priority <span class="text-red-500">*</span></label>
+        <select class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          <option value="3">3 - Normal (default)</option>
+          <option value="1">1 - Lowest</option>
+          <option value="2">2 - Low</option>
+          <option value="4">4 - High</option>
+          <option value="5">5 - Highest</option>
+        </select>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="allowNewIter" class="rounded border-slate-300">
+        <label for="allowNewIter" class="text-sm text-slate-700">Allow new iteration</label>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" id="ignoreDigCheck" class="rounded border-slate-300">
+        <label for="ignoreDigCheck" class="text-sm text-slate-700">Ignore digitization check</label>
+      </div>
+    </div>
+    <div class="flex justify-end gap-2">
+      <button onclick="closeDialogs()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+      <button onclick="closeDialogs()" class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700">Approve</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject dialog -->
+<div id="rejectDialog" class="hidden fixed inset-0 wizard-overlay z-50 flex items-center justify-center">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6">
+    <h3 class="text-lg font-semibold mb-4">Reject Proposal</h3>
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-slate-700 mb-1">Rejection message (optional)</label>
+      <textarea class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm h-24" placeholder="Reason for rejection..."></textarea>
+    </div>
+    <div class="flex justify-end gap-2">
+      <button onclick="closeDialogs()" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50">Cancel</button>
+      <button onclick="closeDialogs()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700">Reject</button>
+    </div>
+  </div>
+</div>
+
+<!-- Submission wizard -->
+<div id="wizardDialog" class="hidden fixed inset-0 wizard-overlay z-50 flex items-center justify-center">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+    <div class="p-6 border-b border-slate-200">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold">Submit Proposals</h3>
+        <button onclick="closeDialogs()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+      </div>
+      <!-- Steps -->
+      <div class="flex items-center gap-2 mt-4">
+        <div class="flex items-center gap-1.5" id="step1indicator">
+          <span class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-medium">1</span>
+          <span class="text-sm font-medium">Identifiers</span>
+        </div>
+        <div class="w-8 h-px bg-slate-300"></div>
+        <div class="flex items-center gap-1.5" id="step2indicator">
+          <span class="w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs flex items-center justify-center font-medium">2</span>
+          <span class="text-sm text-slate-500">Metadata</span>
+        </div>
+        <div class="w-8 h-px bg-slate-300"></div>
+        <div class="flex items-center gap-1.5" id="step3indicator">
+          <span class="w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs flex items-center justify-center font-medium">3</span>
+          <span class="text-sm text-slate-500">Review & Submit</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex-1 overflow-y-auto p-6" id="wizardContent">
+      <!-- Step 1 -->
+      <div id="wizardStep1">
+        <p class="text-sm text-slate-600 mb-4">Enter identifiers for the documents you want to propose for digitization.</p>
+        <div class="flex gap-2 mb-3 flex-wrap">
+          <button onclick="switchInputMode('manual', this)" class="input-mode-btn px-3 py-1.5 text-sm font-medium bg-slate-900 text-white rounded-lg">Manual Entry</button>
+          <button onclick="switchInputMode('paste', this)" class="input-mode-btn px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50">Paste List</button>
+          <button onclick="switchInputMode('file', this)" class="input-mode-btn px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50">File Upload</button>
+          <button onclick="switchInputMode('photo', this)" class="input-mode-btn px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
+            Photo Capture
+          </button>
+          <button onclick="switchInputMode('barcode', this)" class="input-mode-btn px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h2v16H3V4zm4 0h1v16H7V4zm3 0h2v16h-2V4zm4 0h1v16h-1V4zm3 0h2v16h-2V4zm3 0h1v16h-1V4z"/></svg>
+            Barcode Scan
+          </button>
+        </div>
+
+        <!-- Manual Entry input -->
+        <div id="inputManual" class="mb-4">
+          <div class="flex gap-2">
+            <select class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              <option>CNBID</option>
+              <option>ISSN</option>
+              <option>ISBN</option>
+              <option>OCLC</option>
+            </select>
+            <input type="text" placeholder="Enter identifier value..." class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm">
+            <button class="border border-slate-300 rounded-lg px-3 py-2 text-sm hover:bg-slate-50">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Paste List input -->
+        <div id="inputPaste" class="hidden mb-4">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-slate-700">Paste identifiers (one per line)</label>
+            <textarea class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono h-28" placeholder="cnb002345678&#10;cnb005678901&#10;1801-1234"></textarea>
+            <div class="flex items-center gap-2">
+              <select class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                <option>Auto-detect type</option>
+                <option>CNBID</option>
+                <option>ISSN</option>
+                <option>ISBN</option>
+              </select>
+              <button class="bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-slate-800">Parse & Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- File Upload input -->
+        <div id="inputFile" class="hidden mb-4">
+          <div class="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-slate-400 transition-colors">
+            <svg class="w-8 h-8 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+            <p class="text-sm font-medium text-slate-700 mb-1">Drop a CSV or TXT file here</p>
+            <p class="text-xs text-slate-500 mb-3">or click to browse</p>
+            <input type="file" accept=".csv,.txt,.xlsx" class="hidden" id="fileInput">
+            <button onclick="document.getElementById('fileInput').click()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm hover:bg-slate-50">Browse Files</button>
+          </div>
+        </div>
+
+        <!-- Photo Capture input -->
+        <div id="inputPhoto" class="hidden mb-4">
+          <div class="space-y-3">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-sm text-blue-700">
+              <strong>Photo recognition:</strong> Upload a photo of a book cover, title page, or catalog card. The system will attempt to extract identifiers (ISBN, ISSN, barcode) automatically.
+            </div>
+            <div class="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors cursor-pointer" id="photoDropZone" onclick="document.getElementById('photoInput').click()">
+              <svg class="w-10 h-10 text-slate-400 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
+              <p class="text-sm font-medium text-slate-700 mb-1">Upload photo or use camera</p>
+              <p class="text-xs text-slate-500 mb-3">Supports JPG, PNG, HEIC</p>
+              <input type="file" accept="image/*" capture="environment" class="hidden" id="photoInput" onchange="simulatePhotoRecognition(this)">
+              <div class="flex gap-2 justify-center">
+                <button onclick="event.stopPropagation(); document.getElementById('photoInput').click()" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm hover:bg-slate-50 flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  Browse Photos
+                </button>
+                <button onclick="event.stopPropagation(); simulatePhotoRecognition()" class="bg-blue-600 text-white rounded-lg px-3 py-1.5 text-sm font-medium hover:bg-blue-700 flex items-center gap-1.5">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>
+                  Take Photo
+                </button>
+              </div>
+            </div>
+            <!-- Recognition results (shown after photo upload) -->
+            <div id="photoResults" class="hidden">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+                  <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <span class="text-sm font-medium text-green-700">Identifiers detected from photo</span>
+              </div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">ISBN</span>
+                    <span class="text-sm font-mono">978-80-7325-456-3</span>
+                    <span class="text-xs text-slate-400">confidence: 97%</span>
+                  </div>
+                  <button class="text-xs text-blue-600 hover:underline" onclick="addPhotoResult('ISBN', '978-80-7325-456-3')">+ Add</button>
+                </div>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700">CNBID</span>
+                    <span class="text-sm font-mono">cnb003891245</span>
+                    <span class="text-xs text-slate-400">confidence: 85%</span>
+                  </div>
+                  <button class="text-xs text-blue-600 hover:underline" onclick="addPhotoResult('CNBID', 'cnb003891245')">+ Add</button>
+                </div>
+              </div>
+              <button class="text-sm text-blue-600 hover:underline mt-2" onclick="addAllPhotoResults()">Add all detected identifiers</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Barcode Scan input -->
+        <div id="inputBarcode" class="hidden mb-4">
+          <div class="space-y-3">
+            <div class="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-sm text-amber-700">
+              <strong>Barcode scanner:</strong> Point your camera at a barcode (ISBN, ISSN, or library barcode) or enter the scanned value manually.
+            </div>
+            <!-- Camera viewfinder simulation -->
+            <div class="relative bg-slate-900 rounded-lg overflow-hidden" style="aspect-ratio: 4/3; max-height: 240px;">
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-center">
+                  <svg class="w-12 h-12 text-slate-500 mx-auto mb-2" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h2v16H3V4zm4 0h1v16H7V4zm3 0h2v16h-2V4zm4 0h1v16h-1V4zm3 0h2v16h-2V4zm3 0h1v16h-1V4z"/></svg>
+                  <p class="text-slate-400 text-sm">Camera viewfinder</p>
+                  <p class="text-slate-500 text-xs">Position barcode within frame</p>
+                </div>
+              </div>
+              <!-- Scan frame overlay -->
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="w-3/4 h-1/2 border-2 border-blue-400 rounded-lg opacity-60">
+                  <div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-blue-400 rounded-tl-lg"></div>
+                  <div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-blue-400 rounded-tr-lg"></div>
+                  <div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-blue-400 rounded-bl-lg"></div>
+                  <div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-blue-400 rounded-br-lg"></div>
+                </div>
+              </div>
+              <!-- Scan line animation -->
+              <div class="absolute left-1/8 right-1/8 h-0.5 bg-red-500 opacity-75 animate-pulse" style="top: 50%;"></div>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="simulateBarcodeScan()" class="flex-1 bg-blue-600 text-white rounded-lg px-3 py-2 text-sm font-medium hover:bg-blue-700 flex items-center justify-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h2v16H3V4zm4 0h1v16H7V4zm3 0h2v16h-2V4zm4 0h1v16h-1V4zm3 0h2v16h-2V4zm3 0h1v16h-1V4z"/></svg>
+                Simulate Scan
+              </button>
+              <button class="border border-slate-300 rounded-lg px-3 py-2 text-sm hover:bg-slate-50" onclick="document.getElementById('barcodeManualInput').classList.toggle('hidden')">Enter Manually</button>
+            </div>
+            <div id="barcodeManualInput" class="hidden">
+              <div class="flex gap-2">
+                <select class="border border-slate-300 rounded-lg px-3 py-2 text-sm">
+                  <option>Auto-detect</option>
+                  <option>ISBN (EAN-13)</option>
+                  <option>ISSN</option>
+                  <option>Library barcode</option>
+                </select>
+                <input type="text" placeholder="Enter scanned barcode value..." class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono">
+                <button class="bg-slate-900 text-white rounded-lg px-3 py-2 text-sm font-medium hover:bg-slate-800">Add</button>
+              </div>
+            </div>
+            <!-- Scan results -->
+            <div id="barcodeScanResult" class="hidden">
+              <div class="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div class="flex-1">
+                  <span class="text-sm font-medium text-green-700">Barcode detected: </span>
+                  <span class="rounded-full px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700" id="scanType">ISBN</span>
+                  <span class="text-sm font-mono ml-1" id="scanValue">978-80-200-3214-5</span>
+                </div>
+                <button class="text-xs bg-green-600 text-white rounded-lg px-2.5 py-1 hover:bg-green-700" id="scanAddBtn">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border border-slate-200 rounded-lg overflow-hidden">
+          <table class="w-full text-sm">
+            <thead><tr class="bg-slate-50 border-b border-slate-200"><th class="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Type</th><th class="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Value</th><th class="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Source</th><th class="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Status</th></tr></thead>
+            <tbody id="identifiersTable">
+              <tr class="border-b border-slate-100"><td class="px-3 py-2">CNBID</td><td class="px-3 py-2 font-mono">cnb002345678</td><td class="px-3 py-2"><span class="text-xs text-slate-400">manual</span></td><td class="px-3 py-2"><span class="rounded-full px-2 py-0.5 text-xs bg-green-100 text-green-700">Valid</span></td></tr>
+              <tr class="border-b border-slate-100"><td class="px-3 py-2">CNBID</td><td class="px-3 py-2 font-mono">cnb005678901</td><td class="px-3 py-2"><span class="text-xs text-slate-400">manual</span></td><td class="px-3 py-2"><span class="rounded-full px-2 py-0.5 text-xs bg-green-100 text-green-700">Valid</span></td></tr>
+              <tr class="border-b border-slate-100"><td class="px-3 py-2">ISSN</td><td class="px-3 py-2 font-mono">1801-1234</td><td class="px-3 py-2"><span class="text-xs text-slate-400">manual</span></td><td class="px-3 py-2"><span class="rounded-full px-2 py-0.5 text-xs bg-green-100 text-green-700">Valid</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm text-slate-500 mt-2" id="identifierCount">3 identifiers ready</p>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="wizardStep2" class="hidden">
+        <p class="text-sm text-slate-600 mb-4">Provide metadata for this proposal batch.</p>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Batch Name</label>
+            <input id="wizardBatchName" type="text" value="batch-2026-05-28" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Project</label>
+            <select id="wizardProject" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              <option>NDK Monografie</option>
+              <option>NDK Periodika</option>
+              <option>VISK 7</option>
+              <option>Kramerius+</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Justification <span class="text-red-500">*</span></label>
+            <textarea id="wizardJustification" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm h-24" placeholder="Why should these documents be digitized?" required></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1">Priority</label>
+            <select id="wizardPriority" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm">
+              <option value="1">1 - Lowest</option>
+              <option value="2">2 - Low</option>
+              <option value="3" selected>3 - Normal</option>
+              <option value="4">4 - High</option>
+              <option value="5">5 - Highest</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div id="wizardStep3" class="hidden">
+        <p class="text-sm text-slate-600 mb-4">Review your proposal before submitting.</p>
+
+        <!-- Summary -->
+        <div class="grid grid-cols-2 gap-x-6 gap-y-2 text-sm border border-slate-200 rounded-lg p-4 mb-4">
+          <div><span class="text-slate-500">Identifiers:</span> <span class="font-medium" id="reviewCount">3</span></div>
+          <div><span class="text-slate-500">Batch Name:</span> <span class="font-medium" id="reviewBatch">batch-2026-05-28</span></div>
+          <div><span class="text-slate-500">Project:</span> <span class="font-medium" id="reviewProject">NDK Monografie</span></div>
+          <div><span class="text-slate-500">Priority:</span> <span class="font-medium" id="reviewPriority">3 - Normal</span></div>
+          <div class="col-span-2"><span class="text-slate-500">Source:</span> <span class="font-medium inline-flex items-center gap-1"><svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>VERA</span></div>
+        </div>
+
+        <!-- Identifiers table -->
+        <div class="border border-slate-200 rounded-lg overflow-hidden mb-4">
+          <table class="w-full text-sm">
+            <thead><tr class="bg-slate-50 border-b border-slate-200"><th class="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Type</th><th class="text-left px-3 py-2 text-xs font-semibold text-slate-500 uppercase">Value</th></tr></thead>
+            <tbody>
+              <tr class="border-b border-slate-100"><td class="px-3 py-2">CNBID</td><td class="px-3 py-2 font-mono">cnb002345678</td></tr>
+              <tr class="border-b border-slate-100"><td class="px-3 py-2">CNBID</td><td class="px-3 py-2 font-mono">cnb005678901</td></tr>
+              <tr class="border-b border-slate-100"><td class="px-3 py-2">ISSN</td><td class="px-3 py-2 font-mono">1801-1234</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Justification -->
+        <div>
+          <h4 class="text-sm font-semibold text-slate-700 mb-1">Justification</h4>
+          <div class="bg-slate-100 rounded-lg p-3 text-sm text-slate-600" id="reviewJustification"></div>
+        </div>
+      </div>
+    </div>
+    <div class="p-6 border-t border-slate-200 flex justify-between">
+      <button id="wizardBackBtn" onclick="goToWizardStep(wizardStep - 1)" class="border border-slate-300 px-4 py-2 rounded-lg text-sm hover:bg-slate-50 opacity-50" disabled>Back</button>
+      <button id="wizardNextBtn" onclick="goToWizardStep(2)" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800">Next</button>
+    </div>
+  </div>
+</div>
+  <!-- Watchlist Panel -->
+  <div id="watchlistPanel" class="hidden fixed left-14 bottom-16 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl z-50 flex flex-col max-h-[28rem]">
+    <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+      <span class="text-sm font-semibold">Watchlists</span>
+      <button onclick="toggleWatchlistPanel()" class="text-slate-400 hover:text-slate-600 text-lg">&times;</button>
+    </div>
+    <div class="py-1 overflow-y-auto flex-1">
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Documents</div>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>High priority pending</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>My rejected documents</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="documents.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Periodicals queue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Proposals</div>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Pending from NDK project</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">3</span>
+      </a>
+      <a href="proposals.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Declined proposals</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Additions</div>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed additions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="additions.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>NDK batch completions</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Projects</div>
+      <a href="projects.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Overdue milestones</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Digitization Lists</div>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Planned lists - MZK</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Revision overdue</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="digitization-lists.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Finished this month</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+      <div class="px-4 py-1.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-1">Tasks</div>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Failed tasks today</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">2</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm">
+        <span>Long-running tasks</span>
+        <span class="bg-red-100 text-red-700 text-xs rounded-full px-1.5 py-0.5 font-medium">1</span>
+      </a>
+      <a href="tasks.html" class="flex items-center justify-between px-4 py-2 hover:bg-slate-50 text-sm text-slate-400">
+        <span>Scheduled overdue</span>
+        <span class="bg-slate-100 text-slate-500 text-xs rounded-full px-1.5 py-0.5 font-medium">0</span>
+      </a>
+    </div>
+    <div class="border-t border-slate-100 px-4 py-2.5 flex-shrink-0">
+      <a href="#" class="text-xs text-blue-600 hover:underline">Manage Watchlists</a>
+    </div>
+  </div>
+
+<script>
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('expanded');
+}
+    function toggleWatchlistPanel() {
+      document.getElementById('watchlistPanel').classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function(e) {
+      const panel = document.getElementById('watchlistPanel');
+      if (!panel.classList.contains('hidden') && !e.target.closest('#watchlistPanel') && !e.target.closest('[title="Watchlists"]')) {
+        panel.classList.add('hidden');
+      }
+    });
+
+const proposals = [
+  { ident: 'CNBID: cnb002345678', identShort: 'cnb002345678', status: 'Pending', statusColor: 'amber', eligibility: 'Eligible', eligColor: 'green', eligText: 'Catalog record found, not previously digitized, no digitization in progress.', project: 'NDK Monografie', batch: 'batch-2026-05-14', submitter: 'Jana Novaková', date: '14 May 2026', source: 'VERA', sourceType: 'app', justification: 'Important for local history research. This title covers the Brno region events of the 1920s and is frequently requested by researchers at the Moravian Library reading room. No digital copy currently exists in any Czech digital library.' },
+  { ident: 'CNBID: cnb001987654', identShort: 'cnb001987654', status: 'Pending', statusColor: 'amber', eligibility: 'Eligible', eligColor: 'green', eligText: 'Catalog record found, eligible for digitization.', project: 'NDK Periodika', batch: 'batch-2026-05-14', submitter: 'Jana Novaková', date: '14 May 2026', source: 'CatalogHarvester', sourceType: 'plugin', justification: 'Part of systematic coverage of pre-war Moravian periodicals. Regional significance for cultural heritage preservation.' },
+  { ident: 'CNBID: cnb005678901', identShort: 'cnb005678901', status: 'Pending', statusColor: 'amber', eligibility: 'Eligible', eligColor: 'green', eligText: 'Catalog record found, not previously digitized.', project: 'NDK Monografie', batch: 'batch-2026-05-12', submitter: 'Petr Dvorak', date: '12 May 2026', source: 'VERA', sourceType: 'app', justification: 'Rare first edition in fragile condition. Physical access is restricted; digital copy would enable broader research use.' },
+  { ident: 'ISSN: 1801-1234', identShort: '1801-1234', status: 'Pending', statusColor: 'amber', eligibility: 'Eligible', eligColor: 'green', eligText: 'ISSN resolved, periodical not yet digitized.', project: 'VISK 7', batch: 'periodika-kveten', submitter: 'Marie Cerná', date: '11 May 2026', source: 'CatalogHarvester', sourceType: 'plugin', justification: 'Regional newspaper with unique coverage of south Moravian events. Complementary to existing Lidove noviny digitization.' },
+  { ident: 'CNBID: cnb006789012', identShort: 'cnb006789012', status: 'Pending', statusColor: 'amber', eligibility: 'Pending', eligColor: 'slate', eligText: 'Eligibility check in progress...', project: 'NDK Monografie', batch: 'batch-2026-05-14', submitter: 'Tomas Kral', date: '14 May 2026', source: 'VERA', sourceType: 'app', justification: 'Czech literary classic, requested by multiple university libraries for inclusion in digital study collections.' },
+  { ident: 'CNBID: cnb007890123', identShort: 'cnb007890123', status: 'Pending', statusColor: 'amber', eligibility: 'Eligible', eligColor: 'green', eligText: 'Catalog record found, eligible for digitization.', project: 'NDK Periodika', batch: 'batch-2026-05-13', submitter: 'Lucie Horakova', date: '13 May 2026', source: 'ExternalImporter', sourceType: 'plugin', justification: 'Missing volumes in current Kramerius holdings. This would complete the run for 1920-1930 decade.' }
+];
+
+function switchView(view) {
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-view="${view}"]`).classList.add('active');
+  document.getElementById('view-requestor').classList.toggle('hidden', view !== 'requestor');
+  document.getElementById('view-reviewer').classList.toggle('hidden', view !== 'reviewer');
+}
+
+function selectProposal(idx) {
+  const p = proposals[idx];
+  document.getElementById('detailIdent').textContent = p.ident;
+  const colorMap = { amber: 'bg-amber-100 text-amber-700', green: 'bg-green-100 text-green-700', red: 'bg-red-100 text-red-700', slate: 'bg-slate-100 text-slate-600' };
+  document.getElementById('detailStatusBadge').className = `rounded-full px-2 py-0.5 text-xs font-medium ${colorMap[p.statusColor]}`;
+  document.getElementById('detailStatusBadge').textContent = p.status;
+  document.getElementById('detailMeta').textContent = `Submitted by ${p.submitter} \u00b7 ${p.date}`;
+  document.getElementById('detailJustification').textContent = p.justification;
+  document.getElementById('detailBatch').textContent = p.batch;
+  document.getElementById('detailProject').textContent = p.project;
+  document.getElementById('detailSubmitter').textContent = p.submitter;
+  document.getElementById('detailDate').textContent = p.date;
+  document.getElementById('detailEligBadge').className = `rounded-full px-2 py-0.5 text-xs font-medium ${colorMap[p.eligColor]}`;
+  document.getElementById('detailEligBadge').textContent = p.eligibility;
+  document.getElementById('detailEligText').textContent = p.eligText;
+
+  const sourceEl = document.getElementById('detailSource');
+  if (p.sourceType === 'plugin') {
+    sourceEl.innerHTML = '<svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1 2 2 0 110-4 1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg><span class="text-purple-600">' + p.source + '</span><a href="plugins.html" class="text-xs text-purple-400 hover:underline ml-1">(plugin)</a>';
+  } else {
+    sourceEl.innerHTML = '<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>VERA';
+  }
+
+  document.querySelectorAll('.nav-item').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+}
+
+
+function showApproveDialog() { document.getElementById('approveDialog').classList.remove('hidden'); }
+function showRejectDialog() { document.getElementById('rejectDialog').classList.remove('hidden'); }
+
+let wizardStep = 1;
+
+function openWizard() {
+  document.getElementById('wizardDialog').classList.remove('hidden');
+  goToWizardStep(1);
+}
+
+function goToWizardStep(step) {
+  wizardStep = step;
+  // Hide all steps
+  document.getElementById('wizardStep1').classList.add('hidden');
+  document.getElementById('wizardStep2').classList.add('hidden');
+  document.getElementById('wizardStep3').classList.add('hidden');
+  // Show current
+  document.getElementById('wizardStep' + step).classList.remove('hidden');
+
+  // Update step indicators
+  for (let i = 1; i <= 3; i++) {
+    const ind = document.getElementById('step' + i + 'indicator');
+    const circle = ind.querySelector('span:first-child');
+    const label = ind.querySelector('span:last-child');
+    if (i < step) {
+      circle.className = 'w-6 h-6 rounded-full bg-green-600 text-white text-xs flex items-center justify-center font-medium';
+      circle.innerHTML = '&#10003;';
+      label.className = 'text-sm font-medium text-green-600';
+    } else if (i === step) {
+      circle.className = 'w-6 h-6 rounded-full bg-slate-900 text-white text-xs flex items-center justify-center font-medium';
+      circle.textContent = i;
+      label.className = 'text-sm font-medium';
+    } else {
+      circle.className = 'w-6 h-6 rounded-full bg-slate-200 text-slate-500 text-xs flex items-center justify-center font-medium';
+      circle.textContent = i;
+      label.className = 'text-sm text-slate-500';
+    }
+  }
+
+  // Populate review step when entering step 3
+  if (step === 3) {
+    document.getElementById('reviewBatch').textContent = document.getElementById('wizardBatchName').value || 'batch-2026-05-28';
+    document.getElementById('reviewProject').textContent = document.getElementById('wizardProject').value;
+    const prioritySelect = document.getElementById('wizardPriority');
+    document.getElementById('reviewPriority').textContent = prioritySelect.options[prioritySelect.selectedIndex].text;
+    document.getElementById('reviewJustification').textContent = document.getElementById('wizardJustification').value || '(none)';
+  }
+
+  // Update buttons
+  const backBtn = document.getElementById('wizardBackBtn');
+  const nextBtn = document.getElementById('wizardNextBtn');
+  backBtn.disabled = step === 1;
+  backBtn.classList.toggle('opacity-50', step === 1);
+
+  if (step === 3) {
+    nextBtn.textContent = 'Submit Proposals';
+    nextBtn.className = 'bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700';
+    nextBtn.onclick = function() { closeDialogs(); };
+  } else {
+    nextBtn.textContent = 'Next';
+    nextBtn.className = 'bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800';
+    nextBtn.onclick = function() { goToWizardStep(wizardStep + 1); };
+  }
+}
+
+function closeDialogs() {
+  document.getElementById('approveDialog').classList.add('hidden');
+  document.getElementById('rejectDialog').classList.add('hidden');
+  document.getElementById('wizardDialog').classList.add('hidden');
+}
+
+// Input mode switching
+function switchInputMode(mode, btn) {
+  document.querySelectorAll('.input-mode-btn').forEach(b => {
+    b.className = 'input-mode-btn px-3 py-1.5 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50' + (b.querySelector('svg') ? ' flex items-center gap-1.5' : '');
+  });
+  btn.className = 'input-mode-btn px-3 py-1.5 text-sm font-medium bg-slate-900 text-white rounded-lg' + (btn.querySelector('svg') ? ' flex items-center gap-1.5' : '');
+  ['inputManual','inputPaste','inputFile','inputPhoto','inputBarcode'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  const map = { manual:'inputManual', paste:'inputPaste', file:'inputFile', photo:'inputPhoto', barcode:'inputBarcode' };
+  document.getElementById(map[mode]).classList.remove('hidden');
+}
+
+// Photo recognition simulation
+function simulatePhotoRecognition(input) {
+  const dropZone = document.getElementById('photoDropZone');
+  // Show processing state
+  dropZone.innerHTML = '<div class="p-4"><div class="flex items-center justify-center gap-2 mb-2"><svg class="w-5 h-5 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg><span class="text-sm text-blue-600 font-medium">Analyzing image...</span></div><div class="w-48 h-1.5 bg-slate-200 rounded-full mx-auto"><div class="h-1.5 bg-blue-500 rounded-full animate-pulse" style="width:60%"></div></div></div>';
+  setTimeout(() => {
+    dropZone.innerHTML = '<div class="p-4 flex items-center gap-3"><div class="w-16 h-20 bg-slate-200 rounded flex items-center justify-center flex-shrink-0"><svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M6.75 7.5h.008v.008H6.75V7.5z"/></svg></div><div><p class="text-sm font-medium text-slate-700">book_cover_photo.jpg</p><p class="text-xs text-slate-500">2.4 MB &middot; 3024 &times; 4032</p><button onclick="event.stopPropagation(); document.getElementById(\'photoInput\').click()" class="text-xs text-blue-600 hover:underline mt-1">Replace photo</button></div></div>';
+    document.getElementById('photoResults').classList.remove('hidden');
+  }, 1500);
+}
+
+function addPhotoResult(type, value) {
+  const table = document.getElementById('identifiersTable');
+  const row = table.insertRow();
+  row.className = 'border-b border-slate-100 bg-blue-50';
+  row.innerHTML = '<td class="px-3 py-2">' + type + '</td><td class="px-3 py-2 font-mono">' + value + '</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1 text-xs text-blue-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>photo</span></td><td class="px-3 py-2"><span class="rounded-full px-2 py-0.5 text-xs bg-amber-100 text-amber-700">Validating...</span></td>';
+  updateIdentifierCount();
+  // Simulate validation
+  setTimeout(() => {
+    row.querySelector('td:last-child').innerHTML = '<span class="rounded-full px-2 py-0.5 text-xs bg-green-100 text-green-700">Valid</span>';
+    row.classList.remove('bg-blue-50');
+  }, 1200);
+}
+
+function addAllPhotoResults() {
+  addPhotoResult('ISBN', '978-80-7325-456-3');
+  setTimeout(() => addPhotoResult('CNBID', 'cnb003891245'), 200);
+}
+
+// Barcode scan simulation
+function simulateBarcodeScan() {
+  const result = document.getElementById('barcodeScanResult');
+  result.classList.add('hidden');
+  // Flash the scan line
+  setTimeout(() => {
+    const types = ['ISBN', 'ISSN', 'CNBID'];
+    const values = { ISBN: '978-80-200-3214-5', ISSN: '0862-7487', CNBID: 'cnb004523178' };
+    const type = types[Math.floor(Math.random() * types.length)];
+    document.getElementById('scanType').textContent = type;
+    document.getElementById('scanValue').textContent = values[type];
+    document.getElementById('scanAddBtn').onclick = function() {
+      addBarcodeResult(type, values[type]);
+      result.classList.add('hidden');
+    };
+    result.classList.remove('hidden');
+  }, 800);
+}
+
+function addBarcodeResult(type, value) {
+  const table = document.getElementById('identifiersTable');
+  const row = table.insertRow();
+  row.className = 'border-b border-slate-100 bg-amber-50';
+  row.innerHTML = '<td class="px-3 py-2">' + type + '</td><td class="px-3 py-2 font-mono">' + value + '</td><td class="px-3 py-2"><span class="inline-flex items-center gap-1 text-xs text-amber-600"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h2v16H3V4zm4 0h1v16H7V4zm3 0h2v16h-2V4zm4 0h1v16h-1V4zm3 0h2v16h-2V4zm3 0h1v16h-1V4z"/></svg>barcode</span></td><td class="px-3 py-2"><span class="rounded-full px-2 py-0.5 text-xs bg-amber-100 text-amber-700">Validating...</span></td>';
+  updateIdentifierCount();
+  setTimeout(() => {
+    row.querySelector('td:last-child').innerHTML = '<span class="rounded-full px-2 py-0.5 text-xs bg-green-100 text-green-700">Valid</span>';
+    row.classList.remove('bg-amber-50');
+  }, 1000);
+}
+
+function updateIdentifierCount() {
+  const count = document.getElementById('identifiersTable').rows.length;
+  document.getElementById('identifierCount').textContent = count + ' identifiers ready';
+}
+</script>
+</body>
+</html>

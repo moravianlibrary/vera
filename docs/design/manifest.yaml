@@ -1,0 +1,45 @@
+project:
+  name: VERA
+  logo: V
+  tagline: Digitization Planning System
+  version: 0.1.0
+
+viewports:
+  - { name: Mobile, width: 393, icon: phone }
+  - { name: Tablet, width: 1024, icon: tablet }
+  - { name: Laptop, width: 1440, icon: laptop }
+  - { name: Desktop, width: 1920, icon: desktop }
+  - { name: Full, width: 0, icon: expand }
+
+features:
+  - id: proposals
+    name: Proposals
+    icon: Pr
+    description: Submission and review of digitization proposals
+    tabs:
+      - { type: readme, file: features/proposals/readme.md }
+      - { type: diagrams, file: features/proposals/diagrams.md }
+      - { type: api, file: features/proposals/api.yaml }
+      - { type: demo, file: features/proposals/demo.yaml }
+
+  - id: documents
+    name: Documents
+    icon: Do
+    description: Document lifecycle and validation
+    tabs:
+      - { type: readme, file: features/documents/readme.md }
+      - { type: diagrams, file: features/documents/diagrams.md }
+      - { type: demo, file: features/documents/demo.yaml }
+
+shared:
+  entities:
+    - id: identifier-types
+      name: Identifier Types
+      file: shared/entities/identifier-types.md
+    - id: document-lifecycle
+      name: Document Lifecycle
+      file: shared/entities/document-lifecycle.md
+  diagrams:
+    - id: pipeline-overview
+      name: Pipeline Overview
+      file: shared/diagrams/pipeline-overview.md
