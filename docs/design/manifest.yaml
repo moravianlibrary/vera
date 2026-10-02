@@ -2,44 +2,71 @@ project:
   name: VERA
   logo: V
   tagline: Digitization Planning System
-  version: 0.1.0
+  version: 0.2.0
 
+# Size tiers. Authoritative copy is view-rules.md §"Size tiers" — these must
+# match it, and the demo directory is the artifact each one is checked against.
 viewports:
-  - { name: Mobile, width: 393, icon: phone }
-  - { name: Tablet, width: 1024, icon: tablet }
-  - { name: Laptop, width: 1440, icon: laptop }
-  - { name: Desktop, width: 1920, icon: desktop }
-  - { name: Full, width: 0, icon: expand }
+  - { name: Phone,    width: 393,  icon: phone,   tier: phone,    demos: demos/phone }
+  - { name: Small,    width: 1024, icon: tablet,  tier: small,    demos: demos/small }
+  - { name: Notebook, width: 1440, icon: laptop,  tier: notebook, demos: demos/notebook, default: true }
+  - { name: Large,    width: 1920, icon: desktop, tier: large,    demos: demos/large }
 
-features:
-  - id: proposals
-    name: Proposals
-    icon: Pr
-    description: Submission and review of digitization proposals
-    tabs:
-      - { type: readme, file: features/proposals/readme.md }
-      - { type: diagrams, file: features/proposals/diagrams.md }
-      - { type: api, file: features/proposals/api.yaml }
-      - { type: demo, file: features/proposals/demo.yaml }
-
-  - id: documents
-    name: Documents
-    icon: Do
-    description: Document lifecycle and validation
-    tabs:
-      - { type: readme, file: features/documents/readme.md }
-      - { type: diagrams, file: features/documents/diagrams.md }
-      - { type: demo, file: features/documents/demo.yaml }
-
+# What is decided. Nothing else in docs/ is binding — see docs/README.md.
 shared:
+  rules:
+    - id: view-rules
+      name: View Rules
+      file: shared/view-rules.md
+    - id: view-map
+      name: View Map
+      file: shared/view-map.md
+    - id: document-use-cases
+      name: Document Use Cases
+      file: shared/document-use-cases.md
+    - id: navigation
+      name: Navigation
+      file: shared/navigation.md
+    - id: view-catalog
+      name: View Catalog
+      file: shared/view-catalog.md
+    - id: page-composition
+      name: Page Composition
+      file: shared/page-composition.md
   entities:
+    - id: concepts
+      name: Concepts
+      file: shared/entities/concepts.md
+    - id: status-model
+      name: Status Model
+      file: shared/entities/status-model.md
+    - id: relationships
+      name: Entity Relationships
+      file: shared/entities/relationships.md
+    - id: permissions
+      name: Permissions
+      file: shared/entities/permissions.md
+    - id: registry-status
+      name: Registry Status
+      file: shared/entities/registry-status.md
+    - id: status-log
+      name: Status Log
+      file: shared/entities/status-log.md
+    - id: intentions
+      name: Intentions and Distributions
+      file: shared/entities/intentions.md
+    - id: document-identity
+      name: Document Identity
+      file: shared/entities/document-identity.md
+    - id: document-properties
+      name: Document Properties
+      file: shared/entities/document-properties.md
     - id: identifier-types
       name: Identifier Types
       file: shared/entities/identifier-types.md
-    - id: document-lifecycle
-      name: Document Lifecycle
-      file: shared/entities/document-lifecycle.md
-  diagrams:
-    - id: pipeline-overview
-      name: Pipeline Overview
-      file: shared/diagrams/pipeline-overview.md
+    - id: priority-levels
+      name: Priority Levels
+      file: shared/entities/priority-levels.md
+
+# Feature specs may be added per view once the views are drawn.
+features: []

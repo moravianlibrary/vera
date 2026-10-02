@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VERA — workflow model</title>
+<link rel="stylesheet" href="shared/vera.css">
+<style>
+  body { background: #fafafa; overflow: auto; }
+  .wrap { max-width: 82rem; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  h1 { font-size: 1.5rem; margin: 0 0 .25rem; }
+  .lede { color: var(--muted-foreground); font-size: .875rem; max-width: 52rem; line-height: 1.6; margin: 0 0 1.25rem; }
+  .bar { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.25rem; font-size: .8125rem; }
+  .bar select { font: inherit; padding: .25rem .5rem; border: 1px solid var(--border); border-radius: .375rem; background: #fff; }
+  .key { display: flex; gap: 1rem; color: var(--muted-foreground); }
+  .key i { display: inline-block; width: 1.5rem; height: 0; vertical-align: middle; margin-right: .375rem; border-top: 2px solid; }
+  .k-person { border-color: #2b7fff !important; } .k-system { border-color: #a3a3a3 !important; border-top-style: dashed !important; }
+  .k-plugin { border-color: #9333ea !important; border-top-style: dotted !important; }
+  .checks { background: #fff; border: 1px solid var(--border); border-radius: .625rem; padding: .75rem 1rem; margin-bottom: 1.5rem;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: .125rem 1.5rem; font-size: .8125rem; }
+  .ck { display: flex; gap: .5rem; padding: .25rem 0; }
+  .ck b { width: 1rem; text-align: center; }
+  .ck.ok b { color: #16a34a; } .ck.warn b { color: #d97706; } .ck.fail b { color: #dc2626; }
+  .ck span.n { margin-left: auto; color: var(--muted-foreground); }
+  .finds { margin: 0 0 1.5rem; font-size: .8125rem; }
+  .finds div { padding: .3125rem .625rem; border-left: 3px solid; margin: .25rem 0; background: #fff; }
+  .finds .fail { border-color: #dc2626; } .finds .warn { border-color: #d97706; }
+  .finds code { font-size: .75rem; }
+  .m { background: #fff; border: 1px solid var(--border); border-radius: .625rem; margin-bottom: 1.25rem; overflow: hidden; }
+  .m-head { display: flex; gap: .75rem; align-items: baseline; padding: .75rem 1rem; border-bottom: 1px solid var(--border); }
+  .m-head h2 { font-size: 1rem; margin: 0; }
+  .m-head .of { font-family: ui-monospace, monospace; font-size: .75rem; color: var(--muted-foreground); }
+  .m-head .ref { margin-left: auto; font-size: .75rem; color: var(--muted-foreground); }
+  .m-graph { padding: .75rem 1rem; overflow-x: auto; }
+  .m-graph svg { max-width: none !important; }
+  details.tx summary { cursor: pointer; padding: .5rem 1rem; font-size: .8125rem; color: var(--muted-foreground); border-top: 1px solid var(--border); }
+  table.t { width: 100%; border-collapse: collapse; font-size: .75rem; }
+  table.t th { text-align: left; font-weight: 500; color: var(--muted-foreground); padding: .375rem .75rem; background: #fafafa; }
+  table.t td { padding: .375rem .75rem; border-top: 1px solid var(--border); vertical-align: top; }
+  table.t tr.off td { opacity: .35; }
+  .mono { font-family: ui-monospace, monospace; }
+  .ok { color: #16a34a; } .bad { color: #d97706; } .err { color: #dc2626; }
+  .badge-by { font-size: .6875rem; padding: 0 .375rem; border-radius: .25rem; background: #f4f4f5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Workflow model</h1>
+  <p class="lede">Every lifecycle in VERA as a state machine, drawn from one model
+    (<code>docs/design/shared/model/workflows.js</code>) and checked by
+    <code>node docs/design/shared/model/check.js</code> against itself, the shipped roles, the sidebar and the
+    demo pages. A <b>person</b>'s step names the permission it needs and the page it is offered on; the checker
+    proves some role holds that permission and can open that page, and that the page's script has the action.
+    <span id="when"></span></p>
+
+  <div class="bar">
+    <label>Show what this role can do <select id="role"><option value="">every role</option></select></label>
+    <span class="key"><span><i class="k-person"></i>a person</span><span><i class="k-system"></i>VERA, by a rule or the date</span><span><i class="k-plugin"></i>a plugin</span></span>
+  </div>
+
+  <div class="checks" id="checks"></div>
+  <div class="finds" id="finds"></div>
+  <div id="machines"></div>
+</div>
+
+<script src="shared/vera-model.js"></script>
+<script src="shared/vera-data.js"></script>
+<script src="shared/vera-ui.js"></script>
+<script src="../design/shared/model/workflows.js"></script>
+<script src="../design/shared/model/report.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+const D = VERA_DATA, U = VERA_UI, W = VERA_WORKFLOWS, R = window.VERA_REPORT;
+const NAV = Object.fromEntries(U.NAV.map(n => [n.id, n]));
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const covers = (held, want) => held === want || held === 'any' || (want == null && held == null);
+const holdersOf = (t) => { if (t.by !== 'person' || t.noPerm) return null;
+  const [k, s] = t.perm.split('@'); const accepts = D.permission(k) && D.permission(k).scopes;
+  return D.roles.filter(r => r.grants.some(([g, gs]) => g === k && covers(gs, s || (accepts ? accepts[0] : null)))).map(r => r.id); };
+const canDo = (t, role) => !role || t.by !== 'person' || t.noPerm || (holdersOf(t) || []).includes(role);
+
+/* ---------------------------------------------------------------- checks */
+if (!R) document.getElementById('checks').innerHTML = '<p>Run <code>node docs/design/shared/model/check.js</code> to write the report.</p>';
+else {
+  document.getElementById('when').textContent = `Last checked ${new Date(R.at).toLocaleString('en-GB')} — ${W.machines.length} machines, ${R.counts.states} states, ${R.counts.transitions} transitions, ${R.counts.actions} actions.`;
+  document.getElementById('checks').innerHTML = R.checks.map(c => {
+    const f = R.findings.filter(x => x.check === c), lvl = !f.length ? 'ok' : f.some(x => x.level === 'fail') ? 'fail' : 'warn';
+    return `<div class="ck ${lvl}"><b>${lvl === 'ok' ? '✓' : lvl === 'fail' ? '✗' : '!'}</b>${c}<span class="n">${f.length || ''}</span></div>`; }).join('');
+  document.getElementById('finds').innerHTML = R.findings.map(x =>
+    `<div class="${x.level}"><b>${x.check}</b> · <span class="mono">${esc(x.machine)} · ${esc(x.item)}</span> — ${esc(x.text)}</div>`).join('');
+}
+/* the worst finding on a state or step: 'fail', 'warn' or null */
+const bad = (m, id) => { const f = R ? R.findings.filter(x => x.machine === m && (x.item === id || x.item.startsWith(id + ' '))) : [];
+  return f.some(x => x.level === 'fail') ? 'fail' : f.length ? 'warn' : null; };
+
+/* ---------------------------------------------------------------- graphs */
+const COLOR = { person: '#2b7fff', system: '#a3a3a3', plugin: '#9333ea' };
+const kind = (t) => t.by.startsWith('plugin:') ? 'plugin' : t.by;
+function graph(m, role) {
+  const id = (s) => `${m.id}_${s}`;
+  const lines = ['flowchart LR'], styles = [];
+  lines.push(`  ${m.id}__start(( ))`);
+  Object.entries(m.states).forEach(([k, s]) => {
+    const shape = s.terminal ? `([${esc(s.label)}])` : `["${esc(s.label)}"]`;
+    lines.push(`  ${id(k)}${shape}`);
+    const st = bad(m.id, k) === 'fail' ? 'fill:#fef2f2,stroke:#dc2626,stroke-width:2px'
+      : bad(m.id, k) ? 'fill:#fffbeb,stroke:#d97706,stroke-width:2px'
+      : s.terminal ? 'fill:#f4f4f5,stroke:#737373' : s.next ? 'fill:#eff6ff,stroke:#2b7fff' : 'fill:#fff,stroke:#a3a3a3';
+    lines.push(`  style ${id(k)} ${st}`);
+  });
+  lines.push(`  style ${m.id}__start fill:#171717,stroke:#171717`);
+  Object.entries(m.states).filter(([, s]) => s.initial).forEach(([k]) => {
+    if (!m.transitions.some(t => !t.from && t.to === k)) { lines.push(`  ${m.id}__start --> ${id(k)}`); styles.push('stroke:#171717'); }
+  });
+  m.transitions.forEach(t => {
+    const lbl = esc(t.label + (t.perm ? ` · ${t.perm}` : t.by.startsWith('plugin:') ? ` · ${t.by.slice(7)}` : ''));
+    const k = kind(t), on = canDo(t, role), broken = bad(m.id, t.id);
+    lines.push(`  ${t.from ? id(t.from) : m.id + '__start'} ${k === 'person' ? '-->' : '-.->'}|"${lbl}"| ${id(t.to)}`);
+    styles.push(`stroke:${broken === 'fail' ? '#dc2626' : broken ? '#d97706' : COLOR[k]},stroke-width:${on ? (k === 'person' ? 2 : 1.5) : 1}px${on ? '' : ',opacity:0.2'}${k === 'system' ? ',stroke-dasharray:5 4' : ''}`);
+  });
+  styles.forEach((s, i) => lines.push(`  linkStyle ${i} ${s}`));
+  return lines.join('\n');
+}
+
+function table(m, role) {
+  const rows = [...m.transitions.map(t => [t, false]), ...(m.actions || []).map(a => [a, true])];
+  return `<table class="t"><thead><tr><th>Step</th><th>From → to</th><th>By</th><th>Permission</th><th>Held by</th><th>Page</th><th>In the demo</th><th>Logs · hook</th></tr></thead><tbody>${
+    rows.map(([t, act]) => { const h = holdersOf(t), broken = bad(m.id, t.id);
+      const demo = t.by !== 'person' ? '—' : R && R.findings.some(x => x.machine === m.id && x.check === 'built in the demo' && x.item.startsWith(t.id))
+        ? `<span class="bad">! no <code>${esc(t.marker)}</code></span>` : '<span class="ok">✓</span>';
+      return `<tr class="${canDo(t, role) ? '' : 'off'}"><td><b>${esc(t.label)}</b>${broken === 'fail' ? ' <span class="err">✗</span>' : broken ? ' <span class="bad">!</span>' : ''}</td>
+        <td class="mono">${act ? '<i>action</i>' : `${t.from || '•'} → ${t.to}`}</td>
+        <td><span class="badge-by">${esc(t.by.replace('plugin:', 'plugin · '))}</span></td>
+        <td class="mono">${t.perm ? esc(t.perm) : t.noPerm ? '<i>none needed</i>' : ''}</td>
+        <td>${h ? (h.length ? h.join(', ') : '<span class="err">nobody</span>') : ''}</td>
+        <td>${t.page ? (NAV[t.page] ? NAV[t.page].label : `<span class="err">${t.page}</span>`) : ''}</td>
+        <td>${demo}</td>
+        <td>${esc(t.logs || '')}${t.hook ? ` <span class="mono">· ${t.hook}</span>` : ''}</td></tr>`; }).join('')}</tbody></table>`;
+}
+
+async function draw() {
+  const role = document.getElementById('role').value;
+  document.getElementById('machines').innerHTML = W.machines.map(m => `<section class="m" id="m-${m.id}">
+      <div class="m-head"><h2>${esc(m.name)}</h2><span class="of">${esc(m.of)}</span><span class="ref">${esc(m.ref)}</span></div>
+      <div class="m-graph"><pre class="mermaid">${graph(m, role)}</pre></div>
+      <details class="tx" ${role ? 'open' : ''}><summary>${m.transitions.length} transitions${(m.actions || []).length ? `, ${m.actions.length} actions` : ''} — who, where, and whether the demo has it</summary>${table(m, role)}</details>
+    </section>`).join('');
+  await mermaid.run({ querySelector: '.mermaid' });
+}
+const sel = document.getElementById('role');
+sel.innerHTML += D.roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+sel.onchange = draw;
+mermaid.initialize({ startOnLoad: false, theme: 'neutral', flowchart: { curve: 'basis', htmlLabels: true }, securityLevel: 'loose' });
+draw();
+</script>
+</body>
+</html>

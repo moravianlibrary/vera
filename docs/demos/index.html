@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VERA — demos</title>
+<link rel="stylesheet" href="shared/vera.css">
+<style>
+  body { background: #0f172a; color: #e2e8f0; }
+  .wrap { max-width: 72rem; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+  h1 { font-size: 1.5rem; margin: 0 0 .375rem; color: #fff; }
+  .lede { color: #94a3b8; font-size: .875rem; max-width: 46rem; line-height: 1.6; margin: 0 0 2rem; }
+  h2 { font-size: .6875rem; text-transform: uppercase; letter-spacing: .08em;
+       color: #64748b; margin: 2rem 0 .75rem; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; }
+  td, th { padding: .4375rem .625rem; text-align: left; font-size: .8125rem; }
+  th { font-size: .625rem; text-transform: uppercase; letter-spacing: .04em;
+       color: #64748b; font-weight: 600; border-bottom: 1px solid #1e293b; }
+  tr.r { border-bottom: 1px solid #1e293b; }
+  tr.r:hover { background: rgba(255,255,255,.03); }
+  .rl { display: inline-block; width: 1.75rem; font-size: .625rem; font-weight: 700;
+        color: #38bdf8; }
+  .nm { color: #e2e8f0; }
+  .sub { color: #64748b; font-size: .6875rem; }
+  a.t { color: #cbd5e1; text-decoration: none; padding: .125rem .5rem;
+        border: 1px solid #334155; border-radius: 9999px; font-size: .6875rem;
+        margin-right: .25rem; display: inline-block; }
+  a.t:hover { background: #1e293b; color: #fff; border-color: #475569; }
+  .grp { color: #38bdf8; font-size: .625rem; text-transform: uppercase;
+         letter-spacing: .06em; font-weight: 700; }
+  .note { background: #1e293b; border-left: 3px solid #38bdf8; padding: .75rem 1rem;
+          font-size: .8125rem; color: #cbd5e1; line-height: 1.6; border-radius: .25rem;
+          margin: 1rem 0; }
+  .note b { color: #fff; }
+  code { background: #0b1220; padding: .0625rem .25rem; border-radius: .1875rem;
+         font-size: .75rem; color: #7dd3fc; }
+  .old a { color: #64748b; font-size: .75rem; margin-right: .75rem; text-decoration: none; }
+  .old a:hover { color: #94a3b8; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>VERA — rework demos</h1>
+<p class="lede">
+  Twelve pages plus Home, four size tiers each. Every page is a view over
+  <b>one dataset</b> — the same document appears as a row in Proposals with
+  four askers, then in Documents, then on a list, then inside a project's
+  planned-versus-delivered numbers. The rules they satisfy are in
+  <code>docs/design/shared/</code>; what is decided and what is waiting for
+  review is in <code>docs/demos/STATUS.md</code>.
+</p>
+
+<div class="note">
+  <b>A tier is a display, not a column count.</b>
+  <b>notebook</b> 1440×900 at a 16px root is what everything is authored at —
+  it fits a laptop. <b>large</b> is 1920×1200 at 15px: a bigger screen
+  <i>and</i> a step back, so you see more at once. <b>small</b> (tablet,
+  1024×768) and <b>phone</b> keep notebook's type on a physically smaller
+  panel — the layout gives way, the type does not shrink. Small still shows
+  both columns; only the phone turns the detail pane into a sheet.
+</div>
+
+<div class="note">
+  <b>Two shapes.</b> Most pages are <b>master–detail</b> — a list you scan
+  beside a pane that answers in full, which is the originals' shape and the
+  one that can say <i>why</i> a row is where it is — Documents, Proposals,
+  Validations, Lists, Categories, Users &amp; Groups and Hooks. At notebook
+  and large the list half reads as a table. <b>Projects and Intentions are
+  cards</b>, because there are only a handful at once and each answers <i>will
+  we make it</i>. <b>Tasks, Schedules and Plugins are tables</b>, where you
+  compare rows across. <b>Home</b> has no list and no record, so it is cards,
+  one per entry you hold.
+</div>
+
+<div class="note">
+  <b>Two demo-only controls, bottom of every page.</b>
+  <b>size</b> (right) jumps between the four tiers of the same page.
+  <b>as</b> (left) re-renders it as a different actor — entries and actions the
+  actor cannot reach are <b>absent, never disabled</b>, which is easier to see
+  than to describe. Try <i>Proposals</i> as <code>curator</code> and as
+  <code>admin</code>: the curator sees only what is in their proposal custody.
+</div>
+
+<div class="note">
+  <b>Sizes are shown at their size.</b> <b>small</b> and <b>phone</b> open
+  inside a <b>device frame</b> — drawn at 1024×768 and 393×852 on a backdrop,
+  the phone with a phone's bezel — because a tablet layout stretched across a
+  desktop is not a tablet layout. If the device is taller than your window it
+  is <i>scaled</i>, never cropped: a phone cut off at 700px would make every
+  judgement about what fits above the fold wrong. <b>notebook</b> and
+  <b>large</b> just fill the window; notebook is the default and large exists
+  to use extra room when there is extra room.
+</div>
+
+<h2>Home</h2>
+<table><tbody id="home"></tbody></table>
+
+<h2>Workflow model</h2>
+<table><tbody><tr class="r">
+  <td><span class="rl">⇄</span><span class="nm">Every lifecycle as a graph</span></td>
+  <td class="sub">11 state machines from one model, checked for reachability, dead ends, who may do each step
+    and where — and whether the demo has it. Run <code>node docs/design/shared/model/check.js</code> to refresh.</td>
+  <td><a class="t" href="model.html">open</a></td></tr></tbody></table>
+
+<h2>Pages — in sidebar order</h2>
+<table>
+  <thead><tr><th>Page</th><th>Row is</th><th>Sizes</th></tr></thead>
+  <tbody id="pages"></tbody>
+</table>
+
+<h2>What to look at first</h2>
+<div class="note">
+  <b>Proposals</b> — one row per document: <i>Národní listy</i> has four
+  asks and is decided once. As <code>curator</code> the queue is what the
+  Custody rules placed in Jana's proposal custodies; the <i>Placed in</i> card
+  says which. A proposal made after its project's approval carries the flag
+  and the project's priority, pre-filled.<br>
+  <b>Projects</b> — decision and period are two badges. <i>Brněnské
+  kalendáře</i> is Proposed: <i>Approve…</i> picks the priority, approves
+  two and skips the one with a copy. <i>Hudebniny</i> has nothing in it, so
+  its manager can still delete it.<br>
+  <b>Documents Validations</b> — outstanding shows <code>D \ A</code>, never
+  what was already accepted. The <i>Forbidden</i> filter holds what a rule
+  forbade; a curator can only message an admin about it.<br>
+  <b>Digitization Lists</b> — <i>Mark Done…</i> is an act, and an item can be
+  marked <i>could not be digitized</i> first. <i>Regional weeklies</i> has an
+  item blocked since listing: it stays on, flagged.<br>
+  <b>Categories</b> — the mix of one intention, picked in <i>Mix of</i>.
+  <i>NDK Periodika</i> tracks <i>Periodicals push — watch</i>: Regional is
+  55% of Periodicals. Saving the house mix lists the seven intentions that
+  track it, and unticked ones keep the old mix.<br>
+  <b>Users &amp; Groups</b> — Roles · Users · Groups and proposal custodies.
+  A solid line is a role set by hand, a dashed one was mapped by an Identity
+  plugin at login. Groups never carry a role.
+</div>
+
+<h2>The original demos — reference, untouched</h2>
+<p class="old">
+  <a href="documents.html">Documents</a>
+  <a href="proposals.html">Proposals</a>
+  <a href="additions.html">Additions</a>
+  <a href="projects.html">Projects</a>
+  <a href="categories.html">Categories</a>
+  <a href="intentions.html">Intentions</a>
+  <a href="digitization-lists.html">Digitization Lists</a>
+  <a href="tasks.html">Tasks</a>
+  <a href="plugins.html">Plugins</a>
+  <a href="hooks.html">Hooks</a>
+</p>
+
+</div>
+
+<script src="shared/vera-model.js"></script>
+<script src="shared/vera-data.js"></script>
+<script src="shared/vera-ui.js"></script>
+<script>
+const ROW = {
+  documents:  'one document — its askers, then its current iteration · My Documents for a reader',
+  proposals:  'one document, not one ask — in my proposal custody',
+  validation: 'one iteration, in my category custody · Forbidden one filter away',
+  lists:      'one list — current state; Done is an act · the editor builds and generates',
+  projects:   'one project card — decision and period, planned and delivered never summed',
+  categories: 'one category — the mix of one intention, edited on its owner',
+  intentions: 'one intention card — targets and tracking; a mix tracked or owned',
+  tasks:      'one run — My Tasks for whoever holds only their own',
+  schedules:  'one schedule — what runs by itself, and intention repeats',
+  access:     'roles · users · groups and proposal custodies, with provenance',
+  plugins:    'type → implementation → instance',
+  hooks:      'one hook — its deliveries, retries and dead letters'
+};
+const TIERS = ['large', 'notebook', 'small', 'phone'];
+
+/* Home is not a sidebar entry — it is what the logo and `/` resolve to, so it
+   gets its own row rather than a place in the list. */
+document.getElementById('home').innerHTML = `
+  <tr class="r">
+    <td><span class="rl">/</span><span class="nm">Home</span></td>
+    <td class="sub">one card per entry you hold, with what is waiting for you — as
+      <code>reader</code>, the rule that <code>/</code> is a redirect to My Documents;
+      <a class="t" href="notebook/home.html?grants=none">no role yet</a></td>
+    <td>${TIERS.map(t => `<a class="t" href="${t}/home.html">${t}</a>`).join('')}</td>
+  </tr>`;
+
+document.getElementById('pages').innerHTML = VERA_UI.NAV.map(n => `
+    <tr class="r">
+      <td><span class="rl">${n.rail}</span><span class="nm">${n.label}</span>
+        ${n.count ? `<span class="sub"> · ${n.count} waiting</span>` : ''}</td>
+      <td class="sub">${ROW[n.id] || ''}</td>
+      <td>${TIERS.map(t => `<a class="t" href="${t}/${n.file}">${t}</a>`).join('')}</td>
+    </tr>`).join('');
+</script>
+</body>
+</html>

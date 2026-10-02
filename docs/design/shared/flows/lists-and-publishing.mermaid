@@ -1,0 +1,82 @@
+%% Digitization lists and publishing — L1–L17, P1–P3 in ../flows.md, in
+%% one diagram.
+flowchart TB
+  classDef st fill:#dbeafe,stroke:#2563eb
+  classDef sys fill:#f1f5f9,stroke:#94a3b8
+
+  POOL["Ready pool: every gate passed, on no list<br/>shows what review is holding back"]:::st
+
+  subgraph MK[Making a list · list.create]
+    NEW(["New list: name · Starts now / on a date · ends"])
+    HAND(["By hand: move from the pool"])
+    GENS{"List generators configured"}
+    NOB["No Generate button"]:::sys
+    GEN(["Generate…: pages · categories · shape by<br/>one intention, Overall by default"])
+    COR(["Intentions: correcting run<br/>from a tracking card out of band"])
+    CAT(["Intentions: catch-up run<br/>from a behind-pace target"])
+    DRAFT["Draft: picks marked generated, with reasons<br/>shortfall per category · copies found after approval"]:::sys
+    WIN["Warning: starts outside the<br/>shaping intention's window"]:::sys
+  end
+
+  SAVE(["Save: provenance recorded if generated"])
+  PLN["Planned: starts later<br/>reader: Scheduled · counts as planned"]:::st
+  INP["In progress"]:::st
+  ON["On a list: Planned or In progress"]:::st
+
+  subgraph ED[Changing a list · list.edit]
+    OFF(["Take off: no reason"])
+    TOP(["Generate tops up: members fixed"])
+    DATES(["Move dates"])
+    DW["Warns before Save if it stops<br/>counting towards an intention"]:::sys
+    BLK["Member gains a blocker, or a copy appears:<br/>stays on the list, flagged"]:::st
+  end
+
+  subgraph MEM[Per member]
+    CAN(["Cancel… reason · iteration.cancel"])
+    NDG(["Could not be digitized… message · dig-curator"])
+    HELD["Held: off the list<br/>reader: On hold"]:::st
+    RES(["Resume"])
+  end
+
+  subgraph END[Ending a list]
+    DONE(["Mark Done · dig-curator"])
+    DL(["Delete… · list.delete<br/>only while not Done"])
+    BACK["Not digitized → Ready · cancelled stay held<br/>all stop counting as planned · logged"]:::sys
+  end
+
+  DIG["Digitized · counts as delivered and output"]:::st
+  PUB["Published<br/>reader: Available + link"]:::st
+  SETL(["Set / update link · iteration.publish@custody"])
+  AGAIN(["Proposed again later"])
+  RESC["Existing copy → approve as rescan →<br/>iteration 2 of the same document"]:::st
+
+  POOL --> NEW
+  NEW -->|"L1 L2"| HAND --> SAVE
+  NEW --> GENS
+  GENS -->|L3 none| NOB
+  GENS -->|L3 one or several| GEN
+  COR -->|L6 allocation locked| GEN
+  CAT -->|L7 pages pre-filled| GEN
+  GEN -->|L4| DRAFT --> SAVE
+  DRAFT -->|L8| WIN --> SAVE
+  SAVE -->|L1 starts later| PLN
+  SAVE -->|L2 starts now| INP
+  PLN -->|start date arrives, nothing written| INP
+  PLN --> ON
+  INP --> ON
+  ON -->|L9| OFF --> POOL
+  ON -->|L5| TOP --> SAVE
+  ON -->|L10| DATES --> DW --> SAVE
+  ON -->|"L11 L17"| BLK
+  BLK -->|dig-curator takes it off| OFF
+  ON -->|L12| CAN --> HELD
+  INP -->|L13| NDG --> HELD
+  HELD --> RES --> POOL
+  INP -->|L14| DONE
+  DONE -->|every member not marked L13| DIG
+  ON -->|L15| DL --> BACK --> POOL
+  DONE -.->|"L16 a Done list cannot be deleted"| DL
+  DIG -->|P1| SETL --> PUB
+  PUB -->|P1 update| SETL
+  DIG & PUB -.->|"P2 new defect: footnote,<br/>progress stays"| DIG
+  PUB -->|P3| AGAIN --> RESC --> POOL

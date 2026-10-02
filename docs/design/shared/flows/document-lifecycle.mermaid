@@ -1,0 +1,73 @@
+%% Document lifecycle — the whole path, one diagram. Edge labels are
+%% scenario IDs in ../flows.md. Blue = state, white = a person acts,
+%% grey = the system does it by itself.
+flowchart TB
+  classDef st fill:#dbeafe,stroke:#2563eb
+  classDef sys fill:#f1f5f9,stroke:#94a3b8
+  classDef end1 fill:#fee2e2,stroke:#dc2626
+
+  subgraph IN[Intake]
+    P(["Propose: person, harvester agent,<br/>project member · always a batch"])
+    CHK["Catalog check, then VERA check"]:::sys
+    SKIP["Skipped, in the report"]:::sys
+    FOL["Follows existing work<br/>reader: its live status"]:::st
+    PEN["Pending<br/>reader: Waiting for review"]:::st
+  end
+
+  subgraph DE[Decision · Proposals, scoped by proposal custody]
+    DEC{"Decide"}
+    AP["Approved<br/>reader: Being added"]:::st
+    DN["Declined"]:::end1
+    WD["Withdrawn"]:::end1
+  end
+
+  subgraph GA[Ingest and gates]
+    ENQ["Enqueued"]:::st
+    FAIL["Could not be added"]:::st
+    GATE{"Gates: restriction · validation · not cancelled"}
+    FORB["Forbidden"]:::st
+    REV["Review needed / Denied in review<br/>reader: Being checked / On hold"]:::st
+    HELD["Cancelled / Could not be digitized<br/>reader: On hold"]:::st
+  end
+
+  subgraph PL[Planning · Digitization Lists]
+    RDY["Ready: in the pool<br/>reader: Waiting to be scheduled"]:::st
+    LST["Planned / In progress<br/>reader: Scheduled"]:::st
+  end
+
+  subgraph DONE[After scanning]
+    DIG["Digitized"]:::st
+    PUB["Published<br/>reader: Available + link"]:::st
+  end
+
+  P --> CHK
+  CHK -->|I3 I4 I5| SKIP
+  CHK -->|I6 C4| FOL
+  CHK -->|I1 I2 I7 I10 I13 I14| PEN
+  CHK -->|"I8 I11: approve now, no copy"| AP
+  CHK -->|"I9 I12: copy found, held"| PEN
+  PEN --> DEC
+  DEC -->|D1 D2 D3 D4 D9 D11| AP
+  DEC -->|D5 D12| DN
+  PEN -->|D6 D7: own ask, while Pending| WD
+  AP -->|G1: automatic| ENQ
+  ENQ -->|G2| FAIL
+  FAIL -->|G2: Retry, admin| ENQ
+  ENQ --> GATE
+  GATE -->|V10 V11: a rule forbids| FORB
+  FORB -->|"V10: overruled · V12: rule no longer fires"| GATE
+  GATE -->|G3 V7 V9: defect| REV
+  REV -->|V2 V3 V4 V5 V8| GATE
+  GATE -->|V1: all pass| RDY
+  RDY -->|V14: a gate fails| ENQ
+  RDY -->|L1 … L8: listed| LST
+  LST -->|"L9 L15: taken off, list deleted"| RDY
+  LST -->|L11 L17: flagged, stays| LST
+  GATE -. C1 .-> HELD
+  RDY -. C2 .-> HELD
+  LST -. "C3 L12 L13" .-> HELD
+  HELD -->|resume| GATE
+  LST -->|L14: list marked Done| DIG
+  DIG -->|P1: link set| PUB
+  DIG -. P2: new defect, footnote only .-> DIG
+  PUB -. "P3: proposed again → rescan, iteration 2" .-> P

@@ -1,0 +1,75 @@
+%% Ingest, gates, validation and cancellation — G1–G3, V1–V14, C1–C4,
+%% P2 in ../flows.md, in one diagram.
+flowchart TB
+  classDef st fill:#dbeafe,stroke:#2563eb
+  classDef sys fill:#f1f5f9,stroke:#94a3b8
+
+  AP["Approved"]:::st --> ENQ["Enqueued<br/>reader: Being added"]:::st
+
+  subgraph IG[Ingest]
+    RUN["Catalog record · property sources · checks"]:::sys
+    FAIL["Could not be added<br/>curator: failure text · addition.read"]:::st
+    RET(["Retry item or batch · addition.retry"])
+  end
+
+  subgraph RS[Restriction · rules only]
+    RULE{"A rule says never?"}
+    FORB["Forbidden<br/>reader: Not available for digitization"]:::st
+    MSG(["Validations · Show Forbidden ·<br/>curator messages an admin"])
+    OVR(["Overrule · restriction.overrule@any"])
+    CLR["Cleared: the rule no longer fires"]:::sys
+  end
+
+  subgraph VA[Validation · Validations, in custody]
+    DEF{"Outstanding defects?"}
+    REV["Review needed: D minus A"]:::st
+    FIX(["Fix in place: page count ·<br/>correct field · relink"])
+    ACC(["Accept one or all · validation.approve"])
+    DNY(["Deny… · validation.deny"])
+    DEN["Denied in review<br/>reader: On hold"]:::st
+    REVK(["Revoke · validation.revoke"])
+    OK["Approved or NotRequired"]:::st
+    RCK["Re-check: schedule ·<br/>catalog record changed"]:::sys
+  end
+
+  subgraph CX[Cancellation · any time before Digitized]
+    CAN(["Cancel… reason · iteration.cancel<br/>Documents · Validations · the list"])
+    HELD["Cancelled: off any list<br/>reader: On hold"]:::st
+    RES(["Resume · iteration.resume"])
+  end
+
+  RDY["Ready: every gate passed<br/>reader: Waiting to be scheduled"]:::st
+  CLS(["Reclassify · iteration.classify@custody<br/>may hand it to another custody"])
+  POST["Digitized / Published · review needed<br/>progress never moves back"]:::st
+
+  ENQ -->|G1| RUN
+  RUN -->|G2 adapter error| FAIL
+  FAIL --> RET -->|G2| RUN
+  RUN -->|G3 no catalog record: a defect| DEF
+  RUN --> RULE
+  RULE -->|"V10 V11"| FORB
+  FORB --> MSG --> OVR
+  OVR -->|"V10 overruled: both records kept"| DEF
+  FORB -->|V12| CLR --> DEF
+  RULE -->|no| DEF
+  DEF -->|yes| REV
+  DEF -->|V1 no| OK
+  REV -->|V2| FIX --> RCK
+  REV -->|"V3 V4"| ACC --> OK
+  REV -->|V5| DNY --> DEN
+  DEN -->|"V5 fix: the denial lapses"| FIX
+  OK -->|V8| REVK --> REV
+  OK --> RCK
+  RCK -->|"V6 V9 same or fewer"| OK
+  RCK -->|"V7 V9 something new: only it shown"| REV
+  OK -->|all gates pass| RDY
+  RDY -->|"V14 a gate fails: back to Enqueued"| ENQ
+  ENQ -.->|C1| CAN
+  REV -.->|C1| CAN
+  RDY -.->|C2| CAN
+  CAN --> HELD --> RES
+  RES -->|"C1 C2 C3 back through the gates"| DEF
+  HELD -.->|"C4 a new ask follows the held work"| HELD
+  CLS -.->|V13 any state before Digitized| REV
+  RDY -.->|"lists, then P2: re-check finds a defect"| POST
+  POST -->|"P2 accept or deny, no fix"| OK

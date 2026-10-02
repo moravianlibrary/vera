@@ -11,15 +11,32 @@ Identifiers are the primary way documents enter VERA. Each proposal contains one
 | ISBN | `978-...` | 978-80-7325-456-3 | ISBN lookup |
 | OCLC | `\d+` | 12345678 | WorldCat |
 
-## Validation Rules
+## Rules
 
-- Format validation is synchronous (regex check)
-- Catalog resolution is async (queued as eligibility check)
-- A single document may have multiple identifiers (e.g. both CNBID and ISBN)
-- Identifier type determines which catalog plugin is invoked for resolution
+- **An identifier is not an identity.** It resolves *to* a catalog ID, which is
+  what names the document — see [[document-identity]]. Two identifiers of
+  different types may resolve to the same record.
+- Format validation is synchronous (a regex check, the same patterns rules 3–5
+  of the [[view-rules]] §3 search table use).
+- Resolution is asynchronous and happens during `progress = Enqueued`
+  ([[status-model]] §2). A resolution that cannot complete is an ingest
+  failure; one that completes and finds nothing is a *no catalog record*
+  defect, fixed by relinking.
+- A single document may carry more than one identifier.
 
-## Used By
+> `TODO(Tenancy):` these four types are national or international registries and
+> are institution-neutral. The **catalog ID and barcode** formats are not — those
+> are MZK's, and live in [[view-rules]] §3 rules 2 and 6. Keep the distinction:
+> what an identifier *is* generalises; what one library's own IDs look like does
+> not.
 
-- Proposals — identifiers are the input
-- Documents — primary identifier is inherited from proposal
-- Additions — identifier used for re-ingest matching
+> `TODO(Plugins):` **which plugin resolves which type.** The Resolution column
+> above names a service, not a contract. Whether the type→plugin mapping is
+> configuration or is claimed by the plugin itself is a question for the plugin
+> model, together with `defect_key` ([[status-model]] §2).
+
+## Related
+
+- [[document-identity]] — what an identifier resolves to
+- [[view-rules]] — §3, the search patterns these formats feed
+- [[status-model]] — §2, where resolution happens

@@ -1,0 +1,97 @@
+%% Intake and decision — I1–I14, D1–D12 in ../flows.md, in one diagram.
+flowchart TB
+  classDef st fill:#dbeafe,stroke:#2563eb
+  classDef sys fill:#f1f5f9,stroke:#94a3b8
+  classDef end1 fill:#fee2e2,stroke:#dc2626
+
+  subgraph WHO[Who proposes]
+    PER(["Person · Documents · Propose"])
+    HRV["Harvester run: agent is the requester"]:::sys
+    MEM(["Project member · Propose into project"])
+  end
+
+  subgraph BAT[One batch per submission]
+    WAYS["Filled by: type · catalog search · paste ·<br/>file · barcode · photo"]:::sys
+    LIM{"Holds request.decide?"}
+    OVER["Over propose.max_at_once:<br/>reported, not dropped"]:::sys
+  end
+
+  subgraph CAT[Each item: catalog check]
+    CC{"Catalog"}
+    NF["Not found / unknown id: skipped"]:::sys
+    VOL["Which volume? · not submitted<br/>until one is picked"]:::sys
+    LNK(["Catalog not searchable: paste record link"])
+  end
+
+  subgraph VC[VERA check]
+    VV{"In VERA?"}
+    FOL["Follows the active work<br/>no review · no project · no category"]:::st
+    COPY["Existing copy on the request"]:::sys
+  end
+
+  subgraph PROJ[Project state]
+    PS{"Project"}
+    FLAG["Flag: after the project's approval"]:::sys
+    NOP["Rejected: proposing into it not offered"]:::sys
+  end
+
+  PEN["Pending<br/>reader: Waiting for review"]:::st
+  INT{"Approve-now intent<br/>person or additions entry"}
+  HOLD["Held: still Pending, marked<br/>asked to be added"]:::st
+
+  subgraph PR[Proposals · request.decide@custody via proposal custody]
+    CUS{"Covered by a custody?"}
+    FB["Fallback custody: members,<br/>or admins if it has none"]:::sys
+    CHR{"Checks done?"}
+    WAIT["No decision card yet"]:::sys
+    ACT{"Decide"}
+  end
+
+  AP["Approved · ingest starts by itself"]:::st
+  DN["Declined: every asker reads the reason"]:::end1
+  WD["Withdrawn"]:::end1
+
+  subgraph PJD[Project decision]
+    PA(["Approve project · picks priority"])
+    PRJ(["Reject project"])
+    ORIG["Oldest remaining request<br/>becomes the originator"]:::sys
+  end
+
+  PER --> WAYS
+  MEM --> PS
+  PS -->|I13 Proposed| WAYS
+  PS -->|I14 Approved| FLAG --> WAYS
+  PS -->|Rejected| NOP
+  HRV -->|I10 I11 I12| CC
+  WAYS -->|I2| LIM
+  LIM -->|no| OVER --> CC
+  LIM -->|yes| CC
+  CC -->|I3| NF
+  CC -->|I4| VOL
+  CC -->|I5| LNK --> CC
+  CC -->|I1| VV
+  VV -->|"I6 · C4 active or held work"| FOL
+  VV -->|I7 digitized before| COPY --> PEN
+  VV -->|new| INT
+  INT -->|no| PEN
+  INT -->|"I8 I11 no copy"| AP
+  INT -->|"I9 I12 copy found"| HOLD --> CUS
+  PEN --> CUS
+  CUS -->|yes| CHR
+  CUS -->|D10 no| FB --> CHR
+  CHR -->|D8 no| WAIT --> CHR
+  CHR -->|yes| ACT
+  ACT -->|"D1 approve: category + priority"| AP
+  ACT -->|"D2 several askers: all approved,<br/>oldest originates"| AP
+  ACT -->|"D3 approve as rescan: note"| AP
+  ACT -->|"D4 bulk on batch: skips rescans, unchecked"| AP
+  ACT -->|"D9 restricted: approved, stays Forbidden"| AP
+  ACT -->|D5 decline| DN
+  PEN -->|"D6 D7 withdraw own ask, only while Pending"| WD
+  PEN --> PA
+  PA -->|"D11 no copy: approved at project priority"| AP
+  PA -->|"D11 with copy: skipped"| ACT
+  PEN --> PRJ
+  PRJ -->|"D12 only the project asked"| DN
+  PRJ -->|"D12 others asked too: theirs stay"| PEN
+  PRJ -->|"D12 it was the originator"| ORIG --> PEN
