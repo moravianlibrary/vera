@@ -1,8 +1,0 @@
-[run]
-omit =
-    */tmp/*
-    */temp/*
-    vera_plugins/specs/*
-[report]
-exclude_lines =
-    def __repr__
