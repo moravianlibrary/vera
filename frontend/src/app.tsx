@@ -1,0 +1,85 @@
+// The application: providers and routes. Every navigation entry is a route, gated by the same
+// permissions that reveal it in the sidebar.
+// TODO(rrandiak): the remaining views (frontend/continuation.md); labels move to i18n.
+
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
+import { AppShell } from "@/components/layout/app-shell";
+import { navigationEntries, visibleNavigation } from "@/components/layout/navigation";
+import { PageContent, PageHeader } from "@/components/layout/page-header";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { DocumentsPage } from "@/features/documents/documents-page";
+import { useSessionQuery } from "@/hooks/use-session-query";
+import { queryClient } from "@/lib/query-client";
+
+function Placeholder({ title }: { title: string }) {
+  return (
+    <>
+      <PageHeader title={title} />
+      <PageContent>
+        <p className="text-sm text-muted-foreground">This view is planned for a later milestone.</p>
+      </PageContent>
+    </>
+  );
+}
+
+function NoAccess() {
+  return (
+    <div className="mx-auto max-w-xl px-4 py-20 text-center">
+      <h1 className="text-lg font-semibold">No access yet</h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        An administrator has not given this account a role.
+      </p>
+    </div>
+  );
+}
+
+// Sends `/` and unknown paths to the first entry the session holds.
+function Landing() {
+  const { data: session } = useSessionQuery();
+  if (session === undefined) {
+    return null;
+  }
+
+  const [first] = visibleNavigation(session);
+  return first === undefined ? <NoAccess /> : <Navigate to={first.path} replace />;
+}
+
+function Gate({ entryId, children }: { entryId: string; children: React.ReactNode }) {
+  const { data: session } = useSessionQuery();
+  if (session === undefined) {
+    return null;
+  }
+
+  const isVisible = visibleNavigation(session).some((entry) => entry.id === entryId);
+  return isVisible ? children : <Navigate to="/" replace />;
+}
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <AppShell />,
+    children: [
+      { index: true, element: <Landing /> },
+      ...navigationEntries.map((entry) => ({
+        path: entry.path.slice(1),
+        element: (
+          <Gate entryId={entry.id}>
+            {entry.id === "documents" ? <DocumentsPage /> : <Placeholder title={entry.label} />}
+          </Gate>
+        ),
+      })),
+      { path: "*", element: <Navigate to="/" replace /> },
+    ],
+  },
+]);
+
+export function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <RouterProvider router={router} />
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
