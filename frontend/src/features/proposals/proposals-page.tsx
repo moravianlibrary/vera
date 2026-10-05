@@ -42,6 +42,10 @@ const pageParams = [selectedParam, proposalGroupingParam, watchlistParam] as con
 type Filter = Record<string, string>;
 type BatchGroup = Extract<ProposalGroup, { kind: "batch" }>;
 
+// Nothing named but perhaps the grouping, which is presentation.
+const isBareView = (params: URLSearchParams) =>
+  [...params.keys()].every((name) => name === proposalGroupingParam);
+
 const filterOf = (query: ProposalQuery): Filter =>
   Object.fromEntries(toProposalSearchParams(query));
 const queryOf = (filter: Filter): ProposalQuery =>
@@ -163,6 +167,7 @@ export function ProposalsPage() {
             setFilterReplacements((count) => count + 1);
           }}
           onDetach={() => setFilter(query, null)}
+          isBare={isBareView(params)}
         />
       )}
 

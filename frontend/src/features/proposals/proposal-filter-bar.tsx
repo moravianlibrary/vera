@@ -1,6 +1,5 @@
 // The Proposals filter bar (filtering.md §3, §6): the search, Decision and Proposal custody on
-// the bar, then the other fields as chips with "+ Add filter". Decision opens on awaiting a
-// decision; declined and withdrawn are one pick away.
+// the bar, then the other fields as chips with "+ Add filter".
 // TODO(rrandiak): Asked and the Advanced editor (filtering.md §3.3); the phone tier's Filter
 // sheet; labels move to i18n.
 
@@ -13,7 +12,7 @@ import type {
   ProposalPage,
   ProposalQuery,
 } from "@/api/proposal-review";
-import { askerCountSchema, askerCounts, decisionsOf } from "@/api/proposal-review";
+import { askerCountSchema, askerCounts } from "@/api/proposal-review";
 import type { FilterField } from "@/components/filters/filter-controls";
 import {
   AddFilterMenu,
@@ -149,22 +148,6 @@ function useProposalFilterFields({
     onChange: (values) => onQueryChange({ ...query, [field]: values }),
   });
 
-  // Decision always holds a value: "any" picks every one, so the default does not come back.
-  const decisions = decisionsOf(query);
-  const decisionField: FilterField = {
-    ...enumField("decisions", proposalDecisionSchema, proposalDecisions, proposalDecisionLabels),
-    options: proposalDecisions.map((decision) => ({
-      value: decision,
-      label: proposalDecisionLabels[decision],
-      count: facets?.decisions.find((facet) => facet.value === decision)?.count ?? 0,
-    })),
-    selected: decisions,
-    onChange: (values) => {
-      const picked = values.filter(isOneOf(proposalDecisionSchema));
-      onQueryChange({ ...query, decisions: picked.length === 0 ? [...proposalDecisions] : picked });
-    },
-  };
-
   const custodyLabelOf = (custodyId: string) =>
     custodies.find((custody) => custody.id === custodyId)?.name ?? custodyId;
   const projectLabelOf = (projectId: string) =>
@@ -176,7 +159,10 @@ function useProposalFilterFields({
   };
 
   return {
-    quickFields: [decisionField, referenceField("custodyIds", custodyLabelOf)],
+    quickFields: [
+      enumField("decisions", proposalDecisionSchema, proposalDecisions, proposalDecisionLabels),
+      referenceField("custodyIds", custodyLabelOf),
+    ],
     chipFields: [
       enumField(
         "documentTypes",

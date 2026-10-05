@@ -793,10 +793,12 @@ coarser: a reader needs to know whether to wait.
   both the `Accepted` override and the admin-only *allow a new iteration*.
 - **No shortcut approves a rescan** — not *approve now*, not a plugin's
   `additions` entry point, not bulk approve, not a project's approval (§2.8).
-- **`Withdrawn` stays visible to curators, but not by default.** Proposal
-  Review filters it out along with `Declined`; both are reachable by changing
-  the filter. This is the [[view-rules]] §4.5 pattern — a default filter, not a
-  hidden record — and it belongs in the view #2 declaration of [[view-map]].
+- **`Withdrawn` stays visible to curators, but out of the way.** Proposal
+  Review's shared watchlist *Awaiting a decision* leaves it out along with
+  `Declined`; *All* shows both, and the view reopens on the tab the curator
+  last used (revised 2026-10-05, [[filtering]] §4.2). A filter, not a hidden
+  record — the [[view-rules]] §4.5 pattern, declared in view #2 of
+  [[view-map]].
 
 ## 7. Still open
 

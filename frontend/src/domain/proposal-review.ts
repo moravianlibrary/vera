@@ -8,14 +8,11 @@ import { z } from "zod";
 import { documentRecordSchema, existingCopiesOf } from "@/domain/documents";
 import type { Request } from "@/domain/entities";
 
-// The decisions a proposal can rest at. Pending is open; the others are hidden by default and
-// one filter away (status-model.md §6).
+// The decisions a proposal can rest at. Pending is open; the others stay one filter away
+// (status-model.md §6), which the shared "Awaiting a decision" watchlist leaves out.
 export const proposalDecisions = ["Pending", "Denied", "Withdrawn"] as const;
 export const proposalDecisionSchema = z.enum(proposalDecisions);
 export type ProposalDecision = z.infer<typeof proposalDecisionSchema>;
-
-// What the view opens on: awaiting a decision.
-export const defaultProposalDecisions = ["Pending"] as const satisfies readonly ProposalDecision[];
 
 export const proposalRowSchema = z.object({
   // The document, its earlier attempts and the asks of this row, oldest first.

@@ -206,8 +206,10 @@ Curator decides whether an asked-for item should enter the pipeline at all.
   priority pre-filled
 - one row per document, not per proposal — five asks, one decision
   ([[status-model]] §2.7)
-- default filter hides `Declined` and `Withdrawn`; both stay reachable by
-  changing the filter ([[status-model]] §6) — hidden by default, never absent
+- *All* is every decision; the shared watchlist *Awaiting a decision* leaves
+  out `Declined` and `Withdrawn`, and the view reopens on whichever tab the
+  curator last used ([[filtering]] §4.2) — out of the way, never absent
+  ([[status-model]] §6)
 - decisions: **approve** or **decline** *(reason)*
 - approving is where **category and priority are set** — this is the only place
   a human classifies a request, and everything downstream depends on it

@@ -1,6 +1,6 @@
 // A view's watchlists as tabs above its filter bar (filtering.md §4): "All", the view with no
 // filter, the shared watchlists, the caller's own, then "+". A tab is open while the filter is
-// the one it saved. Each thing is saved in one place: "+" saves the current filter as a new
+// the one it saved. Opened bare, the view reopens on the tab the caller last opened. Each thing is saved in one place: "+" saves the current filter as a new
 // watchlist; a change to an open watchlist is saved on its own tab, which also discards it,
 // renames and deletes, where the caller may change it; those who manage shared watchlists share
 // their own from there. A shared one the caller may not change still shows that it changed, and
@@ -12,7 +12,7 @@
 
 import { ChevronDown, CircleAlert, Plus, Save, Users } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
-import { useId, useState } from "react";
+import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { ApiError } from "@/api/http";
 import type { WatchlistSummary } from "@/api/watchlists";
 import { isSameWatchlistFilter } from "@/api/watchlists";
@@ -48,6 +48,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Watchlist, WatchlistScope, WatchlistView } from "@/domain/entities";
 import { watchlistScopeSchema, watchlistScopes } from "@/domain/entities";
+import { useRememberedWatchlist } from "@/hooks/use-remembered-watchlist";
+import { useSessionQuery } from "@/hooks/use-session-query";
 import { useWatchlistMutations, useWatchlistsQuery } from "@/hooks/use-watchlists-query";
 import { cn } from "@/lib/utils";
 
@@ -65,6 +67,9 @@ interface WatchlistTabsProps {
   onOpen: (watchlist: Watchlist | null) => void;
   // The open watchlist is gone; the filter stays as it is.
   onDetach: () => void;
+  // The view was opened bare, naming no filter, watchlist or record: it reopens on the tab the
+  // caller last left it on.
+  isBare: boolean;
 }
 
 export function WatchlistTabs({
@@ -72,10 +77,37 @@ export function WatchlistTabs({
   filter,
   openedId,
   canShare,
-  onOpen,
+  onOpen: openInView,
   onDetach,
+  isBare,
 }: WatchlistTabsProps) {
-  const { data: watchlists = [] } = useWatchlistsQuery(view);
+  const { data: session } = useSessionQuery();
+  const { data: watchlists = [], isSuccess } = useWatchlistsQuery(view);
+  const { rememberedId, remember } = useRememberedWatchlist(session?.user.id ?? "", view);
+  const onOpen = (watchlist: Watchlist | null) => {
+    remember(watchlist?.id ?? null);
+    openInView(watchlist);
+  };
+
+  // Once the watchlists are known; one deleted since reopens on "All".
+  const hasRestoredRef = useRef(false);
+  const restore = useEffectEvent(() => {
+    const remembered = watchlists.find((watchlist) => watchlist.id === rememberedId);
+    if (remembered !== undefined) {
+      openInView(remembered);
+    }
+  });
+  useEffect(() => {
+    if (!isSuccess || hasRestoredRef.current) {
+      return;
+    }
+
+    hasRestoredRef.current = true;
+    if (isBare) {
+      restore();
+    }
+  }, [isSuccess, isBare]);
+
   const { create } = useWatchlistMutations();
   const isSameFilter = (first: Filter, second: Filter) =>
     isSameWatchlistFilter(view, first, second);

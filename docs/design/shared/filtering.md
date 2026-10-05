@@ -174,7 +174,10 @@ Collapsed to the rail it is a dot. A watchlist set to *no badge* (§4.3) is
 not counted.
 
 **Opening the entry does not clear it**; opening the watchlist does. The
-entry opens on the view's default filter, which is not the watchlist.
+entry opens on the tab the person last left the view on, *All* or a
+watchlist, remembered per person and per view (decided 2026-10-05; kept in
+the browser until user settings exist). *All* is the view with no filter.
+A link that names a filter or a record opens what it names.
 
 ### 4.3 The Watchlists row and its page
 

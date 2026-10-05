@@ -20,11 +20,7 @@ import {
   statusLogEntrySchema,
 } from "@/domain/entities";
 import type { ProposalDecision } from "@/domain/proposal-review";
-import {
-  defaultProposalDecisions,
-  proposalDecisionSchema,
-  proposalRowSchema,
-} from "@/domain/proposal-review";
+import { proposalDecisionSchema, proposalRowSchema } from "@/domain/proposal-review";
 
 // ---------------------------------------------------------------- query
 
@@ -36,7 +32,6 @@ export type AskerCount = z.infer<typeof askerCountSchema>;
 // Each list matches any of its values; the fields together match all of them (filtering.md §2).
 export interface ProposalQuery {
   readonly search?: string;
-  // Absent means the view's default, awaiting a decision.
   readonly decisions?: readonly ProposalDecision[];
   readonly custodyIds?: readonly string[];
   readonly documentTypes?: readonly DocumentType[];
@@ -82,19 +77,6 @@ const proposalFieldSchemas = {
 const listFields = Object.keys(proposalFieldSchemas) as ProposalListField[];
 const listSeparator = ",";
 
-// The decisions the query asks for, the view's default when it names none.
-export function decisionsOf(query: ProposalQuery): readonly ProposalDecision[] {
-  return query.decisions ?? defaultProposalDecisions;
-}
-
-function isDefaultDecisions(decisions: readonly ProposalDecision[]): boolean {
-  return (
-    decisions.length === defaultProposalDecisions.length &&
-    defaultProposalDecisions.every((decision) => decisions.includes(decision))
-  );
-}
-
-// The default decision is left out, so the view's plain address is its opening state.
 export function toProposalSearchParams(query: ProposalQuery): URLSearchParams {
   const params = new URLSearchParams();
   const search = query.search?.trim();
@@ -105,10 +87,6 @@ export function toProposalSearchParams(query: ProposalQuery): URLSearchParams {
   for (const field of listFields) {
     const values = query[field];
     if (values === undefined || values.length === 0) {
-      continue;
-    }
-
-    if (field === "decisions" && isDefaultDecisions(decisionsOf(query))) {
       continue;
     }
 

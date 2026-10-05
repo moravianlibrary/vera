@@ -35,6 +35,10 @@ const pageParams = [selectedParam, documentGroupingParam, watchlistParam] as con
 
 type Filter = Record<string, string>;
 
+// Nothing named but perhaps the grouping, which is presentation.
+const isBareView = (params: URLSearchParams) =>
+  [...params.keys()].every((name) => name === documentGroupingParam);
+
 const filterOf = (query: DocumentQuery): Filter =>
   Object.fromEntries(toDocumentSearchParams(query));
 const queryOf = (filter: Filter): DocumentQuery =>
@@ -173,6 +177,7 @@ export function DocumentsPage() {
             setFilterReplacements((count) => count + 1);
           }}
           onDetach={() => setFilter(query, null)}
+          isBare={isBareView(params)}
         />
       )}
 

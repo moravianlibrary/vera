@@ -18,7 +18,7 @@ import type {
   ProposalPage,
   ProposalQuery,
 } from "@/api/proposal-review";
-import { decisionsOf, proposalPageSchema, proposalSliceSize } from "@/api/proposal-review";
+import { proposalPageSchema, proposalSliceSize } from "@/api/proposal-review";
 import { categoryPathOf } from "@/domain/categories";
 import { existingCopiesOf } from "@/domain/documents";
 import type {
@@ -246,7 +246,7 @@ function predicatesOf(query: ProposalQuery): Predicate[] {
   }
 
   for (const field of listFields) {
-    const wanted = field === "decisions" ? decisionsOf(query) : query[field];
+    const wanted = query[field];
     if (wanted === undefined || wanted.length === 0) {
       continue;
     }

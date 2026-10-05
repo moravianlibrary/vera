@@ -46,8 +46,8 @@ async function documentIdsOf(query: ProposalQuery = {}): Promise<string[]> {
 }
 
 describe("the query", () => {
-  it("leaves the default decision out of the address, and keeps any other", () => {
-    expect(toProposalSearchParams({ decisions: ["Pending"] }).toString()).toBe("");
+  it("writes every decision it names, and none for any", () => {
+    expect(toProposalSearchParams({ decisions: ["Pending"] }).toString()).toBe("decision=Pending");
     expect(parseProposalSearchParams(new URLSearchParams("")).decisions).toBeUndefined();
     expect(
       isSameProposalQuery(
@@ -55,7 +55,7 @@ describe("the query", () => {
         { decisions: ["Denied", "Withdrawn"] },
       ),
     ).toBe(true);
-    expect(isSameProposalQuery({}, { decisions: ["Pending"] })).toBe(true);
+    expect(isSameProposalQuery({}, { decisions: ["Pending"] })).toBe(false);
   });
 });
 
@@ -63,7 +63,7 @@ describe("listProposals", () => {
   it("shows an admin every open proposal, the fallback's included, one row per document", async () => {
     signInAs("admin");
 
-    const page = await listProposals({}, { limit: 200 });
+    const page = await listProposals({ decisions: ["Pending"] }, { limit: 200 });
     const ids = page.items.map((row) => row.record.document.id);
 
     expect(ids).toContain("D31");
@@ -85,10 +85,11 @@ describe("listProposals", () => {
     expect(page.facets.custodyIds.map((facet) => facet.value)).not.toContain("pc0");
   });
 
-  it("hides declined and withdrawn by default, one filter away", async () => {
+  it("shows every decision unfiltered, and only the open ones awaiting a decision", async () => {
     signInAs("admin");
 
-    expect(await documentIdsOf()).not.toContain("D23");
+    expect(await documentIdsOf()).toEqual(expect.arrayContaining(["D20", "D23", "D24"]));
+    expect(await documentIdsOf({ decisions: ["Pending"] })).not.toContain("D23");
     expect(await documentIdsOf({ decisions: ["Denied"] })).toEqual(["D23"]);
     expect(await documentIdsOf({ decisions: ["Withdrawn"] })).toEqual(["D24"]);
   });

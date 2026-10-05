@@ -44,6 +44,10 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- A view reopens on the watchlist tab, or "All", that the person last opened there,
+  remembered in the browser per person and per view. In Proposals "All" now shows every
+  decision, and a shared "Awaiting a decision" watchlist leaves out the declined and withdrawn.
+
 - The page header no longer repeats the list's count under the title.
 
 ## [0.1.0] - 2026-10-02

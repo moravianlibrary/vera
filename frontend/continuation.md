@@ -36,7 +36,8 @@ The foundation is in place:
   with `watchlist.manage_shared`); an open tab whose filter changed saves the change itself
   (a save icon on the tab, and Save / Discard changes in its menu). Rename and Delete sit in
   the open tab's menu where the caller may change it, with "Share with everyone" on their own
-  for holders of `watchlist.manage_shared`; a shared tab they may not change shows only a dot
+  for holders of `watchlist.manage_shared`; opened bare, a view reopens on the tab last opened
+  there (`src/hooks/use-remembered-watchlist.ts`, localStorage per user and view); a shared tab they may not change shows only a dot
   and Discard. A filter is saved once (filtering.md §4.5): "+" and Save changes are disabled
   with the name of the tab that already holds it, and a refusal from the server shows in the
   form or beside the tab.
@@ -104,8 +105,8 @@ The foundation is in place:
   the phone Filter sheet and the Batch field. Not yet built in the shell: the Watchlists row
   with its "new" badge (which leaves shared watchlists out until "seen" is kept per person), the running-tasks row, the user menu and phone bottom tabs.
 - `src/features/proposals/` is the Proposals view, on Documents' pattern: the watchlist tabs
-  (view `proposals`), `proposal-filter-bar.tsx` (search, Decision, which opens on awaiting a
-  decision and keeps a value, Proposal custody, then chips), `proposal-list.tsx` (a row per
+  (view `proposals`; "All" is every decision, the shared "Awaiting a decision" the open
+  ones), `proposal-filter-bar.tsx` (search, Decision, Proposal custody, then chips), `proposal-list.tsx` (a row per
   document with a line under it saying why it is there; grouped by the batch or requester of
   its earliest ask, `proposal-group-header.tsx`) and `proposal-detail.tsx`, built from the
   record cards Documents uses too (`src/components/record-cards.tsx`: who asked, existing

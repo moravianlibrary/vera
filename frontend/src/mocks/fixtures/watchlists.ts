@@ -21,7 +21,8 @@ interface Lens {
 const sharedLenses = [
   { name: "Awaiting a decision", filter: { decision: "Pending" } },
   { name: "Restricted", filter: { restricted: "Yes" } },
-  { name: "Periodicals", filter: { type: "Periodical" }, view: "proposals" },
+  { name: "Awaiting a decision", filter: { decision: "Pending" }, view: "proposals" },
+  { name: "Periodicals", filter: { decision: "Pending", type: "Periodical" }, view: "proposals" },
 ] as const satisfies readonly Lens[];
 
 const staffLenses = [
@@ -31,7 +32,11 @@ const staffLenses = [
 ] as const satisfies readonly Lens[];
 
 const deciderLenses = [
-  { name: "More than one asker", filter: { askers: "Several" }, view: "proposals" },
+  {
+    name: "More than one asker",
+    filter: { decision: "Pending", askers: "Several" },
+    view: "proposals",
+  },
 ] as const satisfies readonly Lens[];
 
 const readerLenses = [
