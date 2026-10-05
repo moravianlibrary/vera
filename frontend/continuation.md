@@ -103,6 +103,14 @@ The foundation is in place:
   scanning and photo capture are not built. Still missing there: rendering only the visible rows once thousands are loaded, the reason line under a row, retrying a batch's failed additions,
   the phone Filter sheet and the Batch field. Not yet built in the shell: the Watchlists row
   with its "new" badge (which leaves shared watchlists out until "seen" is kept per person), the running-tasks row, the user menu and phone bottom tabs.
+- `src/features/proposals/` is the Proposals view, on Documents' pattern: the watchlist tabs
+  (view `proposals`), `proposal-filter-bar.tsx` (search, Decision, which opens on awaiting a
+  decision and keeps a value, Proposal custody, then chips), `proposal-list.tsx` (a row per
+  document with a line under it saying why it is there; grouped by the batch or requester of
+  its earliest ask, `proposal-group-header.tsx`) and `proposal-detail.tsx`, built from the
+  record cards Documents uses too (`src/components/record-cards.tsx`: who asked, existing
+  copies, the catalog record, history and the heading), plus Placed in. A copy's link is in
+  the pane, not on the row, which is one button. Message askers is not built.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

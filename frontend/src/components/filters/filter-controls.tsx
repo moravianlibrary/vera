@@ -6,6 +6,7 @@
 // TODO(rrandiak): the Advanced editor (filtering.md §3.3); labels move to i18n.
 
 import { ChevronDown, Plus, X } from "lucide-react";
+import type { z } from "zod";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -135,6 +136,46 @@ export function AddFilterMenu({ fields }: AddFilterMenuProps) {
     </DropdownMenu>
   );
 }
+
+// ---------------------------------------------------------------- options
+
+interface FacetCount<Value extends string> {
+  value: Value;
+  count: number;
+}
+
+// The values with a match, plus any picked value that no longer has one, so its chip still reads.
+export function optionsOf<Value extends string>(
+  counts: readonly FacetCount<Value>[] | undefined,
+  selected: readonly Value[] | undefined,
+  labelOf: (value: Value) => string,
+): FilterOption[] {
+  const counted = counts ?? [];
+  const unmatched = (selected ?? [])
+    .filter((value) => !counted.some((entry) => entry.value === value))
+    .map((value) => ({ value, count: 0 }));
+
+  return [...counted, ...unmatched].map(({ value, count }) => ({
+    value,
+    label: labelOf(value),
+    count,
+  }));
+}
+
+export function byLabel(first: FilterOption, second: FilterOption): number {
+  return first.label.localeCompare(second.label);
+}
+
+export function byOrderOf(order: readonly string[]) {
+  return (first: FilterOption, second: FilterOption): number =>
+    order.indexOf(first.value) - order.indexOf(second.value);
+}
+
+export function isOneOf<Value extends string>(schema: z.ZodType<Value>) {
+  return (value: string): value is Value => schema.safeParse(value).success;
+}
+
+// ---------------------------------------------------------------- labels
 
 function selectedLabelsOf(field: FilterField): string {
   const labelOf = (value: string) =>

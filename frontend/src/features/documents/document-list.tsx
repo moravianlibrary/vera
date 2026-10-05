@@ -10,7 +10,7 @@
 // reason under a row; labels move to i18n.
 
 import type { ReactNode } from "react";
-import { Fragment, useEffect, useEffectEvent, useRef } from "react";
+import { Fragment } from "react";
 import type { DocumentGroup, DocumentGrouping } from "@/api/documents";
 import { documentGroupingSchema } from "@/api/documents";
 import { PriorityBadge, RegistryBadge, StatusBadge } from "@/components/status-badge";
@@ -30,6 +30,7 @@ import {
 import type { StatusFootnote } from "@/domain/status";
 import { statusFootnoteOf } from "@/domain/status";
 import { DocumentGroupHeader } from "@/features/documents/document-group-header";
+import { useLoadMore } from "@/hooks/use-load-more";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { cn } from "@/lib/utils";
 
@@ -75,9 +76,6 @@ const askedFormat = new Intl.DateTimeFormat("en-GB", {
   month: "short",
   year: "numeric",
 });
-
-// How far below the visible rows the next slice is asked for, so scrolling rarely waits.
-const loadAheadMargin = "800px";
 
 interface DocumentListProps {
   // Undefined until the first slice arrives.
@@ -125,28 +123,7 @@ export function DocumentList({
   const count = total === undefined ? "Documents" : `${total} documents`;
   const groupStarts = groupStartsOf(groups);
 
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const loadMore = useEffectEvent(onLoadMore);
-  // Re-armed after each slice, so a sentinel still in view asks again.
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (sentinel === null || !hasMore || isLoadingMore) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          loadMore();
-        }
-      },
-      // Observed against the list's own scroll box: against the viewport, the list's clipping
-      // would hide the margin and the sentinel would never be seen.
-      { root: scrollContainerOf(sentinel), rootMargin: `0px 0px ${loadAheadMargin} 0px` },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [hasMore, isLoadingMore]);
+  const sentinelRef = useLoadMore(hasMore, isLoadingMore, onLoadMore);
 
   const categoryNameOf = (record: DocumentRecord) => {
     const categoryId = currentIterationOf(record)?.categoryId;
@@ -362,17 +339,6 @@ function groupStartsOf(groups: readonly DocumentGroup[]): Map<number, DocumentGr
 
 function groupKeyOf(group: DocumentGroup): string | null {
   return group.kind === "batch" ? (group.batch?.id ?? null) : (group.project?.id ?? null);
-}
-
-function scrollContainerOf(element: Element): Element | null {
-  for (let current = element.parentElement; current !== null; current = current.parentElement) {
-    const { overflowY } = getComputedStyle(current);
-    if (overflowY === "auto" || overflowY === "scroll") {
-      return current;
-    }
-  }
-
-  return null;
 }
 
 function Muted({ children }: { children: ReactNode }) {

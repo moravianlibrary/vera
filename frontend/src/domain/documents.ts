@@ -5,6 +5,7 @@
 import { z } from "zod";
 import type {
   Document,
+  ExistingCopy,
   Iteration,
   PageSource,
   RegistryRecord,
@@ -63,6 +64,16 @@ export function requestsBy(record: DocumentRecord, userId: string): Request[] {
   return record.requests
     .filter((request) => request.requesterId === userId)
     .toSorted((first, second) => second.at.localeCompare(first.at));
+}
+
+// Every ask records the copies its check found; the same copy found twice is one copy.
+export function existingCopiesOf(requests: readonly Request[]): ExistingCopy[] {
+  const copies = new Map<string, ExistingCopy>();
+  for (const copy of requests.flatMap((request) => request.existingCopies)) {
+    copies.set(`${copy.source}-${copy.iterationId}`, copy);
+  }
+
+  return [...copies.values()];
 }
 
 // ---------------------------------------------------------------- status

@@ -10,6 +10,8 @@ const toneClasses = {
   amber: "bg-tone-amber/50 text-tone-amber-foreground",
   red: "bg-tone-red/50 text-tone-red-foreground",
   blue: "bg-tone-blue/50 text-tone-blue-foreground",
+  purple: "bg-tone-purple/50 text-tone-purple-foreground",
+  green: "bg-tone-green/50 text-tone-green-foreground",
 } as const satisfies Record<NoteTone, string>;
 
 interface StatusNoteProps {

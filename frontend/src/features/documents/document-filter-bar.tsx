@@ -9,15 +9,24 @@
 import { Search } from "lucide-react";
 import { useId } from "react";
 import type { z } from "zod";
-import type { Answer, DocumentListField, DocumentPage, DocumentQuery } from "@/api/documents";
+import type { DocumentListField, DocumentPage, DocumentQuery } from "@/api/documents";
 import { answerSchema, answers, publicStatusSchema, validationSchema } from "@/api/documents";
-import type { FilterField, FilterOption } from "@/components/filters/filter-controls";
-import { AddFilterMenu, FilterChip, QuickFilter } from "@/components/filters/filter-controls";
+import type { FilterField } from "@/components/filters/filter-controls";
+import {
+  AddFilterMenu,
+  byLabel,
+  byOrderOf,
+  FilterChip,
+  isOneOf,
+  optionsOf,
+  QuickFilter,
+} from "@/components/filters/filter-controls";
+import { answerLabels, existingCopyLabels } from "@/components/filters/value-labels";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { categoryPathOf } from "@/domain/categories";
-import type { AskDecision, ExistingCopyState } from "@/domain/documents";
+import type { AskDecision } from "@/domain/documents";
 import {
   askDecisionSchema,
   askDecisions,
@@ -75,18 +84,6 @@ const priorityLabels = {
   Normal: "Normal",
   Low: "Low",
 } as const satisfies Record<Priority, string>;
-
-const answerLabels = { Yes: "Yes", No: "No" } as const satisfies Record<Answer, string>;
-
-const existingCopyLabels = {
-  None: "No copy",
-  CheckFailed: "Check failed",
-  Unmapped: "Unmapped",
-  Planned: "Planned",
-  InProgress: "In progress",
-  Digitized: "Digitized",
-  Published: "Published",
-} as const satisfies Record<ExistingCopyState, string>;
 
 interface DocumentFilterBarProps {
   query: DocumentQuery;
@@ -261,39 +258,3 @@ const fieldLabels = {
   existingCopies: "Existing copy",
   askerIds: "Asked by",
 } as const satisfies Record<DocumentListField, string>;
-
-interface FacetCount<Value extends string> {
-  value: Value;
-  count: number;
-}
-
-// The values with a match, plus any picked value that no longer has one, so its chip still reads.
-function optionsOf<Value extends string>(
-  counts: readonly FacetCount<Value>[] | undefined,
-  selected: readonly Value[] | undefined,
-  labelOf: (value: Value) => string,
-): FilterOption[] {
-  const counted = counts ?? [];
-  const unmatched = (selected ?? [])
-    .filter((value) => !counted.some((entry) => entry.value === value))
-    .map((value) => ({ value, count: 0 }));
-
-  return [...counted, ...unmatched].map(({ value, count }) => ({
-    value,
-    label: labelOf(value),
-    count,
-  }));
-}
-
-function byLabel(first: FilterOption, second: FilterOption): number {
-  return first.label.localeCompare(second.label);
-}
-
-function byOrderOf(order: readonly string[]) {
-  return (first: FilterOption, second: FilterOption): number =>
-    order.indexOf(first.value) - order.indexOf(second.value);
-}
-
-function isOneOf<Value extends string>(schema: z.ZodType<Value>) {
-  return (value: string): value is Value => schema.safeParse(value).success;
-}

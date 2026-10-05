@@ -21,7 +21,7 @@ import {
 } from "@/domain/status";
 import { formatDay } from "@/lib/format-date";
 
-export type NoteTone = "slate" | "amber" | "red" | "blue";
+export type NoteTone = "slate" | "amber" | "red" | "blue" | "purple" | "green";
 
 export interface StatusNote {
   tone: NoteTone;

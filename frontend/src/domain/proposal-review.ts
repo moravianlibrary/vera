@@ -5,8 +5,8 @@
 // here, so the list, the pane and the server read it the same way.
 
 import { z } from "zod";
-import { documentRecordSchema } from "@/domain/documents";
-import type { ExistingCopy, Request } from "@/domain/entities";
+import { documentRecordSchema, existingCopiesOf } from "@/domain/documents";
+import type { Request } from "@/domain/entities";
 
 // The decisions a proposal can rest at. Pending is open; the others are hidden by default and
 // one filter away (status-model.md §6).
@@ -46,16 +46,6 @@ export function firstAskOf(row: ProposalRow): Request | null {
 
 export function askerIdsOf(row: ProposalRow): string[] {
   return [...new Set(asksOf(row).map((request) => request.requesterId))];
-}
-
-// Every ask records the copies its check found; the same copy found twice is one copy.
-export function existingCopiesOf(requests: readonly Request[]): ExistingCopy[] {
-  const copies = new Map<string, ExistingCopy>();
-  for (const copy of requests.flatMap((request) => request.existingCopies)) {
-    copies.set(`${copy.source}-${copy.iterationId}`, copy);
-  }
-
-  return [...copies.values()];
 }
 
 // Approving over a copy is a rescan, decided one item at a time.

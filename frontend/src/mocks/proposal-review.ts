@@ -20,6 +20,7 @@ import type {
 } from "@/api/proposal-review";
 import { decisionsOf, proposalPageSchema, proposalSliceSize } from "@/api/proposal-review";
 import { categoryPathOf } from "@/domain/categories";
+import { existingCopiesOf } from "@/domain/documents";
 import type {
   Document,
   Iteration,
@@ -34,7 +35,6 @@ import {
   askerIdsOf,
   asksOf,
   batchIdsOf,
-  existingCopiesOf,
   firstAskOf,
   isAfterProjectApproval,
   isBeingChecked,

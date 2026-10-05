@@ -9,6 +9,7 @@ import { navigationEntries, visibleNavigation } from "@/components/layout/naviga
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DocumentsPage } from "@/features/documents/documents-page";
+import { ProposalsPage } from "@/features/proposals/proposals-page";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { queryClient } from "@/lib/query-client";
 
@@ -21,6 +22,17 @@ function Placeholder({ title }: { title: string }) {
       </PageContent>
     </>
   );
+}
+
+function EntryPage({ entryId, label }: { entryId: string; label: string }) {
+  switch (entryId) {
+    case "documents":
+      return <DocumentsPage />;
+    case "proposals":
+      return <ProposalsPage />;
+    default:
+      return <Placeholder title={label} />;
+  }
 }
 
 function NoAccess() {
@@ -65,7 +77,7 @@ const router = createBrowserRouter([
         path: entry.path.slice(1),
         element: (
           <Gate entryId={entry.id}>
-            {entry.id === "documents" ? <DocumentsPage /> : <Placeholder title={entry.label} />}
+            <EntryPage entryId={entry.id} label={entry.label} />
           </Gate>
         ),
       })),

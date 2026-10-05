@@ -29,6 +29,11 @@ All notable changes to this project are documented here.
   per document within the decider's custody, its filters with facet counts, grouping by batch
   or requester, and approve, approve as rescan, decline and bulk approve over every asker at
   once, written to the status log.
+- The Proposals view: one row per document awaiting a decision with why it is there (a copy,
+  checks still running, the project, the askers' reasons), Decision and Proposal custody on
+  the bar and the other fields as chips, grouping by batch or by requester, watchlist tabs,
+  and the proposal beside it as cards: who asked, where it was placed, existing copies, the
+  catalog record and the history. Documents links a pending document straight to it.
 
 ### Changed
 
