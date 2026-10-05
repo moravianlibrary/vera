@@ -150,9 +150,6 @@ export function DocumentFilterBar({
 
       {chipFields.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[0.6875rem] font-bold tracking-wider text-muted-foreground uppercase">
-            Filters
-          </span>
           {activeChipFields.map((field) => (
             <FilterChip key={field.key} field={field} />
           ))}
