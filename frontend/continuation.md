@@ -113,7 +113,9 @@ The foundation is in place:
   Decide card (category and priority from `src/components/classification-fields.tsx`, which
   Propose uses too; a note for a rescan; the decline form). An approved proposal leaves the
   list and the pane says what was decided. A copy's link is in the pane, not on the row, which
-  is one button. Message askers is not built.
+  is one button. A batch's header carries "Approve N…", which opens `bulk-approve-dialog.tsx`
+  over every open row the batch asked for (one slice of at most 200; a larger harvest needs
+  approving by batch on the server). Message askers and the Asked date filter are not built.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

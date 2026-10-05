@@ -38,6 +38,9 @@ All notable changes to this project are documented here.
   the project when it came after the project's approval; approve as rescan with a note when a
   copy exists; or decline with what every asker is told and an internal note. One decision
   covers every asker.
+- Bulk approve from a batch's header in Proposals: one category and priority for what the
+  batch can take, each item untickable, with rescans and items still being checked listed as
+  left out. New proposals from Propose show in Proposals at once.
 
 ### Changed
 

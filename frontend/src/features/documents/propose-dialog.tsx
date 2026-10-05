@@ -48,6 +48,7 @@ import {
   parseProposalLines,
 } from "@/domain/proposals";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
+import { proposalsQueryKey } from "@/features/proposals/use-proposals-query";
 import { referenceQueryKey, useProjectsQuery } from "@/hooks/use-reference-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 import { cn } from "@/lib/utils";
@@ -149,6 +150,8 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
       setStep("Submitted");
       void queryClient.invalidateQueries({ queryKey: documentsQueryKey });
       void queryClient.invalidateQueries({ queryKey: watchlistsQueryKey });
+      // What waits for a decision now includes these.
+      void queryClient.invalidateQueries({ queryKey: [...proposalsQueryKey, "list"] });
       void queryClient.invalidateQueries({ queryKey: [...referenceQueryKey, "batches"] });
     },
   });

@@ -18,6 +18,7 @@ import {
   findProposal,
   listProposalCustodies,
   listProposals,
+  maximumProposalSliceSize,
 } from "@/api/proposal-review";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
@@ -32,6 +33,16 @@ export function useProposalsQuery(query: ProposalQuery, grouping: ProposalGroupi
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     // Keep the previous rows on screen while a new search is fetched.
     placeholderData: keepPreviousData,
+  });
+}
+
+// Every open proposal a batch asked for, in one slice, for approving the batch at once.
+// TODO(rrandiak): a batch beyond one slice (a harvest of thousands) needs the server to approve
+// by batch rather than by listed documents.
+export function useBatchProposalsQuery(batchId: string) {
+  return useQuery({
+    queryKey: [...proposalsQueryKey, "batch", batchId],
+    queryFn: () => listProposals({ batchIds: [batchId] }, { limit: maximumProposalSliceSize }),
   });
 }
 

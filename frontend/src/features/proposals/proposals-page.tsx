@@ -7,7 +7,7 @@
 import { ArrowRight, Inbox } from "lucide-react";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import type { ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
+import type { ProposalGroup, ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
 import {
   parseProposalGrouping,
   parseProposalSearchParams,
@@ -21,6 +21,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { hasPermission } from "@/domain/permissions";
+import { BulkApproveDialog } from "@/features/proposals/bulk-approve-dialog";
 import type { DecisionOutcome } from "@/features/proposals/proposal-detail";
 import { ProposalDetailPane } from "@/features/proposals/proposal-detail";
 import { ProposalFilterBar } from "@/features/proposals/proposal-filter-bar";
@@ -39,6 +40,7 @@ const watchlistParam = "watchlist";
 const pageParams = [selectedParam, proposalGroupingParam, watchlistParam] as const;
 
 type Filter = Record<string, string>;
+type BatchGroup = Extract<ProposalGroup, { kind: "batch" }>;
 
 const filterOf = (query: ProposalQuery): Filter =>
   Object.fromEntries(toProposalSearchParams(query));
@@ -52,6 +54,7 @@ export function ProposalsPage() {
   const grouping = parseProposalGrouping(params);
   const [filterReplacements, setFilterReplacements] = useState(0);
   const [decided, setDecided] = useState<DecisionOutcome | null>(null);
+  const [bulkGroup, setBulkGroup] = useState<BatchGroup | null>(null);
   const { data: session } = useSessionQuery();
   const proposals = useProposalsQuery(query, grouping);
   const { data: detail } = useProposalQuery(selectedId);
@@ -185,6 +188,7 @@ export function ProposalsPage() {
             grouping={grouping}
             onGroupingChange={setGrouping}
             references={{ users, projects, custodies }}
+            onBulkApprove={setBulkGroup}
             selectedId={selectedId}
             onSelect={select}
           />
@@ -198,6 +202,8 @@ export function ProposalsPage() {
           }
         }}
       />
+
+      <BulkApproveDialog group={bulkGroup} onClose={() => setBulkGroup(null)} />
     </>
   );
 }
