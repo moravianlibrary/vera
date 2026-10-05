@@ -18,6 +18,14 @@ All notable changes to this project are documented here.
 - A filter is saved as one watchlist only: saving it again, as personal or shared, is
   refused with the name of the watchlist that holds it, and a personal watchlist is shared in
   place from its tab.
+- The document detail as cards, following the demo: a toned note on what holds the record
+  (such as Review needed with its outstanding defects), its facts, who asked, existing
+  copies, defects, adding, digitization, earlier iterations, the catalog record and the
+  history; a requester reads their own ask in public words.
+
+### Changed
+
+- The page header no longer repeats the list's count under the title.
 
 ## [0.1.0] - 2026-10-02
 

@@ -11,12 +11,12 @@
 
 import type { ReactNode } from "react";
 import { Fragment, useEffect, useEffectEvent, useRef } from "react";
-import type { Audience, DocumentGroup, DocumentGrouping } from "@/api/documents";
+import type { DocumentGroup, DocumentGrouping } from "@/api/documents";
 import { documentGroupingSchema } from "@/api/documents";
 import { PriorityBadge, RegistryBadge, StatusBadge } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { categoryPathOf } from "@/domain/categories";
-import type { DocumentRecord } from "@/domain/documents";
+import type { Audience, DocumentRecord } from "@/domain/documents";
 import {
   askersOf,
   currentIterationOf,

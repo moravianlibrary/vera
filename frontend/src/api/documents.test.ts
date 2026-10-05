@@ -263,6 +263,25 @@ describe("findDocument", () => {
       true,
     );
   });
+
+  it("tells a requester their story in plain words, without the machinery", async () => {
+    signInAs("reader");
+
+    const detail = await findDocument("D17");
+    const events = detail?.log.map((entry) => entry.event) ?? [];
+
+    expect(events).not.toContain("Ingest failed");
+  });
+
+  it("withholds how an ingest failed from staff who may not read additions", async () => {
+    signInAs("staff");
+
+    const detail = await findDocument("D7");
+    const failure = detail?.log.find((entry) => entry.event === "Ingest failed");
+
+    expect(failure).toBeDefined();
+    expect(failure?.detail).toBeNull();
+  });
 });
 
 describe("document search params", () => {

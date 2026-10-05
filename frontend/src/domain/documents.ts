@@ -15,6 +15,11 @@ import { documentSchema, iterationSchema, registryStates, requestSchema } from "
 import type { DisplayStatus, PublicStatus } from "@/domain/status";
 import { decisionStatusOf, iterationStatusOf, publicStatusOf } from "@/domain/status";
 
+// Who reads a record: staff in the internal vocabulary, a requester in the public one, about
+// their own asks only (view-map.md §4).
+export const audienceSchema = z.enum(["staff", "public"]);
+export type Audience = z.infer<typeof audienceSchema>;
+
 export const documentRecordSchema = z.object({
   document: documentSchema,
   // Oldest attempt first; the last one is current.

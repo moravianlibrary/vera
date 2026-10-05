@@ -3,6 +3,7 @@
 // Tones follow docs/demos/shared/vera-model.js.
 
 import { cva } from "class-variance-authority";
+import type { ReactNode } from "react";
 import type { RecordStatus } from "@/api/documents";
 import { Badge } from "@/components/ui/badge";
 import type { Priority, RegistryRecord, RegistryState } from "@/domain/entities";
@@ -23,7 +24,22 @@ const toneVariants = cva("border-transparent", {
   },
 });
 
-type Tone = "slate" | "blue" | "green" | "amber" | "red" | "purple" | "dark";
+export type Tone = "slate" | "blue" | "green" | "amber" | "red" | "purple" | "dark";
+
+interface ToneBadgeProps {
+  tone: Tone;
+  className?: string;
+  children: ReactNode;
+}
+
+// A small badge in a status tone, for a tag that is not itself a status: "originated", "in use".
+export function ToneBadge({ tone, className, children }: ToneBadgeProps) {
+  return (
+    <Badge className={cn(toneVariants({ tone }), "px-1.5 py-0 text-[0.6875rem]", className)}>
+      {children}
+    </Badge>
+  );
+}
 
 const statusTones = {
   Declined: "red",

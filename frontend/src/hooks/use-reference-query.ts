@@ -1,7 +1,13 @@
 // Reference data views resolve names through. It changes rarely, so it is fetched once per visit.
 
 import { useQuery } from "@tanstack/react-query";
-import { listCategories, listProjects, listUsers } from "@/api/reference";
+import {
+  listBatches,
+  listCategories,
+  listDigitizationLists,
+  listProjects,
+  listUsers,
+} from "@/api/reference";
 
 export const referenceQueryKey = ["reference"] as const;
 
@@ -32,6 +38,24 @@ export function useProjectsQuery({ isEnabled = true }: ReferenceQueryOptions = {
   return useQuery({
     queryKey: [...referenceQueryKey, "projects"],
     queryFn: listProjects,
+    staleTime: Infinity,
+    enabled: isEnabled,
+  });
+}
+
+export function useDigitizationListsQuery({ isEnabled = true }: ReferenceQueryOptions = {}) {
+  return useQuery({
+    queryKey: [...referenceQueryKey, "lists"],
+    queryFn: listDigitizationLists,
+    staleTime: Infinity,
+    enabled: isEnabled,
+  });
+}
+
+export function useBatchesQuery({ isEnabled = true }: ReferenceQueryOptions = {}) {
+  return useQuery({
+    queryKey: [...referenceQueryKey, "batches"],
+    queryFn: listBatches,
     staleTime: Infinity,
     enabled: isEnabled,
   });

@@ -9,6 +9,7 @@ import { apiRoutes, documentRoute } from "@/api/routes";
 import type { AskDecision, ExistingCopyState } from "@/domain/documents";
 import {
   askDecisionSchema,
+  audienceSchema,
   documentRecordSchema,
   existingCopyStateSchema,
 } from "@/domain/documents";
@@ -22,9 +23,6 @@ import {
 } from "@/domain/entities";
 import type { PublicStatus, Validation } from "@/domain/status";
 import { displayStatuses, publicStatuses, validations } from "@/domain/status";
-
-export const audienceSchema = z.enum(["staff", "public"]);
-export type Audience = z.infer<typeof audienceSchema>;
 
 // A display status for staff, a public status for a requester.
 export const recordStatusSchema = z.enum([...new Set([...displayStatuses, ...publicStatuses])]);

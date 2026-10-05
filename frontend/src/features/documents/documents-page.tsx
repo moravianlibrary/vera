@@ -3,8 +3,7 @@
 // document, `?group=` the grouping and `?watchlist=` the watchlist the filter was opened from.
 // A link from elsewhere names a document by searching for it: a search with exactly one match
 // opens that match.
-// TODO(rrandiak): the rest of docs/demos/notebook/documents.html — the detail cards and the
-// propose form; labels move to i18n.
+// TODO(rrandiak): the propose form; labels move to i18n.
 
 import { BookOpen, Plus } from "lucide-react";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
@@ -20,21 +19,13 @@ import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
-import { StatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
-import type { DocumentRecord } from "@/domain/documents";
-import {
-  documentIdentifierOf,
-  effectivePageCount,
-  publicRecordStatusOf,
-  recordStatusOf,
-} from "@/domain/documents";
 import { hasPermission } from "@/domain/permissions";
+import { DocumentDetailPane } from "@/features/documents/document-detail";
 import { DocumentFilterBar } from "@/features/documents/document-filter-bar";
 import { DocumentList } from "@/features/documents/document-list";
 import { useDocumentQuery, useDocumentsQuery } from "@/features/documents/use-documents-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
-import { joinDetails } from "@/lib/join-details";
 
 const selectedParam = "id";
 const watchlistParam = "watchlist";
@@ -138,18 +129,11 @@ export function DocumentsPage() {
     : hasPermission(session, "addition.read")
       ? (["batch", "project"] as const)
       : (["project"] as const);
-  const statusBadgeOf = (record: DocumentRecord) => {
-    const status = isPublic ? publicRecordStatusOf(record, userId) : recordStatusOf(record);
-    return status === null ? null : <StatusBadge status={status} />;
-  };
-
   const title =
     visibleNavigation(session).find((entry) => entry.id === "documents")?.visibleLabel ?? "";
 
-  const selected = detail?.record;
-  const pages = selected === undefined ? null : effectivePageCount(selected.document);
   const detailPane =
-    selected === undefined ? (
+    detail === undefined || detail === null ? (
       <div className="grid h-full place-items-center text-center text-sm text-muted-foreground">
         <div>
           <BookOpen className="mx-auto" />
@@ -157,43 +141,7 @@ export function DocumentsPage() {
         </div>
       </div>
     ) : (
-      <article className="max-w-5xl">
-        <div className="mb-5">
-          <h2 className="text-xl leading-7 font-semibold">{selected.document.title}</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            {joinDetails([
-              documentIdentifierOf(selected.document),
-              selected.document.type,
-              selected.document.signature,
-            ])}
-          </p>
-          <div className="mt-2">{statusBadgeOf(selected)}</div>
-        </div>
-
-        <dl className="grid grid-cols-3 gap-4 text-sm">
-          <div>
-            <dt className="text-xs text-muted-foreground">Pages</dt>
-            <dd className="mt-1 font-medium">{pages?.value ?? "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-muted-foreground">Iterations</dt>
-            <dd className="mt-1 font-medium">{selected.iterations.length}</dd>
-          </div>
-          <div>
-            <dt className="text-xs text-muted-foreground">Requests</dt>
-            <dd className="mt-1 font-medium">{selected.requests.length}</dd>
-          </div>
-        </dl>
-
-        <ol className="mt-6 space-y-2 text-sm">
-          {detail?.log.map((entry) => (
-            <li key={entry.id}>
-              <b className="font-medium">{entry.event}</b>{" "}
-              <span className="text-muted-foreground">{entry.at}</span>
-            </li>
-          ))}
-        </ol>
-      </article>
+      <DocumentDetailPane detail={detail} session={session} />
     );
 
   // TODO(rrandiak): open the propose form (status-model.md §2.8).
@@ -260,7 +208,7 @@ export function DocumentsPage() {
           />
         }
         detail={detailPane}
-        detailTitle={selected?.document.title ?? "Document detail"}
+        detailTitle={detail?.record.document.title ?? "Document detail"}
         detailOpen={selectedId !== null}
         onDetailOpenChange={(isOpen) => {
           if (!isOpen) {

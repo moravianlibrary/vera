@@ -70,6 +70,8 @@ The foundation is in place:
   watchlists and, to staff, the shared ones, answers 403 to changing a shared one without
   `watchlist.manage_shared` (the admin role has it), 409 to a filter the caller already sees
   saved (`isSameWatchlistFilter` in `src/api/watchlists.ts`), and counts each by running its filter;
+  The document detail withholds an ingest error from staff without `addition.read`, and
+  rewords a requester's history into plain language (`publicEventOf`).
   `fixtures/watchlists.ts` seeds two shared ones and a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
   repeats the fixture documents through `src/mocks/volume.ts`, to try lists at volume. `createHandlers(profile)` serves it over MSW.
 - Query hooks: `src/hooks/use-session-query.ts`, `src/features/documents/use-documents-query.ts`.
@@ -78,16 +80,20 @@ The foundation is in place:
   the watchlist tabs, `document-filter-bar.tsx` (search, quick Decision and Progress, Mine,
   then the chips and "+ Add filter", left to right on one wrapping line) and `document-list.tsx`
   (stacked cards, or table rows on a subgrid once the list is 42rem wide; a group-by select in
-  its count row, `document-group-header.tsx` over each group). The page URL holds the filter,
+  its count row, `document-group-header.tsx` over each group) and `document-detail.tsx`, the
+  record beside it: the toned status note (`src/domain/status-notes.ts`, which also says whose
+  desk it is on), stat tiles and a card per part, built from `src/components/detail-card.tsx`
+  and `status-note.tsx`; a requester gets their own ask, why they asked and its story in plain
+  words. The pane's actions (Ask for this too, Withdraw, More) are not built yet. The page URL holds the filter,
   `id`, `group` and `watchlist`, the tab the filter was opened from. A search with exactly one match opens it, once per search, so links
   from elsewhere name a document by an identifier (`?q=IT12`); `?id=` is the selection while
-  browsing. Still missing there: rendering only the visible rows once thousands are loaded, the detail
-  cards, the propose form, the reason line under a row, retrying a batch's failed additions,
+  browsing. Still missing there: rendering only the visible rows once thousands are loaded, the
+  propose form, the reason line under a row, retrying a batch's failed additions,
   the phone Filter sheet and the Batch field. Not yet built in the shell: the Watchlists row
   with its "new" badge (which leaves shared watchlists out until "seen" is kept per person), the running-tasks row, the user menu and phone bottom tabs.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
-  as staff, and
+  as staff, the status notes and desks for both audiences, watchlists, and
   `joinDetails`.
 - `frontend/.env.example` is safe to commit. Keep local environment values in ignored `.env.local`; never put secrets in `VITE_*`.
 

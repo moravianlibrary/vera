@@ -4,7 +4,6 @@
 
 import type {
   Answer,
-  Audience,
   DocumentDetail,
   DocumentGroup,
   DocumentGrouping,
@@ -15,7 +14,7 @@ import type {
 } from "@/api/documents";
 import { documentPageSchema, documentSliceSize } from "@/api/documents";
 import { categoryLineageOf } from "@/domain/categories";
-import type { AskDecision, DocumentRecord } from "@/domain/documents";
+import type { AskDecision, Audience, DocumentRecord } from "@/domain/documents";
 import {
   askDecisionSchema,
   askersOf,
@@ -91,7 +90,7 @@ export function findDocumentDetail(session: Session, documentId: string): Docume
   }
 
   const visible = redact(record, session, audience);
-  return { audience, record: visible, log: logOf(visible, audience) };
+  return { audience, record: visible, log: logOf(visible, session, audience) };
 }
 
 // ---------------------------------------------------------------- reach and redaction
@@ -516,19 +515,52 @@ function byOwnLatestAsk(userId: string) {
 
 // ---------------------------------------------------------------- history
 
-// A requester sees what happened, not who did it or why.
-function logOf(record: DocumentRecord, audience: Audience): StatusLogEntry[] {
+// Staff read the whole story, less an ingest error they may not read; a requester reads what
+// happened in plain words, not who did it or why.
+function logOf(record: DocumentRecord, session: Session, audience: Audience): StatusLogEntry[] {
   const subjects = new Set([...record.iterations, ...record.requests].map((entry) => entry.id));
   const entries = database.statusLog
     .filter((entry) => subjects.has(entry.subjectId))
     .toSorted((first, second) => second.at.localeCompare(first.at));
   if (audience === "staff") {
-    return entries;
+    // How an ingest failed is withheld with the failure's error (addition.read).
+    return hasPermission(session, "addition.read")
+      ? entries
+      : entries.map((entry) => (isIngestEvent(entry) ? { ...entry, detail: null } : entry));
   }
 
-  return entries.map((entry) => ({
-    ...entry,
-    actor: entry.actor.kind === "system" ? entry.actor : { kind: "undisclosed" },
-    detail: null,
-  }));
+  return entries.flatMap((entry) => {
+    const event = publicEventOf(entry.event);
+    if (event === null) {
+      return [];
+    }
+
+    return [
+      {
+        ...entry,
+        event,
+        actor: entry.actor.kind === "system" ? entry.actor : { kind: "undisclosed" },
+        detail: null,
+      },
+    ];
+  });
+}
+
+function isIngestEvent(entry: StatusLogEntry): boolean {
+  return entry.event.startsWith("Ingest");
+}
+
+// A requester reads their request's story in plain language (status-log.md §7): what moved it
+// forward or held it, never the checks, retries and corrections behind it.
+// TODO(rrandiak): carry the public wording on the event codes once the log contract exists.
+const publicEvents = [
+  { prefix: "Approved", wording: "Accepted" },
+  { prefix: "Forbidden", wording: "Not available for digitization" },
+  { prefix: "Cancelled", wording: "On hold" },
+  { prefix: "Digitized", wording: "Digitized" },
+  { prefix: "Published", wording: "Available to read" },
+] as const;
+
+function publicEventOf(event: string): string | null {
+  return publicEvents.find((entry) => event.startsWith(entry.prefix))?.wording ?? null;
 }
