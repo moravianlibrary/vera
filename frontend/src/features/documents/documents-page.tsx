@@ -145,7 +145,6 @@ export function DocumentsPage() {
 
   const title =
     visibleNavigation(session).find((entry) => entry.id === "documents")?.visibleLabel ?? "";
-  const count = summary === undefined ? null : `${summary.total} documents`;
 
   const selected = detail?.record;
   const pages = selected === undefined ? null : effectivePageCount(selected.document);
@@ -204,7 +203,6 @@ export function DocumentsPage() {
     <>
       <PageHeader
         title={title}
-        details={[count, isPublic ? session.user.name : null]}
         actions={
           canPropose && (
             <Button size="sm">

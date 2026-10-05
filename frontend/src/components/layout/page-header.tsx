@@ -1,22 +1,17 @@
-// The strip at the top of every view: the title, one secondary line of details joined with a
-// middle dot, and the view's actions on the right (docs/demos/shared/vera.css § top bar). It
+// The strip at the top of every view: the title and the view's actions on the right
+// (docs/demos/shared/vera.css § top bar). Counts belong to the list they count, not here. It
 // never scrolls; the view's body below it does.
 
 import type { ReactNode } from "react";
-import type { DetailPart } from "@/lib/join-details";
-import { joinDetails } from "@/lib/join-details";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
   title: string;
-  details?: readonly DetailPart[];
   actions?: ReactNode;
   className?: string;
 }
 
-export function PageHeader({ title, details = [], actions, className }: PageHeaderProps) {
-  const detailLine = joinDetails(details);
-
+export function PageHeader({ title, actions, className }: PageHeaderProps) {
   return (
     <header
       className={cn(
@@ -24,10 +19,7 @@ export function PageHeader({ title, details = [], actions, className }: PageHead
         className,
       )}
     >
-      <div className="min-w-0">
-        <h1 className="truncate text-lg leading-7 font-semibold">{title}</h1>
-        {detailLine && <p className="truncate text-xs text-muted-foreground">{detailLine}</p>}
-      </div>
+      <h1 className="min-w-0 truncate text-lg leading-7 font-semibold">{title}</h1>
 
       {actions && <div className="ml-auto flex flex-wrap items-center gap-2">{actions}</div>}
     </header>

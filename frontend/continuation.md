@@ -22,8 +22,8 @@ The foundation is in place:
   rail opens over the content on hover (`src/hooks/use-sidebar-peek.ts`, navigation.md §4.2):
   200ms in, instant out, fine pointers only, tap to open on touch, keyboard focus opens it, and
   it stays shut after a navigation until the pointer leaves the bar.
-  `page-header.tsx` is every view's header (`title`, `details` joined with " · " by
-  `src/lib/join-details.ts`, `actions` on the right) plus `PageContent` for a scrolling body.
+  `page-header.tsx` is every view's header (`title`, `actions` on the right; no count line, a
+  count belongs to its list) plus `PageContent` for a scrolling body.
   `master-detail.tsx` takes the remaining height: from 1024px a list at half the width (at least
   21.5rem) beside a docked pane, scrolling independently; a detail sheet below that. The list
   is a CSS container, so rows lay out by its own width.
