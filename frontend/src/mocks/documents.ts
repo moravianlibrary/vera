@@ -96,7 +96,7 @@ export function findDocumentDetail(session: Session, documentId: string): Docume
 
 // ---------------------------------------------------------------- reach and redaction
 
-function audienceOf(session: Session): Audience {
+export function audienceOf(session: Session): Audience {
   return hasPermission(session, "iteration.read") ? "staff" : "public";
 }
 

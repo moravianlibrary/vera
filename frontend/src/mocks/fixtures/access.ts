@@ -380,6 +380,10 @@ export const roles: readonly Role[] = [
         scope: null,
       },
       {
+        permission: "watchlist.manage_shared",
+        scope: "any",
+      },
+      {
         permission: "addition.read",
         scope: "any",
       },

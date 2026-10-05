@@ -224,6 +224,7 @@ export function DocumentsPage() {
           filter={filterOf(query)}
           openedId={params.get(watchlistParam)}
           isSameFilter={isSameFilter}
+          canShare={hasPermission(session, "watchlist.manage_shared")}
           onOpen={(watchlist) => {
             setFilter(watchlist === null ? {} : queryOf(watchlist.filter), watchlist?.id ?? null);
             setFilterReplacements((count) => count + 1);

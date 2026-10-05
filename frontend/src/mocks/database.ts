@@ -15,6 +15,7 @@ import { users } from "@/mocks/fixtures/users";
 import { watchlists } from "@/mocks/fixtures/watchlists";
 import { withCopies } from "@/mocks/volume";
 
+// The owner is who saved it; for a shared watchlist that says nothing about who sees it.
 export interface StoredWatchlist extends Watchlist {
   readonly ownerId: string;
 }

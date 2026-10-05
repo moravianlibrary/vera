@@ -348,11 +348,18 @@ export type StatusLogEntry = z.infer<typeof statusLogEntrySchema>;
 export const watchlistViewSchema = z.enum(["documents"]);
 export type WatchlistView = z.infer<typeof watchlistViewSchema>;
 
+// Personal is the owner's own lens; shared is one everybody who opens the view sees, and only
+// those who manage shared watchlists change (filtering.md §4.4).
+export const watchlistScopes = ["personal", "shared"] as const;
+export const watchlistScopeSchema = z.enum(watchlistScopes);
+export type WatchlistScope = z.infer<typeof watchlistScopeSchema>;
+
 // A saved filter over one view. Grouping is presentation and is never part of it.
 export const watchlistSchema = z.object({
   id,
   name: z.string().min(1),
   view: watchlistViewSchema,
+  scope: watchlistScopeSchema,
   filter: z.record(z.string(), z.string()),
   createdAt: timestamp,
 });

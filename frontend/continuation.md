@@ -30,9 +30,13 @@ The foundation is in place:
 - Filters (`src/components/filters/`): a view declares its fields (filtering.md §2.1);
   `filter-controls.tsx` draws quick fields on the bar (`QuickFilter`, "Decision: any ▾"), the
   chips and the "+ Add filter" picker, with facet counts and several values per field.
-  `watchlist-tabs.tsx` puts a view's watchlists as tabs above its bar: "All", each saved
-  filter with its count, "+" to save the current one; a tab changed since saving shows a dot
-  and Save / Save as new; the open tab's menu renames or deletes it.
+  `watchlist-tabs.tsx` puts a view's watchlists as tabs above its bar: "All", the shared ones
+  (a people icon), the caller's own, each with its count, then "+". Each thing is saved in one
+  place: "+" saves the current filter as a new watchlist (Personal or Shared, the choice only
+  with `watchlist.manage_shared`); an open tab whose filter changed saves the change itself
+  (a save icon on the tab, and Save / Discard changes in its menu). Rename and Delete sit in
+  the open tab's menu where the caller may change it; a shared tab they may not change shows
+  only a dot and Discard.
 - `src/lib/utils.ts` owns `cn()` (clsx + tailwind-merge).
 - `src/domain/` holds the model: zod schemas with inferred types for every entity
   (`entities.ts`), permission keys and grant checks (`permissions.ts`), the status
@@ -47,8 +51,9 @@ The foundation is in place:
   `project`, `priority`, `copy`, `asker`; a requester has only `status`, in the public
   vocabulary) and the page/detail responses with per-field facet counts. `group=batch|project`
   arranges the list: the server sorts by group first and each slice carries the headers of
-  the groups it touches with their full counts. `watchlists.ts` lists a view's watchlists with
-  their counts, creates, renames or refilters, and deletes them
+  the groups it touches with their full counts. `watchlists.ts` lists a view's watchlists (shared
+  first, then the caller's own, each with its count and `isEditable`), creates, renames or
+  refilters, and deletes them
   (`src/hooks/use-watchlists-query.ts`). The list comes in slices (`cursor`, `limit`, default 50): each
   response carries `total` over the whole filter and the `nextCursor`, and the client loads
   the next slice as the list nears its end (`useInfiniteQuery`). `reference.ts` serves users, categories and projects
@@ -58,14 +63,16 @@ The foundation is in place:
   on. `session.ts` resolves the mock profile into grants and custody; `documents.ts` applies
   reach (`iteration.read` → staff, else own requests in the public vocabulary), redaction,
   search, filters and facet counts (each counted over the other filters), order and grouping.
-  A requester's view has only search and status. `watchlists.ts` keeps watchlists to their
-  owner and counts each by running its filter; `fixtures/watchlists.ts` seeds a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
+  A requester's view has only search and status. `watchlists.ts` shows each caller their own
+  watchlists and, to staff, the shared ones, answers 403 to changing a shared one without
+  `watchlist.manage_shared` (the admin role has it), and counts each by running its filter;
+  `fixtures/watchlists.ts` seeds two shared ones and a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
   repeats the fixture documents through `src/mocks/volume.ts`, to try lists at volume. `createHandlers(profile)` serves it over MSW.
 - Query hooks: `src/hooks/use-session-query.ts`, `src/features/documents/use-documents-query.ts`.
   Sidebar entries and their required permissions: `src/components/layout/navigation.ts`.
 - `src/app.tsx` holds the providers and routes. `src/features/documents/` is the Documents view:
   the watchlist tabs, `document-filter-bar.tsx` (search, quick Decision and Progress, Mine,
-  then the Filters chips, left to right on one wrapping line) and `document-list.tsx`
+  then the chips and "+ Add filter", left to right on one wrapping line) and `document-list.tsx`
   (stacked cards, or table rows on a subgrid once the list is 42rem wide; a group-by select in
   its count row, `document-group-header.tsx` over each group). The page URL holds the filter,
   `id`, `group` and `watchlist`, the tab the filter was opened from. A search with exactly one match opens it, once per search, so links
@@ -73,7 +80,7 @@ The foundation is in place:
   browsing. Still missing there: rendering only the visible rows once thousands are loaded, the detail
   cards, the propose form, the reason line under a row, retrying a batch's failed additions,
   the phone Filter sheet and the Batch field. Not yet built in the shell: the Watchlists row
-  with its "new" badge, the running-tasks row, the user menu and phone bottom tabs.
+  with its "new" badge (which leaves shared watchlists out until "seen" is kept per person), the running-tasks row, the user menu and phone bottom tabs.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, and

@@ -22,6 +22,7 @@ export const permissionKeys = [
   "iteration.resume",
   "iteration.publish",
   "watch",
+  "watchlist.manage_shared",
   "addition.read",
   "addition.retry",
   "addition.read_payload",

@@ -12,6 +12,9 @@ All notable changes to this project are documented here.
   counts in the URL, the status filtered by its stored dimensions, slice-by-slice loading,
   cards or table rows by the list's own width, grouping by batch or project, and watchlists
   as tabs.
+- Shared watchlists: every staff member sees them, and only holders of the new
+  `watchlist.manage_shared` permission create, change, rename or delete them. A watchlist is
+  saved new from "+" and its changes are saved, or discarded, on its own tab.
 
 ## [0.1.0] - 2026-10-02
 

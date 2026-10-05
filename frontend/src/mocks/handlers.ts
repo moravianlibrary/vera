@@ -16,7 +16,12 @@ import { watchlistViewSchema } from "@/domain/entities";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
 import { resolveSession } from "@/mocks/session";
-import { findOwnWatchlist, ownWatchlists, publicWatchlistOf } from "@/mocks/watchlists";
+import {
+  canChange,
+  findVisibleWatchlist,
+  publicWatchlistOf,
+  visibleWatchlists,
+} from "@/mocks/watchlists";
 
 const route = (path: string) => `${env.VITE_API_BASE_URL}${path}`;
 
@@ -56,13 +61,20 @@ export function createHandlers(profile: MockUserProfile) {
       const view = watchlistViewSchema.safeParse(
         new URL(request.url).searchParams.get(watchlistViewParam),
       );
-      return HttpResponse.json(ownWatchlists(currentSession(), view.success ? view.data : null));
+      return HttpResponse.json(
+        visibleWatchlists(currentSession(), view.success ? view.data : null),
+      );
     }),
 
     http.post(route(apiRoutes.watchlists), async ({ request }) => {
+      const session = currentSession();
       const draft = watchlistDraftSchema.safeParse(await request.json());
       if (!draft.success) {
         return HttpResponse.json({ message: draft.error.message }, { status: 422 });
+      }
+
+      if (!canChange(session, draft.data.scope)) {
+        return forbidden();
       }
 
       const watchlist = {
@@ -70,14 +82,19 @@ export function createHandlers(profile: MockUserProfile) {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
       };
-      database.watchlists.push({ ...watchlist, ownerId: currentSession().user.id });
+      database.watchlists.push({ ...watchlist, ownerId: session.user.id });
       return HttpResponse.json(watchlist, { status: 201 });
     }),
 
     http.patch(route(`${apiRoutes.watchlists}/:watchlistId`), async ({ params, request }) => {
-      const watchlist = findOwnWatchlist(currentSession(), String(params.watchlistId));
+      const session = currentSession();
+      const watchlist = findVisibleWatchlist(session, String(params.watchlistId));
       if (watchlist === null) {
         return HttpResponse.json({ message: "Watchlist not found" }, { status: 404 });
+      }
+
+      if (!canChange(session, watchlist.scope)) {
+        return forbidden();
       }
 
       const change = watchlistChangeSchema.safeParse(await request.json());
@@ -91,15 +108,27 @@ export function createHandlers(profile: MockUserProfile) {
     }),
 
     http.delete(route(`${apiRoutes.watchlists}/:watchlistId`), ({ params }) => {
-      const watchlist = findOwnWatchlist(currentSession(), String(params.watchlistId));
+      const session = currentSession();
+      const watchlist = findVisibleWatchlist(session, String(params.watchlistId));
       if (watchlist === null) {
         return HttpResponse.json({ message: "Watchlist not found" }, { status: 404 });
+      }
+
+      if (!canChange(session, watchlist.scope)) {
+        return forbidden();
       }
 
       database.watchlists.splice(database.watchlists.indexOf(watchlist), 1);
       return new HttpResponse(null, { status: 204 });
     }),
   ];
+}
+
+function forbidden() {
+  return HttpResponse.json(
+    { message: "Only those who manage shared watchlists can change them" },
+    { status: 403 },
+  );
 }
 
 export const handlers = createHandlers(env.VITE_MOCK_USER);
