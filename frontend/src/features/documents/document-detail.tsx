@@ -55,7 +55,7 @@ import {
   outstandingDefects,
   validationOf,
 } from "@/domain/status";
-import type { Desk, StatusNote as StatusNoteParts } from "@/domain/status-notes";
+import type { StatusNote as StatusNoteParts } from "@/domain/status-notes";
 import { deskOf, publicRecordNoteOf, staffRecordNoteOf } from "@/domain/status-notes";
 import {
   useBatchesQuery,
@@ -137,15 +137,7 @@ function StaffFacts({ record, session }: { record: DocumentRecord; session: Sess
 
   if (current === null) {
     const askerCount = new Set(record.requests.map((request) => request.requesterId)).size;
-    return (
-      <StatTiles
-        stats={[
-          statusStat,
-          { label: "Askers", value: askerCount, foot: "decided together" },
-          where,
-        ]}
-      />
-    );
+    return <StatTiles stats={[statusStat, { label: "Askers", value: askerCount }, where]} />;
   }
 
   const pages = effectivePageCount(record.document);
@@ -164,29 +156,18 @@ function StaffFacts({ record, session }: { record: DocumentRecord; session: Sess
           foot: pages === null ? "no source answered" : `${pages.source} · tier ${pages.tier}`,
         },
         where,
-        {
-          label: "Iteration",
-          value: current.attempt,
-          foot: record.iterations.length > 1 ? "earlier ones below" : "the first attempt",
-        },
+        { label: "Iteration", value: current.attempt },
       ]}
     />
   );
 }
-
-const deskFeet = {
-  documents: "being added",
-  proposals: "whose desk it is on",
-  validations: "whose desk it is on",
-  lists: "whose desk it is on",
-} as const satisfies Record<Desk, string>;
 
 // The view whose queue holds it, as a link only for whoever may open that view.
 function whereNowOf(record: DocumentRecord, session: Session): Stat {
   const label = "Where it is now";
   const desk = deskOf(record);
   if (desk === null) {
-    return { label, value: "Nobody", foot: "nothing is waiting on anyone", isText: true };
+    return { label, value: "Nobody", isText: true };
   }
 
   if (desk === "documents") {
@@ -194,7 +175,7 @@ function whereNowOf(record: DocumentRecord, session: Session): Stat {
     return {
       label,
       value: "Here",
-      foot: isFailed ? "ingest failed — an administrator retries it" : deskFeet.documents,
+      foot: isFailed ? "ingest failed" : "being added",
       isText: true,
     };
   }
@@ -215,7 +196,6 @@ function whereNowOf(record: DocumentRecord, session: Session): Stat {
           <ArrowRight className="size-3.5" />
         </Link>
       ),
-    foot: deskFeet[desk],
     isText: true,
   };
 }
@@ -236,10 +216,22 @@ function AskersCard({
   const requests = record.requests.toSorted((first, second) => second.at.localeCompare(first.at));
   const askerCount = new Set(record.requests.map((request) => request.requesterId)).size;
   const isPending = record.requests.some((request) => request.decision === "Pending");
-  const isFollowed = record.requests.some(isFollowing);
 
   return (
-    <DetailCard title={`Asked by ${askerCount}`}>
+    <DetailCard
+      title={`Asked by ${askerCount}`}
+      action={
+        isPending &&
+        hasPermission(session, "request.decide") && (
+          <Button asChild size="sm" variant="outline">
+            <Link to="/review/proposals">
+              Decide in Proposals
+              <ArrowRight />
+            </Link>
+          </Button>
+        )
+      }
+    >
       {requests.map((request) => {
         const user = users.find((candidate) => candidate.id === request.requesterId);
         const project = projects.find((candidate) => candidate.id === request.projectId);
@@ -265,22 +257,6 @@ function AskersCard({
           </DetailRow>
         );
       })}
-      {isPending && (
-        <FinePrint>
-          One decision covers every asker.{" "}
-          {hasPermission(session, "request.decide") && (
-            <Link to="/review/proposals" className="underline underline-offset-4">
-              Decide it in Proposals →
-            </Link>
-          )}
-        </FinePrint>
-      )}
-      {isFollowed && (
-        <FinePrint>
-          A later asker <b>follows</b> the work already moving rather than duplicating it — none of
-          them sees the word “duplicate”.
-        </FinePrint>
-      )}
     </DetailCard>
   );
 }
@@ -337,14 +313,11 @@ function CopiesCard({
   const rescan = record.requests.find(
     (request) => request.decision === "Approved" && request.rescan !== null,
   );
-  const isFoundAfterApproval = copies.some((copy) => copy.foundAfterApproval);
 
   if (copies.length === 0 && registries.length === 0) {
     return (
       <DetailCard title="Existing copies">
-        <p className="text-xs text-muted-foreground">
-          No copy anywhere VERA looks. Nothing to decide over.
-        </p>
+        <p className="text-xs text-muted-foreground">No copy found.</p>
       </DetailCard>
     );
   }
@@ -372,12 +345,6 @@ function CopiesCard({
           {rescan.rescan.note}
         </StatusNote>
       )}
-      {isFoundAfterApproval && rescan === undefined && (
-        <FinePrint>
-          <b>Found after approval</b>, so nobody decided over it. It is flagged in the list editor's
-          pool, so it is never listed unseen.
-        </FinePrint>
-      )}
 
       {registries.length > 0 && (
         <div className="mt-3">
@@ -402,15 +369,7 @@ function CopiesCard({
               </Muted>
             </DetailRow>
           ))}
-          <FinePrint>Registry answers are evidence: shown as the registry said them.</FinePrint>
         </div>
-      )}
-
-      {copies.length > 0 && rescan === undefined && !isFoundAfterApproval && (
-        <FinePrint>
-          A copy blocks nothing. Approving over it is a <b>rescan</b> — decided in Proposals, one
-          item at a time.
-        </FinePrint>
       )}
     </DetailCard>
   );
@@ -479,10 +438,6 @@ function DefectsCard({ iteration, session }: { iteration: Iteration; session: Se
           {denial === undefined ? "" : `: ${denial.note}`}
         </FinePrint>
       )}
-      <FinePrint>
-        Read-only here — accepting a defect is a decision, and deciding happens in Documents
-        Validations.
-      </FinePrint>
     </DetailCard>
   );
 }
@@ -540,16 +495,9 @@ function AddingCard({
           {iteration.ingestFailure?.error ?? "the error is not recorded."}
         </StatusNote>
       )}
-      {isFailed && (
+      {isFailed && !hasPermission(session, "addition.retry") && (
         <FinePrint>
-          {hasPermission(session, "addition.retry") ? (
-            "A failed ingest is retried, never deleted."
-          ) : (
-            <>
-              Only an administrator can retry this. Ask about{" "}
-              <b className="font-mono">{batch.id}</b> — the batch is the unit they retry.
-            </>
-          )}
+          Only an administrator can retry batch <b className="font-mono">{batch.id}</b>.
         </FinePrint>
       )}
     </DetailCard>
@@ -681,10 +629,6 @@ function EarlierCard({ record }: { record: DocumentRecord }) {
           </Muted>
         </DetailRow>
       ))}
-      <FinePrint>
-        One document, several attempts. The row shows the current one; the earlier scans stay here,
-        and are the <b>VERA</b> copy a rescan was decided over.
-      </FinePrint>
     </DetailCard>
   );
 }
@@ -727,7 +671,7 @@ function CatalogCard({
       />
       <div className="mt-3.5">
         {pageSources.length === 0 ? (
-          <FinePrint>No source answered a page count — that is a defect, not a blank.</FinePrint>
+          <p className="text-muted-foreground">No page count</p>
         ) : (
           pageSources.map((source) => (
             <DetailRow
@@ -804,7 +748,6 @@ function HistoryCard({
           )}
         </DetailRow>
       ))}
-      <FinePrint>Provenance lives in the history, not in a box of its own.</FinePrint>
     </DetailCard>
   );
 }
@@ -833,7 +776,6 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
           {
             label: "Status",
             value: status === null ? "—" : <StatusBadge status={status} />,
-            foot: "the same words a notification carries",
             isText: true,
           },
           {
@@ -857,10 +799,6 @@ function OwnRecord({ detail, session }: DocumentDetailPaneProps) {
                   <ArrowUpRight className="size-3.5" />
                 </a>
               ),
-            foot:
-              readingLink === null
-                ? "you get a link the moment there is one"
-                : "somewhere you can read it now",
             isText: true,
           },
         ]}
