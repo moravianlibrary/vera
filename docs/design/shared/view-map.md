@@ -128,6 +128,7 @@ and *Mine* as a filter.
   | *In VERA* + its status | **ask for this too** — joins that work ([[status-model]] §2.7) |
   | *Which volume?* | nothing until a volume is chosen or the item removed — never the whole run by accident |
   | *Not in the catalog* / *not a known identifier* | skipped and listed in the report, never guessed |
+  | *Already yours* | skipped — the person already asks for it, and a second ask would only repeat the first |
 
   Then **details** — why (an item's own reason wins), and for somebody holding
   `request.decide` the category, priority and **approve now** for the *new*

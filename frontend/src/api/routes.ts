@@ -10,6 +10,9 @@ export const apiRoutes = {
   batches: "/batches",
   documents: "/documents",
   watchlists: "/watchlists",
+  proposalSettings: "/proposals/settings",
+  proposalLookup: "/proposals/lookup",
+  proposals: "/proposals",
 } as const;
 
 export function documentRoute(documentId: string): string {

@@ -87,8 +87,12 @@ The foundation is in place:
   words. The pane's actions (Ask for this too, Withdraw, More) are not built yet. The page URL holds the filter,
   `id`, `group` and `watchlist`, the tab the filter was opened from. A search with exactly one match opens it, once per search, so links
   from elsewhere name a document by an identifier (`?q=IT12`); `?id=` is the selection while
-  browsing. Still missing there: rendering only the visible rows once thousands are loaded, the
-  propose form, the reason line under a row, retrying a batch's failed additions,
+  browsing. `propose-dialog.tsx` is Propose: items typed, pasted or from a file, each checked as
+  it lands (`src/api/proposals.ts`; identifier formats and line parsing in
+  `src/domain/proposals.ts`), then why, a project and, with `request.decide`, approving at
+  once, then a report; the mock (`src/mocks/proposals.ts`, `fixtures/catalog.ts`) resolves
+  against a small catalog plus every fixture document. Catalog search, record links, barcode
+  scanning and photo capture are not built. Still missing there: rendering only the visible rows once thousands are loaded, the reason line under a row, retrying a batch's failed additions,
   the phone Filter sheet and the Batch field. Not yet built in the shell: the Watchlists row
   with its "new" badge (which leaves shared watchlists out until "seen" is kept per person), the running-tasks row, the user menu and phone bottom tabs.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,

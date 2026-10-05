@@ -7,15 +7,24 @@ import {
   parseDocumentSearchParams,
   parseDocumentSliceParams,
 } from "@/api/documents";
+import { proposalDraftSchema, proposalLookupSchema } from "@/api/proposals";
 import { apiRoutes } from "@/api/routes";
 import { watchlistChangeSchema, watchlistDraftSchema, watchlistViewParam } from "@/api/watchlists";
 import type { MockUserProfile } from "@/config/env";
 import { env } from "@/config/env";
 import type { Session } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
+import { hasPermission } from "@/domain/permissions";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
+import {
+  checkItem,
+  proposableProjectsOf,
+  proposalLimitOf,
+  proposalSettings,
+  submitProposal,
+} from "@/mocks/proposals";
 import { resolveSession } from "@/mocks/session";
 import {
   canChange,
@@ -57,6 +66,55 @@ export function createHandlers(profile: MockUserProfile) {
       }
 
       return HttpResponse.json(detail);
+    }),
+
+    http.get(route(apiRoutes.proposalSettings), () => HttpResponse.json(proposalSettings)),
+
+    http.post(route(apiRoutes.proposalLookup), async ({ request }) => {
+      const session = currentSession();
+      if (!hasPermission(session, "request.create")) {
+        return HttpResponse.json({ message: "You may not propose" }, { status: 403 });
+      }
+
+      const lookup = proposalLookupSchema.safeParse(await request.json());
+      if (!lookup.success) {
+        return HttpResponse.json({ message: lookup.error.message }, { status: 422 });
+      }
+
+      return HttpResponse.json(lookup.data.items.map((item) => checkItem(session, item)));
+    }),
+
+    http.post(route(apiRoutes.proposals), async ({ request }) => {
+      const session = currentSession();
+      const draft = proposalDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return HttpResponse.json({ message: draft.error.message }, { status: 422 });
+      }
+
+      const isApprovalRefused =
+        draft.data.approval !== null && !hasPermission(session, "request.decide");
+      if (!hasPermission(session, "request.create") || isApprovalRefused) {
+        return HttpResponse.json({ message: "You may not propose this" }, { status: 403 });
+      }
+
+      if (draft.data.items.length > proposalLimitOf(session)) {
+        return HttpResponse.json(
+          { message: `At most ${proposalLimitOf(session)} items at once` },
+          { status: 422 },
+        );
+      }
+
+      const isProjectRefused =
+        draft.data.projectId !== null &&
+        !proposableProjectsOf(session).some((project) => project.id === draft.data.projectId);
+      if (isProjectRefused) {
+        return HttpResponse.json(
+          { message: "Only a member proposes into a project, and not into a rejected one" },
+          { status: 422 },
+        );
+      }
+
+      return HttpResponse.json(submitProposal(session, draft.data), { status: 201 });
     }),
 
     http.get(route(apiRoutes.watchlists), ({ request }) => {

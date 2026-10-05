@@ -3,7 +3,7 @@
 // document, `?group=` the grouping and `?watchlist=` the watchlist the filter was opened from.
 // A link from elsewhere names a document by searching for it: a search with exactly one match
 // opens that match.
-// TODO(rrandiak): the propose form; labels move to i18n.
+// TODO(rrandiak): labels move to i18n.
 
 import { BookOpen, Plus } from "lucide-react";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
@@ -24,6 +24,7 @@ import { hasPermission } from "@/domain/permissions";
 import { DocumentDetailPane } from "@/features/documents/document-detail";
 import { DocumentFilterBar } from "@/features/documents/document-filter-bar";
 import { DocumentList } from "@/features/documents/document-list";
+import { ProposeDialog } from "@/features/documents/propose-dialog";
 import { useDocumentQuery, useDocumentsQuery } from "@/features/documents/use-documents-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
 
@@ -45,6 +46,7 @@ export function DocumentsPage() {
   const selectedId = params.get(selectedParam);
   const grouping = parseDocumentGrouping(params);
   const [filterReplacements, setFilterReplacements] = useState(0);
+  const [isProposing, setIsProposing] = useState(false);
   const { data: session } = useSessionQuery();
   const documents = useDocumentsQuery(query, grouping);
   const { data: detail } = useDocumentQuery(selectedId);
@@ -144,7 +146,6 @@ export function DocumentsPage() {
       <DocumentDetailPane detail={detail} session={session} />
     );
 
-  // TODO(rrandiak): open the propose form (status-model.md §2.8).
   const canPropose = hasPermission(session, "request.create");
 
   return (
@@ -153,7 +154,7 @@ export function DocumentsPage() {
         title={title}
         actions={
           canPropose && (
-            <Button size="sm">
+            <Button size="sm" onClick={() => setIsProposing(true)}>
               <Plus />
               Propose
             </Button>
@@ -216,6 +217,15 @@ export function DocumentsPage() {
           }
         }}
       />
+
+      {canPropose && (
+        <ProposeDialog
+          isOpen={isProposing}
+          onOpenChange={setIsProposing}
+          session={session}
+          viewTitle={title}
+        />
+      )}
     </>
   );
 }

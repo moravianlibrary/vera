@@ -22,6 +22,9 @@ All notable changes to this project are documented here.
   (such as Review needed with its outstanding defects), its facts, who asked, existing
   copies, defects, adding, digitization, earlier iterations, the catalog record and the
   history; a requester reads their own ask in public words.
+- Propose: one dialog holding one list of items, typed, pasted or from a file, each checked
+  against the catalog and VERA as it lands, then submitted as a request or, for several, one
+  batch; a curator may approve the new ones at once.
 
 ### Changed
 

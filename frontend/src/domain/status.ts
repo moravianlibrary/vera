@@ -174,7 +174,8 @@ export function publicStatusOf(request: Request, iteration: Iteration | null): P
   return iteration === null ? "BeingAdded" : publicIterationStatusOf(iteration);
 }
 
-function publicIterationStatusOf(iteration: Iteration): PublicStatus {
+// The public status of an attempt, whoever asked for it.
+export function publicIterationStatusOf(iteration: Iteration): PublicStatus {
   if (iteration.cancellation !== null) {
     return "OnHold";
   }

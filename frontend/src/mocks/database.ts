@@ -30,7 +30,10 @@ export const database = {
   categories,
   projects,
   lists,
-  batches,
-  ...records,
+  batches: [...batches],
+  documents: [...records.documents],
+  iterations: [...records.iterations],
+  requests: [...records.requests],
+  statusLog: [...records.statusLog],
   watchlists: [...watchlists],
 };
