@@ -288,6 +288,12 @@ shipped roles in §4 actually use.
 > grant they make is itself bounded by the grant they hold — delegation cannot
 > widen. Granting at a root stays `any`.
 
+### Watchlists
+
+| Permission | Scopes | |
+|---|---|---|
+| `watchlist.manage_shared` | `any ✱` | create, change, rename and delete **shared** watchlists ([[filtering]] §4.5). A person's own watchlists need only `watch` (§2.1); seeing a shared one needs only the view |
+
 ### Administration
 
 | Permission | Scopes | |

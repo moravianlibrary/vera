@@ -136,8 +136,9 @@ and are not saved in a watchlist.
 ## 4. Watchlists
 
 A watchlist is **a saved filter on one view**: the view, its predicates, a
-name, an owner. *Save as watchlist* on the bar saves exactly the chips shown,
-quick fields included. It can be saved at any tier, since saving is naming
+name, and who sees it: its owner, or everybody who opens the view (§4.4).
+The view shows its watchlists as tabs above the bar, and **+** at the end of
+them saves exactly the chips shown, quick fields included. It can be saved at any tier, since saving is naming
 what is already on the bar, not building it (this replaces [[view-rules]] §2
 rule 3).
 
@@ -195,8 +196,8 @@ Documents     High priority, not listed    Priority: Urgent, High · Ready      
 - **Every watchlist the person owns**, grouped by view in sidebar order,
   draggable within a view (the order the popover uses).
 - **Badge** on or off per watchlist: a lens kept for reference should not ping.
-- **Edit filter** opens the view with that filter applied and *Save* in place
-  of *Save as watchlist*.
+- **Edit filter** opens the view on the watchlist's tab. A change to the filter
+  is saved, or discarded, on that tab; **+** only ever saves a new one.
 - **A watchlist on a view the person can no longer open** is listed greyed
   under *No longer reachable*, with *Delete*: losing a role must not delete
   someone's lenses, and getting it back brings them back.
@@ -205,11 +206,30 @@ Documents     High priority, not listed    Priority: Urgent, High · Ready      
 
 ### 4.4 What a watchlist is not
 
-- **Not shared**, not yet. A shared lens is a team's queue, which is a view,
-  and needs its own decision.
 - **Not a notification.** Mail or chat on a watchlist change would be a hook
   on a derived condition, which [[view-catalog]] *Hooks* rules out. The badge
   is the notification.
+- **Not a role's view.** A shared watchlist is a lens everybody on the view
+  can open, not a queue assigned to anyone (§4.5).
+
+### 4.5 Personal and shared
+
+Decided 2026-10-05. A watchlist is **personal** or **shared**:
+
+| | personal | shared |
+|---|---|---|
+| seen by | its owner | everybody who opens the view, at the audience it was drawn for: staff, since a requester's *My Documents* is their own asks |
+| changed by | its owner, under `watch` | holders of `watchlist.manage_shared` ([[permissions]] §3) |
+| on the tabs | after the shared ones | first, marked with a people icon, *Shared* on hover |
+
+**+** asks for a name, and with `watchlist.manage_shared` also *Personal* or
+*Shared*. A shared tab the person may not change still shows that its filter
+changed, and offers only *Discard*; **+** keeps the change as their own.
+
+**Shared watchlists carry no badge yet.** *Seen* is one timestamp per
+watchlist (§5), which is right for its owner and wrong for a lens many people
+open. Until *seen* is kept per person, a shared watchlist counts items but is
+not counted in the entry's badge (§4.2).
 
 ---
 
@@ -217,7 +237,8 @@ Documents     High priority, not listed    Priority: Urgent, High · Ready      
 
 ```
 watchlist
-  id, owner_id → user
+  id, owner_id → user who saved it
+  scope             'personal' | 'shared' — who sees it (§4.5)
   view              'proposals', 'validation', … — a sidebar entry id
   name
   filter            jsonb — the predicates, as in the URL (§2)
@@ -233,6 +254,12 @@ watchlist_entry      — what makes "new" cheap
 
 `new = entries with entered_at > seen_at`. An entry is added when a record
 starts matching and removed when it stops.
+
+**A scope column, not a nullable owner.** A shared watchlist still has
+somebody who saved it, which the record keeps; making `owner_id` null would
+lose that and make "nobody" mean "everybody". `seen_at` is the owner's, so a
+shared watchlist takes no part in the badge until it moves to a per-person
+table (§4.5).
 
 ---
 
