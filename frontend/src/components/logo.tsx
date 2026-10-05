@@ -1,0 +1,28 @@
+// The VERA mark: a circle with a V, from the original client (webclient/src/logo.svg on main).
+// The original cut the V out of the circle and laid two hand-traced fills over the holes; they
+// did not quite meet the holes' edges, which shows as a hairline on a dark background. Here the
+// circle is solid and the V is drawn from the holes' own outlines, so the two always agree.
+// The circle takes the current text colour; the V takes `markClassName`, white by default.
+
+interface LogoProps {
+  className?: string;
+  markClassName?: string;
+}
+
+// Decorative: it always sits beside the "VERA" wordmark, which names it.
+export function Logo({ className, markClassName = "fill-white" }: LogoProps) {
+  return (
+    <svg viewBox="0 0 625 625" className={className} aria-hidden="true">
+      <g transform="translate(0 625) scale(0.1 -0.1)">
+        <path fill="currentColor" d={circlePath} />
+        <path className={markClassName} d={markPath} />
+      </g>
+    </svg>
+  );
+}
+
+const circlePath =
+  "M2905 6240 c-764 -60 -1450 -374 -1985 -910 -511 -510 -814 -1144 -901 -1880 -16 -135 -16 -515 0 -650 87 -736 390 -1370 901 -1880 510 -511 1144 -814 1880 -901 135 -16 515 -16 650 0 736 87 1370 390 1880 901 511 510 814 1144 901 1880 16 135 16 515 0 650 -87 736 -390 1370 -901 1880 -508 509 -1157 820 -1875 900 -132 14 -424 20 -550 10z";
+
+const markPath =
+  "M2209 4358 c54 -112 185 -381 291 -598 106 -217 222 -458 257 -535 l65 -140 -32 -130 c-38 -150 -279 -1068 -347 -1320 -25 -93 -49 -174 -54 -179 -4 -5 -55 87 -114 203 -174 349 -1415 2888 -1415 2896 0 3 281 5 625 5 l625 0 99 -202z M5370 4554 c0 -7 -306 -558 -1043 -1874 -297 -531 -574 -1027 -616 -1102 l-76 -138 -602 0 c-332 0 -603 2 -603 4 0 3 329 609 1493 2749 l199 367 624 0 c343 0 624 -3 624 -6z";
