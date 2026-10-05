@@ -10,3 +10,4 @@ frontend/.env.*
 .DS_Store
 .frontend.pid
 .frontend.log
+.dev-roles/

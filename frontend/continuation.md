@@ -101,7 +101,7 @@ The foundation is in place:
   `joinDetails`.
 - `frontend/.env.example` is safe to commit. Keep local environment values in ignored `.env.local`; never put secrets in `VITE_*`.
 
-Use the root Makefile as the task entry point. Useful commands are `make frontend-install`, `make dev-frontend`, `make format`, `make lint`, `make typecheck`, and `make check`.
+Use the root Makefile as the task entry point. Useful commands are `make frontend-install`, `make dev-frontend`, `make format`, `make lint`, `make typecheck`, and `make check`. `make dev-roles` starts a background dev server per fake user (admin on 5201, curator 5202, digitization 5203, staff 5204, reader 5205, no-access 5206; `ROLES="admin reader"` for some), `make dev-roles-status` lists them, `make dev-roles-open` opens them and `make dev-roles-stop` stops them; pids and logs are in `.dev-roles/`.
 
 ## Design sources
 
