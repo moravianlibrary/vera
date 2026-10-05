@@ -13,11 +13,13 @@ import type { MockUserProfile } from "@/config/env";
 import { env } from "@/config/env";
 import type { Session } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
+import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
 import { resolveSession } from "@/mocks/session";
 import {
   canChange,
+  findDuplicateWatchlist,
   findVisibleWatchlist,
   publicWatchlistOf,
   visibleWatchlists,
@@ -77,6 +79,11 @@ export function createHandlers(profile: MockUserProfile) {
         return forbidden();
       }
 
+      const duplicate = findDuplicateWatchlist(session, { ...draft.data, id: null });
+      if (duplicate !== null) {
+        return alreadySaved(duplicate);
+      }
+
       const watchlist = {
         ...draft.data,
         id: crypto.randomUUID(),
@@ -102,7 +109,20 @@ export function createHandlers(profile: MockUserProfile) {
         return HttpResponse.json({ message: change.error.message }, { status: 422 });
       }
 
-      const changed = { ...watchlist, ...change.data };
+      const scope = change.data.scope ?? watchlist.scope;
+      if (!canChange(session, scope)) {
+        return forbidden();
+      }
+
+      // A shared watchlist taken back as personal becomes the caller's own.
+      const ownerId =
+        scope === "personal" && watchlist.scope === "shared" ? session.user.id : watchlist.ownerId;
+      const changed = { ...watchlist, ...change.data, ownerId };
+      const duplicate = findDuplicateWatchlist(session, changed);
+      if (duplicate !== null) {
+        return alreadySaved(duplicate);
+      }
+
       database.watchlists.splice(database.watchlists.indexOf(watchlist), 1, changed);
       return HttpResponse.json(publicWatchlistOf(changed));
     }),
@@ -128,6 +148,13 @@ function forbidden() {
   return HttpResponse.json(
     { message: "Only those who manage shared watchlists can change them" },
     { status: 403 },
+  );
+}
+
+function alreadySaved(duplicate: StoredWatchlist) {
+  return HttpResponse.json(
+    { message: `The filter is already saved as “${duplicate.name}”` },
+    { status: 409 },
   );
 }
 

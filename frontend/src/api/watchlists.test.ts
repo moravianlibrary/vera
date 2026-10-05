@@ -109,3 +109,97 @@ describe("changing a shared watchlist", () => {
     await deleteWatchlist(created.id);
   });
 });
+
+describe("saving a filter twice", () => {
+  it("is refused among the caller's own", async () => {
+    signInAs("staff");
+
+    expect(
+      await statusOf(
+        createWatchlist({
+          name: "Urgent again",
+          view: "documents",
+          scope: "personal",
+          filter: { copy: "None", priority: "High,Urgent" },
+        }),
+      ),
+    ).toBe(409);
+  });
+
+  it("is refused when a shared watchlist holds the filter", async () => {
+    signInAs("staff");
+
+    expect(
+      await statusOf(
+        createWatchlist({
+          name: "My pending",
+          view: "documents",
+          scope: "personal",
+          filter: { decision: "Pending" },
+        }),
+      ),
+    ).toBe(409);
+  });
+
+  it("is refused as shared while the caller keeps it as their own", async () => {
+    signInAs("admin");
+
+    expect(
+      await statusOf(
+        createWatchlist({
+          name: "Review needed for all",
+          view: "documents",
+          scope: "shared",
+          filter: { validation: "Needed" },
+        }),
+      ),
+    ).toBe(409);
+  });
+
+  it("is refused when a change would make it the same as another", async () => {
+    signInAs("staff");
+    const [own] = (await listWatchlists("documents")).filter(
+      (watchlist) => watchlist.scope === "personal",
+    );
+    if (own === undefined) {
+      throw new Error("No personal watchlist in the fixtures");
+    }
+
+    expect(await statusOf(updateWatchlist(own.id, { filter: { restricted: "Yes" } }))).toBe(409);
+  });
+});
+
+describe("sharing a personal watchlist", () => {
+  it("is refused without the permission", async () => {
+    signInAs("staff");
+    const [own] = (await listWatchlists("documents")).filter(
+      (watchlist) => watchlist.scope === "personal",
+    );
+    if (own === undefined) {
+      throw new Error("No personal watchlist in the fixtures");
+    }
+
+    expect(await statusOf(updateWatchlist(own.id, { scope: "shared" }))).toBe(403);
+  });
+
+  it("makes it the one everybody sees, in place of the caller's own", async () => {
+    signInAs("admin");
+    const created = await createWatchlist({
+      name: "Cancelled",
+      view: "documents",
+      scope: "personal",
+      filter: { cancelled: "Yes" },
+    });
+
+    const shared = await updateWatchlist(created.id, { scope: "shared" });
+
+    signInAs("staff");
+    const seen = await listWatchlists("documents");
+
+    expect(shared.scope).toBe("shared");
+    expect(seen.some((watchlist) => watchlist.id === created.id)).toBe(true);
+
+    signInAs("admin");
+    await deleteWatchlist(created.id);
+  });
+});

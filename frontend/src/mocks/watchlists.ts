@@ -1,10 +1,13 @@
 // What the server does for watchlists: show each caller their own and the shared ones on the
 // view, let only those who manage shared watchlists change a shared one, and count what matches
-// each now by running its filter over its view. A shared lens is drawn over the staff view, so a
+// each now by running its filter over its view. A filter is saved once among the watchlists a
+// caller sees, so nobody keeps the same lens as their own and as a shared one; someone else's
+// personal watchlist is out of the caller's sight and never blocks theirs. A shared lens is drawn over the staff view, so a
 // requester, whose Documents are their own asks, sees none.
 
 import { parseDocumentSearchParams } from "@/api/documents";
 import type { WatchlistSummary } from "@/api/watchlists";
+import { isSameWatchlistFilter } from "@/api/watchlists";
 import type { Session, Watchlist, WatchlistScope, WatchlistView } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import type { StoredWatchlist } from "@/mocks/database";
@@ -35,6 +38,22 @@ export function findVisibleWatchlist(
   return (
     database.watchlists.find(
       (watchlist) => watchlist.id === watchlistId && isVisible(session, watchlist),
+    ) ?? null
+  );
+}
+
+// The watchlist the caller sees on the same view with the same filter, other than the candidate.
+export function findDuplicateWatchlist(
+  session: Session,
+  candidate: Pick<StoredWatchlist, "view" | "filter"> & { id: string | null },
+): StoredWatchlist | null {
+  return (
+    database.watchlists.find(
+      (watchlist) =>
+        watchlist.id !== candidate.id &&
+        watchlist.view === candidate.view &&
+        isVisible(session, watchlist) &&
+        isSameWatchlistFilter(watchlist.view, watchlist.filter, candidate.filter),
     ) ?? null
   );
 }

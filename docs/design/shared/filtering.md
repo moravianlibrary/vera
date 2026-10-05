@@ -226,6 +226,18 @@ Decided 2026-10-05. A watchlist is **personal** or **shared**:
 *Shared*. A shared tab the person may not change still shows that its filter
 changed, and offers only *Discard*; **+** keeps the change as their own.
 
+**A filter is saved once.** Two watchlists on one view are the same when their
+filters select the same records, whatever their names or scopes. The server
+refuses (409) a new watchlist, a changed filter or a change of scope that would
+repeat a watchlist the person already sees: their own and the shared ones. So an
+administrator does not keep a lens as their own and as a shared one at once; to
+share their own, they use *Share with everyone* on its tab, which changes its
+scope in place. **+** and *Save changes* are disabled, with the name of the
+watchlist that already holds the filter. The rule stops at what the person sees:
+somebody else's personal watchlist is out of sight and never blocks a shared
+one, so sharing a lens may give another person the same filter twice. They
+delete their own when they notice it.
+
 **Shared watchlists carry no badge yet.** *Seen* is one timestamp per
 watchlist (§5), which is right for its owner and wrong for a lens many people
 open. Until *seen* is kept per person, a shared watchlist counts items but is

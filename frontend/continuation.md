@@ -35,8 +35,11 @@ The foundation is in place:
   place: "+" saves the current filter as a new watchlist (Personal or Shared, the choice only
   with `watchlist.manage_shared`); an open tab whose filter changed saves the change itself
   (a save icon on the tab, and Save / Discard changes in its menu). Rename and Delete sit in
-  the open tab's menu where the caller may change it; a shared tab they may not change shows
-  only a dot and Discard.
+  the open tab's menu where the caller may change it, with "Share with everyone" on their own
+  for holders of `watchlist.manage_shared`; a shared tab they may not change shows only a dot
+  and Discard. A filter is saved once (filtering.md §4.5): "+" and Save changes are disabled
+  with the name of the tab that already holds it, and a refusal from the server shows in the
+  form or beside the tab.
 - `src/lib/utils.ts` owns `cn()` (clsx + tailwind-merge).
 - `src/domain/` holds the model: zod schemas with inferred types for every entity
   (`entities.ts`), permission keys and grant checks (`permissions.ts`), the status
@@ -65,7 +68,8 @@ The foundation is in place:
   search, filters and facet counts (each counted over the other filters), order and grouping.
   A requester's view has only search and status. `watchlists.ts` shows each caller their own
   watchlists and, to staff, the shared ones, answers 403 to changing a shared one without
-  `watchlist.manage_shared` (the admin role has it), and counts each by running its filter;
+  `watchlist.manage_shared` (the admin role has it), 409 to a filter the caller already sees
+  saved (`isSameWatchlistFilter` in `src/api/watchlists.ts`), and counts each by running its filter;
   `fixtures/watchlists.ts` seeds two shared ones and a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
   repeats the fixture documents through `src/mocks/volume.ts`, to try lists at volume. `createHandlers(profile)` serves it over MSW.
 - Query hooks: `src/hooks/use-session-query.ts`, `src/features/documents/use-documents-query.ts`.

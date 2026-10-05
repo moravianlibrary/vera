@@ -2,17 +2,20 @@
 // filter, the shared watchlists, the caller's own, then "+". A tab is open while the filter is
 // the one it saved. Each thing is saved in one place: "+" saves the current filter as a new
 // watchlist; a change to an open watchlist is saved on its own tab, which also discards it,
-// renames and deletes, where the caller may change it. A shared one the caller may not change
-// still shows that it changed, and "+" keeps the change as their own. The row scrolls sideways
-// when it runs out of room. Grouping is never part of what is saved (§3.4).
+// renames and deletes, where the caller may change it; those who manage shared watchlists share
+// their own from there. A shared one the caller may not change still shows that it changed, and
+// "+" keeps the change as their own. A filter is saved once: "+" and saving a change are refused
+// while another tab already holds the filter. The row scrolls sideways when it runs out of room. Grouping is never part of what is saved (§3.4).
 // TODO(rrandiak): the sidebar's Watchlists row and the "new" badge (navigation.md §5,
 // filtering.md §4.2–4.3), which leaves shared watchlists out until "seen" is kept per person;
 // labels move to i18n.
 
-import { ChevronDown, Plus, Save, Users } from "lucide-react";
+import { ChevronDown, CircleAlert, Plus, Save, Users } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
 import { useId, useState } from "react";
+import { ApiError } from "@/api/http";
 import type { WatchlistSummary } from "@/api/watchlists";
+import { isSameWatchlistFilter } from "@/api/watchlists";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,8 +59,7 @@ interface WatchlistTabsProps {
   filter: Filter;
   // The watchlist the filter was opened from, if any; it stays open while the filter changes.
   openedId: string | null;
-  isSameFilter: (first: Filter, second: Filter) => boolean;
-  // Whether "+" may save a shared watchlist too.
+  // Whether the caller may save shared watchlists too.
   canShare: boolean;
   // Null opens "All".
   onOpen: (watchlist: Watchlist | null) => void;
@@ -69,19 +71,26 @@ export function WatchlistTabs({
   view,
   filter,
   openedId,
-  isSameFilter,
   canShare,
   onOpen,
   onDetach,
 }: WatchlistTabsProps) {
   const { data: watchlists = [] } = useWatchlistsQuery(view);
   const { create } = useWatchlistMutations();
+  const isSameFilter = (first: Filter, second: Filter) =>
+    isSameWatchlistFilter(view, first, second);
+  // The tab already holding a filter, other than the one about to save it.
+  const holderOf = (candidate: Filter, exceptId?: string) =>
+    watchlists.find(
+      (watchlist) => watchlist.id !== exceptId && isSameFilter(watchlist.filter, candidate),
+    );
   const open =
     openedId === null
       ? watchlists.find((watchlist) => isSameFilter(watchlist.filter, filter))
       : watchlists.find((watchlist) => watchlist.id === openedId);
   const isFiltered = Object.keys(filter).length > 0;
   const isChanged = open !== undefined && !isSameFilter(open.filter, filter);
+  const savedAs = holderOf(filter);
 
   const saveAsNew = async (name: string, scope: WatchlistScope) => {
     const created = await create.mutateAsync({ name, view, scope, filter });
@@ -105,6 +114,8 @@ export function WatchlistTabs({
             isOpen={watchlist.id === open?.id}
             isChanged={watchlist.id === open?.id && isChanged}
             filter={filter}
+            savedAs={watchlist.id === open?.id ? holderOf(filter, watchlist.id) : undefined}
+            canShare={canShare}
             onOpen={() => onOpen(watchlist)}
             onDeleted={() => {
               if (watchlist.id === open?.id) {
@@ -117,13 +128,21 @@ export function WatchlistTabs({
         <SaveWatchlistPopover
           canShare={canShare}
           isSaving={create.isPending}
+          error={create.error}
+          onOpen={create.reset}
           onSave={saveAsNew}
           trigger={
             <button
               type="button"
               aria-label="Save this filter as a watchlist"
-              title={isFiltered ? "Save this filter as a watchlist" : "Filter the list first"}
-              disabled={!isFiltered}
+              title={
+                savedAs !== undefined
+                  ? `Already saved as “${savedAs.name}”`
+                  : isFiltered
+                    ? "Save this filter as a watchlist"
+                    : "Filter the list first"
+              }
+              disabled={!isFiltered || savedAs !== undefined}
               className="mb-1 ml-1 grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40"
             >
               <Plus className="size-4" />
@@ -167,6 +186,9 @@ interface WatchlistTabProps {
   isChanged: boolean;
   // The view's current filter, which saving the change keeps.
   filter: Filter;
+  // Another watchlist that already holds the current filter, which refuses saving it here.
+  savedAs: WatchlistSummary | undefined;
+  canShare: boolean;
   // Opens the watchlist as saved, which also discards a change.
   onOpen: () => void;
   onDeleted: () => void;
@@ -178,15 +200,23 @@ function WatchlistTab({
   isOpen,
   isChanged,
   filter,
+  savedAs,
+  canShare,
   onOpen,
   onDeleted,
 }: WatchlistTabProps) {
   const [dialog, setDialog] = useState<"rename" | "delete" | null>(null);
   const { update, remove } = useWatchlistMutations();
   const { isEditable } = watchlist;
+  const isShareable = canShare && watchlist.scope === "personal";
   const hasMenu = isChanged || isEditable;
+  const canSaveChanges = isChanged && isEditable;
+  const saveRefusal = savedAs === undefined ? null : `Already saved as “${savedAs.name}”`;
+  // A refused rename shows in its dialog; anything else refused shows beside the tab.
+  const failure = dialog === "rename" ? remove.error : (update.error ?? remove.error);
 
   const saveChanges = () => update.mutate({ watchlistId: watchlist.id, change: { filter } });
+  const share = () => update.mutate({ watchlistId: watchlist.id, change: { scope: "shared" } });
 
   return (
     <span className="inline-flex shrink-0 items-center">
@@ -204,14 +234,14 @@ function WatchlistTab({
         )}
       </Tab>
 
-      {isChanged && isEditable && (
+      {canSaveChanges && (
         <button
           type="button"
           aria-label={`Save changes to “${watchlist.name}”`}
-          title="The filter has changed since it was saved. Save the changes."
-          disabled={update.isPending}
+          title={saveRefusal ?? "The filter has changed since it was saved. Save the changes."}
+          disabled={update.isPending || saveRefusal !== null}
           onClick={saveChanges}
-          className="-ml-2 grid size-6 place-items-center rounded-md text-tone-amber-foreground outline-none hover:bg-tone-amber focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-50"
+          className="-ml-2 grid size-6 place-items-center rounded-md text-tone-amber-foreground outline-none hover:bg-tone-amber focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-40"
         >
           <Save className="size-3.5" />
         </button>
@@ -223,15 +253,19 @@ function WatchlistTab({
             aria-label={`${watchlist.name} options`}
             className={cn(
               "grid size-6 place-items-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50",
-              !(isChanged && isEditable) && "-ml-2",
+              !canSaveChanges && "-ml-2",
             )}
           >
             <ChevronDown className="size-3.5" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            {isChanged && isEditable && (
-              <DropdownMenuItem className="text-xs" onSelect={saveChanges}>
-                Save changes
+            {canSaveChanges && (
+              <DropdownMenuItem
+                className="text-xs"
+                disabled={saveRefusal !== null}
+                onSelect={saveChanges}
+              >
+                {saveRefusal === null ? "Save changes" : `Save changes — ${saveRefusal}`}
               </DropdownMenuItem>
             )}
             {isChanged && (
@@ -239,12 +273,17 @@ function WatchlistTab({
                 Discard changes
               </DropdownMenuItem>
             )}
-            {isChanged && isEditable && <DropdownMenuSeparator />}
+            {canSaveChanges && <DropdownMenuSeparator />}
             {isEditable && (
               <>
                 <DropdownMenuItem className="text-xs" onSelect={() => setDialog("rename")}>
                   Rename
                 </DropdownMenuItem>
+                {isShareable && (
+                  <DropdownMenuItem className="text-xs" onSelect={share}>
+                    Share with everyone
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   variant="destructive"
                   className="text-xs"
@@ -258,11 +297,17 @@ function WatchlistTab({
         </DropdownMenu>
       )}
 
+      {failure !== null && <Refusal error={failure} />}
+
       <RenameWatchlistDialog
         isOpen={dialog === "rename"}
         name={watchlist.name}
         isSaving={update.isPending}
-        onClose={() => setDialog(null)}
+        error={update.error}
+        onClose={() => {
+          setDialog(null);
+          update.reset();
+        }}
         onRename={async (name) => {
           await update.mutateAsync({ watchlistId: watchlist.id, change: { name } });
           setDialog(null);
@@ -299,6 +344,35 @@ function WatchlistTab({
   );
 }
 
+// What the server refused, kept beside the tab until the next try.
+function Refusal({ error }: { error: Error }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span role="img" aria-label={refusalOf(error)} className="inline-flex">
+          <CircleAlert className="size-3.5 text-destructive" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{refusalOf(error)}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+const forbiddenStatus = 403;
+const conflictStatus = 409;
+
+function refusalOf(error: Error): string {
+  if (error instanceof ApiError && error.status === conflictStatus) {
+    return "The filter is already saved as another watchlist.";
+  }
+
+  if (error instanceof ApiError && error.status === forbiddenStatus) {
+    return "Only those who manage shared watchlists can change them.";
+  }
+
+  return "The watchlist could not be saved. Try again.";
+}
+
 function SharedMark() {
   return (
     <Tooltip>
@@ -322,11 +396,21 @@ const scopeLabels = {
 interface SaveWatchlistPopoverProps {
   canShare: boolean;
   isSaving: boolean;
+  error: Error | null;
+  // Clears what the last try was refused.
+  onOpen: () => void;
   onSave: (name: string, scope: WatchlistScope) => Promise<void>;
   trigger: ReactNode;
 }
 
-function SaveWatchlistPopover({ canShare, isSaving, onSave, trigger }: SaveWatchlistPopoverProps) {
+function SaveWatchlistPopover({
+  canShare,
+  isSaving,
+  error,
+  onOpen,
+  onSave,
+  trigger,
+}: SaveWatchlistPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scope, setScope] = useState<WatchlistScope>("personal");
   const scopeId = useId();
@@ -337,6 +421,7 @@ function SaveWatchlistPopover({ canShare, isSaving, onSave, trigger }: SaveWatch
       onOpenChange={(isPopoverOpen) => {
         setIsOpen(isPopoverOpen);
         setScope("personal");
+        onOpen();
       }}
     >
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
@@ -345,6 +430,7 @@ function SaveWatchlistPopover({ canShare, isSaving, onSave, trigger }: SaveWatch
           label="Save this filter as a watchlist"
           submitLabel="Save watchlist"
           isSaving={isSaving}
+          error={error}
           onSubmit={async (name) => {
             await onSave(name, scope);
             setIsOpen(false);
@@ -382,6 +468,7 @@ interface RenameWatchlistDialogProps {
   isOpen: boolean;
   name: string;
   isSaving: boolean;
+  error: Error | null;
   onClose: () => void;
   onRename: (name: string) => Promise<void>;
 }
@@ -390,6 +477,7 @@ function RenameWatchlistDialog({
   isOpen,
   name,
   isSaving,
+  error,
   onClose,
   onRename,
 }: RenameWatchlistDialogProps) {
@@ -411,6 +499,7 @@ function RenameWatchlistDialog({
           initialName={name}
           submitLabel="Rename"
           isSaving={isSaving}
+          error={error}
           onSubmit={onRename}
           footer={DialogFooter}
         />
@@ -424,6 +513,8 @@ interface NameFormProps {
   initialName?: string;
   submitLabel: string;
   isSaving: boolean;
+  // What the server refused on the last try.
+  error: Error | null;
   onSubmit: (name: string) => Promise<void>;
   footer?: (props: { children: ReactNode }) => ReactNode;
   // More fields, between the name and the button.
@@ -435,6 +526,7 @@ function NameForm({
   initialName = "",
   submitLabel,
   isSaving,
+  error,
   onSubmit,
   footer: Footer = PlainFooter,
   children,
@@ -448,7 +540,8 @@ function NameForm({
       return;
     }
 
-    void onSubmit(trimmed);
+    // A refusal stays in the mutation and shows below; the form stays open for another try.
+    onSubmit(trimmed).catch(() => undefined);
   };
 
   return (
@@ -462,6 +555,7 @@ function NameForm({
         autoFocus
       />
       {children}
+      {error !== null && <p className="text-xs text-destructive">{refusalOf(error)}</p>}
       <Footer>
         <Button type="submit" size="sm" disabled={trimmed === "" || isSaving}>
           {submitLabel}

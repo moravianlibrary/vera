@@ -12,7 +12,6 @@ import { useSearchParams } from "react-router";
 import type { DocumentGrouping, DocumentQuery } from "@/api/documents";
 import {
   documentGroupingParam,
-  isSameDocumentQuery,
   parseDocumentGrouping,
   parseDocumentSearchParams,
   toDocumentSearchParams,
@@ -48,8 +47,6 @@ const filterOf = (query: DocumentQuery): Filter =>
   Object.fromEntries(toDocumentSearchParams(query));
 const queryOf = (filter: Filter): DocumentQuery =>
   parseDocumentSearchParams(new URLSearchParams(filter));
-const isSameFilter = (first: Filter, second: Filter) =>
-  isSameDocumentQuery(queryOf(first), queryOf(second));
 
 export function DocumentsPage() {
   const [params, setParams] = useSearchParams();
@@ -223,7 +220,6 @@ export function DocumentsPage() {
           view="documents"
           filter={filterOf(query)}
           openedId={params.get(watchlistParam)}
-          isSameFilter={isSameFilter}
           canShare={hasPermission(session, "watchlist.manage_shared")}
           onOpen={(watchlist) => {
             setFilter(watchlist === null ? {} : queryOf(watchlist.filter), watchlist?.id ?? null);

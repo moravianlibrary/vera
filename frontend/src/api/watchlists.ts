@@ -1,8 +1,10 @@
 // Watchlists: saved filters over one view (filtering.md §4), the caller's own and the shared ones
 // on the view. A listed watchlist carries how many records match it now and whether the caller
-// may change it.
+// may change it. Two watchlists on one view with the same filter are the same watchlist, whatever
+// their names or scopes, and the server keeps only one of them among those a caller sees.
 
 import { z } from "zod";
+import { isSameDocumentQuery, parseDocumentSearchParams } from "@/api/documents";
 import { deleteResource, getJson, patchJson, postJson } from "@/api/http";
 import { apiRoutes, watchlistRoute } from "@/api/routes";
 import type { Watchlist, WatchlistView } from "@/domain/entities";
@@ -16,8 +18,9 @@ export const watchlistDraftSchema = watchlistSchema.pick({
 });
 export type WatchlistDraft = z.infer<typeof watchlistDraftSchema>;
 
+// A scope change shares a personal watchlist or takes a shared one back as the caller's own.
 export const watchlistChangeSchema = watchlistDraftSchema
-  .pick({ name: true, filter: true })
+  .pick({ name: true, scope: true, filter: true })
   .partial();
 export type WatchlistChange = z.infer<typeof watchlistChangeSchema>;
 
@@ -28,6 +31,21 @@ export const watchlistSummarySchema = watchlistSchema.extend({
 export type WatchlistSummary = z.infer<typeof watchlistSummarySchema>;
 
 export const watchlistViewParam = "view";
+
+type Filter = Watchlist["filter"];
+
+const filterComparers = {
+  documents: (first, second) =>
+    isSameDocumentQuery(
+      parseDocumentSearchParams(new URLSearchParams(first)),
+      parseDocumentSearchParams(new URLSearchParams(second)),
+    ),
+} as const satisfies Record<WatchlistView, (first: Filter, second: Filter) => boolean>;
+
+// True when the two filters of the view select the same records, however they are written.
+export function isSameWatchlistFilter(view: WatchlistView, first: Filter, second: Filter): boolean {
+  return filterComparers[view](first, second);
+}
 
 // Shared first, then the caller's own, each oldest first. Every view's when no view is named.
 export async function listWatchlists(view?: WatchlistView): Promise<WatchlistSummary[]> {
