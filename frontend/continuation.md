@@ -109,8 +109,11 @@ The foundation is in place:
   document with a line under it saying why it is there; grouped by the batch or requester of
   its earliest ask, `proposal-group-header.tsx`) and `proposal-detail.tsx`, built from the
   record cards Documents uses too (`src/components/record-cards.tsx`: who asked, existing
-  copies, the catalog record, history and the heading), plus Placed in. A copy's link is in
-  the pane, not on the row, which is one button. Message askers is not built.
+  copies, the catalog record, history and the heading), plus Placed in and, while open, the
+  Decide card (category and priority from `src/components/classification-fields.tsx`, which
+  Propose uses too; a note for a rescan; the decline form). An approved proposal leaves the
+  list and the pane says what was decided. A copy's link is in the pane, not on the row, which
+  is one button. Message askers is not built.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

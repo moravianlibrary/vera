@@ -4,9 +4,9 @@
 // `?group=` the grouping and `?watchlist=` the watchlist the filter was opened from.
 // TODO(rrandiak): labels move to i18n.
 
-import { Inbox } from "lucide-react";
+import { ArrowRight, Inbox } from "lucide-react";
 import { useState } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import type { ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
 import {
   parseProposalGrouping,
@@ -18,7 +18,10 @@ import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
+import { StatusNote } from "@/components/status-note";
+import { Button } from "@/components/ui/button";
 import { hasPermission } from "@/domain/permissions";
+import type { DecisionOutcome } from "@/features/proposals/proposal-detail";
 import { ProposalDetailPane } from "@/features/proposals/proposal-detail";
 import { ProposalFilterBar } from "@/features/proposals/proposal-filter-bar";
 import { ProposalList } from "@/features/proposals/proposal-list";
@@ -48,6 +51,7 @@ export function ProposalsPage() {
   const selectedId = params.get(selectedParam);
   const grouping = parseProposalGrouping(params);
   const [filterReplacements, setFilterReplacements] = useState(0);
+  const [decided, setDecided] = useState<DecisionOutcome | null>(null);
   const { data: session } = useSessionQuery();
   const proposals = useProposalsQuery(query, grouping);
   const { data: detail } = useProposalQuery(selectedId);
@@ -110,8 +114,25 @@ export function ProposalsPage() {
   const title =
     visibleNavigation(session).find((entry) => entry.id === "proposals")?.visibleLabel ?? "";
 
+  const documentsEntry = visibleNavigation(session).find((entry) => entry.id === "documents");
+  const outcome = detail === null && decided?.documentId === selectedId ? decided : null;
   const detailPane =
-    detail === undefined || detail === null ? (
+    outcome !== null ? (
+      <article className="max-w-5xl">
+        <h2 className="mb-4 text-xl leading-7 font-semibold">{outcome.title}</h2>
+        <StatusNote tone="green" title="Decided">
+          {outcome.summary}.
+        </StatusNote>
+        {documentsEntry !== undefined && (
+          <Button asChild size="sm" variant="outline" className="mt-4">
+            <Link to={`${documentsEntry.path}?id=${encodeURIComponent(outcome.documentId)}`}>
+              Open in {documentsEntry.visibleLabel}
+              <ArrowRight />
+            </Link>
+          </Button>
+        )}
+      </article>
+    ) : detail === undefined || detail === null ? (
       <div className="grid h-full place-items-center text-center text-sm text-muted-foreground">
         <div>
           <Inbox className="mx-auto" />
@@ -121,7 +142,7 @@ export function ProposalsPage() {
         </div>
       </div>
     ) : (
-      <ProposalDetailPane detail={detail} session={session} />
+      <ProposalDetailPane detail={detail} session={session} onDecided={setDecided} />
     );
 
   return (

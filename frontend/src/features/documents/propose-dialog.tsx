@@ -14,6 +14,7 @@ import type { ReactNode } from "react";
 import { useId, useRef, useState } from "react";
 import type { ProposalCheck, ProposalDraft, ProposalReport } from "@/api/proposals";
 import { checkProposalItems, getProposalSettings, submitProposal } from "@/api/proposals";
+import { CategorySelect, Field, PrioritySelect } from "@/components/classification-fields";
 import { StatusBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
@@ -37,9 +38,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { categoryPathOf } from "@/domain/categories";
 import type { Batch, Priority, Session } from "@/domain/entities";
-import { priorities, prioritySchema } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import type { IdentifierType, ProposalLine } from "@/domain/proposals";
 import {
@@ -49,11 +48,7 @@ import {
   parseProposalLines,
 } from "@/domain/proposals";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
-import {
-  referenceQueryKey,
-  useCategoriesQuery,
-  useProjectsQuery,
-} from "@/hooks/use-reference-query";
+import { referenceQueryKey, useProjectsQuery } from "@/hooks/use-reference-query";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 import { cn } from "@/lib/utils";
 
@@ -795,16 +790,12 @@ function DetailsStep({
   const canDecide = hasPermission(session, "request.decide");
   const isStaff = hasPermission(session, "iteration.read");
   const { data: projects = [] } = useProjectsQuery();
-  const { data: categories = [] } = useCategoriesQuery({ isEnabled: canDecide });
   const newCount = items.filter((item) => outcomeOf(item) === "new").length;
   const joinCount = items.filter((item) => outcomeOf(item) === "inVera").length;
   const skipCount = items.filter((item) => outcomeOf(item) === "skip").length;
   const isBatch = newCount + joinCount > 1;
   const proposable = projects.filter(
     (project) => project.state !== "Rejected" && project.memberIds.includes(session.user.id),
-  );
-  const leaves = categories.filter(
-    (category) => !categories.some((child) => child.parentId === category.id),
   );
 
   const [batchName, setBatchName] = useState(`proposals-${new Date().toISOString().slice(0, 10)}`);
@@ -890,37 +881,18 @@ function DetailsStep({
             {isApprovedNow && (
               <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem]">
                 <Field id={`${fieldId}-category`} label="Category" hint={`for the ${newCount} new`}>
-                  <Select value={categoryId ?? undefined} onValueChange={setCategoryId}>
-                    <SelectTrigger id={`${fieldId}-category`} className="w-full">
-                      <SelectValue placeholder="Choose…" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {leaves.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {categoryPathOf(categories, category.id)
-                            .map((step) => step.name)
-                            .join(" / ")}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <CategorySelect
+                    id={`${fieldId}-category`}
+                    value={categoryId}
+                    onChange={setCategoryId}
+                  />
                 </Field>
                 <Field id={`${fieldId}-priority`} label="Priority">
-                  <Select
+                  <PrioritySelect
+                    id={`${fieldId}-priority`}
                     value={priority}
-                    onValueChange={(picked) => setPriority(prioritySchema.parse(picked))}
-                  >
-                    <SelectTrigger id={`${fieldId}-priority`} className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {priorities.toReversed().map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={setPriority}
+                  />
                 </Field>
               </div>
             )}
@@ -957,28 +929,6 @@ function DetailsStep({
         </Button>
       </DialogFooter>
     </>
-  );
-}
-
-function Field({
-  id,
-  label,
-  hint,
-  children,
-}: {
-  id: string;
-  label: string;
-  hint?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="grid gap-1.5">
-      <Label htmlFor={id}>
-        {label}
-        {hint !== undefined && <span className="font-normal text-muted-foreground"> — {hint}</span>}
-      </Label>
-      {children}
-    </div>
   );
 }
 

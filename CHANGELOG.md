@@ -34,6 +34,10 @@ All notable changes to this project are documented here.
   the bar and the other fields as chips, grouping by batch or by requester, watchlist tabs,
   and the proposal beside it as cards: who asked, where it was placed, existing copies, the
   catalog record and the history. Documents links a pending document straight to it.
+- Deciding a proposal from its pane: approve with a category and a priority, pre-filled from
+  the project when it came after the project's approval; approve as rescan with a note when a
+  copy exists; or decline with what every asker is told and an internal note. One decision
+  covers every asker.
 
 ### Changed
 

@@ -19,3 +19,10 @@ export function categoryPathOf(categories: readonly Category[], categoryId: stri
 export function categoryLineageOf(categories: readonly Category[], categoryId: string): string[] {
   return categoryPathOf(categories, categoryId).map((category) => category.id);
 }
+
+// The categories with no subcategories: the only ones an item is classified into.
+export function leafCategoriesOf(categories: readonly Category[]): Category[] {
+  return categories.filter(
+    (category) => !categories.some((child) => child.parentId === category.id),
+  );
+}

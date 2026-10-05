@@ -52,12 +52,13 @@ export function useProposalCustodiesQuery() {
 
 export function useDecisionMutations() {
   const queryClient = useQueryClient();
-  const onSuccess = () =>
-    Promise.all(
-      [proposalsQueryKey, documentsQueryKey, watchlistsQueryKey].map((queryKey) =>
-        queryClient.invalidateQueries({ queryKey }),
-      ),
-    );
+  // Not awaited: the caller's own callback runs first, while the decided proposal is still on
+  // screen, and the refetch then takes it off.
+  const onSuccess = () => {
+    for (const queryKey of [proposalsQueryKey, documentsQueryKey, watchlistsQueryKey]) {
+      void queryClient.invalidateQueries({ queryKey });
+    }
+  };
 
   return {
     approve: useMutation({
