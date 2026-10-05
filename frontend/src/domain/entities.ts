@@ -1,0 +1,359 @@
+// Domain entities as transport schemas, with the TypeScript types inferred from them.
+// The API layer parses every response through these, so the rest of the app works with trusted
+// values. Shapes follow docs/design/shared/entities/ (concepts, relationships, status-model):
+// a document is the item, an iteration one attempt at it, a request one ask for it. The four
+// status axes stay separate; the displayed status is derived in ./status.ts, never stored here.
+
+import { z } from "zod";
+import { grantSchema } from "@/domain/permissions";
+
+const id = z.string().min(1);
+const timestamp = z.iso.datetime();
+const calendarDate = z.iso.date();
+
+// A reason shown to two audiences (view-rules §4.3). The internal text is withheld (null) from
+// callers who may only read the public one.
+const reasonTexts = {
+  publicText: z.string(),
+  internalText: z.string().nullable(),
+};
+
+// Who did something. `undisclosed` is what a reader sees for staff acts on their request.
+export const actorSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("user"), userId: id }),
+  z.object({ kind: z.literal("system") }),
+  z.object({ kind: z.literal("undisclosed") }),
+]);
+export type Actor = z.infer<typeof actorSchema>;
+
+const actedBy = {
+  actorId: id,
+  at: timestamp,
+};
+
+// ---------------------------------------------------------------- people and access
+
+export const userSchema = z.object({
+  id,
+  name: z.string(),
+  // An agent is a plugin that proposes like a person and never signs in.
+  kind: z.enum(["person", "agent"]),
+  email: z.string().nullable(),
+});
+export type User = z.infer<typeof userSchema>;
+
+export const sessionSchema = z.object({
+  user: userSchema,
+  roleIds: z.array(id),
+  grants: z.array(grantSchema),
+  // Category custody, inherited downward; `custody`-scoped grants apply inside it.
+  custodyCategoryIds: z.array(id),
+});
+export type Session = z.infer<typeof sessionSchema>;
+
+// ---------------------------------------------------------------- classification and funding
+
+export const categorySchema = z.object({
+  id,
+  name: z.string(),
+  parentId: id.nullable(),
+});
+export type Category = z.infer<typeof categorySchema>;
+
+export const priorities = ["Low", "Normal", "High", "Urgent"] as const;
+export const prioritySchema = z.enum(priorities);
+export type Priority = z.infer<typeof prioritySchema>;
+
+const projectBase = {
+  id,
+  name: z.string(),
+  description: z.string(),
+  startsOn: calendarDate,
+  endsOn: calendarDate,
+  targetPages: z.number().int().nonnegative(),
+  managerId: id,
+  memberIds: z.array(id),
+  createdAt: timestamp,
+};
+
+// Decision state is stored and final once decided; the period (upcoming, active, ended) is
+// derived from the dates (projects.md §1).
+export const projectSchema = z.discriminatedUnion("state", [
+  z.object({ ...projectBase, state: z.literal("Proposed") }),
+  z.object({ ...projectBase, state: z.literal("Approved"), priority: prioritySchema, ...actedBy }),
+  z.object({ ...projectBase, state: z.literal("Rejected"), reason: z.string(), ...actedBy }),
+]);
+export type Project = z.infer<typeof projectSchema>;
+
+export const digitizationListSchema = z.object({
+  id,
+  name: z.string(),
+  startsOn: calendarDate,
+  endsOn: calendarDate,
+  targetPages: z.number().int().nonnegative().nullable(),
+  // Provenance of a generated list; a hand-built list has none.
+  generated: z
+    .object({
+      intentionId: id,
+      pages: z.number().int().nonnegative(),
+      generator: z.string(),
+      at: timestamp,
+    })
+    .nullable(),
+  createdBy: id,
+  createdAt: timestamp,
+  done: z.object(actedBy).nullable(),
+});
+export type DigitizationList = z.infer<typeof digitizationListSchema>;
+
+export const batchSchema = z.object({
+  id,
+  name: z.string(),
+  via: z.enum(["file", "pastedList", "barcodeScan", "harvest"]),
+  submittedBy: id,
+  submittedAt: timestamp,
+});
+export type Batch = z.infer<typeof batchSchema>;
+
+// ---------------------------------------------------------------- documents
+
+export const pageSourceSchema = z.object({
+  source: z.enum(["manual", "catalog", "predictor"]),
+  // The highest tier with a value is the page count in use (document-properties.md §4).
+  tier: z.number().int(),
+  value: z.number().int().nonnegative(),
+  observedAt: timestamp,
+  setBy: id.nullable(),
+});
+export type PageSource = z.infer<typeof pageSourceSchema>;
+
+export const registryStates = [
+  "CheckFailed",
+  "NotFound",
+  "Unmapped",
+  "Planned",
+  "InProgress",
+  "Digitized",
+  "Published",
+] as const;
+export const registryStateSchema = z.enum(registryStates);
+export type RegistryState = z.infer<typeof registryStateSchema>;
+
+// Evidence from an external registry, not VERA state (registry-status.md).
+export const registryRecordSchema = z.object({
+  registry: z.string(),
+  state: registryStateSchema,
+  rawState: z.string().nullable(),
+  // `content` links to the scan, `record` to someone else's bookkeeping.
+  linkKind: z.enum(["content", "record"]).nullable(),
+  url: z.url().nullable(),
+  observedAt: timestamp,
+  checkedAt: timestamp,
+  error: z.string().nullable(),
+});
+export type RegistryRecord = z.infer<typeof registryRecordSchema>;
+
+export const documentTypeSchema = z.enum(["Periodical", "Monograph", "Manuscript", "Map"]);
+export type DocumentType = z.infer<typeof documentTypeSchema>;
+
+// Identity is the catalog ID plus, for one part of a larger record, the unit
+// (document-identity.md).
+export const documentSchema = z.object({
+  id,
+  catalogId: z.string(),
+  unit: z
+    .object({
+      type: z.enum(["volume-name", "volume-number", "barcode"]),
+      value: z.string(),
+    })
+    .nullable(),
+  title: z.string(),
+  type: documentTypeSchema,
+  signature: z.string().nullable(),
+  pageSources: z.array(pageSourceSchema),
+  registryRecords: z.array(registryRecordSchema),
+});
+export type Document = z.infer<typeof documentSchema>;
+
+// ---------------------------------------------------------------- iterations
+
+export const progressValues = [
+  "Enqueued",
+  "IngestFailed",
+  "Ready",
+  "Planned",
+  "InProgress",
+  "Digitized",
+  "Published",
+] as const;
+export const progressSchema = z.enum(progressValues);
+export type Progress = z.infer<typeof progressSchema>;
+
+export const restrictionSchema = z.object({
+  rule: z.string(),
+  ...reasonTexts,
+  foundAt: timestamp,
+});
+export type Restriction = z.infer<typeof restrictionSchema>;
+
+export const cancellationSchema = z.object({
+  cause: z.enum(["Decided", "NotDigitizable"]),
+  ...actedBy,
+  ...reasonTexts,
+});
+export type Cancellation = z.infer<typeof cancellationSchema>;
+
+// A finding that makes metadata not good enough to digitize against. `key` is stable across
+// check runs: plugin instance, rule code and subject, never the value (status-model.md §2).
+export const defectSchema = z.object({
+  key: z.string(),
+  plugin: z.string(),
+  ruleCode: z.string(),
+  subject: z.string(),
+  ...reasonTexts,
+  firstSeenAt: timestamp,
+});
+export type Defect = z.infer<typeof defectSchema>;
+
+// Append-only: a verdict covers exactly the defect keys ruled on in one act.
+export const validationVerdictSchema = z.object({
+  defectKeys: z.array(z.string()).min(1),
+  verdict: z.enum(["Approved", "Denied"]),
+  ...actedBy,
+  note: z.string(),
+});
+export type ValidationVerdict = z.infer<typeof validationVerdictSchema>;
+
+export const iterationSchema = z.object({
+  id,
+  documentId: id,
+  // 1 for the first attempt; a rescan is the next attempt at the same document.
+  attempt: z.number().int().positive(),
+  // The request that originated it; it is the only one whose project funds it.
+  requestId: id,
+  categoryId: id,
+  priority: prioritySchema,
+  projectId: id.nullable(),
+  progress: progressSchema,
+  listId: id.nullable(),
+  // A deleted list survives only by name, as provenance.
+  formerListName: z.string().nullable(),
+  restriction: restrictionSchema.nullable(),
+  restrictionOverride: z.object({ ...actedBy, note: z.string() }).nullable(),
+  cancellation: cancellationSchema.nullable(),
+  defects: z.array(defectSchema),
+  verdicts: z.array(validationVerdictSchema),
+  ingestFailure: z
+    .object({
+      attempts: z.number().int().positive(),
+      // Withheld from callers without `addition.read`.
+      error: z.string().nullable(),
+    })
+    .nullable(),
+  digitizedAt: timestamp.nullable(),
+  publishedLink: z.url().nullable(),
+  scanDpi: z.number().int().positive().nullable(),
+});
+export type Iteration = z.infer<typeof iterationSchema>;
+
+// ---------------------------------------------------------------- requests
+
+export const existingCopySchema = z.object({
+  source: z.string(),
+  state: registryStateSchema,
+  link: z.url().nullable(),
+  // Set when the copy is VERA's own earlier iteration.
+  iterationId: id.nullable(),
+  seenAt: timestamp,
+  // A copy that appeared after approval was never decided over: a warning, not a rescan.
+  foundAfterApproval: z.boolean(),
+});
+export type ExistingCopy = z.infer<typeof existingCopySchema>;
+
+const requestBase = {
+  id,
+  documentId: id,
+  requesterId: id,
+  at: timestamp,
+  reason: z.string().nullable(),
+  batchId: id.nullable(),
+  projectId: id.nullable(),
+  existingCopies: z.array(existingCopySchema),
+  // Null until restriction and copy checks have run once.
+  checkedAt: timestamp.nullable(),
+};
+
+// Proposal and addition are phases of a request, not other entities (concepts.md §Request).
+export const requestSchema = z.discriminatedUnion("decision", [
+  z.object({
+    ...requestBase,
+    decision: z.literal("Pending"),
+    // "Approve now" is an intent that waits for the copy check (status-model.md §2.8).
+    approveOnCheck: z.object({ actorId: id, at: timestamp }).nullable(),
+    // Proposed into a project after the project itself was approved.
+    isAfterProjectApproval: z.boolean(),
+  }),
+  z.object({
+    ...requestBase,
+    decision: z.literal("Approved"),
+    // Null in the window between approval and ingest.
+    iteration: z
+      .object({
+        relation: z.enum(["Originates", "Tracks"]),
+        id,
+      })
+      .nullable(),
+    // Approved over an existing copy.
+    rescan: z.object({ ...actedBy, note: z.string() }).nullable(),
+  }),
+  z.object({
+    ...requestBase,
+    decision: z.literal("Denied"),
+    decline: z.object({ ...actedBy, ...reasonTexts }),
+  }),
+  z.object({
+    ...requestBase,
+    decision: z.literal("Withdrawn"),
+    withdrawnAt: timestamp,
+  }),
+  z.object({
+    ...requestBase,
+    // Machine-set: work had already started, so this request follows it.
+    decision: z.literal("Duplicate"),
+    tracksIterationId: id,
+  }),
+]);
+export type Request = z.infer<typeof requestSchema>;
+export type Decision = Request["decision"];
+
+// ---------------------------------------------------------------- history
+
+// Causes, never derivations (status-log.md). One log across entities.
+export const statusLogEntrySchema = z.object({
+  id,
+  subjectKind: z.enum(["iteration", "request", "list", "project"]),
+  subjectId: id,
+  at: timestamp,
+  actor: actorSchema,
+  correlationId: z.string(),
+  // TODO(rrandiak): replace free-text events with event codes once the log contract exists.
+  event: z.string(),
+  // Withheld from callers who may only see what happened, not why.
+  detail: z.string().nullable(),
+});
+export type StatusLogEntry = z.infer<typeof statusLogEntrySchema>;
+
+// ---------------------------------------------------------------- watchlists
+
+export const watchlistViewSchema = z.enum(["documents"]);
+export type WatchlistView = z.infer<typeof watchlistViewSchema>;
+
+// A saved filter over one view. Grouping is presentation and is never part of it.
+export const watchlistSchema = z.object({
+  id,
+  name: z.string().min(1),
+  view: watchlistViewSchema,
+  filter: z.record(z.string(), z.string()),
+  createdAt: timestamp,
+});
+export type Watchlist = z.infer<typeof watchlistSchema>;
