@@ -36,6 +36,8 @@ import type {
 } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import { isRestricted, validationOf } from "@/domain/status";
+import type { Arrangement as GenericArrangement } from "@/mocks/arrangement";
+import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 
 export function queryDocuments(
@@ -65,7 +67,7 @@ export function queryDocuments(
   );
   const arrangement = arrangementOf(groupingFor(session, audience, grouping), reachable);
   const arranged = arrangement === null ? matching : arrangement.sorted(matching);
-  const { items, nextCursor } = sliceOf(arranged, slice);
+  const { items, nextCursor } = sliceOf(arranged, (record) => record.document.id, slice);
 
   return {
     audience,
@@ -322,26 +324,9 @@ function facetsOf(
   });
 }
 
-function countValues(values: readonly string[]): { value: string; count: number }[] {
-  const counts = new Map<string, number>();
-  for (const value of values) {
-    counts.set(value, (counts.get(value) ?? 0) + 1);
-  }
-
-  return [...counts].map(([value, count]) => ({ value, count }));
-}
-
 // ---------------------------------------------------------------- grouping
 
-interface Arrangement {
-  // The rows in group order, the list's own order kept within a group.
-  sorted: (records: readonly DocumentRecord[]) => DocumentRecord[];
-  // The headers of the groups a slice's rows fall into, counted over every matching row.
-  headersOf: (
-    items: readonly DocumentRecord[],
-    matching: readonly DocumentRecord[],
-  ) => DocumentGroup[];
-}
+type Arrangement = GenericArrangement<DocumentRecord, DocumentGroup>;
 
 // Batches are the staff's unit of retry, so they need `addition.read`; a requester's list is
 // never grouped.
@@ -426,61 +411,6 @@ function projectArrangementOf(): Arrangement {
   );
 }
 
-// Groups by a key in the given order; a null key, or one not in the order, comes last.
-function groupedBy(
-  keyOf: (record: DocumentRecord) => string | null,
-  order: readonly string[],
-  headerOf: (key: string | null, total: number, rowCount: number) => DocumentGroup,
-): Arrangement {
-  const knownKeyOf = (record: DocumentRecord) => {
-    const key = keyOf(record);
-    return key !== null && order.includes(key) ? key : null;
-  };
-  const rankOf = (record: DocumentRecord) => {
-    const key = knownKeyOf(record);
-    return key === null ? order.length : order.indexOf(key);
-  };
-
-  return {
-    sorted: (records) => records.toSorted((first, second) => rankOf(first) - rankOf(second)),
-    headersOf: (items, matching) => {
-      const runs: { key: string | null; rowCount: number }[] = [];
-      for (const key of items.map(knownKeyOf)) {
-        const last = runs.at(-1);
-        if (last !== undefined && last.key === key) {
-          last.rowCount += 1;
-          continue;
-        }
-
-        runs.push({ key, rowCount: 1 });
-      }
-
-      return runs.map(({ key, rowCount }) =>
-        headerOf(key, matching.filter((record) => knownKeyOf(record) === key).length, rowCount),
-      );
-    },
-  };
-}
-
-// ---------------------------------------------------------------- slices
-
-// The mock's cursor is the last row's document ID. A real server encodes that row's sort key
-// instead, so a row that changes or leaves meanwhile does not lose the reader's place.
-function sliceOf(
-  records: DocumentRecord[],
-  { cursor, limit }: Required<DocumentSlice>,
-): { items: DocumentRecord[]; nextCursor: string | null } {
-  const start =
-    cursor === null ? 0 : records.findIndex((record) => record.document.id === cursor) + 1;
-  if (cursor !== null && start === 0) {
-    return { items: [], nextCursor: null };
-  }
-
-  const items = records.slice(start, start + limit);
-  const hasMore = start + limit < records.length;
-  return { items, nextCursor: hasMore ? (items.at(-1)?.document.id ?? null) : null };
-}
-
 // ---------------------------------------------------------------- order
 
 const priorityRank = { Low: 0, Normal: 1, High: 2, Urgent: 3 } as const;
@@ -524,9 +454,11 @@ function logOf(record: DocumentRecord, session: Session, audience: Audience): St
     .toSorted((first, second) => second.at.localeCompare(first.at));
   if (audience === "staff") {
     // How an ingest failed is withheld with the failure's error (addition.read).
-    return hasPermission(session, "addition.read")
-      ? entries
-      : entries.map((entry) => (isIngestEvent(entry) ? { ...entry, detail: null } : entry));
+    return oncePerCause(
+      hasPermission(session, "addition.read")
+        ? entries
+        : entries.map((entry) => (isIngestEvent(entry) ? { ...entry, detail: null } : entry)),
+    );
   }
 
   return entries.flatMap((entry) => {
@@ -546,6 +478,21 @@ function logOf(record: DocumentRecord, session: Session, audience: Audience): St
   });
 }
 
+// One decision on several asks is written once per ask, so each asker's history holds it; staff
+// read it once.
+export function oncePerCause(entries: readonly StatusLogEntry[]): StatusLogEntry[] {
+  const seen = new Set<string>();
+  return entries.filter((entry) => {
+    const cause = `${entry.correlationId}|${entry.event}`;
+    if (seen.has(cause)) {
+      return false;
+    }
+
+    seen.add(cause);
+    return true;
+  });
+}
+
 function isIngestEvent(entry: StatusLogEntry): boolean {
   return entry.event.startsWith("Ingest");
 }
@@ -555,6 +502,7 @@ function isIngestEvent(entry: StatusLogEntry): boolean {
 // TODO(rrandiak): carry the public wording on the event codes once the log contract exists.
 const publicEvents = [
   { prefix: "Approved", wording: "Accepted" },
+  { prefix: "Declined", wording: "Not accepted" },
   { prefix: "Forbidden", wording: "Not available for digitization" },
   { prefix: "Cancelled", wording: "On hold" },
   { prefix: "Digitized", wording: "Digitized" },

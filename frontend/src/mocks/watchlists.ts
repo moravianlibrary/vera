@@ -6,6 +6,7 @@
 // requester, whose Documents are their own asks, sees none.
 
 import { parseDocumentSearchParams } from "@/api/documents";
+import { parseProposalSearchParams } from "@/api/proposal-review";
 import type { WatchlistSummary } from "@/api/watchlists";
 import { isSameWatchlistFilter } from "@/api/watchlists";
 import type { Session, Watchlist, WatchlistScope, WatchlistView } from "@/domain/entities";
@@ -13,6 +14,7 @@ import { hasPermission } from "@/domain/permissions";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { audienceOf, queryDocuments } from "@/mocks/documents";
+import { canDecide, queryProposals } from "@/mocks/proposal-review";
 
 const scopeOrder = ["shared", "personal"] as const satisfies readonly WatchlistScope[];
 
@@ -79,8 +81,16 @@ function isVisible(session: Session, watchlist: StoredWatchlist): boolean {
   return watchlist.ownerId === session.user.id;
 }
 
+const counters = {
+  documents: (session, filter) =>
+    queryDocuments(session, parseDocumentSearchParams(filter), { cursor: null, limit: 1 }).total,
+  // Without `request.decide` the view does not exist for the caller, and nothing matches.
+  proposals: (session, filter) =>
+    canDecide(session)
+      ? queryProposals(session, parseProposalSearchParams(filter), { cursor: null, limit: 1 }).total
+      : 0,
+} as const satisfies Record<WatchlistView, (session: Session, filter: URLSearchParams) => number>;
+
 function itemCountOf(session: Session, watchlist: Watchlist): number {
-  const filter = new URLSearchParams(watchlist.filter);
-  return queryDocuments(session, parseDocumentSearchParams(filter), { cursor: null, limit: 1 })
-    .total;
+  return counters[watchlist.view](session, new URLSearchParams(watchlist.filter));
 }

@@ -72,7 +72,15 @@ The foundation is in place:
   saved (`isSameWatchlistFilter` in `src/api/watchlists.ts`), and counts each by running its filter;
   The document detail withholds an ingest error from staff without `addition.read`, and
   rewords a requester's history into plain language (`publicEventOf`).
-  `fixtures/watchlists.ts` seeds two shared ones and a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
+  `proposal-review.ts` is Proposal Review: a row per document from the asks that share its
+  liveliest proposal decision (`src/domain/proposal-review.ts`), kept to the decider's proposal
+  custodies (`fixtures/proposal-custodies.ts`: the custodies, their members, where the Custody
+  plugins placed each fixture ask, and `houseRuleOf` for asks made since; what none placed is in
+  the fallback), filtered, counted and grouped by the batch or requester of its earliest ask;
+  approving creates the one iteration the oldest ask originates and the rest track, declining
+  denies every ask with one reason, bulk approve skips rescans and asks still being checked;
+  each writes the status log. `arrangement.ts` holds the grouping and slicing both lists share.
+  `fixtures/watchlists.ts` seeds three shared ones and a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
   repeats the fixture documents through `src/mocks/volume.ts`, to try lists at volume. `createHandlers(profile)` serves it over MSW.
 - Query hooks: `src/hooks/use-session-query.ts`, `src/features/documents/use-documents-query.ts`.
   Sidebar entries and their required permissions: `src/components/layout/navigation.ts`.

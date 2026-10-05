@@ -1,12 +1,21 @@
 // MSW handlers: the fake API at the HTTP boundary. They answer as one emulated user, VITE_MOCK_USER
 // in the browser, so components, queries and forms run unchanged against the real API later.
 
+import type { JsonBodyType } from "msw";
 import { HttpResponse, http } from "msw";
 import {
   parseDocumentGrouping,
   parseDocumentSearchParams,
   parseDocumentSliceParams,
 } from "@/api/documents";
+import {
+  approvalSchema,
+  bulkApprovalSchema,
+  declineSchema,
+  parseProposalGrouping,
+  parseProposalSearchParams,
+  parseProposalSliceParams,
+} from "@/api/proposal-review";
 import { proposalDraftSchema, proposalLookupSchema } from "@/api/proposals";
 import { apiRoutes } from "@/api/routes";
 import { watchlistChangeSchema, watchlistDraftSchema, watchlistViewParam } from "@/api/watchlists";
@@ -18,6 +27,16 @@ import { hasPermission } from "@/domain/permissions";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
+import type { Refusal } from "@/mocks/proposal-review";
+import {
+  approveProposal,
+  bulkApproveProposals,
+  canDecide,
+  declineProposal,
+  findProposalDetail,
+  publicCustodyOf,
+  queryProposals,
+} from "@/mocks/proposal-review";
 import {
   checkItem,
   proposableProjectsOf,
@@ -117,6 +136,93 @@ export function createHandlers(profile: MockUserProfile) {
       return HttpResponse.json(submitProposal(session, draft.data), { status: 201 });
     }),
 
+    http.get(route(apiRoutes.proposalCustodies), () => {
+      if (!canDecide(currentSession())) {
+        return mayNotDecide();
+      }
+
+      return HttpResponse.json(database.proposalCustodies.map(publicCustodyOf));
+    }),
+
+    http.get(route(apiRoutes.proposalReview), ({ request }) => {
+      const session = currentSession();
+      if (!canDecide(session)) {
+        return mayNotDecide();
+      }
+
+      const params = new URL(request.url).searchParams;
+      return HttpResponse.json(
+        queryProposals(
+          session,
+          parseProposalSearchParams(params),
+          parseProposalSliceParams(params),
+          parseProposalGrouping(params),
+        ),
+      );
+    }),
+
+    http.post(route(apiRoutes.proposalBulkApproval), async ({ request }) => {
+      const session = currentSession();
+      if (!canDecide(session)) {
+        return mayNotDecide();
+      }
+
+      const bulk = bulkApprovalSchema.safeParse(await request.json());
+      if (!bulk.success) {
+        return HttpResponse.json({ message: bulk.error.message }, { status: 422 });
+      }
+
+      return outcomeResponse(bulkApproveProposals(session, bulk.data));
+    }),
+
+    http.get(route(`${apiRoutes.proposalReview}/:documentId`), ({ params }) => {
+      const session = currentSession();
+      if (!canDecide(session)) {
+        return mayNotDecide();
+      }
+
+      const detail = findProposalDetail(session, String(params.documentId));
+      if (detail === null) {
+        return HttpResponse.json({ message: "Proposal not found" }, { status: 404 });
+      }
+
+      return HttpResponse.json(detail);
+    }),
+
+    http.post(
+      route(`${apiRoutes.proposalReview}/:documentId/approve`),
+      async ({ params, request }) => {
+        const session = currentSession();
+        if (!canDecide(session)) {
+          return mayNotDecide();
+        }
+
+        const approval = approvalSchema.safeParse(await request.json());
+        if (!approval.success) {
+          return HttpResponse.json({ message: approval.error.message }, { status: 422 });
+        }
+
+        return outcomeResponse(approveProposal(session, String(params.documentId), approval.data));
+      },
+    ),
+
+    http.post(
+      route(`${apiRoutes.proposalReview}/:documentId/decline`),
+      async ({ params, request }) => {
+        const session = currentSession();
+        if (!canDecide(session)) {
+          return mayNotDecide();
+        }
+
+        const decline = declineSchema.safeParse(await request.json());
+        if (!decline.success) {
+          return HttpResponse.json({ message: decline.error.message }, { status: 422 });
+        }
+
+        return outcomeResponse(declineProposal(session, String(params.documentId), decline.data));
+      },
+    ),
+
     http.get(route(apiRoutes.watchlists), ({ request }) => {
       const view = watchlistViewSchema.safeParse(
         new URL(request.url).searchParams.get(watchlistViewParam),
@@ -200,6 +306,23 @@ export function createHandlers(profile: MockUserProfile) {
       return new HttpResponse(null, { status: 204 });
     }),
   ];
+}
+
+function mayNotDecide() {
+  return HttpResponse.json({ message: "You may not decide proposals" }, { status: 403 });
+}
+
+function outcomeResponse<Value extends JsonBodyType>(
+  outcome: { value: Value } | { refusal: Refusal },
+) {
+  if ("refusal" in outcome) {
+    return HttpResponse.json(
+      { message: outcome.refusal.message },
+      { status: outcome.refusal.status },
+    );
+  }
+
+  return HttpResponse.json(outcome.value);
 }
 
 function forbidden() {

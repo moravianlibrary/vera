@@ -25,6 +25,10 @@ All notable changes to this project are documented here.
 - Propose: one dialog holding one list of items, typed, pasted or from a file, each checked
   against the catalog and VERA as it lands, then submitted as a request or, for several, one
   batch; a curator may approve the new ones at once.
+- Proposal Review on the mock API: proposal custodies with members and the fallback, one row
+  per document within the decider's custody, its filters with facet counts, grouping by batch
+  or requester, and approve, approve as rescan, decline and bulk approve over every asker at
+  once, written to the status log.
 
 ### Changed
 

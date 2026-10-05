@@ -13,6 +13,9 @@ export const apiRoutes = {
   proposalSettings: "/proposals/settings",
   proposalLookup: "/proposals/lookup",
   proposals: "/proposals",
+  proposalReview: "/proposal-review",
+  proposalBulkApproval: "/proposal-review/bulk-approval",
+  proposalCustodies: "/proposal-custodies",
 } as const;
 
 export function documentRoute(documentId: string): string {
@@ -21,4 +24,12 @@ export function documentRoute(documentId: string): string {
 
 export function watchlistRoute(watchlistId: string): string {
   return `${apiRoutes.watchlists}/${encodeURIComponent(watchlistId)}`;
+}
+
+export function proposalReviewRoute(documentId: string): string {
+  return `${apiRoutes.proposalReview}/${encodeURIComponent(documentId)}`;
+}
+
+export function proposalDecisionRoute(documentId: string, decision: "approve" | "decline"): string {
+  return `${proposalReviewRoute(documentId)}/${decision}`;
 }

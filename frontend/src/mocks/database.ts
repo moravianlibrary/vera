@@ -9,6 +9,7 @@ import { documents } from "@/mocks/fixtures/documents";
 import { iterations } from "@/mocks/fixtures/iterations";
 import { lists } from "@/mocks/fixtures/lists";
 import { projects } from "@/mocks/fixtures/projects";
+import { proposalCustodies } from "@/mocks/fixtures/proposal-custodies";
 import { requests } from "@/mocks/fixtures/requests";
 import { statusLog } from "@/mocks/fixtures/status-log";
 import { users } from "@/mocks/fixtures/users";
@@ -31,6 +32,7 @@ export const database = {
   projects,
   lists,
   batches: [...batches],
+  proposalCustodies: [...proposalCustodies],
   documents: [...records.documents],
   iterations: [...records.iterations],
   requests: [...records.requests],
