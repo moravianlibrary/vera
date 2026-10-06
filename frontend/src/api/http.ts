@@ -62,6 +62,11 @@ export async function patchJson<T>(path: string, body: unknown, schema: z.ZodTyp
   return sendJson("PATCH", path, body, schema);
 }
 
+// Replaces the whole resource with what is sent.
+export async function putJson<T>(path: string, body: unknown, schema: z.ZodType<T>): Promise<T> {
+  return sendJson("PUT", path, body, schema);
+}
+
 // A delete answers with no body.
 export async function deleteResource(path: string): Promise<void> {
   const response = await fetch(apiUrl(path), { method: "DELETE", headers: jsonHeaders });
@@ -71,7 +76,7 @@ export async function deleteResource(path: string): Promise<void> {
 }
 
 async function sendJson<T>(
-  method: "POST" | "PATCH",
+  method: "POST" | "PATCH" | "PUT",
   path: string,
   body: unknown,
   schema: z.ZodType<T>,

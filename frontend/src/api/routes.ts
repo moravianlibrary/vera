@@ -8,6 +8,8 @@ export const apiRoutes = {
   categories: "/categories",
   projects: "/projects",
   lists: "/lists",
+  digitizationLists: "/digitization-lists",
+  digitizationListPool: "/digitization-lists/pool",
   batches: "/batches",
   documents: "/documents",
   iterations: "/iterations",
@@ -24,6 +26,10 @@ export const apiRoutes = {
 
 export function documentRoute(documentId: string): string {
   return `${apiRoutes.documents}/${encodeURIComponent(documentId)}`;
+}
+
+export function digitizationListRoute(listId: string): string {
+  return `${apiRoutes.digitizationLists}/${encodeURIComponent(listId)}`;
 }
 
 export function watchlistRoute(watchlistId: string): string {

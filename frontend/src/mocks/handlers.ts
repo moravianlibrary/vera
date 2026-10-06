@@ -16,6 +16,12 @@ import {
   recheckSchema,
   reclassificationSchema,
 } from "@/api/iterations";
+import {
+  listDraftSchema,
+  parseListSearchParams,
+  parseListSliceParams,
+  parsePoolSearchParams,
+} from "@/api/lists";
 import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
 import {
   approvalSchema,
@@ -54,6 +60,15 @@ import {
   recheckIteration,
   reclassifyIteration,
 } from "@/mocks/iterations";
+import {
+  canBuildLists,
+  canReadLists,
+  createList,
+  findListDetail,
+  queryLists,
+  queryPool,
+  saveList,
+} from "@/mocks/lists";
 import { messageChannels, prepareMessage } from "@/mocks/messages";
 import type { Outcome } from "@/mocks/mutations";
 import { invalidResponse, problemResponse } from "@/mocks/problem";
@@ -150,6 +165,67 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(apiRoutes.projects), () => HttpResponse.json(database.projects)),
     http.get(route(apiRoutes.lists), () => HttpResponse.json(database.lists)),
     http.get(route(apiRoutes.batches), () => HttpResponse.json(database.batches)),
+
+    http.get(route(apiRoutes.digitizationLists), ({ request }) => {
+      const session = currentSession();
+      if (!canReadLists(session)) {
+        return mayNotReadLists();
+      }
+
+      const params = new URL(request.url).searchParams;
+      return HttpResponse.json(
+        queryLists(session, parseListSearchParams(params), parseListSliceParams(params)),
+      );
+    }),
+
+    // Before `/:listId`, so the pool is not read as a list named "pool".
+    http.get(route(apiRoutes.digitizationListPool), ({ request }) => {
+      if (!canBuildLists(currentSession())) {
+        return problemResponse({ status: 403, message: "You may not build lists" });
+      }
+
+      const params = new URL(request.url).searchParams;
+      return HttpResponse.json(
+        queryPool(parsePoolSearchParams(params), parseListSliceParams(params)),
+      );
+    }),
+
+    http.get(route(`${apiRoutes.digitizationLists}/:listId`), ({ params }) => {
+      const session = currentSession();
+      if (!canReadLists(session)) {
+        return mayNotReadLists();
+      }
+
+      const detail = findListDetail(session, String(params.listId));
+      if (detail === null) {
+        return problemResponse({ status: 404, message: "List not found" });
+      }
+
+      return HttpResponse.json(detail);
+    }),
+
+    http.post(route(apiRoutes.digitizationLists), async ({ request }) => {
+      const draft = listDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      const outcome = createList(currentSession(), draft.data);
+      if ("refusal" in outcome) {
+        return problemResponse(outcome.refusal);
+      }
+
+      return HttpResponse.json(outcome.value, { status: 201 });
+    }),
+
+    http.put(route(`${apiRoutes.digitizationLists}/:listId`), async ({ params, request }) => {
+      const draft = listDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      return outcomeResponse(saveList(currentSession(), String(params.listId), draft.data));
+    }),
 
     http.post(route(`${apiRoutes.batches}/:batchId/retry`), ({ params }) =>
       outcomeResponse(retryBatch(currentSession(), String(params.batchId))),
@@ -455,6 +531,10 @@ export function createHandlers(profile: MockUserProfile) {
 
 function mayNotDecide() {
   return problemResponse({ status: 403, message: "You may not decide proposals" });
+}
+
+function mayNotReadLists() {
+  return problemResponse({ status: 403, message: "You may not read digitization lists" });
 }
 
 function mayNotReview() {

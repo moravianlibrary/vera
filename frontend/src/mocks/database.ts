@@ -30,7 +30,7 @@ export const database = {
   users,
   categories,
   projects,
-  lists,
+  lists: [...lists],
   batches: [...batches],
   proposalCustodies: [...proposalCustodies],
   documents: [...records.documents],
