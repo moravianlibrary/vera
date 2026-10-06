@@ -4,13 +4,16 @@
 // it needs to get there; opened, its share of the target per category and the lists that start
 // in its window. A tracking card draws the intended mix over the output, with the categories out
 // of the ±5 band; opened, the drift per category. Under both, the mix it reads and whose it is.
-// TODO(rrandiak): *Generate*, *Edit* and *Archive* arrive with the editor and the correcting
-// list (plan.md 6.3–6.4); *Edit mix* / *Proportions* links to Categories with its `?i=` once
-// Categories is built (step 7); labels move to i18n.
+// Its acts sit in the foot, beside what the Overall intention cannot have done to it.
+// TODO(rrandiak): *Generate* and the correcting list arrive with plan.md 6.4; *Edit mix* /
+// *Proportions* links to Categories with its `?i=` once Categories is built (step 7); labels
+// move to i18n.
 
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import type { FillRowView, IntentionRow, MixRowView } from "@/api/intentions";
+import type { ViewAction } from "@/components/actions/action-bar";
+import { ActionBar } from "@/components/actions/action-bar";
 import { RecordCard } from "@/components/card-sections";
 import { DataTable } from "@/components/data-table";
 import type { ColumnDefinition } from "@/components/lists/record-list";
@@ -43,9 +46,11 @@ interface IntentionCardProps {
   row: IntentionRow;
   repeatEvery: keyof typeof everyLabels | null;
   isOpen: boolean;
+  // Only what the person may do to it.
+  actions: readonly ViewAction[];
 }
 
-export function IntentionCard({ row, repeatEvery, isOpen }: IntentionCardProps) {
+export function IntentionCard({ row, repeatEvery, isOpen, actions }: IntentionCardProps) {
   const { intention } = row;
   const isTracking = intention.targetPages === null;
   return (
@@ -77,9 +82,14 @@ export function IntentionCard({ row, repeatEvery, isOpen }: IntentionCardProps) 
         </>
       }
       foot={
-        intention.isOverall
-          ? "The default mix for generating. Cannot be archived or deleted."
-          : undefined
+        intention.isOverall || actions.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            {intention.isOverall && (
+              <span>The default mix for generating. Cannot be archived or deleted.</span>
+            )}
+            <ActionBar actions={actions} className="ml-auto" />
+          </div>
+        ) : undefined
       }
     />
   );

@@ -17,6 +17,7 @@ import {
   isInWindow,
   mixOwnerOf,
   mixReadingOf,
+  nextPeriodStartOf,
   pagesPerWeekNeededOf,
   shareWithinOf,
   targetVerdictOf,
@@ -321,5 +322,15 @@ describe("the mix", () => {
     expect(mixOwnerOf(tracker, [owner, tracker])).toBe(owner);
     expect(mixOwnerOf(owner, [owner, tracker])).toBe(owner);
     expect(trackersOf(owner, [owner, tracker])).toEqual([tracker]);
+  });
+});
+
+describe("nextPeriodStartOf", () => {
+  it("starts the next week on a Monday, a month and a quarter on their first day", () => {
+    expect(nextPeriodStartOf("week", "2026-06-25")).toBe("2026-06-29");
+    expect(nextPeriodStartOf("week", "2026-06-29")).toBe("2026-07-06");
+    expect(nextPeriodStartOf("month", "2026-12-15")).toBe("2027-01-01");
+    expect(nextPeriodStartOf("quarter", "2026-06-25")).toBe("2026-07-01");
+    expect(nextPeriodStartOf("quarter", "2026-07-01")).toBe("2026-10-01");
   });
 });

@@ -2,13 +2,18 @@
 // interfaces.md §1.4): what VERA is trying to digitize, as two columns of cards, Targets and
 // Tracking, each running → upcoming with Ended and Archived folded below. The repeats head the
 // Targets column. Where only one column fits, a Targets / Tracking switch picks it (`?col=track`);
-// `?i=` opens one card, marks it and scrolls to it, `?t=` marks one repeat.
-// TODO(rrandiak): *New intention*, *New repeat*, a repeat's *Edit* and a row's *Archive* /
-// *Unarchive* arrive with the editor (plan.md 6.3); labels move to i18n.
+// `?i=` opens one card, marks it and scrolls to it, `?t=` marks one repeat. *New intention* and
+// *Edit* need `intention.edit`, *New repeat* and a repeat's *Edit* `intention.repeat`; what was
+// done is said above the columns, and the card it was done to is marked.
+// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router";
 import type { IntentionIndex, IntentionRow, IntentionTemplateRow } from "@/api/intentions";
+import { archiveIntention, unarchiveIntention } from "@/api/intentions";
+import type { ViewAction } from "@/components/actions/action-bar";
+import { ActionBar } from "@/components/actions/action-bar";
 import type { CardSection } from "@/components/card-sections";
 import { CardSections } from "@/components/card-sections";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
@@ -16,7 +21,17 @@ import type { ColumnDefinition } from "@/components/lists/record-list";
 import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { Session } from "@/domain/entities";
+import { scopeOfIntention } from "@/domain/intentions";
+import { can } from "@/domain/permissions";
+import type { NoteTone } from "@/domain/status-notes";
 import { IntentionCard } from "@/features/intentions/intention-card";
+import type { IntentionSource } from "@/features/intentions/intention-dialogs";
+import {
+  DeleteIntentionDialog,
+  IntentionFormDialog,
+  TemplateFormDialog,
+} from "@/features/intentions/intention-dialogs";
 import type { IntentionColumn } from "@/features/intentions/intentions-view";
 import {
   columnOf,
@@ -30,34 +45,275 @@ import {
   tileOf,
   verdictBadgeOf,
 } from "@/features/intentions/intentions-view";
-import { useIntentionIndexQuery } from "@/features/intentions/use-intentions-query";
-import { useUsersQuery } from "@/hooks/use-reference-query";
+import {
+  intentionInvalidations,
+  useIntentionIndexQuery,
+} from "@/features/intentions/use-intentions-query";
+import { useActionMutation } from "@/hooks/use-action-mutation";
+import { useProjectsQuery, useUsersQuery } from "@/hooks/use-reference-query";
+import { useSessionQuery } from "@/hooks/use-session-query";
 import { useTier } from "@/hooks/use-tier";
 import { formatCalendarDay, formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 
+type OpenDialog =
+  | { kind: "intention"; source: IntentionSource }
+  | { kind: "delete"; row: IntentionRow }
+  | { kind: "template"; row: IntentionTemplateRow | null }
+  | null;
+
+interface Note {
+  tone: NoteTone;
+  title: string;
+  text: string;
+}
+
+// What the person may do here, and to each intention.
+export interface IntentionActs {
+  cardActionsOf: (row: IntentionRow) => ViewAction[];
+  foldActionOf: (row: IntentionRow) => ViewAction | null;
+  // Null when the person may not set repeats.
+  editTemplate: ((row: IntentionTemplateRow) => void) | null;
+}
+
 export function IntentionsPage() {
   const { data: index, error } = useIntentionIndexQuery();
+  const { data: session } = useSessionQuery();
+  const { data: projects = [] } = useProjectsQuery();
+  const [params, setParams] = useSearchParams();
+  const [dialog, setDialog] = useState<OpenDialog>(null);
+  const [note, setNote] = useState<Note | null>(null);
+  const archive = useActionMutation({
+    call: archiveIntention,
+    invalidates: intentionInvalidations,
+  });
+  const unarchive = useActionMutation({
+    call: unarchiveIntention,
+    invalidates: intentionInvalidations,
+  });
+
+  const focus = (intentionId: string | null, said: Note) => {
+    setNote(said);
+    setParams(intentionId === null ? {} : { i: intentionId }, { replace: true });
+  };
+  const canEdit = (row: IntentionRow) =>
+    session !== undefined &&
+    can(session, "intention.edit", scopeOfIntention(row.intention, projects));
+  const toggleArchived = async (row: IntentionRow) => {
+    const { intention } = row;
+    const isArchiving = intention.archived === null;
+    const result = await (isArchiving ? archive : unarchive).run(intention.id);
+    if (!result.isDone) {
+      setNote({
+        tone: "red",
+        title: `${intention.name} was not changed`,
+        text: result.refusal.message,
+      });
+      return;
+    }
+
+    focus(
+      intention.id,
+      isArchiving
+        ? {
+            tone: "green",
+            title: `Archived ${intention.name}.`,
+            text: "Only off the page — its counts are unchanged.",
+          }
+        : { tone: "green", title: `Unarchived ${intention.name}.`, text: "Back on the page." },
+    );
+  };
+  const acts: IntentionActs = {
+    cardActionsOf: (row) => {
+      if (!canEdit(row)) {
+        return [];
+      }
+
+      const { intention } = row;
+      const isMet = intention.targetPages !== null && row.deliveredPages >= intention.targetPages;
+      const isArchivable =
+        !intention.isOverall && (row.state === "Ended" || isMet || intention.targetPages === null);
+      return [
+        {
+          id: "edit",
+          label: "Edit",
+          onSelect: () => setDialog({ kind: "intention", source: { kind: "edit", row } }),
+        },
+        ...(isArchivable
+          ? [{ id: "archive", label: "Archive", onSelect: () => void toggleArchived(row) }]
+          : []),
+      ];
+    },
+    foldActionOf: (row) =>
+      canEdit(row) && !row.intention.isOverall
+        ? {
+            id: "archive",
+            label: row.intention.archived === null ? "Archive" : "Unarchive",
+            onSelect: () => void toggleArchived(row),
+          }
+        : null,
+    editTemplate:
+      session !== undefined && can(session, "intention.repeat")
+        ? (row) => setDialog({ kind: "template", row })
+        : null,
+  };
+  const headerActions: ViewAction[] =
+    session === undefined
+      ? []
+      : [
+          ...(can(session, "intention.repeat")
+            ? [
+                {
+                  id: "repeat",
+                  label: "New repeat",
+                  onSelect: () => setDialog({ kind: "template", row: null }),
+                },
+              ]
+            : []),
+          ...(can(session, "intention.edit")
+            ? [
+                {
+                  id: "new",
+                  label: "New intention",
+                  isPrimary: true,
+                  onSelect: () => setDialog({ kind: "intention", source: { kind: "new" } }),
+                },
+              ]
+            : []),
+        ];
+  const close = () => setDialog(null);
 
   return (
     <>
-      <PageHeader title="Intentions" />
+      <PageHeader title="Intentions" actions={headerActions} />
       <PageContent>
         {error !== null ? (
           <StatusNote tone="red" title="Intentions could not be loaded">
             Try again in a moment.
           </StatusNote>
         ) : index === undefined ? null : (
-          <IntentionBoard index={index} />
+          <>
+            {note !== null && (
+              <StatusNote tone={note.tone} title={note.title} className="mb-4">
+                {note.text}
+              </StatusNote>
+            )}
+            <IntentionBoard index={index} acts={acts} params={params} setParams={setParams} />
+          </>
         )}
       </PageContent>
+      {index !== undefined && session !== undefined && (
+        <PageDialogs
+          dialog={dialog}
+          index={index}
+          session={session}
+          onClose={close}
+          onOpen={setDialog}
+          onDone={focus}
+        />
+      )}
     </>
   );
 }
 
-function IntentionBoard({ index }: { index: IntentionIndex }) {
-  const [params, setParams] = useSearchParams();
+interface PageDialogsProps {
+  dialog: OpenDialog;
+  index: IntentionIndex;
+  session: Session;
+  onClose: () => void;
+  onOpen: (dialog: OpenDialog) => void;
+  onDone: (intentionId: string | null, note: Note) => void;
+}
+
+function PageDialogs({ dialog, index, session, onClose, onOpen, onDone }: PageDialogsProps) {
+  if (dialog === null) {
+    return null;
+  }
+
+  if (dialog.kind === "template") {
+    return (
+      <TemplateFormDialog
+        isOpen
+        onClose={onClose}
+        row={dialog.row}
+        rows={index.rows}
+        session={session}
+      />
+    );
+  }
+
+  if (dialog.kind === "delete") {
+    const { intention } = dialog.row;
+    return (
+      <DeleteIntentionDialog
+        isOpen
+        onClose={onClose}
+        row={dialog.row}
+        onDeleted={() =>
+          onDone(null, {
+            tone: "green",
+            title: `Deleted ${intention.name}.`,
+            text: "No list changed.",
+          })
+        }
+      />
+    );
+  }
+
+  const { source } = dialog;
+  const edited = source.kind === "edit" ? source.row : null;
+  const isTrackedByRepeat = (row: IntentionRow) =>
+    index.templates.some((template) => template.tracks?.id === row.intention.id);
+  const isDeletable =
+    edited !== null &&
+    !edited.intention.isOverall &&
+    edited.mix.trackerCount === 0 &&
+    !isTrackedByRepeat(edited);
+  return (
+    <IntentionFormDialog
+      key={`${source.kind}-${edited?.intention.id ?? ""}`}
+      isOpen
+      onClose={onClose}
+      source={source}
+      rows={index.rows}
+      session={session}
+      onSaved={(row) =>
+        onDone(
+          row.intention.id,
+          edited === null
+            ? {
+                tone: "green",
+                title: `Created ${row.intention.name}.`,
+                text: `${columnTitles[columnOf(row.intention)]} · ${row.state.toLowerCase()}. Nothing to attach — whatever matches its scope counts.`,
+              }
+            : {
+                tone: "green",
+                title: `Saved ${row.intention.name}.`,
+                text: "Its counts are worked out again over its whole window.",
+              },
+        )
+      }
+      onCopy={
+        edited === null
+          ? undefined
+          : () => onOpen({ kind: "intention", source: { kind: "copy", row: edited } })
+      }
+      onDelete={
+        isDeletable && edited !== null ? () => onOpen({ kind: "delete", row: edited }) : undefined
+      }
+    />
+  );
+}
+
+interface IntentionBoardProps {
+  index: IntentionIndex;
+  acts: IntentionActs;
+  params: URLSearchParams;
+  setParams: ReturnType<typeof useSearchParams>[1];
+}
+
+function IntentionBoard({ index, acts, params, setParams }: IntentionBoardProps) {
   const tier = useTier();
   const urlState = intentionsUrlStateOf(params, index.rows);
   const isOneColumn = tier === "phone" || tier === "small";
@@ -98,6 +354,7 @@ function IntentionBoard({ index }: { index: IntentionIndex }) {
             templates={column === "target" ? index.templates : []}
             focusedId={urlState.focusedId}
             focusedTemplateId={urlState.focusedTemplateId}
+            acts={acts}
           />
         ))}
       </div>
@@ -125,6 +382,7 @@ interface IntentionColumnViewProps {
   templates: readonly IntentionTemplateRow[];
   focusedId: string | null;
   focusedTemplateId: string | null;
+  acts: IntentionActs;
 }
 
 function IntentionColumnView({
@@ -133,6 +391,7 @@ function IntentionColumnView({
   templates,
   focusedId,
   focusedTemplateId,
+  acts,
 }: IntentionColumnViewProps) {
   const { data: users = [] } = useUsersQuery();
   const sections = columnSectionsOf(rows, column);
@@ -160,7 +419,7 @@ function IntentionColumnView({
     title,
     items,
     isCollapsedByDefault: !isFocusedIn(items),
-    presentation: { table: { notebook: foldColumns(id, archivedBy) } },
+    presentation: { table: { notebook: foldColumns(id, archivedBy, acts.foldActionOf) } },
   });
   const cardSections: CardSection<IntentionRow>[] = [
     { id: "running", items: sections.running, emptyText: "Nothing running." },
@@ -180,6 +439,7 @@ function IntentionColumnView({
           key={row.template.id}
           row={row}
           isFocused={row.template.id === focusedTemplateId}
+          onEdit={acts.editTemplate}
         />
       ))}
       <CardSections
@@ -190,6 +450,7 @@ function IntentionColumnView({
             row={row}
             repeatEvery={everyOf(row)}
             isOpen={row.intention.id === focusedId}
+            actions={acts.cardActionsOf(row)}
           />
         )}
         columns={{ notebook: 1 }}
@@ -229,7 +490,15 @@ function Tile({
 }
 
 // A repeat has its own address, `?t=`, which Schedules and the Tasks trigger link to.
-function RepeatLine({ row, isFocused }: { row: IntentionTemplateRow; isFocused: boolean }) {
+function RepeatLine({
+  row,
+  isFocused,
+  onEdit,
+}: {
+  row: IntentionTemplateRow;
+  isFocused: boolean;
+  onEdit: ((row: IntentionTemplateRow) => void) | null;
+}) {
   const { template } = row;
   const [before, after = ""] = template.namePattern.split("{period}");
   const parts: ReactNode[] = [
@@ -242,17 +511,22 @@ function RepeatLine({ row, isFocused }: { row: IntentionTemplateRow; isFocused: 
   return (
     <div
       className={cn(
-        "rounded-lg border border-dashed px-3 py-2 text-[0.8125rem]",
+        "flex items-center gap-3 rounded-lg border border-dashed px-3 py-2 text-[0.8125rem]",
         isFocused && "outline-2 outline-offset-2 outline-ring",
       )}
     >
-      ↻{" "}
-      <b className="font-semibold">
-        {before}
-        <i>{periodNouns[template.every]}</i>
-        {after}
-      </b>{" "}
-      <span className="text-muted-foreground">· {parts.join(" · ")}</span>
+      <span className="min-w-0 flex-1">
+        ↻{" "}
+        <b className="font-semibold">
+          {before}
+          <i>{periodNouns[template.every]}</i>
+          {after}
+        </b>{" "}
+        <span className="text-muted-foreground">· {parts.join(" · ")}</span>
+      </span>
+      {onEdit !== null && (
+        <ActionBar actions={[{ id: "edit", label: "Edit", onSelect: () => onEdit(row) }]} />
+      )}
     </div>
   );
 }
@@ -260,6 +534,7 @@ function RepeatLine({ row, isFocused }: { row: IntentionTemplateRow; isFocused: 
 function foldColumns(
   kind: "ended" | "archived",
   archivedBy: (row: IntentionRow) => string,
+  actionOf: (row: IntentionRow) => ViewAction | null,
 ): ColumnDefinition<IntentionRow>[] {
   return [
     {
@@ -302,6 +577,15 @@ function foldColumns(
             )}
           </>
         );
+      },
+    },
+    {
+      key: "act",
+      header: "",
+      track: "max-content",
+      cell: (row) => {
+        const action = actionOf(row);
+        return action === null ? null : <ActionBar actions={[action]} />;
       },
     },
   ];

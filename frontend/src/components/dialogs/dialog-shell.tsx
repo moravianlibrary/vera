@@ -44,6 +44,12 @@ export interface DialogPrimaryAction {
   onSelect: () => void;
 }
 
+export interface DialogSecondaryAction {
+  label: string;
+  isDestructive?: boolean;
+  onSelect: () => void;
+}
+
 export interface DialogShellProps {
   isOpen: boolean;
   onClose: () => void;
@@ -57,6 +63,8 @@ export interface DialogShellProps {
   primary: DialogPrimaryAction;
   // Null on a result screen, where the primary is the only way on ("Done").
   cancelLabel?: string | null;
+  // Apart, at the start of the footer: an editor's "Delete…".
+  secondary?: DialogSecondaryAction;
   // Under the title: a stepped dialog's steps.
   head?: ReactNode;
   // Back to the step before.
@@ -76,6 +84,7 @@ export function DialogShell({
   isDirty = false,
   primary,
   cancelLabel = "Cancel",
+  secondary,
   head,
   onBack,
   refusal = null,
@@ -126,6 +135,20 @@ export function DialogShell({
             )}
 
             <DialogFooter className={cn(isPhone && "flex-col")}>
+              {secondary !== undefined && (
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "sm:mr-auto",
+                    secondary.isDestructive === true && "text-destructive",
+                    isPhone && "order-last w-full",
+                  )}
+                  onClick={secondary.onSelect}
+                  disabled={primary.isPending}
+                >
+                  {secondary.label}
+                </Button>
+              )}
               {!isPhone && cancelLabel !== null && (
                 <Button variant="outline" onClick={requestClose} disabled={primary.isPending}>
                   {cancelLabel}

@@ -9,6 +9,7 @@ import { useState } from "react";
 import type { DefaultValues, FieldValues, Path, UseFormReturn } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
+import type { DialogSecondaryAction } from "@/components/dialogs/dialog-shell";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 
@@ -32,6 +33,8 @@ interface FormDialogProps<Values extends FieldValues> {
   onSubmit: (values: Values) => Promise<ActionResult<unknown>>;
   // Which field a refusal is about, where the action can tell.
   fieldOf?: (refusal: Refusal) => Path<Values> | null;
+  // "Delete…", apart from saving.
+  secondary?: DialogSecondaryAction;
 }
 
 export function FormDialog<Values extends FieldValues>({
@@ -46,6 +49,7 @@ export function FormDialog<Values extends FieldValues>({
   submitLabel,
   onSubmit,
   fieldOf,
+  secondary,
 }: FormDialogProps<Values>) {
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues });
   const [refusal, setRefusal] = useState<Refusal | null>(null);
@@ -81,6 +85,7 @@ export function FormDialog<Values extends FieldValues>({
       description={description}
       isDirty={form.formState.isDirty}
       refusal={refusal}
+      secondary={secondary}
       primary={{
         label: submitLabel,
         isPending: form.formState.isSubmitting,

@@ -12,6 +12,10 @@ export const apiRoutes = {
   groups: "/groups",
   // Intentions, the page: every intention the caller sees with what it counts.
   intentionIndex: "/intentions/overview",
+  intentions: "/intentions",
+  // What a draft would count and the mix it would read, before it is saved.
+  intentionPreview: "/intentions/preview",
+  intentionTemplates: "/intention-templates",
   lists: "/lists",
   digitizationLists: "/digitization-lists",
   digitizationListPool: "/digitization-lists/pool",

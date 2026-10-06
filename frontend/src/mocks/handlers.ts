@@ -10,6 +10,11 @@ import {
   parseDocumentSliceParams,
 } from "@/api/documents";
 import {
+  intentionDraftSchema,
+  intentionPreviewRequestSchema,
+  intentionTemplateDraftSchema,
+} from "@/api/intentions";
+import {
   cancellationRequestSchema,
   pageCountSchema,
   publicationSchema,
@@ -61,7 +66,19 @@ import { retryBatch } from "@/mocks/additions";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
-import { canReadIntentions, queryIntentionIndex } from "@/mocks/intentions";
+import {
+  archiveIntention,
+  canReadIntentions,
+  createIntention,
+  createIntentionTemplate,
+  deleteIntention,
+  previewIntention,
+  previewIntentionDeletion,
+  queryIntentionIndex,
+  saveIntention,
+  saveIntentionTemplate,
+  unarchiveIntention,
+} from "@/mocks/intentions";
 import {
   cancelIteration,
   enterPageCount,
@@ -200,6 +217,86 @@ export function createHandlers(profile: MockUserProfile) {
       }
 
       return HttpResponse.json(queryIntentionIndex(session));
+    }),
+
+    http.post(route(apiRoutes.intentionPreview), async ({ request }) => {
+      const preview = intentionPreviewRequestSchema.safeParse(await request.json());
+      if (!preview.success) {
+        return invalidResponse(preview.error);
+      }
+
+      return outcomeResponse(previewIntention(currentSession(), preview.data));
+    }),
+
+    http.post(route(apiRoutes.intentions), async ({ request }) => {
+      const draft = intentionDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      const outcome = createIntention(currentSession(), draft.data);
+      if ("refusal" in outcome) {
+        return problemResponse(outcome.refusal);
+      }
+
+      return HttpResponse.json(outcome.value, { status: 201 });
+    }),
+
+    http.put(route(`${apiRoutes.intentions}/:intentionId`), async ({ params, request }) => {
+      const draft = intentionDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      return outcomeResponse(
+        saveIntention(currentSession(), String(params.intentionId), draft.data),
+      );
+    }),
+
+    http.post(route(`${apiRoutes.intentions}/:intentionId/archive`), ({ params }) =>
+      outcomeResponse(archiveIntention(currentSession(), String(params.intentionId))),
+    ),
+
+    http.post(route(`${apiRoutes.intentions}/:intentionId/unarchive`), ({ params }) =>
+      outcomeResponse(unarchiveIntention(currentSession(), String(params.intentionId))),
+    ),
+
+    http.get(route(`${apiRoutes.intentions}/:intentionId/deletion`), ({ params }) =>
+      outcomeResponse(previewIntentionDeletion(currentSession(), String(params.intentionId))),
+    ),
+
+    http.delete(route(`${apiRoutes.intentions}/:intentionId`), ({ params }) => {
+      const outcome = deleteIntention(currentSession(), String(params.intentionId));
+      if ("refusal" in outcome) {
+        return problemResponse(outcome.refusal);
+      }
+
+      return new HttpResponse(null, { status: 204 });
+    }),
+
+    http.post(route(apiRoutes.intentionTemplates), async ({ request }) => {
+      const draft = intentionTemplateDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      const outcome = createIntentionTemplate(currentSession(), draft.data);
+      if ("refusal" in outcome) {
+        return problemResponse(outcome.refusal);
+      }
+
+      return HttpResponse.json(outcome.value, { status: 201 });
+    }),
+
+    http.put(route(`${apiRoutes.intentionTemplates}/:templateId`), async ({ params, request }) => {
+      const draft = intentionTemplateDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      return outcomeResponse(
+        saveIntentionTemplate(currentSession(), String(params.templateId), draft.data),
+      );
     }),
 
     // Before `/:projectId`, so the index is not read as a project named "overview".

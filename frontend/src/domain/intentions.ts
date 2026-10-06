@@ -14,8 +14,17 @@ import type {
   Distribution,
   Intention,
   Iteration,
+  Project,
+  RepeatEvery,
 } from "@/domain/entities";
-import { daysUntil, paceSlack, paceVerdicts, timeElapsedOf } from "@/domain/projects";
+import type { ScopedRecord } from "@/domain/permissions";
+import {
+  daysUntil,
+  paceSlack,
+  paceVerdicts,
+  scopeOfProject,
+  timeElapsedOf,
+} from "@/domain/projects";
 import { isProgressAtLeast } from "@/domain/status";
 
 export const intentionStates = ["Running", "Upcoming", "Ended"] as const;
@@ -236,6 +245,41 @@ export function catchUpPagesOf(input: TargetInput): number | null {
   }
 
   return Math.max(0, Math.round((target * timeElapsed - input.plannedPages) / 10) * 10);
+}
+
+// ---------------------------------------------------------------- who may
+
+// `intention.read@project` and `.edit@project` reach an intention a project the person is on
+// funds; any other only `any` reaches (permissions.md §3).
+export function scopeOfIntention(
+  intention: Pick<Intention, "funding">,
+  projects: readonly Project[],
+): ScopedRecord {
+  const { funding } = intention;
+  const project =
+    funding.kind === "project"
+      ? projects.find((candidate) => candidate.id === funding.projectId)
+      : undefined;
+  return project === undefined ? { kind: "unscoped" } : scopeOfProject(project);
+}
+
+// ---------------------------------------------------------------- repeats
+
+// When a repeat makes its next occurrence: the first day of the period after today's, a week
+// from Monday, a month or a quarter from its first day (§3.3).
+export function nextPeriodStartOf(every: RepeatEvery, today: string): string {
+  const day = new Date(`${today}T00:00:00Z`);
+  if (every === "week") {
+    const daysToMonday = 7 - ((day.getUTCDay() + 6) % 7);
+    day.setUTCDate(day.getUTCDate() + daysToMonday);
+    return day.toISOString().slice(0, 10);
+  }
+
+  const monthsPerPeriod = every === "month" ? 1 : 3;
+  const month = Math.floor(day.getUTCMonth() / monthsPerPeriod) * monthsPerPeriod;
+  return new Date(Date.UTC(day.getUTCFullYear(), month + monthsPerPeriod, 1))
+    .toISOString()
+    .slice(0, 10);
 }
 
 // ---------------------------------------------------------------- the mix

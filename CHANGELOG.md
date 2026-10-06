@@ -63,6 +63,14 @@ All notable changes to this project are documented here.
   how much of the mix is unallocated; opened, the drift per category. Under every card, the mix
   it reads and whose it is. The monthly repeat heads Targets; `?i=` opens and marks one
   intention, and on small screens a Targets / Tracking switch shows one column at a time.
+- Intentions can be made, edited, archived and deleted. One form sets the funding, one category
+  subtree, the mix, a target and the window. The mix either tracks an intention that owns its
+  mix (House mix by default) or is the intention's own copy of one. An owner others track can
+  switch to tracking only by moving them with it. Before saving, the form says where the
+  intention lands, what saving recounts over its whole window and the percentages it would read
+  beside the ones it reads now. The counting start is fixed; *Count from another date* makes a
+  new intention from the old one. Repeats are made and edited by an admin, from the next
+  occurrence on.
 - Projects shows the intentions a project funds, each with its own planned and delivered, and
   says *No intention yet* on an approved project nothing says what to buy for.
 - Documents Validations groups its list by category or by defect.

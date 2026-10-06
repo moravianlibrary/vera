@@ -5,9 +5,14 @@
 // added, so nothing here sums across rows.
 
 import { z } from "zod";
-import { getJson } from "@/api/http";
+import { deleteResource, getJson, postJson, putJson } from "@/api/http";
 import { apiRoutes } from "@/api/routes";
-import { intentionSchema, intentionTemplateSchema } from "@/domain/entities";
+import {
+  intentionFundingSchema,
+  intentionSchema,
+  intentionTemplateSchema,
+  repeatEverySchema,
+} from "@/domain/entities";
 import { intentionStates, mixFlags, targetVerdicts } from "@/domain/intentions";
 
 const count = z.number().int().nonnegative();
@@ -115,8 +120,145 @@ export const intentionIndexSchema = z.object({
 });
 export type IntentionIndex = z.infer<typeof intentionIndexSchema>;
 
+// ---------------------------------------------------------------- acts
+
+const calendarDate = z.iso.date();
+const name = z.string().trim().min(1, "An intention needs a name");
+
+// The one mix field (§2.1, §2.2): keep its own, track an intention that owns one, or own a copy
+// of one as it is now. An owner others track switches to tracking only by moving them with it.
+export const mixChoiceSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("keep") }),
+  z.object({ kind: z.literal("track"), ownerId: z.string(), isMovingTrackers: z.boolean() }),
+  z.object({ kind: z.literal("copy"), fromId: z.string() }),
+]);
+export type MixChoice = z.infer<typeof mixChoiceSchema>;
+
+// What decides which items it counts; the counting start is fixed once it exists (§3).
+export const intentionScopeSchema = z.object({
+  funding: intentionFundingSchema,
+  scopeCategoryId: z.string().nullable(),
+  countsFrom: calendarDate,
+  endsOn: calendarDate.nullable(),
+});
+export type IntentionScope = z.infer<typeof intentionScopeSchema>;
+
+export const intentionDraftSchema = intentionScopeSchema
+  .extend({
+    name,
+    description: z.string().trim(),
+    targetPages: z.number().int().positive().nullable(),
+    mix: mixChoiceSchema,
+  })
+  .refine((draft) => draft.endsOn === null || draft.endsOn >= draft.countsFrom, {
+    message: "It cannot end before it starts counting",
+    path: ["endsOn"],
+  });
+export type IntentionDraft = z.infer<typeof intentionDraftSchema>;
+
+// What the editor asks before saving: the draft's scope and mix choice, on the intention it
+// edits (none for a new one).
+export const intentionPreviewRequestSchema = intentionScopeSchema.extend({
+  intentionId: z.string().nullable(),
+  mix: mixChoiceSchema,
+});
+export type IntentionPreviewRequest = z.infer<typeof intentionPreviewRequestSchema>;
+
+// What the draft would count over its whole window, and its mix within the draft's scope beside
+// the one it reads now (§2.2: the new percentages beside the old, first).
+export const intentionPreviewSchema = z.object({
+  plannedPages: pages,
+  deliveredPages: pages,
+  outputPages: pages,
+  mix: z.array(
+    z.object({
+      categoryId: z.string(),
+      name: z.string(),
+      // Null with no share; before is null throughout for a new intention.
+      before: percent.nullable(),
+      after: percent.nullable(),
+    }),
+  ),
+});
+export type IntentionPreview = z.infer<typeof intentionPreviewSchema>;
+
+// Deleting moves nothing, since nothing is attached; the lists generated with it keep that in
+// their history.
+export const intentionDeletionSchema = z.object({
+  generatedLists: z.array(namedSchema),
+});
+export type IntentionDeletion = z.infer<typeof intentionDeletionSchema>;
+
+export const intentionTemplateDraftSchema = z.object({
+  namePattern: z
+    .string()
+    .trim()
+    .includes("{period}", { message: "Put {period} in the name, so each one is told apart" }),
+  every: repeatEverySchema,
+  funding: intentionFundingSchema,
+  scopeCategoryId: z.string().nullable(),
+  // Each occurrence tracks it; only an intention that owns its mix.
+  tracksMixOf: z.string(),
+  targetPages: z.number().int().positive().nullable(),
+  isArchivingPrevious: z.boolean(),
+});
+export type IntentionTemplateDraft = z.infer<typeof intentionTemplateDraftSchema>;
+
 // ---------------------------------------------------------------- calls
+
+const intentionRoute = (intentionId: string) =>
+  `${apiRoutes.intentions}/${encodeURIComponent(intentionId)}`;
 
 export async function listIntentionIndex(): Promise<IntentionIndex> {
   return getJson(apiRoutes.intentionIndex, intentionIndexSchema);
+}
+
+export async function previewIntention(
+  request: IntentionPreviewRequest,
+): Promise<IntentionPreview> {
+  return postJson(apiRoutes.intentionPreview, request, intentionPreviewSchema);
+}
+
+export async function createIntention(draft: IntentionDraft): Promise<IntentionRow> {
+  return postJson(apiRoutes.intentions, draft, intentionRowSchema);
+}
+
+export async function saveIntention(
+  intentionId: string,
+  draft: IntentionDraft,
+): Promise<IntentionRow> {
+  return putJson(intentionRoute(intentionId), draft, intentionRowSchema);
+}
+
+export async function archiveIntention(intentionId: string): Promise<IntentionRow> {
+  return postJson(`${intentionRoute(intentionId)}/archive`, {}, intentionRowSchema);
+}
+
+export async function unarchiveIntention(intentionId: string): Promise<IntentionRow> {
+  return postJson(`${intentionRoute(intentionId)}/unarchive`, {}, intentionRowSchema);
+}
+
+export async function previewIntentionDeletion(intentionId: string): Promise<IntentionDeletion> {
+  return getJson(`${intentionRoute(intentionId)}/deletion`, intentionDeletionSchema);
+}
+
+export async function deleteIntention(intentionId: string): Promise<void> {
+  return deleteResource(intentionRoute(intentionId));
+}
+
+export async function createIntentionTemplate(
+  draft: IntentionTemplateDraft,
+): Promise<IntentionTemplateRow> {
+  return postJson(apiRoutes.intentionTemplates, draft, intentionTemplateRowSchema);
+}
+
+export async function saveIntentionTemplate(
+  templateId: string,
+  draft: IntentionTemplateDraft,
+): Promise<IntentionTemplateRow> {
+  return putJson(
+    `${apiRoutes.intentionTemplates}/${encodeURIComponent(templateId)}`,
+    draft,
+    intentionTemplateRowSchema,
+  );
 }
