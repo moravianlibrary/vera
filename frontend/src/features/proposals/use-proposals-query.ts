@@ -3,11 +3,10 @@
 // it refetches all three.
 
 import { skipToken, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Approval, Decline, ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
+import type { Approval, ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
 import {
   approveProposal,
   bulkApproveProposals,
-  declineProposal,
   findProposal,
   listProposals,
   maximumProposalSliceSize,
@@ -41,12 +40,15 @@ export function useProposalQuery(documentId: string | null) {
   });
 }
 
+// What a decision changes.
+export const decisionInvalidations = [proposalsQueryKey, documentsQueryKey, watchlistsQueryKey];
+
 export function useDecisionMutations() {
   const queryClient = useQueryClient();
   // Not awaited: the caller's own callback runs first, while the decided proposal is still on
   // screen, and the refetch then takes it off.
   const onSuccess = () => {
-    for (const queryKey of [proposalsQueryKey, documentsQueryKey, watchlistsQueryKey]) {
+    for (const queryKey of decisionInvalidations) {
       void queryClient.invalidateQueries({ queryKey });
     }
   };
@@ -55,11 +57,6 @@ export function useDecisionMutations() {
     approve: useMutation({
       mutationFn: ({ documentId, approval }: { documentId: string; approval: Approval }) =>
         approveProposal(documentId, approval),
-      onSuccess,
-    }),
-    decline: useMutation({
-      mutationFn: ({ documentId, decline }: { documentId: string; decline: Decline }) =>
-        declineProposal(documentId, decline),
       onSuccess,
     }),
     bulkApprove: useMutation({ mutationFn: bulkApproveProposals, onSuccess }),

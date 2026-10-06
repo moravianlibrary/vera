@@ -56,6 +56,9 @@ All notable changes to this project are documented here.
   sidebar, with the page's actions on the right of the same line. Nothing is fixed at the bottom
   of a phone screen.
 - At the large tier (1600px and wider) the type steps back to 15px, as designed.
+- Declining a proposal opens a dialog with what every asker is told and an internal note;
+  closing it with text typed asks to discard first, and a refusal shows in the dialog with the
+  text kept. On a phone a dialog fills the screen.
 - A page shows at most three action buttons, two on the small tier and one on a phone; the rest
   are under "…", and an irreversible action is never the filled button on a phone.
 

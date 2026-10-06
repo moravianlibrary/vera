@@ -8,7 +8,8 @@ import { ArrowRight } from "lucide-react";
 import { useId, useState } from "react";
 import { Link } from "react-router";
 import { ApiError } from "@/api/http";
-import type { ProposalDetail } from "@/api/proposal-review";
+import type { Decline, ProposalDetail } from "@/api/proposal-review";
+import { declineProposal } from "@/api/proposal-review";
 import {
   CategorySelect,
   categoryLabelOf,
@@ -16,6 +17,8 @@ import {
   PrioritySelect,
 } from "@/components/classification-fields";
 import { DetailCard, DetailRow, Muted, StatTiles } from "@/components/detail-card";
+import type { ReasonTexts } from "@/components/dialogs/reason-dialog";
+import { ReasonDialog } from "@/components/dialogs/reason-dialog";
 import { visibleNavigation } from "@/components/layout/navigation";
 import {
   AskersCard,
@@ -43,7 +46,12 @@ import {
   projectIdsOf,
 } from "@/domain/proposal-review";
 import { ProposalStatusBadge } from "@/features/proposals/proposal-status";
-import { useDecisionMutations } from "@/features/proposals/use-proposals-query";
+import {
+  decisionInvalidations,
+  useDecisionMutations,
+} from "@/features/proposals/use-proposals-query";
+import { useActionMutation } from "@/hooks/use-action-mutation";
+import { useCan } from "@/hooks/use-can";
 import {
   useCategoriesQuery,
   useProjectsQuery,
@@ -75,6 +83,7 @@ export function ProposalDetailPane({ detail, session, onDecided }: ProposalDetai
   const { data: custodies = [] } = useProposalCustodiesQuery();
   const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
   const documents = visibleNavigation(session).find((entry) => entry.id === "documents");
+  const can = useCan();
 
   return (
     <article className="@container max-w-5xl">
@@ -97,9 +106,10 @@ export function ProposalDetailPane({ detail, session, onDecided }: ProposalDetai
       <ProposalFacts row={row} />
 
       <div className="mt-4 grid gap-4">
-        {row.decision === "Pending" && (
-          <DecideCard key={document.id} row={row} projects={projects} onDecided={onDecided} />
-        )}
+        {row.decision === "Pending" &&
+          can("request.decide", { kind: "proposal", askerIds: askerIdsOf(row) }) && (
+            <DecideCard key={document.id} row={row} projects={projects} onDecided={onDecided} />
+          )}
         <AskersCard record={record} users={users} />
         <PlacedCard row={row} projects={projects} custodies={custodies} />
         <CopiesCard record={record} nameOf={nameOf} />
@@ -143,14 +153,18 @@ interface DecideCardProps {
 function DecideCard({ row, projects, onDecided }: DecideCardProps) {
   const fieldId = useId();
   const { data: categories = [] } = useCategoriesQuery();
-  const { approve, decline } = useDecisionMutations();
+  const { approve } = useDecisionMutations();
+  const decline = useActionMutation({
+    call: ({ documentId, decline }: { documentId: string; decline: Decline }) =>
+      declineProposal(documentId, decline),
+    invalidates: decisionInvalidations,
+    refusalTexts: { 409: "Someone has decided it meanwhile." },
+  });
   const prefilled = prefilledPriorityOf(row, projects);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [priority, setPriority] = useState<Priority>(prefilled?.priority ?? "Normal");
   const [rescanNote, setRescanNote] = useState("");
   const [isDeclining, setIsDeclining] = useState(false);
-  const [publicText, setPublicText] = useState("");
-  const [internalText, setInternalText] = useState("");
 
   const documentId = row.record.document.id;
   const title = row.record.document.title;
@@ -158,7 +172,7 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
   const forAll = askCount > 1 ? ` for all ${askCount}` : "";
   const rescan = isRescan(row);
   const isSaving = approve.isPending || decline.isPending;
-  const failure = approve.error ?? decline.error;
+  const failure = approve.error;
 
   if (isBeingChecked(row)) {
     return (
@@ -196,11 +210,8 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
       .catch(() => undefined);
   };
 
-  const submitDecline = () =>
-    decline.mutate({
-      documentId,
-      decline: { publicText: publicText.trim(), internalText: internalText.trim() || null },
-    });
+  const submitDecline = ({ publicText, internalNote }: ReasonTexts) =>
+    decline.run({ documentId, decline: { publicText, internalText: internalNote || null } });
 
   return (
     <DetailCard title={`Decide${forAll}`}>
@@ -234,67 +245,45 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
           </Field>
         )}
 
-        {!isDeclining ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              size="sm"
-              disabled={isSaving || approvalRefusal !== null}
-              onClick={submitApproval}
-            >
-              {rescan ? "Approve as rescan" : "Approve"}
-              {forAll}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-destructive"
-              disabled={isSaving}
-              onClick={() => setIsDeclining(true)}
-            >
-              Decline{forAll}…
-            </Button>
-            {approvalRefusal !== null && (
-              <span className="text-xs text-muted-foreground">{approvalRefusal}</span>
-            )}
-          </div>
-        ) : (
-          <div className="grid gap-3 rounded-lg border p-3">
-            <Field
-              id={`${fieldId}-public`}
-              label="What they are told"
-              hint={askCount === 1 ? "the asker reads this" : `all ${askCount} askers read this`}
-            >
-              <Textarea
-                id={`${fieldId}-public`}
-                rows={2}
-                value={publicText}
-                onChange={(event) => setPublicText(event.target.value)}
-                placeholder="About the document, never a motive"
-              />
-            </Field>
-            <Field id={`${fieldId}-internal`} label="Internal note" hint="optional; staff only">
-              <Textarea
-                id={`${fieldId}-internal`}
-                rows={2}
-                value={internalText}
-                onChange={(event) => setInternalText(event.target.value)}
-              />
-            </Field>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                variant="destructive"
-                disabled={isSaving || publicText.trim() === ""}
-                onClick={submitDecline}
-              >
-                Decline{forAll}
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => setIsDeclining(false)}>
-                Cancel
-              </Button>
-            </div>
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            size="sm"
+            disabled={isSaving || approvalRefusal !== null}
+            onClick={submitApproval}
+          >
+            {rescan ? "Approve as rescan" : "Approve"}
+            {forAll}
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-destructive"
+            disabled={isSaving}
+            onClick={() => setIsDeclining(true)}
+          >
+            Decline{forAll}…
+          </Button>
+          {approvalRefusal !== null && (
+            <span className="text-xs text-muted-foreground">{approvalRefusal}</span>
+          )}
+        </div>
+
+        <ReasonDialog
+          isOpen={isDeclining}
+          onClose={() => setIsDeclining(false)}
+          title={`Decline ${title}`}
+          description="Decline the proposal for every asker, with what they are told."
+          publicText={{
+            label: "What they are told",
+            hint: askCount === 1 ? "the asker reads this" : `all ${askCount} askers read this`,
+            isRequired: true,
+            placeholder: "About the document, never a motive",
+          }}
+          internalNote={{ label: "Internal note", hint: "optional; staff only", isRequired: false }}
+          confirmLabel={`Decline${forAll}`}
+          isDestructive
+          onConfirm={submitDecline}
+        />
 
         {failure !== null && (
           <p className="text-xs text-destructive">

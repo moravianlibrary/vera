@@ -115,6 +115,20 @@ The foundation is in place:
   else. `src/components/pane-state.tsx` is what a pane shows: *Select a …*, nothing while
   loading, a line when the record left the view, an outcome after an action (Proposals'
   *Decided*), or the record.
+- Dialogs (`src/components/dialogs/`): `dialog-shell.tsx` is the frame of every dialog (title,
+  body, Cancel and one primary, a refusal inline above the footer, "Discard changes?" when
+  closed dirty; a full-screen sheet on the phone with an outlined destructive primary).
+  `consequence-dialog.tsx` (kind A: what happens, from a server dry run), `reason-dialog.tsx`
+  (kind B: what readers are told plus an internal note; Decline in Proposals uses it) and
+  `form-dialog.tsx` (kind C: React Hook Form over a zod schema, a computed warning, a refusal
+  tied to a field). Each takes an `onConfirm`/`onSubmit` returning an `ActionResult` and closes
+  itself when it is done. `src/hooks/use-action-mutation.ts` turns a call into that result: a
+  refusal (403/404/409/422, worded per action) or any other failure becomes a value, and the
+  query keys it touches are refetched without being awaited. `can()` in
+  `src/domain/permissions.ts` (and `src/hooks/use-can.ts`) checks a grant's scope against a
+  record (proposal, iteration by category path, project, run); pane actions use it to be absent.
+  Still to build: picker, set editor, stepped frame and Message dialogs (component-interfaces.md
+  §6.5–6.8).
 - Query hooks: `src/hooks/use-session-query.ts`, `src/features/documents/use-documents-query.ts`.
   Sidebar entries and their required permissions: `src/components/layout/navigation.ts`.
 - `src/app.tsx` holds the providers and routes. `src/features/documents/` is the Documents view:
