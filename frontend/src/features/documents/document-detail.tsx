@@ -5,9 +5,10 @@
 // reads their own ask: its status in the public words, why they asked, and what has happened.
 // What a caller may not read the server has already withheld; the cards gate only what they
 // offer.
-// TODO(rrandiak): the pane's actions (Ask for this too, Withdraw, More), Retry and Raw payload
-// on Adding, Message on Digitization and Open in catalog; grants are checked at any scope, not
-// against custody or project; labels move to i18n.
+// Its acts sit beside the heading (document-actions.tsx).
+// TODO(rrandiak): Ask for this too and Withdraw; Retry and Raw payload on Adding, Message on
+// Digitization and Open in catalog; the cards' links check grants at any scope, not against
+// custody or project; labels move to i18n.
 
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import type { ReactNode } from "react";
@@ -54,6 +55,7 @@ import {
 } from "@/domain/status";
 import type { StatusNote as StatusNoteParts } from "@/domain/status-notes";
 import { deskOf, publicRecordNoteOf, staffRecordNoteOf } from "@/domain/status-notes";
+import { DocumentActions } from "@/features/documents/document-actions";
 import {
   useBatchesQuery,
   useCategoriesQuery,
@@ -95,11 +97,14 @@ function StaffRecord({ detail, session }: DocumentDetailPaneProps) {
 
   return (
     <>
-      <RecordHeading
-        title={document.title}
-        identifier={documentIdentifierOf(document)}
-        details={[document.type, document.signature]}
-      />
+      <div className="flex flex-wrap items-start justify-between gap-x-4">
+        <RecordHeading
+          title={document.title}
+          identifier={documentIdentifierOf(document)}
+          details={[document.type, document.signature]}
+        />
+        <DocumentActions record={record} session={session} className="mb-4" />
+      </div>
       {note !== null && <RecordNote note={note} nameOf={nameOf} />}
       <StaffFacts record={record} session={session} />
 

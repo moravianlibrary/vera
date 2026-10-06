@@ -2,11 +2,12 @@
 // on buttons is applied here once, rather than by each view: phone 1, small 2, notebook and
 // large 3 (view-rules.md §5.2); the rest go into "…" in declared order. An irreversible action
 // is never primary-styled on a phone (§5.3). The caller passes only what the person may do to
-// this record: an action they may not is absent, never disabled (§5.1).
+// this record: an action they may not is absent, never disabled (§5.1). A pane names its menu,
+// "More ▾", and keeps the record's rarer acts in it whatever the cap.
 // TODO(rrandiak): labels move to i18n.
 
 import type { LucideIcon } from "lucide-react";
-import { MoreHorizontal } from "lucide-react";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +32,8 @@ export type ViewAction = ActionTarget & {
   isPrimary?: boolean;
   // Red; irreversible or seen outside (view-rules.md §5.3).
   isDestructive?: boolean;
+  // Always in the menu, never a button: a pane's More ▾.
+  isInMenu?: boolean;
 };
 
 export const primaryCaps = {
@@ -44,17 +47,20 @@ interface ActionBarProps {
   actions: readonly ViewAction[];
   // How many show as buttons; defaults to the tier's cap.
   cap?: number;
+  // The menu as a named button, "More", rather than "…".
+  menuLabel?: string;
   className?: string;
 }
 
-export function ActionBar({ actions, cap, className }: ActionBarProps) {
+export function ActionBar({ actions, cap, menuLabel, className }: ActionBarProps) {
   const tier = useTier();
   if (actions.length === 0) {
     return null;
   }
 
-  const shown = actions.slice(0, cap ?? primaryCaps[tier]);
-  const folded = actions.slice(shown.length);
+  const buttons = actions.filter((action) => action.isInMenu !== true);
+  const shown = buttons.slice(0, cap ?? primaryCaps[tier]);
+  const folded = actions.filter((action) => !shown.includes(action));
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -65,9 +71,16 @@ export function ActionBar({ actions, cap, className }: ActionBarProps) {
       {folded.length > 0 && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon-sm" aria-label="More actions">
-              <MoreHorizontal />
-            </Button>
+            {menuLabel === undefined ? (
+              <Button variant="outline" size="icon-sm" aria-label="More actions">
+                <MoreHorizontal />
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm">
+                {menuLabel}
+                <ChevronDown />
+              </Button>
+            )}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {folded.map((action) => (

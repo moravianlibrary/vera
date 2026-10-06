@@ -10,6 +10,7 @@ export const apiRoutes = {
   lists: "/lists",
   batches: "/batches",
   documents: "/documents",
+  iterations: "/iterations",
   watchlists: "/watchlists",
   proposalSettings: "/proposals/settings",
   proposalLookup: "/proposals/lookup",
@@ -33,4 +34,13 @@ export function proposalReviewRoute(documentId: string): string {
 
 export function proposalDecisionRoute(documentId: string, decision: "approve" | "decline"): string {
   return `${proposalReviewRoute(documentId)}/${decision}`;
+}
+
+// What may be done to an iteration from the Documents pane: each is its own action, so the server
+// checks each permission against the iteration's category (permissions.md §3).
+export const iterationActions = ["relink", "reclassify", "publish"] as const;
+export type IterationAction = (typeof iterationActions)[number];
+
+export function iterationActionRoute(iterationId: string, action: IterationAction): string {
+  return `${apiRoutes.iterations}/${encodeURIComponent(iterationId)}/${action}`;
 }

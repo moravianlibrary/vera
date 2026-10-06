@@ -24,10 +24,10 @@ import type {
 } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import { isProgressAtLeast, publicIterationStatusOf } from "@/domain/status";
+import { findDocumentByIdentity, knownCatalogRecords, unitTypeOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import type { CatalogRecord } from "@/mocks/fixtures/catalog";
-import { catalogRecords } from "@/mocks/fixtures/catalog";
 
 export const proposalSettings: ProposalSettings = { maxAtOnce: 10, canDetectTypes: true };
 
@@ -75,7 +75,7 @@ export function checkItem(session: Session, item: ProposalItem): ProposalCheck {
     unit: resolution.unit,
     title: resolution.unit === null ? record.title : `${record.title} · ${resolution.unit}`,
   };
-  const document = findDocument(record.catalogId, resolution.unit);
+  const document = findDocumentByIdentity(record.catalogId, resolution.unit);
   if (document === null) {
     return { kind: "new", ...found, isAskedBefore: false };
   }
@@ -122,7 +122,7 @@ function resolve(item: ProposalItem): Resolution {
 }
 
 function catalogRecordOf(item: ProposalItem): CatalogRecord | null {
-  const records = [...catalogRecords, ...heldCatalogRecords()];
+  const records = knownCatalogRecords();
   const normalized = (value: string) => value.replaceAll("-", "").toLowerCase();
 
   const record = records.find((candidate) => {
@@ -138,40 +138,6 @@ function catalogRecordOf(item: ProposalItem): CatalogRecord | null {
     }
   });
   return record ?? null;
-}
-
-// The documents VERA already holds answer for their catalog IDs, units and barcodes.
-function heldCatalogRecords(): CatalogRecord[] {
-  const byCatalogId = new Map<string, Document[]>();
-  for (const document of database.documents) {
-    byCatalogId.set(document.catalogId, [...(byCatalogId.get(document.catalogId) ?? []), document]);
-  }
-
-  return [...byCatalogId].map(([catalogId, documents]) => {
-    const units = documents.flatMap((document) =>
-      document.unit === null ? [] : [document.unit.value],
-    );
-    const barcodes = documents.flatMap((document) =>
-      document.unit?.type === "barcode" ? [[document.unit.value, document.unit.value]] : [],
-    );
-    const [first] = documents;
-    return {
-      catalogId,
-      title: first?.title ?? catalogId,
-      type: first?.type ?? "Monograph",
-      units: units.length === 0 ? null : units,
-      identifiers: [],
-      barcodes: Object.fromEntries(barcodes),
-    };
-  });
-}
-
-function findDocument(catalogId: string, unit: string | null): Document | null {
-  return (
-    database.documents.find(
-      (document) => document.catalogId === catalogId && (document.unit?.value ?? null) === unit,
-    ) ?? null
-  );
 }
 
 function recordOf(document: Document): DocumentRecord {
@@ -230,8 +196,9 @@ export function submitProposal(session: Session, draft: ProposalDraft): Proposal
 
     const document =
       check.kind === "new"
-        ? (findDocument(check.catalogId, check.unit) ?? createDocument(check.catalogId, check.unit))
-        : findDocument(check.catalogId, check.unit);
+        ? (findDocumentByIdentity(check.catalogId, check.unit) ??
+          createDocument(check.catalogId, check.unit))
+        : findDocumentByIdentity(check.catalogId, check.unit);
     if (document === null) {
       continue;
     }
@@ -361,9 +328,7 @@ function existingCopiesOf(record: DocumentRecord, now: string): ExistingCopy[] {
 }
 
 function createDocument(catalogId: string, unit: string | null): Document {
-  const record = [...catalogRecords, ...heldCatalogRecords()].find(
-    (candidate) => candidate.catalogId === catalogId,
-  );
+  const record = knownCatalogRecords().find((candidate) => candidate.catalogId === catalogId);
   const document: Document = {
     id: `D-${crypto.randomUUID()}`,
     catalogId,
@@ -376,14 +341,6 @@ function createDocument(catalogId: string, unit: string | null): Document {
   };
   database.documents.push(document);
   return document;
-}
-
-function unitTypeOf(unit: string): NonNullable<Document["unit"]>["type"] {
-  if (/^MZK-\d{4}-\d{6}$/.test(unit)) {
-    return "barcode";
-  }
-
-  return /^(roč\.|sv\.|vol\.)\s*\d+/.test(unit) ? "volume-number" : "volume-name";
 }
 
 function createBatch(session: Session, draft: ProposalDraft, now: string): Batch {

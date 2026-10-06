@@ -41,6 +41,11 @@ All notable changes to this project are documented here.
 - Bulk approve from a batch's header in Proposals: one category and priority for what the
   batch can take, each item untickable, with rescans and items still being checked listed as
   left out. New proposals from Propose show in Proposals at once.
+- More ▾ in a document's pane: relink it to another catalog record (clearing a missing-record
+  defect), reclassify its category and priority before it is scanned, warned when the new
+  category hands it to another custody, and set or change where its scan is available, which
+  makes it Published. Each is offered only to those whose grant reaches the document's
+  category, and a refusal shows in the dialog.
 
 ### Changed
 

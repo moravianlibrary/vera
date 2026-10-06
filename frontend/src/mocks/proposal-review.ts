@@ -51,6 +51,8 @@ import { oncePerCause } from "@/mocks/documents";
 import { groups } from "@/mocks/fixtures/access";
 import type { StoredProposalCustody } from "@/mocks/fixtures/proposal-custodies";
 import { custodyPlacements, houseRuleOf } from "@/mocks/fixtures/proposal-custodies";
+import type { Outcome } from "@/mocks/mutations";
+import { leafCategoryRefusal, writeLog } from "@/mocks/mutations";
 
 // ---------------------------------------------------------------- reach
 
@@ -382,9 +384,6 @@ function logOf(row: ProposalRow): StatusLogEntry[] {
 
 // ---------------------------------------------------------------- decisions
 
-export type Refusal = { status: 403 | 404 | 409 | 422; message: string };
-type Outcome<Value> = { value: Value } | { refusal: Refusal };
-
 // Open rows outside the caller's custody are refused, not hidden: they exist, and somebody else
 // decides them.
 function openRowFor(session: Session, documentId: string): Outcome<ProposalRow> {
@@ -403,16 +402,6 @@ function openRowFor(session: Session, documentId: string): Outcome<ProposalRow> 
   }
 
   return { value: row };
-}
-
-function leafCategoryRefusal(categoryId: string): Refusal | null {
-  const path = categoryPathOf(database.categories, categoryId);
-  const isLeaf = !database.categories.some((category) => category.parentId === categoryId);
-  if (path.length === 0 || !isLeaf) {
-    return { status: 422, message: "Approve into a category with no subcategories" };
-  }
-
-  return null;
 }
 
 export function approveProposal(
@@ -621,8 +610,4 @@ function withoutPendingFields(request: Request) {
 function replaceRequest(request: Request): void {
   const index = database.requests.findIndex((candidate) => candidate.id === request.id);
   database.requests.splice(index, 1, request);
-}
-
-function writeLog(entry: Omit<StatusLogEntry, "id">): void {
-  database.statusLog.push({ ...entry, id: `E-${crypto.randomUUID()}` });
 }

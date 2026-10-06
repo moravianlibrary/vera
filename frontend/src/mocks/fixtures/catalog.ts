@@ -102,6 +102,16 @@ export const catalogRecords: readonly CatalogRecord[] = [
     identifiers: [],
     barcodes: {},
   },
+  // The record D35 should have been linked to: its own ID answers nothing (IT19's defect), so
+  // relinking it here is the fix.
+  {
+    catalogId: "MZK01-001502234",
+    title: "Našinec",
+    type: "Periodical",
+    units: ["roč. 11", "roč. 12", "roč. 13"],
+    identifiers: [],
+    barcodes: {},
+  },
   {
     catalogId: "NKC01-002345678",
     title: "Zlatá Praha",

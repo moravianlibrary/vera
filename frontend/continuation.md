@@ -89,6 +89,12 @@ The foundation is in place:
   approving creates the one iteration the oldest ask originates and the rest track, declining
   denies every ask with one reason, bulk approve skips rescans and asks still being checked;
   each writes the status log. `arrangement.ts` holds the grouping and slicing both lists share.
+  `iterations.ts` relinks (the target must be in the mock catalog, `catalog.ts`, with its unit,
+  and no other document may be it; a missing-record defect clears), reclassifies (leaf
+  categories, before Digitized; the answer says whether it was handed over out of the caller's
+  custody) and publishes (Digitized or Published, an http(s) link), each logged.
+  `mutations.ts` holds what the actions share: `Outcome`/`Refusal`, `writeLog` and the
+  leaf-category check.
   `fixtures/watchlists.ts` seeds three shared ones and a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
   repeats the fixture documents through `src/mocks/volume.ts`, to try lists at volume. `createHandlers(profile)` serves it over MSW.
 - A list view declares itself once (`src/lib/view-definition.ts`, `ViewDefinition`): its filter
@@ -139,7 +145,13 @@ The foundation is in place:
   record beside it: the toned status note (`src/domain/status-notes.ts`, which also says whose
   desk it is on), stat tiles and a card per part, built from `src/components/detail-card.tsx`
   and `status-note.tsx`; a requester gets their own ask, why they asked and its story in plain
-  words. The pane's actions (Ask for this too, Withdraw, More) are not built yet. The page URL holds the filter,
+  words. Beside the heading, `document-actions.tsx` puts More ▾ (`ActionBar` with `menuLabel`,
+  each action `isInMenu`): Relink catalog record, Reclassify and Set (or Change) where it is
+  available, each a `FormDialog` over `src/api/iterations.ts` (`POST /iterations/:id/relink`,
+  `/reclassify`, `/publish`), offered by `can()` against the current iteration's category
+  (`scopeOfIteration` in `src/domain/iterations.ts`, which also says an item is reclassified
+  only before Digitized and published only from it). Ask for this too and Withdraw are not
+  built yet. The page URL holds the filter,
   `id`, `group` and `watchlist`, the tab the filter was opened from. A search with exactly one match opens it, once per search, so links
   from elsewhere name a document by an identifier (`?q=IT12`); `?id=` is the selection while
   browsing. `propose-dialog.tsx` is Propose: items typed, pasted or from a file, each checked as

@@ -8,6 +8,7 @@ import {
   parseDocumentSearchParams,
   parseDocumentSliceParams,
 } from "@/api/documents";
+import { publicationSchema, reclassificationSchema, relinkSchema } from "@/api/iterations";
 import {
   approvalSchema,
   bulkApprovalSchema,
@@ -28,7 +29,8 @@ import { hasPermission } from "@/domain/permissions";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
-import type { Refusal } from "@/mocks/proposal-review";
+import { publishIteration, reclassifyIteration, relinkIteration } from "@/mocks/iterations";
+import type { Outcome } from "@/mocks/mutations";
 import {
   approveProposal,
   bulkApproveProposals,
@@ -101,6 +103,45 @@ export function createHandlers(profile: MockUserProfile) {
 
       return HttpResponse.json(detail);
     }),
+
+    http.post(route(`${apiRoutes.iterations}/:iterationId/relink`), async ({ params, request }) => {
+      const relink = relinkSchema.safeParse(await request.json());
+      if (!relink.success) {
+        return HttpResponse.json({ message: relink.error.message }, { status: 422 });
+      }
+
+      return outcomeResponse(
+        relinkIteration(currentSession(), String(params.iterationId), relink.data),
+      );
+    }),
+
+    http.post(
+      route(`${apiRoutes.iterations}/:iterationId/reclassify`),
+      async ({ params, request }) => {
+        const reclassification = reclassificationSchema.safeParse(await request.json());
+        if (!reclassification.success) {
+          return HttpResponse.json({ message: reclassification.error.message }, { status: 422 });
+        }
+
+        return outcomeResponse(
+          reclassifyIteration(currentSession(), String(params.iterationId), reclassification.data),
+        );
+      },
+    ),
+
+    http.post(
+      route(`${apiRoutes.iterations}/:iterationId/publish`),
+      async ({ params, request }) => {
+        const publication = publicationSchema.safeParse(await request.json());
+        if (!publication.success) {
+          return HttpResponse.json({ message: publication.error.message }, { status: 422 });
+        }
+
+        return outcomeResponse(
+          publishIteration(currentSession(), String(params.iterationId), publication.data),
+        );
+      },
+    ),
 
     http.get(route(apiRoutes.proposalSettings), () => HttpResponse.json(proposalSettings)),
 
@@ -327,9 +368,7 @@ function mayNotDecide() {
   return HttpResponse.json({ message: "You may not decide proposals" }, { status: 403 });
 }
 
-function outcomeResponse<Value extends JsonBodyType>(
-  outcome: { value: Value } | { refusal: Refusal },
-) {
+function outcomeResponse<Value extends JsonBodyType>(outcome: Outcome<Value>) {
   if ("refusal" in outcome) {
     return HttpResponse.json(
       { message: outcome.refusal.message },
