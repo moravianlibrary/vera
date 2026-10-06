@@ -1,7 +1,7 @@
 // How a range reads on its chip, whichever of its ends are set.
 
 import { describe, expect, it } from "vitest";
-import { rangeSummaryOf } from "@/components/filters/range-filter";
+import { countPresetLabelOf, rangeSummaryOf } from "@/components/filters/range-filter";
 import type { RangeFieldDefinition } from "@/lib/view-definition";
 
 interface Query {
@@ -37,5 +37,13 @@ describe("rangeSummaryOf", () => {
 
   it("reads a preset by its name, so it stays relative", () => {
     expect(rangeSummaryOf(asked, { preset: "last-7-days" })).toBe("last 7 days");
+  });
+});
+
+describe("countPresetLabelOf", () => {
+  it("names a count preset by its ends, both included", () => {
+    expect(countPresetLabelOf({ to: 99 })).toBe("Under 100");
+    expect(countPresetLabelOf({ from: 100, to: 499 })).toBe("100–499");
+    expect(countPresetLabelOf({ from: 1000 })).toBe("1,000 and more");
   });
 });

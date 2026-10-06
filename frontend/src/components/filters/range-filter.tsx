@@ -2,7 +2,8 @@
 // (decided 2026-10-06): a range is added from "+ Add filter" like any other field, as a chip
 // that reads "any" until a value is chosen, and the chip opens what the field takes. A range of
 // days offers its presets (the last 7, 14 or 30 days, this month), kept as words so a saved
-// filter stays relative, or two days; a count offers two ends. Every tier edits it, the phone in
+// filter stays relative, or two days; a count offers the field's presets (Pages: under 100 up to
+// 1,000 and more), plain ranges, or two ends. Every tier edits it, the phone in
 // its filter sheet (filter-sheet.tsx) through the same editor.
 // TODO(rrandiak): the rest of filtering.md §3.3 — *not*, *empty* and fields reached through
 // another record; labels move to i18n.
@@ -54,6 +55,16 @@ export function rangeSummaryOf<Query>(field: RangeFieldDefinition<Query>, range:
   }
 
   return isDate ? `until ${format(to ?? "")}` : `≤ ${format(to ?? 0)}`;
+}
+
+// "Under 100", "100–499", "1,000 and more".
+export function countPresetLabelOf({ from, to }: ValueRange<number>): string {
+  const format = (value: number) => value.toLocaleString("en-GB");
+  if (from === undefined) {
+    return `Under ${format((to ?? 0) + 1)}`;
+  }
+
+  return to === undefined ? `${format(from)} and more` : `${format(from)}–${format(to)}`;
 }
 
 // ---------------------------------------------------------------- the chip
@@ -144,6 +155,13 @@ export function RangeEditor<Query>({ field, range, onApply }: RangeEditorProps<Q
   const isReversed = isReversedRange(draft);
   const isDate = field.field.kind === "dateRange";
   const preset = range !== undefined && "preset" in range ? range.preset : null;
+  const { presets: countPresets = [], unit = "" } =
+    field.field.kind === "numberRange" ? field.field : {};
+  const isChosen = (candidate: ValueRange<number>) =>
+    range !== undefined &&
+    !("preset" in range) &&
+    range.from === candidate.from &&
+    range.to === candidate.to;
 
   return (
     <div className="grid gap-3 text-sm">
@@ -165,7 +183,25 @@ export function RangeEditor<Query>({ field, range, onApply }: RangeEditorProps<Q
         </fieldset>
       )}
 
-      <div className={cn("grid gap-2", isDate && "border-t pt-3")}>
+      {countPresets.length > 0 && (
+        <fieldset className="grid gap-1" aria-label={`${field.label}, presets`}>
+          {countPresets.map((candidate) => (
+            <Button
+              key={countPresetLabelOf(candidate)}
+              type="button"
+              variant={isChosen(candidate) ? "secondary" : "ghost"}
+              size="sm"
+              aria-pressed={isChosen(candidate)}
+              className="justify-start font-normal"
+              onClick={() => onApply(candidate)}
+            >
+              {countPresetLabelOf(candidate)} {unit}
+            </Button>
+          ))}
+        </fieldset>
+      )}
+
+      <div className={cn("grid gap-2", (isDate || countPresets.length > 0) && "border-t pt-3")}>
         <span className="text-xs font-medium text-muted-foreground">
           {isDate ? "Between two days" : "Between"}
         </span>

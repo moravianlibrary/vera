@@ -66,8 +66,12 @@ export interface ListFieldDefinition<Query> extends FilterFieldBase {
 // and large; every tier shows it as a chip that can be removed (view-rules.md §2, rule 1).
 export interface NumberRangeFieldDefinition<Query> extends FilterFieldBase {
   readonly key: NumberRangeFieldOf<Query>;
-  // "pages", after the numbers.
-  readonly field: { readonly kind: "numberRange"; readonly unit: string };
+  // "pages", after the numbers; the ranges offered before two ends are typed.
+  readonly field: {
+    readonly kind: "numberRange";
+    readonly unit: string;
+    readonly presets?: readonly ValueRange<number>[];
+  };
 }
 
 export interface DateRangeFieldDefinition<Query> extends FilterFieldBase {

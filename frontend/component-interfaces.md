@@ -627,7 +627,7 @@ export type FilterFieldKind =
   | { kind: "reference"; reference: ReferenceKind }   // users, projects, batches, custodies…
   | { kind: "answer" }                                // Yes / No
   | { kind: "dateRange" }                             // Asked, Started
-  | { kind: "numberRange"; unit: string };            // Pages > 1000 (Advanced)
+  | { kind: "numberRange"; unit: string; presets?: readonly ValueRange<number>[] }; // Pages ≥ 1000
 
 export interface FilterFieldDefinition<Query> {
   key: keyof Query & string;

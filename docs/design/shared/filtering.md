@@ -117,9 +117,10 @@ chip.
 > is one more entry in *+ Add filter*. Picked, it is a chip reading *any*
 > until it is given a value, and the chip opens what the field takes: a range
 > of days offers *Last 7 days*, *Last 14 days*, *Last 30 days*, *This month*
-> or two days; a count offers two ends. A preset is kept as its word
-> (`asked=last-7-days`) so a watchlist stays relative. Every tier edits
-> ranges, the phone in its filter sheet. What follows is kept for *not*,
+> or two days; a count offers the presets its view gives it (Pages: *Under
+> 100*, *100–499*, *500–999*, *1,000 and more*) or two ends. A day preset is
+> kept as its word (`asked=last-7-days`) so a watchlist stays relative. Every
+> tier edits ranges, the phone in its filter sheet. What follows is kept for *not*,
 > *empty* and fields through another record, which have no design yet.
 
 **Advanced…** opens all of the filter as one list of rows: field, operator,

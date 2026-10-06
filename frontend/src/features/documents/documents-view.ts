@@ -145,7 +145,11 @@ export const documentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = {
     {
       key: "pages",
       label: "Pages",
-      field: { kind: "numberRange", unit: "pages" },
+      field: {
+        kind: "numberRange",
+        unit: "pages",
+        presets: [{ to: 99 }, { from: 100, to: 499 }, { from: 500, to: 999 }, { from: 1000 }],
+      },
       audience: "staff",
     },
     {
