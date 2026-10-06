@@ -12,6 +12,13 @@ All notable changes to this project are documented here.
   blocked since listing, review needed after scanning, empty). The pane says where the list
   stands, planned against delivered, what is on it with each item's status and flag, and its
   history; whoever builds lists sees how much is ready to list.
+- Digitization Lists, building a list: *New list* and *Edit* open one editor, the list on top
+  (name, starts now or on a day, ends, pages against a target) and two panes under it, what is
+  on it and what is ready to list. Rows are picked by their checkbox (Shift for a range) and
+  moved one at a time or together; the pool filters by category and search and says what
+  review still holds back. Everything is a draft until Save, counted as +N −M; taking one off
+  returns it to Ready with no reason, and leaving with changes asks first. Saving goes back to
+  the list.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

@@ -9,6 +9,7 @@ import { navigationEntries, visibleNavigation } from "@/components/layout/naviga
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DocumentsPage } from "@/features/documents/documents-page";
+import { ListEditorPage } from "@/features/lists/list-editor-page";
 import { ListsPage } from "@/features/lists/lists-page";
 import { ProposalsPage } from "@/features/proposals/proposals-page";
 import { ValidationsPage } from "@/features/validations/validations-page";
@@ -84,6 +85,15 @@ const router = createBrowserRouter([
         element: (
           <Gate entryId={entry.id}>
             <EntryPage entryId={entry.id} label={entry.label} />
+          </Gate>
+        ),
+      })),
+      // Digitization Lists' editor: one page, three surfaces (view-map.md §2.4).
+      ...["lists/new", "lists/:listId/edit"].map((path) => ({
+        path,
+        element: (
+          <Gate entryId="lists">
+            <ListEditorPage />
           </Gate>
         ),
       })),

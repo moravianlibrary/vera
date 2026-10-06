@@ -264,6 +264,32 @@ The foundation is in place:
   outcome). A forbidden item gets *What you can do* and, for whoever may not overrule,
   *Message admins…*: the Message dialog over the new `restriction` subject, which the mock
   (`src/mocks/messages.ts`) resolves to the holders of `restriction.overrule`.
+- `src/features/lists/` is Digitization Lists (`/lists`, view-map.md §2.4), steps 4.1–4.3 of
+  `plan.md`; 4.4 (Generate…) and 4.5 (Mark Done, Delete, per-item Cancel and Could not be
+  digitized) are still to build. The resource is `src/api/lists.ts` over
+  `/digitization-lists` (the bare `/lists` stays reference data): rows with the state worked out
+  from the dates (`src/domain/lists.ts`: `listStateOf`, `isOverdue`, `progressOnList`,
+  `memberBlockerOf`) and the counts the browse reads; one list with its members and its own
+  log; the pool (`/digitization-lists/pool`: Ready, every gate passed, on no list, with what
+  review holds back by top category and the undecided count); `POST` creates and `PUT
+  /digitization-lists/:id` saves the editor's whole draft (no start = starts now). The mock
+  (`src/mocks/lists.ts`) writes the members' progress as the start says, returns taken-off ones
+  to Ready (or Enqueued if a gate fails), refuses an item another list took (409
+  `list.member_unavailable`) and any change to a Done list (409 `list.done`), and reads
+  `list.read`'s custody and project scopes as "a member within them" (a TODO). Browse is
+  `lists-page.tsx` with `lists-view.ts` (search and *Show*: Planned and running by default,
+  Done, Everything, as `?show=`; no fields, watchlists or grouping), `list-rows.tsx` (List ·
+  State · Runs · Items · Pages · Delivered and the why line) and `list-detail.tsx` (state note,
+  tiles with bars, members with their status and one flag, history; *Edit* with `list.edit`
+  while not Done). *New list* (`list.create`) opens `/lists/new`, *Edit* `/lists/:id/edit`
+  (`list-editor-page.tsx`, routes in `src/app.tsx`); `list-editor.tsx` builds on
+  `src/components/transfer-editor.tsx` (`TransferEditor`: the header strip, +N −M, Discard,
+  Save; two panes with checkboxes, a range by Shift, per-row and bulk moves, side by side from
+  notebook, stacked with sticky heads below), `src/hooks/use-draft.ts` (`useDraft`, `isSameSet`),
+  `src/hooks/use-picked.ts` (`usePicked`) and `src/components/leave-guard.tsx` (*Discard
+  changes?* on a route change, the browser's own prompt on reload). Saving goes back to the
+  list in browse. *Counts towards*, the mix and the L8/L10 warnings wait for intentions in the
+  mock API (step 6), as TODOs in `list-rows.tsx`, `list-detail.tsx` and `list-editor.tsx`.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

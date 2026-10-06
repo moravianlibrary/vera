@@ -83,11 +83,11 @@ zod v4.
 
 | Need | Use |
 |---|---|
-| A list view's URL state | `ViewDefinition` (`src/lib/view-definition.ts`) in `features/<view>/<view>-view.ts`, read by `useViewUrlState` |
+| A list view's URL state | `ViewDefinition` (`src/lib/view-definition.ts`; `view` only when it has watchlists) in `features/<view>/<view>-view.ts`, read by `useViewUrlState` |
 | Its filter bar | the definition's `fields` → `FilterBar` (`components/filters/`); value, reference, `numberRange` (with `presets`) and `dateRange` fields; the phone's `filter-sheet.tsx`; names via `useReferenceLabels` |
 | Saved filters | `WatchlistTabs`; a new view adds its value to `watchlistViewSchema` (`domain/entities.ts`) and a comparer in `api/watchlists.ts` |
 | List beside a pane | `MasterDetail` + `RecordList` (columns, card under 42rem, why line, `GroupHeader`) + `usePagedList`; grouping via `groups` in the view definition and `mocks/arrangement.ts` |
-| The pane | `Pane` / `paneStateOf` / `Outcome` (`components/pane-state.tsx`); `DetailCard`, `FactGrid`, `StatTiles` (`detail-card.tsx`), `StatusNote`, `record-cards.tsx` (askers, copies, catalog, history, heading) |
+| The pane | `Pane` / `paneStateOf` / `Outcome` (`components/pane-state.tsx`); `DetailCard`, `FactGrid`, `StatTiles` with an optional `meter` (`detail-card.tsx`), `StatusNote`, `record-cards.tsx` (askers, copies, catalog, heading; `HistoryCard` takes a log alone, without a document) |
 | Actions | `ViewAction` + `ActionBar` (per-tier cap, `isInMenu` for More ▾); `PageHeader actions` |
 | Who may | `can()` (`domain/permissions.ts`) / `useCan()` with a scoped record |
 | Dialogs | `components/dialogs/`: `DialogShell`, `ConsequenceDialog` (A), `ReasonDialog` (B), `FormDialog` (C), `MessageDialog`. Not built: `SetEditorDialog` (D), `PickerDialog` (E), `SteppedDialog` (F), see component-interfaces §6.5–6.7 |
@@ -95,13 +95,14 @@ zod v4.
 | Tier | `useTier`, `valueForTier` (phone < 768, small < 1280, notebook < 1600, large); container queries for what the room decides |
 | Words | `plural`, `formatDay`, `joinDetails` |
 | Iteration dialogs | `components/iteration-dialogs.tsx` (Reclassify), `classification-fields.tsx` |
+| Two panes and a draft | `TransferEditor` (`components/transfer-editor.tsx`), `useDraft` + `isSameSet`, `usePicked`, `LeaveGuard` (`components/leave-guard.tsx`) |
+| Words for numbers and days | `formatCount` (`lib/format-number.ts`), `formatCalendarDay`, `formatShortCalendarDay` |
 
 **Not built yet** (the step that first needs one builds it, as a shared part,
-from component-interfaces): `TransferEditor` §1.3, `CardSections`/`CardGrid`
+from component-interfaces): `CardSections`/`CardGrid`
 §1.4, `RecordPage` §1.5, `TableWithDrawer` §1.6, `LinkedColumns` §1.7,
 `SettingsPage` §1.8, `PaneWizard` §1.9, `DataTable` §2.4, `Tree` §2.5,
-`MembersCard` §4.4, the visualizations (PaceBar, MixBar) §5, Selection §9.4,
-`useDraft` §9.5.
+`MembersCard` §4.4, the visualizations (PaceBar, MixBar) §5.
 
 **The mock API** (`src/mocks/`): `handlers.ts` routes every request
 (`createHandlers(profile)`); one module per resource applies reach, filters,
@@ -115,9 +116,10 @@ grants and custody. Fixtures (`mocks/fixtures/`, demo "today" 2026-06-25,
 (`src/api/*.test.ts`).
 
 **Views built:** `features/documents/`, `features/proposals/`,
-`features/validations/` (the newest, and the best model for a list with a pane
-and actions: `validations-view.ts`, `validation-list.tsx`,
-`validation-detail.tsx`, `validation-actions.tsx`). Routes in `src/app.tsx`,
+`features/validations/` (the best model for a list with a pane and actions:
+`validations-view.ts`, `validation-list.tsx`, `validation-detail.tsx`,
+`validation-actions.tsx`), and `features/lists/` up to 4.3 (browse and the
+editor; the model for a view without watchlists, and for an editor page). Routes in `src/app.tsx`,
 sidebar entries in `components/layout/navigation.ts`.
 
 ---

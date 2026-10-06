@@ -1,7 +1,8 @@
 // The Digitization Lists page, browse (view-map.md §2.4): the lists on the left, the chosen one
 // in the pane. Its state lives in the URL like the other views': the search, `?show=` and `?id=`
 // naming the open list. The count says how much is ready to list to whoever builds lists.
-// TODO(rrandiak): New list and the editor (plan.md 4.3); labels move to i18n.
+// *New list* opens the editor, and needs `list.create`.
+// TODO(rrandiak): labels move to i18n.
 
 import { ListChecks } from "lucide-react";
 import { useId } from "react";
@@ -50,7 +51,14 @@ export function ListsPage() {
 
   return (
     <>
-      <PageHeader title={title} />
+      <PageHeader
+        title={title}
+        actions={
+          hasPermission(session, "list.create")
+            ? [{ id: "new", label: "New list", isPrimary: true, href: "/lists/new" }]
+            : []
+        }
+      />
 
       <FilterBar
         fields={listsView.fields}

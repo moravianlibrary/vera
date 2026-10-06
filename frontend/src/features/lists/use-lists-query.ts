@@ -3,7 +3,7 @@
 // and changes what Documents shows of them, so it refetches all three.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
-import type { ListQuery } from "@/api/lists";
+import type { ListQuery, PoolQuery } from "@/api/lists";
 import { findList, listLists, listPool } from "@/api/lists";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { usePagedList } from "@/hooks/use-paged-list";
@@ -21,10 +21,15 @@ export function useListQuery(listId: string | null) {
   });
 }
 
+// What a list can take, a slice at a time.
+export function usePoolQuery(query: PoolQuery) {
+  return usePagedList([...listsQueryKey, "pool", query], (cursor) => listPool(query, { cursor }));
+}
+
 // Only its totals: how much is ready to list.
 export function usePoolSizeQuery(isEnabled: boolean) {
   return useQuery({
-    queryKey: [...listsQueryKey, "pool", "size"],
+    queryKey: [...listsQueryKey, "poolSize"],
     queryFn: isEnabled ? () => listPool({}, { limit: 1 }) : skipToken,
     select: (pool) => ({ total: pool.total, pages: pool.pages }),
   });

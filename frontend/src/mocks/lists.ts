@@ -30,6 +30,7 @@ import {
 } from "@/domain/lists";
 import { can, hasPermission, scopesOf } from "@/domain/permissions";
 import { isRestricted, passesGates, statusFootnoteOf, validationOf } from "@/domain/status";
+import { formatShortCalendarDay } from "@/lib/format-date";
 import { dayOf } from "@/lib/value-range";
 import { countValues, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
@@ -203,19 +204,14 @@ function findReachableList(session: Session, listId: string): DigitizationList |
 }
 
 function detailOf(list: DigitizationList): ListDetail {
-  const memberIds = new Set(membersOf(list.id).map((iteration) => iteration.id));
   return {
     row: rowOf(list),
     members: membersOf(list.id)
       .flatMap((iteration) => itemOf(iteration) ?? [])
       .toSorted(byPriorityThenAge),
-    // The list's own entries, and what its members logged about it.
+    // The list's own entries; each member keeps its own story in Documents.
     log: database.statusLog
-      .filter(
-        (entry) =>
-          (entry.subjectKind === "list" && entry.subjectId === list.id) ||
-          (memberIds.has(entry.subjectId) && entry.detail?.includes(list.id) === true),
-      )
+      .filter((entry) => entry.subjectKind === "list" && entry.subjectId === list.id)
       .toSorted((first, second) => second.at.localeCompare(first.at)),
   };
 }
@@ -484,7 +480,7 @@ function nextListId(): string {
 }
 
 function datesOf(list: DigitizationList): string {
-  return `${list.startsOn} → ${list.endsOn}`;
+  return `${formatShortCalendarDay(list.startsOn)} → ${formatShortCalendarDay(list.endsOn)}`;
 }
 
 function logList(
