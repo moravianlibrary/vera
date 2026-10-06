@@ -184,7 +184,7 @@ export function VerdictControls({
           picked.length === 0
             ? Promise.resolve({
                 isDone: false,
-                refusal: { status: null, message: "Pick at least one defect." },
+                refusal: { status: null, code: null, message: "Pick at least one defect." },
               })
             : runDeny(texts)
         }

@@ -54,7 +54,7 @@ export function MessageDialog({
       description={`Write to ${recipientLabel} about ${label}`}
       refusal={
         handOffQuery.isError
-          ? { status: null, message: "Who it goes to could not be found. Try again." }
+          ? { status: null, code: null, message: "Who it goes to could not be found. Try again." }
           : null
       }
       primary={{

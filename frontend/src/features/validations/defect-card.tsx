@@ -78,7 +78,9 @@ export function PageCountEntry({ iteration, onRechecked }: PageCountEntryProps) 
   const save = useActionMutation({
     call: ({ value }: PageCountForm) => enterPageCount(iteration.id, { pages: pageCountOf(value) }),
     invalidates: validationInvalidations,
-    refusalTexts: { 409: "It has been scanned meanwhile; the scan counts the pages." },
+    refusalTexts: {
+      "iteration.scanned": "It has been scanned meanwhile; the scan counts the pages.",
+    },
   });
 
   if (!isOpen) {

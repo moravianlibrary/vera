@@ -56,6 +56,7 @@ import {
 } from "@/mocks/iterations";
 import { messageChannels, prepareMessage } from "@/mocks/messages";
 import type { Outcome } from "@/mocks/mutations";
+import { invalidResponse, problemResponse } from "@/mocks/problem";
 import {
   approveProposal,
   bulkApproveProposals,
@@ -110,7 +111,7 @@ export function createHandlers(profile: MockUserProfile) {
 
       const body = schema.safeParse(await request.json());
       if (!body.success) {
-        return HttpResponse.json({ message: body.error.message }, { status: 422 });
+        return invalidResponse(body.error);
       }
 
       return outcomeResponse(act(session, String(params.id), body.data));
@@ -138,7 +139,7 @@ export function createHandlers(profile: MockUserProfile) {
     http.patch(route(apiRoutes.userSettings), async ({ request }) => {
       const change = userSettingsChangeSchema.safeParse(await request.json());
       if (!change.success) {
-        return HttpResponse.json({ message: change.error.message }, { status: 422 });
+        return invalidResponse(change.error);
       }
 
       return HttpResponse.json(changeUserSettings(currentSession().user.id, change.data));
@@ -168,7 +169,7 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(`${apiRoutes.documents}/:documentId`), ({ params }) => {
       const detail = findDocumentDetail(currentSession(), String(params.documentId));
       if (detail === null) {
-        return HttpResponse.json({ message: "Document not found" }, { status: 404 });
+        return problemResponse({ status: 404, message: "Document not found" });
       }
 
       return HttpResponse.json(detail);
@@ -185,12 +186,12 @@ export function createHandlers(profile: MockUserProfile) {
     http.post(route(apiRoutes.proposalLookup), async ({ request }) => {
       const session = currentSession();
       if (!hasPermission(session, "request.create")) {
-        return HttpResponse.json({ message: "You may not propose" }, { status: 403 });
+        return problemResponse({ status: 403, message: "You may not propose" });
       }
 
       const lookup = proposalLookupSchema.safeParse(await request.json());
       if (!lookup.success) {
-        return HttpResponse.json({ message: lookup.error.message }, { status: 422 });
+        return invalidResponse(lookup.error);
       }
 
       return HttpResponse.json(lookup.data.items.map((item) => checkItem(session, item)));
@@ -200,30 +201,30 @@ export function createHandlers(profile: MockUserProfile) {
       const session = currentSession();
       const draft = proposalDraftSchema.safeParse(await request.json());
       if (!draft.success) {
-        return HttpResponse.json({ message: draft.error.message }, { status: 422 });
+        return invalidResponse(draft.error);
       }
 
       const isApprovalRefused =
         draft.data.approval !== null && !hasPermission(session, "request.decide");
       if (!hasPermission(session, "request.create") || isApprovalRefused) {
-        return HttpResponse.json({ message: "You may not propose this" }, { status: 403 });
+        return problemResponse({ status: 403, message: "You may not propose this" });
       }
 
       if (draft.data.items.length > proposalLimitOf(session)) {
-        return HttpResponse.json(
-          { message: `At most ${proposalLimitOf(session)} items at once` },
-          { status: 422 },
-        );
+        return problemResponse({
+          status: 422,
+          message: `At most ${proposalLimitOf(session)} items at once`,
+        });
       }
 
       const isProjectRefused =
         draft.data.projectId !== null &&
         !proposableProjectsOf(session).some((project) => project.id === draft.data.projectId);
       if (isProjectRefused) {
-        return HttpResponse.json(
-          { message: "Only a member proposes into a project, and not into a rejected one" },
-          { status: 422 },
-        );
+        return problemResponse({
+          status: 422,
+          message: "Only a member proposes into a project, and not into a rejected one",
+        });
       }
 
       return HttpResponse.json(submitProposal(session, draft.data), { status: 201 });
@@ -264,7 +265,7 @@ export function createHandlers(profile: MockUserProfile) {
 
         const bulk = bulkApprovalSchema.safeParse(await request.json());
         if (!bulk.success) {
-          return HttpResponse.json({ message: bulk.error.message }, { status: 422 });
+          return invalidResponse(bulk.error);
         }
 
         return outcomeResponse(bulkApproveProposals(session, String(params.batchId), bulk.data));
@@ -279,7 +280,7 @@ export function createHandlers(profile: MockUserProfile) {
 
       const detail = findProposalDetail(session, String(params.documentId));
       if (detail === null) {
-        return HttpResponse.json({ message: "Proposal not found" }, { status: 404 });
+        return problemResponse({ status: 404, message: "Proposal not found" });
       }
 
       return HttpResponse.json(detail);
@@ -295,7 +296,7 @@ export function createHandlers(profile: MockUserProfile) {
 
         const approval = approvalSchema.safeParse(await request.json());
         if (!approval.success) {
-          return HttpResponse.json({ message: approval.error.message }, { status: 422 });
+          return invalidResponse(approval.error);
         }
 
         return outcomeResponse(approveProposal(session, String(params.documentId), approval.data));
@@ -312,7 +313,7 @@ export function createHandlers(profile: MockUserProfile) {
 
         const decline = declineSchema.safeParse(await request.json());
         if (!decline.success) {
-          return HttpResponse.json({ message: decline.error.message }, { status: 422 });
+          return invalidResponse(decline.error);
         }
 
         return outcomeResponse(declineProposal(session, String(params.documentId), decline.data));
@@ -344,7 +345,7 @@ export function createHandlers(profile: MockUserProfile) {
 
       const detail = findValidationDetail(session, String(params.iterationId));
       if (detail === null) {
-        return HttpResponse.json({ message: "Nothing here waits for a verdict" }, { status: 404 });
+        return problemResponse({ status: 404, message: "Nothing here waits for a verdict" });
       }
 
       return HttpResponse.json(detail);
@@ -361,7 +362,7 @@ export function createHandlers(profile: MockUserProfile) {
       const kind = messageSubjectKindSchema.safeParse(params.get(messageSubjectParams.kind));
       const id = params.get(messageSubjectParams.id);
       if (!kind.success || id === null || id === "") {
-        return HttpResponse.json({ message: "Say what the message is about" }, { status: 422 });
+        return problemResponse({ status: 422, message: "Say what the message is about" });
       }
 
       return outcomeResponse(prepareMessage(currentSession(), { kind: kind.data, id }));
@@ -380,7 +381,7 @@ export function createHandlers(profile: MockUserProfile) {
       const session = currentSession();
       const draft = watchlistDraftSchema.safeParse(await request.json());
       if (!draft.success) {
-        return HttpResponse.json({ message: draft.error.message }, { status: 422 });
+        return invalidResponse(draft.error);
       }
 
       if (!canChange(session, draft.data.scope)) {
@@ -405,7 +406,7 @@ export function createHandlers(profile: MockUserProfile) {
       const session = currentSession();
       const watchlist = findVisibleWatchlist(session, String(params.watchlistId));
       if (watchlist === null) {
-        return HttpResponse.json({ message: "Watchlist not found" }, { status: 404 });
+        return problemResponse({ status: 404, message: "Watchlist not found" });
       }
 
       if (!canChange(session, watchlist.scope)) {
@@ -414,7 +415,7 @@ export function createHandlers(profile: MockUserProfile) {
 
       const change = watchlistChangeSchema.safeParse(await request.json());
       if (!change.success) {
-        return HttpResponse.json({ message: change.error.message }, { status: 422 });
+        return invalidResponse(change.error);
       }
 
       const scope = change.data.scope ?? watchlist.scope;
@@ -439,7 +440,7 @@ export function createHandlers(profile: MockUserProfile) {
       const session = currentSession();
       const watchlist = findVisibleWatchlist(session, String(params.watchlistId));
       if (watchlist === null) {
-        return HttpResponse.json({ message: "Watchlist not found" }, { status: 404 });
+        return problemResponse({ status: 404, message: "Watchlist not found" });
       }
 
       if (!canChange(session, watchlist.scope)) {
@@ -453,36 +454,34 @@ export function createHandlers(profile: MockUserProfile) {
 }
 
 function mayNotDecide() {
-  return HttpResponse.json({ message: "You may not decide proposals" }, { status: 403 });
+  return problemResponse({ status: 403, message: "You may not decide proposals" });
 }
 
 function mayNotReview() {
-  return HttpResponse.json({ message: "You may not review documents" }, { status: 403 });
+  return problemResponse({ status: 403, message: "You may not review documents" });
 }
 
 function outcomeResponse<Value extends JsonBodyType>(outcome: Outcome<Value>) {
   if ("refusal" in outcome) {
-    return HttpResponse.json(
-      { message: outcome.refusal.message },
-      { status: outcome.refusal.status },
-    );
+    return problemResponse(outcome.refusal);
   }
 
   return HttpResponse.json(outcome.value);
 }
 
 function forbidden() {
-  return HttpResponse.json(
-    { message: "Only those who manage shared watchlists can change them" },
-    { status: 403 },
-  );
+  return problemResponse({
+    status: 403,
+    message: "Only those who manage shared watchlists can change them",
+  });
 }
 
 function alreadySaved(duplicate: StoredWatchlist) {
-  return HttpResponse.json(
-    { message: `The filter is already saved as “${duplicate.name}”` },
-    { status: 409 },
-  );
+  return problemResponse({
+    status: 409,
+    message: `The filter is already saved as “${duplicate.name}”`,
+    code: "watchlist.already_saved",
+  });
 }
 
 export const handlers = createHandlers(env.VITE_MOCK_USER);

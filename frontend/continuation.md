@@ -124,7 +124,11 @@ The foundation is in place:
   `src/domain/iterations.ts`, V14: Enqueued to Ready once clear, Ready back to Enqueued when a
   gate fails) and says so in its log entry.
   `mutations.ts` holds what the actions share: `Outcome`/`Refusal`, `writeLog`,
-  `replaceIteration`, the leaf-category check and `progressNote`.
+  `replaceIteration`, the leaf-category check and `progressNote`. `problem.ts` answers every
+  refusal as RFC 9457 Problem Details (`application/problem+json`: `type`, `title`, `status`,
+  `detail`, plus VERA's `code`, and `errors: [{field, message}]` on a 422 from a schema); a
+  refusal with no code of its own takes its status's (`forbidden`, `not_found`, `conflict`,
+  `invalid`).
   `fixtures/watchlists.ts` seeds shared ones per view (Validations: *Review needed*, *Page
   counts*, *Denied in review*) and a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
   repeats the fixture documents through `src/mocks/volume.ts`, to try lists at volume. `createHandlers(profile)` serves it over MSW.
@@ -172,7 +176,9 @@ The foundation is in place:
   `form-dialog.tsx` (kind C: React Hook Form over a zod schema, a computed warning, a refusal
   tied to a field). Each takes an `onConfirm`/`onSubmit` returning an `ActionResult` and closes
   itself when it is done. `src/hooks/use-action-mutation.ts` turns a call into that result: a
-  refusal (403/404/409/422, worded per action) or any other failure becomes a value, and the
+  refusal (403/404/409/422) or any other failure becomes a value, worded by the action's text
+  for its Problem Details `code`, else the server's `detail`, else the action's text for the
+  status (`src/api/http.ts` keeps the parsed problem on `ApiError.problem`), and the
   query keys it touches are refetched without being awaited. `can()` in
   `src/domain/permissions.ts` (and `src/hooks/use-can.ts`) checks a grant's scope against a
   record (proposal, iteration by category path, project, run); pane actions use it to be absent.

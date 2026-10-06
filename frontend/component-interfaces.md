@@ -1332,7 +1332,9 @@ export type ScopedRecord =
 
 ```ts
 // One mutation per action. A refusal comes back as a value for the dialog to show; the lists,
-// details and watchlist counts it touches are invalidated without being awaited.
+// details and watchlist counts it touches are invalidated without being awaited. The server
+// refuses with RFC 9457 Problem Details plus `code` and `errors` (decided 2026-10-06); the
+// action words it by code, else the server's detail, else by status.
 export function useActionMutation<Input, Value>(options: {
   call: (input: Input) => Promise<Value>;
   invalidates: (input: Input, value: Value) => readonly QueryKey[];

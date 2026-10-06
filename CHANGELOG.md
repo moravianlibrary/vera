@@ -95,6 +95,9 @@ All notable changes to this project are documented here.
 - A batch's header in Documents counts how far adding it got, as *28 added · 12 being added ·
   3 could not be added*, so a batch just retried, or just arrived, no longer reads as all
   added.
+- The mock API refuses with RFC 9457 Problem Details (`application/problem+json`), adding a
+  stable `code` and, for a rejected body, the fields it got wrong. A refusal in a dialog now
+  says the server's reason where the action has no words of its own for its code.
 - Rechecking a document and entering its page count take the new `iteration.recheck`
   permission, which curators hold within their custody and administrators everywhere. The
   catalog link in Validations is the one the catalog adapter plugin gives, and absent when it

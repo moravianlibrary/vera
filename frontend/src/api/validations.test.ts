@@ -258,6 +258,30 @@ describe("page count and recheck", () => {
 
     expect(await statusOf(enterPageCount("IT12", { pages: 18 }))).toBe(409);
   });
+
+  it("answers a refusal as Problem Details with its own code", async () => {
+    signInAs("admin");
+
+    const error = await enterPageCount("IT12", { pages: 18 }).catch((caught: unknown) => caught);
+
+    expect(error instanceof ApiError && error.problem).toMatchObject({
+      status: 409,
+      code: "iteration.scanned",
+      type: "https://vera.mzk.cz/problems/iteration.scanned",
+    });
+  });
+
+  it("names the field a rejected body got wrong", async () => {
+    signInAs("admin");
+
+    const error = await enterPageCount("IT11", { pages: -3 }).catch((caught: unknown) => caught);
+
+    expect(error instanceof ApiError && error.problem).toMatchObject({
+      status: 422,
+      code: "invalid",
+      errors: [{ field: "pages" }],
+    });
+  });
 });
 
 describe("cancel", () => {

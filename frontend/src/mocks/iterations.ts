@@ -201,7 +201,13 @@ function fixableIteration(
   }
 
   if (isFoundAfterScan(found.value.iteration)) {
-    return { refusal: { status: 409, message: "It is scanned; fix the catalog record instead" } };
+    return {
+      refusal: {
+        status: 409,
+        message: "It is scanned; the scan counts its pages",
+        code: "iteration.scanned",
+      },
+    };
   }
 
   return found;

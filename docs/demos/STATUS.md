@@ -105,6 +105,9 @@ into `status-model.md` §2, §2.5 and §4, `document-identity.md`, `flows.md`,
 - **A batch header counts each addition state**: *28 added · 12 being
   added · 3 could not be added*, zero parts left out, *40 added* once all is
   in, so a retried or new batch does not read as all added.
+- **Errors are RFC 9457 Problem Details**, with VERA's `code` (a stable key
+  the frontend words and translates) and `errors` (the fields a 422
+  rejected). Ranges in the URL stay `from..to`.
 - **The catalog link comes from the catalog adapter plugin** (`toLink`,
   `plugins.md` §4.1).
 

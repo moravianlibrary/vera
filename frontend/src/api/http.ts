@@ -1,19 +1,36 @@
 // The HTTP boundary. Every response is parsed against its schema here, once, so callers receive
 // typed and trusted values. A failed request or an unexpected body raises ApiError; an expected
-// absence (404 on a lookup) is returned as null by `findJson`.
+// absence (404 on a lookup) is returned as null by `findJson`. A refusal's body is RFC 9457
+// Problem Details (decided 2026-10-06), kept on the ApiError for the caller to word.
 
 import { z } from "zod";
 import { env } from "@/config/env";
 
+// RFC 9457 Problem Details, with VERA's two extensions: `code`, a stable key a refusal is worded
+// by (and translated by, later), and `errors`, the fields a 422 rejected.
+export const problemSchema = z.object({
+  type: z.string().default("about:blank"),
+  title: z.string().optional(),
+  status: z.number().int().optional(),
+  detail: z.string().optional(),
+  instance: z.string().optional(),
+  code: z.string().optional(),
+  errors: z.array(z.object({ field: z.string(), message: z.string() })).optional(),
+});
+export type Problem = z.infer<typeof problemSchema>;
+
 export class ApiError extends Error {
   readonly status: number;
   readonly path: string;
+  // Null when the server sent no Problem Details: a proxy's page, or nothing at all.
+  readonly problem: Problem | null;
 
-  constructor(status: number, path: string, message: string) {
+  constructor(status: number, path: string, message: string, problem: Problem | null = null) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.path = path;
+    this.problem = problem;
   }
 }
 
@@ -49,7 +66,7 @@ export async function patchJson<T>(path: string, body: unknown, schema: z.ZodTyp
 export async function deleteResource(path: string): Promise<void> {
   const response = await fetch(apiUrl(path), { method: "DELETE", headers: jsonHeaders });
   if (!response.ok) {
-    throw new ApiError(response.status, path, `DELETE ${path} failed: HTTP ${response.status}`);
+    throw await failureOf("DELETE", path, response);
   }
 }
 
@@ -86,7 +103,7 @@ async function parseResponse<T>(
   schema: z.ZodType<T>,
 ): Promise<T> {
   if (!response.ok) {
-    throw new ApiError(response.status, path, `${method} ${path} failed: HTTP ${response.status}`);
+    throw await failureOf(method, path, response);
   }
 
   const parsed = schema.safeParse(await response.json());
@@ -99,4 +116,12 @@ async function parseResponse<T>(
   }
 
   return parsed.data;
+}
+
+async function failureOf(method: string, path: string, response: Response): Promise<ApiError> {
+  const problem = problemSchema.safeParse(await response.json().catch(() => null));
+  const message = `${method} ${path} failed: HTTP ${response.status}`;
+  return problem.success
+    ? new ApiError(response.status, path, `${message}: ${problem.data.detail ?? ""}`, problem.data)
+    : new ApiError(response.status, path, message);
 }
