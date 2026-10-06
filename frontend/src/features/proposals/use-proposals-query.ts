@@ -1,6 +1,6 @@
-// Proposals within the caller's proposal custody: the list a slice at a time, one proposal, the
-// custodies' names, and the decisions. A decision changes what Documents, Proposals and the
-// watchlist counts show, so it refetches all three.
+// Proposals within the caller's proposal custody: the list a slice at a time, one proposal and
+// the decisions. A decision changes what Documents, Proposals and the watchlist counts show, so
+// it refetches all three.
 
 import { skipToken, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Approval, Decline, ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
@@ -9,7 +9,6 @@ import {
   bulkApproveProposals,
   declineProposal,
   findProposal,
-  listProposalCustodies,
   listProposals,
   maximumProposalSliceSize,
 } from "@/api/proposal-review";
@@ -39,14 +38,6 @@ export function useProposalQuery(documentId: string | null) {
   return useQuery({
     queryKey: [...proposalsQueryKey, "detail", documentId],
     queryFn: documentId === null ? skipToken : () => findProposal(documentId),
-  });
-}
-
-export function useProposalCustodiesQuery() {
-  return useQuery({
-    queryKey: [...proposalsQueryKey, "custodies"],
-    queryFn: listProposalCustodies,
-    staleTime: Infinity,
   });
 }
 

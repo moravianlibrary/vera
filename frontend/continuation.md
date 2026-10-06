@@ -98,10 +98,19 @@ The foundation is in place:
   it. `src/hooks/use-paged-list.ts` is the slice-by-slice query behind a list: rows, the first
   slice as the summary, every slice for its group headers, and the paging. `src/lib/plural.ts`
   says "3 askers".
+- The filter bar is declared, not written: a view's definition lists its fields (key, label,
+  a closed vocabulary with labels or a reference kind, quick or chip, and the one audience that
+  has it), and `src/components/filters/filter-bar.tsx` builds the search, quick fields, chips and
+  "+ Add filter" from them with the facet counts; a view adds toggles that are not fields
+  through `extras` (Documents' Mine). `src/hooks/use-reference-labels.ts` names referenced
+  records (users, projects, categories, batches, proposal custodies) for the bar and anywhere
+  else. `src/components/pane-state.tsx` is what a pane shows: *Select a …*, nothing while
+  loading, a line when the record left the view, an outcome after an action (Proposals'
+  *Decided*), or the record.
 - Query hooks: `src/hooks/use-session-query.ts`, `src/features/documents/use-documents-query.ts`.
   Sidebar entries and their required permissions: `src/components/layout/navigation.ts`.
 - `src/app.tsx` holds the providers and routes. `src/features/documents/` is the Documents view:
-  the watchlist tabs, `document-filter-bar.tsx` (search, quick Decision and Progress, Mine,
+  the watchlist tabs, the filter bar (search, quick Decision and Progress, Mine,
   then the chips and "+ Add filter", left to right on one wrapping line) and `document-list.tsx`
   (stacked cards, or table rows on a subgrid once the list is 42rem wide; a group-by select in
   its count row, `document-group-header.tsx` over each group) and `document-detail.tsx`, the
@@ -121,7 +130,7 @@ The foundation is in place:
   with its "new" badge (which leaves shared watchlists out until "seen" is kept per person), the running-tasks row, the user menu and phone bottom tabs.
 - `src/features/proposals/` is the Proposals view, on Documents' pattern: the watchlist tabs
   (view `proposals`; "All" is every decision, the shared "Awaiting a decision" the open
-  ones), `proposal-filter-bar.tsx` (search, Decision, Proposal custody, then chips), `proposal-list.tsx` (a row per
+  ones), the filter bar (search, Decision, Proposal custody, then chips), `proposal-list.tsx` (a row per
   document with a line under it saying why it is there; grouped by the batch or requester of
   its earliest ask, `proposal-group-header.tsx`) and `proposal-detail.tsx`, built from the
   record cards Documents uses too (`src/components/record-cards.tsx`: who asked, existing

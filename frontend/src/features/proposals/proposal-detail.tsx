@@ -43,11 +43,13 @@ import {
   projectIdsOf,
 } from "@/domain/proposal-review";
 import { ProposalStatusBadge } from "@/features/proposals/proposal-status";
+import { useDecisionMutations } from "@/features/proposals/use-proposals-query";
 import {
-  useDecisionMutations,
+  useCategoriesQuery,
+  useProjectsQuery,
   useProposalCustodiesQuery,
-} from "@/features/proposals/use-proposals-query";
-import { useCategoriesQuery, useProjectsQuery, useUsersQuery } from "@/hooks/use-reference-query";
+  useUsersQuery,
+} from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
 

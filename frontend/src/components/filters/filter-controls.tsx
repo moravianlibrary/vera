@@ -6,7 +6,6 @@
 // TODO(rrandiak): the Advanced editor (filtering.md §3.3); labels move to i18n.
 
 import { ChevronDown, Plus, X } from "lucide-react";
-import type { z } from "zod";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -169,10 +168,6 @@ export function byLabel(first: FilterOption, second: FilterOption): number {
 export function byOrderOf(order: readonly string[]) {
   return (first: FilterOption, second: FilterOption): number =>
     order.indexOf(first.value) - order.indexOf(second.value);
-}
-
-export function isOneOf<Value extends string>(schema: z.ZodType<Value>) {
-  return (value: string): value is Value => schema.safeParse(value).success;
 }
 
 // ---------------------------------------------------------------- labels

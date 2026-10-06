@@ -6,15 +6,18 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { BookOpen, Plus } from "lucide-react";
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
+import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
+import { Pane, paneStateOf } from "@/components/pane-state";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { hasPermission } from "@/domain/permissions";
 import { DocumentDetailPane } from "@/features/documents/document-detail";
-import { DocumentFilterBar } from "@/features/documents/document-filter-bar";
 import { DocumentList } from "@/features/documents/document-list";
 import { documentsView } from "@/features/documents/documents-view";
 import { ProposeDialog } from "@/features/documents/propose-dialog";
@@ -65,17 +68,14 @@ export function DocumentsPage() {
   const title =
     visibleNavigation(session).find((entry) => entry.id === "documents")?.visibleLabel ?? "";
 
-  const detailPane =
-    detail === undefined || detail === null ? (
-      <div className="grid h-full place-items-center text-center text-sm text-muted-foreground">
-        <div>
-          <BookOpen className="mx-auto" />
-          <p className="mt-3">Select a document</p>
-        </div>
-      </div>
-    ) : (
-      <DocumentDetailPane detail={detail} session={session} />
-    );
+  const detailPane = (
+    <Pane
+      state={paneStateOf(selectedId, detail, "This document is not within your reach")}
+      emptyIcon={BookOpen}
+      emptyText="Select a document"
+      render={(ready) => <DocumentDetailPane detail={ready} session={session} />}
+    />
+  );
 
   const canPropose = hasPermission(session, "request.create");
 
@@ -105,13 +105,28 @@ export function DocumentsPage() {
         />
       )}
 
-      <DocumentFilterBar
+      <FilterBar
         // The bar holds its search as typed; a filter replaced from a tab starts it afresh.
         key={view.filterReplacements}
+        fields={documentsView.fields.filter(
+          (field) =>
+            field.audience === undefined || field.audience === (isPublic ? "public" : "staff"),
+        )}
         query={query}
-        summary={summary}
-        isPublic={isPublic}
+        facets={summary?.facets}
         onQueryChange={(next) => view.setQuery(next)}
+        searchLabel="Search documents"
+        searchPlaceholder={
+          isPublic ? "Search my documents…" : "Search — title, catalog ID, volume, signature, cnb…"
+        }
+        extras={
+          !isPublic && (
+            <MineToggle
+              isChecked={query.isMine === true}
+              onChange={(isMine) => view.setQuery({ ...query, isMine: isMine || undefined })}
+            />
+          )
+        }
       />
 
       <MasterDetail
@@ -154,5 +169,23 @@ export function DocumentsPage() {
         />
       )}
     </>
+  );
+}
+
+interface MineToggleProps {
+  isChecked: boolean;
+  onChange: (isChecked: boolean) => void;
+}
+
+// Narrows a staff reach to documents the caller asked for.
+function MineToggle({ isChecked, onChange }: MineToggleProps) {
+  const id = useId();
+  return (
+    <div className="flex h-7 items-center gap-1.5 px-1">
+      <Checkbox id={id} checked={isChecked} onCheckedChange={(state) => onChange(state === true)} />
+      <Label htmlFor={id} className="text-xs font-normal">
+        Mine
+      </Label>
+    </div>
   );
 }
