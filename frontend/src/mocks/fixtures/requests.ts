@@ -987,9 +987,13 @@ export const requests: readonly Request[] = [
     projectId: "p8",
     existingCopies: [],
     checkedAt: "2026-06-24T09:00:00Z",
-    decision: "Pending",
-    approveOnCheck: null,
-    isAfterProjectApproval: false,
+    decision: "Denied",
+    decline: {
+      actorId: "u1",
+      at: "2026-06-25T08:30:00Z",
+      publicText: "This almanac is already being digitized by the Brno City Archives.",
+      internalText: "AMB confirmed the run 1880–1940 in their 2026 plan; ask them for the files.",
+    },
   },
   {
     id: "R34",

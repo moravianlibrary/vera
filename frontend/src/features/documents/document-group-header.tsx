@@ -1,7 +1,8 @@
 // The header over a group of Documents rows (docs/demos/shared/page-documents.js, byBatch and
 // byProject), on the shared GroupHeader frame. A batch says when and by whom it came in and how
-// far adding it got (decided 2026-10-06: awaiting a decision, added, being added and could not
-// be added, each counted, so a retry or a new batch does not read as all added), the unit an admin retries; a project says its state and how
+// far adding it got (decided 2026-10-06: awaiting a decision, added, being added, could not be
+// added and denied, each counted, so a retry or a new batch does not read as all added and the
+// parts add up to the batch), the unit an admin retries; a project says its state and how
 // many of its documents match. An administrator retries a batch's failed additions from its
 // header, at once and without a dialog: a retry only sends them back to ingest.
 // TODO(rrandiak): on a phone the retry moves into the header's "…" (component-interfaces.md
@@ -56,7 +57,7 @@ interface BatchHeaderProps {
 }
 
 function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
-  const { batch, size, awaiting, added, adding, failed } = group;
+  const { batch, size, awaiting, added, adding, failed, denied } = group;
   if (batch === null) {
     return (
       <GroupHeader title="Not from a batch" meta="asked for one at a time, or still a proposal" />
@@ -81,6 +82,7 @@ function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
             added={added}
             adding={adding}
             failed={failed}
+            denied={denied}
           />
         </>
       }
@@ -99,11 +101,12 @@ interface AdditionCountsProps {
   added: number;
   adding: number;
   failed: number;
+  denied: number;
 }
 
-// "4 awaiting a decision · 28 added · 5 being added · 3 could not be added", each part only when
-// it counts something; "40 added" once all of it is in.
-function AdditionCounts({ size, awaiting, added, adding, failed }: AdditionCountsProps) {
+// "4 awaiting a decision · 28 added · 5 being added · 3 could not be added · 2 denied", each
+// part only when it counts something; "40 added" once all of it is in.
+function AdditionCounts({ size, awaiting, added, adding, failed, denied }: AdditionCountsProps) {
   if (added === size) {
     return `${size} added`;
   }
@@ -117,6 +120,7 @@ function AdditionCounts({ size, awaiting, added, adding, failed }: AdditionCount
         {failed} could not be added
       </b>
     ),
+    denied > 0 && <span key="denied">{denied} denied</span>,
   ].filter(Boolean);
   if (parts.length === 0) {
     return "none added";

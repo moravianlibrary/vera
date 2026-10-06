@@ -259,12 +259,13 @@ export const documentGroupSchema = z.discriminatedUnion("kind", [
     batch: batchSchema.nullable(),
     // Every document of the batch within reach, filtered or not, and how far its addition got:
     // added (Ready or later), being added (Enqueued, a retry too), failed, and awaiting a decision
-    // (asked for, with no iteration yet). The rest were denied.
+    // (asked for, with no iteration yet), and denied (every ask declined before an iteration).
     size: z.number().int(),
     awaiting: z.number().int(),
     added: z.number().int(),
     adding: z.number().int(),
     failed: z.number().int(),
+    denied: z.number().int(),
     ...groupCounts,
   }),
   z.object({ kind: z.literal("project"), project: projectSchema.nullable(), ...groupCounts }),

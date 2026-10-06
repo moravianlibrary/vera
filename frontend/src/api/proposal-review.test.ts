@@ -130,7 +130,7 @@ describe("listProposals", () => {
 
     expect(await documentIdsOf()).toEqual(expect.arrayContaining(["D20", "D23", "D24"]));
     expect(await documentIdsOf({ decisions: ["Pending"] })).not.toContain("D23");
-    expect(await documentIdsOf({ decisions: ["Denied"] })).toEqual(["D23"]);
+    expect(await documentIdsOf({ decisions: ["Denied"] })).toEqual(["D23", "D29"]);
     expect(await documentIdsOf({ decisions: ["Withdrawn"] })).toEqual(["D24"]);
   });
 

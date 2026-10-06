@@ -405,6 +405,10 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
   const isAwaiting = (record: DocumentRecord) =>
     currentIterationOf(record) === null &&
     record.requests.some((request) => request.decision === "Pending");
+  const isDenied = (record: DocumentRecord) =>
+    currentIterationOf(record) === null &&
+    !isAwaiting(record) &&
+    record.requests.some((request) => request.decision === "Denied");
   const isAdded = (record: DocumentRecord) => {
     const progress = progressOf(record);
     return progress !== undefined && progress !== "Enqueued" && progress !== "IngestFailed";
@@ -418,6 +422,7 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
       added: inBatch(batch.id).filter(isAdded).length,
       adding: inBatch(batch.id).filter(isAdding).length,
       failed: inBatch(batch.id).filter(isFailed).length,
+      denied: inBatch(batch.id).filter(isDenied).length,
     }))
     .toSorted(
       (first, second) =>
@@ -436,6 +441,7 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
       added: entry?.added ?? 0,
       adding: entry?.adding ?? 0,
       failed: entry?.failed ?? 0,
+      denied: entry?.denied ?? 0,
       total,
       rowCount,
     };

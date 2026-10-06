@@ -271,6 +271,21 @@ describe("listDocuments grouping", () => {
     expect(page.groups.at(-1)).toMatchObject({ kind: "batch", batch: null });
   });
 
+  it("counts every document of a batch in exactly one addition state", async () => {
+    signInAs("admin");
+
+    const page = await listDocuments({}, { grouping: "batch", limit: maximumDocumentSliceSize });
+
+    for (const group of page.groups) {
+      if (group.kind !== "batch" || group.batch === null) {
+        continue;
+      }
+
+      const { size, awaiting, added, adding, failed, denied } = group;
+      expect(awaiting + added + adding + failed + denied, group.batch.id).toBe(size);
+    }
+  });
+
   it("does not group by batch without addition.read", async () => {
     signInAs("staff");
 

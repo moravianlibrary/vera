@@ -93,8 +93,8 @@ All notable changes to this project are documented here.
   and *1,000 and more* before two numbers of your choice. Every screen size can edit a range,
   a phone in its filter sheet.
 - A batch's header in Documents counts how far adding it got, as *4 awaiting a decision · 28
-  added · 12 being added · 3 could not be added*, so a batch just retried, or just arrived, no longer reads as all
-  added.
+  added · 12 being added · 3 could not be added · 2 denied*, so a batch just retried, or just
+  arrived, no longer reads as all added, and the parts add up to the batch.
 - The mock API refuses with RFC 9457 Problem Details (`application/problem+json`), adding a
   stable `code` and, for a rejected body, the fields it got wrong. A refusal in a dialog now
   says the server's reason where the action has no words of its own for its code.
