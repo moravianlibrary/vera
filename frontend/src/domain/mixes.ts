@@ -32,3 +32,28 @@ export function effectiveShareOf(
 
   return share * 100;
 }
+
+export interface SiblingSet {
+  // Percent of the parent's share no child has; 0 for a leaf.
+  readonly unallocated: number;
+  // The children without a share: unallocated, flagged rather than corrected (§1.1.1).
+  readonly noShareIds: string[];
+}
+
+// The children of a category, or the top level for null, as one set: what they leave unallocated.
+export function siblingSetOf(
+  categories: readonly Category[],
+  shares: Shares,
+  parentId: string | null,
+): SiblingSet {
+  const children = categories.filter((category) => category.parentId === parentId);
+  if (children.length === 0) {
+    return { unallocated: 0, noShareIds: [] };
+  }
+
+  const allocated = children.reduce((sum, child) => sum + (shares[child.id] ?? 0), 0);
+  return {
+    unallocated: Math.max(0, 100 - allocated),
+    noShareIds: children.filter((child) => shares[child.id] === undefined).map((child) => child.id),
+  };
+}

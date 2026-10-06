@@ -527,6 +527,8 @@ export const roleAssignments: Readonly<Record<string, readonly string[]>> = {
   a2: ["reader"],
 };
 
-export const directCustody: Readonly<Record<string, readonly string[]>> = {
+// Custody granted to people directly, by category (the demo's `categoryMembers`); groups carry
+// theirs on the group.
+export const categoryMembers: Readonly<Record<string, readonly string[]>> = {
   c4: ["u8"],
 };

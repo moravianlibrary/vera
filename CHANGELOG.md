@@ -163,6 +163,9 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Custody granted to a person directly now counts, as custody through a group does: in the
+  mock data the curator who holds Maps directly reviews and acts on it in Documents
+  Validations.
 - Cancelling an item that is on a digitization list takes it off the list, from any view; it
   stops counting as planned and, resumed, returns to the pool rather than to the old list.
 - Filters have no *Advanced…* any more: Pages, Asked and Waiting since are added from

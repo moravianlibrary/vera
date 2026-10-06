@@ -64,6 +64,7 @@ import type { Session } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import { retryBatch } from "@/mocks/additions";
+import { canReadCategories, queryCategoryIndex } from "@/mocks/categories";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
@@ -209,6 +210,16 @@ export function createHandlers(profile: MockUserProfile) {
 
     http.get(route(apiRoutes.users), () => HttpResponse.json(database.users)),
     http.get(route(apiRoutes.categories), () => HttpResponse.json(database.categories)),
+    http.get(route(apiRoutes.categoryIndex), ({ request }) => {
+      const session = currentSession();
+      if (!canReadCategories(session)) {
+        return problemResponse({ status: 403, message: "You may not read categories" });
+      }
+
+      return HttpResponse.json(
+        queryCategoryIndex(session, new URL(request.url).searchParams.get("i")),
+      );
+    }),
     http.get(route(apiRoutes.projects), () => HttpResponse.json(database.projects)),
     http.get(route(apiRoutes.groups), () => HttpResponse.json(listMemberGroups())),
 

@@ -6,7 +6,7 @@ import type { MockUserProfile } from "@/config/env";
 import type { Session } from "@/domain/entities";
 import type { Grant } from "@/domain/permissions";
 import { database } from "@/mocks/database";
-import { directCustody, groups, roleAssignments, roles } from "@/mocks/fixtures/access";
+import { categoryMembers, groups, roleAssignments, roles } from "@/mocks/fixtures/access";
 
 const userIdsByProfile = {
   admin: "u3",
@@ -45,5 +45,8 @@ function custodyOf(userId: string): string[] {
   const viaGroups = groups
     .filter((group) => group.memberIds.includes(userId))
     .flatMap((group) => group.categoryIds);
-  return [...new Set([...viaGroups, ...(directCustody[userId] ?? [])])];
+  const direct = Object.entries(categoryMembers)
+    .filter(([, memberIds]) => memberIds.includes(userId))
+    .map(([categoryId]) => categoryId);
+  return [...new Set([...viaGroups, ...direct])];
 }

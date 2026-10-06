@@ -2,7 +2,7 @@
 // share on the way is missing.
 
 import { describe, expect, it } from "vitest";
-import { effectiveShareOf } from "@/domain/mixes";
+import { effectiveShareOf, siblingSetOf } from "@/domain/mixes";
 import { categories } from "@/mocks/fixtures/categories";
 
 describe("effectiveShareOf", () => {
@@ -17,5 +17,22 @@ describe("effectiveShareOf", () => {
     expect(effectiveShareOf(categories, shares, "c23")).toBeNull();
     expect(effectiveShareOf(categories, shares, "c11")).toBeNull();
     expect(effectiveShareOf(categories, shares, "c99")).toBeNull();
+  });
+});
+
+describe("siblingSetOf", () => {
+  it("flags what the children leave unallocated, and those with no share", () => {
+    expect(siblingSetOf(categories, { c21: 55, c22: 35 }, "c2")).toEqual({
+      unallocated: 10,
+      noShareIds: ["c23"],
+    });
+  });
+
+  it("reads the top level for no parent, and nothing for a leaf", () => {
+    expect(siblingSetOf(categories, { c1: 35, c2: 45, c3: 15, c4: 5 }, null)).toEqual({
+      unallocated: 0,
+      noShareIds: [],
+    });
+    expect(siblingSetOf(categories, {}, "c4")).toEqual({ unallocated: 0, noShareIds: [] });
   });
 });

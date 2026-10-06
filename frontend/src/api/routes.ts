@@ -6,6 +6,8 @@ export const apiRoutes = {
   userSettings: "/session/settings",
   users: "/users",
   categories: "/categories",
+  // Categories, the page: the tree with its numbers, custody and one intention's mix.
+  categoryIndex: "/categories/overview",
   projects: "/projects",
   // Projects, the page: every project the caller sees with its numbers worked out.
   projectIndex: "/projects/overview",
