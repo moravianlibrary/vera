@@ -5,7 +5,8 @@ The parts are those in `component-inventory.md` and their draft props in
 `component-interfaces.md`. The design is `docs/demos/` and
 `docs/design/shared/`.
 
-How a step is carried out, commit by commit, is `step-guide.md`.
+How a step is carried out, and what to read for it, is `brief.md`: the one
+file a session reads before it starts.
 
 A step is one session. Steps 4, 6 and 7 are larger than one session's
 work, so each is split in two sessions at the line marked *Session break*.
@@ -15,7 +16,8 @@ those pairs keep their order.
 **For every commit:**
 - **Checks:** tsc, vitest, and Biome on the changed files only.
 - **Screenshots:** Playwright at 1440×900, 1700×950 and 393×852.
-- **Records:** update `CHANGELOG.md` [Unreleased] and `continuation.md`.
+- **Records:** update `CHANGELOG.md` [Unreleased]; at a step's end,
+  `continuation.md` and `brief.md` §3.
 - **Mock API:** a mock API comes with its tests over HTTP, before the UI that
   uses it.
 
