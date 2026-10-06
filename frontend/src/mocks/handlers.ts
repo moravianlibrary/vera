@@ -61,6 +61,7 @@ import { retryBatch } from "@/mocks/additions";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
+import { canReadIntentions, queryIntentionIndex } from "@/mocks/intentions";
 import {
   cancelIteration,
   enterPageCount,
@@ -191,6 +192,15 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(apiRoutes.categories), () => HttpResponse.json(database.categories)),
     http.get(route(apiRoutes.projects), () => HttpResponse.json(database.projects)),
     http.get(route(apiRoutes.groups), () => HttpResponse.json(listMemberGroups())),
+
+    http.get(route(apiRoutes.intentionIndex), () => {
+      const session = currentSession();
+      if (!canReadIntentions(session)) {
+        return problemResponse({ status: 403, message: "You may not read intentions" });
+      }
+
+      return HttpResponse.json(queryIntentionIndex(session));
+    }),
 
     // Before `/:projectId`, so the index is not read as a project named "overview".
     http.get(route(apiRoutes.projectIndex), () => {

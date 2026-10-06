@@ -100,6 +100,77 @@ export const projectSchema = z.discriminatedUnion("state", [
 ]);
 export type Project = z.infer<typeof projectSchema>;
 
+// ---------------------------------------------------------------- intentions
+
+// The stored mix: percentages over the category tree (intentions.md §1). It belongs to the one
+// intention that owns it; every other intention reading it tracks that owner (§2). Revisioned
+// so that provenance can name the percentages a list was generated against.
+export const distributionSchema = z.object({
+  id,
+  ownerId: id,
+  // Percent by category ID; a category without an entry has no share.
+  shares: z.record(z.string(), z.number().min(0).max(100)),
+  revision: z.number().int().positive(),
+});
+export type Distribution = z.infer<typeof distributionSchema>;
+
+// Which items an intention counts: any, those funded by no project, or one project's.
+export const intentionFundingSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("any") }),
+  z.object({ kind: z.literal("none") }),
+  z.object({ kind: z.literal("project"), projectId: id }),
+]);
+export type IntentionFunding = z.infer<typeof intentionFundingSchema>;
+
+// A scope and an objective, never a container: an item counts towards every intention whose
+// scope it matches (intentions.md §3). With a target it has progress; without one it tracks the
+// mix. Every intention counts from a date, locked once created.
+export const intentionSchema = z.object({
+  id,
+  name: z.string(),
+  description: z.string(),
+  funding: intentionFundingSchema,
+  // One category node with its subtree; null is every category.
+  scopeCategoryId: id.nullable(),
+  // The intention whose mix this one reads; null when it owns its mix. Never one that tracks.
+  tracksMixOf: id.nullable(),
+  // The mix in use: its own, or the tracked owner's.
+  distributionId: id,
+  targetPages: z.number().int().positive().nullable(),
+  countsFrom: calendarDate,
+  // The last day counted; null for open-ended.
+  endsOn: calendarDate.nullable(),
+  // Exactly one: everything, no target, no end, the default mix for generating (§3.1).
+  isOverall: z.boolean(),
+  // The repeat that made it.
+  templateId: id.nullable(),
+  // Hides it; counting goes on (§3.3). A repeat archives the previous occurrence itself.
+  archived: z.object({ actor: actorSchema, at: timestamp }).nullable(),
+});
+export type Intention = z.infer<typeof intentionSchema>;
+
+export const repeatEverySchema = z.enum(["week", "month", "quarter"]);
+export type RepeatEvery = z.infer<typeof repeatEverySchema>;
+
+// A repeat makes one intention per period, each with its own window (intentions.md §3.3).
+export const intentionTemplateSchema = z.object({
+  id,
+  // "Monthly output — {period}".
+  namePattern: z.string(),
+  every: repeatEverySchema,
+  funding: intentionFundingSchema,
+  scopeCategoryId: id.nullable(),
+  tracksMixOf: id.nullable(),
+  distributionId: id,
+  targetPages: z.number().int().positive().nullable(),
+  // Archiving the previous occurrence only hides it.
+  isArchivingPrevious: z.boolean(),
+  since: calendarDate,
+  nextOn: calendarDate,
+  createdBy: id,
+});
+export type IntentionTemplate = z.infer<typeof intentionTemplateSchema>;
+
 // What a list was generated with: provenance, never what it counts towards (intentions.md §5).
 export const listGenerationSchema = z.object({
   intentionId: id,

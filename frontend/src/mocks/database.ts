@@ -6,6 +6,7 @@ import type { Watchlist } from "@/domain/entities";
 import { batches } from "@/mocks/fixtures/batches";
 import { categories } from "@/mocks/fixtures/categories";
 import { documents } from "@/mocks/fixtures/documents";
+import { distributions, intentions, intentionTemplates } from "@/mocks/fixtures/intentions";
 import { iterations } from "@/mocks/fixtures/iterations";
 import { lists } from "@/mocks/fixtures/lists";
 import { projects } from "@/mocks/fixtures/projects";
@@ -30,6 +31,9 @@ export const database = {
   users,
   categories,
   projects: [...projects],
+  intentions: [...intentions],
+  distributions: [...distributions],
+  intentionTemplates: [...intentionTemplates],
   lists: [...lists],
   batches: [...batches],
   proposalCustodies: [...proposalCustodies],

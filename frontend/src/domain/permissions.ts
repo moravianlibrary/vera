@@ -100,7 +100,9 @@ export type ScopedRecord =
       readonly memberIds: readonly string[];
       readonly memberGroupIds: readonly string[];
     }
-  | { readonly kind: "run"; readonly startedById: string };
+  | { readonly kind: "run"; readonly startedById: string }
+  // A record no narrower scope reaches, such as an intention no project funds: only `any` holds.
+  | { readonly kind: "unscoped" };
 
 export interface ScopeHolder extends GrantHolder {
   readonly user: { readonly id: string };
@@ -149,6 +151,7 @@ function isOwnedBy(record: ScopedRecord, userId: string): boolean {
     case "project":
       return record.managerId === userId;
     case "iteration":
+    case "unscoped":
       return false;
   }
 }
@@ -163,6 +166,7 @@ function isInCustody(holder: ScopeHolder, record: ScopedRecord): boolean {
       return record.categoryPathIds.some((id) => holder.custodyCategoryIds.includes(id));
     case "project":
     case "run":
+    case "unscoped":
       return false;
   }
 }

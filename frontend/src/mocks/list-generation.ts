@@ -12,12 +12,8 @@ import { effectiveShareOf } from "@/domain/mixes";
 import { hasPermission } from "@/domain/permissions";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { database } from "@/mocks/database";
-import {
-  advisorReasons,
-  listGenerators,
-  overallIntention,
-  overallShares,
-} from "@/mocks/fixtures/list-generators";
+import { advisorReasons, listGenerators } from "@/mocks/fixtures/list-generators";
+import { distributionOf, overallIntention } from "@/mocks/intentions";
 import { byPriorityThenAge, isHeldInReview, isInPool, itemOf, topCategoryOf } from "@/mocks/lists";
 import type { Outcome } from "@/mocks/mutations";
 
@@ -58,8 +54,9 @@ export function generateDraft(
     .filter((item) => item.pages !== null)
     .toSorted(byPriorityThenAge);
   const leaves = leafCategoriesOf(database.categories);
-  const shareOf = (categoryId: string) =>
-    effectiveShareOf(database.categories, overallShares, categoryId);
+  const overall = overallIntention();
+  const { shares } = distributionOf(overall);
+  const shareOf = (categoryId: string) => effectiveShareOf(database.categories, shares, categoryId);
   const isAllowed = (categoryId: string) =>
     categoryIds.length === 0 || categoryIds.includes(topCategoryOf(categoryId));
   const pagesIn = (categoryId: string, of: readonly ListItem[]) =>
@@ -161,14 +158,14 @@ export function generateDraft(
   return {
     value: {
       generator,
-      shapedBy: overallIntention,
+      shapedBy: { intentionId: overall.id, name: overall.name },
       picks,
       requestedPages: pages,
       totalPages: total,
       spreadCount,
       shortfalls,
       provenance: {
-        intentionId: overallIntention.intentionId,
+        intentionId: overall.id,
         pages,
         generator: `${generator.plugin} ${generator.version}`,
         at: new Date().toISOString(),

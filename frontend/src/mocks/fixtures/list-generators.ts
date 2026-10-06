@@ -1,11 +1,9 @@
 // The list generator plugin instances (docs/demos/shared/vera-data.js pt11, pt12; plugins.md
-// §4.9) and the one mix generation is shaped by until intentions are in the mock API: the
-// Overall intention, House mix, with its Standard mix (vera-data.js i4, d1).
-// TODO(rrandiak): *Shape by* another intention, and correcting allocations, come with intentions
-// (plan.md step 6); the instances move to the Plugins fixtures with step 10.
+// §4.9). Generation is shaped by the Overall intention's mix (fixtures/intentions.ts).
+// TODO(rrandiak): *Shape by* another intention, and correcting allocations, come with the
+// intention editor (plan.md 6.3–6.4); the instances move to the Plugins fixtures with step 10.
 
 import type { ListGenerator } from "@/api/lists";
-import type { Shares } from "@/domain/mixes";
 
 export interface ListGeneratorInstance extends ListGenerator {
   readonly isEnabled: boolean;
@@ -35,22 +33,6 @@ export const listGenerators: readonly ListGeneratorInstance[] = [
     isEnabled: true,
   },
 ];
-
-export const overallIntention = { intentionId: "i4", name: "House mix" } as const;
-
-export const overallShares: Shares = {
-  c1: 35,
-  c2: 45,
-  c3: 15,
-  c4: 5,
-  c11: 40,
-  c12: 60,
-  c21: 30,
-  c22: 50,
-  c23: 20,
-  c31: 60,
-  c32: 40,
-};
 
 // What the AI-based generator says for itself: the model's own sentence per pick.
 export const advisorReasons: Readonly<Record<string, string>> = {

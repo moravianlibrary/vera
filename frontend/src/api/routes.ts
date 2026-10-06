@@ -10,6 +10,8 @@ export const apiRoutes = {
   // Projects, the page: every project the caller sees with its numbers worked out.
   projectIndex: "/projects/overview",
   groups: "/groups",
+  // Intentions, the page: every intention the caller sees with what it counts.
+  intentionIndex: "/intentions/overview",
   lists: "/lists",
   digitizationLists: "/digitization-lists",
   digitizationListPool: "/digitization-lists/pool",
