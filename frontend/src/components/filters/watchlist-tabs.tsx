@@ -49,7 +49,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { Watchlist, WatchlistScope, WatchlistView } from "@/domain/entities";
 import { watchlistScopeSchema, watchlistScopes } from "@/domain/entities";
 import { useRememberedWatchlist } from "@/hooks/use-remembered-watchlist";
-import { useSessionQuery } from "@/hooks/use-session-query";
 import { useWatchlistMutations, useWatchlistsQuery } from "@/hooks/use-watchlists-query";
 import { cn } from "@/lib/utils";
 
@@ -81,15 +80,14 @@ export function WatchlistTabs({
   onDetach,
   isBare,
 }: WatchlistTabsProps) {
-  const { data: session } = useSessionQuery();
   const { data: watchlists = [], isSuccess } = useWatchlistsQuery(view);
-  const { rememberedId, remember } = useRememberedWatchlist(session?.user.id ?? "", view);
+  const { isSettled, rememberedId, remember } = useRememberedWatchlist(view);
   const onOpen = (watchlist: Watchlist | null) => {
     remember(watchlist?.id ?? null);
     openInView(watchlist);
   };
 
-  // Once the watchlists are known; one deleted since reopens on "All".
+  // Once the watchlists and the settings are known; one deleted since reopens on "All".
   const hasRestoredRef = useRef(false);
   const restore = useEffectEvent(() => {
     const remembered = watchlists.find((watchlist) => watchlist.id === rememberedId);
@@ -98,7 +96,7 @@ export function WatchlistTabs({
     }
   });
   useEffect(() => {
-    if (!isSuccess || hasRestoredRef.current) {
+    if (!isSuccess || !isSettled || hasRestoredRef.current) {
       return;
     }
 
@@ -106,7 +104,7 @@ export function WatchlistTabs({
     if (isBare) {
       restore();
     }
-  }, [isSuccess, isBare]);
+  }, [isSuccess, isSettled, isBare]);
 
   const { create } = useWatchlistMutations();
   const isSameFilter = (first: Filter, second: Filter) =>

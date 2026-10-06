@@ -45,8 +45,10 @@ All notable changes to this project are documented here.
 ### Changed
 
 - A view reopens on the watchlist tab, or "All", that the person last opened there,
-  remembered in the browser per person and per view. In Proposals "All" now shows every
+  remembered per person and per view. In Proposals "All" now shows every
   decision, and a shared "Awaiting a decision" watchlist leaves out the declined and withdrawn.
+- The remembered tab is kept with the person's settings on the server (`/session/settings`),
+  so it follows them to another device; the mock server keeps those settings across reloads.
 - The record docks beside the list from 768px, the whole small tier, as the tablet demo
   draws it; only the phone opens it as a sheet.
 

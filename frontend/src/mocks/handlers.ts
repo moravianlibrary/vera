@@ -18,6 +18,7 @@ import {
 } from "@/api/proposal-review";
 import { proposalDraftSchema, proposalLookupSchema } from "@/api/proposals";
 import { apiRoutes } from "@/api/routes";
+import { userSettingsChangeSchema } from "@/api/user-settings";
 import { watchlistChangeSchema, watchlistDraftSchema, watchlistViewParam } from "@/api/watchlists";
 import type { MockUserProfile } from "@/config/env";
 import { env } from "@/config/env";
@@ -45,6 +46,7 @@ import {
   submitProposal,
 } from "@/mocks/proposals";
 import { resolveSession } from "@/mocks/session";
+import { changeUserSettings, userSettingsOf } from "@/mocks/user-settings";
 import {
   canChange,
   findDuplicateWatchlist,
@@ -60,6 +62,19 @@ export function createHandlers(profile: MockUserProfile) {
 
   return [
     http.get(route(apiRoutes.session), () => HttpResponse.json(currentSession())),
+
+    http.get(route(apiRoutes.userSettings), () =>
+      HttpResponse.json(userSettingsOf(currentSession().user.id)),
+    ),
+
+    http.patch(route(apiRoutes.userSettings), async ({ request }) => {
+      const change = userSettingsChangeSchema.safeParse(await request.json());
+      if (!change.success) {
+        return HttpResponse.json({ message: change.error.message }, { status: 422 });
+      }
+
+      return HttpResponse.json(changeUserSettings(currentSession().user.id, change.data));
+    }),
 
     http.get(route(apiRoutes.users), () => HttpResponse.json(database.users)),
     http.get(route(apiRoutes.categories), () => HttpResponse.json(database.categories)),

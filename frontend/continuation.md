@@ -37,7 +37,7 @@ The foundation is in place:
   (a save icon on the tab, and Save / Discard changes in its menu). Rename and Delete sit in
   the open tab's menu where the caller may change it, with "Share with everyone" on their own
   for holders of `watchlist.manage_shared`; opened bare, a view reopens on the tab last opened
-  there (`src/hooks/use-remembered-watchlist.ts`, localStorage per user and view); a shared tab they may not change shows only a dot
+  there (`src/hooks/use-remembered-watchlist.ts`, kept in the user settings at `/session/settings`, `src/api/user-settings.ts`; the mock keeps them in localStorage under `vera.mock.user-settings` so they survive a reload); a shared tab they may not change shows only a dot
   and Discard. A filter is saved once (filtering.md §4.5): "+" and Save changes are disabled
   with the name of the tab that already holds it, and a refusal from the server shows in the
   form or beside the tab.

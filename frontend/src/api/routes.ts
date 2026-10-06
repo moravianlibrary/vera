@@ -3,6 +3,7 @@
 
 export const apiRoutes = {
   session: "/session",
+  userSettings: "/session/settings",
   users: "/users",
   categories: "/categories",
   projects: "/projects",
