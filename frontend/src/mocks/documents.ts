@@ -15,8 +15,10 @@ import type {
 } from "@/api/documents";
 import { documentPageSchema, documentSliceSize } from "@/api/documents";
 import { categoryLineageOf } from "@/domain/categories";
-import type { AskDecision, Audience, DocumentRecord } from "@/domain/documents";
+import type { AdditionState, AskDecision, Audience, DocumentRecord } from "@/domain/documents";
 import {
+  additionStateOf,
+  additionStates,
   askDecisionSchema,
   askersOf,
   batchIdOf,
@@ -399,34 +401,19 @@ function arrangementOf(
 // Batches with failed additions first, as that is what an admin retries; then newest first, and
 // the rows from no batch last.
 function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
-  const progressOf = (record: DocumentRecord) => currentIterationOf(record)?.progress;
-  const isAdding = (record: DocumentRecord) => progressOf(record) === "Enqueued";
-  const isFailed = (record: DocumentRecord) => progressOf(record) === "IngestFailed";
-  const isAwaiting = (record: DocumentRecord) =>
-    currentIterationOf(record) === null &&
-    record.requests.some((request) => request.decision === "Pending");
-  const isDenied = (record: DocumentRecord) =>
-    currentIterationOf(record) === null &&
-    !isAwaiting(record) &&
-    record.requests.some((request) => request.decision === "Denied");
-  const isAdded = (record: DocumentRecord) => {
-    const progress = progressOf(record);
-    return progress !== undefined && progress !== "Enqueued" && progress !== "IngestFailed";
+  const additionsOf = (batchId: string) => {
+    const records = reachable.filter((record) => batchIdOf(record) === batchId);
+    const states = records.map(additionStateOf);
+    const additions = Object.fromEntries(
+      additionStates.map((state) => [state, states.filter((each) => each === state).length]),
+    ) as Record<AdditionState, number>;
+    return { size: records.length, additions };
   };
-  const inBatch = (batchId: string) => reachable.filter((record) => batchIdOf(record) === batchId);
   const batchOrder = database.batches
-    .map((batch) => ({
-      batch,
-      size: inBatch(batch.id).length,
-      awaiting: inBatch(batch.id).filter(isAwaiting).length,
-      added: inBatch(batch.id).filter(isAdded).length,
-      adding: inBatch(batch.id).filter(isAdding).length,
-      failed: inBatch(batch.id).filter(isFailed).length,
-      denied: inBatch(batch.id).filter(isDenied).length,
-    }))
+    .map((batch) => ({ batch, ...additionsOf(batch.id) }))
     .toSorted(
       (first, second) =>
-        second.failed - first.failed ||
+        second.additions.failed - first.additions.failed ||
         second.batch.submittedAt.localeCompare(first.batch.submittedAt),
     );
   const keys = batchOrder.map((entry) => entry.batch.id);
@@ -437,16 +424,17 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
       kind: "batch",
       batch: entry?.batch ?? null,
       size: entry?.size ?? total,
-      awaiting: entry?.awaiting ?? 0,
-      added: entry?.added ?? 0,
-      adding: entry?.adding ?? 0,
-      failed: entry?.failed ?? 0,
-      denied: entry?.denied ?? 0,
+      additions: entry?.additions ?? noAdditions,
       total,
       rowCount,
     };
   });
 }
+
+const noAdditions = Object.fromEntries(additionStates.map((state) => [state, 0])) as Record<
+  AdditionState,
+  number
+>;
 
 // Projects by name, the rows funded by none last.
 function projectArrangementOf(): Arrangement {

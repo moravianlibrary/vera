@@ -57,8 +57,10 @@ describe("retrying a batch", () => {
       (group) => group.kind === "batch" && group.batch?.id === "B-0141",
     );
 
-    // IT17, retried, joins the two of B-0141 still being added.
-    expect(header).toMatchObject({ failed: 0, adding: 3, awaiting: 0 });
+    // IT17, retried, is being added; the other two of B-0141 are held by their review.
+    expect(header).toMatchObject({
+      additions: { failed: 0, adding: 1, reviewNeeded: 1, deniedInReview: 1 },
+    });
     expect(await statusOf(retryBatch("B-0141"))).toBe(409);
   });
 

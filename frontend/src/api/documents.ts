@@ -8,6 +8,7 @@ import { findJson, getJson } from "@/api/http";
 import { apiRoutes, documentRoute } from "@/api/routes";
 import type { AskDecision, ExistingCopyState } from "@/domain/documents";
 import {
+  additionStates,
   askDecisionSchema,
   audienceSchema,
   documentRecordSchema,
@@ -257,15 +258,10 @@ export const documentGroupSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("batch"),
     batch: batchSchema.nullable(),
-    // Every document of the batch within reach, filtered or not, and how far its addition got:
-    // added (Ready or later), being added (Enqueued, a retry too), failed, and awaiting a decision
-    // (asked for, with no iteration yet), and denied (every ask declined before an iteration).
+    // Every document of the batch within reach, filtered or not, and how many are in each
+    // addition state (additionStateOf in src/domain/documents.ts).
     size: z.number().int(),
-    awaiting: z.number().int(),
-    added: z.number().int(),
-    adding: z.number().int(),
-    failed: z.number().int(),
-    denied: z.number().int(),
+    additions: z.record(z.enum(additionStates), z.number().int()),
     ...groupCounts,
   }),
   z.object({ kind: z.literal("project"), project: projectSchema.nullable(), ...groupCounts }),

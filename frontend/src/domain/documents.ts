@@ -135,6 +135,52 @@ export function batchIdOf(record: DocumentRecord): string | null {
   return record.requests.find((request) => request.batchId !== null)?.batchId ?? null;
 }
 
+// How far adding a document of a batch got, for the batch's header (decided 2026-10-06). Each
+// document is in exactly one state, read off the status its row shows, so the header agrees with
+// its rows and its parts add up to the batch: what is held at a gate (forbidden, waiting for
+// review, denied in review) is not counted as being added.
+export const additionStates = [
+  "awaiting",
+  "declined",
+  "withdrawn",
+  "forbidden",
+  "reviewNeeded",
+  "deniedInReview",
+  "adding",
+  "failed",
+  "added",
+  "cancelled",
+] as const;
+export type AdditionState = (typeof additionStates)[number];
+
+export function additionStateOf(record: DocumentRecord): AdditionState | null {
+  const status = recordStatusOf(record);
+  if (status === null) {
+    return null;
+  }
+
+  const states = {
+    AwaitingReview: "awaiting",
+    Declined: "declined",
+    Withdrawn: "withdrawn",
+    Forbidden: "forbidden",
+    ReviewNeeded: "reviewNeeded",
+    ValidationDenied: "deniedInReview",
+    BeingAdded: "adding",
+    Enqueued: "adding",
+    IngestFailed: "failed",
+    Ready: "added",
+    Planned: "added",
+    InProgress: "added",
+    Digitized: "added",
+    Published: "added",
+    Cancelled: "cancelled",
+    NotDigitizable: "cancelled",
+  } as const satisfies Record<DisplayStatus, AdditionState>;
+
+  return states[status];
+}
+
 // ---------------------------------------------------------------- catalog facts
 
 // The highest tier that has a value wins (document-properties.md §4).

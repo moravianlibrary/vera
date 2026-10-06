@@ -1,8 +1,8 @@
 // The header over a group of Documents rows (docs/demos/shared/page-documents.js, byBatch and
 // byProject), on the shared GroupHeader frame. A batch says when and by whom it came in and how
-// far adding it got (decided 2026-10-06: awaiting a decision, added, being added, could not be
-// added and denied, each counted, so a retry or a new batch does not read as all added and the
-// parts add up to the batch), the unit an admin retries; a project says its state and how
+// far adding it got (decided 2026-10-06: each document counted once, by the status its row
+// shows, so a retry or a new batch does not read as all added, what a gate holds does not read
+// as being added, and the parts add up to the batch), the unit an admin retries; a project says its state and how
 // many of its documents match. An administrator retries a batch's failed additions from its
 // header, at once and without a dialog: a retry only sends them back to ingest.
 // TODO(rrandiak): on a phone the retry moves into the header's "…" (component-interfaces.md
@@ -15,6 +15,8 @@ import type { DocumentGroup } from "@/api/documents";
 import { GroupHeader } from "@/components/lists/group-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { AdditionState } from "@/domain/documents";
+import { additionStates } from "@/domain/documents";
 import type { Project, User } from "@/domain/entities";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import type { Refusal } from "@/hooks/use-action-mutation";
@@ -57,7 +59,7 @@ interface BatchHeaderProps {
 }
 
 function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
-  const { batch, size, awaiting, added, adding, failed, denied } = group;
+  const { batch, size, additions } = group;
   if (batch === null) {
     return (
       <GroupHeader title="Not from a batch" meta="asked for one at a time, or still a proposal" />
@@ -76,19 +78,12 @@ function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
       meta={
         <>
           {formatDay(batch.submittedAt)} · {submitter} ·{" "}
-          <AdditionCounts
-            size={size}
-            awaiting={awaiting}
-            added={added}
-            adding={adding}
-            failed={failed}
-            denied={denied}
-          />
+          <AdditionCounts size={size} additions={additions} />
         </>
       }
       action={
-        failed > 0 && canRetryAdditions ? (
-          <RetryFailedButton batchId={batch.id} failed={failed} />
+        additions.failed > 0 && canRetryAdditions ? (
+          <RetryFailedButton batchId={batch.id} failed={additions.failed} />
         ) : undefined
       }
     />
@@ -97,31 +92,43 @@ function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
 
 interface AdditionCountsProps {
   size: number;
-  awaiting: number;
-  added: number;
-  adding: number;
-  failed: number;
-  denied: number;
+  additions: Readonly<Record<AdditionState, number>>;
 }
 
-// "4 awaiting a decision · 28 added · 5 being added · 3 could not be added · 2 denied", each
-// part only when it counts something; "40 added" once all of it is in.
-function AdditionCounts({ size, awaiting, added, adding, failed, denied }: AdditionCountsProps) {
-  if (added === size) {
+const additionLabels = {
+  awaiting: "awaiting a decision",
+  declined: "declined",
+  withdrawn: "withdrawn",
+  forbidden: "forbidden",
+  reviewNeeded: "review needed",
+  deniedInReview: "denied in review",
+  adding: "being added",
+  failed: "could not be added",
+  added: "added",
+  cancelled: "cancelled",
+} as const satisfies Record<AdditionState, string>;
+
+// "4 awaiting a decision · 1 forbidden · 12 being added · 3 could not be added · 28 added", each
+// part only when it counts something, in the order a document moves; "40 added" once all of it
+// is in.
+function AdditionCounts({ size, additions }: AdditionCountsProps) {
+  if (additions.added === size) {
     return `${size} added`;
   }
 
-  const parts = [
-    awaiting > 0 && <span key="awaiting">{awaiting} awaiting a decision</span>,
-    added > 0 && <span key="added">{added} added</span>,
-    adding > 0 && <span key="adding">{adding} being added</span>,
-    failed > 0 && (
-      <b key="failed" className="font-semibold text-tone-red-foreground">
-        {failed} could not be added
-      </b>
-    ),
-    denied > 0 && <span key="denied">{denied} denied</span>,
-  ].filter(Boolean);
+  const parts = additionStates
+    .filter((state) => additions[state] > 0)
+    .map((state) =>
+      state === "failed" ? (
+        <b key={state} className="font-semibold text-tone-red-foreground">
+          {additions[state]} {additionLabels[state]}
+        </b>
+      ) : (
+        <span key={state}>
+          {additions[state]} {additionLabels[state]}
+        </span>
+      ),
+    );
   if (parts.length === 0) {
     return "none added";
   }

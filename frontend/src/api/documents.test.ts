@@ -266,7 +266,9 @@ describe("listDocuments grouping", () => {
 
     const page = await listDocuments({}, { grouping: "batch", limit: maximumDocumentSliceSize });
 
-    const failed = page.groups.map((group) => (group.kind === "batch" ? group.failed : -1));
+    const failed = page.groups.map((group) =>
+      group.kind === "batch" ? group.additions.failed : -1,
+    );
     expect(failed).toEqual(failed.toSorted((first, second) => second - first));
     expect(page.groups.at(-1)).toMatchObject({ kind: "batch", batch: null });
   });
@@ -281,8 +283,8 @@ describe("listDocuments grouping", () => {
         continue;
       }
 
-      const { size, awaiting, added, adding, failed, denied } = group;
-      expect(awaiting + added + adding + failed + denied, group.batch.id).toBe(size);
+      const counted = Object.values(group.additions).reduce((sum, count) => sum + count, 0);
+      expect(counted, group.batch.id).toBe(group.size);
     }
   });
 
