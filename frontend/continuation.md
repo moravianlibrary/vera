@@ -143,8 +143,17 @@ The foundation is in place:
   query keys it touches are refetched without being awaited. `can()` in
   `src/domain/permissions.ts` (and `src/hooks/use-can.ts`) checks a grant's scope against a
   record (proposal, iteration by category path, project, run); pane actions use it to be absent.
-  Still to build: picker, set editor, stepped frame and Message dialogs (component-interfaces.md
-  §6.5–6.8).
+  `message-dialog.tsx` is the one *Message…* dialog (messaging.md): given a record
+  (`MessageSubject`), it shows who the server resolved it to (`src/api/messages.ts`,
+  `GET /messages/hand-off`), who the chosen Message instance (`GET /message-channels`, in
+  order, the first preselected) cannot reach, and hands off through `DialogShell`'s link primary
+  (`primary.href`, a new tab); `src/hooks/use-message-query.ts` asks for both, and *Message…*
+  exists only while some instance is enabled. The mock (`src/mocks/messages.ts`,
+  `fixtures/message-channels.ts`: Email by address, MZK Slack by the `slack_id` handle) sends a
+  proposal's message to its askers, people only and never the sender, as a `mailto:` or Slack
+  link pre-filled with the record and a link back; a record out of reach is 404. Only `proposal`
+  subjects exist so far, and instances that send on their own are not modelled.
+  Still to build: picker, set editor and stepped frame (component-interfaces.md §6.5–6.7).
 - Query hooks: `src/hooks/use-session-query.ts`, `src/features/documents/use-documents-query.ts`.
   Sidebar entries and their required permissions: `src/components/layout/navigation.ts`.
 - `src/app.tsx` holds the providers and routes. `src/features/documents/` is the Documents view:
@@ -184,7 +193,8 @@ The foundation is in place:
   list and the pane says what was decided. A copy's link is in the pane, not on the row, which
   is one button. A batch's header carries "Approve N…", which opens `bulk-approve-dialog.tsx`
   over every open row the batch asked for (one slice of at most 200; a larger harvest needs
-  approving by batch on the server). Message askers and the Asked date filter are not built.
+  approving by batch on the server). Beside the pane's heading, *Message askers…* opens the
+  Message dialog over the proposal. The Asked date filter is not built.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

@@ -53,6 +53,10 @@ All notable changes to this project are documented here.
   screen and a dialog on a notebook; on a tablet the range shows as a chip that can be removed.
 - On a phone the filter bar is the search and one *Filter* button counting what is set; it opens
   a sheet with every field's values and counts, Mine, the ranges and *Clear all*.
+- *Message askers…* in a proposal's pane writes to everyone who asked for it, in the person's
+  own mail or Slack: the dialog shows who it reaches, names who the chosen one cannot reach,
+  and opens it pre-filled with the record and a link back. VERA keeps none of the text, and
+  the action is absent when no Message plugin is enabled.
 
 ### Changed
 

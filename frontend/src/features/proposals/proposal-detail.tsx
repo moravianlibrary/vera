@@ -2,14 +2,15 @@
 // the facts, then a card for each part: who asked, where it was placed, the existing copies, the
 // catalog record and the history. The decision, with its category and priority, sits at the top
 // of the cards.
-// TODO(rrandiak): Message askers (messaging.md §3); labels move to i18n.
+// Beside the heading, *Message askers…* writes to everyone who asked (messaging.md §3).
+// TODO(rrandiak): labels move to i18n.
 
-import { ArrowRight } from "lucide-react";
 import { useId, useState } from "react";
-import { Link } from "react-router";
 import { ApiError } from "@/api/http";
 import type { Decline, ProposalDetail } from "@/api/proposal-review";
 import { declineProposal } from "@/api/proposal-review";
+import type { ViewAction } from "@/components/actions/action-bar";
+import { ActionBar } from "@/components/actions/action-bar";
 import {
   CategorySelect,
   categoryLabelOf,
@@ -17,6 +18,7 @@ import {
   PrioritySelect,
 } from "@/components/classification-fields";
 import { DetailCard, DetailRow, Muted, StatTiles } from "@/components/detail-card";
+import { MessageDialog } from "@/components/dialogs/message-dialog";
 import type { ReasonTexts } from "@/components/dialogs/reason-dialog";
 import { ReasonDialog } from "@/components/dialogs/reason-dialog";
 import { visibleNavigation } from "@/components/layout/navigation";
@@ -52,6 +54,7 @@ import {
 } from "@/features/proposals/use-proposals-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCan } from "@/hooks/use-can";
+import { useMessageChannelsQuery } from "@/hooks/use-message-query";
 import {
   useCategoriesQuery,
   useProjectsQuery,
@@ -84,6 +87,26 @@ export function ProposalDetailPane({ detail, session, onDecided }: ProposalDetai
   const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
   const documents = visibleNavigation(session).find((entry) => entry.id === "documents");
   const can = useCan();
+  const { data: messageChannels = [] } = useMessageChannelsQuery();
+  const [isMessaging, setIsMessaging] = useState(false);
+
+  // Message… needs no permission of its own, only an enabled Message instance (messaging.md §4).
+  const headingActions: ViewAction[] = [];
+  if (messageChannels.length > 0) {
+    headingActions.push({
+      id: "message",
+      label: "Message askers…",
+      onSelect: () => setIsMessaging(true),
+    });
+  }
+
+  if (documents !== undefined) {
+    headingActions.push({
+      id: "documents",
+      label: `Open in ${documents.visibleLabel} →`,
+      href: `${documents.path}?id=${encodeURIComponent(document.id)}`,
+    });
+  }
 
   return (
     <article className="@container max-w-5xl">
@@ -93,14 +116,7 @@ export function ProposalDetailPane({ detail, session, onDecided }: ProposalDetai
           identifier={documentIdentifierOf(document)}
           details={[document.type, document.signature]}
         />
-        {documents !== undefined && (
-          <Button asChild size="sm" variant="outline" className="mb-4">
-            <Link to={`${documents.path}?id=${encodeURIComponent(document.id)}`}>
-              Open in {documents.visibleLabel}
-              <ArrowRight />
-            </Link>
-          </Button>
-        )}
+        <ActionBar actions={headingActions} className="mb-4" />
       </div>
       <ProposalNote row={row} nameOf={nameOf} />
       <ProposalFacts row={row} />
@@ -116,6 +132,14 @@ export function ProposalDetailPane({ detail, session, onDecided }: ProposalDetai
         <CatalogCard document={document} nameOf={nameOf} />
         <HistoryCard record={record} log={log} nameOf={nameOf} isPublic={false} />
       </div>
+
+      <MessageDialog
+        isOpen={isMessaging}
+        onClose={() => setIsMessaging(false)}
+        subject={{ kind: "proposal", id: document.id }}
+        label={document.title}
+        recipientLabel="who asked"
+      />
     </article>
   );
 }

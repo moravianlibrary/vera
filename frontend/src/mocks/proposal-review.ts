@@ -99,7 +99,8 @@ function reachableRows(session: Session): ProposalRow[] {
     .filter((row) => row.custodyIds.some((custodyId) => custodyIds.has(custodyId)));
 }
 
-function findReachableRow(session: Session, documentId: string): ProposalRow | null {
+// The open or decided row of a document the caller decides; null outside their reach.
+export function findReachableRow(session: Session, documentId: string): ProposalRow | null {
   return reachableRows(session).find((row) => row.record.document.id === documentId) ?? null;
 }
 

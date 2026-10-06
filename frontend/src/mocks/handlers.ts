@@ -9,6 +9,7 @@ import {
   parseDocumentSliceParams,
 } from "@/api/documents";
 import { publicationSchema, reclassificationSchema, relinkSchema } from "@/api/iterations";
+import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
 import {
   approvalSchema,
   bulkApprovalSchema,
@@ -31,6 +32,7 @@ import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
 import { publishIteration, reclassifyIteration, relinkIteration } from "@/mocks/iterations";
+import { messageChannels, prepareMessage } from "@/mocks/messages";
 import type { Outcome } from "@/mocks/mutations";
 import {
   approveProposal,
@@ -283,6 +285,19 @@ export function createHandlers(profile: MockUserProfile) {
         return outcomeResponse(declineProposal(session, String(params.documentId), decline.data));
       },
     ),
+
+    http.get(route(apiRoutes.messageChannels), () => HttpResponse.json(messageChannels())),
+
+    http.get(route(apiRoutes.messageHandOff), ({ request }) => {
+      const params = new URL(request.url).searchParams;
+      const kind = messageSubjectKindSchema.safeParse(params.get(messageSubjectParams.kind));
+      const id = params.get(messageSubjectParams.id);
+      if (!kind.success || id === null || id === "") {
+        return HttpResponse.json({ message: "Say what the message is about" }, { status: 422 });
+      }
+
+      return outcomeResponse(prepareMessage(currentSession(), { kind: kind.data, id }));
+    }),
 
     http.get(route(apiRoutes.watchlists), ({ request }) => {
       const view = watchlistViewSchema.safeParse(

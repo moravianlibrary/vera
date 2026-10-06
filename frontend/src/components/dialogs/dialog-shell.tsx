@@ -38,6 +38,9 @@ export interface DialogPrimaryAction {
   isPending?: boolean;
   // Only while a required field is empty.
   isDisabled?: boolean;
+  // A hand-off elsewhere, opened in a new tab as a link (the Message dialog), rather than a call
+  // to the server; `onSelect` runs as it opens.
+  href?: string;
   onSelect: () => void;
 }
 
@@ -120,14 +123,7 @@ export function DialogShell({
                   {cancelLabel}
                 </Button>
               )}
-              <Button
-                variant={isFilled ? (primary.isDestructive ? "destructive" : "default") : "outline"}
-                className={cn(!isFilled && "text-destructive", isPhone && "w-full")}
-                disabled={primary.isDisabled === true || primary.isPending === true}
-                onClick={primary.onSelect}
-              >
-                {primary.label}
-              </Button>
+              <PrimaryButton primary={primary} isFilled={isFilled} isPhone={isPhone} />
             </DialogFooter>
           </div>
         </DialogContent>
@@ -154,5 +150,39 @@ export function DialogShell({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+interface PrimaryButtonProps {
+  primary: DialogPrimaryAction;
+  isFilled: boolean;
+  isPhone: boolean;
+}
+
+function PrimaryButton({ primary, isFilled, isPhone }: PrimaryButtonProps) {
+  const variant = isFilled ? (primary.isDestructive ? "destructive" : "default") : "outline";
+  const className = cn(!isFilled && "text-destructive", isPhone && "w-full");
+  const isDisabled = primary.isDisabled === true || primary.isPending === true;
+
+  // A link cannot be disabled, so a disabled hand-off is a plain button.
+  if (primary.href !== undefined && !isDisabled) {
+    return (
+      <Button asChild variant={variant} className={className}>
+        <a href={primary.href} target="_blank" rel="noopener noreferrer" onClick={primary.onSelect}>
+          {primary.label}
+        </a>
+      </Button>
+    );
+  }
+
+  return (
+    <Button
+      variant={variant}
+      className={className}
+      disabled={isDisabled}
+      onClick={primary.onSelect}
+    >
+      {primary.label}
+    </Button>
   );
 }

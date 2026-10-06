@@ -18,6 +18,8 @@ export const apiRoutes = {
   proposalReview: "/proposal-review",
   proposalBulkApproval: "/proposal-review/bulk-approval",
   proposalCustodies: "/proposal-custodies",
+  messageChannels: "/message-channels",
+  messageHandOff: "/messages/hand-off",
 } as const;
 
 export function documentRoute(documentId: string): string {
