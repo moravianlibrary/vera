@@ -306,19 +306,20 @@ interface HistoryEvent {
   actor: Actor;
 }
 
-// The status log, with the asks it does not hold, newest first.
+// The status log, with the asks of a document's record that it does not hold, newest first. A
+// record that is not a document, such as a list, has only its log.
 export function HistoryCard({
   record,
   log,
   nameOf,
   isPublic,
 }: {
-  record: DocumentRecord;
+  record?: DocumentRecord;
   log: readonly StatusLogEntry[];
   nameOf: (userId: string) => string;
   isPublic: boolean;
 }) {
-  const asks: HistoryEvent[] = record.requests.map((request) => ({
+  const asks: HistoryEvent[] = (record?.requests ?? []).map((request) => ({
     key: `asked-${request.id}`,
     at: request.at,
     event: "Asked for",
@@ -333,6 +334,7 @@ export function HistoryCard({
 
   return (
     <DetailCard title={isPublic ? "What has happened" : "History"}>
+      {events.length === 0 && <Muted>Nothing recorded yet.</Muted>}
       {events.map((entry) => (
         <DetailRow
           key={entry.key}

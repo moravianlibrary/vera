@@ -97,7 +97,8 @@ export interface ViewGroupingOption<Grouping extends string> {
 }
 
 export interface ViewDefinition<Query, Grouping extends string = never> {
-  readonly view: WatchlistView;
+  // The watchlists saved over it; a view without watchlists has none.
+  readonly view?: WatchlistView;
   readonly toSearchParams: (query: Query) => URLSearchParams;
   // Unknown or malformed values are dropped, so a stale link still opens the view.
   readonly parseSearchParams: (params: URLSearchParams) => Query;

@@ -9,6 +9,7 @@ import { navigationEntries, visibleNavigation } from "@/components/layout/naviga
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DocumentsPage } from "@/features/documents/documents-page";
+import { ListsPage } from "@/features/lists/lists-page";
 import { ProposalsPage } from "@/features/proposals/proposals-page";
 import { ValidationsPage } from "@/features/validations/validations-page";
 import { useSessionQuery } from "@/hooks/use-session-query";
@@ -33,6 +34,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <ProposalsPage />;
     case "validations":
       return <ValidationsPage />;
+    case "lists":
+      return <ListsPage />;
     default:
       return <Placeholder title={label} />;
   }

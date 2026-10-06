@@ -6,6 +6,12 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- Digitization Lists, browse: the lists beside the chosen one, Planned and running by default
+  with Done and Everything behind *Show*, each row with its state, run, items, pages and how
+  much is delivered, and a line for what needs a look (past its end and not marked Done,
+  blocked since listing, review needed after scanning, empty). The pane says where the list
+  stands, planned against delivered, what is on it with each item's status and flag, and its
+  history; whoever builds lists sees how much is ready to list.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

@@ -75,6 +75,8 @@ export interface Stat {
   foot?: ReactNode;
   // A word or a badge rather than a number, set smaller.
   isText?: boolean;
+  // How far along, 0–100, as a bar under the value.
+  meter?: number;
 }
 
 export function StatTiles({ stats }: { stats: readonly Stat[] }) {
@@ -93,6 +95,14 @@ export function StatTiles({ stats }: { stats: readonly Stat[] }) {
           >
             {stat.value}
           </div>
+          {stat.meter !== undefined && (
+            <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-secondary">
+              <div
+                className="h-full bg-chart-3"
+                style={{ width: `${Math.min(100, Math.max(0, stat.meter))}%` }}
+              />
+            </div>
+          )}
           {stat.foot !== undefined && (
             <div className="mt-1 text-xs text-muted-foreground">{stat.foot}</div>
           )}
