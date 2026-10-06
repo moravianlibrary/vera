@@ -66,6 +66,13 @@ All notable changes to this project are documented here.
   Project and *Waiting since* as further filters, watchlist tabs with *Review needed*, *Page
   counts* and *Denied in review* shared. Documents' *Resolve in Documents Validations* opens the
   item there.
+- An item's pane in Documents Validations: a note on what holds it (the denial and over which
+  defects, found after digitization, accepted, or the rule that forbade it), its facts, each
+  outstanding defect with its internal text and what askers read, and a fix in place: *Enter
+  page count…*, *Correct 260$c…* or *Relink…*. A fix runs the checks again; a defect they no
+  longer find needs no verdict, and an item with nothing left says so where it was. A denied
+  item shows its defects to fix, and the defects already accepted sit in their own card with
+  who and when.
 
 ### Changed
 

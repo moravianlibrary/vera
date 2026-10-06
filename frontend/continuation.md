@@ -230,7 +230,14 @@ The foundation is in place:
   the list, one item, and `validationInvalidations` (Validations, Documents, watchlists). The
   Defect field names plugins through the `defectPlugins` reference kind, which is the name
   itself until a Plugins resource exists. Documents' *Resolve in Documents Validations* opens
-  the item (`?id=`).
+  the item (`?id=`). `validation-detail.tsx` is the pane: the review note, the facts, *Outstanding
+  — n* (Needed) or *Fix it* (Denied) built from `defect-card.tsx` (the texts and the fix in
+  place: an inline form for a page count or a field, *Relink…* through the shared dialog), the
+  accepted defects with who and when, the attempt, the catalog record and the history. An act
+  that takes the item out of the view reports it through `onLeft`, and the page shows it as the
+  pane's outcome. Relink and Reclassify are shared dialogs (`src/components/iteration-dialogs.tsx`,
+  with `FieldError`), each told what to refetch (`invalidates`) and what to do once done
+  (`onDone`).
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

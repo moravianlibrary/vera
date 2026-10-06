@@ -1,25 +1,25 @@
 // The acts on a document's record in its pane (docs/demos/shared/page-documents.js actionsOf):
 // More ▾ holds Relink catalog record, Reclassify and Set where it is available, each a form
-// dialog (component-interfaces.md §6.4) over its own endpoint. Each is offered only where the
+// dialog (component-interfaces.md §6.4) over its own endpoint; Relink and Reclassify are shared with
+// Validations (components/iteration-dialogs.tsx). Each is offered only where the
 // caller's grant reaches the current iteration's category and its state allows it; the server
 // decides again (view-rules.md §5.1).
 // TODO(rrandiak): Ask for this too and Withdraw beside the menu; Edit descriptive metadata,
 // Overrule restriction, Cancel and Resume in it; labels move to i18n.
 
-import type { ReactNode } from "react";
 import { useId, useState } from "react";
 import { z } from "zod";
-import type { Publication, Reclassification, Relink } from "@/api/iterations";
-import { publishIteration, reclassifyIteration, relinkIteration } from "@/api/iterations";
+import type { Publication } from "@/api/iterations";
+import { publishIteration } from "@/api/iterations";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
-import { CategorySelect, Field, PrioritySelect } from "@/components/classification-fields";
+import { Field } from "@/components/classification-fields";
 import { FormDialog } from "@/components/dialogs/form-dialog";
+import { FieldError, ReclassifyDialog, RelinkDialog } from "@/components/iteration-dialogs";
 import { Input } from "@/components/ui/input";
 import type { DocumentRecord } from "@/domain/documents";
 import { currentIterationOf } from "@/domain/documents";
-import type { Iteration, Priority, Session } from "@/domain/entities";
-import { prioritySchema } from "@/domain/entities";
+import type { Iteration, Session } from "@/domain/entities";
 import { isPublishable, isReclassifiable, scopeOfIteration } from "@/domain/iterations";
 import { can } from "@/domain/permissions";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
@@ -93,6 +93,7 @@ export function DocumentActions({ record, session, className }: DocumentActionsP
         onClose={close}
         title={title}
         iteration={iteration}
+        invalidates={iterationInvalidations}
         current={{
           catalogId: record.document.catalogId,
           unit: record.document.unit?.value ?? "",
@@ -104,6 +105,7 @@ export function DocumentActions({ record, session, className }: DocumentActionsP
         onClose={close}
         title={title}
         iteration={iteration}
+        invalidates={iterationInvalidations}
         session={session}
       />
       <PublishDialog
@@ -123,139 +125,6 @@ interface ActionDialogProps {
   // The document's title, which the dialog acts on.
   title: string;
   iteration: Iteration;
-}
-
-// ---------------------------------------------------------------- relink
-
-const relinkFormSchema = z.object({
-  catalogId: z.string().trim().min(1, "Enter the catalog ID"),
-  unit: z.string().trim(),
-});
-type RelinkForm = z.infer<typeof relinkFormSchema>;
-
-function RelinkDialog({
-  isOpen,
-  onClose,
-  title,
-  iteration,
-  current,
-}: ActionDialogProps & { current: RelinkForm }) {
-  const id = useId();
-  const relink = useActionMutation({
-    call: (change: Relink) => relinkIteration(iteration.id, change),
-    invalidates: iterationInvalidations,
-    refusalTexts: {
-      409: "Another document in VERA is already that record.",
-      422: "The catalog does not know that record, or it needs one of its volumes or issues.",
-    },
-  });
-
-  return (
-    <FormDialog
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Relink — ${title}`}
-      description="Link the document to another catalog record."
-      schema={relinkFormSchema}
-      defaultValues={current}
-      submitLabel="Relink"
-      onSubmit={({ catalogId, unit }) => relink.run({ catalogId, unit: unit === "" ? null : unit })}
-      render={(form) => (
-        <>
-          <Field id={`${id}-catalog`} label="Catalog ID" hint="the record in the catalog">
-            <Input
-              id={`${id}-catalog`}
-              className="font-mono"
-              placeholder="e.g. MZK01-001502234"
-              {...form.register("catalogId")}
-            />
-          </Field>
-          <FieldError message={form.formState.errors.catalogId?.message} />
-          <Field id={`${id}-unit`} label="Volume or issue" hint="for a record of several">
-            <Input id={`${id}-unit`} placeholder="e.g. roč. 12" {...form.register("unit")} />
-          </Field>
-          <p className="text-xs text-muted-foreground">
-            The document stays what it is in VERA, with its asks and its history; the history keeps
-            the record it was linked to.
-          </p>
-        </>
-      )}
-    />
-  );
-}
-
-// ---------------------------------------------------------------- reclassify
-
-function ReclassifyDialog({
-  isOpen,
-  onClose,
-  title,
-  iteration,
-  session,
-}: ActionDialogProps & { session: Session }) {
-  const id = useId();
-  const { data: categories = [] } = useCategoriesQuery();
-  const reclassify = useActionMutation({
-    call: (change: Reclassification) => reclassifyIteration(iteration.id, change),
-    invalidates: iterationInvalidations,
-    refusalTexts: {
-      403: "You may no longer reclassify it.",
-      409: "It has been scanned meanwhile; its category and priority stay.",
-      422: "Choose a category with no subcategories.",
-    },
-  });
-  const schema = z
-    .object({ categoryId: z.string().min(1, "Choose a category"), priority: prioritySchema })
-    .refine(
-      (values) =>
-        values.categoryId !== iteration.categoryId || values.priority !== iteration.priority,
-      { message: "Change the category or the priority", path: ["categoryId"] },
-    );
-
-  return (
-    <FormDialog
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Reclassify — ${title}`}
-      description="Change the category and the priority of the document's current iteration."
-      schema={schema}
-      defaultValues={{ categoryId: iteration.categoryId, priority: iteration.priority }}
-      submitLabel="Save"
-      onSubmit={(values) => reclassify.run(values)}
-      warningOf={({ categoryId }) =>
-        can(session, "iteration.classify", scopeOfIteration(categories, categoryId))
-          ? null
-          : "Outside your custody, it is handed over: it leaves your queues for whoever holds " +
-            "that category, and you cannot move it back."
-      }
-      render={(form) => (
-        <>
-          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_10rem]">
-            <Field id={`${id}-category`} label="Category">
-              <CategorySelect
-                id={`${id}-category`}
-                value={form.watch("categoryId")}
-                onChange={(categoryId) =>
-                  form.setValue("categoryId", categoryId, { shouldDirty: true })
-                }
-              />
-            </Field>
-            <Field id={`${id}-priority`} label="Priority">
-              <PrioritySelect
-                id={`${id}-priority`}
-                value={form.watch("priority")}
-                onChange={(priority: Priority) =>
-                  form.setValue("priority", priority, { shouldDirty: true })
-                }
-              />
-            </Field>
-          </div>
-          <FieldError message={form.formState.errors.categoryId?.message} />
-          <p className="text-xs text-muted-foreground">The history records the change.</p>
-        </>
-      )}
-    />
-  );
 }
 
 // ---------------------------------------------------------------- publish
@@ -311,19 +180,5 @@ function PublishDialog({ isOpen, onClose, title, iteration }: ActionDialogProps)
         </>
       )}
     />
-  );
-}
-
-// ---------------------------------------------------------------- shared
-
-function FieldError({ message }: { message: ReactNode | undefined }) {
-  if (message === undefined) {
-    return null;
-  }
-
-  return (
-    <p role="alert" className="-mt-2 text-xs text-destructive">
-      {message}
-    </p>
   );
 }

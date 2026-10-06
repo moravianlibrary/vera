@@ -6,17 +6,21 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { ClipboardCheck } from "lucide-react";
+import { useState } from "react";
+import type { ValidationDetail } from "@/api/validations";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
+import type { PaneState } from "@/components/pane-state";
 import { Pane, paneStateOf } from "@/components/pane-state";
 import { hasPermission } from "@/domain/permissions";
 import {
   useValidationQuery,
   useValidationsQuery,
 } from "@/features/validations/use-validations-query";
+import type { LeftOutcome } from "@/features/validations/validation-detail";
 import { ValidationDetailPane } from "@/features/validations/validation-detail";
 import { ValidationList } from "@/features/validations/validation-list";
 import { validationsView } from "@/features/validations/validations-view";
@@ -27,6 +31,7 @@ import { useViewUrlState } from "@/hooks/use-view-url-state";
 export function ValidationsPage() {
   const view = useViewUrlState(validationsView);
   const { query, selectedId, select } = view;
+  const [left, setLeft] = useState<LeftOutcome | null>(null);
   const { data: session } = useSessionQuery();
   const validations = useValidationsQuery(query);
   const { data: detail } = useValidationQuery(selectedId);
@@ -39,12 +44,24 @@ export function ValidationsPage() {
 
   const title =
     visibleNavigation(session).find((entry) => entry.id === "validations")?.visibleLabel ?? "";
+  // An act that took the item out of the view says so where it was, until another is opened.
+  const paneState: PaneState<ValidationDetail> =
+    detail === null && left?.iterationId === selectedId
+      ? { kind: "outcome", outcome: left }
+      : paneStateOf(selectedId, detail, "This item no longer waits here");
   const detailPane = (
     <Pane
-      state={paneStateOf(selectedId, detail, "This item no longer waits here")}
+      state={paneState}
       emptyIcon={ClipboardCheck}
       emptyText="Select an item"
-      render={(ready) => <ValidationDetailPane detail={ready} session={session} />}
+      render={(ready) => (
+        <ValidationDetailPane
+          key={ready.row.iteration.id}
+          detail={ready}
+          session={session}
+          onLeft={setLeft}
+        />
+      )}
     />
   );
 
