@@ -258,9 +258,10 @@ export const documentGroupSchema = z.discriminatedUnion("kind", [
     kind: z.literal("batch"),
     batch: batchSchema.nullable(),
     // Every document of the batch within reach, filtered or not, and how far its addition got:
-    // added (Ready or later), being added (Enqueued, a retry too) and failed. The rest are not
-    // approved yet, or never were.
+    // added (Ready or later), being added (Enqueued, a retry too), failed, and awaiting a decision
+    // (asked for, with no iteration yet). The rest were denied.
     size: z.number().int(),
+    awaiting: z.number().int(),
     added: z.number().int(),
     adding: z.number().int(),
     failed: z.number().int(),

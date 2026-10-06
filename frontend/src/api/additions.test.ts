@@ -58,7 +58,7 @@ describe("retrying a batch", () => {
     );
 
     // IT17, retried, joins the two of B-0141 still being added.
-    expect(header).toMatchObject({ failed: 0, adding: 3 });
+    expect(header).toMatchObject({ failed: 0, adding: 3, awaiting: 0 });
     expect(await statusOf(retryBatch("B-0141"))).toBe(409);
   });
 

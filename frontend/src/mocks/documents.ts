@@ -402,6 +402,9 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
   const progressOf = (record: DocumentRecord) => currentIterationOf(record)?.progress;
   const isAdding = (record: DocumentRecord) => progressOf(record) === "Enqueued";
   const isFailed = (record: DocumentRecord) => progressOf(record) === "IngestFailed";
+  const isAwaiting = (record: DocumentRecord) =>
+    currentIterationOf(record) === null &&
+    record.requests.some((request) => request.decision === "Pending");
   const isAdded = (record: DocumentRecord) => {
     const progress = progressOf(record);
     return progress !== undefined && progress !== "Enqueued" && progress !== "IngestFailed";
@@ -411,6 +414,7 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
     .map((batch) => ({
       batch,
       size: inBatch(batch.id).length,
+      awaiting: inBatch(batch.id).filter(isAwaiting).length,
       added: inBatch(batch.id).filter(isAdded).length,
       adding: inBatch(batch.id).filter(isAdding).length,
       failed: inBatch(batch.id).filter(isFailed).length,
@@ -428,6 +432,7 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
       kind: "batch",
       batch: entry?.batch ?? null,
       size: entry?.size ?? total,
+      awaiting: entry?.awaiting ?? 0,
       added: entry?.added ?? 0,
       adding: entry?.adding ?? 0,
       failed: entry?.failed ?? 0,

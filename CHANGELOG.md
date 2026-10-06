@@ -92,8 +92,8 @@ All notable changes to this project are documented here.
   keeps relative, or two days of your choice. Pages offers *Under 100*, *100–499*, *500–999*
   and *1,000 and more* before two numbers of your choice. Every screen size can edit a range,
   a phone in its filter sheet.
-- A batch's header in Documents counts how far adding it got, as *28 added · 12 being added ·
-  3 could not be added*, so a batch just retried, or just arrived, no longer reads as all
+- A batch's header in Documents counts how far adding it got, as *4 awaiting a decision · 28
+  added · 12 being added · 3 could not be added*, so a batch just retried, or just arrived, no longer reads as all
   added.
 - The mock API refuses with RFC 9457 Problem Details (`application/problem+json`), adding a
   stable `code` and, for a rejected body, the fields it got wrong. A refusal in a dialog now

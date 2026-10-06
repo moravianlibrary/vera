@@ -102,8 +102,8 @@ into `status-model.md` §2, §2.5 and §4, `document-identity.md`, `flows.md`,
 - **No editing descriptive metadata in VERA**, anywhere: `iteration.edit_descriptive`
   is gone. **Recheck** and entering a page count take `iteration.recheck`, a
   curator's within custody.
-- **A batch header counts each addition state**: *28 added · 12 being
-  added · 3 could not be added*, zero parts left out, *40 added* once all is
+- **A batch header counts each addition state**: *4 awaiting a decision ·
+  28 added · 12 being added · 3 could not be added*, zero parts left out, *40 added* once all is
   in, so a retried or new batch does not read as all added.
 - **Errors are RFC 9457 Problem Details**, with VERA's `code` (a stable key
   the frontend words and translates) and `errors` (the fields a 422
