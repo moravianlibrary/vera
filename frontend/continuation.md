@@ -88,7 +88,9 @@ The foundation is in place:
   plugins placed each fixture ask, and `houseRuleOf` for asks made since; what none placed is in
   the fallback), filtered, counted and grouped by the batch or requester of its earliest ask;
   approving creates the one iteration the oldest ask originates and the rest track, declining
-  denies every ask with one reason, bulk approve skips rescans and asks still being checked;
+  denies every ask with one reason, bulk approve (`POST /proposal-review/batches/:id/approve`)
+  takes every open row the batch asked for in reach but those unticked (`excludedIds`), skips
+  rescans and asks still being checked, and answers with what it took and left out;
   each writes the status log. `arrangement.ts` holds the grouping and slicing both lists share.
   `iterations.ts` relinks (the target must be in the mock catalog, `catalog.ts`, with its unit,
   and no other document may be it; a missing-record defect clears), reclassifies (leaf
@@ -192,8 +194,10 @@ The foundation is in place:
   Propose uses too; a note for a rescan; the decline form). An approved proposal leaves the
   list and the pane says what was decided. A copy's link is in the pane, not on the row, which
   is one button. A batch's header carries "Approve N…", which opens `bulk-approve-dialog.tsx`
-  over every open row the batch asked for (one slice of at most 200; a larger harvest needs
-  approving by batch on the server). Beside the pane's heading, *Message askers…* opens the
+  on `DialogShell` over every open row the batch asked for, loaded a slice at a time as it
+  scrolls, the left out in place with why; the server approves the batch whole, so a harvest
+  of any size is one call, and the result screen (`cancelLabel={null}`) says what moved and
+  what stays. Beside the pane's heading, *Message askers…* opens the
   Message dialog over the proposal. Its advanced field is *Asked* (`asked=from..to` on
   `/proposal-review`), the day any of the row's asks was made.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,

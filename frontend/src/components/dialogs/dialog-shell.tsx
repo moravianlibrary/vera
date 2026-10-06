@@ -55,7 +55,8 @@ export interface DialogShellProps {
   // While true, closing asks "Discard changes?" first.
   isDirty?: boolean;
   primary: DialogPrimaryAction;
-  cancelLabel?: string;
+  // Null on a result screen, where the primary is the only way on ("Done").
+  cancelLabel?: string | null;
   refusal?: Refusal | null;
   children: ReactNode;
 }
@@ -118,7 +119,7 @@ export function DialogShell({
             )}
 
             <DialogFooter className={cn(isPhone && "flex-col")}>
-              {!isPhone && (
+              {!isPhone && cancelLabel !== null && (
                 <Button variant="outline" onClick={requestClose} disabled={primary.isPending}>
                   {cancelLabel}
                 </Button>

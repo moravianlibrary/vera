@@ -8,7 +8,12 @@ import { z } from "zod";
 import type { Answer } from "@/api/documents";
 import { answerSchema } from "@/api/documents";
 import { findJson, getJson, postJson } from "@/api/http";
-import { apiRoutes, proposalDecisionRoute, proposalReviewRoute } from "@/api/routes";
+import {
+  apiRoutes,
+  proposalBulkApprovalRoute,
+  proposalDecisionRoute,
+  proposalReviewRoute,
+} from "@/api/routes";
 import type { ExistingCopyState } from "@/domain/documents";
 import { existingCopyStateSchema } from "@/domain/documents";
 import type { DocumentType, ProposalCustody } from "@/domain/entities";
@@ -261,10 +266,13 @@ export const declineSchema = z.object({
 });
 export type Decline = z.infer<typeof declineSchema>;
 
+// A batch is approved on the server, however many it asked for (a harvest may bring thousands):
+// the dialog names the batch and what was unticked, never the documents it takes.
 export const bulkApprovalSchema = z.object({
-  documentIds: z.array(idValueSchema).min(1),
   categoryId: idValueSchema,
   priority: prioritySchema,
+  // Unticked, to be decided on their own.
+  excludedIds: z.array(idValueSchema),
 });
 export type BulkApproval = z.infer<typeof bulkApprovalSchema>;
 
@@ -276,12 +284,11 @@ export const decisionResultSchema = z.object({
 });
 export type DecisionResult = z.infer<typeof decisionResultSchema>;
 
-// A bulk approve leaves out what needs deciding on its own, and says why.
-export const bulkSkipReasons = ["rescan", "beingChecked", "decided", "outOfReach"] as const;
-
+// What the bulk approve took, and what it left to be decided on its own, counted when it ran.
 export const bulkApprovalResultSchema = z.object({
-  approvedIds: z.array(z.string()),
-  skipped: z.array(z.object({ documentId: z.string(), reason: z.enum(bulkSkipReasons) })),
+  approvedCount: z.number().int(),
+  rescanCount: z.number().int(),
+  checkingCount: z.number().int(),
 });
 export type BulkApprovalResult = z.infer<typeof bulkApprovalResultSchema>;
 
@@ -329,8 +336,11 @@ export async function declineProposal(
   return postJson(proposalDecisionRoute(documentId, "decline"), decline, decisionResultSchema);
 }
 
-export async function bulkApproveProposals(approval: BulkApproval): Promise<BulkApprovalResult> {
-  return postJson(apiRoutes.proposalBulkApproval, approval, bulkApprovalResultSchema);
+export async function bulkApproveProposals(
+  batchId: string,
+  approval: BulkApproval,
+): Promise<BulkApprovalResult> {
+  return postJson(proposalBulkApprovalRoute(batchId), approval, bulkApprovalResultSchema);
 }
 
 export async function listProposalCustodies(): Promise<ProposalCustody[]> {

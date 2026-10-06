@@ -4,13 +4,7 @@
 
 import { skipToken, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Approval, ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
-import {
-  approveProposal,
-  bulkApproveProposals,
-  findProposal,
-  listProposals,
-  maximumProposalSliceSize,
-} from "@/api/proposal-review";
+import { approveProposal, findProposal, listProposals } from "@/api/proposal-review";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { usePagedList } from "@/hooks/use-paged-list";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
@@ -23,14 +17,13 @@ export function useProposalsQuery(query: ProposalQuery, grouping: ProposalGroupi
   );
 }
 
-// Every open proposal a batch asked for, in one slice, for approving the batch at once.
-// TODO(rrandiak): a batch beyond one slice (a harvest of thousands) needs the server to approve
-// by batch rather than by listed documents.
+// Every open proposal a batch asked for, wherever its earliest ask was, a slice at a time: the
+// bulk approve lists them to be unticked, and the server takes the batch whole.
 export function useBatchProposalsQuery(batchId: string) {
-  return useQuery({
-    queryKey: [...proposalsQueryKey, "batch", batchId],
-    queryFn: () => listProposals({ batchIds: [batchId] }, { limit: maximumProposalSliceSize }),
-  });
+  const query: ProposalQuery = { batchIds: [batchId], decisions: ["Pending"] };
+  return usePagedList([...proposalsQueryKey, "batch", batchId], (cursor) =>
+    listProposals(query, { cursor }),
+  );
 }
 
 export function useProposalQuery(documentId: string | null) {
@@ -59,6 +52,5 @@ export function useDecisionMutations() {
         approveProposal(documentId, approval),
       onSuccess,
     }),
-    bulkApprove: useMutation({ mutationFn: bulkApproveProposals, onSuccess }),
   };
 }

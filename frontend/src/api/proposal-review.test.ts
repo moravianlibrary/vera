@@ -15,10 +15,14 @@ import {
   findProposal,
   isSameProposalQuery,
   listProposals,
+  maximumProposalSliceSize,
   parseProposalSearchParams,
   toProposalSearchParams,
 } from "@/api/proposal-review";
 import type { MockUserProfile } from "@/config/env";
+import { database } from "@/mocks/database";
+import { documents } from "@/mocks/fixtures/documents";
+import { requests } from "@/mocks/fixtures/requests";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
@@ -37,6 +41,30 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
     return null;
   } catch (error) {
     return error instanceof ApiError ? error.status : null;
+  }
+}
+
+// A harvest of `size` open proposals in a batch of its own, each a copy of D25's ask, which its
+// custody placement follows.
+function harvest(batchId: string, size: number): void {
+  // The fixtures as they were, before any test decided them.
+  const document = documents.find(({ id }) => id === "D25");
+  const ask = requests.find(({ id }) => id === "R28");
+  if (document === undefined || ask === undefined) {
+    throw new Error("D25 and its ask R28 are fixtures");
+  }
+
+  database.batches.push({
+    id: batchId,
+    name: "ISSN harvest",
+    via: "harvest",
+    submittedBy: "a2",
+    submittedAt: "2026-06-25T06:00:00Z",
+  });
+  for (let index = 1; index <= size; index += 1) {
+    const documentId = `D25.${9000 + index}`;
+    database.documents.push({ ...document, id: documentId });
+    database.requests.push({ ...ask, id: `R28.${9000 + index}`, documentId, batchId });
   }
 }
 
@@ -196,17 +224,49 @@ describe("deciding", () => {
     expect(await documentIdsOf({ decisions: ["Denied"] })).toContain("D33");
   });
 
-  it("bulk approves what it may and leaves a rescan to be decided on its own", async () => {
+  it("bulk approves the batch but what was unticked, and leaves a rescan on its own", async () => {
     signInAs("admin");
+    const classification = { categoryId: "c22", priority: "Normal" } as const;
 
-    const result = await bulkApproveProposals({
-      documentIds: ["D25", "D26", "D27", "D28"],
+    const result = await bulkApproveProposals("B-0143", {
+      ...classification,
+      excludedIds: ["D26"],
+    });
+    const open = await documentIdsOf({ batchIds: ["B-0143"], decisions: ["Pending"] });
+
+    expect(result).toEqual({ approvedCount: 2, rescanCount: 1, checkingCount: 0 });
+    expect(open.toSorted()).toEqual(["D26", "D27"]); // unticked, and the rescan
+    expect(
+      await bulkApproveProposals("B-0143", { ...classification, excludedIds: [] }),
+    ).toMatchObject({ approvedCount: 1 });
+    expect(
+      await statusOf(bulkApproveProposals("B-0143", { ...classification, excludedIds: [] })),
+    ).toBe(409);
+  });
+
+  it("approves a batch of any size, beyond what one slice lists", async () => {
+    signInAs("admin");
+    const harvestSize = maximumProposalSliceSize + 50;
+    harvest("B-HARVEST", harvestSize);
+
+    const result = await bulkApproveProposals("B-HARVEST", {
       categoryId: "c22",
-      priority: "Normal",
+      priority: "Low",
+      excludedIds: [],
     });
 
-    expect(result.approvedIds).toEqual(["D25", "D26", "D28"]);
-    expect(result.skipped).toEqual([{ documentId: "D27", reason: "rescan" }]);
+    expect(result.approvedCount).toBe(harvestSize);
+    expect(await documentIdsOf({ batchIds: ["B-HARVEST"], decisions: ["Pending"] })).toEqual([]);
+  });
+
+  it("refuses an unknown batch", async () => {
+    signInAs("admin");
+
+    expect(
+      await statusOf(
+        bulkApproveProposals("B-9999", { categoryId: "c22", priority: "Low", excludedIds: [] }),
+      ),
+    ).toBe(404);
   });
 
   it("refuses a curator a proposal outside their proposal custody", async () => {

@@ -483,37 +483,45 @@ export function declineProposal(
   return { value: { documentId, decision: "Denied", askCount: asksOf(row).length } };
 }
 
-// Takes what may be approved together and says why it left out the rest: a rescan or an ask
-// still being checked is decided on its own (status-model.md §2.8).
+// Takes every open row the batch asked for that may be approved together, wherever its earliest
+// ask was, but those unticked; a rescan or an ask still being checked is decided on its own
+// (status-model.md §2.8), and is counted as left out.
 export function bulkApproveProposals(
   session: Session,
+  batchId: string,
   bulk: BulkApproval,
 ): Outcome<BulkApprovalResult> {
+  if (!database.batches.some((batch) => batch.id === batchId)) {
+    return { refusal: { status: 404, message: "No such batch" } };
+  }
+
   const refusal = leafCategoryRefusal(bulk.categoryId);
   if (refusal !== null) {
     return { refusal };
   }
 
-  const result: BulkApprovalResult = { approvedIds: [], skipped: [] };
-  for (const documentId of new Set(bulk.documentIds)) {
-    const found = openRowFor(session, documentId);
-    if ("refusal" in found) {
-      const reason = found.refusal.status === 409 ? "decided" : "outOfReach";
-      result.skipped.push({ documentId, reason });
-      continue;
-    }
-
-    const row = found.value;
-    if (!isBulkApprovable(row)) {
-      result.skipped.push({ documentId, reason: isRescan(row) ? "rescan" : "beingChecked" });
-      continue;
-    }
-
-    approveRow(session, row, { ...bulk, rescanNote: null });
-    result.approvedIds.push(documentId);
+  const open = reachableRows(session).filter(
+    (row) => row.decision === "Pending" && batchIdsOf(row).includes(batchId),
+  );
+  const excludedIds = new Set(bulk.excludedIds);
+  const taken = open.filter(
+    (row) => isBulkApprovable(row) && !excludedIds.has(row.record.document.id),
+  );
+  if (taken.length === 0) {
+    return { refusal: { status: 409, message: "Nothing in this batch is left to approve" } };
   }
 
-  return { value: result };
+  for (const row of taken) {
+    approveRow(session, row, { ...bulk, rescanNote: null });
+  }
+
+  return {
+    value: {
+      approvedCount: taken.length,
+      rescanCount: open.filter(isRescan).length,
+      checkingCount: open.filter((row) => !isRescan(row) && isBeingChecked(row)).length,
+    },
+  };
 }
 
 // One iteration for the document: the oldest ask originates it and its project funds it; every

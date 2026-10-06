@@ -224,19 +224,22 @@ export function createHandlers(profile: MockUserProfile) {
       );
     }),
 
-    http.post(route(apiRoutes.proposalBulkApproval), async ({ request }) => {
-      const session = currentSession();
-      if (!canDecide(session)) {
-        return mayNotDecide();
-      }
+    http.post(
+      route(`${apiRoutes.proposalReview}/batches/:batchId/approve`),
+      async ({ params, request }) => {
+        const session = currentSession();
+        if (!canDecide(session)) {
+          return mayNotDecide();
+        }
 
-      const bulk = bulkApprovalSchema.safeParse(await request.json());
-      if (!bulk.success) {
-        return HttpResponse.json({ message: bulk.error.message }, { status: 422 });
-      }
+        const bulk = bulkApprovalSchema.safeParse(await request.json());
+        if (!bulk.success) {
+          return HttpResponse.json({ message: bulk.error.message }, { status: 422 });
+        }
 
-      return outcomeResponse(bulkApproveProposals(session, bulk.data));
-    }),
+        return outcomeResponse(bulkApproveProposals(session, String(params.batchId), bulk.data));
+      },
+    ),
 
     http.get(route(`${apiRoutes.proposalReview}/:documentId`), ({ params }) => {
       const session = currentSession();

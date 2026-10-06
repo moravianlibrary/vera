@@ -81,6 +81,10 @@ All notable changes to this project are documented here.
   are under "…", and an irreversible action is never the filled button on a phone.
 
 - The page header no longer repeats the list's count under the title.
+- Bulk approve takes the whole batch on the server, however many it asked for, but what was
+  unticked: its dialog loads the batch as it scrolls, lists rescans and items still being
+  checked in place as left out, fills the screen on a phone and says on its result what moved
+  to Documents and what stays.
 
 ## [0.1.0] - 2026-10-02
 

@@ -44,7 +44,7 @@ green after every extraction.
 3. The *Pages* and *Asked* advanced fields with the date-range field; the
    phone filter sheet.
 
-## 2. Proposals
+## 2. Proposals — done
 
 1. The shared Message dialog and *Message askers…*.
 2. The *Asked* filter.

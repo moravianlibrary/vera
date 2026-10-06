@@ -16,7 +16,6 @@ export const apiRoutes = {
   proposalLookup: "/proposals/lookup",
   proposals: "/proposals",
   proposalReview: "/proposal-review",
-  proposalBulkApproval: "/proposal-review/bulk-approval",
   proposalCustodies: "/proposal-custodies",
   messageChannels: "/message-channels",
   messageHandOff: "/messages/hand-off",
@@ -36,6 +35,11 @@ export function proposalReviewRoute(documentId: string): string {
 
 export function proposalDecisionRoute(documentId: string, decision: "approve" | "decline"): string {
   return `${proposalReviewRoute(documentId)}/${decision}`;
+}
+
+// Everything open a batch asked for, approved at once (status-model.md §2.8).
+export function proposalBulkApprovalRoute(batchId: string): string {
+  return `${apiRoutes.proposalReview}/batches/${encodeURIComponent(batchId)}/approve`;
 }
 
 // What may be done to an iteration from the Documents pane: each is its own action, so the server
