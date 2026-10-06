@@ -7,6 +7,11 @@ The parts are those in `component-inventory.md` and their draft props in
 
 How a step is carried out, commit by commit, is `step-guide.md`.
 
+A step is one session. Steps 4, 6 and 7 are larger than one session's
+work, so each is split in two sessions at the line marked *Session break*.
+Step 6 builds on step 4's editor, and step 9 reuses step 7's set editor, so
+those pairs keep their order.
+
 **For every commit:**
 - **Checks:** tsc, vitest, and Biome on the changed files only.
 - **Screenshots:** Playwright at 1440×900, 1700×950 and 393×852.
@@ -64,6 +69,9 @@ green after every extraction.
 1. Mock API: lists, members, the pool of what is ready, derived state.
 2. Browse as master–detail, with the pane.
 3. Selectable rows, drafts and the two-pane editor for new and edit.
+
+*Session break.*
+
 4. Generate… (stepped), and its report.
 5. Mark Done and Delete (consequence dialogs); per item, Cancel and Could not
    be digitized.
@@ -79,6 +87,9 @@ green after every extraction.
 
 1. Mock API: the counting rules, and tracking another intention's mix.
 2. The Targets and Tracking columns of cards, with PaceBars and MixBars.
+
+*Session break.*
+
 3. The editor (*Track* or *Own mix*), and repeats.
 4. The correcting list, which hands its allocation to the Lists editor.
 
@@ -86,6 +97,9 @@ green after every extraction.
 
 1. Mock API: the tree, shares, custody.
 2. Tree + detail, with the Show picker and the intention picker (`?i=`).
+
+*Session break.*
+
 3. The Proportions set editor, which says what reaches the trackers.
 4. Custody grants, Edit, New and Delete; the Refine wizard in the pane.
 

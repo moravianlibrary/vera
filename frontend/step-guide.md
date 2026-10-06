@@ -2,8 +2,9 @@
 
 How one step of `plan.md` is done. The steps from 1 on are done one at a
 time in the main session, with no subagents (decided 2026-10-06: subagents
-spent far more tokens than they saved). One session does exactly one step,
-then stops; the user compacts the conversation and asks for the next. So
+spent far more tokens than they saved). One session does exactly one step
+(or one half of a step split by a *Session break* in `plan.md`), then
+stops; the user compacts the conversation and asks for the next. So
 every step starts from this repository and a compacted summary, and this page
 is what it needs before it starts. The step's commits are listed in
 `plan.md`.
