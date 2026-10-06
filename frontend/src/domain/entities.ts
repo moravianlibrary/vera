@@ -226,12 +226,18 @@ export const defectSchema = z.object({
 });
 export type Defect = z.infer<typeof defectSchema>;
 
-// Append-only: a verdict covers exactly the defect keys ruled on in one act.
+// Append-only: a verdict covers exactly the defect keys ruled on in one act. A revocation takes
+// back the acceptances it names, as a row of its own, so the table is never rewritten.
+// TODO(rrandiak): status-model.md §2 lists only Approved and Denied; confirm Revoked as a row.
+export const verdicts = ["Approved", "Denied", "Revoked"] as const;
 export const validationVerdictSchema = z.object({
   defectKeys: z.array(z.string()).min(1),
-  verdict: z.enum(["Approved", "Denied"]),
+  verdict: z.enum(verdicts),
   ...actedBy,
+  // Internal: why, for staff.
   note: z.string(),
+  // What every asker reads about a denial; null for the other verdicts.
+  publicText: z.string().nullable(),
 });
 export type ValidationVerdict = z.infer<typeof validationVerdictSchema>;
 
@@ -356,7 +362,7 @@ export type StatusLogEntry = z.infer<typeof statusLogEntrySchema>;
 
 // ---------------------------------------------------------------- watchlists
 
-export const watchlistViewSchema = z.enum(["documents", "proposals"]);
+export const watchlistViewSchema = z.enum(["documents", "proposals", "validations"]);
 export type WatchlistView = z.infer<typeof watchlistViewSchema>;
 
 // Personal is the owner's own lens; shared is one everybody who opens the view sees, and only

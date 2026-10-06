@@ -99,9 +99,29 @@ The foundation is in place:
   `additions.ts` retries a batch's failed additions (`POST /batches/:id/retry`, `addition.retry`
   only): each goes back to Enqueued with its attempt counted and the last error kept, logged
   as "Ingest retried"; the batch header's *Retry failed* calls it (`src/api/additions.ts`).
+  `validations.ts` is Documents Validations (`GET /validations`, `/validations/:id`): one row
+  per current iteration a defect holds or a rule forbade (`src/domain/validations.ts`: the review
+  state *Needed · Denied · Approved · Forbidden*, a forbidden item filed apart whatever its
+  defects, a cancelled one out; how long it has waited; the defects still to rule on; the fix a
+  defect asks for), kept to the caller's category custody (`validation.*` at `custody` reaches the
+  subtree of the categories they hold, at `any` everything), filtered by review, category
+  (subtree), the plugin of a defect still to rule on, priority, project and the day it started
+  waiting (`since=from..to`), counted, sorted needs-review first, most urgent, longest waiting.
+  The verdicts (`POST /validations/:id/accept|deny|revoke`, each its own permission) append one
+  row naming the keys they cover; accept and deny take only the outstanding set as it is now (409
+  otherwise) and refuse a forbidden item, deny keeps what every asker reads, revoke appends a
+  *Revoked* row that takes the acceptances back (`approvedKeysOf` in `src/domain/status.ts`, the
+  later row winning). `iterations.ts` also enters a counted page count
+  (`/iterations/:id/page-count`, the manual source) and corrects a field
+  (`/iterations/:id/field`), each a fix that re-runs the mock's checks (every defect on that
+  subject clears) and refused once scanned, and cancels (`/iterations/:id/cancel`, held where it
+  is). Every verdict and fix moves progress as the gates say (`progressAfterGates` in
+  `src/domain/iterations.ts`, V14: Enqueued to Ready once clear, Ready back to Enqueued when a
+  gate fails) and says so in its log entry.
   `mutations.ts` holds what the actions share: `Outcome`/`Refusal`, `writeLog`,
-  `replaceIteration` and the leaf-category check.
-  `fixtures/watchlists.ts` seeds three shared ones and a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
+  `replaceIteration`, the leaf-category check and `progressNote`.
+  `fixtures/watchlists.ts` seeds shared ones per view (Validations: *Review needed*, *Page
+  counts*, *Denied in review*) and a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
   repeats the fixture documents through `src/mocks/volume.ts`, to try lists at volume. `createHandlers(profile)` serves it over MSW.
 - A list view declares itself once (`src/lib/view-definition.ts`, `ViewDefinition`): its filter
   in the URL, the watchlist comparer and its groupings (`features/documents/documents-view.ts`,

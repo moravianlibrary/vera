@@ -1,11 +1,11 @@
 // What may be done to an iteration, by its state rather than by who asks: the server refuses the
-// rest, and the Documents pane leaves it out. Who may is a grant's scope against the iteration's
+// rest, and the Documents and Validations panes leave it out. Who may is a grant's scope against the iteration's
 // category path (permissions.md §2), which `scopeOfIteration` gives `can()`.
 
 import { categoryLineageOf } from "@/domain/categories";
-import type { Category, Iteration } from "@/domain/entities";
+import type { Category, Iteration, Progress } from "@/domain/entities";
 import type { ScopedRecord } from "@/domain/permissions";
-import { isProgressAtLeast } from "@/domain/status";
+import { isProgressAtLeast, isRestricted, validationOf } from "@/domain/status";
 
 // Category and priority change until the scan exists (flows.md V13).
 export function isReclassifiable(iteration: Iteration): boolean {
@@ -15,6 +15,30 @@ export function isReclassifiable(iteration: Iteration): boolean {
 // Only a scan can be somewhere to read; setting the link is what makes it Published (P1).
 export function isPublishable(iteration: Iteration): boolean {
   return isProgressAtLeast(iteration.progress, "Digitized");
+}
+
+// Held at the gate rather than moved, and only before the scan exists (status-model.md §2.5).
+export function isCancellable(iteration: Iteration): boolean {
+  return iteration.cancellation === null && !isProgressAtLeast(iteration.progress, "Digitized");
+}
+
+// Where a verdict or a fix leaves progress: Ready only while the restriction and validation gates
+// pass, back to Enqueued when one fails after Ready, and returning when it clears (flows.md V14).
+// A cancellation holds an item where it is rather than moving it; an item on a list stays there,
+// flagged; nothing moves a scan back.
+export function progressAfterGates(iteration: Iteration): Progress {
+  const validation = validationOf(iteration);
+  const isClear =
+    !isRestricted(iteration) && (validation === "NotRequired" || validation === "Approved");
+  if (iteration.progress === "Enqueued" && isClear && iteration.cancellation === null) {
+    return "Ready";
+  }
+
+  if (iteration.progress === "Ready" && !isClear) {
+    return "Enqueued";
+  }
+
+  return iteration.progress;
 }
 
 export function scopeOfIteration(

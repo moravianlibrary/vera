@@ -31,3 +31,16 @@ export function leafCategoryRefusal(categoryId: string): Refusal | null {
 
   return null;
 }
+
+// Said in the entry of the act that moved progress, since the move is that act's effect
+// (status-log.md: causes, not derivations).
+export function progressNote(
+  before: Iteration["progress"],
+  after: Iteration["progress"],
+): string | null {
+  if (before === after) {
+    return null;
+  }
+
+  return after === "Ready" ? "Every gate passes: Ready." : `Back to ${after}: a gate holds it.`;
+}

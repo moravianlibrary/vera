@@ -1,30 +1,48 @@
-// What the server does when someone changes a document's current iteration from the Documents
-// pane: relink it to another catalog record (S3, flows.md G3), reclassify it (C6, V13) or set
-// where its scan is available (P1). Each checks its permission against the iteration's category,
-// refuses what the iteration's state does not allow, and writes the status log.
+// What the server does when someone changes a document's current iteration from the Documents or
+// Validations pane: relink it to another catalog record (S3, flows.md G3), reclassify it (C6,
+// V13), set where its scan is available (P1), enter its page count or correct a field (the fixes
+// in place of C3) and cancel it. Each checks its permission against the iteration's category,
+// refuses what the iteration's state does not allow, and writes the status log. A fix runs the
+// checks again; a defect they no longer find needs no verdict, and the gates move progress
+// (flows.md V14).
 
 import type {
+  CancellationRequest,
+  CancellationResult,
+  FieldCorrection,
+  PageCount,
   Publication,
   PublicationResult,
+  RecheckResult,
   Reclassification,
   ReclassificationResult,
   Relink,
   RelinkResult,
 } from "@/api/iterations";
 import { categoryPathOf } from "@/domain/categories";
-import { documentIdentifierOf } from "@/domain/documents";
+import { documentIdentifierOf, followedIterationId } from "@/domain/documents";
 import type { Document, Iteration, Session } from "@/domain/entities";
-import { isPublishable, isReclassifiable, scopeOfIteration } from "@/domain/iterations";
+import {
+  isCancellable,
+  isPublishable,
+  isReclassifiable,
+  progressAfterGates,
+  scopeOfIteration,
+} from "@/domain/iterations";
 import type { Permission } from "@/domain/permissions";
 import { can } from "@/domain/permissions";
+import {
+  defectNameOf,
+  isFoundAfterScan,
+  pagesSubject,
+  recordSubject,
+  reviewStateOf,
+} from "@/domain/validations";
 import { findDocumentByIdentity, knownCatalogRecords, unitTypeOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import type { Outcome } from "@/mocks/mutations";
-import { leafCategoryRefusal, replaceIteration, writeLog } from "@/mocks/mutations";
-
-// The defect a missing catalog record raises; relinking to a record the catalog knows clears it.
-const catalogRecordSubject = "record";
+import { leafCategoryRefusal, progressNote, replaceIteration, writeLog } from "@/mocks/mutations";
 
 export function relinkIteration(
   session: Session,
@@ -75,11 +93,10 @@ export function relinkIteration(
   };
   replaceDocument(relinked);
   // The re-check finds the record now, so its defect goes; the other checks keep theirs.
-  const hadNoRecord = iteration.defects.some((defect) => defect.subject === catalogRecordSubject);
-  replaceIteration({
-    ...iteration,
-    defects: iteration.defects.filter((defect) => defect.subject !== catalogRecordSubject),
-  });
+  const hadNoRecord = iteration.defects.some((defect) => defect.subject === recordSubject);
+  const rechecked = recheck(iteration, recordSubject);
+  const progress = progressAfterGates(rechecked);
+  replaceIteration({ ...rechecked, progress });
   writeLog({
     subjectKind: "iteration",
     subjectId: iteration.id,
@@ -90,6 +107,7 @@ export function relinkIteration(
     detail: [
       `From ${documentIdentifierOf(document)} to ${documentIdentifierOf(relinked)}.`,
       hadNoRecord ? "The catalog record is found again." : null,
+      progressNote(iteration.progress, progress),
     ]
       .filter((sentence) => sentence !== null)
       .join(" "),
@@ -189,6 +207,183 @@ export function publishIteration(
   return { value: { publishedLink: publication.link, progress: "Published" } };
 }
 
+// ---------------------------------------------------------------- fixes in place
+
+// A counted page count goes in as the manual source, above the catalog and the predictor.
+export function enterPageCount(
+  session: Session,
+  iterationId: string,
+  pageCount: PageCount,
+): Outcome<RecheckResult> {
+  const found = fixableIteration(session, iterationId, "iteration.edit_descriptive");
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const { iteration, document } = found.value;
+  const now = new Date().toISOString();
+  replaceDocument({
+    ...document,
+    pageSources: [
+      ...document.pageSources.filter((source) => source.source !== "manual"),
+      {
+        source: "manual",
+        tier: manualPageTier,
+        value: pageCount.pages,
+        observedAt: now,
+        setBy: session.user.id,
+      },
+    ],
+  });
+
+  return {
+    value: applyRecheck(session, iteration, pagesSubject, {
+      event: "Page count entered",
+      detail: `${pageCount.pages.toLocaleString("en-GB")} pages, counted.`,
+    }),
+  };
+}
+
+// The manual source's tier in document-properties.md §4, as the fixtures carry it.
+const manualPageTier = 100;
+
+// A field of the record corrected in VERA. The mock keeps only the history of it.
+// TODO(rrandiak): where a corrected field lives once descriptive metadata is modelled.
+export function correctField(
+  session: Session,
+  iterationId: string,
+  correction: FieldCorrection,
+): Outcome<RecheckResult> {
+  const found = fixableIteration(session, iterationId, "iteration.edit_descriptive");
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const { iteration } = found.value;
+  const { subject, value } = correction;
+  const isOwnFix = subject === pagesSubject || subject === recordSubject;
+  if (isOwnFix || !iteration.defects.some((defect) => defect.subject === subject)) {
+    return { refusal: { status: 422, message: `No defect asks for ${subject} to be corrected` } };
+  }
+
+  return {
+    value: applyRecheck(session, iteration, subject, {
+      event: `Corrected ${subject}`,
+      detail: `Now “${value}”, in VERA.`,
+    }),
+  };
+}
+
+// The iteration a fix may be made to: not once scanned, since then the fix goes to the catalog
+// record and progress never moves back (C10).
+function fixableIteration(
+  session: Session,
+  iterationId: string,
+  permission: Permission,
+): Outcome<Actionable> {
+  const found = actionableIteration(session, iterationId, permission);
+  if ("refusal" in found) {
+    return found;
+  }
+
+  if (isFoundAfterScan(found.value.iteration)) {
+    return { refusal: { status: 409, message: "It is scanned; fix the catalog record instead" } };
+  }
+
+  return found;
+}
+
+// The mock's check run: a fix to a subject clears every defect found on it. A real run asks the
+// plugins again and may find the same defect, or a new one.
+function recheck(iteration: Iteration, subject: string): Iteration {
+  return {
+    ...iteration,
+    defects: iteration.defects.filter((defect) => defect.subject !== subject),
+  };
+}
+
+function applyRecheck(
+  session: Session,
+  iteration: Iteration,
+  subject: string,
+  entry: { event: string; detail: string },
+): RecheckResult {
+  const rechecked = recheck(iteration, subject);
+  const progress = progressAfterGates(rechecked);
+  replaceIteration({ ...rechecked, progress });
+  const cleared = iteration.defects.filter((defect) => defect.subject === subject);
+  writeLog({
+    subjectKind: "iteration",
+    subjectId: iteration.id,
+    at: new Date().toISOString(),
+    actor: { kind: "user", userId: session.user.id },
+    correlationId: crypto.randomUUID(),
+    event: entry.event,
+    detail: [
+      entry.detail,
+      cleared.length === 0
+        ? null
+        : `The checks no longer find ${cleared.map(defectNameOf).join(", ")}.`,
+      progressNote(iteration.progress, progress),
+    ]
+      .filter((sentence) => sentence !== null)
+      .join(" "),
+  });
+
+  return {
+    clearedKeys: cleared.map((defect) => defect.key),
+    review: reviewStateOf({ ...rechecked, progress }),
+    progress,
+  };
+}
+
+// ---------------------------------------------------------------- cancel
+
+// Held at the gate, not moved: progress stays, and Resume in Documents lets it through again.
+export function cancelIteration(
+  session: Session,
+  iterationId: string,
+  cancellation: CancellationRequest,
+): Outcome<CancellationResult> {
+  const found = actionableIteration(session, iterationId, "iteration.cancel");
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const { iteration } = found.value;
+  if (!isCancellable(iteration)) {
+    return { refusal: { status: 409, message: "It is already held, or already scanned" } };
+  }
+
+  const now = new Date().toISOString();
+  replaceIteration({
+    ...iteration,
+    cancellation: {
+      cause: "Decided",
+      actorId: session.user.id,
+      at: now,
+      publicText: cancellation.publicText,
+      internalText: cancellation.internalText,
+    },
+  });
+  writeLog({
+    subjectKind: "iteration",
+    subjectId: iteration.id,
+    at: now,
+    actor: { kind: "user", userId: session.user.id },
+    correlationId: crypto.randomUUID(),
+    event: "Cancelled",
+    detail: [`They were told: “${cancellation.publicText}”`, cancellation.internalText]
+      .filter((sentence) => sentence !== null)
+      .join(" "),
+  });
+
+  const askerIds = database.requests
+    .filter((request) => followedIterationId(request) === iteration.id)
+    .map((request) => request.requesterId);
+  return { value: { progress: iteration.progress, askerCount: new Set(askerIds).size } };
+}
+
 // ---------------------------------------------------------------- shared
 
 interface Actionable {
@@ -197,7 +392,7 @@ interface Actionable {
 }
 
 // The document's current iteration within the caller's reach, and the grant to act on it.
-function actionableIteration(
+export function actionableIteration(
   session: Session,
   iterationId: string,
   permission: Permission,

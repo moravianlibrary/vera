@@ -2,6 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import type { Iteration } from "@/domain/entities";
+import { progressAfterGates } from "@/domain/iterations";
 import {
   iterationStatusOf,
   outstandingDefects,
@@ -35,6 +36,27 @@ describe("validationOf", () => {
 
     expect(validationOf(changedUpstream)).toBe("Needed");
     expect(outstanding.map((defect) => defect.key)).toEqual(["CatalogValidity:R07:260$c"]); // only D \ A
+  });
+
+  it("needs review again once an acceptance is revoked, the table only appended to", () => {
+    const accepted = iteration("IT3");
+    const revoked: Iteration = {
+      ...accepted,
+      verdicts: [
+        ...accepted.verdicts,
+        {
+          defectKeys: ["PageCount:R02:pages"],
+          verdict: "Revoked",
+          actorId: "u1",
+          at: "2026-06-24T09:00:00Z",
+          note: "",
+          publicText: null,
+        },
+      ],
+    };
+
+    expect(validationOf(revoked)).toBe("Needed");
+    expect(progressAfterGates(revoked)).toBe("Enqueued"); // fails a gate after Ready (V14)
   });
 });
 

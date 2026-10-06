@@ -56,25 +56,42 @@ export function validationOf(iteration: Iteration): Validation {
     return "NotRequired";
   }
 
-  const deniedKeys = keysWithVerdict(iteration, "Denied");
+  const deniedKeys = deniedKeysOf(iteration);
   if (defectKeys.some((key) => deniedKeys.has(key))) {
     return "Denied";
   }
 
-  const approvedKeys = keysWithVerdict(iteration, "Approved");
+  const approvedKeys = approvedKeysOf(iteration);
   return defectKeys.every((key) => approvedKeys.has(key)) ? "Approved" : "Needed";
 }
 
 // What a curator is shown: D \ A, never what was already accepted.
 export function outstandingDefects(iteration: Iteration): Iteration["defects"] {
-  const approvedKeys = keysWithVerdict(iteration, "Approved");
+  const approvedKeys = approvedKeysOf(iteration);
   return iteration.defects.filter((defect) => !approvedKeys.has(defect.key));
 }
 
-function keysWithVerdict(iteration: Iteration, verdict: "Approved" | "Denied"): Set<string> {
+// A: the keys accepted and not revoked since. The table is append-only, so the later row wins.
+export function approvedKeysOf(iteration: Iteration): Set<string> {
+  const approved = new Set<string>();
+  for (const entry of iteration.verdicts) {
+    for (const key of entry.defectKeys) {
+      if (entry.verdict === "Approved") {
+        approved.add(key);
+      } else if (entry.verdict === "Revoked") {
+        approved.delete(key);
+      }
+    }
+  }
+
+  return approved;
+}
+
+// N: the keys ruled substantial. A denial lapses only when its defect is gone (status-model §2).
+export function deniedKeysOf(iteration: Iteration): Set<string> {
   return new Set(
     iteration.verdicts
-      .filter((entry) => entry.verdict === verdict)
+      .filter((entry) => entry.verdict === "Denied")
       .flatMap((entry) => entry.defectKeys),
   );
 }

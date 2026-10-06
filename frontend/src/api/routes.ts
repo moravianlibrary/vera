@@ -17,6 +17,7 @@ export const apiRoutes = {
   proposals: "/proposals",
   proposalReview: "/proposal-review",
   proposalCustodies: "/proposal-custodies",
+  validations: "/validations",
   messageChannels: "/message-channels",
   messageHandOff: "/messages/hand-off",
 } as const;
@@ -42,9 +43,29 @@ export function proposalBulkApprovalRoute(batchId: string): string {
   return `${apiRoutes.proposalReview}/batches/${encodeURIComponent(batchId)}/approve`;
 }
 
-// What may be done to an iteration from the Documents pane: each is its own action, so the server
-// checks each permission against the iteration's category (permissions.md §3).
-export const iterationActions = ["relink", "reclassify", "publish"] as const;
+// The verdicts on one iteration's defects, each its own permission (permissions.md §3).
+export const verdictActions = ["accept", "deny", "revoke"] as const;
+export type VerdictAction = (typeof verdictActions)[number];
+
+export function validationRoute(iterationId: string): string {
+  return `${apiRoutes.validations}/${encodeURIComponent(iterationId)}`;
+}
+
+export function verdictRoute(iterationId: string, action: VerdictAction): string {
+  return `${validationRoute(iterationId)}/${action}`;
+}
+
+// What may be done to an iteration from the Documents and Validations panes: each is its own
+// action, so the server checks each permission against the iteration's category (permissions.md
+// §3). A page count and a field correction are fixes in place: the checks run again after them.
+export const iterationActions = [
+  "relink",
+  "reclassify",
+  "publish",
+  "page-count",
+  "field",
+  "cancel",
+] as const;
 export type IterationAction = (typeof iterationActions)[number];
 
 export function iterationActionRoute(iterationId: string, action: IterationAction): string {

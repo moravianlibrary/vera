@@ -1,5 +1,6 @@
-// Watchlists the emulated users start with, so the Documents and Proposals tabs have something
-// to show.
+// Watchlists the emulated users start with, so the Documents, Proposals and Validations tabs have
+// something to show. Validations seeds Page counts and Denied in review (docs/demos/STATUS.md), and
+// Review needed, the queue it opens on in the demo.
 // Written by hand; the demos keep none. Filters are in the URL form of each view. The shared
 // ones were saved by the administrator (u3) and are seen by all staff.
 
@@ -23,6 +24,9 @@ const sharedLenses = [
   { name: "Restricted", filter: { restricted: "Yes" } },
   { name: "Awaiting a decision", filter: { decision: "Pending" }, view: "proposals" },
   { name: "Periodicals", filter: { decision: "Pending", type: "Periodical" }, view: "proposals" },
+  { name: "Review needed", filter: { review: "Needed" }, view: "validations" },
+  { name: "Page counts", filter: { review: "Needed", defect: "PageCount" }, view: "validations" },
+  { name: "Denied in review", filter: { review: "Denied" }, view: "validations" },
 ] as const satisfies readonly Lens[];
 
 const staffLenses = [

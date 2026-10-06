@@ -8,6 +8,7 @@ import { isSameDocumentQuery, parseDocumentSearchParams } from "@/api/documents"
 import { deleteResource, getJson, patchJson, postJson } from "@/api/http";
 import { isSameProposalQuery, parseProposalSearchParams } from "@/api/proposal-review";
 import { apiRoutes, watchlistRoute } from "@/api/routes";
+import { isSameValidationQuery, parseValidationSearchParams } from "@/api/validations";
 import type { Watchlist, WatchlistView } from "@/domain/entities";
 import { watchlistSchema } from "@/domain/entities";
 
@@ -45,6 +46,11 @@ const filterComparers = {
     isSameProposalQuery(
       parseProposalSearchParams(new URLSearchParams(first)),
       parseProposalSearchParams(new URLSearchParams(second)),
+    ),
+  validations: (first, second) =>
+    isSameValidationQuery(
+      parseValidationSearchParams(new URLSearchParams(first)),
+      parseValidationSearchParams(new URLSearchParams(second)),
     ),
 } as const satisfies Record<WatchlistView, (first: Filter, second: Filter) => boolean>;
 

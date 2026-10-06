@@ -1,12 +1,14 @@
-// What may be changed on a document's current iteration from the Documents pane (More ▾): move it
-// to another catalog record, reclassify it, and set where its scan is available. Each is its own
-// permission, scoped by the iteration's category (permissions.md §3), and the server checks it
-// again; the pane only leaves out what the caller may not do.
+// What may be changed on a document's current iteration from the Documents and Validations panes:
+// move it to another catalog record, reclassify it, set where its scan is available, enter its
+// page count or correct a field (the fixes in place, after which the checks run again) and cancel
+// it. Each is its own permission, scoped by the iteration's category (permissions.md §3), and the
+// server checks it again; a pane only leaves out what the caller may not do.
 
 import { z } from "zod";
 import { postJson } from "@/api/http";
 import { iterationActionRoute } from "@/api/routes";
 import { prioritySchema, progressSchema } from "@/domain/entities";
+import { reviewStateSchema } from "@/domain/validations";
 
 const idValueSchema = z.string().trim().min(1);
 
@@ -61,6 +63,47 @@ export const publicationResultSchema = z.object({
 });
 export type PublicationResult = z.infer<typeof publicationResultSchema>;
 
+// ---------------------------------------------------------------- fixes in place
+
+// A page count someone counted: the manual source, above the catalog and the predictor
+// (document-properties.md §4).
+export const pageCountSchema = z.object({
+  pages: z.number().int().positive(),
+});
+export type PageCount = z.infer<typeof pageCountSchema>;
+
+// A field of the catalog record corrected in VERA ("260$c"), not in the catalog.
+export const fieldCorrectionSchema = z.object({
+  subject: idValueSchema,
+  value: z.string().trim().min(1),
+});
+export type FieldCorrection = z.infer<typeof fieldCorrectionSchema>;
+
+// What the checks found once they ran again. A defect they no longer find needs no verdict.
+export const recheckResultSchema = z.object({
+  clearedKeys: z.array(z.string()),
+  // Where it stands in Validations now; null once nothing holds it there.
+  review: reviewStateSchema.nullable(),
+  progress: progressSchema,
+});
+export type RecheckResult = z.infer<typeof recheckResultSchema>;
+
+// ---------------------------------------------------------------- cancel
+
+// Held at the gate rather than moved; every asker reads why (component-interfaces.md §6.3).
+export const cancellationRequestSchema = z.object({
+  publicText: z.string().trim().min(1),
+  internalText: z.string().trim().min(1).nullable(),
+});
+export type CancellationRequest = z.infer<typeof cancellationRequestSchema>;
+
+export const cancellationResultSchema = z.object({
+  progress: progressSchema,
+  // How many askers are told.
+  askerCount: z.number().int(),
+});
+export type CancellationResult = z.infer<typeof cancellationResultSchema>;
+
 // ---------------------------------------------------------------- calls
 
 export async function relinkIteration(iterationId: string, relink: Relink): Promise<RelinkResult> {
@@ -86,5 +129,30 @@ export async function publishIteration(
     iterationActionRoute(iterationId, "publish"),
     publication,
     publicationResultSchema,
+  );
+}
+
+export async function enterPageCount(
+  iterationId: string,
+  pageCount: PageCount,
+): Promise<RecheckResult> {
+  return postJson(iterationActionRoute(iterationId, "page-count"), pageCount, recheckResultSchema);
+}
+
+export async function correctField(
+  iterationId: string,
+  correction: FieldCorrection,
+): Promise<RecheckResult> {
+  return postJson(iterationActionRoute(iterationId, "field"), correction, recheckResultSchema);
+}
+
+export async function cancelIteration(
+  iterationId: string,
+  cancellation: CancellationRequest,
+): Promise<CancellationResult> {
+  return postJson(
+    iterationActionRoute(iterationId, "cancel"),
+    cancellation,
+    cancellationResultSchema,
   );
 }

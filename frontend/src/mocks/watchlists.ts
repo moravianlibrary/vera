@@ -7,6 +7,7 @@
 
 import { parseDocumentSearchParams } from "@/api/documents";
 import { parseProposalSearchParams } from "@/api/proposal-review";
+import { parseValidationSearchParams } from "@/api/validations";
 import type { WatchlistSummary } from "@/api/watchlists";
 import { isSameWatchlistFilter } from "@/api/watchlists";
 import type { Session, Watchlist, WatchlistScope, WatchlistView } from "@/domain/entities";
@@ -15,6 +16,7 @@ import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { audienceOf, queryDocuments } from "@/mocks/documents";
 import { canDecide, queryProposals } from "@/mocks/proposal-review";
+import { canReview, queryValidations } from "@/mocks/validations";
 
 const scopeOrder = ["shared", "personal"] as const satisfies readonly WatchlistScope[];
 
@@ -88,6 +90,11 @@ const counters = {
   proposals: (session, filter) =>
     canDecide(session)
       ? queryProposals(session, parseProposalSearchParams(filter), { cursor: null, limit: 1 }).total
+      : 0,
+  validations: (session, filter) =>
+    canReview(session)
+      ? queryValidations(session, parseValidationSearchParams(filter), { cursor: null, limit: 1 })
+          .total
       : 0,
 } as const satisfies Record<WatchlistView, (session: Session, filter: URLSearchParams) => number>;
 

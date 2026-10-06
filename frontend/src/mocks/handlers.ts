@@ -3,12 +3,20 @@
 
 import type { JsonBodyType } from "msw";
 import { HttpResponse, http } from "msw";
+import type { z } from "zod";
 import {
   parseDocumentGrouping,
   parseDocumentSearchParams,
   parseDocumentSliceParams,
 } from "@/api/documents";
-import { publicationSchema, reclassificationSchema, relinkSchema } from "@/api/iterations";
+import {
+  cancellationRequestSchema,
+  fieldCorrectionSchema,
+  pageCountSchema,
+  publicationSchema,
+  reclassificationSchema,
+  relinkSchema,
+} from "@/api/iterations";
 import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
 import {
   approvalSchema,
@@ -19,8 +27,16 @@ import {
   parseProposalSliceParams,
 } from "@/api/proposal-review";
 import { proposalDraftSchema, proposalLookupSchema } from "@/api/proposals";
+import type { IterationAction, VerdictAction } from "@/api/routes";
 import { apiRoutes } from "@/api/routes";
 import { userSettingsChangeSchema } from "@/api/user-settings";
+import {
+  acceptanceSchema,
+  denialSchema,
+  parseValidationSearchParams,
+  parseValidationSliceParams,
+  revocationSchema,
+} from "@/api/validations";
 import { watchlistChangeSchema, watchlistDraftSchema, watchlistViewParam } from "@/api/watchlists";
 import type { MockUserProfile } from "@/config/env";
 import { env } from "@/config/env";
@@ -31,7 +47,14 @@ import { retryBatch } from "@/mocks/additions";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
-import { publishIteration, reclassifyIteration, relinkIteration } from "@/mocks/iterations";
+import {
+  cancelIteration,
+  correctField,
+  enterPageCount,
+  publishIteration,
+  reclassifyIteration,
+  relinkIteration,
+} from "@/mocks/iterations";
 import { messageChannels, prepareMessage } from "@/mocks/messages";
 import type { Outcome } from "@/mocks/mutations";
 import {
@@ -53,6 +76,14 @@ import {
 import { resolveSession } from "@/mocks/session";
 import { changeUserSettings, userSettingsOf } from "@/mocks/user-settings";
 import {
+  acceptDefects,
+  canReview,
+  denyDefects,
+  findValidationDetail,
+  queryValidations,
+  revokeAcceptance,
+} from "@/mocks/validations";
+import {
   canChange,
   findDuplicateWatchlist,
   findVisibleWatchlist,
@@ -64,6 +95,39 @@ const route = (path: string) => `${env.VITE_API_BASE_URL}${path}`;
 
 export function createHandlers(profile: MockUserProfile) {
   const currentSession = (): Session => resolveSession(profile);
+
+  // An act on one record: its body parsed by the action's own schema, the outcome as a status.
+  const recordAction = <Body, Value extends JsonBodyType>(
+    path: string,
+    schema: z.ZodType<Body>,
+    act: (session: Session, id: string, body: Body) => Outcome<Value>,
+    isAllowed: (session: Session) => boolean = () => true,
+  ) =>
+    http.post(route(path), async ({ params, request }) => {
+      const session = currentSession();
+      if (!isAllowed(session)) {
+        return mayNotReview();
+      }
+
+      const body = schema.safeParse(await request.json());
+      if (!body.success) {
+        return HttpResponse.json({ message: body.error.message }, { status: 422 });
+      }
+
+      return outcomeResponse(act(session, String(params.id), body.data));
+    });
+
+  const iterationAction = <Body, Value extends JsonBodyType>(
+    action: IterationAction,
+    schema: z.ZodType<Body>,
+    act: (session: Session, iterationId: string, body: Body) => Outcome<Value>,
+  ) => recordAction(`${apiRoutes.iterations}/:id/${action}`, schema, act);
+
+  const verdictAction = <Body, Value extends JsonBodyType>(
+    action: VerdictAction,
+    schema: z.ZodType<Body>,
+    act: (session: Session, iterationId: string, body: Body) => Outcome<Value>,
+  ) => recordAction(`${apiRoutes.validations}/:id/${action}`, schema, act, canReview);
 
   return [
     http.get(route(apiRoutes.session), () => HttpResponse.json(currentSession())),
@@ -111,44 +175,12 @@ export function createHandlers(profile: MockUserProfile) {
       return HttpResponse.json(detail);
     }),
 
-    http.post(route(`${apiRoutes.iterations}/:iterationId/relink`), async ({ params, request }) => {
-      const relink = relinkSchema.safeParse(await request.json());
-      if (!relink.success) {
-        return HttpResponse.json({ message: relink.error.message }, { status: 422 });
-      }
-
-      return outcomeResponse(
-        relinkIteration(currentSession(), String(params.iterationId), relink.data),
-      );
-    }),
-
-    http.post(
-      route(`${apiRoutes.iterations}/:iterationId/reclassify`),
-      async ({ params, request }) => {
-        const reclassification = reclassificationSchema.safeParse(await request.json());
-        if (!reclassification.success) {
-          return HttpResponse.json({ message: reclassification.error.message }, { status: 422 });
-        }
-
-        return outcomeResponse(
-          reclassifyIteration(currentSession(), String(params.iterationId), reclassification.data),
-        );
-      },
-    ),
-
-    http.post(
-      route(`${apiRoutes.iterations}/:iterationId/publish`),
-      async ({ params, request }) => {
-        const publication = publicationSchema.safeParse(await request.json());
-        if (!publication.success) {
-          return HttpResponse.json({ message: publication.error.message }, { status: 422 });
-        }
-
-        return outcomeResponse(
-          publishIteration(currentSession(), String(params.iterationId), publication.data),
-        );
-      },
-    ),
+    iterationAction("relink", relinkSchema, relinkIteration),
+    iterationAction("reclassify", reclassificationSchema, reclassifyIteration),
+    iterationAction("publish", publicationSchema, publishIteration),
+    iterationAction("page-count", pageCountSchema, enterPageCount),
+    iterationAction("field", fieldCorrectionSchema, correctField),
+    iterationAction("cancel", cancellationRequestSchema, cancelIteration),
 
     http.get(route(apiRoutes.proposalSettings), () => HttpResponse.json(proposalSettings)),
 
@@ -289,6 +321,40 @@ export function createHandlers(profile: MockUserProfile) {
       },
     ),
 
+    http.get(route(apiRoutes.validations), ({ request }) => {
+      const session = currentSession();
+      if (!canReview(session)) {
+        return mayNotReview();
+      }
+
+      const params = new URL(request.url).searchParams;
+      return HttpResponse.json(
+        queryValidations(
+          session,
+          parseValidationSearchParams(params),
+          parseValidationSliceParams(params),
+        ),
+      );
+    }),
+
+    http.get(route(`${apiRoutes.validations}/:iterationId`), ({ params }) => {
+      const session = currentSession();
+      if (!canReview(session)) {
+        return mayNotReview();
+      }
+
+      const detail = findValidationDetail(session, String(params.iterationId));
+      if (detail === null) {
+        return HttpResponse.json({ message: "Nothing here waits for a verdict" }, { status: 404 });
+      }
+
+      return HttpResponse.json(detail);
+    }),
+
+    verdictAction("accept", acceptanceSchema, acceptDefects),
+    verdictAction("deny", denialSchema, denyDefects),
+    verdictAction("revoke", revocationSchema, revokeAcceptance),
+
     http.get(route(apiRoutes.messageChannels), () => HttpResponse.json(messageChannels())),
 
     http.get(route(apiRoutes.messageHandOff), ({ request }) => {
@@ -389,6 +455,10 @@ export function createHandlers(profile: MockUserProfile) {
 
 function mayNotDecide() {
   return HttpResponse.json({ message: "You may not decide proposals" }, { status: 403 });
+}
+
+function mayNotReview() {
+  return HttpResponse.json({ message: "You may not review documents" }, { status: 403 });
 }
 
 function outcomeResponse<Value extends JsonBodyType>(outcome: Outcome<Value>) {
