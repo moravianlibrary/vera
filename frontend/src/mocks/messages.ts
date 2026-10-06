@@ -1,5 +1,6 @@
 // What the server does for *Message…* (messaging.md): offers the enabled Message instances in
-// their order, resolves who a message about a record goes to (§3) and lets each instance say
+// their order, resolves who a message about a record goes to (§3: a proposal's askers, a
+// restriction's administrators) and lets each instance say
 // whom it can reach and where it hands off to (§2). It keeps nothing: a redirect is not logged,
 // since VERA cannot know it was sent (§4). A record the caller cannot see is not found.
 
@@ -7,13 +8,16 @@ import type { MessageChannel, MessageHandOff, MessageSubject } from "@/api/messa
 import { navigationEntries } from "@/components/layout/navigation";
 import { documentIdentifierOf } from "@/domain/documents";
 import type { Session, User } from "@/domain/entities";
+import type { Permission } from "@/domain/permissions";
 import { askerIdsOf, asksOf, projectIdsOf } from "@/domain/proposal-review";
 import { plural } from "@/lib/plural";
 import { database } from "@/mocks/database";
+import { roleAssignments, roles } from "@/mocks/fixtures/access";
 import type { MessageInstance } from "@/mocks/fixtures/message-channels";
 import { messageInstances, slackHandles, slackWorkspace } from "@/mocks/fixtures/message-channels";
 import type { Outcome } from "@/mocks/mutations";
 import { findReachableRow } from "@/mocks/proposal-review";
+import { findReachableValidation } from "@/mocks/validations";
 
 const channelDescriptions = {
   mailto: "opens your mail, pre-filled",
@@ -43,7 +47,16 @@ interface ResolvedSubject {
 }
 
 function resolveSubject(session: Session, subject: MessageSubject): ResolvedSubject | null {
-  const row = findReachableRow(session, subject.id);
+  switch (subject.kind) {
+    case "proposal":
+      return resolveProposal(session, subject.id);
+    case "restriction":
+      return resolveRestriction(session, subject.id);
+  }
+}
+
+function resolveProposal(session: Session, documentId: string): ResolvedSubject | null {
+  const row = findReachableRow(session, documentId);
   if (row === null) {
     return null;
   }
@@ -61,6 +74,37 @@ function resolveSubject(session: Session, subject: MessageSubject): ResolvedSubj
     // A proposal's message goes to its requesters (§3).
     recipientIds: askerIdsOf(row),
   };
+}
+
+// A forbidden item in the caller's custody: only an administrator can overrule the rule, so
+// that is who hears about it (messaging.md §3, page-validation.js forbiddenPane).
+function resolveRestriction(session: Session, iterationId: string): ResolvedSubject | null {
+  const row = findReachableValidation(session, iterationId);
+  const restriction = row?.iteration.restriction ?? null;
+  if (row === null || row.review !== "Forbidden" || restriction === null) {
+    return null;
+  }
+
+  const { document } = row;
+  return {
+    label: `${document.title} · ${documentIdentifierOf(document)}`,
+    path: `${pathOf("validations")}?id=${encodeURIComponent(iterationId)}&review=Forbidden`,
+    context: `Forbidden by ${restriction.rule}: ${restriction.internalText ?? restriction.publicText}`,
+    recipientIds: holdersOf("restriction.overrule"),
+  };
+}
+
+// Everyone whose roles grant the permission, at any scope.
+function holdersOf(permission: Permission): string[] {
+  return database.users
+    .filter((user) =>
+      (roleAssignments[user.id] ?? []).some((roleId) =>
+        roles
+          .find((role) => role.id === roleId)
+          ?.grants.some((grant) => grant.permission === permission),
+      ),
+    )
+    .map((user) => user.id);
 }
 
 function pathOf(entryId: string): string {

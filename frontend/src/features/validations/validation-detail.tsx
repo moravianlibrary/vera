@@ -2,9 +2,12 @@
 // holds it, the facts, then the cards. The curator is shown D \ A only: the outstanding defects,
 // each with its fix in place; a denied item shows the defects ruled substantial with theirs, since
 // a denial lapses once its defect is gone; the defects already accepted sit in their own card,
-// with who and when. Then the attempt, the catalog record and the history.
+// with who and when, and Revoke. Accept and Deny… close the outstanding card, Reclassify and
+// Cancel… sit in More ▾ (validation-actions.tsx). A forbidden item says what the rule said and
+// offers *Message admins…*. Then the attempt, the catalog record and the history.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ReactNode } from "react";
 import { useState } from "react";
 import type { RecheckResult } from "@/api/iterations";
 import type { ValidationDetail } from "@/api/validations";
@@ -19,6 +22,7 @@ import {
   Muted,
   StatTiles,
 } from "@/components/detail-card";
+import { MessageDialog } from "@/components/dialogs/message-dialog";
 import { RelinkDialog } from "@/components/iteration-dialogs";
 import { visibleNavigation } from "@/components/layout/navigation";
 import type { Outcome } from "@/components/pane-state";
@@ -42,7 +46,14 @@ import {
 } from "@/domain/validations";
 import { DefectCard } from "@/features/validations/defect-card";
 import { validationInvalidations } from "@/features/validations/use-validations-query";
+import {
+  ForbiddenCard,
+  RevokeButton,
+  useMoreActions,
+  VerdictControls,
+} from "@/features/validations/validation-actions";
 import { IterationStatus } from "@/features/validations/validation-list";
+import { useMessageChannelsQuery } from "@/hooks/use-message-query";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
 import { joinDetails } from "@/lib/join-details";
@@ -67,6 +78,8 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
   const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
   const documents = visibleNavigation(session).find((entry) => entry.id === "documents");
   const [isRelinking, setIsRelinking] = useState(false);
+  const [isMessaging, setIsMessaging] = useState(false);
+  const { data: messageChannels = [] } = useMessageChannelsQuery();
   // What the last fix found, until another item is opened.
   const [lastFix, setLastFix] = useState<{ defect: Defect; result: RecheckResult } | null>(null);
 
@@ -103,10 +116,54 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
     setLastFix({ defect, result });
   };
 
+  const more = useMoreActions({
+    row,
+    scope,
+    session,
+    onHandedOver: () =>
+      onLeft({
+        iterationId: iteration.id,
+        title: document.title,
+        tone: "slate",
+        heading: "Handed over",
+        summary:
+          "Reclassified into a category outside your custody; whoever holds it reviews it now",
+        next,
+      }),
+    onCancelled: (askerCount) =>
+      onLeft({
+        iterationId: iteration.id,
+        title: document.title,
+        tone: "slate",
+        heading: "Cancelled",
+        summary: joinDetails([
+          "Held where it was; it stays in Documents, with Resume",
+          askerCount === 1 ? "the asker is told" : `all ${askerCount} askers are told`,
+        ]),
+        next,
+      }),
+  });
+
+  // Only an administrator overrules a restriction; anyone else may reach one (messaging.md §3).
+  // Message… needs no permission of its own, only an enabled Message instance (§4).
   const headingActions: ViewAction[] = [];
+  const canMessageAdmins =
+    row.review === "Forbidden" &&
+    !can(session, "restriction.overrule", scope) &&
+    messageChannels.length > 0;
+  if (canMessageAdmins) {
+    headingActions.push({
+      id: "message",
+      label: "Message admins…",
+      onSelect: () => setIsMessaging(true),
+    });
+  }
+
   if (next !== undefined) {
     headingActions.push({ id: "documents", label: `${next.label} →`, href: next.href });
   }
+
+  headingActions.push(...more.actions);
 
   const defectCardOf = (defect: Defect) => (
     <DefectCard
@@ -127,7 +184,7 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
           identifier={documentIdentifierOf(document)}
           details={[categoryLabelOf(categories, iteration.categoryId)]}
         />
-        <ActionBar actions={headingActions} className="mb-4" />
+        <ActionBar actions={headingActions} menuLabel="More" className="mb-4" />
       </div>
       <ReviewNote row={row} nameOf={nameOf} />
       <ReviewFacts row={row} nameOf={nameOf} />
@@ -137,6 +194,7 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
           <DetailCard title={`Outstanding — ${outstandingDefects(iteration).length}`}>
             {lastFix !== null && <FixNote defect={lastFix.defect} result={lastFix.result} />}
             {outstandingDefects(iteration).map(defectCardOf)}
+            <VerdictControls row={row} scope={scope} session={session} />
             <FinePrint>
               Fix it and the checks run again: a defect that is gone needs no verdict. Accepting
               says it is tolerable — a later re-check finding the same or fewer asks nobody again.
@@ -149,7 +207,12 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
             {deniedDefectsOf(iteration).map(defectCardOf)}
           </DetailCard>
         )}
-        <AcceptedCard row={row} nameOf={nameOf} />
+        {row.review === "Forbidden" && <ForbiddenCard session={session} />}
+        <AcceptedCard
+          row={row}
+          nameOf={nameOf}
+          action={<RevokeButton row={row} scope={scope} session={session} />}
+        />
         <AttemptCard row={row} />
         <CatalogCard document={document} nameOf={nameOf} />
         <HistoryCard
@@ -183,6 +246,14 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
             next,
           });
         }}
+      />
+      {more.dialogs}
+      <MessageDialog
+        isOpen={isMessaging}
+        onClose={() => setIsMessaging(false)}
+        subject={{ kind: "restriction", id: iteration.id }}
+        label={document.title}
+        recipientLabel="who may overrule it"
       />
     </article>
   );
@@ -319,7 +390,12 @@ function ReviewFacts({ row, nameOf }: RowProps) {
         {
           label: "Outstanding",
           value: row.review === "Forbidden" ? "—" : outstanding.length,
-          foot: acceptedCount > 0 ? `${acceptedCount} already accepted` : "nothing accepted yet",
+          foot:
+            row.review === "Forbidden"
+              ? "not reviewed while forbidden"
+              : acceptedCount > 0
+                ? `${acceptedCount} already accepted`
+                : "nothing accepted yet",
         },
         third(),
       ]}
@@ -328,7 +404,7 @@ function ReviewFacts({ row, nameOf }: RowProps) {
 }
 
 // A ∩ D, each with who accepted it and when. While new defects wait, these are not asked again.
-function AcceptedCard({ row, nameOf }: RowProps) {
+function AcceptedCard({ row, nameOf, action }: RowProps & { action: ReactNode }) {
   const { iteration } = row;
   const accepted = acceptedDefectsOf(iteration);
   if (accepted.length === 0) {
@@ -341,7 +417,7 @@ function AcceptedCard({ row, nameOf }: RowProps) {
     );
 
   return (
-    <DetailCard title={`Already accepted — ${accepted.length}`}>
+    <DetailCard title={`Already accepted — ${accepted.length}`} action={action}>
       {accepted.map((defect) => {
         const acceptance = acceptanceOf(defect);
         return (

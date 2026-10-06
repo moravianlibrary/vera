@@ -50,7 +50,7 @@ green after every extraction.
 2. The *Asked* filter.
 3. Bulk approve over the whole batch on the server, removing the 200 limit.
 
-## 3. Documents Validations
+## 3. Documents Validations — done
 
 1. Mock API: defects, verdicts, the custody scope.
 2. The list: one row per iteration, with its why line.

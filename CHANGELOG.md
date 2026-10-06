@@ -73,6 +73,15 @@ All notable changes to this project are documented here.
   longer find needs no verdict, and an item with nothing left says so where it was. A denied
   item shows its defects to fix, and the defects already accepted sit in their own card with
   who and when.
+- Ruling on an item in Documents Validations: *Accept it* (or *Accept all n*) with an optional
+  note, *Deny…* picking which defects are substantial with what every asker reads following the
+  pick, and *Revoke* on the accepted defects, which returns the item to review. More ▾ holds
+  *Reclassify* (an item moved outside the curator's custody is handed over) and *Cancel…* with
+  its reason. Accepting makes an item Ready once every gate passes; a denial or a revocation
+  takes a Ready item back.
+- The *Forbidden* filter in Documents Validations shows what a rule forbade in the curator's
+  custody, with what the rule said; nothing there acts on it, and *Message admins…* writes to
+  those who may overrule it.
 
 ### Changed
 

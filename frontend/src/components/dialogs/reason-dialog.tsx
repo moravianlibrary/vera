@@ -17,6 +17,9 @@ export interface ReasonText {
   hint: string;
   isRequired: boolean;
   placeholder?: string;
+  // What it says until it is typed in, following the fields above it: Deny's text follows the
+  // defects picked (page-validation.js).
+  suggestion?: string;
 }
 
 export interface ReasonTexts {
@@ -55,7 +58,11 @@ export function ReasonDialog({
   onConfirm,
 }: ReasonDialogProps) {
   const id = useId();
-  const [texts, setTexts] = useState<ReasonTexts>({ publicText: "", internalNote: "" });
+  const [typed, setTyped] = useState<Partial<ReasonTexts>>({});
+  const texts: ReasonTexts = {
+    publicText: typed.publicText ?? publicText?.suggestion ?? "",
+    internalNote: typed.internalNote ?? internalNote?.suggestion ?? "",
+  };
   const [isPending, setIsPending] = useState(false);
   const [refusal, setRefusal] = useState<Refusal | null>(null);
   const trimmed = { publicText: texts.publicText.trim(), internalNote: texts.internalNote.trim() };
@@ -64,7 +71,7 @@ export function ReasonDialog({
     (internalNote?.isRequired === true && trimmed.internalNote === "");
 
   const close = () => {
-    setTexts({ publicText: "", internalNote: "" });
+    setTyped({});
     setRefusal(null);
     onClose();
   };
@@ -89,7 +96,7 @@ export function ReasonDialog({
         value={texts[key]}
         placeholder={text.placeholder}
         required={text.isRequired}
-        onChange={(event) => setTexts((current) => ({ ...current, [key]: event.target.value }))}
+        onChange={(event) => setTyped((current) => ({ ...current, [key]: event.target.value }))}
       />
     </Field>
   );
@@ -100,7 +107,7 @@ export function ReasonDialog({
       onClose={close}
       title={title}
       description={description}
-      isDirty={trimmed.publicText !== "" || trimmed.internalNote !== ""}
+      isDirty={(typed.publicText ?? "").trim() !== "" || (typed.internalNote ?? "").trim() !== ""}
       refusal={refusal}
       primary={{
         label: confirmLabel,

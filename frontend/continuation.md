@@ -172,9 +172,9 @@ The foundation is in place:
   (`primary.href`, a new tab); `src/hooks/use-message-query.ts` asks for both, and *Message…*
   exists only while some instance is enabled. The mock (`src/mocks/messages.ts`,
   `fixtures/message-channels.ts`: Email by address, MZK Slack by the `slack_id` handle) sends a
-  proposal's message to its askers, people only and never the sender, as a `mailto:` or Slack
-  link pre-filled with the record and a link back; a record out of reach is 404. Only `proposal`
-  subjects exist so far, and instances that send on their own are not modelled.
+  proposal's message to its askers and a forbidden item's (`restriction`) to whoever may overrule
+  it, people only and never the sender, as a `mailto:` or Slack link pre-filled with the record
+  and a link back; a record out of reach is 404. Only those two subjects exist so far, and instances that send on their own are not modelled.
   Still to build: picker, set editor and stepped frame (component-interfaces.md §6.5–6.7).
 - Query hooks: `src/hooks/use-session-query.ts`, `src/features/documents/use-documents-query.ts`.
   Sidebar entries and their required permissions: `src/components/layout/navigation.ts`.
@@ -237,7 +237,14 @@ The foundation is in place:
   that takes the item out of the view reports it through `onLeft`, and the page shows it as the
   pane's outcome. Relink and Reclassify are shared dialogs (`src/components/iteration-dialogs.tsx`,
   with `FieldError`), each told what to refetch (`invalidates`) and what to do once done
-  (`onDone`).
+  (`onDone`). `validation-actions.tsx` holds the rest: *Accept it / Accept all n* with a note and *Deny…*
+  (`ReasonDialog` with the defect pick in `fields`; the public text follows the pick through
+  the new `suggestion` of a `ReasonText`, until typed in), *Revoke* on the accepted card, and
+  `useMoreActions` for More ▾ (Reclassify, handed over out of custody → outcome; Cancel… →
+  outcome). A forbidden item gets *What you can do* and, for whoever may not overrule,
+  *Message admins…*: the Message dialog over the new `restriction` subject, which the mock
+  (`src/mocks/messages.ts`) resolves to the holders of `restriction.overrule`. Accepting defects
+  one by one has an endpoint but no control yet (a TODO).
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

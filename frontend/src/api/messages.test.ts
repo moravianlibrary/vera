@@ -1,5 +1,5 @@
 // Messaging end to end against the mock server over HTTP: the Message instances in their order,
-// who a message about a proposal goes to, whom each instance can reach and where it hands off,
+// who a message about a proposal or a restriction goes to, whom each instance can reach and where it hands off,
 // and that a record the caller cannot see has nobody to message.
 
 import { setupServer } from "msw/node";
@@ -79,5 +79,21 @@ describe("prepareMessage", () => {
     signInAs("curator");
 
     expect(await statusOf(prepareMessage({ kind: "proposal", id: "D31" }))).toBe(404);
+  });
+
+  it("sends a forbidden item's message to those who may overrule it", async () => {
+    signInAs("curator");
+
+    const handOff = await prepareMessage({ kind: "restriction", id: "IT14" });
+
+    expect(handOff.recipients.map((recipient) => recipient.name)).toEqual(["Petr Dvořák"]);
+    expect(handOff.context).toMatch(/^Forbidden by Copyright: /);
+    expect(handOff.about.path).toContain("/review/documents?id=IT14");
+  });
+
+  it("has no restriction to message about on an item no rule forbade", async () => {
+    signInAs("curator");
+
+    expect(await statusOf(prepareMessage({ kind: "restriction", id: "IT16" }))).toBe(404);
   });
 });
