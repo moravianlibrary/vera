@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import type { RecordStatus } from "@/api/documents";
 import { Badge } from "@/components/ui/badge";
 import type { Priority, RegistryRecord, RegistryState } from "@/domain/entities";
+import type { ListState } from "@/domain/lists";
 import type { StatusFootnote } from "@/domain/status";
 import { cn } from "@/lib/utils";
 
@@ -176,4 +177,21 @@ export function RegistryBadge({ record, className }: RegistryBadgeProps) {
       {record.registry}: {record.rawState ?? record.state}
     </Badge>
   );
+}
+
+const listStateLabels = {
+  Planned: "Planned",
+  InProgress: "In progress",
+  Done: "Done",
+} as const satisfies Record<ListState, string>;
+
+const listStateTones = {
+  Planned: "blue",
+  InProgress: "blue",
+  Done: "green",
+} as const satisfies Record<ListState, Tone>;
+
+// A digitization list's state, wherever a list is named: its own page and a project's.
+export function ListStateBadge({ state }: { state: ListState }) {
+  return <ToneBadge tone={listStateTones[state]}>{listStateLabels[state]}</ToneBadge>;
 }

@@ -12,30 +12,12 @@ import type { ListRow } from "@/api/lists";
 import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
-import type { Tone } from "@/components/status-badge";
-import { ToneBadge } from "@/components/status-badge";
+import { ListStateBadge } from "@/components/status-badge";
 import type { DigitizationList } from "@/domain/entities";
-import type { ListState } from "@/domain/lists";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
-
-export const listStateLabels = {
-  Planned: "Planned",
-  InProgress: "In progress",
-  Done: "Done",
-} as const satisfies Record<ListState, string>;
-
-const listStateTones = {
-  Planned: "blue",
-  InProgress: "blue",
-  Done: "green",
-} as const satisfies Record<ListState, Tone>;
-
-export function ListStateBadge({ state }: { state: ListState }) {
-  return <ToneBadge tone={listStateTones[state]}>{listStateLabels[state]}</ToneBadge>;
-}
 
 // "22 Jun → 10 Jul".
 export function runsOf(list: DigitizationList): string {

@@ -19,7 +19,7 @@ import type {
   ProjectRejection,
   ProjectRow,
 } from "@/api/projects";
-import { effectivePageCount, existingCopiesOf } from "@/domain/documents";
+import { documentIdentifierOf, effectivePageCount, existingCopiesOf } from "@/domain/documents";
 import type { Iteration, Project, Request, Session } from "@/domain/entities";
 import { listStateOf } from "@/domain/lists";
 import type { Permission } from "@/domain/permissions";
@@ -200,7 +200,7 @@ function proposalRowsOf(projectId: string): ProjectProposal[] {
       {
         documentId: document.id,
         title: document.title,
-        catalogId: document.catalogId,
+        identifier: documentIdentifierOf(document),
         requesterId: request.requesterId,
         at: request.at,
         decision: request.decision,

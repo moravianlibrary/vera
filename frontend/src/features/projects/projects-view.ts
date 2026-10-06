@@ -9,7 +9,9 @@ import type { ProjectRow } from "@/api/projects";
 import type { Tone } from "@/components/status-badge";
 import type { Project } from "@/domain/entities";
 import type { PaceVerdict, ProjectPeriod } from "@/domain/projects";
-import { formatCalendarDay } from "@/lib/format-date";
+import type { NoteTone } from "@/domain/status-notes";
+import { formatCalendarDay, formatDay } from "@/lib/format-date";
+import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 
 export const decisionTones = {
@@ -69,7 +71,9 @@ export function projectSectionsOf(rows: readonly ProjectRow[]): ProjectSections 
   };
 }
 
-export function paceOf(row: ProjectRow): { text: string; tone: Tone } | null {
+export function paceOf(
+  row: ProjectRow,
+): { text: string; tone: (typeof verdictTones)[PaceVerdict] } | null {
   if (row.verdict === null) {
     return null;
   }
@@ -103,4 +107,85 @@ export function pagesOf(row: ProjectRow) {
   return row.fundedCount === 0
     ? null
     : { planned: row.plannedPages, delivered: row.deliveredPages };
+}
+
+export interface ProjectNote {
+  tone: NoteTone;
+  title: string;
+  body: string;
+}
+
+// Where it stands, in words, at the top of its page (page-projects.js detail).
+export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
+  const { project, pending, waiting } = row;
+  const delivered = Math.round((row.deliveredPages / Math.max(1, project.targetPages)) * 100);
+  switch (project.state) {
+    case "Proposed":
+      return {
+        tone: "amber",
+        title: "Proposed — waiting for a curator to approve or reject it",
+        body:
+          pending.documentCount === 0
+            ? "Nothing is proposed into it yet; members can propose while it waits."
+            : `${plural(pending.documentCount, "document is", "documents are")} proposed into it. Approving approves them at the priority it picks${
+                pending.withCopyCount > 0
+                  ? `, except ${pending.withCopyCount} with a copy, each decided on its own as a rescan`
+                  : ""
+              }.`,
+      };
+    case "Rejected":
+      return {
+        tone: "red",
+        title: `Rejected ${formatDay(project.at)} by ${decidedBy}`,
+        body: `${project.reason} It takes no more proposals, and the decision is final — to try again, start a new project.`,
+      };
+    case "Approved":
+      break;
+  }
+
+  if (row.period === "Upcoming") {
+    return {
+      tone: "slate",
+      title: `Approved · starts ${formatCalendarDay(project.startsOn)}`,
+      body: "Nothing is delivered before it starts.",
+    };
+  }
+
+  if (row.period === "Ended") {
+    const short = project.targetPages - row.deliveredPages;
+    return {
+      tone: paceOf(row)?.tone ?? "slate",
+      title: `Ended ${formatCalendarDay(project.endsOn)} — ${delivered >= 100 ? "target met" : `${delivered}% of the target delivered`}`,
+      body: `${formatCount(row.deliveredPages)} of ${formatCount(project.targetPages)} pages digitized${
+        short > 0 ? `, ${formatCount(short)} short` : ""
+      }. These numbers stay true: the pages it funded are funded by it for good.`,
+    };
+  }
+
+  const pace = paceOf(row);
+  const daysLeft = `${plural(row.daysLeft, "day")} left.`;
+  if (pace === null) {
+    return {
+      tone: "amber",
+      title: `Running since ${formatCalendarDay(project.startsOn)}, and nothing is funded by it yet`,
+      body: `${daysLeft} No approved request names this project.`,
+    };
+  }
+
+  const onLists = row.plannedPages - row.deliveredPages;
+  return {
+    tone: pace.tone,
+    title: `${pace.text} — ${delivered}% delivered with ${Math.round(row.timeElapsed * 100)}% of the time gone`,
+    body: [
+      daysLeft,
+      onLists > 0
+        ? `${formatCount(onLists)} pp are on lists and not digitized yet.`
+        : "Nothing of it is on a running list.",
+      waiting.itemCount > 0
+        ? `${formatCount(waiting.pages)} pp more are approved and waiting for a list.`
+        : null,
+    ]
+      .filter((part) => part !== null)
+      .join(" "),
+  };
 }

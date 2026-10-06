@@ -11,6 +11,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { DocumentsPage } from "@/features/documents/documents-page";
 import { ListEditorPage } from "@/features/lists/list-editor-page";
 import { ListsPage } from "@/features/lists/lists-page";
+import { ProjectPage } from "@/features/projects/project-page";
 import { ProjectsPage } from "@/features/projects/projects-page";
 import { ProposalsPage } from "@/features/proposals/proposals-page";
 import { ValidationsPage } from "@/features/validations/validations-page";
@@ -100,6 +101,15 @@ const router = createBrowserRouter([
           </Gate>
         ),
       })),
+      // A project's own page: few run at once, so it is not a pane (STATUS "Projects").
+      {
+        path: "projects/:projectId",
+        element: (
+          <Gate entryId="projects">
+            <ProjectPage />
+          </Gate>
+        ),
+      },
       { path: "*", element: <Navigate to="/" replace /> },
     ],
   },

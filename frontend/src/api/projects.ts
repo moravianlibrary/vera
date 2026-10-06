@@ -72,7 +72,8 @@ export type ProjectIndex = z.infer<typeof projectIndexSchema>;
 export const projectProposalSchema = z.object({
   documentId: z.string(),
   title: z.string(),
-  catalogId: z.string(),
+  // Catalog ID, and the unit for one part of a larger record.
+  identifier: z.string(),
   requesterId: z.string(),
   at: z.iso.datetime(),
   decision: z.enum(["Pending", "Approved", "Denied", "Withdrawn", "Duplicate"]),

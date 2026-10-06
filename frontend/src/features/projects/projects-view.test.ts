@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { ProjectRow } from "@/api/projects";
 import type { Project } from "@/domain/entities";
 import type { ProjectPeriod } from "@/domain/projects";
-import { paceOf, projectSectionsOf } from "@/features/projects/projects-view";
+import { paceOf, projectNoteOf, projectSectionsOf } from "@/features/projects/projects-view";
 
 const base = {
   name: "P",
@@ -82,5 +82,43 @@ describe("paceOf", () => {
       tone: "amber",
     });
     expect(paceOf(row)).toBeNull();
+  });
+});
+
+describe("projectNoteOf", () => {
+  it("says what approving a proposed project would do, and what it skips", () => {
+    const row = rowOf("p", "Proposed", "Upcoming", "2026-09-01", "2027-08-31");
+
+    expect(projectNoteOf(row, "").body).toBe(
+      "Nothing is proposed into it yet; members can propose while it waits.",
+    );
+    expect(
+      projectNoteOf({ ...row, pending: { documentCount: 2, withCopyCount: 1 } }, "").body,
+    ).toBe(
+      "2 documents are proposed into it. Approving approves them at the priority it picks, except 1 with a copy, each decided on its own as a rescan.",
+    );
+  });
+
+  it("puts the pace in words while it runs: what is on lists and what waits for one", () => {
+    const row = rowOf("p", "Approved", "Active", "2026-01-01", "2026-12-31");
+    const note = projectNoteOf(
+      {
+        ...row,
+        verdict: "behindPace",
+        timeElapsed: 0.5,
+        daysLeft: 190,
+        fundedCount: 4,
+        plannedPages: 300,
+        deliveredPages: 100,
+        waiting: { itemCount: 2, pages: 940 },
+      },
+      "Jana",
+    );
+
+    expect(note).toEqual({
+      tone: "amber",
+      title: "Behind pace — 10% delivered with 50% of the time gone",
+      body: "190 days left. 200 pp are on lists and not digitized yet. 940 pp more are approved and waiting for a list.",
+    });
   });
 });

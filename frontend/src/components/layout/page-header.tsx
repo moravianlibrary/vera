@@ -4,6 +4,7 @@
 // list they count, not here. It never scrolls; the view's body below it does.
 
 import type { ReactNode } from "react";
+import { Link } from "react-router";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import { NavigationButton } from "@/components/layout/navigation-button";
@@ -13,10 +14,12 @@ interface PageHeaderProps {
   title: string;
   // Already narrowed to what the person may do.
   actions?: readonly ViewAction[];
+  // On a record's own page, the way back to its index, and a word on where the record stands.
+  breadcrumb?: { label: string; href: string; detail?: string };
   className?: string;
 }
 
-export function PageHeader({ title, actions = [], className }: PageHeaderProps) {
+export function PageHeader({ title, actions = [], breadcrumb, className }: PageHeaderProps) {
   return (
     <header
       className={cn(
@@ -25,7 +28,19 @@ export function PageHeader({ title, actions = [], className }: PageHeaderProps) 
       )}
     >
       <NavigationButton />
-      <h1 className="min-w-0 flex-1 truncate text-lg leading-7 font-semibold">{title}</h1>
+      {breadcrumb === undefined ? (
+        <h1 className="min-w-0 flex-1 truncate text-lg leading-7 font-semibold">{title}</h1>
+      ) : (
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate text-base leading-6 font-semibold">{title}</h1>
+          <p className="truncate text-xs text-muted-foreground">
+            <Link to={breadcrumb.href} className="hover:text-foreground hover:underline">
+              {breadcrumb.label}
+            </Link>
+            {breadcrumb.detail !== undefined && ` · ${breadcrumb.detail}`}
+          </p>
+        </div>
+      )}
       <ActionBar actions={actions} className="shrink-0" />
     </header>
   );

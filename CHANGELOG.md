@@ -40,6 +40,13 @@ All notable changes to this project are documented here.
   members and groups, and what is approved but on no list yet. The ended projects and the
   rejected ones sit in tables below. Staff see the projects they are on, directly or through a
   group.
+- Projects, a project's own page: where it stands in words (waiting for a decision, on pace
+  or behind with what is on lists and what waits for one, met or short once ended, rejected
+  with its reason), the bars against its target, every document proposed into it with its
+  decision, the lists carrying what it funded (a deleted one named, no longer counted), the
+  iterations it funded with their status, and beside them what it is (manager, decision,
+  priority), its members and groups, and its history. On a narrow screen the facts come
+  first and the history last.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.
