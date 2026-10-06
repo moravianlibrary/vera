@@ -293,17 +293,27 @@ The foundation is in place:
   list in browse. *Generate…* sits in the editor's left pane head when a generator runs
   (`GET /digitization-lists/generators`): `generate-dialog.tsx` is a `SteppedDialog` (Ask →
   Preview) over `POST /digitization-lists/generate`, whose mock (`src/mocks/list-generation.ts`)
-  plays the reference rule-based generator over the Overall mix (`effectiveShareOf`,
-  `src/domain/mixes.ts`; the Overall intention's mix from `mocks/fixtures/intentions.ts`) and the AI one with
-  its own sentences; the draft's picks join the left pane marked *generated* with their reason,
-  `generation-report.tsx` stays in the top strip, and Save sends the provenance (`generated`),
-  logged as *Generated — {generator}*. The pane's acts are `list-actions.tsx`: *Mark Done…*
+  plays the reference rule-based generator and the AI one with its own sentences. One intention
+  shapes the draft (*Shape by*, from `GET /digitization-lists/shapes`: neither ended nor
+  archived, Overall first): the pool narrows to its funding and subtree and its mix is read
+  inside its scope (`shareWithinOf`); a correcting run's `allocation` fixes the pages per category
+  the mix is read across and is never re-spread. The draft's picks join the left pane marked
+  *generated* with their reason, `generation-report.tsx` stays in the top strip, and Save sends
+  the provenance (`generated`: intention, mix revision, pages, allocation, generator), logged as
+  *Generated — {generator}*. `/lists/new?generate&shape=&pages=&alloc=` (`lists-view.ts`
+  `generationHrefOf` / `generationStartOf`) is a new list an intention's card started: Generate
+  opens at once, shaped by it, with the pages or the allocation (*Use its plain mix instead*
+  drops it). The editor's top says what the draft counts towards and its fill against one
+  intention's mix (`POST /digitization-lists/reading`, `src/mocks/intention-lists.ts`; the parts
+  are `list-intentions.tsx`), and warns when it will not count towards the intention it was
+  generated with (L8) or will stop counting towards one with new dates (L10); rows and the pane
+  carry the same from `countsTowardsOf` and `listMixOf` (`src/domain/intentions.ts`), with the
+  pane's *Counts towards* and *Mix* cards. The pane's acts are `list-actions.tsx`: *Mark Done…*
   while it runs and *Delete…* in More ▾, each a `ConsequenceDialog` over a server dry run
   (`GET …/done`, `GET …/deletion`, then `POST …/done`, `DELETE …/:id`); per item, a ⋯ with
   *Could not be digitized…* (`POST …/items/:iterationId/not-digitizable`, stays on), *Cancel…*
   (the shared iteration cancel, which now takes an item off its list, flows.md C3) and *Take it
-  off — in the editor*. *Counts towards*, the mix, *Shape by* another intention and the L8/L10
-  warnings wait for intentions in the mock API (step 6), as TODOs.
+  off — in the editor*.
 - `src/features/projects/` is Projects (`/projects`, `/projects/:projectId`), step 5 of
   `plan.md`. The resource is `src/api/projects.ts`: `GET /projects/overview` is every project
   the caller sees (members and their groups at `project.read@project`, everyone at `any` or with
@@ -333,7 +343,7 @@ The foundation is in place:
   (`ConsequenceDialog`). The page's Intentions card lists the intentions it funds, each counted in
   its own window (`GET /projects/:id` `intentions`; rows carry `intentionCount`), and an approved
   project with none says *No intention yet* on its card and page. *Message…* is a TODO.
-- `src/features/intentions/` is Intentions (`/intentions`), step 6 of `plan.md`, read-only so far.
+- `src/features/intentions/` is Intentions (`/intentions`), step 6 of `plan.md`.
   The resource is `src/api/intentions.ts`: `GET /intentions/overview` is every intention the
   caller sees (`intention.read@any`, or `@project` for one a project they are on funds) with what
   the server counts by `src/domain/intentions.ts`, the one home of the counting rules: planned (on
@@ -349,8 +359,20 @@ The foundation is in place:
   `intentions-page.tsx` over `intentions-view.ts` (columns, order, tile, words, `?i=`, `?t=`,
   `?col=`) and `intention-card.tsx` on `RecordCard` without an `href`, with `PaceBars` and
   `src/components/visualizations/mix-bars.tsx` (`MixBar`, `MixBars`); small and phone switch
-  columns with Tabs. *New intention*, *New repeat*, *Edit*, *Archive*, the Generate links and
-  the correcting list are 6.3–6.4.
+  columns with Tabs. The acts are `intention-dialogs.tsx`: one `FormDialog` makes, edits and
+  makes a new intention from an old one (the counting start is locked), with one mix field —
+  *Track* an owner or *Own mix, copied from* one, an owner others track switching only by
+  moving them along — and a server preview (`POST /intentions/preview`) of where it lands, what
+  saving recounts and the percentages beside the ones it reads now; `POST /intentions`,
+  `PUT /intentions/:id`, `POST …/archive` and `…/unarchive`, `GET …/deletion` then `DELETE` (409
+  `intention.tracked` while others track its mix, 409 `intention.overall` for Overall). Repeats
+  are `POST /intention-templates` and `PUT …/:id` under `intention.repeat` (the next occurrence by
+  `nextPeriodStartOf`). A card's Generate starts a list: *Generate a list* or *against this mix*
+  shaped by it, *Generate catch-up — N pp* when behind pace, and *Generate correcting list…* for
+  a tracking card out of band, whose dialog shows the allocation from
+  `GET /intentions/:id/correction?pages=` (`correctionOf`: what each category lacks against its
+  share of output plus the new pages, cut in proportion; supply short stays short) and hands it
+  to the list editor. Who may: `scopeOfIntention` in `src/domain/intentions.ts`.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

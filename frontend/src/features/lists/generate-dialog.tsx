@@ -3,12 +3,14 @@
 // let the generator draft a fill, show it, and hand it to the editor's left pane. One generator
 // needs no picker; several each say whether a rule or a model chose. The current members stay
 // fixed and the draft tops them up. Nothing is saved by generating, and nothing is attached:
-// what the list counts towards follows from what ends up on it (intentions.md §5).
-// TODO(rrandiak): *Shape by* another intention than Overall, and a correcting run's allocation,
-// wait for intentions in the mock API (plan.md step 6); labels move to i18n.
+// what the list counts towards follows from what ends up on it (intentions.md §5). One intention
+// shapes the draft, Overall unless another is picked or a card started it (§4.1, §4.4); a
+// correcting run's allocation, accepted on Intentions, fixes the pages and the shape until it is
+// dropped for the plain mix.
+// TODO(rrandiak): labels move to i18n.
 
 import { useId } from "react";
-import type { GenerationDraft, ListGenerator } from "@/api/lists";
+import type { GenerationDraft, ListGenerator, ListShape } from "@/api/lists";
 import { generateDraft } from "@/api/lists";
 import { Field } from "@/components/classification-fields";
 import type { DialogStep } from "@/components/dialogs/stepped-dialog";
@@ -18,6 +20,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { GenerationReport, generatorClassLabels } from "@/features/lists/generation-report";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
@@ -30,6 +39,8 @@ interface GenerateState {
   pages: string;
   // Top-level categories; none means all.
   categoryIds: readonly string[];
+  // The intention it is shaped by.
+  intentionId: string;
   draft: GenerationDraft | null;
 }
 
@@ -45,8 +56,15 @@ interface GenerateDialogProps {
   // What is on the list now: fixed, topped up.
   memberIds: readonly string[];
   memberPages: number;
-  // The list's target, offered as the pages.
+  // The list's target, offered as the pages, unless a card asked for others.
   target: number | null;
+  shapes: readonly ListShape[];
+  // Preselected; none is Overall.
+  shapeId: string | null;
+  // A correcting run's pages per category, and the pages they add up to.
+  allocation: { pages: number; byCategory: Readonly<Record<string, number>> } | null;
+  // Back to the intention's plain mix.
+  onDropAllocation: () => void;
   onDraft: (draft: GenerationDraft) => void;
 }
 
@@ -57,6 +75,10 @@ export function GenerateDialog({
   memberIds,
   memberPages,
   target,
+  shapes,
+  shapeId,
+  allocation,
+  onDropAllocation,
   onDraft,
 }: GenerateDialogProps) {
   const generate = useActionMutation({ call: generateDraft, invalidates: [] });
@@ -73,6 +95,9 @@ export function GenerateDialog({
           generators={generators}
           memberCount={memberIds.length}
           memberPages={memberPages}
+          shapes={shapes}
+          allocation={allocation}
+          onDropAllocation={onDropAllocation}
         />
       ),
       onAdvance: async (state) => {
@@ -81,6 +106,8 @@ export function GenerateDialog({
           pages: pagesOf(state.pages) ?? 0,
           categoryIds: [...state.categoryIds],
           memberIds: [...memberIds],
+          intentionId: state.intentionId === "" ? null : state.intentionId,
+          allocation: allocation === null ? null : { ...allocation.byCategory },
         });
         return result.isDone ? { isDone: true, value: { ...state, draft: result.value } } : result;
       },
@@ -102,8 +129,10 @@ export function GenerateDialog({
       steps={steps}
       initialState={{
         generatorId: generators[0]?.id ?? "",
-        pages: target === null ? "" : String(target),
+        pages:
+          allocation !== null ? String(allocation.pages) : target === null ? "" : String(target),
         categoryIds: [],
+        intentionId: shapeId ?? shapes.find((shape) => shape.isOverall)?.id ?? "",
         draft: null,
       }}
       isDirty={(state) => state.draft !== null || state.categoryIds.length > 0}
@@ -129,9 +158,21 @@ interface AskStepProps {
   generators: readonly ListGenerator[];
   memberCount: number;
   memberPages: number;
+  shapes: readonly ListShape[];
+  allocation: GenerateDialogProps["allocation"];
+  onDropAllocation: () => void;
 }
 
-function AskStep({ state, onChange, generators, memberCount, memberPages }: AskStepProps) {
+function AskStep({
+  state,
+  onChange,
+  generators,
+  memberCount,
+  memberPages,
+  shapes,
+  allocation,
+  onDropAllocation,
+}: AskStepProps) {
   const id = useId();
   const { data: categories = [] } = useCategoriesQuery();
   const tops = categories.filter((category) => category.parentId === null);
@@ -184,6 +225,7 @@ function AskStep({ state, onChange, generators, memberCount, memberPages }: AskS
             inputMode="numeric"
             placeholder="e.g. 4,000"
             value={state.pages}
+            readOnly={allocation !== null}
             onChange={(event) => change({ pages: event.target.value })}
           />
         </Field>
@@ -220,21 +262,74 @@ function AskStep({ state, onChange, generators, memberCount, memberPages }: AskS
         </p>
       )}
 
-      <div className="grid gap-1">
-        <Label>Shape by</Label>
-        <p>
-          Overall, the default{" "}
-          <span className="text-muted-foreground">
-            — one intention supplies the scope and the mix
-          </span>
-        </p>
-        <p className="text-xs text-muted-foreground">
-          It is not attached to anything by this: what the list counts towards is worked out from
-          what ends up on it.
-        </p>
-      </div>
+      {allocation !== null && (
+        <div className="rounded-md border border-tone-purple-foreground/30 bg-tone-purple px-3 py-2 text-xs text-tone-purple-foreground">
+          <b className="font-semibold">
+            Correcting allocation from{" "}
+            {shapes.find((shape) => shape.id === state.intentionId)?.name ?? "the intention"}
+          </b>{" "}
+          {Object.entries(allocation.byCategory)
+            .map(
+              ([categoryId, pages]) =>
+                `${categories.find((category) => category.id === categoryId)?.name ?? categoryId} ${formatCount(pages)} pp`,
+            )
+            .join(" · ")}
+          . Accepted on Intentions; a category that cannot be filled stays short.{" "}
+          <button
+            type="button"
+            className="font-medium underline underline-offset-2"
+            onClick={onDropAllocation}
+          >
+            Use its plain mix instead
+          </button>
+        </div>
+      )}
+
+      <Field
+        id={`${id}-shape`}
+        label="Shape by"
+        hint="one intention supplies the scope and the mix"
+      >
+        <Select
+          value={state.intentionId}
+          disabled={allocation !== null}
+          onValueChange={(intentionId) => change({ intentionId })}
+        >
+          <SelectTrigger id={`${id}-shape`} className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {shapes.map((shape) => (
+              <SelectItem key={shape.id} value={shape.id}>
+                {shapeLabelOf(shape)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+      <p className="-mt-3 text-xs text-muted-foreground">
+        It is not attached to anything by this: what the list counts towards is worked out from what
+        ends up on it.
+      </p>
     </div>
   );
+}
+
+// "NDK Periodika — 2026 Q3 · only Periodicals · funded by NDK Periodika".
+function shapeLabelOf(shape: ListShape): string {
+  const funding =
+    shape.funding.kind === "project"
+      ? `funded by ${shape.funding.name}`
+      : shape.funding.kind === "none"
+        ? "unfunded only"
+        : null;
+  return [
+    shape.isOverall ? `${shape.name} — Overall, the default` : shape.name,
+    shape.scope === null ? null : `only ${shape.scope}`,
+    funding,
+  ]
+    .filter((part) => part !== null)
+    .join(" · ");
 }
 
 function PreviewStep({ draft }: { draft: GenerationDraft }) {

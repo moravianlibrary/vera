@@ -5,9 +5,8 @@
 // in its window. A tracking card draws the intended mix over the output, with the categories out
 // of the ±5 band; opened, the drift per category. Under both, the mix it reads and whose it is.
 // Its acts sit in the foot, beside what the Overall intention cannot have done to it.
-// TODO(rrandiak): *Generate* and the correcting list arrive with plan.md 6.4; *Edit mix* /
-// *Proportions* links to Categories with its `?i=` once Categories is built (step 7); labels
-// move to i18n.
+// TODO(rrandiak): *Edit mix* / *Proportions* links to Categories with its `?i=` once Categories
+// is built (step 7); labels move to i18n.
 
 import type { ReactNode } from "react";
 import { Link } from "react-router";

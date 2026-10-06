@@ -24,6 +24,7 @@ import { priorities } from "@/domain/entities";
 import { progressAfterGates, scopeOfIteration } from "@/domain/iterations";
 import type { ListState } from "@/domain/lists";
 import {
+  isInPool,
   isOverdue,
   isScanned,
   listStateOf,
@@ -34,12 +35,18 @@ import {
 import type { Permission } from "@/domain/permissions";
 import { can, hasPermission, scopesOf } from "@/domain/permissions";
 import { scopeOfProject } from "@/domain/projects";
-import { isRestricted, passesGates, statusFootnoteOf, validationOf } from "@/domain/status";
+import { isRestricted, statusFootnoteOf, validationOf } from "@/domain/status";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { dayOf } from "@/lib/value-range";
 import { countValues, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
+import {
+  countingMembersOf,
+  countsTowardsRowsOf,
+  generatedWithOf,
+  savedListMixOf,
+} from "@/mocks/intention-lists";
 import type { Outcome } from "@/mocks/mutations";
 import { replaceIteration, writeLog } from "@/mocks/mutations";
 import { mockToday } from "@/mocks/today";
@@ -119,6 +126,15 @@ function rowOf(list: DigitizationList): ListRow {
     ).length,
     cancelledCount: members.filter((iteration) => iteration.cancellation?.cause === "Decided")
       .length,
+    countsTowards: countsTowardsRowsOf(countingMembersOf(list.id), list.startsOn).map((row) => ({
+      id: row.intentionId,
+      name: row.name,
+      isOverall: row.isOverall,
+    })),
+    generatedWith: (() => {
+      const intention = generatedWithOf(list);
+      return intention === null ? null : { id: intention.id, name: intention.name };
+    })(),
   };
 }
 
@@ -212,6 +228,8 @@ function detailOf(list: DigitizationList): ListDetail {
     log: database.statusLog
       .filter((entry) => entry.subjectKind === "list" && entry.subjectId === list.id)
       .toSorted((first, second) => second.at.localeCompare(first.at)),
+    countsTowards: countsTowardsRowsOf(countingMembersOf(list.id), list.startsOn),
+    mix: savedListMixOf(list),
   };
 }
 
@@ -221,10 +239,6 @@ export function findListDetail(session: Session, listId: string): ListDetail | n
 }
 
 // ---------------------------------------------------------------- the pool
-
-export function isInPool(iteration: Iteration): boolean {
-  return iteration.progress === "Ready" && iteration.listId === null && passesGates(iteration);
-}
 
 export function topCategoryOf(categoryId: string): string {
   return categoryPathOf(database.categories, categoryId)[0]?.id ?? categoryId;

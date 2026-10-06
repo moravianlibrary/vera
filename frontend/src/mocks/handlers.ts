@@ -24,6 +24,7 @@ import {
 import {
   generationRequestSchema,
   listDraftSchema,
+  listReadingRequestSchema,
   notDigitizableRequestSchema,
   parseListSearchParams,
   parseListSliceParams,
@@ -66,6 +67,7 @@ import { retryBatch } from "@/mocks/additions";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
+import { listShapes, previewCorrection, readList } from "@/mocks/intention-lists";
 import {
   archiveIntention,
   canReadIntentions,
@@ -261,6 +263,17 @@ export function createHandlers(profile: MockUserProfile) {
       outcomeResponse(unarchiveIntention(currentSession(), String(params.intentionId))),
     ),
 
+    http.get(route(`${apiRoutes.intentions}/:intentionId/correction`), ({ params, request }) => {
+      const pages = Number(new URL(request.url).searchParams.get("pages"));
+      if (!Number.isInteger(pages) || pages <= 0) {
+        return problemResponse({ status: 422, message: "Say how many pages the list is for" });
+      }
+
+      return outcomeResponse(
+        previewCorrection(currentSession(), String(params.intentionId), pages),
+      );
+    }),
+
     http.get(route(`${apiRoutes.intentions}/:intentionId/deletion`), ({ params }) =>
       outcomeResponse(previewIntentionDeletion(currentSession(), String(params.intentionId))),
     ),
@@ -433,6 +446,17 @@ export function createHandlers(profile: MockUserProfile) {
       }
 
       return outcomeResponse(generateDraft(currentSession(), generation.data));
+    }),
+
+    http.get(route(apiRoutes.listShapes), () => outcomeResponse(listShapes(currentSession()))),
+
+    http.post(route(apiRoutes.listReading), async ({ request }) => {
+      const reading = listReadingRequestSchema.safeParse(await request.json());
+      if (!reading.success) {
+        return invalidResponse(reading.error);
+      }
+
+      return outcomeResponse(readList(currentSession(), reading.data));
     }),
 
     http.get(route(`${apiRoutes.digitizationLists}/:listId`), ({ params }) => {

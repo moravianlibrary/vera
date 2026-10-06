@@ -189,6 +189,32 @@ export const intentionDeletionSchema = z.object({
 });
 export type IntentionDeletion = z.infer<typeof intentionDeletionSchema>;
 
+// What a correcting list of so many pages would take, per category of the scope, shown and
+// accepted before anything is generated (STATUS "Intentions").
+export const correctionPreviewSchema = z.object({
+  outputPages: pages,
+  pages,
+  // The gaps add up to more than the pages, so each was cut in proportion.
+  isCut: z.boolean(),
+  unallocated: percent,
+  rows: z.array(
+    z.object({
+      categoryId: z.string(),
+      name: z.string(),
+      intended: percent.nullable(),
+      // Its share of the output now.
+      output: percent.nullable(),
+      newPages: pages,
+      // Its share once the new pages are digitized.
+      after: percent,
+      readyPages: pages,
+      // What the pool cannot cover: the draft stays short there.
+      shortPages: pages,
+    }),
+  ),
+});
+export type CorrectionPreview = z.infer<typeof correctionPreviewSchema>;
+
 export const intentionTemplateDraftSchema = z.object({
   namePattern: z
     .string()
@@ -240,6 +266,16 @@ export async function unarchiveIntention(intentionId: string): Promise<Intention
 
 export async function previewIntentionDeletion(intentionId: string): Promise<IntentionDeletion> {
   return getJson(`${intentionRoute(intentionId)}/deletion`, intentionDeletionSchema);
+}
+
+export async function previewCorrection(
+  intentionId: string,
+  pages: number,
+): Promise<CorrectionPreview> {
+  return getJson(
+    `${intentionRoute(intentionId)}/correction?pages=${pages}`,
+    correctionPreviewSchema,
+  );
 }
 
 export async function deleteIntention(intentionId: string): Promise<void> {

@@ -4,12 +4,15 @@
 // Targets column. Where only one column fits, a Targets / Tracking switch picks it (`?col=track`);
 // `?i=` opens one card, marks it and scrolls to it, `?t=` marks one repeat. *New intention* and
 // *Edit* need `intention.edit`, *New repeat* and a repeat's *Edit* `intention.repeat`; what was
-// done is said above the columns, and the card it was done to is marked.
+// done is said above the columns, and the card it was done to is marked. Whoever builds lists,
+// while a generator runs, starts one from a card (intentions.md §4.4): shaped by it, with the
+// pages a behind-pace target is short, or a correcting run's allocation for a tracking card out
+// of the band.
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { useSearchParams } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import type { IntentionIndex, IntentionRow, IntentionTemplateRow } from "@/api/intentions";
 import { archiveIntention, unarchiveIntention } from "@/api/intentions";
 import type { ViewAction } from "@/components/actions/action-bar";
@@ -28,6 +31,7 @@ import type { NoteTone } from "@/domain/status-notes";
 import { IntentionCard } from "@/features/intentions/intention-card";
 import type { IntentionSource } from "@/features/intentions/intention-dialogs";
 import {
+  CorrectionDialog,
   DeleteIntentionDialog,
   IntentionFormDialog,
   TemplateFormDialog,
@@ -49,6 +53,8 @@ import {
   intentionInvalidations,
   useIntentionIndexQuery,
 } from "@/features/intentions/use-intentions-query";
+import { generationHrefOf } from "@/features/lists/lists-view";
+import { useListGeneratorsQuery } from "@/features/lists/use-lists-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useProjectsQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
@@ -61,6 +67,7 @@ type OpenDialog =
   | { kind: "intention"; source: IntentionSource }
   | { kind: "delete"; row: IntentionRow }
   | { kind: "template"; row: IntentionTemplateRow | null }
+  | { kind: "correct"; row: IntentionRow }
   | null;
 
 interface Note {
@@ -82,6 +89,8 @@ export function IntentionsPage() {
   const { data: session } = useSessionQuery();
   const { data: projects = [] } = useProjectsQuery();
   const [params, setParams] = useSearchParams();
+  const canGenerate = session !== undefined && can(session, "list.create");
+  const { data: generators = [] } = useListGeneratorsQuery({ isEnabled: canGenerate });
   const [dialog, setDialog] = useState<OpenDialog>(null);
   const [note, setNote] = useState<Note | null>(null);
   const archive = useActionMutation({
@@ -124,26 +133,62 @@ export function IntentionsPage() {
         : { tone: "green", title: `Unarchived ${intention.name}.`, text: "Back on the page." },
     );
   };
+  const generateActionOf = (row: IntentionRow): ViewAction | null => {
+    const { intention } = row;
+    if (
+      !canGenerate ||
+      generators.length === 0 ||
+      row.state === "Ended" ||
+      intention.archived !== null
+    ) {
+      return null;
+    }
+
+    const isTracking = intention.targetPages === null;
+    if (isTracking && row.outputPages > 0 && row.outOfBandCount > 0) {
+      return {
+        id: "generate",
+        label: "Generate correcting list…",
+        onSelect: () => setDialog({ kind: "correct", row }),
+      };
+    }
+
+    const catchUp = row.verdict === "behindPace" ? (row.catchUpPages ?? 0) : 0;
+    return {
+      id: "generate",
+      label:
+        catchUp > 0
+          ? `Generate catch-up — ${formatCount(catchUp)} pp`
+          : isTracking
+            ? "Generate against this mix"
+            : "Generate a list",
+      href: generationHrefOf({
+        intentionId: intention.id,
+        pages: catchUp > 0 ? catchUp : null,
+        allocation: null,
+      }),
+    };
+  };
   const acts: IntentionActs = {
     cardActionsOf: (row) => {
-      if (!canEdit(row)) {
-        return [];
-      }
-
+      const generate = generateActionOf(row);
       const { intention } = row;
       const isMet = intention.targetPages !== null && row.deliveredPages >= intention.targetPages;
       const isArchivable =
         !intention.isOverall && (row.state === "Ended" || isMet || intention.targetPages === null);
-      return [
-        {
-          id: "edit",
-          label: "Edit",
-          onSelect: () => setDialog({ kind: "intention", source: { kind: "edit", row } }),
-        },
-        ...(isArchivable
-          ? [{ id: "archive", label: "Archive", onSelect: () => void toggleArchived(row) }]
-          : []),
-      ];
+      const edits: ViewAction[] = canEdit(row)
+        ? [
+            {
+              id: "edit",
+              label: "Edit",
+              onSelect: () => setDialog({ kind: "intention", source: { kind: "edit", row } }),
+            },
+            ...(isArchivable
+              ? [{ id: "archive", label: "Archive", onSelect: () => void toggleArchived(row) }]
+              : []),
+          ]
+        : [];
+      return [...(generate === null ? [] : [generate]), ...edits];
     },
     foldActionOf: (row) =>
       canEdit(row) && !row.intention.isOverall
@@ -227,8 +272,22 @@ interface PageDialogsProps {
 }
 
 function PageDialogs({ dialog, index, session, onClose, onOpen, onDone }: PageDialogsProps) {
+  const navigate = useNavigate();
   if (dialog === null) {
     return null;
+  }
+
+  if (dialog.kind === "correct") {
+    return (
+      <CorrectionDialog
+        isOpen
+        onClose={onClose}
+        row={dialog.row}
+        onAccept={(pages, allocation) =>
+          navigate(generationHrefOf({ intentionId: dialog.row.intention.id, pages, allocation }))
+        }
+      />
+    );
   }
 
   if (dialog.kind === "template") {

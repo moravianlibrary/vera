@@ -1,11 +1,13 @@
 // Digitization lists within the caller's reach, a slice at a time, one list with its members,
-// and the pool's size for whoever builds lists. Saving a list moves items in and out of the pool
-// and changes what Documents shows of them, so it refetches all three.
+// and the pool's size, the generators and the intentions to shape by for whoever builds lists.
+// Saving a list moves items in and out of the pool, changes what Documents shows of them and
+// what intentions count, so it refetches all of them.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
-import type { ListQuery, PoolQuery } from "@/api/lists";
-import { findList, listGenerators, listLists, listPool } from "@/api/lists";
+import type { ListQuery, ListReadingRequest, PoolQuery } from "@/api/lists";
+import { findList, listGenerators, listLists, listPool, listShapes, readList } from "@/api/lists";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
+import { intentionsQueryKey } from "@/features/intentions/use-intentions-query";
 import { usePagedList } from "@/hooks/use-paged-list";
 
 export const listsQueryKey = ["lists"] as const;
@@ -35,10 +37,29 @@ export function usePoolSizeQuery(isEnabled: boolean) {
   });
 }
 
-// The list generators running; none means no Generate.
-export function useListGeneratorsQuery() {
-  return useQuery({ queryKey: [...listsQueryKey, "generators"], queryFn: listGenerators });
+// The list generators running; none means no Generate. Only whoever builds lists may ask.
+export function useListGeneratorsQuery({ isEnabled = true }: { isEnabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: [...listsQueryKey, "generators"],
+    queryFn: isEnabled ? listGenerators : skipToken,
+  });
 }
 
-// What saving or acting on a list changes.
-export const listInvalidations = [listsQueryKey, documentsQueryKey];
+// The intentions a draft can be shaped by.
+export function useListShapesQuery() {
+  return useQuery({ queryKey: [...listsQueryKey, "shapes"], queryFn: listShapes });
+}
+
+// What a draft counts towards and its fill against a mix, as the editor changes it; the last
+// answer stays while the next is asked.
+export function useListReadingQuery(request: ListReadingRequest) {
+  return useQuery({
+    queryKey: [...listsQueryKey, "reading", request],
+    queryFn: () => readList(request),
+    placeholderData: (previous) => previous,
+  });
+}
+
+// What saving or acting on a list changes: what is on it moves in Documents, and the
+// intentions it counts towards count it.
+export const listInvalidations = [listsQueryKey, documentsQueryKey, intentionsQueryKey];

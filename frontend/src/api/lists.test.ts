@@ -15,11 +15,13 @@ import {
   listGenerators,
   listLists,
   listPool,
+  listShapes,
   markDone,
   markNotDigitizable,
   parseListSearchParams,
   previewDeletion,
   previewMarkDone,
+  readList,
   saveList,
   toListSearchParams,
 } from "@/api/lists";
@@ -312,6 +314,8 @@ describe("generating a draft", () => {
       pages: 4000,
       categoryIds: [],
       memberIds: [],
+      intentionId: null,
+      allocation: null,
     });
     const after = await listPool({}, { limit: 200 });
 
@@ -324,7 +328,14 @@ describe("generating a draft", () => {
 
   it("is deterministic when rule-based, and keeps the current members fixed", async () => {
     signInAs("digitization");
-    const request = { generatorId: "pi14", pages: 3000, categoryIds: [], memberIds: ["IT3"] };
+    const request = {
+      generatorId: "pi14",
+      pages: 3000,
+      categoryIds: [],
+      memberIds: ["IT3"],
+      intentionId: null,
+      allocation: null,
+    };
 
     const first = await generateDraft(request);
     const second = await generateDraft(request);
@@ -343,6 +354,8 @@ describe("generating a draft", () => {
       pages: 4000,
       categoryIds: ["c2"],
       memberIds: [],
+      intentionId: null,
+      allocation: null,
     });
 
     expect(draft.picks.every(({ item }) => item.iteration.categoryId.startsWith("c2"))).toBe(true);
@@ -359,6 +372,8 @@ describe("generating a draft", () => {
       pages: 4000,
       categoryIds: [],
       memberIds: [],
+      intentionId: null,
+      allocation: null,
     });
 
     expect(draft.picks.some(({ reason }) => reason.includes("priority · asked"))).toBe(false);
@@ -371,6 +386,8 @@ describe("generating a draft", () => {
       pages: 1500,
       categoryIds: ["c3"],
       memberIds: [],
+      intentionId: null,
+      allocation: null,
     });
 
     const detail = await createList({
@@ -384,6 +401,90 @@ describe("generating a draft", () => {
 
     expect(detail.row.list.generated?.generator).toBe("PriorityFirst 1.2.0");
     expect(detail.log.map((entry) => entry.event)).toContain("Generated — PriorityFirst 1.2.0");
+  });
+});
+
+describe("shaping a draft by an intention", () => {
+  const shaped = {
+    generatorId: "pi14",
+    pages: 2000,
+    categoryIds: [],
+    memberIds: [],
+    intentionId: "i8",
+    allocation: null,
+  };
+
+  it("offers the intentions neither ended nor archived, Overall first", async () => {
+    signInAs("digitization");
+    const shapes = await listShapes();
+
+    expect(shapes[0]).toMatchObject({ id: "i4", isOverall: true });
+    expect(shapes.map((shape) => shape.id)).not.toContain("i7");
+    expect(shapes.map((shape) => shape.id)).not.toContain("i10");
+    expect(shapes.find((shape) => shape.id === "i2")?.funding).toEqual({
+      kind: "project",
+      name: "VISK 7 / 2026",
+    });
+  });
+
+  it("draws only from the intention's scope, and records its mix's revision", async () => {
+    signInAs("digitization");
+    const draft = await generateDraft(shaped);
+
+    expect(draft.shapedBy).toEqual({ intentionId: "i8", name: "Periodicals push — watch" });
+    expect(draft.picks.every(({ item }) => item.iteration.categoryId.startsWith("c2"))).toBe(true);
+    expect(draft.provenance).toMatchObject({ intentionId: "i8", mixRevision: 2, allocation: null });
+  });
+
+  it("fills a correcting run's allocation and leaves the rest short, never re-spread", async () => {
+    signInAs("digitization");
+    const draft = await generateDraft({ ...shaped, allocation: { c21: 300, c22: 0 } });
+
+    expect(draft.spreadCount).toBe(0);
+    expect(draft.picks.every(({ item }) => item.iteration.categoryId === "c21")).toBe(true);
+    expect(draft.provenance.allocation).toEqual({ c21: 300, c22: 0 });
+    expect(await statusOf(generateDraft({ ...shaped, allocation: { c1: 300 } }))).toBe(422);
+    expect(await statusOf(generateDraft({ ...shaped, intentionId: "i10" }))).toBe(422);
+  });
+});
+
+describe("what a list counts towards", () => {
+  it("is worked out from its members and start, Overall last, beside what it was generated with", async () => {
+    signInAs("digitization");
+    const detail = await findList("L-2026-015");
+
+    expect(detail?.row.generatedWith).toEqual({ id: "i3", name: "Regional catch-up" });
+    expect(detail?.countsTowards.map((row) => row.intentionId)).toContain("i3");
+    expect(detail?.countsTowards.at(-1)).toMatchObject({ intentionId: "i4", isOverall: true });
+    expect(detail?.row.countsTowards.map((row) => row.id)).toEqual(
+      detail?.countsTowards.map((row) => row.intentionId),
+    );
+    expect(detail?.mix.intention.id).toBe("i3");
+  });
+
+  it("says what a draft would stop counting towards, and reads its fill against a mix", async () => {
+    signInAs("digitization");
+    const detail = await findList("L-2026-015");
+    const memberIds = detail?.members.map((item) => item.iteration.id) ?? [];
+    const reading = await readList({
+      listId: "L-2026-015",
+      startsOn: "2026-01-05",
+      memberIds,
+      intentionId: "i8",
+      targetPages: 1000,
+      allocation: null,
+    });
+
+    expect(reading.stopsCountingTowards.map((row) => row.id)).toContain("i3");
+    expect(reading.mix.scope).toBe("Periodicals");
+    expect(reading.mix.rows.map((row) => [row.name, row.goalPages])).toEqual([
+      ["Regional", 550],
+      ["National", 350],
+      ["Specialist", null],
+    ]);
+
+    signInAs("curator");
+    expect(await statusOf(listShapes())).toBe(403);
   });
 });
 

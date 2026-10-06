@@ -174,7 +174,11 @@ export type IntentionTemplate = z.infer<typeof intentionTemplateSchema>;
 // What a list was generated with: provenance, never what it counts towards (intentions.md §5).
 export const listGenerationSchema = z.object({
   intentionId: id,
+  // The revision of the mix it read, since a shared mix changes after (§5).
+  mixRevision: z.number().int().positive(),
   pages: z.number().int().nonnegative(),
+  // A correcting run's pages per category, accepted before generating; none when the mix decided.
+  allocation: z.record(z.string(), z.number().int().nonnegative()).nullable(),
   // Plugin and version: "PriorityFirst 1.2.0".
   generator: z.string(),
   at: timestamp,

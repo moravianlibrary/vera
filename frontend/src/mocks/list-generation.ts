@@ -4,17 +4,23 @@
 // the oldest ask, never splitting a document. A share it cannot fill is shortfall: re-spread to
 // categories that still have supply, nearest first and never into one at 0%, and reported with
 // why. Current members stay fixed; it tops up. Nothing is saved: the result is a draft.
+// One intention shapes it (Overall unless another is picked): the pool narrows to its funding and
+// subtree, and its mix is read inside its scope. A correcting run's allocation fixes the pages of
+// each category the mix is read across, split below by the shares; what it cannot fill stays
+// short there, never re-spread (STATUS "Intentions").
 
 import type { GenerationDraft, GenerationRequest, ListItem, ShortfallCause } from "@/api/lists";
-import { leafCategoriesOf } from "@/domain/categories";
+import { categoryLineageOf, leafCategoriesOf } from "@/domain/categories";
 import type { Category, Session } from "@/domain/entities";
-import { effectiveShareOf } from "@/domain/mixes";
+import { isInIntentionScope, mixNodesOf, mixOwnerOf, shareWithinOf } from "@/domain/intentions";
+import { isInPool } from "@/domain/lists";
 import { hasPermission } from "@/domain/permissions";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { database } from "@/mocks/database";
 import { advisorReasons, listGenerators } from "@/mocks/fixtures/list-generators";
+import { shapeableIntentions } from "@/mocks/intention-lists";
 import { distributionOf, overallIntention } from "@/mocks/intentions";
-import { byPriorityThenAge, isHeldInReview, isInPool, itemOf, topCategoryOf } from "@/mocks/lists";
+import { byPriorityThenAge, isHeldInReview, itemOf, topCategoryOf } from "@/mocks/lists";
 import type { Outcome } from "@/mocks/mutations";
 
 // A little slack on a category's own goal, so one document just over it is still taken.
@@ -43,6 +49,35 @@ export function generateDraft(
     return { refusal: { status: 404, message: "No such list generator is running" } };
   }
 
+  const shapedBy =
+    request.intentionId === null
+      ? overallIntention()
+      : shapeableIntentions().find((intention) => intention.id === request.intentionId);
+  if (shapedBy === undefined) {
+    return {
+      refusal: {
+        status: 422,
+        message: "Shape it by an intention that is neither ended nor archived",
+      },
+    };
+  }
+
+  const { categories } = database;
+  const scope = shapedBy.scopeCategoryId;
+  const nodes = mixNodesOf(categories, scope);
+  const { allocation } = request;
+  if (
+    allocation !== null &&
+    Object.keys(allocation).some((id) => !nodes.some((node) => node.id === id))
+  ) {
+    return {
+      refusal: {
+        status: 422,
+        message: "Allocate pages only to the categories its mix is read across",
+      },
+    };
+  }
+
   const { pages, categoryIds } = request;
   const tolerance = generator.tolerance;
   const isAdvisor = generator.generatorClass === "AiBased";
@@ -51,12 +86,30 @@ export function generateDraft(
   const fixed = items.filter((item) => memberIds.has(item.iteration.id));
   const available = items
     .filter((item) => isInPool(item.iteration) && !memberIds.has(item.iteration.id))
+    .filter((item) => isInIntentionScope(shapedBy, item.iteration, categories))
     .filter((item) => item.pages !== null)
     .toSorted(byPriorityThenAge);
-  const leaves = leafCategoriesOf(database.categories);
-  const overall = overallIntention();
-  const { shares } = distributionOf(overall);
-  const shareOf = (categoryId: string) => effectiveShareOf(database.categories, shares, categoryId);
+  const isUnder = (categoryId: string, ancestorId: string) =>
+    categoryLineageOf(categories, categoryId).includes(ancestorId);
+  const leaves = leafCategoriesOf(categories).filter(
+    (leaf) => scope === null || isUnder(leaf.id, scope),
+  );
+  const distribution = distributionOf(mixOwnerOf(shapedBy, database.intentions));
+  const shareOf = (categoryId: string) =>
+    shareWithinOf(categories, distribution, scope, categoryId);
+  // Its share of the pages, or its node's allocated pages split by the shares below the node.
+  const goalOf = (leaf: Category) => {
+    const share = shareOf(leaf.id) ?? 0;
+    if (allocation === null) {
+      return (pages * share) / 100;
+    }
+
+    const node = nodes.find((candidate) => isUnder(leaf.id, candidate.id));
+    const nodeShare = node === undefined ? 0 : (shareOf(node.id) ?? 0);
+    return node === undefined || nodeShare === 0
+      ? 0
+      : ((allocation[node.id] ?? 0) * share) / nodeShare;
+  };
   const isAllowed = (categoryId: string) =>
     categoryIds.length === 0 || categoryIds.includes(topCategoryOf(categoryId));
   const pagesIn = (categoryId: string, of: readonly ListItem[]) =>
@@ -68,7 +121,7 @@ export function generateDraft(
   const picked = new Set<string>();
   let total = fixed.reduce((sum, item) => sum + (item.pages ?? 0), 0);
   const got = new Map(leaves.map((leaf) => [leaf.id, pagesIn(leaf.id, fixed)]));
-  const goal = new Map(leaves.map((leaf) => [leaf.id, (pages * (shareOf(leaf.id) ?? 0)) / 100]));
+  const goal = new Map(leaves.map((leaf) => [leaf.id, goalOf(leaf)]));
   const take = (item: ListItem, covers: Category | null) => {
     const asked = `${item.iteration.priority} priority · asked ${formatShortCalendarDay(item.askedAt.slice(0, 10))}`;
     const isInPlaceOf = covers !== null && covers.id !== item.iteration.categoryId;
@@ -106,15 +159,14 @@ export function generateDraft(
     return missing > target * tolerance ? missing : 0;
   };
 
-  // A share that cannot be filled goes to categories that still have supply, nearest first.
+  // A share that cannot be filled goes to categories that still have supply, nearest first; a
+  // correcting run stays short instead.
   let spreadCount = 0;
-  const short = leaves.filter((leaf) => shortOf(leaf.id) > 0);
+  const short = allocation === null ? leaves.filter((leaf) => shortOf(leaf.id) > 0) : [];
   for (const leaf of short.toSorted((first, second) => shortOf(second.id) - shortOf(first.id))) {
     let need = shortOf(leaf.id);
     const distanceOf = (item: ListItem) => {
-      const category = database.categories.find(
-        (candidate) => candidate.id === item.iteration.categoryId,
-      );
+      const category = categories.find((candidate) => candidate.id === item.iteration.categoryId);
       if (category?.parentId === leaf.parentId) {
         return 0;
       }
@@ -158,15 +210,17 @@ export function generateDraft(
   return {
     value: {
       generator,
-      shapedBy: { intentionId: overall.id, name: overall.name },
+      shapedBy: { intentionId: shapedBy.id, name: shapedBy.name },
       picks,
       requestedPages: pages,
       totalPages: total,
       spreadCount,
       shortfalls,
       provenance: {
-        intentionId: overall.id,
+        intentionId: shapedBy.id,
+        mixRevision: distribution.revision,
         pages,
+        allocation,
         generator: `${generator.plugin} ${generator.version}`,
         at: new Date().toISOString(),
       },

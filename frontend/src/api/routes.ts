@@ -21,6 +21,10 @@ export const apiRoutes = {
   digitizationListPool: "/digitization-lists/pool",
   listGenerators: "/digitization-lists/generators",
   listGeneration: "/digitization-lists/generate",
+  // The intentions a draft can be shaped by.
+  listShapes: "/digitization-lists/shapes",
+  // What a draft counts towards, and its fill against one intention's mix.
+  listReading: "/digitization-lists/reading",
   batches: "/batches",
   documents: "/documents",
   iterations: "/iterations",

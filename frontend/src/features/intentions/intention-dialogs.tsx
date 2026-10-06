@@ -5,11 +5,12 @@
 // cannot be picked, and an owner others track switches only by moving them along. Before saving
 // it says where the intention lands, what saving recounts and the percentages it would read
 // beside the ones it reads now, all from the server's preview. Deleting says what was generated
-// with it; a repeat changes only the occurrences still to come.
+// with it; a repeat changes only the occurrences still to come. A correcting run shows the
+// allocation it would hand to the list editor before anything is generated.
 // TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
-import { useId } from "react";
+import { useId, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import type {
@@ -24,6 +25,7 @@ import {
   createIntention,
   createIntentionTemplate,
   deleteIntention,
+  previewCorrection,
   previewIntention,
   previewIntentionDeletion,
   saveIntention,
@@ -31,6 +33,7 @@ import {
 } from "@/api/intentions";
 import { Field } from "@/components/classification-fields";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
+import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { FieldError } from "@/components/iteration-dialogs";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -45,6 +48,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { Category, IntentionFunding, Project, Session } from "@/domain/entities";
 import { repeatEverySchema } from "@/domain/entities";
+import { mixBand } from "@/domain/intentions";
 import { can } from "@/domain/permissions";
 import { scopeOfProject } from "@/domain/projects";
 import { columnTitles, everyLabels, shareTextOf } from "@/features/intentions/intentions-view";
@@ -931,5 +935,179 @@ export function TemplateFormDialog({
         );
       }}
     />
+  );
+}
+
+// ---------------------------------------------------------------- a correcting run
+
+interface CorrectionDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  row: IntentionRow;
+  // Hands the accepted allocation to the list editor.
+  onAccept: (pages: number, allocation: Record<string, number>) => void;
+}
+
+const correctionPagesOf = (typed: string) => {
+  const digits = Number.parseInt(typed.replace(/\D/g, ""), 10);
+  return Number.isNaN(digits) || digits <= 0 ? null : digits;
+};
+
+// The allocation that brings output back towards the mix, shown and accepted before anything is
+// generated (STATUS "Intentions"). What the pool cannot cover stays short, and says so; moving
+// those pages to another category is a decision, not a default.
+export function CorrectionDialog({ isOpen, onClose, row, onAccept }: CorrectionDialogProps) {
+  const id = useId();
+  const { intention } = row;
+  const [typed, setTyped] = useState("3000");
+  const pages = correctionPagesOf(typed);
+  const { data: preview } = useQuery({
+    queryKey: ["intention-correction", intention.id, pages],
+    queryFn: () => previewCorrection(intention.id, pages ?? 0),
+    enabled: isOpen && pages !== null,
+    placeholderData: (previous) => previous,
+  });
+  const within = row.scope === null ? null : (row.scope.path.at(-1) ?? null);
+  const short = preview?.rows.filter((correction) => correction.shortPages > 0) ?? [];
+
+  return (
+    <DialogShell
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Correcting list — ${intention.name}`}
+      description="The allocation a correcting list would take, before it is generated."
+      width="wide"
+      primary={{
+        label: "Generate draft with this allocation",
+        isDisabled: pages === null || preview === undefined,
+        onSelect: () => {
+          if (pages === null || preview === undefined) {
+            return;
+          }
+
+          onAccept(
+            pages,
+            Object.fromEntries(
+              preview.rows.map((correction) => [correction.categoryId, correction.newPages]),
+            ),
+          );
+        },
+      }}
+    >
+      <div className="grid gap-4">
+        <p className="text-xs text-muted-foreground">
+          Output{within === null ? "" : ` in ${within}`} so far:{" "}
+          <b className="font-semibold text-foreground">{formatCount(row.outputPages)} pp</b> since{" "}
+          {formatCalendarDay(intention.countsFrom)}. The new pages go where the output is short of
+          the mix{within === null ? "" : ` within ${within}`}.
+        </p>
+        <Field id={`${id}-pages`} label="Pages for the list">
+          <Input
+            id={`${id}-pages`}
+            inputMode="numeric"
+            className="max-w-40"
+            value={typed}
+            onChange={(event) => setTyped(event.target.value)}
+          />
+        </Field>
+        {preview !== undefined && (
+          <>
+            <div>
+              <table className="w-full text-xs">
+                <thead className="text-muted-foreground">
+                  <tr className="border-b">
+                    <th className="py-1.5 text-left font-medium">
+                      {within === null ? "Category" : `Within ${within}`}
+                    </th>
+                    <th className="text-right font-medium">Intended</th>
+                    <th className="hidden text-right font-medium sm:table-cell">Output now</th>
+                    <th className="text-right font-medium">New pages</th>
+                    <th className="text-right font-medium">After</th>
+                    <th className="hidden text-right font-medium sm:table-cell">Ready</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {preview.rows.map((correction) => {
+                    const drift =
+                      correction.intended === null
+                        ? null
+                        : Math.round(correction.after - correction.intended);
+                    return (
+                      <tr key={correction.categoryId} className="border-b last:border-0">
+                        <td className="py-1.5">{correction.name}</td>
+                        <td
+                          className={cn(
+                            "text-right tabular-nums",
+                            correction.intended === null && "text-tone-amber-foreground",
+                          )}
+                        >
+                          {correction.intended === null
+                            ? "no share"
+                            : shareTextOf(correction.intended)}
+                        </td>
+                        <td className="hidden text-right tabular-nums sm:table-cell">
+                          {correction.output === null ? "—" : `${Math.round(correction.output)}%`}
+                        </td>
+                        <td className="text-right font-semibold tabular-nums">
+                          {formatCount(correction.newPages)}
+                        </td>
+                        <td className="text-right tabular-nums">
+                          {Math.round(correction.after)}%
+                          {drift !== null && Math.abs(drift) > mixBand && (
+                            <span
+                              className={cn(
+                                "ml-1 font-semibold",
+                                drift > 0
+                                  ? "text-tone-red-foreground"
+                                  : "text-tone-blue-foreground",
+                              )}
+                            >
+                              {drift > 0 ? "+" : ""}
+                              {drift}
+                            </span>
+                          )}
+                        </td>
+                        <td
+                          className={cn(
+                            "hidden text-right tabular-nums sm:table-cell",
+                            correction.shortPages > 0 && "font-semibold text-tone-amber-foreground",
+                          )}
+                        >
+                          {formatCount(correction.readyPages)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {preview.unallocated > 0.5 && (
+              <p className="text-xs text-tone-amber-foreground">
+                {Math.round(preview.unallocated)}% of the mix is unallocated — nothing is drawn for
+                it.
+              </p>
+            )}
+            {short.length > 0 && (
+              <p className="rounded-md border border-tone-amber-foreground/30 bg-tone-amber px-3 py-2 text-xs text-tone-amber-foreground">
+                <b className="font-semibold">Short:</b>{" "}
+                {short
+                  .map(
+                    (correction) =>
+                      `${correction.name} needs ${formatCount(correction.newPages)} pp, ${formatCount(correction.readyPages)} are ready`,
+                  )
+                  .join(" · ")}
+                . The draft stays short there and says so; it does not move those pages elsewhere.
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              Each category gets what it lacks against its share of the output plus these pages
+              {preview.isCut ? ", cut in proportion because the gaps add up to more" : ""}. The
+              draft is not saved, and the list counts towards whatever it matches — not towards this
+              intention by being generated from it.
+            </p>
+          </>
+        )}
+      </div>
+    </DialogShell>
   );
 }

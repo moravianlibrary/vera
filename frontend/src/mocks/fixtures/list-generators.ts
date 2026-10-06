@@ -1,7 +1,6 @@
 // The list generator plugin instances (docs/demos/shared/vera-data.js pt11, pt12; plugins.md
-// §4.9). Generation is shaped by the Overall intention's mix (fixtures/intentions.ts).
-// TODO(rrandiak): *Shape by* another intention, and correcting allocations, come with the
-// intention editor (plan.md 6.3–6.4); the instances move to the Plugins fixtures with step 10.
+// §4.9). Generation is shaped by an intention's mix (fixtures/intentions.ts), Overall by default.
+// TODO(rrandiak): the instances move to the Plugins fixtures with step 10.
 
 import type { ListGenerator } from "@/api/lists";
 

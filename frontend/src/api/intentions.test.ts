@@ -13,6 +13,7 @@ import {
   createIntentionTemplate,
   deleteIntention,
   listIntentionIndex,
+  previewCorrection,
   previewIntention,
   previewIntentionDeletion,
   saveIntention,
@@ -281,6 +282,33 @@ describe("creating and editing an intention", () => {
       ["National", 35, 50],
       ["Specialist", null, 20],
     ]);
+  });
+});
+
+describe("a correcting run", () => {
+  it("allocates the pages where output is short of the mix, before anything is generated", async () => {
+    signInAs("digitization");
+    const push = rowOf(await listIntentionIndex(), "i8");
+    const preview = await previewCorrection("i8", 3000);
+    const newPages = preview.rows.reduce((sum, row) => sum + row.newPages, 0);
+
+    expect(preview.outputPages).toBe(push.outputPages);
+    expect(preview.rows.map((row) => [row.name, row.intended])).toEqual([
+      ["Regional", 55],
+      ["National", 35],
+      ["Specialist", null],
+    ]);
+    expect(preview.rows.find((row) => row.name === "Specialist")?.newPages).toBe(0);
+    expect(Math.abs(newPages - 3000)).toBeLessThanOrEqual(20);
+    expect(
+      preview.rows.every((row) => row.shortPages === Math.max(0, row.newPages - row.readyPages)),
+    ).toBe(true);
+  });
+
+  it("is only for whoever builds lists", async () => {
+    signInAs("curator");
+
+    expect(await statusOf(previewCorrection("i8", 3000))).toBe(403);
   });
 });
 

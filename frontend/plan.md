@@ -85,7 +85,7 @@ green after every extraction.
 3. The detail page, with members and history.
 4. New, Edit, Members, Approve, Reject, Delete.
 
-## 6. Intentions
+## 6. Intentions — done
 
 1. Mock API: the counting rules, and tracking another intention's mix.
 2. The Targets and Tracking columns of cards, with PaceBars and MixBars.

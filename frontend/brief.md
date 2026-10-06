@@ -90,7 +90,7 @@ zod v4.
 | The pane | `Pane` / `paneStateOf` / `Outcome` (`components/pane-state.tsx`); `DetailCard`, `FactGrid`, `StatTiles` with an optional `meter` (`detail-card.tsx`), `StatusNote`, `record-cards.tsx` (askers, copies, catalog, heading; `HistoryCard` takes a log alone, without a document) |
 | Actions | `ViewAction` + `ActionBar` (per-tier cap, `isInMenu` for More ▾); `PageHeader actions` |
 | Who may | `can()` (`domain/permissions.ts`) / `useCan()` with a scoped record |
-| Dialogs | `components/dialogs/`: `DialogShell` (`head`, `onBack`), `ConsequenceDialog` (A, fed by a server dry run), `ReasonDialog` (B), `FormDialog` (C), `SteppedDialog` (F, with `StepIndicator`), `MessageDialog`. Not built: `SetEditorDialog` (D), `PickerDialog` (E), see component-interfaces §6.5–6.6 |
+| Dialogs | `components/dialogs/`: `DialogShell` (`head`, `onBack`, `secondary` for an editor's *Delete…*; `FormDialog` passes it), `ConsequenceDialog` (A, fed by a server dry run), `ReasonDialog` (B), `FormDialog` (C), `SteppedDialog` (F, with `StepIndicator`), `MessageDialog`. Not built: `SetEditorDialog` (D), `PickerDialog` (E), see component-interfaces §6.5–6.6 |
 | Doing something | `useActionMutation` → `ActionResult`; refusals are RFC 9457 Problem Details, worded by the action's `refusalTexts[code]`, then `detail`, then by status; `invalidates` lists every query the change shows in |
 | Tier | `useTier`, `valueForTier` (phone < 768, small < 1280, notebook < 1600, large); container queries for what the room decides |
 | Words | `plural`, `formatDay`, `joinDetails` |
@@ -102,7 +102,7 @@ zod v4.
 | Bars against a target | `PaceBars` (`components/visualizations/pace-bars.tsx`): the server's numbers, an even-pace mark; no time bar for an open-ended target |
 | A mix as bars | `MixBar` (one stacked bar, unallocated hatched) and `MixBars` (intended over output) in `components/visualizations/mix-bars.tsx`, `shareToneOf` for a category's colour |
 | A record's own page | `RecordPage` (`components/layout/record-page.tsx`: note, cards, aside, history), `PageHeader breadcrumb`, `MembersCard` (`components/members-card.tsx`) |
-| A mix's shares | `effectiveShareOf` (`domain/mixes.ts`); `shareWithinOf` and the counting rules (planned, delivered, output, pace, drift, fill, mix owner and trackers) in `domain/intentions.ts`; mixes are `mocks/fixtures/intentions.ts`, list generators `mocks/fixtures/list-generators.ts` until plugins (step 10) |
+| A mix's shares | `effectiveShareOf` (`domain/mixes.ts`); `shareWithinOf` and the counting rules (planned, delivered, output, pace, drift, fill, mix owner and trackers, a correcting run's allocation, what a list counts towards and its fill against a mix, who may) in `domain/intentions.ts`; `isInPool` in `domain/lists.ts`; mixes are `mocks/fixtures/intentions.ts`, list generators `mocks/fixtures/list-generators.ts` until plugins (step 10) |
 
 **Not built yet** (the step that first needs one builds it, as a shared part,
 from component-interfaces): `CardGrid` §1.4 (Home),
@@ -129,7 +129,7 @@ Generate… and the list's acts; the model for a view without watchlists, for an
 editor page, and for acts behind a server dry run), and `features/projects/`
 (cards in sections, a record's own page, acts on both; the model for a page
 that is not master–detail), and `features/intentions/` (two columns of cards that
-open in place; read-only until 6.3). Routes in `src/app.tsx`,
+open in place; an editor with a server preview, and a hand-off to the Lists editor by URL). Routes in `src/app.tsx`,
 sidebar entries in `components/layout/navigation.ts`.
 
 ---

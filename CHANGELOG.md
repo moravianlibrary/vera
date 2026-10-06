@@ -71,6 +71,16 @@ All notable changes to this project are documented here.
   beside the ones it reads now. The counting start is fixed; *Count from another date* makes a
   new intention from the old one. Repeats are made and edited by an admin, from the next
   occurrence on.
+- An intention's card starts a list: *Generate a list* shaped by it, *Generate catch-up* with
+  the pages a behind-pace target is short, and *Generate correcting list…* on a tracking card out
+  of band, which shows per category the pages a correcting list would take, what it leaves short
+  and the share after, then opens the list editor with that allocation. Generate takes *Shape
+  by* any running intention, which narrows what it draws from to that intention's funding and
+  categories and uses its mix.
+- Digitization Lists says what each list counts towards, in its row, its pane and while it is
+  edited, and reads its fill against one intention's mix. The editor warns when a list will not
+  count towards the intention it was generated with, or will stop counting towards one with new
+  dates.
 - Projects shows the intentions a project funds, each with its own planned and delivered, and
   says *No intention yet* on an approved project nothing says what to buy for.
 - Documents Validations groups its list by category or by defect.

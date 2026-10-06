@@ -471,3 +471,157 @@ export function fillOf(
     };
   });
 }
+
+// ---------------------------------------------------------------- a correcting run
+
+// The categories a mix is read across, a leaf scope being itself (§3.2).
+export function mixNodesOf(
+  categories: readonly Category[],
+  scopeCategoryId: string | null,
+): Category[] {
+  const children = mixCategoriesOf(categories, scopeCategoryId);
+  return children.length > 0
+    ? children
+    : categories.filter((category) => category.id === scopeCategoryId);
+}
+
+export interface CorrectionInput {
+  // The scope's categories: their share within the scope, and their output so far.
+  readonly rows: readonly {
+    readonly categoryId: string;
+    readonly intended: number | null;
+    readonly outputPages: number;
+  }[];
+  readonly outputPages: number;
+  // For the new list.
+  readonly pages: number;
+  // Ready to list in a category, within the intention's scope.
+  readonly readyPagesOf: (categoryId: string) => number;
+}
+
+export interface CorrectionRow {
+  readonly categoryId: string;
+  readonly newPages: number;
+  // Its share of the output plus the new pages, once they are digitized.
+  readonly after: number;
+  readonly readyPages: number;
+  // What the pool cannot cover: it stays short, never moved elsewhere.
+  readonly shortPages: number;
+}
+
+export interface Correction {
+  readonly rows: readonly CorrectionRow[];
+  // The gaps add up to more than the pages, so each was cut in proportion.
+  readonly isCut: boolean;
+}
+
+// The allocation that brings output back towards the mix (STATUS "Intentions"): each category
+// gets what it lacks against its share of the output plus the new pages; gaps over the pages are
+// cut in proportion, and pages left over follow the shares. A category with no share gets none.
+export function correctionOf({
+  rows,
+  outputPages,
+  pages,
+  readyPagesOf,
+}: CorrectionInput): Correction {
+  const whole = outputPages + pages;
+  const needs = rows.map((row) =>
+    row.intended === null ? 0 : Math.max(0, (row.intended / 100) * whole - row.outputPages),
+  );
+  const needed = needs.reduce((sum, need) => sum + need, 0);
+  const intendedSum = rows.reduce((sum, row) => sum + (row.intended ?? 0), 0);
+  return {
+    isCut: needed > pages,
+    rows: rows.map((row, index) => {
+      const need = needs[index] ?? 0;
+      const raw =
+        needed >= pages
+          ? needed === 0
+            ? 0
+            : (pages * need) / needed
+          : need + (intendedSum === 0 ? 0 : ((pages - needed) * (row.intended ?? 0)) / intendedSum);
+      const newPages = Math.round(raw / 10) * 10;
+      const readyPages = readyPagesOf(row.categoryId);
+      return {
+        categoryId: row.categoryId,
+        newPages,
+        after: whole === 0 ? 0 : ((row.outputPages + newPages) / whole) * 100,
+        readyPages,
+        shortPages: Math.max(0, newPages - readyPages),
+      };
+    }),
+  };
+}
+
+// ---------------------------------------------------------------- what a list counts towards
+
+export interface CountsTowards {
+  readonly intention: Intention;
+  readonly itemCount: number;
+  readonly pages: number;
+}
+
+// Worked out, never attached (§5): every intention not archived whose window holds the list's
+// start, with the part of its members that matches its scope. Figures overlap; never add them.
+export function countsTowardsOf(
+  intentions: readonly Intention[],
+  members: readonly Iteration[],
+  startsOn: string,
+  data: Pick<CountingData, "categories" | "pagesOf">,
+): CountsTowards[] {
+  return intentions
+    .filter((intention) => intention.archived === null && isInWindow(intention, startsOn))
+    .flatMap((intention) => {
+      const matching = members.filter((iteration) =>
+        isInIntentionScope(intention, iteration, data.categories),
+      );
+      return matching.length === 0
+        ? []
+        : [
+            {
+              intention,
+              itemCount: matching.length,
+              pages: matching.reduce((sum, iteration) => sum + (data.pagesOf(iteration) ?? 0), 0),
+            },
+          ];
+    });
+}
+
+export interface ListMixRow {
+  readonly categoryId: string;
+  // Within the intention's scope; null with no share.
+  readonly share: number | null;
+  readonly pages: number;
+  // Its share of the target, or of the pages on it without one; a correcting run's own pages.
+  readonly goalPages: number | null;
+}
+
+// A list's fill read against one intention's mix, inside its scope (page-lists.js `mixOf`).
+export function listMixOf(
+  intention: Pick<Intention, "scopeCategoryId">,
+  distribution: Pick<Distribution, "shares">,
+  members: readonly Iteration[],
+  goal: { targetPages: number | null; allocation: Readonly<Record<string, number>> | null },
+  data: Pick<CountingData, "categories" | "pagesOf">,
+): ListMixRow[] {
+  const { categories, pagesOf } = data;
+  const scope = intention.scopeCategoryId;
+  const isUnder = (iteration: Iteration, categoryId: string) =>
+    categoryLineageOf(categories, iteration.categoryId).includes(categoryId);
+  const inScope = members.filter((iteration) => scope === null || isUnder(iteration, scope));
+  const pagesUnder = (categoryId: string) =>
+    inScope
+      .filter((iteration) => isUnder(iteration, categoryId))
+      .reduce((sum, iteration) => sum + (pagesOf(iteration) ?? 0), 0);
+  const total = inScope.reduce((sum, iteration) => sum + (pagesOf(iteration) ?? 0), 0);
+  return mixNodesOf(categories, scope).map((node) => {
+    const share = shareWithinOf(categories, distribution, scope, node.id);
+    const goalPages =
+      goal.allocation !== null
+        ? (goal.allocation[node.id] ?? 0)
+        : share === null
+          ? null
+          : Math.round(((goal.targetPages ?? total) * share) / 100);
+    return { categoryId: node.id, share, pages: pagesUnder(node.id), goalPages };
+  });
+}

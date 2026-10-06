@@ -5,16 +5,24 @@
 // and search, and says what review still holds back. Saving goes back to the list in browse.
 // Generate… in the left pane's head drafts a fill with a configured list generator (L3–L5): its
 // picks join the left pane marked *generated* with their reason, and its report stays in the
-// top strip. Without a generator there is no Generate.
-// TODO(rrandiak): *Counts towards*, the mix read against an intention and the warnings that a
-// list will not, or will stop, counting towards one (L8, L10) wait for intentions in the mock API
-// (plan.md step 6).
+// top strip. Without a generator there is no Generate. Started from an intention's card, a new
+// list opens Generate at once, shaped by it, with the pages or a correcting run's allocation
+// (intentions.md §4.4). The top says what the draft counts towards, worked out from what is on
+// it and when it starts, its fill against one intention's mix, and warns when it will not count
+// towards the intention it was generated with, or will stop counting towards one (L8, L10).
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { useDeferredValue, useEffect, useId, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import type { GenerationDraft, ListDetail, ListDraft, ListItem } from "@/api/lists";
+import type {
+  GenerationDraft,
+  ListDetail,
+  ListDraft,
+  ListItem,
+  ListReading,
+  ListShape,
+} from "@/api/lists";
 import { createList, saveList } from "@/api/lists";
 import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition } from "@/components/lists/record-list";
@@ -27,16 +35,20 @@ import type { Category } from "@/domain/entities";
 import { priorities } from "@/domain/entities";
 import { GenerateDialog } from "@/features/lists/generate-dialog";
 import { GenerationReport } from "@/features/lists/generation-report";
+import { CountsTowardsLine, MixMeters } from "@/features/lists/list-intentions";
+import type { GenerationStart } from "@/features/lists/lists-view";
 import {
   listInvalidations,
   useListGeneratorsQuery,
+  useListReadingQuery,
+  useListShapesQuery,
   usePoolQuery,
 } from "@/features/lists/use-lists-query";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { isSameSet, useDraft } from "@/hooks/use-draft";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
-import { formatDay } from "@/lib/format-date";
+import { formatCalendarDay, formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 
@@ -85,9 +97,12 @@ function byPriorityThenAge(first: ListItem, second: ListItem): number {
 interface ListEditorProps {
   // Null for a new list.
   detail: ListDetail | null;
+  // A new list an intention's card started.
+  start?: GenerationStart | null;
+  canOpenIntentions: boolean;
 }
 
-export function ListEditor({ detail }: ListEditorProps) {
+export function ListEditor({ detail, start = null, canOpenIntentions }: ListEditorProps) {
   const navigate = useNavigate();
   const listId = detail?.row.list.id ?? null;
   const fields = useDraft(fieldsOf(detail), isSameFields);
@@ -104,7 +119,23 @@ export function ListEditor({ detail }: ListEditorProps) {
   const pool = usePoolQuery(poolQuery);
   const { data: categories = [] } = useCategoriesQuery();
   const { data: generators = [] } = useListGeneratorsQuery();
-  const [isGenerating, setIsGenerating] = useState(false);
+  const { data: shapes = [] } = useListShapesQuery();
+  const [isGenerating, setIsGenerating] = useState(start !== null);
+  // The intention the fill is read against, and Generate's default: what it was generated with,
+  // or what started it; none is Overall.
+  const [mixBy, setMixBy] = useState<string | null>(
+    start?.intentionId ?? detail?.row.generatedWith?.id ?? null,
+  );
+  // A correcting run's allocation, until it is generated with or dropped for the plain mix.
+  const [allocation, setAllocation] = useState(
+    start?.allocation === null || start === null
+      ? null
+      : {
+          pages:
+            start.pages ?? Object.values(start.allocation).reduce((sum, pages) => sum + pages, 0),
+          byCategory: start.allocation,
+        },
+  );
   // The last draft taken from a generator: its report, and the provenance saving records.
   const [generation, setGeneration] = useState<GenerationDraft | null>(null);
   const [isReportShown, setIsReportShown] = useState(false);
@@ -167,6 +198,24 @@ export function ListEditor({ detail }: ListEditorProps) {
   });
 
   const { name, startsNow, startsOn, endsOn } = fields.current;
+  // The provenance in force: a generation since the editor opened, else what was saved.
+  const provenance = generation?.provenance ?? detail?.row.list.generated ?? null;
+  const reading = useListReadingQuery({
+    listId,
+    startsOn: startsNow || startsOn === "" ? null : startsOn,
+    memberIds: [...members.current].toSorted(),
+    intentionId: mixBy,
+    targetPages: target,
+    allocation:
+      provenance !== null && provenance.intentionId === mixBy ? provenance.allocation : null,
+  }).data;
+  const generatedWith =
+    provenance === null
+      ? null
+      : (shapes.find((shape) => shape.id === provenance.intentionId) ??
+        (detail?.row.generatedWith?.id === provenance.intentionId
+          ? detail.row.generatedWith
+          : null));
   const canSave =
     name.trim() !== "" &&
     endsOn !== "" &&
@@ -213,6 +262,8 @@ export function ListEditor({ detail }: ListEditorProps) {
     members.set(new Set([...members.current, ...draft.picks.map(({ item }) => item.iteration.id)]));
     fields.set({ ...fields.current, target: String(draft.requestedPages) });
     setGeneration(draft);
+    setMixBy(draft.shapedBy.intentionId);
+    setAllocation(null);
     setIsReportShown(true);
   };
 
@@ -247,6 +298,22 @@ export function ListEditor({ detail }: ListEditorProps) {
             pages={pages}
             target={target}
             lateCopies={lateCopies}
+            intentions={
+              <IntentionsStrip
+                reading={reading}
+                shapes={shapes}
+                mixBy={mixBy}
+                onMixByChange={setMixBy}
+                hasTarget={target !== null}
+                canOpen={canOpenIntentions}
+                generatedWith={onList.length === 0 ? null : generatedWith}
+                isDatesChanged={
+                  listId !== null &&
+                  (fields.current.startsNow !== fields.original.startsNow ||
+                    fields.current.startsOn !== fields.original.startsOn)
+                }
+              />
+            }
             report={
               generation !== null && isReportShown ? (
                 <GenerationReport draft={generation} onDismiss={() => setIsReportShown(false)} />
@@ -313,14 +380,18 @@ export function ListEditor({ detail }: ListEditorProps) {
         onSave={() => void onSave()}
         onDiscard={onDiscard}
       />
-      {isGenerating && (
+      {isGenerating && generators.length > 0 && (
         <GenerateDialog
           isOpen
           onClose={() => setIsGenerating(false)}
           generators={generators}
           memberIds={[...members.current]}
           memberPages={pages}
-          target={target}
+          target={allocation === null ? (target ?? start?.pages ?? null) : null}
+          shapes={shapes}
+          shapeId={mixBy}
+          allocation={allocation}
+          onDropAllocation={() => setAllocation(null)}
           onDraft={takeDraft}
         />
       )}
@@ -516,6 +587,8 @@ interface EditorHeaderProps {
   pages: number;
   target: number | null;
   lateCopies: number;
+  // What it counts towards and its mix.
+  intentions: ReactNode;
   // What the last generation made of its request.
   report: ReactNode;
   refusal: Refusal | null;
@@ -528,6 +601,7 @@ function EditorHeader({
   pages,
   target,
   lateCopies,
+  intentions,
   report,
   refusal,
 }: EditorHeaderProps) {
@@ -597,6 +671,7 @@ function EditorHeader({
         </span>
       </div>
 
+      {intentions}
       {report}
       {lateCopies > 0 && (
         <StatusNote
@@ -609,6 +684,96 @@ function EditorHeader({
       {refusal !== null && (
         <StatusNote tone="red" title="Not saved">
           {refusal.message}
+        </StatusNote>
+      )}
+    </div>
+  );
+}
+
+interface IntentionsStripProps {
+  reading: ListReading | undefined;
+  shapes: readonly ListShape[];
+  mixBy: string | null;
+  onMixByChange: (intentionId: string) => void;
+  hasTarget: boolean;
+  canOpen: boolean;
+  // What it was generated with, while something is on it.
+  generatedWith: { id: string; name: string } | null;
+  isDatesChanged: boolean;
+}
+
+// Read-only: what it counts towards follows from what is on it and when it starts (§5).
+function IntentionsStrip({
+  reading,
+  shapes,
+  mixBy,
+  onMixByChange,
+  hasTarget,
+  canOpen,
+  generatedWith,
+  isDatesChanged,
+}: IntentionsStripProps) {
+  if (reading === undefined) {
+    return null;
+  }
+
+  const overall = shapes.find((shape) => shape.isOverall);
+  const generatedShape = shapes.find((shape) => shape.id === generatedWith?.id);
+  const isGeneratedCounted =
+    generatedWith === null ||
+    reading.countsTowards.some((row) => row.intentionId === generatedWith.id);
+  return (
+    <div className="grid gap-2">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span
+          className="text-xs font-semibold tracking-wider text-muted-foreground uppercase"
+          title="Worked out from what is on it and when it starts — nothing to tick"
+        >
+          Counts towards
+        </span>
+        <CountsTowardsLine rows={reading.countsTowards} canOpen={canOpen} />
+      </div>
+      <div className="grid gap-2 sm:grid-cols-[auto_1fr] sm:items-start">
+        <label className="flex items-center gap-2">
+          <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+            Mix
+          </span>
+          <select
+            aria-label="Read the fill against"
+            title="Which intention's mix to read the fill against"
+            className="h-7 max-w-48 rounded-md border bg-background px-2 text-xs"
+            value={mixBy ?? overall?.id ?? ""}
+            onChange={(event) => onMixByChange(event.target.value)}
+          >
+            {shapes.map((shape) => (
+              <option key={shape.id} value={shape.id}>
+                {shape.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <MixMeters mix={reading.mix} hasTarget={hasTarget} />
+      </div>
+      {!isGeneratedCounted && generatedWith !== null && (
+        <StatusNote
+          tone="amber"
+          title={`Generated with ${generatedWith.name}, but it will not count towards it`}
+        >
+          {generatedShape === undefined
+            ? "It counts lists starting inside its window"
+            : `${generatedShape.name} counts lists starting ${generatedShape.endsOn === null ? `from ${formatCalendarDay(generatedShape.countsFrom)}` : `${formatCalendarDay(generatedShape.countsFrom)} → ${formatCalendarDay(generatedShape.endsOn)}`}`}
+          ; this one starts {formatCalendarDay(reading.startsOn)}. Move the start into that window
+          if it should.
+        </StatusNote>
+      )}
+      {isDatesChanged && reading.stopsCountingTowards.length > 0 && (
+        <StatusNote
+          tone="amber"
+          title={`Saving with these dates, it stops counting towards ${reading.stopsCountingTowards.map((row) => row.name).join(", ")}`}
+        >
+          {reading.stopsCountingTowards.length === 1 ? "That intention counts" : "They count"} lists
+          starting inside {reading.stopsCountingTowards.length === 1 ? "its" : "their"} window; this
+          one would start {formatCalendarDay(reading.startsOn)}.
         </StatusNote>
       )}
     </div>

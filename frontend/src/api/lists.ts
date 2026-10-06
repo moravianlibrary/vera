@@ -124,6 +124,10 @@ export const listRowSchema = z.object({
   reviewNeededCount: count,
   notDigitizableCount: count,
   cancelledCount: count,
+  // What it counts towards, Overall last; worked out from what is on it and when it starts.
+  countsTowards: z.array(z.object({ id: z.string(), name: z.string(), isOverall: z.boolean() })),
+  // The intention it was generated with, provenance only.
+  generatedWith: z.object({ id: z.string(), name: z.string() }).nullable(),
 });
 export type ListRow = z.infer<typeof listRowSchema>;
 
@@ -149,12 +153,88 @@ export const listPageSchema = z.object({
 });
 export type ListPage = z.infer<typeof listPageSchema>;
 
+// ---------------------------------------------------------------- intentions
+
+// Where a list stands against intentions (intentions.md §5): worked out, never attached.
+export const countsTowardsRowSchema = z.object({
+  intentionId: z.string(),
+  name: z.string(),
+  isOverall: z.boolean(),
+  itemCount: count,
+  pages: count,
+});
+export type CountsTowardsRow = z.infer<typeof countsTowardsRowSchema>;
+
+// One of the scope's categories: its share, the pages on the list in it, and its goal.
+export const listMixRowSchema = z.object({
+  categoryId: z.string(),
+  name: z.string(),
+  share: z.number().nullable(),
+  pages: count,
+  goalPages: count.nullable(),
+});
+export type ListMixRow = z.infer<typeof listMixRowSchema>;
+
+// The list's fill read against one intention's mix, inside its scope.
+export const listMixSchema = z.object({
+  intention: z.object({ id: z.string(), name: z.string() }),
+  scope: z.string().nullable(),
+  // Read against a correcting run's allocation rather than the shares.
+  isAllocation: z.boolean(),
+  rows: z.array(listMixRowSchema),
+});
+export type ListMix = z.infer<typeof listMixSchema>;
+
+// An intention a draft can be shaped by: not archived, not ended. Overall first.
+export const listShapeSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  isOverall: z.boolean(),
+  countsFrom: z.iso.date(),
+  endsOn: z.iso.date().nullable(),
+  scope: z.string().nullable(),
+  funding: z.discriminatedUnion("kind", [
+    z.object({ kind: z.literal("any") }),
+    z.object({ kind: z.literal("none") }),
+    z.object({ kind: z.literal("project"), name: z.string() }),
+  ]),
+});
+export type ListShape = z.infer<typeof listShapeSchema>;
+
+const allocationSchema = z.record(z.string(), count);
+
+// What the editor asks while it builds a list: what the draft counts towards from its start,
+// what it would stop counting towards against the saved one (flows.md L10), and its fill read
+// against the intention picked. No start means it starts now.
+export const listReadingRequestSchema = z.object({
+  listId: z.string().nullable(),
+  startsOn: z.iso.date().nullable(),
+  memberIds: z.array(z.string().min(1)),
+  // Null reads it against Overall.
+  intentionId: z.string().nullable(),
+  targetPages: z.number().int().positive().nullable(),
+  allocation: allocationSchema.nullable(),
+});
+export type ListReadingRequest = z.infer<typeof listReadingRequestSchema>;
+
+export const listReadingSchema = z.object({
+  startsOn: z.iso.date(),
+  countsTowards: z.array(countsTowardsRowSchema),
+  // Counted with the saved start and members, no longer with the draft's.
+  stopsCountingTowards: z.array(z.object({ id: z.string(), name: z.string() })),
+  mix: listMixSchema,
+});
+export type ListReading = z.infer<typeof listReadingSchema>;
+
 export const listDetailSchema = z.object({
   row: listRowSchema,
   // Highest priority first, then the oldest ask.
   members: z.array(listItemSchema),
   // Newest first.
   log: z.array(statusLogEntrySchema),
+  countsTowards: z.array(countsTowardsRowSchema),
+  // Read against the intention it was generated with, else Overall.
+  mix: listMixSchema,
 });
 export type ListDetail = z.infer<typeof listDetailSchema>;
 
@@ -229,15 +309,18 @@ export const listGeneratorSchema = z.object({
 export type ListGenerator = z.infer<typeof listGeneratorSchema>;
 
 // What a generator is given (intentions.md §4.1). The current members stay fixed: it tops up
-// towards the pages. No categories means all of them.
-// TODO(rrandiak): *Shape by* an intention other than Overall, and an allocation, wait for
-// intentions in the mock API (plan.md step 6).
+// towards the pages. No categories means all of them. One intention shapes it, supplying the
+// scope and the mix; a correcting run's allocation fixes the pages per category instead.
 export const generationRequestSchema = z.object({
   generatorId: z.string().min(1),
   pages: z.number().int().positive(),
   // Top-level categories to draw from.
   categoryIds: z.array(z.string().min(1)),
   memberIds: z.array(z.string().min(1)),
+  // Null shapes it by Overall.
+  intentionId: z.string().nullable(),
+  // By the categories the intention's mix is read across.
+  allocation: allocationSchema.nullable(),
 });
 export type GenerationRequest = z.infer<typeof generationRequestSchema>;
 
@@ -363,6 +446,14 @@ export async function listPool(query: PoolQuery, slice: SliceOptions = {}): Prom
 
 export async function listGenerators(): Promise<ListGenerator[]> {
   return getJson(apiRoutes.listGenerators, z.array(listGeneratorSchema));
+}
+
+export async function listShapes(): Promise<ListShape[]> {
+  return getJson(apiRoutes.listShapes, z.array(listShapeSchema));
+}
+
+export async function readList(request: ListReadingRequest): Promise<ListReading> {
+  return postJson(apiRoutes.listReading, request, listReadingSchema);
 }
 
 export async function generateDraft(request: GenerationRequest): Promise<GenerationDraft> {

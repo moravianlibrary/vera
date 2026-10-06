@@ -4,7 +4,7 @@
 
 import { z } from "zod";
 import type { DigitizationList, Iteration, Progress } from "@/domain/entities";
-import { isProgressAtLeast, iterationStatusOf } from "@/domain/status";
+import { isProgressAtLeast, iterationStatusOf, passesGates } from "@/domain/status";
 
 // Planned before it starts, In progress from that day, Done once marked: Done is an act, the
 // other two are never written (decided 2026-09-26).
@@ -44,4 +44,9 @@ export type MemberBlocker = z.infer<typeof memberBlockerSchema>;
 export function memberBlockerOf(iteration: Iteration): MemberBlocker | null {
   const status = iterationStatusOf(iteration);
   return memberBlockers.find((blocker) => blocker === status) ?? null;
+}
+
+// What a list can take: Ready, on no list, every gate passed (intentions.md §4.2 rule 1).
+export function isInPool(iteration: Iteration): boolean {
+  return iteration.progress === "Ready" && iteration.listId === null && passesGates(iteration);
 }

@@ -11,10 +11,13 @@ import type {
 } from "@/domain/entities";
 import {
   catchUpPagesOf,
+  correctionOf,
   countIntention,
+  countsTowardsOf,
   fillOf,
   intentionStateOf,
   isInWindow,
+  listMixOf,
   mixOwnerOf,
   mixReadingOf,
   nextPeriodStartOf,
@@ -332,5 +335,114 @@ describe("nextPeriodStartOf", () => {
     expect(nextPeriodStartOf("month", "2026-12-15")).toBe("2027-01-01");
     expect(nextPeriodStartOf("quarter", "2026-06-25")).toBe("2026-07-01");
     expect(nextPeriodStartOf("quarter", "2026-07-01")).toBe("2026-10-01");
+  });
+});
+
+describe("correctionOf", () => {
+  const rows = [
+    { categoryId: "mono", intended: 40, outputPages: 100 },
+    { categoryId: "per", intended: 60, outputPages: 400 },
+    { categoryId: "maps", intended: null, outputPages: 0 },
+  ];
+  const ready: Record<string, number> = { mono: 100, per: 1000 };
+  const correct = (pages: number) =>
+    correctionOf({
+      rows,
+      outputPages: 500,
+      pages,
+      readyPagesOf: (categoryId) => ready[categoryId] ?? 0,
+    });
+
+  it("gives each category what it lacks against its share of output and new pages", () => {
+    const { rows: plan, isCut } = correct(500);
+
+    expect(isCut).toBe(false);
+    expect(plan.map((row) => [row.categoryId, row.newPages, row.after])).toEqual([
+      ["mono", 300, 40],
+      ["per", 200, 60],
+      ["maps", 0, 0],
+    ]);
+    expect(plan[0]?.shortPages).toBe(200);
+  });
+
+  it("cuts the gaps in proportion when they add up to more than the pages", () => {
+    const { rows: plan, isCut } = correct(100);
+
+    expect(isCut).toBe(true);
+    expect(plan.map((row) => row.newPages)).toEqual([100, 0, 0]);
+  });
+
+  it("spreads pages left over by the shares, when part of the mix is unallocated", () => {
+    const partial = correctionOf({
+      rows: [
+        { categoryId: "mono", intended: 40, outputPages: 100 },
+        { categoryId: "per", intended: 50, outputPages: 400 },
+      ],
+      outputPages: 500,
+      pages: 500,
+      readyPagesOf: () => 1000,
+    });
+
+    expect(partial.rows.map((row) => row.newPages)).toEqual([340, 160]);
+  });
+});
+
+describe("countsTowardsOf", () => {
+  const members = [iterations[0], iterations[3]].filter((it) => it !== undefined);
+
+  it("counts the members each intention's scope matches, when its window holds the start", () => {
+    const funded = intention({ id: "p", funding: { kind: "project", projectId: "p1" } });
+    const archived = intention({
+      id: "x",
+      archived: { actor: { kind: "system" }, at: "2026-06-30T00:00:00Z" },
+    });
+    const counted = countsTowardsOf([intention(), funded, archived], members, "2026-06-05", data);
+
+    expect(counted.map((row) => [row.intention.id, row.itemCount, row.pages])).toEqual([
+      ["i", 2, 500],
+      ["p", 1, 100],
+    ]);
+    expect(countsTowardsOf([intention()], members, "2026-07-06", data)).toEqual([]);
+  });
+});
+
+describe("listMixOf", () => {
+  const members = [iterations[0], iterations[1]].filter((it) => it !== undefined);
+
+  it("reads the fill within the scope against the target, or against an allocation", () => {
+    const scoped = { scopeCategoryId: "per" };
+    const byTarget = listMixOf(
+      scoped,
+      { shares },
+      members,
+      { targetPages: 1000, allocation: null },
+      data,
+    );
+    const byAllocation = listMixOf(
+      scoped,
+      { shares },
+      members,
+      { targetPages: 1000, allocation: { reg: 70 } },
+      data,
+    );
+
+    expect(byTarget).toEqual([
+      { categoryId: "reg", share: 50, pages: 100, goalPages: 500 },
+      { categoryId: "nat", share: 30, pages: 200, goalPages: 300 },
+      { categoryId: "spec", share: null, pages: 0, goalPages: null },
+    ]);
+    expect(byAllocation.map((row) => row.goalPages)).toEqual([70, 0, 0]);
+  });
+
+  it("reads a leaf scope as itself, all of it", () => {
+    expect(
+      listMixOf(
+        { scopeCategoryId: "reg" },
+        { shares },
+        members,
+        { targetPages: null, allocation: null },
+        data,
+      ),
+    ).toEqual([{ categoryId: "reg", share: 100, pages: 100, goalPages: 100 }]);
   });
 });

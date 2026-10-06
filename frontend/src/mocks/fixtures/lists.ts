@@ -25,7 +25,9 @@ export const lists: readonly DigitizationList[] = [
     targetPages: 4000,
     generated: {
       intentionId: "i3",
+      mixRevision: 2,
       pages: 4000,
+      allocation: null,
       generator: "PriorityFirst 1.2.0",
       at: "2026-06-22T09:00:00Z",
     },

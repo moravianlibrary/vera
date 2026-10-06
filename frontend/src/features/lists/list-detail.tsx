@@ -2,8 +2,8 @@
 // stands, planned against delivered, what is on it, and its history. A member a gate stopped
 // after listing stays on, flagged (flows.md L11); one that could not be digitized carries its
 // message, and a cancelled one its reason. Its acts, and each member's, are list-actions.tsx.
-// TODO(rrandiak): the *Counts towards* and *Mix* cards wait for intentions in the mock API
-// (plan.md step 6), and the provenance's intention name with them.
+// What it counts towards is worked out, never attached; what it was generated with is
+// provenance, and its mix is read against that intention, else Overall (intentions.md §5).
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
@@ -11,7 +11,7 @@ import { Link } from "react-router";
 import type { ListDetail, ListItem } from "@/api/lists";
 import { ActionBar } from "@/components/actions/action-bar";
 import { categoryLabelOf } from "@/components/classification-fields";
-import { DetailCard, DetailRow, Muted, StatTiles } from "@/components/detail-card";
+import { DetailCard, DetailRow, FinePrint, Muted, StatTiles } from "@/components/detail-card";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { HistoryCard, RecordHeading } from "@/components/record-cards";
 import { StatusWithFootnote } from "@/components/status-badge";
@@ -20,8 +20,10 @@ import { documentIdentifierOf } from "@/domain/documents";
 import type { Session } from "@/domain/entities";
 import type { MemberBlocker } from "@/domain/lists";
 import { isScanned } from "@/domain/lists";
+import { can } from "@/domain/permissions";
 import { iterationStatusOf, statusFootnoteOf } from "@/domain/status";
 import { ItemActions, useListActions } from "@/features/lists/list-actions";
+import { MixMeters } from "@/features/lists/list-intentions";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { formatCalendarDay, formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
@@ -105,9 +107,68 @@ export function ListDetailPane({ detail, session, onDeleted }: ListDetailPanePro
             />
           ))}
         </DetailCard>
+        <IntentionCards detail={detail} canOpen={can(session, "intention.read")} />
         <HistoryCard log={log} nameOf={nameOf} isPublic={false} />
       </div>
     </article>
+  );
+}
+
+function IntentionCards({ detail, canOpen }: { detail: ListDetail; canOpen: boolean }) {
+  const { row, countsTowards, mix } = detail;
+  const generated = row.list.generated;
+  return (
+    <>
+      <DetailCard title="Counts towards">
+        {countsTowards.length === 0 && <Muted>Nothing yet — it counts once items are on it.</Muted>}
+        {countsTowards.map((counted) => (
+          <DetailRow
+            key={counted.intentionId}
+            aside={
+              <Muted>
+                {plural(counted.itemCount, "item")} · {formatCount(counted.pages)} pp
+              </Muted>
+            }
+          >
+            {canOpen ? (
+              <Link
+                to={`/intentions?i=${encodeURIComponent(counted.intentionId)}`}
+                className="font-medium hover:underline"
+              >
+                {counted.name}
+              </Link>
+            ) : (
+              <span className="font-medium">{counted.name}</span>
+            )}
+            {counted.isOverall && <Muted> · Overall</Muted>}
+          </DetailRow>
+        ))}
+        <FinePrint>
+          Worked out, not attached: an item counts towards every intention whose funding and
+          category it matches, when the list starts inside that intention's window. The figures
+          overlap — never add them.
+        </FinePrint>
+        {generated !== null && (
+          <p className="mt-2.5 border-t pt-2.5 text-xs">
+            <b className="font-semibold">Generated</b> with{" "}
+            {row.generatedWith === null ? "an intention since deleted" : row.generatedWith.name}
+            <span className="block text-muted-foreground">
+              {generated.generator} · {formatCount(generated.pages)} pp asked
+              {generated.allocation === null ? "" : " · a correcting allocation"} · its mix as it
+              was on {formatDay(generated.at)}
+            </span>
+          </p>
+        )}
+      </DetailCard>
+      <DetailCard title={`Mix — ${mix.intention.name}`}>
+        <MixMeters mix={mix} hasTarget={row.list.targetPages !== null} />
+        <FinePrint>
+          {mix.isAllocation
+            ? "Each category against the correcting allocation it was generated with."
+            : `Each category against its share of ${row.list.targetPages === null ? "the pages on it — there is no target" : "the target"}${mix.scope === null ? "" : `, within ${mix.scope}`}.`}
+        </FinePrint>
+      </DetailCard>
+    </>
   );
 }
 
