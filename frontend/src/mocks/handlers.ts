@@ -26,6 +26,12 @@ import {
 } from "@/api/lists";
 import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
 import {
+  projectApprovalSchema,
+  projectDraftSchema,
+  projectMembersSchema,
+  projectRejectionSchema,
+} from "@/api/projects";
+import {
   approvalSchema,
   bulkApprovalSchema,
   declineSchema,
@@ -80,6 +86,19 @@ import {
 import { messageChannels, prepareMessage } from "@/mocks/messages";
 import type { Outcome } from "@/mocks/mutations";
 import { invalidResponse, problemResponse } from "@/mocks/problem";
+import {
+  approveProject,
+  canReadProjects,
+  createProject,
+  deleteProject,
+  findProjectDetail,
+  listMemberGroups,
+  previewDecision,
+  queryProjectIndex,
+  rejectProject,
+  saveProject,
+  saveProjectMembers,
+} from "@/mocks/projects";
 import {
   approveProposal,
   bulkApproveProposals,
@@ -171,6 +190,100 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(apiRoutes.users), () => HttpResponse.json(database.users)),
     http.get(route(apiRoutes.categories), () => HttpResponse.json(database.categories)),
     http.get(route(apiRoutes.projects), () => HttpResponse.json(database.projects)),
+    http.get(route(apiRoutes.groups), () => HttpResponse.json(listMemberGroups())),
+
+    // Before `/:projectId`, so the index is not read as a project named "overview".
+    http.get(route(apiRoutes.projectIndex), () => {
+      const session = currentSession();
+      if (!canReadProjects(session)) {
+        return mayNotReadProjects();
+      }
+
+      return HttpResponse.json(queryProjectIndex(session));
+    }),
+
+    http.get(route(`${apiRoutes.projects}/:projectId`), ({ params }) => {
+      const session = currentSession();
+      if (!canReadProjects(session)) {
+        return mayNotReadProjects();
+      }
+
+      const detail = findProjectDetail(session, String(params.projectId));
+      if (detail === null) {
+        return problemResponse({ status: 404, message: "Project not found" });
+      }
+
+      return HttpResponse.json(detail);
+    }),
+
+    http.post(route(apiRoutes.projects), async ({ request }) => {
+      const draft = projectDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      const outcome = createProject(currentSession(), draft.data);
+      if ("refusal" in outcome) {
+        return problemResponse(outcome.refusal);
+      }
+
+      return HttpResponse.json(outcome.value, { status: 201 });
+    }),
+
+    http.put(route(`${apiRoutes.projects}/:projectId`), async ({ params, request }) => {
+      const draft = projectDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      return outcomeResponse(saveProject(currentSession(), String(params.projectId), draft.data));
+    }),
+
+    http.put(route(`${apiRoutes.projects}/:projectId/members`), async ({ params, request }) => {
+      const members = projectMembersSchema.safeParse(await request.json());
+      if (!members.success) {
+        return invalidResponse(members.error);
+      }
+
+      return outcomeResponse(
+        saveProjectMembers(currentSession(), String(params.projectId), members.data),
+      );
+    }),
+
+    http.get(route(`${apiRoutes.projects}/:projectId/decision`), ({ params }) =>
+      outcomeResponse(previewDecision(currentSession(), String(params.projectId))),
+    ),
+
+    http.post(route(`${apiRoutes.projects}/:projectId/approve`), async ({ params, request }) => {
+      const approval = projectApprovalSchema.safeParse(await request.json());
+      if (!approval.success) {
+        return invalidResponse(approval.error);
+      }
+
+      return outcomeResponse(
+        approveProject(currentSession(), String(params.projectId), approval.data),
+      );
+    }),
+
+    http.post(route(`${apiRoutes.projects}/:projectId/reject`), async ({ params, request }) => {
+      const rejection = projectRejectionSchema.safeParse(await request.json());
+      if (!rejection.success) {
+        return invalidResponse(rejection.error);
+      }
+
+      return outcomeResponse(
+        rejectProject(currentSession(), String(params.projectId), rejection.data),
+      );
+    }),
+
+    http.delete(route(`${apiRoutes.projects}/:projectId`), ({ params }) => {
+      const outcome = deleteProject(currentSession(), String(params.projectId));
+      if ("refusal" in outcome) {
+        return problemResponse(outcome.refusal);
+      }
+
+      return new HttpResponse(null, { status: 204 });
+    }),
     http.get(route(apiRoutes.lists), () => HttpResponse.json(database.lists)),
     http.get(route(apiRoutes.batches), () => HttpResponse.json(database.batches)),
 
@@ -600,6 +713,10 @@ function mayNotDecide() {
 
 function mayNotReadLists() {
   return problemResponse({ status: 403, message: "You may not read digitization lists" });
+}
+
+function mayNotReadProjects() {
+  return problemResponse({ status: 403, message: "You may not read projects" });
 }
 
 function mayNotReview() {

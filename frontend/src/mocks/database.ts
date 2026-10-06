@@ -29,7 +29,7 @@ const records = withCopies(
 export const database = {
   users,
   categories,
-  projects,
+  projects: [...projects],
   lists: [...lists],
   batches: [...batches],
   proposalCustodies: [...proposalCustodies],

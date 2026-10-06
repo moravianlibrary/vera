@@ -23,6 +23,7 @@ import type {
   Session,
 } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
+import { isProjectMember } from "@/domain/projects";
 import { isProgressAtLeast, publicIterationStatusOf } from "@/domain/status";
 import { findDocumentByIdentity, knownCatalogRecords, unitTypeOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
@@ -41,7 +42,8 @@ export function proposalLimitOf(session: Session): number {
 // The projects the caller may propose into: a member's, and not Rejected (projects.md §4).
 export function proposableProjectsOf(session: Session): Project[] {
   return database.projects.filter(
-    (project) => project.state !== "Rejected" && project.memberIds.includes(session.user.id),
+    (project) =>
+      project.state !== "Rejected" && isProjectMember(project, session.user.id, session.groupIds),
   );
 }
 

@@ -7,6 +7,9 @@ export const apiRoutes = {
   users: "/users",
   categories: "/categories",
   projects: "/projects",
+  // Projects, the page: every project the caller sees with its numbers worked out.
+  projectIndex: "/projects/overview",
+  groups: "/groups",
   lists: "/lists",
   digitizationLists: "/digitization-lists",
   digitizationListPool: "/digitization-lists/pool",
@@ -28,6 +31,10 @@ export const apiRoutes = {
 
 export function documentRoute(documentId: string): string {
   return `${apiRoutes.documents}/${encodeURIComponent(documentId)}`;
+}
+
+export function projectRoute(projectId: string): string {
+  return `${apiRoutes.projects}/${encodeURIComponent(projectId)}`;
 }
 
 export function digitizationListRoute(listId: string): string {

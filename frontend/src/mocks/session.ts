@@ -30,6 +30,7 @@ export function resolveSession(profile: MockUserProfile): Session {
     roleIds: [...roleIds],
     grants: grantsOf(roleIds),
     custodyCategoryIds: custodyOf(userId),
+    groupIds: groups.filter((group) => group.memberIds.includes(userId)).map(({ id }) => id),
   };
 }
 

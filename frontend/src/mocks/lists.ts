@@ -33,6 +33,7 @@ import {
 } from "@/domain/lists";
 import type { Permission } from "@/domain/permissions";
 import { can, hasPermission, scopesOf } from "@/domain/permissions";
+import { scopeOfProject } from "@/domain/projects";
 import { isRestricted, passesGates, statusFootnoteOf, validationOf } from "@/domain/status";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
@@ -76,14 +77,7 @@ function isInReach(session: Session, list: DigitizationList): boolean {
     }
 
     const project = database.projects.find((candidate) => candidate.id === iteration.projectId);
-    return (
-      project !== undefined &&
-      can(session, "list.read", {
-        kind: "project",
-        managerId: project.managerId,
-        memberIds: project.memberIds,
-      })
-    );
+    return project !== undefined && can(session, "list.read", scopeOfProject(project));
   });
 }
 

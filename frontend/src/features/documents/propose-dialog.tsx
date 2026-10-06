@@ -41,6 +41,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import type { Batch, Priority, Session } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
+import { isProjectMember } from "@/domain/projects";
 import type { IdentifierType, ProposalLine } from "@/domain/proposals";
 import {
   identifierTypeSchema,
@@ -771,7 +772,8 @@ function DetailsStep({
   const skipCount = items.filter((item) => outcomeOf(item) === "skip").length;
   const isBatch = newCount + joinCount > 1;
   const proposable = projects.filter(
-    (project) => project.state !== "Rejected" && project.memberIds.includes(session.user.id),
+    (project) =>
+      project.state !== "Rejected" && isProjectMember(project, session.user.id, session.groupIds),
   );
 
   const [batchName, setBatchName] = useState(`proposals-${new Date().toISOString().slice(0, 10)}`);

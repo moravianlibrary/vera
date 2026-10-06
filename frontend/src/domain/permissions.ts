@@ -98,12 +98,15 @@ export type ScopedRecord =
       readonly kind: "project";
       readonly managerId: string;
       readonly memberIds: readonly string[];
+      readonly memberGroupIds: readonly string[];
     }
   | { readonly kind: "run"; readonly startedById: string };
 
 export interface ScopeHolder extends GrantHolder {
   readonly user: { readonly id: string };
   readonly custodyCategoryIds: readonly string[];
+  // The groups the holder is in: a project's group is a membership too.
+  readonly groupIds: readonly string[];
 }
 
 // Whether the holder may do this to this record, scope included. Only hides what the person
@@ -127,7 +130,11 @@ function isWithinScope(holder: ScopeHolder, scope: GrantScope, record: ScopedRec
     case "custody":
       return isInCustody(holder, record);
     case "project":
-      return record.kind === "project" && [record.managerId, ...record.memberIds].includes(userId);
+      return (
+        record.kind === "project" &&
+        ([record.managerId, ...record.memberIds].includes(userId) ||
+          record.memberGroupIds.some((groupId) => holder.groupIds.includes(groupId)))
+      );
     case "managed":
       return record.kind === "project" && record.managerId === userId;
   }

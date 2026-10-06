@@ -5,7 +5,7 @@ import type { Grant, ScopeHolder } from "@/domain/permissions";
 import { can } from "@/domain/permissions";
 
 function holderWith(grants: Grant[], custodyCategoryIds: string[] = []): ScopeHolder {
-  return { user: { id: "U1" }, grants, custodyCategoryIds };
+  return { user: { id: "U1" }, grants, custodyCategoryIds, groupIds: ["G1"] };
 }
 
 describe("can", () => {
@@ -40,10 +40,28 @@ describe("can", () => {
 
   it("lets a managed scope reach only the projects the holder manages", () => {
     const holder = holderWith([{ permission: "project.edit", scope: "managed" }]);
-    const project = { kind: "project", managerId: "U2", memberIds: ["U1"] } as const;
+    const project = {
+      kind: "project",
+      managerId: "U2",
+      memberIds: ["U1"],
+      memberGroupIds: [],
+    } as const;
 
     expect(can(holder, "project.edit", project)).toBe(false); // a member does not manage
     expect(can(holder, "project.edit", { ...project, managerId: "U1" })).toBe(true);
+  });
+
+  it("lets a project scope reach a project through one of the holder's groups", () => {
+    const holder = holderWith([{ permission: "project.read", scope: "project" }]);
+    const project = {
+      kind: "project",
+      managerId: "U2",
+      memberIds: [],
+      memberGroupIds: [],
+    } as const;
+
+    expect(can(holder, "project.read", project)).toBe(false);
+    expect(can(holder, "project.read", { ...project, memberGroupIds: ["G1"] })).toBe(true);
   });
 
   it("lets a self-scoped grant reach the holder's own runs only", () => {

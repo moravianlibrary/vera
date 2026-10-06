@@ -48,6 +48,8 @@ export const sessionSchema = z.object({
   grants: z.array(grantSchema),
   // Category custody, inherited downward; `custody`-scoped grants apply inside it.
   custodyCategoryIds: z.array(id),
+  // A group brings custody and project membership (permissions.md §1).
+  groupIds: z.array(id),
 });
 export type Session = z.infer<typeof sessionSchema>;
 
@@ -83,7 +85,9 @@ const projectBase = {
   endsOn: calendarDate,
   targetPages: z.number().int().nonnegative(),
   managerId: id,
+  // People, the manager among them, and groups whose people are members while they are in it.
   memberIds: z.array(id),
+  memberGroupIds: z.array(id),
   createdAt: timestamp,
 };
 
