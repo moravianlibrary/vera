@@ -90,13 +90,14 @@ zod v4.
 | The pane | `Pane` / `paneStateOf` / `Outcome` (`components/pane-state.tsx`); `DetailCard`, `FactGrid`, `StatTiles` with an optional `meter` (`detail-card.tsx`), `StatusNote`, `record-cards.tsx` (askers, copies, catalog, heading; `HistoryCard` takes a log alone, without a document) |
 | Actions | `ViewAction` + `ActionBar` (per-tier cap, `isInMenu` for More ▾); `PageHeader actions` |
 | Who may | `can()` (`domain/permissions.ts`) / `useCan()` with a scoped record |
-| Dialogs | `components/dialogs/`: `DialogShell`, `ConsequenceDialog` (A), `ReasonDialog` (B), `FormDialog` (C), `MessageDialog`. Not built: `SetEditorDialog` (D), `PickerDialog` (E), `SteppedDialog` (F), see component-interfaces §6.5–6.7 |
+| Dialogs | `components/dialogs/`: `DialogShell` (`head`, `onBack`), `ConsequenceDialog` (A, fed by a server dry run), `ReasonDialog` (B), `FormDialog` (C), `SteppedDialog` (F, with `StepIndicator`), `MessageDialog`. Not built: `SetEditorDialog` (D), `PickerDialog` (E), see component-interfaces §6.5–6.6 |
 | Doing something | `useActionMutation` → `ActionResult`; refusals are RFC 9457 Problem Details, worded by the action's `refusalTexts[code]`, then `detail`, then by status; `invalidates` lists every query the change shows in |
 | Tier | `useTier`, `valueForTier` (phone < 768, small < 1280, notebook < 1600, large); container queries for what the room decides |
 | Words | `plural`, `formatDay`, `joinDetails` |
 | Iteration dialogs | `components/iteration-dialogs.tsx` (Reclassify), `classification-fields.tsx` |
 | Two panes and a draft | `TransferEditor` (`components/transfer-editor.tsx`), `useDraft` + `isSameSet`, `usePicked`, `LeaveGuard` (`components/leave-guard.tsx`) |
 | Words for numbers and days | `formatCount` (`lib/format-number.ts`), `formatCalendarDay`, `formatShortCalendarDay` |
+| A mix's shares | `effectiveShareOf` (`domain/mixes.ts`); the mock's Overall mix and list generators are `mocks/fixtures/list-generators.ts` until intentions (step 6) and plugins (step 10) |
 
 **Not built yet** (the step that first needs one builds it, as a shared part,
 from component-interfaces): `CardSections`/`CardGrid`
@@ -118,8 +119,9 @@ grants and custody. Fixtures (`mocks/fixtures/`, demo "today" 2026-06-25,
 **Views built:** `features/documents/`, `features/proposals/`,
 `features/validations/` (the best model for a list with a pane and actions:
 `validations-view.ts`, `validation-list.tsx`, `validation-detail.tsx`,
-`validation-actions.tsx`), and `features/lists/` up to 4.3 (browse and the
-editor; the model for a view without watchlists, and for an editor page). Routes in `src/app.tsx`,
+`validation-actions.tsx`), and `features/lists/` (browse, the editor,
+Generate… and the list's acts; the model for a view without watchlists, for an
+editor page, and for acts behind a server dry run). Routes in `src/app.tsx`,
 sidebar entries in `components/layout/navigation.ts`.
 
 ---

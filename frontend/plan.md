@@ -66,7 +66,7 @@ green after every extraction.
    - Accept, Deny… (with the defect pick), Revoke, Reclassify, Cancel;
    - the Forbidden filter, with *Message admins…*.
 
-## 4. Digitization Lists — 4.1–4.3 done
+## 4. Digitization Lists — done
 
 1. Mock API: lists, members, the pool of what is ready, derived state.
 2. Browse as master–detail, with the pane.

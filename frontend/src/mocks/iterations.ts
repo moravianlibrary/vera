@@ -261,6 +261,8 @@ function applyRecheck(
 // ---------------------------------------------------------------- cancel
 
 // Held at the gate, not moved: progress stays, and Resume in Documents lets it through again.
+// One on a list comes off it and stops counting as planned (flows.md C3), back to what its gates
+// say; resumed, it returns to the pool, not to the old list.
 export function cancelIteration(
   session: Session,
   iterationId: string,
@@ -277,8 +279,14 @@ export function cancelIteration(
   }
 
   const now = new Date().toISOString();
+  const progress =
+    iteration.listId === null
+      ? iteration.progress
+      : progressAfterGates({ ...iteration, progress: "Ready" });
   replaceIteration({
     ...iteration,
+    listId: null,
+    progress,
     cancellation: {
       cause: "Decided",
       actorId: session.user.id,
@@ -294,7 +302,11 @@ export function cancelIteration(
     actor: { kind: "user", userId: session.user.id },
     correlationId: crypto.randomUUID(),
     event: "Cancelled",
-    detail: [`They were told: “${cancellation.publicText}”`, cancellation.internalText]
+    detail: [
+      `They were told: “${cancellation.publicText}”`,
+      cancellation.internalText,
+      iteration.listId === null ? null : `Taken off ${iteration.listId}.`,
+    ]
       .filter((sentence) => sentence !== null)
       .join(" "),
   });
@@ -302,7 +314,7 @@ export function cancelIteration(
   const askerIds = database.requests
     .filter((request) => followedIterationId(request) === iteration.id)
     .map((request) => request.requesterId);
-  return { value: { progress: iteration.progress, askerCount: new Set(askerIds).size } };
+  return { value: { progress, askerCount: new Set(askerIds).size } };
 }
 
 // ---------------------------------------------------------------- shared

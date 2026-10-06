@@ -91,7 +91,12 @@ export function ListsPage() {
             emptyIcon={ListChecks}
             emptyText="Select a list"
             render={(ready) => (
-              <ListDetailPane key={ready.row.list.id} detail={ready} session={session} />
+              <ListDetailPane
+                key={ready.row.list.id}
+                detail={ready}
+                session={session}
+                onDeleted={() => select(null)}
+              />
             )}
           />
         }

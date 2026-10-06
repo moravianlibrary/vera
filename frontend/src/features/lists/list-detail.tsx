@@ -1,14 +1,14 @@
 // One digitization list beside the browse list (page-lists.js render): a note on where it
 // stands, planned against delivered, what is on it, and its history. A member a gate stopped
 // after listing stays on, flagged (flows.md L11); one that could not be digitized carries its
-// message, and a cancelled one its reason.
+// message, and a cancelled one its reason. Its acts, and each member's, are list-actions.tsx.
 // TODO(rrandiak): the *Counts towards* and *Mix* cards wait for intentions in the mock API
 // (plan.md step 6), and the provenance's intention name with them.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ReactNode } from "react";
 import { Link } from "react-router";
 import type { ListDetail, ListItem } from "@/api/lists";
-import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import { categoryLabelOf } from "@/components/classification-fields";
 import { DetailCard, DetailRow, Muted, StatTiles } from "@/components/detail-card";
@@ -20,8 +20,8 @@ import { documentIdentifierOf } from "@/domain/documents";
 import type { Session } from "@/domain/entities";
 import type { MemberBlocker } from "@/domain/lists";
 import { isScanned } from "@/domain/lists";
-import { hasPermission } from "@/domain/permissions";
 import { iterationStatusOf, statusFootnoteOf } from "@/domain/status";
+import { ItemActions, useListActions } from "@/features/lists/list-actions";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { formatCalendarDay, formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
@@ -36,9 +36,10 @@ const blockerTexts = {
 interface ListDetailPaneProps {
   detail: ListDetail;
   session: Session;
+  onDeleted: () => void;
 }
 
-export function ListDetailPane({ detail, session }: ListDetailPaneProps) {
+export function ListDetailPane({ detail, session, onDeleted }: ListDetailPaneProps) {
   const { row, members, log } = detail;
   const { list } = row;
   const { data: users = [] } = useUsersQuery();
@@ -49,18 +50,7 @@ export function ListDetailPane({ detail, session }: ListDetailPaneProps) {
       ? undefined
       : `${documents.path}?id=${encodeURIComponent(item.document.id)}`;
   const average = row.itemCount === 0 ? null : Math.round(row.pages / row.itemCount);
-  // A Done list is history: nothing on it or about it changes.
-  const actions: ViewAction[] =
-    hasPermission(session, "list.edit") && row.state !== "Done"
-      ? [
-          {
-            id: "edit",
-            label: "Edit",
-            isPrimary: true,
-            href: `/lists/${encodeURIComponent(list.id)}/edit`,
-          },
-        ]
-      : [];
+  const { actions, dialogs } = useListActions({ detail, session, onDeleted });
 
   return (
     <article className="@container max-w-5xl">
@@ -75,6 +65,7 @@ export function ListDetailPane({ detail, session }: ListDetailPaneProps) {
         />
         <ActionBar actions={actions} menuLabel="More" className="mb-4" />
       </div>
+      {dialogs}
       <StateNote detail={detail} nameOf={nameOf} />
 
       <StatTiles
@@ -106,7 +97,12 @@ export function ListDetailPane({ detail, session }: ListDetailPaneProps) {
         <DetailCard title={`On this list — ${members.length}`}>
           {members.length === 0 && <Muted>Nothing yet.</Muted>}
           {members.map((item) => (
-            <MemberRow key={item.iteration.id} item={item} href={documentHref(item)} />
+            <MemberRow
+              key={item.iteration.id}
+              item={item}
+              href={documentHref(item)}
+              actions={<ItemActions item={item} detail={detail} session={session} />}
+            />
           ))}
         </DetailCard>
         <HistoryCard log={log} nameOf={nameOf} isPublic={false} />
@@ -115,21 +111,30 @@ export function ListDetailPane({ detail, session }: ListDetailPaneProps) {
   );
 }
 
-function MemberRow({ item, href }: { item: ListItem; href: string | undefined }) {
+interface MemberRowProps {
+  item: ListItem;
+  href: string | undefined;
+  actions: ReactNode;
+}
+
+function MemberRow({ item, href, actions }: MemberRowProps) {
   const { data: categories = [] } = useCategoriesQuery();
   const { document, iteration } = item;
 
   return (
     <DetailRow
       aside={
-        <span className="flex flex-col items-end gap-1">
-          <span className="tabular-nums">
-            {item.pages === null ? "—" : `${formatCount(item.pages)} pp`}
+        <span className="flex flex-col-reverse items-end gap-1 @md:flex-row @md:items-start @md:gap-2">
+          <span className="flex flex-col items-end gap-1">
+            <span className="tabular-nums">
+              {item.pages === null ? "—" : `${formatCount(item.pages)} pp`}
+            </span>
+            <StatusWithFootnote
+              status={iterationStatusOf(iteration)}
+              footnote={statusFootnoteOf(iteration)}
+            />
           </span>
-          <StatusWithFootnote
-            status={iterationStatusOf(iteration)}
-            footnote={statusFootnoteOf(iteration)}
-          />
+          {actions}
         </span>
       }
     >

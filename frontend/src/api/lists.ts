@@ -5,8 +5,8 @@
 // reference data other views name a list by.
 
 import { z } from "zod";
-import { findJson, getJson, postJson, putJson } from "@/api/http";
-import { apiRoutes, digitizationListRoute } from "@/api/routes";
+import { deleteResource, findJson, getJson, postJson, putJson } from "@/api/http";
+import { apiRoutes, digitizationListMemberRoute, digitizationListRoute } from "@/api/routes";
 import {
   digitizationListSchema,
   documentSchema,
@@ -292,6 +292,35 @@ export const listDraftSchema = z
   });
 export type ListDraft = z.infer<typeof listDraftSchema>;
 
+// ---------------------------------------------------------------- acting on a list
+
+// What marking it Done would do, counted by the server before it is done (flows.md L14): every
+// member not yet scanned and not stopped moves to Digitized, the blocked ones among them too.
+export const markDoneDryRunSchema = z.object({
+  toDigitized: z.object({ itemCount: count, pages: count }),
+  alreadyScannedCount: count,
+  notDigitizableCount: count,
+  // Blocked since listing and about to move anyway: perhaps never scanned.
+  blocked: z.array(z.object({ iterationId: z.string(), title: z.string() })),
+});
+export type MarkDoneDryRun = z.infer<typeof markDoneDryRunSchema>;
+
+// What deleting it would do to its members (flows.md L15, V14): back to the pool as Ready, back
+// to Enqueued where a gate now fails, scanned ones keep their status, stopped ones stay held.
+export const deletionDryRunSchema = z.object({
+  toReady: z.object({ itemCount: count, pages: count }),
+  toEnqueuedCount: count,
+  scannedCount: count,
+  heldCount: count,
+});
+export type DeletionDryRun = z.infer<typeof deletionDryRunSchema>;
+
+// Could not be digitized (flows.md L13): a fact about the item, with a message every asker reads.
+export const notDigitizableRequestSchema = z.object({
+  message: z.string().trim().min(1, "Say what happened"),
+});
+export type NotDigitizableRequest = z.infer<typeof notDigitizableRequestSchema>;
+
 // ---------------------------------------------------------------- calls
 
 interface SliceOptions {
@@ -346,4 +375,32 @@ export async function createList(draft: ListDraft): Promise<ListDetail> {
 
 export async function saveList(listId: string, draft: ListDraft): Promise<ListDetail> {
   return putJson(digitizationListRoute(listId), draft, listDetailSchema);
+}
+
+export async function previewMarkDone(listId: string): Promise<MarkDoneDryRun> {
+  return getJson(`${digitizationListRoute(listId)}/done`, markDoneDryRunSchema);
+}
+
+export async function markDone(listId: string): Promise<ListDetail> {
+  return postJson(`${digitizationListRoute(listId)}/done`, {}, listDetailSchema);
+}
+
+export async function previewDeletion(listId: string): Promise<DeletionDryRun> {
+  return getJson(`${digitizationListRoute(listId)}/deletion`, deletionDryRunSchema);
+}
+
+export async function deleteList(listId: string): Promise<void> {
+  return deleteResource(digitizationListRoute(listId));
+}
+
+export async function markNotDigitizable(
+  listId: string,
+  iterationId: string,
+  request: NotDigitizableRequest,
+): Promise<ListDetail> {
+  return postJson(
+    `${digitizationListMemberRoute(listId, iterationId)}/not-digitizable`,
+    request,
+    listDetailSchema,
+  );
 }

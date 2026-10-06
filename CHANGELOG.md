@@ -26,6 +26,12 @@ All notable changes to this project are documented here.
   why); taking it puts the picks on the list, each marked *generated* with its reason, keeps
   what was there, and leaves the report on top. Nothing is saved until Save, which records
   what it was generated with.
+- Digitization Lists, acting on a list: *Mark Done…* while it runs (the primary once it has
+  ended) and *Delete…* under More, each saying first what happens to the members as the server
+  counts it. Done moves everything open to Digitized and fixes the list as history; deleting
+  returns the members to the pool, or to Enqueued where a gate now holds them, and is never
+  offered on a Done list. Per item, a ⋯ offers *Could not be digitized…* with a message every
+  asker reads, *Cancel…* with a reason, and taking it off in the editor.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.
@@ -106,6 +112,8 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Cancelling an item that is on a digitization list takes it off the list, from any view; it
+  stops counting as planned and, resumed, returns to the pool rather than to the old list.
 - Filters have no *Advanced…* any more: Pages, Asked and Waiting since are added from
   "+ Add filter" like any other field, as a chip reading "any" that opens its range. A date
   offers *Last 7 days*, *Last 14 days*, *Last 30 days* or *This month*, which a saved watchlist

@@ -34,6 +34,10 @@ export function digitizationListRoute(listId: string): string {
   return `${apiRoutes.digitizationLists}/${encodeURIComponent(listId)}`;
 }
 
+export function digitizationListMemberRoute(listId: string, iterationId: string): string {
+  return `${digitizationListRoute(listId)}/items/${encodeURIComponent(iterationId)}`;
+}
+
 export function watchlistRoute(watchlistId: string): string {
   return `${apiRoutes.watchlists}/${encodeURIComponent(watchlistId)}`;
 }

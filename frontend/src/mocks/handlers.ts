@@ -19,6 +19,7 @@ import {
 import {
   generationRequestSchema,
   listDraftSchema,
+  notDigitizableRequestSchema,
   parseListSearchParams,
   parseListSliceParams,
   parsePoolSearchParams,
@@ -66,7 +67,12 @@ import {
   canBuildLists,
   canReadLists,
   createList,
+  deleteList,
   findListDetail,
+  markListDone,
+  markNotDigitizable,
+  previewDeletion,
+  previewMarkDone,
   queryLists,
   queryPool,
   saveList,
@@ -245,6 +251,46 @@ export function createHandlers(profile: MockUserProfile) {
 
       return outcomeResponse(saveList(currentSession(), String(params.listId), draft.data));
     }),
+
+    http.get(route(`${apiRoutes.digitizationLists}/:listId/done`), ({ params }) =>
+      outcomeResponse(previewMarkDone(currentSession(), String(params.listId))),
+    ),
+
+    http.post(route(`${apiRoutes.digitizationLists}/:listId/done`), ({ params }) =>
+      outcomeResponse(markListDone(currentSession(), String(params.listId))),
+    ),
+
+    http.get(route(`${apiRoutes.digitizationLists}/:listId/deletion`), ({ params }) =>
+      outcomeResponse(previewDeletion(currentSession(), String(params.listId))),
+    ),
+
+    http.delete(route(`${apiRoutes.digitizationLists}/:listId`), ({ params }) => {
+      const outcome = deleteList(currentSession(), String(params.listId));
+      if ("refusal" in outcome) {
+        return problemResponse(outcome.refusal);
+      }
+
+      return new HttpResponse(null, { status: 204 });
+    }),
+
+    http.post(
+      route(`${apiRoutes.digitizationLists}/:listId/items/:iterationId/not-digitizable`),
+      async ({ params, request }) => {
+        const body = notDigitizableRequestSchema.safeParse(await request.json());
+        if (!body.success) {
+          return invalidResponse(body.error);
+        }
+
+        return outcomeResponse(
+          markNotDigitizable(
+            currentSession(),
+            String(params.listId),
+            String(params.iterationId),
+            body.data,
+          ),
+        );
+      },
+    ),
 
     http.post(route(`${apiRoutes.batches}/:batchId/retry`), ({ params }) =>
       outcomeResponse(retryBatch(currentSession(), String(params.batchId))),

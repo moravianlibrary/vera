@@ -174,7 +174,8 @@ The foundation is in place:
   `consequence-dialog.tsx` (kind A: what happens, from a server dry run), `reason-dialog.tsx`
   (kind B: what readers are told plus an internal note; Decline in Proposals uses it) and
   `form-dialog.tsx` (kind C: React Hook Form over a zod schema, a computed warning, a refusal
-  tied to a field). Each takes an `onConfirm`/`onSubmit` returning an `ActionResult` and closes
+  tied to a field) and `stepped-dialog.tsx` (kind F: steps named in the head by
+  `step-indicator.tsx`, Back, a step's `onAdvance` may call the server). Each takes an `onConfirm`/`onSubmit` returning an `ActionResult` and closes
   itself when it is done. `src/hooks/use-action-mutation.ts` turns a call into that result: a
   refusal (403/404/409/422) or any other failure becomes a value, worded by the action's text
   for its Problem Details `code`, else the server's `detail`, else the action's text for the
@@ -264,9 +265,8 @@ The foundation is in place:
   outcome). A forbidden item gets *What you can do* and, for whoever may not overrule,
   *Message admins…*: the Message dialog over the new `restriction` subject, which the mock
   (`src/mocks/messages.ts`) resolves to the holders of `restriction.overrule`.
-- `src/features/lists/` is Digitization Lists (`/lists`, view-map.md §2.4), steps 4.1–4.3 of
-  `plan.md`; 4.4 (Generate…) and 4.5 (Mark Done, Delete, per-item Cancel and Could not be
-  digitized) are still to build. The resource is `src/api/lists.ts` over
+- `src/features/lists/` is Digitization Lists (`/lists`, view-map.md §2.4), step 4 of
+  `plan.md`. The resource is `src/api/lists.ts` over
   `/digitization-lists` (the bare `/lists` stays reference data): rows with the state worked out
   from the dates (`src/domain/lists.ts`: `listStateOf`, `isOverdue`, `progressOnList`,
   `memberBlockerOf`) and the counts the browse reads; one list with its members and its own
@@ -288,8 +288,20 @@ The foundation is in place:
   notebook, stacked with sticky heads below), `src/hooks/use-draft.ts` (`useDraft`, `isSameSet`),
   `src/hooks/use-picked.ts` (`usePicked`) and `src/components/leave-guard.tsx` (*Discard
   changes?* on a route change, the browser's own prompt on reload). Saving goes back to the
-  list in browse. *Counts towards*, the mix and the L8/L10 warnings wait for intentions in the
-  mock API (step 6), as TODOs in `list-rows.tsx`, `list-detail.tsx` and `list-editor.tsx`.
+  list in browse. *Generate…* sits in the editor's left pane head when a generator runs
+  (`GET /digitization-lists/generators`): `generate-dialog.tsx` is a `SteppedDialog` (Ask →
+  Preview) over `POST /digitization-lists/generate`, whose mock (`src/mocks/list-generation.ts`)
+  plays the reference rule-based generator over the Overall mix (`effectiveShareOf`,
+  `src/domain/mixes.ts`; fixtures in `mocks/fixtures/list-generators.ts`) and the AI one with
+  its own sentences; the draft's picks join the left pane marked *generated* with their reason,
+  `generation-report.tsx` stays in the top strip, and Save sends the provenance (`generated`),
+  logged as *Generated — {generator}*. The pane's acts are `list-actions.tsx`: *Mark Done…*
+  while it runs and *Delete…* in More ▾, each a `ConsequenceDialog` over a server dry run
+  (`GET …/done`, `GET …/deletion`, then `POST …/done`, `DELETE …/:id`); per item, a ⋯ with
+  *Could not be digitized…* (`POST …/items/:iterationId/not-digitizable`, stays on), *Cancel…*
+  (the shared iteration cancel, which now takes an item off its list, flows.md C3) and *Take it
+  off — in the editor*. *Counts towards*, the mix, *Shape by* another intention and the L8/L10
+  warnings wait for intentions in the mock API (step 6), as TODOs.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

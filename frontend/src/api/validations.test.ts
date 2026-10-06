@@ -285,7 +285,7 @@ describe("page count and recheck", () => {
 });
 
 describe("cancel", () => {
-  it("holds an item where it is and takes it out of review", async () => {
+  it("takes it off its list and out of review, back to what its gates say (C3)", async () => {
     signInAs("curator");
 
     const result = await cancelIteration("IT25", {
@@ -293,7 +293,8 @@ describe("cancel", () => {
       internalText: null,
     });
 
-    expect(result.progress).toBe("Planned");
+    // Planned on L-2026-015, but a page-count defect holds it: off the list it is Enqueued.
+    expect(result.progress).toBe("Enqueued");
     expect(await findValidation("IT25")).toBeNull();
     expect(
       await statusOf(cancelIteration("IT25", { publicText: "Again.", internalText: null })),

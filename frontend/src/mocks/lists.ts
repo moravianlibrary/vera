@@ -4,12 +4,15 @@
 // progress as the list's start says (flows.md L1, L2): a real server derives it on read.
 
 import type {
+  DeletionDryRun,
   ListDetail,
   ListDraft,
   ListItem,
   ListPage,
   ListQuery,
   ListRow,
+  MarkDoneDryRun,
+  NotDigitizableRequest,
   PoolPage,
   PoolQuery,
 } from "@/api/lists";
@@ -28,6 +31,7 @@ import {
   memberBlockerOf,
   progressOnList,
 } from "@/domain/lists";
+import type { Permission } from "@/domain/permissions";
 import { can, hasPermission, scopesOf } from "@/domain/permissions";
 import { isRestricted, passesGates, statusFootnoteOf, validationOf } from "@/domain/status";
 import { formatShortCalendarDay } from "@/lib/format-date";
@@ -479,6 +483,221 @@ function moveMembers(
   if (added > 0 || removed > 0) {
     logList(session, list, correlationId, "Members moved", `+${added} −${removed}`);
   }
+}
+
+// ---------------------------------------------------------------- acting on a list
+
+const doneRefusal = {
+  refusal: {
+    status: 409,
+    message: "A Done list is history: it no longer changes and is not deleted",
+    code: "list.done",
+  },
+} as const;
+
+// A list within reach, not Done, and the grant to act on it.
+function actionableList(
+  session: Session,
+  listId: string,
+  permission: Permission,
+): Outcome<DigitizationList> {
+  if (!hasPermission(session, permission)) {
+    return { refusal: { status: 403, message: "You may not do this to lists" } };
+  }
+
+  const list = findReachableList(session, listId);
+  if (list === null) {
+    return { refusal: { status: 404, message: "List not found" } };
+  }
+
+  return list.done === null ? { value: list } : doneRefusal;
+}
+
+// Only a list that has started can be through: one still Planned has nothing scanned.
+function runningList(session: Session, listId: string): Outcome<DigitizationList> {
+  const found = actionableList(session, listId, "list.edit");
+  if ("refusal" in found || listStateOf(found.value, today()) === "InProgress") {
+    return found;
+  }
+
+  return {
+    refusal: {
+      status: 409,
+      message: "It has not started yet: nothing on it is being scanned",
+      code: "list.not_started",
+    },
+  };
+}
+
+// Not scanned and not stopped: what Done moves, and what deleting returns to the pool.
+const isOpenMember = (iteration: Iteration) =>
+  !isScanned(iteration) && iteration.cancellation === null;
+
+export function previewMarkDone(session: Session, listId: string): Outcome<MarkDoneDryRun> {
+  const found = runningList(session, listId);
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const members = membersOf(found.value.id);
+  const moving = members.filter(isOpenMember);
+  return {
+    value: {
+      toDigitized: { itemCount: moving.length, pages: sumPages(moving) },
+      alreadyScannedCount: members.filter(isScanned).length,
+      notDigitizableCount: members.filter(
+        (iteration) => iteration.cancellation?.cause === "NotDigitizable",
+      ).length,
+      blocked: moving
+        .filter((iteration) => memberBlockerOf(iteration) !== null)
+        .map((iteration) => ({
+          iterationId: iteration.id,
+          title: itemOf(iteration)?.document.title ?? iteration.id,
+        })),
+    },
+  };
+}
+
+// Done is an act (flows.md L14): every open member moves to Digitized, and the list's dates are
+// fixed from then on.
+export function markListDone(session: Session, listId: string): Outcome<ListDetail> {
+  const found = runningList(session, listId);
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const list = found.value;
+  const now = new Date().toISOString();
+  const correlationId = crypto.randomUUID();
+  const members = membersOf(list.id);
+  const moving = members.filter(isOpenMember);
+  for (const iteration of moving) {
+    replaceIteration({ ...iteration, progress: "Digitized", digitizedAt: now });
+    logIteration(session, iteration, correlationId, "Digitized", `${list.id} marked Done`);
+  }
+
+  const done: DigitizationList = { ...list, done: { actorId: session.user.id, at: now } };
+  database.lists.splice(database.lists.indexOf(list), 1, done);
+  const notDigitizable = members.filter(
+    (iteration) => iteration.cancellation?.cause === "NotDigitizable",
+  ).length;
+  logList(
+    session,
+    done,
+    correlationId,
+    "Marked Done",
+    [
+      `${moving.length} moved to Digitized`,
+      notDigitizable > 0 ? `${notDigitizable} could not be digitized` : null,
+    ]
+      .filter((part) => part !== null)
+      .join(" · "),
+  );
+  return { value: detailOf(done) };
+}
+
+// Where a member goes when its list is deleted: Ready, or Enqueued where a gate now fails.
+const progressOffList = (iteration: Iteration) =>
+  isScanned(iteration)
+    ? iteration.progress
+    : progressAfterGates({ ...iteration, progress: "Ready" });
+
+export function previewDeletion(session: Session, listId: string): Outcome<DeletionDryRun> {
+  const found = actionableList(session, listId, "list.delete");
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const members = membersOf(found.value.id);
+  const open = members.filter(isOpenMember);
+  const toReady = open.filter((iteration) => progressOffList(iteration) === "Ready");
+  return {
+    value: {
+      toReady: { itemCount: toReady.length, pages: sumPages(toReady) },
+      toEnqueuedCount: open.length - toReady.length,
+      scannedCount: members.filter(isScanned).length,
+      heldCount: members.filter(
+        (iteration) => !isScanned(iteration) && iteration.cancellation !== null,
+      ).length,
+    },
+  };
+}
+
+// Lists are deleted, not cancelled (flows.md L15): no reason, and each member's history keeps
+// that it was listed, by the list's name.
+export function deleteList(session: Session, listId: string): Outcome<null> {
+  const found = actionableList(session, listId, "list.delete");
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const list = found.value;
+  const correlationId = crypto.randomUUID();
+  for (const iteration of membersOf(list.id)) {
+    const progress = progressOffList(iteration);
+    replaceIteration({ ...iteration, listId: null, formerListName: list.name, progress });
+    logIteration(
+      session,
+      iteration,
+      correlationId,
+      "List deleted",
+      `${list.id} · ${progress === "Enqueued" ? "Enqueued until its gate clears" : "keeps its status"}`,
+    );
+  }
+
+  database.lists.splice(database.lists.indexOf(list), 1);
+  logList(session, list, correlationId, "Deleted", datesOf(list));
+  return { value: null };
+}
+
+// It stays on the list, marked, with a message every asker reads (flows.md L13); Done does not
+// move it, and Resume in Documents brings it back to Ready.
+export function markNotDigitizable(
+  session: Session,
+  listId: string,
+  iterationId: string,
+  request: NotDigitizableRequest,
+): Outcome<ListDetail> {
+  const found = runningList(session, listId);
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const list = found.value;
+  const iteration = membersOf(list.id).find((member) => member.id === iterationId);
+  if (iteration === undefined) {
+    return { refusal: { status: 404, message: "It is not on this list" } };
+  }
+
+  if (!isOpenMember(iteration)) {
+    return {
+      refusal: {
+        status: 409,
+        message: "It is already scanned, or already stopped",
+        code: "iteration.stopped",
+      },
+    };
+  }
+
+  const now = new Date().toISOString();
+  replaceIteration({
+    ...iteration,
+    cancellation: {
+      cause: "NotDigitizable",
+      actorId: session.user.id,
+      at: now,
+      publicText: request.message,
+      internalText: null,
+    },
+  });
+  logIteration(
+    session,
+    iteration,
+    crypto.randomUUID(),
+    "Could not be digitized",
+    `${request.message} · on ${list.id}`,
+  );
+  return { value: detailOf(list) };
 }
 
 function nextListId(): string {

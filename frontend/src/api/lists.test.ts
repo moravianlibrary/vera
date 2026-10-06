@@ -5,15 +5,21 @@
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
+import { cancelIteration } from "@/api/iterations";
 import {
   createList,
+  deleteList,
   findList,
   generateDraft,
   isSameListQuery,
   listGenerators,
   listLists,
   listPool,
+  markDone,
+  markNotDigitizable,
   parseListSearchParams,
+  previewDeletion,
+  previewMarkDone,
   saveList,
   toListSearchParams,
 } from "@/api/lists";
@@ -378,5 +384,91 @@ describe("generating a draft", () => {
 
     expect(detail.row.list.generated?.generator).toBe("PriorityFirst 1.2.0");
     expect(detail.log.map((entry) => entry.event)).toContain("Generated — PriorityFirst 1.2.0");
+  });
+});
+
+describe("acting on a list", () => {
+  it("marks an item that could not be digitized, and keeps it on the list", async () => {
+    signInAs("digitization");
+    const before = await findList("L-2026-014");
+    const open = before?.members.find(
+      (item) => item.iteration.cancellation === null && item.iteration.progress === "InProgress",
+    );
+
+    const detail = await markNotDigitizable("L-2026-014", open?.iteration.id ?? "", {
+      message: "Pages too tightly bound to open safely.",
+    });
+    const marked = detail.members.find((item) => item.iteration.id === open?.iteration.id);
+
+    expect(marked?.iteration.cancellation).toMatchObject({
+      cause: "NotDigitizable",
+      publicText: "Pages too tightly bound to open safely.",
+    });
+    expect(detail.row.notDigitizableCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it("refuses to mark an item on a list that has not started", async () => {
+    signInAs("digitization");
+
+    expect(
+      await statusOf(markNotDigitizable("L-2026-015", "IT25", { message: "Lost in the stacks." })),
+    ).toBe(409);
+  });
+
+  it("takes an item cancelled from a list off it, out of the pool too", async () => {
+    signInAs("digitization");
+    const before = await findList("L-2026-014");
+    const open = before?.members.find((item) => item.iteration.cancellation === null);
+    const iterationId = open?.iteration.id ?? "";
+
+    await cancelIteration(iterationId, { publicText: "Postponed.", internalText: null });
+    const after = await findList("L-2026-014");
+    const pool = await listPool({ search: iterationId });
+
+    expect(after?.members.map((item) => item.iteration.id)).not.toContain(iterationId);
+    expect(pool.items).toEqual([]);
+  });
+
+  it("counts what deleting does, then deletes: blocked ones back to Enqueued", async () => {
+    signInAs("digitization");
+    const dryRun = await previewDeletion("L-2026-015");
+
+    expect(dryRun.toEnqueuedCount).toBe(1); // IT25, blocked since listing
+
+    await deleteList("L-2026-015");
+    const pool = await listPool({}, { limit: 200 });
+
+    expect(await findList("L-2026-015")).toBeNull();
+    expect(pool.items.map((item) => item.iteration.id)).not.toContain("IT25");
+    expect(pool.total).toBeGreaterThanOrEqual(dryRun.toReady.itemCount);
+  });
+
+  it("refuses to delete a Done list, and to delete without list.delete", async () => {
+    signInAs("digitization");
+    expect(await statusOf(previewDeletion("L-2026-012"))).toBe(409);
+    expect(await statusOf(deleteList("L-2026-012"))).toBe(409);
+
+    signInAs("curator");
+    expect(await statusOf(deleteList("L-2026-016"))).toBe(403);
+  });
+
+  it("marks a running list Done: its open members Digitized, the stopped ones not", async () => {
+    signInAs("digitization");
+    expect(await statusOf(previewMarkDone("L-2026-016"))).toBe(409); // still Planned
+
+    const dryRun = await previewMarkDone("L-2026-014");
+    const detail = await markDone("L-2026-014");
+
+    expect(detail.row.state).toBe("Done");
+    expect(detail.row.scannedItemCount).toBe(
+      dryRun.toDigitized.itemCount + dryRun.alreadyScannedCount,
+    );
+    expect(
+      detail.members
+        .filter((item) => item.iteration.cancellation?.cause === "NotDigitizable")
+        .every((item) => item.iteration.progress !== "Digitized"),
+    ).toBe(true);
+    expect(detail.log.map((entry) => entry.event)).toContain("Marked Done");
+    expect(await statusOf(markDone("L-2026-014"))).toBe(409);
   });
 });
