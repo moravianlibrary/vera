@@ -49,7 +49,7 @@ describe("retrying a batch", () => {
     expect(detail?.log[0]?.event).toBe("Ingest retried");
   });
 
-  it("leaves the batch's header with nothing failed, and refuses a second retry", async () => {
+  it("leaves the batch's header being added, not added, and refuses a second retry", async () => {
     signInAs("admin");
 
     const page = await listDocuments({}, { grouping: "batch", limit: maximumDocumentSliceSize });
@@ -57,7 +57,8 @@ describe("retrying a batch", () => {
       (group) => group.kind === "batch" && group.batch?.id === "B-0141",
     );
 
-    expect(header).toMatchObject({ failed: 0 });
+    // IT17, retried, joins the two of B-0141 still being added.
+    expect(header).toMatchObject({ failed: 0, adding: 3 });
     expect(await statusOf(retryBatch("B-0141"))).toBe(409);
   });
 

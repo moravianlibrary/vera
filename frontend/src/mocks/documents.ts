@@ -399,13 +399,20 @@ function arrangementOf(
 // Batches with failed additions first, as that is what an admin retries; then newest first, and
 // the rows from no batch last.
 function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
-  const isFailed = (record: DocumentRecord) =>
-    currentIterationOf(record)?.progress === "IngestFailed";
+  const progressOf = (record: DocumentRecord) => currentIterationOf(record)?.progress;
+  const isAdding = (record: DocumentRecord) => progressOf(record) === "Enqueued";
+  const isFailed = (record: DocumentRecord) => progressOf(record) === "IngestFailed";
+  const isAdded = (record: DocumentRecord) => {
+    const progress = progressOf(record);
+    return progress !== undefined && progress !== "Enqueued" && progress !== "IngestFailed";
+  };
   const inBatch = (batchId: string) => reachable.filter((record) => batchIdOf(record) === batchId);
   const batchOrder = database.batches
     .map((batch) => ({
       batch,
       size: inBatch(batch.id).length,
+      added: inBatch(batch.id).filter(isAdded).length,
+      adding: inBatch(batch.id).filter(isAdding).length,
       failed: inBatch(batch.id).filter(isFailed).length,
     }))
     .toSorted(
@@ -421,6 +428,8 @@ function batchArrangementOf(reachable: readonly DocumentRecord[]): Arrangement {
       kind: "batch",
       batch: entry?.batch ?? null,
       size: entry?.size ?? total,
+      added: entry?.added ?? 0,
+      adding: entry?.adding ?? 0,
       failed: entry?.failed ?? 0,
       total,
       rowCount,

@@ -1,6 +1,7 @@
 // The header over a group of Documents rows (docs/demos/shared/page-documents.js, byBatch and
 // byProject), on the shared GroupHeader frame. A batch says when and by whom it came in and how
-// much of it could not be added, the unit an admin retries; a project says its state and how
+// far adding it got (decided 2026-10-06: added, being added and could not be added, each
+// counted, so a retry or a new batch does not read as all added), the unit an admin retries; a project says its state and how
 // many of its documents match. An administrator retries a batch's failed additions from its
 // header, at once and without a dialog: a retry only sends them back to ingest.
 // TODO(rrandiak): on a phone the retry moves into the header's "…" (component-interfaces.md
@@ -55,7 +56,7 @@ interface BatchHeaderProps {
 }
 
 function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
-  const { batch, size, failed } = group;
+  const { batch, size, added, adding, failed } = group;
   if (batch === null) {
     return (
       <GroupHeader title="Not from a batch" meta="asked for one at a time, or still a proposal" />
@@ -74,13 +75,7 @@ function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
       meta={
         <>
           {formatDay(batch.submittedAt)} · {submitter} ·{" "}
-          {failed > 0 ? (
-            <b className="font-semibold text-tone-red-foreground">
-              {failed} of {size} could not be added
-            </b>
-          ) : (
-            `${size} added`
-          )}
+          <AdditionCounts size={size} added={added} adding={adding} failed={failed} />
         </>
       }
       action={
@@ -90,6 +85,36 @@ function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
       }
     />
   );
+}
+
+interface AdditionCountsProps {
+  size: number;
+  added: number;
+  adding: number;
+  failed: number;
+}
+
+// "28 added · 12 being added · 3 could not be added", each part only when it counts something;
+// "40 added" once all of it is in.
+function AdditionCounts({ size, added, adding, failed }: AdditionCountsProps) {
+  if (added === size) {
+    return `${size} added`;
+  }
+
+  const parts = [
+    added > 0 && <span key="added">{added} added</span>,
+    adding > 0 && <span key="adding">{adding} being added</span>,
+    failed > 0 && (
+      <b key="failed" className="font-semibold text-tone-red-foreground">
+        {failed} could not be added
+      </b>
+    ),
+  ].filter(Boolean);
+  if (parts.length === 0) {
+    return "none added yet";
+  }
+
+  return parts.flatMap((part, index) => (index === 0 ? [part] : [" · ", part]));
 }
 
 // The footnote says a refusal; success needs no word, as the refetch takes the failures off.

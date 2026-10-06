@@ -92,6 +92,9 @@ All notable changes to this project are documented here.
   keeps relative, or two days of your choice. Pages offers *Under 100*, *100–499*, *500–999*
   and *1,000 and more* before two numbers of your choice. Every screen size can edit a range,
   a phone in its filter sheet.
+- A batch's header in Documents counts how far adding it got, as *28 added · 12 being added ·
+  3 could not be added*, so a batch just retried, or just arrived, no longer reads as all
+  added.
 - Rechecking a document and entering its page count take the new `iteration.recheck`
   permission, which curators hold within their custody and administrators everywhere. The
   catalog link in Validations is the one the catalog adapter plugin gives, and absent when it
