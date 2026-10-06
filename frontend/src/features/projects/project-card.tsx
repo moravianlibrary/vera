@@ -5,6 +5,7 @@
 // TODO(rrandiak): *No intention yet — Create one* waits for intentions (plan.md step 6); labels
 // move to i18n.
 
+import { Fragment } from "react";
 import type { ProjectRow } from "@/api/projects";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { RecordCard } from "@/components/card-sections";
@@ -87,29 +88,41 @@ function ProjectFoot({ row }: { row: ProjectRow }) {
     .join(" · ");
 
   return (
-    <span className="flex flex-wrap gap-x-1">
-      {project.state === "Proposed" && (
-        <span>
-          {pending.documentCount === 0 ? (
-            "No proposals in it yet"
-          ) : (
-            <>
-              <b className="font-medium text-foreground">{pending.documentCount} pending</b>
-              {pending.withCopyCount > 0 &&
-                ` · ${pending.withCopyCount} with a copy (will be skipped)`}
-            </>
-          )}{" "}
-          ·
-        </span>
-      )}
-      {row.listCount > 0 && <span>{plural(row.listCount, "list")} ·</span>}
-      <span>{members}</span>
-      {waiting.itemCount > 0 && (
-        <span>
-          · <b className="font-medium text-foreground">{formatCount(waiting.pages)} pp</b> approved,
-          not on a list
-        </span>
-      )}
-    </span>
+    <>
+      {[
+        {
+          key: "pending",
+          part:
+            project.state !== "Proposed" ? null : pending.documentCount === 0 ? (
+              "No proposals in it yet"
+            ) : (
+              <>
+                <b className="font-medium text-foreground">{pending.documentCount} pending</b>
+                {pending.withCopyCount > 0 &&
+                  ` · ${pending.withCopyCount} with a copy (will be skipped)`}
+              </>
+            ),
+        },
+        { key: "lists", part: row.listCount > 0 ? plural(row.listCount, "list") : null },
+        { key: "members", part: members },
+        {
+          key: "waiting",
+          part:
+            waiting.itemCount === 0 ? null : (
+              <>
+                <b className="font-medium text-foreground">{formatCount(waiting.pages)} pp</b>{" "}
+                approved, not on a list
+              </>
+            ),
+        },
+      ]
+        .filter(({ part }) => part !== null)
+        .map(({ key, part }, index) => (
+          <Fragment key={key}>
+            {index > 0 && " · "}
+            {part}
+          </Fragment>
+        ))}
+    </>
   );
 }

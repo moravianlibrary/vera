@@ -6,7 +6,7 @@
 // intentions in the mock API (plan.md step 6); labels move to i18n.
 
 import type { ReactNode } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import type { FundedItem, ProjectDetail, ProjectProposal } from "@/api/projects";
 import { categoryLabelOf } from "@/components/classification-fields";
 import { DataTable } from "@/components/data-table";
@@ -24,11 +24,13 @@ import {
   ToneBadge,
 } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
+import { Button } from "@/components/ui/button";
 import { PaceBars } from "@/components/visualizations/pace-bars";
 import { documentIdentifierOf } from "@/domain/documents";
-import type { Category } from "@/domain/entities";
+import type { Category, Session } from "@/domain/entities";
 import { progressValues } from "@/domain/entities";
 import { iterationStatusOf, statusFootnoteOf } from "@/domain/status";
+import { useProjectActions } from "@/features/projects/project-actions";
 import { ProjectBadges } from "@/features/projects/project-card";
 import {
   pagesOf,
@@ -38,6 +40,7 @@ import {
 } from "@/features/projects/projects-view";
 import { useProjectQuery } from "@/features/projects/use-projects-query";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
+import { useSessionQuery } from "@/hooks/use-session-query";
 import { formatDay, formatShortCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
@@ -49,8 +52,9 @@ export function ProjectPage() {
   const { data: detail } = useProjectQuery(projectId);
   const { data: users = [] } = useUsersQuery();
   const { data: categories = [] } = useCategoriesQuery();
+  const { data: session } = useSessionQuery();
 
-  if (detail === undefined) {
+  if (detail === undefined || session === undefined) {
     return <PageHeader title="Project" breadcrumb={backToIndex} />;
   }
 
@@ -68,7 +72,15 @@ export function ProjectPage() {
   }
 
   const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
-  return <ProjectRecord detail={detail} nameOf={nameOf} categories={categories} />;
+  return (
+    <ProjectRecord
+      key={detail.row.project.id}
+      detail={detail}
+      session={session}
+      nameOf={nameOf}
+      categories={categories}
+    />
+  );
 }
 
 interface ProjectRecordProps {
@@ -77,9 +89,20 @@ interface ProjectRecordProps {
   categories: readonly Category[];
 }
 
-function ProjectRecord({ detail, nameOf, categories }: ProjectRecordProps) {
+function ProjectRecord({
+  detail,
+  session,
+  nameOf,
+  categories,
+}: ProjectRecordProps & { session: Session }) {
+  const navigate = useNavigate();
   const { row } = detail;
   const { project } = row;
+  const { pageActions, editMembers, dialogs } = useProjectActions({
+    row,
+    session,
+    onDeleted: () => navigate("/projects"),
+  });
   const note = projectNoteOf(row, project.state === "Proposed" ? "" : nameOf(project.actorId));
   const standing = [project.state, project.state === "Rejected" ? null : row.period]
     .filter((part) => part !== null)
@@ -89,6 +112,7 @@ function ProjectRecord({ detail, nameOf, categories }: ProjectRecordProps) {
     <RecordPage
       header={{
         title: project.name,
+        actions: pageActions,
         breadcrumb: { ...backToIndex, detail: `${standing} · ${periodTextOf(project)}` },
       }}
       note={
@@ -99,7 +123,8 @@ function ProjectRecord({ detail, nameOf, categories }: ProjectRecordProps) {
       aside={
         <>
           <AboutCard detail={detail} nameOf={nameOf} />
-          <ProjectMembersCard detail={detail} nameOf={nameOf} />
+          <ProjectMembersCard detail={detail} nameOf={nameOf} onEdit={editMembers} />
+          {dialogs}
         </>
       }
       history={<HistoryCard log={detail.log} nameOf={nameOf} isPublic={false} />}
@@ -176,15 +201,25 @@ function AboutCard({ detail, nameOf }: Omit<ProjectRecordProps, "categories">) {
   );
 }
 
-function ProjectMembersCard({ detail, nameOf }: Omit<ProjectRecordProps, "categories">) {
+function ProjectMembersCard({
+  detail,
+  nameOf,
+  onEdit,
+}: Omit<ProjectRecordProps, "categories"> & { onEdit: (() => void) | null }) {
   const { project, memberGroups } = detail.row;
   const members: Member[] = [
-    ...project.memberIds.map((userId) => ({
-      kind: "user" as const,
-      id: userId,
-      label: nameOf(userId),
-      role: userId === project.managerId ? "manager" : "member",
-    })),
+    // The manager first.
+    ...project.memberIds
+      .toSorted(
+        (first, second) =>
+          Number(second === project.managerId) - Number(first === project.managerId),
+      )
+      .map((userId) => ({
+        kind: "user" as const,
+        id: userId,
+        label: nameOf(userId),
+        role: userId === project.managerId ? "manager" : "member",
+      })),
     ...memberGroups.map((group) => ({
       kind: "group" as const,
       id: group.id,
@@ -194,7 +229,18 @@ function ProjectMembersCard({ detail, nameOf }: Omit<ProjectRecordProps, "catego
   ];
 
   return (
-    <MembersCard title="Members" members={members} emptyText="Nobody yet.">
+    <MembersCard
+      title="Members"
+      members={members}
+      emptyText="Nobody yet."
+      action={
+        onEdit === null ? undefined : (
+          <Button variant="outline" size="sm" onClick={onEdit}>
+            Edit
+          </Button>
+        )
+      }
+    >
       <FinePrint>
         Members propose documents into it
         {project.state === "Rejected" ? ", not any more" : ""}. A grant scoped to project means

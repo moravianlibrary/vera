@@ -183,6 +183,8 @@ The foundation is in place:
   query keys it touches are refetched without being awaited. `can()` in
   `src/domain/permissions.ts` (and `src/hooks/use-can.ts`) checks a grant's scope against a
   record (proposal, iteration by category path, project, run); pane actions use it to be absent.
+  A project is reached through its people or its groups: the session carries the caller's
+  `groupIds`, and `isProjectMember` / `scopeOfProject` (`src/domain/projects.ts`) answer it.
   `message-dialog.tsx` is the one *Message…* dialog (messaging.md): given a record
   (`MessageSubject`), it shows who the server resolved it to (`src/api/messages.ts`,
   `GET /messages/hand-off`), who the chosen Message instance (`GET /message-channels`, in
@@ -193,7 +195,7 @@ The foundation is in place:
   proposal's message to its askers and a forbidden item's (`restriction`) to whoever may overrule
   it, people only and never the sender, as a `mailto:` or Slack link pre-filled with the record
   and a link back; a record out of reach is 404. Only those two subjects exist so far, and instances that send on their own are not modelled.
-  Still to build: picker, set editor and stepped frame (component-interfaces.md §6.5–6.7).
+  Still to build: picker and set editor (component-interfaces.md §6.5–6.6).
 - Query hooks: `src/hooks/use-session-query.ts`, `src/features/documents/use-documents-query.ts`.
   Sidebar entries and their required permissions: `src/components/layout/navigation.ts`.
 - `src/app.tsx` holds the providers and routes. `src/features/documents/` is the Documents view:
@@ -302,6 +304,33 @@ The foundation is in place:
   (the shared iteration cancel, which now takes an item off its list, flows.md C3) and *Take it
   off — in the editor*. *Counts towards*, the mix, *Shape by* another intention and the L8/L10
   warnings wait for intentions in the mock API (step 6), as TODOs.
+- `src/features/projects/` is Projects (`/projects`, `/projects/:projectId`), step 5 of
+  `plan.md`. The resource is `src/api/projects.ts`: `GET /projects/overview` is every project
+  the caller sees (members and their groups at `project.read@project`, everyone at `any` or with
+  `project.decide`) with what the server works out (`src/domain/projects.ts`: `periodOf`,
+  `timeElapsedOf`, `daysUntil`, `paceVerdictOf` within ten points, `evenPaceOf`): days left and to
+  the start, planned (on a list that still exists, or digitized) and delivered pages, what waits
+  for a list, the pending documents and those with a copy, lists and member groups.
+  `GET /projects/:id` adds the proposals one row per document, the live and the deleted lists,
+  the funded iterations and the project's log; the bare `GET /projects` stays reference data.
+  The acts: `POST /projects`, `PUT /projects/:id`, `PUT …/members` (the whole set, manager
+  among them), `GET …/decision` (the dry run), `POST …/approve` (priority; the pending documents
+  without a copy become Approved with no iteration until ingest classifies them), `POST
+  …/reject` (reason; only the project's own asks are declined), `DELETE` (409
+  `project.has_proposals` once anything was proposed); 409 `project.decided` once decided. The
+  mock is `src/mocks/projects.ts`; groups are `GET /groups`. The index is `projects-page.tsx`
+  over `projects-view.ts` (sections, labels, the note in words) on
+  `src/components/card-sections.tsx` (`CardSections` and `RecordCard`, whose title link opens
+  the whole card), `project-card.tsx` and `src/components/visualizations/pace-bars.tsx`
+  (`PaceBars`: time, planned, delivered, the even-pace mark); the ended and rejected projects
+  are `src/components/data-table.tsx` (`DataTable`, columns per tier). The page is
+  `project-page.tsx` on `src/components/layout/record-page.tsx` (`RecordPage`: note, cards,
+  aside, history; the aside first and the history last where it is narrow), with
+  `src/components/members-card.tsx` and `PageHeader`'s `breadcrumb`. `project-actions.tsx`
+  offers the acts and `project-dialogs.tsx` holds them: New and Edit (`FormDialog`, warning on
+  an approved project's dates and target), Members (on `DialogShell` until `PickerDialog`
+  exists), Approve (`FormDialog` over the dry run), Reject (`ReasonDialog`), Delete
+  (`ConsequenceDialog`). *No intention yet*, the Intentions card and *Message…* are TODOs.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

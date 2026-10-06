@@ -78,7 +78,7 @@ green after every extraction.
 5. Mark Done and Delete (consequence dialogs); per item, Cancel and Could not
    be digitized.
 
-## 5. Projects
+## 5. Projects — done
 
 1. Mock API: periods, decisions, pace.
 2. Card sections with PaceBars; the Ended and Rejected tables.

@@ -47,6 +47,13 @@ All notable changes to this project are documented here.
   iterations it funded with their status, and beside them what it is (manager, decision,
   priority), its members and groups, and its history. On a narrow screen the facts come
   first and the history last.
+- Projects, acting on a project: *New project* for staff and up starts one Proposed, its
+  creator the manager and only member. The manager (or a dig-curator) edits it, with a warning
+  when an approved project's dates or target move, changes its members and groups, hands the
+  manager role over, and deletes it while nothing has been proposed into it. Whoever decides
+  projects has *Approve…* and *Reject…* on the card and the page: approving picks the priority
+  and lists what it approves and the copies it skips; rejecting asks a reason every member
+  reads and says which documents stay with others who asked for them. Every change is logged.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

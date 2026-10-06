@@ -343,14 +343,19 @@ export function saveProject(
   const saved: Project = { ...project, ...draft };
   replaceProject(saved);
   const correlationId = crypto.randomUUID();
-  if (periodText(saved) !== periodText(project)) {
-    logProject(
-      session,
-      saved,
-      correlationId,
-      "Dates or target changed",
-      `${periodText(project)} → ${periodText(saved)}`,
-    );
+  const moves = [
+    saved.startsOn === project.startsOn
+      ? null
+      : `starts ${formatCalendarDay(project.startsOn)} → ${formatCalendarDay(saved.startsOn)}`,
+    saved.endsOn === project.endsOn
+      ? null
+      : `ends ${formatCalendarDay(project.endsOn)} → ${formatCalendarDay(saved.endsOn)}`,
+    saved.targetPages === project.targetPages
+      ? null
+      : `target ${formatCount(project.targetPages)} → ${formatCount(saved.targetPages)} pp`,
+  ].filter((move) => move !== null);
+  if (moves.length > 0) {
+    logProject(session, saved, correlationId, "Dates or target changed", moves.join(" · "));
   }
 
   if (saved.name !== project.name || saved.description !== project.description) {

@@ -4,6 +4,7 @@
 // later. A card or a row opens the project's own page.
 // TODO(rrandiak): labels move to i18n.
 
+import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import type { ProjectRow } from "@/api/projects";
 import type { CardSection } from "@/components/card-sections";
@@ -12,8 +13,11 @@ import { PageContent, PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
+import type { Session } from "@/domain/entities";
 import { can, scopesOf } from "@/domain/permissions";
+import { useProjectActions } from "@/features/projects/project-actions";
 import { ProjectCard } from "@/features/projects/project-card";
+import { ProjectFormDialog } from "@/features/projects/project-dialogs";
 import type { ProjectSections } from "@/features/projects/projects-view";
 import { paceOf, periodTextOf, projectSectionsOf } from "@/features/projects/projects-view";
 import { useProjectIndexQuery } from "@/features/projects/use-projects-query";
@@ -75,6 +79,7 @@ const endedColumns = {
 
 export function ProjectsPage() {
   const navigate = useNavigate();
+  const [isStarting, setIsStarting] = useState(false);
   const { data: session } = useSessionQuery();
   const { data: index, error } = useProjectIndexQuery();
   const { data: users = [] } = useUsersQuery();
@@ -109,7 +114,27 @@ export function ProjectsPage() {
 
   return (
     <>
-      <PageHeader title="Projects" />
+      <PageHeader
+        title="Projects"
+        actions={
+          can(session, "project.create")
+            ? [
+                {
+                  id: "new",
+                  label: "New project",
+                  isPrimary: true,
+                  onSelect: () => setIsStarting(true),
+                },
+              ]
+            : []
+        }
+      />
+      <ProjectFormDialog
+        isOpen={isStarting}
+        onClose={() => setIsStarting(false)}
+        row={null}
+        onSaved={(detail) => navigate(`/projects/${encodeURIComponent(detail.row.project.id)}`)}
+      />
       <PageContent>
         {error !== null ? (
           <StatusNote tone="red" title="Projects could not be loaded">
@@ -119,6 +144,7 @@ export function ProjectsPage() {
           <ProjectBoard
             sections={projectSectionsOf(index.rows)}
             seesEvery={seesEvery}
+            session={session}
             nameOf={nameOf}
             rejectedColumns={{
               notebook: [nameColumn, periodColumn, reason, decided],
@@ -135,6 +161,7 @@ export function ProjectsPage() {
 interface ProjectBoardProps {
   sections: ProjectSections;
   seesEvery: boolean;
+  session: Session;
   nameOf: (userId: string) => string;
   rejectedColumns: {
     notebook: ColumnDefinition<ProjectRow>[];
@@ -143,7 +170,14 @@ interface ProjectBoardProps {
   onOpen: (projectId: string) => void;
 }
 
-function ProjectBoard({ sections, seesEvery, nameOf, rejectedColumns, onOpen }: ProjectBoardProps) {
+function ProjectBoard({
+  sections,
+  seesEvery,
+  session,
+  nameOf,
+  rejectedColumns,
+  onOpen,
+}: ProjectBoardProps) {
   const { counts } = sections;
   const tile =
     [
@@ -174,10 +208,27 @@ function ProjectBoard({ sections, seesEvery, nameOf, rejectedColumns, onOpen }: 
     <CardSections
       sections={cardSections}
       itemId={(row) => row.project.id}
-      renderCard={(row) => <ProjectCard row={row} nameOf={nameOf} />}
+      renderCard={(row) => <ActionableCard row={row} session={session} nameOf={nameOf} />}
       columns={{ notebook: 2, small: 1, phone: 1 }}
       tile={tile}
       onOpen={onOpen}
     />
+  );
+}
+
+interface ActionableCardProps {
+  row: ProjectRow;
+  session: Session;
+  nameOf: (userId: string) => string;
+}
+
+// A card with the decision on it, for whoever decides projects.
+function ActionableCard({ row, session, nameOf }: ActionableCardProps) {
+  const { cardActions, dialogs } = useProjectActions({ row, session });
+  return (
+    <>
+      <ProjectCard row={row} nameOf={nameOf} actions={cardActions} />
+      {dialogs}
+    </>
   );
 }

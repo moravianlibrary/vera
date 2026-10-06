@@ -97,13 +97,17 @@ zod v4.
 | Iteration dialogs | `components/iteration-dialogs.tsx` (Reclassify), `classification-fields.tsx` |
 | Two panes and a draft | `TransferEditor` (`components/transfer-editor.tsx`), `useDraft` + `isSameSet`, `usePicked`, `LeaveGuard` (`components/leave-guard.tsx`) |
 | Words for numbers and days | `formatCount` (`lib/format-number.ts`), `formatCalendarDay`, `formatShortCalendarDay` |
+| Cards in sections | `CardSections` + `RecordCard` (`components/card-sections.tsx`), sections of cards or `DataTable`s, the whole card a link |
+| A full-width table | `DataTable` (`components/data-table.tsx`), columns per tier, a row opens its record; no grouping, notes or paging yet |
+| Bars against a target | `PaceBars` (`components/visualizations/pace-bars.tsx`): the server's numbers, an even-pace mark |
+| A record's own page | `RecordPage` (`components/layout/record-page.tsx`: note, cards, aside, history), `PageHeader breadcrumb`, `MembersCard` (`components/members-card.tsx`) |
 | A mix's shares | `effectiveShareOf` (`domain/mixes.ts`); the mock's Overall mix and list generators are `mocks/fixtures/list-generators.ts` until intentions (step 6) and plugins (step 10) |
 
 **Not built yet** (the step that first needs one builds it, as a shared part,
-from component-interfaces): `CardSections`/`CardGrid`
-§1.4, `RecordPage` §1.5, `TableWithDrawer` §1.6, `LinkedColumns` §1.7,
-`SettingsPage` §1.8, `PaneWizard` §1.9, `DataTable` §2.4, `Tree` §2.5,
-`MembersCard` §4.4, the visualizations (PaceBar, MixBar) §5.
+from component-interfaces): `CardGrid` §1.4 (Home),
+`TableWithDrawer` §1.6, `LinkedColumns` §1.7, `SettingsPage` §1.8,
+`PaneWizard` §1.9, `Tree` §2.5, MixBars and the other visualizations §5;
+`DataTable`'s grouping, note rows, row actions and paging §2.4.
 
 **The mock API** (`src/mocks/`): `handlers.ts` routes every request
 (`createHandlers(profile)`); one module per resource applies reach, filters,
@@ -121,7 +125,9 @@ grants and custody. Fixtures (`mocks/fixtures/`, demo "today" 2026-06-25,
 `validations-view.ts`, `validation-list.tsx`, `validation-detail.tsx`,
 `validation-actions.tsx`), and `features/lists/` (browse, the editor,
 Generate… and the list's acts; the model for a view without watchlists, for an
-editor page, and for acts behind a server dry run). Routes in `src/app.tsx`,
+editor page, and for acts behind a server dry run), and `features/projects/`
+(cards in sections, a record's own page, acts on both; the model for a page
+that is not master–detail). Routes in `src/app.tsx`,
 sidebar entries in `components/layout/navigation.ts`.
 
 ---
