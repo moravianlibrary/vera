@@ -698,7 +698,7 @@ if there is one, otherwise the progress**.
 |---|-----------|-------|
 | 1 | `decision = Denied` | Declined |
 | 2 | `decision = Withdrawn` | Withdrawn |
-| 3 | `decision = Pending` | Awaiting review |
+| 3 | `decision = Pending` | Awaiting a decision |
 | 4 | `cancellation.cause = Decided` | Cancelled |
 | 5 | `cancellation.cause = NotDigitizable` | Could not be digitized |
 | 5a | `cancellation.cause = RecordGone` | Record no longer exists |

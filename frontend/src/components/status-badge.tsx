@@ -87,7 +87,7 @@ interface StatusBadgeProps {
 const statusLabels = {
   Declined: "Declined",
   Withdrawn: "Withdrawn",
-  AwaitingReview: "Awaiting review",
+  AwaitingReview: "Awaiting a decision",
   BeingAdded: "Being added",
   Cancelled: "Cancelled",
   NotDigitizable: "Could not be digitized",

@@ -97,6 +97,9 @@ All notable changes to this project are documented here.
   12 being added · 3 could not be added · 28 added*. A batch just retried or just arrived no
   longer reads as all added, what a rule or a review holds no longer reads as being added, and
   the parts add up to the batch.
+- A proposal not yet decided reads *Awaiting a decision* on its row, in Proposals and in its
+  ask, as its batch's header does, instead of *Awaiting review*, which is easy to take for a
+  review in Documents Validations.
 - The mock API refuses with RFC 9457 Problem Details (`application/problem+json`), adding a
   stable `code` and, for a rejected body, the fields it got wrong. A refusal in a dialog now
   says the server's reason where the action has no words of its own for its code.

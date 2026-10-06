@@ -96,7 +96,7 @@ function AskTag({ request, record }: { request: Request; record: DocumentRecord 
   }
 
   if (request.decision === "Pending") {
-    return tag("amber", "awaiting review");
+    return tag("amber", "awaiting a decision");
   }
 
   if (request.decision === "Denied") {

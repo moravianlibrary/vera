@@ -107,6 +107,8 @@ into `status-model.md` §2, §2.5 and §4, `document-identity.md`, `flows.md`,
   in review · 12 being added · 3 could not be added · 28 added* (also withdrawn, cancelled),
   zero parts left out, *40 added* once all is in. A retried or new batch does not read as all
   added, what a gate holds does not read as being added, and the parts add up to the batch.
+- **A pending proposal reads *Awaiting a decision***, not *Awaiting review*, on
+  rows, asks and batch headers (`status-model.md` §4 row 3).
 - **Errors are RFC 9457 Problem Details**, with VERA's `code` (a stable key
   the frontend words and translates) and `errors` (the fields a 422
   rejected). Ranges in the URL stay `from..to`.

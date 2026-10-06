@@ -1,6 +1,6 @@
 // Where a proposal stands, as the list and the pane say it (page-proposals.js statusOf): decided
 // one way or the other, still being checked, held because approval was asked for over a copy,
-// or awaiting review.
+// or awaiting a decision.
 // TODO(rrandiak): labels move to i18n.
 
 import type { Tone } from "@/components/status-badge";
@@ -13,7 +13,7 @@ const proposalStatuses = {
   withdrawn: { tone: "slate", label: "Withdrawn" },
   beingChecked: { tone: "slate", label: "Being checked" },
   held: { tone: "amber", label: "Asked to be added" },
-  awaitingReview: { tone: "amber", label: "Awaiting review" },
+  awaitingReview: { tone: "amber", label: "Awaiting a decision" },
 } as const satisfies Record<string, { tone: Tone; label: string }>;
 
 type ProposalStatus = keyof typeof proposalStatuses;
