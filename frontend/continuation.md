@@ -194,7 +194,8 @@ The foundation is in place:
   is one button. A batch's header carries "Approve N…", which opens `bulk-approve-dialog.tsx`
   over every open row the batch asked for (one slice of at most 200; a larger harvest needs
   approving by batch on the server). Beside the pane's heading, *Message askers…* opens the
-  Message dialog over the proposal. The Asked date filter is not built.
+  Message dialog over the proposal. Its advanced field is *Asked* (`asked=from..to` on
+  `/proposal-review`), the day any of the row's asks was made.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

@@ -17,6 +17,7 @@ import type {
   ProposalListField,
   ProposalPage,
   ProposalQuery,
+  ProposalRangeField,
 } from "@/api/proposal-review";
 import { proposalPageSchema, proposalSliceSize } from "@/api/proposal-review";
 import { categoryPathOf } from "@/domain/categories";
@@ -44,6 +45,7 @@ import {
   projectIdsOf,
   rowDecisionOf,
 } from "@/domain/proposal-review";
+import { isWithinRange } from "@/lib/value-range";
 import type { Arrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
@@ -154,7 +156,7 @@ function baseIdOf(requestId: string): string {
 
 // ---------------------------------------------------------------- list
 
-type FilterField = "search" | ProposalListField;
+type FilterField = "search" | ProposalListField | ProposalRangeField;
 
 interface Predicate {
   field: FilterField;
@@ -258,6 +260,16 @@ function predicatesOf(query: ProposalQuery): Predicate[] {
     predicates.push({
       field,
       matches: (row) => fieldValues[field](row).some((value) => wantedValues.has(value)),
+    });
+  }
+
+  // A row asked for on several days is in the range when any of its asks is.
+  const { asked } = query;
+  if (asked !== undefined) {
+    predicates.push({
+      field: "asked",
+      matches: (row) =>
+        asksOf(row).some((request) => isWithinRange(request.at.slice(0, 10), asked)),
     });
   }
 

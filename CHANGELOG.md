@@ -57,6 +57,8 @@ All notable changes to this project are documented here.
   own mail or Slack: the dialog shows who it reaches, names who the chosen one cannot reach,
   and opens it pre-filled with the record and a link back. VERA keeps none of the text, and
   the action is absent when no Message plugin is enabled.
+- Proposals filters by the day it was asked for: *Advanced…* sets *Asked* as a range of days,
+  matching a document when any of its asks falls within it, and a watchlist keeps it.
 
 ### Changed
 

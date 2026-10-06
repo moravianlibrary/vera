@@ -57,6 +57,18 @@ describe("the query", () => {
     ).toBe(true);
     expect(isSameProposalQuery({}, { decisions: ["Pending"] })).toBe(false);
   });
+
+  it("writes the days asked as a range with either end open, and drops a malformed one", () => {
+    expect(toProposalSearchParams({ asked: { from: "2026-06-01" } }).toString()).toBe(
+      "asked=2026-06-01..",
+    );
+    expect(parseProposalSearchParams(new URLSearchParams("asked=..2026-06-21")).asked).toEqual({
+      to: "2026-06-21",
+    });
+    expect(parseProposalSearchParams(new URLSearchParams("asked=2026-13-01..")).asked).toBe(
+      undefined,
+    );
+  });
 });
 
 describe("listProposals", () => {
@@ -104,6 +116,17 @@ describe("listProposals", () => {
 
     expect(shelf).toMatchObject({ elsewhereCount: 1, rescanCount: 1 });
     expect(shelf?.kind === "batch" && shelf.approvableCount).toBe(4);
+  });
+
+  it("keeps the documents any of whose asks was made within the days", async () => {
+    signInAs("admin");
+
+    const onTheDay = await documentIdsOf({ asked: { from: "2026-06-24", to: "2026-06-24" } });
+    const before = await documentIdsOf({ asked: { to: "2026-06-21" } });
+
+    expect(onTheDay).toEqual(expect.arrayContaining(["D20", "D25", "D31"])); // D20 also on 22 Jun
+    expect(onTheDay).not.toContain("D21");
+    expect(before.toSorted()).toEqual(["D21", "D23", "D24"]);
   });
 
   it("refuses those who may not decide", async () => {

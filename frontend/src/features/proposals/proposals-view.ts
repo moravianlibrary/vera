@@ -1,8 +1,7 @@
 // The Proposals view's declaration (component-interfaces.md §9.2): its filter in the URL, the
-// watchlist comparer, its fields (Decision and Proposal custody on the bar, the rest as chips)
-// and its groupings.
-// TODO(rrandiak): Asked, a date range, once the Advanced editor exists (filtering.md §3.3);
-// labels move to i18n.
+// watchlist comparer, its fields (Decision and Proposal custody on the bar, the rest as chips,
+// and the advanced range Asked, filtering.md §6) and its groupings.
+// TODO(rrandiak): labels move to i18n.
 
 import { answers } from "@/api/documents";
 import type { AskerCount, ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
@@ -77,6 +76,7 @@ export const proposalsView: ViewDefinition<ProposalQuery, ProposalGrouping> = {
       label: "After the project's approval",
       field: vocabulary(answers, answerLabels),
     },
+    { key: "asked", label: "Asked", field: { kind: "dateRange" } },
   ],
   groupings: [
     { value: "batch", label: "Group by batch" },

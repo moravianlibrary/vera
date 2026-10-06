@@ -21,6 +21,8 @@ import {
 } from "@/domain/entities";
 import type { ProposalDecision } from "@/domain/proposal-review";
 import { proposalDecisionSchema, proposalRowSchema } from "@/domain/proposal-review";
+import type { ValueRange } from "@/lib/value-range";
+import { formatRange, parseDay, parseRange } from "@/lib/value-range";
 
 // ---------------------------------------------------------------- query
 
@@ -41,10 +43,14 @@ export interface ProposalQuery {
   readonly batchIds?: readonly string[];
   readonly askerCounts?: readonly AskerCount[];
   readonly afterProjectApproval?: readonly Answer[];
+  // Advanced, a range rather than values (filtering.md §6): the day any of the row's asks was
+  // made.
+  readonly asked?: ValueRange<string>;
 }
-// TODO(rrandiak): Asked, a date range, once the Advanced editor exists (filtering.md §3.3).
 
-export type ProposalListField = Exclude<keyof ProposalQuery, "search">;
+// The fields that are lists of values, each counted as a facet.
+export type ProposalListField = Exclude<keyof ProposalQuery, "search" | ProposalRangeField>;
+export type ProposalRangeField = "asked";
 
 // Query-string names; the same names address the filter in the page URL.
 export const proposalQueryParams = {
@@ -58,6 +64,7 @@ export const proposalQueryParams = {
   batchIds: "batch",
   askerCounts: "askers",
   afterProjectApproval: "after",
+  asked: "asked",
 } as const satisfies Record<keyof ProposalQuery, string>;
 
 const idValueSchema = z.string().min(1);
@@ -93,6 +100,11 @@ export function toProposalSearchParams(query: ProposalQuery): URLSearchParams {
     params.set(proposalQueryParams[field], values.toSorted().join(listSeparator));
   }
 
+  const asked = formatRange(query.asked);
+  if (asked !== null) {
+    params.set(proposalQueryParams.asked, asked);
+  }
+
   return params;
 }
 
@@ -109,6 +121,8 @@ export function parseProposalSearchParams(params: URLSearchParams): ProposalQuer
     });
     query[field] = values.length === 0 ? undefined : [...new Set(values)];
   }
+
+  query.asked = parseRange(params.get(proposalQueryParams.asked), parseDay);
 
   // Every value of each field was parsed by that field's own schema.
   return query as ProposalQuery;
