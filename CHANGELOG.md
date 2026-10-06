@@ -85,6 +85,8 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Status badges read in words, such as *Review needed* and *Denied in review*, instead of
+  the stored value.
 - A view reopens on the watchlist tab, or "All", that the person last opened there,
   remembered per person and per view. In Proposals "All" now shows every
   decision, and a shared "Awaiting a decision" watchlist leaves out the declined and withdrawn.

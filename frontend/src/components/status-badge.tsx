@@ -1,6 +1,7 @@
 // Status, priority and registry badges in the palette's status tones. The staff and public vocabularies each
 // carry their own colours, so a public label never borrows an internal one (view-map.md §4).
 // Tones follow docs/demos/shared/vera-model.js.
+// TODO(rrandiak): labels move to i18n.
 
 import { cva } from "class-variance-authority";
 import type { ReactNode } from "react";
@@ -82,10 +83,39 @@ interface StatusBadgeProps {
   className?: string;
 }
 
-// TODO(rrandiak): show the i18n label instead of the status key.
+// The precedence table's labels (status-model.md §4), then the requester's (view-map.md §4).
+const statusLabels = {
+  Declined: "Declined",
+  Withdrawn: "Withdrawn",
+  AwaitingReview: "Awaiting review",
+  BeingAdded: "Being added",
+  Cancelled: "Cancelled",
+  NotDigitizable: "Could not be digitized",
+  Forbidden: "Forbidden",
+  ValidationDenied: "Denied in review",
+  ReviewNeeded: "Review needed",
+  Enqueued: "Enqueued",
+  IngestFailed: "Could not be added",
+  Ready: "Ready",
+  Planned: "Planned",
+  InProgress: "In progress",
+  Digitized: "Digitized",
+  Published: "Published",
+  WaitingForReview: "Waiting for review",
+  NotAccepted: "Not accepted",
+  BeingChecked: "Being checked",
+  WaitingToBeScheduled: "Waiting to be scheduled",
+  Scheduled: "Scheduled",
+  Available: "Available",
+  OnHold: "On hold",
+  NotAvailable: "Not available",
+} as const satisfies Record<RecordStatus, string>;
+
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   return (
-    <Badge className={cn(toneVariants({ tone: statusTones[status] }), className)}>{status}</Badge>
+    <Badge className={cn(toneVariants({ tone: statusTones[status] }), className)}>
+      {statusLabels[status]}
+    </Badge>
   );
 }
 
