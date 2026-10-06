@@ -9,6 +9,7 @@ import { navigationEntries, visibleNavigation } from "@/components/layout/naviga
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DocumentsPage } from "@/features/documents/documents-page";
+import { IntentionsPage } from "@/features/intentions/intentions-page";
 import { ListEditorPage } from "@/features/lists/list-editor-page";
 import { ListsPage } from "@/features/lists/lists-page";
 import { ProjectPage } from "@/features/projects/project-page";
@@ -41,6 +42,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <ListsPage />;
     case "projects":
       return <ProjectsPage />;
+    case "intentions":
+      return <IntentionsPage />;
     default:
       return <Placeholder title={label} />;
   }

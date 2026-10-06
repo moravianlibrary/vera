@@ -1,9 +1,9 @@
 // A project's own page, `/projects/:projectId` (docs/demos/shared/page-projects.js detail;
 // projects.md §4): where it stands in words, the bars against its target, what was proposed into
-// it, the lists carrying what it funded, the iterations it funded; beside them what it is, its
-// members and its history. No mix: a project has no link to a category (relationships.md §4).
-// TODO(rrandiak): the intentions it funds, each with its own planned and delivered, wait for
-// intentions in the mock API (plan.md step 6); labels move to i18n.
+// it, the intentions it funds, the lists carrying what it funded, the iterations it funded; beside
+// them what it is, its members and its history. No mix of its own: what the money should buy is
+// an intention's, set on Intentions (relationships.md §4).
+// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { Link, useNavigate, useParams } from "react-router";
@@ -29,9 +29,11 @@ import { PaceBars } from "@/components/visualizations/pace-bars";
 import { documentIdentifierOf } from "@/domain/documents";
 import type { Category, Session } from "@/domain/entities";
 import { progressValues } from "@/domain/entities";
+import { can } from "@/domain/permissions";
 import { iterationStatusOf, statusFootnoteOf } from "@/domain/status";
+import { shortWindowOf } from "@/features/intentions/intentions-view";
 import { useProjectActions } from "@/features/projects/project-actions";
-import { ProjectBadges } from "@/features/projects/project-card";
+import { NoIntention, ProjectBadges } from "@/features/projects/project-card";
 import {
   pagesOf,
   periodTextOf,
@@ -152,6 +154,7 @@ function ProjectRecord({
         </DetailCard>
       )}
       <ProposalsCard detail={detail} nameOf={nameOf} />
+      <IntentionsCard detail={detail} canReadIntentions={can(session, "intention.read")} />
       <ListsCard detail={detail} />
       <FundedCard detail={detail} categories={categories} />
     </RecordPage>
@@ -314,6 +317,79 @@ function ProposalsCard({ detail, nameOf }: Omit<ProjectRecordProps, "categories"
             : project.state === "Proposed"
               ? "Ordinary pending proposals: a curator may decide one before the project is decided."
               : "Rejected with the project, except where somebody else asked too."}
+        </FinePrint>
+      )}
+    </DetailCard>
+  );
+}
+
+// Each counts what the project funds on lists starting in its own window, so they need not add up
+// to the project; once decided only.
+function IntentionsCard({
+  detail,
+  canReadIntentions,
+}: {
+  detail: ProjectDetail;
+  canReadIntentions: boolean;
+}) {
+  const { intentions, row } = detail;
+  if (row.project.state !== "Approved") {
+    return null;
+  }
+
+  return (
+    <DetailCard title={`Intentions — ${intentions.length}`}>
+      {intentions.length === 0 &&
+        (row.period === "Ended" ? (
+          <Muted>
+            None was set — it ran without a stated mix. Its numbers above are all there is.
+          </Muted>
+        ) : (
+          <>
+            <NoIntention canReadIntentions={canReadIntentions} />
+            <FinePrint>
+              Allowed, and it says something true: the money exists, the plan does not yet.
+            </FinePrint>
+          </>
+        ))}
+      {intentions.map((intention) => (
+        <DetailRow
+          key={intention.id}
+          aside={
+            <span className="grid justify-items-end gap-0.5 text-right text-xs">
+              <span className="tabular-nums">
+                {formatCount(intention.plannedPages)} planned ·{" "}
+                {formatCount(intention.deliveredPages)} delivered
+              </span>
+              <Muted>
+                of{" "}
+                {intention.targetPages === null
+                  ? "no target"
+                  : `${formatCount(intention.targetPages)} pp`}
+              </Muted>
+            </span>
+          }
+        >
+          {canReadIntentions ? (
+            <Link
+              to={`/intentions?i=${encodeURIComponent(intention.id)}`}
+              className="font-medium hover:underline"
+            >
+              {intention.name}
+            </Link>
+          ) : (
+            <span className="font-medium">{intention.name}</span>
+          )}
+          <div className="text-xs text-muted-foreground">
+            {intention.tracksName === null ? "its own mix" : `tracks ${intention.tracksName}`} ·{" "}
+            {shortWindowOf(intention)}
+          </div>
+        </DetailRow>
+      ))}
+      {intentions.length > 0 && (
+        <FinePrint>
+          Each counts what this project funds on lists starting in its own window — so they need not
+          add up to the project. What the money should buy is set there, not here.
         </FinePrint>
       )}
     </DetailCard>

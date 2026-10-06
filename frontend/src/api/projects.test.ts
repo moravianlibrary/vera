@@ -95,6 +95,30 @@ describe("listProjectIndex", () => {
 });
 
 describe("findProject", () => {
+  it("counts each intention it funds in that intention's own window", async () => {
+    signInAs("digitization");
+    const moravica = await findProject("p3");
+    const visk = await findProject("p2");
+    const index = await listProjectIndex();
+
+    expect(moravica?.intentions).toEqual([
+      {
+        id: "i5",
+        name: "Moravica — closing year",
+        countsFrom: "2026-01-01",
+        endsOn: "2026-12-31",
+        targetPages: 800,
+        tracksName: "House mix",
+        plannedPages: 438,
+        deliveredPages: 438,
+      },
+    ]);
+    expect(visk?.intentions.map((intention) => intention.id)).toEqual(["i2"]);
+    expect(
+      index.rows.filter((row) => row.intentionCount === 0).map((row) => row.project.id),
+    ).not.toContain("p1");
+  });
+
   it("gives one row per proposed document, the lists carrying its items and its history", async () => {
     signInAs("digitization");
     const detail = await findProject("p8");

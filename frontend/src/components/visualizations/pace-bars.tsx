@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils";
 
 export interface PaceBarsProps {
   target: number;
-  // 0 to 1.
-  timeElapsed: number;
+  // 0 to 1; null for an open-ended target, which has no time bar and no pace.
+  timeElapsed: number | null;
   // "36% elapsed · 371 days left", "starts 1 Sep 2026 · in 67 days".
   timeLabel: string;
   // Null while nothing is funded: only the time bar is drawn.
@@ -43,9 +43,11 @@ export function PaceBars({
     <div
       className={cn("@container grid gap-2", density === "detail" ? "text-[0.8125rem]" : "text-xs")}
     >
-      <PaceBar label="Time" fill={timeElapsed} tone="bg-neutral-400" density={density}>
-        {timeLabel}
-      </PaceBar>
+      {timeElapsed !== null && (
+        <PaceBar label="Time" fill={timeElapsed} tone="bg-neutral-400" density={density}>
+          {timeLabel}
+        </PaceBar>
+      )}
       {pages !== null && (
         <>
           <PaceBar

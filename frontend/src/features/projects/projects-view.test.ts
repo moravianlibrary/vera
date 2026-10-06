@@ -46,6 +46,7 @@ function rowOf(
     proposalCount: 0,
     listCount: 0,
     memberGroups: [],
+    intentionCount: 0,
   };
 }
 

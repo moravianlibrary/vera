@@ -294,7 +294,7 @@ The foundation is in place:
   (`GET /digitization-lists/generators`): `generate-dialog.tsx` is a `SteppedDialog` (Ask →
   Preview) over `POST /digitization-lists/generate`, whose mock (`src/mocks/list-generation.ts`)
   plays the reference rule-based generator over the Overall mix (`effectiveShareOf`,
-  `src/domain/mixes.ts`; fixtures in `mocks/fixtures/list-generators.ts`) and the AI one with
+  `src/domain/mixes.ts`; the Overall intention's mix from `mocks/fixtures/intentions.ts`) and the AI one with
   its own sentences; the draft's picks join the left pane marked *generated* with their reason,
   `generation-report.tsx` stays in the top strip, and Save sends the provenance (`generated`),
   logged as *Generated — {generator}*. The pane's acts are `list-actions.tsx`: *Mark Done…*
@@ -330,7 +330,27 @@ The foundation is in place:
   offers the acts and `project-dialogs.tsx` holds them: New and Edit (`FormDialog`, warning on
   an approved project's dates and target), Members (on `DialogShell` until `PickerDialog`
   exists), Approve (`FormDialog` over the dry run), Reject (`ReasonDialog`), Delete
-  (`ConsequenceDialog`). *No intention yet*, the Intentions card and *Message…* are TODOs.
+  (`ConsequenceDialog`). The page's Intentions card lists the intentions it funds, each counted in
+  its own window (`GET /projects/:id` `intentions`; rows carry `intentionCount`), and an approved
+  project with none says *No intention yet* on its card and page. *Message…* is a TODO.
+- `src/features/intentions/` is Intentions (`/intentions`), step 6 of `plan.md`, read-only so far.
+  The resource is `src/api/intentions.ts`: `GET /intentions/overview` is every intention the
+  caller sees (`intention.read@any`, or `@project` for one a project they are on funds) with what
+  the server counts by `src/domain/intentions.ts`, the one home of the counting rules: planned (on
+  a list that still exists starting in the window, a cancelled item out unless delivered),
+  delivered (digitized in the window, a part of planned), output (everything matching digitized
+  in it), the target verdict (the Projects pace with ten points of slack, or fully planned, met,
+  short), pages a week needed and the catch-up pages, the mix read within the scope against the
+  output (±5 points, unallocated, a 0% category used, no share), the fill of a target per leaf,
+  the lists in its window, and whose mix it reads (its own, or an owner's: no chains) with the
+  number of its trackers; plus the repeats. Fixtures are `src/mocks/fixtures/intentions.ts`
+  (intentions, mixes, the monthly repeat); the mock is `src/mocks/intentions.ts`, whose
+  `overallIntention` and `distributionOf` the list generation mock now shapes by. The page is
+  `intentions-page.tsx` over `intentions-view.ts` (columns, order, tile, words, `?i=`, `?t=`,
+  `?col=`) and `intention-card.tsx` on `RecordCard` without an `href`, with `PaceBars` and
+  `src/components/visualizations/mix-bars.tsx` (`MixBar`, `MixBars`); small and phone switch
+  columns with Tabs. *New intention*, *New repeat*, *Edit*, *Archive*, the Generate links and
+  the correcting list are 6.3–6.4.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

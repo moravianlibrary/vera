@@ -59,6 +59,8 @@ export const projectRowSchema = z.object({
   proposalCount: count,
   listCount: count,
   memberGroups: z.array(memberGroupSchema),
+  // The intentions funded by it: what the money should buy (intentions.md §3).
+  intentionCount: count,
 });
 export type ProjectRow = z.infer<typeof projectRowSchema>;
 
@@ -100,6 +102,20 @@ export const fundedItemSchema = z.object({
 });
 export type FundedItem = z.infer<typeof fundedItemSchema>;
 
+// An intention it funds, counted in its own window: they need not add up to the project.
+export const projectIntentionSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  countsFrom: z.iso.date(),
+  endsOn: z.iso.date().nullable(),
+  targetPages: pages.nullable(),
+  // The owner it tracks; null for its own mix.
+  tracksName: z.string().nullable(),
+  plannedPages: pages,
+  deliveredPages: pages,
+});
+export type ProjectIntention = z.infer<typeof projectIntentionSchema>;
+
 export const projectDetailSchema = z.object({
   row: projectRowSchema,
   proposals: z.array(projectProposalSchema),
@@ -107,6 +123,7 @@ export const projectDetailSchema = z.object({
   // A deleted list's items stop counting; its name is all that is left.
   formerLists: z.array(z.object({ name: z.string(), itemCount: count })),
   funded: z.array(fundedItemSchema),
+  intentions: z.array(projectIntentionSchema),
   log: z.array(statusLogEntrySchema),
 });
 export type ProjectDetail = z.infer<typeof projectDetailSchema>;

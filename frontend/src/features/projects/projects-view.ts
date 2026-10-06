@@ -147,7 +147,10 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
     return {
       tone: "slate",
       title: `Approved · starts ${formatCalendarDay(project.startsOn)}`,
-      body: "Nothing is delivered before it starts.",
+      body:
+        row.intentionCount > 0
+          ? "Nothing is delivered before it starts."
+          : "Funded, and nothing yet says what it should buy — set an intention before lists are generated for it.",
     };
   }
 

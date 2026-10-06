@@ -97,16 +97,17 @@ zod v4.
 | Iteration dialogs | `components/iteration-dialogs.tsx` (Reclassify), `classification-fields.tsx` |
 | Two panes and a draft | `TransferEditor` (`components/transfer-editor.tsx`), `useDraft` + `isSameSet`, `usePicked`, `LeaveGuard` (`components/leave-guard.tsx`) |
 | Words for numbers and days | `formatCount` (`lib/format-number.ts`), `formatCalendarDay`, `formatShortCalendarDay` |
-| Cards in sections | `CardSections` + `RecordCard` (`components/card-sections.tsx`), sections of cards or `DataTable`s, the whole card a link |
+| Cards in sections | `CardSections` + `RecordCard` (`components/card-sections.tsx`), sections of cards or `DataTable`s, the whole card a link when it has an `href`; `focusedId` marks and scrolls to a card or a table row |
 | A full-width table | `DataTable` (`components/data-table.tsx`), columns per tier, a row opens its record; no grouping, notes or paging yet |
-| Bars against a target | `PaceBars` (`components/visualizations/pace-bars.tsx`): the server's numbers, an even-pace mark |
+| Bars against a target | `PaceBars` (`components/visualizations/pace-bars.tsx`): the server's numbers, an even-pace mark; no time bar for an open-ended target |
+| A mix as bars | `MixBar` (one stacked bar, unallocated hatched) and `MixBars` (intended over output) in `components/visualizations/mix-bars.tsx`, `shareToneOf` for a category's colour |
 | A record's own page | `RecordPage` (`components/layout/record-page.tsx`: note, cards, aside, history), `PageHeader breadcrumb`, `MembersCard` (`components/members-card.tsx`) |
-| A mix's shares | `effectiveShareOf` (`domain/mixes.ts`); the mock's Overall mix and list generators are `mocks/fixtures/list-generators.ts` until intentions (step 6) and plugins (step 10) |
+| A mix's shares | `effectiveShareOf` (`domain/mixes.ts`); `shareWithinOf` and the counting rules (planned, delivered, output, pace, drift, fill, mix owner and trackers) in `domain/intentions.ts`; mixes are `mocks/fixtures/intentions.ts`, list generators `mocks/fixtures/list-generators.ts` until plugins (step 10) |
 
 **Not built yet** (the step that first needs one builds it, as a shared part,
 from component-interfaces): `CardGrid` §1.4 (Home),
 `TableWithDrawer` §1.6, `LinkedColumns` §1.7, `SettingsPage` §1.8,
-`PaneWizard` §1.9, `Tree` §2.5, MixBars and the other visualizations §5;
+`PaneWizard` §1.9, `Tree` §2.5, MixBars' markers form and the other visualizations §5;
 `DataTable`'s grouping, note rows, row actions and paging §2.4.
 
 **The mock API** (`src/mocks/`): `handlers.ts` routes every request
@@ -115,7 +116,7 @@ facets, order and grouping. `mutations.ts` holds `Outcome`/`Refusal`,
 `writeLog`, `replaceIteration`; `problem.ts` answers refusals
 (`problemResponse`, `invalidResponse`). `session.ts` resolves the profile into
 grants and custody. Fixtures (`mocks/fixtures/`, demo "today" 2026-06-25,
-`mocks/today.ts`) already hold `lists.ts`, `projects.ts`, `categories.ts`,
+`mocks/today.ts`) already hold `lists.ts`, `projects.ts`, `intentions.ts`, `categories.ts`,
 `batches.ts`, `users.ts`, `access.ts`; the entity schemas are in
 `domain/entities.ts`. Every API module has tests over HTTP through MSW
 (`src/api/*.test.ts`).
@@ -127,7 +128,8 @@ grants and custody. Fixtures (`mocks/fixtures/`, demo "today" 2026-06-25,
 Generate… and the list's acts; the model for a view without watchlists, for an
 editor page, and for acts behind a server dry run), and `features/projects/`
 (cards in sections, a record's own page, acts on both; the model for a page
-that is not master–detail). Routes in `src/app.tsx`,
+that is not master–detail), and `features/intentions/` (two columns of cards that
+open in place; read-only until 6.3). Routes in `src/app.tsx`,
 sidebar entries in `components/layout/navigation.ts`.
 
 ---

@@ -1,8 +1,7 @@
 // What the server does for Projects (projects.md): keep projects to the caller's reach, work out
 // each one's period, numbers and pace, gather what it funded and what was proposed into it, and
-// carry out its acts: start, edit, members, approve, reject and delete, each logged (§5).
-// TODO(rrandiak): the intentions a project funds wait for intentions in the mock API (plan.md
-// step 6); until then neither the card's *No intention yet* nor the detail's Intentions exist.
+// carry out its acts: start, edit, members, approve, reject and delete, each logged (§5). The
+// intentions it funds are counted by the intention rules, each in its own window.
 
 import type {
   DecidedDocument,
@@ -13,6 +12,7 @@ import type {
   ProjectDetail,
   ProjectDraft,
   ProjectIndex,
+  ProjectIntention,
   ProjectList,
   ProjectMembers,
   ProjectProposal,
@@ -21,6 +21,7 @@ import type {
 } from "@/api/projects";
 import { documentIdentifierOf, effectivePageCount, existingCopiesOf } from "@/domain/documents";
 import type { Iteration, Project, Request, Session } from "@/domain/entities";
+import { countIntention, mixOwnerOf } from "@/domain/intentions";
 import { listStateOf } from "@/domain/lists";
 import type { Permission } from "@/domain/permissions";
 import { can } from "@/domain/permissions";
@@ -39,6 +40,7 @@ import { plural } from "@/lib/plural";
 import { dayOf } from "@/lib/value-range";
 import { database } from "@/mocks/database";
 import { groups } from "@/mocks/fixtures/access";
+import { countingData } from "@/mocks/intentions";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { writeLog } from "@/mocks/mutations";
 import { mockToday } from "@/mocks/today";
@@ -172,7 +174,34 @@ function rowOf(project: Project): ProjectRow {
     proposalCount: proposalsInto(project.id).length,
     listCount: listIds.size,
     memberGroups: project.memberGroupIds.flatMap((groupId) => memberGroupOf(groupId) ?? []),
+    intentionCount: intentionsFundedBy(project.id).length,
   };
+}
+
+// ---------------------------------------------------------------- intentions
+
+const intentionsFundedBy = (projectId: string) =>
+  database.intentions.filter(
+    (intention) =>
+      intention.funding.kind === "project" && intention.funding.projectId === projectId,
+  );
+
+function projectIntentionsOf(projectId: string): ProjectIntention[] {
+  const data = countingData();
+  return intentionsFundedBy(projectId).map((intention) => {
+    const counted = countIntention(intention, data);
+    const owner = mixOwnerOf(intention, database.intentions);
+    return {
+      id: intention.id,
+      name: intention.name,
+      countsFrom: intention.countsFrom,
+      endsOn: intention.endsOn,
+      targetPages: intention.targetPages,
+      tracksName: owner === intention ? null : owner.name,
+      plannedPages: counted.plannedPages,
+      deliveredPages: counted.deliveredPages,
+    };
+  });
 }
 
 export function queryProjectIndex(session: Session): ProjectIndex {
@@ -266,6 +295,7 @@ function detailOf(project: Project): ProjectDetail {
     lists: listsOf(funded),
     formerLists: formerListsOf(funded),
     funded: fundedItemsOf(funded),
+    intentions: projectIntentionsOf(project.id),
     log: database.statusLog
       .filter((entry) => entry.subjectKind === "project" && entry.subjectId === project.id)
       .toSorted((first, second) => second.at.localeCompare(first.at)),

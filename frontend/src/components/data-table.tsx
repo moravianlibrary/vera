@@ -16,9 +16,18 @@ export interface DataTableProps<Row> {
   columns: PerTier<readonly ColumnDefinition<Row>[]>;
   onOpen?: (id: string) => void;
   emptyText: string;
+  // A row the URL points at, marked.
+  focusedId?: string | null;
 }
 
-export function DataTable<Row>({ rows, rowId, columns, onOpen, emptyText }: DataTableProps<Row>) {
+export function DataTable<Row>({
+  rows,
+  rowId,
+  columns,
+  onOpen,
+  emptyText,
+  focusedId = null,
+}: DataTableProps<Row>) {
   const shown = valueForTier(columns, useTier());
 
   if (rows.length === 0) {
@@ -50,7 +59,12 @@ export function DataTable<Row>({ rows, rowId, columns, onOpen, emptyText }: Data
             return (
               <tr
                 key={id}
-                className={cn("border-t", onOpen !== undefined && "cursor-pointer hover:bg-muted")}
+                data-focused={id === focusedId || undefined}
+                className={cn(
+                  "scroll-mt-4 border-t",
+                  onOpen !== undefined && "cursor-pointer hover:bg-muted",
+                  id === focusedId && "bg-tone-blue",
+                )}
                 onClick={(event) => {
                   if (onOpen === undefined || (event.target as Element).closest("a, button")) {
                     return;

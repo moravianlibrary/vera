@@ -1,10 +1,11 @@
 // A page of cards in sections (component-interfaces.md §1.4; docs/demos/shared/vera.css .pj-cards):
 // for the few records that run at once, each a card with its numbers, where a queue would be
 // master–detail. The sections that pile up over the years turn into compact tables, collapsible,
-// below the cards. A whole card opens its record; a link or button inside it stays its own.
+// below the cards. A whole card opens its record, where it has a page of its own; a link or button
+// inside it stays its own. `?p=` / `?i=` mark one card and scroll to it.
 
 import type { ReactNode } from "react";
-import { Fragment } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
@@ -12,6 +13,7 @@ import { DataTable } from "@/components/data-table";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import type { PerTier } from "@/hooks/use-tier";
 import { useTier, valueForTier } from "@/hooks/use-tier";
+import { cn } from "@/lib/utils";
 
 export interface CardSection<Item> {
   id: string;
@@ -32,6 +34,7 @@ export interface CardSectionsProps<Item> {
   // A line at the head that counts items, never pages: "2 proposed · 3 active".
   tile?: ReactNode;
   onOpen?: (id: string) => void;
+  focusedId?: string | null;
 }
 
 export function CardSections<Item>({
@@ -41,11 +44,19 @@ export function CardSections<Item>({
   columns,
   tile,
   onOpen,
+  focusedId = null,
 }: CardSectionsProps<Item>) {
   const columnCount = valueForTier(columns, useTier());
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (focusedId !== null) {
+      containerRef.current?.querySelector("[data-focused]")?.scrollIntoView({ block: "start" });
+    }
+  }, [focusedId]);
 
   return (
-    <div className="grid gap-6">
+    <div ref={containerRef} className="grid gap-6">
       {tile !== undefined && <div className="text-sm text-muted-foreground">{tile}</div>}
       {sections.map((section) => {
         if (section.items.length === 0 && section.emptyText === undefined) {
@@ -60,9 +71,21 @@ export function CardSections<Item>({
               className="grid gap-4"
               style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
             >
-              {section.items.map((item) => (
-                <Fragment key={itemId(item)}>{renderCard(item)}</Fragment>
-              ))}
+              {section.items.map((item) => {
+                const id = itemId(item);
+                return (
+                  <div
+                    key={id}
+                    data-focused={id === focusedId || undefined}
+                    className={cn(
+                      "grid scroll-mt-4 rounded-lg",
+                      id === focusedId && "outline-2 outline-offset-2 outline-ring",
+                    )}
+                  >
+                    {renderCard(item)}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <DataTable
@@ -71,6 +94,7 @@ export function CardSections<Item>({
               columns={section.presentation.table}
               onOpen={onOpen}
               emptyText={section.emptyText ?? ""}
+              focusedId={focusedId}
             />
           );
 
@@ -94,7 +118,8 @@ export function CardSections<Item>({
 
 export interface RecordCardProps {
   title: string;
-  href: string;
+  // Its own page; without one the card is the whole record.
+  href?: string;
   badges?: ReactNode;
   // The line under the title: dates, target, who runs it.
   meta?: ReactNode;
@@ -104,6 +129,7 @@ export interface RecordCardProps {
   actions?: readonly ViewAction[];
   // Counts across the bottom, over a rule.
   foot?: ReactNode;
+  className?: string;
 }
 
 // The title's link stretches over the card, so the whole card opens the record; what is inside
@@ -117,17 +143,28 @@ export function RecordCard({
   note,
   actions,
   foot,
+  className,
 }: RecordCardProps) {
   return (
-    <article className="relative flex flex-col gap-3.5 rounded-lg border bg-card px-4.5 py-4 hover:border-ring">
+    <article
+      className={cn(
+        "relative flex flex-col gap-3.5 rounded-lg border bg-card px-4.5 py-4",
+        href !== undefined && "hover:border-ring",
+        className,
+      )}
+    >
       <div className="flex flex-wrap items-start gap-x-3 gap-y-1.5">
         <div className="min-w-0 flex-[1_1_16rem]">
-          <Link
-            to={href}
-            className="font-semibold after:absolute after:inset-0 after:rounded-lg hover:underline"
-          >
-            {title}
-          </Link>
+          {href === undefined ? (
+            <h3 className="font-semibold">{title}</h3>
+          ) : (
+            <Link
+              to={href}
+              className="font-semibold after:absolute after:inset-0 after:rounded-lg hover:underline"
+            >
+              {title}
+            </Link>
+          )}
           {meta !== undefined && <div className="mt-0.5 text-xs text-muted-foreground">{meta}</div>}
         </div>
         {badges !== undefined && <div className="flex shrink-0 flex-wrap gap-1.5">{badges}</div>}

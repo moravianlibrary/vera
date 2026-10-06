@@ -54,6 +54,17 @@ All notable changes to this project are documented here.
   projects has *Approve…* and *Reject…* on the card and the page: approving picks the priority
   and lists what it approves and the copies it skips; rejecting asks a reason every member
   reads and says which documents stay with others who asked for them. Every change is logged.
+- Intentions: what VERA is trying to digitize, as two columns of cards, Targets and Tracking,
+  each running, then upcoming, with Ended and Archived folded below and a line counting
+  intentions (never pages). A target shows time, planned and delivered against it with the
+  even-pace mark, on pace, behind, fully planned, met or how short it ended, and what it needs a
+  week; opened, its share of the target per category and the lists starting in its window. A
+  tracking card shows the intended mix over the output, the categories out of the ±5 band and
+  how much of the mix is unallocated; opened, the drift per category. Under every card, the mix
+  it reads and whose it is. The monthly repeat heads Targets; `?i=` opens and marks one
+  intention, and on small screens a Targets / Tracking switch shows one column at a time.
+- Projects shows the intentions a project funds, each with its own planned and delivered, and
+  says *No intention yet* on an approved project nothing says what to buy for.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

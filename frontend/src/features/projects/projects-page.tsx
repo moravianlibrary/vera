@@ -227,7 +227,12 @@ function ActionableCard({ row, session, nameOf }: ActionableCardProps) {
   const { cardActions, dialogs } = useProjectActions({ row, session });
   return (
     <>
-      <ProjectCard row={row} nameOf={nameOf} actions={cardActions} />
+      <ProjectCard
+        row={row}
+        nameOf={nameOf}
+        actions={cardActions}
+        canReadIntentions={can(session, "intention.read")}
+      />
       {dialogs}
     </>
   );

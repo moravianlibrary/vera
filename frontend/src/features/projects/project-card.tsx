@@ -1,11 +1,13 @@
 // One project on the Projects page (docs/demos/shared/page-projects.js card; projects.md §4): its
 // decision and period as two badges, the pace once approved, who runs it, what it is for, the
 // bars against its target, and across the foot what waits on it: the proposals a decision would
-// act on, the lists carrying its items, its members, and what is approved but on no list yet.
-// TODO(rrandiak): *No intention yet — Create one* waits for intentions (plan.md step 6); labels
-// move to i18n.
+// act on, the lists carrying its items, its members, its intentions, and what is approved but on
+// no list yet. A decided project with no intention says so: the money exists, nothing yet says
+// what it should buy.
+// TODO(rrandiak): labels move to i18n.
 
 import { Fragment } from "react";
+import { Link } from "react-router";
 import type { ProjectRow } from "@/api/projects";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { RecordCard } from "@/components/card-sections";
@@ -26,9 +28,11 @@ interface ProjectCardProps {
   row: ProjectRow;
   nameOf: (userId: string) => string;
   actions?: readonly ViewAction[];
+  // Offers *Create one* on the Intentions page.
+  canReadIntentions: boolean;
 }
 
-export function ProjectCard({ row, nameOf, actions }: ProjectCardProps) {
+export function ProjectCard({ row, nameOf, actions, canReadIntentions }: ProjectCardProps) {
   const { project } = row;
   const meta = [
     periodTextOf(project),
@@ -59,9 +63,30 @@ export function ProjectCard({ row, nameOf, actions }: ProjectCardProps) {
           />
         </>
       }
+      note={
+        project.state === "Approved" && row.intentionCount === 0 ? (
+          <NoIntention canReadIntentions={canReadIntentions} />
+        ) : undefined
+      }
       actions={actions}
       foot={<ProjectFoot row={row} />}
     />
+  );
+}
+
+export function NoIntention({ canReadIntentions }: { canReadIntentions: boolean }) {
+  return (
+    <p className="rounded-md bg-tone-amber px-3 py-2 text-[0.8125rem] text-tone-amber-foreground">
+      <b className="font-semibold">No intention yet</b> — nothing says what this money should buy.
+      {canReadIntentions && (
+        <>
+          {" "}
+          <Link to="/intentions" className="relative font-medium underline underline-offset-2">
+            Create one
+          </Link>
+        </>
+      )}
+    </p>
   );
 }
 
@@ -104,6 +129,13 @@ function ProjectFoot({ row }: { row: ProjectRow }) {
             ),
         },
         { key: "lists", part: row.listCount > 0 ? plural(row.listCount, "list") : null },
+        {
+          key: "intentions",
+          part:
+            project.state !== "Proposed" && row.intentionCount > 0
+              ? plural(row.intentionCount, "intention")
+              : null,
+        },
         { key: "members", part: members },
         {
           key: "waiting",
