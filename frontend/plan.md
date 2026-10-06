@@ -5,6 +5,8 @@ The parts are those in `component-inventory.md` and their draft props in
 `component-interfaces.md`. The design is `docs/demos/` and
 `docs/design/shared/`.
 
+How a step is carried out, commit by commit, is `step-guide.md`.
+
 **For every commit:**
 - **Checks:** tsc, vitest, and Biome on the changed files only.
 - **Screenshots:** Playwright at 1440×900, 1700×950 and 393×852.
@@ -17,7 +19,7 @@ green after every extraction.
 
 ---
 
-## 0. Foundation
+## 0. Foundation — done
 
 1. `useViewUrlState` and `ViewDefinition`; Documents and Proposals move onto
    them.

@@ -209,7 +209,8 @@ Home is conditional: redirect when the user has exactly one available destinatio
 ## Implementation sequence
 
 **The next work is `plan.md`**: steps 0–12, one per view, each split into
-commits. Its parts are in `component-inventory.md`, with their draft props in
+commits; step 0, the foundation, is done. `step-guide.md` is how each step is
+carried out. Its parts are in `component-inventory.md`, with their draft props in
 `component-interfaces.md`. The sequence below is the original outline.
 
 1. **Application shell.** Add routes and the responsive navigation frame. Navigation entries should come from the current user's available permissions. Actions and destinations the user cannot use are absent, not disabled. Support the demo's large, notebook, small, and phone layouts.
