@@ -1,7 +1,8 @@
 // A list beside a pane that answers in full (docs/demos/shared/vera.css § master–detail). It
 // takes the height left under the view's header and filters, and the list and the docked pane
 // scroll independently. Docked, the list takes half the room and never less than a card's width;
-// it is a container, so its rows lay themselves out by its width. The pane docks at every tier
+// it is a container, so its rows lay themselves out by its width. A tree is narrower: a fixed
+// width that leaves the pane the room (component-interfaces.md §1.2). The pane docks at every tier
 // but the phone, the small tier included (view-rules.md §1.5); on a phone it opens as a sheet
 // over the list.
 
@@ -23,6 +24,8 @@ interface MasterDetailProps {
   detailDescription?: string;
   detailOpen: boolean;
   onDetailOpenChange: (open: boolean) => void;
+  // Half for a list read as a table; a tree keeps 20rem on the small tier and 24rem above it.
+  masterWidth?: "half" | "tree";
   className?: string;
 }
 
@@ -33,6 +36,7 @@ export function MasterDetail({
   detailDescription,
   detailOpen,
   onDetailOpenChange,
+  masterWidth = "half",
   className,
 }: MasterDetailProps) {
   // The sheet is modal; left open on a wide screen it would dim and block the docked pane.
@@ -42,7 +46,10 @@ export function MasterDetail({
     <div className={cn("flex min-h-0 flex-1", className)}>
       <section
         aria-label="Items"
-        className="@container min-w-0 flex-1 overflow-y-auto bg-background md:w-1/2 md:min-w-86 md:flex-none md:border-r"
+        className={cn(
+          "@container min-w-0 flex-1 overflow-y-auto bg-background md:flex-none md:border-r",
+          masterWidth === "half" ? "md:w-1/2 md:min-w-86" : "md:w-80 xl:w-96",
+        )}
       >
         {master}
       </section>

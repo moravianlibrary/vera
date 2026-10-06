@@ -37,6 +37,8 @@ export function userSettingsOf(userId: string): UserSettings {
 export function changeUserSettings(userId: string, change: UserSettingsChange): UserSettings {
   const current = userSettingsOf(userId);
   const changed = {
+    ...current,
+    ...change,
     lastOpenedWatchlists: { ...current.lastOpenedWatchlists, ...change.lastOpenedWatchlists },
   };
   settingsByUser.set(userId, changed);

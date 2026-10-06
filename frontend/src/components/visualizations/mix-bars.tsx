@@ -1,10 +1,11 @@
 // A mix drawn as stacked bars (component-interfaces.md §5; docs/demos/shared/vera.css .in-strip):
 // each category's share in its own blue of the chart ramp, in the same order and colour on every
 // bar, so the intended mix and the output read against each other; what no category has a share
-// of is left hatched. Every number is the server's; this only draws them.
-// TODO(rrandiak): the *markers* form (▲/▼ only) arrives with Categories (plan.md step 7); labels
-// move to i18n.
+// of is left hatched. Every number is the server's; this only draws them. Where a row has no room
+// for bars, as on Categories, the markers form says only how far outside the ±5 band it is.
+// TODO(rrandiak): labels move to i18n.
 
+import { mixBand } from "@/domain/intentions";
 import { cn } from "@/lib/utils";
 
 const shareTones = ["bg-chart-5", "bg-chart-3", "bg-chart-2", "bg-chart-1", "bg-blue-200"];
@@ -82,5 +83,37 @@ export function MixBars({ categories }: MixBarsProps) {
         </div>
       ))}
     </div>
+  );
+}
+
+interface DriftMarkerProps {
+  // Percent; nothing is drawn when either is missing.
+  intended: number | null;
+  actual: number | null;
+}
+
+// ▲ over the mix, ▼ under it, in whole points; nothing inside the band.
+export function DriftMarker({ intended, actual }: DriftMarkerProps) {
+  if (intended === null || actual === null) {
+    return null;
+  }
+
+  const drift = Math.round(actual - intended);
+  if (Math.abs(drift) <= mixBand) {
+    return null;
+  }
+
+  const isOver = drift > 0;
+  return (
+    <span
+      className={cn(
+        "ml-1 text-xs font-semibold tabular-nums",
+        isOver ? "text-tone-red-foreground" : "text-tone-blue-foreground",
+      )}
+      title={`${Math.abs(drift)} points ${isOver ? "over" : "under"} the mix`}
+    >
+      {isOver ? "▲" : "▼"}
+      {Math.abs(drift)}
+    </span>
   );
 }

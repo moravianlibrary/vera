@@ -86,9 +86,10 @@ zod v4.
 | A list view's URL state | `ViewDefinition` (`src/lib/view-definition.ts`; `view` only when it has watchlists) in `features/<view>/<view>-view.ts`, read by `useViewUrlState` |
 | Its filter bar | the definition's `fields` → `FilterBar` (`components/filters/`); value, reference, `numberRange` (with `presets`) and `dateRange` fields; the phone's `filter-sheet.tsx`; names via `useReferenceLabels` |
 | Saved filters | `WatchlistTabs`; a new view adds its value to `watchlistViewSchema` (`domain/entities.ts`) and a comparer in `api/watchlists.ts` |
-| List beside a pane | `MasterDetail` + `RecordList` (columns, card under 42rem, why line, `GroupHeader`) + `usePagedList`; grouping via `groups` in the view definition and `mocks/arrangement.ts` |
+| List beside a pane | `MasterDetail` (`masterWidth="tree"` for a tree) + `RecordList` (columns, card under 42rem, why line, `GroupHeader`) + `usePagedList`; grouping via `groups` in the view definition and `mocks/arrangement.ts` |
 | The pane | `Pane` / `paneStateOf` / `Outcome` (`components/pane-state.tsx`); `DetailCard`, `FactGrid`, `StatTiles` with an optional `meter` (`detail-card.tsx`), `StatusNote`, `record-cards.tsx` (askers, copies, catalog, heading; `HistoryCard` takes a log alone, without a document) |
-| Actions | `ViewAction` + `ActionBar` (per-tier cap, `isInMenu` for More ▾); `PageHeader actions` |
+| Actions | `ViewAction` + `ActionBar` (per-tier cap, `isInMenu` for More ▾); `PageHeader actions`, and `control` for a picker the whole view reads (wraps on a phone) |
+| A tree beside a pane | `Tree` (`components/tree.tsx`): virtual root, value, ⚠, dimming, arrow keys; `custodyReachOf`, `unheldCategoriesOf`, `isInSubtree` in `domain/categories.ts`, `siblingSetOf` in `domain/mixes.ts` |
 | Who may | `can()` (`domain/permissions.ts`) / `useCan()` with a scoped record |
 | Dialogs | `components/dialogs/`: `DialogShell` (`head`, `onBack`, `secondary` for an editor's *Delete…*; `FormDialog` passes it), `ConsequenceDialog` (A, fed by a server dry run), `ReasonDialog` (B), `FormDialog` (C), `SteppedDialog` (F, with `StepIndicator`), `MessageDialog`. Not built: `SetEditorDialog` (D), `PickerDialog` (E), see component-interfaces §6.5–6.6 |
 | Doing something | `useActionMutation` → `ActionResult`; refusals are RFC 9457 Problem Details, worded by the action's `refusalTexts[code]`, then `detail`, then by status; `invalidates` lists every query the change shows in |
@@ -100,14 +101,14 @@ zod v4.
 | Cards in sections | `CardSections` + `RecordCard` (`components/card-sections.tsx`), sections of cards or `DataTable`s, the whole card a link when it has an `href`; `focusedId` marks and scrolls to a card or a table row |
 | A full-width table | `DataTable` (`components/data-table.tsx`), columns per tier, a row opens its record; no grouping, notes or paging yet |
 | Bars against a target | `PaceBars` (`components/visualizations/pace-bars.tsx`): the server's numbers, an even-pace mark; no time bar for an open-ended target |
-| A mix as bars | `MixBar` (one stacked bar, unallocated hatched) and `MixBars` (intended over output) in `components/visualizations/mix-bars.tsx`, `shareToneOf` for a category's colour |
+| A mix as bars | `MixBar` (one stacked bar, unallocated hatched), `MixBars` (intended over output) and `DriftMarker` (▲/▼ outside the band, the markers form) in `components/visualizations/mix-bars.tsx`, `shareToneOf` for a category's colour |
 | A record's own page | `RecordPage` (`components/layout/record-page.tsx`: note, cards, aside, history), `PageHeader breadcrumb`, `MembersCard` (`components/members-card.tsx`) |
 | A mix's shares | `effectiveShareOf` (`domain/mixes.ts`); `shareWithinOf` and the counting rules (planned, delivered, output, pace, drift, fill, mix owner and trackers, a correcting run's allocation, what a list counts towards and its fill against a mix, who may) in `domain/intentions.ts`; `isInPool` in `domain/lists.ts`; mixes are `mocks/fixtures/intentions.ts`, list generators `mocks/fixtures/list-generators.ts` until plugins (step 10) |
 
 **Not built yet** (the step that first needs one builds it, as a shared part,
 from component-interfaces): `CardGrid` §1.4 (Home),
 `TableWithDrawer` §1.6, `LinkedColumns` §1.7, `SettingsPage` §1.8,
-`PaneWizard` §1.9, `Tree` §2.5, MixBars' markers form and the other visualizations §5;
+`PaneWizard` §1.9, the other visualizations §5;
 `DataTable`'s grouping, note rows, row actions and paging §2.4.
 
 **The mock API** (`src/mocks/`): `handlers.ts` routes every request
@@ -129,7 +130,8 @@ Generate… and the list's acts; the model for a view without watchlists, for an
 editor page, and for acts behind a server dry run), and `features/projects/`
 (cards in sections, a record's own page, acts on both; the model for a page
 that is not master–detail), and `features/intentions/` (two columns of cards that
-open in place; an editor with a server preview, and a hand-off to the Lists editor by URL). Routes in `src/app.tsx`,
+open in place; an editor with a server preview, and a hand-off to the Lists editor by URL), and
+`features/categories/` (a tree beside a pane, a picker in the header). Routes in `src/app.tsx`,
 sidebar entries in `components/layout/navigation.ts`.
 
 ---

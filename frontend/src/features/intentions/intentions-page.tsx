@@ -7,7 +7,8 @@
 // done is said above the columns, and the card it was done to is marked. Whoever builds lists,
 // while a generator runs, starts one from a card (intentions.md §4.4): shaped by it, with the
 // pages a behind-pace target is short, or a correcting run's allocation for a tracking card out
-// of the band.
+// of the band. Its mix line links to Categories with its `?i=`: *Edit mix* where the person may
+// edit the owner's, *Proportions* otherwise.
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
@@ -28,6 +29,8 @@ import type { Session } from "@/domain/entities";
 import { scopeOfIntention } from "@/domain/intentions";
 import { can } from "@/domain/permissions";
 import type { NoteTone } from "@/domain/status-notes";
+import { categoriesHrefOf } from "@/features/categories/categories-view";
+import type { MixLink } from "@/features/intentions/intention-card";
 import { IntentionCard } from "@/features/intentions/intention-card";
 import type { IntentionSource } from "@/features/intentions/intention-dialogs";
 import {
@@ -82,6 +85,8 @@ export interface IntentionActs {
   foldActionOf: (row: IntentionRow) => ViewAction | null;
   // Null when the person may not set repeats.
   editTemplate: ((row: IntentionTemplateRow) => void) | null;
+  // To its mix on Categories; null without `category.read`.
+  mixLinkOf: (row: IntentionRow) => MixLink | null;
 }
 
 export function IntentionsPage() {
@@ -202,6 +207,26 @@ export function IntentionsPage() {
       session !== undefined && can(session, "intention.repeat")
         ? (row) => setDialog({ kind: "template", row })
         : null,
+    mixLinkOf: (row) => {
+      if (session === undefined || !can(session, "category.read")) {
+        return null;
+      }
+
+      // The mix is edited on its owner (intentions.md §2.5); anyone else only reads it there.
+      const owner = index?.rows.find(
+        (candidate) => candidate.intention.id === row.mix.owner.id,
+      )?.intention;
+      const canEditMix = row.mix.owner.isOverall
+        ? can(session, "intention.edit_overall")
+        : owner !== undefined && can(session, "intention.edit", scopeOfIntention(owner, projects));
+      return {
+        label: canEditMix ? "Edit mix" : "Proportions",
+        href: categoriesHrefOf({
+          intentionId: row.intention.id,
+          categoryId: row.intention.scopeCategoryId,
+        }),
+      };
+    },
   };
   const headerActions: ViewAction[] =
     session === undefined
@@ -510,6 +535,7 @@ function IntentionColumnView({
             repeatEvery={everyOf(row)}
             isOpen={row.intention.id === focusedId}
             actions={acts.cardActionsOf(row)}
+            mixLink={acts.mixLinkOf(row)}
           />
         )}
         columns={{ notebook: 1 }}

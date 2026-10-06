@@ -4,6 +4,11 @@
 
 import type { Category } from "@/domain/entities";
 
+// What each row of the Categories tree carries, picked per viewer (STATUS "Categories"): the
+// first three read a mix, the rest count what the subtree holds.
+export const categoryTreeValues = ["share", "whole", "mix", "documents", "pages", "ready"] as const;
+export type CategoryTreeValue = (typeof categoryTreeValues)[number];
+
 // From the root down to the category; empty for an unknown ID.
 export function categoryPathOf(categories: readonly Category[], categoryId: string): Category[] {
   const byId = new Map(categories.map((category) => [category.id, category]));

@@ -1,7 +1,9 @@
 // The strip at the top of every view, on one line at every tier: ☰ where the sidebar is a sheet,
 // the title, and the view's declared actions on the right, capped per tier
 // (docs/demos/shared/vera.css § top bar; component-interfaces.md §1.1). Counts belong to the
-// list they count, not here. It never scrolls; the view's body below it does.
+// list they count, not here. It never scrolls; the view's body below it does. A control that
+// picks what the whole view reads, such as Categories' *Mix of*, sits before the actions, and on
+// a phone wraps to a line of its own.
 
 import type { ReactNode } from "react";
 import { Link } from "react-router";
@@ -16,14 +18,22 @@ interface PageHeaderProps {
   actions?: readonly ViewAction[];
   // On a record's own page, the way back to its index, and a word on where the record stands.
   breadcrumb?: { label: string; href: string; detail?: string };
+  control?: ReactNode;
   className?: string;
 }
 
-export function PageHeader({ title, actions = [], breadcrumb, className }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  actions = [],
+  breadcrumb,
+  control,
+  className,
+}: PageHeaderProps) {
   return (
     <header
       className={cn(
-        "flex h-14 shrink-0 items-center gap-x-2 border-b bg-background px-4 sm:px-6",
+        "flex min-h-14 shrink-0 items-center gap-x-2 border-b bg-background px-4 sm:px-6",
+        control === undefined ? "h-14" : "flex-wrap gap-y-2 py-2 md:h-14 md:flex-nowrap md:py-0",
         className,
       )}
     >
@@ -39,6 +49,11 @@ export function PageHeader({ title, actions = [], breadcrumb, className }: PageH
             </Link>
             {breadcrumb.detail !== undefined && ` · ${breadcrumb.detail}`}
           </p>
+        </div>
+      )}
+      {control !== undefined && (
+        <div className="order-last w-full min-w-0 md:order-none md:w-auto md:max-w-lg">
+          {control}
         </div>
       )}
       <ActionBar actions={actions} className="shrink-0" />

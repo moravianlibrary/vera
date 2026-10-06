@@ -4,9 +4,9 @@
 // it needs to get there; opened, its share of the target per category and the lists that start
 // in its window. A tracking card draws the intended mix over the output, with the categories out
 // of the ±5 band; opened, the drift per category. Under both, the mix it reads and whose it is.
-// Its acts sit in the foot, beside what the Overall intention cannot have done to it.
-// TODO(rrandiak): *Edit mix* / *Proportions* links to Categories with its `?i=` once Categories
-// is built (step 7); labels move to i18n.
+// Its acts sit in the foot, beside what the Overall intention cannot have done to it; the mix line
+// links to the mix on Categories.
+// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { Link } from "react-router";
@@ -41,15 +41,22 @@ import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
+// *Edit mix* or *Proportions*, to the mix on Categories.
+export interface MixLink {
+  label: string;
+  href: string;
+}
+
 interface IntentionCardProps {
   row: IntentionRow;
   repeatEvery: keyof typeof everyLabels | null;
   isOpen: boolean;
   // Only what the person may do to it.
   actions: readonly ViewAction[];
+  mixLink: MixLink | null;
 }
 
-export function IntentionCard({ row, repeatEvery, isOpen, actions }: IntentionCardProps) {
+export function IntentionCard({ row, repeatEvery, isOpen, actions, mixLink }: IntentionCardProps) {
   const { intention } = row;
   const isTracking = intention.targetPages === null;
   return (
@@ -77,7 +84,7 @@ export function IntentionCard({ row, repeatEvery, isOpen, actions }: IntentionCa
           ) : (
             <TargetBody row={row} isOpen={isOpen} />
           )}
-          <MixStrip row={row} isBarShown={!isTracking || row.outputPages === 0} />
+          <MixStrip row={row} isBarShown={!isTracking || row.outputPages === 0} mixLink={mixLink} />
         </>
       }
       foot={
@@ -451,7 +458,13 @@ function driftColumns(row: IntentionRow): ColumnDefinition<MixRowView>[] {
 
 // The intended shares as one bar, unless a tracking card already draws them above; then what
 // they are in words, and whose mix it is.
-function MixStrip({ row, isBarShown }: { row: IntentionRow; isBarShown: boolean }) {
+interface MixStripProps {
+  row: IntentionRow;
+  isBarShown: boolean;
+  mixLink: MixLink | null;
+}
+
+function MixStrip({ row, isBarShown, mixLink }: MixStripProps) {
   const isPhone = useTier() === "phone";
   const shown = isPhone ? row.mixRows.slice(0, 5) : row.mixRows;
   const hidden = row.mixRows.length - shown.length;
@@ -491,7 +504,17 @@ function MixStrip({ row, isBarShown }: { row: IntentionRow; isBarShown: boolean 
             </span>
           )}
         </span>
-        <span className="ml-auto text-muted-foreground">{mixSourceOf(row)}</span>
+        <span className="ml-auto text-muted-foreground">
+          {mixSourceOf(row)}
+          {mixLink !== null && (
+            <>
+              {" · "}
+              <Link to={mixLink.href} className="text-foreground hover:underline">
+                {mixLink.label}
+              </Link>
+            </>
+          )}
+        </span>
       </div>
     </div>
   );

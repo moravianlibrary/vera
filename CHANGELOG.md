@@ -83,6 +83,15 @@ All notable changes to this project are documented here.
   dates.
 - Projects shows the intentions a project funds, each with its own planned and delivered, and
   says *No intention yet* on an approved project nothing says what to buy for.
+- Categories: the category tree beside one category, *All categories* when none is picked. Each
+  row carries what *Show* picks, remembered per person: share of parent, of the whole, intended
+  against actual with ▲/▼ outside ±5 points, documents, pages or ready; a ⚠ marks a set under
+  100 whatever is picked. *Mix of* picks the intention whose mix is read: a tracker shows its
+  owner's, says so and offers *Edit [owner]'s mix*; a scoped intention dims the rest of the tree.
+  The pane gives the numbers, the children's shares beside what each actually got, a leaf's
+  documents, custody granted here and whom it reaches from where, and on *All categories* what
+  needs attention. Without access to intentions the tree shows counts and custody only. An
+  intention's card links to its mix there, *Edit mix* or *Proportions*.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.
