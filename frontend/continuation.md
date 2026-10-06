@@ -93,8 +93,11 @@ The foundation is in place:
   and no other document may be it; a missing-record defect clears), reclassifies (leaf
   categories, before Digitized; the answer says whether it was handed over out of the caller's
   custody) and publishes (Digitized or Published, an http(s) link), each logged.
-  `mutations.ts` holds what the actions share: `Outcome`/`Refusal`, `writeLog` and the
-  leaf-category check.
+  `additions.ts` retries a batch's failed additions (`POST /batches/:id/retry`, `addition.retry`
+  only): each goes back to Enqueued with its attempt counted and the last error kept, logged
+  as "Ingest retried"; the batch header's *Retry failed* calls it (`src/api/additions.ts`).
+  `mutations.ts` holds what the actions share: `Outcome`/`Refusal`, `writeLog`,
+  `replaceIteration` and the leaf-category check.
   `fixtures/watchlists.ts` seeds three shared ones and a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
   repeats the fixture documents through `src/mocks/volume.ts`, to try lists at volume. `createHandlers(profile)` serves it over MSW.
 - A list view declares itself once (`src/lib/view-definition.ts`, `ViewDefinition`): its filter
@@ -159,7 +162,7 @@ The foundation is in place:
   `src/domain/proposals.ts`), then why, a project and, with `request.decide`, approving at
   once, then a report; the mock (`src/mocks/proposals.ts`, `fixtures/catalog.ts`) resolves
   against a small catalog plus every fixture document. Catalog search, record links, barcode
-  scanning and photo capture are not built. Still missing there: rendering only the visible rows once thousands are loaded, the reason line under a row, retrying a batch's failed additions,
+  scanning and photo capture are not built. Still missing there: rendering only the visible rows once thousands are loaded, the reason line under a row,
   the phone Filter sheet and the Batch field. Not yet built in the shell: the Watchlists row
   with its "new" badge (which leaves shared watchlists out until "seen" is kept per person), the running-tasks row, the user menu and phone gestures (component-interfaces.md §8.1).
 - `src/features/proposals/` is the Proposals view, on Documents' pattern: the watchlist tabs

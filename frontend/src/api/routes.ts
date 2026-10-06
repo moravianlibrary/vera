@@ -44,3 +44,8 @@ export type IterationAction = (typeof iterationActions)[number];
 export function iterationActionRoute(iterationId: string, action: IterationAction): string {
   return `${apiRoutes.iterations}/${encodeURIComponent(iterationId)}/${action}`;
 }
+
+// Every failed addition of a batch, retried at once: the batch is the unit an admin retries.
+export function batchRetryRoute(batchId: string): string {
+  return `${apiRoutes.batches}/${encodeURIComponent(batchId)}/retry`;
+}

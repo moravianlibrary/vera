@@ -21,7 +21,7 @@ import { findDocumentByIdentity, knownCatalogRecords, unitTypeOf } from "@/mocks
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import type { Outcome } from "@/mocks/mutations";
-import { leafCategoryRefusal, writeLog } from "@/mocks/mutations";
+import { leafCategoryRefusal, replaceIteration, writeLog } from "@/mocks/mutations";
 
 // The defect a missing catalog record raises; relinking to a record the catalog knows clears it.
 const catalogRecordSubject = "record";
@@ -225,11 +225,6 @@ function categoryNameOf(categoryId: string): string {
   return categoryPathOf(database.categories, categoryId)
     .map((category) => category.name)
     .join(" / ");
-}
-
-function replaceIteration(iteration: Iteration): void {
-  const index = database.iterations.findIndex((candidate) => candidate.id === iteration.id);
-  database.iterations.splice(index, 1, iteration);
 }
 
 function replaceDocument(document: Document): void {

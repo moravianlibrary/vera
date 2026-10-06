@@ -1,15 +1,23 @@
 // The header over a group of Documents rows (docs/demos/shared/page-documents.js, byBatch and
 // byProject), on the shared GroupHeader frame. A batch says when and by whom it came in and how
 // much of it could not be added, the unit an admin retries; a project says its state and how
-// many of its documents match.
-// TODO(rrandiak): retrying a batch's failed additions; labels move to i18n.
+// many of its documents match. An administrator retries a batch's failed additions from its
+// header, at once and without a dialog: a retry only sends them back to ingest.
+// TODO(rrandiak): on a phone the retry moves into the header's "…" (component-interfaces.md
+// §2.3); labels move to i18n.
 
+import { useState } from "react";
 import { Link } from "react-router";
+import { retryBatch } from "@/api/additions";
 import type { DocumentGroup } from "@/api/documents";
 import { GroupHeader } from "@/components/lists/group-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Project, User } from "@/domain/entities";
+import { documentsQueryKey } from "@/features/documents/use-documents-query";
+import type { Refusal } from "@/hooks/use-action-mutation";
+import { useActionMutation } from "@/hooks/use-action-mutation";
+import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 import { formatDay } from "@/lib/format-date";
 import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
@@ -77,12 +85,50 @@ function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
       }
       action={
         failed > 0 && canRetryAdditions ? (
-          <Button variant="outline" size="xs" className="bg-background">
-            {failed === 1 ? "Retry the failed one" : "Retry failed"}
-          </Button>
+          <RetryFailedButton batchId={batch.id} failed={failed} />
         ) : undefined
       }
     />
+  );
+}
+
+// The footnote says a refusal; success needs no word, as the refetch takes the failures off.
+function RetryFailedButton({ batchId, failed }: { batchId: string; failed: number }) {
+  const [refusal, setRefusal] = useState<Refusal | null>(null);
+  const retry = useActionMutation({
+    call: retryBatch,
+    invalidates: [documentsQueryKey, watchlistsQueryKey],
+    refusalTexts: {
+      403: "Only an administrator retries additions.",
+      409: "Nothing in this batch is waiting for a retry any more.",
+    },
+  });
+
+  const run = async () => {
+    setRefusal(null);
+    const result = await retry.run(batchId);
+    if (!result.isDone) {
+      setRefusal(result.refusal);
+    }
+  };
+
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="xs"
+        className="bg-background"
+        disabled={retry.isPending}
+        onClick={() => void run()}
+      >
+        {retry.isPending ? "Retrying…" : failed === 1 ? "Retry the failed one" : "Retry failed"}
+      </Button>
+      {refusal !== null && (
+        <span role="alert" className="text-destructive">
+          {refusal.message}
+        </span>
+      )}
+    </>
   );
 }
 

@@ -101,7 +101,7 @@ export function audienceOf(session: Session): Audience {
   return hasPermission(session, "iteration.read") ? "staff" : "public";
 }
 
-function recordOf(document: Document): DocumentRecord {
+export function recordOf(document: Document): DocumentRecord {
   return {
     document,
     iterations: database.iterations

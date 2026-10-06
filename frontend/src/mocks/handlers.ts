@@ -26,6 +26,7 @@ import { env } from "@/config/env";
 import type { Session } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
+import { retryBatch } from "@/mocks/additions";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
@@ -83,6 +84,10 @@ export function createHandlers(profile: MockUserProfile) {
     http.get(route(apiRoutes.projects), () => HttpResponse.json(database.projects)),
     http.get(route(apiRoutes.lists), () => HttpResponse.json(database.lists)),
     http.get(route(apiRoutes.batches), () => HttpResponse.json(database.batches)),
+
+    http.post(route(`${apiRoutes.batches}/:batchId/retry`), ({ params }) =>
+      outcomeResponse(retryBatch(currentSession(), String(params.batchId))),
+    ),
 
     http.get(route(apiRoutes.documents), ({ request }) => {
       const params = new URL(request.url).searchParams;

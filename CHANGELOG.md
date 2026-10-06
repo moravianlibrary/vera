@@ -46,6 +46,8 @@ All notable changes to this project are documented here.
   category hands it to another custody, and set or change where its scan is available, which
   makes it Published. Each is offered only to those whose grant reaches the document's
   category, and a refusal shows in the dialog.
+- An administrator retries a batch's failed additions from its header in Documents grouped by
+  batch: each goes back to being added, its attempt counted and logged.
 
 ### Changed
 
