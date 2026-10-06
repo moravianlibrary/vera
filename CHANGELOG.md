@@ -6,6 +6,7 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.
 - Documents view against an MSW mock API: search, quick fields and filter chips with facet

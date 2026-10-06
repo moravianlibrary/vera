@@ -32,6 +32,7 @@ import { userSettingsChangeSchema } from "@/api/user-settings";
 import {
   acceptanceSchema,
   denialSchema,
+  parseValidationGrouping,
   parseValidationSearchParams,
   parseValidationSliceParams,
   revocationSchema,
@@ -330,6 +331,7 @@ export function createHandlers(profile: MockUserProfile) {
           session,
           parseValidationSearchParams(params),
           parseValidationSliceParams(params),
+          parseValidationGrouping(params),
         ),
       );
     }),

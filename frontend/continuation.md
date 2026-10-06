@@ -105,7 +105,10 @@ The foundation is in place:
   subtree of the categories they hold, at `any` everything), filtered by review (*Needed · Denied ·
   Approved*: a forbidden item has none there), *Forbidden* Yes / No (as in Documents, whose
   *Restricted* is renamed to it, `forbidden=` in the URL), category (subtree), the plugin of a defect still to rule on, priority, project and the day it started
-  waiting (`since=from..to`), counted, sorted needs-review first, most urgent, longest waiting.
+  waiting (`since=from..to`), counted, sorted needs-review first, most urgent, longest waiting, and grouped on `?group=`
+  by category (the tree's order) or by defect (the plugin of what is left to rule on; *several*
+  when more than one, none when nothing is left: forbidden or all accepted), each row in one
+  group, the headers in `groups` as Documents does.
   The verdicts (`POST /validations/:id/accept|deny|revoke`, each its own permission) append one
   row naming the keys they cover; accept and deny take only the outstanding set as it is now (409
   otherwise) and refuse a forbidden item, deny keeps what every asker reads, revoke appends a

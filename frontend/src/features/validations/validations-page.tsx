@@ -30,10 +30,10 @@ import { useViewUrlState } from "@/hooks/use-view-url-state";
 
 export function ValidationsPage() {
   const view = useViewUrlState(validationsView);
-  const { query, selectedId, select } = view;
+  const { query, selectedId, grouping, select } = view;
   const [left, setLeft] = useState<LeftOutcome | null>(null);
   const { data: session } = useSessionQuery();
-  const validations = useValidationsQuery(query);
+  const validations = useValidationsQuery(query, grouping);
   const { data: detail } = useValidationQuery(selectedId);
   const { data: categories = [] } = useCategoriesQuery();
   const { summary } = validations;
@@ -96,6 +96,9 @@ export function ValidationsPage() {
         master={
           <ValidationList
             items={validations.items}
+            groups={validations.slices?.flatMap((slice) => slice.groups) ?? []}
+            grouping={grouping}
+            onGroupingChange={view.setGrouping}
             total={summary?.total}
             outstandingTotal={summary?.outstandingTotal}
             isLoading={validations.isLoading}

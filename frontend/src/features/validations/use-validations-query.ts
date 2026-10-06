@@ -3,7 +3,7 @@
 // Validations and the watchlist counts show, so each refetches all three.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
-import type { ValidationQuery } from "@/api/validations";
+import type { ValidationGrouping, ValidationQuery } from "@/api/validations";
 import { findValidation, listValidations } from "@/api/validations";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { usePagedList } from "@/hooks/use-paged-list";
@@ -11,9 +11,9 @@ import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
 export const validationsQueryKey = ["validations"] as const;
 
-export function useValidationsQuery(query: ValidationQuery) {
-  return usePagedList([...validationsQueryKey, "list", query], (cursor) =>
-    listValidations(query, { cursor }),
+export function useValidationsQuery(query: ValidationQuery, grouping: ValidationGrouping | null) {
+  return usePagedList([...validationsQueryKey, "list", query, grouping], (cursor) =>
+    listValidations(query, { grouping, cursor }),
   );
 }
 

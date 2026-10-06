@@ -9,13 +9,15 @@ import type {
   Denial,
   Revocation,
   ValidationDetail,
+  ValidationGroup,
+  ValidationGrouping,
   ValidationListField,
   ValidationPage,
   ValidationQuery,
   ValidationRangeField,
   VerdictResult,
 } from "@/api/validations";
-import { validationPageSchema, validationSliceSize } from "@/api/validations";
+import { severalPlugins, validationPageSchema, validationSliceSize } from "@/api/validations";
 import { categoryLineageOf } from "@/domain/categories";
 import { followedIterationId } from "@/domain/documents";
 import type { Iteration, Session, StatusLogEntry, ValidationVerdict } from "@/domain/entities";
@@ -27,7 +29,8 @@ import { approvedKeysOf, outstandingDefects } from "@/domain/status";
 import type { ValidationRow } from "@/domain/validations";
 import { defectNameOf, defectsToRuleOn, reviewStateOf, waitingSinceOf } from "@/domain/validations";
 import { isWithinRange } from "@/lib/value-range";
-import { countValues, sliceOf } from "@/mocks/arrangement";
+import type { Arrangement } from "@/mocks/arrangement";
+import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { catalogLinkOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { oncePerCause } from "@/mocks/documents";
@@ -130,6 +133,7 @@ export function queryValidations(
   session: Session,
   query: ValidationQuery,
   slice: { cursor: string | null; limit: number } = { cursor: null, limit: validationSliceSize },
+  grouping: ValidationGrouping | null = null,
 ): ValidationPage {
   const reachable = reachableRows(session);
   const predicates = predicatesOf(query);
@@ -140,7 +144,9 @@ export function queryValidations(
     );
 
   const matching = matchingAllBut(null).toSorted(byUrgency);
-  const { items, nextCursor } = sliceOf(matching, (row) => row.iteration.id, slice);
+  const arrangement = grouping === null ? null : arrangementOf(grouping, reachable);
+  const arranged = arrangement === null ? matching : arrangement.sorted(matching);
+  const { items, nextCursor } = sliceOf(arranged, (row) => row.iteration.id, slice);
   const countOf = (field: ValidationListField) =>
     countValues(matchingAllBut(field).flatMap(fieldValues[field]));
 
@@ -151,6 +157,7 @@ export function queryValidations(
       .filter((row) => row.review === "Needed")
       .reduce((sum, row) => sum + outstandingDefects(row.iteration).length, 0),
     nextCursor,
+    groups: arrangement === null ? [] : arrangement.headersOf(items, matching),
     // Each list's values were produced by that field's own value function.
     facets: validationPageSchema.shape.facets.parse(
       Object.fromEntries(listFields.map((field) => [field, countOf(field)])),
@@ -225,6 +232,46 @@ function byUrgency(first: ValidationRow, second: ValidationRow): number {
     first.waitingSince.localeCompare(second.waitingSince) ||
     first.document.title.localeCompare(second.document.title)
   );
+}
+
+// ---------------------------------------------------------------- grouping
+
+// By category in the tree's order; by defect, the plugins in name order, then the rows whose
+// defects come from several, then those with none left to rule on. Within a group the list's own
+// order holds.
+function arrangementOf(
+  grouping: ValidationGrouping,
+  reachable: readonly ValidationRow[],
+): Arrangement<ValidationRow, ValidationGroup> {
+  if (grouping === "category") {
+    return groupedBy(
+      (row) => row.iteration.categoryId,
+      database.categories.map((category) => category.id),
+      (categoryId, total, rowCount) => ({
+        kind: "category",
+        categoryId: categoryId ?? "",
+        total,
+        rowCount,
+      }),
+    );
+  }
+
+  const plugins = [...new Set(reachable.flatMap(fieldValues.plugins))].toSorted();
+  return groupedBy(defectGroupOf, [...plugins, severalPlugins], (plugin, total, rowCount) => ({
+    kind: "defect",
+    plugin,
+    total,
+    rowCount,
+  }));
+}
+
+function defectGroupOf(row: ValidationRow): string | null {
+  const plugins = fieldValues.plugins(row);
+  if (row.review === "Forbidden" || row.review === "Approved" || plugins.length === 0) {
+    return null;
+  }
+
+  return plugins.length === 1 ? (plugins[0] ?? null) : severalPlugins;
 }
 
 // The iteration's own story, newest first.

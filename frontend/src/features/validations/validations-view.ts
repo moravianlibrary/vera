@@ -2,15 +2,16 @@
 // URL, the watchlist comparer and its fields: Review and Category on the bar (the demo's Show and
 // Category, page-validation.js), Forbidden (Yes / No, as in Documents, decided 2026-10-06),
 // Defect (the plugin), Priority and Project as chips, and the day it started waiting as a range.
-// TODO(rrandiak): groupings (component-interfaces.md §2.2 lists category and defect; the demo has
-// none); labels move to i18n.
+// Grouped by category or by defect (component-interfaces.md §2.2, decided 2026-10-06).
+// TODO(rrandiak): labels move to i18n.
 
 import { answers } from "@/api/documents";
-import type { ValidationQuery } from "@/api/validations";
+import type { ValidationGrouping, ValidationQuery } from "@/api/validations";
 import {
   isSameValidationQuery,
   parseValidationSearchParams,
   toValidationSearchParams,
+  validationGroupingParam,
 } from "@/api/validations";
 import { answerLabels } from "@/components/filters/value-labels";
 import type { Priority } from "@/domain/entities";
@@ -33,7 +34,7 @@ const priorityLabels = {
   Low: "Low",
 } as const satisfies Record<Priority, string>;
 
-export const validationsView: ViewDefinition<ValidationQuery, never> = {
+export const validationsView: ViewDefinition<ValidationQuery, ValidationGrouping> = {
   view: "validations",
   toSearchParams: toValidationSearchParams,
   parseSearchParams: parseValidationSearchParams,
@@ -61,6 +62,9 @@ export const validationsView: ViewDefinition<ValidationQuery, never> = {
     { key: "projectIds", label: "Project", field: { kind: "reference", reference: "projects" } },
     { key: "waiting", label: "Waiting since", field: { kind: "dateRange" } },
   ],
-  groupings: [],
-  groupingParam: "group",
+  groupings: [
+    { value: "category", label: "Group by category" },
+    { value: "defect", label: "Group by defect" },
+  ],
+  groupingParam: validationGroupingParam,
 };

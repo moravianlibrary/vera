@@ -118,6 +118,21 @@ export function isSameValidationQuery(first: ValidationQuery, second: Validation
   return canonical(first) === canonical(second);
 }
 
+// ---------------------------------------------------------------- grouping
+
+// How the rows may be grouped; presentation, never part of the filter or a watchlist
+// (filtering.md §3.4). By the item's category, or by the plugin of the defects still to rule on.
+export const validationGroupings = ["category", "defect"] as const;
+export const validationGroupingSchema = z.enum(validationGroupings);
+export type ValidationGrouping = z.infer<typeof validationGroupingSchema>;
+
+export const validationGroupingParam = "group";
+
+export function parseValidationGrouping(params: URLSearchParams): ValidationGrouping | null {
+  const grouping = validationGroupingSchema.safeParse(params.get(validationGroupingParam));
+  return grouping.success ? grouping.data : null;
+}
+
 // ---------------------------------------------------------------- slices
 
 export const validationSliceParams = { cursor: "cursor", limit: "limit" } as const;
@@ -146,12 +161,37 @@ function facetCountsOf<Value extends z.ZodType>(value: Value) {
   return z.array(z.object({ value, count: z.number().int() }));
 }
 
+// The defect group of a row whose defects to rule on come from more than one plugin.
+export const severalPlugins = "several";
+
+const groupCounts = {
+  // Rows of the group matching the whole filter, across every slice.
+  total: z.number().int(),
+  // How many of this slice's rows, next in order, fall into the group.
+  rowCount: z.number().int(),
+};
+
+// A group header. By defect, a row whose defects to rule on come from several plugins is filed
+// under none of them but under "several", and one with none to rule on (forbidden, or accepted)
+// under null: a row is in one group only.
+export const validationGroupSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("category"), categoryId: z.string(), ...groupCounts }),
+  z.object({
+    kind: z.literal("defect"),
+    plugin: z.union([z.string(), z.literal(severalPlugins)]).nullable(),
+    ...groupCounts,
+  }),
+]);
+export type ValidationGroup = z.infer<typeof validationGroupSchema>;
+
 export const validationPageSchema = z.object({
   items: z.array(validationRowSchema),
   // Rows matching the whole filter, across every slice, and the defects on them still to rule on.
   total: z.number().int(),
   outstandingTotal: z.number().int(),
   nextCursor: z.string().nullable(),
+  // When grouped, the groups this slice's rows fall into, in order; empty otherwise.
+  groups: z.array(validationGroupSchema),
   // Each field's values with a match, counted over every other active filter.
   facets: z.object({
     reviews: facetCountsOf(reviewedStateSchema),
@@ -211,15 +251,20 @@ export type VerdictResult = z.infer<typeof verdictResultSchema>;
 // ---------------------------------------------------------------- calls
 
 interface ValidationListOptions {
+  readonly grouping?: ValidationGrouping | null;
   readonly cursor?: string | null;
   readonly limit?: number;
 }
 
 export async function listValidations(
   query: ValidationQuery,
-  { cursor = null, limit = validationSliceSize }: ValidationListOptions = {},
+  { grouping = null, cursor = null, limit = validationSliceSize }: ValidationListOptions = {},
 ): Promise<ValidationPage> {
   const params = toValidationSearchParams(query);
+  if (grouping !== null) {
+    params.set(validationGroupingParam, grouping);
+  }
+
   if (cursor !== null) {
     params.set(validationSliceParams.cursor, cursor);
   }

@@ -2,11 +2,16 @@
 // iteration (page-validation.js rowOf). Under each row one line says why it is here: the rule
 // that forbade it, the denial, what was accepted, or the defects still to rule on, verbatim when
 // there is one and counted when there are several, so that no one of them stands for the rest.
+// Grouped, a header opens each category or defect.
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactElement } from "react";
 import { Fragment } from "react";
+import type { ValidationGroup, ValidationGrouping } from "@/api/validations";
+import { severalPlugins } from "@/api/validations";
+import { categoryLabelOf } from "@/components/classification-fields";
 import { Muted } from "@/components/detail-card";
+import { GroupHeader } from "@/components/lists/group-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
 import { PriorityBadge, StatusWithFootnote } from "@/components/status-badge";
@@ -20,12 +25,17 @@ import {
   deniedDefectsOf,
   isFoundAfterScan,
 } from "@/domain/validations";
+import { validationsView } from "@/features/validations/validations-view";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { formatDay } from "@/lib/format-date";
 import { plural } from "@/lib/plural";
 
 interface ValidationListProps {
   items: ValidationRow[] | undefined;
+  // The headers of every loaded slice, in order; empty when not grouped.
+  groups: readonly ValidationGroup[];
+  grouping: ValidationGrouping | null;
+  onGroupingChange: (grouping: ValidationGrouping | null) => void;
   total: number | undefined;
   outstandingTotal: number | undefined;
   isLoading: boolean;
@@ -39,6 +49,9 @@ interface ValidationListProps {
 
 export function ValidationList({
   items,
+  groups,
+  grouping,
+  onGroupingChange,
   total,
   outstandingTotal,
   isLoading,
@@ -87,7 +100,19 @@ export function ValidationList({
         },
       }}
       whyOf={(row) => <WhyLine row={row} />}
-      toolbar={{ count }}
+      toolbar={{
+        count,
+        groupings: {
+          options: validationsView.groupings,
+          value: grouping,
+          onChange: onGroupingChange,
+        },
+      }}
+      groups={{
+        items: groups,
+        keyOf: groupKeyOf,
+        header: (group) => <ValidationGroupHeader group={group} categories={categories} />,
+      }}
       paging={paging}
       isLoading={isLoading}
       selectedId={selectedId}
@@ -95,6 +120,35 @@ export function ValidationList({
       loadingText="Loading what waits for review…"
       emptyText={emptyTextOf(reviews)}
       loadingMoreText="Loading more…"
+    />
+  );
+}
+
+function groupKeyOf(group: ValidationGroup): string | null {
+  return group.kind === "category" ? group.categoryId : group.plugin;
+}
+
+// A category by its path; a defect by its plugin, or the rows it cannot name one for.
+function ValidationGroupHeader({
+  group,
+  categories,
+}: {
+  group: ValidationGroup;
+  categories: readonly Category[];
+}) {
+  const title =
+    group.kind === "category"
+      ? categoryLabelOf(categories, group.categoryId)
+      : group.plugin === null
+        ? "Nothing left to rule on"
+        : group.plugin === severalPlugins
+          ? "Defects of several kinds"
+          : group.plugin;
+
+  return (
+    <GroupHeader
+      title={<b className="font-semibold">{title}</b>}
+      meta={plural(group.total, "document")}
     />
   );
 }

@@ -190,6 +190,30 @@ describe("verdicts", () => {
   });
 });
 
+describe("grouping", () => {
+  it("files each row in one defect group, several plugins apart and forbidden last", async () => {
+    signInAs("admin");
+
+    const page = await listValidations({}, { grouping: "defect" });
+    const plugins = page.groups.map((group) => (group.kind === "defect" ? group.plugin : "?"));
+
+    expect(plugins.at(-1)).toBeNull(); // nothing left to rule on: forbidden or accepted
+    expect(plugins).toContain("several");
+    expect(new Set(plugins).size).toBe(plugins.length); // a group never comes back
+    expect(page.groups.reduce((sum, group) => sum + group.rowCount, 0)).toBe(page.items.length);
+    const accepted = page.items.filter((row) => row.review === "Approved").length;
+    expect(page.groups.at(-1)?.rowCount).toBeGreaterThanOrEqual(accepted);
+  });
+
+  it("groups by category in the tree's order and counts each over the whole filter", async () => {
+    signInAs("admin");
+
+    const page = await listValidations({}, { grouping: "category" });
+
+    expect(page.groups.reduce((sum, group) => sum + group.total, 0)).toBe(page.total);
+  });
+});
+
 describe("page count and recheck", () => {
   it("clears a page-count defect once someone counts the pages, so no verdict is needed", async () => {
     signInAs("curator");
