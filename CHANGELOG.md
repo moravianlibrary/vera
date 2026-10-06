@@ -47,6 +47,8 @@ All notable changes to this project are documented here.
 - A view reopens on the watchlist tab, or "All", that the person last opened there,
   remembered in the browser per person and per view. In Proposals "All" now shows every
   decision, and a shared "Awaiting a decision" watchlist leaves out the declined and withdrawn.
+- The record docks beside the list from 768px, the whole small tier, as the tablet demo
+  draws it; only the phone opens it as a sheet.
 
 - The page header no longer repeats the list's count under the title.
 

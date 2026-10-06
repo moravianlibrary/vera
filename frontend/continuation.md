@@ -24,7 +24,7 @@ The foundation is in place:
   it stays shut after a navigation until the pointer leaves the bar.
   `page-header.tsx` is every view's header (`title`, `actions` on the right; no count line, a
   count belongs to its list) plus `PageContent` for a scrolling body.
-  `master-detail.tsx` takes the remaining height: from 1024px a list at half the width (at least
+  `master-detail.tsx` takes the remaining height: from 768px (all of small) a list at half the width (at least
   21.5rem) beside a docked pane, scrolling independently; a detail sheet below that. The list
   is a CSS container, so rows lay out by its own width.
 - Filters (`src/components/filters/`): a view declares its fields (filtering.md §2.1);
@@ -176,7 +176,7 @@ Home is conditional: redirect when the user has exactly one available destinatio
 - Keep server data in TanStack Query. Keep filter state addressable in the URL. Use React Hook Form + Zod for user input and validation; use i18next for user-facing strings.
 - Use MSW at the HTTP boundary for fake data. Do not introduce MirageJS or page-local arrays that bypass the API/query path.
 - Preserve the demos' distinction between search/filter and grouping. Search and predicates combine as a filter; grouping only changes arrangement.
-- Keep responsive behavior intentional: the tablet demo keeps the master–detail split at 1024px; phone presents detail as a sheet. Do not shrink type simply to fit more columns.
+- Keep responsive behavior intentional: master–detail docks from 768px, all of small (view-rules.md §1.5); phone presents detail as a sheet. Do not shrink type simply to fit more columns.
 - Match repository formatting and naming conventions. Update the Bun lockfile whenever dependencies change. Keep secrets out of source, examples, and browser-visible environment variables.
 
 ## First concrete milestone
