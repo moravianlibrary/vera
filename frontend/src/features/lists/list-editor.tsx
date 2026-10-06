@@ -3,25 +3,35 @@
 // what is on it on the left and what is ready to list on the right. Everything is a draft until
 // Save; taking an item off returns it to the pool with no reason. The pool filters by category
 // and search, and says what review still holds back. Saving goes back to the list in browse.
+// Generate… in the left pane's head drafts a fill with a configured list generator (L3–L5): its
+// picks join the left pane marked *generated* with their reason, and its report stays in the
+// top strip. Without a generator there is no Generate.
 // TODO(rrandiak): *Counts towards*, the mix read against an intention and the warnings that a
 // list will not, or will stop, counting towards one (L8, L10) wait for intentions in the mock API
-// (plan.md step 6). Generate… is plan.md 4.4.
+// (plan.md step 6).
 // TODO(rrandiak): labels move to i18n.
 
+import type { ReactNode } from "react";
 import { useDeferredValue, useEffect, useId, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import type { ListDetail, ListDraft, ListItem } from "@/api/lists";
+import type { GenerationDraft, ListDetail, ListDraft, ListItem } from "@/api/lists";
 import { createList, saveList } from "@/api/lists";
 import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition } from "@/components/lists/record-list";
-import { PriorityBadge } from "@/components/status-badge";
+import { PriorityBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { TransferEditor } from "@/components/transfer-editor";
 import { Input } from "@/components/ui/input";
 import { documentIdentifierOf } from "@/domain/documents";
 import type { Category } from "@/domain/entities";
 import { priorities } from "@/domain/entities";
-import { listInvalidations, usePoolQuery } from "@/features/lists/use-lists-query";
+import { GenerateDialog } from "@/features/lists/generate-dialog";
+import { GenerationReport } from "@/features/lists/generation-report";
+import {
+  listInvalidations,
+  useListGeneratorsQuery,
+  usePoolQuery,
+} from "@/features/lists/use-lists-query";
 import type { ActionResult, Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { isSameSet, useDraft } from "@/hooks/use-draft";
@@ -93,10 +103,18 @@ export function ListEditor({ detail }: ListEditorProps) {
   };
   const pool = usePoolQuery(poolQuery);
   const { data: categories = [] } = useCategoriesQuery();
+  const { data: generators = [] } = useListGeneratorsQuery();
+  const [isGenerating, setIsGenerating] = useState(false);
+  // The last draft taken from a generator: its report, and the provenance saving records.
+  const [generation, setGeneration] = useState<GenerationDraft | null>(null);
+  const [isReportShown, setIsReportShown] = useState(false);
+  // Why each generated pick was made, by item ID.
+  const [reasons, setReasons] = useState<ReadonlyMap<string, string>>(new Map());
   const [refusal, setRefusal] = useState<Refusal | null>(null);
   // Where to go once the drafts read clean, so leaving does not ask about what was just saved.
   const [leaveTo, setLeaveTo] = useState<string | null>(null);
-  const isDirty = fields.isDirty || members.isDirty;
+  const isOtherwiseDirty = fields.isDirty || generation !== null;
+  const isDirty = isOtherwiseDirty || members.isDirty;
 
   useEffect(() => {
     if (leaveTo !== null && !isDirty) {
@@ -113,9 +131,14 @@ export function ListEditor({ detail }: ListEditorProps) {
 
   const known = knownRef.current;
   const originalIds = members.original;
+  // What was there first, then what a generator added.
   const onList = [...members.current]
     .flatMap((id) => known.get(id) ?? [])
-    .toSorted(byPriorityThenAge);
+    .toSorted(
+      (first, second) =>
+        Number(reasons.has(first.iteration.id)) - Number(reasons.has(second.iteration.id)) ||
+        byPriorityThenAge(first, second),
+    );
   const takenOff = [...originalIds]
     .filter((id) => !members.current.has(id))
     .flatMap((id) => known.get(id) ?? []);
@@ -158,6 +181,7 @@ export function ListEditor({ detail }: ListEditorProps) {
       endsOn,
       targetPages: target,
       memberIds: [...members.current],
+      generated: generation?.provenance,
     });
     if (!result.isDone) {
       setRefusal(result.refusal);
@@ -166,13 +190,30 @@ export function ListEditor({ detail }: ListEditorProps) {
 
     fields.commit();
     members.commit();
+    setGeneration(null);
     setLeaveTo(`/lists?id=${encodeURIComponent(result.value.row.list.id)}`);
   };
 
   const onDiscard = () => {
     fields.reset();
     members.reset();
+    setGeneration(null);
     setLeaveTo(backHref);
+  };
+
+  // The picks join what is there, and the pages asked become the list's target.
+  const takeDraft = (draft: GenerationDraft) => {
+    const next = new Map(reasons);
+    for (const { item, reason } of draft.picks) {
+      known.set(item.iteration.id, item);
+      next.set(item.iteration.id, reason);
+    }
+
+    setReasons(next);
+    members.set(new Set([...members.current, ...draft.picks.map(({ item }) => item.iteration.id)]));
+    fields.set({ ...fields.current, target: String(draft.requestedPages) });
+    setGeneration(draft);
+    setIsReportShown(true);
   };
 
   const leafOf = (id: string) => categories.find((category) => category.id === id)?.name ?? id;
@@ -196,66 +237,94 @@ export function ListEditor({ detail }: ListEditorProps) {
   };
 
   return (
-    <TransferEditor
-      header={
-        <EditorHeader
-          listId={listId}
-          fields={fields.current}
-          onFieldsChange={(change) => fields.set({ ...fields.current, ...change })}
-          pages={pages}
-          target={target}
-          lateCopies={lateCopies}
-          refusal={refusal}
-        />
-      }
-      draft={members}
-      isOtherwiseDirty={fields.isDirty}
-      rowId={(item) => item.iteration.id}
-      target={{
-        title: "On this list",
-        summary: `${plural(onList.length, "item")} · ${formatCount(pages)} pp`,
-        items: onList,
-        columns,
-        card,
-        whyOf: (item) => <OnListWhy item={item} />,
-        emptyText: (
-          <>
-            <b className="font-semibold text-foreground">Nothing on it yet.</b> Add documents from
-            the ready ones.
-          </>
-        ),
-      }}
-      source={{
-        title: "Ready to list",
-        summary:
-          poolCount === null ? "" : `${poolCount.total} · ${formatCount(poolCount.pages)} pp`,
-        items: pool.items === undefined ? undefined : [...takenOff, ...ready],
-        columns,
-        card,
-        filter: (
-          <PoolFilter
-            search={search}
-            onSearchChange={setSearch}
-            categoryId={categoryId}
-            onCategoryChange={setCategoryId}
-            categories={categories}
+    <>
+      <TransferEditor
+        header={
+          <EditorHeader
+            listId={listId}
+            fields={fields.current}
+            onFieldsChange={(change) => fields.set({ ...fields.current, ...change })}
+            pages={pages}
+            target={target}
+            lateCopies={lateCopies}
+            report={
+              generation !== null && isReportShown ? (
+                <GenerationReport draft={generation} onDismiss={() => setIsReportShown(false)} />
+              ) : null
+            }
+            refusal={refusal}
           />
-        ),
-        whyOf: (item) => <PoolWhy item={item} isTakenOff={originalIds.has(item.iteration.id)} />,
-        footnote:
-          pool.summary === undefined ? undefined : (
-            <PoolFootnote pool={pool.summary} categoryName={leafOf} />
+        }
+        draft={members}
+        isOtherwiseDirty={isOtherwiseDirty}
+        rowId={(item) => item.iteration.id}
+        target={{
+          title: "On this list",
+          summary: `${plural(onList.length, "item")} · ${formatCount(pages)} pp`,
+          items: onList,
+          columns,
+          card,
+          action:
+            generators.length === 0
+              ? undefined
+              : { id: "generate", label: "Generate…", onSelect: () => setIsGenerating(true) },
+          whyOf: (item) => <OnListWhy item={item} reason={reasons.get(item.iteration.id)} />,
+          emptyText: (
+            <>
+              <b className="font-semibold text-foreground">Nothing on it yet.</b> Add documents from
+              the ready ones
+              {generators.length > 0 ? ", or generate a draft and adjust it." : "."}
+              {generators.length === 0 && (
+                <span className="mt-1 block">
+                  No list generator is configured, so lists are built by hand.
+                </span>
+              )}
+            </>
           ),
-        emptyText: "Nothing ready matches.",
-        resetKey: poolQuery,
-        paging: pool.paging,
-      }}
-      unchangedText={listId === null ? "new — not saved" : "no changes"}
-      canSave={canSave}
-      isSaving={save.isPending}
-      onSave={() => void onSave()}
-      onDiscard={onDiscard}
-    />
+        }}
+        source={{
+          title: "Ready to list",
+          summary:
+            poolCount === null ? "" : `${poolCount.total} · ${formatCount(poolCount.pages)} pp`,
+          items: pool.items === undefined ? undefined : [...takenOff, ...ready],
+          columns,
+          card,
+          filter: (
+            <PoolFilter
+              search={search}
+              onSearchChange={setSearch}
+              categoryId={categoryId}
+              onCategoryChange={setCategoryId}
+              categories={categories}
+            />
+          ),
+          whyOf: (item) => <PoolWhy item={item} isTakenOff={originalIds.has(item.iteration.id)} />,
+          footnote:
+            pool.summary === undefined ? undefined : (
+              <PoolFootnote pool={pool.summary} categoryName={leafOf} />
+            ),
+          emptyText: "Nothing ready matches.",
+          resetKey: poolQuery,
+          paging: pool.paging,
+        }}
+        unchangedText={listId === null ? "new — not saved" : "no changes"}
+        canSave={canSave}
+        isSaving={save.isPending}
+        onSave={() => void onSave()}
+        onDiscard={onDiscard}
+      />
+      {isGenerating && (
+        <GenerateDialog
+          isOpen
+          onClose={() => setIsGenerating(false)}
+          generators={generators}
+          memberIds={[...members.current]}
+          memberPages={pages}
+          target={target}
+          onDraft={takeDraft}
+        />
+      )}
+    </>
   );
 }
 
@@ -312,7 +381,13 @@ function LateCopy({ item }: { item: ListItem }) {
   );
 }
 
-function OnListWhy({ item }: { item: ListItem }) {
+function OnListWhy({ item, reason }: { item: ListItem; reason: string | undefined }) {
+  const generated =
+    reason === undefined ? null : (
+      <>
+        <ToneBadge tone="purple">generated</ToneBadge> {reason}
+      </>
+    );
   if (item.blocker !== null) {
     return (
       <b className="font-semibold text-tone-amber-foreground">
@@ -321,7 +396,17 @@ function OnListWhy({ item }: { item: ListItem }) {
     );
   }
 
-  return item.lateCopy === null ? null : <LateCopy item={item} />;
+  if (item.lateCopy === null) {
+    return generated;
+  }
+
+  return (
+    <>
+      {generated}
+      {generated !== null && " · "}
+      <LateCopy item={item} />
+    </>
+  );
 }
 
 function PoolWhy({ item, isTakenOff }: { item: ListItem; isTakenOff: boolean }) {
@@ -431,6 +516,8 @@ interface EditorHeaderProps {
   pages: number;
   target: number | null;
   lateCopies: number;
+  // What the last generation made of its request.
+  report: ReactNode;
   refusal: Refusal | null;
 }
 
@@ -441,6 +528,7 @@ function EditorHeader({
   pages,
   target,
   lateCopies,
+  report,
   refusal,
 }: EditorHeaderProps) {
   const id = useId();
@@ -509,6 +597,7 @@ function EditorHeader({
         </span>
       </div>
 
+      {report}
       {lateCopies > 0 && (
         <StatusNote
           tone="amber"

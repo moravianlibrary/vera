@@ -31,6 +31,7 @@ import {
 import { can, hasPermission, scopesOf } from "@/domain/permissions";
 import { isRestricted, passesGates, statusFootnoteOf, validationOf } from "@/domain/status";
 import { formatShortCalendarDay } from "@/lib/format-date";
+import { formatCount } from "@/lib/format-number";
 import { dayOf } from "@/lib/value-range";
 import { countValues, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
@@ -123,7 +124,7 @@ function rowOf(list: DigitizationList): ListRow {
   };
 }
 
-function itemOf(iteration: Iteration): ListItem | null {
+export function itemOf(iteration: Iteration): ListItem | null {
   const document = database.documents.find((candidate) => candidate.id === iteration.documentId);
   const request = originatingRequestOf(iteration);
   if (document === undefined || request === undefined) {
@@ -142,7 +143,7 @@ function itemOf(iteration: Iteration): ListItem | null {
 
 // Highest priority first, then the oldest ask: the reference generator's order (intentions.md
 // §4.2), so a hand-built list reads the same way.
-function byPriorityThenAge(first: ListItem, second: ListItem): number {
+export function byPriorityThenAge(first: ListItem, second: ListItem): number {
   const rankOf = (item: ListItem) => priorities.indexOf(item.iteration.priority);
   return rankOf(second) - rankOf(first) || first.askedAt.localeCompare(second.askedAt);
 }
@@ -223,12 +224,23 @@ export function findListDetail(session: Session, listId: string): ListDetail | n
 
 // ---------------------------------------------------------------- the pool
 
-function isInPool(iteration: Iteration): boolean {
+export function isInPool(iteration: Iteration): boolean {
   return iteration.progress === "Ready" && iteration.listId === null && passesGates(iteration);
 }
 
-function topCategoryOf(categoryId: string): string {
+export function topCategoryOf(categoryId: string): string {
   return categoryPathOf(database.categories, categoryId)[0]?.id ?? categoryId;
+}
+
+// Approved, on no list, and held only by a defect still to rule on or denied.
+export function isHeldInReview(iteration: Iteration): boolean {
+  return (
+    iteration.listId === null &&
+    iteration.progress === "Enqueued" &&
+    iteration.cancellation === null &&
+    !isRestricted(iteration) &&
+    ["Needed", "Denied"].includes(validationOf(iteration))
+  );
 }
 
 function matchesPool(item: ListItem, query: PoolQuery): boolean {
@@ -264,15 +276,7 @@ export function queryPool(
     .toSorted(byPriorityThenAge);
   const { items, nextCursor } = sliceOf(matching, (item) => item.iteration.id, slice);
 
-  // Approved, on no list, and held only by a defect still to rule on or denied.
-  const inReview = database.iterations.filter(
-    (iteration) =>
-      iteration.listId === null &&
-      iteration.progress === "Enqueued" &&
-      iteration.cancellation === null &&
-      !isRestricted(iteration) &&
-      ["Needed", "Denied"].includes(validationOf(iteration)),
-  );
+  const inReview = database.iterations.filter(isHeldInReview);
   const tops = [...new Set(inReview.map((iteration) => topCategoryOf(iteration.categoryId)))];
   const undecided = database.requests
     .filter((request) => request.decision === "Pending")
@@ -326,7 +330,7 @@ export function createList(session: Session, draft: ListDraft): Outcome<ListDeta
     startsOn,
     endsOn: draft.endsOn,
     targetPages: draft.targetPages,
-    generated: null,
+    generated: draft.generated ?? null,
     createdBy: session.user.id,
     createdAt: now,
     done: null,
@@ -334,6 +338,7 @@ export function createList(session: Session, draft: ListDraft): Outcome<ListDeta
   database.lists.push(list);
   const correlationId = crypto.randomUUID();
   logList(session, list, correlationId, "Created", datesOf(list));
+  logGeneration(session, list, correlationId);
   moveMembers(session, list, draft.memberIds, correlationId);
   return { value: detailOf(list) };
 }
@@ -376,6 +381,7 @@ export function saveList(session: Session, listId: string, draft: ListDraft): Ou
     startsOn,
     endsOn: draft.endsOn,
     targetPages: draft.targetPages,
+    generated: draft.generated ?? list.generated,
   };
   database.lists.splice(database.lists.indexOf(list), 1, saved);
   const correlationId = crypto.randomUUID();
@@ -385,6 +391,10 @@ export function saveList(session: Session, listId: string, draft: ListDraft): Ou
 
   if (saved.name !== list.name) {
     logList(session, saved, correlationId, "Renamed", `${list.name} → ${saved.name}`);
+  }
+
+  if (draft.generated !== undefined) {
+    logGeneration(session, saved, correlationId);
   }
 
   moveMembers(session, saved, draft.memberIds, correlationId);
@@ -491,6 +501,23 @@ function logList(
   detail: string,
 ): void {
   writeLog(entryOf(session, "list", list.id, correlationId, event, detail));
+}
+
+// Which generator and which inputs drafted it: for an AI generator the only way to say afterwards
+// why a list looks the way it does (intentions.md §4.3).
+function logGeneration(session: Session, list: DigitizationList, correlationId: string): void {
+  if (list.generated === null) {
+    return;
+  }
+
+  const { generator, pages } = list.generated;
+  logList(
+    session,
+    list,
+    correlationId,
+    `Generated — ${generator}`,
+    `${formatCount(pages)} pp asked`,
+  );
 }
 
 function logIteration(

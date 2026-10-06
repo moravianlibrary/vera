@@ -96,6 +96,16 @@ export const projectSchema = z.discriminatedUnion("state", [
 ]);
 export type Project = z.infer<typeof projectSchema>;
 
+// What a list was generated with: provenance, never what it counts towards (intentions.md §5).
+export const listGenerationSchema = z.object({
+  intentionId: id,
+  pages: z.number().int().nonnegative(),
+  // Plugin and version: "PriorityFirst 1.2.0".
+  generator: z.string(),
+  at: timestamp,
+});
+export type ListGeneration = z.infer<typeof listGenerationSchema>;
+
 export const digitizationListSchema = z.object({
   id,
   name: z.string(),
@@ -103,14 +113,7 @@ export const digitizationListSchema = z.object({
   endsOn: calendarDate,
   targetPages: z.number().int().nonnegative().nullable(),
   // Provenance of a generated list; a hand-built list has none.
-  generated: z
-    .object({
-      intentionId: id,
-      pages: z.number().int().nonnegative(),
-      generator: z.string(),
-      at: timestamp,
-    })
-    .nullable(),
+  generated: listGenerationSchema.nullable(),
   createdBy: id,
   createdAt: timestamp,
   done: z.object(actedBy).nullable(),

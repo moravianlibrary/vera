@@ -100,8 +100,9 @@ export function TransferEditor<Item>({
       <LeaveGuard isDirty={isDirty && !isSaving} />
       <section className="shrink-0 border-b px-4 py-3 sm:px-6">
         <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
-          <div className="min-w-0 flex-1">{header}</div>
-          <div className="flex shrink-0 items-center gap-2">
+          {/* Where the two do not fit side by side, the header takes the width and Save sits above. */}
+          <div className="min-w-0 flex-[1_1_28rem]">{header}</div>
+          <div className="flex shrink-0 items-center gap-2 max-sm:order-first max-sm:w-full max-sm:justify-end">
             <span className="text-xs text-muted-foreground tabular-nums">
               {added > 0 || removed > 0 ? (
                 <>

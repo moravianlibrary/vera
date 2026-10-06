@@ -4,8 +4,8 @@
 // Cancel ask "Discard changes?" first (page-composition.md §1). Centred where there is room,
 // a full-screen sheet on a phone (decided 2026-10-06), where × in its head is the Cancel and
 // an irreversible primary is outlined rather than filled (view-rules.md §5.3).
-// TODO(rrandiak): step labels in the head for stepped dialogs (§6.7); Back closing it on a
-// phone (§8.1); labels move to i18n.
+// A stepped dialog puts its steps under the title and a Back before the primary (§6.7).
+// TODO(rrandiak): Back closing it on a phone (§8.1); labels move to i18n.
 
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -57,6 +57,10 @@ export interface DialogShellProps {
   primary: DialogPrimaryAction;
   // Null on a result screen, where the primary is the only way on ("Done").
   cancelLabel?: string | null;
+  // Under the title: a stepped dialog's steps.
+  head?: ReactNode;
+  // Back to the step before.
+  onBack?: () => void;
   refusal?: Refusal | null;
   children: ReactNode;
 }
@@ -72,6 +76,8 @@ export function DialogShell({
   isDirty = false,
   primary,
   cancelLabel = "Cancel",
+  head,
+  onBack,
   refusal = null,
   children,
 }: DialogShellProps) {
@@ -107,6 +113,7 @@ export function DialogShell({
           <DialogHeader className="border-b px-6 py-4 text-left">
             <DialogTitle className="pr-8 leading-snug">{title}</DialogTitle>
             <DialogDescription className="sr-only">{description}</DialogDescription>
+            {head}
           </DialogHeader>
 
           <div className="min-h-0 overflow-y-auto px-6 py-5 text-sm">{children}</div>
@@ -122,6 +129,11 @@ export function DialogShell({
               {!isPhone && cancelLabel !== null && (
                 <Button variant="outline" onClick={requestClose} disabled={primary.isPending}>
                   {cancelLabel}
+                </Button>
+              )}
+              {onBack !== undefined && (
+                <Button variant="outline" onClick={onBack} disabled={primary.isPending}>
+                  Back
                 </Button>
               )}
               <PrimaryButton primary={primary} isFilled={isFilled} isPhone={isPhone} />

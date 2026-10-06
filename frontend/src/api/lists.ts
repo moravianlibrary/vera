@@ -12,6 +12,7 @@ import {
   documentSchema,
   existingCopySchema,
   iterationSchema,
+  listGenerationSchema,
   statusLogEntrySchema,
 } from "@/domain/entities";
 import type { ListState } from "@/domain/lists";
@@ -206,10 +207,76 @@ export const poolPageSchema = z.object({
 });
 export type PoolPage = z.infer<typeof poolPageSchema>;
 
+// ---------------------------------------------------------------- generating
+
+// A configured list generator plugin instance (plugins.md §4.9). None configured, no Generate.
+export const generatorClasses = ["RuleBased", "AiBased"] as const;
+export const generatorClassSchema = z.enum(generatorClasses);
+export type GeneratorClass = z.infer<typeof generatorClassSchema>;
+
+export const listGeneratorSchema = z.object({
+  id: z.string(),
+  // The instance: "Priority, then age".
+  name: z.string(),
+  // The plugin and its version: "PriorityFirst", "1.2.0".
+  plugin: z.string(),
+  version: z.string(),
+  generatorClass: generatorClassSchema,
+  description: z.string(),
+  // How far over or under the pages it may land, as a fraction: lumpy page counts never hit it.
+  tolerance: z.number().nonnegative(),
+});
+export type ListGenerator = z.infer<typeof listGeneratorSchema>;
+
+// What a generator is given (intentions.md §4.1). The current members stay fixed: it tops up
+// towards the pages. No categories means all of them.
+// TODO(rrandiak): *Shape by* an intention other than Overall, and an allocation, wait for
+// intentions in the mock API (plan.md step 6).
+export const generationRequestSchema = z.object({
+  generatorId: z.string().min(1),
+  pages: z.number().int().positive(),
+  // Top-level categories to draw from.
+  categoryIds: z.array(z.string().min(1)),
+  memberIds: z.array(z.string().min(1)),
+});
+export type GenerationRequest = z.infer<typeof generationRequestSchema>;
+
+// Why a category ends short (intentions.md §4.2 rule 2): left out of the categories asked for,
+// what is ready would overshoot it, nothing more is ready, or the mix gives it no share.
+export const shortfallCauses = ["leftOut", "overshoot", "noSupply", "unallocated"] as const;
+export const shortfallCauseSchema = z.enum(shortfallCauses);
+export type ShortfallCause = z.infer<typeof shortfallCauseSchema>;
+
+// A draft, never a list (intentions.md §4.3): the picks, each with its reason, and the report.
+export const generationDraftSchema = z.object({
+  generator: listGeneratorSchema,
+  shapedBy: z.object({ intentionId: z.string(), name: z.string() }),
+  picks: z.array(z.object({ item: listItemSchema, reason: z.string() })),
+  requestedPages: count,
+  // The current members and the picks together.
+  totalPages: count,
+  // Picks made in a sibling's place because a category could not be filled.
+  spreadCount: count,
+  // Leaf categories, in tree order.
+  shortfalls: z.array(
+    z.object({
+      categoryId: z.string(),
+      pages: count,
+      cause: shortfallCauseSchema,
+      // Approved for it but still held in review: why a short category may fill later.
+      inReviewCount: count,
+    }),
+  ),
+  // What the list records once saved.
+  provenance: listGenerationSchema,
+});
+export type GenerationDraft = z.infer<typeof generationDraftSchema>;
+
 // ---------------------------------------------------------------- saving
 
 // What the editor saves, the whole of it at once: the members are the set as it should be.
-// No start date means it starts now.
+// No start date means it starts now. A generation drafted since the editor opened replaces the
+// list's provenance; without one it stays as it was.
 export const listDraftSchema = z
   .object({
     name: z.string().trim().min(1, "Name the list"),
@@ -217,6 +284,7 @@ export const listDraftSchema = z
     endsOn: z.iso.date(),
     targetPages: z.number().int().positive().nullable(),
     memberIds: z.array(z.string().min(1)),
+    generated: listGenerationSchema.optional(),
   })
   .refine((draft) => draft.startsOn === null || draft.endsOn >= draft.startsOn, {
     message: "It cannot end before it starts",
@@ -262,6 +330,14 @@ export async function listPool(query: PoolQuery, slice: SliceOptions = {}): Prom
     poolPageSchema,
     withSlice(toPoolSearchParams(query), slice),
   );
+}
+
+export async function listGenerators(): Promise<ListGenerator[]> {
+  return getJson(apiRoutes.listGenerators, z.array(listGeneratorSchema));
+}
+
+export async function generateDraft(request: GenerationRequest): Promise<GenerationDraft> {
+  return postJson(apiRoutes.listGeneration, request, generationDraftSchema);
 }
 
 export async function createList(draft: ListDraft): Promise<ListDetail> {

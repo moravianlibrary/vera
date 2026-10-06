@@ -17,6 +17,7 @@ import {
   reclassificationSchema,
 } from "@/api/iterations";
 import {
+  generationRequestSchema,
   listDraftSchema,
   parseListSearchParams,
   parseListSliceParams,
@@ -60,6 +61,7 @@ import {
   recheckIteration,
   reclassifyIteration,
 } from "@/mocks/iterations";
+import { canGenerate, enabledGenerators, generateDraft } from "@/mocks/list-generation";
 import {
   canBuildLists,
   canReadLists,
@@ -188,6 +190,23 @@ export function createHandlers(profile: MockUserProfile) {
       return HttpResponse.json(
         queryPool(parsePoolSearchParams(params), parseListSliceParams(params)),
       );
+    }),
+
+    http.get(route(apiRoutes.listGenerators), () => {
+      if (!canGenerate(currentSession())) {
+        return problemResponse({ status: 403, message: "You may not build lists" });
+      }
+
+      return HttpResponse.json(enabledGenerators());
+    }),
+
+    http.post(route(apiRoutes.listGeneration), async ({ request }) => {
+      const generation = generationRequestSchema.safeParse(await request.json());
+      if (!generation.success) {
+        return invalidResponse(generation.error);
+      }
+
+      return outcomeResponse(generateDraft(currentSession(), generation.data));
     }),
 
     http.get(route(`${apiRoutes.digitizationLists}/:listId`), ({ params }) => {

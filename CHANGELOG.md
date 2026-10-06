@@ -19,6 +19,13 @@ All notable changes to this project are documented here.
   review still holds back. Everything is a draft until Save, counted as +N −M; taking one off
   returns it to Ready with no reason, and leaving with changes asks first. Saving goes back to
   the list.
+- Digitization Lists, *Generate…*: where a list generator is configured, the editor's left
+  pane offers it. Give the pages, and optionally the categories; with several generators, pick
+  one, each marked rule-based or AI-based. The preview shows the picks and a report (pages
+  against those asked, the tolerance, what was re-spread, and which categories are short and
+  why); taking it puts the picks on the list, each marked *generated* with its reason, keeps
+  what was there, and leaves the report on top. Nothing is saved until Save, which records
+  what it was generated with.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

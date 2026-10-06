@@ -8,7 +8,9 @@ import { ApiError } from "@/api/http";
 import {
   createList,
   findList,
+  generateDraft,
   isSameListQuery,
+  listGenerators,
   listLists,
   listPool,
   parseListSearchParams,
@@ -277,5 +279,104 @@ describe("saving a list", () => {
       }),
     );
     expect(await refused).toBe(403);
+  });
+});
+
+describe("generating a draft", () => {
+  it("offers the running generators to whoever builds lists, and nobody else", async () => {
+    signInAs("digitization");
+    const generators = await listGenerators();
+
+    expect(generators.map((generator) => [generator.plugin, generator.generatorClass])).toEqual([
+      ["PriorityFirst", "RuleBased"],
+      ["ShelfAdvisor", "AiBased"],
+    ]);
+
+    signInAs("curator");
+    expect(await statusOf(listGenerators())).toBe(403);
+  });
+
+  it("picks only from the pool, each with its reason, and saves nothing", async () => {
+    signInAs("digitization");
+    const pool = await listPool({}, { limit: 200 });
+    const poolIds = new Set(pool.items.map((item) => item.iteration.id));
+
+    const draft = await generateDraft({
+      generatorId: "pi14",
+      pages: 4000,
+      categoryIds: [],
+      memberIds: [],
+    });
+    const after = await listPool({}, { limit: 200 });
+
+    expect(draft.picks.length).toBeGreaterThan(0);
+    expect(draft.picks.every(({ item }) => poolIds.has(item.iteration.id))).toBe(true);
+    expect(draft.picks.every(({ reason }) => reason.includes("priority · asked"))).toBe(true);
+    expect(draft.provenance).toMatchObject({ intentionId: "i4", generator: "PriorityFirst 1.2.0" });
+    expect(after.total).toBe(pool.total);
+  });
+
+  it("is deterministic when rule-based, and keeps the current members fixed", async () => {
+    signInAs("digitization");
+    const request = { generatorId: "pi14", pages: 3000, categoryIds: [], memberIds: ["IT3"] };
+
+    const first = await generateDraft(request);
+    const second = await generateDraft(request);
+
+    expect(first.picks.map(({ item }) => item.iteration.id)).toEqual(
+      second.picks.map(({ item }) => item.iteration.id),
+    );
+    expect(first.picks.map(({ item }) => item.iteration.id)).not.toContain("IT3");
+  });
+
+  it("reports a category left out as short, and draws nothing from it", async () => {
+    signInAs("digitization");
+
+    const draft = await generateDraft({
+      generatorId: "pi14",
+      pages: 4000,
+      categoryIds: ["c2"],
+      memberIds: [],
+    });
+
+    expect(draft.picks.every(({ item }) => item.iteration.categoryId.startsWith("c2"))).toBe(true);
+    expect(draft.shortfalls).toContainEqual(
+      expect.objectContaining({ categoryId: "c11", cause: "leftOut" }),
+    );
+  });
+
+  it("gives the AI generator's own sentence for each pick", async () => {
+    signInAs("digitization");
+
+    const draft = await generateDraft({
+      generatorId: "pi15",
+      pages: 4000,
+      categoryIds: [],
+      memberIds: [],
+    });
+
+    expect(draft.picks.some(({ reason }) => reason.includes("priority · asked"))).toBe(false);
+  });
+
+  it("records the generation when the draft is saved", async () => {
+    signInAs("digitization");
+    const draft = await generateDraft({
+      generatorId: "pi14",
+      pages: 1500,
+      categoryIds: ["c3"],
+      memberIds: [],
+    });
+
+    const detail = await createList({
+      name: "Manuscripts — generated",
+      startsOn: "2026-12-01",
+      endsOn: "2026-12-18",
+      targetPages: 1500,
+      memberIds: draft.picks.map(({ item }) => item.iteration.id),
+      generated: draft.provenance,
+    });
+
+    expect(detail.row.list.generated?.generator).toBe("PriorityFirst 1.2.0");
+    expect(detail.log.map((entry) => entry.event)).toContain("Generated — PriorityFirst 1.2.0");
   });
 });

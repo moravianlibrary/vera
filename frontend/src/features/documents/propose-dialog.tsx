@@ -15,6 +15,7 @@ import { useId, useRef, useState } from "react";
 import type { ProposalCheck, ProposalDraft, ProposalReport } from "@/api/proposals";
 import { checkProposalItems, getProposalSettings, submitProposal } from "@/api/proposals";
 import { CategorySelect, Field, PrioritySelect } from "@/components/classification-fields";
+import { StepIndicator } from "@/components/dialogs/step-indicator";
 import { StatusBadge, ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
@@ -238,7 +239,7 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
         <DialogDescription className="sr-only">
           Propose documents for digitization, one or several at once.
         </DialogDescription>
-        <StepIndicator current={step} />
+        <StepIndicator steps={steps} currentIndex={steps.indexOf(step)} />
       </DialogHeader>
 
       {step === "Items" && (
@@ -291,34 +292,6 @@ function ProposeFlow({ session, viewTitle, onClose }: ProposeFlowProps) {
 // TODO(rrandiak): a "typed" way for a batch of typed items once the batch contract has one.
 function viaOf(items: readonly { source: string }[]): Batch["via"] {
   return items.some((item) => item.source.startsWith("file")) ? "file" : "pastedList";
-}
-
-function StepIndicator({ current }: { current: Step }) {
-  const currentIndex = steps.indexOf(current);
-  return (
-    <ol className="flex items-center gap-2 text-xs text-muted-foreground">
-      {steps.map((step, index) => (
-        <li key={step} className="flex items-center gap-2">
-          {index > 0 && <span aria-hidden className="h-px w-6 bg-border" />}
-          <span
-            aria-current={index === currentIndex ? "step" : undefined}
-            className={cn("flex items-center gap-1.5", index === currentIndex && "text-foreground")}
-          >
-            <span
-              className={cn(
-                "grid size-5 place-items-center rounded-full border text-[0.6875rem]",
-                index === currentIndex && "border-primary bg-primary text-primary-foreground",
-                index < currentIndex && "border-transparent bg-muted",
-              )}
-            >
-              {index < currentIndex ? <Check className="size-3" /> : index + 1}
-            </span>
-            {step}
-          </span>
-        </li>
-      ))}
-    </ol>
-  );
 }
 
 // ---------------------------------------------------------------- items

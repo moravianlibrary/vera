@@ -10,6 +10,8 @@ export const apiRoutes = {
   lists: "/lists",
   digitizationLists: "/digitization-lists",
   digitizationListPool: "/digitization-lists/pool",
+  listGenerators: "/digitization-lists/generators",
+  listGeneration: "/digitization-lists/generate",
   batches: "/batches",
   documents: "/documents",
   iterations: "/iterations",

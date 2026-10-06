@@ -4,7 +4,7 @@
 
 import { skipToken, useQuery } from "@tanstack/react-query";
 import type { ListQuery, PoolQuery } from "@/api/lists";
-import { findList, listLists, listPool } from "@/api/lists";
+import { findList, listGenerators, listLists, listPool } from "@/api/lists";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { usePagedList } from "@/hooks/use-paged-list";
 
@@ -33,6 +33,11 @@ export function usePoolSizeQuery(isEnabled: boolean) {
     queryFn: isEnabled ? () => listPool({}, { limit: 1 }) : skipToken,
     select: (pool) => ({ total: pool.total, pages: pool.pages }),
   });
+}
+
+// The list generators running; none means no Generate.
+export function useListGeneratorsQuery() {
+  return useQuery({ queryKey: [...listsQueryKey, "generators"], queryFn: listGenerators });
 }
 
 // What saving or acting on a list changes.
