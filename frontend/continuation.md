@@ -89,6 +89,15 @@ The foundation is in place:
   view's whole URL state from it: the query, the open record (`?id=` or the view's own name),
   the grouping, the watchlist tab, opening and detaching a tab, and whether the view was opened
   bare. Every list page uses it rather than touching `useSearchParams`.
+- Lists (`src/components/lists/`): `record-list.tsx` is every list beside a pane. A view gives
+  it column declarations (header, cell, grid track, numeric), the card a row becomes when the
+  list is under 42rem, an optional why line under each row, its group headers and the paging;
+  it draws the toolbar (`list-toolbar.tsx`: the count and the grouping picker), the sticky table
+  header, the rows on one subgrid, the loading and empty lines and the load-more sentinel.
+  `group-header.tsx` is the frame over a group (title, meta, action, footnote); the views fill
+  it. `src/hooks/use-paged-list.ts` is the slice-by-slice query behind a list: rows, the first
+  slice as the summary, every slice for its group headers, and the paging. `src/lib/plural.ts`
+  says "3 askers".
 - Query hooks: `src/hooks/use-session-query.ts`, `src/features/documents/use-documents-query.ts`.
   Sidebar entries and their required permissions: `src/components/layout/navigation.ts`.
 - `src/app.tsx` holds the providers and routes. `src/features/documents/` is the Documents view:

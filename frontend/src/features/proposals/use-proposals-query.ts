@@ -2,14 +2,7 @@
 // custodies' names, and the decisions. A decision changes what Documents, Proposals and the
 // watchlist counts show, so it refetches all three.
 
-import {
-  keepPreviousData,
-  skipToken,
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { skipToken, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Approval, Decline, ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
 import {
   approveProposal,
@@ -21,19 +14,15 @@ import {
   maximumProposalSliceSize,
 } from "@/api/proposal-review";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
+import { usePagedList } from "@/hooks/use-paged-list";
 import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
 export const proposalsQueryKey = ["proposals"] as const;
 
 export function useProposalsQuery(query: ProposalQuery, grouping: ProposalGrouping | null) {
-  return useInfiniteQuery({
-    queryKey: [...proposalsQueryKey, "list", query, grouping],
-    queryFn: ({ pageParam }) => listProposals(query, { grouping, cursor: pageParam }),
-    initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-    // Keep the previous rows on screen while a new search is fetched.
-    placeholderData: keepPreviousData,
-  });
+  return usePagedList([...proposalsQueryKey, "list", query, grouping], (cursor) =>
+    listProposals(query, { grouping, cursor }),
+  );
 }
 
 // Every open proposal a batch asked for, in one slice, for approving the batch at once.

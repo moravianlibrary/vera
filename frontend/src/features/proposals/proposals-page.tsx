@@ -43,16 +43,7 @@ export function ProposalsPage() {
   const { data: users = [] } = useUsersQuery();
   const { data: projects = [] } = useProjectsQuery();
   const { data: custodies = [] } = useProposalCustodiesQuery();
-  // The first slice carries what describes the whole list: totals and counts.
-  const summary = proposals.data?.pages[0];
-  const items = proposals.data?.pages.flatMap((page) => page.items);
-  const groups = proposals.data?.pages.flatMap((page) => page.groups) ?? [];
-
-  const loadMore = () => {
-    if (proposals.hasNextPage && !proposals.isFetchingNextPage) {
-      void proposals.fetchNextPage();
-    }
-  };
+  const { summary } = proposals;
 
   if (session === undefined) {
     return null;
@@ -119,14 +110,12 @@ export function ProposalsPage() {
       <MasterDetail
         master={
           <ProposalList
-            items={items}
-            groups={groups}
+            items={proposals.items}
+            groups={proposals.slices?.flatMap((slice) => slice.groups) ?? []}
             total={summary?.total}
             askTotal={summary?.askTotal}
             isLoading={proposals.isLoading}
-            isLoadingMore={proposals.isFetchingNextPage}
-            hasMore={proposals.hasNextPage}
-            onLoadMore={loadMore}
+            paging={proposals.paging}
             grouping={grouping}
             onGroupingChange={view.setGrouping}
             references={{ users, projects, custodies }}

@@ -29,12 +29,12 @@ import { documentIdentifierOf, existingCopiesOf } from "@/domain/documents";
 import type { Priority } from "@/domain/entities";
 import type { ProposalRow } from "@/domain/proposal-review";
 import { askerIdsOf, asksOf, isBulkApprovable, isRescan } from "@/domain/proposal-review";
-import { plural } from "@/features/proposals/proposal-list";
 import {
   useBatchProposalsQuery,
   useDecisionMutations,
 } from "@/features/proposals/use-proposals-query";
 import { useCategoriesQuery } from "@/hooks/use-reference-query";
+import { plural } from "@/lib/plural";
 
 type BatchGroup = Extract<ProposalGroup, { kind: "batch" }>;
 

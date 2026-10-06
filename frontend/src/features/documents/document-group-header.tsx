@@ -1,21 +1,18 @@
 // The header over a group of Documents rows (docs/demos/shared/page-documents.js, byBatch and
-// byProject). A batch says when and by whom it came in and how much of it could not be added,
-// the unit an admin retries; a project says its state and how many of its documents match.
+// byProject), on the shared GroupHeader frame. A batch says when and by whom it came in and how
+// much of it could not be added, the unit an admin retries; a project says its state and how
+// many of its documents match.
 // TODO(rrandiak): retrying a batch's failed additions; labels move to i18n.
 
-import type { ReactNode } from "react";
 import { Link } from "react-router";
 import type { DocumentGroup } from "@/api/documents";
+import { GroupHeader } from "@/components/lists/group-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Project, User } from "@/domain/entities";
+import { formatDay } from "@/lib/format-date";
+import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
-
-const submittedFormat = new Intl.DateTimeFormat("en-GB", {
-  day: "numeric",
-  month: "short",
-  year: "numeric",
-});
 
 const projectStateTones = {
   Proposed: "bg-tone-amber text-tone-amber-foreground",
@@ -36,114 +33,102 @@ export function DocumentGroupHeader({
   canRetryAdditions,
   canOpenProjects,
 }: DocumentGroupHeaderProps) {
-  return (
-    <div className="border-t-2 border-b border-l-4 border-t-muted-foreground border-l-primary bg-muted px-4 py-3 text-xs @2xl:col-span-full">
-      {group.kind === "batch" ? (
-        <BatchHeading group={group} users={users} canRetryAdditions={canRetryAdditions} />
-      ) : (
-        <ProjectHeading group={group} canOpenProjects={canOpenProjects} />
-      )}
-    </div>
+  return group.kind === "batch" ? (
+    <BatchHeader group={group} users={users} canRetryAdditions={canRetryAdditions} />
+  ) : (
+    <ProjectHeader group={group} canOpenProjects={canOpenProjects} />
   );
 }
 
-interface BatchHeadingProps {
+interface BatchHeaderProps {
   group: Extract<DocumentGroup, { kind: "batch" }>;
   users: readonly User[];
   canRetryAdditions: boolean;
 }
 
-function BatchHeading({ group, users, canRetryAdditions }: BatchHeadingProps) {
+function BatchHeader({ group, users, canRetryAdditions }: BatchHeaderProps) {
   const { batch, size, failed } = group;
   if (batch === null) {
     return (
-      <>
-        <Title>Not from a batch</Title>
-        <Subtitle>asked for one at a time, or still a proposal</Subtitle>
-      </>
+      <GroupHeader title="Not from a batch" meta="asked for one at a time, or still a proposal" />
     );
   }
 
   const submitter = users.find((user) => user.id === batch.submittedBy)?.name ?? batch.submittedBy;
   return (
-    <>
-      <Title>
-        <b className="font-mono font-bold">{batch.id}</b>{" "}
-        <span className="text-muted-foreground">{batch.name}</span>
-      </Title>
-      <Subtitle>
-        {submittedFormat.format(new Date(batch.submittedAt))} · {submitter} ·{" "}
-        {failed > 0 ? (
-          <b className="font-semibold text-tone-red-foreground">
-            {failed} of {size} could not be added
-          </b>
-        ) : (
-          `${size} added`
-        )}
-      </Subtitle>
-      {failed > 0 && canRetryAdditions && (
-        <div className="mt-2">
+    <GroupHeader
+      title={
+        <>
+          <b className="font-mono font-bold">{batch.id}</b>{" "}
+          <span className="text-muted-foreground">{batch.name}</span>
+        </>
+      }
+      meta={
+        <>
+          {formatDay(batch.submittedAt)} · {submitter} ·{" "}
+          {failed > 0 ? (
+            <b className="font-semibold text-tone-red-foreground">
+              {failed} of {size} could not be added
+            </b>
+          ) : (
+            `${size} added`
+          )}
+        </>
+      }
+      action={
+        failed > 0 && canRetryAdditions ? (
           <Button variant="outline" size="xs" className="bg-background">
             {failed === 1 ? "Retry the failed one" : "Retry failed"}
           </Button>
-        </div>
-      )}
-    </>
+        ) : undefined
+      }
+    />
   );
 }
 
-interface ProjectHeadingProps {
+interface ProjectHeaderProps {
   group: Extract<DocumentGroup, { kind: "project" }>;
   canOpenProjects: boolean;
 }
 
-function ProjectHeading({ group, canOpenProjects }: ProjectHeadingProps) {
+function ProjectHeader({ group, canOpenProjects }: ProjectHeaderProps) {
   const { project, total } = group;
-  const count = `${total} ${total === 1 ? "document" : "documents"}`;
+  const count = plural(total, "document");
   if (project === null) {
-    return (
-      <>
-        <Title>No project</Title>
-        <Subtitle>{count}</Subtitle>
-      </>
-    );
+    return <GroupHeader title="No project" meta={count} />;
   }
 
   return (
-    <>
-      <Title>
-        <b className="font-bold">{project.name}</b>{" "}
-        <Badge
-          className={cn(
-            "ml-1 border-transparent px-1.5 py-0 text-[0.625rem]",
-            projectStateTones[project.state],
+    <GroupHeader
+      title={
+        <>
+          <b className="font-bold">{project.name}</b>{" "}
+          <Badge
+            className={cn(
+              "ml-1 border-transparent px-1.5 py-0 text-[0.625rem]",
+              projectStateTones[project.state],
+            )}
+          >
+            {project.state}
+          </Badge>
+        </>
+      }
+      meta={
+        <>
+          {count}
+          {canOpenProjects && (
+            <>
+              {" · "}
+              <Link
+                to={`/projects?id=${encodeURIComponent(project.id)}`}
+                className="underline underline-offset-2 hover:text-foreground"
+              >
+                open the project
+              </Link>
+            </>
           )}
-        >
-          {project.state}
-        </Badge>
-      </Title>
-      <Subtitle>
-        {count}
-        {canOpenProjects && (
-          <>
-            {" · "}
-            <Link
-              to={`/projects?id=${encodeURIComponent(project.id)}`}
-              className="underline underline-offset-2 hover:text-foreground"
-            >
-              open the project
-            </Link>
-          </>
-        )}
-      </Subtitle>
-    </>
+        </>
+      }
+    />
   );
-}
-
-function Title({ children }: { children: ReactNode }) {
-  return <div className="text-sm leading-snug">{children}</div>;
-}
-
-function Subtitle({ children }: { children: ReactNode }) {
-  return <div className="mt-1 text-muted-foreground">{children}</div>;
 }

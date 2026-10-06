@@ -29,10 +29,7 @@ export function DocumentsPage() {
   const { data: session } = useSessionQuery();
   const documents = useDocumentsQuery(query, grouping);
   const { data: detail } = useDocumentQuery(selectedId);
-  // The first slice carries what describes the whole list: audience, total and counts.
-  const summary = documents.data?.pages[0];
-  const items = documents.data?.pages.flatMap((page) => page.items);
-  const groups = documents.data?.pages.flatMap((page) => page.groups) ?? [];
+  const { summary } = documents;
 
   // Once per search, so a closed record stays closed.
   const autoOpenedSearchRef = useRef<string | null>(null);
@@ -53,23 +50,18 @@ export function DocumentsPage() {
     }
   }, [search, onlyMatchId, selectedId]);
 
-  const loadMore = () => {
-    if (documents.hasNextPage && !documents.isFetchingNextPage) {
-      void documents.fetchNextPage();
-    }
-  };
-
   if (session === undefined) {
     return null;
   }
 
   const userId = session.user.id;
   const isPublic = summary?.audience === "public";
+  // Batches need `addition.read`; a requester's list is never grouped.
   const groupings = isPublic
     ? []
-    : hasPermission(session, "addition.read")
-      ? (["batch", "project"] as const)
-      : (["project"] as const);
+    : documentsView.groupings.filter(
+        (option) => option.value !== "batch" || hasPermission(session, "addition.read"),
+      );
   const title =
     visibleNavigation(session).find((entry) => entry.id === "documents")?.visibleLabel ?? "";
 
@@ -126,13 +118,11 @@ export function DocumentsPage() {
         master={
           <DocumentList
             audience={summary?.audience}
-            items={items}
-            groups={groups}
+            items={documents.items}
+            groups={documents.slices?.flatMap((slice) => slice.groups) ?? []}
             total={summary?.total}
             isLoading={documents.isLoading}
-            isLoadingMore={documents.isFetchingNextPage}
-            hasMore={documents.hasNextPage}
-            onLoadMore={loadMore}
+            paging={documents.paging}
             groupings={groupings}
             grouping={grouping}
             onGroupingChange={view.setGrouping}
