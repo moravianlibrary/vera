@@ -21,7 +21,7 @@ interface Lens {
 
 const sharedLenses = [
   { name: "Awaiting a decision", filter: { decision: "Pending" } },
-  { name: "Restricted", filter: { restricted: "Yes" } },
+  { name: "Forbidden", filter: { forbidden: "Yes" } },
   { name: "Awaiting a decision", filter: { decision: "Pending" }, view: "proposals" },
   { name: "Periodicals", filter: { decision: "Pending", type: "Periodical" }, view: "proposals" },
   { name: "Review needed", filter: { review: "Needed" }, view: "validations" },

@@ -330,9 +330,9 @@ beyond equality, or a field reached through another record.
 
 | View | Fields |
 |---|---|
-| Documents | **Decision** · **Progress** · Mine · Validation · Restricted · Cancelled · Category · Priority · Project · Existing copy · Asked by · Batch · *Pages* · *Asked* · *Iteration count* · *Project → state*. A requester: **Status** only, in the public vocabulary |
+| Documents | **Decision** · **Progress** · Mine · Validation · Forbidden · Cancelled · Category · Priority · Project · Existing copy · Asked by · Batch · *Pages* · *Asked* · *Iteration count* · *Project → state*. A requester: **Status** only, in the public vocabulary |
 | Proposals | **Decision** · **Proposal custody** · Material type · Project · Existing copy · Asked by · Batch · Askers · *Asked* · *After the project's approval* |
-| Documents Validations | **Validation** (incl. Forbidden) · Defect · Category · Priority · Project · *Waiting since* · *Found after digitization* |
+| Documents Validations | **Review** · Forbidden (Yes / No) · Defect · Category · Priority · Project · *Waiting since* · *Found after digitization* |
 | Digitization Lists | **State** · Counts towards · Created by · Generated · *Runs* · *Blocked items* |
 | Projects | **Decision** · Period · Manager · Member — the cards filter too |
 | Intentions | **Kind** (target, tracking) · State · Funding · Scope · *Tracks* |
@@ -348,7 +348,7 @@ derived by precedence, is gone from the staff bar: a derived badge hides the
 dimension underneath it (a scanned document still restricted shows
 *Digitized*), so it cannot be filtered on honestly. Staff filter on the
 stored dimensions the status is made from ([[status-model]] §1): *Decision*
-and *Progress* quick, *Validation*, *Restricted* and *Cancelled* under
+and *Progress* quick, *Validation*, *Forbidden* and *Cancelled* under
 **+ Filter**. A document holds the decisions of its current askers; the
 other dimensions belong to its current iteration, so a document with none
 yet holds none of them. The row still shows one status badge. *Mine* stays

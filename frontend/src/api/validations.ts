@@ -6,12 +6,14 @@
 // There are no bulk verdicts: each is a judgement on one record's evidence.
 
 import { z } from "zod";
+import type { Answer } from "@/api/documents";
+import { answerSchema } from "@/api/documents";
 import { findJson, getJson, postJson } from "@/api/http";
 import { apiRoutes, validationRoute, verdictRoute } from "@/api/routes";
 import type { Priority } from "@/domain/entities";
 import { prioritySchema, progressSchema, statusLogEntrySchema } from "@/domain/entities";
-import type { ReviewState } from "@/domain/validations";
-import { reviewStateSchema, validationRowSchema } from "@/domain/validations";
+import type { ReviewedState } from "@/domain/validations";
+import { reviewedStateSchema, reviewStateSchema, validationRowSchema } from "@/domain/validations";
 import type { ValueRange } from "@/lib/value-range";
 import { formatRange, parseDay, parseRange } from "@/lib/value-range";
 
@@ -20,7 +22,9 @@ import { formatRange, parseDay, parseRange } from "@/lib/value-range";
 // Each list matches any of its values; the fields together match all of them (filtering.md §2).
 export interface ValidationQuery {
   readonly search?: string;
-  readonly reviews?: readonly ReviewState[];
+  readonly reviews?: readonly ReviewedState[];
+  // Whether a rule forbade it: Yes, No, or either.
+  readonly forbidden?: readonly Answer[];
   readonly categoryIds?: readonly string[];
   // The plugin that found a defect still to rule on.
   readonly plugins?: readonly string[];
@@ -37,6 +41,7 @@ export type ValidationListField = Exclude<keyof ValidationQuery, "search" | Vali
 export const validationQueryParams = {
   search: "q",
   reviews: "review",
+  forbidden: "forbidden",
   categoryIds: "category",
   plugins: "defect",
   priorities: "priority",
@@ -47,7 +52,8 @@ export const validationQueryParams = {
 const idValueSchema = z.string().min(1);
 
 const validationFieldSchemas = {
-  reviews: reviewStateSchema,
+  reviews: reviewedStateSchema,
+  forbidden: answerSchema,
   categoryIds: idValueSchema,
   plugins: idValueSchema,
   priorities: prioritySchema,
@@ -148,7 +154,8 @@ export const validationPageSchema = z.object({
   nextCursor: z.string().nullable(),
   // Each field's values with a match, counted over every other active filter.
   facets: z.object({
-    reviews: facetCountsOf(reviewStateSchema),
+    reviews: facetCountsOf(reviewedStateSchema),
+    forbidden: facetCountsOf(answerSchema),
     categoryIds: facetCountsOf(z.string()),
     plugins: facetCountsOf(z.string()),
     priorities: facetCountsOf(prioritySchema),

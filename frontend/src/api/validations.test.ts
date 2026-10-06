@@ -78,10 +78,12 @@ describe("listValidations", () => {
   it("files a forbidden item apart from review, whatever its defects", async () => {
     signInAs("curator");
 
-    const page = await listValidations({ reviews: ["Forbidden"] });
+    const page = await listValidations({ forbidden: ["Yes"] });
 
     expect(page.items.map((row) => row.iteration.id)).toEqual(["IT14"]);
-    expect(page.facets.reviews).toContainEqual({ value: "Needed", count: expect.any(Number) });
+    expect(page.facets.reviews).toEqual([]); // a forbidden item has no review state
+    expect(await idsOf({ reviews: ["Needed"] })).not.toContain("IT14");
+    expect(await idsOf({ forbidden: ["No"] })).not.toContain("IT14");
   });
 
   it("files an item under a plugin only for what is still to rule on", async () => {

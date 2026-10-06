@@ -13,7 +13,7 @@ import { PriorityBadge, StatusWithFootnote } from "@/components/status-badge";
 import { documentIdentifierOf } from "@/domain/documents";
 import type { Category } from "@/domain/entities";
 import { iterationStatusOf, outstandingDefects, statusFootnoteOf } from "@/domain/status";
-import type { ReviewState, ValidationRow } from "@/domain/validations";
+import type { ReviewedState, ValidationRow } from "@/domain/validations";
 import {
   acceptedDefectsOf,
   defectNameOf,
@@ -32,7 +32,7 @@ interface ValidationListProps {
   paging: PagedList;
   categories: readonly Category[];
   // The review states the filter keeps, which the empty line speaks of.
-  reviews: readonly ReviewState[] | undefined;
+  reviews: readonly ReviewedState[] | undefined;
   selectedId: string | null;
   onSelect: (iterationId: string) => void;
 }
@@ -99,14 +99,10 @@ export function ValidationList({
   );
 }
 
-function emptyTextOf(reviews: readonly ReviewState[] | undefined): string {
+function emptyTextOf(reviews: readonly ReviewedState[] | undefined): string {
   const [only] = reviews ?? [];
   if (reviews?.length === 1 && only === "Needed") {
     return "Nothing needs review in your custody.";
-  }
-
-  if (reviews?.length === 1 && only === "Forbidden") {
-    return "Nothing in your custody is forbidden.";
   }
 
   return "Nothing in your custody matches.";

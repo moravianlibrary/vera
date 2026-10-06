@@ -108,6 +108,7 @@ interface Predicate {
 
 const listFields = [
   "reviews",
+  "forbidden",
   "categoryIds",
   "plugins",
   "priorities",
@@ -115,7 +116,9 @@ const listFields = [
 ] as const satisfies readonly ValidationListField[];
 
 const fieldValues = {
-  reviews: (row) => [row.review],
+  // A forbidden item has no review state here; the Forbidden field finds it.
+  reviews: (row) => (row.review === "Forbidden" ? [] : [row.review]),
+  forbidden: (row) => [row.review === "Forbidden" ? "Yes" : "No"],
   // A category holds every category above it too, so it matches its whole subtree.
   categoryIds: (row) => categoryLineageOf(database.categories, row.iteration.categoryId),
   plugins: (row) => [...new Set(defectsToRuleOn(row.iteration).map((defect) => defect.plugin))],

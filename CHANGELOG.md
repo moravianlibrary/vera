@@ -85,6 +85,9 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Documents' *Restricted* filter is called *Forbidden*, and Documents Validations has the same
+  Yes / No field in place of Forbidden among the review states, so "any" review now means every
+  reviewable item and forbidden ones are one pick away.
 - Documents Validations: one Defects card with outstanding, denied and accepted defects in
   sections. Nothing is corrected in VERA but the page count: the catalog record opens from the
   pane, and **Recheck**, beside Accept and Deny, reads it again and clears what was repaired.

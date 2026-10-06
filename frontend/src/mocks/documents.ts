@@ -191,7 +191,7 @@ const audienceFields = {
     "decisions",
     "progress",
     "validations",
-    "restricted",
+    "forbidden",
     "cancelled",
     "categoryIds",
     "projectIds",
@@ -301,7 +301,7 @@ function fieldValuesOf(userId: string): FieldValues {
     ],
     progress: ofCurrent((iteration) => iteration.progress),
     validations: ofCurrent(validationOf),
-    restricted: ofCurrent((iteration) => answerOf(isRestricted(iteration))),
+    forbidden: ofCurrent((iteration) => answerOf(isRestricted(iteration))),
     cancelled: ofCurrent((iteration) => answerOf(iteration.cancellation !== null)),
     // A category holds every category above it too, so it matches its whole subtree.
     categoryIds: ofCurrentList((iteration) =>
@@ -346,7 +346,7 @@ function facetsOf(
     decisions: countOf("decisions"),
     progress: countOf("progress"),
     validations: countOf("validations"),
-    restricted: countOf("restricted"),
+    forbidden: countOf("forbidden"),
     cancelled: countOf("cancelled"),
     categoryIds: countOf("categoryIds"),
     projectIds: countOf("projectIds"),

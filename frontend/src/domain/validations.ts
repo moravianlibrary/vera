@@ -21,6 +21,12 @@ export const reviewStates = ["Needed", "Denied", "Approved", "Forbidden"] as con
 export const reviewStateSchema = z.enum(reviewStates);
 export type ReviewState = z.infer<typeof reviewStateSchema>;
 
+// What the Review filter offers: a forbidden item has no review state there, and is found by
+// the Forbidden field instead (decided 2026-10-06).
+export const reviewedStates = ["Needed", "Denied", "Approved"] as const;
+export const reviewedStateSchema = z.enum(reviewedStates);
+export type ReviewedState = z.infer<typeof reviewedStateSchema>;
+
 export const validationRowSchema = z.object({
   iteration: iterationSchema,
   document: documentSchema,

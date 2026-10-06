@@ -101,8 +101,8 @@ export const documentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = {
       audience: "staff",
     },
     {
-      key: "restricted",
-      label: "Restricted",
+      key: "forbidden",
+      label: "Forbidden",
       field: vocabulary(answers, answerLabels),
       audience: "staff",
     },

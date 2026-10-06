@@ -102,8 +102,9 @@ The foundation is in place:
   per current iteration a defect holds or a rule forbade (`src/domain/validations.ts`: the review
   state *Needed · Denied · Approved · Forbidden*, a forbidden item filed apart whatever its
   defects, a cancelled one out; how long it has waited; the defects still to rule on), kept to the caller's category custody (`validation.*` at `custody` reaches the
-  subtree of the categories they hold, at `any` everything), filtered by review, category
-  (subtree), the plugin of a defect still to rule on, priority, project and the day it started
+  subtree of the categories they hold, at `any` everything), filtered by review (*Needed · Denied ·
+  Approved*: a forbidden item has none there), *Forbidden* Yes / No (as in Documents, whose
+  *Restricted* is renamed to it, `forbidden=` in the URL), category (subtree), the plugin of a defect still to rule on, priority, project and the day it started
   waiting (`since=from..to`), counted, sorted needs-review first, most urgent, longest waiting.
   The verdicts (`POST /validations/:id/accept|deny|revoke`, each its own permission) append one
   row naming the keys they cover; accept and deny take only the outstanding set as it is now (409

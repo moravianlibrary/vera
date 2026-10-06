@@ -165,7 +165,7 @@ describe("saving a filter twice", () => {
       throw new Error("No personal watchlist in the fixtures");
     }
 
-    expect(await statusOf(updateWatchlist(own.id, { filter: { restricted: "Yes" } }))).toBe(409);
+    expect(await statusOf(updateWatchlist(own.id, { filter: { forbidden: "Yes" } }))).toBe(409);
   });
 });
 

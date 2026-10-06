@@ -53,7 +53,7 @@ export interface DocumentQuery {
   readonly decisions?: readonly AskDecision[];
   readonly progress?: readonly Progress[];
   readonly validations?: readonly Validation[];
-  readonly restricted?: readonly Answer[];
+  readonly forbidden?: readonly Answer[];
   readonly cancelled?: readonly Answer[];
   // A category matches its whole subtree.
   readonly categoryIds?: readonly string[];
@@ -82,7 +82,7 @@ export const documentQueryParams = {
   decisions: "decision",
   progress: "progress",
   validations: "validation",
-  restricted: "restricted",
+  forbidden: "forbidden",
   cancelled: "cancelled",
   categoryIds: "category",
   projectIds: "project",
@@ -102,7 +102,7 @@ const listFields = [
   "decisions",
   "progress",
   "validations",
-  "restricted",
+  "forbidden",
   "cancelled",
   "categoryIds",
   "projectIds",
@@ -160,7 +160,7 @@ export function parseDocumentSearchParams(params: URLSearchParams): DocumentQuer
     decisions: listOf("decisions", askDecisionSchema),
     progress: listOf("progress", progressSchema),
     validations: listOf("validations", validationSchema),
-    restricted: listOf("restricted", answerSchema),
+    forbidden: listOf("forbidden", answerSchema),
     cancelled: listOf("cancelled", answerSchema),
     categoryIds: listOf("categoryIds", idValueSchema),
     projectIds: listOf("projectIds", idValueSchema),
@@ -278,7 +278,7 @@ export const documentPageSchema = z.object({
     decisions: facetCountsOf(askDecisionSchema),
     progress: facetCountsOf(progressSchema),
     validations: facetCountsOf(validationSchema),
-    restricted: facetCountsOf(answerSchema),
+    forbidden: facetCountsOf(answerSchema),
     cancelled: facetCountsOf(answerSchema),
     categoryIds: facetCountsOf(z.string()),
     projectIds: facetCountsOf(z.string()),

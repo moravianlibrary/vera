@@ -60,11 +60,11 @@ describe("listDocuments as staff", () => {
   it("filters on the stored dimensions, not the displayed status", async () => {
     signInAs("staff");
     const all = await listDocuments({});
-    const restricted = all.facets.restricted.find((entry) => entry.value === "Yes");
+    const forbidden = all.facets.forbidden.find((entry) => entry.value === "Yes");
 
-    const page = await listDocuments({ restricted: ["Yes"] });
+    const page = await listDocuments({ forbidden: ["Yes"] });
 
-    expect(page.total).toBe(restricted?.count ?? -1);
+    expect(page.total).toBe(forbidden?.count ?? -1);
     expect(page.total).toBeGreaterThan(0);
     // Once scanned, a restriction no longer shows in the badge but is still held.
     expect(page.items.every((record) => record.iterations.at(-1)?.restriction !== null)).toBe(true);
@@ -337,7 +337,7 @@ describe("document search params", () => {
       decisions: ["Pending", "Approved"],
       progress: ["Ready", "Digitized"],
       validations: ["Needed"],
-      restricted: ["Yes"],
+      forbidden: ["Yes"],
       cancelled: ["No"],
       categoryIds: ["c2", "c11"],
       projectIds: ["p1"],
