@@ -13,11 +13,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useTier } from "@/hooks/use-tier";
 import { cn } from "@/lib/utils";
-
-// Tailwind `md`, the small tier's lower edge: at this width and wider the detail is docked.
-const splitQuery = "(min-width: 768px)";
 
 interface MasterDetailProps {
   master: ReactNode;
@@ -39,7 +36,7 @@ export function MasterDetail({
   className,
 }: MasterDetailProps) {
   // The sheet is modal; left open on a wide screen it would dim and block the docked pane.
-  const isSplit = useMediaQuery(splitQuery);
+  const isSplit = useTier() !== "phone";
 
   return (
     <div className={cn("flex min-h-0 flex-1", className)}>

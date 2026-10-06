@@ -1,27 +1,32 @@
-// The strip at the top of every view: the title and the view's actions on the right
-// (docs/demos/shared/vera.css § top bar). Counts belong to the list they count, not here. It
-// never scrolls; the view's body below it does.
+// The strip at the top of every view, on one line at every tier: ☰ where the sidebar is a sheet,
+// the title, and the view's declared actions on the right, capped per tier
+// (docs/demos/shared/vera.css § top bar; component-interfaces.md §1.1). Counts belong to the
+// list they count, not here. It never scrolls; the view's body below it does.
 
 import type { ReactNode } from "react";
+import type { ViewAction } from "@/components/actions/action-bar";
+import { ActionBar } from "@/components/actions/action-bar";
+import { NavigationButton } from "@/components/layout/navigation-button";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
   title: string;
-  actions?: ReactNode;
+  // Already narrowed to what the person may do.
+  actions?: readonly ViewAction[];
   className?: string;
 }
 
-export function PageHeader({ title, actions, className }: PageHeaderProps) {
+export function PageHeader({ title, actions = [], className }: PageHeaderProps) {
   return (
     <header
       className={cn(
-        "flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b bg-background px-4 py-3 sm:px-6",
+        "flex h-14 shrink-0 items-center gap-x-2 border-b bg-background px-4 sm:px-6",
         className,
       )}
     >
-      <h1 className="min-w-0 truncate text-lg leading-7 font-semibold">{title}</h1>
-
-      {actions && <div className="ml-auto flex flex-wrap items-center gap-2">{actions}</div>}
+      <NavigationButton />
+      <h1 className="min-w-0 flex-1 truncate text-lg leading-7 font-semibold">{title}</h1>
+      <ActionBar actions={actions} className="shrink-0" />
     </header>
   );
 }

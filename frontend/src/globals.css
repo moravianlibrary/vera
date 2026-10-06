@@ -118,6 +118,12 @@
 }
 
 @layer base {
+  /* The large tier steps the type back, so its room shows more (component-interfaces.md §0.1).
+     Media queries in rem keep measuring against the browser's 16px. */
+  html[data-tier="large"] {
+    font-size: 15px;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }

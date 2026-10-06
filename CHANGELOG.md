@@ -52,6 +52,13 @@ All notable changes to this project are documented here.
 - The record docks beside the list from 768px, the whole small tier, as the tablet demo
   draws it; only the phone opens it as a sheet.
 
+- Below 1280px the separate top bar is gone: ☰ sits before the page title and opens the
+  sidebar, with the page's actions on the right of the same line. Nothing is fixed at the bottom
+  of a phone screen.
+- At the large tier (1600px and wider) the type steps back to 15px, as designed.
+- A page shows at most three action buttons, two on the small tier and one on a phone; the rest
+  are under "…", and an irreversible action is never the filled button on a phone.
+
 - The page header no longer repeats the list's count under the title.
 
 ## [0.1.0] - 2026-10-02

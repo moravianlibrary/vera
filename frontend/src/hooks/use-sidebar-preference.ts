@@ -4,12 +4,9 @@
 // choice, large is expanded and notebook collapsed.
 
 import { useState } from "react";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useTier } from "@/hooks/use-tier";
 
 type SidebarTier = "large" | "notebook";
-
-// The `large` tier boundary (navigation.md §3).
-const largeQuery = "(min-width: 1600px)";
 
 const expandedValue = "1";
 const collapsedValue = "0";
@@ -37,7 +34,7 @@ function storePreference(tier: SidebarTier, isExpanded: boolean): void {
 }
 
 export function useSidebarPreference() {
-  const tier: SidebarTier = useMediaQuery(largeQuery) ? "large" : "notebook";
+  const tier: SidebarTier = useTier() === "large" ? "large" : "notebook";
   const [preferences, setPreferences] = useState(() => ({
     large: readStoredPreference("large"),
     notebook: readStoredPreference("notebook"),

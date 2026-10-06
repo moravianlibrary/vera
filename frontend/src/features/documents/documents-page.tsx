@@ -13,7 +13,6 @@ import { MasterDetail } from "@/components/layout/master-detail";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { PageHeader } from "@/components/layout/page-header";
 import { Pane, paneStateOf } from "@/components/pane-state";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { hasPermission } from "@/domain/permissions";
@@ -84,12 +83,17 @@ export function DocumentsPage() {
       <PageHeader
         title={title}
         actions={
-          canPropose && (
-            <Button size="sm" onClick={() => setIsProposing(true)}>
-              <Plus />
-              Propose
-            </Button>
-          )
+          canPropose
+            ? [
+                {
+                  id: "propose",
+                  label: "Propose",
+                  icon: Plus,
+                  isPrimary: true,
+                  onSelect: () => setIsProposing(true),
+                },
+              ]
+            : []
         }
       />
 

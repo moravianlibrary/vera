@@ -18,12 +18,20 @@ The foundation is in place:
 - The shell (`src/components/layout/`): `app-shell.tsx` fills the viewport and never scrolls;
   views scroll only their own regions. `sidebar.tsx` is docked from 1280px and toggles between
   expanded and the two-letter rail, remembered per tier by `src/hooks/use-sidebar-preference.ts`
-  (`vera.sidebar.large|notebook`); below 1280px a hamburger opens it as a sheet. Collapsed, the
+  (`vera.sidebar.large|notebook`); below 1280px ☰ before each page's title (`navigation-button.tsx`, given its opener
+  by the shell) opens it as a sheet; there is no separate top bar. Collapsed, the
   rail opens over the content on hover (`src/hooks/use-sidebar-peek.ts`, navigation.md §4.2):
   200ms in, instant out, fine pointers only, tap to open on touch, keyboard focus opens it, and
   it stays shut after a navigation until the pointer leaves the bar.
-  `page-header.tsx` is every view's header (`title`, `actions` on the right; no count line, a
-  count belongs to its list) plus `PageContent` for a scrolling body.
+  `page-header.tsx` is every view's header on one line (☰, `title`, declared `actions` on the
+  right; no count line, a count belongs to its list) plus `PageContent` for a scrolling body.
+  `src/components/actions/action-bar.tsx` draws declared actions (`ViewAction`: run or go,
+  primary, destructive) with the per-tier cap on buttons (phone 1, small 2, else 3) and the
+  rest under "…"; a destructive action is never filled on a phone. `src/hooks/use-tier.ts` is
+  the display tier (phone < 768, small < 1280, notebook < 1600, large) with `PerTier` values;
+  the shell stamps it on `<html>` as `data-tier`, and `large` sets the 15px root. Use the tier
+  for what the display decides (navigation, docking, dialogs, the cap) and container queries
+  for what the room decides (list and fact columns).
   `master-detail.tsx` takes the remaining height: from 768px (all of small) a list at half the width (at least
   21.5rem) beside a docked pane, scrolling independently; a detail sheet below that. The list
   is a CSS container, so rows lay out by its own width.
@@ -127,7 +135,7 @@ The foundation is in place:
   against a small catalog plus every fixture document. Catalog search, record links, barcode
   scanning and photo capture are not built. Still missing there: rendering only the visible rows once thousands are loaded, the reason line under a row, retrying a batch's failed additions,
   the phone Filter sheet and the Batch field. Not yet built in the shell: the Watchlists row
-  with its "new" badge (which leaves shared watchlists out until "seen" is kept per person), the running-tasks row, the user menu and phone bottom tabs.
+  with its "new" badge (which leaves shared watchlists out until "seen" is kept per person), the running-tasks row, the user menu and phone gestures (component-interfaces.md §8.1).
 - `src/features/proposals/` is the Proposals view, on Documents' pattern: the watchlist tabs
   (view `proposals`; "All" is every decision, the shared "Awaiting a decision" the open
   ones), the filter bar (search, Decision, Proposal custody, then chips), `proposal-list.tsx` (a row per
