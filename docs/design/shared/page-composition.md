@@ -42,10 +42,12 @@ deliberately — and it is the only surface that can refuse to close.
 2. **Detail is a route.** It has to be linkable from a notification, a status
    log entry, and another view's cross-reference. `/documents/1234` opens the
    index with that record's detail showing.
-3. **Detail docks only at `large`.** A docked panel is 6 points
+3. ~~**Detail docks only at `large`.** A docked panel is 6 points
    ([[view-rules]] §1.2); at `notebook` the sidebar alone can be 4 and the
    filter rail 5, so 6 more does not fit under 18. Everywhere below `large` the
-   detail is a drawer, and drawers are free (§1.3 rule 1).
+   detail is a drawer, and drawers are free (§1.3 rule 1).~~
+   **Superseded 2026-10-06:** the detail docks at `large`, `notebook` and
+   `small`, and is a full-screen sheet on the phone ([[view-rules]] §1.5).
 4. **An editor that writes a *set* is modal, never inline.** A sibling set of
    percentages is read and written under a lock ([[intentions]] §1.1) — there
    is no such thing as half-saving it, so there must be no UI that suggests

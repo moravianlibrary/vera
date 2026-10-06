@@ -118,8 +118,8 @@ The twelve render as **one list in one order**, with no group headers.
 > were dropped from the sidebar first, kept as vocabulary, and then **removed
 > entirely**: the division was invented, not asked for, and rework.md's list is
 > one flat list in one order. Where a rule needs to pick some entries — the
-> phone's tabs (§3), the resolution of `/` (§8) — it picks by **position in
-> the list and by what the actor holds**, never by a group.
+> phone's swipe order (§3.1), the resolution of `/` (§8) — it picks by
+> **position in the list and by what the actor holds**, never by a group.
 
 **No per-entry count**, either. A bare number beside a nav entry does not say
 what it counts: *3* next to *Documents Validations* could be three documents,
@@ -160,8 +160,8 @@ enforced:
 |------|-----|:-----------:|:------:|
 | `large` | expanded sidebar | **4** | 28 |
 | `notebook` | icon rail, expandable | **2** (4 expanded) | 18 |
-| `small` | hamburger → left sheet | **1** | 10 |
-| `phone` | bottom tabs + *More* → left sheet | **3** | 6 |
+| `small` | ☰ before the title → left sheet | **1** | 10 |
+| `phone` | ☰ before the title → left sheet | **1** | 6 |
 
 Costs are [[view-rules]] §1.2. The four built demos already implement this
 row-for-row, so the shell is not new work at `large`, `small` or `phone` — only
@@ -177,11 +177,44 @@ the entry list and §4's behaviour are.
 width competes with the table for horizontal space it cannot spare, and small
 is where a touch device is most likely to be.
 
-**`phone` bottom tabs are actor-dependent.** Four slots, and the last is always
-*More*. The first three are **the first three entries the actor holds**, in
-list order; an actor with fewer than three gets fewer tabs, not filler. A
-reader gets *My Documents* and *More*, which is an honest description of what a
-reader can do.
+**`phone` has no bottom bar** (decided 2026-10-06; it replaces the bottom tabs
+and *More*). It works like `small`: ☰ sits before the page title and opens the
+sidebar as a left sheet. The page's actions are at the top right, on the same
+line: one primary and `…` ([[view-rules]] §5 rule 2). **Nothing is fixed at the
+bottom of the screen**, neither tabs nor actions, so the last rows of a list
+are never covered. Moving between entries is the swipe in §3.1.
+
+### 3.1 Phone gestures
+
+Decided 2026-10-06. The same horizontal swipe means one thing per layer. On a
+page it moves between entries; on an open record it moves between records.
+Closing is never a horizontal swipe, so the two never compete.
+
+| Gesture | Where | Does |
+|---|---|---|
+| **Swipe ← / →** on a page | nothing open over it | next / previous sidebar entry the person holds, in sidebar order, no wrap |
+| **Swipe ← / →** on a record | the open record sheet ([[view-rules]] §1.4), or a drawer (Tasks, Plugins) | next / previous row of the list it was opened from, in the list's order and grouping, loading more near the end. The list behind follows, so closing lands on the record you ended on |
+| **Back** | a record, drawer, filter sheet, the nav sheet or a dialog | closes it, in any of three ways: the system's Back (button or edge swipe), the ‹ in the sheet's head, or a swipe down started on the sheet's head |
+| **Long-press** a row | lists with picking (the list editor, bulk approve) | starts picking; after that a tap toggles ([[view-rules]] §5 rule 5) |
+
+What keeps them apart:
+
+- **One layer at a time.** The entry swipe is off while anything is open over
+  the page. The record swipe exists only on the sheet.
+- **Not on things that scroll sideways.** Neither swipe starts on watchlist
+  tabs, chips, a wide table or a text field.
+- **Not at the screen's edges.** iOS and Android both use a swipe in from
+  the edge as their Back. So neither swipe starts there, and the nav sheet
+  opens only from ☰.
+- **Back takes one step.** On the phone, opening a record pushes a history
+  entry and moving between records replaces it. Back then closes the sheet
+  however many records were swiped through, and never leaves the page by
+  surprise.
+- **Dialogs take no swipe.** A dialog with typed text answers Back with
+  *Discard changes?*.
+- **The motion says where it goes.** The page or record follows the finger,
+  with the neighbour's name at the side ("Proposals ›", "D24 ›"). Below a
+  threshold it springs back, and at an end nothing moves.
 
 ---
 
@@ -283,6 +316,8 @@ Inside the panel:
 - **Each row carries its own count** — which is what makes the total legible.
 - Authored only where advanced filtering exists, `large` and `notebook`
   ([[view-rules]] §2 rule 3). Consumed at every tier.
+- It ends with **Manage watchlists**, which opens Preferences → Watchlists
+  (§7, [[filtering]] §4.3).
 
 > **Counts are opt-in per watchlist.** A count on a saved lens means running
 > that query on every page load, and a watchlist is an *arbitrary* advanced
@@ -328,8 +363,21 @@ running.
 One popover at the foot of the sidebar: preferences, change password, logout,
 and whatever else accumulates. Not a group, not a route.
 
-- At `phone` it lives behind *More* in the same sheet as the entry list, since
-  the bottom bar has no spare slot and this is not a per-tap destination.
+- At `small` and `phone` it lives at the foot of the sheet ☰ opens, below the
+  entry list.
+- **Preferences is a page**, `/preferences`, though not a sidebar entry
+  (decided 2026-10-06). Its sections:
+  - **Watchlists:** the page [[filtering]] §4.3 describes. `/watchlists`
+    leads here.
+  - **Display:** the sidebar per tier (§4.3), the tab each view opens on
+    (the last one used, or a fixed one; [[filtering]] §4.2), list density
+    and date format, and later the language.
+  - **Account:** the name and the identities it signs in with, read-only;
+    *Change password* for a local account only.
+
+  The settings are kept per person on the server, so they follow the person
+  between devices. Until that store exists, the client keeps them in the
+  browser.
 - **Logout is separated from the rest**, by a rule and by position. It is the
   one item in the menu that cannot be undone by clicking it again.
 
@@ -461,7 +509,7 @@ The card is the same at every tier. What changes is how many sit side by side:
 | **columns** | 4 | 3 | 2 | 1 |
 | **card** | box | box | box | **row** — job and count stacked, full width |
 | **header** | *Signed in as …* | same | same | same |
-| **reaching Home** | the logo | the logo | the logo, in the sheet | the logo, in the *More* sheet |
+| **reaching Home** | the logo | the logo | the logo, in the sheet | the logo, in the sheet |
 
 Four things about it are worth the words:
 
@@ -475,9 +523,8 @@ Four things about it are worth the words:
   same type size, which is the tier rule doing its job — the layout gives way,
   the type does not.
 - **Home needs no new control at `small` and `phone`.** The logo is already the
-  first thing in the sheet the hamburger and *More* open, and the logo
-  navigates Home at every tier. Not a fifth bottom tab, which would cost an
-  entry its slot (§3).
+  first thing in the sheet ☰ opens, and the logo navigates Home at every
+  tier.
 - **The header is *Signed in as …*, not *Home*.** Library desk machines are
   shared and stay logged in; whose session this is, is the one genuinely useful
   thing a landing page can say, and it is otherwise buried in the user menu

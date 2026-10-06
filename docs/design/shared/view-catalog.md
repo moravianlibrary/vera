@@ -379,6 +379,7 @@ and the proposal custodies they are in, directly or via a group.
 | **Users** | roles **and how**; how they sign in (each linked identity: instance, external id, last login); groups; category custody, proposal custody and projects, directly or via which group; every permission with the role it comes from. A user with no role says *No access yet*, and the header counts them |
 | **Groups** | members, the categories, proposal custodies and projects it holds, and *adding somebody here gives them …* — never a role |
 | **Proposal custodies** | members, direct or via a group, each with what they can do (*decides*, *sees only*, *no role reaches it*); the Custody rules that name it; open proposals. The fallback is marked and cannot be deleted |
+| **Shared watchlists** | the view, the filter, the audience (everyone, or groups and roles) and how many people it reaches; *Share…*, *Rename…*, *Edit filter*, *Delete…* under `watchlist.manage_shared` ([[filtering]] §4.5). Added 2026-10-06; they sit in the third column, beside groups and custodies |
 
 **Users come from Identity plugins** ([[identity]]): somebody with an
 institutional account appears the first time they log in. The page creates
@@ -398,6 +399,10 @@ the same for responsibility.
 **Proposal custody is edited here** (`access.manage`): the custodies, their
 names and members, and the *fallback* custody's members. Which proposals are
 in each is a Custody rule's answer, edited on Plugins.
+
+**Roles, groups and users each carry a *Watchlists* card**: shared with this
+role, shared with this group, and what this person sees. Selecting a role or
+a group lights up the shared watchlists it reaches, like any other link.
 
 The **Groups** index shows what membership confers, so the consequence of adding
 somebody is visible while adding them rather than discoverable later.

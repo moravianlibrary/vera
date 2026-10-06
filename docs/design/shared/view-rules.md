@@ -58,7 +58,7 @@ worth the point.
 
 | Element | Points |
 |---------|--------|
-| navigation: expanded sidebar / icon rail / bottom tabs / hamburger only | 4 / 2 / 3 / 1 |
+| navigation: expanded sidebar / icon rail / ☰ only | 4 / 2 / 1 |
 | filtering: docked rail / horizontal bar / button + chips | 5 / 3 / 1 |
 | search field (visible) / behind an icon | 1 / 0.5 |
 | overview: full chart (legend + axis) / compact bar / collapsed | 3 each / 1 each / 0.5 total |
@@ -150,7 +150,9 @@ What the budgets forced out, and why each was the right thing to lose:
 - **phone chrome** — the hamburger and the segmented role switcher both went.
   The bottom tab bar's *More* already opened the same drawer, so the hamburger
   was a second section-nav mechanism on the smallest screen; the role switcher
-  moved onto the title as a dropdown.
+  moved onto the title as a dropdown. *Reversed 2026-10-06: the bottom tabs
+  went instead, and ☰ before the title is the phone's navigation
+  ([[navigation]] §3).*
 - **large Digitization shows two charts, not three.** That view carries the
   *Generate List* CTA, and at 26 base the chrome has no room for it. *By status*
   is the chart a batch decision leans on least, so it goes. This one only
@@ -168,6 +170,36 @@ is the expected steady state — the budget is meant to be spent, not hoarded.
 > themselves have not changed. It costs **notebook / Validator** its slack: at
 > 17 of 18 it has room for one more point of chrome and no more, and it is the
 > variant to re-measure first when the views are rebuilt.
+
+### 1.5 Layout per tier
+
+Decided 2026-10-06. What the display decides, and what the room decides.
+
+- **The tier decides** the navigation ([[navigation]] §3), whether the detail
+  docks, the dialog's form, the action cap (§5 rule 2) and the filter depth (§2).
+- **The room decides** a list's columns and a pane's fact and tile columns:
+  the width of the list or pane itself, which also changes when the sidebar or
+  the detail opens. A list is a table at **42rem** and up, and stacked cards
+  below.
+
+| | large | notebook | small | phone |
+|---|---|---|---|---|
+| master–detail | docked, half and half | docked | **docked**, as in the demos | the detail is a full-screen sheet over the list |
+| list in master–detail | table | table with the rail; **cards with the sidebar expanded** | cards | cards |
+| dialogs | centred, 36rem (wide 56rem) | same | same | **full-screen sheet**, head and foot fixed |
+| header actions | top right | top right | top right, ☰ before the title | top right, ☰ before the title; one primary and `…` |
+| fixed at the bottom | — | — | — | **nothing**: no tabs, no action bar |
+| root size | **15px** | 16px | 16px | 16px |
+
+- **Docked from 768px.** The detail docks across all of `small`, not only
+  from 1024px.
+- **Cards at notebook with the sidebar expanded.** The list's half falls
+  under 42rem, so it shows stacked cards. The threshold was left where it is,
+  not lowered to keep the table.
+- **The phone's dialog is a sheet** because the long forms (Propose, the hook
+  editor) and the on-screen keyboard do not fit a centred box at 393px.
+- **Gestures on the phone** are [[navigation]] §3.1: swipe between entries on
+  a page and between records on an open record, and Back closes.
 
 ---
 

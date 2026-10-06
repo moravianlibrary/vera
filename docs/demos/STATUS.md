@@ -2,7 +2,7 @@
 
 A running record, not a plan: what has been built, which decisions to trust,
 which documents have fallen behind them, and the order the work goes in.
-Update it when something is decided or finished. Last updated 2026-10-01.
+Update it when something is decided or finished. Last updated 2026-10-06.
 
 ---
 
@@ -72,6 +72,41 @@ When sources disagree:
 ## Decisions to trust
 
 Each is settled. It is not reopened unless the user reopens it.
+
+**From the component pass, 2026-10-06.** The user's decisions, carried into
+`navigation.md` §3, §3.1, §5, §7 and §8.4, `view-rules.md` §1.2 and §1.5,
+`filtering.md` §4 and §5, `permissions.md` and `view-catalog.md` Users &
+Groups. The demos do not show them yet.
+- **No bottom tabs on the phone.** ☰ before the title opens the sidebar sheet,
+  as at small. The page's actions are at the top right. Nothing is fixed at
+  the bottom.
+- **Phone gestures:**
+  - on a page with nothing open, swipe ← → moves to the next or previous
+    sidebar entry;
+  - on an open record, swipe ← → moves to the next or previous record;
+  - Back (the system's, the ‹, or a swipe down on the sheet's head) closes
+    what is open;
+  - long-press starts picking.
+  Neither swipe starts at the screen's edges, which belong to the system's
+  Back.
+- **Master–detail docks across all of small** (from 768px), as the demos
+  draw it. The detail is a sheet only on the phone.
+- **A list is a table at 42rem of its own width.** At notebook with the
+  sidebar expanded it shows cards, and that stays.
+- **Dialogs are full-screen sheets on the phone.** Large keeps its 15px root.
+- **Preferences is a page** (`/preferences`, from the user menu): Watchlists
+  (the planned `/watchlists` page moves here, with *Shared with me* and
+  *Hide*), Display (the sidebar, each view's opening tab, density, dates) and
+  Account. Settings are kept per person on the server.
+- **Shared watchlists have an audience:** everyone, or groups and roles.
+  - Only `watchlist.manage_shared` shares; a group's members get no special
+    right.
+  - Sharing that reaches someone who keeps the same filter warns rather than
+    refuses.
+  - *Seen*, the badge, the order and *hidden* are per person, so shared
+    watchlists badge too.
+  - Shared watchlists are listed in Users & Groups, with a *Watchlists* card
+    on roles, groups and users.
 
 **From the outside review, 2026-09-26.** The user's decisions. **Carried into
 the design docs on 2026-09-30**: concepts, relationships, permissions,

@@ -292,7 +292,7 @@ shipped roles in §4 actually use.
 
 | Permission | Scopes | |
 |---|---|---|
-| `watchlist.manage_shared` | `any ✱` | create, change, rename and delete **shared** watchlists ([[filtering]] §4.5). A person's own watchlists need only `watch` (§2.1); seeing a shared one needs only the view |
+| `watchlist.manage_shared` | `any ✱` | create, change, rename and delete **shared** watchlists and set their audience: everyone, groups or roles ([[filtering]] §4.5). The only way to share: a group's members get no right to share with their own group (decided 2026-10-06). A person's own watchlists need only `watch` (§2.1); seeing a shared one needs only the view and being in its audience |
 
 ### Administration
 
