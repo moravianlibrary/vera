@@ -18,6 +18,14 @@ reference: look a part up there by its section, never read them whole.
   subject); what was built and what was left out, with why; decisions taken
   and questions only the user can answer; shared parts added or extended; the
   checks and their result; where the screenshots are.
+- The report ends with the prompt for the next session, in a code block ready
+  to paste after the compaction:
+  ```
+  Read frontend/brief.md, then do step <n> of frontend/plan.md
+  (<the part, e.g. "4.4–4.5, after the session break">).
+  Carried from the last session: <open questions the user answered, shared
+  parts added, anything the brief does not say yet; "nothing" if so>.
+  ```
 
 **Never:**
 - read `app/`, `client/` or `webclient/` for design, or import from them;
