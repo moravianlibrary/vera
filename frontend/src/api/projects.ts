@@ -42,6 +42,9 @@ export const projectRowSchema = z.object({
   period: projectPeriodSchema,
   // 0 to 1, the share of the period gone by today.
   timeElapsed: z.number().min(0).max(1),
+  // Today counts as left; both are 0 once past.
+  daysToStart: count,
+  daysLeft: count,
   // Where planned and delivered would be at an even pace; only while an Approved project runs.
   evenPace: z.number().min(0).max(1).nullable(),
   verdict: paceVerdictSchema.nullable(),

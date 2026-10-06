@@ -25,6 +25,7 @@ import { listStateOf } from "@/domain/lists";
 import type { Permission } from "@/domain/permissions";
 import { can } from "@/domain/permissions";
 import {
+  daysUntil,
   evenPaceOf,
   paceVerdictOf,
   periodOf,
@@ -151,6 +152,8 @@ function rowOf(project: Project): ProjectRow {
     project,
     period: periodOf(project, today()),
     timeElapsed: timeElapsedOf(project, today()),
+    daysToStart: Math.max(0, daysUntil(project.startsOn, today())),
+    daysLeft: Math.max(0, daysUntil(project.endsOn, today()) + 1),
     evenPace: evenPaceOf(project, today()),
     verdict: paceVerdictOf({
       project,

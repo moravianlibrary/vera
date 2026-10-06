@@ -42,6 +42,11 @@ export function timeElapsedOf(
   return Math.min(1, Math.max(0, elapsed));
 }
 
+// Whole days from today to the date; negative once it is past.
+export function daysUntil(calendarDate: string, today: string): number {
+  return Math.round((millisecondsOf(calendarDate) - millisecondsOf(today)) / dayInMilliseconds);
+}
+
 export interface PaceInput {
   project: Pick<Project, "state" | "startsOn" | "endsOn" | "targetPages">;
   fundedCount: number;

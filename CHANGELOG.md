@@ -32,6 +32,14 @@ All notable changes to this project are documented here.
   returns the members to the pool, or to Enqueued where a gate now holds them, and is never
   offered on a Done list. Per item, a ⋯ offers *Could not be digitized…* with a message every
   asker reads, *Cancel…* with a reason, and taking it off in the editor.
+- Projects: a card for each project that is proposed, running or about to start, with its
+  decision and period as two badges, its pace once approved (*On pace*, *Behind pace*), who
+  manages it, what it is for, and three bars against its target: time gone, pages planned and
+  pages delivered, marked where an even pace would be by today. Across the foot, what waits on
+  it: the documents pending in a proposed project and how many have a copy, its lists, its
+  members and groups, and what is approved but on no list yet. The ended projects and the
+  rejected ones sit in tables below. Staff see the projects they are on, directly or through a
+  group.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import type { PaceInput } from "@/domain/projects";
-import { evenPaceOf, paceVerdictOf, periodOf, timeElapsedOf } from "@/domain/projects";
+import { daysUntil, evenPaceOf, paceVerdictOf, periodOf, timeElapsedOf } from "@/domain/projects";
 
 const year = { startsOn: "2026-01-01", endsOn: "2026-12-31" };
 
@@ -20,6 +20,13 @@ describe("timeElapsedOf", () => {
     expect(timeElapsedOf(year, "2026-01-01")).toBe(0);
     expect(timeElapsedOf(year, "2026-07-02")).toBeCloseTo(182 / 365);
     expect(timeElapsedOf(year, "2028-01-01")).toBe(1);
+  });
+});
+
+describe("daysUntil", () => {
+  it("counts whole days, negative once past", () => {
+    expect(daysUntil("2026-07-02", "2026-06-25")).toBe(7);
+    expect(daysUntil("2026-06-20", "2026-06-25")).toBe(-5);
   });
 });
 

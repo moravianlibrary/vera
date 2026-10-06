@@ -11,6 +11,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { DocumentsPage } from "@/features/documents/documents-page";
 import { ListEditorPage } from "@/features/lists/list-editor-page";
 import { ListsPage } from "@/features/lists/lists-page";
+import { ProjectsPage } from "@/features/projects/projects-page";
 import { ProposalsPage } from "@/features/proposals/proposals-page";
 import { ValidationsPage } from "@/features/validations/validations-page";
 import { useSessionQuery } from "@/hooks/use-session-query";
@@ -37,6 +38,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <ValidationsPage />;
     case "lists":
       return <ListsPage />;
+    case "projects":
+      return <ProjectsPage />;
     default:
       return <Placeholder title={label} />;
   }
