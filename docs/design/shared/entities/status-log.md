@@ -74,7 +74,7 @@ are the ones other documents explicitly promised:
 |---------|--------|
 | **request** | created · approval requested (*approve now*) · decision changed (approved / approved as rescan / denied / withdrawn / duplicate) · held: a copy exists · existing copy observed · started tracking an iteration · stopped tracking |
 | **iteration** | ingested · ingest failed · restriction set (by a rule) · restriction cleared (the rule no longer finds it) · restriction overruled · validation verdict (approve / deny / revoke) · **cancelled** · **could not be digitized** · **resumed** · added to list · removed from list · flagged on its list (a blocker appeared) · digitized (its list marked Done) · published · published link changed · category, priority or project changed |
-| **document** | catalog relinked · unit ID changed · property value changed ([[document-properties]] §3) · registry state changed ([[registry-status]]) |
+| **document** | unit ID changed · property value changed ([[document-properties]] §3) · registry state changed ([[registry-status]]) |
 | **list** | created · generated (generator, version, intention, mix revision, allocation) · dates changed · marked Done · deleted |
 | **project** | created · details or description changed · dates or target changed · member added or removed · manager changed · deleted (only while empty) · approved (with its priority, what it approved and what it skipped) · rejected (with its reason) |
 | **access** | proposal custody created · renamed · deleted · member (user or group) added or removed · a user's role granted or removed (by hand, or by the IdP mapping) · a Custody plugin's rule changed, with the re-run over open proposals it started ([[proposal-custody]]) |

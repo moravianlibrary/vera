@@ -1,7 +1,6 @@
 // The acts on a document's record in its pane (docs/demos/shared/page-documents.js actionsOf):
-// More ▾ holds Relink catalog record, Reclassify and Set where it is available, each a form
-// dialog (component-interfaces.md §6.4) over its own endpoint; Relink and Reclassify are shared with
-// Validations (components/iteration-dialogs.tsx). Each is offered only where the
+// More ▾ holds Reclassify and Set where it is available, each a form dialog
+// (component-interfaces.md §6.4) over its own endpoint; Reclassify is shared with Validations (components/iteration-dialogs.tsx). Each is offered only where the
 // caller's grant reaches the current iteration's category and its state allows it; the server
 // decides again (view-rules.md §5.1).
 // TODO(rrandiak): Ask for this too and Withdraw beside the menu; Edit descriptive metadata,
@@ -15,7 +14,7 @@ import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import { Field } from "@/components/classification-fields";
 import { FormDialog } from "@/components/dialogs/form-dialog";
-import { FieldError, ReclassifyDialog, RelinkDialog } from "@/components/iteration-dialogs";
+import { FieldError, ReclassifyDialog } from "@/components/iteration-dialogs";
 import { Input } from "@/components/ui/input";
 import type { DocumentRecord } from "@/domain/documents";
 import { currentIterationOf } from "@/domain/documents";
@@ -30,7 +29,7 @@ import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 // A change to an iteration shows in the list, the record and what each watchlist counts.
 const iterationInvalidations = [documentsQueryKey, watchlistsQueryKey];
 
-type OpenDialog = "relink" | "reclassify" | "publish" | null;
+type OpenDialog = "reclassify" | "publish" | null;
 
 interface DocumentActionsProps {
   record: DocumentRecord;
@@ -53,15 +52,6 @@ export function DocumentActions({ record, session, className }: DocumentActionsP
   const { title } = record.document;
 
   const actions: ViewAction[] = [];
-  if (mayDo("iteration.relink")) {
-    actions.push({
-      id: "relink",
-      label: "Relink catalog record…",
-      isInMenu: true,
-      onSelect: open("relink"),
-    });
-  }
-
   if (mayDo("iteration.classify") && isReclassifiable(iteration)) {
     actions.push({
       id: "reclassify",
@@ -87,18 +77,6 @@ export function DocumentActions({ record, session, className }: DocumentActionsP
     <>
       <ActionBar actions={actions} menuLabel="More" className={className} />
 
-      <RelinkDialog
-        key={`relink-${record.document.id}-${record.document.catalogId}-${record.document.unit?.value}`}
-        isOpen={openDialog === "relink"}
-        onClose={close}
-        title={title}
-        iteration={iteration}
-        invalidates={iterationInvalidations}
-        current={{
-          catalogId: record.document.catalogId,
-          unit: record.document.unit?.value ?? "",
-        }}
-      />
       <ReclassifyDialog
         key={`reclassify-${iteration.id}-${iteration.categoryId}-${iteration.priority}`}
         isOpen={openDialog === "reclassify"}

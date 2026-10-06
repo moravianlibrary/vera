@@ -1,6 +1,5 @@
 // The form dialogs that change an iteration from more than one pane (component-interfaces.md
-// §6.4): Relink catalog record (Documents' More ▾, and the fix for a missing record in
-// Validations) and Reclassify (More ▾ in both, flows.md V13). Each runs its own endpoint, says a
+// §6.4): Reclassify (More ▾ in Documents and Validations, flows.md V13). Each runs its own endpoint, says a
 // refusal in the dialog and refetches what the caller names, since each view shows the change in
 // its own lists.
 // TODO(rrandiak): labels move to i18n.
@@ -9,16 +8,10 @@ import type { QueryKey } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useId } from "react";
 import { z } from "zod";
-import type {
-  Reclassification,
-  ReclassificationResult,
-  Relink,
-  RelinkResult,
-} from "@/api/iterations";
-import { reclassifyIteration, relinkIteration } from "@/api/iterations";
+import type { Reclassification, ReclassificationResult } from "@/api/iterations";
+import { reclassifyIteration } from "@/api/iterations";
 import { CategorySelect, Field, PrioritySelect } from "@/components/classification-fields";
 import { FormDialog } from "@/components/dialogs/form-dialog";
-import { Input } from "@/components/ui/input";
 import type { Iteration, Priority, Session } from "@/domain/entities";
 import { prioritySchema } from "@/domain/entities";
 import { scopeOfIteration } from "@/domain/iterations";
@@ -36,74 +29,6 @@ interface IterationDialogProps<Result> {
   invalidates: readonly QueryKey[];
   // Once it is done, before the dialog closes.
   onDone?: (result: Result) => void;
-}
-
-// ---------------------------------------------------------------- relink
-
-const relinkFormSchema = z.object({
-  catalogId: z.string().trim().min(1, "Enter the catalog ID"),
-  unit: z.string().trim(),
-});
-export type RelinkForm = z.infer<typeof relinkFormSchema>;
-
-export function RelinkDialog({
-  isOpen,
-  onClose,
-  title,
-  iteration,
-  invalidates,
-  onDone,
-  current,
-}: IterationDialogProps<RelinkResult> & { current: RelinkForm }) {
-  const id = useId();
-  const relink = useActionMutation({
-    call: (change: Relink) => relinkIteration(iteration.id, change),
-    invalidates,
-    refusalTexts: {
-      409: "Another document in VERA is already that record.",
-      422: "The catalog does not know that record, or it needs one of its volumes or issues.",
-    },
-  });
-
-  return (
-    <FormDialog
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Relink — ${title}`}
-      description="Link the document to another catalog record."
-      schema={relinkFormSchema}
-      defaultValues={current}
-      submitLabel="Relink"
-      onSubmit={async ({ catalogId, unit }) => {
-        const result = await relink.run({ catalogId, unit: unit === "" ? null : unit });
-        if (result.isDone) {
-          onDone?.(result.value);
-        }
-
-        return result;
-      }}
-      render={(form) => (
-        <>
-          <Field id={`${id}-catalog`} label="Catalog ID" hint="the record in the catalog">
-            <Input
-              id={`${id}-catalog`}
-              className="font-mono"
-              placeholder="e.g. MZK01-001502234"
-              {...form.register("catalogId")}
-            />
-          </Field>
-          <FieldError message={form.formState.errors.catalogId?.message} />
-          <Field id={`${id}-unit`} label="Volume or issue" hint="for a record of several">
-            <Input id={`${id}-unit`} placeholder="e.g. roč. 12" {...form.register("unit")} />
-          </Field>
-          <p className="text-xs text-muted-foreground">
-            The document stays what it is in VERA, with its asks and its history; the history keeps
-            the record it was linked to. The checks run again on the new record.
-          </p>
-        </>
-      )}
-    />
-  );
 }
 
 // ---------------------------------------------------------------- reclassify

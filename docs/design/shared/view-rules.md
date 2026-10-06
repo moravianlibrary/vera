@@ -380,7 +380,6 @@ Two things follow that views depend on:
 | Watch | ✅ | ✅ | ✅ | ✅ | ✅ | any |
 | Propose digitization | ✅ | ✅ | ✅ | ✅ | ✅ | not Forbidden |
 | Edit descriptive fields | | ✅ | ✅ | ✅ | ✅ | not Denied / Forbidden |
-| Link / relink catalog record | | ✅ | ✅ | | ✅ | any |
 | Set category / priority | | | ✅ | ✅ | ✅ | any |
 | Approve (override issues) | | | ✅ | | | Review Needed |
 | Revoke approval | | | ✅ | | | Approved |
@@ -479,7 +478,7 @@ search:
 actions:
   primary:  [Approve]
   secondary: [Deny, Revoke]
-  overflow: [Edit, Relink catalog record, Cancel]   # §5 rule 3 — reason required
+  overflow: [Edit, Cancel]   # §5 rule 3 — reason required
   bulk:     []
 
 columns:                     # which columns survive, per tier — a decision,

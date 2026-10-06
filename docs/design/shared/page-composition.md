@@ -87,7 +87,6 @@ everything downstream.
 |---------|-------|-------|-------|
 | index | `/documents` | staff+ | |
 | iteration detail | `/documents/:id` | staff+ | docked at `large`; every property, every registry, full log |
-| relink catalog record | — | staff+ | dialog |
 
 The detail is where [[document-properties]] §7 pays off: no budget, every
 readable property with its source and tier, every registry with its age.

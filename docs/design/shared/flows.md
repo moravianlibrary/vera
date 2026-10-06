@@ -526,7 +526,7 @@ flowchart LR
   classDef st fill:#dbeafe,stroke:#2563eb
   classDef sys fill:#f1f5f9,stroke:#94a3b8
   A[Ingest: identifier resolves to nothing]:::sys --> B["Review needed: no catalog record<br/>reader: Being checked"]:::st
-  B --> C(["Validations · Relink… · iteration.relink"])
+  B --> C(["Repaired in the catalog ·<br/>Validations · Recheck"])
   C --> D[Re-check: the defect is gone]:::sys
   D --> E[[V1]]
 ```
@@ -552,13 +552,15 @@ flowchart LR
 
 ### V2
 
-**A defect, fixed in place.** A fix needs no verdict.
+**A defect, repaired.** A repair needs no verdict. The record is repaired in
+the catalog and *Recheck* pulls it again; a page count is entered in VERA and
+runs the re-check itself (decided 2026-10-06).
 
 ```mermaid
 flowchart LR
   classDef st fill:#dbeafe,stroke:#2563eb
   classDef sys fill:#f1f5f9,stroke:#94a3b8
-  A["Review needed<br/>reader: Being checked"]:::st --> B(["Validations · fix in place:<br/>Enter page count… · Correct 260$c… · Relink…"])
+  A["Review needed<br/>reader: Being checked"]:::st --> B(["Repaired in the catalog, then Recheck ·<br/>or Enter page count…"])
   B --> C[Checks run again]:::sys
   C -->|defect gone| D[[V1]]
   C -->|still there, or another| A
@@ -600,7 +602,7 @@ flowchart LR
   classDef sys fill:#f1f5f9,stroke:#94a3b8
   A["Review needed"]:::st --> B(["Validations · Deny…: pick the substantial ones,<br/>text every asker reads · validation.deny"])
   B --> C["Denied in review<br/>reader: On hold"]:::st
-  C --> D(["Fix: page count, edit, relink"])
+  C --> D(["Repair in the catalog, then Recheck ·<br/>or enter the page count"])
   D --> E[Re-check: that defect is gone]:::sys
   E --> F[[V1]]
 ```

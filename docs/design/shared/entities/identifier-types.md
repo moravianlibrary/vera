@@ -21,7 +21,7 @@ Identifiers are the primary way documents enter VERA. Each proposal contains one
 - Resolution is asynchronous and happens during `progress = Enqueued`
   ([[status-model]] §2). A resolution that cannot complete is an ingest
   failure; one that completes and finds nothing is a *no catalog record*
-  defect, fixed by relinking.
+  defect, repaired in the catalog and picked up by a re-check.
 - A single document may carry more than one identifier.
 
 > `TODO(Tenancy):` these four types are national or international registries and

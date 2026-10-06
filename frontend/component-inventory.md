@@ -109,7 +109,7 @@ columns. Generalize before the third copy (Validations).
 | RecordHeading, AskersCard, CopiesCard, CatalogCard | ✅ `record-cards.tsx` | Documents, Proposals, Validations |
 | **HistoryCard** for any subject | ♻️ | today document only. Projects, lists, categories, access (status-log `access` subject), and Hooks deliveries all have a history |
 | **PaneState**: none selected / gone / outcome | ♻️ from `proposals-page.tsx` | "Select a …", "no longer here", and the green *Decided* outcome with its link onwards. Validations needs the same thing after Accept |
-| **ActionBar + More ▾** | 🆕 | the primary actions plus a menu of the rest, each gated by permission and record (Documents: Relink, Reclassify, Set where it is available; Validations: Reclassify, Cancel; Lists: Cancel, Could not be digitized) |
+| **ActionBar + More ▾** | 🆕 | the primary actions plus a menu of the rest, each gated by permission and record (Documents: Reclassify, Set where it is available; Validations: Reclassify, Cancel; Lists: Cancel, Could not be digitized) |
 | **MembersCard** | 🆕 | people and groups with a role tag (manager, member, *via group*). Projects, groups, custodies |
 | **Defect card** with fix in place | 🆕 | Validations: per defect its texts and *Enter page count…* / *Correct 260$c…* / *Relink…* |
 | **Provenance tags** | 🆕 | *direct*, *via Periodicals Curators*, *mapped by MZK Keycloak*. Users & Groups, Categories custody |

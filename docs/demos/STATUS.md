@@ -73,6 +73,32 @@ When sources disagree:
 
 Each is settled. It is not reopened unless the user reopens it.
 
+**From building the frontend, 2026-10-06.** The user's decisions, carried
+into `status-model.md` §2, §2.5 and §4, `document-identity.md`, `flows.md`,
+`view-map.md` and the permission tables. The demos do not show them yet.
+- **No relink.** A document's catalog ID never changes, and `iteration.relink`
+  is gone. A record repaired in the catalog is picked up by a re-check. A
+  record that no longer exists upstream sets the cancellation cause
+  `RecordGone`, shown as *Record no longer exists*: the asker asks for the new
+  record, which is a new document.
+- **No fixes in VERA for defects.** The Validations pane links to the catalog
+  record; the curator repairs it there and presses **Recheck**, beside Accept
+  and Deny, which pulls the record again and runs the checks. The page count
+  is the one value entered in VERA, and entering it runs the re-check.
+- **Accepting one by one** is a pick of the outstanding defects, all ticked to
+  begin with, shown only when there is more than one.
+- **One Defects card**, in sections divided by a rule: outstanding (with
+  Accept, Deny… and Recheck), accepted (with who, when and Revoke) and denied.
+- **Revoke is a verdict row**, `Revoked` over the keys it takes back, so the
+  verdict table stays append-only.
+- **Forbidden is a Yes / No filter**, in Documents (renamed from Restricted)
+  and in Validations, apart from the review state.
+- **Validations groups** by category and by defect.
+- **No Advanced filter.** "+ Add filter" offers every field, ranges included.
+  A field added reads *any* until a value is chosen. A date offers *Last 7
+  days*, *Last 14 days*, *Last 30 days*, *This month* or a range; a count
+  offers a range.
+
 **From the component pass, 2026-10-06.** The user's decisions, carried into
 `navigation.md` §3, §3.1, §5, §7 and §8.4, `view-rules.md` §1.2 and §1.5,
 `filtering.md` §4 and §5, `permissions.md` and `view-catalog.md` Users &

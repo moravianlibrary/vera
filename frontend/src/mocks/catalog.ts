@@ -1,6 +1,6 @@
 // The mock catalog: the records it knows beyond VERA (fixtures/catalog.ts), and every document
 // VERA already holds, which answers for its own catalog ID, units and barcodes. Proposing checks
-// an identifier against it, and relinking checks the record a document is moved to.
+// an identifier against it.
 
 import type { Document } from "@/domain/entities";
 import { database } from "@/mocks/database";

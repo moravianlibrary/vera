@@ -1,5 +1,5 @@
-// The Documents pane's More ▾ end to end against the mock server over HTTP: relinking a document
-// to another catalog record, reclassifying its iteration and setting where its scan is available,
+// The Documents pane's More ▾ end to end against the mock server over HTTP: reclassifying a
+// document's iteration and setting where its scan is available,
 // each within the caller's grant and the iteration's state. Each changes the mock's state, so
 // each test acts on its own iteration.
 
@@ -7,7 +7,7 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { findDocument } from "@/api/documents";
 import { ApiError } from "@/api/http";
-import { publishIteration, reclassifyIteration, relinkIteration } from "@/api/iterations";
+import { publishIteration, reclassifyIteration } from "@/api/iterations";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
 
@@ -34,54 +34,6 @@ async function currentIterationOf(documentId: string) {
   const detail = await findDocument(documentId);
   return detail?.record.iterations.at(-1);
 }
-
-describe("relinking", () => {
-  it("moves a document to the record the catalog knows and clears its missing-record defect", async () => {
-    signInAs("staff");
-
-    const result = await relinkIteration("IT19", { catalogId: "MZK01-001502234", unit: "roč. 12" });
-    const detail = await findDocument("D35");
-
-    expect(result.catalogId).toBe("MZK01-001502234");
-    expect(detail?.record.document.catalogId).toBe("MZK01-001502234");
-    expect(detail?.record.document.id).toBe("D35"); // relinked, not renumbered
-    expect(detail?.record.iterations.at(-1)?.defects).toEqual([]);
-    expect(detail?.log[0]?.event).toBe("Relinked");
-  });
-
-  it("refuses a record the catalog does not know, or one without its volume", async () => {
-    signInAs("staff");
-
-    expect(
-      await statusOf(relinkIteration("IT2", { catalogId: "MZK09-999999999", unit: null })),
-    ).toBe(422);
-    expect(
-      await statusOf(relinkIteration("IT2", { catalogId: "MZK01-001277001", unit: null })),
-    ).toBe(422); // a periodical's record needs its volume
-  });
-
-  it("refuses a record another document already is", async () => {
-    signInAs("staff");
-    const taken = (await findDocument("D1"))?.record.document;
-
-    const status = await statusOf(
-      relinkIteration("IT2", {
-        catalogId: taken?.catalogId ?? "",
-        unit: taken?.unit?.value ?? null,
-      }),
-    );
-
-    expect(status).toBe(409); // catalog ID and unit are unique
-  });
-
-  it("is not offered to a requester at all", async () => {
-    signInAs("reader");
-
-    expect(
-      await statusOf(relinkIteration("IT19", { catalogId: "MZK01-001502234", unit: null })),
-    ).toBe(404);
-  });
-});
 
 describe("reclassifying", () => {
   it("changes category and priority inside the curator's custody", async () => {

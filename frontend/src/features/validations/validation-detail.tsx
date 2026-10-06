@@ -23,7 +23,6 @@ import {
   StatTiles,
 } from "@/components/detail-card";
 import { MessageDialog } from "@/components/dialogs/message-dialog";
-import { RelinkDialog } from "@/components/iteration-dialogs";
 import { visibleNavigation } from "@/components/layout/navigation";
 import type { Outcome } from "@/components/pane-state";
 import { CatalogCard, HistoryCard, RecordHeading } from "@/components/record-cards";
@@ -42,10 +41,8 @@ import {
   fixOf,
   fixPermissionOf,
   isFoundAfterScan,
-  recordSubject,
 } from "@/domain/validations";
 import { DefectCard } from "@/features/validations/defect-card";
-import { validationInvalidations } from "@/features/validations/use-validations-query";
 import {
   ForbiddenCard,
   RevokeButton,
@@ -77,7 +74,6 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
   const { data: users = [] } = useUsersQuery();
   const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
   const documents = visibleNavigation(session).find((entry) => entry.id === "documents");
-  const [isRelinking, setIsRelinking] = useState(false);
   const [isMessaging, setIsMessaging] = useState(false);
   const { data: messageChannels = [] } = useMessageChannelsQuery();
   // What the last fix found, until another item is opened.
@@ -87,7 +83,9 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
   // No fix in place once scanned: it goes to the catalog record (C10).
   const fixFor = (defect: Defect) => {
     const fix = fixOf(defect);
-    return can(session, fixPermissionOf(fix), scope) && !isFoundAfterScan(iteration) ? fix : null;
+    return fix !== null && can(session, fixPermissionOf(fix), scope) && !isFoundAfterScan(iteration)
+      ? fix
+      : null;
   };
   const next =
     documents === undefined
@@ -171,7 +169,6 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
       defect={defect}
       iteration={iteration}
       fix={fixFor(defect)}
-      onRelink={() => setIsRelinking(true)}
       onFixed={onFixed}
     />
   );
@@ -223,30 +220,6 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
         />
       </div>
 
-      <RelinkDialog
-        key={`relink-${iteration.id}-${document.catalogId}`}
-        isOpen={isRelinking}
-        onClose={() => setIsRelinking(false)}
-        title={document.title}
-        iteration={iteration}
-        invalidates={validationInvalidations}
-        current={{ catalogId: document.catalogId, unit: document.unit?.value ?? "" }}
-        onDone={({ title }) => {
-          // The re-check finds the record now, so only the other defects can keep it here.
-          if (iteration.defects.some((defect) => defect.subject !== recordSubject)) {
-            return;
-          }
-
-          onLeft({
-            iterationId: iteration.id,
-            title,
-            tone: "green",
-            heading: "Relinked",
-            summary: "The catalog record is found now, and nothing is left to rule on",
-            next,
-          });
-        }}
-      />
       {more.dialogs}
       <MessageDialog
         isOpen={isMessaging}

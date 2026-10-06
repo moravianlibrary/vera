@@ -84,19 +84,19 @@ export function isFoundAfterScan(iteration: Iteration): boolean {
 
 // ---------------------------------------------------------------- fixes in place
 
-// The staff edit that makes a defect go away, by what the defect is about: a missing record is
-// relinked, a page count is counted, any other field is corrected in VERA.
+// The staff edit that makes a defect go away, by what the defect is about: a page count is
+// counted, any other field is corrected in VERA. A missing record has none: it is repaired in the
+// catalog (decided 2026-10-06).
 export type DefectFix =
-  | { readonly kind: "relink" }
   | { readonly kind: "pageCount" }
   | { readonly kind: "field"; readonly subject: string };
 
 export const recordSubject = "record";
 export const pagesSubject = "pages";
 
-export function fixOf(defect: Defect): DefectFix {
+export function fixOf(defect: Defect): DefectFix | null {
   if (defect.subject === recordSubject) {
-    return { kind: "relink" };
+    return null;
   }
 
   if (defect.subject === pagesSubject) {
@@ -106,8 +106,8 @@ export function fixOf(defect: Defect): DefectFix {
   return { kind: "field", subject: defect.subject };
 }
 
-export function fixPermissionOf(fix: DefectFix): Permission {
-  return fix.kind === "relink" ? "iteration.relink" : "iteration.edit_descriptive";
+export function fixPermissionOf(_fix: DefectFix): Permission {
+  return "iteration.edit_descriptive";
 }
 
 // A defect's own name, "PageCount R03".

@@ -180,7 +180,7 @@ and *Mine* as a filter.
   holding `addition.read` sees the failure text and nothing to press. A reader
   sees *being added*.
 - **per-record actions** — withdraw my own proposal (only while undecided),
-  reclassify, cancel and resume, edit descriptive metadata, relink, set the
+  reclassify, cancel and resume, edit descriptive metadata, set the
   link that publishes it (`iteration.publish`), and for an admin overrule a
   restriction — each absent without its permission. Nobody forbids by hand:
   only rules do. None of them is a queue, so none earns a view; they are
@@ -232,12 +232,13 @@ is a fact on the request ([[status-model]] §2), so neither is judged here.
   (outstanding, denied or accepted), at any progress, or a restriction.
   Opens on *Review needed*; the rest are filters
 - default filter: status = Review Needed ([[view-rules]] §4.5)
-- defects include **missing data** and **no catalog record** — the last fixed
-  by relinking
+- defects include **missing data** and **no catalog record**; each is repaired
+  in the catalog and picked up by *Recheck* — only a page count is entered
+  here (decided 2026-10-06)
 - decisions: accept (one defect or all), revoke, deny *(reason)*. No forbid —
   only rules forbid; the *Forbidden* filter shows those items, and a curator
   can message an admin
-- edits: category, priority, catalog relink, descriptive metadata
+- edits: category, priority, the page count
 - a defect found **after** digitization lands here too, shown as *Published ·
   review needed* ([[status-model]] §4)
 

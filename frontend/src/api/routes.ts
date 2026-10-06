@@ -58,14 +58,7 @@ export function verdictRoute(iterationId: string, action: VerdictAction): string
 // What may be done to an iteration from the Documents and Validations panes: each is its own
 // action, so the server checks each permission against the iteration's category (permissions.md
 // §3). A page count and a field correction are fixes in place: the checks run again after them.
-export const iterationActions = [
-  "relink",
-  "reclassify",
-  "publish",
-  "page-count",
-  "field",
-  "cancel",
-] as const;
+export const iterationActions = ["reclassify", "publish", "page-count", "field", "cancel"] as const;
 export type IterationAction = (typeof iterationActions)[number];
 
 export function iterationActionRoute(iterationId: string, action: IterationAction): string {

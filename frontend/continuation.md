@@ -92,8 +92,7 @@ The foundation is in place:
   takes every open row the batch asked for in reach but those unticked (`excludedIds`), skips
   rescans and asks still being checked, and answers with what it took and left out;
   each writes the status log. `arrangement.ts` holds the grouping and slicing both lists share.
-  `iterations.ts` relinks (the target must be in the mock catalog, `catalog.ts`, with its unit,
-  and no other document may be it; a missing-record defect clears), reclassifies (leaf
+  `iterations.ts` reclassifies (leaf
   categories, before Digitized; the answer says whether it was handed over out of the caller's
   custody) and publishes (Digitized or Published, an http(s) link), each logged.
   `additions.ts` retries a batch's failed additions (`POST /batches/:id/retry`, `addition.retry`
@@ -187,9 +186,9 @@ The foundation is in place:
   desk it is on), stat tiles and a card per part, built from `src/components/detail-card.tsx`
   and `status-note.tsx`; a requester gets their own ask, why they asked and its story in plain
   words. Beside the heading, `document-actions.tsx` puts More ▾ (`ActionBar` with `menuLabel`,
-  each action `isInMenu`): Relink catalog record, Reclassify and Set (or Change) where it is
-  available, each a `FormDialog` over `src/api/iterations.ts` (`POST /iterations/:id/relink`,
-  `/reclassify`, `/publish`), offered by `can()` against the current iteration's category
+  each action `isInMenu`): Reclassify and Set (or Change) where it is
+  available, each a `FormDialog` over `src/api/iterations.ts` (`POST /iterations/:id/reclassify`,
+  `/publish`), offered by `can()` against the current iteration's category
   (`scopeOfIteration` in `src/domain/iterations.ts`, which also says an item is reclassified
   only before Digitized and published only from it). Ask for this too and Withdraw are not
   built yet. The page URL holds the filter,
@@ -232,10 +231,10 @@ The foundation is in place:
   itself until a Plugins resource exists. Documents' *Resolve in Documents Validations* opens
   the item (`?id=`). `validation-detail.tsx` is the pane: the review note, the facts, *Outstanding
   — n* (Needed) or *Fix it* (Denied) built from `defect-card.tsx` (the texts and the fix in
-  place: an inline form for a page count or a field, *Relink…* through the shared dialog), the
+  place: an inline form for a page count or a field), the
   accepted defects with who and when, the attempt, the catalog record and the history. An act
   that takes the item out of the view reports it through `onLeft`, and the page shows it as the
-  pane's outcome. Relink and Reclassify are shared dialogs (`src/components/iteration-dialogs.tsx`,
+  pane's outcome. Reclassify is a shared dialog (`src/components/iteration-dialogs.tsx`,
   with `FieldError`), each told what to refetch (`invalidates`) and what to do once done
   (`onDone`). `validation-actions.tsx` holds the rest: *Accept it / Accept all n* with a note and *Deny…*
   (`ReasonDialog` with the defect pick in `fields`; the public text follows the pick through

@@ -29,8 +29,11 @@ matching over title + unit ID ([[view-rules]] §3, rules 6–7 and 9).
 
 ## Rules
 
-- Catalog ID is immutable. A document whose catalog record changes is relinked,
-  not renumbered, and the relink is written to the [[status-log]].
+- Catalog ID is immutable, and there is **no relink** (decided 2026-10-06). A
+  record repaired in the catalog is picked up by a re-check. A record that no
+  longer exists upstream cancels the document's work as *Record no longer
+  exists* ([[status-model]] §2.5); the asker asks for the new record, which is
+  a new document.
 - Unit ID is set once at creation and only changed by `staff` or above, because
   changing it silently repoints physical work.
 - `catalogId + unitId` is unique. Two documents for the same volume are a

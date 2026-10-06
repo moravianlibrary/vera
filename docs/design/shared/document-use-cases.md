@@ -40,7 +40,6 @@ made ([[status-model]] §2.8). An **iteration** is one attempt to digitize a
 |---|---|---|---|
 | S1 | Look up anybody's requests and documents | `request.read@any` · `iteration.read@any` | the reference job — no decisions |
 | S2 | Fix descriptive metadata | `iteration.edit_descriptive` | |
-| S3 | Relink to a different catalog record | `iteration.relink` | also the fix for a *no catalog record* defect |
 
 ## 3. Curator — within custody
 

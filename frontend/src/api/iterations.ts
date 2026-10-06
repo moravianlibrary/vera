@@ -1,5 +1,5 @@
 // What may be changed on a document's current iteration from the Documents and Validations panes:
-// move it to another catalog record, reclassify it, set where its scan is available, enter its
+// reclassify it, set where its scan is available, enter its
 // page count or correct a field (the fixes in place, after which the checks run again) and cancel
 // it. Each is its own permission, scoped by the iteration's category (permissions.md §3), and the
 // server checks it again; a pane only leaves out what the caller may not do.
@@ -11,26 +11,6 @@ import { prioritySchema, progressSchema } from "@/domain/entities";
 import { reviewStateSchema } from "@/domain/validations";
 
 const idValueSchema = z.string().trim().min(1);
-
-// ---------------------------------------------------------------- relink
-
-// The catalog record the document is moved to: the record, and the volume or issue when the
-// record has several (document-identity.md). The document keeps its own ID; the old link goes to
-// the history.
-export const relinkSchema = z.object({
-  catalogId: idValueSchema,
-  unit: z.string().trim().min(1).nullable(),
-});
-export type Relink = z.infer<typeof relinkSchema>;
-
-export const relinkResultSchema = z.object({
-  documentId: z.string(),
-  catalogId: z.string(),
-  unit: z.string().nullable(),
-  // The record's title, as the catalog names it.
-  title: z.string(),
-});
-export type RelinkResult = z.infer<typeof relinkResultSchema>;
 
 // ---------------------------------------------------------------- reclassify
 
@@ -105,10 +85,6 @@ export const cancellationResultSchema = z.object({
 export type CancellationResult = z.infer<typeof cancellationResultSchema>;
 
 // ---------------------------------------------------------------- calls
-
-export async function relinkIteration(iterationId: string, relink: Relink): Promise<RelinkResult> {
-  return postJson(iterationActionRoute(iterationId, "relink"), relink, relinkResultSchema);
-}
 
 export async function reclassifyIteration(
   iterationId: string,

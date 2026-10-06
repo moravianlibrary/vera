@@ -153,10 +153,13 @@ shortcut may make it (§2.8).
 
 **A defect** is anything that makes the metadata not good enough to digitize
 against — an estimated page count, a malformed date, missing data, and an
-identifier that resolves to **no catalog record**. The last is fixed by
-relinking (`iteration.relink`), and the re-check that follows takes it out of
-`D` on its own. It is a defect and not an ingest failure because ingest
-*finished* — it simply found nothing; an adapter that errors is
+identifier that resolves to **no catalog record**. Every defect is repaired
+where the data lives — in the catalog — and a **Recheck** pulls the record
+again and runs the checks; a page count is the one value entered in VERA, and
+entering it runs the re-check. There is no relink (decided 2026-10-06): a
+document's catalog ID never changes; a record that no longer exists at all is
+`RecordGone` (§2.5). No catalog record is a defect and not an ingest failure
+because ingest *finished* — it simply found nothing; an adapter that errors is
 `IngestFailed` (below).
 
 Same two words as *Decision*, different axis, and that is the resolution of the
@@ -184,12 +187,15 @@ one value loses what was approved the moment the checks run again.
 |--------|--|
 | `iteration_id` | |
 | `defect_keys[]` | exactly what this verdict covers |
-| `verdict` | `Approved` \| `Denied` |
+| `verdict` | `Approved` \| `Denied` \| `Revoked` |
 | `actor`, `at`, `note` | who, when, why |
 
 A curator accepts the outstanding defects **one by one, or all at once** for an
 item (decided 2026-09-26): each verdict row covers exactly the keys accepted in
-that act.
+that act. **A revocation is a row too** — `Revoked` over the keys it takes
+back — so the table stays append-only and keeps who revoked what, and when
+(decided 2026-10-06). `A` is read in order: an `Approved` row adds its keys, a
+later `Revoked` row removes them.
 
 Validation state is then a comparison of the current defect set **D** against
 the approved keys **A** and denied keys **N**:
@@ -369,6 +375,13 @@ iteration.cancellation = null
 |---------|---------|--------|
 | `Decided` | a person chose not to continue | curator, dig-curator, admin |
 | `NotDigitizable` | attempted and could not be done — not on the shelf, binding will not open, too fragile | the dig-curator, per item on its list, with a message (decided 2026-09-30) |
+| `RecordGone` | the catalog record no longer exists upstream | the catalog sync, never a person (decided 2026-10-06) |
+
+**`RecordGone` is not resumable.** A document is its catalog ID
+([[document-identity]]), so it cannot be moved to the record that replaced
+it. The asker reads that the record no longer exists and asks for the new one,
+which is a new document. It is expected almost never, which is why it is a
+cause here and not a mechanism of its own.
 
 **Why not a progress value.** If a cancelled item can be resumed, resumption
 has to land somewhere, and where depends on where it was. Writing `Cancelled`
@@ -688,6 +701,7 @@ if there is one, otherwise the progress**.
 | 3 | `decision = Pending` | Awaiting review |
 | 4 | `cancellation.cause = Decided` | Cancelled |
 | 5 | `cancellation.cause = NotDigitizable` | Could not be digitized |
+| 5a | `cancellation.cause = RecordGone` | Record no longer exists |
 | 6 | **`progress ≥ Digitized`** | the `progress` value — see below |
 | 7 | restriction set ∧ not overruled | Forbidden |
 | 8 | `validation = Denied` | Denied in review |

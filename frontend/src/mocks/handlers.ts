@@ -15,7 +15,6 @@ import {
   pageCountSchema,
   publicationSchema,
   reclassificationSchema,
-  relinkSchema,
 } from "@/api/iterations";
 import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
 import {
@@ -53,7 +52,6 @@ import {
   enterPageCount,
   publishIteration,
   reclassifyIteration,
-  relinkIteration,
 } from "@/mocks/iterations";
 import { messageChannels, prepareMessage } from "@/mocks/messages";
 import type { Outcome } from "@/mocks/mutations";
@@ -175,7 +173,6 @@ export function createHandlers(profile: MockUserProfile) {
       return HttpResponse.json(detail);
     }),
 
-    iterationAction("relink", relinkSchema, relinkIteration),
     iterationAction("reclassify", reclassificationSchema, reclassifyIteration),
     iterationAction("publish", publicationSchema, publishIteration),
     iterationAction("page-count", pageCountSchema, enterPageCount),

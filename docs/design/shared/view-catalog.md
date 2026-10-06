@@ -116,7 +116,7 @@ along, which is why it sits among the stage views without being one.
 **Controls** — search (all rules); facets: status, registry, category,
 priority, project; advanced: full, `large` + `notebook`; overview: up to 3
 charts; detail: docked at `large`, transient below; actions: *Propose*,
-*Watch*, *Relink catalog record* (staff+).
+*Watch*.
 
 **Not here**
 

@@ -1,7 +1,7 @@
 // One defect in the Validations pane (component-interfaces.md §4.5, page-validation.js
 // defectHTML): what the plugin found, in its internal words and in what askers read, and its fix
 // in place, the staff edit that makes it go away rather than a verdict that it may stay: count
-// the pages, correct the field in VERA, or relink the record. A fix runs the checks again; a
+// the pages or correct the field in VERA. A fix runs the checks again; a
 // defect they no longer find needs no verdict.
 // TODO(rrandiak): labels move to i18n.
 
@@ -27,12 +27,10 @@ interface DefectCardProps {
   iteration: Iteration;
   // The fix the caller may make here; null where they may not, or once scanned.
   fix: DefectFix | null;
-  // A missing record is fixed by relinking, in the shared dialog.
-  onRelink: () => void;
   onFixed: (defect: Defect, result: RecheckResult) => void;
 }
 
-export function DefectCard({ defect, iteration, fix, onRelink, onFixed }: DefectCardProps) {
+export function DefectCard({ defect, iteration, fix, onFixed }: DefectCardProps) {
   const [isFixing, setIsFixing] = useState(false);
 
   return (
@@ -48,17 +46,12 @@ export function DefectCard({ defect, iteration, fix, onRelink, onFixed }: Defect
       <p className="mt-1 text-xs text-muted-foreground">Askers read: “{defect.publicText}”</p>
 
       {fix !== null && !isFixing && (
-        <Button
-          size="sm"
-          variant="outline"
-          className="mt-2"
-          onClick={() => (fix.kind === "relink" ? onRelink() : setIsFixing(true))}
-        >
+        <Button size="sm" variant="outline" className="mt-2" onClick={() => setIsFixing(true)}>
           {fixLabelOf(fix)}
         </Button>
       )}
 
-      {fix !== null && fix.kind !== "relink" && isFixing && (
+      {fix !== null && isFixing && (
         <FixForm
           fix={fix}
           iteration={iteration}
@@ -75,8 +68,6 @@ export function DefectCard({ defect, iteration, fix, onRelink, onFixed }: Defect
 
 function fixLabelOf(fix: DefectFix): string {
   switch (fix.kind) {
-    case "relink":
-      return "Relink…";
     case "pageCount":
       return "Enter page count…";
     case "field":
@@ -100,7 +91,7 @@ function pageCountOf(value: string): number {
 }
 
 interface FixFormProps {
-  fix: Exclude<DefectFix, { kind: "relink" }>;
+  fix: DefectFix;
   iteration: Iteration;
   onCancel: () => void;
   onFixed: (result: RecheckResult) => void;

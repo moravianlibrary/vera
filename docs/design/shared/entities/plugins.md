@@ -235,8 +235,8 @@ sealed interface Outcome<T> {
 
 `Unavailable` keeps the previous answer standing, with its old `observed_at`
 (*published, as of 6 weeks ago, unreachable since*). `Refused` is a fact about
-the input: for a catalog adapter it is *no catalog record*, a defect fixed by
-relinking.
+the input: for a catalog adapter it is *no catalog record*, a defect repaired in
+the catalog.
 
 Kinds that run over many items take them in **batches** and return one
 `Outcome` per item, so one bad record never fails the other 199.

@@ -203,7 +203,6 @@ shipped roles in §4 actually use.
 | `iteration.read` | `custody` · `project` · `any ✱` | **other people's** |
 | `iteration.edit_descriptive` | `custody` · `any ✱` | |
 | `iteration.classify` | `custody ✱` · `any ✱` | category and priority, after approval |
-| `iteration.relink` | `custody` · `any ✱` | catalog record |
 | `validation.approve` | `custody ✱` · `any ✱` | accepts the outstanding defect set |
 | `validation.deny` | `custody ✱` · `any ✱` | with reason |
 | `validation.revoke` | `custody ✱` · `any ✱` | |
@@ -316,7 +315,7 @@ distinguishing them from a role somebody adds next year.
 | Role | Holds |
 |------|-------|
 | **reader** | `request.create` · `request.read_own` · `request.withdraw_own` · `watch` — four of the self-scoped grants, and nothing else |
-| **staff** | reader + `task.read_own` · `project.create` · `project.edit@managed` · `project.manage_members@managed` · `project.delete@managed` · `iteration.read@any` · `request.read@any` · `iteration.edit_descriptive@any` · `iteration.relink@any` · `category.read@any` |
+| **staff** | reader + `task.read_own` · `project.create` · `project.edit@managed` · `project.manage_members@managed` · `project.delete@managed` · `iteration.read@any` · `request.read@any` · `iteration.edit_descriptive@any` · `category.read@any` |
 | **curator** | staff + everything else `@custody`: `request.decide` (proposal custody) · `validation.*` · `iteration.classify` · `iteration.cancel` · `iteration.resume` · `iteration.publish` · `addition.read` · `category.edit` · `category.grant_custody` · `project.decide@any` |
 | **dig-curator** | staff + `list.*@any` · `intention.read@any` · `intention.edit@any` · `project.*@any` · `iteration.cancel@any` · `iteration.resume@any` |
 | **admin** | everything at `any`, including `restriction.overrule` and `access.manage` |

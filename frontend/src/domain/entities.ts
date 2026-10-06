@@ -207,6 +207,8 @@ export const restrictionSchema = z.object({
 });
 export type Restriction = z.infer<typeof restrictionSchema>;
 
+// TODO(rrandiak): the cause RecordGone (status-model.md §2.5, decided 2026-10-06) is set by the
+// catalog sync, not a person, so it waits for the sync and an actor that is not a user.
 export const cancellationSchema = z.object({
   cause: z.enum(["Decided", "NotDigitizable"]),
   ...actedBy,

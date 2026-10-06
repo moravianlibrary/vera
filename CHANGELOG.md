@@ -111,6 +111,12 @@ All notable changes to this project are documented here.
   checked in place as left out, fills the screen on a phone and says on its result what moved
   to Documents and what stays.
 
+### Removed
+
+- *Relink catalog record*, from Documents' More ▾ and from Validations: a document's catalog
+  record never changes. A record repaired in the catalog is picked up when the checks run
+  again.
+
 ## [0.1.0] - 2026-10-02
 
 - Initialize the frontend workspace.

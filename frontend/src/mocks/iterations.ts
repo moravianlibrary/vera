@@ -1,5 +1,5 @@
 // What the server does when someone changes a document's current iteration from the Documents or
-// Validations pane: relink it to another catalog record (S3, flows.md G3), reclassify it (C6,
+// Validations pane: reclassify it (C6,
 // V13), set where its scan is available (P1), enter its page count or correct a field (the fixes
 // in place of C3) and cancel it. Each checks its permission against the iteration's category,
 // refuses what the iteration's state does not allow, and writes the status log. A fix runs the
@@ -16,11 +16,9 @@ import type {
   RecheckResult,
   Reclassification,
   ReclassificationResult,
-  Relink,
-  RelinkResult,
 } from "@/api/iterations";
 import { categoryPathOf } from "@/domain/categories";
-import { documentIdentifierOf, followedIterationId } from "@/domain/documents";
+import { followedIterationId } from "@/domain/documents";
 import type { Document, Iteration, Session } from "@/domain/entities";
 import {
   isCancellable,
@@ -38,85 +36,10 @@ import {
   recordSubject,
   reviewStateOf,
 } from "@/domain/validations";
-import { findDocumentByIdentity, knownCatalogRecords, unitTypeOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import type { Outcome } from "@/mocks/mutations";
 import { leafCategoryRefusal, progressNote, replaceIteration, writeLog } from "@/mocks/mutations";
-
-export function relinkIteration(
-  session: Session,
-  iterationId: string,
-  relink: Relink,
-): Outcome<RelinkResult> {
-  const found = actionableIteration(session, iterationId, "iteration.relink");
-  if ("refusal" in found) {
-    return found;
-  }
-
-  const { iteration, document } = found.value;
-  const catalogId = relink.catalogId.toUpperCase();
-  const record = knownCatalogRecords().find((candidate) => candidate.catalogId === catalogId);
-  if (record === undefined) {
-    return { refusal: { status: 422, message: `The catalog has no record ${catalogId}` } };
-  }
-
-  if (record.units === null && relink.unit !== null) {
-    return { refusal: { status: 422, message: `${catalogId} is one document, with no volumes` } };
-  }
-
-  if (record.units !== null && (relink.unit === null || !record.units.includes(relink.unit))) {
-    return {
-      refusal: {
-        status: 422,
-        message: `Choose one of its volumes or issues: ${record.units.join(", ")}`,
-      },
-    };
-  }
-
-  const holder = findDocumentByIdentity(catalogId, relink.unit);
-  if (holder?.id === document.id) {
-    return { refusal: { status: 422, message: "It is already linked to that record" } };
-  }
-
-  if (holder !== null) {
-    return {
-      refusal: { status: 409, message: `That record is already ${holder.title} in VERA` },
-    };
-  }
-
-  const relinked: Document = {
-    ...document,
-    catalogId,
-    unit: relink.unit === null ? null : { type: unitTypeOf(relink.unit), value: relink.unit },
-    title: record.title,
-  };
-  replaceDocument(relinked);
-  // The re-check finds the record now, so its defect goes; the other checks keep theirs.
-  const hadNoRecord = iteration.defects.some((defect) => defect.subject === recordSubject);
-  const rechecked = recheck(iteration, recordSubject);
-  const progress = progressAfterGates(rechecked);
-  replaceIteration({ ...rechecked, progress });
-  writeLog({
-    subjectKind: "iteration",
-    subjectId: iteration.id,
-    at: new Date().toISOString(),
-    actor: { kind: "user", userId: session.user.id },
-    correlationId: crypto.randomUUID(),
-    event: "Relinked",
-    detail: [
-      `From ${documentIdentifierOf(document)} to ${documentIdentifierOf(relinked)}.`,
-      hadNoRecord ? "The catalog record is found again." : null,
-      progressNote(iteration.progress, progress),
-    ]
-      .filter((sentence) => sentence !== null)
-      .join(" "),
-  });
-
-  return {
-    value: { documentId: document.id, catalogId, unit: relink.unit, title: record.title },
-  };
-}
 
 export function reclassifyIteration(
   session: Session,
