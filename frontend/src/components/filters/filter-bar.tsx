@@ -1,22 +1,15 @@
 // A view's filter bar, one line that wraps when narrow (filtering.md §3, §6), read left to right:
 // the search, the quick fields, the view's own toggles, then the other fields as chips with
-// "+ Add filter", then the ranges with "Advanced…". The view declares its fields
-// (lib/view-definition.ts); the bar builds the controls, their options with facet counts and
-// their labels from the declaration. Its depth follows the tier (component-interfaces.md §3.2):
-// the Advanced editor is a panel under the bar at large and a dialog at notebook; at small a
-// range is a chip that only reads and can be removed; a phone keeps the search and one Filter
-// button, and the rest opens as a sheet (filter-sheet.tsx).
+// "+ Add filter". The view declares its fields (lib/view-definition.ts); the bar builds the
+// controls, their options with facet counts and their labels from the declaration. A range is
+// one more field in "+ Add filter", not an Advanced editor (decided 2026-10-06): added, it is a
+// chip reading "any" until it is given a range, and only then is it in the URL. A phone keeps
+// the search and one Filter button, and the rest opens as a sheet (filter-sheet.tsx).
 // TODO(rrandiak): labels move to i18n.
 
 import { Search, SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import {
-  AdvancedFilter,
-  RangeChip,
-  rangeOf,
-  rangeSummaryOf,
-} from "@/components/filters/advanced-filter";
 import type { FilterField } from "@/components/filters/filter-controls";
 import {
   AddFilterMenu,
@@ -27,6 +20,8 @@ import {
   QuickFilter,
 } from "@/components/filters/filter-controls";
 import { FilterSheet } from "@/components/filters/filter-sheet";
+import type { AnyRange } from "@/components/filters/range-filter";
+import { RangeChip, rangeOf } from "@/components/filters/range-filter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
@@ -72,8 +67,10 @@ export function FilterBar<Query extends FilterableQuery>({
   activeExtraCount = 0,
 }: FilterBarProps<Query>) {
   const tier = useTier();
-  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  // Ranges added from "+ Add filter" that read "any" yet; the last one added opens its editor.
+  const [addedRangeKeys, setAddedRangeKeys] = useState<readonly string[]>([]);
+  const [openedRangeKey, setOpenedRangeKey] = useState<string | null>(null);
   const listDefinitions = fields.filter(
     (field): field is ListFieldDefinition<Query> => !isRangeField(field),
   );
@@ -113,18 +110,28 @@ export function FilterBar<Query extends FilterableQuery>({
   const chipFields = listDefinitions.filter((field) => field.isQuick !== true).map(filterFieldOf);
   const activeChipFields = chipFields.filter((field) => field.selected.length > 0);
 
-  const canBuildRanges = tier === "notebook" || tier === "large";
-  const activeRanges = rangeDefinitions.flatMap((field) => {
-    const range = rangeOf(query, field);
-    return range === undefined ? [] : [{ field, range }];
-  });
-  const rangeChips = activeRanges.map(({ field, range }) => (
+  const activeRanges = rangeDefinitions.filter((field) => rangeOf(query, field) !== undefined);
+  const rangesOnBar = rangeDefinitions.filter(
+    (field) => rangeOf(query, field) !== undefined || addedRangeKeys.includes(field.key),
+  );
+  const changeRange = (key: string, range: AnyRange | undefined) =>
+    onQueryChange({ ...query, [key]: range });
+  const removeRange = (key: string) => {
+    setAddedRangeKeys((keys) => keys.filter((candidate) => candidate !== key));
+    changeRange(key, undefined);
+  };
+  const addRange = (key: string) => {
+    setAddedRangeKeys((keys) => [...keys, key]);
+    setOpenedRangeKey(key);
+  };
+  const rangeChips = rangesOnBar.map((field) => (
     <RangeChip
       key={field.key}
-      label={field.label}
-      summary={rangeSummaryOf(field, range)}
-      onRemove={() => onQueryChange({ ...query, [field.key]: undefined })}
-      onOpen={canBuildRanges ? () => setIsAdvancedOpen(true) : undefined}
+      field={field}
+      range={rangeOf(query, field)}
+      isOpenAtFirst={field.key === openedRangeKey}
+      onChange={(range) => changeRange(field.key, range)}
+      onRemove={() => removeRange(field.key)}
     />
   ));
 
@@ -172,7 +179,9 @@ export function FilterBar<Query extends FilterableQuery>({
           quickFields={quickFields}
           chipFields={chipFields}
           extras={extras}
-          rangeChips={rangeChips}
+          rangeFields={rangeDefinitions}
+          query={query}
+          onRangeChange={changeRange}
           onClear={clearFields}
         />
       </div>
@@ -180,61 +189,32 @@ export function FilterBar<Query extends FilterableQuery>({
   }
 
   return (
-    <>
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2.5 sm:px-6">
-        {search}
+    <div className="flex shrink-0 flex-wrap items-center gap-2 border-b px-4 py-2.5 sm:px-6">
+      {search}
 
-        {quickFields.map((field) => (
-          <QuickFilter key={field.key} field={field} />
-        ))}
+      {quickFields.map((field) => (
+        <QuickFilter key={field.key} field={field} />
+      ))}
 
-        {extras}
+      {extras}
 
-        {chipFields.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            {activeChipFields.map((field) => (
-              <FilterChip key={field.key} field={field} />
-            ))}
-            <AddFilterMenu fields={chipFields} />
-          </div>
-        )}
-
-        {(rangeChips.length > 0 || (canBuildRanges && rangeDefinitions.length > 0)) && (
-          <div className="flex flex-wrap items-center gap-2">
-            {rangeChips}
-            {canBuildRanges && rangeDefinitions.length > 0 && (
-              <AdvancedButton
-                isPressed={tier === "large" && isAdvancedOpen}
-                onSelect={() => setIsAdvancedOpen((isOpen) => !isOpen || tier !== "large")}
-              />
-            )}
-          </div>
-        )}
-      </div>
-
-      {canBuildRanges && isAdvancedOpen && (
-        <AdvancedFilter
-          presentation={tier === "large" ? "panel" : "dialog"}
-          onClose={() => setIsAdvancedOpen(false)}
-          fields={rangeDefinitions}
-          query={query}
-          onApply={onQueryChange}
-        />
+      {(chipFields.length > 0 || rangeDefinitions.length > 0) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {activeChipFields.map((field) => (
+            <FilterChip key={field.key} field={field} />
+          ))}
+          {rangeChips}
+          <AddFilterMenu
+            fields={chipFields}
+            ranges={rangeDefinitions.map((field) => ({
+              key: field.key,
+              label: field.label,
+              isOnBar: rangesOnBar.includes(field),
+            }))}
+            onAddRange={addRange}
+          />
+        </div>
       )}
-    </>
-  );
-}
-
-function AdvancedButton({ isPressed, onSelect }: { isPressed: boolean; onSelect: () => void }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={isPressed}
-      onClick={onSelect}
-      className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-pressed:bg-muted aria-pressed:text-foreground"
-    >
-      <SlidersHorizontal className="size-3.5" />
-      Advanced…
-    </button>
+    </div>
   );
 }

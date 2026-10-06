@@ -1,6 +1,7 @@
 // A range over a field's values, for the filters that need more than equality: Pages and Asked
 // (filtering.md §2). Either end may be open and both are inclusive. In a URL it is written
-// `from..to`, `from..` or `..to`, so `pages=1000..` and `asked=2026-06-01..2026-06-30`.
+// `from..to`, `from..` or `..to`, so `pages=1000..` and `asked=2026-06-01..2026-06-30`; a range
+// of days may instead be a preset, `asked=last-7-days`.
 // TODO(rrandiak): filtering.md writes `pages=>1000`; settle one syntax with the backend contract.
 
 export interface ValueRange<Value> {
@@ -78,6 +79,44 @@ export function parseDay(raw: string): string | null {
 }
 
 // ---------------------------------------------------------------- day ranges
+
+// The ranges of days asked for most, kept as words rather than days so that a saved filter
+// stays "the last 7 days" tomorrow (decided 2026-10-06). The server counts them from its today.
+export const dayPresets = ["last-7-days", "last-14-days", "last-30-days", "this-month"] as const;
+export type DayPreset = (typeof dayPresets)[number];
+
+// Either two ends, or a preset.
+export type DayRange = ValueRange<string> | { readonly preset: DayPreset };
+
+export function isDayPreset(range: DayRange): range is { readonly preset: DayPreset } {
+  return "preset" in range;
+}
+
+// A preset is written as its word, `asked=last-7-days`; two ends as any other range.
+export function formatDayRange(range: DayRange | undefined): string | null {
+  if (range === undefined) {
+    return null;
+  }
+
+  return isDayPreset(range) ? range.preset : formatRange(range);
+}
+
+export function parseDayRange(raw: string | null): DayRange | undefined {
+  const preset = dayPresets.find((candidate) => candidate === raw);
+  return preset === undefined ? parseRange(raw, parseDay) : { preset };
+}
+
+// The days a range covers, counted from `today` when it is a preset.
+export function resolveDayRange(range: DayRange, today: Date): ValueRange<string> {
+  if (!isDayPreset(range)) {
+    return range;
+  }
+
+  const lastDays = { "last-7-days": 7, "last-14-days": 14, "last-30-days": 30 } as const;
+  return range.preset === "this-month"
+    ? monthRange(today)
+    : lastDaysRange(today, lastDays[range.preset]);
+}
 
 // The local calendar day of a moment, as a range end.
 export function dayOf(moment: Date): string {

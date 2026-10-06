@@ -59,9 +59,9 @@ The foundation is in place:
   `deleteResource` change and remove. Routes live in `routes.ts`.
   `documents.ts` owns the Documents contract: the query, its URL params (`q`, `mine` and
   comma lists matching any value within a field and every field together: the stored status
-  dimensions `decision`, `progress`, `validation`, `restricted`, `cancelled`, then `category`,
-  `project`, `priority`, `copy`, `asker`, then the advanced ranges `pages` and `asked`, written
-  `from..to` with either end open (`src/lib/value-range.ts`); a requester has only `status`, in
+  dimensions `decision`, `progress`, `validation`, `forbidden`, `cancelled`, then `category`,
+  `project`, `priority`, `copy`, `asker`, then the ranges `pages` and `asked`, written
+  `from..to` with either end open, or for days a preset word (`src/lib/value-range.ts`); a requester has only `status`, in
   the public vocabulary) and the page/detail responses with per-field facet counts. `group=batch|project`
   arranges the list: the server sorts by group first and each slice carries the headers of
   the groups it touches with their full counts. `watchlists.ts` lists a view's watchlists (shared
@@ -148,12 +148,18 @@ The foundation is in place:
   has it), and `src/components/filters/filter-bar.tsx` builds the search, quick fields, chips and
   "+ Add filter" from them with the facet counts; a view adds toggles that are not fields
   through `extras` (Documents' Mine, counted by `activeExtraCount`). A field may instead be a
-  range, `numberRange` (Pages) or `dateRange` (Asked), which is advanced: the bar shows it as a
-  removable chip at every tier and builds it in `advanced-filter.tsx`, a panel under the bar at
-  large and a dialog at notebook, from `src/components/fields/number-range-field.tsx` and
-  `date-range-field.tsx` (native date inputs, *Last 7 days* and *This month*). On a phone the bar
-  is the search and *Filter n*, and `filter-sheet.tsx` opens from the bottom with every field as
-  a list of its values and counts, the toggles, the range chips and *Clear all*. `src/hooks/use-reference-labels.ts` names referenced
+  range, `numberRange` (Pages) or `dateRange` (Asked). There is no Advanced editor (decided
+  2026-10-06): "+ Add filter" lists the ranges after the value fields, and picking one adds a
+  chip reading *any* (held by the bar, not in the URL, until given a range) whose popover opens.
+  `src/components/filters/range-filter.tsx` is the chip and its `RangeEditor`: a range of days
+  offers *Last 7 / 14 / 30 days* and *This month*, applied at once and kept as words
+  (`asked=last-7-days`, `DayRange` in `src/lib/value-range.ts`, which the server counts from its
+  today — the mock from the demo's, `src/mocks/today.ts`), or two days
+  (`src/components/fields/date-range-field.tsx`); a count offers two ends
+  (`number-range-field.tsx`). Every tier edits ranges. On a phone the bar is the search and
+  *Filter n*, and `filter-sheet.tsx` opens from the bottom with every field as a list of its
+  values and counts, the toggles, each range as a section with the same editor, and *Clear
+  all*. `src/hooks/use-reference-labels.ts` names referenced
   records (users, projects, categories, batches, proposal custodies) for the bar and anywhere
   else. `src/components/pane-state.tsx` is what a pane shows: *Select a …*, nothing while
   loading, a line when the record left the view, an outcome after an action (Proposals'
@@ -223,7 +229,7 @@ The foundation is in place:
   scrolls, the left out in place with why; the server approves the batch whole, so a harvest
   of any size is one call, and the result screen (`cancelLabel={null}`) says what moved and
   what stays. Beside the pane's heading, *Message askers…* opens the
-  Message dialog over the proposal. Its advanced field is *Asked* (`asked=from..to` on
+  Message dialog over the proposal. Its range field is *Asked* (`asked=from..to` or a preset on
   `/proposal-review`), the day any of the row's asks was made.
 - `src/features/validations/` is the Documents Validations view (`/review/documents`), on
   Proposals' pattern: the watchlist tabs (view `validations`), the filter bar (search, Review and

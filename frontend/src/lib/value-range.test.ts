@@ -2,6 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  formatDayRange,
   formatRange,
   isReversedRange,
   isWithinRange,
@@ -9,7 +10,9 @@ import {
   monthRange,
   parseCount,
   parseDay,
+  parseDayRange,
   parseRange,
+  resolveDayRange,
 } from "@/lib/value-range";
 
 describe("a range in the URL", () => {
@@ -60,5 +63,28 @@ describe("day ranges", () => {
   it("says when the ends are the wrong way round", () => {
     expect(isReversedRange({ from: 1000, to: 200 })).toBe(true);
     expect(isReversedRange({ from: "2026-06-01" })).toBe(false);
+  });
+});
+
+describe("day presets", () => {
+  it("round-trips a preset as its word and two ends as a range", () => {
+    expect(formatDayRange({ preset: "last-14-days" })).toBe("last-14-days");
+    expect(parseDayRange("this-month")).toEqual({ preset: "this-month" });
+    expect(parseDayRange("2026-06-01..")).toEqual({ from: "2026-06-01" });
+    expect(parseDayRange("yesterday")).toBeUndefined();
+  });
+
+  it("counts a preset from the day it is resolved on", () => {
+    const today = new Date(2026, 5, 25);
+
+    expect(resolveDayRange({ preset: "last-30-days" }, today)).toEqual({
+      from: "2026-05-27",
+      to: "2026-06-25",
+    });
+    expect(resolveDayRange({ preset: "this-month" }, today)).toEqual({
+      from: "2026-06-01",
+      to: "2026-06-30",
+    });
+    expect(resolveDayRange({ from: "2026-06-01" }, today)).toEqual({ from: "2026-06-01" });
   });
 });

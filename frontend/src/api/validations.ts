@@ -14,8 +14,8 @@ import type { Priority } from "@/domain/entities";
 import { prioritySchema, progressSchema, statusLogEntrySchema } from "@/domain/entities";
 import type { ReviewedState } from "@/domain/validations";
 import { reviewedStateSchema, reviewStateSchema, validationRowSchema } from "@/domain/validations";
-import type { ValueRange } from "@/lib/value-range";
-import { formatRange, parseDay, parseRange } from "@/lib/value-range";
+import type { DayRange } from "@/lib/value-range";
+import { formatDayRange, parseDayRange } from "@/lib/value-range";
 
 // ---------------------------------------------------------------- query
 
@@ -31,7 +31,7 @@ export interface ValidationQuery {
   readonly priorities?: readonly Priority[];
   readonly projectIds?: readonly string[];
   // Advanced, a range rather than values (filtering.md §6): the day it started waiting.
-  readonly waiting?: ValueRange<string>;
+  readonly waiting?: DayRange;
 }
 
 export type ValidationRangeField = "waiting";
@@ -79,7 +79,7 @@ export function toValidationSearchParams(query: ValidationQuery): URLSearchParam
     params.set(validationQueryParams[field], values.toSorted().join(listSeparator));
   }
 
-  const waiting = formatRange(query.waiting);
+  const waiting = formatDayRange(query.waiting);
   if (waiting !== null) {
     params.set(validationQueryParams.waiting, waiting);
   }
@@ -101,7 +101,7 @@ export function parseValidationSearchParams(params: URLSearchParams): Validation
     query[field] = values.length === 0 ? undefined : [...new Set(values)];
   }
 
-  query.waiting = parseRange(params.get(validationQueryParams.waiting), parseDay);
+  query.waiting = parseDayRange(params.get(validationQueryParams.waiting));
 
   // Every value of each field was parsed by that field's own schema.
   return query as ValidationQuery;

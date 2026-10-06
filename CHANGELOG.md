@@ -86,6 +86,11 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Filters have no *Advanced…* any more: Pages, Asked and Waiting since are added from
+  "+ Add filter" like any other field, as a chip reading "any" that opens its range. A date
+  offers *Last 7 days*, *Last 14 days*, *Last 30 days* or *This month*, which a saved watchlist
+  keeps relative, or two days of your choice. Every screen size can edit a range, a phone in
+  its filter sheet.
 - Documents' *Restricted* filter is called *Forbidden*, and Documents Validations has the same
   Yes / No field in place of Forbidden among the review states, so "any" review now means every
   reviewable item and forbidden ones are one pick away.

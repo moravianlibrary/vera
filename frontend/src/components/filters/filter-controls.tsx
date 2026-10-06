@@ -2,8 +2,8 @@
 // the chips with their "+ Add filter" picker (§3.2). A view declares its fields; each is a list
 // of values the rows may match, any of them. A quick field always shows and reads "any" when
 // empty. Any other field becomes a chip once a value is picked; clicking the chip reopens its
-// values, and × strikes the whole field off.
-// Ranges, the advanced depth, are advanced-filter.tsx.
+// values, and × strikes the whole field off. A range is added from the same picker, as a chip
+// that reads "any" until it is given one (range-filter.tsx).
 // TODO(rrandiak): labels move to i18n.
 
 import { ChevronDown, Plus, X } from "lucide-react";
@@ -105,13 +105,23 @@ export function FilterChip({ field }: FilterChipProps) {
   );
 }
 
-interface AddFilterMenuProps {
-  // Every field of the view, those already on the bar included.
-  fields: readonly FilterField[];
+export interface AddableRange {
+  key: string;
+  label: string;
+  // Already a chip on the bar, so it cannot be added again.
+  isOnBar: boolean;
 }
 
-export function AddFilterMenu({ fields }: AddFilterMenuProps) {
-  if (fields.length === 0) {
+interface AddFilterMenuProps {
+  // Every list field of the view, those already on the bar included.
+  fields: readonly FilterField[];
+  // Every range field, after the lists.
+  ranges?: readonly AddableRange[];
+  onAddRange?: (key: string) => void;
+}
+
+export function AddFilterMenu({ fields, ranges = [], onAddRange }: AddFilterMenuProps) {
+  if (fields.length === 0 && ranges.length === 0) {
     return null;
   }
 
@@ -121,7 +131,8 @@ export function AddFilterMenu({ fields }: AddFilterMenuProps) {
         <Plus className="size-3.5" />
         Add filter
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
+      {/* The range chip a pick adds opens its own editor; focus stays there. */}
+      <DropdownMenuContent align="start" onCloseAutoFocus={(event) => event.preventDefault()}>
         {fields.map((field) => (
           <DropdownMenuSub key={field.key}>
             <DropdownMenuSubTrigger disabled={field.options.length === 0} className="text-xs">
@@ -131,6 +142,17 @@ export function AddFilterMenu({ fields }: AddFilterMenuProps) {
               <FilterOptionItems field={field} />
             </DropdownMenuSubContent>
           </DropdownMenuSub>
+        ))}
+        {ranges.length > 0 && fields.length > 0 && <DropdownMenuSeparator />}
+        {ranges.map((range) => (
+          <DropdownMenuItem
+            key={range.key}
+            disabled={range.isOnBar}
+            onSelect={() => onAddRange?.(range.key)}
+            className="text-xs"
+          >
+            {range.label}
+          </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

@@ -38,10 +38,11 @@ import type {
 } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import { isRestricted, validationOf } from "@/domain/status";
-import { isWithinRange } from "@/lib/value-range";
+import { isWithinRange, resolveDayRange } from "@/lib/value-range";
 import type { Arrangement as GenericArrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
+import { mockToday } from "@/mocks/today";
 
 export function queryDocuments(
   session: Session,
@@ -261,7 +262,9 @@ function rangePredicatesOf({ pages, asked }: DocumentQuery): Predicate[] {
     predicates.push({
       field: "asked",
       matches: (record) =>
-        askersOf(record).some((request) => isWithinRange(request.at.slice(0, 10), asked)),
+        askersOf(record).some((request) =>
+          isWithinRange(request.at.slice(0, 10), resolveDayRange(asked, mockToday)),
+        ),
     });
   }
 

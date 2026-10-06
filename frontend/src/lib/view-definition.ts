@@ -6,7 +6,7 @@
 import type { Audience } from "@/domain/documents";
 import type { WatchlistView } from "@/domain/entities";
 import type { ReferenceKind } from "@/hooks/use-reference-labels";
-import type { ValueRange } from "@/lib/value-range";
+import type { DayRange, ValueRange } from "@/lib/value-range";
 
 // A filter's query: a search, and fields that are each a list of values matching any of them.
 export interface FilterableQuery {
@@ -26,7 +26,7 @@ export type NumberRangeFieldOf<Query> = {
   string;
 
 export type DateRangeFieldOf<Query> = {
-  [Key in keyof Query]-?: NonNullable<Query[Key]> extends ValueRange<string> ? Key : never;
+  [Key in keyof Query]-?: NonNullable<Query[Key]> extends DayRange ? Key : never;
 }[keyof Query] &
   string;
 

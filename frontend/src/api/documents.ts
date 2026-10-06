@@ -23,8 +23,14 @@ import {
 } from "@/domain/entities";
 import type { PublicStatus, Validation } from "@/domain/status";
 import { displayStatuses, publicStatuses, validations } from "@/domain/status";
-import type { ValueRange } from "@/lib/value-range";
-import { formatRange, parseCount, parseDay, parseRange } from "@/lib/value-range";
+import type { DayRange, ValueRange } from "@/lib/value-range";
+import {
+  formatDayRange,
+  formatRange,
+  parseCount,
+  parseDayRange,
+  parseRange,
+} from "@/lib/value-range";
 
 // A display status for staff, a public status for a requester.
 export const recordStatusSchema = z.enum([...new Set([...displayStatuses, ...publicStatuses])]);
@@ -64,7 +70,7 @@ export interface DocumentQuery {
   // Advanced, ranges rather than values (filtering.md §6): the page count in use, and the day
   // any current asker asked.
   readonly pages?: ValueRange<number>;
-  readonly asked?: ValueRange<string>;
+  readonly asked?: DayRange;
 }
 
 // The fields that are lists of values, each counted as a facet.
@@ -134,7 +140,7 @@ export function toDocumentSearchParams(query: DocumentQuery): URLSearchParams {
     params.set(documentQueryParams.pages, pages);
   }
 
-  const asked = formatRange(query.asked);
+  const asked = formatDayRange(query.asked);
   if (asked !== null) {
     params.set(documentQueryParams.asked, asked);
   }
@@ -168,7 +174,7 @@ export function parseDocumentSearchParams(params: URLSearchParams): DocumentQuer
     existingCopies: listOf("existingCopies", existingCopyStateSchema),
     askerIds: listOf("askerIds", idValueSchema),
     pages: parseRange(params.get(documentQueryParams.pages), parseCount),
-    asked: parseRange(params.get(documentQueryParams.asked), parseDay),
+    asked: parseDayRange(params.get(documentQueryParams.asked)),
   };
 }
 

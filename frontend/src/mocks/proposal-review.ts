@@ -45,7 +45,7 @@ import {
   projectIdsOf,
   rowDecisionOf,
 } from "@/domain/proposal-review";
-import { isWithinRange } from "@/lib/value-range";
+import { isWithinRange, resolveDayRange } from "@/lib/value-range";
 import type { Arrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
@@ -55,6 +55,7 @@ import type { StoredProposalCustody } from "@/mocks/fixtures/proposal-custodies"
 import { custodyPlacements, houseRuleOf } from "@/mocks/fixtures/proposal-custodies";
 import type { Outcome } from "@/mocks/mutations";
 import { leafCategoryRefusal, writeLog } from "@/mocks/mutations";
+import { mockToday } from "@/mocks/today";
 
 // ---------------------------------------------------------------- reach
 
@@ -269,7 +270,9 @@ function predicatesOf(query: ProposalQuery): Predicate[] {
     predicates.push({
       field: "asked",
       matches: (row) =>
-        asksOf(row).some((request) => isWithinRange(request.at.slice(0, 10), asked)),
+        asksOf(row).some((request) =>
+          isWithinRange(request.at.slice(0, 10), resolveDayRange(asked, mockToday)),
+        ),
     });
   }
 

@@ -28,7 +28,7 @@ import { can } from "@/domain/permissions";
 import { approvedKeysOf, outstandingDefects } from "@/domain/status";
 import type { ValidationRow } from "@/domain/validations";
 import { defectNameOf, defectsToRuleOn, reviewStateOf, waitingSinceOf } from "@/domain/validations";
-import { isWithinRange } from "@/lib/value-range";
+import { isWithinRange, resolveDayRange } from "@/lib/value-range";
 import type { Arrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { catalogLinkOf } from "@/mocks/catalog";
@@ -36,6 +36,7 @@ import { database } from "@/mocks/database";
 import { oncePerCause } from "@/mocks/documents";
 import type { Outcome } from "@/mocks/mutations";
 import { progressNote, replaceIteration, writeLog } from "@/mocks/mutations";
+import { mockToday } from "@/mocks/today";
 
 // ---------------------------------------------------------------- reach
 
@@ -201,7 +202,8 @@ function predicatesOf(query: ValidationQuery): Predicate[] {
   if (waiting !== undefined) {
     predicates.push({
       field: "waiting",
-      matches: (row) => isWithinRange(row.waitingSince.slice(0, 10), waiting),
+      matches: (row) =>
+        isWithinRange(row.waitingSince.slice(0, 10), resolveDayRange(waiting, mockToday)),
     });
   }
 

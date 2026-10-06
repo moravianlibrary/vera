@@ -1,12 +1,12 @@
 // How a range reads on its chip, whichever of its ends are set.
 
 import { describe, expect, it } from "vitest";
-import { rangeSummaryOf } from "@/components/filters/advanced-filter";
+import { rangeSummaryOf } from "@/components/filters/range-filter";
 import type { RangeFieldDefinition } from "@/lib/view-definition";
 
 interface Query {
   pages?: { from?: number; to?: number };
-  asked?: { from?: string; to?: string };
+  asked?: { from?: string; to?: string } | { preset: "last-7-days" | "this-month" };
 }
 
 const pages: RangeFieldDefinition<Query> = {
@@ -33,5 +33,9 @@ describe("rangeSummaryOf", () => {
     expect(rangeSummaryOf(asked, { from: "2026-06-01", to: "2026-06-30" })).toBe(
       "1 Jun 2026 – 30 Jun 2026",
     );
+  });
+
+  it("reads a preset by its name, so it stays relative", () => {
+    expect(rangeSummaryOf(asked, { preset: "last-7-days" })).toBe("last 7 days");
   });
 });

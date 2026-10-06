@@ -94,7 +94,7 @@ columns. Generalize before the third copy (Validations).
 | **FilterBar** shell | ♻️ from both `*-filter-bar.tsx` | search, quick fields, chips and *+ Add filter*. Each view supplies only a field declaration (key, label, kind, vocabulary or reference, labels). `enumField` and `referenceField` move out of the views |
 | WatchlistTabs, remembered tab | ✅ | already generic over `view` |
 | **Date-range field** | 🆕 | *Asked* (Proposals), *Started* (Tasks), list dates. filtering.md §3 |
-| **Advanced editor** | 🆕 | filtering.md §3.3, the TODO in both bars |
+| **Range chip** | 🆕 | filtering.md §3.3 as decided 2026-10-06: a range is added from "+ Add filter" and edited in its chip's popover; no Advanced editor |
 | **Phone filter sheet** | 🆕 | the bar collapses to *Filter (n)* and a sheet |
 | **Show / scope switch** | 🆕 | the tab-like switch for Intentions *Targets / Tracking* on narrow tiers and Users & Groups columns on the phone |
 

@@ -75,7 +75,7 @@ What each tier gives a list, in rem at that tier's root:
 | Primary-styled actions per screen (view-rules §5.2), the rest in `…` | 3 | 3 | 2 | 1 |
 | Detail beside the list | docked | docked | docked, narrower list | full-screen sheet with Back |
 | *Select a …* empty pane | shown | shown | shown | absent |
-| Filter (filtering.md §3) | bar + Advanced | bar + Advanced in a modal | bar; advanced chips shown and removable only | one *Filter (n)* button → bottom sheet |
+| Filter (filtering.md §3) | bar; ranges from + Add filter | bar; ranges from + Add filter | bar; ranges from + Add filter | one *Filter (n)* button → bottom sheet |
 | Stat tiles | 3 | 3 | 2 | 1 |
 | Fact grid columns | 2 | 2 | 2 | 1 |
 | Pane measure cap | 64rem | — | — | — |
@@ -674,7 +674,7 @@ export interface FilterBarProps<Query> {
 | quick fields | on the bar | on the bar | on the bar, wrapping | inside the sheet |
 | chips | on the bar | on the bar | on the bar | the row of chips under one *Filter (n)* button |
 | + Add filter | popover | popover | popover | inside the sheet |
-| Advanced | inline editor | modal | read-only chip, removable | read-only chip, removable |
+| Range | chip with popover | chip with popover | chip with popover | section in the sheet |
 | watchlist tabs | tabs | tabs | tabs, scrolling | a select ("All ▾") |
 
 ### 3.3 `WatchlistTabs` (✅)
