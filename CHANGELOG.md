@@ -59,6 +59,13 @@ All notable changes to this project are documented here.
   the action is absent when no Message plugin is enabled.
 - Proposals filters by the day it was asked for: *Advanced…* sets *Asked* as a range of days,
   matching a document when any of its asks falls within it, and a watchlist keeps it.
+- The Documents Validations view: one row per item in the curator's category custody that a
+  defect holds or a rule forbade, what needs review first, most urgent, longest waiting, each
+  with why it is there (the defect verbatim or how many, what was already accepted, the denial,
+  the rule, or *Found after digitization*). Review and Category on the bar, Defect, Priority,
+  Project and *Waiting since* as further filters, watchlist tabs with *Review needed*, *Page
+  counts* and *Denied in review* shared. Documents' *Resolve in Documents Validations* opens the
+  item there.
 
 ### Changed
 

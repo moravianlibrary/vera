@@ -220,6 +220,17 @@ The foundation is in place:
   what stays. Beside the pane's heading, *Message askers…* opens the
   Message dialog over the proposal. Its advanced field is *Asked* (`asked=from..to` on
   `/proposal-review`), the day any of the row's asks was made.
+- `src/features/validations/` is the Documents Validations view (`/review/documents`), on
+  Proposals' pattern: the watchlist tabs (view `validations`), the filter bar (search, Review and
+  Category on the bar, Defect, Priority and Project as chips, *Waiting since* as a range;
+  `validations-view.ts`, no groupings yet) and `validation-list.tsx` (Document · Status · Defects
+  · Priority · Category · Since, the status with its post-scan footnote through
+  `StatusWithFootnote` in `src/components/status-badge.tsx`, and a why line: the rule, the
+  denial, what was accepted, or the defects still to rule on). `use-validations-query.ts` holds
+  the list, one item, and `validationInvalidations` (Validations, Documents, watchlists). The
+  Defect field names plugins through the `defectPlugins` reference kind, which is the name
+  itself until a Plugins resource exists. Documents' *Resolve in Documents Validations* opens
+  the item (`?id=`).
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

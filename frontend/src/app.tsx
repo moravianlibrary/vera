@@ -10,6 +10,7 @@ import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { DocumentsPage } from "@/features/documents/documents-page";
 import { ProposalsPage } from "@/features/proposals/proposals-page";
+import { ValidationsPage } from "@/features/validations/validations-page";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { queryClient } from "@/lib/query-client";
 
@@ -30,6 +31,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <DocumentsPage />;
     case "proposals":
       return <ProposalsPage />;
+    case "validations":
+      return <ValidationsPage />;
     default:
       return <Placeholder title={label} />;
   }

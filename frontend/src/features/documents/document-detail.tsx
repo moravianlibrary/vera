@@ -232,7 +232,7 @@ function DefectsCard({ iteration, session }: { iteration: Iteration; session: Se
       action={
         hasPermission(session, "validation.approve") && (
           <Button asChild size="sm" variant="outline">
-            <Link to="/review/documents">
+            <Link to={`/review/documents?id=${encodeURIComponent(iteration.id)}`}>
               Resolve in Documents Validations
               <ArrowRight />
             </Link>

@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import type { RecordStatus } from "@/api/documents";
 import { Badge } from "@/components/ui/badge";
 import type { Priority, RegistryRecord, RegistryState } from "@/domain/entities";
+import type { StatusFootnote } from "@/domain/status";
 import { cn } from "@/lib/utils";
 
 const toneVariants = cva("border-transparent", {
@@ -85,6 +86,28 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, className }: StatusBadgeProps) {
   return (
     <Badge className={cn(toneVariants({ tone: statusTones[status] }), className)}>{status}</Badge>
+  );
+}
+
+const footnoteLabels = {
+  ReviewNeeded: "review needed",
+  ValidationDenied: "denied in review",
+} as const satisfies Record<StatusFootnote, string>;
+
+interface StatusWithFootnoteProps {
+  status: RecordStatus;
+  // Once scanned, a new defect rides beside the progress instead of hiding it (status-model §4).
+  footnote: StatusFootnote | null;
+}
+
+export function StatusWithFootnote({ status, footnote }: StatusWithFootnoteProps) {
+  return (
+    <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+      <StatusBadge status={status} />
+      {footnote !== null && (
+        <span className="text-[0.6875rem] text-muted-foreground">· {footnoteLabels[footnote]}</span>
+      )}
+    </span>
   );
 }
 

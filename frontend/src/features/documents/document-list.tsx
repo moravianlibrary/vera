@@ -6,7 +6,7 @@ import type { DocumentGroup, DocumentGrouping } from "@/api/documents";
 import { Muted } from "@/components/detail-card";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { RecordList } from "@/components/lists/record-list";
-import { PriorityBadge, RegistryBadge, StatusBadge } from "@/components/status-badge";
+import { PriorityBadge, RegistryBadge, StatusWithFootnote } from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { categoryPathOf } from "@/domain/categories";
 import type { Audience, DocumentRecord } from "@/domain/documents";
@@ -21,18 +21,12 @@ import {
   strongestRegistryRecord,
 } from "@/domain/documents";
 import type { Category } from "@/domain/entities";
-import type { StatusFootnote } from "@/domain/status";
 import { statusFootnoteOf } from "@/domain/status";
 import { DocumentGroupHeader } from "@/features/documents/document-group-header";
 import type { PagedList } from "@/hooks/use-paged-list";
 import { useCategoriesQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { formatDay } from "@/lib/format-date";
 import type { ViewGroupingOption } from "@/lib/view-definition";
-
-const footnoteLabels = {
-  ReviewNeeded: "review needed",
-  ValidationDenied: "denied in review",
-} as const satisfies Record<StatusFootnote, string>;
 
 interface DocumentListProps {
   // Undefined until the first slice arrives.
@@ -263,14 +257,7 @@ function StatusCell({ record, isPublic, userId }: StatusCellProps) {
 
   const current = currentIterationOf(record);
   const footnote = isPublic || current === null ? null : statusFootnoteOf(current);
-  return (
-    <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-      <StatusBadge status={status} />
-      {footnote !== null && (
-        <span className="text-[0.6875rem] text-muted-foreground">· {footnoteLabels[footnote]}</span>
-      )}
-    </span>
-  );
+  return <StatusWithFootnote status={status} footnote={footnote} />;
 }
 
 function groupKeyOf(group: DocumentGroup): string | null {
