@@ -6,14 +6,8 @@
 
 import { ArrowRight, Inbox } from "lucide-react";
 import { useState } from "react";
-import { Link, useSearchParams } from "react-router";
-import type { ProposalGroup, ProposalGrouping, ProposalQuery } from "@/api/proposal-review";
-import {
-  parseProposalGrouping,
-  parseProposalSearchParams,
-  proposalGroupingParam,
-  toProposalSearchParams,
-} from "@/api/proposal-review";
+import { Link } from "react-router";
+import type { ProposalGroup } from "@/api/proposal-review";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { visibleNavigation } from "@/components/layout/navigation";
@@ -26,6 +20,7 @@ import type { DecisionOutcome } from "@/features/proposals/proposal-detail";
 import { ProposalDetailPane } from "@/features/proposals/proposal-detail";
 import { ProposalFilterBar } from "@/features/proposals/proposal-filter-bar";
 import { ProposalList } from "@/features/proposals/proposal-list";
+import { proposalsView } from "@/features/proposals/proposals-view";
 import {
   useProposalCustodiesQuery,
   useProposalQuery,
@@ -33,30 +28,13 @@ import {
 } from "@/features/proposals/use-proposals-query";
 import { useProjectsQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
+import { useViewUrlState } from "@/hooks/use-view-url-state";
 
-const selectedParam = "id";
-const watchlistParam = "watchlist";
-// What the page keeps of its URL when the filter changes.
-const pageParams = [selectedParam, proposalGroupingParam, watchlistParam] as const;
-
-type Filter = Record<string, string>;
 type BatchGroup = Extract<ProposalGroup, { kind: "batch" }>;
 
-// Nothing named but perhaps the grouping, which is presentation.
-const isBareView = (params: URLSearchParams) =>
-  [...params.keys()].every((name) => name === proposalGroupingParam);
-
-const filterOf = (query: ProposalQuery): Filter =>
-  Object.fromEntries(toProposalSearchParams(query));
-const queryOf = (filter: Filter): ProposalQuery =>
-  parseProposalSearchParams(new URLSearchParams(filter));
-
 export function ProposalsPage() {
-  const [params, setParams] = useSearchParams();
-  const query = parseProposalSearchParams(params);
-  const selectedId = params.get(selectedParam);
-  const grouping = parseProposalGrouping(params);
-  const [filterReplacements, setFilterReplacements] = useState(0);
+  const view = useViewUrlState(proposalsView);
+  const { query, selectedId, grouping, select } = view;
   const [decided, setDecided] = useState<DecisionOutcome | null>(null);
   const [bulkGroup, setBulkGroup] = useState<BatchGroup | null>(null);
   const { data: session } = useSessionQuery();
@@ -69,44 +47,6 @@ export function ProposalsPage() {
   const summary = proposals.data?.pages[0];
   const items = proposals.data?.pages.flatMap((page) => page.items);
   const groups = proposals.data?.pages.flatMap((page) => page.groups) ?? [];
-
-  const replaceParams = (change: (next: URLSearchParams) => void) => {
-    const next = new URLSearchParams(params);
-    change(next);
-    setParams(next, { replace: true });
-  };
-
-  const setFilter = (next: ProposalQuery, openedWatchlistId?: string | null) => {
-    const nextParams = toProposalSearchParams(next);
-    for (const name of pageParams) {
-      const value = params.get(name);
-      if (value !== null) {
-        nextParams.set(name, value);
-      }
-    }
-
-    if (openedWatchlistId === null) {
-      nextParams.delete(watchlistParam);
-    } else if (openedWatchlistId !== undefined) {
-      nextParams.set(watchlistParam, openedWatchlistId);
-    }
-
-    setParams(nextParams, { replace: true });
-  };
-
-  const setGrouping = (next: ProposalGrouping | null) =>
-    replaceParams((nextParams) =>
-      next === null
-        ? nextParams.delete(proposalGroupingParam)
-        : nextParams.set(proposalGroupingParam, next),
-    );
-
-  const select = (documentId: string | null) =>
-    replaceParams((nextParams) =>
-      documentId === null
-        ? nextParams.delete(selectedParam)
-        : nextParams.set(selectedParam, documentId),
-    );
 
   const loadMore = () => {
     if (proposals.hasNextPage && !proposals.isFetchingNextPage) {
@@ -159,24 +99,21 @@ export function ProposalsPage() {
       {hasPermission(session, "watch") && (
         <WatchlistTabs
           view="proposals"
-          filter={filterOf(query)}
-          openedId={params.get(watchlistParam)}
+          filter={view.filter}
+          openedId={view.watchlistId}
           canShare={hasPermission(session, "watchlist.manage_shared")}
-          onOpen={(watchlist) => {
-            setFilter(watchlist === null ? {} : queryOf(watchlist.filter), watchlist?.id ?? null);
-            setFilterReplacements((count) => count + 1);
-          }}
-          onDetach={() => setFilter(query, null)}
-          isBare={isBareView(params)}
+          onOpen={view.openWatchlist}
+          onDetach={view.detachWatchlist}
+          isBare={view.isBare}
         />
       )}
 
       <ProposalFilterBar
         // The bar holds its search as typed; a filter replaced from a tab starts it afresh.
-        key={filterReplacements}
+        key={view.filterReplacements}
         query={query}
         summary={summary}
-        onQueryChange={(next) => setFilter(next)}
+        onQueryChange={(next) => view.setQuery(next)}
       />
 
       <MasterDetail
@@ -191,7 +128,7 @@ export function ProposalsPage() {
             hasMore={proposals.hasNextPage}
             onLoadMore={loadMore}
             grouping={grouping}
-            onGroupingChange={setGrouping}
+            onGroupingChange={view.setGrouping}
             references={{ users, projects, custodies }}
             onBulkApprove={setBulkGroup}
             selectedId={selectedId}

@@ -83,6 +83,12 @@ The foundation is in place:
   each writes the status log. `arrangement.ts` holds the grouping and slicing both lists share.
   `fixtures/watchlists.ts` seeds three shared ones and a few per user. `VITE_MOCK_DOCUMENT_COPIES` (default 1)
   repeats the fixture documents through `src/mocks/volume.ts`, to try lists at volume. `createHandlers(profile)` serves it over MSW.
+- A list view declares itself once (`src/lib/view-definition.ts`, `ViewDefinition`): its filter
+  in the URL, the watchlist comparer and its groupings (`features/documents/documents-view.ts`,
+  `features/proposals/proposals-view.ts`). `src/hooks/use-view-url-state.ts` reads and writes a
+  view's whole URL state from it: the query, the open record (`?id=` or the view's own name),
+  the grouping, the watchlist tab, opening and detaching a tab, and whether the view was opened
+  bare. Every list page uses it rather than touching `useSearchParams`.
 - Query hooks: `src/hooks/use-session-query.ts`, `src/features/documents/use-documents-query.ts`.
   Sidebar entries and their required permissions: `src/components/layout/navigation.ts`.
 - `src/app.tsx` holds the providers and routes. `src/features/documents/` is the Documents view:

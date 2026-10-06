@@ -7,14 +7,6 @@
 
 import { BookOpen, Plus } from "lucide-react";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
-import { useSearchParams } from "react-router";
-import type { DocumentGrouping, DocumentQuery } from "@/api/documents";
-import {
-  documentGroupingParam,
-  parseDocumentGrouping,
-  parseDocumentSearchParams,
-  toDocumentSearchParams,
-} from "@/api/documents";
 import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { MasterDetail } from "@/components/layout/master-detail";
 import { visibleNavigation } from "@/components/layout/navigation";
@@ -24,32 +16,15 @@ import { hasPermission } from "@/domain/permissions";
 import { DocumentDetailPane } from "@/features/documents/document-detail";
 import { DocumentFilterBar } from "@/features/documents/document-filter-bar";
 import { DocumentList } from "@/features/documents/document-list";
+import { documentsView } from "@/features/documents/documents-view";
 import { ProposeDialog } from "@/features/documents/propose-dialog";
 import { useDocumentQuery, useDocumentsQuery } from "@/features/documents/use-documents-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
-
-const selectedParam = "id";
-const watchlistParam = "watchlist";
-// What the page keeps of its URL when the filter changes.
-const pageParams = [selectedParam, documentGroupingParam, watchlistParam] as const;
-
-type Filter = Record<string, string>;
-
-// Nothing named but perhaps the grouping, which is presentation.
-const isBareView = (params: URLSearchParams) =>
-  [...params.keys()].every((name) => name === documentGroupingParam);
-
-const filterOf = (query: DocumentQuery): Filter =>
-  Object.fromEntries(toDocumentSearchParams(query));
-const queryOf = (filter: Filter): DocumentQuery =>
-  parseDocumentSearchParams(new URLSearchParams(filter));
+import { useViewUrlState } from "@/hooks/use-view-url-state";
 
 export function DocumentsPage() {
-  const [params, setParams] = useSearchParams();
-  const query = parseDocumentSearchParams(params);
-  const selectedId = params.get(selectedParam);
-  const grouping = parseDocumentGrouping(params);
-  const [filterReplacements, setFilterReplacements] = useState(0);
+  const view = useViewUrlState(documentsView);
+  const { query, selectedId, grouping, select } = view;
   const [isProposing, setIsProposing] = useState(false);
   const { data: session } = useSessionQuery();
   const documents = useDocumentsQuery(query, grouping);
@@ -58,46 +33,6 @@ export function DocumentsPage() {
   const summary = documents.data?.pages[0];
   const items = documents.data?.pages.flatMap((page) => page.items);
   const groups = documents.data?.pages.flatMap((page) => page.groups) ?? [];
-
-  const setFilter = (next: DocumentQuery, openedWatchlistId?: string | null) => {
-    const nextParams = toDocumentSearchParams(next);
-    for (const name of pageParams) {
-      const value = params.get(name);
-      if (value !== null) {
-        nextParams.set(name, value);
-      }
-    }
-
-    if (openedWatchlistId === null) {
-      nextParams.delete(watchlistParam);
-    } else if (openedWatchlistId !== undefined) {
-      nextParams.set(watchlistParam, openedWatchlistId);
-    }
-
-    setParams(nextParams, { replace: true });
-  };
-
-  const setGrouping = (next: DocumentGrouping | null) => {
-    const nextParams = new URLSearchParams(params);
-    if (next === null) {
-      nextParams.delete(documentGroupingParam);
-    } else {
-      nextParams.set(documentGroupingParam, next);
-    }
-
-    setParams(nextParams, { replace: true });
-  };
-
-  const select = (documentId: string | null) => {
-    const nextParams = new URLSearchParams(params);
-    if (documentId === null) {
-      nextParams.delete(selectedParam);
-    } else {
-      nextParams.set(selectedParam, documentId);
-    }
-
-    setParams(nextParams, { replace: true });
-  };
 
   // Once per search, so a closed record stays closed.
   const autoOpenedSearchRef = useRef<string | null>(null);
@@ -169,25 +104,22 @@ export function DocumentsPage() {
       {hasPermission(session, "watch") && (
         <WatchlistTabs
           view="documents"
-          filter={filterOf(query)}
-          openedId={params.get(watchlistParam)}
+          filter={view.filter}
+          openedId={view.watchlistId}
           canShare={hasPermission(session, "watchlist.manage_shared")}
-          onOpen={(watchlist) => {
-            setFilter(watchlist === null ? {} : queryOf(watchlist.filter), watchlist?.id ?? null);
-            setFilterReplacements((count) => count + 1);
-          }}
-          onDetach={() => setFilter(query, null)}
-          isBare={isBareView(params)}
+          onOpen={view.openWatchlist}
+          onDetach={view.detachWatchlist}
+          isBare={view.isBare}
         />
       )}
 
       <DocumentFilterBar
         // The bar holds its search as typed; a filter replaced from a tab starts it afresh.
-        key={filterReplacements}
+        key={view.filterReplacements}
         query={query}
         summary={summary}
         isPublic={isPublic}
-        onQueryChange={(next) => setFilter(next)}
+        onQueryChange={(next) => view.setQuery(next)}
       />
 
       <MasterDetail
@@ -203,7 +135,7 @@ export function DocumentsPage() {
             onLoadMore={loadMore}
             groupings={groupings}
             grouping={grouping}
-            onGroupingChange={setGrouping}
+            onGroupingChange={view.setGrouping}
             canRetryAdditions={hasPermission(session, "addition.retry")}
             canOpenProjects={
               hasPermission(session, "project.read") || hasPermission(session, "project.decide")
