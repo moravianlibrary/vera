@@ -1,9 +1,12 @@
 # Step guide
 
-How one step of `plan.md` is done. Every step from 1 on is carried out by a
-fresh agent that knows nothing but this repository, so this page is what it
-needs before it starts. The orchestrator hands it a step number; the step's
-commits are listed in `plan.md`.
+How one step of `plan.md` is done. The steps from 1 on are done one at a
+time in the main session, with no subagents (decided 2026-10-06: subagents
+spent far more tokens than they saved). One session does exactly one step,
+then stops; the user compacts the conversation and asks for the next. So
+every step starts from this repository and a compacted summary, and this page
+is what it needs before it starts. The step's commits are listed in
+`plan.md`.
 
 ---
 
@@ -115,7 +118,7 @@ Each sub-item of the step in `plan.md` is one commit, in the order given.
    ```sh
    bunx tsc -b
    bun run test
-   F=$(git status --porcelain -uall . | grep -v '^ D\|^D ' | awk '{print $2}' | sed 's|^frontend/||' | grep -E '\.(ts|tsx|css)$')
+   F=$(git status --porcelain -uall . | grep -v '^ D\|^D ' | awk '{print $NF}' | sed 's|^frontend/||' | grep -E '\.(ts|tsx|css)$')
    bunx biome check --write $F   # only the changed files: vendored ui/ has known errors
    ```
    All three clean before committing.
@@ -164,7 +167,9 @@ Each sub-item of the step in `plan.md` is one commit, in the order given.
 
 ## 5. Report back
 
-End with a short report to the orchestrator:
+End with a short report to the user, then stop: do not start the next step,
+however small, until the user has compacted and asked for it. The report is
+what survives the compaction, so it names everything the next step needs:
 - the commits (hash and subject);
 - what was built, and anything in the plan left out, with why;
 - decisions you had to take, and questions only the user can answer;
