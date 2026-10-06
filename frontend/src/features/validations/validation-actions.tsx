@@ -280,7 +280,7 @@ export function RecheckButton({ row, scope, session, onRechecked }: RecheckButto
     refusalTexts: { 404: "It no longer waits here." },
   });
   const [failure, setFailure] = useState<string | null>(null);
-  if (!can(session, "validation.approve", scope)) {
+  if (!can(session, "iteration.recheck", scope)) {
     return null;
   }
 

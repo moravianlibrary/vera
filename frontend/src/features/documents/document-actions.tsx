@@ -3,8 +3,9 @@
 // (component-interfaces.md §6.4) over its own endpoint; Reclassify is shared with Validations (components/iteration-dialogs.tsx). Each is offered only where the
 // caller's grant reaches the current iteration's category and its state allows it; the server
 // decides again (view-rules.md §5.1).
-// TODO(rrandiak): Ask for this too and Withdraw beside the menu; Edit descriptive metadata,
-// Overrule restriction, Cancel and Resume in it; labels move to i18n.
+// TODO(rrandiak): Ask for this too and Withdraw beside the menu; Overrule restriction, Cancel and
+// Resume in it; labels move to i18n. No Edit descriptive metadata: VERA corrects no catalog data
+// (decided 2026-10-06).
 
 import { useId, useState } from "react";
 import { z } from "zod";

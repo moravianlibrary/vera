@@ -11,7 +11,7 @@ export const permissionKeys = [
   "request.read",
   "request.decide",
   "iteration.read",
-  "iteration.edit_descriptive",
+  "iteration.recheck",
   "iteration.classify",
   "validation.approve",
   "validation.deny",

@@ -259,6 +259,7 @@ public interface CatalogAdapter extends Plugin {
         return new Outcome.Refused<>("not searchable");
     }
     default Optional<CatalogRef> fromLink(URI recordPage) { return Optional.empty(); } // a pasted OPAC link
+    default Optional<URI> toLink(CatalogRef ref) { return Optional.empty(); } // the record's page, to repair it
 }
 
 public record Unit(String unitId, UnitType type, String label,
@@ -275,6 +276,10 @@ public record CatalogRecord(CatalogRef ref, JsonNode fields, Instant changedAt,
 - A catalog that cannot be searched from VERA declares no search and gives
   the OPAC address and `fromLink`: the Propose dialog opens it in a new tab and
   reads the pasted link back.
+- `toLink` is where a curator repairs a record: VERA corrects no catalog data,
+  so the Validations pane links out and a Recheck reads the record again
+  (decided 2026-10-06). An adapter that gives no link leaves the curator to
+  find the record themselves.
 
 ### 4.2 Registry
 

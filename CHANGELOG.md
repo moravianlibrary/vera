@@ -89,8 +89,13 @@ All notable changes to this project are documented here.
 - Filters have no *Advanced…* any more: Pages, Asked and Waiting since are added from
   "+ Add filter" like any other field, as a chip reading "any" that opens its range. A date
   offers *Last 7 days*, *Last 14 days*, *Last 30 days* or *This month*, which a saved watchlist
-  keeps relative, or two days of your choice. Every screen size can edit a range, a phone in
-  its filter sheet.
+  keeps relative, or two days of your choice. Pages offers *Under 100*, *100–499*, *500–999*
+  and *1,000 and more* before two numbers of your choice. Every screen size can edit a range,
+  a phone in its filter sheet.
+- Rechecking a document and entering its page count take the new `iteration.recheck`
+  permission, which curators hold within their custody and administrators everywhere. The
+  catalog link in Validations is the one the catalog adapter plugin gives, and absent when it
+  gives none.
 - Documents' *Restricted* filter is called *Forbidden*, and Documents Validations has the same
   Yes / No field in place of Forbidden among the review states, so "any" review now means every
   reviewable item and forbidden ones are one pick away.
@@ -130,6 +135,8 @@ All notable changes to this project are documented here.
 - *Relink catalog record*, from Documents' More ▾ and from Validations: a document's catalog
   record never changes. A record repaired in the catalog is picked up when the checks run
   again.
+- **Breaking:** `iteration.edit_descriptive`, and with it editing descriptive metadata in VERA:
+  it is repaired in the catalog. Staff no longer hold a grant for it.
 
 ## [0.1.0] - 2026-10-02
 

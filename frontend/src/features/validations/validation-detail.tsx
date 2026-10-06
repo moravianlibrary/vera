@@ -74,9 +74,8 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
   const [lastRecheck, setLastRecheck] = useState<LastRecheck | null>(null);
 
   const scope = scopeOfIteration(categories, iteration.categoryId);
-  // A page count is entered here until the scan has counted the pages.
-  const mayEnterPages =
-    can(session, "iteration.edit_descriptive", scope) && !isFoundAfterScan(iteration);
+  // A page count is entered here until the scan has counted the pages; entering it rechecks.
+  const mayEnterPages = can(session, "iteration.recheck", scope) && !isFoundAfterScan(iteration);
   const next =
     documents === undefined
       ? undefined

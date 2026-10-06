@@ -131,3 +131,15 @@ export const catalogRepairs: Readonly<Record<string, readonly string[]>> = {
   // Kodex Gigas — fragment: 300$a now gives the leaves the scan has.
   "MZK05-000009901": ["300$a"],
 };
+
+// The catalog adapter plugin the mock stands in for, MZK's, with only what the frontend sees of
+// it: where a record opens, for a curator to repair it (plugins.md §4.1 toLink).
+export interface CatalogAdapterFixture {
+  readonly name: string;
+  readonly toLink?: (catalogId: string) => string;
+}
+
+export const catalogAdapter: CatalogAdapterFixture = {
+  name: "MZK Aleph",
+  toLink: (catalogId) => `https://vufind.mzk.cz/Record/${encodeURIComponent(catalogId)}`,
+};

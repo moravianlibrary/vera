@@ -97,7 +97,13 @@ into `status-model.md` §2, §2.5 and §4, `document-identity.md`, `flows.md`,
 - **No Advanced filter.** "+ Add filter" offers every field, ranges included.
   A field added reads *any* until a value is chosen. A date offers *Last 7
   days*, *Last 14 days*, *Last 30 days*, *This month* or a range; a count
-  offers a range.
+  offers its presets (Pages: under 100, 100–499, 500–999, 1,000 and more) or
+  a range.
+- **No editing descriptive metadata in VERA**, anywhere: `iteration.edit_descriptive`
+  is gone. **Recheck** and entering a page count take `iteration.recheck`, a
+  curator's within custody.
+- **The catalog link comes from the catalog adapter plugin** (`toLink`,
+  `plugins.md` §4.1).
 
 **From the component pass, 2026-10-06.** The user's decisions, carried into
 `navigation.md` §3, §3.1, §5, §7 and §8.4, `view-rules.md` §1.2 and §1.5,

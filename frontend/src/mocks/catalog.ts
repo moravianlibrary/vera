@@ -5,12 +5,12 @@
 import type { Document } from "@/domain/entities";
 import { database } from "@/mocks/database";
 import type { CatalogRecord } from "@/mocks/fixtures/catalog";
-import { catalogRecords, catalogRepairs } from "@/mocks/fixtures/catalog";
+import { catalogAdapter, catalogRecords, catalogRepairs } from "@/mocks/fixtures/catalog";
 
-// Where the record opens in the library's catalog, for a curator to repair it there.
-// TODO(rrandiak): the catalog adapter supplies the link (plugins.md); MZK's VuFind until then.
-export function catalogLinkOf(catalogId: string): string {
-  return `https://vufind.mzk.cz/Record/${encodeURIComponent(catalogId)}`;
+// Where the record opens in the library's catalog, for a curator to repair it there: the catalog
+// adapter's toLink (plugins.md §4.1), null when it gives none.
+export function catalogLinkOf(catalogId: string): string | null {
+  return catalogAdapter.toLink?.(catalogId) ?? null;
 }
 
 // The subjects a recheck of the record no longer finds a defect on.

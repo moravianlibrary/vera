@@ -379,7 +379,6 @@ Two things follow that views depend on:
 |--------|:--:|:--:|:--:|:--:|:--:|---|
 | Watch | ✅ | ✅ | ✅ | ✅ | ✅ | any |
 | Propose digitization | ✅ | ✅ | ✅ | ✅ | ✅ | not Forbidden |
-| Edit descriptive fields | | ✅ | ✅ | ✅ | ✅ | not Denied / Forbidden |
 | Set category / priority | | | ✅ | ✅ | ✅ | any |
 | Approve (override issues) | | | ✅ | | | Review Needed |
 | Revoke approval | | | ✅ | | | Approved |

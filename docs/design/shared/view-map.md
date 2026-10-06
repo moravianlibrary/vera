@@ -180,7 +180,7 @@ and *Mine* as a filter.
   holding `addition.read` sees the failure text and nothing to press. A reader
   sees *being added*.
 - **per-record actions** — withdraw my own proposal (only while undecided),
-  reclassify, cancel and resume, edit descriptive metadata, set the
+  reclassify, cancel and resume, set the
   link that publishes it (`iteration.publish`), and for an admin overrule a
   restriction — each absent without its permission. Nobody forbids by hand:
   only rules do. None of them is a queue, so none earns a view; they are

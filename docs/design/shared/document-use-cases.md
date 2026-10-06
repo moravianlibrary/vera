@@ -39,7 +39,6 @@ made ([[status-model]] §2.8). An **iteration** is one attempt to digitize a
 | # | Use case | Permission | Notes |
 |---|---|---|---|
 | S1 | Look up anybody's requests and documents | `request.read@any` · `iteration.read@any` | the reference job — no decisions |
-| S2 | Fix descriptive metadata | `iteration.edit_descriptive` | |
 
 ## 3. Curator — within custody
 

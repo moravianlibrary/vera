@@ -134,7 +134,7 @@ export function enterPageCount(
   iterationId: string,
   pageCount: PageCount,
 ): Outcome<RecheckResult> {
-  const found = fixableIteration(session, iterationId, "iteration.edit_descriptive");
+  const found = fixableIteration(session, iterationId, "iteration.recheck");
   if ("refusal" in found) {
     return found;
   }
@@ -174,8 +174,7 @@ export function recheckIteration(
   iterationId: string,
   _recheck: Recheck,
 ): Outcome<RecheckResult> {
-  // TODO(rrandiak): no permission of its own yet; whoever may accept may ask the checks again.
-  const found = actionableIteration(session, iterationId, "validation.approve");
+  const found = actionableIteration(session, iterationId, "iteration.recheck");
   if ("refusal" in found) {
     return found;
   }

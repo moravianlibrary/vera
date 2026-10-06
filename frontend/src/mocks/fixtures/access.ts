@@ -81,10 +81,6 @@ export const roles: readonly Role[] = [
         scope: "any",
       },
       {
-        permission: "iteration.edit_descriptive",
-        scope: "any",
-      },
-      {
         permission: "category.read",
         scope: "any",
       },
@@ -144,8 +140,8 @@ export const roles: readonly Role[] = [
         scope: "any",
       },
       {
-        permission: "iteration.edit_descriptive",
-        scope: "any",
+        permission: "iteration.recheck",
+        scope: "custody",
       },
       {
         permission: "category.read",
@@ -231,10 +227,6 @@ export const roles: readonly Role[] = [
       },
       {
         permission: "request.read",
-        scope: "any",
-      },
-      {
-        permission: "iteration.edit_descriptive",
         scope: "any",
       },
       {
@@ -324,7 +316,7 @@ export const roles: readonly Role[] = [
         scope: "any",
       },
       {
-        permission: "iteration.edit_descriptive",
+        permission: "iteration.recheck",
         scope: "any",
       },
       {
