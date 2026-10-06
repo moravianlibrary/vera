@@ -123,6 +123,7 @@ export function DocumentsPage() {
         searchPlaceholder={
           isPublic ? "Search my documents…" : "Search — title, catalog ID, volume, signature, cnb…"
         }
+        activeExtraCount={query.isMine === true ? 1 : 0}
         extras={
           !isPublic && (
             <MineToggle

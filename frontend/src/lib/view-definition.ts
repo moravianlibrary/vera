@@ -6,21 +6,33 @@
 import type { Audience } from "@/domain/documents";
 import type { WatchlistView } from "@/domain/entities";
 import type { ReferenceKind } from "@/hooks/use-reference-labels";
+import type { ValueRange } from "@/lib/value-range";
 
 // A filter's query: a search, and fields that are each a list of values matching any of them.
 export interface FilterableQuery {
   readonly search?: string;
 }
 
-// The query's fields that hold a list of values; only these are filter fields.
+// The query's fields that hold a list of values.
 export type ListFieldOf<Query> = {
   [Key in keyof Query]-?: NonNullable<Query[Key]> extends readonly string[] ? Key : never;
 }[keyof Query] &
   string;
 
-// Where a field's values come from: a closed vocabulary, in its own order, or records named by
-// id, by name.
-export type FilterFieldKind =
+// The query's fields that hold a range of counts, and of days.
+export type NumberRangeFieldOf<Query> = {
+  [Key in keyof Query]-?: NonNullable<Query[Key]> extends ValueRange<number> ? Key : never;
+}[keyof Query] &
+  string;
+
+export type DateRangeFieldOf<Query> = {
+  [Key in keyof Query]-?: NonNullable<Query[Key]> extends ValueRange<string> ? Key : never;
+}[keyof Query] &
+  string;
+
+// Where a list field's values come from: a closed vocabulary, in its own order, or records named
+// by id, by name.
+export type ListFieldKind =
   | {
       readonly kind: "vocabulary";
       readonly values: readonly string[];
@@ -32,19 +44,47 @@ export type FilterFieldKind =
 export function vocabulary<Value extends string>(
   values: readonly Value[],
   labels: Readonly<Record<Value, string>>,
-): FilterFieldKind {
+): ListFieldKind {
   return { kind: "vocabulary", values, labels };
 }
 
-export interface FilterFieldDefinition<Query> {
-  readonly key: ListFieldOf<Query>;
+interface FilterFieldBase {
   readonly label: string;
-  readonly field: FilterFieldKind;
+  // The one audience that has the field; absent, both have it.
+  readonly audience?: Audience;
+}
+
+export interface ListFieldDefinition<Query> extends FilterFieldBase {
+  readonly key: ListFieldOf<Query>;
+  readonly field: ListFieldKind;
   // On the bar itself, reading "any" when empty, at most two (filtering.md §3.1); otherwise a
   // chip once a value is picked, under "+ Add filter".
   readonly isQuick?: boolean;
-  // The one audience that has the field; absent, both have it.
-  readonly audience?: Audience;
+}
+
+// A range is advanced (filtering.md §3.3, §6): only the Advanced editor builds it, at notebook
+// and large; every tier shows it as a chip that can be removed (view-rules.md §2, rule 1).
+export interface NumberRangeFieldDefinition<Query> extends FilterFieldBase {
+  readonly key: NumberRangeFieldOf<Query>;
+  // "pages", after the numbers.
+  readonly field: { readonly kind: "numberRange"; readonly unit: string };
+}
+
+export interface DateRangeFieldDefinition<Query> extends FilterFieldBase {
+  readonly key: DateRangeFieldOf<Query>;
+  readonly field: { readonly kind: "dateRange" };
+}
+
+export type RangeFieldDefinition<Query> =
+  | NumberRangeFieldDefinition<Query>
+  | DateRangeFieldDefinition<Query>;
+
+export type FilterFieldDefinition<Query> = ListFieldDefinition<Query> | RangeFieldDefinition<Query>;
+
+export function isRangeField<Query>(
+  definition: FilterFieldDefinition<Query>,
+): definition is RangeFieldDefinition<Query> {
+  return definition.field.kind === "numberRange" || definition.field.kind === "dateRange";
 }
 
 export interface ViewGroupingOption<Grouping extends string> {

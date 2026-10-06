@@ -23,6 +23,8 @@ import {
 } from "@/domain/entities";
 import type { PublicStatus, Validation } from "@/domain/status";
 import { displayStatuses, publicStatuses, validations } from "@/domain/status";
+import type { ValueRange } from "@/lib/value-range";
+import { formatRange, parseCount, parseDay, parseRange } from "@/lib/value-range";
 
 // A display status for staff, a public status for a requester.
 export const recordStatusSchema = z.enum([...new Set([...displayStatuses, ...publicStatuses])]);
@@ -59,10 +61,18 @@ export interface DocumentQuery {
   readonly priorities?: readonly Priority[];
   readonly existingCopies?: readonly ExistingCopyState[];
   readonly askerIds?: readonly string[];
+  // Advanced, ranges rather than values (filtering.md §6): the page count in use, and the day
+  // any current asker asked.
+  readonly pages?: ValueRange<number>;
+  readonly asked?: ValueRange<string>;
 }
 
 // The fields that are lists of values, each counted as a facet.
-export type DocumentListField = Exclude<keyof DocumentQuery, "search" | "isMine">;
+export type DocumentListField = Exclude<
+  keyof DocumentQuery,
+  "search" | "isMine" | DocumentRangeField
+>;
+export type DocumentRangeField = "pages" | "asked";
 
 // Query-string names; the same names address the filter in the page URL.
 export const documentQueryParams = {
@@ -79,6 +89,8 @@ export const documentQueryParams = {
   priorities: "priority",
   existingCopies: "copy",
   askerIds: "asker",
+  pages: "pages",
+  asked: "asked",
 } as const satisfies Record<keyof DocumentQuery, string>;
 
 const mineValue = "1";
@@ -117,6 +129,16 @@ export function toDocumentSearchParams(query: DocumentQuery): URLSearchParams {
     }
   }
 
+  const pages = formatRange(query.pages);
+  if (pages !== null) {
+    params.set(documentQueryParams.pages, pages);
+  }
+
+  const asked = formatRange(query.asked);
+  if (asked !== null) {
+    params.set(documentQueryParams.asked, asked);
+  }
+
   return params;
 }
 
@@ -145,6 +167,8 @@ export function parseDocumentSearchParams(params: URLSearchParams): DocumentQuer
     priorities: listOf("priorities", prioritySchema),
     existingCopies: listOf("existingCopies", existingCopyStateSchema),
     askerIds: listOf("askerIds", idValueSchema),
+    pages: parseRange(params.get(documentQueryParams.pages), parseCount),
+    asked: parseRange(params.get(documentQueryParams.asked), parseDay),
   };
 }
 

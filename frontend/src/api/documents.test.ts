@@ -154,6 +154,50 @@ describe("listDocuments facets", () => {
   });
 });
 
+describe("listDocuments ranges", () => {
+  it("keeps the documents whose page count in use falls in the range, ends included", async () => {
+    signInAs("staff");
+    const all = await listDocuments({}, { limit: maximumDocumentSliceSize });
+
+    const page = await listDocuments(
+      { pages: { from: 1000 } },
+      { limit: maximumDocumentSliceSize },
+    );
+
+    expect(page.total).toBeGreaterThan(0);
+    expect(page.total).toBeLessThan(all.total);
+    expect(
+      page.items.every((record) => {
+        const sources = record.document.pageSources.toSorted((a, b) => b.tier - a.tier);
+        return (sources[0]?.value ?? -1) >= 1000;
+      }),
+    ).toBe(true); // a document with no page count is in no range
+  });
+
+  it("keeps the documents a current asker asked for within the days", async () => {
+    signInAs("staff");
+    const asked = { from: "2026-06-20", to: "2026-06-25" };
+
+    const page = await listDocuments({ asked }, { limit: maximumDocumentSliceSize });
+
+    expect(page.total).toBeGreaterThan(0);
+    expect(
+      page.items.every((record) =>
+        record.requests.some((request) => request.at.slice(0, 10) >= asked.from),
+      ),
+    ).toBe(true);
+  });
+
+  it("ignores ranges for a requester, who has only the status", async () => {
+    signInAs("reader");
+    const all = await listDocuments({});
+
+    const page = await listDocuments({ pages: { from: 100000 } });
+
+    expect(page.total).toBe(all.total);
+  });
+});
+
 describe("listDocuments slices", () => {
   it("walks every row once, in the order of a single slice", async () => {
     signInAs("staff");
@@ -300,6 +344,8 @@ describe("document search params", () => {
       priorities: ["Urgent", "High"],
       existingCopies: ["None", "Published"],
       askerIds: ["u5"],
+      pages: { from: 200, to: 1000 },
+      asked: { from: "2026-06-01" },
     };
 
     const parsed = parseDocumentSearchParams(toDocumentSearchParams(query));

@@ -60,8 +60,9 @@ The foundation is in place:
   `documents.ts` owns the Documents contract: the query, its URL params (`q`, `mine` and
   comma lists matching any value within a field and every field together: the stored status
   dimensions `decision`, `progress`, `validation`, `restricted`, `cancelled`, then `category`,
-  `project`, `priority`, `copy`, `asker`; a requester has only `status`, in the public
-  vocabulary) and the page/detail responses with per-field facet counts. `group=batch|project`
+  `project`, `priority`, `copy`, `asker`, then the advanced ranges `pages` and `asked`, written
+  `from..to` with either end open (`src/lib/value-range.ts`); a requester has only `status`, in
+  the public vocabulary) and the page/detail responses with per-field facet counts. `group=batch|project`
   arranges the list: the server sorts by group first and each slice carries the headers of
   the groups it touches with their full counts. `watchlists.ts` lists a view's watchlists (shared
   first, then the caller's own, each with its count and `isEditable`), creates, renames or
@@ -119,7 +120,13 @@ The foundation is in place:
   a closed vocabulary with labels or a reference kind, quick or chip, and the one audience that
   has it), and `src/components/filters/filter-bar.tsx` builds the search, quick fields, chips and
   "+ Add filter" from them with the facet counts; a view adds toggles that are not fields
-  through `extras` (Documents' Mine). `src/hooks/use-reference-labels.ts` names referenced
+  through `extras` (Documents' Mine, counted by `activeExtraCount`). A field may instead be a
+  range, `numberRange` (Pages) or `dateRange` (Asked), which is advanced: the bar shows it as a
+  removable chip at every tier and builds it in `advanced-filter.tsx`, a panel under the bar at
+  large and a dialog at notebook, from `src/components/fields/number-range-field.tsx` and
+  `date-range-field.tsx` (native date inputs, *Last 7 days* and *This month*). On a phone the bar
+  is the search and *Filter n*, and `filter-sheet.tsx` opens from the bottom with every field as
+  a list of its values and counts, the toggles, the range chips and *Clear all*. `src/hooks/use-reference-labels.ts` names referenced
   records (users, projects, categories, batches, proposal custodies) for the bar and anywhere
   else. `src/components/pane-state.tsx` is what a pane shows: *Select a …*, nothing while
   loading, a line when the record left the view, an outcome after an action (Proposals'
@@ -162,8 +169,8 @@ The foundation is in place:
   `src/domain/proposals.ts`), then why, a project and, with `request.decide`, approving at
   once, then a report; the mock (`src/mocks/proposals.ts`, `fixtures/catalog.ts`) resolves
   against a small catalog plus every fixture document. Catalog search, record links, barcode
-  scanning and photo capture are not built. Still missing there: rendering only the visible rows once thousands are loaded, the reason line under a row,
-  the phone Filter sheet and the Batch field. Not yet built in the shell: the Watchlists row
+  scanning and photo capture are not built. Still missing there: rendering only the visible rows once thousands are loaded, the reason line under a row
+  and the Batch field. Not yet built in the shell: the Watchlists row
   with its "new" badge (which leaves shared watchlists out until "seen" is kept per person), the running-tasks row, the user menu and phone gestures (component-interfaces.md §8.1).
 - `src/features/proposals/` is the Proposals view, on Documents' pattern: the watchlist tabs
   (view `proposals`; "All" is every decision, the shared "Awaiting a decision" the open

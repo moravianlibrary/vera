@@ -48,6 +48,11 @@ All notable changes to this project are documented here.
   category, and a refusal shows in the dialog.
 - An administrator retries a batch's failed additions from its header in Documents grouped by
   batch: each goes back to being added, its attempt counted and logged.
+- Documents filters by page count and by the day it was asked for: *Advanced…* sets either as a
+  range with open ends (with *Last 7 days* and *This month*), a panel under the bar on a large
+  screen and a dialog on a notebook; on a tablet the range shows as a chip that can be removed.
+- On a phone the filter bar is the search and one *Filter* button counting what is set; it opens
+  a sheet with every field's values and counts, Mine, the ranges and *Clear all*.
 
 ### Changed
 

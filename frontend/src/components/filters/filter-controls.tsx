@@ -3,7 +3,8 @@
 // of values the rows may match, any of them. A quick field always shows and reads "any" when
 // empty. Any other field becomes a chip once a value is picked; clicking the chip reopens its
 // values, and × strikes the whole field off.
-// TODO(rrandiak): the Advanced editor (filtering.md §3.3); labels move to i18n.
+// Ranges, the advanced depth, are advanced-filter.tsx.
+// TODO(rrandiak): labels move to i18n.
 
 import { ChevronDown, Plus, X } from "lucide-react";
 import {

@@ -10,6 +10,7 @@ import type {
   DocumentListField,
   DocumentPage,
   DocumentQuery,
+  DocumentRangeField,
   DocumentSlice,
 } from "@/api/documents";
 import { documentPageSchema, documentSliceSize } from "@/api/documents";
@@ -20,6 +21,7 @@ import {
   askersOf,
   batchIdOf,
   currentIterationOf,
+  effectivePageCount,
   existingCopyStateOf,
   followedIterationId,
   projectIdOf,
@@ -36,6 +38,7 @@ import type {
 } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import { isRestricted, validationOf } from "@/domain/status";
+import { isWithinRange } from "@/lib/value-range";
 import type { Arrangement as GenericArrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
@@ -174,7 +177,7 @@ function withoutIngestError(iteration: Iteration): Iteration {
 
 // ---------------------------------------------------------------- filters
 
-type FilterField = "search" | "isMine" | DocumentListField;
+type FilterField = "search" | "isMine" | DocumentListField | DocumentRangeField;
 
 interface Predicate {
   field: FilterField;
@@ -230,6 +233,35 @@ function predicatesOf(
     predicates.push({
       field,
       matches: (record) => valuesOf[field](record).some((value) => wantedValues.has(value)),
+    });
+  }
+
+  if (audience === "staff") {
+    predicates.push(...rangePredicatesOf(query));
+  }
+
+  return predicates;
+}
+
+// A document with no page count is in no page range; one asked on several days is in a range
+// when any current asker asked within it.
+function rangePredicatesOf({ pages, asked }: DocumentQuery): Predicate[] {
+  const predicates: Predicate[] = [];
+  if (pages !== undefined) {
+    predicates.push({
+      field: "pages",
+      matches: (record) => {
+        const count = effectivePageCount(record.document);
+        return count !== null && isWithinRange(count.value, pages);
+      },
+    });
+  }
+
+  if (asked !== undefined) {
+    predicates.push({
+      field: "asked",
+      matches: (record) =>
+        askersOf(record).some((request) => isWithinRange(request.at.slice(0, 10), asked)),
     });
   }
 

@@ -1,7 +1,8 @@
 // The Documents view's declaration (component-interfaces.md §9.2): its filter in the URL, the
 // watchlist comparer, its fields and its groupings. Staff filter on the stored dimensions a
-// status is made from, Decision and Progress on the bar; a requester has only the status of
-// their own ask, in the public vocabulary, and the other fields do not exist for them.
+// status is made from, Decision and Progress on the bar, and on the advanced ranges Pages and
+// Asked (filtering.md §6); a requester has only the status of their own ask, in the public
+// vocabulary, and the other fields do not exist for them.
 // TODO(rrandiak): labels move to i18n.
 
 import type { DocumentGrouping, DocumentQuery } from "@/api/documents";
@@ -139,6 +140,18 @@ export const documentsView: ViewDefinition<DocumentQuery, DocumentGrouping> = {
       key: "askerIds",
       label: "Asked by",
       field: { kind: "reference", reference: "users" },
+      audience: "staff",
+    },
+    {
+      key: "pages",
+      label: "Pages",
+      field: { kind: "numberRange", unit: "pages" },
+      audience: "staff",
+    },
+    {
+      key: "asked",
+      label: "Asked",
+      field: { kind: "dateRange" },
       audience: "staff",
     },
   ],

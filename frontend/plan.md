@@ -36,7 +36,7 @@ green after every extraction.
    - `useActionMutation` and `useCan`;
    - Decline moves onto the Reason dialog.
 
-## 1. Documents
+## 1. Documents — done
 
 1. The pane's *More ▾*: Relink, Reclassify, Set where it is available, each
    with its mock endpoint.
