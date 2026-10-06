@@ -1,18 +1,19 @@
 // What the server does when someone changes a document's current iteration from the Documents or
 // Validations pane: reclassify it (C6,
-// V13), set where its scan is available (P1), enter its page count or correct a field (the fixes
-// in place of C3) and cancel it. Each checks its permission against the iteration's category,
-// refuses what the iteration's state does not allow, and writes the status log. A fix runs the
-// checks again; a defect they no longer find needs no verdict, and the gates move progress
+// V13), set where its scan is available (P1), enter its page count, recheck it against the
+// catalog and cancel it. Each checks its permission against the iteration's category,
+// refuses what the iteration's state does not allow, and writes the status log. Entering a
+// page count runs the checks again, and a recheck runs them over the record as the catalog has
+// it now; a defect they no longer find needs no verdict, and the gates move progress
 // (flows.md V14).
 
 import type {
   CancellationRequest,
   CancellationResult,
-  FieldCorrection,
   PageCount,
   Publication,
   PublicationResult,
+  Recheck,
   RecheckResult,
   Reclassification,
   ReclassificationResult,
@@ -29,13 +30,8 @@ import {
 } from "@/domain/iterations";
 import type { Permission } from "@/domain/permissions";
 import { can } from "@/domain/permissions";
-import {
-  defectNameOf,
-  isFoundAfterScan,
-  pagesSubject,
-  recordSubject,
-  reviewStateOf,
-} from "@/domain/validations";
+import { defectNameOf, isFoundAfterScan, pagesSubject, reviewStateOf } from "@/domain/validations";
+import { repairedSubjectsOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
 import type { Outcome } from "@/mocks/mutations";
@@ -130,7 +126,7 @@ export function publishIteration(
   return { value: { publishedLink: publication.link, progress: "Published" } };
 }
 
-// ---------------------------------------------------------------- fixes in place
+// ---------------------------------------------------------------- page count and recheck
 
 // A counted page count goes in as the manual source, above the catalog and the predictor.
 export function enterPageCount(
@@ -160,7 +156,7 @@ export function enterPageCount(
   });
 
   return {
-    value: applyRecheck(session, iteration, pagesSubject, {
+    value: applyRecheck(session, iteration, [pagesSubject], {
       event: "Page count entered",
       detail: `${pageCount.pages.toLocaleString("en-GB")} pages, counted.`,
     }),
@@ -170,35 +166,31 @@ export function enterPageCount(
 // The manual source's tier in document-properties.md §4, as the fixtures carry it.
 const manualPageTier = 100;
 
-// A field of the record corrected in VERA. The mock keeps only the history of it.
-// TODO(rrandiak): where a corrected field lives once descriptive metadata is modelled.
-export function correctField(
+// Reads the record from the catalog again and runs the checks: what was repaired there is gone,
+// everything else is found again with the same keys, so its verdicts still stand. Checks run at
+// any time, after the scan too (status-model.md §2).
+export function recheckIteration(
   session: Session,
   iterationId: string,
-  correction: FieldCorrection,
+  _recheck: Recheck,
 ): Outcome<RecheckResult> {
-  const found = fixableIteration(session, iterationId, "iteration.edit_descriptive");
+  // TODO(rrandiak): no permission of its own yet; whoever may accept may ask the checks again.
+  const found = actionableIteration(session, iterationId, "validation.approve");
   if ("refusal" in found) {
     return found;
   }
 
-  const { iteration } = found.value;
-  const { subject, value } = correction;
-  const isOwnFix = subject === pagesSubject || subject === recordSubject;
-  if (isOwnFix || !iteration.defects.some((defect) => defect.subject === subject)) {
-    return { refusal: { status: 422, message: `No defect asks for ${subject} to be corrected` } };
-  }
-
+  const { iteration, document } = found.value;
   return {
-    value: applyRecheck(session, iteration, subject, {
-      event: `Corrected ${subject}`,
-      detail: `Now “${value}”, in VERA.`,
+    value: applyRecheck(session, iteration, repairedSubjectsOf(document.catalogId), {
+      event: "Rechecked",
+      detail: "The record was read from the catalog again.",
     }),
   };
 }
 
-// The iteration a fix may be made to: not once scanned, since then the fix goes to the catalog
-// record and progress never moves back (C10).
+// The iteration a page count may be entered for: not once scanned, since then the scan counts
+// the pages and progress never moves back (C10).
 function fixableIteration(
   session: Session,
   iterationId: string,
@@ -216,25 +208,26 @@ function fixableIteration(
   return found;
 }
 
-// The mock's check run: a fix to a subject clears every defect found on it. A real run asks the
-// plugins again and may find the same defect, or a new one.
-function recheck(iteration: Iteration, subject: string): Iteration {
+// The mock's check run: every defect on a repaired subject is gone. A real run asks the plugins
+// again and may find the same defect, or a new one.
+function recheck(iteration: Iteration, repairedSubjects: readonly string[]): Iteration {
   return {
     ...iteration,
-    defects: iteration.defects.filter((defect) => defect.subject !== subject),
+    defects: iteration.defects.filter((defect) => !repairedSubjects.includes(defect.subject)),
   };
 }
 
 function applyRecheck(
   session: Session,
   iteration: Iteration,
-  subject: string,
+  repairedSubjects: readonly string[],
   entry: { event: string; detail: string },
 ): RecheckResult {
-  const rechecked = recheck(iteration, subject);
-  const progress = progressAfterGates(rechecked);
+  const rechecked = recheck(iteration, repairedSubjects);
+  // Once scanned, progress never moves back (C10).
+  const progress = isFoundAfterScan(iteration) ? iteration.progress : progressAfterGates(rechecked);
   replaceIteration({ ...rechecked, progress });
-  const cleared = iteration.defects.filter((defect) => defect.subject === subject);
+  const cleared = iteration.defects.filter((defect) => repairedSubjects.includes(defect.subject));
   writeLog({
     subjectKind: "iteration",
     subjectId: iteration.id,

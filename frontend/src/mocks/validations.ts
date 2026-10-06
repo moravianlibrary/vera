@@ -28,6 +28,7 @@ import type { ValidationRow } from "@/domain/validations";
 import { defectNameOf, defectsToRuleOn, reviewStateOf, waitingSinceOf } from "@/domain/validations";
 import { isWithinRange } from "@/lib/value-range";
 import { countValues, sliceOf } from "@/mocks/arrangement";
+import { catalogLinkOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { oncePerCause } from "@/mocks/documents";
 import type { Outcome } from "@/mocks/mutations";
@@ -163,7 +164,7 @@ export function findValidationDetail(
     return null;
   }
 
-  return { row, log: logOf(row) };
+  return { row, catalogLink: catalogLinkOf(row.document.catalogId), log: logOf(row) };
 }
 
 function predicatesOf(query: ValidationQuery): Predicate[] {

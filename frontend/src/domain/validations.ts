@@ -6,7 +6,6 @@
 import { z } from "zod";
 import type { Defect, Iteration } from "@/domain/entities";
 import { documentSchema, iterationSchema } from "@/domain/entities";
-import type { Permission } from "@/domain/permissions";
 import {
   approvedKeysOf,
   deniedKeysOf,
@@ -76,39 +75,14 @@ export function deniedDefectsOf(iteration: Iteration): Defect[] {
   return iteration.defects.filter((defect) => deniedKeys.has(defect.key));
 }
 
-// Found after digitization (C10): progress never moves back, and the fix goes to the catalog
-// record, not here.
+// Found after digitization (C10): progress never moves back, and the scan has counted the pages.
 export function isFoundAfterScan(iteration: Iteration): boolean {
   return isProgressAtLeast(iteration.progress, "Digitized");
 }
 
-// ---------------------------------------------------------------- fixes in place
-
-// The staff edit that makes a defect go away, by what the defect is about: a page count is
-// counted, any other field is corrected in VERA. A missing record has none: it is repaired in the
-// catalog (decided 2026-10-06).
-export type DefectFix =
-  | { readonly kind: "pageCount" }
-  | { readonly kind: "field"; readonly subject: string };
-
-export const recordSubject = "record";
+// What a defect is about when it is the page count: the one value entered in VERA, which runs
+// the checks again (decided 2026-10-06). Every other defect is repaired in the catalog.
 export const pagesSubject = "pages";
-
-export function fixOf(defect: Defect): DefectFix | null {
-  if (defect.subject === recordSubject) {
-    return null;
-  }
-
-  if (defect.subject === pagesSubject) {
-    return { kind: "pageCount" };
-  }
-
-  return { kind: "field", subject: defect.subject };
-}
-
-export function fixPermissionOf(_fix: DefectFix): Permission {
-  return "iteration.edit_descriptive";
-}
 
 // A defect's own name, "PageCount R03".
 export function defectNameOf(defect: Defect): string {

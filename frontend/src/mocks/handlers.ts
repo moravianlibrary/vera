@@ -11,9 +11,9 @@ import {
 } from "@/api/documents";
 import {
   cancellationRequestSchema,
-  fieldCorrectionSchema,
   pageCountSchema,
   publicationSchema,
+  recheckSchema,
   reclassificationSchema,
 } from "@/api/iterations";
 import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
@@ -48,9 +48,9 @@ import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
 import {
   cancelIteration,
-  correctField,
   enterPageCount,
   publishIteration,
+  recheckIteration,
   reclassifyIteration,
 } from "@/mocks/iterations";
 import { messageChannels, prepareMessage } from "@/mocks/messages";
@@ -176,7 +176,7 @@ export function createHandlers(profile: MockUserProfile) {
     iterationAction("reclassify", reclassificationSchema, reclassifyIteration),
     iterationAction("publish", publicationSchema, publishIteration),
     iterationAction("page-count", pageCountSchema, enterPageCount),
-    iterationAction("field", fieldCorrectionSchema, correctField),
+    iterationAction("recheck", recheckSchema, recheckIteration),
     iterationAction("cancel", cancellationRequestSchema, cancelIteration),
 
     http.get(route(apiRoutes.proposalSettings), () => HttpResponse.json(proposalSettings)),

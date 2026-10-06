@@ -159,6 +159,9 @@ export type ValidationPage = z.infer<typeof validationPageSchema>;
 
 export const validationDetailSchema = z.object({
   row: validationRowSchema,
+  // Where the record opens in the library's catalog, to repair it there; null when the catalog
+  // adapter gives none.
+  catalogLink: z.url().nullable(),
   // Newest first.
   log: z.array(statusLogEntrySchema),
 });

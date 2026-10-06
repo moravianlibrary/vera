@@ -101,8 +101,7 @@ The foundation is in place:
   `validations.ts` is Documents Validations (`GET /validations`, `/validations/:id`): one row
   per current iteration a defect holds or a rule forbade (`src/domain/validations.ts`: the review
   state *Needed · Denied · Approved · Forbidden*, a forbidden item filed apart whatever its
-  defects, a cancelled one out; how long it has waited; the defects still to rule on; the fix a
-  defect asks for), kept to the caller's category custody (`validation.*` at `custody` reaches the
+  defects, a cancelled one out; how long it has waited; the defects still to rule on), kept to the caller's category custody (`validation.*` at `custody` reaches the
   subtree of the categories they hold, at `any` everything), filtered by review, category
   (subtree), the plugin of a defect still to rule on, priority, project and the day it started
   waiting (`since=from..to`), counted, sorted needs-review first, most urgent, longest waiting.
@@ -111,10 +110,13 @@ The foundation is in place:
   otherwise) and refuse a forbidden item, deny keeps what every asker reads, revoke appends a
   *Revoked* row that takes the acceptances back (`approvedKeysOf` in `src/domain/status.ts`, the
   later row winning). `iterations.ts` also enters a counted page count
-  (`/iterations/:id/page-count`, the manual source) and corrects a field
-  (`/iterations/:id/field`), each a fix that re-runs the mock's checks (every defect on that
-  subject clears) and refused once scanned, and cancels (`/iterations/:id/cancel`, held where it
-  is). Every verdict and fix moves progress as the gates say (`progressAfterGates` in
+  (`/iterations/:id/page-count`, the manual source, refused once scanned), rechecks
+  (`/iterations/:id/recheck`: the record is read from the catalog again, and every defect on a
+  subject `fixtures/catalog.ts` lists in `catalogRepairs` for that record is gone; both re-run
+  the checks the same way, and a recheck runs after the scan too without moving progress back),
+  and cancels (`/iterations/:id/cancel`, held where it is). The detail carries `catalogLink`
+  (`catalogLinkOf` in `catalog.ts`, MZK's VuFind until the catalog adapter supplies it). Nothing
+  else is corrected in VERA (decided 2026-10-06). Every verdict and recheck moves progress as the gates say (`progressAfterGates` in
   `src/domain/iterations.ts`, V14: Enqueued to Ready once clear, Ready back to Enqueued when a
   gate fails) and says so in its log entry.
   `mutations.ts` holds what the actions share: `Outcome`/`Refusal`, `writeLog`,
@@ -229,21 +231,23 @@ The foundation is in place:
   the list, one item, and `validationInvalidations` (Validations, Documents, watchlists). The
   Defect field names plugins through the `defectPlugins` reference kind, which is the name
   itself until a Plugins resource exists. Documents' *Resolve in Documents Validations* opens
-  the item (`?id=`). `validation-detail.tsx` is the pane: the review note, the facts, *Outstanding
-  — n* (Needed) or *Fix it* (Denied) built from `defect-card.tsx` (the texts and the fix in
-  place: an inline form for a page count or a field), the
-  accepted defects with who and when, the attempt, the catalog record and the history. An act
+  the item (`?id=`). `validation-detail.tsx` is the pane: the review note, the facts, one *Defects* card
+  in sections divided by a rule — *Outstanding — n* (Needed) with Accept, Deny… and Recheck,
+  *Denied — n* with Recheck, *Accepted — n* with who and when and Revoke — each defect a
+  `DefectRow` from `defect-card.tsx`, a page-count defect with `PageCountEntry` (saving it runs
+  the checks again); then the attempt, the catalog record (`CatalogCard`'s `link`: *Open in the
+  catalog ↗*) and the history. What a recheck cleared shows as a note until another item opens. An act
   that takes the item out of the view reports it through `onLeft`, and the page shows it as the
   pane's outcome. Reclassify is a shared dialog (`src/components/iteration-dialogs.tsx`,
   with `FieldError`), each told what to refetch (`invalidates`) and what to do once done
-  (`onDone`). `validation-actions.tsx` holds the rest: *Accept it / Accept all n* with a note and *Deny…*
+  (`onDone`). `validation-actions.tsx` holds the rest: *Which to accept* (a pick, all ticked, shown
+  when more than one is outstanding), *Accept it / Accept all n / Accept n* with a note, *Deny…*
   (`ReasonDialog` with the defect pick in `fields`; the public text follows the pick through
-  the new `suggestion` of a `ReasonText`, until typed in), *Revoke* on the accepted card, and
+  the new `suggestion` of a `ReasonText`, until typed in), *Revoke* on the accepted section, `RecheckButton`, and
   `useMoreActions` for More ▾ (Reclassify, handed over out of custody → outcome; Cancel… →
   outcome). A forbidden item gets *What you can do* and, for whoever may not overrule,
   *Message admins…*: the Message dialog over the new `restriction` subject, which the mock
-  (`src/mocks/messages.ts`) resolves to the holders of `restriction.overrule`. Accepting defects
-  one by one has an endpoint but no control yet (a TODO).
+  (`src/mocks/messages.ts`) resolves to the holders of `restriction.overrule`.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

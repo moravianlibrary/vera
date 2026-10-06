@@ -6,7 +6,7 @@
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
-import { cancelIteration, correctField, enterPageCount } from "@/api/iterations";
+import { cancelIteration, enterPageCount, recheckIteration } from "@/api/iterations";
 import type { ValidationQuery } from "@/api/validations";
 import {
   acceptDefects,
@@ -188,7 +188,7 @@ describe("verdicts", () => {
   });
 });
 
-describe("fixes in place", () => {
+describe("page count and recheck", () => {
   it("clears a page-count defect once someone counts the pages, so no verdict is needed", async () => {
     signInAs("curator");
 
@@ -200,22 +200,37 @@ describe("fixes in place", () => {
     expect(await findValidation("IT11")).toBeNull();
   });
 
-  it("clears a field's defect once corrected, leaving the others outstanding", async () => {
+  it("clears what was repaired in the catalog and finds the rest again", async () => {
     signInAs("admin");
 
-    const result = await correctField("IT10", {
-      subject: "245$a",
-      value: "Dějiny Velehradu [díl I]",
-    });
+    const result = await recheckIteration("IT10");
 
     expect(result.clearedKeys).toEqual(["CatalogValidity:R03:245$a"]);
+    expect(result.review).toBe("Needed"); // 041$a is still missing in the catalog
+  });
+
+  it("finds the same defects when nothing was repaired", async () => {
+    signInAs("admin");
+
+    const result = await recheckIteration("IT19");
+
+    expect(result.clearedKeys).toEqual([]);
     expect(result.review).toBe("Needed");
   });
 
-  it("is refused once scanned, where the fix goes to the catalog record", async () => {
+  it("runs after the scan too, and never moves progress back", async () => {
     signInAs("admin");
 
-    expect(await statusOf(correctField("IT12", { subject: "300$a", value: "18 ff." }))).toBe(409);
+    const result = await recheckIteration("IT12");
+
+    expect(result.clearedKeys).toEqual(["CatalogValidity:R11:300$a"]);
+    expect(result.progress).toBe("Digitized");
+  });
+
+  it("refuses a page count once scanned, where the scan counts the pages", async () => {
+    signInAs("admin");
+
+    expect(await statusOf(enterPageCount("IT12", { pages: 18 }))).toBe(409);
   });
 });
 

@@ -1,17 +1,17 @@
-// What a curator does in the Validations pane besides fixing (page-validation.js decideCard,
-// acceptedCard, moreMenu and forbiddenPane). The verdicts: Accept takes the outstanding set as it
-// stands with an optional note, Deny… picks which defects are substantial and the text every
-// asker reads follows the pick, Revoke takes the acceptances back. More ▾ holds Reclassify and
+// What a curator does in the Validations pane (page-validation.js decideCard, acceptedCard,
+// moreMenu and forbiddenPane). The verdicts: Accept takes the defects picked, all of them to
+// begin with, with an optional note; Deny… picks which are substantial and the text every asker
+// reads follows the pick; Revoke takes the acceptances back. Recheck sits beside them: the
+// curator repairs the record in the catalog, and the checks read it again (decided 2026-10-06). More ▾ holds Reclassify and
 // Cancel…, each with its reason. A forbidden item has no verdict here: a rule forbade it, and
 // only an administrator overrules it, so the curator may message them. There are no bulk
 // verdicts. Each act is offered only where the caller's grant reaches the item's category.
-// TODO(rrandiak): accepting defects one by one (STATUS.md, decided 2026-09-26) has an endpoint
-// that takes any outstanding subset, but the demo draws only *Accept all*; how the pane offers
-// one at a time is undecided. Labels move to i18n.
+// TODO(rrandiak): labels move to i18n.
 
+import type { ReactNode } from "react";
 import { useId, useState } from "react";
-import type { CancellationRequest, ReclassificationResult } from "@/api/iterations";
-import { cancelIteration } from "@/api/iterations";
+import type { CancellationRequest, RecheckResult, ReclassificationResult } from "@/api/iterations";
+import { cancelIteration, recheckIteration } from "@/api/iterations";
 import type { Denial } from "@/api/validations";
 import { acceptDefects, denyDefects, revokeAcceptance } from "@/api/validations";
 import type { ViewAction } from "@/components/actions/action-bar";
@@ -52,15 +52,21 @@ interface VerdictControlsProps {
   session: Session;
 }
 
-export function VerdictControls({ row, scope, session }: VerdictControlsProps) {
+export function VerdictControls({
+  row,
+  scope,
+  session,
+  recheck,
+}: VerdictControlsProps & { recheck: ReactNode }) {
   const id = useId();
   const { iteration } = row;
   const outstanding = outstandingDefects(iteration);
   const [note, setNote] = useState("");
   const [isDenying, setIsDenying] = useState(false);
-  const [pickedKeys, setPickedKeys] = useState<readonly string[]>(
-    outstanding.map((defect) => defect.key),
-  );
+  const allKeys = outstanding.map((defect) => defect.key);
+  // Which to accept, and which to deny: each its own pick, all of them to begin with.
+  const [acceptKeys, setAcceptKeys] = useState<readonly string[]>(allKeys);
+  const [pickedKeys, setPickedKeys] = useState<readonly string[]>(allKeys);
   const accept = useActionMutation({
     call: (keys: readonly string[]) =>
       acceptDefects(iteration.id, { defectKeys: [...keys], note: note.trim() || null }),
@@ -81,10 +87,17 @@ export function VerdictControls({ row, scope, session }: VerdictControlsProps) {
   }
 
   const picked = outstanding.filter((defect) => pickedKeys.includes(defect.key));
+  const toAccept = outstanding.filter((defect) => acceptKeys.includes(defect.key));
   const runAccept = async () => {
-    const result = await accept.run(outstanding.map((defect) => defect.key));
+    const result = await accept.run(toAccept.map((defect) => defect.key));
     setFailure(result.isDone ? null : result.refusal.message);
   };
+  const acceptLabel =
+    outstanding.length === 1
+      ? "Accept it"
+      : toAccept.length === outstanding.length
+        ? `Accept all ${outstanding.length}`
+        : `Accept ${toAccept.length}`;
   const runDeny = ({ publicText, internalNote }: ReasonTexts) =>
     deny.run({
       defectKeys: picked.map((defect) => defect.key),
@@ -94,6 +107,14 @@ export function VerdictControls({ row, scope, session }: VerdictControlsProps) {
 
   return (
     <div className="mt-3 grid gap-3 border-t pt-3">
+      {mayAccept && outstanding.length > 1 && (
+        <DefectPick
+          legend="Which to accept"
+          defects={outstanding}
+          pickedKeys={acceptKeys}
+          onChange={setAcceptKeys}
+        />
+      )}
       {mayAccept && (
         <Field id={`${id}-note`} label="Note" hint="optional; kept with the verdict">
           <Textarea
@@ -108,8 +129,12 @@ export function VerdictControls({ row, scope, session }: VerdictControlsProps) {
 
       <div className="flex flex-wrap items-center gap-2">
         {mayAccept && (
-          <Button size="sm" disabled={accept.isPending} onClick={() => void runAccept()}>
-            {outstanding.length === 1 ? "Accept it" : `Accept all ${outstanding.length}`}
+          <Button
+            size="sm"
+            disabled={accept.isPending || toAccept.length === 0}
+            onClick={() => void runAccept()}
+          >
+            {acceptLabel}
           </Button>
         )}
         {mayDeny && (
@@ -122,6 +147,7 @@ export function VerdictControls({ row, scope, session }: VerdictControlsProps) {
             Deny…
           </Button>
         )}
+        {recheck}
         {failure !== null && <span className="text-xs text-destructive">{failure}</span>}
       </div>
 
@@ -132,11 +158,16 @@ export function VerdictControls({ row, scope, session }: VerdictControlsProps) {
         description={
           isFoundAfterScan(iteration)
             ? `Rule the defects substantial. It stays ${iteration.progress} and reads denied in review.`
-            : "Rule the defects substantial. It is held until they are fixed; the denial lapses once they are gone."
+            : "Rule the defects substantial. It is held until they are repaired in the catalog; the denial lapses once they are gone."
         }
         fields={
           outstanding.length > 1 && (
-            <DefectPick defects={outstanding} pickedKeys={pickedKeys} onChange={setPickedKeys} />
+            <DefectPick
+              legend="Which are substantial"
+              defects={outstanding}
+              pickedKeys={pickedKeys}
+              onChange={setPickedKeys}
+            />
           )
         }
         publicText={{
@@ -162,12 +193,14 @@ export function VerdictControls({ row, scope, session }: VerdictControlsProps) {
   );
 }
 
-// Which of the outstanding defects are substantial; all of them to begin with.
+// A pick among the outstanding defects; all of them to begin with.
 function DefectPick({
+  legend,
   defects,
   pickedKeys,
   onChange,
 }: {
+  legend: string;
   defects: readonly Defect[];
   pickedKeys: readonly string[];
   onChange: (keys: readonly string[]) => void;
@@ -176,7 +209,7 @@ function DefectPick({
 
   return (
     <fieldset className="grid gap-2">
-      <legend className="mb-1 text-sm font-medium">Which are substantial</legend>
+      <legend className="mb-1 text-sm font-medium">{legend}</legend>
       {defects.map((defect) => {
         const isPicked = pickedKeys.includes(defect.key);
         return (
@@ -230,6 +263,42 @@ export function RevokeButton({ row, scope, session }: VerdictControlsProps) {
         Revoke
       </Button>
     </span>
+  );
+}
+
+// ---------------------------------------------------------------- recheck
+
+interface RecheckButtonProps extends VerdictControlsProps {
+  onRechecked: (result: RecheckResult) => void;
+}
+
+// Reads the record from the catalog again and runs the checks: what was repaired there is gone.
+export function RecheckButton({ row, scope, session, onRechecked }: RecheckButtonProps) {
+  const recheck = useActionMutation({
+    call: () => recheckIteration(row.iteration.id),
+    invalidates: validationInvalidations,
+    refusalTexts: { 404: "It no longer waits here." },
+  });
+  const [failure, setFailure] = useState<string | null>(null);
+  if (!can(session, "validation.approve", scope)) {
+    return null;
+  }
+
+  const run = async () => {
+    const result = await recheck.run(undefined);
+    setFailure(result.isDone ? null : result.refusal.message);
+    if (result.isDone) {
+      onRechecked(result.value);
+    }
+  };
+
+  return (
+    <>
+      <Button size="sm" variant="outline" disabled={recheck.isPending} onClick={() => void run()}>
+        {recheck.isPending ? "Rechecking…" : "Recheck"}
+      </Button>
+      {failure !== null && <span className="text-xs text-destructive">{failure}</span>}
+    </>
   );
 }
 

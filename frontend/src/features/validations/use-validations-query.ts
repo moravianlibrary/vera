@@ -1,5 +1,5 @@
 // Iterations held in Documents Validations within the caller's custody: the list a slice at a time
-// and one iteration with its history. A verdict, a fix or a cancellation changes what Documents,
+// and one iteration with its history. A verdict, a recheck or a cancellation changes what Documents,
 // Validations and the watchlist counts show, so each refetches all three.
 
 import { skipToken, useQuery } from "@tanstack/react-query";

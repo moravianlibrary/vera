@@ -1,7 +1,6 @@
 // What may be changed on a document's current iteration from the Documents and Validations panes:
 // reclassify it, set where its scan is available, enter its
-// page count or correct a field (the fixes in place, after which the checks run again) and cancel
-// it. Each is its own permission, scoped by the iteration's category (permissions.md §3), and the
+// page count, run the checks again over the record as the catalog has it now, and cancel it. Each is its own permission, scoped by the iteration's category (permissions.md §3), and the
 // server checks it again; a pane only leaves out what the caller may not do.
 
 import { z } from "zod";
@@ -43,21 +42,19 @@ export const publicationResultSchema = z.object({
 });
 export type PublicationResult = z.infer<typeof publicationResultSchema>;
 
-// ---------------------------------------------------------------- fixes in place
+// ---------------------------------------------------------------- page count and recheck
 
 // A page count someone counted: the manual source, above the catalog and the predictor
-// (document-properties.md §4).
+// (document-properties.md §4). The one value entered in VERA; entering it runs the checks again.
+// Every other defect is repaired in the catalog and picked up by a recheck (decided 2026-10-06).
 export const pageCountSchema = z.object({
   pages: z.number().int().positive(),
 });
 export type PageCount = z.infer<typeof pageCountSchema>;
 
-// A field of the catalog record corrected in VERA ("260$c"), not in the catalog.
-export const fieldCorrectionSchema = z.object({
-  subject: idValueSchema,
-  value: z.string().trim().min(1),
-});
-export type FieldCorrection = z.infer<typeof fieldCorrectionSchema>;
+// A recheck carries nothing: it pulls the record from the catalog and runs the checks.
+export const recheckSchema = z.object({});
+export type Recheck = z.infer<typeof recheckSchema>;
 
 // What the checks found once they ran again. A defect they no longer find needs no verdict.
 export const recheckResultSchema = z.object({
@@ -115,11 +112,8 @@ export async function enterPageCount(
   return postJson(iterationActionRoute(iterationId, "page-count"), pageCount, recheckResultSchema);
 }
 
-export async function correctField(
-  iterationId: string,
-  correction: FieldCorrection,
-): Promise<RecheckResult> {
-  return postJson(iterationActionRoute(iterationId, "field"), correction, recheckResultSchema);
+export async function recheckIteration(iterationId: string): Promise<RecheckResult> {
+  return postJson(iterationActionRoute(iterationId, "recheck"), {}, recheckResultSchema);
 }
 
 export async function cancelIteration(

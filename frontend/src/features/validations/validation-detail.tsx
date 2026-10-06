@@ -1,10 +1,11 @@
 // One iteration beside the Documents Validations list (page-validation.js render): a note on what
-// holds it, the facts, then the cards. The curator is shown D \ A only: the outstanding defects,
-// each with its fix in place; a denied item shows the defects ruled substantial with theirs, since
-// a denial lapses once its defect is gone; the defects already accepted sit in their own card,
-// with who and when, and Revoke. Accept and Deny… close the outstanding card, Reclassify and
-// Cancel… sit in More ▾ (validation-actions.tsx). A forbidden item says what the rule said and
-// offers *Message admins…*. Then the attempt, the catalog record and the history.
+// holds it, the facts, then the cards. One Defects card holds every finding in sections divided
+// by a rule (decided 2026-10-06): outstanding, D \ A, with Accept, Deny… and Recheck; denied, the
+// ones ruled substantial, which lapse once gone; accepted, with who and when, and Revoke. Nothing
+// is corrected here: the catalog record links out, the curator repairs it there, and Recheck
+// reads it again; only a page count is entered here. Reclassify and Cancel… sit in More ▾
+// (validation-actions.tsx). A forbidden item says what the rule said and offers *Message
+// admins…*. Then the attempt, the catalog record and the history.
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
@@ -14,14 +15,7 @@ import type { ValidationDetail } from "@/api/validations";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import { categoryLabelOf } from "@/components/classification-fields";
-import {
-  DetailCard,
-  DetailRow,
-  FactGrid,
-  FinePrint,
-  Muted,
-  StatTiles,
-} from "@/components/detail-card";
+import { DetailCard, FactGrid, FinePrint, StatTiles } from "@/components/detail-card";
 import { MessageDialog } from "@/components/dialogs/message-dialog";
 import { visibleNavigation } from "@/components/layout/navigation";
 import type { Outcome } from "@/components/pane-state";
@@ -38,13 +32,13 @@ import {
   acceptedDefectsOf,
   defectNameOf,
   deniedDefectsOf,
-  fixOf,
-  fixPermissionOf,
   isFoundAfterScan,
+  pagesSubject,
 } from "@/domain/validations";
-import { DefectCard } from "@/features/validations/defect-card";
+import { DefectRow, PageCountEntry } from "@/features/validations/defect-card";
 import {
   ForbiddenCard,
+  RecheckButton,
   RevokeButton,
   useMoreActions,
   VerdictControls,
@@ -76,17 +70,13 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
   const documents = visibleNavigation(session).find((entry) => entry.id === "documents");
   const [isMessaging, setIsMessaging] = useState(false);
   const { data: messageChannels = [] } = useMessageChannelsQuery();
-  // What the last fix found, until another item is opened.
-  const [lastFix, setLastFix] = useState<{ defect: Defect; result: RecheckResult } | null>(null);
+  // What the last recheck found, until another item is opened.
+  const [lastRecheck, setLastRecheck] = useState<LastRecheck | null>(null);
 
   const scope = scopeOfIteration(categories, iteration.categoryId);
-  // No fix in place once scanned: it goes to the catalog record (C10).
-  const fixFor = (defect: Defect) => {
-    const fix = fixOf(defect);
-    return fix !== null && can(session, fixPermissionOf(fix), scope) && !isFoundAfterScan(iteration)
-      ? fix
-      : null;
-  };
+  // A page count is entered here until the scan has counted the pages.
+  const mayEnterPages =
+    can(session, "iteration.edit_descriptive", scope) && !isFoundAfterScan(iteration);
   const next =
     documents === undefined
       ? undefined
@@ -94,16 +84,15 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
           label: `Open in ${documents.visibleLabel}`,
           href: `${documents.path}?id=${encodeURIComponent(document.id)}`,
         };
-  const onFixed = (defect: Defect, result: RecheckResult) => {
+  const onRechecked = (result: RecheckResult) => {
     if (result.review === null) {
       onLeft({
         iterationId: iteration.id,
         title: document.title,
         tone: "green",
-        heading: "Fixed",
+        heading: "Rechecked",
         summary: joinDetails([
-          `The checks no longer find ${defectNameOf(defect)}`,
-          "nothing is left to rule on",
+          "The checks found nothing left to rule on",
           result.progress === "Ready" ? "it is Ready" : null,
         ]),
         next,
@@ -111,7 +100,7 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
       return;
     }
 
-    setLastFix({ defect, result });
+    setLastRecheck({ defects: iteration.defects, result });
   };
 
   const more = useMoreActions({
@@ -163,15 +152,13 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
 
   headingActions.push(...more.actions);
 
-  const defectCardOf = (defect: Defect) => (
-    <DefectCard
-      key={defect.key}
-      defect={defect}
-      iteration={iteration}
-      fix={fixFor(defect)}
-      onFixed={onFixed}
-    />
+  const recheck = (
+    <RecheckButton row={row} scope={scope} session={session} onRechecked={onRechecked} />
   );
+  const pageCountOf = (defect: Defect) =>
+    defect.subject === pagesSubject && mayEnterPages ? (
+      <PageCountEntry iteration={iteration} onRechecked={onRechecked} />
+    ) : null;
 
   return (
     <article className="@container max-w-5xl">
@@ -187,31 +174,50 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
       <ReviewFacts row={row} nameOf={nameOf} />
 
       <div className="mt-4 grid gap-4">
-        {row.review === "Needed" && (
-          <DetailCard title={`Outstanding — ${outstandingDefects(iteration).length}`}>
-            {lastFix !== null && <FixNote defect={lastFix.defect} result={lastFix.result} />}
-            {outstandingDefects(iteration).map(defectCardOf)}
-            <VerdictControls row={row} scope={scope} session={session} />
+        {row.review !== "Forbidden" && (
+          <DetailCard title="Defects">
+            {lastRecheck !== null && <RecheckNote {...lastRecheck} />}
+            {row.review === "Needed" && (
+              <DefectSection title={`Outstanding — ${outstandingDefects(iteration).length}`}>
+                <div>
+                  {outstandingDefects(iteration).map((defect) => (
+                    <DefectRow key={defect.key} defect={defect}>
+                      {pageCountOf(defect)}
+                    </DefectRow>
+                  ))}
+                </div>
+                <VerdictControls row={row} scope={scope} session={session} recheck={recheck} />
+              </DefectSection>
+            )}
+            {row.review === "Denied" && (
+              <DefectSection title={`Denied — ${deniedDefectsOf(iteration).length}`}>
+                <div>
+                  {deniedDefectsOf(iteration).map((defect) => (
+                    <DefectRow key={defect.key} defect={defect}>
+                      {pageCountOf(defect)}
+                    </DefectRow>
+                  ))}
+                </div>
+                <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
+                  {recheck}
+                </div>
+              </DefectSection>
+            )}
+            <AcceptedSection
+              row={row}
+              nameOf={nameOf}
+              action={<RevokeButton row={row} scope={scope} session={session} />}
+            />
             <FinePrint>
-              Fix it and the checks run again: a defect that is gone needs no verdict. Accepting
-              says it is tolerable — a later re-check finding the same or fewer asks nobody again.
+              Repair the record in the catalog, then Recheck: a defect that is gone needs no
+              verdict. Accepting says it is tolerable — a later check finding the same or fewer asks
+              nobody again.
             </FinePrint>
           </DetailCard>
         )}
-        {row.review === "Denied" && (
-          <DetailCard title="Fix it">
-            {lastFix !== null && <FixNote defect={lastFix.defect} result={lastFix.result} />}
-            {deniedDefectsOf(iteration).map(defectCardOf)}
-          </DetailCard>
-        )}
         {row.review === "Forbidden" && <ForbiddenCard session={session} />}
-        <AcceptedCard
-          row={row}
-          nameOf={nameOf}
-          action={<RevokeButton row={row} scope={scope} session={session} />}
-        />
         <AttemptCard row={row} />
-        <CatalogCard document={document} nameOf={nameOf} />
+        <CatalogCard document={document} nameOf={nameOf} link={detail.catalogLink} />
         <HistoryCard
           record={{ document, iterations: [iteration], requests: [] }}
           log={log}
@@ -232,21 +238,50 @@ export function ValidationDetailPane({ detail, session, onLeft }: ValidationDeta
   );
 }
 
-// What the checks found after a fix that left something to rule on.
-function FixNote({ defect, result }: { defect: Defect; result: RecheckResult }) {
-  if (result.clearedKeys.includes(defect.key)) {
+interface LastRecheck {
+  // The defects before it ran.
+  defects: readonly Defect[];
+  result: RecheckResult;
+}
+
+// What the checks found when they ran again, while something is still left to rule on.
+function RecheckNote({ defects, result }: LastRecheck) {
+  const cleared = defects.filter((defect) => result.clearedKeys.includes(defect.key));
+  if (cleared.length === 0) {
     return (
-      <StatusNote tone="green" className="mb-3" title="Saved, and the checks ran again">
-        They no longer find {defectNameOf(defect)}; it needs no verdict and leaves the set you
-        accept.
+      <StatusNote tone="amber" className="mb-3" title="Rechecked: nothing changed">
+        The catalog record still gives the same findings. Repair it in the catalog first.
       </StatusNote>
     );
   }
 
   return (
-    <StatusNote tone="amber" className="mb-3" title="Saved, and the checks ran again">
-      They still find {defectNameOf(defect)}.
+    <StatusNote tone="green" className="mb-3" title="Rechecked">
+      The checks no longer find {cleared.map(defectNameOf).join(", ")}; the rest are still there.
     </StatusNote>
+  );
+}
+
+// A part of the Defects card, divided from the one above it by a rule.
+function DefectSection({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="mt-4 border-t pt-4 first:mt-0 first:border-t-0 first:pt-0">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h3 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+          {title}
+        </h3>
+        {action}
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -289,7 +324,7 @@ function ReviewNote({ row, nameOf }: RowProps) {
         {denial?.note && `${denial.note} `}
         {denial?.publicText && `They were told: “${denial.publicText}” `}
         Over {deniedDefectsOf(iteration).map(defectNameOf).join(", ")}. The denial lapses on its own
-        once the defect is gone — fix it below and the checks clear it.
+        once the defect is gone — repair it in the catalog, then Recheck.
       </StatusNote>
     );
   }
@@ -298,8 +333,7 @@ function ReviewNote({ row, nameOf }: RowProps) {
     return (
       <StatusNote tone="purple" className="mb-4" title={`${iteration.progress} · review needed`}>
         Found after the scan exists, so progress does not move back. Accepting records it as
-        tolerable; denying marks it {iteration.progress} · denied in review. A fix goes to the
-        catalog record, not here.
+        tolerable; denying marks it {iteration.progress} · denied in review.
       </StatusNote>
     );
   }
@@ -377,7 +411,7 @@ function ReviewFacts({ row, nameOf }: RowProps) {
 }
 
 // A ∩ D, each with who accepted it and when. While new defects wait, these are not asked again.
-function AcceptedCard({ row, nameOf, action }: RowProps & { action: ReactNode }) {
+function AcceptedSection({ row, nameOf, action }: RowProps & { action: ReactNode }) {
   const { iteration } = row;
   const accepted = acceptedDefectsOf(iteration);
   if (accepted.length === 0) {
@@ -390,41 +424,34 @@ function AcceptedCard({ row, nameOf, action }: RowProps & { action: ReactNode })
     );
 
   return (
-    <DetailCard title={`Already accepted — ${accepted.length}`} action={action}>
-      {accepted.map((defect) => {
-        const acceptance = acceptanceOf(defect);
-        return (
-          <DetailRow
-            key={defect.key}
-            aside={
-              <Muted>
-                {acceptance === undefined ? (
-                  "accepted"
-                ) : (
-                  <>
-                    {nameOf(acceptance.actorId)}
-                    <span className="block">{formatDay(acceptance.at)}</span>
-                  </>
-                )}
-              </Muted>
-            }
-          >
-            <b className="font-semibold">{defectNameOf(defect)}</b>{" "}
-            <span className="font-mono text-xs text-muted-foreground">{defect.subject}</span>
-            {defect.internalText !== null && (
-              <div className="text-muted-foreground">{defect.internalText}</div>
-            )}
-            {acceptance?.note && <div className="text-muted-foreground">“{acceptance.note}”</div>}
-          </DetailRow>
-        );
-      })}
+    <DefectSection title={`Accepted — ${accepted.length}`} action={action}>
+      <div>
+        {accepted.map((defect) => {
+          const acceptance = acceptanceOf(defect);
+          return (
+            <DefectRow
+              key={defect.key}
+              defect={defect}
+              aside={
+                acceptance === undefined
+                  ? "accepted"
+                  : `accepted by ${nameOf(acceptance.actorId)}, ${formatDay(acceptance.at)}`
+              }
+            >
+              {acceptance?.note && (
+                <p className="mt-1 text-xs text-muted-foreground">Note: “{acceptance.note}”</p>
+              )}
+            </DefectRow>
+          );
+        })}
+      </div>
       {row.review === "Needed" && (
         <FinePrint>
-          Not asked again: the re-check found {accepted.length === 1 ? "it" : "them"} unchanged.
+          Not asked again: the last check found {accepted.length === 1 ? "it" : "them"} unchanged.
           Only what is new is outstanding.
         </FinePrint>
       )}
-    </DetailCard>
+    </DefectSection>
   );
 }
 

@@ -121,3 +121,13 @@ export const catalogRecords: readonly CatalogRecord[] = [
     barcodes: {},
   },
 ];
+
+// What has been repaired in the catalog since VERA last read each record: catalog ID to the
+// subjects (fields, or the record itself) a recheck no longer finds a defect on. Everything else
+// is as VERA last read it, so a recheck finds the same defects again.
+export const catalogRepairs: Readonly<Record<string, readonly string[]>> = {
+  // Dějiny Velehradu: the bracket in 245$a is closed; 041$a is still missing.
+  "MZK03-000445012": ["245$a"],
+  // Kodex Gigas — fragment: 300$a now gives the leaves the scan has.
+  "MZK05-000009901": ["300$a"],
+};

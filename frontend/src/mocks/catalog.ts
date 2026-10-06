@@ -1,11 +1,22 @@
 // The mock catalog: the records it knows beyond VERA (fixtures/catalog.ts), and every document
 // VERA already holds, which answers for its own catalog ID, units and barcodes. Proposing checks
-// an identifier against it.
+// an identifier against it; a recheck reads what has been repaired in it.
 
 import type { Document } from "@/domain/entities";
 import { database } from "@/mocks/database";
 import type { CatalogRecord } from "@/mocks/fixtures/catalog";
-import { catalogRecords } from "@/mocks/fixtures/catalog";
+import { catalogRecords, catalogRepairs } from "@/mocks/fixtures/catalog";
+
+// Where the record opens in the library's catalog, for a curator to repair it there.
+// TODO(rrandiak): the catalog adapter supplies the link (plugins.md); MZK's VuFind until then.
+export function catalogLinkOf(catalogId: string): string {
+  return `https://vufind.mzk.cz/Record/${encodeURIComponent(catalogId)}`;
+}
+
+// The subjects a recheck of the record no longer finds a defect on.
+export function repairedSubjectsOf(catalogId: string): readonly string[] {
+  return catalogRepairs[catalogId] ?? [];
+}
 
 export function knownCatalogRecords(): CatalogRecord[] {
   return [...catalogRecords, ...heldCatalogRecords()];

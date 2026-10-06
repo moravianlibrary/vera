@@ -772,8 +772,9 @@ custody.
 ```ts
 export interface DefectCardProps {
   defect: Defect;                       // internal text, what askers read, plugin
-  // A fix made in place: it re-runs the checks and needs no verdict.
-  fix?: { label: string; dialog: "pageCount" | "catalogField" | "relink" };
+  // Nothing is corrected here but the page count, which re-runs the checks (decided 2026-10-06);
+  // the rest is repaired in the catalog and picked up by Recheck.
+  canEnterPageCount?: boolean;
   verdict?: Verdict;                    // accepted by whom and when, with Revoke
 }
 ```
@@ -986,7 +987,6 @@ export interface FormDialogProps<Values> {
 | Keep runs for | days, failed and cancelled days |
 | Reclassify | category, priority; *handed over* when outside custody |
 | Set where it is available | the link |
-| Enter page count, Correct a field, Relink catalog record | the one value |
 
 ### 6.5 Kind D — `SetEditorDialog`
 

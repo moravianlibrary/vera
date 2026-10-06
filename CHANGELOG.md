@@ -85,6 +85,11 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- Documents Validations: one Defects card with outstanding, denied and accepted defects in
+  sections. Nothing is corrected in VERA but the page count: the catalog record opens from the
+  pane, and **Recheck**, beside Accept and Deny, reads it again and clears what was repaired.
+  Entering a page count runs the checks again by itself. Accept offers a pick of which
+  defects to accept when there is more than one, all ticked to begin with.
 - Status badges read in words, such as *Review needed* and *Denied in review*, instead of
   the stored value.
 - A view reopens on the watchlist tab, or "All", that the person last opened there,

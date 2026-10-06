@@ -225,15 +225,32 @@ const unitTypeLabels = {
 export function CatalogCard({
   document,
   nameOf,
+  link,
 }: {
   document: Document;
   nameOf: (userId: string) => string;
+  // Where the record opens in the catalog, to repair it there.
+  link?: string | null;
 }) {
   const inUse = effectivePageCount(document);
   const pageSources = document.pageSources.toSorted((first, second) => second.tier - first.tier);
 
   return (
-    <DetailCard title="Catalog record">
+    <DetailCard
+      title="Catalog record"
+      action={
+        link ? (
+          <a
+            href={link}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs font-medium underline-offset-4 hover:underline"
+          >
+            Open in the catalog ↗
+          </a>
+        ) : undefined
+      }
+    >
       <FactGrid
         facts={[
           { label: "Type", value: document.type },
