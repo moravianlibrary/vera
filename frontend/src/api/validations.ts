@@ -8,6 +8,7 @@
 import { z } from "zod";
 import type { Answer } from "@/api/documents";
 import { answerSchema } from "@/api/documents";
+import { facetCountsOf } from "@/api/facets";
 import { findJson, getJson, postJson } from "@/api/http";
 import { apiRoutes, validationRoute, verdictRoute } from "@/api/routes";
 import type { Priority } from "@/domain/entities";
@@ -156,10 +157,6 @@ export function parseValidationSliceParams(params: URLSearchParams): {
 }
 
 // ---------------------------------------------------------------- responses
-
-function facetCountsOf<Value extends z.ZodType>(value: Value) {
-  return z.array(z.object({ value, count: z.number().int() }));
-}
 
 // The defect group of a row whose defects to rule on come from more than one plugin.
 export const severalPlugins = "several";

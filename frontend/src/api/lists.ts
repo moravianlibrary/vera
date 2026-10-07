@@ -5,6 +5,7 @@
 // reference data other views name a list by.
 
 import { z } from "zod";
+import { facetCountsOf } from "@/api/facets";
 import { deleteResource, findJson, getJson, postJson, putJson } from "@/api/http";
 import { apiRoutes, digitizationListMemberRoute, digitizationListRoute } from "@/api/routes";
 import {
@@ -97,10 +98,6 @@ export function parseListSliceParams(params: URLSearchParams): {
 }
 
 // ---------------------------------------------------------------- responses
-
-function facetCountsOf<Value extends z.ZodType>(value: Value) {
-  return z.array(z.object({ value, count: z.number().int() }));
-}
 
 const count = z.number().int().nonnegative();
 

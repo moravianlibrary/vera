@@ -39,6 +39,12 @@ export const apiRoutes = {
   validations: "/validations",
   messageChannels: "/message-channels",
   messageHandOff: "/messages/hand-off",
+  pluginInstances: "/plugin-instances",
+  tasks: "/tasks",
+  // The sidebar's panel: only what is running.
+  runningTasks: "/tasks/running",
+  taskRetention: "/tasks/retention",
+  schedules: "/schedules",
 } as const;
 
 export function documentRoute(documentId: string): string {
@@ -123,4 +129,28 @@ export function iterationActionRoute(iterationId: string, action: IterationActio
 // Every failed addition of a batch, retried at once: the batch is the unit an admin retries.
 export function batchRetryRoute(batchId: string): string {
   return `${apiRoutes.batches}/${encodeURIComponent(batchId)}/retry`;
+}
+
+export function taskRoute(runId: string): string {
+  return `${apiRoutes.tasks}/${encodeURIComponent(runId)}`;
+}
+
+// What is done to one run, and its log as a file.
+export const taskActions = ["cancel", "rerun", "log"] as const;
+export type TaskAction = (typeof taskActions)[number];
+
+export function taskActionRoute(runId: string, action: TaskAction): string {
+  return `${taskRoute(runId)}/${action}`;
+}
+
+export function scheduleRoute(scheduleId: string): string {
+  return `${apiRoutes.schedules}/${encodeURIComponent(scheduleId)}`;
+}
+
+// Pause it with a reason, resume it, or run it now by hand.
+export const scheduleActions = ["pause", "resume", "run"] as const;
+export type ScheduleAction = (typeof scheduleActions)[number];
+
+export function scheduleActionRoute(scheduleId: string, action: ScheduleAction): string {
+  return `${scheduleRoute(scheduleId)}/${action}`;
 }

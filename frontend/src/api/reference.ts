@@ -1,5 +1,6 @@
 // Reference data other records point at by id: people and their groups, the category tree,
-// projects, lists and batches. Views resolve names through these instead of receiving them denormalized.
+// projects, lists, batches and plugin instances. Views resolve names through these instead of
+// receiving them denormalized.
 
 import { z } from "zod";
 import { getJson } from "@/api/http";
@@ -12,6 +13,8 @@ import {
   projectSchema,
   userSchema,
 } from "@/domain/entities";
+import type { PluginInstance } from "@/domain/plugins";
+import { pluginInstanceSchema } from "@/domain/plugins";
 
 // A group: everyone in it is a project member, or holds custody, while they are in it.
 export const groupSchema = z.object({
@@ -43,4 +46,8 @@ export async function listDigitizationLists(): Promise<DigitizationList[]> {
 
 export async function listBatches(): Promise<Batch[]> {
   return getJson(apiRoutes.batches, z.array(batchSchema));
+}
+
+export async function listPluginInstances(): Promise<PluginInstance[]> {
+  return getJson(apiRoutes.pluginInstances, z.array(pluginInstanceSchema));
 }

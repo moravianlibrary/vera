@@ -50,6 +50,13 @@ import {
 import { proposalDraftSchema, proposalLookupSchema } from "@/api/proposals";
 import type { IterationAction, VerdictAction } from "@/api/routes";
 import { apiRoutes } from "@/api/routes";
+import {
+  newScheduleSchema,
+  pauseRequestSchema,
+  scheduleDraftSchema,
+  timelineRangeSchema,
+} from "@/api/schedules";
+import { parseRunSearchParams, retentionSchema } from "@/api/tasks";
 import { userSettingsChangeSchema } from "@/api/user-settings";
 import {
   acceptanceSchema,
@@ -149,7 +156,27 @@ import {
   proposalSettings,
   submitProposal,
 } from "@/mocks/proposals";
+import {
+  canReadSchedules,
+  createSchedule,
+  deleteSchedule,
+  pauseSchedule,
+  querySchedules,
+  resumeSchedule,
+  runScheduleNow,
+  saveSchedule,
+} from "@/mocks/schedules";
 import { resolveSession } from "@/mocks/session";
+import {
+  cancelRun,
+  canReadRuns,
+  findRunDetail,
+  queryRuns,
+  runAgain,
+  runLogText,
+  runningRuns,
+  saveRetention,
+} from "@/mocks/tasks";
 import { changeUserSettings, userSettingsOf } from "@/mocks/user-settings";
 import {
   acceptDefects,
@@ -222,6 +249,98 @@ export function createHandlers(profile: MockUserProfile) {
     }),
 
     http.get(route(apiRoutes.users), () => HttpResponse.json(database.users)),
+
+    http.get(route(apiRoutes.pluginInstances), () => HttpResponse.json(database.pluginInstances)),
+
+    // Tasks: the fixed paths before a run's own, which would read "running" as a run.
+    http.get(route(apiRoutes.runningTasks), () => {
+      const session = currentSession();
+      return canReadRuns(session) ? HttpResponse.json(runningRuns(session)) : mayNotReadTasks();
+    }),
+    http.put(route(apiRoutes.taskRetention), async ({ request }) => {
+      const retention = retentionSchema.safeParse(await request.json());
+      if (!retention.success) {
+        return invalidResponse(retention.error);
+      }
+
+      return outcomeResponse(saveRetention(currentSession(), retention.data));
+    }),
+    http.get(route(apiRoutes.tasks), ({ request }) => {
+      const session = currentSession();
+      if (!canReadRuns(session)) {
+        return mayNotReadTasks();
+      }
+
+      const query = parseRunSearchParams(new URL(request.url).searchParams);
+      return HttpResponse.json(queryRuns(session, query));
+    }),
+    http.get(route(`${apiRoutes.tasks}/:runId`), ({ params }) => {
+      const session = currentSession();
+      if (!canReadRuns(session)) {
+        return mayNotReadTasks();
+      }
+
+      const detail = findRunDetail(session, String(params.runId));
+      return detail === null ? noSuchRun() : HttpResponse.json(detail);
+    }),
+    http.get(route(`${apiRoutes.tasks}/:runId/log`), ({ params }) => {
+      const session = currentSession();
+      const text = canReadRuns(session) ? runLogText(session, String(params.runId)) : null;
+      return text === null
+        ? noSuchRun()
+        : new HttpResponse(text, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
+    }),
+    ...(["cancel", "rerun"] as const).map((action) =>
+      http.post(route(`${apiRoutes.tasks}/:runId/${action}`), ({ params }) => {
+        const session = currentSession();
+        if (!canReadRuns(session)) {
+          return mayNotReadTasks();
+        }
+
+        const act = action === "cancel" ? cancelRun : runAgain;
+        return outcomeResponse(act(session, String(params.runId)));
+      }),
+    ),
+
+    http.get(route(apiRoutes.schedules), ({ request }) => {
+      if (!canReadSchedules(currentSession())) {
+        return mayNotReadSchedules();
+      }
+
+      const range = timelineRangeSchema
+        .catch("day")
+        .parse(new URL(request.url).searchParams.get("range"));
+      return HttpResponse.json(querySchedules(range));
+    }),
+    http.post(route(apiRoutes.schedules), async ({ request }) => {
+      const draft = newScheduleSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      return outcomeResponse(createSchedule(currentSession(), draft.data));
+    }),
+    http.put(route(`${apiRoutes.schedules}/:scheduleId`), async ({ params, request }) => {
+      const draft = scheduleDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      return outcomeResponse(saveSchedule(currentSession(), String(params.scheduleId), draft.data));
+    }),
+    http.delete(route(`${apiRoutes.schedules}/:scheduleId`), ({ params }) => {
+      const outcome = deleteSchedule(currentSession(), String(params.scheduleId));
+      return "refusal" in outcome
+        ? problemResponse(outcome.refusal)
+        : new HttpResponse(null, { status: 204 });
+    }),
+    recordAction(`${apiRoutes.schedules}/:id/pause`, pauseRequestSchema, pauseSchedule),
+    http.post(route(`${apiRoutes.schedules}/:scheduleId/resume`), ({ params }) =>
+      outcomeResponse(resumeSchedule(currentSession(), String(params.scheduleId))),
+    ),
+    http.post(route(`${apiRoutes.schedules}/:scheduleId/run`), ({ params }) =>
+      outcomeResponse(runScheduleNow(currentSession(), String(params.scheduleId))),
+    ),
     http.get(route(apiRoutes.categories), () => HttpResponse.json(database.categories)),
     http.get(route(apiRoutes.categoryIndex), () => {
       const session = currentSession();
@@ -946,6 +1065,18 @@ function mayNotReadLists() {
 
 function mayNotReadProjects() {
   return problemResponse({ status: 403, message: "You may not read projects" });
+}
+
+function mayNotReadTasks() {
+  return problemResponse({ status: 403, message: "You may not read tasks" });
+}
+
+function mayNotReadSchedules() {
+  return problemResponse({ status: 403, message: "You may not read schedules" });
+}
+
+function noSuchRun() {
+  return problemResponse({ status: 404, message: "No such run" });
 }
 
 function mayNotReview() {

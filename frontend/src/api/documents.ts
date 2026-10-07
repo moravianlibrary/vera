@@ -4,6 +4,7 @@
 // `request.read_own` they see their own asks in the public vocabulary (navigation.md §1.1).
 
 import { z } from "zod";
+import { facetCountsOf } from "@/api/facets";
 import { findJson, getJson } from "@/api/http";
 import { apiRoutes, documentRoute } from "@/api/routes";
 import type { AskDecision, ExistingCopyState } from "@/domain/documents";
@@ -241,10 +242,6 @@ export function parseDocumentSliceParams(params: URLSearchParams): Required<Docu
 }
 
 // ---------------------------------------------------------------- responses
-
-function facetCountsOf<Value extends z.ZodType>(value: Value) {
-  return z.array(z.object({ value, count: z.number().int() }));
-}
 
 const groupCounts = {
   // Rows of the group matching the whole filter, across every slice.

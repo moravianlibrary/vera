@@ -7,6 +7,7 @@
 import { z } from "zod";
 import type { Answer } from "@/api/documents";
 import { answerSchema } from "@/api/documents";
+import { facetCountsOf } from "@/api/facets";
 import { findJson, getJson, postJson } from "@/api/http";
 import {
   apiRoutes,
@@ -182,10 +183,6 @@ export function parseProposalSliceParams(params: URLSearchParams): {
 }
 
 // ---------------------------------------------------------------- responses
-
-function facetCountsOf<Value extends z.ZodType>(value: Value) {
-  return z.array(z.object({ value, count: z.number().int() }));
-}
 
 const groupCounts = {
   // Rows of the group matching the whole filter, across every slice.

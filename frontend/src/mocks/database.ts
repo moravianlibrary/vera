@@ -10,10 +10,12 @@ import { documents } from "@/mocks/fixtures/documents";
 import { distributions, intentions, intentionTemplates } from "@/mocks/fixtures/intentions";
 import { iterations } from "@/mocks/fixtures/iterations";
 import { lists } from "@/mocks/fixtures/lists";
+import { pluginInstances } from "@/mocks/fixtures/plugins";
 import { projects } from "@/mocks/fixtures/projects";
 import { proposalCustodies } from "@/mocks/fixtures/proposal-custodies";
 import { requests } from "@/mocks/fixtures/requests";
 import { statusLog } from "@/mocks/fixtures/status-log";
+import { retention, runs, schedules } from "@/mocks/fixtures/tasks";
 import { users } from "@/mocks/fixtures/users";
 import { watchlists } from "@/mocks/fixtures/watchlists";
 import { withCopies } from "@/mocks/volume";
@@ -47,4 +49,9 @@ export const database = {
   requests: [...records.requests],
   statusLog: [...records.statusLog],
   watchlists: [...watchlists],
+  pluginInstances,
+  runs: [...runs],
+  schedules: [...schedules],
+  // Changed by Keep runs for… on Tasks.
+  taskRetention: { ...retention },
 };
