@@ -43,6 +43,7 @@ import {
 } from "@/api/lists";
 import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
 import { mixSetDraftSchema } from "@/api/mixes";
+import { instanceDraftSchema, newInstanceSchema } from "@/api/plugins";
 import {
   projectApprovalSchema,
   projectDraftSchema,
@@ -160,6 +161,21 @@ import {
 import { messageChannels, prepareMessage } from "@/mocks/messages";
 import { detachIntention, findIntentionMix, saveMixSet } from "@/mocks/mixes";
 import type { Outcome } from "@/mocks/mutations";
+import { instanceSummaries } from "@/mocks/plugin-instances";
+import {
+  canReadPlugins,
+  createInstance,
+  deleteInstance,
+  installUpload,
+  instanceImpact,
+  instanceUpgrade,
+  pluginIndex,
+  readUpload,
+  runInstanceNow,
+  saveInstance,
+  setInstanceEnabled,
+  upgradeInstance,
+} from "@/mocks/plugins";
 import { invalidResponse, problemResponse } from "@/mocks/problem";
 import {
   approveProject,
@@ -310,7 +326,7 @@ export function createHandlers(profile: MockUserProfile) {
 
     http.get(route(apiRoutes.users), () => HttpResponse.json(database.users)),
 
-    http.get(route(apiRoutes.pluginInstances), () => HttpResponse.json(database.pluginInstances)),
+    http.get(route(apiRoutes.pluginInstances), () => HttpResponse.json(instanceSummaries())),
 
     // Tasks: the fixed paths before a run's own, which would read "running" as a run.
     http.get(route(apiRoutes.runningTasks), () => {
@@ -400,6 +416,56 @@ export function createHandlers(profile: MockUserProfile) {
     ),
     http.post(route(`${apiRoutes.schedules}/:scheduleId/run`), ({ params }) =>
       outcomeResponse(runScheduleNow(currentSession(), String(params.scheduleId))),
+    ),
+    http.get(route(apiRoutes.plugins), () => {
+      if (!canReadPlugins(currentSession())) {
+        return problemResponse({ status: 403, message: "You may not read plugins" });
+      }
+
+      return HttpResponse.json(pluginIndex());
+    }),
+    accessWrite("post", apiRoutes.pluginInstances, newInstanceSchema, (session, _id, draft) =>
+      createInstance(session, draft),
+    ),
+    accessWrite("put", `${apiRoutes.pluginInstances}/:id`, instanceDraftSchema, saveInstance),
+    accessDelete(`${apiRoutes.pluginInstances}/:id`, deleteInstance),
+    ...(["enable", "disable"] as const).map((action) =>
+      http.post(route(`${apiRoutes.pluginInstances}/:id/${action}`), ({ params }) =>
+        outcomeResponse(
+          setInstanceEnabled(currentSession(), String(params.id), action === "enable"),
+        ),
+      ),
+    ),
+    http.get(route(`${apiRoutes.pluginInstances}/:id/impact`), ({ params }) =>
+      outcomeResponse(instanceImpact(currentSession(), String(params.id))),
+    ),
+    http.post(route(`${apiRoutes.pluginInstances}/:id/run`), ({ params }) =>
+      outcomeResponse(runInstanceNow(currentSession(), String(params.id))),
+    ),
+    http.get(route(`${apiRoutes.pluginInstances}/:id/upgrade`), ({ params }) =>
+      outcomeResponse(instanceUpgrade(currentSession(), String(params.id))),
+    ),
+    http.post(route(`${apiRoutes.pluginInstances}/:id/upgrade`), ({ params }) =>
+      outcomeResponse(upgradeInstance(currentSession(), String(params.id))),
+    ),
+    http.post(route(apiRoutes.pluginUploads), async ({ request }) => {
+      const form = await request.formData();
+      const file = form.get("file");
+      if (!(file instanceof File)) {
+        return problemResponse({ status: 422, message: "Choose a package to upload" });
+      }
+
+      const implementationId = form.get("implementationId");
+      return outcomeResponse(
+        readUpload(
+          currentSession(),
+          file.name,
+          typeof implementationId === "string" ? implementationId : null,
+        ),
+      );
+    }),
+    http.post(route(`${apiRoutes.pluginUploads}/:id/install`), ({ params }) =>
+      outcomeResponse(installUpload(currentSession(), String(params.id))),
     ),
     http.get(route(apiRoutes.access), () => {
       if (!canReadAccess(currentSession())) {

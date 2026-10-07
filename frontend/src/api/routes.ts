@@ -43,7 +43,13 @@ export const apiRoutes = {
   validations: "/validations",
   messageChannels: "/message-channels",
   messageHandOff: "/messages/hand-off",
+  // Every instance by name, for other records to point at; and where a new one is made.
   pluginInstances: "/plugin-instances",
+  // Plugins, the page: every implementation and instance with what it declares and runs.
+  plugins: "/plugins",
+  pluginImplementations: "/plugin-implementations",
+  // A package read before it is installed.
+  pluginUploads: "/plugin-implementations/uploads",
   tasks: "/tasks",
   // The sidebar's panel: only what is running.
   runningTasks: "/tasks/running",
@@ -183,4 +189,24 @@ export function accessRecordActionRoute(
   action: AccessRecordAction,
 ): string {
   return `${accessRecordRoute(kind, recordId)}/${action}`;
+}
+
+export function pluginInstanceRoute(instanceId: string): string {
+  return `${apiRoutes.pluginInstances}/${encodeURIComponent(instanceId)}`;
+}
+
+// Switch it on or off, say what switching it off stops, run it now, or move it to the newest
+// version installed.
+export const pluginInstanceActions = ["enable", "disable", "impact", "run", "upgrade"] as const;
+export type PluginInstanceAction = (typeof pluginInstanceActions)[number];
+
+export function pluginInstanceActionRoute(
+  instanceId: string,
+  action: PluginInstanceAction,
+): string {
+  return `${pluginInstanceRoute(instanceId)}/${action}`;
+}
+
+export function pluginUploadInstallRoute(uploadId: string): string {
+  return `${apiRoutes.pluginUploads}/${encodeURIComponent(uploadId)}/install`;
 }

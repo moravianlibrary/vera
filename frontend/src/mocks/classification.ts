@@ -7,8 +7,9 @@ import { leafCategoriesOf } from "@/domain/categories";
 import type { Document, Request } from "@/domain/entities";
 import type { ClassifierSuggestion } from "@/domain/proposal-review";
 import { database } from "@/mocks/database";
-import type { ClassifierInstance } from "@/mocks/fixtures/classifiers";
-import { classifiers, materialLeaves, moravianPlaces } from "@/mocks/fixtures/classifiers";
+import { materialLeaves, moravianPlaces } from "@/mocks/fixtures/classifiers";
+import type { StoredPluginInstance } from "@/mocks/fixtures/plugins";
+import { enabledInstancesOf, implementationOf } from "@/mocks/plugin-instances";
 
 interface Answer {
   categoryId: string;
@@ -25,8 +26,8 @@ const rules: Readonly<Record<string, (document: Document) => Answer | null>> = {
   MaterialType: (document) => materialLeaves[document.type] ?? null,
 };
 
-function answerOf(instance: ClassifierInstance, document: Document): Answer | null {
-  const answer = rules[instance.plugin]?.(document) ?? null;
+function answerOf(instance: StoredPluginInstance, document: Document): Answer | null {
+  const answer = rules[implementationOf(instance)?.name ?? ""]?.(document) ?? null;
   const leafIds = leafCategoriesOf(database.categories).map((category) => category.id);
   return answer !== null && leafIds.includes(answer.categoryId) ? answer : null;
 }
@@ -36,7 +37,7 @@ export function suggestionFor(ask: Request, document: Document): ClassifierSugge
     return null;
   }
 
-  for (const instance of classifiers.filter((candidate) => candidate.isEnabled)) {
+  for (const instance of enabledInstancesOf("Classifier")) {
     const answer = answerOf(instance, document);
     if (answer !== null) {
       return { ...answer, classifier: { id: instance.id, name: instance.name } };

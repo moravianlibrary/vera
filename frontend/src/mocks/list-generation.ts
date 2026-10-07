@@ -9,7 +9,13 @@
 // each category the mix is read across, split below by the shares; what it cannot fill stays
 // short there, never re-spread (STATUS "Intentions").
 
-import type { GenerationDraft, GenerationRequest, ListItem, ShortfallCause } from "@/api/lists";
+import type {
+  GenerationDraft,
+  GenerationRequest,
+  ListGenerator,
+  ListItem,
+  ShortfallCause,
+} from "@/api/lists";
 import { categoryLineageOf, leafCategoriesOf } from "@/domain/categories";
 import type { Category, Session } from "@/domain/entities";
 import { isInIntentionScope, mixNodesOf, mixOwnerOf, shareWithinOf } from "@/domain/intentions";
@@ -17,11 +23,12 @@ import { isInPool } from "@/domain/lists";
 import { hasPermission } from "@/domain/permissions";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { database } from "@/mocks/database";
-import { advisorReasons, listGenerators } from "@/mocks/fixtures/list-generators";
+import { advisorReasons } from "@/mocks/fixtures/list-generators";
 import { shapeableIntentions } from "@/mocks/intention-lists";
 import { distributionOf, overallIntention } from "@/mocks/intentions";
 import { byPriorityThenAge, isHeldInReview, itemOf, topCategoryOf } from "@/mocks/lists";
 import type { Outcome } from "@/mocks/mutations";
+import { enabledInstancesOf, implementationOf } from "@/mocks/plugin-instances";
 
 // A little slack on a category's own goal, so one document just over it is still taken.
 const pageSlack = 50;
@@ -30,10 +37,30 @@ export function canGenerate(session: Session): boolean {
   return hasPermission(session, "list.create") || hasPermission(session, "list.edit");
 }
 
-export function enabledGenerators() {
-  return listGenerators
-    .filter((generator) => generator.isEnabled)
-    .map(({ isEnabled: _isEnabled, ...generator }) => generator);
+// Every enabled list generator instance; its tolerance is its configuration's, "5%".
+export function enabledGenerators(): ListGenerator[] {
+  return enabledInstancesOf("ListGenerator").flatMap((instance) => {
+    const implementation = implementationOf(instance);
+    const version = implementation?.versions.find(
+      (candidate) => candidate.version === instance.version,
+    );
+    const generatorClass = version?.declares.generatorClass ?? null;
+    if (implementation === undefined || generatorClass === null) {
+      return [];
+    }
+
+    return [
+      {
+        id: instance.id,
+        name: instance.name,
+        plugin: implementation.name,
+        version: instance.version,
+        generatorClass,
+        description: implementation.description,
+        tolerance: (Number.parseFloat(instance.configuration.tolerance ?? "") || 5) / 100,
+      },
+    ];
+  });
 }
 
 export function generateDraft(

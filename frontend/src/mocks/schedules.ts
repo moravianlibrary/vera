@@ -27,6 +27,7 @@ import {
 import { database } from "@/mocks/database";
 import type { StoredSchedule } from "@/mocks/fixtures/tasks";
 import type { Outcome, Refusal } from "@/mocks/mutations";
+import { findInstanceSummary, instanceSummaries } from "@/mocks/plugin-instances";
 import { publicRunOf, startRun } from "@/mocks/tasks";
 import { mockNow } from "@/mocks/today";
 
@@ -53,9 +54,7 @@ interface Listed {
 
 function listedSchedules(): Listed[] {
   const plugin = database.schedules.flatMap((schedule): Listed[] => {
-    const instance = database.pluginInstances.find(
-      (candidate) => candidate.id === schedule.instanceId,
-    );
+    const instance = findInstanceSummary(schedule.instanceId);
     return instance === undefined ? [] : [{ ...schedule, source: { kind: "plugin", instance } }];
   });
   const repeats = database.intentionTemplates.map(
@@ -176,7 +175,7 @@ export function createSchedule(session: Session, draft: NewSchedule): Outcome<Sc
     return { refusal: mayNotSchedule };
   }
 
-  const instance = database.pluginInstances.find((candidate) => candidate.id === draft.instanceId);
+  const instance = instanceSummaries().find((candidate) => candidate.id === draft.instanceId);
   const isSchedulable =
     instance !== undefined && (schedulableKinds as readonly string[]).includes(instance.kind);
   if (!isSchedulable) {

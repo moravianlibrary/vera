@@ -45,16 +45,6 @@ export const proposalCustodies: readonly StoredProposalCustody[] = [
   },
 ];
 
-// The Custody instances and the custody names their rule can return (proposal-custody.md §3),
-// which the custody's record names as what places proposals in it.
-export const custodyRules = [
-  {
-    instanceId: "pi25",
-    name: "House rules",
-    names: ["Periodicals", "19th-century prints", "Moravica"],
-  },
-] as const;
-
 export const custodyPlacements: Readonly<Record<string, readonly string[]>> = {
   R16: ["Periodicals", "19th-century prints"],
   R17: ["Periodicals", "19th-century prints"],

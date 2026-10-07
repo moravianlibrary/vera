@@ -18,6 +18,7 @@ import {
 } from "@/domain/entities";
 import type { ListState } from "@/domain/lists";
 import { listStateSchema, memberBlockerSchema } from "@/domain/lists";
+import { generatorClassSchema } from "@/domain/plugins";
 
 // ---------------------------------------------------------------- query
 
@@ -287,10 +288,6 @@ export type PoolPage = z.infer<typeof poolPageSchema>;
 // ---------------------------------------------------------------- generating
 
 // A configured list generator plugin instance (plugins.md §4.9). None configured, no Generate.
-export const generatorClasses = ["RuleBased", "AiBased"] as const;
-export const generatorClassSchema = z.enum(generatorClasses);
-export type GeneratorClass = z.infer<typeof generatorClassSchema>;
-
 export const listGeneratorSchema = z.object({
   id: z.string(),
   // The instance: "Priority, then age".

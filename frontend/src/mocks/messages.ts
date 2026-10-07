@@ -11,9 +11,10 @@ import type { Session, User } from "@/domain/entities";
 import { askerIdsOf, asksOf, projectIdsOf } from "@/domain/proposal-review";
 import { plural } from "@/lib/plural";
 import { database } from "@/mocks/database";
-import type { MessageInstance } from "@/mocks/fixtures/message-channels";
-import { messageInstances, slackHandles, slackWorkspace } from "@/mocks/fixtures/message-channels";
+import type { MessageImplementation } from "@/mocks/fixtures/message-channels";
+import { slackHandles, slackWorkspace } from "@/mocks/fixtures/message-channels";
 import type { Outcome } from "@/mocks/mutations";
+import { enabledInstancesOf, implementationOf } from "@/mocks/plugin-instances";
 import { findReachableRow } from "@/mocks/proposal-review";
 import { holdersOfPermission } from "@/mocks/session";
 import { findReachableValidation } from "@/mocks/validations";
@@ -21,12 +22,27 @@ import { findReachableValidation } from "@/mocks/validations";
 const channelDescriptions = {
   mailto: "opens your mail, pre-filled",
   slack: "opens a Slack message",
-} as const satisfies Record<MessageInstance["implementation"], string>;
+} as const satisfies Record<MessageImplementation, string>;
+
+interface MessageInstance {
+  readonly id: string;
+  readonly name: string;
+  readonly implementation: MessageImplementation;
+}
+
+// The implementations the mock plays, by name.
+const implementationsByName: Readonly<Record<string, MessageImplementation>> = {
+  MailtoMessage: "mailto",
+  SlackMessage: "slack",
+};
 
 function enabledInstances(): MessageInstance[] {
-  return messageInstances
-    .filter((instance) => instance.isEnabled)
-    .toSorted((first, second) => first.order - second.order);
+  return enabledInstancesOf("Message").flatMap((instance) => {
+    const implementation = implementationsByName[implementationOf(instance)?.name ?? ""];
+    return implementation === undefined
+      ? []
+      : [{ id: instance.id, name: instance.name, implementation }];
+  });
 }
 
 export function messageChannels(): MessageChannel[] {

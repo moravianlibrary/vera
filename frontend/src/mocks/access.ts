@@ -29,8 +29,8 @@ import { hasPermission, isAcceptedGrant } from "@/domain/permissions";
 import { database } from "@/mocks/database";
 import type { UserAccess } from "@/mocks/fixtures/access";
 import type { StoredProposalCustody } from "@/mocks/fixtures/proposal-custodies";
-import { custodyRules } from "@/mocks/fixtures/proposal-custodies";
 import type { Outcome, Refusal } from "@/mocks/mutations";
+import { custodyRules, identityInstances } from "@/mocks/plugin-instances";
 import { openProposalPlacements } from "@/mocks/proposal-review";
 import { accessUserOf } from "@/mocks/session";
 import { mockNow } from "@/mocks/today";
@@ -69,7 +69,7 @@ export function accessIndex(): AccessIndex {
     custodies: database.proposalCustodies
       .toSorted((first, second) => Number(second.isFallback) - Number(first.isFallback))
       .map((custody) => custodyRecordOf(custody, openCounts)),
-    identityInstances: [...database.identityInstances],
+    identityInstances: identityInstances(),
     categoryMemberships: Object.entries(database.categoryMembers).map(([categoryId, userIds]) => ({
       categoryId,
       userIds: [...userIds],
@@ -99,8 +99,8 @@ function custodyRecordOf(
     openCount: openCounts.get(custody.id) ?? 0,
     placedByIds: custody.isFallback
       ? []
-      : custodyRules
-          .filter((rule) => (rule.names as readonly string[]).includes(custody.name))
+      : custodyRules()
+          .filter((rule) => rule.names.includes(custody.name))
           .map(({ instanceId }) => instanceId),
   };
 }
@@ -268,7 +268,7 @@ export function roleImpact(session: Session, roleId: string): Outcome<RoleImpact
         userId: user.id,
         keptRoleIds: heldRoleIdsOf(outcome.access[user.id] ?? user),
       })),
-      mappings: mappingsOf(database.identityInstances, roleId),
+      mappings: mappingsOf(identityInstances(), roleId),
       leavesNoManager: !keepsManager(outcome.roles, outcome.access),
     },
   };
@@ -371,7 +371,7 @@ export function linkIdentity(
     return { refusal: { status: 422, message: "An agent never logs in" } };
   }
 
-  const instance = database.identityInstances.find((candidate) => candidate.id === link.instanceId);
+  const instance = identityInstances().find((candidate) => candidate.id === link.instanceId);
   if (instance === undefined) {
     return { refusal: unknownRecord("identity provider") };
   }
@@ -403,7 +403,7 @@ export function createLocalAccount(session: Session, account: LocalAccount): Out
     return { refusal };
   }
 
-  const local = database.identityInstances.find((instance) => instance.isLocal);
+  const local = identityInstances().find((instance) => instance.isLocal);
   if (local === undefined) {
     return { refusal: { status: 422, message: "Local accounts are switched off" } };
   }

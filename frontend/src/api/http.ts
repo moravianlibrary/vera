@@ -62,6 +62,12 @@ export async function patchJson<T>(path: string, body: unknown, schema: z.ZodTyp
   return sendJson("PATCH", path, body, schema);
 }
 
+// A file, as multipart form data; the browser sets the boundary.
+export async function postForm<T>(path: string, form: FormData, schema: z.ZodType<T>): Promise<T> {
+  const response = await fetch(apiUrl(path), { method: "POST", headers: jsonHeaders, body: form });
+  return parseResponse("POST", path, response, schema);
+}
+
 // Replaces the whole resource with what is sent.
 export async function putJson<T>(path: string, body: unknown, schema: z.ZodType<T>): Promise<T> {
   return sendJson("PUT", path, body, schema);

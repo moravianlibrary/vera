@@ -1,37 +1,6 @@
-// The list generator plugin instances (docs/demos/shared/vera-data.js pt11, pt12; plugins.md
-// §4.9). Generation is shaped by an intention's mix (fixtures/intentions.ts), Overall by default.
-// TODO(rrandiak): the instances move to the Plugins fixtures with step 10.
-
-import type { ListGenerator } from "@/api/lists";
-
-export interface ListGeneratorInstance extends ListGenerator {
-  readonly isEnabled: boolean;
-}
-
-export const listGenerators: readonly ListGeneratorInstance[] = [
-  {
-    id: "pi14",
-    name: "Priority, then age",
-    plugin: "PriorityFirst",
-    version: "1.2.0",
-    generatorClass: "RuleBased",
-    description:
-      "Fills each category to its share, highest priority first, then the oldest ask. Deterministic.",
-    tolerance: 0.05,
-    isEnabled: true,
-  },
-  {
-    id: "pi15",
-    name: "Pilot",
-    plugin: "ShelfAdvisor",
-    version: "0.4.0",
-    generatorClass: "AiBased",
-    description:
-      "A model reads the pool and proposes a list, giving its own reason for every pick. Not deterministic.",
-    tolerance: 0.08,
-    isEnabled: true,
-  },
-];
+// What the AI-based list generator (docs/demos/shared/vera-data.js pt12; plugins.md §4.9) says
+// for itself: the model's own sentence per pick. The instances are Plugins'
+// (fixtures/plugins.ts).
 
 // What the AI-based generator says for itself: the model's own sentence per pick.
 export const advisorReasons: Readonly<Record<string, string>> = {

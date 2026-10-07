@@ -7,11 +7,10 @@ import { categoryMembers, groups, roles, userAccess } from "@/mocks/fixtures/acc
 import { batches } from "@/mocks/fixtures/batches";
 import { categories } from "@/mocks/fixtures/categories";
 import { documents } from "@/mocks/fixtures/documents";
-import { identityInstances } from "@/mocks/fixtures/identity";
 import { distributions, intentions, intentionTemplates } from "@/mocks/fixtures/intentions";
 import { iterations } from "@/mocks/fixtures/iterations";
 import { lists } from "@/mocks/fixtures/lists";
-import { pluginInstances } from "@/mocks/fixtures/plugins";
+import { pluginImplementations, pluginInstances } from "@/mocks/fixtures/plugins";
 import { projects } from "@/mocks/fixtures/projects";
 import { proposalCustodies } from "@/mocks/fixtures/proposal-custodies";
 import { requests } from "@/mocks/fixtures/requests";
@@ -19,6 +18,7 @@ import { statusLog } from "@/mocks/fixtures/status-log";
 import { retention, runs, schedules } from "@/mocks/fixtures/tasks";
 import { users } from "@/mocks/fixtures/users";
 import { watchlists } from "@/mocks/fixtures/watchlists";
+import type { StoredUpload } from "@/mocks/plugins";
 import { withCopies } from "@/mocks/volume";
 import type { StoredWatchlistViewer } from "@/mocks/watchlists";
 
@@ -38,7 +38,6 @@ export const database = {
   // Roles, how each person holds them, and the groups: written by Users & Groups.
   roles: [...roles],
   userAccess: { ...userAccess },
-  identityInstances,
   categories: [...categories],
   // Category custody: groups carry theirs, and people hold it directly by category; both are
   // written by Grant custody… on Categories.
@@ -58,7 +57,11 @@ export const database = {
   watchlists: [...watchlists],
   // Each person's own row for a watchlist they see: seen, badge, hidden, place.
   watchlistViewers: [] as StoredWatchlistViewer[],
-  pluginInstances,
+  // Written by Plugins: instances made, edited, switched off and deleted; versions uploaded.
+  pluginImplementations: [...pluginImplementations],
+  pluginInstances: [...pluginInstances],
+  // Packages read and waiting to be installed.
+  pluginUploads: [] as StoredUpload[],
   runs: [...runs],
   schedules: [...schedules],
   // Changed by Keep runs for… on Tasks.

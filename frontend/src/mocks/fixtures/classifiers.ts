@@ -1,29 +1,8 @@
-// The Classifier plugin instances (plugins.md §4.13, a kind new on 2026-10-07, so not in the
-// demo data), in tier order: the first suggestion wins. Each reads the proposal as a custody
-// plugin does and answers a leaf with its reason, or nothing. Ids follow the demo's plugin
-// instances.
-// TODO(rrandiak): the instances move to the Plugins fixtures with step 10.
+// What the two Classifier plugins (plugins.md §4.13, a kind new on 2026-10-07, so not in the
+// demo data) read a proposal by; the instances, in the order whose first suggestion wins, are
+// Plugins' (fixtures/plugins.ts). Each answers a leaf with its reason, or nothing.
 
 import type { DocumentType } from "@/domain/entities";
-
-export interface ClassifierInstance {
-  readonly id: string;
-  readonly name: string;
-  readonly plugin: string;
-  readonly version: string;
-  readonly isEnabled: boolean;
-}
-
-export const classifiers: readonly ClassifierInstance[] = [
-  {
-    id: "pi30",
-    name: "Regional press",
-    plugin: "PlaceOfPublication",
-    version: "1.0.0",
-    isEnabled: true,
-  },
-  { id: "pi31", name: "Material type", plugin: "MaterialType", version: "1.1.0", isEnabled: true },
-];
 
 // What PlaceOfPublication reads a Moravian place by: the mock has no imprint, so the title
 // stands in for it.

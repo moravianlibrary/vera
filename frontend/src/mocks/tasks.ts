@@ -27,6 +27,7 @@ import { countValues } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import type { StoredRun } from "@/mocks/fixtures/tasks";
 import type { Outcome } from "@/mocks/mutations";
+import { findInstanceSummary } from "@/mocks/plugin-instances";
 import { mockNow } from "@/mocks/today";
 
 const minuteMilliseconds = 60_000;
@@ -88,7 +89,7 @@ export function publicRunOf(run: StoredRun, now: Date): Run {
   const progress = progressOf(run, now);
   const isRunning = progress.state === "Running";
   const pace = run.itemsPerMinute ?? 1;
-  const instance = database.pluginInstances.find((candidate) => candidate.id === run.instanceId);
+  const instance = findInstanceSummary(run.instanceId);
   return {
     id: run.id,
     what: run.what,
@@ -129,6 +130,15 @@ function visibleRuns(session: Session, now: Date): Run[] {
   const seesEveryone = hasPermission(session, "task.read");
   return database.runs
     .filter((run) => seesEveryone || run.startedBy === session.user.id)
+    .map((run) => publicRunOf(run, now))
+    .filter((run) => isKept(run, now))
+    .toSorted((first, second) => Date.parse(second.startedAt) - Date.parse(first.startedAt));
+}
+
+// An instance's runs still kept, newest first, whoever started them: Plugins shows them all.
+export function instanceRunsOf(instanceId: string, now: Date): Run[] {
+  return database.runs
+    .filter((run) => run.instanceId === instanceId)
     .map((run) => publicRunOf(run, now))
     .filter((run) => isKept(run, now))
     .toSorted((first, second) => Date.parse(second.startedAt) - Date.parse(first.startedAt));
