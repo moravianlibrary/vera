@@ -4,6 +4,16 @@
 import type { JsonBodyType } from "msw";
 import { HttpResponse, http } from "msw";
 import type { z } from "zod";
+import {
+  custodyMembersSchema,
+  groupMembersSchema,
+  handRolesSchema,
+  identityLinkSchema,
+  localAccountSchema,
+  recordDraftSchema,
+  roleDraftSchema,
+  userGroupsSchema,
+} from "@/api/access";
 import { categoryDraftSchema, custodyDraftSchema, refineDraftSchema } from "@/api/categories";
 import {
   parseDocumentGrouping,
@@ -72,6 +82,24 @@ import { env } from "@/config/env";
 import type { Session } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
+import {
+  accessIndex,
+  canReadAccess,
+  createCustody,
+  createGroup,
+  createLocalAccount,
+  createRole,
+  deleteCustody,
+  deleteRole,
+  linkIdentity,
+  saveRole as saveAccessRole,
+  saveCustody,
+  saveGroup,
+  setCustodyMembers,
+  setGroupMembers,
+  setHandRoles,
+  setUserGroups,
+} from "@/mocks/access";
 import { retryBatch } from "@/mocks/additions";
 import {
   canReadCategories,
@@ -232,6 +260,30 @@ export function createHandlers(profile: MockUserProfile) {
     act: (session: Session, iterationId: string, body: Body) => Outcome<Value>,
   ) => recordAction(`${apiRoutes.validations}/:id/${action}`, schema, act, canReview);
 
+  // A write on Users & Groups: its body parsed by its own schema, the outcome as a status.
+  const accessWrite = <Body, Value extends JsonBodyType>(
+    method: "post" | "put",
+    path: string,
+    schema: z.ZodType<Body>,
+    act: (session: Session, id: string, body: Body) => Outcome<Value>,
+  ) =>
+    http[method](route(path), async ({ params, request }) => {
+      const body = schema.safeParse(await request.json());
+      if (!body.success) {
+        return invalidResponse(body.error);
+      }
+
+      return outcomeResponse(act(currentSession(), String(params.id ?? ""), body.data));
+    });
+
+  const accessDelete = (path: string, act: (session: Session, id: string) => Outcome<null>) =>
+    http.delete(route(path), ({ params }) => {
+      const outcome = act(currentSession(), String(params.id));
+      return "refusal" in outcome
+        ? problemResponse(outcome.refusal)
+        : new HttpResponse(null, { status: 204 });
+    });
+
   return [
     http.get(route(apiRoutes.session), () => HttpResponse.json(currentSession())),
 
@@ -341,6 +393,50 @@ export function createHandlers(profile: MockUserProfile) {
     http.post(route(`${apiRoutes.schedules}/:scheduleId/run`), ({ params }) =>
       outcomeResponse(runScheduleNow(currentSession(), String(params.scheduleId))),
     ),
+    http.get(route(apiRoutes.access), () => {
+      if (!canReadAccess(currentSession())) {
+        return problemResponse({ status: 403, message: "You may not read users and groups" });
+      }
+
+      return HttpResponse.json(accessIndex());
+    }),
+    accessWrite("post", apiRoutes.accessRoles, roleDraftSchema, (session, _id, draft) =>
+      createRole(session, draft),
+    ),
+    accessWrite("put", `${apiRoutes.accessRoles}/:id`, roleDraftSchema, saveAccessRole),
+    accessDelete(`${apiRoutes.accessRoles}/:id`, deleteRole),
+    accessWrite("post", apiRoutes.accessUsers, localAccountSchema, (session, _id, account) =>
+      createLocalAccount(session, account),
+    ),
+    accessWrite("put", `${apiRoutes.accessUsers}/:id/roles`, handRolesSchema, setHandRoles),
+    accessWrite("put", `${apiRoutes.accessUsers}/:id/groups`, userGroupsSchema, setUserGroups),
+    accessWrite(
+      "post",
+      `${apiRoutes.accessUsers}/:id/identities`,
+      identityLinkSchema,
+      linkIdentity,
+    ),
+    accessWrite("post", apiRoutes.accessGroups, recordDraftSchema, (session, _id, draft) =>
+      createGroup(session, draft),
+    ),
+    accessWrite("put", `${apiRoutes.accessGroups}/:id`, recordDraftSchema, saveGroup),
+    accessWrite(
+      "put",
+      `${apiRoutes.accessGroups}/:id/members`,
+      groupMembersSchema,
+      setGroupMembers,
+    ),
+    accessWrite("post", apiRoutes.accessCustodies, recordDraftSchema, (session, _id, draft) =>
+      createCustody(session, draft),
+    ),
+    accessWrite("put", `${apiRoutes.accessCustodies}/:id`, recordDraftSchema, saveCustody),
+    accessWrite(
+      "put",
+      `${apiRoutes.accessCustodies}/:id/members`,
+      custodyMembersSchema,
+      setCustodyMembers,
+    ),
+    accessDelete(`${apiRoutes.accessCustodies}/:id`, deleteCustody),
     http.get(route(apiRoutes.categories), () => HttpResponse.json(database.categories)),
     http.get(route(apiRoutes.categoryIndex), () => {
       const session = currentSession();

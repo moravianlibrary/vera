@@ -8,15 +8,14 @@ import type { MessageChannel, MessageHandOff, MessageSubject } from "@/api/messa
 import { navigationEntries } from "@/components/layout/navigation";
 import { documentIdentifierOf } from "@/domain/documents";
 import type { Session, User } from "@/domain/entities";
-import type { Permission } from "@/domain/permissions";
 import { askerIdsOf, asksOf, projectIdsOf } from "@/domain/proposal-review";
 import { plural } from "@/lib/plural";
 import { database } from "@/mocks/database";
-import { roleAssignments, roles } from "@/mocks/fixtures/access";
 import type { MessageInstance } from "@/mocks/fixtures/message-channels";
 import { messageInstances, slackHandles, slackWorkspace } from "@/mocks/fixtures/message-channels";
 import type { Outcome } from "@/mocks/mutations";
 import { findReachableRow } from "@/mocks/proposal-review";
+import { holdersOfPermission } from "@/mocks/session";
 import { findReachableValidation } from "@/mocks/validations";
 
 const channelDescriptions = {
@@ -90,21 +89,8 @@ function resolveRestriction(session: Session, iterationId: string): ResolvedSubj
     label: `${document.title} · ${documentIdentifierOf(document)}`,
     path: `${pathOf("validations")}?id=${encodeURIComponent(iterationId)}&review=Forbidden`,
     context: `Forbidden by ${restriction.rule}: ${restriction.internalText ?? restriction.publicText}`,
-    recipientIds: holdersOf("restriction.overrule"),
+    recipientIds: holdersOfPermission("restriction.overrule"),
   };
-}
-
-// Everyone whose roles grant the permission, at any scope.
-function holdersOf(permission: Permission): string[] {
-  return database.users
-    .filter((user) =>
-      (roleAssignments[user.id] ?? []).some((roleId) =>
-        roles
-          .find((role) => role.id === roleId)
-          ?.grants.some((grant) => grant.permission === permission),
-      ),
-    )
-    .map((user) => user.id);
 }
 
 function pathOf(entryId: string): string {

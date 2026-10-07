@@ -3,9 +3,10 @@
 // 2026-06-25: list dates and relative observations were resolved against it. Date-only demo
 // values became 09:00 UTC.
 
-import type { Group, Role } from "@/mocks/fixtures/access-types";
+import type { AccessGroup, Identity, MappedRole, Role } from "@/domain/access";
 
-export const roles: readonly Role[] = [
+// The five shipped roles (permissions.md §4): bundles, not a ladder, each named by its id.
+const shippedRoles: readonly Omit<Role, "name" | "isShipped">[] = [
   {
     id: "reader",
     description: "Proposes and follows their own requests. Holds only self-scoped grants.",
@@ -491,40 +492,125 @@ export const roles: readonly Role[] = [
   },
 ];
 
-export const groups: readonly Group[] = [
+export const roles: readonly Role[] = shippedRoles.map((role) => ({
+  ...role,
+  name: role.id,
+  isShipped: true,
+}));
+
+export const groups: readonly AccessGroup[] = [
   {
     id: "g1",
     name: "Periodicals Curators",
+    description: "Curators of the periodicals collection.",
     categoryIds: ["c2"],
     memberIds: ["u1", "u8"],
   },
   {
     id: "g2",
     name: "Digitization Office",
+    description: "Plans lists and runs the funded projects.",
     categoryIds: [],
     memberIds: ["u2", "u9"],
   },
   {
     id: "g3",
     name: "Reading Room",
+    description: "Reading-room staff.",
     categoryIds: [],
     memberIds: ["u4"],
   },
 ];
 
-export const roleAssignments: Readonly<Record<string, readonly string[]>> = {
-  u1: ["curator"],
-  u2: ["dig-curator"],
-  u3: ["admin", "staff"],
-  u4: ["staff"],
-  u8: ["curator", "staff"],
-  u9: ["staff"],
-  u5: ["reader"],
-  u6: ["reader"],
-  u7: ["reader"],
-  u10: [],
-  a1: ["reader"],
-  a2: ["reader"],
+// How each person signs in and holds their roles (docs/demos/shared/vera-data.js `users`): roles
+// set by hand, and those the Identity instances mapped at their last login, from a claim
+// (identity.md §4). Agents have no identity and hold what they were created with. Adam Kolář
+// logged in through Local accounts, whose default role is none, and holds nothing yet.
+export interface UserAccess {
+  readonly handRoleIds: readonly string[];
+  readonly mappedRoles: readonly MappedRole[];
+  readonly identities: readonly Identity[];
+  readonly entry: string | null;
+}
+
+const keycloak = "pi22";
+const eduId = "pi23";
+const localAccounts = "pi24";
+
+function loginAt(month: number, day: number, hours = 9, minutes = 0): string {
+  return new Date(2026, month - 1, day, hours, minutes).toISOString();
+}
+
+function person(
+  handRoleIds: readonly string[],
+  mappedRoles: readonly MappedRole[],
+  identities: readonly Identity[],
+): UserAccess {
+  return { handRoleIds, mappedRoles, identities, entry: null };
+}
+
+const mapped = (roleId: string, claim: string, instanceId = keycloak): MappedRole => ({
+  roleId,
+  instanceId,
+  claim,
+});
+
+export const userAccess: Readonly<Record<string, UserAccess>> = {
+  u1: person(
+    [],
+    [mapped("curator", "group mzk-curators")],
+    [{ instanceId: keycloak, externalId: "jnovakova", lastLoginAt: loginAt(6, 25, 8, 12) }],
+  ),
+  u2: person(
+    [],
+    [mapped("dig-curator", "group mzk-digitization")],
+    [{ instanceId: keycloak, externalId: "msvoboda", lastLoginAt: loginAt(6, 25, 7, 55) }],
+  ),
+  u3: person(
+    ["admin"],
+    [mapped("staff", "group mzk-staff")],
+    [
+      { instanceId: keycloak, externalId: "pdvorak", lastLoginAt: loginAt(6, 25, 9, 1) },
+      { instanceId: localAccounts, externalId: "admin", lastLoginAt: loginAt(6, 2) },
+    ],
+  ),
+  u4: person(
+    [],
+    [mapped("staff", "group mzk-staff")],
+    [{ instanceId: keycloak, externalId: "ehorakova", lastLoginAt: loginAt(6, 24, 16, 20) }],
+  ),
+  u8: person(
+    ["curator"],
+    [mapped("staff", "group mzk-staff")],
+    [{ instanceId: keycloak, externalId: "knovotna", lastLoginAt: loginAt(6, 19) }],
+  ),
+  u9: person(
+    [],
+    [mapped("staff", "group mzk-staff")],
+    [{ instanceId: keycloak, externalId: "rsimek", lastLoginAt: loginAt(6, 21) }],
+  ),
+  u5: person(
+    [],
+    [mapped("reader", "default role", eduId)],
+    [{ instanceId: eduId, externalId: "marek@muni.cz", lastLoginAt: loginAt(6, 18) }],
+  ),
+  u6: person(
+    ["reader"],
+    [],
+    [{ instanceId: localAccounts, externalId: "lbenesova", lastLoginAt: loginAt(6, 12) }],
+  ),
+  u7: person(
+    ["reader"],
+    [],
+    [{ instanceId: localAccounts, externalId: "okrejci", lastLoginAt: loginAt(5, 3) }],
+  ),
+  u10: person(
+    [],
+    [],
+    [{ instanceId: localAccounts, externalId: "akolar", lastLoginAt: loginAt(6, 25, 8, 40) }],
+  ),
+  a1: { handRoleIds: ["reader"], mappedRoles: [], identities: [], entry: "Additions" },
+  a2: { handRoleIds: ["reader"], mappedRoles: [], identities: [], entry: "Proposals" },
 };
 
 // Custody granted to people directly, by category (the demo's `categoryMembers`); groups carry

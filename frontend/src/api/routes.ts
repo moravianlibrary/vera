@@ -45,6 +45,12 @@ export const apiRoutes = {
   runningTasks: "/tasks/running",
   taskRetention: "/tasks/retention",
   schedules: "/schedules",
+  // Users & Groups, the page: every user, role, group and proposal custody with what links them.
+  access: "/access",
+  accessRoles: "/access/roles",
+  accessUsers: "/access/users",
+  accessGroups: "/access/groups",
+  accessCustodies: "/access/custodies",
 } as const;
 
 export function documentRoute(documentId: string): string {
@@ -153,4 +159,24 @@ export type ScheduleAction = (typeof scheduleActions)[number];
 
 export function scheduleActionRoute(scheduleId: string, action: ScheduleAction): string {
   return `${scheduleRoute(scheduleId)}/${action}`;
+}
+
+// One record of Users & Groups, and what is set on it whole: a user's hand-set roles, groups and
+// identities; a group's or a custody's members.
+export const accessRecordKinds = ["roles", "users", "groups", "custodies"] as const;
+export type AccessRecordKind = (typeof accessRecordKinds)[number];
+
+export function accessRecordRoute(kind: AccessRecordKind, recordId: string): string {
+  return `${apiRoutes.access}/${kind}/${encodeURIComponent(recordId)}`;
+}
+
+export const accessRecordActions = ["roles", "groups", "identities", "members"] as const;
+export type AccessRecordAction = (typeof accessRecordActions)[number];
+
+export function accessRecordActionRoute(
+  kind: AccessRecordKind,
+  recordId: string,
+  action: AccessRecordAction,
+): string {
+  return `${accessRecordRoute(kind, recordId)}/${action}`;
 }

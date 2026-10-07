@@ -175,3 +175,101 @@ function isInCustody(holder: ScopeHolder, record: ScopedRecord): boolean {
       return false;
   }
 }
+
+// ---------------------------------------------------------------- the catalogue
+
+// What a role is built from (permissions.md §3): each permission's heading and the scopes it
+// accepts, `null` for a self-scoped one, which takes none. A property of the model, not of any
+// role: the role editor offers only these, and the server refuses any other.
+export const permissionGroups = [
+  "Requests",
+  "Iterations",
+  "Additions",
+  "Lists and planning",
+  "Categories",
+  "Watchlists",
+  "Administration",
+] as const;
+export type PermissionGroup = (typeof permissionGroups)[number];
+
+export type HeldScope = Exclude<GrantScope, null>;
+
+export interface PermissionEntry {
+  readonly group: PermissionGroup;
+  readonly scopes: readonly HeldScope[] | null;
+}
+
+const ownOnly = null;
+const custodyOrAny = ["custody", "any"] as const;
+const readScopes = ["custody", "project", "any"] as const;
+const anyOnly = ["any"] as const;
+const managedOrAny = ["managed", "any"] as const;
+const projectOrAny = ["project", "any"] as const;
+
+export const permissionCatalog = {
+  "request.create": { group: "Requests", scopes: ownOnly },
+  "request.read_own": { group: "Requests", scopes: ownOnly },
+  "request.withdraw_own": { group: "Requests", scopes: ownOnly },
+  "request.read": { group: "Requests", scopes: readScopes },
+  "request.decide": { group: "Requests", scopes: custodyOrAny },
+  "iteration.read": { group: "Iterations", scopes: readScopes },
+  "iteration.recheck": { group: "Iterations", scopes: custodyOrAny },
+  "iteration.classify": { group: "Iterations", scopes: custodyOrAny },
+  "validation.approve": { group: "Iterations", scopes: custodyOrAny },
+  "validation.deny": { group: "Iterations", scopes: custodyOrAny },
+  "validation.revoke": { group: "Iterations", scopes: custodyOrAny },
+  "restriction.overrule": { group: "Iterations", scopes: anyOnly },
+  "iteration.cancel": { group: "Iterations", scopes: custodyOrAny },
+  "iteration.resume": { group: "Iterations", scopes: custodyOrAny },
+  "iteration.publish": { group: "Iterations", scopes: custodyOrAny },
+  "addition.read": { group: "Additions", scopes: custodyOrAny },
+  "addition.retry": { group: "Additions", scopes: anyOnly },
+  "addition.read_payload": { group: "Additions", scopes: anyOnly },
+  "list.read": { group: "Lists and planning", scopes: readScopes },
+  "list.create": { group: "Lists and planning", scopes: anyOnly },
+  "list.edit": { group: "Lists and planning", scopes: anyOnly },
+  "list.delete": { group: "Lists and planning", scopes: anyOnly },
+  "intention.read": { group: "Lists and planning", scopes: projectOrAny },
+  "intention.edit": { group: "Lists and planning", scopes: projectOrAny },
+  "intention.edit_overall": { group: "Lists and planning", scopes: anyOnly },
+  "intention.repeat": { group: "Lists and planning", scopes: anyOnly },
+  "project.read": { group: "Lists and planning", scopes: projectOrAny },
+  "project.create": { group: "Lists and planning", scopes: anyOnly },
+  "project.edit": { group: "Lists and planning", scopes: managedOrAny },
+  "project.manage_members": { group: "Lists and planning", scopes: managedOrAny },
+  "project.decide": { group: "Lists and planning", scopes: anyOnly },
+  "project.delete": { group: "Lists and planning", scopes: managedOrAny },
+  "category.read": { group: "Categories", scopes: custodyOrAny },
+  "category.edit": { group: "Categories", scopes: custodyOrAny },
+  "category.grant_custody": { group: "Categories", scopes: custodyOrAny },
+  watch: { group: "Watchlists", scopes: ownOnly },
+  "watchlist.manage_shared": { group: "Watchlists", scopes: anyOnly },
+  "task.read_own": { group: "Administration", scopes: ownOnly },
+  "task.read": { group: "Administration", scopes: anyOnly },
+  "task.cancel": { group: "Administration", scopes: anyOnly },
+  "task.schedule": { group: "Administration", scopes: anyOnly },
+  "plugin.read": { group: "Administration", scopes: anyOnly },
+  "plugin.configure": { group: "Administration", scopes: anyOnly },
+  "plugin.upload_code": { group: "Administration", scopes: anyOnly },
+  "plugin.run": { group: "Administration", scopes: anyOnly },
+  "hook.read": { group: "Administration", scopes: anyOnly },
+  "hook.configure": { group: "Administration", scopes: anyOnly },
+  "access.read": { group: "Administration", scopes: anyOnly },
+  "access.manage": { group: "Administration", scopes: anyOnly },
+} as const satisfies Record<Permission, PermissionEntry>;
+
+// Whether the permission takes the grant's scope: none for a self-scoped one, one of its own
+// otherwise.
+export function isAcceptedGrant({ permission, scope }: Grant): boolean {
+  const { scopes } = permissionCatalog[permission] as PermissionEntry;
+  return scopes === null ? scope === null : scope !== null && scopes.includes(scope);
+}
+
+// The catalogue's order: by heading, then as the heading lists them.
+export function catalogOrderOf(permission: Permission): number {
+  const entry = permissionCatalog[permission];
+  return (
+    permissionGroups.indexOf(entry.group) * permissionKeys.length +
+    Object.keys(permissionCatalog).indexOf(permission)
+  );
+}

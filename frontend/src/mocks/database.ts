@@ -3,10 +3,11 @@
 
 import { env } from "@/config/env";
 import type { Watchlist } from "@/domain/entities";
-import { categoryMembers, groups } from "@/mocks/fixtures/access";
+import { categoryMembers, groups, roles, userAccess } from "@/mocks/fixtures/access";
 import { batches } from "@/mocks/fixtures/batches";
 import { categories } from "@/mocks/fixtures/categories";
 import { documents } from "@/mocks/fixtures/documents";
+import { identityInstances } from "@/mocks/fixtures/identity";
 import { distributions, intentions, intentionTemplates } from "@/mocks/fixtures/intentions";
 import { iterations } from "@/mocks/fixtures/iterations";
 import { lists } from "@/mocks/fixtures/lists";
@@ -31,7 +32,12 @@ const records = withCopies(
 );
 
 export const database = {
-  users,
+  // People and agents; Users & Groups adds local accounts.
+  users: [...users],
+  // Roles, how each person holds them, and the groups: written by Users & Groups.
+  roles: [...roles],
+  userAccess: { ...userAccess },
+  identityInstances,
   categories: [...categories],
   // Category custody: groups carry theirs, and people hold it directly by category; both are
   // written by Grant custody… on Categories.

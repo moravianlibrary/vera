@@ -1,15 +1,22 @@
 // The plugin instances other records name (docs/demos/shared/vera-data.js `pluginTypes`): the
 // catalogs, registries, the harvester and the validation that runs and schedules point at, and
 // the instances already held elsewhere in the fixtures (list generators, classifiers, message
-// channels), so every instance is named in one place.
+// channels, identity providers, custody rules), so every instance is named in one place.
 // TODO(rrandiak): types, implementations and configuration arrive with Plugins (plan.md step 10).
 
 import type { PluginInstance } from "@/domain/plugins";
 import { classifiers } from "@/mocks/fixtures/classifiers";
+import { identityInstances } from "@/mocks/fixtures/identity";
 import { listGenerators } from "@/mocks/fixtures/list-generators";
 import { messageInstances } from "@/mocks/fixtures/message-channels";
+import { custodyRules } from "@/mocks/fixtures/proposal-custodies";
 
 const messagePlugins = { mailto: "MailtoMessage", slack: "SlackMessage" } as const;
+const identityPlugins: Readonly<Record<string, string>> = {
+  pi22: "OidcIdentity",
+  pi23: "SamlIdentity",
+  pi24: "LocalAccounts",
+};
 
 export const pluginInstances: readonly PluginInstance[] = [
   {
@@ -75,5 +82,19 @@ export const pluginInstances: readonly PluginInstance[] = [
     plugin: messagePlugins[implementation],
     kind: "Message" as const,
     isEnabled,
+  })),
+  ...identityInstances.map(({ id, name }) => ({
+    id,
+    name,
+    plugin: identityPlugins[id] ?? "OidcIdentity",
+    kind: "Identity" as const,
+    isEnabled: true,
+  })),
+  ...custodyRules.map(({ instanceId, name }) => ({
+    id: instanceId,
+    name,
+    plugin: "JqCustody",
+    kind: "Custody" as const,
+    isEnabled: true,
   })),
 ];
