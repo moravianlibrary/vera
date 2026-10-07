@@ -6,6 +6,7 @@ import { categoryLabelOf } from "@/components/classification-fields";
 import {
   useBatchesQuery,
   useCategoriesQuery,
+  usePluginInstancesQuery,
   useProjectsQuery,
   useProposalCustodiesQuery,
   useUsersQuery,
@@ -18,6 +19,7 @@ export const referenceKinds = [
   "batches",
   "proposalCustodies",
   "defectPlugins",
+  "pluginInstances",
 ] as const;
 export type ReferenceKind = (typeof referenceKinds)[number];
 
@@ -32,6 +34,7 @@ export function useReferenceLabels(
   const { data: categories = [] } = useCategoriesQuery(isNeeded("categories"));
   const { data: batches = [] } = useBatchesQuery(isNeeded("batches"));
   const { data: custodies = [] } = useProposalCustodiesQuery(isNeeded("proposalCustodies"));
+  const { data: instances = [] } = usePluginInstancesQuery(isNeeded("pluginInstances"));
 
   const nameOf =
     (records: readonly { id: string; name: string }[]): LabelOf =>
@@ -50,5 +53,6 @@ export function useReferenceLabels(
     // A plugin is named by itself in a defect.
     // TODO(rrandiak): the instance's name once the Plugins resource exists (plugins.md).
     defectPlugins: (id) => id,
+    pluginInstances: nameOf(instances),
   };
 }

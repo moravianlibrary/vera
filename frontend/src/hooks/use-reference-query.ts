@@ -7,6 +7,7 @@ import {
   listCategories,
   listDigitizationLists,
   listGroups,
+  listPluginInstances,
   listProjects,
   listUsers,
 } from "@/api/reference";
@@ -76,6 +77,15 @@ export function useProposalCustodiesQuery({ isEnabled = true }: ReferenceQueryOp
   return useQuery({
     queryKey: [...referenceQueryKey, "proposalCustodies"],
     queryFn: listProposalCustodies,
+    staleTime: Infinity,
+    enabled: isEnabled,
+  });
+}
+
+export function usePluginInstancesQuery({ isEnabled = true }: ReferenceQueryOptions = {}) {
+  return useQuery({
+    queryKey: [...referenceQueryKey, "pluginInstances"],
+    queryFn: listPluginInstances,
     staleTime: Infinity,
     enabled: isEnabled,
   });

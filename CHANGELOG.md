@@ -111,6 +111,14 @@ All notable changes to this project are documented here.
   suggestion and says how many the one category overrides. The approval's history records the
   suggestion and whether it was kept, overruled or overridden. With no classifier, or no
   suggestion, the decider picks as before.
+- Tasks: what is running, as cards with progress, errors so far, time left and *Cancel…*, and
+  under them the runs that finished, with what started each, how long it took and what it
+  changed, linked to where it shows; a failed run carries its reason and *Run again*. Tiles say
+  how many run, how many failed in the last 7 days and when the next scheduled run is. Filter
+  by state, trigger, plugin and who started it. A run opens in a drawer with its trigger, what
+  it changed, its items (all, or only the errors), its log and *Download log*. Runs are never
+  deleted by hand; how long they are kept is changed with *Change…*. Without `task.read` the
+  page is *My Tasks*, the runs the person started, which they may cancel or run again.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

@@ -27,6 +27,8 @@ interface ConsequenceDialogProps {
   consequences: readonly Consequence[] | undefined;
   // "Delete list".
   confirmLabel: string;
+  // Where "Cancel" would read as the act itself: "Keep running".
+  cancelLabel?: string;
   isDestructive: boolean;
   onConfirm: () => Promise<ActionResult<unknown>>;
 }
@@ -38,6 +40,7 @@ export function ConsequenceDialog({
   description,
   consequences,
   confirmLabel,
+  cancelLabel,
   isDestructive,
   onConfirm,
 }: ConsequenceDialogProps) {
@@ -63,6 +66,7 @@ export function ConsequenceDialog({
       title={title}
       description={description}
       refusal={refusal}
+      cancelLabel={cancelLabel}
       primary={{
         label: confirmLabel,
         isDestructive,
