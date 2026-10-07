@@ -15,6 +15,7 @@ import { IntentionsPage } from "@/features/intentions/intentions-page";
 import { IntentionMixPage } from "@/features/intentions/mix-page";
 import { ListEditorPage } from "@/features/lists/list-editor-page";
 import { ListsPage } from "@/features/lists/lists-page";
+import { PluginsPage } from "@/features/plugins/plugins-page";
 import { ProjectPage } from "@/features/projects/project-page";
 import { ProjectsPage } from "@/features/projects/projects-page";
 import { ProposalsPage } from "@/features/proposals/proposals-page";
@@ -57,6 +58,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <SchedulesPage />;
     case "access":
       return <AccessPage />;
+    case "plugins":
+      return <PluginsPage />;
     default:
       return <Placeholder title={label} />;
   }

@@ -16,8 +16,8 @@ import { viewLabels } from "@/components/filters/share-watchlist-dialog";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import type { LinkedItem, LinkedSection } from "@/components/linked-columns";
 import { LinkedColumns } from "@/components/linked-columns";
+import { NoticeLine } from "@/components/notice-line";
 import { ToneBadge } from "@/components/status-badge";
-import { StatusNote } from "@/components/status-note";
 import { custodyMembersOf, heldRoleIdsOf, holdersOf } from "@/domain/access";
 import type { WatchlistAudience } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
@@ -127,7 +127,14 @@ export function AccessPage() {
             onShowWithoutRole={() => setQuery({ ...query, show: ["none"] })}
             notice={
               notice === null ? undefined : (
-                <NoticeLine notice={notice} onDismiss={() => setNotice(null)} />
+                <NoticeLine
+                  tone="green"
+                  title={notice.title}
+                  onDismiss={() => setNotice(null)}
+                  className="mb-3"
+                >
+                  {notice.text}
+                </NoticeLine>
               )
             }
             recordActions={
@@ -246,23 +253,6 @@ function AccessColumns({
 }
 
 const recordAnchor = "access-record";
-
-function NoticeLine({ notice, onDismiss }: { notice: AccessNotice; onDismiss: () => void }) {
-  return (
-    <div className="mb-3 flex items-start gap-2">
-      <StatusNote tone="green" title={notice.title} className="flex-1">
-        {notice.text}
-      </StatusNote>
-      <button
-        type="button"
-        className="text-xs text-muted-foreground hover:text-foreground"
-        onClick={onDismiss}
-      >
-        Dismiss
-      </button>
-    </div>
-  );
-}
 
 // "10 people · 2 agents · 5 roles · 3 groups · 4 custodies · 1 with no role yet".
 function Counts({

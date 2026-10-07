@@ -1,28 +1,10 @@
-// What Tasks and Schedules say about runs and time (docs/demos/shared/page-tasks.js): a state and
-// its tone, a trigger, a cadence, how long a run took. Moments are worded by lib/format-moment.ts.
+// What Tasks and Schedules say about runs and time (docs/demos/shared/page-tasks.js): a trigger,
+// an overlap, how long a run took. A run's state is components/run-state-badge.tsx's, a cadence
+// lib/format-cadence.ts's and a moment lib/format-moment.ts's.
 // TODO(rrandiak): labels move to i18n.
 
-import type { Tone } from "@/components/status-badge";
-import type { Cadence, Overlap } from "@/domain/schedules";
-import type { RunState, TriggerKind } from "@/domain/tasks";
-
-export const runStateLabels = {
-  Running: "Running",
-  Done: "Done",
-  DoneWithErrors: "Done with errors",
-  Failed: "Failed",
-  Cancelled: "Cancelled",
-  Skipped: "Skipped",
-} as const satisfies Record<RunState, string>;
-
-export const runStateTones = {
-  Running: "blue",
-  Done: "green",
-  DoneWithErrors: "amber",
-  Failed: "red",
-  Cancelled: "slate",
-  Skipped: "slate",
-} as const satisfies Record<RunState, Tone>;
+import type { Overlap } from "@/domain/schedules";
+import type { TriggerKind } from "@/domain/tasks";
 
 export const triggerLabels = {
   schedule: "Schedule",
@@ -41,29 +23,6 @@ export const overlapNotes = {
   skip: "skips an overlapping run",
   wait: "waits for the previous run",
 } as const satisfies Record<Overlap, string>;
-
-const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
-
-export function weekdayName(weekday: number): string {
-  return weekdayNames[weekday] ?? "";
-}
-
-export function cadenceText(cadence: Cadence): string {
-  switch (cadence.every) {
-    case "minutes":
-      return `every ${cadence.interval} min`;
-    case "hours":
-      return cadence.interval === 1 ? "hourly" : `every ${cadence.interval} hours`;
-    case "day":
-      return `daily at ${cadence.at}`;
-    case "week":
-      return `weekly, ${weekdayName(cadence.weekday)} ${cadence.at}`;
-    case "month":
-      return `monthly, day ${cadence.day} at ${cadence.at}`;
-    case "quarter":
-      return `quarterly, day 1 at ${cadence.at}`;
-  }
-}
 
 // "Monthly output — {period}" as one of its occurrences is named.
 export function repeatNameOf(pattern: string): string {

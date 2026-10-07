@@ -8,22 +8,16 @@ import type { ReactNode } from "react";
 import { Link } from "react-router";
 import type { Run } from "@/api/tasks";
 import type { ColumnDefinition } from "@/components/lists/record-list";
-import { ToneBadge } from "@/components/status-badge";
+import { NoticeLine as SharedNoticeLine } from "@/components/notice-line";
+import { RunStateBadge } from "@/components/run-state-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { RunProgress } from "@/components/visualizations/run-progress";
-import {
-  cadenceText,
-  repeatNameOf,
-  runStateLabels,
-  runStateTones,
-  timeLeftText,
-  tookText,
-} from "@/features/tasks/task-words";
+import { repeatNameOf, timeLeftText, tookText } from "@/features/tasks/task-words";
 import type { PerTier } from "@/hooks/use-tier";
+import { cadenceText } from "@/lib/format-cadence";
 import { agoText } from "@/lib/format-moment";
 import { formatCount } from "@/lib/format-number";
-import { plural } from "@/lib/plural";
 
 export type NameOf = (userId: string) => string;
 
@@ -33,14 +27,6 @@ export function starterOf(run: Run, nameOf: NameOf): string {
 
 export function sourceOf(run: Run): string {
   return run.source.kind === "plugin" ? run.source.instance.name : run.source.name;
-}
-
-export function RunStateBadge({ run }: { run: Pick<Run, "state" | "errorCount"> }) {
-  const label =
-    run.state === "DoneWithErrors"
-      ? `Done · ${plural(run.errorCount, "error")}`
-      : runStateLabels[run.state];
-  return <ToneBadge tone={runStateTones[run.state]}>{label}</ToneBadge>;
 }
 
 // What started it, in a word, and under it the detail: the cadence, or where a person started it.
@@ -78,30 +64,26 @@ export function NoticeLine({
 }) {
   const { runId } = notice;
   return (
-    <div className="mb-4 flex items-start gap-2">
-      <StatusNote tone={notice.tone} title={notice.title} className="flex-1">
-        {notice.text}
-        {runId !== undefined && (
-          <>
-            {" "}
-            <button
-              type="button"
-              className="text-primary underline-offset-2 hover:underline"
-              onClick={() => onOpenRun(runId)}
-            >
-              Open the run
-            </button>
-          </>
-        )}
-      </StatusNote>
-      <button
-        type="button"
-        className="text-xs text-muted-foreground hover:text-foreground"
-        onClick={onDismiss}
-      >
-        Dismiss
-      </button>
-    </div>
+    <SharedNoticeLine
+      tone={notice.tone}
+      title={notice.title}
+      onDismiss={onDismiss}
+      className="mb-4"
+    >
+      {notice.text}
+      {runId !== undefined && (
+        <>
+          {" "}
+          <button
+            type="button"
+            className="text-primary underline-offset-2 hover:underline"
+            onClick={() => onOpenRun(runId)}
+          >
+            Open the run
+          </button>
+        </>
+      )}
+    </SharedNoticeLine>
   );
 }
 

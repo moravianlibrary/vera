@@ -160,6 +160,18 @@ All notable changes to this project are documented here.
   watchlists beside groups and custodies, with their filter, audience and the people they
   reach, and *Share…*, *Rename…*, *Edit filter* and *Delete…*; selecting a role, group or person
   lights up the watchlists shared with them, and their records say which.
+- Plugins: one table grouped twice, each type (catalog adapter, registry, harvester…) with what
+  it does, which folds away, then each implementation with its version, what it does and the
+  chips for what it supplies, then its instances with their configuration (never a secret), what
+  they serve on a large screen, when they run, their last run and whether they are enabled. An
+  implementation with no instance says it does nothing yet. *Type*, *State* and the search
+  narrow it. An implementation opens its contract in a drawer: properties and their tiers, a
+  registry's mapping (Unmapped on purpose), an agent, rules, identifiers, what an instance is
+  configured with, the versions installed and its instances. An instance opens its
+  configuration, the login settings of an identity (button, order, the role a new user gets,
+  the claims it maps to roles) or the custodies a custody rule places into, when it runs with
+  its schedules (edited on Schedules), its recent runs from Tasks and *Run now*. Links from
+  Tasks and Users & Groups open the instance.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

@@ -11,13 +11,16 @@ import { Link } from "react-router";
 import type { RunDetail, RunItem } from "@/api/tasks";
 import { getRunLog } from "@/api/tasks";
 import { DetailCard, FactGrid, FinePrint } from "@/components/detail-card";
+import { RunStateBadge } from "@/components/run-state-badge";
 import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { RunProgress } from "@/components/visualizations/run-progress";
+import { pluginInstanceHrefOf } from "@/features/plugins/plugins-view";
 import type { NameOf } from "@/features/tasks/run-parts";
-import { RunStateBadge, starterOf } from "@/features/tasks/run-parts";
-import { cadenceText, repeatNameOf, timeLeftText, tookText } from "@/features/tasks/task-words";
+import { starterOf } from "@/features/tasks/run-parts";
+import { repeatNameOf, timeLeftText, tookText } from "@/features/tasks/task-words";
+import { cadenceText } from "@/lib/format-cadence";
 import { agoText, clockTimeOf, dayAndTimeOf } from "@/lib/format-moment";
 import { formatCount } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
@@ -186,8 +189,7 @@ function PluginFact({ detail, canSeePlugins }: { detail: RunDetail; canSeePlugin
   }
 
   const name = canSeePlugins ? (
-    // TODO(rrandiak): the instance parameter is Plugins' to name (plan.md step 10).
-    <Link to={`/plugins?i=${encodeURIComponent(source.instance.id)}`} className={linkClass}>
+    <Link to={pluginInstanceHrefOf(source.instance.id)} className={linkClass}>
       {source.instance.name}
     </Link>
   ) : (

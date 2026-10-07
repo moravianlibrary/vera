@@ -37,10 +37,11 @@ import {
   formOfCadence,
   scheduleFormSchema,
 } from "@/features/tasks/schedules-view";
-import { cadenceText, overlapLabels, weekdayName } from "@/features/tasks/task-words";
+import { overlapLabels } from "@/features/tasks/task-words";
 import { taskInvalidations } from "@/features/tasks/use-tasks-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { usePluginInstancesQuery } from "@/hooks/use-reference-query";
+import { cadenceText, weekdayName } from "@/lib/format-cadence";
 import { aheadText } from "@/lib/format-moment";
 import { plural } from "@/lib/plural";
 

@@ -8,8 +8,7 @@
 // changed on Categories; mappings and Custody rules on Plugins. A shared watchlist's record gives
 // its view, its filter, its audience and whom it reaches; the user, role and group records each
 // say which shared watchlists reach them (filtering.md §4.5). A named record selects it.
-// TODO(rrandiak): the plugin links name their instance with `?i=` until Plugins (plan.md step 10)
-// says how an instance is opened; labels move to i18n.
+// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { Link } from "react-router";
@@ -49,6 +48,7 @@ import {
   viaText,
   waysShortText,
 } from "@/features/access/access-words";
+import { pluginInstanceHrefOf } from "@/features/plugins/plugins-view";
 import { agoText } from "@/lib/format-moment";
 import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
@@ -96,7 +96,6 @@ interface RecordProps {
 }
 
 const linkClass = "font-medium underline-offset-2 hover:underline";
-const pluginHrefOf = (instanceId: string) => `/plugins?i=${encodeURIComponent(instanceId)}`;
 
 // ---------------------------------------------------------------- the frame
 
@@ -228,7 +227,7 @@ function Ways({ ways, names }: { ways: readonly RoleWay[]; names: AccessNames })
           ) : (
             <>
               mapped by{" "}
-              <Link to={pluginHrefOf(way.instanceId)} className={linkClass}>
+              <Link to={pluginInstanceHrefOf(way.instanceId)} className={linkClass}>
                 {names.instance(way.instanceId)}
               </Link>{" "}
               <Muted>from {way.claim}</Muted>
@@ -396,7 +395,7 @@ export function UserRecord({
                   </Muted>
                 }
               >
-                <Link to={pluginHrefOf(identity.instanceId)} className={linkClass}>
+                <Link to={pluginInstanceHrefOf(identity.instanceId)} className={linkClass}>
                   {names.instance(identity.instanceId)}
                 </Link>{" "}
                 <span className="font-mono text-xs">{identity.externalId}</span>
@@ -613,7 +612,7 @@ export function RoleRecord({
               key={`${instanceId}:${claim}`}
               aside={<Muted>{claim ?? "default role: everyone first seen here"}</Muted>}
             >
-              <Link to={pluginHrefOf(instanceId)} className={linkClass}>
+              <Link to={pluginInstanceHrefOf(instanceId)} className={linkClass}>
                 {names.instance(instanceId)}
               </Link>
             </Row>
@@ -787,7 +786,7 @@ export function CustodyRecordView({
             {custody.placedByIds.map((instanceId, position) => (
               <span key={instanceId}>
                 {position > 0 && ", "}
-                <Link to={pluginHrefOf(instanceId)} className={linkClass}>
+                <Link to={pluginInstanceHrefOf(instanceId)} className={linkClass}>
                   {names.instance(instanceId)}
                 </Link>
               </span>

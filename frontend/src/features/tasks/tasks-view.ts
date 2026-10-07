@@ -7,8 +7,9 @@
 
 import type { RunQuery } from "@/api/tasks";
 import { isSameRunQuery, parseRunSearchParams, toRunSearchParams } from "@/api/tasks";
+import { runStateLabels } from "@/components/run-state-badge";
 import { finishedRunStates, triggerKinds } from "@/domain/tasks";
-import { runStateLabels, triggerLabels } from "@/features/tasks/task-words";
+import { triggerLabels } from "@/features/tasks/task-words";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
 

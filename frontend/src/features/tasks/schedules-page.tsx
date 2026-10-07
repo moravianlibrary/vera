@@ -13,6 +13,7 @@ import { resumeSchedule, runScheduleNow, timelineRanges } from "@/api/schedules"
 import { DataTable } from "@/components/data-table";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
+import { RunStateBadge } from "@/components/run-state-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import type { TimelineLane } from "@/components/visualizations/timeline";
@@ -20,7 +21,7 @@ import { Timeline } from "@/components/visualizations/timeline";
 import { hasPermission } from "@/domain/permissions";
 import type { TaskNotice } from "@/features/tasks/run-dialogs";
 import type { NameOf, ShownNotice } from "@/features/tasks/run-parts";
-import { NoticeLine, RunStateBadge, SectionTitle, Sub } from "@/features/tasks/run-parts";
+import { NoticeLine, SectionTitle, Sub } from "@/features/tasks/run-parts";
 import {
   DeleteScheduleDialog,
   PauseScheduleDialog,
@@ -33,12 +34,13 @@ import {
   rangeParam,
   rangeTitles,
 } from "@/features/tasks/schedules-view";
-import { cadenceText, overlapLabels, overlapNotes } from "@/features/tasks/task-words";
+import { overlapLabels, overlapNotes } from "@/features/tasks/task-words";
 import { taskInvalidations, useSchedulesQuery } from "@/features/tasks/use-tasks-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import type { PerTier } from "@/hooks/use-tier";
+import { cadenceText } from "@/lib/format-cadence";
 import { agoText, aheadText, dayAndTimeOf, shortDayOf } from "@/lib/format-moment";
 import { cn } from "@/lib/utils";
 
