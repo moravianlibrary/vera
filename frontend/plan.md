@@ -119,7 +119,7 @@ green after every extraction.
    the decide form (Proposals).
 5. Custody grants, Edit, New and Delete; the Refine wizard in the pane.
 
-## 8. Tasks and Schedules
+## 8. Tasks and Schedules — done
 
 1. Mock API: runs and schedules.
 2. Tasks: tiles, running cards, the finished-runs table and its drawer.

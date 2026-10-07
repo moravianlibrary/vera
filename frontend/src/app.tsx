@@ -17,6 +17,7 @@ import { ListsPage } from "@/features/lists/lists-page";
 import { ProjectPage } from "@/features/projects/project-page";
 import { ProjectsPage } from "@/features/projects/projects-page";
 import { ProposalsPage } from "@/features/proposals/proposals-page";
+import { SchedulesPage } from "@/features/tasks/schedules-page";
 import { TasksPage } from "@/features/tasks/tasks-page";
 import { ValidationsPage } from "@/features/validations/validations-page";
 import { useSessionQuery } from "@/hooks/use-session-query";
@@ -51,6 +52,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <IntentionsPage />;
     case "tasks":
       return <TasksPage />;
+    case "schedules":
+      return <SchedulesPage />;
     default:
       return <Placeholder title={label} />;
   }

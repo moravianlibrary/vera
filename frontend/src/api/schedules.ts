@@ -45,7 +45,7 @@ export const scheduleRowSchema = z.object({
   pause: schedulePauseSchema.nullable(),
   createdBy: id,
   since: z.iso.date(),
-  lastRun: runSchema.pick({ id: true, state: true, startedAt: true }).nullable(),
+  lastRun: runSchema.pick({ id: true, state: true, startedAt: true, errorCount: true }).nullable(),
   // None while paused.
   nextAt: timestamp.nullable(),
   // Runs of it on record, which outlive it under retention.

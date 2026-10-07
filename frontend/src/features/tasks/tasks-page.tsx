@@ -14,7 +14,6 @@ import { StatTiles } from "@/components/detail-card";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { visibleNavigation } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
-import { StatusNote } from "@/components/status-note";
 import { TableWithDrawer } from "@/components/table-with-drawer";
 import type { Session } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
@@ -22,9 +21,10 @@ import { canCancelRun, canRunAgain, isOwnRun } from "@/domain/tasks";
 import type { TaskNotice } from "@/features/tasks/run-dialogs";
 import { CancelRunDialog, RetentionDialog } from "@/features/tasks/run-dialogs";
 import { RunDrawer } from "@/features/tasks/run-drawer";
-import type { NameOf } from "@/features/tasks/run-parts";
+import type { NameOf, ShownNotice } from "@/features/tasks/run-parts";
 import {
   FailureNote,
+  NoticeLine,
   RunCard,
   RunningCard,
   runColumns,
@@ -42,10 +42,6 @@ import { useTier } from "@/hooks/use-tier";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
 import { plural } from "@/lib/plural";
 
-interface PageNotice extends TaskNotice {
-  tone: "green" | "red";
-}
-
 export function TasksPage() {
   const view = useViewUrlState(tasksView, runParam);
   const { query, selectedId: openRunId, select } = view;
@@ -53,7 +49,7 @@ export function TasksPage() {
   const { data: index } = useRunsQuery(query);
   const { data: detail, isError: isDetailMissing } = useRunQuery(openRunId);
   const { users: nameOf } = useReferenceLabels(["users"]);
-  const [notice, setNotice] = useState<PageNotice | null>(null);
+  const [notice, setNotice] = useState<ShownNotice | null>(null);
   const [cancelling, setCancelling] = useState<Run | null>(null);
   const [isRetentionOpen, setIsRetentionOpen] = useState(false);
   const rerun = useActionMutation({
@@ -72,7 +68,7 @@ export function TasksPage() {
   const title =
     visibleNavigation(session).find((entry) => entry.id === "tasks")?.visibleLabel ?? "Tasks";
   const seesEveryone = hasPermission(session, "task.read");
-  const show = (next: TaskNotice, tone: PageNotice["tone"] = "green") =>
+  const show = (next: TaskNotice, tone: ShownNotice["tone"] = "green") =>
     setNotice({ ...next, tone });
 
   const runAgainNow = async (run: Run) => {
@@ -222,7 +218,7 @@ interface RunsAboveProps {
   index: RunIndex;
   session: Session;
   nameOf: NameOf;
-  notice: PageNotice | null;
+  notice: ShownNotice | null;
   onDismissNotice: () => void;
   openRunId: string | null;
   onOpen: (runId: string) => void;
@@ -245,30 +241,7 @@ function RunsAbove({
   return (
     <>
       {notice !== null && (
-        <div className="mb-4 flex items-start gap-2">
-          <StatusNote tone={notice.tone} title={notice.title} className="flex-1">
-            {notice.text}
-            {notice.runId !== undefined && (
-              <>
-                {" "}
-                <button
-                  type="button"
-                  className="text-primary underline-offset-2 hover:underline"
-                  onClick={() => onOpen(notice.runId ?? "")}
-                >
-                  Open the run
-                </button>
-              </>
-            )}
-          </StatusNote>
-          <button
-            type="button"
-            className="text-xs text-muted-foreground hover:text-foreground"
-            onClick={onDismissNotice}
-          >
-            Dismiss
-          </button>
-        </div>
+        <NoticeLine notice={notice} onOpenRun={onOpen} onDismiss={onDismissNotice} />
       )}
       <RunTiles index={index} />
       {index.visibleCount === 0 ? (

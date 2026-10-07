@@ -104,7 +104,12 @@ function rowOf(listed: Listed, now: Date, windowEnd: Date): ScheduleRow {
     lastRun:
       lastRun === undefined
         ? null
-        : { id: lastRun.id, state: lastRun.state, startedAt: lastRun.startedAt },
+        : {
+            id: lastRun.id,
+            state: lastRun.state,
+            startedAt: lastRun.startedAt,
+            errorCount: lastRun.errorCount,
+          },
     nextAt: isPaused ? null : (nextOccurrenceOf(listed.cadence, now)?.toISOString() ?? null),
     runCount: runs.length,
     window: {

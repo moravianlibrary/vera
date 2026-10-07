@@ -35,7 +35,7 @@ export function sourceOf(run: Run): string {
   return run.source.kind === "plugin" ? run.source.instance.name : run.source.name;
 }
 
-export function RunStateBadge({ run }: { run: Run }) {
+export function RunStateBadge({ run }: { run: Pick<Run, "state" | "errorCount"> }) {
   const label =
     run.state === "DoneWithErrors"
       ? `Done · ${plural(run.errorCount, "error")}`
@@ -56,6 +56,53 @@ export function triggerOf(run: Run, nameOf: NameOf): { title: string; detail: st
     case "manual":
       return { title: starterOf(run, nameOf), detail: `from ${trigger.from.label}` };
   }
+}
+
+// Done, or refused, and what to say about it at the top of the page.
+export interface ShownNotice {
+  title: string;
+  text: string;
+  tone: "green" | "red";
+  // The run it started, to open.
+  runId?: string;
+}
+
+export function NoticeLine({
+  notice,
+  onOpenRun,
+  onDismiss,
+}: {
+  notice: ShownNotice;
+  onOpenRun: (runId: string) => void;
+  onDismiss: () => void;
+}) {
+  const { runId } = notice;
+  return (
+    <div className="mb-4 flex items-start gap-2">
+      <StatusNote tone={notice.tone} title={notice.title} className="flex-1">
+        {notice.text}
+        {runId !== undefined && (
+          <>
+            {" "}
+            <button
+              type="button"
+              className="text-primary underline-offset-2 hover:underline"
+              onClick={() => onOpenRun(runId)}
+            >
+              Open the run
+            </button>
+          </>
+        )}
+      </StatusNote>
+      <button
+        type="button"
+        className="text-xs text-muted-foreground hover:text-foreground"
+        onClick={onDismiss}
+      >
+        Dismiss
+      </button>
+    </div>
+  );
 }
 
 export function Sub({ children }: { children: ReactNode }) {

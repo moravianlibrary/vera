@@ -400,6 +400,33 @@ The foundation is in place:
   pane's acts are in `category-dialogs.tsx` (custody on `SetEditorDialog`, New and Edit on
   `FormDialog`, Delete on `ConsequenceDialog`) and `refine-wizard.tsx`, on the shared
   `PaneWizard` at `?c=ID&refine=1`; a change leaves a note in the pane it opens.
+- Tasks and Schedules (`src/features/tasks/`, one folder as one demo script draws both).
+  `src/api/tasks.ts` serves `GET /tasks` (the runs in reach: `task.read` everyone's,
+  `task.read_own` the person's own; running apart, finished filtered by state, trigger, plugin
+  and who started it, with facets, tiles, retention and the schedules' counts), `GET /tasks/:id`
+  (its errors, first items and log), `GET /tasks/:id/log` (text), `GET /tasks/running` (the
+  sidebar's panel), `POST …/cancel` and `…/rerun` (409 `task.not_running`,
+  `task.not_rerunnable`) and `PUT /tasks/retention` (`task.schedule`; 422
+  `retention.failed_shorter`). `src/api/schedules.ts` serves `GET /schedules?range=day|week|month`
+  (plugin schedules, then the intention repeats, each with its last run, next run and the runs it
+  makes in the window, listed up to 60), `POST`, `PUT` and `DELETE /schedules/:id`
+  (`task.schedule`; 422 `schedule.too_often`, `schedule.not_schedulable`), `…/pause` with a
+  reason, `…/resume` (409 `schedule.paused`, `schedule.not_paused`) and `…/run` (`plugin.run`).
+  Every answer carries `asOf`, the server's moment, which "2 min ago" and "in 5 min" read
+  against. The mock (`src/mocks/tasks.ts`, `schedules.ts`, fixtures `fixtures/tasks.ts`) keeps a
+  running run's pace, not its count, against `mockNow()` (`src/mocks/today.ts`: the demo's
+  2026-06-25 10:40, standing still under tests and moving in the browser), so a run started by
+  hand progresses and finishes. A cadence and its moments are `src/domain/schedules.ts`
+  (`occurrencesOf`, `nextOccurrenceOf`, `repeatCadenceOf`), which the editor's preview shares
+  with the server; who may cancel or re-run is `src/domain/tasks.ts`. Plugin instances are
+  reference data (`GET /plugin-instances`, `fixtures/plugins.ts` until step 10). Tasks
+  (`tasks-page.tsx`) is the shared `TableWithDrawer`: tiles, running cards with `RunProgress`,
+  the finished table with a failed run's note row and phone cards, the drawer at `?run=`
+  (`run-drawer.tsx`), Cancel and Keep runs for (`run-dialogs.tsx`). Schedules
+  (`schedules-page.tsx`) is the `Timeline` (`?range=`), the table (`?s=` marks a row) and
+  `schedule-dialogs.tsx`: the editor with the next three runs and *Delete schedule…*, and Pause
+  on `ReasonDialog`. The sidebar's `running-tasks-panel.tsx` shows what runs, from
+  `src/hooks/use-running-runs-query.ts`.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

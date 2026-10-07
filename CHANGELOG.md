@@ -122,6 +122,15 @@ All notable changes to this project are documented here.
 - The sidebar shows *Tasks running* at its foot while something runs: each run with its
   progress, linked to it on Tasks, in the same reach as Tasks. Collapsed to the rail it is one
   dot with the count; nothing is shown while nothing runs.
+- Schedules: what runs by itself and when. A timeline over the next 24 hours, 7 days or month
+  draws a dot per run, a band where runs are too dense to show, and hatching where a schedule
+  is paused. Under it, each schedule with how often it runs, what it does when the previous run
+  is still going, its last run (linked to Tasks) and its next. *New schedule* and *Edit* set the
+  plugin, a name, Repeat (every N minutes, every N hours, daily, weekly, monthly; every 5
+  minutes is the shortest) and the overlap, showing the next three runs; *Delete schedule…* says
+  its runs stay. *Pause…* asks why, and the reason shows on the row until *Resume*. *Run now*
+  starts a run by hand and leaves the schedule as it was. Intention repeats are listed too, with
+  *Edit on Intentions*.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

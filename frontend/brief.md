@@ -90,8 +90,9 @@ zod v4.
 | The pane | `Pane` / `paneStateOf` / `Outcome` (`components/pane-state.tsx`); `DetailCard`, `FactGrid`, `StatTiles` with an optional `meter` (`detail-card.tsx`), `StatusNote`, `record-cards.tsx` (askers, copies, catalog, heading; `HistoryCard` takes a log alone, without a document) |
 | Actions | `ViewAction` + `ActionBar` (per-tier cap, `isInMenu` for More ▾); `PageHeader actions`, and `control` for a picker the whole view reads (wraps on a phone) |
 | A tree beside a pane | `Tree` (`components/tree.tsx`): virtual root, value, ⚠, dimming, arrow keys; `CategoryTree` (`components/category-tree.tsx`: search, *Show* over the values a page offers, counts and/or a mix) with `category-tree-values.ts`; `custodyReachOf`, `unheldCategoriesOf`, `isInSubtree`, `searchedCategoriesOf`, `isOutsideScope`, and for changing the tree `scopeOfCategory` (a `category` scoped record), `placesFor`, `isNameTaken` in `domain/categories.ts`, `siblingSetOf` in `domain/mixes.ts` |
-| Who may | `can()` (`domain/permissions.ts`) / `useCan()` with a scoped record |
-| Dialogs | `components/dialogs/`: `DialogShell` (`head`, `onBack`, `secondary` for an editor's *Delete…*; `FormDialog` passes it), `ConsequenceDialog` (A, fed by a server dry run), `ReasonDialog` (B), `FormDialog` (C), `SteppedDialog` (F, with `StepIndicator`), `SetEditorDialog` (D: a set saved whole, a reason holding Save back, an optional *Who it reaches* step the instance fills; Proportions and category custody), `MessageDialog`; a wizard in the pane, `PaneWizard` (`components/pane-wizard.tsx`, routed by the page; Refine); people and groups picked one at a time, `AddSelect` and `RemoveButton` (`components/fields/picked-list.tsx`). Not built: `PickerDialog` (E), see component-interfaces §6.6 |
+| Who may | `can()` (`domain/permissions.ts`) / `useCan()` with a scoped record; a run's own, self-scoped acts in `domain/tasks.ts` (`canCancelRun`, `canRunAgain`) |
+| When something runs by itself | `domain/schedules.ts`: `cadenceSchema`, `occurrencesOf`, `nextOccurrenceOf`, `repeatCadenceOf`, the 5-minute floor; server and editor preview share it |
+| Dialogs | `components/dialogs/`: `DialogShell` (`head`, `onBack`, `secondary` for an editor's *Delete…*; `FormDialog` passes it), `ConsequenceDialog` (A, fed by a server dry run; `cancelLabel` where "Cancel" would read as the act: *Keep running*), `ReasonDialog` (B), `FormDialog` (C), `SteppedDialog` (F, with `StepIndicator`), `SetEditorDialog` (D: a set saved whole, a reason holding Save back, an optional *Who it reaches* step the instance fills; Proportions and category custody), `MessageDialog`; a wizard in the pane, `PaneWizard` (`components/pane-wizard.tsx`, routed by the page; Refine); people and groups picked one at a time, `AddSelect` and `RemoveButton` (`components/fields/picked-list.tsx`). Not built: `PickerDialog` (E), see component-interfaces §6.6 |
 | Doing something | `useActionMutation` → `ActionResult`; refusals are RFC 9457 Problem Details, worded by the action's `refusalTexts[code]`, then `detail`, then by status; `invalidates` lists every query the change shows in |
 | Tier | `useTier`, `valueForTier` (phone < 768, small < 1280, notebook < 1600, large); container queries for what the room decides |
 | Words | `plural`, `formatDay`, `joinDetails` |
@@ -99,17 +100,19 @@ zod v4.
 | Two panes and a draft | `TransferEditor` (`components/transfer-editor.tsx`), `useDraft` + `isSameSet`, `usePicked`, `LeaveGuard` (`components/leave-guard.tsx`) |
 | Words for numbers and days | `formatCount` and `formatPercent` (`lib/format-number.ts`), `formatCalendarDay`, `formatShortCalendarDay` |
 | Cards in sections | `CardSections` + `RecordCard` (`components/card-sections.tsx`), sections of cards or `DataTable`s, the whole card a link when it has an `href`; `focusedId` marks and scrolls to a card or a table row |
-| A full-width table | `DataTable` (`components/data-table.tsx`), columns per tier, a row opens its record; no grouping, notes or paging yet |
+| A full-width table | `DataTable` (`components/data-table.tsx`), columns per tier, a row opens its record, a note row under a row (`noteOf`), cards on a phone (`cardOf`); no grouping or paging yet |
+| A table whose row opens in a drawer | `TableWithDrawer` (`components/table-with-drawer.tsx`): `above`, the table, `below`, a 28rem drawer (full width on a phone) from the URL that does not hold the page; Tasks |
 | Bars against a target | `PaceBars` (`components/visualizations/pace-bars.tsx`): the server's numbers, an even-pace mark; no time bar for an open-ended target |
+| A run's progress, and runs over time | `RunProgress` (`components/visualizations/run-progress.tsx`, `card` or `sidebar`), `Timeline` (`components/visualizations/timeline.tsx`: a lane a schedule, dots, bands, hatched when paused); the words for runs, cadences and moments read against the server's `asOf` in `features/tasks/task-words.ts` |
 | A mix as bars | `MixBar` (one stacked bar, unallocated hatched), `MixBars` (intended over output) and `DriftMarker` (▲/▼ outside the band, the markers form) in `components/visualizations/mix-bars.tsx`, `shareToneOf` for a category's colour; one sibling set as a table, `MixSetCard` (`components/mix-set-card.tsx`) |
 | A record's own page | `RecordPage` (`components/layout/record-page.tsx`: note, cards, aside, history), `PageHeader breadcrumb`, `MembersCard` (`components/members-card.tsx`) |
 | A mix's shares | `effectiveShareOf` (`domain/mixes.ts`); `shareWithinOf` and the counting rules (planned, delivered, output, pace, drift, fill, mix owner and trackers, a correcting run's allocation, what a list counts towards and its fill against a mix, who may) in `domain/intentions.ts`; an intention's mix over the tree, its set writes and detach in `api/mixes.ts`; a project's target and pace are its own intention's (`intention.projectId`); `isInPool` in `domain/lists.ts`; mixes are `mocks/fixtures/intentions.ts`, list generators `mocks/fixtures/list-generators.ts` and classifiers `mocks/fixtures/classifiers.ts` until plugins (step 10) |
 
 **Not built yet** (the step that first needs one builds it, as a shared part,
 from component-interfaces): `CardGrid` §1.4 (Home),
-`TableWithDrawer` §1.6, `LinkedColumns` §1.7, `SettingsPage` §1.8,
-the other visualizations §5;
-`DataTable`'s grouping, note rows, row actions and paging §2.4.
+`LinkedColumns` §1.7, `SettingsPage` §1.8,
+the Sparkline §5;
+`DataTable`'s grouping, row actions and paging §2.4.
 
 **The mock API** (`src/mocks/`): `handlers.ts` routes every request
 (`createHandlers(profile)`); one module per resource applies reach, filters,
@@ -117,8 +120,9 @@ facets, order and grouping. `mutations.ts` holds `Outcome`/`Refusal`,
 `writeLog`, `replaceIteration`; `problem.ts` answers refusals
 (`problemResponse`, `invalidResponse`). `session.ts` resolves the profile into
 grants and custody. Fixtures (`mocks/fixtures/`, demo "today" 2026-06-25,
-`mocks/today.ts`) already hold `lists.ts`, `projects.ts`, `intentions.ts`, `categories.ts`,
-`batches.ts`, `users.ts`, `access.ts` (groups and direct custody are copied into the database, where Categories writes them; `useGroupsQuery` lists groups); the entity schemas are in
+`mocks/today.ts`, and its moment `mockNow()`, 10:40, standing still under tests and moving on in
+the browser) already hold `lists.ts`, `projects.ts`, `intentions.ts`, `categories.ts`,
+`batches.ts`, `users.ts`, `tasks.ts` (runs and schedules), `plugins.ts` (plugin instances, reference data via `usePluginInstancesQuery` until step 10), `access.ts` (groups and direct custody are copied into the database, where Categories writes them; `useGroupsQuery` lists groups); the entity schemas are in
 `domain/entities.ts`. Every API module has tests over HTTP through MSW
 (`src/api/*.test.ts`).
 
@@ -131,7 +135,7 @@ editor page, and for acts behind a server dry run), and `features/projects/`
 (cards in sections, a record's own page, acts on both; the model for a page
 that is not master–detail), and `features/intentions/` (two columns of cards that
 open in place; an editor with a server preview, and a hand-off to the Lists editor by URL), and
-`features/categories/` (a tree beside a pane; the tree changed from the pane, custody written whole, a wizard in the pane), and an intention's Mix in `features/intentions/mix-page.tsx` (a tree beside a pane, a set editor with a reach step). Routes in `src/app.tsx`,
+`features/categories/` (a tree beside a pane; the tree changed from the pane, custody written whole, a wizard in the pane), an intention's Mix in `features/intentions/mix-page.tsx` (a tree beside a pane, a set editor with a reach step), and `features/tasks/` (Tasks and Schedules: a table with a drawer, polling while something runs, a timeline, acts on a row; the model for anything read against the server's clock). The sidebar's foot has the Running tasks panel (`components/layout/running-tasks-panel.tsx`). A filtered resource answers its facets with `facetCountsOf` (`api/facets.ts`). Routes in `src/app.tsx`,
 sidebar entries in `components/layout/navigation.ts`.
 
 ---
