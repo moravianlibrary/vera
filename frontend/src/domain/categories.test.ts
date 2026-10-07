@@ -1,9 +1,15 @@
-// Custody reaches down from where it was granted, by the grant nearest the root, and the gaps
-// nobody holds are reported at their highest point.
+// The category tree: custody reaches down from where it was granted, by the grant nearest the
+// root, and the gaps nobody holds are reported at their highest point; a search keeps what is
+// above a match; a scope holds its own subtree.
 
 import { describe, expect, it } from "vitest";
 import type { CustodyHolders } from "@/domain/categories";
-import { custodyReachOf, unheldCategoriesOf } from "@/domain/categories";
+import {
+  custodyReachOf,
+  isOutsideScope,
+  searchedCategoriesOf,
+  unheldCategoriesOf,
+} from "@/domain/categories";
 import { categories } from "@/mocks/fixtures/categories";
 
 const holders: CustodyHolders = {
@@ -34,5 +40,23 @@ describe("unheldCategoriesOf", () => {
       "c3",
       "c4",
     ]);
+  });
+});
+
+describe("searchedCategoriesOf", () => {
+  it("keeps the matches and every category above them", () => {
+    expect([...(searchedCategoriesOf(categories, " regional") ?? [])]).toEqual(["c2", "c21"]);
+    expect(searchedCategoriesOf(categories, "  ")).toBeNull();
+    expect(searchedCategoriesOf(categories, "nothing")?.size).toBe(0);
+  });
+});
+
+describe("isOutsideScope", () => {
+  it("puts the root and everything outside a scope out of it, the scope itself in", () => {
+    expect(isOutsideScope(categories, "c2", null)).toBe(true);
+    expect(isOutsideScope(categories, "c2", "c1")).toBe(true);
+    expect(isOutsideScope(categories, "c2", "c2")).toBe(false);
+    expect(isOutsideScope(categories, "c2", "c21")).toBe(false);
+    expect(isOutsideScope(categories, null, null)).toBe(false);
   });
 });

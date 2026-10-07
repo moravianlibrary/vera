@@ -17,6 +17,7 @@ const intention = (id: string, overrides: Partial<Intention> = {}): Intention =>
   name: id,
   description: "",
   funding: { kind: "any" },
+  projectId: null,
   scopeCategoryId: null,
   tracksMixOf: "overall",
   distributionId: "d1",

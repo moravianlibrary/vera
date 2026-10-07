@@ -6,6 +6,9 @@
 // is ever stored; an owner others track switches to tracking only by moving them with it; a copy
 // is a new mix the intention owns. All of it is `intention.edit` on each intention changed, a
 // repeat `intention.repeat`. A repeat's occurrences are fixtures; the mock makes no new ones.
+// A project's own intention (§3.4) is listed once its project is decided; its name, funding,
+// window and target are the project's, changed on Projects, and it is never archived or deleted
+// on its own.
 
 import type {
   FillRowView,
@@ -67,8 +70,15 @@ export function canReadIntentions(session: Session): boolean {
 const scopeOf = (intention: Pick<Intention, "funding">) =>
   scopeOfIntention(intention, database.projects);
 
-function isVisible(session: Session, intention: Intention): boolean {
-  return can(session, "intention.read", scopeOf(intention));
+// A project's own intention is listed once the project is decided: Approved, or archived with a
+// Rejected one (§3.4).
+function isListed(intention: Pick<Intention, "projectId">): boolean {
+  const project = database.projects.find((candidate) => candidate.id === intention.projectId);
+  return project === undefined || project.state !== "Proposed";
+}
+
+export function isVisible(session: Session, intention: Intention): boolean {
+  return isListed(intention) && can(session, "intention.read", scopeOf(intention));
 }
 
 // ---------------------------------------------------------------- counting
@@ -230,7 +240,14 @@ const overallRefusal: Refusal = {
   code: "intention.overall",
 };
 
-function intentionFor(session: Session, intentionId: string): Outcome<Intention> {
+// The project's own: its name, funding, window and target are the project's.
+const projectRefusal: Refusal = {
+  status: 409,
+  message: "It is its project's intention: it changes, and goes, with the project",
+  code: "intention.project",
+};
+
+export function intentionFor(session: Session, intentionId: string): Outcome<Intention> {
   const intention = database.intentions.find((candidate) => candidate.id === intentionId);
   if (intention === undefined || !isVisible(session, intention)) {
     return { refusal: notFound };
@@ -243,7 +260,7 @@ function intentionFor(session: Session, intentionId: string): Outcome<Intention>
   return { value: intention };
 }
 
-function replaceIntention(intention: Intention): void {
+export function replaceIntention(intention: Intention): void {
   const index = database.intentions.findIndex((candidate) => candidate.id === intention.id);
   database.intentions.splice(index, 1, intention);
 }
@@ -349,12 +366,12 @@ const chainRefusal: Refusal = {
   code: "intention.not_owner",
 };
 
-function nextId(prefix: string, ids: readonly string[]): string {
+export function nextId(prefix: string, ids: readonly string[]): string {
   const numbers = ids.map((id) => Number(id.slice(prefix.length)) || 0);
   return `${prefix}${Math.max(0, ...numbers) + 1}`;
 }
 
-function copyMixOf(owner: Intention, ownerId: string): Distribution {
+export function copyMixOf(owner: Intention, ownerId: string): Distribution {
   const copy: Distribution = {
     id: nextId(
       "d",
@@ -451,6 +468,8 @@ export function createIntention(session: Session, draft: IntentionDraft): Outcom
       "i",
       database.intentions.map((intention) => intention.id),
     ),
+    // A project's own intention is made only with the project.
+    projectId: null,
     tracksMixOf: null,
     distributionId: overallIntention().distributionId,
     isOverall: false,
@@ -489,6 +508,15 @@ export function saveIntention(
     };
   }
 
+  const isProjectKept =
+    draft.name === intention.name &&
+    isSameFunding(draft.funding, intention.funding) &&
+    draft.endsOn === intention.endsOn &&
+    draft.targetPages === intention.targetPages;
+  if (intention.projectId !== null && !isProjectKept) {
+    return { refusal: projectRefusal };
+  }
+
   const isOverallKept =
     draft.funding.kind === "any" &&
     draft.scopeCategoryId === null &&
@@ -515,6 +543,13 @@ export function saveIntention(
   return { value: rowOf(saved) };
 }
 
+function isSameFunding(first: Intention["funding"], second: Intention["funding"]): boolean {
+  return (
+    first.kind === second.kind &&
+    (first.kind !== "project" || second.kind !== "project" || first.projectId === second.projectId)
+  );
+}
+
 // Off the page only; it keeps counting (§3.3).
 export function archiveIntention(session: Session, intentionId: string): Outcome<IntentionRow> {
   const found = intentionFor(session, intentionId);
@@ -525,6 +560,10 @@ export function archiveIntention(session: Session, intentionId: string): Outcome
   const intention = found.value;
   if (intention.isOverall) {
     return { refusal: overallRefusal };
+  }
+
+  if (intention.projectId !== null) {
+    return { refusal: projectRefusal };
   }
 
   const archived: Intention = {
@@ -544,14 +583,17 @@ export function unarchiveIntention(session: Session, intentionId: string): Outco
     return found;
   }
 
+  if (found.value.projectId !== null) {
+    return { refusal: projectRefusal };
+  }
+
   const unarchived: Intention = { ...found.value, archived: null };
   replaceIntention(unarchived);
   return { value: rowOf(unarchived) };
 }
 
-// TODO(rrandiak): deleting an intention others track is refused, since the sources do not say
-// who would own the mix then (the §2.3 rule, "the longest tracker owns it", is for a shared mix
-// edited, and the tracking start is not stored).
+// One others track stays: ownership of a mix never moves on its own (concepts.md *Mix*, decided
+// 2026-10-07), so they are detached first, or it is archived.
 function deletableFor(session: Session, intentionId: string): Outcome<Intention> {
   const found = intentionFor(session, intentionId);
   if ("refusal" in found) {
@@ -563,6 +605,10 @@ function deletableFor(session: Session, intentionId: string): Outcome<Intention>
     return { refusal: overallRefusal };
   }
 
+  if (intention.projectId !== null) {
+    return { refusal: projectRefusal };
+  }
+
   const isTracked =
     trackersOf(intention, database.intentions).length > 0 ||
     database.intentionTemplates.some((template) => template.tracksMixOf === intention.id);
@@ -570,7 +616,7 @@ function deletableFor(session: Session, intentionId: string): Outcome<Intention>
     return {
       refusal: {
         status: 409,
-        message: "Others track its mix, so it stays; archive it instead",
+        message: "Others track its mix, so it stays; detach them, or archive it instead",
         code: "intention.tracked",
       },
     };

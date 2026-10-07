@@ -12,6 +12,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useId, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
+import { Link } from "react-router";
 import { z } from "zod";
 import type {
   IntentionDraft,
@@ -66,6 +67,7 @@ const refusalTexts = {
   "intention.tracked": "Others track its mix: move them along, or keep its own mix.",
   "intention.not_owner": "That intention tracks another one meanwhile; pick again.",
   "intention.counts_from": "The counting start is fixed once created.",
+  "intention.project": "Its name, funding, window and target are its project's; change them there.",
   403: "You may no longer change this intention.",
 } as const;
 
@@ -331,6 +333,8 @@ export function IntentionFormDialog({
   const id = useId();
   const edited = source.kind === "edit" ? source.row : null;
   const isOverall = edited?.intention.isOverall === true;
+  // A project's own: only its description, scope and mix are its own (intentions.md §3.4).
+  const ownProject = edited?.intention.projectId === null ? null : (edited?.project ?? null);
   const save = useActionMutation({
     call: (draft: IntentionDraft) =>
       edited === null ? createIntention(draft) : saveIntention(edited.intention.id, draft),
@@ -375,14 +379,30 @@ export function IntentionFormDialog({
       }
       render={(form) => (
         <>
-          <Field id={`${id}-name`} label="Name">
-            <Input
-              id={`${id}-name`}
-              placeholder="e.g. Regional weeklies 2027"
-              {...form.register("name")}
-            />
-          </Field>
-          <FieldError message={form.formState.errors.name?.message} />
+          {ownProject === null ? (
+            <>
+              <Field id={`${id}-name`} label="Name">
+                <Input
+                  id={`${id}-name`}
+                  placeholder="e.g. Regional weeklies 2027"
+                  {...form.register("name")}
+                />
+              </Field>
+              <FieldError message={form.formState.errors.name?.message} />
+            </>
+          ) : (
+            <p className="rounded-md bg-tone-blue px-3 py-2 text-[0.8125rem] text-tone-blue-foreground">
+              <b className="font-semibold">{ownProject.name}&apos;s own intention.</b> Its name,
+              funding, window and target are the project&apos;s:{" "}
+              <Link
+                to={`/projects/${encodeURIComponent(ownProject.id)}`}
+                className="font-medium underline underline-offset-2"
+              >
+                change them there
+              </Link>
+              . Its categories and mix are its own.
+            </p>
+          )}
           <Field id={`${id}-description`} label="Description" hint="optional">
             <Textarea id={`${id}-description`} rows={2} {...form.register("description")} />
           </Field>
@@ -396,6 +416,7 @@ export function IntentionFormDialog({
               rows={rows}
               session={session}
               onCopy={onCopy}
+              isProjectOwn={ownProject !== null}
             />
           )}
         </>
@@ -412,7 +433,7 @@ function OverallNote({ row, session }: { row: IntentionRow; session: Session }) 
       mix
       {row.mix.trackerCount > 0 && `, which ${plural(row.mix.trackerCount, "other")} track`} —{" "}
       {can(session, "intention.edit_overall")
-        ? "its percentages are changed on Categories."
+        ? "its percentages are changed on its Mix."
         : "only an admin changes its percentages."}
     </p>
   );
@@ -425,13 +446,65 @@ interface IntentionFieldsProps {
   rows: readonly IntentionRow[];
   session: Session;
   onCopy: (() => void) | undefined;
+  // Its funding, window and target are its project's, shown, not edited.
+  isProjectOwn: boolean;
 }
 
-function IntentionFields({ id, form, source, rows, session, onCopy }: IntentionFieldsProps) {
+function IntentionFields({
+  id,
+  form,
+  source,
+  rows,
+  session,
+  onCopy,
+  isProjectOwn,
+}: IntentionFieldsProps) {
   const edited = source.kind === "edit" ? source.row : null;
   const values = form.watch();
   const { errors } = form.formState;
   const touched = { shouldDirty: true } as const;
+
+  if (isProjectOwn && edited !== null) {
+    const { intention } = edited;
+    return (
+      <>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field id={`${id}-scope`} label="Categories" hint="one subtree">
+            <ScopeSelect
+              id={`${id}-scope`}
+              value={values.scope}
+              onChange={(value) => form.setValue("scope", value, touched)}
+            />
+          </Field>
+          <Field id={`${id}-mix`} label="Mix">
+            <MixSelect
+              id={`${id}-mix`}
+              value={values.mix}
+              rows={rows}
+              intentionId={intention.id}
+              isOwner={edited.mix.isOwn}
+              onChange={(value) => form.setValue("mix", value, touched)}
+            />
+          </Field>
+        </div>
+        <MixNote
+          id={id}
+          form={form}
+          edited={edited}
+          rows={rows}
+          error={errors.isMovingTrackers?.message}
+        />
+        <p className="text-xs text-muted-foreground">
+          Counts {formatCalendarDay(intention.countsFrom)} →{" "}
+          {intention.endsOn === null ? "no end" : formatCalendarDay(intention.endsOn)} ·{" "}
+          {intention.targetPages === null
+            ? "no target"
+            : `target ${formatCount(intention.targetPages)} pp`}
+        </p>
+        <LandingNote values={values} edited={edited} />
+      </>
+    );
+  }
 
   return (
     <>

@@ -18,21 +18,25 @@ import type {
   RepeatEvery,
 } from "@/domain/entities";
 import type { ScopedRecord } from "@/domain/permissions";
-import {
-  daysUntil,
-  paceSlack,
-  paceVerdicts,
-  scopeOfProject,
-  timeElapsedOf,
-} from "@/domain/projects";
+import { daysUntil, scopeOfProject, timeElapsedOf } from "@/domain/projects";
 import { isProgressAtLeast } from "@/domain/status";
 
 export const intentionStates = ["Running", "Upcoming", "Ended"] as const;
 export type IntentionState = (typeof intentionStates)[number];
 
-// The Projects verdicts, and a target already covered by what is planned.
-export const targetVerdicts = [...paceVerdicts, "fullyPlanned"] as const;
+// On pace or behind while it runs, met or short once ended, and a target already covered by what
+// is planned. Projects shows its own intention's (projects.md §1.1).
+export const targetVerdicts = [
+  "onPace",
+  "behindPace",
+  "targetMet",
+  "short",
+  "fullyPlanned",
+] as const;
 export type TargetVerdict = (typeof targetVerdicts)[number];
+
+// Ten points of slack: a target is not behind because one list is still running.
+const paceSlack = 0.1;
 
 // Points either way that still read as on the mix: display tolerance, not a change to the mix.
 export const mixBand = 5;

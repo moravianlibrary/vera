@@ -377,19 +377,6 @@ export const statusLog: readonly StatusLogEntry[] = [
     detail: "Jana Nováková",
   },
   {
-    id: "E30",
-    subjectKind: "project",
-    subjectId: "p1",
-    at: "2026-06-10T08:00:00Z",
-    actor: {
-      kind: "user",
-      userId: "u2",
-    },
-    correlationId: "k32",
-    event: "Intention attached",
-    detail: "NDK Periodika — 2026 Q3",
-  },
-  {
     id: "E31",
     subjectKind: "project",
     subjectId: "p2",

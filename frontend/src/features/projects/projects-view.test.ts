@@ -9,7 +9,6 @@ import { paceOf, projectNoteOf, projectSectionsOf } from "@/features/projects/pr
 const base = {
   name: "P",
   description: "",
-  targetPages: 1000,
   managerId: "u1",
   memberIds: ["u1"],
   memberGroupIds: [],
@@ -32,6 +31,7 @@ function rowOf(
         : { ...base, id, startsOn, endsOn, state };
   return {
     project,
+    intention: { id: `i-${id}`, targetPages: 1000 },
     period,
     timeElapsed: 0,
     daysToStart: 0,
@@ -46,7 +46,6 @@ function rowOf(
     proposalCount: 0,
     listCount: 0,
     memberGroups: [],
-    intentionCount: 0,
   };
 }
 
@@ -121,5 +120,16 @@ describe("projectNoteOf", () => {
       title: "Behind pace — 10% delivered with 50% of the time gone",
       body: "190 days left. 200 pp are on lists and not digitized yet. 940 pp more are approved and waiting for a list.",
     });
+  });
+
+  it("says a running project with no target has none, its intention tracking the mix", () => {
+    const row = rowOf("p", "Approved", "Active", "2026-01-01", "2026-12-31");
+
+    expect(
+      projectNoteOf(
+        { ...row, intention: { id: "i", targetPages: null }, fundedCount: 2, deliveredPages: 80 },
+        "",
+      ).title,
+    ).toBe("Running since 1 Jan 2026, with no target");
   });
 });

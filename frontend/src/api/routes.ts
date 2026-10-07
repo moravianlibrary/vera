@@ -6,7 +6,7 @@ export const apiRoutes = {
   userSettings: "/session/settings",
   users: "/users",
   categories: "/categories",
-  // Categories, the page: the tree with its numbers, custody and one intention's mix.
+  // Categories, the page: the tree with its numbers, custody and Overall's mix, read-only.
   categoryIndex: "/categories/overview",
   projects: "/projects",
   // Projects, the page: every project the caller sees with its numbers worked out.
@@ -47,6 +47,10 @@ export function documentRoute(documentId: string): string {
 
 export function projectRoute(projectId: string): string {
   return `${apiRoutes.projects}/${encodeURIComponent(projectId)}`;
+}
+
+export function intentionRoute(intentionId: string): string {
+  return `${apiRoutes.intentions}/${encodeURIComponent(intentionId)}`;
 }
 
 export function digitizationListRoute(listId: string): string {

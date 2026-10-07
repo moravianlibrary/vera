@@ -117,6 +117,7 @@ const intention = (overrides: Partial<Intention> = {}): Intention => ({
   name: "June",
   description: "",
   funding: { kind: "any" },
+  projectId: null,
   scopeCategoryId: null,
   tracksMixOf: null,
   distributionId: "d",

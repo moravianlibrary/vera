@@ -1,10 +1,13 @@
-// Projects end to end against the mock server over HTTP: who sees which project, the period and
-// pace worked out from the dates and what it funded, one project's proposals, lists and history,
-// and its acts. The acts change the mock's state, so each test takes its own project.
+// Projects end to end against the mock server over HTTP: who sees which project, the period from
+// the dates, the target, planned, delivered and pace of its own intention, one project's
+// proposals, lists and history, and its acts, which its intention follows. The acts change the
+// mock's state, so each test takes its own project.
 
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
+import type { IntentionIndex } from "@/api/intentions";
+import { listIntentionIndex } from "@/api/intentions";
 import {
   approveProject,
   createProject,
@@ -13,6 +16,7 @@ import {
   listMemberGroups,
   listProjectIndex,
   previewDecision,
+  previewProjectChange,
   rejectProject,
   saveProject,
   saveProjectMembers,
@@ -37,6 +41,10 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
   } catch (error) {
     return error instanceof ApiError ? error.status : null;
   }
+}
+
+function intentionRowOf(index: IntentionIndex, intentionId: string) {
+  return index.rows.find((row) => row.intention.id === intentionId);
 }
 
 const draft = {
@@ -95,28 +103,27 @@ describe("listProjectIndex", () => {
 });
 
 describe("findProject", () => {
-  it("counts each intention it funds in that intention's own window", async () => {
+  it("reads its target, planned, delivered and pace from its own intention", async () => {
     signInAs("digitization");
-    const moravica = await findProject("p3");
-    const visk = await findProject("p2");
-    const index = await listProjectIndex();
+    const { rows } = await listProjectIndex();
+    const intentions = await listIntentionIndex();
+    const visk = rows.find((row) => row.project.id === "p2");
+    const viskIntention = intentionRowOf(intentions, "i2");
 
-    expect(moravica?.intentions).toEqual([
-      {
-        id: "i5",
-        name: "Moravica — closing year",
-        countsFrom: "2026-01-01",
-        endsOn: "2026-12-31",
-        targetPages: 800,
-        tracksName: "House mix",
-        plannedPages: 438,
-        deliveredPages: 438,
-      },
-    ]);
-    expect(visk?.intentions.map((intention) => intention.id)).toEqual(["i2"]);
-    expect(
-      index.rows.filter((row) => row.intentionCount === 0).map((row) => row.project.id),
-    ).not.toContain("p1");
+    expect(visk?.intention).toEqual({ id: "i2", targetPages: 3000 });
+    expect(viskIntention?.intention).toMatchObject({
+      name: "VISK 7 / 2026",
+      projectId: "p2",
+      countsFrom: "2026-01-01",
+      endsOn: "2026-12-31",
+    });
+    expect(visk).toMatchObject({
+      plannedPages: viskIntention?.plannedPages,
+      deliveredPages: viskIntention?.deliveredPages,
+      verdict: viskIntention?.verdict,
+    });
+    // Another intention counting the same funding is a measure beside it, not its own.
+    expect(rows.find((row) => row.project.id === "p3")?.intention.id).toBe("i13");
   });
 
   it("gives one row per proposed document, the lists carrying its items and its history", async () => {
@@ -162,6 +169,17 @@ describe("starting and running a project", () => {
       memberGroupIds: [],
     });
     expect(created.log.map((entry) => entry.event)).toEqual(["Created"]);
+    expect(created.row.intention.targetPages).toBe(1000);
+    // Listed on Intentions only once the project is decided.
+    signInAs("digitization");
+    expect(intentionRowOf(await listIntentionIndex(), created.row.intention.id)).toBeUndefined();
+  });
+
+  it("starts one without a target, whose intention then tracks the mix", async () => {
+    signInAs("staff");
+    const created = await createProject({ ...draft, name: "Bez cíle", targetPages: null });
+
+    expect(created.row).toMatchObject({ intention: { targetPages: null }, verdict: null });
   });
 
   it("refuses an end before the start, and starting without project.create", async () => {
@@ -183,6 +201,34 @@ describe("starting and running a project", () => {
     expect(saved.row.project.endsOn).toBe("2027-12-31");
     expect(saved.log[0]?.event).toBe("Dates or target changed");
     expect(await statusOf(saveProject("p1", draft))).toBe(403);
+  });
+
+  it("says what new dates do to its intention's figures, then moves its window", async () => {
+    signInAs("digitization");
+    const p1 = {
+      name: "NDK Periodika",
+      description: "National Digital Library grant.",
+      startsOn: "2026-07-01",
+      endsOn: "2027-06-30",
+      targetPages: 5000,
+    };
+    const before = (await listProjectIndex()).rows.find((row) => row.project.id === "p1");
+    const change = await previewProjectChange("p1", p1);
+
+    expect(change.plannedPages.before).toBe(before?.plannedPages);
+    expect(change.plannedPages.after).toBeLessThan(change.plannedPages.before);
+
+    const saved = await saveProject("p1", p1);
+
+    expect(saved.row).toMatchObject({
+      intention: { id: "i12", targetPages: 5000 },
+      plannedPages: change.plannedPages.after,
+    });
+    expect(intentionRowOf(await listIntentionIndex(), "i12")?.intention).toMatchObject({
+      countsFrom: "2026-07-01",
+      endsOn: "2027-06-30",
+      targetPages: 5000,
+    });
   });
 
   it("hands over the manager role; the old manager stays a member", async () => {
@@ -212,6 +258,7 @@ describe("starting and running a project", () => {
     expect(await statusOf(deleteProject("p8"))).toBe(409);
     expect(await statusOf(deleteProject(created.row.project.id))).toBeNull();
     expect(await findProject(created.row.project.id)).toBeNull();
+    expect(intentionRowOf(await listIntentionIndex(), created.row.intention.id)).toBeUndefined();
   });
 });
 
@@ -250,5 +297,9 @@ describe("deciding a project", () => {
       reason: "The call was not won.",
     });
     expect(rejected.row.verdict).toBeNull();
+    signInAs("digitization");
+    expect(
+      intentionRowOf(await listIntentionIndex(), rejected.row.intention.id)?.intention.archived,
+    ).not.toBeNull();
   });
 });

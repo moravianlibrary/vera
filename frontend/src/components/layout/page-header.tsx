@@ -2,8 +2,8 @@
 // the title, and the view's declared actions on the right, capped per tier
 // (docs/demos/shared/vera.css § top bar; component-interfaces.md §1.1). Counts belong to the
 // list they count, not here. It never scrolls; the view's body below it does. A control that
-// picks what the whole view reads, such as Categories' *Mix of*, sits before the actions, and on
-// a phone wraps to a line of its own.
+// picks what the whole view reads sits before the actions, and on a phone wraps to a line of its
+// own.
 
 import type { ReactNode } from "react";
 import { Link } from "react-router";

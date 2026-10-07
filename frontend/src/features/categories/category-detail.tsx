@@ -1,41 +1,36 @@
 // One category in the Categories pane (docs/demos/shared/page-categories.js `render`; STATUS
-// "Categories"; intentions.md §2.3–§2.4): where it sits, its numbers, its children's shares in the
-// mix read with what each actually got, or the documents on a leaf, and its custody with whom it
-// reaches and from where. *All categories* totals the tree, holds the top-level set and says what
-// needs attention: sets under 100 in any mix, and branches nobody holds. A tracker reads its
-// owner's mix and says so; outside a scoped intention's subtree the shares are not used, and the
-// pane says that instead of showing them.
+// "Categories"; concepts.md *Category*): where it sits, its numbers, its children's shares in
+// Overall's mix read with what each actually got, or the documents on a leaf, and its custody with
+// whom it reaches and from where. *All categories* totals the tree, holds the top-level set and
+// says what needs attention: sets under 100 in Overall's mix, and branches nobody holds. The
+// shares are Overall's and read-only here; the set card links to where they are edited
+// (intentions.md §2.4).
 // TODO(rrandiak): labels move to i18n.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
 import { Fragment, type ReactNode } from "react";
 import { Link } from "react-router";
-import type { CategoryIndex, CategoryMix, CategoryNode, CategoryTotals } from "@/api/categories";
+import type { CategoryIndex, CategoryNode, CategoryTotals } from "@/api/categories";
 import { listDocuments } from "@/api/documents";
+import type { MixTree } from "@/api/mixes";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
+import { mixNameOf } from "@/components/category-tree-values";
 import type { Stat } from "@/components/detail-card";
 import { DetailCard, DetailRow, FinePrint, Muted, StatTiles } from "@/components/detail-card";
 import { visibleNavigation } from "@/components/layout/navigation";
+import { MixSetCard } from "@/components/mix-set-card";
 import { StatusBadge } from "@/components/status-badge";
-import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
-import { DriftMarker } from "@/components/visualizations/mix-bars";
 import { categoryPathOf } from "@/domain/categories";
 import { currentIterationOf } from "@/domain/documents";
-import type { Category, Intention, Session } from "@/domain/entities";
-import { scopeOfIntention } from "@/domain/intentions";
+import type { Category, Session } from "@/domain/entities";
 import { can, hasPermission } from "@/domain/permissions";
 import { iterationStatusOf } from "@/domain/status";
-import {
-  isOutOfScope,
-  levelOf,
-  mixNameOf,
-  percentTextOf,
-} from "@/features/categories/categories-view";
+import { levelOf } from "@/features/categories/categories-view";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
-import { useProjectsQuery } from "@/hooks/use-reference-query";
-import { formatCount } from "@/lib/format-number";
+import { intentionMixHrefOf } from "@/features/intentions/mix-view";
+import { formatCount, formatPercent } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 
 // How many of a leaf's documents the pane lists before *Open in Documents*.
@@ -48,7 +43,6 @@ interface CategoryPaneProps {
   categoryId: string | null;
   session: Session;
   onSelect: (id: string | null) => void;
-  onPickIntention: (intentionId: string, atCategoryId?: string | null) => void;
 }
 
 export function CategoryPane({
@@ -57,14 +51,12 @@ export function CategoryPane({
   categoryId,
   session,
   onSelect,
-  onPickIntention,
 }: CategoryPaneProps) {
   const { mix } = index;
   const category = categories.find((candidate) => candidate.id === categoryId) ?? null;
   const node = index.nodes.find((candidate) => candidate.categoryId === categoryId);
   const children = categories.filter((candidate) => candidate.parentId === categoryId);
   const isLeaf = category !== null && children.length === 0;
-  const isOutside = mix !== null && isOutOfScope(categories, mix, categoryId);
   const documentsHref =
     category !== null && canOpenDocuments(session)
       ? `/documents?category=${encodeURIComponent(category.id)}`
@@ -93,42 +85,36 @@ export function CategoryPane({
         <ActionBar actions={actions} className="mb-4" />
       </div>
 
-      {mix !== null && (
-        <MixNotes
-          mix={mix}
-          categories={categories}
-          categoryId={categoryId}
-          session={session}
-          onPickIntention={onPickIntention}
-        />
-      )}
-
       <StatTiles
         stats={[
-          ...(category !== null && mix !== null && !isOutside
-            ? shareStats(categories, mix, category)
-            : []),
+          ...(category !== null && mix !== null ? shareStats(categories, mix, category) : []),
           ...countStats(category === null ? index.totals : node),
         ]}
       />
 
       <div className="mt-4 grid gap-4">
-        {mix !== null && !isLeaf && !isOutside && (
-          <SetCard
+        {mix !== null && !isLeaf && (
+          <MixSetCard
             categories={categories}
-            index={index}
             mix={mix}
             categoryId={categoryId}
             onSelect={onSelect}
+            documentCountOf={(id) =>
+              index.nodes.find((candidate) => candidate.categoryId === id)?.documentCount ?? 0
+            }
+            action={
+              <Button asChild size="sm" variant="outline">
+                <Link to={intentionMixHrefOf(mix.owner.id, categoryId)}>
+                  {can(session, "intention.edit_overall")
+                    ? "Edit the house mix"
+                    : "Open the house mix"}
+                </Link>
+              </Button>
+            }
           />
         )}
         {category === null && (
-          <AttentionCard
-            categories={categories}
-            index={index}
-            onSelect={onSelect}
-            onPickIntention={onPickIntention}
-          />
+          <AttentionCard categories={categories} index={index} onSelect={onSelect} />
         )}
         {isLeaf && node !== undefined && (
           <DocumentsHereCard
@@ -140,11 +126,10 @@ export function CategoryPane({
         )}
         <CustodyCard category={category} node={node} session={session} />
         <FinePrint>
-          <b className="font-semibold">Shares are recursive.</b> <i>Share of parent</i> is what is
-          stored; <i>of the whole</i> is it times its parent&apos;s, worked out on read. They are
-          percentages, not weights: a share set to 30% is 30% tomorrow. <b>No share</b> is
-          unallocated and flagged; <b>0%</b> is a deliberate exclusion. Documents sit on leaves
-          only; custody attaches anywhere and reaches everything under it.
+          <b className="font-semibold">A category is a line of work.</b> It classifies the attempt
+          and gives custody; it holds no share of its own. The shares shown are the house
+          mix&apos;s, Overall&apos;s, and are edited there. Documents sit on leaves only; custody
+          attaches anywhere and reaches everything under it.
         </FinePrint>
       </div>
     </article>
@@ -190,74 +175,10 @@ function Breadcrumb({
   );
 }
 
-// The owner's mix is edited only on the owner: `intention.edit_overall` for Overall's, else
-// `intention.edit` on the owner (§2.5).
-function canEditMixOf(
-  session: Session,
-  owner: Intention,
-  projects: Parameters<typeof scopeOfIntention>[1],
-) {
-  return owner.isOverall
-    ? can(session, "intention.edit_overall")
-    : can(session, "intention.edit", scopeOfIntention(owner, projects));
-}
-
-interface MixNotesProps {
-  mix: CategoryMix;
-  categories: readonly Category[];
-  categoryId: string | null;
-  session: Session;
-  onPickIntention: (intentionId: string, atCategoryId?: string | null) => void;
-}
-
-function MixNotes({ mix, categories, categoryId, session, onPickIntention }: MixNotesProps) {
-  const { data: projects = [] } = useProjectsQuery();
-  const { intention, owner, trackers } = mix;
-  const isTracker = intention.id !== owner.id;
-  const others = trackers.length - 1;
-  const scope = categories.find((candidate) => candidate.id === intention.scopeCategoryId);
-  return (
-    <>
-      {isTracker && (
-        <div className="mb-4 grid gap-2">
-          <StatusNote tone="blue" title={`${intention.name} tracks ${owner.name}`}>
-            Editing changes {owner.name}
-            {others > 0 && ` and ${others} more`}.
-          </StatusNote>
-          {canEditMixOf(session, owner, projects) && (
-            <div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onPickIntention(owner.id, categoryId)}
-              >
-                Edit {owner.name}&apos;s mix
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
-      {scope !== undefined && isOutOfScope(categories, mix, categoryId) && (
-        <StatusNote tone="slate" className="mb-4" title={`Outside ${intention.name}'s scope`}>
-          It reads only{" "}
-          {categoryPathOf(categories, scope.id)
-            .map((step) => step.name)
-            .join(" › ")}
-          ; shares here are not used by it.
-        </StatusNote>
-      )}
-    </>
-  );
-}
-
-function shareStats(categories: readonly Category[], mix: CategoryMix, category: Category): Stat[] {
-  if (category.id === mix.intention.scopeCategoryId) {
-    return [];
-  }
-
+// Overall's share here; it is never scoped.
+function shareStats(categories: readonly Category[], mix: MixTree, category: Category): Stat[] {
   const mixNode = mix.nodes.find((candidate) => candidate.categoryId === category.id);
   const parent = categories.find((candidate) => candidate.id === category.parentId);
-  const scope = categories.find((candidate) => candidate.id === mix.intention.scopeCategoryId);
   const share = mixNode?.share ?? null;
   const ofWhole = mixNode?.ofWhole ?? null;
   const actual = mixNode?.actual ?? null;
@@ -271,12 +192,12 @@ function shareStats(categories: readonly Category[], mix: CategoryMix, category:
           : `of ${parent?.name ?? "All categories"} · ${mixNameOf(mix)}`,
     },
     {
-      label: scope === undefined ? "Of the whole" : `Of ${scope.name}`,
-      value: ofWhole === null ? "—" : percentTextOf(ofWhole),
+      label: "Of the whole",
+      value: ofWhole === null ? "—" : formatPercent(ofWhole),
       foot:
         actual === null
           ? `${mix.intention.name} has no output yet`
-          : `actual ${percentTextOf(actual)} of ${mix.intention.name}'s output`,
+          : `actual ${formatPercent(actual)} of ${mix.intention.name}'s output`,
     },
   ];
 }
@@ -305,151 +226,45 @@ function countStats(totals: CategoryTotals | undefined): Stat[] {
   ];
 }
 
-interface SetCardProps {
-  categories: readonly Category[];
-  index: CategoryIndex;
-  mix: CategoryMix;
-  // Null is the top level.
-  categoryId: string | null;
-  onSelect: (id: string | null) => void;
-}
-
-// One sibling set with the mix: the top level on the root, the children on a branch.
-function SetCard({ categories, index, mix, categoryId, onSelect }: SetCardProps) {
-  const children = categories.filter((candidate) => candidate.parentId === categoryId);
-  const parent = categories.find((candidate) => candidate.id === categoryId);
-  const set =
-    categoryId === null ? mix : mix.nodes.find((candidate) => candidate.categoryId === categoryId);
-  const unallocated = set?.unallocated ?? 0;
-  const noShare = children.filter((child) => set?.noShareIds.includes(child.id));
-  const others = mix.trackers.filter((tracker) => tracker.id !== mix.intention.id).length;
-  const mixNodeOf = (id: string) => mix.nodes.find((candidate) => candidate.categoryId === id);
-  const countOf = (id: string) =>
-    index.nodes.find((candidate) => candidate.categoryId === id)?.documentCount ?? 0;
-  return (
-    <DetailCard title={`${categoryId === null ? "Top level" : "Children"} — ${mixNameOf(mix)}`}>
-      <table className="w-full text-sm">
-        <thead className="text-[0.6875rem] tracking-wide text-muted-foreground uppercase">
-          <tr className="border-b">
-            <th className="py-1.5 text-left font-semibold">Category</th>
-            <th className="text-right font-semibold">
-              Share
-              {parent === undefined ? (
-                ""
-              ) : (
-                <span className="hidden @md:inline"> of {parent.name}</span>
-              )}
-            </th>
-            <th className="text-right font-semibold">
-              <span className="hidden @md:inline">Of the whole</span>
-              <span className="@md:hidden">Whole</span>
-            </th>
-            <th className="text-right font-semibold">Actual</th>
-            <th className="hidden text-right font-semibold @sm:table-cell">Docs</th>
-          </tr>
-        </thead>
-        <tbody>
-          {children.map((child) => {
-            const mixNode = mixNodeOf(child.id);
-            const share = mixNode?.share ?? null;
-            const ofWhole = mixNode?.ofWhole ?? null;
-            const actual = mixNode?.actual ?? null;
-            return (
-              <tr
-                key={child.id}
-                className="cursor-pointer border-b last:border-0 hover:bg-muted/60"
-                onClick={() => onSelect(child.id)}
-              >
-                <td className="py-2 font-medium">
-                  <button
-                    type="button"
-                    className="text-left hover:underline"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onSelect(child.id);
-                    }}
-                  >
-                    {child.name}
-                  </button>
-                </td>
-                <td className="text-right tabular-nums">
-                  {share === null ? (
-                    <span className="text-tone-amber-foreground">no share</span>
-                  ) : share === 0 ? (
-                    <Muted>0% — excluded</Muted>
-                  ) : (
-                    `${share}%`
-                  )}
-                </td>
-                <td className="text-right tabular-nums">
-                  {ofWhole === null ? "—" : percentTextOf(ofWhole)}
-                </td>
-                <td className="text-right whitespace-nowrap tabular-nums">
-                  {actual === null ? <Muted>—</Muted> : percentTextOf(actual)}
-                  <DriftMarker intended={ofWhole} actual={actual} />
-                </td>
-                <td className="hidden text-right tabular-nums @sm:table-cell">
-                  {countOf(child.id)}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      {unallocated > 0 && (
-        <StatusNote
-          tone="amber"
-          className="mt-3"
-          title={`${percentTextOf(unallocated)} unallocated`}
-        >
-          {noShare.length > 0 &&
-            `${noShare.map((child) => child.name).join(", ")} ${noShare.length === 1 ? "has" : "have"} no share. `}
-          Generation allocates only what is allocated and reports the rest — it does not scale the
-          others up.
-        </StatusNote>
-      )}
-      <FinePrint>
-        <i>Actual</i> is its share of {mix.intention.name}&apos;s output, beside what the mix says
-        it should be.
-        {others > 0 &&
-          ` ${plural(others, "other intention tracks", "other intentions track")} this mix.`}
-      </FinePrint>
-    </DetailCard>
-  );
-}
-
 interface AttentionCardProps {
   categories: readonly Category[];
   index: CategoryIndex;
   onSelect: (id: string | null) => void;
-  onPickIntention: (intentionId: string, atCategoryId?: string | null) => void;
 }
 
-function AttentionCard({ categories, index, onSelect, onPickIntention }: AttentionCardProps) {
+// Sets under 100 in Overall's mix, the top level first, and branches nobody holds.
+function AttentionCard({ categories, index, onSelect }: AttentionCardProps) {
   const nameOf = (id: string | null) =>
     id === null
       ? "All categories"
       : (categories.find((category) => category.id === id)?.name ?? id);
-  const { sets, unheldIds } = index.attention;
-  const rows: { key: string; name: string; what: string; issue: string; open: () => void }[] = [
+  const { mix } = index;
+  const sets =
+    mix === null
+      ? []
+      : [
+          { categoryId: null, unallocated: mix.unallocated, noShareIds: mix.noShareIds },
+          ...mix.nodes,
+        ].filter((set) => set.unallocated > 0);
+  const rows: { key: string; name: string; what: string; issue: string; id: string | null }[] = [
     ...sets.map((set) => ({
-      key: `${set.owner.id}-${set.categoryId ?? ""}`,
+      key: `set-${set.categoryId ?? ""}`,
       name: nameOf(set.categoryId),
-      what: `${set.owner.name}'s mix`,
+      what: mix === null ? "" : mixNameOf(mix),
       issue: [
-        `${percentTextOf(set.unallocated)} unallocated`,
+        `${formatPercent(set.unallocated)} unallocated`,
         set.noShareIds.length === 0 ? null : `${set.noShareIds.map(nameOf).join(", ")} no share`,
       ]
         .filter((part) => part !== null)
         .join(" · "),
-      open: () => onPickIntention(set.owner.id, set.categoryId),
+      id: set.categoryId,
     })),
-    ...unheldIds.map((id) => ({
+    ...index.unheldIds.map((id) => ({
       key: `custody-${id}`,
       name: nameOf(id),
       what: "custody",
       issue: "nobody holds it",
-      open: () => onSelect(id),
+      id,
     })),
   ];
   return (
@@ -462,7 +277,11 @@ function AttentionCard({ categories, index, onSelect, onPickIntention }: Attenti
           key={row.key}
           aside={<span className="text-tone-amber-foreground">{row.issue}</span>}
         >
-          <button type="button" className="text-left hover:underline" onClick={row.open}>
+          <button
+            type="button"
+            className="text-left hover:underline"
+            onClick={() => onSelect(row.id)}
+          >
             <b className="font-semibold">{row.name}</b>
           </button>{" "}
           <Muted>· {row.what}</Muted>

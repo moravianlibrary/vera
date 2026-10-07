@@ -16,6 +16,7 @@ import {
   createProject,
   deleteProject,
   previewDecision,
+  previewProjectChange,
   rejectProject,
   saveProject,
   saveProjectMembers,
@@ -38,6 +39,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { Priority } from "@/domain/entities";
 import { prioritySchema } from "@/domain/entities";
+import { intentionsQueryKey } from "@/features/intentions/use-intentions-query";
 import {
   projectInvalidations,
   projectsQueryKey,
@@ -54,16 +56,19 @@ const decidedTexts = {
   "project.has_proposals": "Something has been proposed into it meanwhile, so it stays.",
 } as const;
 
+// A project's acts change its own intention too: made, recounted, archived or deleted with it.
+const invalidations = [...projectInvalidations, intentionsQueryKey];
+
 // ---------------------------------------------------------------- start and edit
 
-// As typed: the target is digits until it is sent.
+// As typed: the target is digits until it is sent, and empty for none.
 const projectFormSchema = z
   .object({
     name: z.string().trim().min(1, "A project needs a name"),
     description: z.string(),
     startsOn: z.string().min(1, "A project is time-boxed: it needs both dates"),
     endsOn: z.string().min(1, "A project is time-boxed: it needs both dates"),
-    targetPages: z.string().regex(/^\s*[1-9][\d\s,]*$/, "Set how many pages the money should buy"),
+    targetPages: z.string().regex(/^\s*([1-9][\d\s,]*)?$/, "Pages, as a whole number above 0"),
   })
   .refine((values) => values.endsOn >= values.startsOn, {
     message: "It cannot end before it starts",
@@ -76,7 +81,8 @@ const draftOf = (values: ProjectForm): ProjectDraft => ({
   description: values.description.trim(),
   startsOn: values.startsOn,
   endsOn: values.endsOn,
-  targetPages: Number(values.targetPages.replace(/\D/g, "")),
+  targetPages:
+    values.targetPages.trim() === "" ? null : Number(values.targetPages.replace(/\D/g, "")),
 });
 
 interface ProjectFormDialogProps {
@@ -88,14 +94,15 @@ interface ProjectFormDialogProps {
 }
 
 // A new project is an empty one; the manager is not here, since handing over is a members act
-// (projects.md §3).
+// (projects.md §3). The target is its intention's, made with it; new dates move that intention's
+// window, and the form shows what that does to its figures before saving (§1.1).
 export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectFormDialogProps) {
   const id = useId();
   const project = row?.project ?? null;
   const save = useActionMutation({
     call: (draft: ProjectDraft) =>
       project === null ? createProject(draft) : saveProject(project.id, draft),
-    invalidates: projectInvalidations,
+    invalidates: invalidations,
     refusalTexts: { 403: "You may no longer edit this project." },
   });
 
@@ -115,7 +122,7 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
         description: project?.description ?? "",
         startsOn: project?.startsOn ?? "",
         endsOn: project?.endsOn ?? "",
-        targetPages: project === null ? "" : String(project.targetPages),
+        targetPages: String(row?.intention.targetPages ?? ""),
       }}
       submitLabel={project === null ? "Propose project" : "Save"}
       onSubmit={async (values) => {
@@ -129,7 +136,7 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
       // A grant can be extended, so an approved project's dates and target still change; its
       // pace follows (flows.md PJ6).
       warningOf={(values) => {
-        if (project === null || project.state !== "Approved") {
+        if (row === null || project === null || project.state !== "Approved") {
           return null;
         }
 
@@ -137,7 +144,7 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
         const isMoved =
           draft.startsOn !== project.startsOn ||
           draft.endsOn !== project.endsOn ||
-          draft.targetPages !== project.targetPages;
+          draft.targetPages !== row.intention.targetPages;
         return isMoved
           ? "It is approved: its period and pace follow the new dates and target. Nothing it funded moves, and its decision and priority stay."
           : null;
@@ -172,7 +179,7 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
               form.formState.errors.startsOn?.message ?? form.formState.errors.endsOn?.message
             }
           />
-          <Field id={`${id}-target`} label="Target pages" hint="what the money should buy">
+          <Field id={`${id}-target`} label="Target pages" hint="none: its intention tracks the mix">
             <Input
               id={`${id}-target`}
               inputMode="numeric"
@@ -181,6 +188,7 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
             />
           </Field>
           <FieldError message={form.formState.errors.targetPages?.message} />
+          {row !== null && <FiguresChange row={row} values={form.watch()} />}
           {project === null && (
             <p className="text-xs text-muted-foreground">
               It starts <b className="font-semibold">Proposed</b>, with you as its manager and only
@@ -190,6 +198,49 @@ export function ProjectFormDialog({ isOpen, onClose, row, onSaved }: ProjectForm
         </>
       )}
     />
+  );
+}
+
+// New dates move its intention's window and recount it: said before saving, from the server
+// (intentions.md §3.4).
+function FiguresChange({ row, values }: { row: ProjectRow; values: ProjectForm }) {
+  const parsed = projectFormSchema.safeParse(values);
+  const draft = parsed.success ? draftOf(parsed.data) : null;
+  const isMoved =
+    draft !== null &&
+    (draft.startsOn !== row.project.startsOn || draft.endsOn !== row.project.endsOn);
+  const { data: change } = useQuery({
+    queryKey: [...projectsQueryKey, "change", row.project.id, draft],
+    queryFn: () => previewProjectChange(row.project.id, draft as ProjectDraft),
+    enabled: isMoved,
+  });
+  if (!isMoved || change === undefined) {
+    return null;
+  }
+
+  const moves = (
+    [
+      ["Planned", change.plannedPages],
+      ["Delivered", change.deliveredPages],
+    ] as const
+  ).filter(([, figure]) => figure.before !== figure.after);
+  return (
+    <p className="rounded-md border border-dashed px-3 py-2 text-xs">
+      Its intention counts over the new dates:{" "}
+      {moves.length === 0 ? (
+        <span className="text-muted-foreground">its figures do not change.</span>
+      ) : (
+        moves.map(([label, figure], index) => (
+          <span key={label}>
+            {index > 0 && " · "}
+            {label}{" "}
+            <b className="font-semibold tabular-nums">
+              {formatCount(figure.before)} → {formatCount(figure.after)}
+            </b>
+          </span>
+        ))
+      )}
+    </p>
   );
 }
 
@@ -229,7 +280,7 @@ export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
         memberIds: [...members.memberIds],
         memberGroupIds: [...members.memberGroupIds],
       }),
-    invalidates: projectInvalidations,
+    invalidates: invalidations,
     refusalTexts: { 403: "You may no longer change who is on it." },
   });
   const nameOf = (userId: string) => users.find((user) => user.id === userId)?.name ?? userId;
@@ -456,7 +507,7 @@ export function ApproveDialog({ isOpen, onClose, row }: DecisionDialogProps) {
   const { data: dryRun } = useDecisionDryRun(project.id, isOpen);
   const approve = useActionMutation({
     call: (priority: Priority) => approveProject(project.id, { priority }),
-    invalidates: projectInvalidations,
+    invalidates: invalidations,
     refusalTexts: decidedTexts,
   });
   const approvedCount = dryRun?.approves.length ?? 0;
@@ -535,7 +586,7 @@ export function RejectDialog({ isOpen, onClose, row }: DecisionDialogProps) {
   const { data: dryRun } = useDecisionDryRun(project.id, isOpen);
   const reject = useActionMutation({
     call: (reason: string) => rejectProject(project.id, { reason }),
-    invalidates: projectInvalidations,
+    invalidates: invalidations,
     refusalTexts: decidedTexts,
   });
 
@@ -595,7 +646,7 @@ export function DeleteProjectDialog({ isOpen, onClose, row, onDeleted }: DeleteD
   const { project } = row;
   const remove = useActionMutation({
     call: deleteProject,
-    invalidates: projectInvalidations,
+    invalidates: invalidations,
     refusalTexts: decidedTexts,
   });
 
@@ -608,7 +659,7 @@ export function DeleteProjectDialog({ isOpen, onClose, row, onDeleted }: DeleteD
       consequences={[
         { text: "Nothing has been proposed into it, so nothing depends on it." },
         {
-          text: `It goes, with its ${formatCount(project.targetPages)} pp target and ${plural(project.memberIds.length, "member")}; its history keeps that it was deleted.`,
+          text: `It goes, with its intention and ${plural(project.memberIds.length, "member")}; its history keeps that it was deleted.`,
         },
       ]}
       confirmLabel="Delete project"

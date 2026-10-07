@@ -1,9 +1,12 @@
 // The intentions, their mixes and the one repeat, from docs/demos/shared/vera-data.js (i1–i11,
 // d1–d2, t1); edit by hand from here on. House mix is the Overall intention and owns the
 // Standard mix; Periodicals push owns the second, which NDK Periodika and Regional catch-up
-// track (intentions.md §2). The demo's "today" is 2026-06-25.
+// track (intentions.md §2). Every project has one intention of its own, holding the target the
+// demo gave the project (§3.4, decided 2026-10-07); VISK 7 backlog became VISK 7 / 2026's. The
+// demo's "today" is 2026-06-25.
 
 import type { Distribution, Intention, IntentionTemplate } from "@/domain/entities";
+import { projects } from "@/mocks/fixtures/projects";
 
 export const distributions: readonly Distribution[] = [
   {
@@ -49,6 +52,7 @@ const everything = { kind: "any" } as const;
 const intentionBase = {
   description: "",
   funding: everything,
+  projectId: null,
   scopeCategoryId: null,
   tracksMixOf: "i4",
   distributionId: "d1",
@@ -81,16 +85,6 @@ export const intentions: readonly Intention[] = [
     targetPages: 7500,
     countsFrom: "2026-07-01",
     endsOn: "2026-09-30",
-  },
-  {
-    ...intentionBase,
-    id: "i2",
-    name: "VISK 7 backlog",
-    description: "Clearing the approved backlog the VISK 7 grant pays for.",
-    funding: { kind: "project", projectId: "p2" },
-    targetPages: 4000,
-    countsFrom: "2026-01-01",
-    endsOn: "2026-12-31",
   },
   {
     ...intentionBase,
@@ -171,7 +165,46 @@ export const intentions: readonly Intention[] = [
     countsFrom: "2026-01-01",
     archived: { actor: { kind: "user", userId: "u2" }, at: "2026-06-12T09:00:00Z" },
   },
+  projectIntention("i2", "p2", 3000, {
+    description: "Clearing the approved backlog the VISK 7 grant pays for.",
+  }),
+  projectIntention("i12", "p1", 6000),
+  projectIntention("i13", "p3", 1200),
+  projectIntention("i14", "p4", 2000),
+  projectIntention("i15", "p8", 800),
+  projectIntention("i16", "p9", 1500, {
+    archived: { actor: { kind: "user", userId: "u1" }, at: "2026-03-16T09:00:00Z" },
+  }),
+  projectIntention("i17", "p5", 2500),
+  projectIntention("i18", "p6", 1200),
+  projectIntention("i19", "p7", 900),
 ];
+
+// A project's own intention: its name, funding and window are the project's; a rejected
+// project's is archived with it.
+function projectIntention(
+  id: string,
+  projectId: string,
+  targetPages: number,
+  fields: Partial<Intention> = {},
+): Intention {
+  const project = projects.find((candidate) => candidate.id === projectId);
+  if (project === undefined) {
+    throw new Error(`No project ${projectId}`);
+  }
+
+  return {
+    ...intentionBase,
+    id,
+    name: project.name,
+    funding: { kind: "project", projectId },
+    projectId,
+    targetPages,
+    countsFrom: project.startsOn,
+    endsOn: project.endsOn,
+    ...fields,
+  };
+}
 
 export const intentionTemplates: readonly IntentionTemplate[] = [
   {

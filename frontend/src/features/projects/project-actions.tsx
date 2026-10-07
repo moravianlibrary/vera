@@ -81,7 +81,7 @@ export function useProjectActions({ row, session, onDeleted = () => {} }: Projec
           project.description,
           project.startsOn,
           project.endsOn,
-          project.targetPages,
+          row.intention.targetPages,
         ].join("|")}
         isOpen={openDialog === "edit"}
         onClose={close}

@@ -81,17 +81,21 @@ All notable changes to this project are documented here.
   edited, and reads its fill against one intention's mix. The editor warns when a list will not
   count towards the intention it was generated with, or will stop counting towards one with new
   dates.
-- Projects shows the intentions a project funds, each with its own planned and delivered, and
-  says *No intention yet* on an approved project nothing says what to buy for.
 - Categories: the category tree beside one category, *All categories* when none is picked. Each
   row carries what *Show* picks, remembered per person: share of parent, of the whole, intended
   against actual with ▲/▼ outside ±5 points, documents, pages or ready; a ⚠ marks a set under
-  100 whatever is picked. *Mix of* picks the intention whose mix is read: a tracker shows its
-  owner's, says so and offers *Edit [owner]'s mix*; a scoped intention dims the rest of the tree.
-  The pane gives the numbers, the children's shares beside what each actually got, a leaf's
-  documents, custody granted here and whom it reaches from where, and on *All categories* what
-  needs attention. Without access to intentions the tree shows counts and custody only. An
-  intention's card links to its mix there, *Edit mix* or *Proportions*.
+  100 whatever is picked. The shares are the house mix's, read-only, with a link to where it is
+  edited. The pane gives the numbers, the children's shares beside what each actually got, a
+  leaf's documents, custody granted here and whom it reaches from where, and on *All
+  categories* what needs attention. Without access to intentions the tree shows counts and
+  custody only.
+- An intention's Mix (`/intentions/…/mix`, *Edit mix* or *Proportions* on its card): the
+  category tree with its shares read against its own output, one category in the pane. Whoever
+  may edit the mix changes one set at a time with *Edit proportions…*: empty is no share, 0 is
+  left out on purpose, over 100 cannot be saved. When other intentions track the mix, saving
+  lists every one of them first, and each can *Keep the old mix* on a copy of its own. A
+  tracker shows its owner's mix with *Edit [owner]'s mix* and *Detach*, which gives it a copy of
+  its own; a scoped intention shows its part of the tree, the rest dimmed.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.
@@ -172,6 +176,13 @@ All notable changes to this project are documented here.
 
 ### Changed
 
+- A project's target, planned, delivered and pace are now those of its own intention, made with
+  the project and named after it, counting what the project funds over the project's dates.
+  The project form still sets the target, which may now be left empty, and says what new dates
+  do to the planned and delivered pages before saving. The intention appears on Intentions
+  once the project is approved, is archived with a rejected project and deleted with an empty
+  one; there, only its categories and mix are edited. The project page no longer lists other
+  intentions that count the same money, nor says *No intention yet*.
 - Custody granted to a person directly now counts, as custody through a group does: in the
   mock data the curator who holds Maps directly reviews and acts on it in Documents
   Validations.

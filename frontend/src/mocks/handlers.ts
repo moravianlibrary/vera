@@ -31,6 +31,7 @@ import {
   parsePoolSearchParams,
 } from "@/api/lists";
 import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
+import { mixSetDraftSchema } from "@/api/mixes";
 import {
   projectApprovalSchema,
   projectDraftSchema,
@@ -105,6 +106,7 @@ import {
   saveList,
 } from "@/mocks/lists";
 import { messageChannels, prepareMessage } from "@/mocks/messages";
+import { detachIntention, findIntentionMix, saveMixSet } from "@/mocks/mixes";
 import type { Outcome } from "@/mocks/mutations";
 import { invalidResponse, problemResponse } from "@/mocks/problem";
 import {
@@ -115,6 +117,7 @@ import {
   findProjectDetail,
   listMemberGroups,
   previewDecision,
+  previewProjectChange,
   queryProjectIndex,
   rejectProject,
   saveProject,
@@ -210,15 +213,13 @@ export function createHandlers(profile: MockUserProfile) {
 
     http.get(route(apiRoutes.users), () => HttpResponse.json(database.users)),
     http.get(route(apiRoutes.categories), () => HttpResponse.json(database.categories)),
-    http.get(route(apiRoutes.categoryIndex), ({ request }) => {
+    http.get(route(apiRoutes.categoryIndex), () => {
       const session = currentSession();
       if (!canReadCategories(session)) {
         return problemResponse({ status: 403, message: "You may not read categories" });
       }
 
-      return HttpResponse.json(
-        queryCategoryIndex(session, new URL(request.url).searchParams.get("i")),
-      );
+      return HttpResponse.json(queryCategoryIndex(session));
     }),
     http.get(route(apiRoutes.projects), () => HttpResponse.json(database.projects)),
     http.get(route(apiRoutes.groups), () => HttpResponse.json(listMemberGroups())),
@@ -284,6 +285,33 @@ export function createHandlers(profile: MockUserProfile) {
         previewCorrection(currentSession(), String(params.intentionId), pages),
       );
     }),
+
+    http.get(route(`${apiRoutes.intentions}/:intentionId/mix`), ({ params }) => {
+      const session = currentSession();
+      if (!canReadIntentions(session)) {
+        return problemResponse({ status: 403, message: "You may not read intentions" });
+      }
+
+      const detail = findIntentionMix(session, String(params.intentionId));
+      if (detail === null) {
+        return problemResponse({ status: 404, message: "Intention not found" });
+      }
+
+      return HttpResponse.json(detail);
+    }),
+
+    http.put(route(`${apiRoutes.intentions}/:intentionId/mix`), async ({ params, request }) => {
+      const draft = mixSetDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      return outcomeResponse(saveMixSet(currentSession(), String(params.intentionId), draft.data));
+    }),
+
+    http.post(route(`${apiRoutes.intentions}/:intentionId/detach`), ({ params }) =>
+      outcomeResponse(detachIntention(currentSession(), String(params.intentionId))),
+    ),
 
     http.get(route(`${apiRoutes.intentions}/:intentionId/deletion`), ({ params }) =>
       outcomeResponse(previewIntentionDeletion(currentSession(), String(params.intentionId))),
@@ -359,6 +387,17 @@ export function createHandlers(profile: MockUserProfile) {
       }
 
       return HttpResponse.json(outcome.value, { status: 201 });
+    }),
+
+    http.post(route(`${apiRoutes.projects}/:projectId/preview`), async ({ params, request }) => {
+      const draft = projectDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      return outcomeResponse(
+        previewProjectChange(currentSession(), String(params.projectId), draft.data),
+      );
     }),
 
     http.put(route(`${apiRoutes.projects}/:projectId`), async ({ params, request }) => {

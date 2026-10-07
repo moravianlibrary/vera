@@ -49,16 +49,20 @@ const periodColumn: ColumnDefinition<ProjectRow> = {
 const pagesColumn = (
   key: string,
   header: string,
-  pagesOf: (row: ProjectRow) => number,
+  pagesOf: (row: ProjectRow) => number | null,
 ): ColumnDefinition<ProjectRow> => ({
   key,
   header,
   track: "max-content",
   isNumeric: true,
-  cell: (row) => formatCount(pagesOf(row)),
+  cell: (row) => {
+    const pages = pagesOf(row);
+    return pages === null ? <span className="text-muted-foreground">—</span> : formatCount(pages);
+  },
 });
 
-const target = pagesColumn("target", "Target", (row) => row.project.targetPages);
+// Its intention's (projects.md §1.1).
+const target = pagesColumn("target", "Target", (row) => row.intention.targetPages);
 const planned = pagesColumn("planned", "Planned", (row) => row.plannedPages);
 const delivered = pagesColumn("delivered", "Delivered", (row) => row.deliveredPages);
 const result: ColumnDefinition<ProjectRow> = {
@@ -227,12 +231,7 @@ function ActionableCard({ row, session, nameOf }: ActionableCardProps) {
   const { cardActions, dialogs } = useProjectActions({ row, session });
   return (
     <>
-      <ProjectCard
-        row={row}
-        nameOf={nameOf}
-        actions={cardActions}
-        canReadIntentions={can(session, "intention.read")}
-      />
+      <ProjectCard row={row} nameOf={nameOf} actions={cardActions} />
       {dialogs}
     </>
   );

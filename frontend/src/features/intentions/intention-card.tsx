@@ -5,7 +5,7 @@
 // in its window. A tracking card draws the intended mix over the output, with the categories out
 // of the ±5 band; opened, the drift per category. Under both, the mix it reads and whose it is.
 // Its acts sit in the foot, beside what the Overall intention cannot have done to it; the mix line
-// links to the mix on Categories.
+// links to its Mix.
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
@@ -41,7 +41,7 @@ import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 import { cn } from "@/lib/utils";
 
-// *Edit mix* or *Proportions*, to the mix on Categories.
+// *Edit mix* or *Proportions*, to its Mix.
 export interface MixLink {
   label: string;
   href: string;
@@ -112,6 +112,7 @@ function IntentionBadges({
   return (
     <>
       {row.intention.isOverall && <ToneBadge tone="purple">Overall</ToneBadge>}
+      {row.intention.projectId !== null && <ToneBadge tone="blue">Project</ToneBadge>}
       {row.state === "Upcoming" && <ToneBadge tone="slate">Upcoming</ToneBadge>}
       {verdict !== null && <ToneBadge tone={verdict.tone}>{verdict.text}</ToneBadge>}
       {repeatEvery !== null && <ToneBadge tone="slate">↻ {everyLabels[repeatEvery]}</ToneBadge>}
@@ -131,7 +132,7 @@ function ScopeLine({ row }: { row: IntentionRow }) {
       key: "funding",
       part: (
         <>
-          Funding:{" "}
+          {row.intention.projectId === null ? "Funding: " : "The project's own: "}
           <Link
             to={`/projects/${encodeURIComponent(row.project.id)}`}
             className="underline underline-offset-2 hover:text-foreground"

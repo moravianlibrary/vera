@@ -29,7 +29,6 @@ import type { Session } from "@/domain/entities";
 import { scopeOfIntention } from "@/domain/intentions";
 import { can } from "@/domain/permissions";
 import type { NoteTone } from "@/domain/status-notes";
-import { categoriesHrefOf } from "@/features/categories/categories-view";
 import type { MixLink } from "@/features/intentions/intention-card";
 import { IntentionCard } from "@/features/intentions/intention-card";
 import type { IntentionSource } from "@/features/intentions/intention-dialogs";
@@ -52,6 +51,7 @@ import {
   tileOf,
   verdictBadgeOf,
 } from "@/features/intentions/intentions-view";
+import { intentionMixHrefOf } from "@/features/intentions/mix-view";
 import {
   intentionInvalidations,
   useIntentionIndexQuery,
@@ -85,7 +85,7 @@ export interface IntentionActs {
   foldActionOf: (row: IntentionRow) => ViewAction | null;
   // Null when the person may not set repeats.
   editTemplate: ((row: IntentionTemplateRow) => void) | null;
-  // To its mix on Categories; null without `category.read`.
+  // To its Mix (`/intentions/:id/mix`).
   mixLinkOf: (row: IntentionRow) => MixLink | null;
 }
 
@@ -179,8 +179,11 @@ export function IntentionsPage() {
       const generate = generateActionOf(row);
       const { intention } = row;
       const isMet = intention.targetPages !== null && row.deliveredPages >= intention.targetPages;
+      // A project's own goes with its project (intentions.md §3.4).
       const isArchivable =
-        !intention.isOverall && (row.state === "Ended" || isMet || intention.targetPages === null);
+        !intention.isOverall &&
+        intention.projectId === null &&
+        (row.state === "Ended" || isMet || intention.targetPages === null);
       const edits: ViewAction[] = canEdit(row)
         ? [
             {
@@ -196,7 +199,7 @@ export function IntentionsPage() {
       return [...(generate === null ? [] : [generate]), ...edits];
     },
     foldActionOf: (row) =>
-      canEdit(row) && !row.intention.isOverall
+      canEdit(row) && !row.intention.isOverall && row.intention.projectId === null
         ? {
             id: "archive",
             label: row.intention.archived === null ? "Archive" : "Unarchive",
@@ -208,11 +211,12 @@ export function IntentionsPage() {
         ? (row) => setDialog({ kind: "template", row })
         : null,
     mixLinkOf: (row) => {
-      if (session === undefined || !can(session, "category.read")) {
+      if (session === undefined) {
         return null;
       }
 
-      // The mix is edited on its owner (intentions.md §2.5); anyone else only reads it there.
+      // The mix is edited on its owner (intentions.md §2.5); anyone else only reads it there. A
+      // tracker's Mix shows its owner's, with the way to it.
       const owner = index?.rows.find(
         (candidate) => candidate.intention.id === row.mix.owner.id,
       )?.intention;
@@ -221,10 +225,7 @@ export function IntentionsPage() {
         : owner !== undefined && can(session, "intention.edit", scopeOfIntention(owner, projects));
       return {
         label: canEditMix ? "Edit mix" : "Proportions",
-        href: categoriesHrefOf({
-          intentionId: row.intention.id,
-          categoryId: row.intention.scopeCategoryId,
-        }),
+        href: intentionMixHrefOf(row.intention.id, row.intention.scopeCategoryId),
       };
     },
   };
@@ -352,6 +353,7 @@ function PageDialogs({ dialog, index, session, onClose, onOpen, onDone }: PageDi
   const isDeletable =
     edited !== null &&
     !edited.intention.isOverall &&
+    edited.intention.projectId === null &&
     edited.mix.trackerCount === 0 &&
     !isTrackedByRepeat(edited);
   return (

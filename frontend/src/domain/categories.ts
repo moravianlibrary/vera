@@ -4,8 +4,8 @@
 
 import type { Category } from "@/domain/entities";
 
-// What each row of the Categories tree carries, picked per viewer (STATUS "Categories"): the
-// first three read a mix, the rest count what the subtree holds.
+// What each row of a category tree carries, picked per viewer (STATUS "Categories"): the first
+// three read a mix, the rest count what the subtree holds.
 export const categoryTreeValues = ["share", "whole", "mix", "documents", "pages", "ready"] as const;
 export type CategoryTreeValue = (typeof categoryTreeValues)[number];
 
@@ -40,6 +40,37 @@ export function isInSubtree(
   topId: string,
 ): boolean {
   return categoryLineageOf(categories, categoryId).includes(topId);
+}
+
+// The categories a search leaves: those whose name holds it, and every one above them. Null
+// when nothing is searched for, which leaves them all.
+export function searchedCategoriesOf(
+  categories: readonly Category[],
+  search: string,
+): ReadonlySet<string> | null {
+  const term = search.trim().toLocaleLowerCase();
+  if (term === "") {
+    return null;
+  }
+
+  return new Set(
+    categories
+      .filter((category) => category.name.toLocaleLowerCase().includes(term))
+      .flatMap((category) => categoryLineageOf(categories, category.id)),
+  );
+}
+
+// Outside a scope's subtree, the root included; nothing is outside no scope.
+export function isOutsideScope(
+  categories: readonly Category[],
+  scopeCategoryId: string | null,
+  categoryId: string | null,
+): boolean {
+  if (scopeCategoryId === null) {
+    return false;
+  }
+
+  return categoryId === null || !isInSubtree(categories, categoryId, scopeCategoryId);
 }
 
 // ---------------------------------------------------------------- custody

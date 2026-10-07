@@ -11,6 +11,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { CategoriesPage } from "@/features/categories/categories-page";
 import { DocumentsPage } from "@/features/documents/documents-page";
 import { IntentionsPage } from "@/features/intentions/intentions-page";
+import { IntentionMixPage } from "@/features/intentions/mix-page";
 import { ListEditorPage } from "@/features/lists/list-editor-page";
 import { ListsPage } from "@/features/lists/lists-page";
 import { ProjectPage } from "@/features/projects/project-page";
@@ -113,6 +114,15 @@ const router = createBrowserRouter([
         element: (
           <Gate entryId="projects">
             <ProjectPage />
+          </Gate>
+        ),
+      },
+      // An intention's Mix: where its shares are read and edited (intentions.md §2.4).
+      {
+        path: "intentions/:intentionId/mix",
+        element: (
+          <Gate entryId="intentions">
+            <IntentionMixPage />
           </Gate>
         ),
       },

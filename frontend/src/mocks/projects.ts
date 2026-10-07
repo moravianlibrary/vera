@@ -1,7 +1,10 @@
 // What the server does for Projects (projects.md): keep projects to the caller's reach, work out
 // each one's period, numbers and pace, gather what it funded and what was proposed into it, and
-// carry out its acts: start, edit, members, approve, reject and delete, each logged (§5). The
-// intentions it funds are counted by the intention rules, each in its own window.
+// carry out its acts: start, edit, members, approve, reject and delete, each logged (§5). Its
+// target, planned, delivered and pace are its own intention's (§1.1; intentions.md §3.4), made
+// with it, counted by the intention rules over the project's period: the project's dates, name
+// and target are written through to it, and it is archived when the project is rejected and
+// deleted with it.
 
 import type {
   DecidedDocument,
@@ -9,10 +12,10 @@ import type {
   FundedItem,
   MemberGroup,
   ProjectApproval,
+  ProjectChange,
   ProjectDetail,
   ProjectDraft,
   ProjectIndex,
-  ProjectIntention,
   ProjectList,
   ProjectMembers,
   ProjectProposal,
@@ -20,19 +23,18 @@ import type {
   ProjectRow,
 } from "@/api/projects";
 import { documentIdentifierOf, effectivePageCount, existingCopiesOf } from "@/domain/documents";
-import type { Iteration, Project, Request, Session } from "@/domain/entities";
-import { countIntention, mixOwnerOf } from "@/domain/intentions";
+import type { Intention, Iteration, Project, Request, Session } from "@/domain/entities";
+import {
+  countIntention,
+  intentionStateOf,
+  intentionTimeElapsedOf,
+  targetVerdictOf,
+  trackersOf,
+} from "@/domain/intentions";
 import { listStateOf } from "@/domain/lists";
 import type { Permission } from "@/domain/permissions";
 import { can } from "@/domain/permissions";
-import {
-  daysUntil,
-  evenPaceOf,
-  paceVerdictOf,
-  periodOf,
-  scopeOfProject,
-  timeElapsedOf,
-} from "@/domain/projects";
+import { daysUntil, periodOf, scopeOfProject, timeElapsedOf } from "@/domain/projects";
 import { isProgressAtLeast } from "@/domain/status";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
@@ -40,7 +42,7 @@ import { plural } from "@/lib/plural";
 import { dayOf } from "@/lib/value-range";
 import { database } from "@/mocks/database";
 import { groups } from "@/mocks/fixtures/access";
-import { countingData } from "@/mocks/intentions";
+import { countingData, nextId, overallIntention } from "@/mocks/intentions";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { writeLog } from "@/mocks/mutations";
 import { mockToday } from "@/mocks/today";
@@ -144,28 +146,55 @@ export function listMemberGroups(): MemberGroup[] {
   return groups.flatMap((group) => memberGroupOf(group.id) ?? []);
 }
 
+// Made with the project; every project has exactly one (intentions.md §3.4).
+function intentionOf(project: Pick<Project, "id">): Intention {
+  const intention = database.intentions.find((candidate) => candidate.projectId === project.id);
+  if (intention === undefined) {
+    throw new Error(`Project ${project.id} has no intention`);
+  }
+
+  return intention;
+}
+
+// Its intention's planned and delivered, and its pace once the project is Approved.
+function figuresOf(project: Project, intention: Intention) {
+  const counted = countIntention(intention, countingData());
+  const isApproved = project.state === "Approved";
+  return {
+    plannedPages: counted.plannedPages,
+    deliveredPages: counted.deliveredPages,
+    verdict: isApproved
+      ? targetVerdictOf({
+          intention,
+          plannedPages: counted.plannedPages,
+          deliveredPages: counted.deliveredPages,
+          today: today(),
+        })
+      : null,
+    evenPace:
+      isApproved &&
+      intention.targetPages !== null &&
+      intentionStateOf(intention, today()) === "Running"
+        ? intentionTimeElapsedOf(intention, today())
+        : null,
+  };
+}
+
 function rowOf(project: Project): ProjectRow {
   const funded = fundedBy(project.id);
-  const delivered = funded.filter(isDelivered);
   const waiting = funded.filter(isWaiting);
   const pending = pendingDocumentIdsOf(project.id);
   const listIds = new Set(funded.flatMap((iteration) => iteration.listId ?? []));
+  const intention = intentionOf(project);
   return {
     project,
+    intention: { id: intention.id, targetPages: intention.targetPages },
     period: periodOf(project, today()),
     timeElapsed: timeElapsedOf(project, today()),
     daysToStart: Math.max(0, daysUntil(project.startsOn, today())),
     daysLeft: Math.max(0, daysUntil(project.endsOn, today()) + 1),
-    evenPace: evenPaceOf(project, today()),
-    verdict: paceVerdictOf({
-      project,
-      fundedCount: funded.length,
-      deliveredPages: sumPages(delivered),
-      today: today(),
-    }),
+    ...figuresOf(project, intention),
     fundedCount: funded.length,
-    plannedPages: sumPages(funded.filter(isPlanned)),
-    deliveredPages: sumPages(delivered),
     waiting: { itemCount: waiting.length, pages: sumPages(waiting) },
     pending: {
       documentCount: pending.length,
@@ -174,34 +203,7 @@ function rowOf(project: Project): ProjectRow {
     proposalCount: proposalsInto(project.id).length,
     listCount: listIds.size,
     memberGroups: project.memberGroupIds.flatMap((groupId) => memberGroupOf(groupId) ?? []),
-    intentionCount: intentionsFundedBy(project.id).length,
   };
-}
-
-// ---------------------------------------------------------------- intentions
-
-const intentionsFundedBy = (projectId: string) =>
-  database.intentions.filter(
-    (intention) =>
-      intention.funding.kind === "project" && intention.funding.projectId === projectId,
-  );
-
-function projectIntentionsOf(projectId: string): ProjectIntention[] {
-  const data = countingData();
-  return intentionsFundedBy(projectId).map((intention) => {
-    const counted = countIntention(intention, data);
-    const owner = mixOwnerOf(intention, database.intentions);
-    return {
-      id: intention.id,
-      name: intention.name,
-      countsFrom: intention.countsFrom,
-      endsOn: intention.endsOn,
-      targetPages: intention.targetPages,
-      tracksName: owner === intention ? null : owner.name,
-      plannedPages: counted.plannedPages,
-      deliveredPages: counted.deliveredPages,
-    };
-  });
 }
 
 export function queryProjectIndex(session: Session): ProjectIndex {
@@ -295,7 +297,6 @@ function detailOf(project: Project): ProjectDetail {
     lists: listsOf(funded),
     formerLists: formerListsOf(funded),
     funded: fundedItemsOf(funded),
-    intentions: projectIntentionsOf(project.id),
     log: database.statusLog
       .filter((entry) => entry.subjectKind === "project" && entry.subjectId === project.id)
       .toSorted((first, second) => second.at.localeCompare(first.at)),
@@ -336,16 +337,42 @@ function replaceProject(project: Project): void {
   database.projects.splice(index, 1, project);
 }
 
+// Its intention follows the project: name, funding and window are the project's, the target is
+// the one entered on the project form (intentions.md §3.4).
+function intentionFollowing(
+  project: Project,
+  targetPages: number | null,
+  intention: Intention,
+): Intention {
+  return {
+    ...intention,
+    name: project.name,
+    funding: { kind: "project", projectId: project.id },
+    projectId: project.id,
+    countsFrom: project.startsOn,
+    endsOn: project.endsOn,
+    targetPages,
+  };
+}
+
+function replaceIntention(intention: Intention): void {
+  database.intentions = database.intentions.map((candidate) =>
+    candidate.id === intention.id ? intention : candidate,
+  );
+}
+
 // Starting needs its own grant; it starts Proposed, the creator its manager and only member
-// (flows.md PJ1).
+// (flows.md PJ1). Its intention is made with it, tracking Overall's mix, and is listed on
+// Intentions once the project is decided.
 export function createProject(session: Session, draft: ProjectDraft): Outcome<ProjectDetail> {
   if (!can(session, "project.create")) {
     return { refusal: { status: 403, message: "You may not start projects" } };
   }
 
+  const { targetPages, ...fields } = draft;
   const project: Project = {
     id: nextProjectId(),
-    ...draft,
+    ...fields,
     managerId: session.user.id,
     memberIds: [session.user.id],
     memberGroupIds: [],
@@ -353,12 +380,63 @@ export function createProject(session: Session, draft: ProjectDraft): Outcome<Pr
     state: "Proposed",
   };
   database.projects.push(project);
-  logProject(session, project, crypto.randomUUID(), "Created", `${periodText(project)} · proposed`);
+  const overall = overallIntention();
+  database.intentions.push(
+    intentionFollowing(project, targetPages, {
+      ...overall,
+      id: nextId(
+        "i",
+        database.intentions.map((intention) => intention.id),
+      ),
+      description: "",
+      scopeCategoryId: null,
+      tracksMixOf: overall.id,
+      isOverall: false,
+      templateId: null,
+      archived: null,
+    }),
+  );
+  logProject(
+    session,
+    project,
+    crypto.randomUUID(),
+    "Created",
+    `${periodText(project, targetPages)} · proposed`,
+  );
   return { value: detailOf(project) };
 }
 
-// Details, description, dates and target (flows.md PJ2). On an Approved project the dates and
-// target stay editable, since a grant can be extended (PJ6); its decision and priority do not.
+// What the edit would do to its intention's figures: new dates move its window (§3.4).
+export function previewProjectChange(
+  session: Session,
+  projectId: string,
+  draft: ProjectDraft,
+): Outcome<ProjectChange> {
+  const found = projectFor(session, projectId, "project.edit");
+  if ("refusal" in found) {
+    return found;
+  }
+
+  const project = found.value;
+  const intention = intentionOf(project);
+  const { targetPages, ...fields } = draft;
+  const data = countingData();
+  const before = countIntention(intention, data);
+  const after = countIntention(
+    intentionFollowing({ ...project, ...fields }, targetPages, intention),
+    data,
+  );
+  return {
+    value: {
+      plannedPages: { before: before.plannedPages, after: after.plannedPages },
+      deliveredPages: { before: before.deliveredPages, after: after.deliveredPages },
+    },
+  };
+}
+
+// Details, description, dates and its intention's target (flows.md PJ2). On an Approved project
+// the dates and target stay editable, since a grant can be extended (PJ6); its decision and
+// priority do not. The intention follows: its window moves with the dates and is recounted.
 export function saveProject(
   session: Session,
   projectId: string,
@@ -370,8 +448,11 @@ export function saveProject(
   }
 
   const project = found.value;
-  const saved: Project = { ...project, ...draft };
+  const intention = intentionOf(project);
+  const { targetPages, ...fields } = draft;
+  const saved: Project = { ...project, ...fields };
   replaceProject(saved);
+  replaceIntention(intentionFollowing(saved, targetPages, intention));
   const correlationId = crypto.randomUUID();
   const moves = [
     saved.startsOn === project.startsOn
@@ -380,9 +461,9 @@ export function saveProject(
     saved.endsOn === project.endsOn
       ? null
       : `ends ${formatCalendarDay(project.endsOn)} → ${formatCalendarDay(saved.endsOn)}`,
-    saved.targetPages === project.targetPages
+    targetPages === intention.targetPages
       ? null
-      : `target ${formatCount(project.targetPages)} → ${formatCount(saved.targetPages)} pp`,
+      : `target ${targetText(intention.targetPages)} → ${targetText(targetPages)}`,
   ].filter((move) => move !== null);
   if (moves.length > 0) {
     logProject(session, saved, correlationId, "Dates or target changed", moves.join(" · "));
@@ -583,6 +664,12 @@ export function rejectProject(
     at: now,
   };
   replaceProject(rejected);
+  // Its intention stays, archived, so what it counted can still be read (intentions.md §3.4).
+  const intention = intentionOf(project);
+  replaceIntention({
+    ...intention,
+    archived: intention.archived ?? { actor: { kind: "user", userId: session.user.id }, at: now },
+  });
   logProject(session, rejected, correlationId, "Rejected", rejection.reason);
   return { value: detailOf(rejected) };
 }
@@ -605,7 +692,19 @@ export function deleteProject(session: Session, projectId: string): Outcome<null
     };
   }
 
+  const intention = intentionOf(project);
+  if (trackersOf(intention, database.intentions).length > 0) {
+    return {
+      refusal: {
+        status: 409,
+        message: "Other intentions track its intention's mix; detach them first",
+        code: "intention.tracked",
+      },
+    };
+  }
+
   database.projects.splice(database.projects.indexOf(project), 1);
+  database.intentions = database.intentions.filter((candidate) => candidate !== intention);
   logProject(session, project, crypto.randomUUID(), "Deleted", "it had no proposals");
   return { value: null };
 }
@@ -617,8 +716,12 @@ function nextProjectId(): string {
   return `p${Math.max(0, ...numbers) + 1}`;
 }
 
-function periodText(project: Pick<Project, "startsOn" | "endsOn" | "targetPages">): string {
-  return `${formatCalendarDay(project.startsOn)} → ${formatCalendarDay(project.endsOn)} · ${formatCount(project.targetPages)} pp`;
+function periodText(project: Pick<Project, "startsOn" | "endsOn">, targetPages: number | null) {
+  return `${formatCalendarDay(project.startsOn)} → ${formatCalendarDay(project.endsOn)} · ${targetText(targetPages)}`;
+}
+
+function targetText(targetPages: number | null): string {
+  return targetPages === null ? "no target" : `${formatCount(targetPages)} pp`;
 }
 
 function nameOf(userId: string): string {

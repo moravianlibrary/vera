@@ -89,21 +89,21 @@ zod v4.
 | List beside a pane | `MasterDetail` (`masterWidth="tree"` for a tree) + `RecordList` (columns, card under 42rem, why line, `GroupHeader`) + `usePagedList`; grouping via `groups` in the view definition and `mocks/arrangement.ts` |
 | The pane | `Pane` / `paneStateOf` / `Outcome` (`components/pane-state.tsx`); `DetailCard`, `FactGrid`, `StatTiles` with an optional `meter` (`detail-card.tsx`), `StatusNote`, `record-cards.tsx` (askers, copies, catalog, heading; `HistoryCard` takes a log alone, without a document) |
 | Actions | `ViewAction` + `ActionBar` (per-tier cap, `isInMenu` for More ▾); `PageHeader actions`, and `control` for a picker the whole view reads (wraps on a phone) |
-| A tree beside a pane | `Tree` (`components/tree.tsx`): virtual root, value, ⚠, dimming, arrow keys; `custodyReachOf`, `unheldCategoriesOf`, `isInSubtree` in `domain/categories.ts`, `siblingSetOf` in `domain/mixes.ts` |
+| A tree beside a pane | `Tree` (`components/tree.tsx`): virtual root, value, ⚠, dimming, arrow keys; `CategoryTree` (`components/category-tree.tsx`: search, *Show* over the values a page offers, counts and/or a mix) with `category-tree-values.ts`; `custodyReachOf`, `unheldCategoriesOf`, `isInSubtree`, `searchedCategoriesOf`, `isOutsideScope` in `domain/categories.ts`, `siblingSetOf` in `domain/mixes.ts` |
 | Who may | `can()` (`domain/permissions.ts`) / `useCan()` with a scoped record |
-| Dialogs | `components/dialogs/`: `DialogShell` (`head`, `onBack`, `secondary` for an editor's *Delete…*; `FormDialog` passes it), `ConsequenceDialog` (A, fed by a server dry run), `ReasonDialog` (B), `FormDialog` (C), `SteppedDialog` (F, with `StepIndicator`), `MessageDialog`. Not built: `SetEditorDialog` (D), `PickerDialog` (E), see component-interfaces §6.5–6.6 |
+| Dialogs | `components/dialogs/`: `DialogShell` (`head`, `onBack`, `secondary` for an editor's *Delete…*; `FormDialog` passes it), `ConsequenceDialog` (A, fed by a server dry run), `ReasonDialog` (B), `FormDialog` (C), `SteppedDialog` (F, with `StepIndicator`), `SetEditorDialog` (D: a set saved whole, a reason holding Save back, an optional *Who it reaches* step the instance fills), `MessageDialog`. Not built: `PickerDialog` (E), see component-interfaces §6.6 |
 | Doing something | `useActionMutation` → `ActionResult`; refusals are RFC 9457 Problem Details, worded by the action's `refusalTexts[code]`, then `detail`, then by status; `invalidates` lists every query the change shows in |
 | Tier | `useTier`, `valueForTier` (phone < 768, small < 1280, notebook < 1600, large); container queries for what the room decides |
 | Words | `plural`, `formatDay`, `joinDetails` |
 | Iteration dialogs | `components/iteration-dialogs.tsx` (Reclassify), `classification-fields.tsx` |
 | Two panes and a draft | `TransferEditor` (`components/transfer-editor.tsx`), `useDraft` + `isSameSet`, `usePicked`, `LeaveGuard` (`components/leave-guard.tsx`) |
-| Words for numbers and days | `formatCount` (`lib/format-number.ts`), `formatCalendarDay`, `formatShortCalendarDay` |
+| Words for numbers and days | `formatCount` and `formatPercent` (`lib/format-number.ts`), `formatCalendarDay`, `formatShortCalendarDay` |
 | Cards in sections | `CardSections` + `RecordCard` (`components/card-sections.tsx`), sections of cards or `DataTable`s, the whole card a link when it has an `href`; `focusedId` marks and scrolls to a card or a table row |
 | A full-width table | `DataTable` (`components/data-table.tsx`), columns per tier, a row opens its record; no grouping, notes or paging yet |
 | Bars against a target | `PaceBars` (`components/visualizations/pace-bars.tsx`): the server's numbers, an even-pace mark; no time bar for an open-ended target |
-| A mix as bars | `MixBar` (one stacked bar, unallocated hatched), `MixBars` (intended over output) and `DriftMarker` (▲/▼ outside the band, the markers form) in `components/visualizations/mix-bars.tsx`, `shareToneOf` for a category's colour |
+| A mix as bars | `MixBar` (one stacked bar, unallocated hatched), `MixBars` (intended over output) and `DriftMarker` (▲/▼ outside the band, the markers form) in `components/visualizations/mix-bars.tsx`, `shareToneOf` for a category's colour; one sibling set as a table, `MixSetCard` (`components/mix-set-card.tsx`) |
 | A record's own page | `RecordPage` (`components/layout/record-page.tsx`: note, cards, aside, history), `PageHeader breadcrumb`, `MembersCard` (`components/members-card.tsx`) |
-| A mix's shares | `effectiveShareOf` (`domain/mixes.ts`); `shareWithinOf` and the counting rules (planned, delivered, output, pace, drift, fill, mix owner and trackers, a correcting run's allocation, what a list counts towards and its fill against a mix, who may) in `domain/intentions.ts`; `isInPool` in `domain/lists.ts`; mixes are `mocks/fixtures/intentions.ts`, list generators `mocks/fixtures/list-generators.ts` until plugins (step 10) |
+| A mix's shares | `effectiveShareOf` (`domain/mixes.ts`); `shareWithinOf` and the counting rules (planned, delivered, output, pace, drift, fill, mix owner and trackers, a correcting run's allocation, what a list counts towards and its fill against a mix, who may) in `domain/intentions.ts`; an intention's mix over the tree, its set writes and detach in `api/mixes.ts`; a project's target and pace are its own intention's (`intention.projectId`); `isInPool` in `domain/lists.ts`; mixes are `mocks/fixtures/intentions.ts`, list generators `mocks/fixtures/list-generators.ts` until plugins (step 10) |
 
 **Not built yet** (the step that first needs one builds it, as a shared part,
 from component-interfaces): `CardGrid` §1.4 (Home),
@@ -131,7 +131,7 @@ editor page, and for acts behind a server dry run), and `features/projects/`
 (cards in sections, a record's own page, acts on both; the model for a page
 that is not master–detail), and `features/intentions/` (two columns of cards that
 open in place; an editor with a server preview, and a hand-off to the Lists editor by URL), and
-`features/categories/` (a tree beside a pane, a picker in the header). Routes in `src/app.tsx`,
+`features/categories/` (a tree beside a pane), and an intention's Mix in `features/intentions/mix-page.tsx` (a tree beside a pane, a set editor with a reach step). Routes in `src/app.tsx`,
 sidebar entries in `components/layout/navigation.ts`.
 
 ---

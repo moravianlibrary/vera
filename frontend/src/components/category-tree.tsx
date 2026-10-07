@@ -1,46 +1,62 @@
-// The Categories tree (docs/demos/shared/page-categories.js `row`; STATUS "Categories"): a search,
-// the Show picker, and the tree under *All categories*, every branch open to begin with. Each row
-// carries the number picked, remembered with the person's settings. A parent whose sibling set
-// is under 100 keeps its ⚠ whatever is picked, so switching away from shares never hides it.
-// Outside a scoped intention's subtree a mix number is neither shown nor read; the rows dim.
+// A category tree beside a pane (docs/demos/shared/page-categories.js `row`; STATUS "Categories"):
+// a search, the Show picker, and the tree under *All categories*, every branch open to begin
+// with. Categories shows it with counts and Overall's mix; an intention's Mix with that mix only.
+// Each row carries the number picked, remembered with the person's settings. A parent whose
+// sibling set is under 100 keeps its ⚠ whatever is picked, so switching away from shares never
+// hides it. Outside a scoped intention's subtree a mix number is neither shown nor read; the
+// rows dim.
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { useId, useState } from "react";
-import type { CategoryIndex, MixNode } from "@/api/categories";
+import type { CategoryNode, CategoryTotals } from "@/api/categories";
+import type { MixNode, MixTree } from "@/api/mixes";
+import {
+  categoryTreeValueLabels,
+  isMixValue,
+  mixNameOf,
+  treeValueOf,
+} from "@/components/category-tree-values";
 import { Tree } from "@/components/tree";
 import { Input } from "@/components/ui/input";
 import { DriftMarker } from "@/components/visualizations/mix-bars";
 import type { CategoryTreeValue } from "@/domain/categories";
-import { categoryTreeValues } from "@/domain/categories";
+import { categoryTreeValues, isOutsideScope, searchedCategoriesOf } from "@/domain/categories";
 import type { Category } from "@/domain/entities";
-import {
-  categoryTreeValueLabels,
-  isMixValue,
-  isOutOfScope,
-  mixNameOf,
-  percentTextOf,
-  searchedCategoriesOf,
-  treeValueOf,
-} from "@/features/categories/categories-view";
 import { useUserSettingsMutation, useUserSettingsQuery } from "@/hooks/use-user-settings-query";
-import { formatCount } from "@/lib/format-number";
+import { formatCount, formatPercent } from "@/lib/format-number";
+
+// What each category and the whole tree hold.
+export interface CategoryCounts {
+  totals: CategoryTotals;
+  nodes: readonly CategoryNode[];
+}
 
 interface CategoryTreeProps {
   categories: readonly Category[];
-  index: CategoryIndex;
+  // None on a page that reads only a mix.
+  counts: CategoryCounts | null;
+  mix: MixTree | null;
+  // What Show offers, in its order.
+  offered: readonly CategoryTreeValue[];
   selectedId: string | null;
   onSelect: (id: string | null) => void;
 }
 
-export function CategoryTree({ categories, index, selectedId, onSelect }: CategoryTreeProps) {
+export function CategoryTree({
+  categories,
+  counts,
+  mix,
+  offered,
+  selectedId,
+  onSelect,
+}: CategoryTreeProps) {
   const id = useId();
   const { data: settings } = useUserSettingsQuery();
   const remember = useUserSettingsMutation();
   const [search, setSearch] = useState("");
   const [collapsedIds, setCollapsedIds] = useState<ReadonlySet<string>>(new Set());
-  const { mix } = index;
-  const shown = treeValueOf(settings?.categoryTreeValue, mix !== null);
+  const shown = treeValueOf(settings?.categoryTreeValue, offered);
   const searched = searchedCategoriesOf(categories, search);
   const isShown = (category: Category) => searched === null || searched.has(category.id);
   const childrenOf = (parentId: string | null) =>
@@ -54,12 +70,13 @@ export function CategoryTree({ categories, index, selectedId, onSelect }: Catego
   );
   const mixNodeOf = (categoryId: string) =>
     mix?.nodes.find((node) => node.categoryId === categoryId);
-  const isDimmed = (categoryId: string | null) =>
-    mix !== null && isMixValue(shown) && isOutOfScope(categories, mix, categoryId);
+  const isOutside = (categoryId: string | null) =>
+    mix !== null && isOutsideScope(categories, mix.intention.scopeCategoryId, categoryId);
+  const isDimmed = (categoryId: string | null) => isMixValue(shown) && isOutside(categoryId);
   const warningOf = (unallocated: number, categoryId: string | null) =>
-    mix === null || unallocated <= 0 || isOutOfScope(categories, mix, categoryId)
+    mix === null || unallocated <= 0 || isOutside(categoryId)
       ? null
-      : `${percentTextOf(unallocated)} of its share is unallocated in ${mixNameOf(mix)}`;
+      : `${formatPercent(unallocated)} of its share is unallocated in ${mixNameOf(mix)}`;
   const roots = childrenOf(null);
 
   return (
@@ -90,7 +107,7 @@ export function CategoryTree({ categories, index, selectedId, onSelect }: Catego
             }}
           >
             {categoryTreeValues
-              .filter((value) => mix !== null || !isMixValue(value))
+              .filter((value) => offered.includes(value))
               .map((value) => (
                 <option key={value} value={value}>
                   {categoryTreeValueLabels[value]}
@@ -109,7 +126,7 @@ export function CategoryTree({ categories, index, selectedId, onSelect }: Catego
           isDimmed(category.id) ? null : (
             <NodeValue
               shown={shown}
-              node={index.nodes.find((node) => node.categoryId === category.id)}
+              node={counts?.nodes.find((node) => node.categoryId === category.id)}
               mixNode={mixNodeOf(category.id)}
               isScope={mix?.intention.scopeCategoryId === category.id}
             />
@@ -125,7 +142,7 @@ export function CategoryTree({ categories, index, selectedId, onSelect }: Catego
         }
         virtualRoot={{
           label: "All categories",
-          value: isDimmed(null) ? null : <RootValue shown={shown} index={index} />,
+          value: isDimmed(null) ? null : <RootValue shown={shown} totals={counts?.totals} />,
           warning: warningOf(mix?.unallocated ?? 0, null),
           isDimmed: isDimmed(null),
         }}
@@ -140,8 +157,7 @@ export function CategoryTree({ categories, index, selectedId, onSelect }: Catego
 const muted = (text: string) => <span className="text-muted-foreground">{text}</span>;
 const amber = (text: string) => <span className="text-tone-amber-foreground">{text}</span>;
 
-function RootValue({ shown, index }: { shown: CategoryTreeValue; index: CategoryIndex }) {
-  const { totals } = index;
+function RootValue({ shown, totals }: { shown: CategoryTreeValue; totals?: CategoryTotals }) {
   switch (shown) {
     case "share":
     case "whole":
@@ -149,13 +165,13 @@ function RootValue({ shown, index }: { shown: CategoryTreeValue; index: Category
     case "mix":
       return muted("intended → actual");
     default:
-      return countOf(shown, totals);
+      return totals === undefined ? null : countOf(shown, totals);
   }
 }
 
 interface NodeValueProps {
   shown: CategoryTreeValue;
-  node: CategoryIndex["nodes"][number] | undefined;
+  node: CategoryNode | undefined;
   mixNode: MixNode | undefined;
   isScope: boolean;
 }
@@ -178,7 +194,7 @@ function NodeValue({ shown, node, mixNode, isScope }: NodeValueProps): ReactNode
     case "share":
       return share === null ? amber("no share") : share === 0 ? muted("0%") : `${share}%`;
     case "whole":
-      return ofWhole === null ? amber("—") : percentTextOf(ofWhole);
+      return ofWhole === null ? amber("—") : formatPercent(ofWhole);
     default:
       return (
         <>
@@ -192,7 +208,7 @@ function NodeValue({ shown, node, mixNode, isScope }: NodeValueProps): ReactNode
 
 function countOf(
   shown: CategoryTreeValue,
-  totals: Pick<CategoryIndex["totals"], "documentCount" | "pages" | "readyPages">,
+  totals: Pick<CategoryTotals, "documentCount" | "pages" | "readyPages">,
 ): ReactNode {
   switch (shown) {
     case "pages":

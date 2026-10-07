@@ -33,6 +33,15 @@ function signInAs(profile: MockUserProfile): void {
   server.use(...createHandlers(profile));
 }
 
+async function problemCodeOf(call: Promise<unknown>): Promise<string | null> {
+  try {
+    await call;
+    return null;
+  } catch (error) {
+    return error instanceof ApiError ? (error.problem?.code ?? null) : null;
+  }
+}
+
 async function statusOf(call: Promise<unknown>): Promise<number | null> {
   try {
     await call;
@@ -65,8 +74,10 @@ describe("listIntentionIndex", () => {
     signInAs("digitization");
     const index = await listIntentionIndex();
 
-    expect(index.rows).toHaveLength(11);
-    expect(index.rows.filter((row) => row.intention.archived !== null)).toHaveLength(2);
+    // Two Proposed projects' own intentions are not listed yet; a Rejected one's is archived.
+    expect(index.rows).toHaveLength(17);
+    expect(index.rows.some((row) => row.intention.id === "i14")).toBe(false);
+    expect(index.rows.filter((row) => row.intention.archived !== null)).toHaveLength(3);
     expect(index.templates.map((row) => [row.template.id, row.tracks?.name])).toEqual([
       ["t1", "House mix"],
     ]);
@@ -96,8 +107,8 @@ describe("listIntentionIndex", () => {
     expect(rowOf(index, "i2")).toMatchObject({
       verdict: "behindPace",
       plannedPages: 0,
-      catchUpPages: 1920,
-      pagesPerWeekNeeded: 150,
+      catchUpPages: 1440,
+      pagesPerWeekNeeded: 120,
     });
     expect(rowOf(index, "i8").verdict).toBeNull();
   });
@@ -109,7 +120,7 @@ describe("listIntentionIndex", () => {
     expect(rowOf(index, "i4").mix).toEqual({
       owner: { id: "i4", name: "House mix", isOverall: true },
       isOwn: true,
-      trackerCount: 7,
+      trackerCount: 15,
     });
     expect(rowOf(index, "i8").mix.trackerCount).toBe(2);
     expect(rowOf(index, "i1").mix).toMatchObject({
@@ -332,6 +343,33 @@ describe("archiving and deleting an intention", () => {
     });
     expect(await statusOf(previewIntentionDeletion("i8"))).toBe(409);
     expect(await statusOf(deleteIntention("i4"))).toBe(409);
+  });
+
+  it("keeps a project's own intention with its project: its window, target and life", async () => {
+    signInAs("digitization");
+    const visk = rowOf(await listIntentionIndex(), "i2").intention;
+    const kept = {
+      name: visk.name,
+      description: "The backlog.",
+      funding: visk.funding,
+      scopeCategoryId: "c1",
+      countsFrom: visk.countsFrom,
+      endsOn: visk.endsOn,
+      targetPages: visk.targetPages,
+      mix: { kind: "track", ownerId: "i4", isMovingTrackers: false },
+    } satisfies IntentionDraft;
+
+    expect((await saveIntention("i2", kept)).intention).toMatchObject({
+      scopeCategoryId: "c1",
+      description: "The backlog.",
+    });
+    for (const changed of [{ targetPages: 100 }, { endsOn: null }, { name: "VISK" }]) {
+      expect(await problemCodeOf(saveIntention("i2", { ...kept, ...changed }))).toBe(
+        "intention.project",
+      );
+    }
+    expect(await problemCodeOf(archiveIntention("i2"))).toBe("intention.project");
+    expect(await problemCodeOf(deleteIntention("i2"))).toBe("intention.project");
   });
 
   it("deletes an intention without touching any list", async () => {

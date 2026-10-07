@@ -2,13 +2,15 @@
 // index; STATUS "Projects"): the proposed, active and upcoming projects are cards, those waiting
 // for a decision first, then the running ones by their end, then what is coming by its start; the
 // ended and the rejected sit in tables below, latest first. Decision and period are two badges
-// that never mix (projects.md §1).
+// that never mix (projects.md §1). The target, planned, delivered and pace are the project's own
+// intention's (§1.1).
 // TODO(rrandiak): labels move to i18n.
 
 import type { ProjectRow } from "@/api/projects";
 import type { Tone } from "@/components/status-badge";
 import type { Project } from "@/domain/entities";
-import type { PaceVerdict, ProjectPeriod } from "@/domain/projects";
+import type { TargetVerdict } from "@/domain/intentions";
+import type { ProjectPeriod } from "@/domain/projects";
 import type { NoteTone } from "@/domain/status-notes";
 import { formatCalendarDay, formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
@@ -31,7 +33,8 @@ const verdictTones = {
   behindPace: "amber",
   targetMet: "green",
   short: "amber",
-} as const satisfies Record<PaceVerdict, Tone>;
+  fullyPlanned: "blue",
+} as const satisfies Record<TargetVerdict, Tone>;
 
 export interface ProjectSections {
   // Proposed, then active, then upcoming.
@@ -71,9 +74,15 @@ export function projectSectionsOf(rows: readonly ProjectRow[]): ProjectSections 
   };
 }
 
+// Of the target, in whole percent; none without one.
+function deliveredPercentOf(row: ProjectRow): number | null {
+  const target = row.intention.targetPages;
+  return target === null ? null : Math.round((row.deliveredPages / Math.max(1, target)) * 100);
+}
+
 export function paceOf(
   row: ProjectRow,
-): { text: string; tone: (typeof verdictTones)[PaceVerdict] } | null {
+): { text: string; tone: (typeof verdictTones)[TargetVerdict] } | null {
   if (row.verdict === null) {
     return null;
   }
@@ -82,9 +91,16 @@ export function paceOf(
     onPace: "On pace",
     behindPace: "Behind pace",
     targetMet: "Target met",
-    short: `${Math.round((row.deliveredPages / Math.max(1, row.project.targetPages)) * 100)}% delivered`,
-  } as const satisfies Record<PaceVerdict, string>;
+    short: `${deliveredPercentOf(row) ?? 0}% delivered`,
+    fullyPlanned: "Fully planned",
+  } as const satisfies Record<TargetVerdict, string>;
   return { text: labels[row.verdict], tone: verdictTones[row.verdict] };
+}
+
+// "target 6,000 pp", "no target".
+export function targetTextOf(row: ProjectRow): string {
+  const target = row.intention.targetPages;
+  return target === null ? "no target" : `target ${formatCount(target)} pp`;
 }
 
 export function periodTextOf(project: Pick<Project, "startsOn" | "endsOn">): string {
@@ -102,9 +118,9 @@ export function timeLabelOf(row: ProjectRow): string {
   }
 }
 
-// Nothing is planned or delivered before anything is funded.
+// Nothing is planned or delivered before anything is funded, nor drawn against no target.
 export function pagesOf(row: ProjectRow) {
-  return row.fundedCount === 0
+  return row.fundedCount === 0 || row.intention.targetPages === null
     ? null
     : { planned: row.plannedPages, delivered: row.deliveredPages };
 }
@@ -118,7 +134,8 @@ export interface ProjectNote {
 // Where it stands, in words, at the top of its page (page-projects.js detail).
 export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
   const { project, pending, waiting } = row;
-  const delivered = Math.round((row.deliveredPages / Math.max(1, project.targetPages)) * 100);
+  const target = row.intention.targetPages;
+  const delivered = deliveredPercentOf(row) ?? 0;
   switch (project.state) {
     case "Proposed":
       return {
@@ -147,19 +164,24 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
     return {
       tone: "slate",
       title: `Approved · starts ${formatCalendarDay(project.startsOn)}`,
-      body:
-        row.intentionCount > 0
-          ? "Nothing is delivered before it starts."
-          : "Funded, and nothing yet says what it should buy — set an intention before lists are generated for it.",
+      body: "Nothing is delivered before it starts.",
     };
   }
 
   if (row.period === "Ended") {
-    const short = project.targetPages - row.deliveredPages;
+    if (target === null) {
+      return {
+        tone: "slate",
+        title: `Ended ${formatCalendarDay(project.endsOn)} — it had no target`,
+        body: `${formatCount(row.deliveredPages)} pages digitized. These numbers stay true: the pages it funded are funded by it for good.`,
+      };
+    }
+
+    const short = target - row.deliveredPages;
     return {
       tone: paceOf(row)?.tone ?? "slate",
       title: `Ended ${formatCalendarDay(project.endsOn)} — ${delivered >= 100 ? "target met" : `${delivered}% of the target delivered`}`,
-      body: `${formatCount(row.deliveredPages)} of ${formatCount(project.targetPages)} pages digitized${
+      body: `${formatCount(row.deliveredPages)} of ${formatCount(target)} pages digitized${
         short > 0 ? `, ${formatCount(short)} short` : ""
       }. These numbers stay true: the pages it funded are funded by it for good.`,
     };
@@ -167,11 +189,19 @@ export function projectNoteOf(row: ProjectRow, decidedBy: string): ProjectNote {
 
   const pace = paceOf(row);
   const daysLeft = `${plural(row.daysLeft, "day")} left.`;
-  if (pace === null) {
+  if (row.fundedCount === 0) {
     return {
       tone: "amber",
       title: `Running since ${formatCalendarDay(project.startsOn)}, and nothing is funded by it yet`,
       body: `${daysLeft} No approved request names this project.`,
+    };
+  }
+
+  if (pace === null) {
+    return {
+      tone: "slate",
+      title: `Running since ${formatCalendarDay(project.startsOn)}, with no target`,
+      body: `${daysLeft} ${formatCount(row.deliveredPages)} pages digitized so far; its intention tracks the mix.`,
     };
   }
 

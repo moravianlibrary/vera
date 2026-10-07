@@ -83,7 +83,6 @@ const projectBase = {
   description: z.string(),
   startsOn: calendarDate,
   endsOn: calendarDate,
-  targetPages: z.number().int().nonnegative(),
   managerId: id,
   // People, the manager among them, and groups whose people are members while they are in it.
   memberIds: z.array(id),
@@ -92,7 +91,7 @@ const projectBase = {
 };
 
 // Decision state is stored and final once decided; the period (upcoming, active, ended) is
-// derived from the dates (projects.md §1).
+// derived from the dates (projects.md §1). It has no target: that is its intention's (§1.1).
 export const projectSchema = z.discriminatedUnion("state", [
   z.object({ ...projectBase, state: z.literal("Proposed") }),
   z.object({ ...projectBase, state: z.literal("Approved"), priority: prioritySchema, ...actedBy }),
@@ -124,12 +123,16 @@ export type IntentionFunding = z.infer<typeof intentionFundingSchema>;
 
 // A scope and an objective, never a container: an item counts towards every intention whose
 // scope it matches (intentions.md §3). With a target it has progress; without one it tracks the
-// mix. Every intention counts from a date, locked once created.
+// mix. Every intention counts from a date, locked once created; a project's own intention counts
+// over the project's period, which the server reads from the project.
 export const intentionSchema = z.object({
   id,
   name: z.string(),
   description: z.string(),
   funding: intentionFundingSchema,
+  // The project it was made with, as that project's own intention (§3.4): its name, funding and
+  // window are the project's and follow it, and it lives and dies with it.
+  projectId: id.nullable(),
   // One category node with its subtree; null is every category.
   scopeCategoryId: id.nullable(),
   // The intention whose mix this one reads; null when it owns its mix. Never one that tracks.

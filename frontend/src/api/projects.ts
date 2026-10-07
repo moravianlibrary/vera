@@ -1,8 +1,9 @@
 // The Projects resource (projects.md, flows.md PJ1–PJ6, D11, D12): every project the caller may
-// see with its period, its numbers against the target and its pace, all worked out by the
-// server; one project with its proposals, the lists carrying what it funded, the iterations it
-// funded and its history; and what is done to one: start, edit, members, approve, reject, delete.
-// The bare `/projects` stays the reference data other views name a project by.
+// see with its period, and its own intention's target, numbers and pace (§1.1), all worked out by
+// the server; one project with its proposals, the lists carrying what it funded, the iterations it
+// funded and its history; and what is done to one: start, edit (with what a change does to its
+// intention's figures), members, approve, reject, delete. The bare `/projects` stays the
+// reference data other views name a project by.
 
 import { z } from "zod";
 import { deleteResource, findJson, getJson, postJson, putJson } from "@/api/http";
@@ -15,14 +16,14 @@ import {
   projectSchema,
   statusLogEntrySchema,
 } from "@/domain/entities";
+import { targetVerdicts } from "@/domain/intentions";
 import { listStateSchema } from "@/domain/lists";
-import { paceVerdicts, projectPeriods } from "@/domain/projects";
+import { projectPeriods } from "@/domain/projects";
 
 const count = z.number().int().nonnegative();
 const pages = z.number().int().nonnegative();
 
 export const projectPeriodSchema = z.enum(projectPeriods);
-export const paceVerdictSchema = z.enum(paceVerdicts);
 
 // ---------------------------------------------------------------- index
 
@@ -34,20 +35,31 @@ export const memberGroupSchema = z.object({
 });
 export type MemberGroup = z.infer<typeof memberGroupSchema>;
 
-// Planned counts what is on a list that still exists, or already digitized; delivered is the
-// digitized part of it. The two are never added (STATUS, *Planned counts only items on a list
-// that still exists*).
+// The intention made with the project (intentions.md §3.4): its name and window are the
+// project's; the target is entered on the project form and stored on it.
+export const projectIntentionSchema = z.object({
+  id: z.string(),
+  // None: it tracks the mix.
+  targetPages: pages.nullable(),
+});
+export type ProjectIntention = z.infer<typeof projectIntentionSchema>;
+
+// Planned and delivered are its intention's, counted over the project's period by the intention
+// rules; they are never added (STATUS, *Planned counts only items on a list that still exists*).
 export const projectRowSchema = z.object({
   project: projectSchema,
+  intention: projectIntentionSchema,
   period: projectPeriodSchema,
   // 0 to 1, the share of the period gone by today.
   timeElapsed: z.number().min(0).max(1),
   // Today counts as left; both are 0 once past.
   daysToStart: count,
   daysLeft: count,
-  // Where planned and delivered would be at an even pace; only while an Approved project runs.
+  // Where planned and delivered would be at an even pace; only while an Approved project with a
+  // target runs.
   evenPace: z.number().min(0).max(1).nullable(),
-  verdict: paceVerdictSchema.nullable(),
+  // Its intention's, only once the project is Approved.
+  verdict: z.enum(targetVerdicts).nullable(),
   fundedCount: count,
   plannedPages: pages,
   deliveredPages: pages,
@@ -59,8 +71,6 @@ export const projectRowSchema = z.object({
   proposalCount: count,
   listCount: count,
   memberGroups: z.array(memberGroupSchema),
-  // The intentions funded by it: what the money should buy (intentions.md §3).
-  intentionCount: count,
 });
 export type ProjectRow = z.infer<typeof projectRowSchema>;
 
@@ -102,20 +112,6 @@ export const fundedItemSchema = z.object({
 });
 export type FundedItem = z.infer<typeof fundedItemSchema>;
 
-// An intention it funds, counted in its own window: they need not add up to the project.
-export const projectIntentionSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  countsFrom: z.iso.date(),
-  endsOn: z.iso.date().nullable(),
-  targetPages: pages.nullable(),
-  // The owner it tracks; null for its own mix.
-  tracksName: z.string().nullable(),
-  plannedPages: pages,
-  deliveredPages: pages,
-});
-export type ProjectIntention = z.infer<typeof projectIntentionSchema>;
-
 export const projectDetailSchema = z.object({
   row: projectRowSchema,
   proposals: z.array(projectProposalSchema),
@@ -123,7 +119,6 @@ export const projectDetailSchema = z.object({
   // A deleted list's items stop counting; its name is all that is left.
   formerLists: z.array(z.object({ name: z.string(), itemCount: count })),
   funded: z.array(fundedItemSchema),
-  intentions: z.array(projectIntentionSchema),
   log: z.array(statusLogEntrySchema),
 });
 export type ProjectDetail = z.infer<typeof projectDetailSchema>;
@@ -139,13 +134,24 @@ export const projectDraftSchema = z
     description: z.string().trim(),
     startsOn: calendarDate,
     endsOn: calendarDate,
-    targetPages: z.number().int().positive("Set how many pages the money should buy"),
+    // Its intention's target; none, and the intention only tracks the mix.
+    targetPages: z.number().int().positive().nullable(),
   })
   .refine((draft) => draft.endsOn >= draft.startsOn, {
     message: "It cannot end before it starts",
     path: ["endsOn"],
   });
 export type ProjectDraft = z.infer<typeof projectDraftSchema>;
+
+const beforeAfterSchema = z.object({ before: pages, after: pages });
+
+// What an edit does to its intention's figures, said before saving: new dates move its window and
+// recount it (intentions.md §3.4).
+export const projectChangeSchema = z.object({
+  plannedPages: beforeAfterSchema,
+  deliveredPages: beforeAfterSchema,
+});
+export type ProjectChange = z.infer<typeof projectChangeSchema>;
 
 // The whole set at once, the manager among the people (projects.md §3).
 export const projectMembersSchema = z
@@ -208,6 +214,13 @@ export async function createProject(draft: ProjectDraft): Promise<ProjectDetail>
 
 export async function saveProject(projectId: string, draft: ProjectDraft): Promise<ProjectDetail> {
   return putJson(projectRoute(projectId), draft, projectDetailSchema);
+}
+
+export async function previewProjectChange(
+  projectId: string,
+  draft: ProjectDraft,
+): Promise<ProjectChange> {
+  return postJson(`${projectRoute(projectId)}/preview`, draft, projectChangeSchema);
 }
 
 export async function saveProjectMembers(

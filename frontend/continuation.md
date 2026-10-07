@@ -317,10 +317,11 @@ The foundation is in place:
 - `src/features/projects/` is Projects (`/projects`, `/projects/:projectId`), step 5 of
   `plan.md`. The resource is `src/api/projects.ts`: `GET /projects/overview` is every project
   the caller sees (members and their groups at `project.read@project`, everyone at `any` or with
-  `project.decide`) with what the server works out (`src/domain/projects.ts`: `periodOf`,
-  `timeElapsedOf`, `daysUntil`, `paceVerdictOf` within ten points, `evenPaceOf`): days left and to
-  the start, planned (on a list that still exists, or digitized) and delivered pages, what waits
-  for a list, the pending documents and those with a copy, lists and member groups.
+  `project.decide`) with what the server works out: the period (`src/domain/projects.ts`:
+  `periodOf`, `timeElapsedOf`, `daysUntil`) and, from the project's own intention
+  (`intentionId`, `targetPages`; intentions.md §3.4), its planned, delivered, verdict and even
+  pace by the intention rules over the project's period, once Approved; days left and to the
+  start, what waits for a list, the pending documents and those with a copy, lists and member groups.
   `GET /projects/:id` adds the proposals one row per document, the live and the deleted lists,
   the funded iterations and the project's log; the bare `GET /projects` stays reference data.
   The acts: `POST /projects`, `PUT /projects/:id`, `PUT …/members` (the whole set, manager
@@ -337,12 +338,15 @@ The foundation is in place:
   `project-page.tsx` on `src/components/layout/record-page.tsx` (`RecordPage`: note, cards,
   aside, history; the aside first and the history last where it is narrow), with
   `src/components/members-card.tsx` and `PageHeader`'s `breadcrumb`. `project-actions.tsx`
-  offers the acts and `project-dialogs.tsx` holds them: New and Edit (`FormDialog`, warning on
-  an approved project's dates and target), Members (on `DialogShell` until `PickerDialog`
+  offers the acts and `project-dialogs.tsx` holds them: New and Edit (`FormDialog`, the target
+  optional and written to its intention, new dates previewed by `POST /projects/:id/preview`,
+  a warning on an approved project), Members (on `DialogShell` until `PickerDialog`
   exists), Approve (`FormDialog` over the dry run), Reject (`ReasonDialog`), Delete
-  (`ConsequenceDialog`). The page's Intentions card lists the intentions it funds, each counted in
-  its own window (`GET /projects/:id` `intentions`; rows carry `intentionCount`), and an approved
-  project with none says *No intention yet* on its card and page. *Message…* is a TODO.
+  (`ConsequenceDialog`). Every project has one intention of its own (`intention.projectId`),
+  made with it in `createProject`, its name, funding and window kept in step by `saveProject`,
+  archived by `rejectProject` and deleted by `deleteProject`; it is listed on Intentions once the
+  project is decided, and refuses archive, delete and changes to the project's fields there
+  (409 `intention.project`). *Message…* is a TODO.
 - `src/features/intentions/` is Intentions (`/intentions`), step 6 of `plan.md`.
   The resource is `src/api/intentions.ts`: `GET /intentions/overview` is every intention the
   caller sees (`intention.read@any`, or `@project` for one a project they are on funds) with what
@@ -372,7 +376,15 @@ The foundation is in place:
   a tracking card out of band, whose dialog shows the allocation from
   `GET /intentions/:id/correction?pages=` (`correctionOf`: what each category lacks against its
   share of output plus the new pages, cut in proportion; supply short stays short) and hands it
-  to the list editor. Who may: `scopeOfIntention` in `src/domain/intentions.ts`.
+  to the list editor. Who may: `scopeOfIntention` in `src/domain/intentions.ts`. An intention's
+  Mix is `mix-page.tsx` at `/intentions/:id/mix` (`?c=`), over `src/api/mixes.ts`:
+  `GET /intentions/:id/mix` (the tree read against its output, the revision, the trackers),
+  `PUT …/mix` (one sibling set, whole, against the revision, `keepOldMixFor` detaching those
+  first; 409 `mix.revision`, `intention.not_owner`, 422 `mix.over`, `mix.outside_scope`) and
+  `POST …/detach`; the mock is `src/mocks/mixes.ts`. It shows the shared `CategoryTree` and
+  `MixSetCard`, and `mix-dialogs.tsx` holds *Edit proportions…* on `SetEditorDialog` with the
+  trackers step, and *Detach*. Categories (`src/features/categories/`) reads Overall's mix only,
+  read-only, from `GET /categories/overview`.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and
@@ -428,7 +440,8 @@ carried out and what it reads. Its parts are in `component-inventory.md`, with t
 Categories reads and links to editing a mix with *Mix of* (`?i=`). Under the definitions only an
 intention has a target or pace (a project's comes from its own intention), a mix is edited on its
 intention, and a category is a line of work whose leaf a Classifier plugin suggests at approval.
-`plan.md` step 7.3 and 7.4 bring the code in line.
+`plan.md` 7.3 brought the project's intention and the intention's Mix in line; 7.4 brings the
+Classifier.
 
 1. **Application shell.** Add routes and the responsive navigation frame. Navigation entries should come from the current user's available permissions. Actions and destinations the user cannot use are absent, not disabled. Support the demo's large, notebook, small, and phone layouts.
 2. **Documents.** Start with coherent fake documents, requests, iterations, projects, status history, and registry copies. Serve them through MSW handlers and access them through TanStack Query. Build the list/detail view with search, status and other declared filters, facet counts, URL-backed filter state, and the responsive `MasterDetail` component. Include view-level save/edit-watchlist affordances.

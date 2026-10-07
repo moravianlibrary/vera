@@ -4,3 +4,8 @@
 export function formatCount(count: number): string {
   return count.toLocaleString("en-GB");
 }
+
+// A share with one decimal, without a trailing zero: "13.5%", "45%".
+export function formatPercent(value: number): string {
+  return `${Math.round(value * 10) / 10}%`;
+}
