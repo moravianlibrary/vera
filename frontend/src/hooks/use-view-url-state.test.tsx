@@ -55,7 +55,7 @@ describe("useViewUrlState", () => {
       id: "W2",
       name: "Urgent",
       view: "documents",
-      scope: "personal",
+      audience: { kind: "personal" },
       filter: { priority: "Urgent" },
       createdAt: "2026-06-01T08:00:00Z",
     } as const;

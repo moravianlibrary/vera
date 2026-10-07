@@ -1,7 +1,8 @@
 // What the selected record on Users & Groups is connected to (docs/demos/shared/page-access.js
 // `links`): a tag on each connected record saying how, and the lines between the columns, which
-// always run left to right: role → user → group or custody. A role held only through a mapping
-// is a dashed line, as is a custody reached through a group.
+// always run left to right: role → user → group, custody or shared watchlist. A role held only
+// through a mapping is a dashed line, as is a custody reached through a group. A shared watchlist
+// lights up the groups and roles in its audience and the people it reaches, and they light it up.
 // TODO(rrandiak): labels move to i18n.
 
 import type { AccessIndex } from "@/api/access";
@@ -32,6 +33,15 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
   const line = (from: [string, string], to: [string, string], isDashed = false) =>
     lines.push({ from: linkKeyOf(...from), to: linkKeyOf(...to), isDashed });
 
+  // The shared watchlists whose audience names the role or the group.
+  const tagSharedWith = (field: "roleIds" | "groupIds", recordId: string) => {
+    for (const watchlist of index.sharedWatchlists) {
+      if (watchlist.audience.kind === "some" && watchlist.audience[field].includes(recordId)) {
+        tag("watchlists", watchlist.id, "shared with it");
+      }
+    }
+  };
+
   switch (selection.kind) {
     case "users": {
       const user = index.users.find((candidate) => candidate.id === selection.id);
@@ -59,6 +69,13 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
         line(["users", user.id], ["custodies", custodyId], via !== null);
       }
 
+      for (const watchlist of index.sharedWatchlists) {
+        if (watchlist.reachedUserIds.includes(user.id)) {
+          tag("watchlists", watchlist.id, "sees it");
+          line(["users", user.id], ["watchlists", watchlist.id]);
+        }
+      }
+
       break;
     }
     case "roles":
@@ -72,6 +89,7 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
         line(["roles", selection.id], ["users", user.id], isMappedOnly(ways));
       }
 
+      tagSharedWith("roleIds", selection.id);
       break;
     case "groups": {
       const group = index.groups.find((candidate) => candidate.id === selection.id);
@@ -86,6 +104,7 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
         tag("custodies", custody.id, "held by this group");
       }
 
+      tagSharedWith("groupIds", selection.id);
       break;
     }
     case "custodies": {
@@ -112,6 +131,33 @@ export function linksOf(index: AccessIndex, selection: AccessSelection): AccessL
 
       for (const groupId of custody.groupIds) {
         tag("groups", groupId, "member of it");
+      }
+
+      break;
+    }
+    case "watchlists": {
+      const watchlist = index.sharedWatchlists.find((candidate) => candidate.id === selection.id);
+      if (watchlist === undefined) {
+        break;
+      }
+
+      for (const userId of watchlist.reachedUserIds) {
+        tag("users", userId, "sees it");
+        line(["users", userId], ["watchlists", watchlist.id]);
+      }
+
+      for (const userId of watchlist.outOfViewUserIds) {
+        tag("users", userId, "cannot open the view");
+      }
+
+      if (watchlist.audience.kind === "some") {
+        for (const roleId of watchlist.audience.roleIds) {
+          tag("roles", roleId, "in its audience");
+        }
+
+        for (const groupId of watchlist.audience.groupIds) {
+          tag("groups", groupId, "in its audience");
+        }
       }
 
       break;

@@ -106,7 +106,7 @@ export function LinkedColumns<Kind extends string>({
     const current = sections.find((section) => section.kind === tab) ?? sections[0];
     return (
       <>
-        <div role="tablist" className="mb-3 flex gap-1 overflow-x-auto rounded-lg bg-muted p-1">
+        <div role="tablist" className="mb-3 flex flex-wrap gap-1 rounded-lg bg-muted p-1">
           {tabOrder.flatMap((kind) => {
             const section = sections.find((candidate) => candidate.kind === kind);
             if (section === undefined) {

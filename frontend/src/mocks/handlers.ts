@@ -76,7 +76,12 @@ import {
   parseValidationSliceParams,
   revocationSchema,
 } from "@/api/validations";
-import { watchlistChangeSchema, watchlistDraftSchema, watchlistViewParam } from "@/api/watchlists";
+import {
+  watchlistChangeSchema,
+  watchlistDraftSchema,
+  watchlistReachRequestSchema,
+  watchlistViewParam,
+} from "@/api/watchlists";
 import type { MockUserProfile } from "@/config/env";
 import { env } from "@/config/env";
 import type { Session } from "@/domain/entities";
@@ -222,6 +227,7 @@ import {
   findVisibleWatchlist,
   publicWatchlistOf,
   visibleWatchlists,
+  watchlistReachOf,
 } from "@/mocks/watchlists";
 
 const route = (path: string) => `${env.VITE_API_BASE_URL}${path}`;
@@ -1090,7 +1096,7 @@ export function createHandlers(profile: MockUserProfile) {
         return invalidResponse(draft.error);
       }
 
-      if (!canChange(session, draft.data.scope)) {
+      if (!canChange(session, draft.data.audience)) {
         return forbidden();
       }
 
@@ -1108,6 +1114,23 @@ export function createHandlers(profile: MockUserProfile) {
       return HttpResponse.json(watchlist, { status: 201 });
     }),
 
+    http.post(route(apiRoutes.watchlistReach), async ({ request }) => {
+      if (!hasPermission(currentSession(), "watchlist.manage_shared")) {
+        return forbidden();
+      }
+
+      const reach = watchlistReachRequestSchema.safeParse(await request.json());
+      if (!reach.success) {
+        return invalidResponse(reach.error);
+      }
+
+      return HttpResponse.json(watchlistReachOf(reach.data));
+    }),
+
+    http.get(route(apiRoutes.roles), () =>
+      HttpResponse.json(database.roles.map(({ id, name }) => ({ id, name }))),
+    ),
+
     http.patch(route(`${apiRoutes.watchlists}/:watchlistId`), async ({ params, request }) => {
       const session = currentSession();
       const watchlist = findVisibleWatchlist(session, String(params.watchlistId));
@@ -1115,7 +1138,7 @@ export function createHandlers(profile: MockUserProfile) {
         return problemResponse({ status: 404, message: "Watchlist not found" });
       }
 
-      if (!canChange(session, watchlist.scope)) {
+      if (!canChange(session, watchlist.audience)) {
         return forbidden();
       }
 
@@ -1124,14 +1147,16 @@ export function createHandlers(profile: MockUserProfile) {
         return invalidResponse(change.error);
       }
 
-      const scope = change.data.scope ?? watchlist.scope;
-      if (!canChange(session, scope)) {
+      const audience = change.data.audience ?? watchlist.audience;
+      if (!canChange(session, audience)) {
         return forbidden();
       }
 
       // A shared watchlist taken back as personal becomes the caller's own.
       const ownerId =
-        scope === "personal" && watchlist.scope === "shared" ? session.user.id : watchlist.ownerId;
+        audience.kind === "personal" && watchlist.audience.kind !== "personal"
+          ? session.user.id
+          : watchlist.ownerId;
       const changed = { ...watchlist, ...change.data, ownerId };
       const duplicate = findDuplicateWatchlist(session, changed);
       if (duplicate !== null) {
@@ -1149,7 +1174,7 @@ export function createHandlers(profile: MockUserProfile) {
         return problemResponse({ status: 404, message: "Watchlist not found" });
       }
 
-      if (!canChange(session, watchlist.scope)) {
+      if (!canChange(session, watchlist.audience)) {
         return forbidden();
       }
 

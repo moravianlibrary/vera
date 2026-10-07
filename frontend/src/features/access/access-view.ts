@@ -1,8 +1,9 @@
 // Users & Groups' state in its URL (docs/demos/shared/page-access.js; view-catalog.md): the
 // search and *Show* (people, agents, or those with no role yet) narrow the columns, and one of
-// `?u=`, `?r=`, `?g=` or `?c=` names the selected record. Opened bare, the first user is selected.
-// The page holds every record already, so the filter is applied here, not by the server. No
-// watchlists: people and roles are looked up, not watched.
+// `?u=`, `?r=`, `?g=`, `?c=` or `?w=` (a shared watchlist) names the selected record. Opened
+// bare, the first user is selected. The page holds every record already, so the filter is
+// applied here, not by the server. It keeps no watchlist tabs of its own: people and roles are
+// looked up, not watched.
 // TODO(rrandiak): labels move to i18n.
 
 import type { AccessIndex } from "@/api/access";
@@ -69,27 +70,33 @@ export const accessView: ViewDefinition<AccessQuery> = {
 
 // ---------------------------------------------------------------- the selected record
 
+// The records the page selects: those it changes, and the shared watchlists beside them.
+export const accessSelectionKinds = [...accessRecordKinds, "watchlists"] as const;
+export type AccessSelectionKind = AccessRecordKind | "watchlists";
+
 export const selectionParams = {
   users: "u",
   roles: "r",
   groups: "g",
   custodies: "c",
-} as const satisfies Record<AccessRecordKind, string>;
+  watchlists: "w",
+} as const satisfies Record<AccessSelectionKind, string>;
 
 export interface AccessSelection {
-  kind: AccessRecordKind;
+  kind: AccessSelectionKind;
   id: string;
 }
 
 // The record the URL names, if it exists; else the first user.
 export function selectionOf(params: URLSearchParams, index: AccessIndex): AccessSelection | null {
-  const exists: Record<AccessRecordKind, (id: string) => boolean> = {
+  const exists: Record<AccessSelectionKind, (id: string) => boolean> = {
     users: (id) => index.users.some((user) => user.id === id),
     roles: (id) => index.roles.some((role) => role.id === id),
     groups: (id) => index.groups.some((group) => group.id === id),
     custodies: (id) => index.custodies.some((custody) => custody.id === id),
+    watchlists: (id) => index.sharedWatchlists.some((watchlist) => watchlist.id === id),
   };
-  for (const kind of accessRecordKinds) {
+  for (const kind of accessSelectionKinds) {
     const id = params.get(selectionParams[kind]);
     if (id !== null && exists[kind](id)) {
       return { kind, id };
@@ -127,6 +134,9 @@ export function filteredIndex(index: AccessIndex, query: AccessQuery): AccessInd
     roles: index.roles.filter((role) => matches(query.search, role.name)),
     groups: index.groups.filter((group) => matches(query.search, group.name)),
     custodies: index.custodies.filter((custody) => matches(query.search, custody.name)),
+    sharedWatchlists: index.sharedWatchlists.filter((watchlist) =>
+      matches(query.search, watchlist.name),
+    ),
   };
 }
 

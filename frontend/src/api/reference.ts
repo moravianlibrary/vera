@@ -1,4 +1,4 @@
-// Reference data other records point at by id: people and their groups, the category tree,
+// Reference data other records point at by id: people, their groups and roles, the category tree,
 // projects, lists, batches and plugin instances. Views resolve names through these instead of
 // receiving them denormalized.
 
@@ -26,6 +26,14 @@ export type Group = z.infer<typeof groupSchema>;
 
 export async function listGroups(): Promise<Group[]> {
   return getJson(apiRoutes.groups, z.array(groupSchema));
+}
+
+// A role by name: who a watchlist is shared with names roles.
+export const roleNameSchema = z.object({ id: z.string(), name: z.string() });
+export type RoleName = z.infer<typeof roleNameSchema>;
+
+export async function listRoles(): Promise<RoleName[]> {
+  return getJson(apiRoutes.roles, z.array(roleNameSchema));
 }
 
 export async function listUsers(): Promise<User[]> {

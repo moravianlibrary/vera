@@ -1,24 +1,31 @@
-// What the server does for watchlists: show each caller their own and the shared ones on the
-// view, let only those who manage shared watchlists change a shared one, and count what matches
-// each now by running its filter over its view. A filter is saved once among the watchlists a
-// caller sees, so nobody keeps the same lens as their own and as a shared one; someone else's
-// personal watchlist is out of the caller's sight and never blocks theirs. A shared lens is drawn over the staff view, so a
-// requester, whose Documents are their own asks, sees none.
+// What the server does for watchlists (filtering.md §4.5, §5): show each caller their own and the
+// shared ones whose audience reaches them, which stops at who may open the view and, on Documents,
+// at staff, since a shared lens is drawn over the staff vocabulary; let only those who manage
+// shared watchlists share or change a shared one; keep each person's own row for every watchlist
+// they see; and count what matches each now by running its filter over its view. A filter is
+// saved once among the watchlists a caller sees, so nobody keeps the same lens twice; someone
+// else's personal watchlist is out of the caller's sight and never blocks theirs. Sharing warns
+// rather than refuses: its reach says how many of the reached already keep the same filter.
 
 import { parseDocumentSearchParams } from "@/api/documents";
 import { parseProposalSearchParams } from "@/api/proposal-review";
 import { parseValidationSearchParams } from "@/api/validations";
-import type { WatchlistSummary } from "@/api/watchlists";
+import type {
+  WatchlistReach,
+  WatchlistReachRequest,
+  WatchlistSummary,
+  WatchlistViewer,
+} from "@/api/watchlists";
 import { isSameWatchlistFilter } from "@/api/watchlists";
-import type { Session, Watchlist, WatchlistScope, WatchlistView } from "@/domain/entities";
+import type { Session, Watchlist, WatchlistAudience, WatchlistView } from "@/domain/entities";
+import { isShared } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { audienceOf, queryDocuments } from "@/mocks/documents";
 import { canDecide, queryProposals } from "@/mocks/proposal-review";
+import { sessionOf } from "@/mocks/session";
 import { canReview, queryValidations } from "@/mocks/validations";
-
-const scopeOrder = ["shared", "personal"] as const satisfies readonly WatchlistScope[];
 
 export function visibleWatchlists(
   session: Session,
@@ -27,11 +34,12 @@ export function visibleWatchlists(
   return database.watchlists
     .filter((watchlist) => isVisible(session, watchlist))
     .filter((watchlist) => view === null || watchlist.view === view)
-    .toSorted((first, second) => scopeOrder.indexOf(first.scope) - scopeOrder.indexOf(second.scope))
+    .toSorted((first, second) => Number(isShared(second)) - Number(isShared(first)))
     .map((watchlist) => ({
       ...publicWatchlistOf(watchlist),
       itemCount: itemCountOf(session, watchlist),
-      isEditable: canChange(session, watchlist.scope),
+      isEditable: canChange(session, watchlist.audience),
+      viewer: viewerOf(session.user.id, watchlist),
     }));
 }
 
@@ -62,9 +70,10 @@ export function findDuplicateWatchlist(
   );
 }
 
-// Anyone keeps their own; a shared one needs the permission, to create as much as to change.
-export function canChange(session: Session, scope: WatchlistScope): boolean {
-  if (scope === "personal") {
+// Anyone keeps their own; any other audience needs the permission, to set as much as to change.
+// A group's members get no right to share with their own group (decided 2026-10-06).
+export function canChange(session: Session, audience: WatchlistAudience): boolean {
+  if (audience.kind === "personal") {
     return true;
   }
 
@@ -75,13 +84,105 @@ export function publicWatchlistOf({ ownerId: _ownerId, ...watchlist }: StoredWat
   return watchlist;
 }
 
+// ---------------------------------------------------------------- who it reaches
+
+// Whether the person may open the view at all, with the vocabulary a shared lens is drawn for.
+function canOpenView(session: Session, view: WatchlistView): boolean {
+  switch (view) {
+    case "documents":
+      return audienceOf(session) === "staff";
+    case "proposals":
+      return canDecide(session);
+    case "validations":
+      return canReview(session);
+  }
+}
+
+function isInAudience(session: Session, audience: WatchlistAudience): boolean {
+  switch (audience.kind) {
+    case "personal":
+      return false;
+    case "everyone":
+      return true;
+    case "some":
+      return (
+        audience.groupIds.some((groupId) => session.groupIds.includes(groupId)) ||
+        audience.roleIds.some((roleId) => session.roleIds.includes(roleId))
+      );
+  }
+}
+
 function isVisible(session: Session, watchlist: StoredWatchlist): boolean {
-  if (watchlist.scope === "shared") {
-    return audienceOf(session) === "staff";
+  if (!isShared(watchlist)) {
+    return watchlist.ownerId === session.user.id;
   }
 
-  return watchlist.ownerId === session.user.id;
+  return isInAudience(session, watchlist.audience) && canOpenView(session, watchlist.view);
 }
+
+// Everyone an audience names, split by whether they may open the view.
+export function audienceReachOf(
+  audience: WatchlistAudience,
+  view: WatchlistView,
+): { reachedIds: string[]; outOfViewIds: string[] } {
+  const reachedIds: string[] = [];
+  const outOfViewIds: string[] = [];
+  for (const user of database.users) {
+    const session = sessionOf(user.id);
+    if (session === null || !isInAudience(session, audience)) {
+      continue;
+    }
+
+    (canOpenView(session, view) ? reachedIds : outOfViewIds).push(user.id);
+  }
+
+  return { reachedIds, outOfViewIds };
+}
+
+export function watchlistReachOf(request: WatchlistReachRequest): WatchlistReach {
+  const { reachedIds, outOfViewIds } = audienceReachOf(request.audience, request.view);
+  const duplicateCount = reachedIds.filter((userId) =>
+    database.watchlists.some(
+      (watchlist) =>
+        watchlist.id !== request.watchlistId &&
+        !isShared(watchlist) &&
+        watchlist.ownerId === userId &&
+        watchlist.view === request.view &&
+        isSameWatchlistFilter(watchlist.view, watchlist.filter, request.filter),
+    ),
+  ).length;
+  return { userCount: reachedIds.length, outOfViewCount: outOfViewIds.length, duplicateCount };
+}
+
+// ---------------------------------------------------------------- each person's own row
+
+export interface StoredWatchlistViewer extends WatchlistViewer {
+  readonly watchlistId: string;
+  readonly userId: string;
+}
+
+// Made the first time the person sees the watchlist, and kept when the audience lapses, so
+// coming back brings their settings back.
+function viewerOf(userId: string, watchlist: StoredWatchlist): WatchlistViewer {
+  const stored = database.watchlistViewers.find(
+    (viewer) => viewer.watchlistId === watchlist.id && viewer.userId === userId,
+  );
+  if (stored !== undefined) {
+    const { watchlistId: _watchlistId, userId: _userId, ...viewer } = stored;
+    return viewer;
+  }
+
+  const viewer: WatchlistViewer = {
+    seenAt: null,
+    hasBadge: true,
+    isHidden: false,
+    position: database.watchlistViewers.filter((candidate) => candidate.userId === userId).length,
+  };
+  database.watchlistViewers.push({ ...viewer, watchlistId: watchlist.id, userId });
+  return viewer;
+}
+
+// ---------------------------------------------------------------- what matches
 
 const counters = {
   documents: (session, filter) =>

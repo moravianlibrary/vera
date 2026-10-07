@@ -5,7 +5,13 @@
 // TODO(rrandiak): labels move to i18n.
 
 import type { RoleWay, Via } from "@/domain/access";
+import type { Watchlist } from "@/domain/entities";
 import type { GrantScope, Permission } from "@/domain/permissions";
+import { documentsView } from "@/features/documents/documents-view";
+import { proposalsView } from "@/features/proposals/proposals-view";
+import { validationsView } from "@/features/validations/validations-view";
+import type { FilterFieldDefinition, ViewDefinition } from "@/lib/view-definition";
+import { isRangeField } from "@/lib/view-definition";
 
 export const permissionLines = {
   "request.create": "raise a proposal",
@@ -104,4 +110,44 @@ function joinAnd(names: readonly string[]): string {
   return names.length < 2
     ? names.join("")
     : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
+// A watchlist's filter in its view's own words: "Decision: Pending · Material: Periodical".
+// Names of records a field points at stay their ids here.
+export function filterSummaryOf({ view, filter }: Pick<Watchlist, "view" | "filter">): string {
+  const params = new URLSearchParams(filter);
+  switch (view) {
+    case "documents":
+      return summaryIn(documentsView, params);
+    case "proposals":
+      return summaryIn(proposalsView, params);
+    case "validations":
+      return summaryIn(validationsView, params);
+  }
+}
+
+function summaryIn<Query extends object, Grouping extends string>(
+  definition: ViewDefinition<Query, Grouping>,
+  params: URLSearchParams,
+): string {
+  const query = new Map<string, unknown>(Object.entries(definition.parseSearchParams(params)));
+  const fieldText = (field: FilterFieldDefinition<Query>) => {
+    const value = query.get(field.key);
+    if (value === undefined) {
+      return null;
+    }
+
+    if (isRangeField(field) || !Array.isArray(value)) {
+      return `${field.label}: set`;
+    }
+
+    const labels: Readonly<Record<string, string>> =
+      field.field.kind === "vocabulary" ? field.field.labels : {};
+    return `${field.label}: ${value.map((item: string) => labels[item] ?? item).join(", ")}`;
+  };
+  const parts = [
+    typeof query.get("search") === "string" ? `“${query.get("search")}”` : null,
+    ...definition.fields.map(fieldText),
+  ].filter((part) => part !== null);
+  return parts.length === 0 ? "everything" : parts.join(" · ");
 }

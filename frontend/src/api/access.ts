@@ -22,7 +22,17 @@ import {
   projectMembershipSchema,
   roleSchema,
 } from "@/domain/access";
+import { watchlistSchema } from "@/domain/entities";
 import { grantSchema } from "@/domain/permissions";
+
+// A shared watchlist as Users & Groups lists it: who saved it, and whom its audience reaches,
+// apart from those in it who cannot open its view (filtering.md §4.5).
+export const sharedWatchlistSchema = watchlistSchema.extend({
+  ownerId: z.string(),
+  reachedUserIds: z.array(z.string()),
+  outOfViewUserIds: z.array(z.string()),
+});
+export type SharedWatchlist = z.infer<typeof sharedWatchlistSchema>;
 
 export const accessIndexSchema = z.object({
   // The server's moment, which a last login is worded against.
@@ -35,6 +45,7 @@ export const accessIndexSchema = z.object({
   identityInstances: z.array(identityInstanceSchema),
   categoryMemberships: z.array(categoryMembershipSchema),
   projects: z.array(projectMembershipSchema),
+  sharedWatchlists: z.array(sharedWatchlistSchema),
 });
 export type AccessIndex = z.infer<typeof accessIndexSchema>;
 

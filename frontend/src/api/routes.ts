@@ -31,6 +31,10 @@ export const apiRoutes = {
   documents: "/documents",
   iterations: "/iterations",
   watchlists: "/watchlists",
+  // Who an audience would reach, before a watchlist is shared with it.
+  watchlistReach: "/watchlists/reach",
+  // Roles by name, for choosing who a watchlist is shared with.
+  roles: "/roles",
   proposalSettings: "/proposals/settings",
   proposalLookup: "/proposals/lookup",
   proposals: "/proposals",

@@ -9,6 +9,7 @@ import {
   listGroups,
   listPluginInstances,
   listProjects,
+  listRoles,
   listUsers,
 } from "@/api/reference";
 
@@ -32,6 +33,15 @@ export function useGroupsQuery({ isEnabled = true }: ReferenceQueryOptions = {})
   return useQuery({
     queryKey: [...referenceQueryKey, "groups"],
     queryFn: listGroups,
+    staleTime: Infinity,
+    enabled: isEnabled,
+  });
+}
+
+export function useRolesQuery({ isEnabled = true }: ReferenceQueryOptions = {}) {
+  return useQuery({
+    queryKey: [...referenceQueryKey, "roles"],
+    queryFn: listRoles,
     staleTime: Infinity,
     enabled: isEnabled,
   });

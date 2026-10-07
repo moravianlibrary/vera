@@ -153,6 +153,13 @@ All notable changes to this project are documented here.
   institutional account. Groups and proposal custodies are created, renamed and given members,
   saying what each member gets or could do; deleting a custody says how many of its proposals
   land in the Fallback. Nothing may leave nobody able to manage access.
+- Shared watchlists have an audience: everyone who opens the view, or some groups and roles. A
+  watchlist tab's *Share…* (for those who manage shared watchlists) picks it and says first how
+  many people it reaches, how many in it cannot open the view, and how many already keep the
+  same filter as their own; *Only me* takes it back. Users & Groups lists the shared
+  watchlists beside groups and custodies, with their filter, audience and the people they
+  reach, and *Share…*, *Rename…*, *Edit filter* and *Delete…*; selecting a role, group or person
+  lights up the watchlists shared with them, and their records say which.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

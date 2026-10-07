@@ -10,15 +10,16 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 import type { AccessIndex } from "@/api/access";
-import type { AccessRecordKind } from "@/api/routes";
 import { ActionBar } from "@/components/actions/action-bar";
 import { FilterBar } from "@/components/filters/filter-bar";
+import { viewLabels } from "@/components/filters/share-watchlist-dialog";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import type { LinkedItem, LinkedSection } from "@/components/linked-columns";
 import { LinkedColumns } from "@/components/linked-columns";
 import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { custodyMembersOf, heldRoleIdsOf, holdersOf } from "@/domain/access";
+import type { WatchlistAudience } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import type { AccessDialog } from "@/features/access/access-acts";
 import {
@@ -35,9 +36,14 @@ import {
   GroupRecord,
   namesOf,
   RoleRecord,
+  SharedWatchlistRecord,
   UserRecord,
 } from "@/features/access/access-records";
-import type { AccessQuery, AccessSelection } from "@/features/access/access-view";
+import type {
+  AccessQuery,
+  AccessSelection,
+  AccessSelectionKind,
+} from "@/features/access/access-view";
 import {
   accessView,
   filteredIndex,
@@ -56,7 +62,15 @@ export function AccessPage() {
   const { data: session } = useSessionQuery();
   const [dialog, setDialog] = useState<AccessDialog | null>(null);
   const [notice, setNotice] = useState<AccessNotice | null>(null);
-  const canManage = session !== undefined && hasPermission(session, "access.manage");
+  const selection = index === undefined ? null : selectionOf(params, index);
+  const may = {
+    canManageAccess: session !== undefined && hasPermission(session, "access.manage"),
+    canManageShared: session !== undefined && hasPermission(session, "watchlist.manage_shared"),
+  };
+  const recordActions =
+    index === undefined || selection === null
+      ? []
+      : recordActionsFor(index, selection, setDialog, may);
   const labels = useReferenceLabels(["categories", "pluginInstances"]);
   const query = accessView.parseSearchParams(params);
 
@@ -87,11 +101,13 @@ export function AccessPage() {
     index === undefined
       ? null
       : namesOf(index, { categoryOf: labels.categories, instanceOf: labels.pluginInstances });
-  const selection = index === undefined ? null : selectionOf(params, index);
 
   return (
     <>
-      <PageHeader title="Users & Groups" actions={canManage ? headerActionsFor(setDialog) : []} />
+      <PageHeader
+        title="Users & Groups"
+        actions={may.canManageAccess ? headerActionsFor(setDialog) : []}
+      />
       <FilterBar
         fields={accessView.fields}
         query={query}
@@ -115,9 +131,7 @@ export function AccessPage() {
               )
             }
             recordActions={
-              canManage && selection !== null ? (
-                <ActionBar actions={recordActionsFor(index, selection, setDialog)} />
-              ) : undefined
+              recordActions.length === 0 ? undefined : <ActionBar actions={recordActions} />
             }
           />
         )}
@@ -197,6 +211,12 @@ function AccessColumns({
           <CustodyRecordView {...recordProps} custody={custody} />
         );
       }
+      case "watchlists": {
+        const watchlist = index.sharedWatchlists.find((candidate) => candidate.id === selection.id);
+        return watchlist === undefined ? null : (
+          <SharedWatchlistRecord {...recordProps} watchlist={watchlist} />
+        );
+      }
     }
   })();
 
@@ -204,8 +224,12 @@ function AccessColumns({
     <>
       <Counts index={index} onShowWithoutRole={onShowWithoutRole} />
       <LinkedColumns
-        columns={[[sections.roles], [sections.users], [sections.groups, sections.custodies]]}
-        tabOrder={["users", "roles", "groups", "custodies"]}
+        columns={[
+          [sections.roles],
+          [sections.users],
+          [sections.groups, sections.custodies, sections.watchlists],
+        ]}
+        tabOrder={["users", "roles", "groups", "custodies", "watchlists"]}
         selected={selection}
         tags={tags}
         lines={lines}
@@ -278,7 +302,7 @@ function Counts({
 const smallBadge = "px-1.5 py-0 text-[0.625rem]";
 
 function sectionsOf(index: AccessIndex, shown: AccessIndex, names: AccessNames) {
-  const roles: LinkedSection<AccessRecordKind> = {
+  const roles: LinkedSection<AccessSelectionKind> = {
     kind: "roles",
     title: "Roles",
     tabTitle: "Roles",
@@ -296,7 +320,7 @@ function sectionsOf(index: AccessIndex, shown: AccessIndex, names: AccessNames) 
       }),
     ),
   };
-  const users: LinkedSection<AccessRecordKind> = {
+  const users: LinkedSection<AccessSelectionKind> = {
     kind: "users",
     title: "Users",
     tabTitle: "Users",
@@ -316,7 +340,7 @@ function sectionsOf(index: AccessIndex, shown: AccessIndex, names: AccessNames) 
       };
     }),
   };
-  const groups: LinkedSection<AccessRecordKind> = {
+  const groups: LinkedSection<AccessSelectionKind> = {
     kind: "groups",
     title: "Groups",
     tabTitle: "Groups",
@@ -327,7 +351,7 @@ function sectionsOf(index: AccessIndex, shown: AccessIndex, names: AccessNames) 
       sub: plural(group.memberIds.length, "member"),
     })),
   };
-  const custodies: LinkedSection<AccessRecordKind> = {
+  const custodies: LinkedSection<AccessSelectionKind> = {
     kind: "custodies",
     title: "Proposal custodies",
     tabTitle: "Custodies",
@@ -343,5 +367,31 @@ function sectionsOf(index: AccessIndex, shown: AccessIndex, names: AccessNames) 
       sub: `${plural(custody.openCount, "open proposal")} · ${plural(custodyMembersOf(custody, index.groups).length, "person", "people")}`,
     })),
   };
-  return { roles, users, groups, custodies };
+  const watchlists: LinkedSection<AccessSelectionKind> = {
+    kind: "watchlists",
+    title: "Shared watchlists",
+    tabTitle: "Watchlists",
+    emptyText: "No shared watchlist matches.",
+    items: shown.sharedWatchlists.map((watchlist) => ({
+      id: watchlist.id,
+      title: watchlist.name,
+      sub: `${viewLabels[watchlist.view]} · ${audienceText(watchlist.audience)} · ${plural(watchlist.reachedUserIds.length, "person", "people")}`,
+    })),
+  };
+  return { roles, users, groups, custodies, watchlists };
+}
+
+function audienceText(audience: WatchlistAudience): string {
+  switch (audience.kind) {
+    case "personal":
+      return "personal";
+    case "everyone":
+      return "everyone";
+    case "some":
+      return plural(
+        audience.groupIds.length + audience.roleIds.length,
+        "group or role",
+        "groups and roles",
+      );
+  }
 }

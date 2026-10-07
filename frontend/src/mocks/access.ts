@@ -24,6 +24,7 @@ import type {
 import type { AccessGroup, AccessUser, CustodyRecord, Identity, Role } from "@/domain/access";
 import { heldRoleIdsOf, holdersOf, managersOf, mappingsOf, roleNameOf } from "@/domain/access";
 import type { Session } from "@/domain/entities";
+import { isShared } from "@/domain/entities";
 import { hasPermission, isAcceptedGrant } from "@/domain/permissions";
 import { database } from "@/mocks/database";
 import type { UserAccess } from "@/mocks/fixtures/access";
@@ -33,6 +34,7 @@ import type { Outcome, Refusal } from "@/mocks/mutations";
 import { openProposalPlacements } from "@/mocks/proposal-review";
 import { accessUserOf } from "@/mocks/session";
 import { mockNow } from "@/mocks/today";
+import { audienceReachOf } from "@/mocks/watchlists";
 
 export function canReadAccess(session: Session): boolean {
   return hasPermission(session, "access.read");
@@ -79,6 +81,10 @@ export function accessIndex(): AccessIndex {
       memberIds: [...memberIds],
       memberGroupIds: [...memberGroupIds],
     })),
+    sharedWatchlists: database.watchlists.filter(isShared).map((watchlist) => {
+      const { reachedIds, outOfViewIds } = audienceReachOf(watchlist.audience, watchlist.view);
+      return { ...watchlist, reachedUserIds: reachedIds, outOfViewUserIds: outOfViewIds };
+    }),
   };
 }
 

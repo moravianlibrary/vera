@@ -2,9 +2,10 @@
 // something to show. Validations seeds Page counts and Denied in review (docs/demos/STATUS.md), and
 // Review needed, the queue it opens on in the demo.
 // Written by hand; the demos keep none. Filters are in the URL form of each view. The shared
-// ones were saved by the administrator (u3) and are seen by all staff.
+// ones were saved by the administrator (u3): most for everyone who opens their view, Periodicals
+// for the Periodicals Curators group and Page counts for the curator role (filtering.md §4.5).
 
-import type { WatchlistView } from "@/domain/entities";
+import type { WatchlistAudience, WatchlistView } from "@/domain/entities";
 import type { StoredWatchlist } from "@/mocks/database";
 
 const staffIds = ["u1", "u2", "u3", "u4", "u8", "u9"] as const;
@@ -17,17 +18,29 @@ interface Lens {
   name: string;
   filter: Record<string, string>;
   view?: WatchlistView;
+  // Shared ones only; everyone who opens the view when absent.
+  audience?: WatchlistAudience;
 }
 
-const sharedLenses = [
+const sharedLenses: readonly Lens[] = [
   { name: "Awaiting a decision", filter: { decision: "Pending" } },
   { name: "Forbidden", filter: { forbidden: "Yes" } },
   { name: "Awaiting a decision", filter: { decision: "Pending" }, view: "proposals" },
-  { name: "Periodicals", filter: { decision: "Pending", type: "Periodical" }, view: "proposals" },
+  {
+    name: "Periodicals",
+    filter: { decision: "Pending", type: "Periodical" },
+    view: "proposals",
+    audience: { kind: "some", groupIds: ["g1"], roleIds: [] },
+  },
   { name: "Review needed", filter: { review: "Needed" }, view: "validations" },
-  { name: "Page counts", filter: { review: "Needed", defect: "PageCount" }, view: "validations" },
+  {
+    name: "Page counts",
+    filter: { review: "Needed", defect: "PageCount" },
+    view: "validations",
+    audience: { kind: "some", groupIds: [], roleIds: ["curator"] },
+  },
   { name: "Denied in review", filter: { review: "Denied" }, view: "validations" },
-] as const satisfies readonly Lens[];
+];
 
 const staffLenses = [
   { name: "Urgent, no copy", filter: { priority: "Urgent,High", copy: "None" } },
@@ -48,12 +61,14 @@ const readerLenses = [
 ] as const satisfies readonly Lens[];
 
 export const watchlists: readonly StoredWatchlist[] = [
-  ...sharedLenses.map((lens, index) => ({
-    ...watchlistOf(lens),
-    id: `W-shared-${index + 1}`,
-    scope: "shared" as const,
-    ownerId: sharedOwnerId,
-  })),
+  ...sharedLenses.map(
+    (lens, index): StoredWatchlist => ({
+      ...watchlistOf(lens),
+      id: `W-shared-${index + 1}`,
+      audience: lens.audience ?? { kind: "everyone" },
+      ownerId: sharedOwnerId,
+    }),
+  ),
   ...staffIds.flatMap((ownerId) => personalLensesFor(ownerId, staffLenses)),
   ...deciderIds.flatMap((ownerId) => personalLensesFor(ownerId, deciderLenses, "proposals")),
   ...readerIds.flatMap((ownerId) => personalLensesFor(ownerId, readerLenses)),
@@ -67,7 +82,7 @@ function personalLensesFor(
   return lenses.map((lens, index) => ({
     ...watchlistOf(lens),
     id: `W-${ownerId}-${view}-${index + 1}`,
-    scope: "personal",
+    audience: { kind: "personal" },
     ownerId,
   }));
 }

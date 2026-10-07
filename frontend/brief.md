@@ -90,17 +90,18 @@ zod v4.
 | The pane | `Pane` / `paneStateOf` / `Outcome` (`components/pane-state.tsx`); `DetailCard`, `FactGrid`, `StatTiles` with an optional `meter` (`detail-card.tsx`), `StatusNote`, `record-cards.tsx` (askers, copies, catalog, heading; `HistoryCard` takes a log alone, without a document) |
 | Actions | `ViewAction` + `ActionBar` (per-tier cap, `isInMenu` for More ▾); `PageHeader actions`, and `control` for a picker the whole view reads (wraps on a phone) |
 | A tree beside a pane | `Tree` (`components/tree.tsx`): virtual root, value, ⚠, dimming, arrow keys; `CategoryTree` (`components/category-tree.tsx`: search, *Show* over the values a page offers, counts and/or a mix) with `category-tree-values.ts`; `custodyReachOf`, `unheldCategoriesOf`, `isInSubtree`, `searchedCategoriesOf`, `isOutsideScope`, and for changing the tree `scopeOfCategory` (a `category` scoped record), `placesFor`, `isNameTaken` in `domain/categories.ts`, `siblingSetOf` in `domain/mixes.ts` |
-| Who may | `can()` (`domain/permissions.ts`) / `useCan()` with a scoped record; a run's own, self-scoped acts in `domain/tasks.ts` (`canCancelRun`, `canRunAgain`) |
+| Who may | `can()` (`domain/permissions.ts`) / `useCan()` with a scoped record; a run's own, self-scoped acts in `domain/tasks.ts` (`canCancelRun`, `canRunAgain`); the permission catalogue with the scopes each takes, `permissionCatalog`; roles and how they are held, permissions with their provenance and who a role's change reaches, `domain/access.ts` |
 | When something runs by itself | `domain/schedules.ts`: `cadenceSchema`, `occurrencesOf`, `nextOccurrenceOf`, `repeatCadenceOf`, the 5-minute floor; server and editor preview share it |
-| Dialogs | `components/dialogs/`: `DialogShell` (`head`, `onBack`, `secondary` for an editor's *Delete…*; `FormDialog` passes it), `ConsequenceDialog` (A, fed by a server dry run; `cancelLabel` where "Cancel" would read as the act: *Keep running*), `ReasonDialog` (B), `FormDialog` (C), `SteppedDialog` (F, with `StepIndicator`), `SetEditorDialog` (D: a set saved whole, a reason holding Save back, an optional *Who it reaches* step the instance fills; Proportions and category custody), `MessageDialog`; a wizard in the pane, `PaneWizard` (`components/pane-wizard.tsx`, routed by the page; Refine); people and groups picked one at a time, `AddSelect` and `RemoveButton` (`components/fields/picked-list.tsx`). Not built: `PickerDialog` (E), see component-interfaces §6.6 |
+| Dialogs | `components/dialogs/`: `DialogShell` (`head`, `onBack`, `secondary` for an editor's *Delete…*; `FormDialog` passes it), `ConsequenceDialog` (A, fed by a server dry run; `cancelLabel` where "Cancel" would read as the act: *Keep running*), `ReasonDialog` (B), `FormDialog` (C), `SteppedDialog` (F, with `StepIndicator`), `SetEditorDialog` (D: a set saved whole, a reason holding Save back, an optional *Who it reaches* step the instance fills, `width="wide"`; Proportions, category custody, the role editor), `PickerDialog` (E: a set ticked from a list, sections, search past 8, what the pick gives above it, a way the dialog does not change said under a row; group, custody and user pickers), `MessageDialog`; a wizard in the pane, `PaneWizard` (`components/pane-wizard.tsx`, routed by the page; Refine); people and groups picked one at a time, `AddSelect` and `RemoveButton` (`components/fields/picked-list.tsx`; Projects and category custody, until they move onto `PickerDialog`); who sees a watchlist, `ShareWatchlistDialog` (`components/filters/`, the server's reach) |
 | Doing something | `useActionMutation` → `ActionResult`; refusals are RFC 9457 Problem Details, worded by the action's `refusalTexts[code]`, then `detail`, then by status; `invalidates` lists every query the change shows in |
 | Tier | `useTier`, `valueForTier` (phone < 768, small < 1280, notebook < 1600, large); container queries for what the room decides |
-| Words | `plural`, `formatDay`, `joinDetails` |
+| Words | `plural`, `formatDay`, `joinDetails`; a moment against the server's `asOf`, `agoText` and `aheadText` (`lib/format-moment.ts`) |
 | Iteration dialogs | `components/iteration-dialogs.tsx` (Reclassify), `classification-fields.tsx` |
 | Two panes and a draft | `TransferEditor` (`components/transfer-editor.tsx`), `useDraft` + `isSameSet`, `usePicked`, `LeaveGuard` (`components/leave-guard.tsx`) |
 | Words for numbers and days | `formatCount` and `formatPercent` (`lib/format-number.ts`), `formatCalendarDay`, `formatShortCalendarDay` |
 | Cards in sections | `CardSections` + `RecordCard` (`components/card-sections.tsx`), sections of cards or `DataTable`s, the whole card a link when it has an `href`; `focusedId` marks and scrolls to a card or a table row |
 | A full-width table | `DataTable` (`components/data-table.tsx`), columns per tier, a row opens its record, a note row under a row (`noteOf`), cards on a phone (`cardOf`); no grouping or paging yet |
+| Records in linked columns | `LinkedColumns` (`components/linked-columns.tsx`): columns of sections, one kind each, the selected record's links lit, tagged and drawn in the gutters, the record underneath; a tab per section on a phone; Users & Groups |
 | A table whose row opens in a drawer | `TableWithDrawer` (`components/table-with-drawer.tsx`): `above`, the table, `below`, a 28rem drawer (full width on a phone) from the URL that does not hold the page; Tasks |
 | Bars against a target | `PaceBars` (`components/visualizations/pace-bars.tsx`): the server's numbers, an even-pace mark; no time bar for an open-ended target |
 | A run's progress, and runs over time | `RunProgress` (`components/visualizations/run-progress.tsx`, `card` or `sidebar`), `Timeline` (`components/visualizations/timeline.tsx`: a lane a schedule, dots, bands, hatched when paused); the words for runs, cadences and moments read against the server's `asOf` in `features/tasks/task-words.ts` |
@@ -110,7 +111,7 @@ zod v4.
 
 **Not built yet** (the step that first needs one builds it, as a shared part,
 from component-interfaces): `CardGrid` §1.4 (Home),
-`LinkedColumns` §1.7, `SettingsPage` §1.8,
+`SettingsPage` §1.8,
 the Sparkline §5;
 `DataTable`'s grouping, row actions and paging §2.4.
 
@@ -122,7 +123,7 @@ facets, order and grouping. `mutations.ts` holds `Outcome`/`Refusal`,
 grants and custody. Fixtures (`mocks/fixtures/`, demo "today" 2026-06-25,
 `mocks/today.ts`, and its moment `mockNow()`, 10:40, standing still under tests and moving on in
 the browser) already hold `lists.ts`, `projects.ts`, `intentions.ts`, `categories.ts`,
-`batches.ts`, `users.ts`, `tasks.ts` (runs and schedules), `plugins.ts` (plugin instances, reference data via `usePluginInstancesQuery` until step 10), `access.ts` (groups and direct custody are copied into the database, where Categories writes them; `useGroupsQuery` lists groups); the entity schemas are in
+`batches.ts`, `users.ts`, `tasks.ts` (runs and schedules), `plugins.ts` (plugin instances, reference data via `usePluginInstancesQuery` until step 10), `access.ts` (roles, how each person holds them by hand or mapped, groups and direct custody, copied into the database, where Users & Groups and Categories write them; `useGroupsQuery` lists groups, `useRolesQuery` roles by name), `identity.ts` (identity instances); the entity schemas are in
 `domain/entities.ts`. Every API module has tests over HTTP through MSW
 (`src/api/*.test.ts`).
 
@@ -135,7 +136,7 @@ editor page, and for acts behind a server dry run), and `features/projects/`
 (cards in sections, a record's own page, acts on both; the model for a page
 that is not master–detail), and `features/intentions/` (two columns of cards that
 open in place; an editor with a server preview, and a hand-off to the Lists editor by URL), and
-`features/categories/` (a tree beside a pane; the tree changed from the pane, custody written whole, a wizard in the pane), an intention's Mix in `features/intentions/mix-page.tsx` (a tree beside a pane, a set editor with a reach step), and `features/tasks/` (Tasks and Schedules: a table with a drawer, polling while something runs, a timeline, acts on a row; the model for anything read against the server's clock). The sidebar's foot has the Running tasks panel (`components/layout/running-tasks-panel.tsx`). A filtered resource answers its facets with `facetCountsOf` (`api/facets.ts`). Routes in `src/app.tsx`,
+`features/access/` (Users & Groups: linked columns, records with provenance, set editors and pickers; the model for a page that reads one index and filters it in place), `features/categories/` (a tree beside a pane; the tree changed from the pane, custody written whole, a wizard in the pane), an intention's Mix in `features/intentions/mix-page.tsx` (a tree beside a pane, a set editor with a reach step), and `features/tasks/` (Tasks and Schedules: a table with a drawer, polling while something runs, a timeline, acts on a row; the model for anything read against the server's clock). The sidebar's foot has the Running tasks panel (`components/layout/running-tasks-panel.tsx`). A filtered resource answers its facets with `facetCountsOf` (`api/facets.ts`). Routes in `src/app.tsx`,
 sidebar entries in `components/layout/navigation.ts`.
 
 ---

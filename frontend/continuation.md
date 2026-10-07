@@ -427,6 +427,30 @@ The foundation is in place:
   `schedule-dialogs.tsx`: the editor with the next three runs and *Delete schedule…*, and Pause
   on `ReasonDialog`. The sidebar's `running-tasks-panel.tsx` shows what runs, from
   `src/hooks/use-running-runs-query.ts`.
+- Users & Groups (`src/features/access/`). `src/api/access.ts` serves `GET /access`
+  (`access.read`: every user with their hand-set and mapped roles, groups and identities; the
+  roles; the groups; the proposal custodies with their open proposals and the Custody rules
+  that name them, the fallback first; the identity instances and their mappings; direct
+  category custody; project membership; the shared watchlists with whom each reaches, and
+  `asOf`), and under `access.manage` `POST`/`PUT`/`DELETE /access/roles…`, `GET
+  …/roles/:id/impact`, `POST /access/users` (a local account), `PUT …/users/:id/roles` and
+  `…/groups`, `POST …/users/:id/identities`, `POST`/`PUT /access/groups…` and `…/members`,
+  `POST`/`PUT`/`DELETE /access/custodies…`, `…/members` and `GET …/custodies/:id/impact` (409
+  `access.last_manager`, `access.name_taken`, `access.identity_taken`; 422 `access.fallback`).
+  Roles, how each person holds them and the identity instances are in the mock database
+  (`fixtures/access.ts` `userAccess`, `fixtures/identity.ts`); the session resolves them per
+  request (`sessionOf` in `src/mocks/session.ts`, for anyone). The derivations, shared with the
+  page, are `src/domain/access.ts` (roles and how held, permissions at their widest with their
+  roles, included roles, custody and projects via groups, who a role's change reaches); the
+  permission catalogue with accepted scopes is `permissionCatalog` in `src/domain/permissions.ts`.
+  The page (`access-page.tsx`) is the shared `LinkedColumns`: Roles · Users · Groups, custodies
+  and shared watchlists, `?u= ?r= ?g= ?c= ?w=`, links from `access-links.ts`, records in
+  `access-records.tsx`, acts in `access-acts.tsx` with `role-dialogs.tsx` (the role editor on
+  `SetEditorDialog`, delete), `access-dialogs.tsx` (the pickers on `PickerDialog`, local
+  account, identity, groups, custodies) and `watchlist-dialogs.tsx`. Watchlists have an
+  audience (personal, everyone, some groups and roles; `watchlistAudienceSchema`), a row per
+  person who sees one (`viewer`: seen, badge, hidden, place) and `POST /watchlists/reach`;
+  `ShareWatchlistDialog` (`src/components/filters/`) sets it from a tab and from Users & Groups.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

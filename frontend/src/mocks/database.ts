@@ -20,6 +20,7 @@ import { retention, runs, schedules } from "@/mocks/fixtures/tasks";
 import { users } from "@/mocks/fixtures/users";
 import { watchlists } from "@/mocks/fixtures/watchlists";
 import { withCopies } from "@/mocks/volume";
+import type { StoredWatchlistViewer } from "@/mocks/watchlists";
 
 // The owner is who saved it; for a shared watchlist that says nothing about who sees it.
 export interface StoredWatchlist extends Watchlist {
@@ -55,6 +56,8 @@ export const database = {
   requests: [...records.requests],
   statusLog: [...records.statusLog],
   watchlists: [...watchlists],
+  // Each person's own row for a watchlist they see: seen, badge, hidden, place.
+  watchlistViewers: [] as StoredWatchlistViewer[],
   pluginInstances,
   runs: [...runs],
   schedules: [...schedules],

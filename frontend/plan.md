@@ -126,7 +126,7 @@ green after every extraction.
 3. The sidebar's Running tasks panel.
 4. Schedules: the timeline, the table, and the editor with Pause.
 
-## 9. Users & Groups
+## 9. Users & Groups — done
 
 1. Mock API: users, groups, roles, custodies, identities.
 2. The linked columns and their records.

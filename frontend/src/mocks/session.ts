@@ -20,10 +20,20 @@ const userIdsByProfile = {
 } as const satisfies Record<MockUserProfile, string>;
 
 export function resolveSession(profile: MockUserProfile): Session {
-  const userId = userIdsByProfile[profile];
+  const session = sessionOf(userIdsByProfile[profile]);
+  if (session === null) {
+    throw new Error(`Mock profile "${profile}" points at an unknown user`);
+  }
+
+  return session;
+}
+
+// Anyone's session as the server would resolve it: what a shared watchlist reaches is asked
+// for every person in its audience.
+export function sessionOf(userId: string): Session | null {
   const user = database.users.find((candidate) => candidate.id === userId);
   if (user === undefined) {
-    throw new Error(`Mock profile "${profile}" points at unknown user "${userId}"`);
+    return null;
   }
 
   const roleIds = roleIdsOf(userId);

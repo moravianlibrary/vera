@@ -452,18 +452,27 @@ export type StatusLogEntry = z.infer<typeof statusLogEntrySchema>;
 export const watchlistViewSchema = z.enum(["documents", "proposals", "validations"]);
 export type WatchlistView = z.infer<typeof watchlistViewSchema>;
 
-// Personal is the owner's own lens; shared is one everybody who opens the view sees, and only
-// those who manage shared watchlists change (filtering.md §4.4).
-export const watchlistScopes = ["personal", "shared"] as const;
-export const watchlistScopeSchema = z.enum(watchlistScopes);
-export type WatchlistScope = z.infer<typeof watchlistScopeSchema>;
+// Who sees a watchlist (filtering.md §4.5, decided 2026-10-06): its owner alone, everyone who
+// opens the view, or the members of some groups and the holders of some roles (by hand or
+// mapped) as one union. Every audience stops at who may open the view. Only those who manage
+// shared watchlists set any audience but personal.
+export const watchlistAudienceSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("personal") }),
+  z.object({ kind: z.literal("everyone") }),
+  z.object({ kind: z.literal("some"), groupIds: z.array(id), roleIds: z.array(id) }),
+]);
+export type WatchlistAudience = z.infer<typeof watchlistAudienceSchema>;
+
+export function isShared({ audience }: { audience: WatchlistAudience }): boolean {
+  return audience.kind !== "personal";
+}
 
 // A saved filter over one view. Grouping is presentation and is never part of it.
 export const watchlistSchema = z.object({
   id,
   name: z.string().min(1),
   view: watchlistViewSchema,
-  scope: watchlistScopeSchema,
+  audience: watchlistAudienceSchema,
   filter: z.record(z.string(), z.string()),
   createdAt: timestamp,
 });

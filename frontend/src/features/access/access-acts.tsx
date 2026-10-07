@@ -1,10 +1,12 @@
 // What may be done on Users & Groups, and the dialog each act opens (view-catalog.md *Users &
-// Groups*; docs/demos/shared/page-access.js). Everything is `access.manage`'s, so without it the
-// page has no acts at all. The header makes new records: a local account first, then a role, a
-// group and a custody, folded into "…" past the tier's cap (one on a phone, as the demo's
-// *New…*). Each record has its own: a person's roles, groups and another identity (not for an
-// agent, which never logs in); a role's grants, a copy and its delete; a group's name and
-// members; a custody's name, members and delete, never the fallback's.
+// Groups*; docs/demos/shared/page-access.js). Everything is `access.manage`'s but a shared
+// watchlist, which is `watchlist.manage_shared`'s (*Share…*, *Rename…*, *Edit filter* in its own
+// view, *Delete…*); without either the page has no acts at all. The header makes new records: a
+// local account first, then a role, a group and a custody, folded into "…" past the tier's cap
+// (one on a phone, as the demo's *New…*). Each record has its own: a person's roles, groups and
+// another identity (not for an agent, which never logs in); a role's grants, a copy and its
+// delete; a group's name and members; a custody's name, members and delete, never the
+// fallback's.
 // TODO(rrandiak): labels move to i18n.
 
 import type { AccessIndex } from "@/api/access";
@@ -24,6 +26,12 @@ import {
 import type { AccessNames } from "@/features/access/access-records";
 import type { AccessSelection } from "@/features/access/access-view";
 import { DeleteRoleDialog, RoleEditorDialog } from "@/features/access/role-dialogs";
+import {
+  DeleteSharedWatchlistDialog,
+  RenameSharedWatchlistDialog,
+  ShareSharedWatchlistDialog,
+  watchlistHrefOf,
+} from "@/features/access/watchlist-dialogs";
 
 export type AccessDialog =
   | { kind: "newAccount" | "newRole" | "newGroup" | "newCustody" }
@@ -39,7 +47,10 @@ export type AccessDialog =
         | "groupMembers"
         | "editCustody"
         | "custodyMembers"
-        | "deleteCustody";
+        | "deleteCustody"
+        | "shareWatchlist"
+        | "renameWatchlist"
+        | "deleteWatchlist";
       id: string;
     };
 
@@ -59,11 +70,49 @@ export function headerActionsFor(open: Open): ViewAction[] {
   ];
 }
 
+// Which of the two the caller holds.
+export interface AccessMay {
+  canManageAccess: boolean;
+  canManageShared: boolean;
+}
+
 export function recordActionsFor(
   index: AccessIndex,
   selection: AccessSelection,
   open: Open,
+  { canManageAccess, canManageShared }: AccessMay,
 ): ViewAction[] {
+  if (selection.kind === "watchlists") {
+    const watchlist = index.sharedWatchlists.find((candidate) => candidate.id === selection.id);
+    if (!canManageShared || watchlist === undefined) {
+      return [];
+    }
+
+    return [
+      {
+        id: "share",
+        label: "Share…",
+        onSelect: () => open({ kind: "shareWatchlist", id: watchlist.id }),
+      },
+      {
+        id: "rename",
+        label: "Rename…",
+        onSelect: () => open({ kind: "renameWatchlist", id: watchlist.id }),
+      },
+      { id: "edit-filter", label: "Edit filter", href: watchlistHrefOf(watchlist) },
+      {
+        id: "delete",
+        label: "Delete…",
+        isDestructive: true,
+        onSelect: () => open({ kind: "deleteWatchlist", id: watchlist.id }),
+      },
+    ];
+  }
+
+  if (!canManageAccess) {
+    return [];
+  }
+
   const { id } = selection;
   const act = (kind: Extract<AccessDialog, { id: string }>["kind"], label: string) => ({
     id: kind,
@@ -117,6 +166,8 @@ export function AccessDialogView({ dialog, index, names, onClose, onDone }: Acce
   const role = recordOf(index.roles);
   const group = recordOf(index.groups);
   const custody = recordOf(index.custodies);
+  const watchlist = recordOf(index.sharedWatchlists);
+  const watchlistProps = { onClose, onDone: (notice: AccessNotice) => onDone(notice) };
 
   switch (dialog.kind) {
     case "newAccount":
@@ -194,6 +245,22 @@ export function AccessDialogView({ dialog, index, names, onClose, onDone }: Acce
     case "custodyMembers":
       return custody === undefined ? null : (
         <CustodyMembersDialog {...common} custody={custody} onSaved={(notice) => onDone(notice)} />
+      );
+    case "shareWatchlist":
+      return watchlist === undefined ? null : (
+        <ShareSharedWatchlistDialog {...watchlistProps} watchlist={watchlist} />
+      );
+    case "renameWatchlist":
+      return watchlist === undefined ? null : (
+        <RenameSharedWatchlistDialog {...watchlistProps} watchlist={watchlist} />
+      );
+    case "deleteWatchlist":
+      return watchlist === undefined ? null : (
+        <DeleteSharedWatchlistDialog
+          onClose={onClose}
+          watchlist={watchlist}
+          onDone={(notice) => onDone(notice, firstUserOf(index))}
+        />
       );
     case "deleteCustody": {
       const fallback = index.custodies.find((candidate) => candidate.isFallback);

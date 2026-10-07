@@ -2,20 +2,21 @@
 // filter, the shared watchlists, the caller's own, then "+". A tab is open while the filter is
 // the one it saved. Opened bare, the view reopens on the tab the caller last opened. Each thing is saved in one place: "+" saves the current filter as a new
 // watchlist; a change to an open watchlist is saved on its own tab, which also discards it,
-// renames and deletes, where the caller may change it; those who manage shared watchlists share
-// their own from there. A shared one the caller may not change still shows that it changed, and
+// renames and deletes, where the caller may change it; those who manage shared watchlists set who
+// sees it from there with Share…, and may save a new one for everyone at once. A shared watchlist
+// the person hid stays off their tabs. A shared one the caller may not change still shows that it changed, and
 // "+" keeps the change as their own. A filter is saved once: "+" and saving a change are refused
 // while another tab already holds the filter. The row scrolls sideways when it runs out of room. Grouping is never part of what is saved (§3.4).
 // TODO(rrandiak): the sidebar's Watchlists row and the "new" badge (navigation.md §5,
-// filtering.md §4.2–4.3), which leaves shared watchlists out until "seen" is kept per person;
-// labels move to i18n.
+// filtering.md §4.2–4.3), now that "seen" is kept per person; labels move to i18n.
 
 import { ChevronDown, CircleAlert, Plus, Save, Users } from "lucide-react";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { ApiError } from "@/api/http";
 import type { WatchlistSummary } from "@/api/watchlists";
-import { isSameWatchlistFilter } from "@/api/watchlists";
+import { isSameWatchlistFilter, updateWatchlist } from "@/api/watchlists";
+import { ShareWatchlistDialog } from "@/components/filters/share-watchlist-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,10 +47,15 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { Watchlist, WatchlistScope, WatchlistView } from "@/domain/entities";
-import { watchlistScopeSchema, watchlistScopes } from "@/domain/entities";
+import type { Watchlist, WatchlistAudience, WatchlistView } from "@/domain/entities";
+import { isShared } from "@/domain/entities";
+import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useRememberedWatchlist } from "@/hooks/use-remembered-watchlist";
-import { useWatchlistMutations, useWatchlistsQuery } from "@/hooks/use-watchlists-query";
+import {
+  useWatchlistMutations,
+  useWatchlistsQuery,
+  watchlistsQueryKey,
+} from "@/hooks/use-watchlists-query";
 import { cn } from "@/lib/utils";
 
 type Filter = Watchlist["filter"];
@@ -80,7 +86,8 @@ export function WatchlistTabs({
   onDetach,
   isBare,
 }: WatchlistTabsProps) {
-  const { data: watchlists = [], isSuccess } = useWatchlistsQuery(view);
+  const { data: everyWatchlist = [], isSuccess } = useWatchlistsQuery(view);
+  const watchlists = everyWatchlist.filter((watchlist) => !watchlist.viewer.isHidden);
   const { isSettled, rememberedId, remember } = useRememberedWatchlist(view);
   const onOpen = (watchlist: Watchlist | null) => {
     remember(watchlist?.id ?? null);
@@ -122,8 +129,8 @@ export function WatchlistTabs({
   const isChanged = open !== undefined && !isSameFilter(open.filter, filter);
   const savedAs = holderOf(filter);
 
-  const saveAsNew = async (name: string, scope: WatchlistScope) => {
-    const created = await create.mutateAsync({ name, view, scope, filter });
+  const saveAsNew = async (name: string, audience: WatchlistAudience) => {
+    const created = await create.mutateAsync({ name, view, audience, filter });
     onOpen(created);
   };
 
@@ -235,10 +242,15 @@ function WatchlistTab({
   onOpen,
   onDeleted,
 }: WatchlistTabProps) {
-  const [dialog, setDialog] = useState<"rename" | "delete" | null>(null);
+  const [dialog, setDialog] = useState<"rename" | "share" | "delete" | null>(null);
+  const share = useActionMutation({
+    call: (audience: WatchlistAudience) => updateWatchlist(watchlist.id, { audience }),
+    invalidates: [watchlistsQueryKey],
+    refusalTexts: { 403: "Only those who manage shared watchlists can share them." },
+  });
   const { update, remove } = useWatchlistMutations();
   const { isEditable } = watchlist;
-  const isShareable = canShare && watchlist.scope === "personal";
+  const isShareable = canShare && isEditable;
   const hasMenu = isChanged || isEditable;
   const canSaveChanges = isChanged && isEditable;
   const saveRefusal = savedAs === undefined ? null : `Already saved as “${savedAs.name}”`;
@@ -246,12 +258,11 @@ function WatchlistTab({
   const failure = dialog === "rename" ? remove.error : (update.error ?? remove.error);
 
   const saveChanges = () => update.mutate({ watchlistId: watchlist.id, change: { filter } });
-  const share = () => update.mutate({ watchlistId: watchlist.id, change: { scope: "shared" } });
 
   return (
     <span className="inline-flex shrink-0 items-center">
       <Tab isOpen={isOpen} onClick={onOpen}>
-        {watchlist.scope === "shared" && <SharedMark />}
+        {isShared(watchlist) && <SharedMark />}
         {watchlist.name}
         <span className="text-xs text-muted-foreground tabular-nums">{watchlist.itemCount}</span>
         {isChanged && !isEditable && (
@@ -310,8 +321,8 @@ function WatchlistTab({
                   Rename
                 </DropdownMenuItem>
                 {isShareable && (
-                  <DropdownMenuItem className="text-xs" onSelect={share}>
-                    Share with everyone
+                  <DropdownMenuItem className="text-xs" onSelect={() => setDialog("share")}>
+                    Share…
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem
@@ -344,6 +355,15 @@ function WatchlistTab({
         }}
       />
 
+      {dialog === "share" && (
+        <ShareWatchlistDialog
+          isOpen
+          onClose={() => setDialog(null)}
+          watchlist={watchlist}
+          onSave={share.run}
+        />
+      )}
+
       <AlertDialog
         open={dialog === "delete"}
         onOpenChange={(isDialogOpen) => setDialog(isDialogOpen ? "delete" : null)}
@@ -353,8 +373,8 @@ function WatchlistTab({
             <AlertDialogTitle>Delete “{watchlist.name}”?</AlertDialogTitle>
             <AlertDialogDescription>
               The saved filter goes
-              {watchlist.scope === "shared" ? ", for everyone who sees it" : ""}; the documents it
-              matched stay where they are.
+              {isShared(watchlist) ? ", for everyone who sees it" : ""}; the documents it matched
+              stay where they are.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -418,10 +438,14 @@ function SharedMark() {
 
 // ---------------------------------------------------------------- naming
 
-const scopeLabels = {
-  personal: "Personal",
-  shared: "Shared",
-} as const satisfies Record<WatchlistScope, string>;
+// A new watchlist is the caller's own or everyone's; groups and roles are chosen with Share….
+const newAudiences = ["personal", "everyone"] as const;
+type NewAudience = (typeof newAudiences)[number];
+
+const newAudienceLabels = {
+  personal: "Only me",
+  everyone: "Everyone",
+} as const satisfies Record<NewAudience, string>;
 
 interface SaveWatchlistPopoverProps {
   canShare: boolean;
@@ -429,7 +453,7 @@ interface SaveWatchlistPopoverProps {
   error: Error | null;
   // Clears what the last try was refused.
   onOpen: () => void;
-  onSave: (name: string, scope: WatchlistScope) => Promise<void>;
+  onSave: (name: string, audience: WatchlistAudience) => Promise<void>;
   trigger: ReactNode;
 }
 
@@ -442,7 +466,7 @@ function SaveWatchlistPopover({
   trigger,
 }: SaveWatchlistPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [scope, setScope] = useState<WatchlistScope>("personal");
+  const [scope, setScope] = useState<NewAudience>("personal");
   const scopeId = useId();
 
   return (
@@ -462,7 +486,7 @@ function SaveWatchlistPopover({
           isSaving={isSaving}
           error={error}
           onSubmit={async (name) => {
-            await onSave(name, scope);
+            await onSave(name, { kind: scope });
             setIsOpen(false);
           }}
         >
@@ -471,18 +495,18 @@ function SaveWatchlistPopover({
               aria-label="Who sees it"
               value={scope}
               onValueChange={(value) => {
-                const parsed = watchlistScopeSchema.safeParse(value);
-                if (parsed.success) {
-                  setScope(parsed.data);
+                const picked = newAudiences.find((option) => option === value);
+                if (picked !== undefined) {
+                  setScope(picked);
                 }
               }}
               className="flex gap-4"
             >
-              {watchlistScopes.map((option) => (
+              {newAudiences.map((option) => (
                 <div key={option} className="flex items-center gap-1.5">
                   <RadioGroupItem id={`${scopeId}-${option}`} value={option} />
                   <Label htmlFor={`${scopeId}-${option}`} className="text-xs font-normal">
-                    {scopeLabels[option]}
+                    {newAudienceLabels[option]}
                   </Label>
                 </div>
               ))}
