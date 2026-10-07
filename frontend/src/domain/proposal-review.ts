@@ -14,12 +14,25 @@ export const proposalDecisions = ["Pending", "Denied", "Withdrawn"] as const;
 export const proposalDecisionSchema = z.enum(proposalDecisions);
 export type ProposalDecision = z.infer<typeof proposalDecisionSchema>;
 
+// A Classifier plugin's suggestion (plugins.md §4.13): a leaf and the sentence the decider reads
+// beside it, from the instance that made it. It only opens the decide form on that leaf; a
+// suggestion nobody confirmed is not a classification (concepts.md *Category*).
+export const classifierSuggestionSchema = z.object({
+  categoryId: z.string(),
+  reason: z.string(),
+  classifier: z.object({ id: z.string(), name: z.string() }),
+});
+export type ClassifierSuggestion = z.infer<typeof classifierSuggestionSchema>;
+
 export const proposalRowSchema = z.object({
   // The document, its earlier attempts and the asks of this row, oldest first.
   record: documentRecordSchema,
   decision: proposalDecisionSchema,
   // The proposal custodies the Custody plugins placed its asks in; the fallback when none.
   custodyIds: z.array(z.string()),
+  // For the oldest open ask, which originates the iteration; null when no classifier is
+  // configured, none suggested, or the checks have not finished.
+  suggestion: classifierSuggestionSchema.nullable(),
 });
 export type ProposalRow = z.infer<typeof proposalRowSchema>;
 

@@ -206,6 +206,9 @@ export const proposalGroupSchema = z.discriminatedUnion("kind", [
     // Over every open row in reach the batch asked for, filtered or not: what a bulk approve
     // takes, and what it leaves to be decided one at a time.
     approvableCount: z.number().int(),
+    // Of those, how many a classifier suggested each leaf for; a bulk approve under one category
+    // overrides the others (plugins.md §4.13).
+    suggestedCounts: z.array(z.object({ value: z.string(), count: z.number().int() })),
     rescanCount: z.number().int(),
     checkingCount: z.number().int(),
     ...groupCounts,

@@ -48,6 +48,7 @@ import {
 import { isWithinRange, resolveDayRange } from "@/lib/value-range";
 import type { Arrangement } from "@/mocks/arrangement";
 import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
+import { suggestionFor } from "@/mocks/classification";
 import { database } from "@/mocks/database";
 import { oncePerCause } from "@/mocks/documents";
 import { groups } from "@/mocks/fixtures/access";
@@ -129,6 +130,7 @@ function rowOf(document: Document): ProposalRow | null {
     record: { document, iterations, requests: asks },
     decision,
     custodyIds: custodiesOf(asks, document),
+    suggestion: asks[0] === undefined ? null : suggestionFor(asks[0], document),
   };
 }
 
@@ -351,6 +353,11 @@ function batchArrangementOf(
       askCount: batchId === null ? 0 : asks.length,
       elsewhereCount: batchId === null ? 0 : elsewhere.length,
       approvableCount: open.filter(isBulkApprovable).length,
+      suggestedCounts: countValues(
+        open.flatMap((row) =>
+          isBulkApprovable(row) && row.suggestion !== null ? [row.suggestion.categoryId] : [],
+        ),
+      ),
       rescanCount: open.filter(isRescan).length,
       checkingCount: open.filter((row) => !isRescan(row) && isBeingChecked(row)).length,
       total,
@@ -515,7 +522,7 @@ export function bulkApproveProposals(
   }
 
   for (const row of taken) {
-    approveRow(session, row, { ...bulk, rescanNote: null });
+    approveRow(session, row, { ...bulk, rescanNote: null }, "batch");
   }
 
   return {
@@ -527,9 +534,17 @@ export function bulkApproveProposals(
   };
 }
 
+// One item decided on its own, or a batch approved under one category.
+type ApprovedBy = "item" | "batch";
+
 // One iteration for the document: the oldest ask originates it and its project funds it; every
 // other ask follows it (status-model.md §2.7).
-function approveRow(session: Session, row: ProposalRow, approval: Approval): void {
+function approveRow(
+  session: Session,
+  row: ProposalRow,
+  approval: Approval,
+  decidedBy: ApprovedBy = "item",
+): void {
   const now = new Date().toISOString();
   const asks = asksOf(row);
   const [originating] = asks;
@@ -586,9 +601,34 @@ function approveRow(session: Session, row: ProposalRow, approval: Approval): voi
     detail: joinSentences([
       rescan === null ? null : `Over ${copiesLineOf(row)}. ${rescan.note}`,
       `Category ${categoryPath}, priority ${approval.priority}`,
+      suggestionNote(row, approval.categoryId, decidedBy),
       custodyNote(row),
     ]),
   });
+}
+
+// The suggestion, its instance and whether the decider kept it go on the approval's entry, so a
+// classifier that is usually overruled shows as one (plugins.md §4.13).
+function suggestionNote(
+  row: ProposalRow,
+  categoryId: string,
+  decidedBy: ApprovedBy,
+): string | null {
+  const { suggestion } = row;
+  if (suggestion === null) {
+    return null;
+  }
+
+  const name = categoryPathOf(database.categories, suggestion.categoryId)
+    .map((category) => category.name)
+    .join(" / ");
+  const verdict =
+    suggestion.categoryId === categoryId
+      ? "kept"
+      : decidedBy === "batch"
+        ? "overridden by the batch's category"
+        : "overruled";
+  return `${suggestion.classifier.name} suggested ${name} (“${suggestion.reason}”) — ${verdict}`;
 }
 
 function joinEvent(event: string, askCount: number): string {

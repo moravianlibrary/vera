@@ -1,6 +1,7 @@
 // Approving a batch at once (page-proposals.js openBulk; status-model.md §2.8): one category and
 // one priority for what the batch can take, each item untickable so it is decided on its own.
-// A rescan and an item still being checked are listed as left out, never dropped silently. The
+// A rescan and an item still being checked are listed as left out, never dropped silently. Each
+// item names the leaf a classifier suggested, and the one category overrides the others. The
 // server approves the batch whole, however many it asked for, but what was unticked, and leaves
 // out again whatever changed meanwhile; the list here arrives a slice at a time as it scrolls.
 // Unlike the demo, the left out are listed in place among the rest rather than after them: with
@@ -22,7 +23,7 @@ import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Checkbox } from "@/components/ui/checkbox";
 import { documentIdentifierOf, existingCopiesOf } from "@/domain/documents";
-import type { Priority } from "@/domain/entities";
+import type { Category, Priority } from "@/domain/entities";
 import type { ProposalRow } from "@/domain/proposal-review";
 import { askerIdsOf, asksOf, isBulkApprovable, isRescan } from "@/domain/proposal-review";
 import {
@@ -172,6 +173,13 @@ function BulkApproval({ group, onClose }: { group: BatchGroup; onClose: () => vo
           </Field>
         </div>
 
+        <SuggestionSummary
+          group={group}
+          categories={categories}
+          categoryId={categoryId}
+          untickedRows={rows.filter((row) => unticked.has(row.record.document.id))}
+        />
+
         <ItemList
           title={`${pickedCount} of ${takeCount} to approve${
             leftOutCount > 0 ? ` · ${leftOutCount} left out` : ""
@@ -211,6 +219,56 @@ function BulkApproval({ group, onClose }: { group: BatchGroup; onClose: () => vo
   );
 }
 
+interface SuggestionSummaryProps {
+  group: BatchGroup;
+  categories: readonly Category[];
+  categoryId: string | null;
+  // Loaded, since only a loaded item can be unticked.
+  untickedRows: readonly ProposalRow[];
+}
+
+// One category for the batch overrides every suggestion for another leaf, and the form says how
+// many (plugins.md §4.13); each is logged as overridden.
+function SuggestionSummary({
+  group,
+  categories,
+  categoryId,
+  untickedRows,
+}: SuggestionSummaryProps) {
+  const suggested = group.suggestedCounts.toSorted((first, second) => second.count - first.count);
+  if (suggested.length === 0) {
+    return null;
+  }
+
+  if (categoryId === null) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        Suggested for them:{" "}
+        {suggested
+          .map(({ value, count }) => `${categoryLabelOf(categories, value)} ×${count}`)
+          .join(", ")}
+        .
+      </p>
+    );
+  }
+
+  const untickedOverrides = untickedRows.filter(
+    (row) => row.suggestion !== null && row.suggestion.categoryId !== categoryId,
+  ).length;
+  const overrideCount =
+    suggested
+      .filter(({ value }) => value !== categoryId)
+      .reduce((sum, { count }) => sum + count, 0) - untickedOverrides;
+  return overrideCount === 0 ? (
+    <p className="text-xs text-muted-foreground">It matches every suggestion.</p>
+  ) : (
+    <p className="text-xs font-medium text-tone-amber-foreground">
+      Overrides {plural(overrideCount, "classifier suggestion")}; the history keeps{" "}
+      {overrideCount === 1 ? "it" : "each"}.
+    </p>
+  );
+}
+
 function LeftOutBadge({ row }: { row: ProposalRow }) {
   const [copy] = existingCopiesOf(asksOf(row));
   if (isRescan(row) && copy !== undefined) {
@@ -233,7 +291,14 @@ function ItemList({ title, hint, children }: { title: string; hint: string; chil
 }
 
 function Item({ row, children }: { row: ProposalRow; children: ReactNode }) {
+  const { data: categories = [] } = useCategoriesQuery();
   const askerCount = askerIdsOf(row).length;
+  // The leaf alone, so the line fits a phone; the summary above names the whole path.
+  const suggestion = row.suggestion;
+  const suggestedName =
+    suggestion === null
+      ? null
+      : (categories.find((category) => category.id === suggestion.categoryId)?.name ?? null);
   const isLeftOut = !isBulkApprovable(row);
   return (
     <li className="flex items-center gap-3 px-3 py-2">
@@ -244,6 +309,7 @@ function Item({ row, children }: { row: ProposalRow; children: ReactNode }) {
         <span className="block truncate text-xs text-muted-foreground">
           <span className="font-mono">{documentIdentifierOf(row.record.document)}</span>
           {askerCount > 1 && ` · ${plural(askerCount, "asker")}`}
+          {suggestedName !== null && ` · suggested ${suggestedName}`}
         </span>
       </span>
       <span className="shrink-0">{children}</span>

@@ -146,6 +146,39 @@ describe("listProposals", () => {
     expect(shelf?.kind === "batch" && shelf.approvableCount).toBe(4);
   });
 
+  it("opens each row on the first classifier's leaf, once the checks have answered", async () => {
+    signInAs("admin");
+
+    const regional = await findProposal("D25");
+    const national = await findProposal("D20");
+
+    expect(regional?.row.suggestion).toEqual({
+      categoryId: "c21",
+      reason: "Periodical, Moravian place of publication",
+      classifier: { id: "pi30", name: "Regional press" },
+    });
+    expect(national?.row.suggestion).toMatchObject({
+      categoryId: "c22",
+      classifier: { name: "Material type" },
+    });
+    expect((await findProposal("D22"))?.row.suggestion).toBeNull(); // a monograph: no rule
+    expect((await findProposal("D21"))?.row.suggestion).toBeNull(); // still being checked
+  });
+
+  it("counts what a batch's classifiers suggested over what a bulk approve takes", async () => {
+    signInAs("admin");
+
+    const page = await listProposals({}, { grouping: "batch", limit: 200 });
+    const shelf = page.groups.find(
+      (group) => group.kind === "batch" && group.batch?.id === "B-0143",
+    );
+
+    expect(shelf?.kind === "batch" && shelf.suggestedCounts.toSorted(byValue)).toEqual([
+      { value: "c21", count: 3 },
+      { value: "c22", count: 1 },
+    ]);
+  });
+
   it("keeps the documents any of whose asks was made within the days", async () => {
     signInAs("admin");
 
@@ -163,6 +196,17 @@ describe("listProposals", () => {
     expect(await statusOf(listProposals({}))).toBe(403);
   });
 });
+
+const byValue = (first: { value: string }, second: { value: string }) =>
+  first.value.localeCompare(second.value);
+
+// The approval's entry on the iteration it created.
+function approvalEntryOf(documentId: string) {
+  const iteration = database.iterations.find((candidate) => candidate.documentId === documentId);
+  return database.statusLog.find(
+    (entry) => entry.subjectKind === "iteration" && entry.subjectId === iteration?.id,
+  );
+}
 
 describe("deciding", () => {
   it("approves every asker of a document at once, the oldest ask originating", async () => {
@@ -182,6 +226,10 @@ describe("deciding", () => {
     expect(detail?.record.iterations).toHaveLength(1);
     expect(relations).toEqual(["Originates", "Tracks", "Tracks", "Tracks"]);
     expect(await findProposal("D20")).toBeNull();
+    expect(approvalEntryOf("D20")?.detail).toContain(
+      "Material type suggested Periodicals / National",
+    );
+    expect(approvalEntryOf("D20")?.detail).toContain("— kept.");
   });
 
   it("asks why a document with a copy is scanned again", async () => {
@@ -192,6 +240,7 @@ describe("deciding", () => {
     expect(
       await approveProposal("D30", { ...approval, rescanNote: "The existing scan is 150 dpi." }),
     ).toMatchObject({ decision: "Approved" });
+    expect(approvalEntryOf("D30")?.detail).toContain("Regional press suggested");
   });
 
   it("waits for the checks, and approves only into a category with no subcategories", async () => {
@@ -278,5 +327,14 @@ describe("deciding", () => {
       ),
     ).toBe(403);
     expect(await findProposal("D31")).toBeNull();
+  });
+
+  it("logs a suggestion the decider changed as overruled, and one a batch changed as overridden", async () => {
+    signInAs("admin");
+
+    await approveProposal("D32", { categoryId: "c21", priority: "Normal", rescanNote: null });
+
+    expect(approvalEntryOf("D32")?.detail).toContain("says otherwise”) — overruled.");
+    expect(approvalEntryOf("D28")?.detail).toContain("— overridden by the batch's category.");
   });
 });

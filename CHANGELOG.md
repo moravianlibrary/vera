@@ -96,6 +96,12 @@ All notable changes to this project are documented here.
   lists every one of them first, and each can *Keep the old mix* on a copy of its own. A
   tracker shows its owner's mix with *Edit [owner]'s mix* and *Detach*, which gives it a copy of
   its own; a scoped intention shows its part of the tree, the rest dimmed.
+- Proposals, the suggested category: where a Classifier plugin is configured, the decide form
+  opens on the leaf it suggests, with its reason and the plugin that gave it; changing the
+  category keeps the suggestion in view with *Use it*. Approving a batch lists each item's
+  suggestion and says how many the one category overrides. The approval's history records the
+  suggestion and whether it was kept, overruled or overridden. With no classifier, or no
+  suggestion, the decider picks as before.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

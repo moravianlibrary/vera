@@ -1,10 +1,12 @@
 // One document's proposal beside the list (page-proposals.js render): a note on what stands out,
 // the facts, then a card for each part: who asked, where it was placed, the existing copies, the
 // catalog record and the history. The decision, with its category and priority, sits at the top
-// of the cards.
+// of the cards; the category opens on a Classifier plugin's suggestion, when there is one
+// (plugins.md §4.13).
 // Beside the heading, *Message askers…* writes to everyone who asked (messaging.md §3).
 // TODO(rrandiak): labels move to i18n.
 
+import { Sparkles } from "lucide-react";
 import { useId, useState } from "react";
 import { ApiError } from "@/api/http";
 import type { Decline, ProposalDetail } from "@/api/proposal-review";
@@ -34,8 +36,8 @@ import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { documentIdentifierOf, existingCopiesOf } from "@/domain/documents";
-import type { Priority, Project, ProposalCustody, Session } from "@/domain/entities";
-import type { ProposalRow } from "@/domain/proposal-review";
+import type { Category, Priority, Project, ProposalCustody, Session } from "@/domain/entities";
+import type { ClassifierSuggestion, ProposalRow } from "@/domain/proposal-review";
 import {
   askerIdsOf,
   asksOf,
@@ -185,7 +187,8 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
     refusalTexts: { 409: "Someone has decided it meanwhile." },
   });
   const prefilled = prefilledPriorityOf(row, projects);
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  // It opens on the classifier's leaf; the decider confirms or changes it.
+  const [categoryId, setCategoryId] = useState<string | null>(row.suggestion?.categoryId ?? null);
   const [priority, setPriority] = useState<Priority>(prefilled?.priority ?? "Normal");
   const [rescanNote, setRescanNote] = useState("");
   const [isDeclining, setIsDeclining] = useState(false);
@@ -252,6 +255,14 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
             <PrioritySelect id={`${fieldId}-priority`} value={priority} onChange={setPriority} />
           </Field>
         </div>
+        {row.suggestion !== null && (
+          <SuggestionLine
+            suggestion={row.suggestion}
+            categories={categories}
+            categoryId={categoryId}
+            onRestore={setCategoryId}
+          />
+        )}
         {prefilled !== null && (
           <p className="text-xs text-muted-foreground">
             Pre-filled from {prefilled.project.name}, approved at {prefilled.priority}.
@@ -322,6 +333,43 @@ function DecideCard({ row, projects, onDecided }: DecideCardProps) {
 }
 
 const conflictStatus = 409;
+
+interface SuggestionLineProps {
+  suggestion: ClassifierSuggestion;
+  categories: readonly Category[];
+  categoryId: string | null;
+  onRestore: (categoryId: string) => void;
+}
+
+// The classifier's leaf and its reason, named by the instance that made it; once changed, the
+// suggestion stays in view with a way back, and the approval logs it as overruled.
+function SuggestionLine({ suggestion, categories, categoryId, onRestore }: SuggestionLineProps) {
+  const isKept = categoryId === suggestion.categoryId;
+  const leaf = categoryLabelOf(categories, suggestion.categoryId);
+  return (
+    <p className="text-xs text-muted-foreground">
+      <Sparkles
+        aria-hidden
+        className="mr-1 inline size-3.5 align-[-0.15em] text-tone-blue-foreground"
+      />
+      {isKept ? "Suggested" : <>{leaf} was suggested</>} by{" "}
+      <b className="font-semibold text-foreground">{suggestion.classifier.name}</b>:{" "}
+      {suggestion.reason}.
+      {!isKept && (
+        <>
+          {" "}
+          <button
+            type="button"
+            className="font-medium text-foreground underline underline-offset-2"
+            onClick={() => onRestore(suggestion.categoryId)}
+          >
+            Use it
+          </button>
+        </>
+      )}
+    </p>
+  );
+}
 
 // ---------------------------------------------------------------- the record
 
