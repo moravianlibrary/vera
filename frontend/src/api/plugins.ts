@@ -105,6 +105,8 @@ export const pluginInstanceDetailSchema = z.object({
   schedules: z.array(
     z.object({ id, name: z.string(), cadence: cadenceSchema, isPaused: z.boolean() }),
   ),
+  // Hooks tied to this Delivery channel, including paused subscriptions.
+  hooks: z.array(z.object({ id, name: z.string(), state: z.enum(["active", "paused"]) })),
   // The latest few on Tasks, newest first.
   recentRuns: z.array(
     runSchema.pick({
@@ -178,6 +180,8 @@ export const pluginImpactSchema = z.object({
   userCount: count,
   // A custody rule: the open proposals it places now.
   openProposalCount: count,
+  // A Delivery channel: active hooks whose sending stops while it is off.
+  hookCount: count,
 });
 export type PluginImpact = z.infer<typeof pluginImpactSchema>;
 

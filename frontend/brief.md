@@ -129,6 +129,14 @@ the browser) already hold `lists.ts`, `projects.ts`, `intentions.ts`, `categorie
 `domain/entities.ts`. Every API module has tests over HTTP through MSW
 (`src/api/*.test.ts`).
 
+**Hooks mock API built (step 11.1):** `api/hooks.ts` holds the typed contracts and
+paths; `domain/hooks.ts` owns batch and retry timing; `mocks/hooks.ts` owns
+delivery state against `mockNow()` with fixtures in `fixtures/hooks.ts`.
+Delivery channels are Plugins instances. Plugins' instance response includes
+linked hooks and its impact includes their active count. `recordHookEvent` is
+called by publication and list creation; other producers still need stable
+public event data. The Hooks UI is step 11.2–11.3.
+
 **Views built:** `features/documents/`, `features/proposals/`,
 `features/validations/` (the best model for a list with a pane and actions:
 `validations-view.ts`, `validation-list.tsx`, `validation-detail.tsx`,

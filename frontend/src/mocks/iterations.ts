@@ -34,6 +34,7 @@ import { defectNameOf, isFoundAfterScan, pagesSubject, reviewStateOf } from "@/d
 import { repairedSubjectsOf } from "@/mocks/catalog";
 import { database } from "@/mocks/database";
 import { audienceOf } from "@/mocks/documents";
+import { recordHookEvent } from "@/mocks/hooks";
 import type { Outcome } from "@/mocks/mutations";
 import { leafCategoryRefusal, progressNote, replaceIteration, writeLog } from "@/mocks/mutations";
 
@@ -122,6 +123,17 @@ export function publishIteration(
     event: isChange ? "Link changed" : "Published",
     detail: isChange ? `From ${iteration.publishedLink} to ${publication.link}.` : publication.link,
   });
+  recordHookEvent(
+    "iteration.published",
+    iteration.id,
+    "",
+    `${iteration.id} is published at ${publication.link}`,
+    {
+      categoryPath: categoryPathOf(database.categories, iteration.categoryId).map(
+        (category) => category.name,
+      ),
+    },
+  );
 
   return { value: { publishedLink: publication.link, progress: "Published" } };
 }

@@ -1,5 +1,10 @@
 # Frontend continuation guide
 
+**Completion handoff (2026-10-07):** follow
+[completion-plan.md](completion-plan.md) for steps 11–12, then the verified
+earlier functional gaps. It resolves stale guidance below and requires finished
+CSS in each UI session. The `.v2` demo redesign remains a separate later pass.
+
 For local mock identity, run make frontend-users to list profiles and
 make frontend-user MOCK_USER=reader (or admin, curator, digitization, staff,
 no-access) to change the emulated user. Restart Vite after changing it. The
@@ -9,6 +14,17 @@ records returned by MSW; identity is configured outside the application UI.
 This is the handoff for continuing VERA's new frontend on `feat/client-redesign`.
 
 ## Current state
+
+- Hooks step 11.1 has a typed API (`src/api/hooks.ts`), fixtures and MSW
+  handlers (`src/mocks/hooks.ts`) for subscription writes, channel-backed
+  deliveries, batching, retries, exhausted deliveries, preview and explicit
+  test sends. Plugins now reports linked hooks and disable impact. Publication
+  and list creation record public events for Hooks. The Hooks page remains a
+  placeholder until step 11.2–11.3. Its existing status log still uses free-text
+  event names and may contain internal details; remaining event producers need
+  typed event codes and explicit public payloads before being wired to Hooks.
+  A general condition builder for “Only when” also awaits a product contract;
+  the mock accepts the two demonstrated conditions and rejects unknown ones.
 
 The greenfield client lives in `frontend/`. It uses Bun, React, TypeScript, Vite, React Router, TanStack Query, Tailwind CSS v4, shadcn/ui (New York), MSW, React Hook Form, Zod, i18next, and Lucide icons. Do not import code from the old `client/` or `webclient/` trees.
 

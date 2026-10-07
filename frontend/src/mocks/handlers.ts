@@ -20,6 +20,7 @@ import {
   parseDocumentSearchParams,
   parseDocumentSliceParams,
 } from "@/api/documents";
+import { hookDraftSchema, hookPauseSchema } from "@/api/hooks";
 import {
   intentionDraftSchema,
   intentionPreviewRequestSchema,
@@ -122,6 +123,21 @@ import {
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
+import {
+  canReadHooks,
+  createHook,
+  deleteHook,
+  discardDelivery,
+  hookIndex,
+  pauseHook,
+  previewHook,
+  resumeHook,
+  retryAllDeliveries,
+  retryDelivery,
+  saveHook,
+  sendNow as sendHookNow,
+  sendTest as sendHookTest,
+} from "@/mocks/hooks";
 import { listShapes, previewCorrection, readList } from "@/mocks/intention-lists";
 import {
   archiveIntention,
@@ -325,6 +341,41 @@ export function createHandlers(profile: MockUserProfile) {
     }),
 
     http.get(route(apiRoutes.users), () => HttpResponse.json(database.users)),
+
+    http.get(route(apiRoutes.hooks), () =>
+      canReadHooks(currentSession())
+        ? HttpResponse.json(hookIndex())
+        : problemResponse({ status: 403, message: "You may not read hooks" }),
+    ),
+    accessWrite("post", apiRoutes.hooks, hookDraftSchema, (session, _id, draft) =>
+      createHook(session, draft),
+    ),
+    accessWrite("put", `${apiRoutes.hooks}/:id`, hookDraftSchema, saveHook),
+    accessDelete(`${apiRoutes.hooks}/:id`, deleteHook),
+    accessWrite("post", `${apiRoutes.hooks}/:id/pause`, hookPauseSchema, (session, id, body) =>
+      pauseHook(session, id, body.reason),
+    ),
+    http.post(route(`${apiRoutes.hooks}/:id/resume`), ({ params }) =>
+      outcomeResponse(resumeHook(currentSession(), String(params.id))),
+    ),
+    http.post(route(`${apiRoutes.hooks}/:id/retry`), ({ params }) =>
+      outcomeResponse(retryAllDeliveries(currentSession(), String(params.id))),
+    ),
+    http.post(route(`${apiRoutes.hooks}/:id/send-now`), ({ params }) =>
+      outcomeResponse(sendHookNow(currentSession(), String(params.id))),
+    ),
+    http.post(route(`${apiRoutes.hooks}/deliveries/:id/retry`), ({ params }) =>
+      outcomeResponse(retryDelivery(currentSession(), String(params.id))),
+    ),
+    http.post(route(`${apiRoutes.hooks}/deliveries/:id/discard`), ({ params }) =>
+      outcomeResponse(discardDelivery(currentSession(), String(params.id))),
+    ),
+    accessWrite("post", apiRoutes.hookPreview, hookDraftSchema, (session, _id, draft) =>
+      previewHook(session, draft),
+    ),
+    accessWrite("post", `${apiRoutes.hooks}/test`, hookDraftSchema, (session, _id, draft) =>
+      sendHookTest(session, draft),
+    ),
 
     http.get(route(apiRoutes.pluginInstances), () => HttpResponse.json(instanceSummaries())),
 

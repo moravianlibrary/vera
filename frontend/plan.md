@@ -1,5 +1,10 @@
 # Implementation plan
 
+For the remaining implementation (steps 11–12 and verified earlier functional
+gaps), follow [completion-plan.md](completion-plan.md). It gives session-sized
+tasks, component reuse and final CSS acceptance criteria. The later `.v2` demo
+redesign is deferred until this implementation is complete.
+
 The rest of the client, one step per view, each step split into its commits.
 The parts are those in `component-inventory.md` and their draft props in
 `component-interfaces.md`. The design is `docs/demos/` and

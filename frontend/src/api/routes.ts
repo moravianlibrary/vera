@@ -55,6 +55,8 @@ export const apiRoutes = {
   runningTasks: "/tasks/running",
   taskRetention: "/tasks/retention",
   schedules: "/schedules",
+  hooks: "/hooks",
+  hookPreview: "/hooks/preview",
   // Users & Groups, the page: every user, role, group and proposal custody with what links them.
   access: "/access",
   accessRoles: "/access/roles",

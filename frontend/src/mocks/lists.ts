@@ -41,6 +41,7 @@ import { formatCount } from "@/lib/format-number";
 import { dayOf } from "@/lib/value-range";
 import { countValues, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
+import { recordHookEvent } from "@/mocks/hooks";
 import {
   countingMembersOf,
   countsTowardsRowsOf,
@@ -352,6 +353,7 @@ export function createList(session: Session, draft: ListDraft): Outcome<ListDeta
   logList(session, list, correlationId, "Created", datesOf(list));
   logGeneration(session, list, correlationId);
   moveMembers(session, list, draft.memberIds, correlationId);
+  recordHookEvent("list.created", list.id, "", `New list ${list.name} starts ${list.startsOn}`);
   return { value: detailOf(list) };
 }
 

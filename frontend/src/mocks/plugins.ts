@@ -39,6 +39,7 @@ import {
   nextVersionChanges,
   noDeclarations,
 } from "@/mocks/fixtures/plugins";
+import { hooksUsingChannel } from "@/mocks/hooks";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import {
   enabledInstancesOf,
@@ -103,6 +104,7 @@ function detailOf(instance: StoredPluginInstance, now: Date): PluginInstanceDeta
         cadence: schedule.cadence,
         isPaused: schedule.pause !== null,
       })),
+    hooks: hooksUsingChannel(instance.id).map(({ id, name, state }) => ({ id, name, state })),
     recentRuns: runs.slice(0, recentRunCount).map((run) => ({
       id: run.id,
       what: run.what,
@@ -443,7 +445,6 @@ export function instanceImpact(session: Session, instanceId: string): Outcome<Pl
       .filter((custody) => names.includes(custody.name))
       .map((custody) => custody.id),
   );
-  // TODO(rrandiak): a delivery channel's hooks, which stop sending, arrive with Hooks (step 11).
   return {
     value: {
       kind,
@@ -457,6 +458,7 @@ export function instanceImpact(session: Session, instanceId: string): Outcome<Pl
       openProposalCount: openProposalPlacements().filter((placedIn) =>
         placedIn.some((custodyId) => custodyIds.has(custodyId)),
       ).length,
+      hookCount: hooksUsingChannel(instance.id).filter((hook) => hook.state === "active").length,
     },
   };
 }

@@ -14,6 +14,7 @@ const impact = (patch: Partial<PluginImpact>): PluginImpact => ({
   runCount: 0,
   userCount: 0,
   openProposalCount: 0,
+  hookCount: 0,
   ...patch,
 });
 

@@ -7,6 +7,7 @@ import { categoryMembers, groups, roles, userAccess } from "@/mocks/fixtures/acc
 import { batches } from "@/mocks/fixtures/batches";
 import { categories } from "@/mocks/fixtures/categories";
 import { documents } from "@/mocks/fixtures/documents";
+import { hookAttempts, hookDeliveries, hooks } from "@/mocks/fixtures/hooks";
 import { distributions, intentions, intentionTemplates } from "@/mocks/fixtures/intentions";
 import { iterations } from "@/mocks/fixtures/iterations";
 import { lists } from "@/mocks/fixtures/lists";
@@ -60,6 +61,9 @@ export const database = {
   // Written by Plugins: instances made, edited, switched off and deleted; versions uploaded.
   pluginImplementations: [...pluginImplementations],
   pluginInstances: [...pluginInstances],
+  hooks: [...hooks],
+  hookDeliveries: [...hookDeliveries],
+  hookAttempts: [...hookAttempts],
   // Packages read and waiting to be installed.
   pluginUploads: [] as StoredUpload[],
   runs: [...runs],

@@ -114,7 +114,6 @@ export function suppliesOf(version: PluginVersion): string[] {
 
 // What stops while an instance is off, by its kind, from the server's count (STATUS "Plugins":
 // "the last generator — the Generate button disappears").
-// TODO(rrandiak): a delivery channel names the hooks that stop sending once Hooks exist (step 11).
 export function lossText(impact: PluginImpact, instanceName: string): string {
   const hasOthers = impact.otherEnabledCount > 0;
   switch (impact.kind) {
@@ -147,7 +146,7 @@ export function lossText(impact: PluginImpact, instanceName: string): string {
         ? "Message… stops offering it; other ways stay."
         : "it is the last one: Message… disappears everywhere.";
     case "DeliveryChannel":
-      return "the hooks sending through it stop sending; their deliveries wait until it is back.";
+      return `${plural(impact.hookCount, "active hook")} sending through it ${impact.hookCount === 1 ? "stops" : "stop"}; waiting deliveries resume when the channel is enabled again.`;
     case "Classifier":
       return hasOthers
         ? "the decide form stops showing its suggestions; the others still suggest."
