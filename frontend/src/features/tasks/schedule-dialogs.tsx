@@ -37,10 +37,11 @@ import {
   formOfCadence,
   scheduleFormSchema,
 } from "@/features/tasks/schedules-view";
-import { aheadText, cadenceText, overlapLabels, weekdayName } from "@/features/tasks/task-words";
+import { cadenceText, overlapLabels, weekdayName } from "@/features/tasks/task-words";
 import { taskInvalidations } from "@/features/tasks/use-tasks-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { usePluginInstancesQuery } from "@/hooks/use-reference-query";
+import { aheadText } from "@/lib/format-moment";
 import { plural } from "@/lib/plural";
 
 const refusalTexts = {

@@ -33,20 +33,13 @@ import {
   rangeParam,
   rangeTitles,
 } from "@/features/tasks/schedules-view";
-import {
-  agoText,
-  aheadText,
-  cadenceText,
-  dayAndTimeOf,
-  overlapLabels,
-  overlapNotes,
-  shortDayOf,
-} from "@/features/tasks/task-words";
+import { cadenceText, overlapLabels, overlapNotes } from "@/features/tasks/task-words";
 import { taskInvalidations, useSchedulesQuery } from "@/features/tasks/use-tasks-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import type { PerTier } from "@/hooks/use-tier";
+import { agoText, aheadText, dayAndTimeOf, shortDayOf } from "@/lib/format-moment";
 import { cn } from "@/lib/utils";
 
 // Which dialog is open, on which schedule.

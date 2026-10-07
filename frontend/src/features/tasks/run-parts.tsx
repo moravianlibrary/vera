@@ -13,7 +13,6 @@ import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
 import { RunProgress } from "@/components/visualizations/run-progress";
 import {
-  agoText,
   cadenceText,
   repeatNameOf,
   runStateLabels,
@@ -22,6 +21,7 @@ import {
   tookText,
 } from "@/features/tasks/task-words";
 import type { PerTier } from "@/hooks/use-tier";
+import { agoText } from "@/lib/format-moment";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 

@@ -8,6 +8,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { navigationEntries, visibleNavigation } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AccessPage } from "@/features/access/access-page";
 import { CategoriesPage } from "@/features/categories/categories-page";
 import { DocumentsPage } from "@/features/documents/documents-page";
 import { IntentionsPage } from "@/features/intentions/intentions-page";
@@ -54,6 +55,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <TasksPage />;
     case "schedules":
       return <SchedulesPage />;
+    case "access":
+      return <AccessPage />;
     default:
       return <Placeholder title={label} />;
   }

@@ -32,7 +32,6 @@ import {
   sourceOf,
   starterOf,
 } from "@/features/tasks/run-parts";
-import { aheadText, shortDayOf } from "@/features/tasks/task-words";
 import { runFieldsFor, runParam, tasksView } from "@/features/tasks/tasks-view";
 import { taskInvalidations, useRunQuery, useRunsQuery } from "@/features/tasks/use-tasks-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
@@ -40,6 +39,7 @@ import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { useTier } from "@/hooks/use-tier";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
+import { aheadText, shortDayOf } from "@/lib/format-moment";
 import { plural } from "@/lib/plural";
 
 export function TasksPage() {

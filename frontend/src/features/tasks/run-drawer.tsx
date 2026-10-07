@@ -17,15 +17,8 @@ import { Button } from "@/components/ui/button";
 import { RunProgress } from "@/components/visualizations/run-progress";
 import type { NameOf } from "@/features/tasks/run-parts";
 import { RunStateBadge, starterOf } from "@/features/tasks/run-parts";
-import {
-  agoText,
-  cadenceText,
-  clockTimeOf,
-  dayAndTimeOf,
-  repeatNameOf,
-  timeLeftText,
-  tookText,
-} from "@/features/tasks/task-words";
+import { cadenceText, repeatNameOf, timeLeftText, tookText } from "@/features/tasks/task-words";
+import { agoText, clockTimeOf, dayAndTimeOf } from "@/lib/format-moment";
 import { formatCount } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 

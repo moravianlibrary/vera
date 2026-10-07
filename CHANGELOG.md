@@ -131,6 +131,18 @@ All notable changes to this project are documented here.
   its runs stay. *Pause…* asks why, and the reason shows on the row until *Resume*. *Run now*
   starts a run by hand and leaves the schedule as it was. Intention repeats are listed too, with
   *Edit on Intentions*.
+- Users & Groups: roles, users, and groups with proposal custodies in three columns, the user
+  in the middle. Selecting any of them lights up what it is connected to, says how on each
+  (*by hand*, *mapped*, *member*, *via Periodicals Curators*) and draws the links, dashed where
+  a role is only mapped or a custody comes through a group; the record opens underneath. A
+  user's record gives each role and how it is held, how they sign in and when they last did,
+  their groups, the category and proposal custody and projects they hold and through what, and
+  every permission with the roles it comes from; somebody with no role says *No access yet*. A
+  role's record gives who holds it and how, the identity providers that map it, what it
+  includes, and its grants with their scope. A group's says what adding somebody gives them,
+  never a role. A custody's says who decides its proposals, who only sees them and whom no
+  role reaches, and which rule places proposals in it. Search and *Show* (people, agents, no
+  role yet) narrow the columns; a phone has a tab for each.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

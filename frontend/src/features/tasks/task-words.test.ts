@@ -1,13 +1,8 @@
 // How Tasks reads a moment against the server's, and how it names a cadence.
 
 import { describe, expect, it } from "vitest";
-import {
-  agoText,
-  aheadText,
-  cadenceText,
-  durationText,
-  timeLeftText,
-} from "@/features/tasks/task-words";
+import { cadenceText, durationText, timeLeftText } from "@/features/tasks/task-words";
+import { agoText, aheadText } from "@/lib/format-moment";
 
 const at = (day: number, hours: number, minutes: number) =>
   new Date(2026, 5, day, hours, minutes).toISOString();
