@@ -3,11 +3,13 @@
 // under the logo (navigation.md §4.1, §4.3). Inside the narrow tiers' sheet it is always expanded
 // and has no toggle. The rail's hover-expand (§4.2) is the shell's: it passes `isPeeking` while
 // the rail is open over the content, and the toggle still answers for the remembered choice.
-// TODO(rrandiak): the Watchlists and running-tasks rows (§5, §6) and the user menu (§7).
+// After a rule at the foot comes what is running, while anything is (§6).
+// TODO(rrandiak): the Watchlists row (§5) and the user menu (§7).
 
 import { ChevronsRight, UserRound } from "lucide-react";
 import { NavLink } from "react-router";
 import { visibleNavigation } from "@/components/layout/navigation";
+import { RunningTasksPanel } from "@/components/layout/running-tasks-panel";
 import { Logo } from "@/components/logo";
 import type { Session } from "@/domain/entities";
 import { sidebarImmediateAttribute } from "@/hooks/use-sidebar-peek";
@@ -98,19 +100,25 @@ export function Sidebar({
         ))}
       </nav>
 
-      <div
-        className="mx-2 mt-2 flex shrink-0 items-center gap-2.5 border-t border-sidebar-border px-1.5 pt-3"
-        title={session?.user.name}
-      >
-        <span className="grid size-7 shrink-0 place-items-center">
-          <UserRound className="size-4" />
-        </span>
-        <span className={cn("min-w-0 text-sm", !isShowingLabels && "sr-only")}>
-          <b className="block truncate font-medium text-sidebar-accent-foreground">
-            {session?.user.name ?? "Loading user…"}
-          </b>
-          <span className="block truncate text-xs">{session?.roleIds.join(", ") || "no role"}</span>
-        </span>
+      <div className="mx-2 mt-2 shrink-0 border-t border-sidebar-border pt-3">
+        <RunningTasksPanel
+          session={session}
+          isShowingLabels={isShowingLabels}
+          onNavigate={onNavigate}
+        />
+        <div className="flex items-center gap-2.5 px-1.5" title={session?.user.name}>
+          <span className="grid size-7 shrink-0 place-items-center">
+            <UserRound className="size-4" />
+          </span>
+          <span className={cn("min-w-0 text-sm", !isShowingLabels && "sr-only")}>
+            <b className="block truncate font-medium text-sidebar-accent-foreground">
+              {session?.user.name ?? "Loading user…"}
+            </b>
+            <span className="block truncate text-xs">
+              {session?.roleIds.join(", ") || "no role"}
+            </span>
+          </span>
+        </div>
       </div>
     </div>
   );

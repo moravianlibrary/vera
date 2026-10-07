@@ -30,7 +30,10 @@ export function RunProgress({ done, total, errors, timeLeft, form }: RunProgress
       aria-valuemax={100}
       aria-valuenow={percent}
       aria-label={`${percent}% done`}
-      className={cn("overflow-hidden rounded-full bg-secondary", form === "card" ? "h-1.5" : "h-1")}
+      className={cn(
+        "overflow-hidden rounded-full",
+        form === "card" ? "h-1.5 bg-secondary" : "h-1 bg-sidebar-accent",
+      )}
     >
       <div
         className={cn("h-full", errors > 0 ? "bg-tone-amber-foreground" : "bg-chart-3")}

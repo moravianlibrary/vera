@@ -119,6 +119,9 @@ All notable changes to this project are documented here.
   it changed, its items (all, or only the errors), its log and *Download log*. Runs are never
   deleted by hand; how long they are kept is changed with *Change…*. Without `task.read` the
   page is *My Tasks*, the runs the person started, which they may cancel or run again.
+- The sidebar shows *Tasks running* at its foot while something runs: each run with its
+  progress, linked to it on Tasks, in the same reach as Tasks. Collapsed to the rail it is one
+  dot with the count; nothing is shown while nothing runs.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.
