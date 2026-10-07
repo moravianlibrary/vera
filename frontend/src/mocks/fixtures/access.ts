@@ -528,7 +528,7 @@ export const roleAssignments: Readonly<Record<string, readonly string[]>> = {
 };
 
 // Custody granted to people directly, by category (the demo's `categoryMembers`); groups carry
-// theirs on the group.
+// theirs on the group. The mock database starts from both, and Grant custody… writes there.
 export const categoryMembers: Readonly<Record<string, readonly string[]>> = {
   c4: ["u8"],
 };

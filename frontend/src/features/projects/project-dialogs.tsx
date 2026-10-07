@@ -7,7 +7,6 @@
 // Users & Groups builds it (plan.md step 9); labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
-import { X } from "lucide-react";
 import { useId, useState } from "react";
 import { z } from "zod";
 import type { DecidedDocument, ProjectDetail, ProjectDraft, ProjectRow } from "@/api/projects";
@@ -26,8 +25,8 @@ import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
 import { FormDialog } from "@/components/dialogs/form-dialog";
 import { ReasonDialog } from "@/components/dialogs/reason-dialog";
+import { AddSelect, RemoveButton } from "@/components/fields/picked-list";
 import { FieldError } from "@/components/iteration-dialogs";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -40,14 +39,10 @@ import { Textarea } from "@/components/ui/textarea";
 import type { Priority } from "@/domain/entities";
 import { prioritySchema } from "@/domain/entities";
 import { intentionsQueryKey } from "@/features/intentions/use-intentions-query";
-import {
-  projectInvalidations,
-  projectsQueryKey,
-  useMemberGroupsQuery,
-} from "@/features/projects/use-projects-query";
+import { projectInvalidations, projectsQueryKey } from "@/features/projects/use-projects-query";
 import type { Refusal } from "@/hooks/use-action-mutation";
 import { useActionMutation } from "@/hooks/use-action-mutation";
-import { useUsersQuery } from "@/hooks/use-reference-query";
+import { useGroupsQuery, useUsersQuery } from "@/hooks/use-reference-query";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 
@@ -272,7 +267,7 @@ export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
   const [isPending, setIsPending] = useState(false);
   const [refusal, setRefusal] = useState<Refusal | null>(null);
   const { data: users = [] } = useUsersQuery();
-  const { data: groups = [] } = useMemberGroupsQuery(isOpen);
+  const { data: groups = [] } = useGroupsQuery({ isEnabled: isOpen });
   const save = useActionMutation({
     call: (members: MembersState) =>
       saveProjectMembers(project.id, {
@@ -434,38 +429,6 @@ export function MembersDialog({ isOpen, onClose, row }: MembersDialogProps) {
         </p>
       </div>
     </DialogShell>
-  );
-}
-
-function RemoveButton({ label, onSelect }: { label: string; onSelect: () => void }) {
-  return (
-    <Button variant="ghost" size="icon" className="size-7" aria-label={label} onClick={onSelect}>
-      <X className="size-3.5" />
-    </Button>
-  );
-}
-
-interface AddSelectProps {
-  placeholder: string;
-  options: readonly { value: string; label: string }[];
-  onAdd: (value: string) => void;
-}
-
-// Picks one to add and goes back to its placeholder.
-function AddSelect({ placeholder, options, onAdd }: AddSelectProps) {
-  return (
-    <Select value="" onValueChange={onAdd}>
-      <SelectTrigger className="w-full sm:w-64" aria-label={placeholder}>
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   );
 }
 

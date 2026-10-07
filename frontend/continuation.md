@@ -231,7 +231,10 @@ The foundation is in place:
   record cards Documents uses too (`src/components/record-cards.tsx`: who asked, existing
   copies, the catalog record, history and the heading), plus Placed in and, while open, the
   Decide card (category and priority from `src/components/classification-fields.tsx`, which
-  Propose uses too; a note for a rescan; the decline form). An approved proposal leaves the
+  Propose uses too; it opens on the row's `suggestion`, a Classifier plugin's leaf with its
+  reason and instance, played by `src/mocks/classification.ts` over
+  `src/mocks/fixtures/classifiers.ts`; a note for a rescan; the decline form). The approval's
+  log entry says whether the suggestion was kept, overruled or overridden by a batch. An approved proposal leaves the
   list and the pane says what was decided. A copy's link is in the pane, not on the row, which
   is one button. A batch's header carries "Approve N…", which opens `bulk-approve-dialog.tsx`
   on `DialogShell` over every open row the batch asked for, loaded a slice at a time as it
@@ -384,7 +387,19 @@ The foundation is in place:
   `POST …/detach`; the mock is `src/mocks/mixes.ts`. It shows the shared `CategoryTree` and
   `MixSetCard`, and `mix-dialogs.tsx` holds *Edit proportions…* on `SetEditorDialog` with the
   trackers step, and *Detach*. Categories (`src/features/categories/`) reads Overall's mix only,
-  read-only, from `GET /categories/overview`.
+  read-only, from `GET /categories/overview`, and changes the tree over `src/api/categories.ts`:
+  `POST /categories` and `PUT`/`DELETE /categories/:id` (create, rename and move, delete an
+  empty leaf; 409 `category.name_taken`, `category.holds_documents`, `category.has_children`,
+  `category.scope`), `GET …/impact` (what a delete or refine touches: documents, the mixes giving
+  it a share, named only where the caller reads intentions, custody, scoped intentions),
+  `PUT …/custody` (the set granted on it, whole) and `POST …/refine` (a child takes the leaf's
+  documents, logged as Reclassified, and 100 in each mix that gave the leaf a share). Each is
+  `category.edit` or `category.grant_custody` against `scopeOfCategory` (`src/domain/categories.ts`,
+  with `placesFor` and `isNameTaken`; the root is `any`'s). Custody lives in the mock database
+  (`database.groups`, `database.categoryMembers`), which the session resolves per request. The
+  pane's acts are in `category-dialogs.tsx` (custody on `SetEditorDialog`, New and Edit on
+  `FormDialog`, Delete on `ConsequenceDialog`) and `refine-wizard.tsx`, on the shared
+  `PaneWizard` at `?c=ID&refine=1`; a change leaves a note in the pane it opens.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and
@@ -440,7 +455,7 @@ carried out and what it reads. Its parts are in `component-inventory.md`, with t
 Categories reads and links to editing a mix with *Mix of* (`?i=`). Under the definitions only an
 intention has a target or pace (a project's comes from its own intention), a mix is edited on its
 intention, and a category is a line of work whose leaf a Classifier plugin suggests at approval.
-`plan.md` 7.3 brought the project's intention and the intention's Mix in line; 7.4 brings the
+`plan.md` 7.3 brought the project's intention and the intention's Mix in line, and 7.4 the
 Classifier.
 
 1. **Application shell.** Add routes and the responsive navigation frame. Navigation entries should come from the current user's available permissions. Actions and destinations the user cannot use are absent, not disabled. Support the demo's large, notebook, small, and phone layouts.

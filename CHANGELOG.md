@@ -89,6 +89,15 @@ All notable changes to this project are documented here.
   leaf's documents, custody granted here and whom it reaches from where, and on *All
   categories* what needs attention. Without access to intentions the tree shows counts and
   custody only.
+- Categories, changing the tree: whoever may change a part of it gets *Edit…* (rename, or move
+  it with everything under it), *+ Child category* (*+ Top-level category* on All categories,
+  for an administrator), *Delete…* on an empty leaf, saying first which mixes lose a share and
+  what custody goes with it, and *Grant custody…*, which sets the groups and people holding the
+  category, the whole set at once. A curator does all of it only inside the categories they
+  hold. A leaf that holds documents is refined instead, in two steps in the pane: name the new
+  category, see what moves, and every document moves into it, which takes the leaf's whole share
+  in each mix and records the move in each document's history. A category new to a set, or
+  moved into one, has no share there; where it left, its share is unallocated and flagged.
 - An intention's Mix (`/intentions/…/mix`, *Edit mix* or *Proportions* on its card): the
   category tree with its shares read against its own output, one category in the pane. Whoever
   may edit the mix changes one set at a time with *Edit proportions…*: empty is no share, 0 is

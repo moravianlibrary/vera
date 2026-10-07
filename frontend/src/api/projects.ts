@@ -7,6 +7,8 @@
 
 import { z } from "zod";
 import { deleteResource, findJson, getJson, postJson, putJson } from "@/api/http";
+import type { Group } from "@/api/reference";
+import { groupSchema } from "@/api/reference";
 import { apiRoutes, projectRoute } from "@/api/routes";
 import {
   digitizationListSchema,
@@ -28,12 +30,8 @@ export const projectPeriodSchema = z.enum(projectPeriods);
 // ---------------------------------------------------------------- index
 
 // A group on a project: everyone in it is a member while they are in it.
-export const memberGroupSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  peopleCount: count,
-});
-export type MemberGroup = z.infer<typeof memberGroupSchema>;
+export const memberGroupSchema = groupSchema;
+export type MemberGroup = Group;
 
 // The intention made with the project (intentions.md §3.4): its name and window are the
 // project's; the target is entered on the project form and stored on it.
@@ -201,11 +199,6 @@ export async function listProjectIndex(): Promise<ProjectIndex> {
 // Null when it does not exist or the caller may not see it.
 export async function findProject(projectId: string): Promise<ProjectDetail | null> {
   return findJson(projectRoute(projectId), projectDetailSchema);
-}
-
-// The groups a project can take as members, for the Members dialog.
-export async function listMemberGroups(): Promise<MemberGroup[]> {
-  return getJson(apiRoutes.groups, z.array(memberGroupSchema));
 }
 
 export async function createProject(draft: ProjectDraft): Promise<ProjectDetail> {

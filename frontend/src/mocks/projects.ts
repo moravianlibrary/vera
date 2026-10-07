@@ -41,7 +41,6 @@ import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
 import { dayOf } from "@/lib/value-range";
 import { database } from "@/mocks/database";
-import { groups } from "@/mocks/fixtures/access";
 import { countingData, nextId, overallIntention } from "@/mocks/intentions";
 import type { Outcome, Refusal } from "@/mocks/mutations";
 import { writeLog } from "@/mocks/mutations";
@@ -136,14 +135,14 @@ function decidedDocumentOf(projectId: string, documentId: string): DecidedDocume
 // ---------------------------------------------------------------- rows
 
 function memberGroupOf(groupId: string): MemberGroup | null {
-  const group = groups.find((candidate) => candidate.id === groupId);
+  const group = database.groups.find((candidate) => candidate.id === groupId);
   return group === undefined
     ? null
     : { id: group.id, name: group.name, peopleCount: group.memberIds.length };
 }
 
 export function listMemberGroups(): MemberGroup[] {
-  return groups.flatMap((group) => memberGroupOf(group.id) ?? []);
+  return database.groups.flatMap((group) => memberGroupOf(group.id) ?? []);
 }
 
 // Made with the project; every project has exactly one (intentions.md §3.4).
@@ -503,7 +502,7 @@ export function saveProjectMembers(
   }
 
   const unknownGroup = members.memberGroupIds.find(
-    (groupId) => !groups.some((group) => group.id === groupId),
+    (groupId) => !database.groups.some((group) => group.id === groupId),
   );
   if (unknownGroup !== undefined) {
     return { refusal: { status: 422, message: `No group ${unknownGroup}` } };
@@ -729,7 +728,7 @@ function nameOf(userId: string): string {
 }
 
 function groupNameOf(groupId: string): string {
-  return groups.find((group) => group.id === groupId)?.name ?? groupId;
+  return database.groups.find((group) => group.id === groupId)?.name ?? groupId;
 }
 
 function logProject(

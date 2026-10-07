@@ -3,6 +3,7 @@
 
 import { env } from "@/config/env";
 import type { Watchlist } from "@/domain/entities";
+import { categoryMembers, groups } from "@/mocks/fixtures/access";
 import { batches } from "@/mocks/fixtures/batches";
 import { categories } from "@/mocks/fixtures/categories";
 import { documents } from "@/mocks/fixtures/documents";
@@ -29,7 +30,11 @@ const records = withCopies(
 
 export const database = {
   users,
-  categories,
+  categories: [...categories],
+  // Category custody: groups carry theirs, and people hold it directly by category; both are
+  // written by Grant custody… on Categories.
+  groups: [...groups],
+  categoryMembers: { ...categoryMembers },
   projects: [...projects],
   intentions: [...intentions],
   distributions: [...distributions],

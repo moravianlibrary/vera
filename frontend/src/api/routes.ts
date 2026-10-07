@@ -45,6 +45,19 @@ export function documentRoute(documentId: string): string {
   return `${apiRoutes.documents}/${encodeURIComponent(documentId)}`;
 }
 
+export function categoryRoute(categoryId: string): string {
+  return `${apiRoutes.categories}/${encodeURIComponent(categoryId)}`;
+}
+
+// What is done to one category besides editing it: its custody set, what removing or refining it
+// would change, and refining it (permissions.md §3, Categories).
+export const categoryActions = ["custody", "impact", "refine"] as const;
+export type CategoryAction = (typeof categoryActions)[number];
+
+export function categoryActionRoute(categoryId: string, action: CategoryAction): string {
+  return `${categoryRoute(categoryId)}/${action}`;
+}
+
 export function projectRoute(projectId: string): string {
   return `${apiRoutes.projects}/${encodeURIComponent(projectId)}`;
 }

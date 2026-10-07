@@ -6,6 +6,7 @@ import {
   listBatches,
   listCategories,
   listDigitizationLists,
+  listGroups,
   listProjects,
   listUsers,
 } from "@/api/reference";
@@ -21,6 +22,15 @@ export function useUsersQuery({ isEnabled = true }: ReferenceQueryOptions = {}) 
   return useQuery({
     queryKey: [...referenceQueryKey, "users"],
     queryFn: listUsers,
+    staleTime: Infinity,
+    enabled: isEnabled,
+  });
+}
+
+export function useGroupsQuery({ isEnabled = true }: ReferenceQueryOptions = {}) {
+  return useQuery({
+    queryKey: [...referenceQueryKey, "groups"],
+    queryFn: listGroups,
     staleTime: Infinity,
     enabled: isEnabled,
   });

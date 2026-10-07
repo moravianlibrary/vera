@@ -3,6 +3,7 @@
 // relationships.md §5.2).
 
 import type { Category } from "@/domain/entities";
+import type { ScopedRecord } from "@/domain/permissions";
 
 // What each row of a category tree carries, picked per viewer (STATUS "Categories"): the first
 // three read a mix, the rest count what the subtree holds.
@@ -144,5 +145,54 @@ export function unheldCategoriesOf(
       !isCovered(category.id) &&
       !isHeldBelow(category.id) &&
       (category.parentId === null || isHeldBelow(category.parentId)),
+  );
+}
+
+// ---------------------------------------------------------------- changing the tree
+
+// What a grant's scope reads a category as; null, the root, is no category and only `any` holds.
+export function scopeOfCategory(
+  categories: readonly Category[],
+  categoryId: string | null,
+): ScopedRecord {
+  return categoryId === null
+    ? { kind: "unscoped" }
+    : { kind: "category", categoryPathIds: categoryLineageOf(categories, categoryId) };
+}
+
+// Where a category may go, null being the top level: never under itself, and never under a leaf
+// that holds documents, which would stop them being on a leaf (intentions.md §1.2). Who may put it
+// there is the caller's to add.
+export function placesFor(
+  categories: readonly Category[],
+  categoryId: string,
+  holdsDocuments: (categoryId: string) => boolean,
+): (string | null)[] {
+  const isLeaf = (id: string) => !categories.some((child) => child.parentId === id);
+  return [
+    null,
+    ...categories
+      .filter(
+        (candidate) =>
+          !isInSubtree(categories, candidate.id, categoryId) &&
+          !(isLeaf(candidate.id) && holdsDocuments(candidate.id)),
+      )
+      .map((candidate) => candidate.id),
+  ];
+}
+
+// Siblings are told apart by name, whatever the case.
+export function isNameTaken(
+  categories: readonly Category[],
+  parentId: string | null,
+  name: string,
+  exceptId: string | null,
+): boolean {
+  const wanted = name.trim().toLocaleLowerCase();
+  return categories.some(
+    (candidate) =>
+      candidate.parentId === parentId &&
+      candidate.id !== exceptId &&
+      candidate.name.toLocaleLowerCase() === wanted,
   );
 }

@@ -51,7 +51,6 @@ import { countValues, groupedBy, sliceOf } from "@/mocks/arrangement";
 import { suggestionFor } from "@/mocks/classification";
 import { database } from "@/mocks/database";
 import { oncePerCause } from "@/mocks/documents";
-import { groups } from "@/mocks/fixtures/access";
 import type { StoredProposalCustody } from "@/mocks/fixtures/proposal-custodies";
 import { custodyPlacements, houseRuleOf } from "@/mocks/fixtures/proposal-custodies";
 import type { Outcome } from "@/mocks/mutations";
@@ -77,7 +76,9 @@ export function decidedCustodiesOf(session: Session): StoredProposalCustody[] {
   }
 
   const userId = session.user.id;
-  const groupIds = groups.filter((group) => group.memberIds.includes(userId)).map(({ id }) => id);
+  const groupIds = database.groups
+    .filter((group) => group.memberIds.includes(userId))
+    .map(({ id }) => id);
   return database.proposalCustodies.filter(
     (custody) =>
       custody.memberIds.includes(userId) ||

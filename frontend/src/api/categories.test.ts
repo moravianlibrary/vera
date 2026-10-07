@@ -1,13 +1,25 @@
 // Categories end to end against the mock server over HTTP: who may read the tree, what custody
-// reaches and from where, and Overall's mix over the tree, the only one Categories shows.
+// reaches and from where, and Overall's mix over the tree, the only one Categories shows; then
+// changing the tree, inside custody: creating, moving, deleting, refining a leaf that holds
+// documents, and writing a category's custody set. The changes stay in the mock's state, so each
+// test changes its own categories.
 
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import type { CategoryIndex } from "@/api/categories";
-import { getCategoryIndex } from "@/api/categories";
+import {
+  createCategory,
+  deleteCategory,
+  getCategoryImpact,
+  getCategoryIndex,
+  refineCategory,
+  saveCategory,
+  saveCategoryCustody,
+} from "@/api/categories";
 import { ApiError } from "@/api/http";
 import { getSession } from "@/api/session";
 import type { MockUserProfile } from "@/config/env";
+import { database } from "@/mocks/database";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
@@ -121,5 +133,102 @@ describe("the session's custody", () => {
     signInAs("curator");
 
     expect((await getSession()).custodyCategoryIds.toSorted()).toEqual(["c2", "c4"]);
+  });
+});
+
+// The mock database starts from the same fixtures in every file, so a test reads what it changed.
+const sharesOf = (distributionId: string) =>
+  database.distributions.find((distribution) => distribution.id === distributionId)?.shares ?? {};
+
+describe("changing the tree", () => {
+  it("lets a curator add a category inside their custody only, with no share anywhere", async () => {
+    signInAs("curator");
+
+    const created = await createCategory({ name: " Moravian ", parentId: "c2" });
+
+    expect(created).toMatchObject({ name: "Moravian", parentId: "c2" });
+    expect(sharesOf("d1")[created.id]).toBeUndefined();
+    expect(await statusOf(createCategory({ name: "Atlases", parentId: "c1" }))).toBe(403);
+    expect(await statusOf(createCategory({ name: "Atlases", parentId: null }))).toBe(403);
+  });
+
+  it("refuses a name a sibling has, and a child under a leaf that holds documents", async () => {
+    signInAs("admin");
+
+    expect(await statusOf(createCategory({ name: "regional", parentId: "c2" }))).toBe(409);
+    expect(await statusOf(createCategory({ name: "Brno", parentId: "c21" }))).toBe(409);
+  });
+
+  it("moves a category with its share left unallocated where it was", async () => {
+    signInAs("admin");
+
+    await saveCategory("c23", { name: "Specialist press", parentId: "c1" });
+    const index = await getCategoryIndex();
+
+    expect(sharesOf("d1").c23).toBeUndefined();
+    expect(index.mix?.nodes.find((node) => node.categoryId === "c2")).toMatchObject({
+      unallocated: 20,
+    });
+    expect(index.mix?.nodes.find((node) => node.categoryId === "c1")?.noShareIds).toContain("c23");
+    expect(await statusOf(saveCategory("c1", { name: "Monographs", parentId: "c11" }))).toBe(422);
+  });
+
+  it("says which mixes give a share, naming only those the caller may read", async () => {
+    signInAs("admin");
+    const admin = await getCategoryImpact("c22");
+    signInAs("curator");
+    const curator = await getCategoryImpact("c22");
+
+    expect(admin.shares.map((share) => [share.owner.name, share.share])).toEqual([
+      ["House mix", 50],
+      ["Periodicals push — watch", 35],
+    ]);
+    expect(admin).toMatchObject({ documentCount: 6, otherMixCount: 0 });
+    expect(curator).toMatchObject({ shares: [], otherMixCount: 2 });
+  });
+
+  it("deletes only an empty leaf, its custody going with it", async () => {
+    signInAs("admin");
+    const empty = await createCategory({ name: "Posters", parentId: null });
+    await saveCategoryCustody(empty.id, { groupIds: ["g3"], userIds: [] });
+
+    await deleteCategory(empty.id);
+
+    expect(database.categories.some((category) => category.id === empty.id)).toBe(false);
+    expect(database.groups.find((group) => group.id === "g3")?.categoryIds).toEqual([]);
+    expect(await statusOf(deleteCategory("c21"))).toBe(409); // holds documents
+    expect(await statusOf(deleteCategory("c3"))).toBe(409); // has children
+  });
+
+  it("writes custody whole, within the curator's own subtree, and the session follows", async () => {
+    signInAs("curator");
+
+    const node = await saveCategoryCustody("c22", { groupIds: [], userIds: ["u4"] });
+    signInAs("staff");
+    const session = await getSession();
+
+    expect(node.grants).toEqual([{ kind: "person", id: "u4", name: expect.any(String) }]);
+    expect(session.custodyCategoryIds).toContain("c22");
+    signInAs("curator");
+    expect(await statusOf(saveCategoryCustody("c11", { groupIds: [], userIds: ["u4"] }))).toBe(403);
+  });
+
+  it("refines a leaf: a child takes every document and all of the leaf's share", async () => {
+    signInAs("curator");
+    const documentCount = database.iterations.filter(
+      ({ categoryId }) => categoryId === "c32",
+    ).length;
+
+    expect(await statusOf(refineCategory("c32", { name: "Brno" }))).toBe(403); // not theirs
+    signInAs("admin");
+    const child = await refineCategory("c32", { name: "Before 1800" });
+
+    expect(child.parentId).toBe("c32");
+    expect(database.iterations.filter(({ categoryId }) => categoryId === child.id)).toHaveLength(
+      documentCount,
+    );
+    expect(sharesOf("d1")[child.id]).toBe(100);
+    expect(sharesOf("d2")[child.id]).toBe(100);
+    expect(await statusOf(refineCategory("c3", { name: "Any" }))).toBe(409); // not a leaf
   });
 });

@@ -4,6 +4,7 @@
 import type { JsonBodyType } from "msw";
 import { HttpResponse, http } from "msw";
 import type { z } from "zod";
+import { categoryDraftSchema, custodyDraftSchema, refineDraftSchema } from "@/api/categories";
 import {
   parseDocumentGrouping,
   parseDocumentSearchParams,
@@ -65,7 +66,16 @@ import type { Session } from "@/domain/entities";
 import { watchlistViewSchema } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
 import { retryBatch } from "@/mocks/additions";
-import { canReadCategories, queryCategoryIndex } from "@/mocks/categories";
+import {
+  canReadCategories,
+  categoryImpact,
+  createCategory,
+  deleteCategory,
+  queryCategoryIndex,
+  refineCategory,
+  saveCategory,
+  saveCategoryCustody,
+} from "@/mocks/categories";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { findDocumentDetail, queryDocuments } from "@/mocks/documents";
@@ -221,6 +231,44 @@ export function createHandlers(profile: MockUserProfile) {
 
       return HttpResponse.json(queryCategoryIndex(session));
     }),
+    http.post(route(apiRoutes.categories), async ({ request }) => {
+      const draft = categoryDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      return outcomeResponse(createCategory(currentSession(), draft.data));
+    }),
+    http.put(route(`${apiRoutes.categories}/:categoryId`), async ({ params, request }) => {
+      const draft = categoryDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      return outcomeResponse(saveCategory(currentSession(), String(params.categoryId), draft.data));
+    }),
+    http.delete(route(`${apiRoutes.categories}/:categoryId`), ({ params }) => {
+      const outcome = deleteCategory(currentSession(), String(params.categoryId));
+      if ("refusal" in outcome) {
+        return problemResponse(outcome.refusal);
+      }
+
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.get(route(`${apiRoutes.categories}/:categoryId/impact`), ({ params }) =>
+      outcomeResponse(categoryImpact(currentSession(), String(params.categoryId))),
+    ),
+    http.put(route(`${apiRoutes.categories}/:categoryId/custody`), async ({ params, request }) => {
+      const draft = custodyDraftSchema.safeParse(await request.json());
+      if (!draft.success) {
+        return invalidResponse(draft.error);
+      }
+
+      return outcomeResponse(
+        saveCategoryCustody(currentSession(), String(params.categoryId), draft.data),
+      );
+    }),
+    recordAction(`${apiRoutes.categories}/:id/refine`, refineDraftSchema, refineCategory),
     http.get(route(apiRoutes.projects), () => HttpResponse.json(database.projects)),
     http.get(route(apiRoutes.groups), () => HttpResponse.json(listMemberGroups())),
 

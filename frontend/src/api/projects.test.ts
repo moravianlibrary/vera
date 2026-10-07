@@ -13,7 +13,6 @@ import {
   createProject,
   deleteProject,
   findProject,
-  listMemberGroups,
   listProjectIndex,
   previewDecision,
   previewProjectChange,
@@ -21,6 +20,7 @@ import {
   saveProject,
   saveProjectMembers,
 } from "@/api/projects";
+import { listGroups } from "@/api/reference";
 import type { MockUserProfile } from "@/config/env";
 import { createHandlers } from "@/mocks/handlers";
 
@@ -153,7 +153,7 @@ describe("findProject", () => {
   it("offers every group as a possible member", async () => {
     signInAs("digitization");
 
-    expect((await listMemberGroups()).map((group) => group.id)).toEqual(["g1", "g2", "g3"]);
+    expect((await listGroups()).map((group) => group.id)).toEqual(["g1", "g2", "g3"]);
   });
 });
 

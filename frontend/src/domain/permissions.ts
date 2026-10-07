@@ -94,6 +94,9 @@ export type ScopedRecord =
   | { readonly kind: "proposal"; readonly askerIds: readonly string[] }
   // Root first, so custody of any ancestor holds.
   | { readonly kind: "iteration"; readonly categoryPathIds: readonly string[] }
+  // A category itself, root first: custody of it or of anything above it holds (permissions.md
+  // §3, Categories). The root of the tree, which is no category, is `unscoped`.
+  | { readonly kind: "category"; readonly categoryPathIds: readonly string[] }
   | {
       readonly kind: "project";
       readonly managerId: string;
@@ -151,6 +154,7 @@ function isOwnedBy(record: ScopedRecord, userId: string): boolean {
     case "project":
       return record.managerId === userId;
     case "iteration":
+    case "category":
     case "unscoped":
       return false;
   }
@@ -163,6 +167,7 @@ function isInCustody(holder: ScopeHolder, record: ScopedRecord): boolean {
     case "proposal":
       return true;
     case "iteration":
+    case "category":
       return record.categoryPathIds.some((id) => holder.custodyCategoryIds.includes(id));
     case "project":
     case "run":

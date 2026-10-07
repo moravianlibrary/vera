@@ -96,7 +96,7 @@ green after every extraction.
 3. The editor (*Track* or *Own mix*), and repeats.
 4. The correcting list, which hands its allocation to the Lists editor.
 
-## 7. Categories — 1–3 done
+## 7. Categories — done
 
 1. Mock API: the tree, shares, custody.
 2. Tree + detail, with the Show picker and the intention picker (`?i=`).

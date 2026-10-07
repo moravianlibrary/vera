@@ -4,11 +4,13 @@
 // whom it reaches and from where. *All categories* totals the tree, holds the top-level set and
 // says what needs attention: sets under 100 in Overall's mix, and branches nobody holds. The
 // shares are Overall's and read-only here; the set card links to where they are edited
-// (intentions.md §2.4).
+// (intentions.md §2.4). Whoever may change this part of the tree gets *Edit…*, *+ Child category*
+// (*+ Top-level category* on the root, at `any`), *Refine…* on a leaf that holds documents,
+// *Delete…* on an empty leaf, and *Grant custody…* on the custody card (permissions.md §3).
 // TODO(rrandiak): labels move to i18n.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
-import { Fragment, type ReactNode } from "react";
+import { Fragment, type ReactNode, useState } from "react";
 import { Link } from "react-router";
 import type { CategoryIndex, CategoryNode, CategoryTotals } from "@/api/categories";
 import { listDocuments } from "@/api/documents";
@@ -21,13 +23,20 @@ import { DetailCard, DetailRow, FinePrint, Muted, StatTiles } from "@/components
 import { visibleNavigation } from "@/components/layout/navigation";
 import { MixSetCard } from "@/components/mix-set-card";
 import { StatusBadge } from "@/components/status-badge";
+import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
-import { categoryPathOf } from "@/domain/categories";
+import { categoryPathOf, scopeOfCategory } from "@/domain/categories";
 import { currentIterationOf } from "@/domain/documents";
 import type { Category, Session } from "@/domain/entities";
 import { can, hasPermission } from "@/domain/permissions";
 import { iterationStatusOf } from "@/domain/status";
 import { levelOf } from "@/features/categories/categories-view";
+import type { CategoryNotice } from "@/features/categories/category-dialogs";
+import {
+  CategoryFormDialog,
+  CustodyDialog,
+  DeleteCategoryDialog,
+} from "@/features/categories/category-dialogs";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { intentionMixHrefOf } from "@/features/intentions/mix-view";
 import { formatCount, formatPercent } from "@/lib/format-number";
@@ -42,16 +51,26 @@ interface CategoryPaneProps {
   // Null is *All categories*.
   categoryId: string | null;
   session: Session;
+  notice: CategoryNotice | null;
   onSelect: (id: string | null) => void;
+  // Shown after a change: the category it left open, null the root, and what to say.
+  onChanged: (id: string | null, notice: CategoryNotice) => void;
+  onRefine: () => void;
 }
+
+type PaneDialog = "edit" | "child" | "delete" | "custody";
 
 export function CategoryPane({
   categories,
   index,
   categoryId,
   session,
+  notice,
   onSelect,
+  onChanged,
+  onRefine,
 }: CategoryPaneProps) {
+  const [dialog, setDialog] = useState<PaneDialog | null>(null);
   const { mix } = index;
   const category = categories.find((candidate) => candidate.id === categoryId) ?? null;
   const node = index.nodes.find((candidate) => candidate.categoryId === categoryId);
@@ -61,10 +80,43 @@ export function CategoryPane({
     category !== null && canOpenDocuments(session)
       ? `/documents?category=${encodeURIComponent(category.id)}`
       : null;
-  const actions: ViewAction[] =
-    documentsHref !== null && !isLeaf
+  const holdsDocuments = (id: string) =>
+    (index.nodes.find((candidate) => candidate.categoryId === id)?.documentCount ?? 0) > 0;
+  const canEdit = can(session, "category.edit", scopeOfCategory(categories, categoryId));
+  const canGrant =
+    category !== null &&
+    can(session, "category.grant_custody", scopeOfCategory(categories, category.id));
+  const isFull = isLeaf && holdsDocuments(category.id);
+  const actions: ViewAction[] = [
+    ...(documentsHref !== null && !isLeaf
       ? [{ id: "documents", label: "Open in Documents", href: documentsHref }]
-      : [];
+      : []),
+    ...(canEdit && category !== null
+      ? [{ id: "edit", label: "Edit…", onSelect: () => setDialog("edit") }]
+      : []),
+    ...(canEdit && isFull ? [{ id: "refine", label: "Refine…", onSelect: onRefine }] : []),
+    ...(canEdit && !isFull
+      ? [
+          {
+            id: "child",
+            label: category === null ? "+ Top-level category" : "+ Child category",
+            onSelect: () => setDialog("child"),
+          },
+        ]
+      : []),
+    ...(canEdit && isLeaf && !isFull
+      ? [
+          {
+            id: "delete",
+            label: "Delete…",
+            isDestructive: true,
+            isInMenu: true,
+            onSelect: () => setDialog("delete"),
+          },
+        ]
+      : []),
+  ];
+  const closeDialog = () => setDialog(null);
 
   return (
     <article className="@container max-w-5xl">
@@ -82,8 +134,14 @@ export function CategoryPane({
                 : `Level ${levelOf(categories, category.id)} · splits its share among ${plural(children.length, "child", "children")}`}
           </p>
         </header>
-        <ActionBar actions={actions} className="mb-4" />
+        <ActionBar actions={actions} menuLabel="More" className="mb-4" />
       </div>
+
+      {notice !== null && (
+        <StatusNote tone="green" title={notice.title} className="mb-4">
+          {notice.text}
+        </StatusNote>
+      )}
 
       <StatTiles
         stats={[
@@ -124,7 +182,12 @@ export function CategoryPane({
             canList={hasPermission(session, "iteration.read")}
           />
         )}
-        <CustodyCard category={category} node={node} session={session} />
+        <CustodyCard
+          category={category}
+          node={node}
+          session={session}
+          onGrant={canGrant ? () => setDialog("custody") : undefined}
+        />
         <FinePrint>
           <b className="font-semibold">A category is a line of work.</b> It classifies the attempt
           and gives custody; it holds no share of its own. The shares shown are the house
@@ -132,6 +195,40 @@ export function CategoryPane({
           attaches anywhere and reaches everything under it.
         </FinePrint>
       </div>
+
+      {/* Mounted while open, so each starts from what the page has now. */}
+      {(dialog === "edit" || dialog === "child") && (
+        <CategoryFormDialog
+          isOpen
+          onClose={closeDialog}
+          categories={categories}
+          category={dialog === "edit" ? category : null}
+          parentId={categoryId}
+          holdsDocuments={holdsDocuments}
+          session={session}
+          onSaved={(saved, savedNotice) => onChanged(saved.id, savedNotice)}
+        />
+      )}
+      {dialog === "delete" && category !== null && (
+        <DeleteCategoryDialog
+          isOpen
+          onClose={closeDialog}
+          categories={categories}
+          category={category}
+          onDeleted={(deletedNotice) => onChanged(category.parentId, deletedNotice)}
+        />
+      )}
+      {dialog === "custody" && category !== null && node !== undefined && (
+        <CustodyDialog
+          isOpen
+          onClose={closeDialog}
+          categories={categories}
+          category={category}
+          node={node}
+          session={session}
+          onSaved={(savedNotice) => onChanged(category.id, savedNotice)}
+        />
+      )}
     </article>
   );
 }
@@ -143,7 +240,7 @@ function canOpenDocuments(session: Session): boolean {
   );
 }
 
-function Breadcrumb({
+export function Breadcrumb({
   categories,
   category,
   onSelect,
@@ -358,9 +455,11 @@ interface CustodyCardProps {
   category: Category | null;
   node: CategoryNode | undefined;
   session: Session;
+  // Where the person may grant custody here.
+  onGrant: (() => void) | undefined;
 }
 
-function CustodyCard({ category, node, session }: CustodyCardProps): ReactNode {
+function CustodyCard({ category, node, session, onGrant }: CustodyCardProps): ReactNode {
   if (category === null || node === undefined) {
     return (
       <DetailCard
@@ -383,7 +482,16 @@ function CustodyCard({ category, node, session }: CustodyCardProps): ReactNode {
   }
 
   return (
-    <DetailCard title="Custody">
+    <DetailCard
+      title="Custody"
+      action={
+        onGrant === undefined ? undefined : (
+          <Button size="sm" variant="outline" onClick={onGrant}>
+            Grant custody…
+          </Button>
+        )
+      }
+    >
       <div className="grid gap-x-8 gap-y-4 @md:grid-cols-2">
         <div>
           <div className="text-xs text-muted-foreground">Granted here</div>

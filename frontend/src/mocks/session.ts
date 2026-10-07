@@ -6,7 +6,7 @@ import type { MockUserProfile } from "@/config/env";
 import type { Session } from "@/domain/entities";
 import type { Grant } from "@/domain/permissions";
 import { database } from "@/mocks/database";
-import { categoryMembers, groups, roleAssignments, roles } from "@/mocks/fixtures/access";
+import { roleAssignments, roles } from "@/mocks/fixtures/access";
 
 const userIdsByProfile = {
   admin: "u3",
@@ -30,7 +30,9 @@ export function resolveSession(profile: MockUserProfile): Session {
     roleIds: [...roleIds],
     grants: grantsOf(roleIds),
     custodyCategoryIds: custodyOf(userId),
-    groupIds: groups.filter((group) => group.memberIds.includes(userId)).map(({ id }) => id),
+    groupIds: database.groups
+      .filter((group) => group.memberIds.includes(userId))
+      .map(({ id }) => id),
   };
 }
 
@@ -42,10 +44,10 @@ function grantsOf(roleIds: readonly string[]): Grant[] {
 }
 
 function custodyOf(userId: string): string[] {
-  const viaGroups = groups
+  const viaGroups = database.groups
     .filter((group) => group.memberIds.includes(userId))
     .flatMap((group) => group.categoryIds);
-  const direct = Object.entries(categoryMembers)
+  const direct = Object.entries(database.categoryMembers)
     .filter(([, memberIds]) => memberIds.includes(userId))
     .map(([categoryId]) => categoryId);
   return [...new Set([...viaGroups, ...direct])];

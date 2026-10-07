@@ -3,7 +3,7 @@
 // the propose form offers, so they refetch those too.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
-import { findProject, listMemberGroups, listProjectIndex } from "@/api/projects";
+import { findProject, listProjectIndex } from "@/api/projects";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { proposalsQueryKey } from "@/features/proposals/use-proposals-query";
 import { referenceQueryKey } from "@/hooks/use-reference-query";
@@ -18,13 +18,6 @@ export function useProjectQuery(projectId: string | null) {
   return useQuery({
     queryKey: [...projectsQueryKey, "detail", projectId],
     queryFn: projectId === null ? skipToken : () => findProject(projectId),
-  });
-}
-
-export function useMemberGroupsQuery(isEnabled: boolean) {
-  return useQuery({
-    queryKey: [...projectsQueryKey, "groups"],
-    queryFn: isEnabled ? listMemberGroups : skipToken,
   });
 }
 
