@@ -89,9 +89,11 @@ import {
   createGroup,
   createLocalAccount,
   createRole,
+  custodyImpact,
   deleteCustody,
   deleteRole,
   linkIdentity,
+  roleImpact,
   saveRole as saveAccessRole,
   saveCustody,
   saveGroup,
@@ -404,6 +406,9 @@ export function createHandlers(profile: MockUserProfile) {
       createRole(session, draft),
     ),
     accessWrite("put", `${apiRoutes.accessRoles}/:id`, roleDraftSchema, saveAccessRole),
+    http.get(route(`${apiRoutes.accessRoles}/:id/impact`), ({ params }) =>
+      outcomeResponse(roleImpact(currentSession(), String(params.id))),
+    ),
     accessDelete(`${apiRoutes.accessRoles}/:id`, deleteRole),
     accessWrite("post", apiRoutes.accessUsers, localAccountSchema, (session, _id, account) =>
       createLocalAccount(session, account),
@@ -435,6 +440,9 @@ export function createHandlers(profile: MockUserProfile) {
       `${apiRoutes.accessCustodies}/:id/members`,
       custodyMembersSchema,
       setCustodyMembers,
+    ),
+    http.get(route(`${apiRoutes.accessCustodies}/:id/impact`), ({ params }) =>
+      outcomeResponse(custodyImpact(currentSession(), String(params.id))),
     ),
     accessDelete(`${apiRoutes.accessCustodies}/:id`, deleteCustody),
     http.get(route(apiRoutes.categories), () => HttpResponse.json(database.categories)),

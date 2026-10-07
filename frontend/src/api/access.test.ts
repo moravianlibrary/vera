@@ -14,6 +14,8 @@ import {
   deleteCustody,
   deleteRole,
   getAccessIndex,
+  getCustodyImpact,
+  getRoleImpact,
   linkIdentity,
   saveCustody,
   saveRole,
@@ -144,6 +146,20 @@ describe("roles", () => {
     expect(
       await refusalOf(createRole({ name: "maps curator", description: "", grants: [] })),
     ).toMatchObject({ status: 409, code: "access.name_taken" });
+  });
+
+  it("says first what deleting a role takes from each holder, and which mappings stop", async () => {
+    signInAs("admin");
+
+    expect(await getRoleImpact("curator")).toEqual({
+      holders: [
+        { userId: "u1", keptRoleIds: [] },
+        { userId: "u8", keptRoleIds: ["staff"] },
+      ],
+      mappings: [{ instanceId: "pi22", claim: "group mzk-curators" }],
+      leavesNoManager: false,
+    });
+    expect((await getRoleImpact("admin")).leavesNoManager).toBe(true);
   });
 
   it("refuses to leave nobody able to manage access", async () => {
@@ -296,6 +312,11 @@ describe("groups and custodies", () => {
 
   it("places a deleted custody's proposals in the fallback", async () => {
     signInAs("admin");
+    const impact = await getCustodyImpact("pc1");
+    expect(impact.ruleIds).toEqual(["pi25"]);
+    expect(impact.toFallbackCount).toBeGreaterThan(0);
+    expect(impact.toFallbackCount).toBeLessThan(impact.openCount);
+
     const before = await getAccessIndex();
     const countOf = (index: AccessIndex, custodyId: string) =>
       index.custodies.find((custody) => custody.id === custodyId)?.openCount ?? 0;
@@ -303,6 +324,6 @@ describe("groups and custodies", () => {
     const after = await getAccessIndex();
 
     expect(after.custodies.some((custody) => custody.id === "pc1")).toBe(false);
-    expect(countOf(after, "pc0")).toBeGreaterThan(countOf(before, "pc0"));
+    expect(countOf(after, "pc0")).toBe(countOf(before, "pc0") + impact.toFallbackCount);
   });
 });

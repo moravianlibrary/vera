@@ -143,6 +143,16 @@ All notable changes to this project are documented here.
   never a role. A custody's says who decides its proposals, who only sees them and whom no
   role reaches, and which rule places proposals in it. Search and *Show* (people, agents, no
   role yet) narrow the columns; a phone has a tab for each.
+- Users & Groups, changing access (with `access.manage`): *New role* and *Edit grants…* set a
+  scope for each permission, only those it takes, *own* for a person's own records; a role
+  people hold asks once more before saving, listing what changes and what each holder actually
+  gains or loses. *Duplicate* copies a role; *Delete…* says what each holder keeps and which
+  identity mappings stop giving anything. A person's *Roles…* sets those held by hand and says
+  which are mapped and follow the provider; *Groups…* says what each group gives; *Link
+  identity…* adds another way to log in. *New local account* is for somebody with no
+  institutional account. Groups and proposal custodies are created, renamed and given members,
+  saying what each member gets or could do; deleting a custody says how many of its proposals
+  land in the Fallback. Nothing may leave nobody able to manage access.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

@@ -3,7 +3,7 @@
 // client can already see is wrong (over 100, nobody left to manage) holds Save back with the
 // reason. Where the change reaches others, Save first shows whom, as a second step with Back;
 // the instance owns whatever is chosen there. Proportions on an intention's Mix is the first
-// instance; the role editor and category custody (steps 7.5, 9) follow.
+// instance; category custody and the role editor follow.
 // TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
@@ -23,6 +23,8 @@ export interface SetEditorDialogProps<Entry> {
   onClose: () => void;
   title: string;
   description: string;
+  // Wide for a long set read in columns: the role editor's permissions.
+  width?: "regular" | "wide";
   // As stored; the editor starts from them.
   entries: readonly Entry[];
   renderEntries: (
@@ -46,6 +48,7 @@ export function SetEditorDialog<Entry>({
   onClose,
   title,
   description,
+  width,
   entries: stored,
   renderEntries,
   summaryOf,
@@ -87,6 +90,7 @@ export function SetEditorDialog<Entry>({
       onClose={close}
       title={title}
       description={description}
+      width={width}
       isDirty={JSON.stringify(entries) !== JSON.stringify(stored)}
       refusal={refusal}
       head={

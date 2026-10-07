@@ -104,22 +104,13 @@ function reachableRows(session: Session): ProposalRow[] {
     .filter((row) => row.custodyIds.some((custodyId) => custodyIds.has(custodyId)));
 }
 
-// How many open proposals the Custody rules place in each custody now, counted by document since
+// The custodies the Custody rules place each open proposal in now, one entry per document since
 // one decision covers every asker (proposal-custody.md §5, Users & Groups).
-export function openProposalCountsByCustody(): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (const document of database.documents) {
+export function openProposalPlacements(): string[][] {
+  return database.documents.flatMap((document) => {
     const row = rowOf(document);
-    if (row === null || row.decision !== "Pending") {
-      continue;
-    }
-
-    for (const custodyId of row.custodyIds) {
-      counts.set(custodyId, (counts.get(custodyId) ?? 0) + 1);
-    }
-  }
-
-  return counts;
+    return row === null || row.decision !== "Pending" ? [] : [row.custodyIds];
+  });
 }
 
 // The open or decided row of a document the caller decides; null outside their reach.

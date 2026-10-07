@@ -75,6 +75,12 @@ export function LinkedColumns<Kind extends string>({
   const isPhone = useTier() === "phone";
   const sections = columns.flat();
   const [tab, setTab] = useState<Kind>(selected.kind);
+  // A record selected from elsewhere (one named in a record, one just made) opens its own tab.
+  const [tabbedKind, setTabbedKind] = useState<Kind>(selected.kind);
+  if (selected.kind !== tabbedKind) {
+    setTabbedKind(selected.kind);
+    setTab(selected.kind);
+  }
   const recordRef = useRef<HTMLDivElement>(null);
 
   const select = (selection: LinkedSelection<Kind>) => {

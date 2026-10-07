@@ -162,7 +162,7 @@ export function scheduleActionRoute(scheduleId: string, action: ScheduleAction):
 }
 
 // One record of Users & Groups, and what is set on it whole: a user's hand-set roles, groups and
-// identities; a group's or a custody's members.
+// identities; a group's or a custody's members. And what deleting a role or a custody would do.
 export const accessRecordKinds = ["roles", "users", "groups", "custodies"] as const;
 export type AccessRecordKind = (typeof accessRecordKinds)[number];
 
@@ -170,7 +170,7 @@ export function accessRecordRoute(kind: AccessRecordKind, recordId: string): str
   return `${apiRoutes.access}/${kind}/${encodeURIComponent(recordId)}`;
 }
 
-export const accessRecordActions = ["roles", "groups", "identities", "members"] as const;
+export const accessRecordActions = ["roles", "groups", "identities", "members", "impact"] as const;
 export type AccessRecordAction = (typeof accessRecordActions)[number];
 
 export function accessRecordActionRoute(

@@ -10,6 +10,7 @@
 
 import type {
   AccessIndex,
+  CustodyImpact,
   CustodyMembers,
   GroupMembers,
   HandRoles,
@@ -17,10 +18,11 @@ import type {
   LocalAccount,
   RecordDraft,
   RoleDraft,
+  RoleImpact,
   UserGroups,
 } from "@/api/access";
 import type { AccessGroup, AccessUser, CustodyRecord, Identity, Role } from "@/domain/access";
-import { managersOf, roleNameOf } from "@/domain/access";
+import { heldRoleIdsOf, holdersOf, managersOf, mappingsOf, roleNameOf } from "@/domain/access";
 import type { Session } from "@/domain/entities";
 import { hasPermission, isAcceptedGrant } from "@/domain/permissions";
 import { database } from "@/mocks/database";
@@ -28,7 +30,7 @@ import type { UserAccess } from "@/mocks/fixtures/access";
 import type { StoredProposalCustody } from "@/mocks/fixtures/proposal-custodies";
 import { custodyRules } from "@/mocks/fixtures/proposal-custodies";
 import type { Outcome, Refusal } from "@/mocks/mutations";
-import { openProposalCountsByCustody } from "@/mocks/proposal-review";
+import { openProposalPlacements } from "@/mocks/proposal-review";
 import { accessUserOf } from "@/mocks/session";
 import { mockNow } from "@/mocks/today";
 
@@ -45,6 +47,15 @@ const lastManager: Refusal = {
 };
 
 // ---------------------------------------------------------------- the page
+
+function openProposalCountsByCustody(): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const custodyId of openProposalPlacements().flat()) {
+    counts.set(custodyId, (counts.get(custodyId) ?? 0) + 1);
+  }
+
+  return counts;
+}
 
 export function accessIndex(): AccessIndex {
   const openCounts = openProposalCountsByCustody();
@@ -195,6 +206,22 @@ export function saveRole(session: Session, roleId: string, draft: RoleDraft): Ou
   return { value: role };
 }
 
+function withoutRole(roleId: string) {
+  return {
+    roles: database.roles.filter((role) => role.id !== roleId),
+    access: Object.fromEntries(
+      Object.entries(database.userAccess).map(([userId, held]) => [
+        userId,
+        {
+          ...held,
+          handRoleIds: held.handRoleIds.filter((id) => id !== roleId),
+          mappedRoles: held.mappedRoles.filter((mapped) => mapped.roleId !== roleId),
+        },
+      ]),
+    ),
+  };
+}
+
 // Whoever held it keeps their other roles; a mapping still naming it gives nothing until the
 // Identity instance is changed on Plugins.
 export function deleteRole(session: Session, roleId: string): Outcome<null> {
@@ -207,17 +234,7 @@ export function deleteRole(session: Session, roleId: string): Outcome<null> {
     return { refusal: unknownRecord("role") };
   }
 
-  const roles = database.roles.filter((role) => role.id !== roleId);
-  const access = Object.fromEntries(
-    Object.entries(database.userAccess).map(([userId, held]) => [
-      userId,
-      {
-        ...held,
-        handRoleIds: held.handRoleIds.filter((id) => id !== roleId),
-        mappedRoles: held.mappedRoles.filter((mapped) => mapped.roleId !== roleId),
-      },
-    ]),
-  );
+  const { roles, access } = withoutRole(roleId);
   if (!keepsManager(roles, access)) {
     return { refusal: lastManager };
   }
@@ -225,6 +242,30 @@ export function deleteRole(session: Session, roleId: string): Outcome<null> {
   database.roles = roles;
   database.userAccess = access;
   return { value: null };
+}
+
+// What deleting the role does: what each holder keeps, the mappings that stop giving anything,
+// and whether it would leave nobody able to manage access.
+export function roleImpact(session: Session, roleId: string): Outcome<RoleImpact> {
+  if (!canReadAccess(session)) {
+    return { refusal: mayNotManage };
+  }
+
+  if (!database.roles.some((role) => role.id === roleId)) {
+    return { refusal: unknownRecord("role") };
+  }
+
+  const outcome = withoutRole(roleId);
+  return {
+    value: {
+      holders: holdersOf(database.users.map(accessUserOf), roleId).map(({ user }) => ({
+        userId: user.id,
+        keptRoleIds: heldRoleIdsOf(outcome.access[user.id] ?? user),
+      })),
+      mappings: mappingsOf(database.identityInstances, roleId),
+      leavesNoManager: !keepsManager(outcome.roles, outcome.access),
+    },
+  };
 }
 
 // ---------------------------------------------------------------- users
@@ -564,6 +605,28 @@ export function setCustodyMembers(
   };
   replaceCustody(custody);
   return { value: custodyRecordOf(custody) };
+}
+
+// What deleting the custody does: its open proposals are placed again, and those it alone held
+// land in the fallback.
+export function custodyImpact(session: Session, custodyId: string): Outcome<CustodyImpact> {
+  if (!canReadAccess(session)) {
+    return { refusal: mayNotManage };
+  }
+
+  const custody = database.proposalCustodies.find((candidate) => candidate.id === custodyId);
+  if (custody === undefined) {
+    return { refusal: unknownRecord("custody") };
+  }
+
+  const placements = openProposalPlacements().filter((placed) => placed.includes(custodyId));
+  return {
+    value: {
+      openCount: placements.length,
+      toFallbackCount: placements.filter((placed) => placed.length === 1).length,
+      ruleIds: custodyRecordOf(custody).placedByIds,
+    },
+  };
 }
 
 export function deleteCustody(session: Session, custodyId: string): Outcome<null> {

@@ -6,15 +6,27 @@
 // and *Show* narrow the columns. A phone switches between the columns with tabs.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ReactNode } from "react";
+import { useState } from "react";
 import { useSearchParams } from "react-router";
 import type { AccessIndex } from "@/api/access";
 import type { AccessRecordKind } from "@/api/routes";
+import { ActionBar } from "@/components/actions/action-bar";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import type { LinkedItem, LinkedSection } from "@/components/linked-columns";
 import { LinkedColumns } from "@/components/linked-columns";
 import { ToneBadge } from "@/components/status-badge";
+import { StatusNote } from "@/components/status-note";
 import { custodyMembersOf, heldRoleIdsOf, holdersOf } from "@/domain/access";
+import { hasPermission } from "@/domain/permissions";
+import type { AccessDialog } from "@/features/access/access-acts";
+import {
+  AccessDialogView,
+  headerActionsFor,
+  recordActionsFor,
+} from "@/features/access/access-acts";
+import type { AccessNotice } from "@/features/access/access-dialogs";
 import { linksOf } from "@/features/access/access-links";
 import type { AccessNames } from "@/features/access/access-records";
 import {
@@ -35,11 +47,16 @@ import {
 } from "@/features/access/access-view";
 import { useAccessQuery } from "@/features/access/use-access-query";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
+import { useSessionQuery } from "@/hooks/use-session-query";
 import { plural } from "@/lib/plural";
 
 export function AccessPage() {
   const [params, setParams] = useSearchParams();
   const { data: index } = useAccessQuery();
+  const { data: session } = useSessionQuery();
+  const [dialog, setDialog] = useState<AccessDialog | null>(null);
+  const [notice, setNotice] = useState<AccessNotice | null>(null);
+  const canManage = session !== undefined && hasPermission(session, "access.manage");
   const labels = useReferenceLabels(["categories", "pluginInstances"]);
   const query = accessView.parseSearchParams(params);
 
@@ -66,9 +83,15 @@ export function AccessPage() {
     setParams(next, { replace: true });
   };
 
+  const names =
+    index === undefined
+      ? null
+      : namesOf(index, { categoryOf: labels.categories, instanceOf: labels.pluginInstances });
+  const selection = index === undefined ? null : selectionOf(params, index);
+
   return (
     <>
-      <PageHeader title="Users & Groups" />
+      <PageHeader title="Users & Groups" actions={canManage ? headerActionsFor(setDialog) : []} />
       <FilterBar
         fields={accessView.fields}
         query={query}
@@ -82,16 +105,43 @@ export function AccessPage() {
           <AccessColumns
             index={index}
             shown={filteredIndex(index, query)}
-            names={namesOf(index, {
-              categoryOf: labels.categories,
-              instanceOf: labels.pluginInstances,
-            })}
-            selection={selectionOf(params, index)}
+            names={names}
+            selection={selection}
             onSelect={select}
             onShowWithoutRole={() => setQuery({ ...query, show: ["none"] })}
+            notice={
+              notice === null ? undefined : (
+                <NoticeLine notice={notice} onDismiss={() => setNotice(null)} />
+              )
+            }
+            recordActions={
+              canManage && selection !== null ? (
+                <ActionBar actions={recordActionsFor(index, selection, setDialog)} />
+              ) : undefined
+            }
           />
         )}
       </PageContent>
+      {dialog !== null && index !== undefined && names !== null && (
+        <AccessDialogView
+          dialog={dialog}
+          index={index}
+          names={names}
+          onClose={() => setDialog(null)}
+          onDone={(next, selected) => {
+            setNotice(next);
+            setDialog(null);
+            if (selected !== undefined) {
+              select(selected);
+            }
+
+            // The record, with what was done said above it, comes into view.
+            requestAnimationFrame(() =>
+              document.getElementById(recordAnchor)?.scrollIntoView({ block: "start" }),
+            );
+          }}
+        />
+      )}
     </>
   );
 }
@@ -100,10 +150,14 @@ interface AccessColumnsProps {
   index: AccessIndex;
   // What the search and Show leave in the columns; the record reads the whole index.
   shown: AccessIndex;
-  names: AccessNames;
+  names: AccessNames | null;
   selection: AccessSelection | null;
   onSelect: (selection: AccessSelection) => void;
   onShowWithoutRole: () => void;
+  // What was just done, said above the record.
+  notice?: ReactNode;
+  // What may be done to the selected record; absent without access.manage.
+  recordActions?: ReactNode;
 }
 
 function AccessColumns({
@@ -113,14 +167,16 @@ function AccessColumns({
   selection,
   onSelect,
   onShowWithoutRole,
+  notice,
+  recordActions,
 }: AccessColumnsProps) {
-  if (selection === null) {
+  if (selection === null || names === null) {
     return <p className="text-sm text-muted-foreground">Nobody here yet.</p>;
   }
 
   const { tags, lines } = linksOf(index, selection);
   const sections = sectionsOf(index, shown, names);
-  const recordProps = { index, names, onSelect };
+  const recordProps = { index, names, onSelect, actions: recordActions };
   const record = (() => {
     switch (selection.kind) {
       case "users": {
@@ -154,9 +210,33 @@ function AccessColumns({
         tags={tags}
         lines={lines}
         onSelect={onSelect}
-        record={record}
+        record={
+          <div id={recordAnchor} className="scroll-mt-4">
+            {notice}
+            {record}
+          </div>
+        }
       />
     </>
+  );
+}
+
+const recordAnchor = "access-record";
+
+function NoticeLine({ notice, onDismiss }: { notice: AccessNotice; onDismiss: () => void }) {
+  return (
+    <div className="mb-3 flex items-start gap-2">
+      <StatusNote tone="green" title={notice.title} className="flex-1">
+        {notice.text}
+      </StatusNote>
+      <button
+        type="button"
+        className="text-xs text-muted-foreground hover:text-foreground"
+        onClick={onDismiss}
+      >
+        Dismiss
+      </button>
+    </div>
   );
 }
 
@@ -167,6 +247,10 @@ function Counts({
 }: {
   index: AccessIndex;
   onShowWithoutRole: () => void;
+  // What was just done, said above the record.
+  notice?: ReactNode;
+  // What may be done to the selected record; absent without access.manage.
+  recordActions?: ReactNode;
 }) {
   const agentCount = index.users.filter((user) => user.kind === "agent").length;
   const withoutRoleCount = index.users.filter((user) => heldRoleIdsOf(user).length === 0).length;

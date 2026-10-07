@@ -83,6 +83,24 @@ export const localAccountSchema = z.object({
 });
 export type LocalAccount = z.infer<typeof localAccountSchema>;
 
+// What deleting a role does, as the server counts it.
+export const roleImpactSchema = z.object({
+  holders: z.array(z.object({ userId: z.string(), keptRoleIds: z.array(z.string()) })),
+  // Identity mappings that name it, which stop giving anything.
+  mappings: z.array(z.object({ instanceId: z.string(), claim: z.string().nullable() })),
+  leavesNoManager: z.boolean(),
+});
+export type RoleImpact = z.infer<typeof roleImpactSchema>;
+
+// What deleting a custody does: its open proposals placed again, some into the fallback.
+export const custodyImpactSchema = z.object({
+  openCount: z.number().int().nonnegative(),
+  toFallbackCount: z.number().int().nonnegative(),
+  // The rules still naming it, which then name nothing.
+  ruleIds: z.array(z.string()),
+});
+export type CustodyImpact = z.infer<typeof custodyImpactSchema>;
+
 export async function getAccessIndex(): Promise<AccessIndex> {
   return getJson(apiRoutes.access, accessIndexSchema);
 }
@@ -95,6 +113,10 @@ export async function createRole(draft: RoleDraft): Promise<Role> {
 
 export async function saveRole({ roleId, draft }: { roleId: string; draft: RoleDraft }) {
   return putJson(accessRecordRoute("roles", roleId), draft, roleSchema);
+}
+
+export async function getRoleImpact(roleId: string): Promise<RoleImpact> {
+  return getJson(accessRecordActionRoute("roles", roleId, "impact"), roleImpactSchema);
 }
 
 export async function deleteRole(roleId: string): Promise<void> {
@@ -156,6 +178,10 @@ export const setCustodyMembers = putOn<CustodyMembers, CustodyRecord>(
   "members",
   custodyRecordSchema,
 );
+
+export async function getCustodyImpact(custodyId: string): Promise<CustodyImpact> {
+  return getJson(accessRecordActionRoute("custodies", custodyId, "impact"), custodyImpactSchema);
+}
 
 // Every open proposal is placed again; those it alone held land in the fallback.
 export async function deleteCustody(custodyId: string): Promise<void> {
