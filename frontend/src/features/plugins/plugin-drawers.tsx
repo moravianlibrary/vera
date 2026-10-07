@@ -66,6 +66,8 @@ interface ImplementationDrawerProps {
   onOpenInstance: (instanceId: string) => void;
   names: DrawerNames;
   actions: readonly ViewAction[];
+  // What was just done to it, said on top.
+  notice?: ReactNode;
 }
 
 export function implementationSubtitle(implementation: PluginImplementation): ReactNode {
@@ -83,10 +85,12 @@ export function ImplementationDrawer({
   onOpenInstance,
   names,
   actions,
+  notice,
 }: ImplementationDrawerProps) {
   const [newest] = implementation.versions;
   return (
     <div className="grid gap-4 text-[0.8125rem]">
+      {notice}
       <p>{implementation.description}</p>
       {newest !== undefined && <Contract version={newest} />}
 

@@ -419,7 +419,7 @@ The foundation is in place:
   hand progresses and finishes. A cadence and its moments are `src/domain/schedules.ts`
   (`occurrencesOf`, `nextOccurrenceOf`, `repeatCadenceOf`), which the editor's preview shares
   with the server; who may cancel or re-run is `src/domain/tasks.ts`. Plugin instances are
-  reference data (`GET /plugin-instances`, `fixtures/plugins.ts` until step 10). Tasks
+  reference data (`GET /plugin-instances`, from Plugins' fixtures). Tasks
   (`tasks-page.tsx`) is the shared `TableWithDrawer`: tiles, running cards with `RunProgress`,
   the finished table with a failed run's note row and phone cards, the drawer at `?run=`
   (`run-drawer.tsx`), Cancel and Keep runs for (`run-dialogs.tsx`). Schedules
@@ -437,8 +437,9 @@ The foundation is in place:
   `…/groups`, `POST …/users/:id/identities`, `POST`/`PUT /access/groups…` and `…/members`,
   `POST`/`PUT`/`DELETE /access/custodies…`, `…/members` and `GET …/custodies/:id/impact` (409
   `access.last_manager`, `access.name_taken`, `access.identity_taken`; 422 `access.fallback`).
-  Roles, how each person holds them and the identity instances are in the mock database
-  (`fixtures/access.ts` `userAccess`, `fixtures/identity.ts`); the session resolves them per
+  Roles and how each person holds them are in the mock database (`fixtures/access.ts`
+  `userAccess`); the identity instances and the Custody rules are Plugins' instances, read
+  through `src/mocks/plugin-instances.ts`; the session resolves them per
   request (`sessionOf` in `src/mocks/session.ts`, for anyone). The derivations, shared with the
   page, are `src/domain/access.ts` (roles and how held, permissions at their widest with their
   roles, included roles, custody and projects via groups, who a role's change reaches); the
@@ -451,6 +452,37 @@ The foundation is in place:
   audience (personal, everyone, some groups and roles; `watchlistAudienceSchema`), a row per
   person who sees one (`viewer`: seen, badge, hidden, place) and `POST /watchlists/reach`;
   `ShareWatchlistDialog` (`src/components/filters/`) sets it from a tab and from Users & Groups.
+- Plugins (`src/features/plugins/`). `src/api/plugins.ts` serves `GET /plugins` (`plugin.read`:
+  every implementation with its installed versions, newest first, each with its contract
+  version, triggers, declarations and config fields; every instance not deleted with its
+  configuration less its secrets (`secretsSet` says which are set), VERA's settings on it
+  (`settings`: an Identity's login label, order, user id claim, default role, match by email and
+  claim mappings; a Custody rule's custody names; a Message's or Classifier's order), its
+  schedules, its recent runs, `runCount` and `lastRunAt`, and `asOf`). Under `plugin.configure`:
+  `POST /plugin-instances` and `PUT /plugin-instances/:id` (checked against the version's config
+  fields; a secret not sent keeps its value; 409 `plugin.name_taken`, `plugin.user_claim_fixed`;
+  422 `plugin.config_missing`, `plugin.config_unknown`, `plugin.settings`), `POST …/enable` and
+  `…/disable` (409 `plugin.last_identity`, `plugin.contract`, `plugin.unchanged`), `GET …/impact`
+  (what stops: others of its kind still on, schedules, runs, who signs in through it, the open
+  proposals a rule places), `DELETE` (kept for its runs, its schedules removed), `GET`/`POST
+  …/upgrade` (to the newest version VERA runs: names added and retired, config fields added and
+  dropped, approvals a retired rule leaves uncovered; 409 `plugin.up_to_date`); `POST …/run`
+  under `plugin.run` (a run on Tasks; 422 `plugin.not_runnable`). Under `plugin.upload_code`:
+  `POST /plugin-implementations/uploads` (multipart; the mock reads the package by its file name,
+  `<kebab-name>-<x.y.z>.jar`: an installed implementation's next version with what
+  `nextVersionChanges` adds and retires, or one of `newPackages`; 422 `plugin.not_a_package`,
+  `plugin.no_descriptor`, `plugin.other_implementation`; 409 `plugin.version_installed`) and
+  `POST …/uploads/:id/install`. The fixtures are `fixtures/plugins.ts` (implementations,
+  instances, packages); `src/mocks/plugin-instances.ts` gives the rest of the mock each kind's
+  enabled instances in order, so Generate, the decide form's suggestion, *Message…*, Users &
+  Groups and custody placement follow what Plugins switches off. Versions and their differences
+  are `src/domain/plugins.ts`. The page (`plugins-page.tsx`) is the shared `TableWithDrawer` over
+  a `DataTable` grouped kind → implementation → instance (`plugin-table.tsx`), filtered in place
+  (`plugins-view.ts`: `?q= ?kind= ?state=`; `?i=` opens an instance, `?impl=` an implementation;
+  every view links an instance with `pluginInstanceHrefOf`), the drawers in `plugin-drawers.tsx`,
+  the acts in `plugin-acts.tsx` (Disable and Delete on `ConsequenceDialog` fed by the impact,
+  Move to a version, the upload on `SteppedDialog`) and the editor in `instance-editor.tsx` on
+  `FormDialog`.
 - Tests (`bun run test`): status derivations against fixture iterations, fixture integrity,
   the Documents API and its filters, facets, slices and grouping through MSW as a reader and
   as staff, the status notes and desks for both audiences, watchlists, and

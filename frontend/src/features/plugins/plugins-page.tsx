@@ -7,10 +7,11 @@
 // Schedules.
 // TODO(rrandiak): labels move to i18n.
 
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import type { PluginImplementation, PluginIndex, PluginInstanceDetail } from "@/api/plugins";
-import { runPluginInstance } from "@/api/plugins";
+import { enablePluginInstance, runPluginInstance } from "@/api/plugins";
 import type { ViewAction } from "@/components/actions/action-bar";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
@@ -18,7 +19,13 @@ import { NoticeLine } from "@/components/notice-line";
 import { TableWithDrawer } from "@/components/table-with-drawer";
 import type { Session } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
-import { schedulableKinds } from "@/domain/schedules";
+import type { PluginDialog, PluginNotice } from "@/features/plugins/plugin-acts";
+import {
+  headerActionsFor,
+  implementationActionsFor,
+  instanceActionsFor,
+  PluginDialogView,
+} from "@/features/plugins/plugin-acts";
 import type { DrawerNames } from "@/features/plugins/plugin-drawers";
 import {
   ImplementationDrawer,
@@ -43,19 +50,12 @@ import { useProposalCustodiesQuery, useRolesQuery } from "@/hooks/use-reference-
 import { useSessionQuery } from "@/hooks/use-session-query";
 import { plural } from "@/lib/plural";
 
-export interface PluginNotice {
-  title: string;
-  text: string;
-  tone: "green" | "red";
-  // The run an act started, followed on Tasks.
-  runId?: string;
-}
-
 export function PluginsPage() {
   const [params, setParams] = useSearchParams();
   const { data: index } = usePluginsQuery();
   const { data: session } = useSessionQuery();
   const [notice, setNotice] = useState<PluginNotice | null>(null);
+  const [dialog, setDialog] = useState<PluginDialog | null>(null);
   const query = pluginsView.parseSearchParams(params);
   const selection = index === undefined ? null : selectionOf(params, index);
 
@@ -89,7 +89,7 @@ export function PluginsPage() {
 
   return (
     <>
-      <PageHeader title="Plugins" />
+      <PageHeader title="Plugins" actions={headerActionsFor(session, setDialog)} />
       <FilterBar
         fields={pluginsView.fields}
         query={query}
@@ -110,9 +110,26 @@ export function PluginsPage() {
             onOpenInstance={(id) => open(instanceParam, id)}
             onOpenImplementation={(id) => open(implementationParam, id)}
             onClose={() => open(instanceParam, null)}
+            onDialog={setDialog}
           />
         )}
       </PageContent>
+      {dialog !== null && index !== undefined && (
+        <PluginDialogView
+          dialog={dialog}
+          index={index}
+          onClose={() => setDialog(null)}
+          onDone={(next, opened) => {
+            setNotice(next);
+            setDialog(null);
+            if (opened?.instanceId !== undefined) {
+              open(instanceParam, opened.instanceId);
+            } else if (opened?.implementationId !== undefined) {
+              open(implementationParam, opened.implementationId);
+            }
+          }}
+        />
+      )}
     </>
   );
 }
@@ -127,6 +144,7 @@ interface PluginTableProps {
   onOpenInstance: (instanceId: string) => void;
   onOpenImplementation: (implementationId: string) => void;
   onClose: () => void;
+  onDialog: (dialog: PluginDialog) => void;
 }
 
 function PluginTable({
@@ -139,13 +157,20 @@ function PluginTable({
   onOpenInstance,
   onOpenImplementation,
   onClose,
+  onDialog,
 }: PluginTableProps) {
   const labels = useReferenceLabels(["users", "categories"]);
   const { data: roles = [] } = useRolesQuery();
   const { data: custodies = [] } = useProposalCustodiesQuery();
   const shown = shownPluginsOf(index, query);
   const isFiltered = !pluginsView.isSameQuery(query, {});
-  const groups = useInstanceGroups({ shown, isFiltered: (query.states ?? []).length > 0 });
+  const groups = useInstanceGroups({
+    shown,
+    isFiltered: (query.states ?? []).length > 0,
+    onNewInstance: hasPermission(session, "plugin.configure")
+      ? (implementation) => onDialog({ kind: "newInstance", implementationId: implementation.id })
+      : undefined,
+  });
   const canSeeTasks = hasPermission(session, "task.read");
   const run = useActionMutation({
     call: runPluginInstance,
@@ -155,6 +180,11 @@ function PluginTable({
       "plugin.not_runnable": "It runs only while somebody uses it.",
       403: "You may not run plugins.",
     },
+  });
+  const enable = useActionMutation({
+    call: enablePluginInstance,
+    invalidates: pluginInvalidations,
+    refusalTexts: { "plugin.contract": "Its version was built for a contract VERA does not run." },
   });
   const implementationOf = (instance: PluginInstanceDetail) =>
     index.implementations.find((candidate) => candidate.id === instance.implementationId);
@@ -180,19 +210,28 @@ function PluginTable({
     );
   };
 
-  const instanceActions = (instance: PluginInstanceDetail): ViewAction[] => {
-    const isRunnable = (schedulableKinds as readonly string[]).includes(instance.kind);
-    return isRunnable && instance.isEnabled && hasPermission(session, "plugin.run")
-      ? [
-          {
-            id: "run",
-            label: "Run now",
-            isPrimary: true,
-            onSelect: () => void runNow(instance),
-          },
-        ]
-      : [];
+  const enableNow = async (instance: PluginInstanceDetail) => {
+    const result = await enable.run(instance.id);
+    onNotice(
+      result.isDone
+        ? {
+            title: `${instance.name} enabled`,
+            text: "It runs from its next trigger.",
+            tone: "green",
+          }
+        : { title: `${instance.name} stays disabled`, text: result.refusal.message, tone: "red" },
+    );
   };
+
+  const instanceActions = (
+    instance: PluginInstanceDetail,
+    implementation: PluginImplementation,
+  ): ViewAction[] =>
+    instanceActionsFor(session, instance, implementation, {
+      open: onDialog,
+      onRun: () => void runNow(instance),
+      onEnable: () => void enableNow(instance),
+    });
 
   const noticeLine =
     notice === null ? null : (
@@ -223,8 +262,11 @@ function PluginTable({
     reach,
     asOf: index.asOf,
     instanceActions,
+    implementationActions: (implementation) =>
+      implementationActionsFor(session, implementation, onDialog),
     onOpenInstance,
     onOpenImplementation,
+    notice: noticeLine,
   });
 
   return (
@@ -242,7 +284,7 @@ function PluginTable({
       drawer={drawer.body}
       above={
         <>
-          {noticeLine}
+          {selection === null && noticeLine}
           <Counts index={index} />
         </>
       }
@@ -270,7 +312,13 @@ interface DrawerOptions {
   names: DrawerNames;
   reach: { canSeeTasks: boolean; canSeeAccess: boolean };
   asOf: string;
-  instanceActions: (instance: PluginInstanceDetail) => ViewAction[];
+  instanceActions: (
+    instance: PluginInstanceDetail,
+    implementation: PluginImplementation,
+  ) => ViewAction[];
+  implementationActions: (implementation: PluginImplementation) => ViewAction[];
+  // What was just done: in the open drawer, which covers the page on a phone.
+  notice: ReactNode;
   onOpenInstance: (instanceId: string) => void;
   onOpenImplementation: (implementationId: string) => void;
 }
@@ -280,8 +328,17 @@ function drawerOf(selection: PluginSelection | null, options: DrawerOptions) {
     return { title: "", subtitle: undefined, body: null };
   }
 
-  const { index, names, reach, asOf, instanceActions, onOpenInstance, onOpenImplementation } =
-    options;
+  const {
+    index,
+    names,
+    reach,
+    asOf,
+    instanceActions,
+    implementationActions,
+    onOpenInstance,
+    onOpenImplementation,
+    notice,
+  } = options;
   if (selection.kind === "implementation") {
     const { implementation } = selection;
     return {
@@ -293,7 +350,8 @@ function drawerOf(selection: PluginSelection | null, options: DrawerOptions) {
           instances={instancesOf(index, implementation)}
           onOpenInstance={onOpenInstance}
           names={names}
-          actions={[]}
+          actions={implementationActions(implementation)}
+          notice={notice}
         />
       ),
     };
@@ -312,7 +370,8 @@ function drawerOf(selection: PluginSelection | null, options: DrawerOptions) {
         names={names}
         reach={reach}
         onOpenImplementation={openImplementation}
-        actions={instanceActions(instance)}
+        actions={instanceActions(instance, implementation)}
+        notice={notice}
       />
     ),
   };

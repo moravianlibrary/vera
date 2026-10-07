@@ -259,7 +259,7 @@ export function useInstanceGroups({
             action={
               onNewInstance === undefined || tier === "phone" ? undefined : (
                 <Button size="sm" variant="outline" onClick={() => onNewInstance(implementation)}>
-                  New instance
+                  New instance…
                 </Button>
               )
             }

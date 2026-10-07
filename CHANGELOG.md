@@ -172,6 +172,18 @@ All notable changes to this project are documented here.
   the claims it maps to roles) or the custodies a custody rule places into, when it runs with
   its schedules (edited on Schedules), its recent runs from Tasks and *Run now*. Links from
   Tasks and Users & Groups open the instance.
+- Plugins, changing them (with `plugin.configure`): *New instance…* from an implementation, and
+  *Edit configuration…*, ask for a field per key its version is configured with (a secret is
+  never shown; blank keeps it) and what it serves; an identity also sets its login button, its
+  order, the role a new user gets, *match by email* and the claims it maps to roles. *Disable…*
+  and *Delete…* say first what stops, by kind and as the server counts it: the last generator
+  takes Generate with it, an identity names who signs in through it, a custody rule how many
+  open proposals are placed again; deleting takes its schedules too and keeps its runs. The
+  last way to log in is never switched off. *Move to v…* says what the newer version adds and
+  retires before an instance moves. *Upload plugin code…* (and *Upload a new version…*, with
+  `plugin.upload_code`) reads the package's descriptor first, saying what it adds and retires
+  against the version installed, or that it was built for a contract VERA does not run, then
+  installs it; no instance moves with it.
 - Documents Validations groups its list by category or by defect.
 - Frontend application shell: permission-driven sidebar that expands on hover when collapsed,
   page header and responsive master–detail layout.

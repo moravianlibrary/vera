@@ -136,7 +136,7 @@ green after every extraction.
    - *Share…*;
    - shared watchlists listed here.
 
-## 10. Plugins
+## 10. Plugins — done
 
 1. Mock API: types, implementations, instances.
 2. The grouped table, with the implementation and instance drawers.

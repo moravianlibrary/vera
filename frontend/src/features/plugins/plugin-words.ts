@@ -1,11 +1,13 @@
-// What Plugins says (docs/demos/shared/page-plugins.js `KIND_DESC`, `supplies`; vera-data.js
-// `KIND_TONE`): each kind's name, colour and the job it does, an instance's triggers, and what an
-// implementation declares it supplies, as the chips on its row.
+// What Plugins says (docs/demos/shared/page-plugins.js `KIND_DESC`, `supplies`, `LOSS`;
+// vera-data.js `KIND_TONE`): each kind's name, colour and the job it does, an instance's
+// triggers, what an implementation declares it supplies, as the chips on its row, and what
+// stops when an instance is switched off.
 // TODO(rrandiak): labels move to i18n.
 
-import type { PluginVersion } from "@/api/plugins";
+import type { PluginImpact, PluginVersion } from "@/api/plugins";
 import type { Tone } from "@/components/status-badge";
-import type { DeclaredNameKind, PluginKind, PluginTrigger } from "@/domain/plugins";
+import type { DeclaredName, DeclaredNameKind, PluginKind, PluginTrigger } from "@/domain/plugins";
+import { plural } from "@/lib/plural";
 
 export const pluginKindLabels = {
   CatalogAdapter: "Catalog adapter",
@@ -106,4 +108,54 @@ export function suppliesOf(version: PluginVersion): string[] {
       ? []
       : [declares.loginEntry === "Form" ? "login form" : "login button"]),
   ];
+}
+
+// ---------------------------------------------------------------- what switching one off stops
+
+// What stops while an instance is off, by its kind, from the server's count (STATUS "Plugins":
+// "the last generator — the Generate button disappears").
+// TODO(rrandiak): a delivery channel names the hooks that stop sending once Hooks exist (step 11).
+export function lossText(impact: PluginImpact, instanceName: string): string {
+  const hasOthers = impact.otherEnabledCount > 0;
+  switch (impact.kind) {
+    case "CatalogAdapter":
+      return `${instanceName} can no longer be searched when proposing, and its records stop resyncing.`;
+    case "Registry":
+      return `existing-copy checks against ${instanceName} stop, and the registry states it reported go stale.`;
+    case "PropertySource":
+      return "values it already supplied stay; new documents get none from it.";
+    case "Harvester":
+      return "it stops proposing new documents.";
+    case "Validation":
+      return "its rules stop running on ingest; defects it already found stay.";
+    case "Restriction":
+      return "it stops forbidding anything new. What it already forbade stays forbidden until a re-check clears it or an admin overrules it.";
+    case "Custody":
+      return `the ${plural(impact.openProposalCount, "open proposal")} it places now are placed again without its rule; what nothing else places lands in the fallback.`;
+    case "Input":
+      return hasOthers
+        ? "another instance still offers this way of entering items."
+        : "this way of entering items disappears from the propose dialog.";
+    case "ListGenerator":
+      return hasOthers
+        ? "it disappears from Generate; other generators stay."
+        : "it is the last generator: the Generate button disappears from Digitization Lists.";
+    case "Identity":
+      return `it leaves the login page. ${plural(impact.userCount, "person signs", "people sign")} in through it; they keep their records but cannot log in this way, and roles it mapped stay until their next login elsewhere.`;
+    case "Message":
+      return hasOthers
+        ? "Message… stops offering it; other ways stay."
+        : "it is the last one: Message… disappears everywhere.";
+    case "DeliveryChannel":
+      return "the hooks sending through it stop sending; their deliveries wait until it is back.";
+    case "Classifier":
+      return hasOthers
+        ? "the decide form stops showing its suggestions; the others still suggest."
+        : "it is the last classifier: the decider picks a category with no suggestion.";
+  }
+}
+
+// "rule R11 extent matches what was delivered", "registry state Revision".
+export function declaredNameText(name: DeclaredName): string {
+  return `${declaredNameKindLabels[name.kind]} ${name.name}${name.label === null ? "" : ` ${name.label}`}`;
 }
