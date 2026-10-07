@@ -2,7 +2,7 @@
 
 A running record, not a plan: what has been built, which decisions to trust,
 which documents have fallen behind them, and the order the work goes in.
-Update it when something is decided or finished. Last updated 2026-10-06.
+Update it when something is decided or finished. Last updated 2026-10-07.
 
 ---
 
@@ -72,6 +72,38 @@ When sources disagree:
 ## Decisions to trust
 
 Each is settled. It is not reopened unless the user reopens it.
+
+**Category, mix, intention, project, defined hard, 2026-10-07.** The user's
+decisions, in `entities/concepts.md` (*Category, mix, intention, project*),
+`intentions.md` §2.3, §2.4, §3.4 and `projects.md` §1.1. Each of the four has
+one job:
+
+- **Category is a line of digitization work**: a stream the library plans
+  and staffs on its own, classifying the attempt, not the book. A node must
+  pass three tests: someone is responsible for it, the library would set a
+  share for it, a decider can place an item in it at approval. What fails
+  them (subject, language, period of publication) is a filter on catalog
+  data. A category classifies (leaves) and gives custody (any node), and
+  holds no numbers: no share, target or money.
+- **A Classifier plugin suggests the leaf** at approval, with its reason; the
+  decider confirms or changes it. None configured: the decider picks
+  (`plugins.md` §4.13, a new kind).
+- **Mix** is the proportion, always one intention's own; others may track it.
+- **Intention** alone has a target, pace and drift, and shapes generation.
+- **Project** is money and people: funding, who may propose, the decision,
+  the priority. **No target of its own**: every project has one intention
+  made with it, whose window is the project's period (read from it, so it
+  follows date changes) and whose target the project form edits. Projects
+  shows that intention's planned, delivered and pace.
+- **The mix is edited on its intention** (`/intentions/ID/mix`), not on
+  Categories with `?i=`. Categories may show Overall's shares, read-only.
+- **Editing a shared mix changes every tracker.** To keep the old mix, a
+  tracker is detached in the same dialog (*Keep the old mix*) and owns its
+  copy. This replaces "unticked trackers keep the old mix, the longest
+  owning it" (2026-10-01).
+- **The demos still show the old design**: Categories with `?i=` and the
+  Proportions editor, a project with its own target and pace. The
+  design docs win ([Which source wins](#which-source-wins)).
 
 **From building the frontend, 2026-10-06.** The user's decisions, carried
 into `status-model.md` §2, §2.5 and §4, `document-identity.md`, `flows.md`,
@@ -167,10 +199,12 @@ they contradict something below, they win.
   - **Designed 2026-10-01** (`intentions.md` §2.1–§2.5, flows M1–M7): a new
     intention tracks Overall by default, or owns a copy of another's mix; the
     picker offers only owners (no chains). Percentages are edited only on the
-    **owner**, on Categories (`?i=`, Overall by default). Saving a mix others
+    **owner**, on Categories (`?i=`, Overall by default) — *superseded
+    2026-10-07: on the intention's Mix*. Saving a mix others
     track lists every tracker, ticked; **unticked ones keep the mix as it
     was**: the longest tracker among them owns it and the rest track that
-    one. Confirmed: closed windows never recount; a scoped intention dims
+    one — *superseded 2026-10-07: every tracker changes; one kept back is
+    detached onto its own copy*. Confirmed: closed windows never recount; a scoped intention dims
     the rest of the tree. A tracker opened on Categories shows its owner's mix with
     *Edit Overall's mix* and *Detach*. An owner that others track can switch
     to tracking only by moving them with it. A scoped intention shows only

@@ -51,7 +51,7 @@ owned by another view, and duplicating it is how two screens start disagreeing.
 | **withdrawing a request** | My Requests | `request.withdraw_own` is self-scoped — your own or nobody's ([[permissions]] §2.1) |
 | **generate against an intention** | Digitization Lists Generation | generation needs a target; only this view has one |
 | **overriding a machine verdict** | Validation (Accept), Additions (Overrule) | two different weights, two different views ([[status-model]] §2) |
-| **editing a mix's percentages** | Categories | shares are a property of the tree, edited where the tree is |
+| **editing a mix's percentages** | Intentions (the intention's *Mix*) | a mix is an intention's, never a category's ([[concepts]]); Categories may show Overall's shares, read-only |
 
 **Three things appear in every view and are never listed per-entry:** the
 search box ([[view-rules]] §3 rule 6 — it is 1 point and scales to phone), the
@@ -303,24 +303,26 @@ a count ([[navigation]] §2 rule 3).
 
 ### Projects · `/projects` · **Pj** · `dig-curator`
 
-Funded envelopes. Rows: name, period, target pages, **planned** and
-**delivered** as two columns that are never summed ([[intentions]] §6). Detail:
-member users and groups, intentions, the iterations it funded.
+Funded envelopes. Rows: name, period, and from **its intention** the target
+pages, **planned** and **delivered** as two columns that are never summed,
+and pace ([[intentions]] §3.4, §6). Detail: member users and groups, its
+intention and others counting its funding, the iterations it funded.
 
-**Not here:** the mix — that belongs to an intention. Project has no link
-to category ([[relationships]] §4).
+**Not here:** the mix, and any target or pace of the project's own — those
+are its intention's ([[projects]] §1.1). Project has no link to category
+([[relationships]] §4).
 
 ### Categories · `/categories` · **Ca** · `curator`, `dig-curator`
 
-The tree, and the **only** place a mix's percentages are edited: the mix of
-one intention, picked in the topbar (`?i=`, Overall by default). A sibling
-set is edited and saved **as a set**, under a lock, and the editor shows
-unallocated remainder and zero-share children explicitly ([[intentions]] §1.1).
-A mix others track lists them before saving; a tracker shows its owner's mix
-and offers *Detach* ([[intentions]] §2.3–§2.4).
+The tree and its two jobs: **classification** (what is in each leaf) and
+**custody** (who looks after each branch). Custody is granted here, and a
+leaf is refined into children here — which moves its documents in the same
+action ([[intentions]] §1.2).
 
-Also where custody is granted, and where a leaf is refined into children —
-which moves its documents in the same action ([[intentions]] §1.2).
+*Show* may display Overall's effective share on each row, **read-only**,
+with a link to edit it on the Overall intention. No other mix is shown, and
+no mix is edited here: shares are an intention's, not a category's
+([[intentions]] §2.4, decided 2026-10-07).
 
 **Not here:** documents. A category shows its counts and links into *Documents*
 filtered; it does not become a second document browser.
@@ -329,8 +331,12 @@ filtered; it does not become a second document browser.
 
 Two columns of cards, *Targets* and *Tracking* (derived: with or without a
 page target). A card: scope, window, its mix (*own* or *tracks Overall*),
-progress or drift, and *Edit mix* into Categories. The form picks the mix:
-track an owner, or own a copy ([[intentions]] §2.1).
+progress or drift, and *Edit mix*, which opens the intention's **Mix**
+(`/intentions/ID/mix`): the tree with its shares, edited one sibling set at
+a time, saved as a set under a lock ([[intentions]] §1.1, §2.4). The form
+picks the mix: track an owner, or own a copy ([[intentions]] §2.1). A
+project's intention is listed with the others once its project is Approved,
+and says *Target and dates: from the project* ([[intentions]] §3.4).
 
 **Not here:** documents — an intention is a target, not a selection
 ([[concepts]]). Selecting is List Building's job.

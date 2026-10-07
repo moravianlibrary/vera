@@ -1007,7 +1007,7 @@ export interface SetEditorDialogProps<Entry> {
 
 | Instance | entry | invalid when | reach |
 |---|---|---|---|
-| Proportions | child category, percent (empty = no share, 0 = excluded) | sum > 100 | the intentions tracking this mix, ticked; unticked keep the old one |
+| Proportions (on the intention's Mix) | child category, percent (empty = no share, 0 = excluded) | sum > 100 | the intentions tracking this mix, all changing with it; *Keep the old mix* detaches one |
 | Role editor (wide) | permission × scope | nobody keeps `access.manage` | the users who gain or lose what |
 | Category custody | group or user | — | who it reaches, with provenance |
 

@@ -3,13 +3,15 @@
 What VERA is *trying* to digitize, expressed as a page target spread over the
 category tree — and the thing list generation aims at.
 
-Three ideas, deliberately separate, which the archived system had partly merged:
+Three ideas, deliberately separate, which the archived system had partly merged.
+What each is responsible for, and is not, is defined in [[concepts]]
+(*Category, mix, intention, project*):
 
 | | What it is |
 |---|---|
 | **Mix** | what share of effort each category deserves — **part of an intention**: its own, or tracked from another intention (§2) |
 | **Intention** | a target — *this many pages, in this mix, by this date* |
-| **Project** | a funded envelope an intention may count ([[relationships]] §1) |
+| **Project** | money and people: who paid, and who may ask under it. Its target is **its intention's** (§3.4) |
 
 A **distribution** is how a mix is stored: a revisioned row of percentages that
 the intentions sharing one mix point at. It is backend only — nobody picks,
@@ -185,65 +187,79 @@ Overall's form has no such field: it always owns its mix (§3.1).
 
 ### 2.3 Editing a shared mix
 
-Percentages are edited on Categories (§2.4), always for **an intention that
-owns its mix**. When others track it, *Save* opens a dialog first:
+> Re-decided with the user on 2026-10-07. This replaces "unticked trackers
+> keep the old mix together, under the longest tracker" (2026-10-01): it moved
+> ownership without anybody choosing it, and made the mix an entity of its own.
+
+Percentages are edited on **the intention that owns the mix** (§2.4). Editing
+changes the mix for **every intention tracking it** — that is what tracking
+means. When others track it, *Save* opens a dialog first:
 
 ```
 Change the mix of Overall?
 
 These intentions track it and change with it:
-  [x] NDK Periodika — 2026         target · running
-  [ ] Regional catch-up            target · running
-  [x] Monthly output — July        tracking · upcoming
-  [ ] Maps watch                   tracking · archived
+  NDK Periodika — 2026         target · running      [ ] Keep the old mix
+  Regional catch-up            target · running      [x] Keep the old mix
+  Monthly output — July        tracking · upcoming   [ ] Keep the old mix
+  Maps watch                   tracking · archived   [ ] Keep the old mix
 
-Unticked ones keep the mix as it was. Regional catch-up has tracked
-longest, so it owns that mix; Maps watch tracks Regional catch-up.
+Regional catch-up will be detached onto its own copy of the mix as it is
+now, before the change.
 
-            [Cancel]  [Save for Overall and 2 more]
+            [Cancel]  [Save for Overall and 3 more]
 ```
 
-- **Every tracker is listed**, ticked by default; archived and ended ones
-  too, since editing changes how their history reads against the mix. A
-  window that is closed counts against the mix as it was (§6), so ticking
-  never rewrites a closed result.
-- **Unticked trackers keep the mix as it was, together** (decided
-  2026-10-01). The one that has tracked it longest becomes the **owner** of
-  that mix; every other unticked tracker now **tracks it**. One copy, not
-  one per tracker, so they still change together. A single unticked tracker
-  simply owns it.
-- **Opening a tracker on Categories** shows its owner's mix, with a line:
+- **Every tracker is listed**, archived and ended ones too, since editing
+  changes how their history reads against the mix. A window that is closed
+  counts against the mix as it was (§6), so the edit never rewrites a closed
+  result.
+- **Keep the old mix** is unticked by default. Ticking it **detaches** that
+  intention first (§2.2): it gets its own copy of the mix as it is now, and
+  owns it. Each detached intention owns its own copy; none tracks another,
+  and nothing changes owner.
+- **Opening a tracker's mix** shows its owner's mix, with a line:
   *NDK Periodika tracks Overall. Editing changes Overall and 4 more.* Two
   buttons: **Edit Overall's mix** (the dialog above, on save), and
   **Detach NDK Periodika** (§2.2, then edit its own copy).
 - **Nobody tracks it**: no dialog, *Save* saves.
 
-### 2.4 Categories shows one intention's mix
+### 2.4 The mix is edited on its intention
 
-Categories reads and edits the mix of **one intention**, picked in the
-topbar: `categories.html?i=ID` (replacing `?d=`, decided 2026-09-26).
+> Re-decided with the user on 2026-10-07. This replaces editing on
+> Categories with an intention picked in its topbar (`categories.html?i=ID`,
+> 2026-09-26): the shares are the intention's, so they are edited where the
+> intention is ([[concepts]], *Category, mix, intention, project*).
 
-- **No `i`** means Overall.
-- **The picker** lists the intentions that own a mix, each with what tracks
-  it: *Overall · tracked by 5*, *Periodicals push — own*. A tracker can be
-  picked too, and shows the line of §2.3.
+An intention's **Mix** shows the category tree with that intention's shares,
+and is where they are edited. It opens from the intention's card on
+Intentions (*Edit mix*), as the intention's own page:
+`/intentions/ID/mix`.
+
+- **One sibling set at a time**, saved as a set under a lock (§1.1), with
+  the unallocated remainder and zero-share children shown (§1.1.1).
+- **A tracker** shows its owner's mix and the line of §2.3.
 - **A scoped intention** shows its subtree as *Mix within Periodicals*
   (§3.2). Outside the subtree the tree is dimmed and its shares are neither
   shown nor editable: the scope does not use them. A copy still copies the
   whole tree, so widening the scope later finds shares already there.
-- **Intended vs actual** compares with the picked intention's output, in its
-  scope and window.
-- **Links in**: an intention's card, *Edit mix* opens Categories with its
-  `i` (its owner's, with the line, for a tracker).
+- **Intended vs actual** compares with the intention's output, in its scope
+  and window.
+
+**Categories shows no mix but Overall's, read-only.** Its *Show* may display
+Overall's effective share on each row, with a link to *Edit Overall's mix*.
+The tree, its classification counts and its custody are what Categories is
+for; a category has no share of its own.
 
 ### 2.5 Who may
 
 All of it is `intention.edit` on the intention being changed: choosing,
 switching, detaching, editing percentages. Editing an owner's mix needs
 `intention.edit` on the owner only. Its trackers change with it, which the
-dialog says, and they cannot be changed without that. Moving trackers with
-an intention that switches to tracking (§2.2) needs `intention.edit` on
-each of them.
+dialog says. **Keeping the old mix** for a tracker needs `intention.edit` on
+that tracker, since it detaches it; without it the box is not offered.
+Moving trackers with an intention that switches to tracking (§2.2) needs
+`intention.edit` on each of them.
 
 **Overall's mix needs `intention.edit_overall`** (decided 2026-10-01), held
 by admin only. A dig-curator can still detach their own intentions from
@@ -259,13 +275,14 @@ Overall and edit those copies.
 ```
 intention
   id, name, description
+  project_id       → project  null  UNIQUE    — its project's intention (§3.4): funding and window read from it
   funding_filter   any | none | → project     — scope
   scope_category   → category  null = all     — scope: ONE node, with its subtree
   tracks_mix_of    → intention  null          — objective: the mix, tracked (§2)
   distribution_id  → distribution             — objective: the mix, as stored
   target_pages     int  null                  — objective: none = it only tracks the mix
-  counts_from      date                       — LOCKED once created; may be in the future
-  ends_on          date null                  — none = open-ended
+  counts_from      date                       — LOCKED once created; may be in the future. Null for a project's intention
+  ends_on          date null                  — none = open-ended. Null for a project's intention
   is_overall       bool                       — exactly one, protected
   template_id      → intention_template null  — the repeat that made it
   archived_at, archived_by                    — visibility only
@@ -282,12 +299,15 @@ and are never added together.
 **Every intention is time-based.** `counts_from` is required and fixed once
 created, so nobody quietly recounts history by moving it; to count from
 another date, make a new intention from the old one. The end is optional.
+A project's intention is the one exception: its window is the project's
+period, and follows it (§3.4).
 What differs is the target: with one, the intention has progress (and pace,
 when it also has an end); without one it **tracks** the mix. The Intentions
 page groups them that way — *Targets* and *Tracking* — derived, not stored.
 
-A "project intention" is simply one with `funding_filter = that project`;
-choosing the project pre-fills its dates.
+Any intention may count one project's funding. **The project's own
+intention** is the one made with the project, and the only one that holds
+the project's target (§3.4).
 
 ### 3.1 The Overall intention is the authority
 
@@ -332,6 +352,38 @@ intention_template
   funding_filter, scope_category, tracks_mix_of | own mix, target_pages
   archive_previous  bool
 ```
+
+### 3.4 A project's intention
+
+> Decided with the user on 2026-10-07. A project had a target, planned and
+> delivered figures and a pace of its own, beside an intention counting the
+> same funding: two verdicts on one grant that could disagree. Now only an
+> intention has a target or pace ([[concepts]]).
+
+**Every project has exactly one intention of its own**, made with it:
+
+| | Of a project's intention |
+|---|---|
+| **scope** | funding = that project, fixed; the category scope is its own (whole tree by default) |
+| **window** | the project's `starts` / `ends`, **read from the project, not stored**. Changing the project's dates moves the window and recalculates the intention, and the project form shows the consequence first (*Planned 4,280 → 3,910*, §6) |
+| **target** | the project's target pages: entered on the project form, stored here. None = the intention tracks the mix |
+| **mix** | tracks Overall when made; edited like any intention's (§2) |
+| **name** | the project's, and follows it |
+
+- **It lives and dies with the project.** It is made when the project is,
+  listed on Intentions once the project is **Approved**, archived when the
+  project is **Rejected**, and deleted with it (only an empty project is
+  deleted, [[projects]] §3). It cannot be archived, deleted or detached from
+  its project on its own.
+- **Who edits what.** Its target and window are the project's, edited on the
+  project form under `project.edit@managed`. Its mix and category scope are
+  the intention's, under `intention.edit`.
+- **Pace only while the project is Approved and running**, as before
+  ([[projects]] §1).
+- **Other intentions may count the same funding**, with windows of their
+  own: *NDK Periodika — Q3* counts the NDK grant for one quarter. They are
+  measures beside it; only the project's own one is shown on Projects.
+
 
 ---
 

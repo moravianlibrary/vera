@@ -203,10 +203,16 @@ reads its row in `entities/permissions.md` §3.
   allocation to step 4's `TransferEditor`.
 
 ### 7. Categories — page `categories`
+- **First** `entities/concepts.md` *Category, mix, intention, project*
+  (2026-10-07), and STATUS *Category, mix, intention, project, defined hard*.
+  They win over the demo, which still edits the mix on Categories with `?i=`
+  and gives a project a target of its own.
 - STATUS "Categories" (~519), and its bullet under *Carried into the pages*
-  (~853).
-- `entities/intentions.md` §1 (shares, the whole-set write, leaves) and §2.3
-  –§2.5 (editing a shared mix, `?i=`, who may); `entities/permissions.md` §2
+  (~853), read against the above.
+- `entities/intentions.md` §1 (shares, the whole-set write, leaves), §2.3
+  –§2.5 (editing a shared mix, on the intention's Mix, who may) and §3.4 (a
+  project's intention); `entities/projects.md` §1.1;
+  `entities/plugins.md` §4.13 (Classifier); `entities/permissions.md` §2
   (custody scope).
 - Parts: `Tree` §2.5, `SetEditorDialog` §6.5 (Proportions; step 9 reuses it),
   `PaneWizard` §1.9 (Refine).

@@ -22,10 +22,10 @@ left out without making the map wrong:
 | **User** | one person | identity |
 | **Group** | a named set of users | so custody and project membership are given to a team, not a list — a group never gives a role |
 | **Role** | a named set of permissions | so *what you may do* is separate from *who you sit with* |
-| **Project** | a funded, time-boxed envelope with a target, a description and a manager; *Proposed · Approved · Rejected*, a priority set once at approval ([[projects]]) | reporting and budget; members propose into it |
+| **Project** | a funded, time-boxed envelope with a description and a manager; *Proposed · Approved · Rejected*, a priority set once at approval. Its target is its intention's ([[projects]] §1.1) | funding; members propose into it |
 | **Intention** | a planning target: *N pages of this mix, by this date* | what list generation aims at |
 | **Distribution** | the stored form of an intention's mix: category percentages, revisioned — **backend only**, never shown as its own thing | so intentions can share one mix, and history can say what the mix was |
-| **Category** | the subject tree | classification **and** access control |
+| **Category** | the tree of **lines of work** — streams the library plans and staffs on its own, never a subject classification ([[concepts]] *Category*) | classification of the attempt **and** custody |
 | **Document** | one bibliographic item | the thing being digitized |
 | **Iteration** | one pass of a document through digitization | re-scans are not new documents |
 | **Request** | one person's ask for one document | provenance, and "my stuff" |
@@ -111,6 +111,7 @@ nobody can predict from a screen.
 |------|----|:-----:|--------|:--------:|
 | Category | Category (parent) | N:1 | `category.parent_id` | root only |
 | Intention | Project | N:1 | `intention.funding_filter` — a scope, not ownership: the intention counts what that project funds ([[intentions]] §3) | yes — any funding when empty |
+| Intention | Project (its own) | 1:1 | `intention.project_id`, unique — the project's own intention: funding and window read from the project, and the only holder of its target ([[intentions]] §3.4) | yes — every project has one; most intentions are no project's |
 | Intention | Category | N:1 | `intention.scope_category` — one node, with its subtree ([[intentions]] §3.2) | yes — all categories when empty |
 | Intention | Intention template | N:1 | `intention.template_id` — the repeat that made it ([[intentions]] §3.3) | yes |
 | Intention | Intention (tracked mix) | N:1 | `intention.tracks_mix_of` — uses another intention's mix; **no chains**: the one tracked has its own | yes — its own mix when empty |
@@ -236,7 +237,7 @@ a view that needs one of them is a view built on a join with no answer.
 | Not related | Why | Get there by |
 |-------------|-----|--------------|
 | **User → Document** | a person never owns an item | custody (§5.2) or authorship (§5.1) |
-| **Category → Project** | the subject tree outlives any grant | an intention: its funding filter and its category scope |
+| **Category → Project** | the lines of work outlive any grant | an intention: its funding filter and its category scope |
 | **Intention → Document** | an intention is a target, not a selection | its scope matched against iteration → list start ([[intentions]] §6) |
 | **Group → Group** | one inheritance system is enough | flat membership |
 | **Group → Role** | capability reaches a person only as a role they hold, never by joining a team (decided 2026-09-26) | `user_roles`, set by hand or by the IdP mapping |
@@ -296,9 +297,11 @@ Answers the curator queues. **Membership inherits downward only.** A member of
 project → iteration.project_id → iteration
 ```
 
-Answers project reporting. An intention scoped to the project measures the
-same funded iterations against a target and a window ([[intentions]] §6); its
-planned pages and the project's documents must never be summed together.
+Answers project reporting: *what did this money pay for?* How much, against
+what target and at what pace is the project's own intention, which measures
+the same funded iterations over the project's period ([[intentions]] §3.4,
+§6); its planned pages and the project's documents must never be summed
+together.
 
 ---
 

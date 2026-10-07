@@ -302,7 +302,7 @@ volume name is ever found. Do not try to pattern-match it.
 |-------|-----|------|
 | `reader` | anyone who can sign in, including non-library users | own proposals and requests, public status text only |
 | `staff` | library staff, desk and acquisitions | all documents, descriptive fields, no approval rights |
-| `curator` | subject curator | validation queue, approve / deny with reason, category and priority |
+| `curator` | curator of one or more lines of work | validation queue, approve / deny with reason, category and priority |
 | `dig-curator` | curator managing digitization | lists, batches, projects, capacity, scheduling |
 | `admin` | system administrator | plugins, hooks, tasks, raw payloads, re-runs |
 

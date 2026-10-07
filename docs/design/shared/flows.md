@@ -90,7 +90,7 @@ each edge labelled with the IDs below:
 | [M4](#m4) | an owner others track switches to tracking | | |
 | [M5](#m5) | edit a mix nobody tracks | | |
 | [M6](#m6) | edit a mix others track | | |
-| [M7](#m7) | open a tracker on Categories | | |
+| [M7](#m7) | open a tracker's mix | | |
 
 ---
 
@@ -313,7 +313,8 @@ flowchart LR
 flowchart LR
   classDef st fill:#dbeafe,stroke:#2563eb
   classDef sys fill:#f1f5f9,stroke:#94a3b8
-  A["Pending"]:::st --> B(["Proposals · pick category (a leaf)<br/>and priority · Approve · request.decide@custody"])
+  A["Pending"]:::st --> S["Classifier suggests a leaf, with its reason<br/>(none configured: no suggestion)"]:::sys
+  S --> B(["Proposals · confirm or change the category (a leaf)<br/>and priority · Approve · request.decide@custody"])
   B --> C["Approved<br/>reader: Being added"]:::st
   C --> D[Ingest starts by itself]:::sys
   D --> E[[G1]]
@@ -1093,7 +1094,7 @@ flowchart LR
 flowchart LR
   classDef st fill:#dbeafe,stroke:#2563eb
   classDef sys fill:#f1f5f9,stroke:#94a3b8
-  A(["Manager · Edit… · project.edit@managed"]) --> B["Details, description, dates, target saved · logged"]:::sys
+  A(["Manager · Edit… · project.edit@managed"]) --> B["Details, description, dates, its intention's target saved · logged"]:::sys
   C(["Manager · Members… · hand over"]) --> D["New manager · old one stays a member"]:::st
   E(["A plain member"]) -.->|no Edit, no Members| F["Read only"]:::sys
 ```
@@ -1147,8 +1148,8 @@ flowchart LR
 flowchart LR
   classDef st fill:#dbeafe,stroke:#2563eb
   classDef sys fill:#f1f5f9,stroke:#94a3b8
-  A(["Manager · Edit… · dates or target"]) --> B["Warns: its intentions count by these dates"]:::sys
-  B --> C["Saved · logged · pace recomputed"]:::st
+  A(["Manager · Edit… · dates or target"]) --> B["Shows its intention's figures before and after:<br/>its window is the project's period"]:::sys
+  B --> C["Saved · logged · its intention recalculated"]:::st
 ```
 
 ---
@@ -1177,7 +1178,7 @@ flowchart LR
 flowchart LR
   classDef st fill:#dbeafe,stroke:#2563eb
   classDef sys fill:#f1f5f9,stroke:#94a3b8
-  A["Tracks Overall"]:::st --> B(["Form or Categories · Detach"])
+  A["Tracks Overall"]:::st --> B(["Form, the intention's Mix, or Keep the old mix in M6 · Detach"])
   B --> C["Own mix = Overall's as of now"]:::st
   C --> D["Overall and its other trackers: unchanged"]:::sys
 ```
@@ -1217,35 +1218,36 @@ flowchart LR
 flowchart LR
   classDef st fill:#dbeafe,stroke:#2563eb
   classDef sys fill:#f1f5f9,stroke:#94a3b8
-  A(["Categories ?i= · Edit proportions · one sibling set"]) --> B{"Sums to 100 or less?"}
+  A(["Intention · Mix · Edit proportions · one sibling set"]) --> B{"Sums to 100 or less?"}
   B -->|yes| C["Saved · new revision"]:::st
   B -->|over 100| D["Cannot be saved"]:::sys
 ```
 
 ### M6
 
-**Edit a mix others track.** The dialog lists them.
+**Edit a mix others track.** The dialog lists them; the mix changes for all
+of them, and one that should keep the old mix is detached first.
 
 ```mermaid
 flowchart LR
   classDef st fill:#dbeafe,stroke:#2563eb
   classDef sys fill:#f1f5f9,stroke:#94a3b8
-  A(["Categories ?i=Overall · Edit proportions · Save"]) --> B["Dialog: every tracker, ticked"]:::sys
-  B -->|all ticked| C["New revision · every tracker follows"]:::st
-  B -->|some unticked| D["Longest tracker unticked owns the old mix<br/>other unticked ones track it"]:::st
+  A(["Overall · Mix · Edit proportions · Save"]) --> B["Dialog: every tracker, Keep the old mix unticked"]:::sys
+  B -->|none kept| C["New revision · every tracker follows"]:::st
+  B -->|some kept · intention.edit on each| D["Each kept one detached:<br/>owns its own copy as of now"]:::st
   D --> C
   B -->|Cancel| E["Nothing saved"]:::sys
 ```
 
 ### M7
 
-**Open a tracker on Categories.** It has no mix of its own to edit.
+**Open a tracker's mix.** It has no mix of its own to edit.
 
 ```mermaid
 flowchart LR
   classDef st fill:#dbeafe,stroke:#2563eb
   classDef sys fill:#f1f5f9,stroke:#94a3b8
-  A(["Categories ?i=NDK"]) --> B["Shows Overall's mix:<br/>NDK tracks Overall · editing changes Overall and 4 more"]:::sys
+  A(["NDK · Mix"]) --> B["Shows Overall's mix:<br/>NDK tracks Overall · editing changes Overall and 4 more"]:::sys
   B --> C(["Edit Overall's mix"]) --> D[[M6]]
   B --> E(["Detach NDK"]) --> F[[M2, then M5]]
 ```

@@ -35,6 +35,7 @@ is §2.6.
 | **Validation** | an iteration and its record | defects | on ingest, on record change, on schedule |
 | **Restriction** | a request or an iteration and its record | a prohibition, or none | on proposal, on ingest, on record change, on schedule — **new kind, Proposed** |
 | **Custody** | a proposal as JSON | proposal-custody names | on proposal, when checks finish, on change ([[proposal-custody]]) |
+| **Classifier** | a proposal as JSON | a suggested category leaf with its reason, or none | on proposal, when checks finish — **new kind, 2026-10-07** |
 | **Input** | a pasted text, a camera frame, a photo | identifiers, or candidate records | on demand, in the Propose dialog |
 | **List generator** | pages, shape, pool, current members | a draft with a reason per pick | on demand, in the list editor |
 | **Identity** | a login | who logged in, and their claims | on login ([[identity]]) |
@@ -46,6 +47,11 @@ demo's *Forbidden by Copyright* had no plugin behind it. A kind of its own,
 rather than a validation that sometimes forbids, so that an admin can see on
 one row of Plugins every piece of code that is able to say *never*: a
 restriction takes an admin to lift, a defect only a curator.
+
+**Classifier is new** (decided 2026-10-07). A category is a line of work,
+confirmed by the decider at approval ([[concepts]] *Category*); a classifier
+only **suggests** the leaf the decide form opens on. It never sets one: a
+suggestion nobody confirmed is not a classification.
 
 **Kramerius is two plugins.** A *Registry* answers *is it published?*; a
 *Harvester* proposes what it finds (decided 2026-09-26). The demo still
@@ -460,6 +466,29 @@ Retries, *wait for more* and dead letters are the hook's, by VERA
 ([[view-catalog]] *Hooks*); the channel only sends once and says whether it
 did.
 
+### 4.13 Classifier
+
+```java
+public interface Classifier extends Plugin {
+    Outcome<Optional<Suggestion>> suggest(JsonNode proposal, Context ctx);
+}
+public record Suggestion(CategoryRef leaf, String reason) {}   // "Periodical, Moravian place of publication"
+```
+
+Given the same JSON as a custody plugin ([[proposal-custody]] §3): the
+record, its properties, the ask and its batch, the project. The answer is a
+**leaf** and a sentence the decider reads beside it; a node with children is
+rejected as a result (§3).
+
+- **Several instances**: they run in their tier order (§2.8) and the first
+  suggestion wins; the decide form names which instance made it.
+- **None configured, or no suggestion**: the decider picks, as without the
+  kind. Nothing is blocked.
+- **Batches**: one suggestion per item; approving a batch under one category
+  ([[flows]] D4) overrides them, and the form says how many it overrides.
+- **Logged** with the approval: the suggestion, its instance and whether the
+  decider kept it, so a classifier that is usually overruled shows as one.
+
 ---
 
 ## 5. What leaves VERA
@@ -470,6 +499,7 @@ kinds that send VERA's data out, **which fields**.
 | Kind | Sends out |
 |---|---|
 | catalog adapter, registry, harvester | identifiers and catalog IDs, to the declared hosts |
+| classifier, AI-based | the proposal fields it declares, to its model |
 | list generator, AI-based | the pool fields it declares — title, category, priority, pages, ask date — to its model |
 | message, delivery channel | the public texts and links ([[view-rules]] §4.3); internal texts never |
 | identity | nothing of VERA's |

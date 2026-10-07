@@ -9,7 +9,8 @@ How a step is carried out, and what to read for it, is `brief.md`: the one
 file a session reads before it starts.
 
 A step is one session. Steps 4, 6 and 7 are larger than one session's
-work, so each is split in two sessions at the line marked *Session break*.
+work, so each is split at the lines marked *Session break*: in two sessions,
+step 7 in three.
 Step 6 builds on step 4's editor, and step 9 reuses step 7's set editor, so
 those pairs keep their order.
 
@@ -95,15 +96,28 @@ green after every extraction.
 3. The editor (*Track* or *Own mix*), and repeats.
 4. The correcting list, which hands its allocation to the Lists editor.
 
-## 7. Categories
+## 7. Categories — 1–2 done
 
 1. Mock API: the tree, shares, custody.
 2. Tree + detail, with the Show picker and the intention picker (`?i=`).
 
 *Session break.*
 
-3. The Proportions set editor, which says what reaches the trackers.
-4. Custody grants, Edit, New and Delete; the Refine wizard in the pane.
+3. The definitions of 2026-10-07 (`docs/design/shared/entities/concepts.md`,
+   *Category, mix, intention, project*), which steps 5–7 were built before:
+   - a project's intention, made with the project; the target moves onto it,
+     and Projects reads planned, delivered and pace from it;
+   - an intention's Mix (`/intentions/:id/mix`), with the Proportions set
+     editor; saving a shared mix lists the trackers, each with *Keep the old
+     mix* (detach);
+   - Categories drops *Mix of*: Overall's shares only, read-only, linking to
+     its Mix.
+
+*Session break.*
+
+4. The Classifier: its mock plugin, and the suggested leaf with its reason on
+   the decide form (Proposals).
+5. Custody grants, Edit, New and Delete; the Refine wizard in the pane.
 
 ## 8. Tasks and Schedules
 

@@ -423,6 +423,13 @@ commits; step 0, the foundation, is done. `brief.md` is how each step is
 carried out and what it reads. Its parts are in `component-inventory.md`, with their draft props in
 `component-interfaces.md`. The sequence below is the original outline.
 
+**Built before the definitions of 2026-10-07** (`docs/design/shared/entities/concepts.md`,
+*Category, mix, intention, project*): Projects gives a project its own target and pace, and
+Categories reads and links to editing a mix with *Mix of* (`?i=`). Under the definitions only an
+intention has a target or pace (a project's comes from its own intention), a mix is edited on its
+intention, and a category is a line of work whose leaf a Classifier plugin suggests at approval.
+`plan.md` step 7.3 and 7.4 bring the code in line.
+
 1. **Application shell.** Add routes and the responsive navigation frame. Navigation entries should come from the current user's available permissions. Actions and destinations the user cannot use are absent, not disabled. Support the demo's large, notebook, small, and phone layouts.
 2. **Documents.** Start with coherent fake documents, requests, iterations, projects, status history, and registry copies. Serve them through MSW handlers and access them through TanStack Query. Build the list/detail view with search, status and other declared filters, facet counts, URL-backed filter state, and the responsive `MasterDetail` component. Include view-level save/edit-watchlist affordances.
 3. **Watchlist management.** Reuse the same watchlist editor from the originating view and user options. Drive navigation badges from watchlist notifications, so a badge appears on the view whose watchlist has new matching items. Do not clear a badge just because the user opened that view; clear/update it when they open the relevant watchlist. Keep fake notification data coherent with the fake records.

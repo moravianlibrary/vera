@@ -3,7 +3,7 @@
 A funded, time-boxed envelope that people propose documents into, and its
 lifecycle. Decided with the user on 2026-09-26, 2026-09-30 and 2026-10-01.
 
-What a project **is** (money and a deadline, not a plan) is in [[concepts]];
+What a project **is** (money and people, not a plan) is in [[concepts]];
 how it reaches iterations and intentions is in [[relationships]] §5.3. This
 page is how a project is made, decided and run.
 
@@ -15,7 +15,6 @@ page is how a project is made, decided and run.
 project
   id, name, description
   starts, ends            date            — the funded period
-  target                  pages   null
   manager_id              → user          — whoever created it, until handed over
   state                   Proposed | Approved | Rejected
   priority                → priority level   null — set once, at approval
@@ -34,8 +33,25 @@ Two separate things read as a project's "state", and they never mix:
 | **period** | *Upcoming · Active · Ended* | derived from `starts` / `ends` and today |
 
 A project can be *Approved · Upcoming*, or *Proposed · Active*. The card on
-Projects shows both. Pace (*On pace*, *Behind pace*) is computed only for an
-Approved project.
+Projects shows both.
+
+### 1.1 Its target is its intention's
+
+> Decided with the user on 2026-10-07: only an intention has a target or
+> pace ([[concepts]]).
+
+A project has **no target column**. Every project is made with **one
+intention of its own** ([[intentions]] §3.4), which counts what the project
+funds over the project's period:
+
+- the project form's **Target pages** field is that intention's target;
+- the card's **planned**, **delivered** and **pace** (*On pace*, *Behind
+  pace*) are that intention's, computed only while the project is Approved;
+- changing the project's **dates** moves the intention's window, and the
+  form shows how its figures change before saving.
+
+The project still answers who paid, who may ask, the decision and the
+priority. How much, in what shape and how fast is its intention.
 
 ---
 
@@ -83,7 +99,7 @@ stateDiagram-v2
 |---|---|---|
 | see a project | `project.read@project` · `@any`, or `project.decide` | members (via their role) · dig-curator · curator · admin |
 | start one | `project.create` | staff and up; a reader cannot. Starting is its own grant, not implied by proposing |
-| edit details, description, dates, target | `project.edit@managed` · `@any` | the manager · dig-curator · admin |
+| edit details, description, dates, and its intention's target | `project.edit@managed` · `@any` | the manager · dig-curator · admin |
 | add or remove members, hand over the manager role | `project.manage_members@managed` · `@any` | the manager · dig-curator · admin |
 | propose documents into it | `request.create` + membership | members, while Proposed or Approved |
 | approve or reject it | `project.decide@any` | curator · admin |
@@ -99,7 +115,8 @@ stateDiagram-v2
   `request.decide` through their role.
 - **What an Approved project still allows to change**: description, members,
   manager. Its **dates and target** stay editable too, since a grant can be
-  extended (confirmed 2026-10-01); a change warns that its intentions' counting follows. Its
+  extended (confirmed 2026-10-01); its intention's window follows, and the form
+shows the change in its figures first ([[intentions]] §3.4). Its
   **priority** and its **decision** do not change.
 - **`project.decide` includes seeing projects** (decided 2026-10-01): whoever
   decides a project can read every project, without a separate
@@ -116,7 +133,7 @@ stateDiagram-v2
 
 | Surface | What |
 |---|---|
-| **Projects** | each card: decision and period, manager, description, members, priority once approved, pace once approved. A Proposed project has **Approve…** and **Reject…** for `project.decide` holders, and a count of its proposals: *N pending · N with a copy (will be skipped)* |
+| **Projects** | each card: decision and period, manager, description, members, priority once approved; its intention's target, planned, delivered and pace once approved, linking to it on Intentions. A Proposed project has **Approve…** and **Reject…** for `project.decide` holders, and a count of its proposals: *N pending · N with a copy (will be skipped)* |
 | **Projects, the decision dialog** | approve: pick the priority, read what it will approve and what it will skip. Reject: a reason, and what it will decline versus leave to other askers |
 | **Proposals** | a project chip on a row; *after the project's approval* flag; filter by project |
 | **Propose form** | the projects I am a member of that are Proposed or Approved; a Rejected one is not offered |

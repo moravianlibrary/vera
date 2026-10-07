@@ -260,14 +260,15 @@ shipped roles in §4 actually use.
 | `intention.repeat` | `any ✱` | repeating intentions — held by admin only in the shipped roles |
 | `project.read` | `project` · `any ✱` | |
 | `project.create` | `any ✱` | starting a project, which starts *Proposed*; the creator becomes its manager |
-| `project.edit` / `.manage_members` | `managed` · `any ✱` | the manager's acts: details, description, dates, target, members, handing over |
+| `project.edit` / `.manage_members` | `managed` · `any ✱` | the manager's acts: details, description, dates, members, handing over, and the target of the project's intention ([[intentions]] §3.4) |
 | `project.decide` | `any ✱` | approve (picking its priority) or reject (with a reason) a Proposed project ([[projects]] §2); **implies `project.read@any`** |
 | `project.delete` | `managed` · `any ✱` | only a project with no proposals |
 
 > **Distributions are not a permission any more** (decided 2026-09-26). The
 > mix belongs to an intention, so editing it is `intention.edit`; a shared
 > mix is edited on the intention that owns it, with its trackers listed
-> first; unticked ones detach ([[intentions]] §2.3, §2.5).
+> first. It changes for all of them; one that should keep the old mix is
+> detached, which needs `intention.edit` on it ([[intentions]] §2.3, §2.5).
 >
 > **Members propose into their project** with `request.create` — membership
 > is what offers the project on the propose form, not a separate grant.
