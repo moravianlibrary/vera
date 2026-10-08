@@ -400,7 +400,11 @@ export function sendNow(session: Session, hookId: string): Outcome<HookDelivery[
 }
 
 export function previewHook(session: Session, draft: HookDraft): Outcome<HookPreview> {
-  const refusal = checkWrite(session) ?? channelRefusal(draft);
+  // A preview is public wording and does not mutate delivery state. Readers may inspect it;
+  // the separate send-test endpoint still requires configuration permission.
+  const refusal: Refusal | null = !canReadHooks(session)
+    ? { status: 403, message: "You may not read hooks" }
+    : channelRefusal(draft);
   if (refusal !== null) {
     return { refusal };
   }
@@ -443,6 +447,11 @@ export function previewHook(session: Session, draft: HookDraft): Outcome<HookPre
 }
 
 export function sendTest(session: Session, draft: HookDraft): Outcome<HookTestResult> {
+  const writeRefusal = checkWrite(session);
+  if (writeRefusal !== null) {
+    return { refusal: writeRefusal };
+  }
+
   const preview = previewHook(session, draft);
   if ("refusal" in preview) {
     return preview;

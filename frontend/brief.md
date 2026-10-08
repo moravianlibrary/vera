@@ -135,7 +135,12 @@ delivery state against `mockNow()` with fixtures in `fixtures/hooks.ts`.
 Delivery channels are Plugins instances. Plugins' instance response includes
 linked hooks and its impact includes their active count. `recordHookEvent` is
 called by publication and list creation; other producers still need stable
-public event data. The Hooks UI is step 11.2–11.3.
+public event data. `features/hooks/` now owns the grouped, filtered Hooks
+master–detail, delivery actions and editor/test flow (step 11.2–11.3); it uses
+`RecordList`, `FilterBar`, `DetailCard`, `DialogShell`, `ConsequenceDialog`,
+`useViewUrlState` and `useActionMutation`. `useHooksQuery` invalidates linked
+Plugin data after writes. Preview is a read-only public sample for `hook.read`;
+the send-test endpoint still requires `hook.configure`.
 
 **Views built:** `features/documents/`, `features/proposals/`,
 `features/validations/` (the best model for a list with a pane and actions:

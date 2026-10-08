@@ -5,8 +5,7 @@
 // versions installed and its instances. An instance opens its configuration (never a secret),
 // VERA's settings on it, when it runs (its schedules are shown here and edited only on
 // Schedules), its recent runs from Tasks and what it supplies.
-// TODO(rrandiak): a delivery channel lists the hooks sending through it once Hooks exist (plan.md
-// step 11). Labels move to i18n.
+// TODO(rrandiak): labels move to i18n.
 
 import type { ReactNode } from "react";
 import { Link } from "react-router";
@@ -48,6 +47,7 @@ const linkClass = "text-primary underline-offset-2 hover:underline";
 export interface DrawerReach {
   canSeeTasks: boolean;
   canSeeAccess: boolean;
+  canSeeHooks: boolean;
 }
 
 export interface DrawerNames {
@@ -363,6 +363,22 @@ export function InstanceDrawer({
           ]}
         />
       </DetailCard>
+
+      {instance.kind === "DeliveryChannel" && reach.canSeeHooks && (
+        <DetailCard title={`Hooks sending through it · ${instance.hooks.length}`}>
+          {instance.hooks.length === 0 ? (
+            <Muted>No hooks use this channel.</Muted>
+          ) : (
+            instance.hooks.map((hook) => (
+              <DetailRow key={hook.id} aside={<Muted>{hook.state}</Muted>}>
+                <Link to={`/hooks?h=${encodeURIComponent(hook.id)}`} className={linkClass}>
+                  {hook.name}
+                </Link>
+              </DetailRow>
+            ))
+          )}
+        </DetailCard>
+      )}
 
       {instance.settings !== null && (
         <SettingsCard settings={instance.settings} names={names} reach={reach} />

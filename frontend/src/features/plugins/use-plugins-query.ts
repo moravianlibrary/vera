@@ -1,8 +1,9 @@
 // Plugins' one index. What is changed there reaches the rest of VERA: an instance's name is
 // reference data on Tasks and Schedules; switching one off or deleting it takes it out of
 // Generate, the decide form's suggestion, Message…, the login page and custody placement, and
-// deleting one removes its schedules; running one starts a run on Tasks. So a change asks again
-// for every view that shows one.
+// deleting one removes its schedules; running one starts a run on Tasks. Delivery-channel
+// changes also alter Hooks' available destinations. So a change asks again for every view
+// that shows one.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
 import { getInstanceUpgrade, getPluginImpact, getPluginIndex } from "@/api/plugins";
@@ -18,6 +19,7 @@ export const pluginsQueryKey = ["plugins"] as const;
 
 export const pluginInvalidations = [
   pluginsQueryKey,
+  ["hooks"],
   referenceQueryKey,
   tasksQueryKey,
   schedulesQueryKey,

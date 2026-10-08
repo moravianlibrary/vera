@@ -12,6 +12,7 @@ import {
   previewHook,
   resumeHook,
   retryDelivery,
+  retryHookDeliveries,
   saveHook,
   sendHookNow,
   sendHookTest,
@@ -24,6 +25,8 @@ import {
   getPluginIndex,
 } from "@/api/plugins";
 import type { MockUserProfile } from "@/config/env";
+import { database } from "@/mocks/database";
+import { hookDeliveries } from "@/mocks/fixtures/hooks";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
@@ -55,6 +58,8 @@ describe("Hooks", () => {
   it("gates reads and writes by hook permissions", async () => {
     signInAs("reader");
     expect(await refusalOf(getHookIndex())).toMatchObject({ status: 403 });
+    expect(await refusalOf(previewHook(draft))).toMatchObject({ status: 403 });
+    expect(await refusalOf(sendHookTest(draft))).toMatchObject({ status: 403 });
     expect(await refusalOf(createHook(draft))).toMatchObject({ status: 403 });
   });
 
@@ -119,6 +124,20 @@ describe("Hooks", () => {
         (attempt) => attempt.deliveryId === "HD-21" && attempt.result === "sent",
       ),
     ).toBe(true);
+  });
+
+  it("retries every exhausted delivery of one hook without touching another hook", async () => {
+    signInAs("admin");
+    database.hookDeliveries.push({ ...hookDeliveries[0], id: "DL-TEST-ALL", state: "gave_up" });
+    const retried = await retryHookDeliveries("H-03");
+    expect(retried.map((delivery) => delivery.id)).toEqual(["DL-TEST-ALL"]);
+    expect(
+      (await getHookIndex()).deliveries.find((delivery) => delivery.id === "HD-21")?.state,
+    ).toBe("sent");
+    database.hookDeliveries.splice(
+      database.hookDeliveries.findIndex((delivery) => delivery.id === "DL-TEST-ALL"),
+      1,
+    );
   });
 
   it("counts dependent hooks in Plugins and stops pending sends while disabled", async () => {

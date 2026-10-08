@@ -148,7 +148,7 @@ green after every extraction.
 3. The instance editor; Disable and Delete, saying what stops; the upload
    wizard.
 
-## 11. Hooks
+## 11. Hooks — done
 
 1. Mock API: hooks, deliveries, channels.
 2. Master–detail grouped by subject, with deliveries: Retry, Discard, Send now.

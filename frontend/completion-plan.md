@@ -103,6 +103,14 @@ mock rules are ready for the UI. Step 11 remains open until Session B finishes.
 
 ## Session B — Hooks UI with final styling (11.2–11.3)
 
+**Implemented 2026-10-08.** `/hooks` now uses the Hooks index and existing
+master–detail, filter, list, card and dialog parts. URL selection, channel and
+state filters, delivery actions, editor, public preview and explicit test are
+live. Four viewport layouts, the editor, failed-delivery detail and test flow
+were reviewed in an isolated admin preview. The remaining typed public event
+producers and general “Only when” condition contract are separate dependencies
+recorded in Session A; neither is represented as arbitrary working behavior.
+
 1. Replace `/hooks`' placeholder with grouped master–detail. Group by the event
    subject; show channel/recipient, event/filter, seven-day activity, state and
    failed-delivery attention. Keep selection in the URL and support deep links.
@@ -248,7 +256,7 @@ Do not mark the whole original product complete merely because 11 and 12 are don
 
 ```text
 Read frontend/brief.md and frontend/completion-plan.md.
-Implement Session A (Hooks contracts and delivery behavior, plan step 11.1).
+Implement Session C (Home and user menu, plan step 12.1 and relevant 12.2).
 Reuse the existing React/TypeScript/shadcn architecture and shared components.
 Follow the completion plan's scope and checks. Keep the .v2 redesign deferred.
 Update the handoff documents and report the next session when finished.

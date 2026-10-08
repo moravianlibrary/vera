@@ -1,6 +1,6 @@
 # Frontend continuation guide
 
-**Completion handoff (2026-10-07):** follow
+**Completion handoff (2026-10-08):** follow
 [completion-plan.md](completion-plan.md) for steps 11–12, then the verified
 earlier functional gaps. It resolves stale guidance below and requires finished
 CSS in each UI session. The `.v2` demo redesign remains a separate later pass.
@@ -15,14 +15,15 @@ This is the handoff for continuing VERA's new frontend on `feat/client-redesign`
 
 ## Current state
 
-- Hooks step 11.1 has a typed API (`src/api/hooks.ts`), fixtures and MSW
-  handlers (`src/mocks/hooks.ts`) for subscription writes, channel-backed
-  deliveries, batching, retries, exhausted deliveries, preview and explicit
-  test sends. Plugins now reports linked hooks and disable impact. Publication
-  and list creation record public events for Hooks. The Hooks page remains a
-  placeholder until step 11.2–11.3. Its existing status log still uses free-text
-  event names and may contain internal details; remaining event producers need
-  typed event codes and explicit public payloads before being wired to Hooks.
+- Hooks step 11 is built. `src/api/hooks.ts` and `src/mocks/hooks.ts` implement
+  channel-backed subscriptions and deliveries; `src/features/hooks/` renders
+  the searchable grouped list, URL-selected detail, attention and waiting queues,
+  public preview, delivery history, editor, pause/resume, retry, discard, send
+  now and explicit test. Plugin channel details and disable impact link back to
+  affected hooks. Publication and list creation record public events for Hooks.
+  The existing status log still uses free-text event names and may contain
+  internal details; remaining event producers need typed event codes and explicit
+  public payloads before being wired to Hooks.
   A general condition builder for “Only when” also awaits a product contract;
   the mock accepts the two demonstrated conditions and rejects unknown ones.
 

@@ -473,7 +473,7 @@ export function createHandlers(profile: MockUserProfile) {
         return problemResponse({ status: 403, message: "You may not read plugins" });
       }
 
-      return HttpResponse.json(pluginIndex());
+      return HttpResponse.json(pluginIndex(currentSession()));
     }),
     accessWrite("post", apiRoutes.pluginInstances, newInstanceSchema, (session, _id, draft) =>
       createInstance(session, draft),

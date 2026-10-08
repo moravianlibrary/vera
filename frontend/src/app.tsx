@@ -11,6 +11,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AccessPage } from "@/features/access/access-page";
 import { CategoriesPage } from "@/features/categories/categories-page";
 import { DocumentsPage } from "@/features/documents/documents-page";
+import { HooksPage } from "@/features/hooks/hooks-page";
 import { IntentionsPage } from "@/features/intentions/intentions-page";
 import { IntentionMixPage } from "@/features/intentions/mix-page";
 import { ListEditorPage } from "@/features/lists/list-editor-page";
@@ -60,6 +61,8 @@ function EntryPage({ entryId, label }: { entryId: string; label: string }) {
       return <AccessPage />;
     case "plugins":
       return <PluginsPage />;
+    case "hooks":
+      return <HooksPage />;
     default:
       return <Placeholder title={label} />;
   }

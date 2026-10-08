@@ -194,7 +194,11 @@ function PluginTable({
     roleOf: (roleId) => roles.find((role) => role.id === roleId)?.name ?? roleId,
     custodyIdOf: (name) => custodies.find((custody) => custody.name === name)?.id,
   };
-  const reach = { canSeeTasks, canSeeAccess: hasPermission(session, "access.read") };
+  const reach = {
+    canSeeTasks,
+    canSeeAccess: hasPermission(session, "access.read"),
+    canSeeHooks: hasPermission(session, "hook.read"),
+  };
 
   const runNow = async (instance: PluginInstanceDetail) => {
     const result = await run.run(instance.id);
@@ -310,7 +314,7 @@ function PluginTable({
 interface DrawerOptions {
   index: PluginIndex;
   names: DrawerNames;
-  reach: { canSeeTasks: boolean; canSeeAccess: boolean };
+  reach: { canSeeTasks: boolean; canSeeAccess: boolean; canSeeHooks: boolean };
   asOf: string;
   instanceActions: (
     instance: PluginInstanceDetail,

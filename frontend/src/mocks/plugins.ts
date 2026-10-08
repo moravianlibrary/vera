@@ -73,7 +73,11 @@ function secretKeysOf(instance: StoredPluginInstance): Set<string> {
   );
 }
 
-function detailOf(instance: StoredPluginInstance, now: Date): PluginInstanceDetail {
+function detailOf(
+  instance: StoredPluginInstance,
+  now: Date,
+  canSeeHooks = true,
+): PluginInstanceDetail {
   const secretKeys = secretKeysOf(instance);
   const runs = instanceRunsOf(instance.id, now);
   const lastRunAt = [runs[0]?.startedAt, instance.lastRunAt?.toISOString()]
@@ -104,7 +108,9 @@ function detailOf(instance: StoredPluginInstance, now: Date): PluginInstanceDeta
         cadence: schedule.cadence,
         isPaused: schedule.pause !== null,
       })),
-    hooks: hooksUsingChannel(instance.id).map(({ id, name, state }) => ({ id, name, state })),
+    hooks: canSeeHooks
+      ? hooksUsingChannel(instance.id).map(({ id, name, state }) => ({ id, name, state }))
+      : [],
     recentRuns: runs.slice(0, recentRunCount).map((run) => ({
       id: run.id,
       what: run.what,
@@ -122,7 +128,7 @@ function publicImplementationOf(implementation: StoredPluginImplementation): Plu
   return { ...implementation, versions: [...implementation.versions] };
 }
 
-export function pluginIndex(): PluginIndex {
+export function pluginIndex(session?: Session): PluginIndex {
   const now = mockNow();
   const kindOrder = (kind: PluginKind) => pluginKinds.indexOf(kind);
   return {
@@ -133,7 +139,9 @@ export function pluginIndex(): PluginIndex {
           kindOrder(first.kind) - kindOrder(second.kind) || first.name.localeCompare(second.name),
       )
       .map(publicImplementationOf),
-    instances: liveInstances().map((instance) => detailOf(instance, now)),
+    instances: liveInstances().map((instance) =>
+      detailOf(instance, now, session === undefined || hasPermission(session, "hook.read")),
+    ),
   };
 }
 
