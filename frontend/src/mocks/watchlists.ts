@@ -7,6 +7,7 @@
 // else's personal watchlist is out of the caller's sight and never blocks theirs. Sharing warns
 // rather than refuses: its reach says how many of the reached already keep the same filter.
 
+import { parseCategorySearchParams } from "@/api/categories";
 import { parseDocumentSearchParams } from "@/api/documents";
 import { parseListSearchParams } from "@/api/lists";
 import { parseProjectSearchParams } from "@/api/projects";
@@ -19,9 +20,11 @@ import type {
   WatchlistViewer,
 } from "@/api/watchlists";
 import { isSameWatchlistFilter } from "@/api/watchlists";
+import { matchingCategoryIds } from "@/domain/category-filters";
 import type { Session, Watchlist, WatchlistAudience, WatchlistView } from "@/domain/entities";
 import { isShared } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
+import { canReadCategories, queryCategoryIndex } from "@/mocks/categories";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { audienceOf, queryDocuments } from "@/mocks/documents";
@@ -103,6 +106,8 @@ function canOpenView(session: Session, view: WatchlistView): boolean {
       return canReadLists(session);
     case "projects":
       return canReadProjects(session);
+    case "categories":
+      return canReadCategories(session);
   }
 }
 
@@ -121,6 +126,15 @@ function isInAudience(session: Session, audience: WatchlistAudience): boolean {
 }
 
 function isVisible(session: Session, watchlist: StoredWatchlist): boolean {
+  // Mix-based watchlists cannot be read without permission to see the selected mix.
+  if (
+    watchlist.view === "categories" &&
+    (watchlist.filter.attention !== undefined || watchlist.filter.mix !== undefined) &&
+    !hasPermission(session, "intention.read")
+  ) {
+    return false;
+  }
+
   if (!isShared(watchlist)) {
     return watchlist.ownerId === session.user.id;
   }
@@ -212,6 +226,14 @@ const counters = {
   projects: (session, filter) =>
     canReadProjects(session)
       ? queryProjectIndex(session, parseProjectSearchParams(filter)).total
+      : 0,
+  categories: (session, filter) =>
+    canReadCategories(session)
+      ? matchingCategoryIds(
+          database.categories,
+          queryCategoryIndex(session, parseCategorySearchParams(filter).mixId),
+          parseCategorySearchParams(filter),
+        ).size
       : 0,
 } as const satisfies Record<WatchlistView, (session: Session, filter: URLSearchParams) => number>;
 

@@ -1,11 +1,57 @@
 // What the Categories page reads from its URL and works out for its pane (STATUS "Categories";
-// concepts.md *Category*): `?c=` the category open in the pane, none for *All categories*, and
-// `&refine=1` the Refine wizard in its place. No
-// intention is picked here any more: the page reads Overall's mix only, and a mix is read and
-// edited on its intention (intentions.md §2.4).
+// concepts.md *Category*): a saved filter, `?c=` the category open in the pane, none for *All
+// categories*, and `&refine=1` the Refine wizard in its place. `?mix=` selects an intention's
+// own mix for read-only context; editing stays on that intention (intentions.md §2.4).
 
+import type { CategoryQuery } from "@/api/categories";
+import {
+  categoryAttentions,
+  categoryCustodies,
+  categoryKinds,
+  isSameCategoryQuery,
+  parseCategorySearchParams,
+  toCategorySearchParams,
+} from "@/api/categories";
 import { categoryPathOf } from "@/domain/categories";
 import type { Category } from "@/domain/entities";
+import type { ViewDefinition } from "@/lib/view-definition";
+import { vocabulary } from "@/lib/view-definition";
+
+export const categoriesView: ViewDefinition<CategoryQuery> = {
+  view: "categories",
+  toSearchParams: toCategorySearchParams,
+  parseSearchParams: parseCategorySearchParams,
+  isSameQuery: isSameCategoryQuery,
+  fields: [
+    {
+      key: "kinds",
+      label: "Kind",
+      field: vocabulary(categoryKinds, { Branch: "Branch", Leaf: "Leaf" }),
+      isQuick: true,
+    },
+    {
+      key: "custodies",
+      label: "Custody",
+      field: vocabulary(categoryCustodies, {
+        Unheld: "Without custody",
+        Direct: "Direct grant",
+        Inherited: "Inherited",
+      }),
+    },
+    {
+      key: "attentions",
+      label: "Needs attention",
+      field: vocabulary(categoryAttentions, {
+        Unallocated: "Unallocated share",
+        NoShare: "No share",
+      }),
+    },
+    { key: "documents", label: "Documents", field: { kind: "numberRange", unit: "documents" } },
+    { key: "readyPages", label: "Ready pages", field: { kind: "numberRange", unit: "pages" } },
+  ],
+  groupings: [],
+  groupingParam: "group",
+};
 
 export interface CategoriesUrlState {
   categoryId: string | null;

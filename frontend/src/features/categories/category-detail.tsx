@@ -1,9 +1,9 @@
 // One category in the Categories pane (docs/demos/shared/page-categories.js `render`; STATUS
 // "Categories"; concepts.md *Category*): where it sits, its numbers, its children's shares in
-// Overall's mix read with what each actually got, or the documents on a leaf, and its custody with
+// the selected mix read with what each actually got, or the documents on a leaf, and its custody with
 // whom it reaches and from where. *All categories* totals the tree, holds the top-level set and
-// says what needs attention: sets under 100 in Overall's mix, and branches nobody holds. The
-// shares are Overall's and read-only here; the set card links to where they are edited
+// says what needs attention: sets under 100 in the selected mix, and branches nobody holds. The
+// shares are read-only here; the set card links to where they are edited
 // (intentions.md §2.4). Whoever may change this part of the tree gets *Edit…*, *+ Child category*
 // (*+ Top-level category* on the root, at `any`), *Refine…* on a leaf that holds documents,
 // *Delete…* on an empty leaf, and *Grant custody…* on the custody card (permissions.md §3).
@@ -25,7 +25,7 @@ import { MixSetCard } from "@/components/mix-set-card";
 import { StatusBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import { Button } from "@/components/ui/button";
-import { categoryPathOf, scopeOfCategory } from "@/domain/categories";
+import { categoryPathOf, isOutsideScope, scopeOfCategory } from "@/domain/categories";
 import { currentIterationOf } from "@/domain/documents";
 import type { Category, Session } from "@/domain/entities";
 import { can, hasPermission } from "@/domain/permissions";
@@ -76,6 +76,8 @@ export function CategoryPane({
   const node = index.nodes.find((candidate) => candidate.categoryId === categoryId);
   const children = categories.filter((candidate) => candidate.parentId === categoryId);
   const isLeaf = category !== null && children.length === 0;
+  const isInsideMix =
+    mix !== null && !isOutsideScope(categories, mix.intention.scopeCategoryId, categoryId);
   const documentsHref =
     category !== null && canOpenDocuments(session)
       ? `/documents?category=${encodeURIComponent(category.id)}`
@@ -119,7 +121,7 @@ export function CategoryPane({
   const closeDialog = () => setDialog(null);
 
   return (
-    <article className="@container max-w-5xl">
+    <article className="@container w-full min-w-0">
       <div className="flex flex-wrap items-start justify-between gap-x-4">
         <header className="mb-4 min-w-0">
           {category !== null && (
@@ -145,13 +147,13 @@ export function CategoryPane({
 
       <StatTiles
         stats={[
-          ...(category !== null && mix !== null ? shareStats(categories, mix, category) : []),
+          ...(category !== null && isInsideMix ? shareStats(categories, mix, category) : []),
           ...countStats(category === null ? index.totals : node),
         ]}
       />
 
       <div className="mt-4 grid gap-4">
-        {mix !== null && !isLeaf && (
+        {mix !== null && isInsideMix && !isLeaf && (
           <MixSetCard
             categories={categories}
             mix={mix}
@@ -162,11 +164,7 @@ export function CategoryPane({
             }
             action={
               <Button asChild size="sm" variant="outline">
-                <Link to={intentionMixHrefOf(mix.owner.id, categoryId)}>
-                  {can(session, "intention.edit_overall")
-                    ? "Edit the house mix"
-                    : "Open the house mix"}
-                </Link>
+                <Link to={intentionMixHrefOf(mix.owner.id, categoryId)}>Open mix</Link>
               </Button>
             }
           />
@@ -190,9 +188,9 @@ export function CategoryPane({
         />
         <FinePrint>
           <b className="font-semibold">A category is a line of work.</b> It classifies the attempt
-          and gives custody; it holds no share of its own. The shares shown are the house
-          mix&apos;s, Overall&apos;s, and are edited there. Documents sit on leaves only; custody
-          attaches anywhere and reaches everything under it.
+          and gives custody; it holds no share of its own. The shares shown belong to the selected
+          intention&apos;s mix and are edited there. Documents sit on leaves only; custody attaches
+          anywhere and reaches everything under it.
         </FinePrint>
       </div>
 
@@ -272,7 +270,7 @@ export function Breadcrumb({
   );
 }
 
-// Overall's share here; it is never scoped.
+// The selected mix's share here, when this category sits inside its scope.
 function shareStats(categories: readonly Category[], mix: MixTree, category: Category): Stat[] {
   const mixNode = mix.nodes.find((candidate) => candidate.categoryId === category.id);
   const parent = categories.find((candidate) => candidate.id === category.parentId);
@@ -329,7 +327,7 @@ interface AttentionCardProps {
   onSelect: (id: string | null) => void;
 }
 
-// Sets under 100 in Overall's mix, the top level first, and branches nobody holds.
+// Sets under 100 in the selected mix, the top level first, and branches nobody holds.
 function AttentionCard({ categories, index, onSelect }: AttentionCardProps) {
   const nameOf = (id: string | null) =>
     id === null

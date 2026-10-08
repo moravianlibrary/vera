@@ -6,6 +6,13 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- Categories now has saved watchlist tabs and filters for kind, custody, mix gaps, document
+  count and ready pages. Search covers category names and IDs; matching branches keep their
+  ancestors visible for context. Selecting a category keeps the active filter, and detail cards
+  fill the available pane width. A Mix of picker shows any visible intention owner's mix across
+  the tree and detail, with scoped shares hidden outside that mix's scope; the selection can be
+  saved in a watchlist.
+
 - Saved watchlist tabs now follow changes to search and filters. A search that matches no saved
   watchlist appears as "Current search", where it can be saved as a new watchlist or used to
   update one the user may edit. Project dates can be filtered by this, last or next week or

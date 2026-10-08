@@ -1,6 +1,6 @@
 // The Categories resource (concepts.md *Category*; intentions.md §2.4; STATUS "Categories"): the
 // tree with what each category holds, who holds custody of it and whom that reaches, and
-// Overall's mix over it, read-only: a category has no share of its own, and a mix is edited on its
+// the selected mix over it, read-only: a category has no share of its own, and a mix is edited on its
 // intention. The mix is the intention's, so it comes only with `intention.read`; the tree and
 // custody with `category.read`.
 // Changing the tree (permissions.md §3, Categories; intentions.md §1.1.1, §1.2): a category is
@@ -16,6 +16,87 @@ import { mixTreeSchema } from "@/api/mixes";
 import { apiRoutes, categoryActionRoute, categoryRoute } from "@/api/routes";
 import type { Category } from "@/domain/entities";
 import { categorySchema } from "@/domain/entities";
+import type { ValueRange } from "@/lib/value-range";
+import { formatRange, parseCount, parseRange } from "@/lib/value-range";
+
+export const categoryKinds = ["Branch", "Leaf"] as const;
+export const categoryCustodies = ["Unheld", "Direct", "Inherited"] as const;
+export const categoryAttentions = ["Unallocated", "NoShare"] as const;
+export type CategoryKind = (typeof categoryKinds)[number];
+export type CategoryCustody = (typeof categoryCustodies)[number];
+export type CategoryAttention = (typeof categoryAttentions)[number];
+
+export interface CategoryQuery {
+  readonly search?: string;
+  // Which intention's own mix the tree and attention filter read; absent means Overall.
+  readonly mixId?: string;
+  readonly kinds?: readonly CategoryKind[];
+  readonly custodies?: readonly CategoryCustody[];
+  readonly attentions?: readonly CategoryAttention[];
+  readonly documents?: ValueRange<number>;
+  readonly readyPages?: ValueRange<number>;
+}
+
+const categoryQueryParams = {
+  search: "q",
+  mixId: "mix",
+  kinds: "kind",
+  custodies: "custody",
+  attentions: "attention",
+  documents: "documents",
+  readyPages: "ready",
+} as const satisfies Record<keyof CategoryQuery, string>;
+
+export function toCategorySearchParams(query: CategoryQuery): URLSearchParams {
+  const params = new URLSearchParams();
+  const search = query.search?.trim();
+  if (search) params.set(categoryQueryParams.search, search);
+  if (query.mixId) params.set(categoryQueryParams.mixId, query.mixId);
+  if (query.kinds?.length) params.set(categoryQueryParams.kinds, query.kinds.join(","));
+  if (query.custodies?.length) params.set(categoryQueryParams.custodies, query.custodies.join(","));
+  if (query.attentions?.length)
+    params.set(categoryQueryParams.attentions, query.attentions.join(","));
+  const documents = formatRange(query.documents);
+  if (documents !== null) params.set(categoryQueryParams.documents, documents);
+  const readyPages = formatRange(query.readyPages);
+  if (readyPages !== null) params.set(categoryQueryParams.readyPages, readyPages);
+  return params;
+}
+
+export function parseCategorySearchParams(params: URLSearchParams): CategoryQuery {
+  const valuesOf = <Value extends string>(
+    key: string,
+    allowed: readonly Value[],
+  ): Value[] | undefined => {
+    const values = (params.get(key) ?? "")
+      .split(",")
+      .filter((value): value is Value => allowed.includes(value as Value));
+    return values.length === 0 ? undefined : [...new Set(values)];
+  };
+  return {
+    search: params.get(categoryQueryParams.search)?.trim() || undefined,
+    mixId: params.get(categoryQueryParams.mixId)?.trim() || undefined,
+    kinds: valuesOf(categoryQueryParams.kinds, categoryKinds),
+    custodies: valuesOf(categoryQueryParams.custodies, categoryCustodies),
+    attentions: valuesOf(categoryQueryParams.attentions, categoryAttentions),
+    documents: parseRange(params.get(categoryQueryParams.documents), parseCount),
+    readyPages: parseRange(params.get(categoryQueryParams.readyPages), parseCount),
+  };
+}
+
+export function isSameCategoryQuery(first: CategoryQuery, second: CategoryQuery): boolean {
+  const canonical = (query: CategoryQuery) => {
+    const params = toCategorySearchParams({
+      ...query,
+      kinds: query.kinds?.toSorted(),
+      custodies: query.custodies?.toSorted(),
+      attentions: query.attentions?.toSorted(),
+    });
+    params.sort();
+    return params.toString();
+  };
+  return canonical(first) === canonical(second);
+}
 
 const count = z.number().int().nonnegative();
 const pages = z.number().int().nonnegative();
@@ -59,7 +140,7 @@ export type CategoryNode = z.infer<typeof categoryNodeSchema>;
 export const categoryIndexSchema = z.object({
   totals: categoryTotalsSchema,
   nodes: z.array(categoryNodeSchema),
-  // Overall's; null without `intention.read`.
+  // The selected mix (Overall by default); null without `intention.read`.
   mix: mixTreeSchema.nullable(),
   // The highest categories nobody holds custody of.
   unheldIds: z.array(z.string()),
@@ -110,8 +191,12 @@ export type CategoryImpact = z.infer<typeof categoryImpactSchema>;
 
 // ---------------------------------------------------------------- calls
 
-export async function getCategoryIndex(): Promise<CategoryIndex> {
-  return getJson(apiRoutes.categoryIndex, categoryIndexSchema);
+export async function getCategoryIndex(mixId?: string): Promise<CategoryIndex> {
+  const params = new URLSearchParams();
+  if (mixId !== undefined) {
+    params.set("mix", mixId);
+  }
+  return getJson(apiRoutes.categoryIndex, categoryIndexSchema, params);
 }
 
 export async function createCategory(draft: CategoryDraft): Promise<Category> {

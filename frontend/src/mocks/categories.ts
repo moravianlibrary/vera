@@ -1,7 +1,7 @@
 // What the server does for Categories (concepts.md *Category*; intentions.md §2.4; STATUS
 // "Categories"): total each category's subtree, resolve who holds custody of it and whom that
-// reaches, and read Overall's mix over the tree for whoever may read intentions. No other mix:
-// one is read and edited on its intention (`mocks/mixes.ts`).
+// reaches, and read the selected visible intention owner's mix (Overall by default). Mix editing
+// stays on the intention (`mocks/mixes.ts`).
 // Changing the tree (permissions.md §3, Categories; intentions.md §1.1.1, §1.2): create, rename
 // and move, delete, refine, under `category.edit`; the custody set under
 // `category.grant_custody`. At `custody` each reaches the person's own subtree only, and the top
@@ -94,12 +94,21 @@ function nodeOf(categoryId: string): CategoryNode {
   };
 }
 
-export function queryCategoryIndex(session: Session): CategoryIndex {
+export function queryCategoryIndex(session: Session, mixId?: string): CategoryIndex {
   const { categories, iterations } = database;
+  const selected =
+    mixId === undefined
+      ? overallIntention()
+      : (database.intentions.find(
+          (intention) =>
+            intention.id === mixId &&
+            intention.tracksMixOf === null &&
+            isVisible(session, intention),
+        ) ?? overallIntention());
   return {
     totals: totalsOf(iterations),
     nodes: categories.map((category) => nodeOf(category.id)),
-    mix: can(session, "intention.read") ? mixTreeOf(overallIntention()) : null,
+    mix: can(session, "intention.read") ? mixTreeOf(selected) : null,
     unheldIds: unheldCategoriesOf(categories, holders()).map((category) => category.id),
   };
 }

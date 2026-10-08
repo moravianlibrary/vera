@@ -1,6 +1,6 @@
 // A category tree beside a pane (docs/demos/shared/page-categories.js `row`; STATUS "Categories"):
 // a search, the Show picker, and the tree under *All categories*, every branch open to begin
-// with. Categories shows it with counts and Overall's mix; an intention's Mix with that mix only.
+// with. Categories shows it with counts and the selected mix; an intention's Mix with that mix only.
 // Each row carries the number picked, remembered with the person's settings. A parent whose
 // sibling set is under 100 keeps its ⚠ whatever is picked, so switching away from shares never
 // hides it. Outside a scoped intention's subtree a mix number is neither shown nor read; the
@@ -34,6 +34,10 @@ export interface CategoryCounts {
 
 interface CategoryTreeProps {
   categories: readonly Category[];
+  // A filtered Categories view supplies the matching nodes and their ancestors; Mix pages
+  // retain this tree's own search.
+  visibleIds?: ReadonlySet<string>;
+  matchingIds?: ReadonlySet<string>;
   // None on a page that reads only a mix.
   counts: CategoryCounts | null;
   mix: MixTree | null;
@@ -45,6 +49,8 @@ interface CategoryTreeProps {
 
 export function CategoryTree({
   categories,
+  visibleIds,
+  matchingIds,
   counts,
   mix,
   offered,
@@ -57,7 +63,7 @@ export function CategoryTree({
   const [search, setSearch] = useState("");
   const [collapsedIds, setCollapsedIds] = useState<ReadonlySet<string>>(new Set());
   const shown = treeValueOf(settings?.categoryTreeValue, offered);
-  const searched = searchedCategoriesOf(categories, search);
+  const searched = visibleIds ?? searchedCategoriesOf(categories, search);
   const isShown = (category: Category) => searched === null || searched.has(category.id);
   const childrenOf = (parentId: string | null) =>
     categories.filter((category) => category.parentId === parentId && isShown(category));
@@ -72,7 +78,9 @@ export function CategoryTree({
     mix?.nodes.find((node) => node.categoryId === categoryId);
   const isOutside = (categoryId: string | null) =>
     mix !== null && isOutsideScope(categories, mix.intention.scopeCategoryId, categoryId);
-  const isDimmed = (categoryId: string | null) => isMixValue(shown) && isOutside(categoryId);
+  const isDimmed = (categoryId: string | null) =>
+    (isMixValue(shown) && isOutside(categoryId)) ||
+    (categoryId !== null && matchingIds !== undefined && !matchingIds.has(categoryId));
   const warningOf = (unallocated: number, categoryId: string | null) =>
     mix === null || unallocated <= 0 || isOutside(categoryId)
       ? null
@@ -82,13 +90,15 @@ export function CategoryTree({
   return (
     <div>
       <div className="sticky top-0 z-10 grid gap-2 border-b bg-background px-4 py-3">
-        <Input
-          type="search"
-          aria-label="Search categories"
-          placeholder="Search categories…"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
+        {visibleIds === undefined && (
+          <Input
+            type="search"
+            aria-label="Search categories"
+            placeholder="Search categories…"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        )}
         <div className="flex items-center justify-between gap-2">
           <label htmlFor={id} className="text-xs text-muted-foreground">
             Show
@@ -115,6 +125,11 @@ export function CategoryTree({
               ))}
           </select>
         </div>
+        {matchingIds !== undefined && matchingIds.size < categories.length && (
+          <p className="text-xs text-muted-foreground">
+            {matchingIds.size} matching categories · ancestors shown for context
+          </p>
+        )}
       </div>
       <Tree
         ariaLabel="Categories"
@@ -148,7 +163,11 @@ export function CategoryTree({
         }}
       />
       {searched?.size === 0 && (
-        <p className="px-4 py-6 text-sm text-muted-foreground">No category is called that.</p>
+        <p className="px-4 py-6 text-sm text-muted-foreground">
+          {visibleIds === undefined
+            ? "No category is called that."
+            : "No categories match these filters."}
+        </p>
       )}
     </div>
   );

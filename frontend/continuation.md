@@ -15,6 +15,17 @@ This is the handoff for continuing VERA's new frontend on `feat/client-redesign`
 
 ## Current state
 
+- Categories now has shared watchlist tabs and a filter bar above its tree. Search matches name
+  or ID; Kind, Custody (without anyone, direct grants or inherited reach), Needs attention
+  (unallocated or missing share), Documents and Ready pages narrow matching categories. The
+  tree keeps ancestor paths as dimmed context and shows a match count, while its Show picker
+  remains a separate display preference. The detail cards fill the pane's available width.
+  The chosen category and filters coexist in the URL. A Mix of picker selects a visible
+  intention owner's mix for the tree and detail; Overall is the default. The selection is saved
+  with a watchlist. Scoped mixes show shares only inside their scope.
+  Without custody and Mix gaps are seeded shared watchlists; Mix gaps and its filter are not
+  offered to people who cannot read an intention's mix (an active old filter stays removable).
+  The `.v2` redesign remains deferred.
 - Saved watchlist tabs now follow the full live search and filter on Documents, Proposals,
   Validations, Lists and Projects. A matching saved tab becomes active automatically; an
   unmatched filter shows `Current search` at the end of the tabs. Its menu saves a new
@@ -423,8 +434,9 @@ The foundation is in place:
   first; 409 `mix.revision`, `intention.not_owner`, 422 `mix.over`, `mix.outside_scope`) and
   `POST …/detach`; the mock is `src/mocks/mixes.ts`. It shows the shared `CategoryTree` and
   `MixSetCard`, and `mix-dialogs.tsx` holds *Edit proportions…* on `SetEditorDialog` with the
-  trackers step, and *Detach*. Categories (`src/features/categories/`) reads Overall's mix only,
-  read-only, from `GET /categories/overview`, and changes the tree over `src/api/categories.ts`:
+  trackers step, and *Detach*. Categories (`src/features/categories/`) reads the selected visible
+  owner's mix, Overall by default, read-only, from `GET /categories/overview?mix=`, and changes
+  the tree over `src/api/categories.ts`:
   `POST /categories` and `PUT`/`DELETE /categories/:id` (create, rename and move, delete an
   empty leaf; 409 `category.name_taken`, `category.holds_documents`, `category.has_children`,
   `category.scope`), `GET …/impact` (what a delete or refine touches: documents, the mixes giving

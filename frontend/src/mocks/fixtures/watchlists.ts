@@ -45,6 +45,12 @@ const sharedLenses: readonly Lens[] = [
   { name: "Active", filter: { state: "Approved", period: "Active" }, view: "projects" },
   { name: "Ended", filter: { period: "Ended" }, view: "projects" },
   { name: "Rejected", filter: { state: "Rejected" }, view: "projects" },
+  { name: "Without custody", filter: { custody: "Unheld" }, view: "categories" },
+  {
+    name: "Mix gaps",
+    filter: { attention: "Unallocated,NoShare" },
+    view: "categories",
+  },
 ];
 
 const staffLenses = [

@@ -3,6 +3,7 @@
 
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { getCategoryIndex, parseCategorySearchParams } from "@/api/categories";
 import { ApiError } from "@/api/http";
 import { listLists } from "@/api/lists";
 import { listProjectIndex } from "@/api/projects";
@@ -14,7 +15,9 @@ import {
   updateWatchlist,
 } from "@/api/watchlists";
 import type { MockUserProfile } from "@/config/env";
+import { matchingCategoryIds } from "@/domain/category-filters";
 import { isShared } from "@/domain/entities";
+import { categories } from "@/mocks/fixtures/categories";
 import { createHandlers } from "@/mocks/handlers";
 
 const server = setupServer();
@@ -37,6 +40,31 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
 }
 
 describe("listWatchlists", () => {
+  it("reads a selected intention's mix for Categories", async () => {
+    signInAs("admin");
+    const overall = await getCategoryIndex();
+    const selected = await getCategoryIndex("i8");
+
+    expect(overall.mix?.owner.id).toBe("i4");
+    expect(selected.mix?.owner.id).toBe("i8");
+    expect(selected.mix?.intention.scopeCategoryId).toBe("c2");
+  });
+  it("counts Categories tabs by matching categories rather than their ancestor rows", async () => {
+    signInAs("admin");
+    const index = await getCategoryIndex();
+    const watchlists = await listWatchlists("categories");
+
+    expect(watchlists.map((row) => row.name)).toEqual(["Without custody", "Mix gaps"]);
+    for (const watchlist of watchlists) {
+      expect(watchlist.itemCount).toBe(
+        matchingCategoryIds(
+          categories,
+          index,
+          parseCategorySearchParams(new URLSearchParams(watchlist.filter)),
+        ).size,
+      );
+    }
+  });
   it("counts the shared Projects tabs over each reader's reach", async () => {
     signInAs("staff");
     const proposed = (await listWatchlists("projects")).find(

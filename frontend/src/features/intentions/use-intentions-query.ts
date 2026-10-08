@@ -13,8 +13,12 @@ export const intentionsQueryKey = ["intentions"] as const;
 // and the mix Categories reads.
 export const intentionInvalidations = [intentionsQueryKey, projectsQueryKey, categoriesQueryKey];
 
-export function useIntentionIndexQuery() {
-  return useQuery({ queryKey: [...intentionsQueryKey, "index"], queryFn: listIntentionIndex });
+export function useIntentionIndexQuery({ isEnabled = true }: { isEnabled?: boolean } = {}) {
+  return useQuery({
+    queryKey: [...intentionsQueryKey, "index"],
+    queryFn: listIntentionIndex,
+    enabled: isEnabled,
+  });
 }
 
 export function useIntentionMixQuery(intentionId: string | null) {

@@ -1,7 +1,7 @@
 // One sibling set of a mix (intentions.md §1, §1.1.1; docs/demos/shared/page-categories.js
 // `render`): each child's share of its parent, of the whole (or the scope), and what it actually
 // got of the intention's output, with the drift marker outside the band; what the set leaves
-// unallocated, flagged, never scaled. Categories shows Overall's, read-only; an intention's Mix
+// unallocated, flagged, never scaled. Categories shows the selected mix, read-only; an intention's Mix
 // shows its own, with *Edit proportions…* as the card's action.
 // TODO(rrandiak): labels move to i18n.
 

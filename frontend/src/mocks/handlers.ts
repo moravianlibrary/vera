@@ -570,13 +570,14 @@ export function createHandlers(profile: MockUserProfile) {
     ),
     accessDelete(`${apiRoutes.accessCustodies}/:id`, deleteCustody),
     http.get(route(apiRoutes.categories), () => HttpResponse.json(database.categories)),
-    http.get(route(apiRoutes.categoryIndex), () => {
+    http.get(route(apiRoutes.categoryIndex), ({ request }) => {
       const session = currentSession();
       if (!canReadCategories(session)) {
         return problemResponse({ status: 403, message: "You may not read categories" });
       }
 
-      return HttpResponse.json(queryCategoryIndex(session));
+      const mixId = new URL(request.url).searchParams.get("mix") ?? undefined;
+      return HttpResponse.json(queryCategoryIndex(session, mixId));
     }),
     http.post(route(apiRoutes.categories), async ({ request }) => {
       const draft = categoryDraftSchema.safeParse(await request.json());

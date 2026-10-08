@@ -7,6 +7,7 @@
 // warns instead (decided 2026-10-06), which is what the reach says before it is saved.
 
 import { z } from "zod";
+import { isSameCategoryQuery, parseCategorySearchParams } from "@/api/categories";
 import { isSameDocumentQuery, parseDocumentSearchParams } from "@/api/documents";
 import { deleteResource, getJson, patchJson, postJson } from "@/api/http";
 import { isSameListQuery, parseListSearchParams } from "@/api/lists";
@@ -96,6 +97,11 @@ const filterComparers = {
     isSameProjectQuery(
       parseProjectSearchParams(new URLSearchParams(first)),
       parseProjectSearchParams(new URLSearchParams(second)),
+    ),
+  categories: (first, second) =>
+    isSameCategoryQuery(
+      parseCategorySearchParams(new URLSearchParams(first)),
+      parseCategorySearchParams(new URLSearchParams(second)),
     ),
 } as const satisfies Record<WatchlistView, (first: Filter, second: Filter) => boolean>;
 

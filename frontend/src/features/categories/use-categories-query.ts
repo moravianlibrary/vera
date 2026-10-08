@@ -21,10 +21,10 @@ export const categoryInvalidations = [
   sessionQueryKey,
 ];
 
-export function useCategoryIndexQuery() {
+export function useCategoryIndexQuery(mixId?: string) {
   return useQuery({
-    queryKey: [...categoriesQueryKey, "index"],
-    queryFn: getCategoryIndex,
+    queryKey: [...categoriesQueryKey, "index", mixId ?? "overall"],
+    queryFn: () => getCategoryIndex(mixId),
   });
 }
 
