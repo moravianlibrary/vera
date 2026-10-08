@@ -19,20 +19,29 @@ import {
 import type { ListState } from "@/domain/lists";
 import { listStateSchema, memberBlockerSchema } from "@/domain/lists";
 import { generatorClassSchema } from "@/domain/plugins";
+import type { DayRange } from "@/lib/value-range";
+import { formatDayRange, parseDayRange } from "@/lib/value-range";
 
 // ---------------------------------------------------------------- query
 
 export interface ListQuery {
   readonly search?: string;
   readonly states?: readonly ListState[];
+  readonly attention?: readonly ListAttention[];
+  readonly runs?: DayRange;
 }
 
-export type ListListField = "states";
+export const listAttentions = ["Overdue", "Blocked", "ReviewNeeded", "LateCopy", "Empty"] as const;
+export const listAttentionSchema = z.enum(listAttentions);
+export type ListAttention = z.infer<typeof listAttentionSchema>;
+export type ListListField = "states" | "attention";
 
 // Query-string names; the same names address the filter in the page URL.
 export const listQueryParams = {
   search: "q",
   states: "state",
+  attention: "attention",
+  runs: "runs",
 } as const satisfies Record<keyof ListQuery, string>;
 
 const listSeparator = ",";
@@ -47,6 +56,13 @@ export function toListSearchParams(query: ListQuery): URLSearchParams {
   if (query.states !== undefined && query.states.length > 0) {
     params.set(listQueryParams.states, query.states.join(listSeparator));
   }
+  if (query.attention !== undefined && query.attention.length > 0) {
+    params.set(listQueryParams.attention, query.attention.join(listSeparator));
+  }
+  const runs = formatDayRange(query.runs);
+  if (runs !== null) {
+    params.set(listQueryParams.runs, runs);
+  }
 
   return params;
 }
@@ -58,17 +74,36 @@ export function parseListSearchParams(params: URLSearchParams): ListQuery {
     const parsed = listStateSchema.safeParse(value.trim());
     return parsed.success ? [parsed.data] : [];
   });
+  // Links made before the shared filter bar used ?show= for the same state choices.
+  const legacyStates =
+    raw === "" && params.get("show") === "current"
+      ? (["Planned", "InProgress"] as const)
+      : raw === "" && params.get("show") === "done"
+        ? (["Done"] as const)
+        : undefined;
+  const attention = (params.get(listQueryParams.attention) ?? "")
+    .split(listSeparator)
+    .flatMap((value) => {
+      const parsed = listAttentionSchema.safeParse(value.trim());
+      return parsed.success ? [parsed.data] : [];
+    });
 
   return {
     search: params.get(listQueryParams.search)?.trim() || undefined,
-    states: states.length === 0 ? undefined : [...new Set(states)],
+    states: states.length === 0 ? legacyStates : [...new Set(states)],
+    attention: attention.length === 0 ? undefined : [...new Set(attention)],
+    runs: parseDayRange(params.get(listQueryParams.runs)),
   };
 }
 
 // True when the two name the same filter, however their lists are ordered.
 export function isSameListQuery(first: ListQuery, second: ListQuery): boolean {
   const canonical = (query: ListQuery) => {
-    const params = toListSearchParams({ ...query, states: query.states?.toSorted() });
+    const params = toListSearchParams({
+      ...query,
+      states: query.states?.toSorted(),
+      attention: query.attention?.toSorted(),
+    });
     params.sort();
     return params.toString();
   };
@@ -147,7 +182,10 @@ export const listPageSchema = z.object({
   // Rows matching the whole filter.
   total: z.number().int(),
   nextCursor: z.string().nullable(),
-  facets: z.object({ states: facetCountsOf(listStateSchema) }),
+  facets: z.object({
+    states: facetCountsOf(listStateSchema),
+    attention: facetCountsOf(listAttentionSchema),
+  }),
 });
 export type ListPage = z.infer<typeof listPageSchema>;
 

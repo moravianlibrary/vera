@@ -8,6 +8,7 @@ import type { RoleWay, Via } from "@/domain/access";
 import type { Watchlist } from "@/domain/entities";
 import type { GrantScope, Permission } from "@/domain/permissions";
 import { documentsView } from "@/features/documents/documents-view";
+import { listsView } from "@/features/lists/lists-view";
 import { proposalsView } from "@/features/proposals/proposals-view";
 import { validationsView } from "@/features/validations/validations-view";
 import type { FilterFieldDefinition, ViewDefinition } from "@/lib/view-definition";
@@ -123,6 +124,8 @@ export function filterSummaryOf({ view, filter }: Pick<Watchlist, "view" | "filt
       return summaryIn(proposalsView, params);
     case "validations":
       return summaryIn(validationsView, params);
+    case "lists":
+      return summaryIn(listsView, params);
   }
 }
 

@@ -5,6 +5,7 @@
 
 import type {
   DeletionDryRun,
+  ListAttention,
   ListDetail,
   ListDraft,
   ListItem,
@@ -16,7 +17,7 @@ import type {
   PoolPage,
   PoolQuery,
 } from "@/api/lists";
-import { listSliceSize } from "@/api/lists";
+import { listAttentions, listSliceSize } from "@/api/lists";
 import { categoryLineageOf, categoryPathOf } from "@/domain/categories";
 import { effectivePageCount } from "@/domain/documents";
 import type { DigitizationList, Iteration, Session, StatusLogEntry } from "@/domain/entities";
@@ -38,7 +39,7 @@ import { scopeOfProject } from "@/domain/projects";
 import { isRestricted, statusFootnoteOf, validationOf } from "@/domain/status";
 import { formatShortCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
-import { dayOf } from "@/lib/value-range";
+import { dayOf, isReversedRange, resolveDayRange } from "@/lib/value-range";
 import { countValues, sliceOf } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import { recordHookEvent } from "@/mocks/hooks";
@@ -183,7 +184,8 @@ export function queryLists(
   query: ListQuery,
   slice: Slice = { cursor: null, limit: listSliceSize },
 ): ListPage {
-  const search = query.search?.toLowerCase();
+  const search = query.search?.trim().toLowerCase();
+  const runs = query.runs === undefined ? undefined : resolveDayRange(query.runs, mockToday);
   const searched = database.lists
     .filter((list) => isInReach(session, list))
     .map(rowOf)
@@ -191,14 +193,40 @@ export function queryLists(
       (row) =>
         search === undefined ||
         row.list.name.toLowerCase().includes(search) ||
-        row.list.id.toLowerCase() === search,
+        row.list.id.toLowerCase().includes(search),
+    )
+    .filter((row) =>
+      runs === undefined
+        ? true
+        : !isReversedRange(runs) &&
+          (runs.from === undefined || row.list.endsOn >= runs.from) &&
+          (runs.to === undefined || row.list.startsOn <= runs.to),
     );
-  const wanted = new Set(query.states ?? []);
+  const wantedStates = new Set(query.states ?? []);
+  const wantedAttention = new Set(query.attention ?? []);
+  const hasAttention = (row: ListRow, reason: ListAttention) => {
+    switch (reason) {
+      case "Overdue":
+        return row.isOverdue;
+      case "Blocked":
+        return row.blockedCount > 0;
+      case "ReviewNeeded":
+        return row.reviewNeededCount > 0;
+      case "LateCopy":
+        return row.lateCopyCount > 0;
+      case "Empty":
+        return row.itemCount === 0;
+    }
+  };
+  const matchesState = (row: ListRow) => wantedStates.size === 0 || wantedStates.has(row.state);
+  const matchesAttention = (row: ListRow) =>
+    wantedAttention.size === 0 || [...wantedAttention].some((reason) => hasAttention(row, reason));
   const matching = searched
-    .filter((row) => wanted.size === 0 || wanted.has(row.state))
+    .filter((row) => matchesState(row) && matchesAttention(row))
     .toSorted(byState);
   const { items, nextCursor } = sliceOf(matching, (row) => row.list.id, slice);
-  const states = countValues(searched.map((row) => row.state));
+  const states = countValues(searched.filter(matchesAttention).map((row) => row.state));
+  const attentionRows = searched.filter(matchesState);
 
   return {
     items,
@@ -209,6 +237,10 @@ export function queryLists(
       states: listStates.flatMap((value) => {
         const found = states.find((entry) => entry.value === value);
         return found === undefined ? [] : [{ value, count: found.count }];
+      }),
+      attention: listAttentions.flatMap((value) => {
+        const count = attentionRows.filter((row) => hasAttention(row, value)).length;
+        return count === 0 ? [] : [{ value, count }];
       }),
     },
   };

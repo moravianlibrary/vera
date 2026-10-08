@@ -40,6 +40,7 @@ const sharedLenses: readonly Lens[] = [
     audience: { kind: "some", groupIds: [], roleIds: ["curator"] },
   },
   { name: "Denied in review", filter: { review: "Denied" }, view: "validations" },
+  { name: "Current", filter: { state: "Planned,InProgress" }, view: "lists" },
 ];
 
 const staffLenses = [

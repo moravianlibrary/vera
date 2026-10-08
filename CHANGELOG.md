@@ -6,14 +6,18 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- Digitization Lists now uses saved watchlist tabs and the shared filter bar. Search accepts
+  names and partial IDs; State, attention reasons, and overlapping run dates narrow the list.
+  The shared Current tab keeps the former Planned and In progress view, while All shows every
+  list. Filter counts reflect the other active filters.
+
 - Hooks now has a searchable, grouped list and a detail pane for subscriptions,
   deliveries that gave up, waiting messages, public previews and delivery history.
   Administrators can create and edit hooks, pause or resume them, retry or discard
   failed deliveries, send waiting messages now, and preview and explicitly send a
   test without saving the editor.
 
-- Digitization Lists, browse: the lists beside the chosen one, Planned and running by default
-  with Done and Everything behind *Show*, each row with its state, run, items, pages and how
+- Digitization Lists, browse: the lists beside the chosen one, each row with its state, run, items, pages and how
   much is delivered, and a line for what needs a look (past its end and not marked Done,
   blocked since listing, review needed after scanning, empty). The pane says where the list
   stands, planned against delivered, what is on it with each item's status and flag, and its

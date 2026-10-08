@@ -9,6 +9,7 @@ import { findList, listGenerators, listLists, listPool, listShapes, readList } f
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { intentionsQueryKey } from "@/features/intentions/use-intentions-query";
 import { usePagedList } from "@/hooks/use-paged-list";
+import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
 export const listsQueryKey = ["lists"] as const;
 
@@ -62,4 +63,9 @@ export function useListReadingQuery(request: ListReadingRequest) {
 
 // What saving or acting on a list changes: what is on it moves in Documents, and the
 // intentions it counts towards count it.
-export const listInvalidations = [listsQueryKey, documentsQueryKey, intentionsQueryKey];
+export const listInvalidations = [
+  listsQueryKey,
+  documentsQueryKey,
+  intentionsQueryKey,
+  watchlistsQueryKey,
+];

@@ -6,7 +6,7 @@
 import type { Audience } from "@/domain/documents";
 import type { WatchlistView } from "@/domain/entities";
 import type { ReferenceKind } from "@/hooks/use-reference-labels";
-import type { DayRange, ValueRange } from "@/lib/value-range";
+import type { DayPreset, DayRange, ValueRange } from "@/lib/value-range";
 
 // A filter's query: a search, and fields that are each a list of values matching any of them.
 export interface FilterableQuery {
@@ -76,7 +76,7 @@ export interface NumberRangeFieldDefinition<Query> extends FilterFieldBase {
 
 export interface DateRangeFieldDefinition<Query> extends FilterFieldBase {
   readonly key: DateRangeFieldOf<Query>;
-  readonly field: { readonly kind: "dateRange" };
+  readonly field: { readonly kind: "dateRange"; readonly presets?: readonly DayPreset[] };
 }
 
 export type RangeFieldDefinition<Query> =

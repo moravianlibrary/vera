@@ -15,6 +15,9 @@ This is the handoff for continuing VERA's new frontend on `feat/client-redesign`
 
 ## Current state
 
+- Digitization Lists follow-up is built: watchlist tabs, shared Current lens, and State,
+  attention and Runs filters through the existing filter bar and API. The `.v2` redesign
+  remains deferred. Session C (Home and user menu) is the next completion-plan session.
 - Hooks step 11 is built. `src/api/hooks.ts` and `src/mocks/hooks.ts` implement
   channel-backed subscriptions and deliveries; `src/features/hooks/` renders
   the searchable grouped list, URL-selected detail, attention and waiting queues,
@@ -299,8 +302,10 @@ The foundation is in place:
   to Ready (or Enqueued if a gate fails), refuses an item another list took (409
   `list.member_unavailable`) and any change to a Done list (409 `list.done`), and reads
   `list.read`'s custody and project scopes as "a member within them" (a TODO). Browse is
-  `lists-page.tsx` with `lists-view.ts` (search and *Show*: Planned and running by default,
-  Done, Everything, as `?show=`; no fields, watchlists or grouping), `list-rows.tsx` (List ·
+  `lists-page.tsx` with `lists-view.ts` (shared `WatchlistTabs` and `FilterBar`: All is
+  unfiltered, Current is a shared saved filter for Planned and In progress; search by name
+  or partial ID, State, attention reasons and overlapping start-to-end Runs dates in the URL;
+  no grouping; old `?show=current|done` links still parse), `list-rows.tsx` (List ·
   State · Runs · Items · Pages · Delivered and the why line) and `list-detail.tsx` (state note,
   tiles with bars, members with their status and one flag, history; *Edit* with `list.edit`
   while not Done). *New list* (`list.create`) opens `/lists/new`, *Edit* `/lists/:id/edit`

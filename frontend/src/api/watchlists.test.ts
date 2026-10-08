@@ -4,6 +4,7 @@
 import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
+import { listLists } from "@/api/lists";
 import {
   createWatchlist,
   deleteWatchlist,
@@ -35,6 +36,17 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
 }
 
 describe("listWatchlists", () => {
+  it("counts the Current Lists tab from its saved state filter and scopes it to readers", async () => {
+    signInAs("digitization");
+    const current = (await listWatchlists("lists")).find(
+      (watchlist) => watchlist.name === "Current",
+    );
+    expect(current?.filter).toEqual({ state: "Planned,InProgress" });
+    expect(current?.itemCount).toBe((await listLists({ states: ["Planned", "InProgress"] })).total);
+
+    signInAs("curator");
+    expect(await listWatchlists("lists")).toEqual([]);
+  });
   it("lists the shared ones first, then the caller's own", async () => {
     signInAs("staff");
 

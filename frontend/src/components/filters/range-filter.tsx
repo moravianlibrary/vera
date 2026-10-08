@@ -154,6 +154,7 @@ export function RangeEditor<Query>({ field, range, onApply }: RangeEditorProps<Q
   const [draft, setDraft] = useState<ValueRange<number> | ValueRange<string>>(ends);
   const isReversed = isReversedRange(draft);
   const isDate = field.field.kind === "dateRange";
+  const datePresets = field.field.kind === "dateRange" ? (field.field.presets ?? dayPresets) : [];
   const preset = range !== undefined && "preset" in range ? range.preset : null;
   const { presets: countPresets = [], unit = "" } =
     field.field.kind === "numberRange" ? field.field : {};
@@ -165,9 +166,9 @@ export function RangeEditor<Query>({ field, range, onApply }: RangeEditorProps<Q
 
   return (
     <div className="grid gap-3 text-sm">
-      {isDate && (
+      {datePresets.length > 0 && (
         <fieldset className="grid gap-1" aria-label={`${field.label}, presets`}>
-          {dayPresets.map((value) => (
+          {datePresets.map((value) => (
             <Button
               key={value}
               type="button"
@@ -201,7 +202,12 @@ export function RangeEditor<Query>({ field, range, onApply }: RangeEditorProps<Q
         </fieldset>
       )}
 
-      <div className={cn("grid gap-2", (isDate || countPresets.length > 0) && "border-t pt-3")}>
+      <div
+        className={cn(
+          "grid gap-2",
+          (datePresets.length > 0 || countPresets.length > 0) && "border-t pt-3",
+        )}
+      >
         <span className="text-xs font-medium text-muted-foreground">
           {isDate ? "Between two days" : "Between"}
         </span>

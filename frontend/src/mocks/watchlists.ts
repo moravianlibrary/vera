@@ -8,6 +8,7 @@
 // rather than refuses: its reach says how many of the reached already keep the same filter.
 
 import { parseDocumentSearchParams } from "@/api/documents";
+import { parseListSearchParams } from "@/api/lists";
 import { parseProposalSearchParams } from "@/api/proposal-review";
 import { parseValidationSearchParams } from "@/api/validations";
 import type {
@@ -23,6 +24,7 @@ import { hasPermission } from "@/domain/permissions";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { audienceOf, queryDocuments } from "@/mocks/documents";
+import { canReadLists, queryLists } from "@/mocks/lists";
 import { canDecide, queryProposals } from "@/mocks/proposal-review";
 import { sessionOf } from "@/mocks/session";
 import { canReview, queryValidations } from "@/mocks/validations";
@@ -95,6 +97,8 @@ function canOpenView(session: Session, view: WatchlistView): boolean {
       return canDecide(session);
     case "validations":
       return canReview(session);
+    case "lists":
+      return canReadLists(session);
   }
 }
 
@@ -196,6 +200,10 @@ const counters = {
     canReview(session)
       ? queryValidations(session, parseValidationSearchParams(filter), { cursor: null, limit: 1 })
           .total
+      : 0,
+  lists: (session, filter) =>
+    canReadLists(session)
+      ? queryLists(session, parseListSearchParams(filter), { cursor: null, limit: 1 }).total
       : 0,
 } as const satisfies Record<WatchlistView, (session: Session, filter: URLSearchParams) => number>;
 

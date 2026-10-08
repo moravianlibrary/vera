@@ -55,6 +55,11 @@ describe("the list query in the URL", () => {
     expect(parseListSearchParams(new URLSearchParams("state=Done,Lost&q="))).toEqual({
       search: undefined,
       states: ["Done"],
+      attention: undefined,
+      runs: undefined,
+    });
+    expect(parseListSearchParams(new URLSearchParams("show=done"))).toMatchObject({
+      states: ["Done"],
     });
   });
 
@@ -62,6 +67,24 @@ describe("the list query in the URL", () => {
     expect(isSameListQuery({ states: ["Planned", "Done"] }, { states: ["Done", "Planned"] })).toBe(
       true,
     );
+  });
+
+  it("round-trips attention and run dates, ignoring unknown values", () => {
+    const query = {
+      states: ["Planned" as const],
+      attention: ["Blocked" as const, "Empty" as const],
+      runs: { from: "2026-10-01", to: "2026-10-31" },
+    };
+    expect(parseListSearchParams(toListSearchParams(query))).toEqual({
+      search: undefined,
+      ...query,
+    });
+    expect(
+      parseListSearchParams(new URLSearchParams("attention=Unknown,Blocked&runs=2026-99-01..")),
+    ).toEqual({ search: undefined, states: undefined, attention: ["Blocked"], runs: undefined });
+    expect(
+      isSameListQuery({ attention: ["Empty", "Blocked"] }, { attention: ["Blocked", "Empty"] }),
+    ).toBe(true);
   });
 });
 
@@ -109,6 +132,28 @@ describe("listLists", () => {
     const page = await listLists({ search: "L-2026-015" });
 
     expect(page.items[0]?.blockedCount).toBe(1); // IT25: a page-count defect found after listing
+  });
+
+  it("matches run intervals by overlap and counts state facets after the run filter", async () => {
+    signInAs("digitization");
+
+    const page = await listLists({ runs: { from: "2026-10-20", to: "2026-11-03" } });
+    expect(page.items.map((row) => row.list.id)).toEqual(["L-2026-015", "L-2026-016"]);
+    expect(page.facets.states).toEqual([{ value: "Planned", count: 2 }]);
+    expect((await listLists({ runs: { from: "2026-12-01" } })).total).toBe(0);
+  });
+
+  it("matches any selected attention reason and keeps the other reasons available", async () => {
+    signInAs("digitization");
+
+    const blocked = await listLists({ attention: ["Blocked"] });
+    expect(blocked.items.map((row) => row.list.id)).toContain("L-2026-015");
+    expect(blocked.items.every((row) => row.blockedCount > 0)).toBe(true);
+    const all = await listLists({});
+    expect(blocked.facets.attention).toEqual(all.facets.attention);
+    expect((await listLists({ search: "2026-016" })).items.map((row) => row.list.id)).toEqual([
+      "L-2026-016",
+    ]);
   });
 });
 

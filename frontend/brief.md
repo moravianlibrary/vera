@@ -86,6 +86,7 @@ zod v4.
 | A list view's URL state | `ViewDefinition` (`src/lib/view-definition.ts`; `view` only when it has watchlists) in `features/<view>/<view>-view.ts`, read by `useViewUrlState` |
 | Its filter bar | the definition's `fields` → `FilterBar` (`components/filters/`); value, reference, `numberRange` (with `presets`) and `dateRange` fields; the phone's `filter-sheet.tsx`; names via `useReferenceLabels` |
 | Saved filters | `WatchlistTabs`; a new view adds its value to `watchlistViewSchema` (`domain/entities.ts`) and a comparer in `api/watchlists.ts` |
+| Digitization Lists filters | `listsView` now declares State, Needs attention and Runs on `FilterBar`; its Current tab is a saved watchlist. `dateRange` fields may set `presets: []` for calendar intervals where relative presets would be misleading. |
 | List beside a pane | `MasterDetail` (`masterWidth="tree"` for a tree) + `RecordList` (columns, card under 42rem, why line, `GroupHeader`) + `usePagedList`; grouping via `groups` in the view definition and `mocks/arrangement.ts` |
 | The pane | `Pane` / `paneStateOf` / `Outcome` (`components/pane-state.tsx`); `DetailCard`, `FactGrid`, `StatTiles` with an optional `meter` (`detail-card.tsx`), `StatusNote`, `record-cards.tsx` (askers, copies, catalog, heading; `HistoryCard` takes a log alone, without a document) |
 | Actions | `ViewAction` + `ActionBar` (per-tier cap, `isInMenu` for More ▾); `PageHeader actions`, and `control` for a picker the whole view reads (wraps on a phone) |
