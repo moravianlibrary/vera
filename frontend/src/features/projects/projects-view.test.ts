@@ -93,12 +93,11 @@ describe("projectSectionsOf", () => {
       rowOf("active-new", "Approved", "Active", "2026-01-01", "2027-01-01"),
       rowOf("ended-new", "Approved", "Ended", "2023-01-01", "2025-01-01"),
     ]);
-    expect(sections.cards.map((row) => row.project.id)).toEqual([
+    expect(sections.proposed.map((row) => row.project.id)).toEqual([
       "proposed-new",
       "proposed-old",
-      "active-new",
-      "active-old",
     ]);
+    expect(sections.active.map((row) => row.project.id)).toEqual(["active-new", "active-old"]);
     expect(sections.ended.map((row) => row.project.id)).toEqual(["ended-new", "ended-old"]);
     expect(sections.rejected.map((row) => row.project.id)).toEqual([
       "rejected-new",
@@ -106,7 +105,7 @@ describe("projectSectionsOf", () => {
     ]);
   });
 
-  it("puts proposed, active, upcoming, ended and rejected in order, newest first within each", () => {
+  it("places approved upcoming projects with active and lapsed proposed projects with ended", () => {
     const sections = projectSectionsOf([
       rowOf("upcoming", "Approved", "Upcoming", "2026-09-01", "2027-08-31"),
       rowOf("late", "Approved", "Active", "2026-01-01", "2027-12-31"),
@@ -117,15 +116,10 @@ describe("projectSectionsOf", () => {
       rowOf("rejected", "Rejected", "Active", "2026-01-01", "2026-12-31"),
     ]);
 
-    expect(sections.cards.map((row) => row.project.id)).toEqual([
-      "proposed",
-      "late",
-      "soon",
-      "upcoming",
-    ]);
+    expect(sections.proposed.map((row) => row.project.id)).toEqual(["proposed"]);
+    expect(sections.active.map((row) => row.project.id)).toEqual(["upcoming", "late", "soon"]);
     expect(sections.ended.map((row) => row.project.id)).toEqual(["lapsed", "ended"]);
     expect(sections.rejected.map((row) => row.project.id)).toEqual(["rejected"]);
-    expect(sections.counts).toEqual({ proposed: 1, active: 2, upcoming: 1, ended: 2, rejected: 1 });
   });
 });
 

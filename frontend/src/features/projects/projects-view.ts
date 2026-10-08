@@ -1,5 +1,5 @@
 // How the Projects page arranges what the server worked out (docs/demos/shared/page-projects.js
-// index; STATUS "Projects"): the proposed, active and upcoming projects are cards; the
+// index; STATUS "Projects"): the proposed and active (including upcoming) are cards; the
 // ended and rejected sit in tables below. Each section shows its newest projects first. Decision and period are two badges
 // that never mix (projects.md §1). The target, planned, delivered and pace are the project's own
 // intention's (§1.1).
@@ -81,11 +81,11 @@ const verdictTones = {
 } as const satisfies Record<TargetVerdict, Tone>;
 
 export interface ProjectSections {
-  // Proposed, then active, then upcoming.
-  cards: ProjectRow[];
+  proposed: ProjectRow[];
+  // Approved projects still running or about to start.
+  active: ProjectRow[];
   ended: ProjectRow[];
   rejected: ProjectRow[];
-  counts: { proposed: number; active: number; upcoming: number; ended: number; rejected: number };
 }
 
 const newestCreatedFirst = (first: ProjectRow, second: ProjectRow) =>
@@ -99,8 +99,7 @@ export function projectSectionsOf(rows: readonly ProjectRow[]): ProjectSections 
     .filter((row) => row.project.state === "Proposed")
     .toSorted(newestCreatedFirst);
   const approved = live.filter((row) => row.project.state === "Approved");
-  const active = approved.filter((row) => row.period === "Active").toSorted(newestStartedFirst);
-  const upcoming = approved.filter((row) => row.period === "Upcoming").toSorted(newestStartedFirst);
+  const active = approved.toSorted(newestStartedFirst);
   const ended = rows
     .filter((row) => row.project.state !== "Rejected" && row.period === "Ended")
     .toSorted((first, second) => second.project.endsOn.localeCompare(first.project.endsOn));
@@ -112,16 +111,10 @@ export function projectSectionsOf(rows: readonly ProjectRow[]): ProjectSections 
       return decidedAt(second).localeCompare(decidedAt(first));
     });
   return {
-    cards: [...proposed, ...active, ...upcoming],
+    proposed,
+    active,
     ended,
     rejected,
-    counts: {
-      proposed: proposed.length,
-      active: active.length,
-      upcoming: upcoming.length,
-      ended: ended.length,
-      rejected: rejected.length,
-    },
   };
 }
 

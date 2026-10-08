@@ -15,6 +15,9 @@ This is the handoff for continuing VERA's new frontend on `feat/client-redesign`
 
 ## Current state
 
+- Projects' four populated categories are now individually collapsible sections, all open
+  by default. Their open state is stored per user in browser storage; a sole matching
+  category shows directly, without a section heading, and does not overwrite that state.
 - Projects follow-up is built: saved tabs for Proposed, Active, Ended and Rejected;
   `FilterBar` over name/description, decision, period, Behind pace/On track, overlapping
   dates, whole elapsed percentage and delivered pages. Each board section is newest first;

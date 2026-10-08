@@ -6,6 +6,10 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- Projects now shows Proposed, Active, Ended and Rejected as sections instead of a summary
+  count line. All start open; each person's open or closed choices are restored on their next
+  visit. When a filter leaves one category, its projects appear without a section header.
+
 - Projects now has saved tabs for Proposed, Active, Ended and Rejected, plus the shared filter
   bar. Search covers name and description; filters cover decision, period, pace (Behind pace or
   On track), overlapping project dates, elapsed time in percent and delivered pages. Sections

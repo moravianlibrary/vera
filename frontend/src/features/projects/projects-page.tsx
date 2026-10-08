@@ -1,7 +1,7 @@
 // The Projects page (docs/demos/shared/page-projects.js index; STATUS "Projects"): few projects
-// run at once, so it is not master–detail but cards for the proposed, active and upcoming ones,
-// and compact tables below for the ended and the rejected, there for the audit that asks years
-// later. A card or a row opens the project's own page.
+// run at once, so it is not master–detail but cards for the proposed and active (including
+// upcoming), with compact tables for the ended and rejected. Each populated category is a
+// remembered section unless it is the only one shown. A card or row opens its project.
 // TODO(rrandiak): labels move to i18n.
 
 import { useState } from "react";
@@ -27,6 +27,7 @@ import {
   projectSectionsOf,
   projectsView,
 } from "@/features/projects/projects-view";
+import { useProjectSectionPreferences } from "@/features/projects/use-project-section-preferences";
 import { useProjectIndexQuery } from "@/features/projects/use-projects-query";
 import { useUsersQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
@@ -175,6 +176,7 @@ export function ProjectsPage() {
           </StatusNote>
         ) : index === undefined ? null : (
           <ProjectBoard
+            key={session.user.id}
             sections={projectSectionsOf(index.rows)}
             isFiltered={Object.keys(view.filter).length > 0}
             seesEvery={seesEvery}
@@ -214,33 +216,56 @@ function ProjectBoard({
   rejectedColumns,
   onOpen,
 }: ProjectBoardProps) {
-  const { counts } = sections;
-  const tile =
-    [
-      counts.proposed > 0 ? `${counts.proposed} proposed` : null,
-      counts.active > 0 ? `${counts.active} active` : null,
-      counts.upcoming > 0 ? `${counts.upcoming} upcoming` : null,
-      counts.ended > 0 ? `${counts.ended} ended` : null,
-      counts.rejected > 0 ? `${counts.rejected} rejected` : null,
-    ]
-      .filter((part) => part !== null)
-      .join(" · ") ||
-    (isFiltered ? "No projects match these filters" : seesEvery ? "None yet" : "None you are on");
+  const { isOpen, setOpen } = useProjectSectionPreferences(session.user.id);
+  const visibleCount = Object.values(sections).filter((rows) => rows.length > 0).length;
+  if (visibleCount === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        {isFiltered
+          ? "No projects match these filters"
+          : seesEvery
+            ? "None yet"
+            : "None you are on"}
+      </p>
+    );
+  }
+
+  const isHeadingHidden = visibleCount === 1;
   const cardSections: CardSection<ProjectRow>[] = [
     {
-      id: "running",
-      items: sections.cards,
-      emptyText:
-        counts.ended + counts.rejected === 0
-          ? "No project is running, about to start, or waiting for a decision."
-          : undefined,
+      id: "proposed",
+      title: "Proposed",
+      items: sections.proposed,
+      isHeadingHidden,
+      isOpen: isOpen("proposed"),
+      onOpenChange: (open) => setOpen("proposed", open),
     },
-    { id: "ended", title: "Ended", items: sections.ended, presentation: { table: endedColumns } },
+    {
+      id: "active",
+      title: sections.active.some((row) => row.period === "Upcoming")
+        ? "Active and upcoming"
+        : "Active",
+      items: sections.active,
+      isHeadingHidden,
+      isOpen: isOpen("active"),
+      onOpenChange: (open) => setOpen("active", open),
+    },
+    {
+      id: "ended",
+      title: "Ended",
+      items: sections.ended,
+      isHeadingHidden,
+      isOpen: isOpen("ended"),
+      onOpenChange: (open) => setOpen("ended", open),
+      presentation: { table: endedColumns },
+    },
     {
       id: "rejected",
       title: "Rejected",
       items: sections.rejected,
-      isCollapsedByDefault: counts.proposed + counts.active + counts.upcoming + counts.ended > 0,
+      isHeadingHidden,
+      isOpen: isOpen("rejected"),
+      onOpenChange: (open) => setOpen("rejected", open),
       presentation: { table: rejectedColumns },
     },
   ];
@@ -251,7 +276,6 @@ function ProjectBoard({
       itemId={(row) => row.project.id}
       renderCard={(row) => <ActionableCard row={row} session={session} nameOf={nameOf} />}
       columns={{ notebook: 2, small: 1, phone: 1 }}
-      tile={tile}
       onOpen={onOpen}
     />
   );

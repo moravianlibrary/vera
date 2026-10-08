@@ -1,7 +1,7 @@
 // A page of cards in sections (component-interfaces.md §1.4; docs/demos/shared/vera.css .pj-cards):
 // for the few records that run at once, each a card with its numbers, where a queue would be
-// master–detail. The sections that pile up over the years turn into compact tables, collapsible,
-// below the cards. A whole card opens its record, where it has a page of its own; a link or button
+// master–detail. A section can be a card group or a compact table, and a view can control its
+// open state. A whole card opens its record, where it has a page of its own; a link or button
 // inside it stays its own. `?p=` / `?i=` mark one card and scroll to it.
 
 import type { ReactNode } from "react";
@@ -23,6 +23,11 @@ export interface CardSection<Item> {
   // Said where the section would be; without it an empty section is left out.
   emptyText?: string;
   isCollapsedByDefault?: boolean;
+  // A view may own this state so it can remember the person's choice.
+  isOpen?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+  // With only one populated section, its heading adds no navigation value.
+  isHeadingHidden?: boolean;
   presentation?: "cards" | { table: PerTier<readonly ColumnDefinition<Item>[]> };
 }
 
@@ -98,13 +103,28 @@ export function CardSections<Item>({
             />
           );
 
-        if (section.title === undefined) {
+        if (section.title === undefined || section.isHeadingHidden) {
           return <section key={section.id}>{body}</section>;
         }
 
         return (
-          <details key={section.id} open={!section.isCollapsedByDefault} className="group">
-            <summary className="mb-2.5 cursor-pointer text-sm font-semibold">
+          <details
+            key={section.id}
+            open={section.isOpen ?? !section.isCollapsedByDefault}
+            className="group"
+          >
+            {/* biome-ignore lint/a11y/noStaticElementInteractions: summary is the native toggle for details, including keyboard activation. */}
+            <summary
+              className="mb-2.5 cursor-pointer text-sm font-semibold"
+              onClick={(event) => {
+                if (section.onOpenChange === undefined) {
+                  return;
+                }
+
+                event.preventDefault();
+                section.onOpenChange(!(section.isOpen ?? !section.isCollapsedByDefault));
+              }}
+            >
               {section.title}{" "}
               <span className="font-normal text-muted-foreground">· {section.items.length}</span>
             </summary>
