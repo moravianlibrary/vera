@@ -9,20 +9,28 @@ import { Link, useNavigate } from "react-router";
 import type { ProjectRow } from "@/api/projects";
 import type { CardSection } from "@/components/card-sections";
 import { CardSections } from "@/components/card-sections";
+import { FilterBar } from "@/components/filters/filter-bar";
+import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import type { ColumnDefinition } from "@/components/lists/record-list";
 import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
 import type { Session } from "@/domain/entities";
-import { can, scopesOf } from "@/domain/permissions";
+import { can, hasPermission, scopesOf } from "@/domain/permissions";
 import { useProjectActions } from "@/features/projects/project-actions";
 import { ProjectCard } from "@/features/projects/project-card";
 import { ProjectFormDialog } from "@/features/projects/project-dialogs";
 import type { ProjectSections } from "@/features/projects/projects-view";
-import { paceOf, periodTextOf, projectSectionsOf } from "@/features/projects/projects-view";
+import {
+  paceOf,
+  periodTextOf,
+  projectSectionsOf,
+  projectsView,
+} from "@/features/projects/projects-view";
 import { useProjectIndexQuery } from "@/features/projects/use-projects-query";
 import { useUsersQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
+import { useViewUrlState } from "@/hooks/use-view-url-state";
 import { formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 
@@ -82,10 +90,11 @@ const endedColumns = {
 };
 
 export function ProjectsPage() {
+  const view = useViewUrlState(projectsView);
   const navigate = useNavigate();
   const [isStarting, setIsStarting] = useState(false);
   const { data: session } = useSessionQuery();
-  const { data: index, error } = useProjectIndexQuery();
+  const { data: index, error } = useProjectIndexQuery(view.query);
   const { data: users = [] } = useUsersQuery();
 
   if (session === undefined) {
@@ -139,6 +148,26 @@ export function ProjectsPage() {
         row={null}
         onSaved={(detail) => navigate(`/projects/${encodeURIComponent(detail.row.project.id)}`)}
       />
+      {hasPermission(session, "watch") && (
+        <WatchlistTabs
+          view="projects"
+          filter={view.filter}
+          openedId={view.watchlistId}
+          canShare={hasPermission(session, "watchlist.manage_shared")}
+          onOpen={view.openWatchlist}
+          onDetach={view.detachWatchlist}
+          isBare={view.isBare}
+        />
+      )}
+      <FilterBar
+        key={view.filterReplacements}
+        fields={projectsView.fields}
+        query={view.query}
+        facets={index?.facets}
+        onQueryChange={view.setQuery}
+        searchLabel="Search projects"
+        searchPlaceholder="Search projects — name, description"
+      />
       <PageContent>
         {error !== null ? (
           <StatusNote tone="red" title="Projects could not be loaded">
@@ -147,6 +176,7 @@ export function ProjectsPage() {
         ) : index === undefined ? null : (
           <ProjectBoard
             sections={projectSectionsOf(index.rows)}
+            isFiltered={Object.keys(view.filter).length > 0}
             seesEvery={seesEvery}
             session={session}
             nameOf={nameOf}
@@ -164,6 +194,7 @@ export function ProjectsPage() {
 
 interface ProjectBoardProps {
   sections: ProjectSections;
+  isFiltered: boolean;
   seesEvery: boolean;
   session: Session;
   nameOf: (userId: string) => string;
@@ -176,6 +207,7 @@ interface ProjectBoardProps {
 
 function ProjectBoard({
   sections,
+  isFiltered,
   seesEvery,
   session,
   nameOf,
@@ -189,21 +221,26 @@ function ProjectBoard({
       counts.active > 0 ? `${counts.active} active` : null,
       counts.upcoming > 0 ? `${counts.upcoming} upcoming` : null,
       counts.ended > 0 ? `${counts.ended} ended` : null,
+      counts.rejected > 0 ? `${counts.rejected} rejected` : null,
     ]
       .filter((part) => part !== null)
-      .join(" · ") || (seesEvery ? "None yet" : "None you are on");
+      .join(" · ") ||
+    (isFiltered ? "No projects match these filters" : seesEvery ? "None yet" : "None you are on");
   const cardSections: CardSection<ProjectRow>[] = [
     {
       id: "running",
       items: sections.cards,
-      emptyText: "No project is running, about to start, or waiting for a decision.",
+      emptyText:
+        counts.ended + counts.rejected === 0
+          ? "No project is running, about to start, or waiting for a decision."
+          : undefined,
     },
     { id: "ended", title: "Ended", items: sections.ended, presentation: { table: endedColumns } },
     {
       id: "rejected",
       title: "Rejected",
       items: sections.rejected,
-      isCollapsedByDefault: true,
+      isCollapsedByDefault: counts.proposed + counts.active + counts.upcoming + counts.ended > 0,
       presentation: { table: rejectedColumns },
     },
   ];

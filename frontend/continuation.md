@@ -15,9 +15,14 @@ This is the handoff for continuing VERA's new frontend on `feat/client-redesign`
 
 ## Current state
 
+- Projects follow-up is built: saved tabs for Proposed, Active, Ended and Rejected;
+  `FilterBar` over name/description, decision, period, Behind pace/On track, overlapping
+  dates, whole elapsed percentage and delivered pages. Each board section is newest first;
+  the shared tab strip scrolls its active tab into view on a phone. The `.v2` redesign stays
+  deferred.
 - Digitization Lists follow-up is built: watchlist tabs, shared Current lens, and State,
   attention and Runs filters through the existing filter bar and API. The `.v2` redesign
-  remains deferred. Session C (Home and user menu) is the next completion-plan session.
+  remains deferred. Session C (Home and user menu) remains queued in the completion plan.
 - Hooks step 11 is built. `src/api/hooks.ts` and `src/mocks/hooks.ts` implement
   channel-backed subscriptions and deliveries; `src/features/hooks/` renders
   the searchable grouped list, URL-selected detail, attention and waiting queues,
@@ -355,7 +360,8 @@ The foundation is in place:
   …/reject` (reason; only the project's own asks are declined), `DELETE` (409
   `project.has_proposals` once anything was proposed); 409 `project.decided` once decided. The
   mock is `src/mocks/projects.ts`; groups are `GET /groups`. The index is `projects-page.tsx`
-  over `projects-view.ts` (sections, labels, the note in words) on
+  with `projects-view.ts` (filters, sections, labels, the note in words), the shared
+  `WatchlistTabs` and `FilterBar` (URL filters and server facets), and
   `src/components/card-sections.tsx` (`CardSections` and `RecordCard`, whose title link opens
   the whole card), `project-card.tsx` and `src/components/visualizations/pace-bars.tsx`
   (`PaceBars`: time, planned, delivered, the even-pace mark); the ended and rejected projects

@@ -9,6 +9,7 @@
 
 import { parseDocumentSearchParams } from "@/api/documents";
 import { parseListSearchParams } from "@/api/lists";
+import { parseProjectSearchParams } from "@/api/projects";
 import { parseProposalSearchParams } from "@/api/proposal-review";
 import { parseValidationSearchParams } from "@/api/validations";
 import type {
@@ -25,6 +26,7 @@ import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { audienceOf, queryDocuments } from "@/mocks/documents";
 import { canReadLists, queryLists } from "@/mocks/lists";
+import { canReadProjects, queryProjectIndex } from "@/mocks/projects";
 import { canDecide, queryProposals } from "@/mocks/proposal-review";
 import { sessionOf } from "@/mocks/session";
 import { canReview, queryValidations } from "@/mocks/validations";
@@ -99,6 +101,8 @@ function canOpenView(session: Session, view: WatchlistView): boolean {
       return canReview(session);
     case "lists":
       return canReadLists(session);
+    case "projects":
+      return canReadProjects(session);
   }
 }
 
@@ -204,6 +208,10 @@ const counters = {
   lists: (session, filter) =>
     canReadLists(session)
       ? queryLists(session, parseListSearchParams(filter), { cursor: null, limit: 1 }).total
+      : 0,
+  projects: (session, filter) =>
+    canReadProjects(session)
+      ? queryProjectIndex(session, parseProjectSearchParams(filter)).total
       : 0,
 } as const satisfies Record<WatchlistView, (session: Session, filter: URLSearchParams) => number>;
 

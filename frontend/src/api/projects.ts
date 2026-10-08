@@ -6,6 +6,7 @@
 // reference data other views name a project by.
 
 import { z } from "zod";
+import { facetCountsOf } from "@/api/facets";
 import { deleteResource, findJson, getJson, postJson, putJson } from "@/api/http";
 import type { Group } from "@/api/reference";
 import { groupSchema } from "@/api/reference";
@@ -21,11 +22,97 @@ import {
 import { targetVerdicts } from "@/domain/intentions";
 import { listStateSchema } from "@/domain/lists";
 import { projectPeriods } from "@/domain/projects";
+import type { DayRange, ValueRange } from "@/lib/value-range";
+import {
+  formatDayRange,
+  formatRange,
+  parseCount,
+  parseDayRange,
+  parseRange,
+} from "@/lib/value-range";
 
 const count = z.number().int().nonnegative();
 const pages = z.number().int().nonnegative();
 
 export const projectPeriodSchema = z.enum(projectPeriods);
+export const projectStates = ["Proposed", "Approved", "Rejected"] as const;
+export const projectStateSchema = z.enum(projectStates);
+export const projectPaces = ["BehindPace", "OnTrack"] as const;
+export const projectPaceSchema = z.enum(projectPaces);
+export type ProjectPace = z.infer<typeof projectPaceSchema>;
+
+// Time elapsed is a whole percentage, matching the cards; delivered is pages.
+export interface ProjectQuery {
+  readonly search?: string;
+  readonly states?: readonly z.infer<typeof projectStateSchema>[];
+  readonly periods?: readonly z.infer<typeof projectPeriodSchema>[];
+  readonly paces?: readonly ProjectPace[];
+  readonly dates?: DayRange;
+  readonly timeElapsed?: ValueRange<number>;
+  readonly delivered?: ValueRange<number>;
+}
+
+export const projectQueryParams = {
+  search: "q",
+  states: "state",
+  periods: "period",
+  paces: "pace",
+  dates: "dates",
+  timeElapsed: "elapsed",
+  delivered: "delivered",
+} as const satisfies Record<keyof ProjectQuery, string>;
+
+export function toProjectSearchParams(query: ProjectQuery): URLSearchParams {
+  const params = new URLSearchParams();
+  const search = query.search?.trim();
+  if (search) params.set(projectQueryParams.search, search);
+  if (query.states?.length) params.set(projectQueryParams.states, query.states.join(","));
+  if (query.periods?.length) params.set(projectQueryParams.periods, query.periods.join(","));
+  if (query.paces?.length) params.set(projectQueryParams.paces, query.paces.join(","));
+  const dates = formatDayRange(query.dates);
+  if (dates !== null) params.set(projectQueryParams.dates, dates);
+  const elapsed = formatRange(query.timeElapsed);
+  if (elapsed !== null) params.set(projectQueryParams.timeElapsed, elapsed);
+  const delivered = formatRange(query.delivered);
+  if (delivered !== null) params.set(projectQueryParams.delivered, delivered);
+  return params;
+}
+
+export function parseProjectSearchParams(params: URLSearchParams): ProjectQuery {
+  const valuesOf = <Value extends string>(
+    key: string,
+    schema: z.ZodType<Value>,
+  ): Value[] | undefined => {
+    const values = (params.get(key) ?? "").split(",").flatMap((raw) => {
+      const parsed = schema.safeParse(raw.trim());
+      return parsed.success ? [parsed.data] : [];
+    });
+    return values.length === 0 ? undefined : [...new Set(values)];
+  };
+  return {
+    search: params.get(projectQueryParams.search)?.trim() || undefined,
+    states: valuesOf(projectQueryParams.states, projectStateSchema),
+    periods: valuesOf(projectQueryParams.periods, projectPeriodSchema),
+    paces: valuesOf(projectQueryParams.paces, projectPaceSchema),
+    dates: parseDayRange(params.get(projectQueryParams.dates)),
+    timeElapsed: parseRange(params.get(projectQueryParams.timeElapsed), parseCount),
+    delivered: parseRange(params.get(projectQueryParams.delivered), parseCount),
+  };
+}
+
+export function isSameProjectQuery(first: ProjectQuery, second: ProjectQuery): boolean {
+  const canonical = (query: ProjectQuery) => {
+    const params = toProjectSearchParams({
+      ...query,
+      states: query.states?.toSorted(),
+      periods: query.periods?.toSorted(),
+      paces: query.paces?.toSorted(),
+    });
+    params.sort();
+    return params.toString();
+  };
+  return canonical(first) === canonical(second);
+}
 
 // ---------------------------------------------------------------- index
 
@@ -73,7 +160,15 @@ export const projectRowSchema = z.object({
 export type ProjectRow = z.infer<typeof projectRowSchema>;
 
 // Few projects run at once (STATUS "Projects"): the whole index, not a page of it.
-export const projectIndexSchema = z.object({ rows: z.array(projectRowSchema) });
+export const projectIndexSchema = z.object({
+  rows: z.array(projectRowSchema),
+  total: count,
+  facets: z.object({
+    states: facetCountsOf(projectStateSchema),
+    periods: facetCountsOf(projectPeriodSchema),
+    paces: facetCountsOf(projectPaceSchema),
+  }),
+});
 export type ProjectIndex = z.infer<typeof projectIndexSchema>;
 
 // ---------------------------------------------------------------- detail
@@ -192,8 +287,8 @@ export type ProjectRejection = z.infer<typeof projectRejectionSchema>;
 
 // ---------------------------------------------------------------- calls
 
-export async function listProjectIndex(): Promise<ProjectIndex> {
-  return getJson(apiRoutes.projectIndex, projectIndexSchema);
+export async function listProjectIndex(query: ProjectQuery = {}): Promise<ProjectIndex> {
+  return getJson(apiRoutes.projectIndex, projectIndexSchema, toProjectSearchParams(query));
 }
 
 // Null when it does not exist or the caller may not see it.

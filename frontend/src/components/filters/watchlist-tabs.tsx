@@ -86,6 +86,7 @@ export function WatchlistTabs({
   onDetach,
   isBare,
 }: WatchlistTabsProps) {
+  const navRef = useRef<HTMLElement>(null);
   const { data: everyWatchlist = [], isSuccess } = useWatchlistsQuery(view);
   const watchlists = everyWatchlist.filter((watchlist) => !watchlist.viewer.isHidden);
   const { isSettled, rememberedId, remember } = useRememberedWatchlist(view);
@@ -128,6 +129,28 @@ export function WatchlistTabs({
   const isFiltered = Object.keys(filter).length > 0;
   const isChanged = open !== undefined && !isSameFilter(open.filter, filter);
   const savedAs = holderOf(filter);
+  const activeId = open?.id ?? (isFiltered ? null : "all");
+
+  // Keep the active tab visible when a saved filter is opened from a URL or restored.
+  useEffect(() => {
+    if (activeId === null) {
+      return;
+    }
+
+    const nav = navRef.current;
+    const active = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (nav === null || active === null || active === undefined) {
+      return;
+    }
+
+    const navRect = nav.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    if (activeRect.right > navRect.right) {
+      nav.scrollLeft += activeRect.right - navRect.right + 8;
+    } else if (activeRect.left < navRect.left) {
+      nav.scrollLeft -= navRect.left - activeRect.left + 8;
+    }
+  }, [activeId]);
 
   const saveAsNew = async (name: string, audience: WatchlistAudience) => {
     const created = await create.mutateAsync({ name, view, audience, filter });
@@ -137,6 +160,7 @@ export function WatchlistTabs({
   return (
     <div className="flex shrink-0 items-end border-b px-4 sm:px-6">
       <nav
+        ref={navRef}
         aria-label="Watchlists"
         className="-mb-px flex min-w-0 flex-1 items-end overflow-x-auto [scrollbar-width:thin]"
       >

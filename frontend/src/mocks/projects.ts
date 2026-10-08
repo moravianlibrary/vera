@@ -19,9 +19,11 @@ import type {
   ProjectList,
   ProjectMembers,
   ProjectProposal,
+  ProjectQuery,
   ProjectRejection,
   ProjectRow,
 } from "@/api/projects";
+import { projectPaces, projectStates } from "@/api/projects";
 import { documentIdentifierOf, effectivePageCount, existingCopiesOf } from "@/domain/documents";
 import type { Intention, Iteration, Project, Request, Session } from "@/domain/entities";
 import {
@@ -34,12 +36,19 @@ import {
 import { listStateOf } from "@/domain/lists";
 import type { Permission } from "@/domain/permissions";
 import { can } from "@/domain/permissions";
-import { daysUntil, periodOf, scopeOfProject, timeElapsedOf } from "@/domain/projects";
+import {
+  daysUntil,
+  periodOf,
+  projectPeriods,
+  scopeOfProject,
+  timeElapsedOf,
+} from "@/domain/projects";
 import { isProgressAtLeast } from "@/domain/status";
 import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
-import { dayOf } from "@/lib/value-range";
+import { dayOf, isReversedRange, isWithinRange, resolveDayRange } from "@/lib/value-range";
+import { countValues } from "@/mocks/arrangement";
 import { database } from "@/mocks/database";
 import { countingData, nextId, overallIntention } from "@/mocks/intentions";
 import type { Outcome, Refusal } from "@/mocks/mutations";
@@ -205,8 +214,77 @@ function rowOf(project: Project): ProjectRow {
   };
 }
 
-export function queryProjectIndex(session: Session): ProjectIndex {
-  return { rows: database.projects.filter((project) => isVisible(session, project)).map(rowOf) };
+export function queryProjectIndex(session: Session, query: ProjectQuery = {}): ProjectIndex {
+  const search = query.search?.trim().toLowerCase();
+  const dates = query.dates === undefined ? undefined : resolveDayRange(query.dates, mockToday);
+  const base = database.projects
+    .filter((project) => isVisible(session, project))
+    .map(rowOf)
+    .filter(
+      (row) =>
+        search === undefined ||
+        row.project.name.toLowerCase().includes(search) ||
+        row.project.description.toLowerCase().includes(search),
+    )
+    .filter((row) =>
+      dates === undefined
+        ? true
+        : !isReversedRange(dates) &&
+          (dates.from === undefined || row.project.endsOn >= dates.from) &&
+          (dates.to === undefined || row.project.startsOn <= dates.to),
+    )
+    .filter((row) =>
+      query.timeElapsed === undefined
+        ? true
+        : !isReversedRange(query.timeElapsed) &&
+          isWithinRange(Math.round(row.timeElapsed * 100), query.timeElapsed),
+    )
+    .filter((row) =>
+      query.delivered === undefined
+        ? true
+        : !isReversedRange(query.delivered) && isWithinRange(row.deliveredPages, query.delivered),
+    );
+  const wantedStates = new Set(query.states ?? []);
+  const wantedPeriods = new Set(query.periods ?? []);
+  const wantedPaces = new Set(query.paces ?? []);
+  const matchesState = (row: ProjectRow) =>
+    wantedStates.size === 0 || wantedStates.has(row.project.state);
+  const matchesPeriod = (row: ProjectRow) =>
+    wantedPeriods.size === 0 || wantedPeriods.has(row.period);
+  const matchesPace = (row: ProjectRow) =>
+    wantedPaces.size === 0 ||
+    (wantedPaces.has("BehindPace") && row.verdict === "behindPace") ||
+    (wantedPaces.has("OnTrack") && row.verdict === "onPace");
+  const rows = base.filter((row) => matchesState(row) && matchesPeriod(row) && matchesPace(row));
+  const stateCounts = countValues(
+    base.filter((row) => matchesPeriod(row) && matchesPace(row)).map((row) => row.project.state),
+  );
+  const periodCounts = countValues(
+    base.filter((row) => matchesState(row) && matchesPace(row)).map((row) => row.period),
+  );
+  const paceRows = base.filter((row) => matchesState(row) && matchesPeriod(row));
+  return {
+    rows,
+    total: rows.length,
+    facets: {
+      states: projectStates.flatMap((value) => {
+        const found = stateCounts.find((entry) => entry.value === value);
+        return found === undefined ? [] : [{ value, count: found.count }];
+      }),
+      periods: projectPeriods.flatMap((value) => {
+        const found = periodCounts.find((entry) => entry.value === value);
+        return found === undefined ? [] : [{ value, count: found.count }];
+      }),
+      paces: projectPaces.flatMap((value) => {
+        const count = paceRows.filter(
+          (row) =>
+            (value === "BehindPace" && row.verdict === "behindPace") ||
+            (value === "OnTrack" && row.verdict === "onPace"),
+        ).length;
+        return count === 0 ? [] : [{ value, count }];
+      }),
+    },
+  };
 }
 
 // ---------------------------------------------------------------- detail

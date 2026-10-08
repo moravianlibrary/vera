@@ -41,6 +41,10 @@ const sharedLenses: readonly Lens[] = [
   },
   { name: "Denied in review", filter: { review: "Denied" }, view: "validations" },
   { name: "Current", filter: { state: "Planned,InProgress" }, view: "lists" },
+  { name: "Proposed", filter: { state: "Proposed" }, view: "projects" },
+  { name: "Active", filter: { state: "Approved", period: "Active" }, view: "projects" },
+  { name: "Ended", filter: { period: "Ended" }, view: "projects" },
+  { name: "Rejected", filter: { state: "Rejected" }, view: "projects" },
 ];
 
 const staffLenses = [

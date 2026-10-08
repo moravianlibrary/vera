@@ -6,6 +6,11 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- Projects now has saved tabs for Proposed, Active, Ended and Rejected, plus the shared filter
+  bar. Search covers name and description; filters cover decision, period, pace (Behind pace or
+  On track), overlapping project dates, elapsed time in percent and delivered pages. Sections
+  show their newest projects first, and the selected tab stays visible on phones.
+
 - Digitization Lists now uses saved watchlist tabs and the shared filter bar. Search accepts
   names and partial IDs; State, attention reasons, and overlapping run dates narrow the list.
   The shared Current tab keeps the former Planned and In progress view, while All shows every

@@ -9,6 +9,7 @@ import type { Watchlist } from "@/domain/entities";
 import type { GrantScope, Permission } from "@/domain/permissions";
 import { documentsView } from "@/features/documents/documents-view";
 import { listsView } from "@/features/lists/lists-view";
+import { projectsView } from "@/features/projects/projects-view";
 import { proposalsView } from "@/features/proposals/proposals-view";
 import { validationsView } from "@/features/validations/validations-view";
 import type { FilterFieldDefinition, ViewDefinition } from "@/lib/view-definition";
@@ -126,6 +127,8 @@ export function filterSummaryOf({ view, filter }: Pick<Watchlist, "view" | "filt
       return summaryIn(validationsView, params);
     case "lists":
       return summaryIn(listsView, params);
+    case "projects":
+      return summaryIn(projectsView, params);
   }
 }
 

@@ -5,6 +5,7 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ApiError } from "@/api/http";
 import { listLists } from "@/api/lists";
+import { listProjectIndex } from "@/api/projects";
 import {
   createWatchlist,
   deleteWatchlist,
@@ -36,6 +37,16 @@ async function statusOf(call: Promise<unknown>): Promise<number | null> {
 }
 
 describe("listWatchlists", () => {
+  it("counts the shared Projects tabs over each reader's reach", async () => {
+    signInAs("staff");
+    const proposed = (await listWatchlists("projects")).find(
+      (watchlist) => watchlist.name === "Proposed",
+    );
+    expect(proposed?.itemCount).toBe((await listProjectIndex({ states: ["Proposed"] })).total);
+
+    signInAs("reader");
+    expect(await listWatchlists("projects")).toEqual([]);
+  });
   it("counts the Current Lists tab from its saved state filter and scopes it to readers", async () => {
     signInAs("digitization");
     const current = (await listWatchlists("lists")).find(

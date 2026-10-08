@@ -1,20 +1,64 @@
 // How the Projects page arranges what the server worked out (docs/demos/shared/page-projects.js
-// index; STATUS "Projects"): the proposed, active and upcoming projects are cards, those waiting
-// for a decision first, then the running ones by their end, then what is coming by its start; the
-// ended and the rejected sit in tables below, latest first. Decision and period are two badges
+// index; STATUS "Projects"): the proposed, active and upcoming projects are cards; the
+// ended and rejected sit in tables below. Each section shows its newest projects first. Decision and period are two badges
 // that never mix (projects.md §1). The target, planned, delivered and pace are the project's own
 // intention's (§1.1).
 // TODO(rrandiak): labels move to i18n.
 
-import type { ProjectRow } from "@/api/projects";
+import type { ProjectQuery, ProjectRow } from "@/api/projects";
+import {
+  isSameProjectQuery,
+  parseProjectSearchParams,
+  projectPaces,
+  projectStates,
+  toProjectSearchParams,
+} from "@/api/projects";
 import type { Tone } from "@/components/status-badge";
 import type { Project } from "@/domain/entities";
 import type { TargetVerdict } from "@/domain/intentions";
 import type { ProjectPeriod } from "@/domain/projects";
+import { projectPeriods } from "@/domain/projects";
 import type { NoteTone } from "@/domain/status-notes";
 import { formatCalendarDay, formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
+import type { ViewDefinition } from "@/lib/view-definition";
+import { vocabulary } from "@/lib/view-definition";
+
+export const projectsView: ViewDefinition<ProjectQuery> = {
+  view: "projects",
+  toSearchParams: toProjectSearchParams,
+  parseSearchParams: parseProjectSearchParams,
+  isSameQuery: isSameProjectQuery,
+  fields: [
+    {
+      key: "states",
+      label: "Decision",
+      field: vocabulary(projectStates, {
+        Proposed: "Proposed",
+        Approved: "Approved",
+        Rejected: "Rejected",
+      }),
+      isQuick: true,
+    },
+    {
+      key: "periods",
+      label: "Period",
+      field: vocabulary(projectPeriods, { Upcoming: "Upcoming", Active: "Active", Ended: "Ended" }),
+      isQuick: true,
+    },
+    {
+      key: "paces",
+      label: "Pace",
+      field: vocabulary(projectPaces, { BehindPace: "Behind pace", OnTrack: "On track" }),
+    },
+    { key: "dates", label: "Project dates", field: { kind: "dateRange", presets: [] } },
+    { key: "timeElapsed", label: "Time elapsed", field: { kind: "numberRange", unit: "%" } },
+    { key: "delivered", label: "Delivered", field: { kind: "numberRange", unit: "pages" } },
+  ],
+  groupings: [],
+  groupingParam: "group",
+};
 
 export const decisionTones = {
   Proposed: "amber",
@@ -41,26 +85,32 @@ export interface ProjectSections {
   cards: ProjectRow[];
   ended: ProjectRow[];
   rejected: ProjectRow[];
-  counts: { proposed: number; active: number; upcoming: number; ended: number };
+  counts: { proposed: number; active: number; upcoming: number; ended: number; rejected: number };
 }
 
-const byStart = (first: ProjectRow, second: ProjectRow) =>
-  first.project.startsOn.localeCompare(second.project.startsOn);
+const newestCreatedFirst = (first: ProjectRow, second: ProjectRow) =>
+  second.project.createdAt.localeCompare(first.project.createdAt);
+const newestStartedFirst = (first: ProjectRow, second: ProjectRow) =>
+  second.project.startsOn.localeCompare(first.project.startsOn);
 
 export function projectSectionsOf(rows: readonly ProjectRow[]): ProjectSections {
   const live = rows.filter((row) => row.project.state !== "Rejected" && row.period !== "Ended");
-  const proposed = live.filter((row) => row.project.state === "Proposed").toSorted(byStart);
+  const proposed = live
+    .filter((row) => row.project.state === "Proposed")
+    .toSorted(newestCreatedFirst);
   const approved = live.filter((row) => row.project.state === "Approved");
-  const active = approved
-    .filter((row) => row.period === "Active")
-    .toSorted((first, second) => first.project.endsOn.localeCompare(second.project.endsOn));
-  const upcoming = approved.filter((row) => row.period === "Upcoming").toSorted(byStart);
+  const active = approved.filter((row) => row.period === "Active").toSorted(newestStartedFirst);
+  const upcoming = approved.filter((row) => row.period === "Upcoming").toSorted(newestStartedFirst);
   const ended = rows
     .filter((row) => row.project.state !== "Rejected" && row.period === "Ended")
     .toSorted((first, second) => second.project.endsOn.localeCompare(first.project.endsOn));
   const rejected = rows
     .filter((row) => row.project.state === "Rejected")
-    .toSorted((first, second) => byStart(second, first));
+    .toSorted((first, second) => {
+      const decidedAt = (row: ProjectRow) =>
+        row.project.state === "Rejected" ? row.project.at : row.project.createdAt;
+      return decidedAt(second).localeCompare(decidedAt(first));
+    });
   return {
     cards: [...proposed, ...active, ...upcoming],
     ended,
@@ -70,6 +120,7 @@ export function projectSectionsOf(rows: readonly ProjectRow[]): ProjectSections 
       active: active.length,
       upcoming: upcoming.length,
       ended: ended.length,
+      rejected: rejected.length,
     },
   };
 }

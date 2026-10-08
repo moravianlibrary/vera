@@ -449,7 +449,13 @@ export type StatusLogEntry = z.infer<typeof statusLogEntrySchema>;
 
 // ---------------------------------------------------------------- watchlists
 
-export const watchlistViewSchema = z.enum(["documents", "proposals", "validations", "lists"]);
+export const watchlistViewSchema = z.enum([
+  "documents",
+  "proposals",
+  "validations",
+  "lists",
+  "projects",
+]);
 export type WatchlistView = z.infer<typeof watchlistViewSchema>;
 
 // Who sees a watchlist (filtering.md §4.5, decided 2026-10-06): its owner alone, everyone who

@@ -13,12 +13,15 @@ import {
   createProject,
   deleteProject,
   findProject,
+  isSameProjectQuery,
   listProjectIndex,
+  parseProjectSearchParams,
   previewDecision,
   previewProjectChange,
   rejectProject,
   saveProject,
   saveProjectMembers,
+  toProjectSearchParams,
 } from "@/api/projects";
 import { listGroups } from "@/api/reference";
 import type { MockUserProfile } from "@/config/env";
@@ -56,6 +59,75 @@ const draft = {
 };
 
 describe("listProjectIndex", () => {
+  it("round-trips its URL filters and treats reordered selections as one lens", () => {
+    const query = {
+      search: " Brno ",
+      states: ["Proposed" as const, "Approved" as const],
+      periods: ["Active" as const],
+      paces: ["BehindPace" as const],
+      dates: { from: "2026-01-01", to: "2026-12-31" },
+      timeElapsed: { from: 25, to: 75 },
+      delivered: { from: 1000 },
+    };
+    expect(parseProjectSearchParams(toProjectSearchParams(query))).toEqual({
+      ...query,
+      search: "Brno",
+    });
+    expect(
+      isSameProjectQuery(
+        { states: ["Proposed", "Approved"] },
+        { states: ["Approved", "Proposed"] },
+      ),
+    ).toBe(true);
+    expect(
+      parseProjectSearchParams(new URLSearchParams("state=Unknown,Rejected&dates=bad&elapsed=abc")),
+    ).toMatchObject({
+      states: ["Rejected"],
+      dates: undefined,
+      timeElapsed: undefined,
+    });
+  });
+
+  it("searches name and description and filters by both enums", async () => {
+    signInAs("curator");
+    expect(
+      (await listProjectIndex({ search: "ministry" })).rows.map((row) => row.project.id),
+    ).toEqual(["p2"]);
+    expect((await listProjectIndex({ search: "VISK" })).rows.length).toBeGreaterThan(1);
+    const active = await listProjectIndex({ states: ["Approved"], periods: ["Active"] });
+    expect(active.rows.length).toBeGreaterThan(0);
+    expect(
+      active.rows.every((row) => row.project.state === "Approved" && row.period === "Active"),
+    ).toBe(true);
+    expect(active.facets.states).toEqual(
+      (await listProjectIndex({ periods: ["Active"] })).facets.states,
+    );
+    expect(active.facets.periods).toEqual(
+      (await listProjectIndex({ states: ["Approved"] })).facets.periods,
+    );
+  });
+
+  it("matches overlapping project dates, whole elapsed percentages, delivered pages and behind pace", async () => {
+    signInAs("curator");
+    const dates = await listProjectIndex({ dates: { from: "2027-07-01", to: "2027-07-31" } });
+    expect(
+      dates.rows.every(
+        (row) => row.project.startsOn <= "2027-07-31" && row.project.endsOn >= "2027-07-01",
+      ),
+    ).toBe(true);
+    expect((await listProjectIndex({ dates: { from: "2035-01-01" } })).total).toBe(0);
+    const elapsed = await listProjectIndex({ timeElapsed: { to: 49 } });
+    expect(elapsed.rows.every((row) => Math.round(row.timeElapsed * 100) <= 49)).toBe(true);
+    const delivered = await listProjectIndex({ delivered: { from: 1 } });
+    expect(delivered.rows.every((row) => row.deliveredPages > 0)).toBe(true);
+    const behind = await listProjectIndex({ paces: ["BehindPace"] });
+    expect(behind.rows.every((row) => row.verdict === "behindPace")).toBe(true);
+    const onTrack = await listProjectIndex({ paces: ["OnTrack"] });
+    expect(onTrack.rows.every((row) => row.verdict === "onPace")).toBe(true);
+    const either = await listProjectIndex({ paces: ["BehindPace", "OnTrack"] });
+    expect(either.total).toBe(behind.total + onTrack.total);
+    expect(behind.facets.paces).toEqual((await listProjectIndex()).facets.paces);
+  });
   it("is refused to a reader, who holds no project grant", async () => {
     signInAs("reader");
 

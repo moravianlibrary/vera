@@ -21,14 +21,16 @@ function rowOf(
   period: ProjectPeriod,
   startsOn: string,
   endsOn: string,
+  createdAt = "2026-01-01T09:00:00Z",
+  decidedAt = "2026-01-02T09:00:00Z",
 ): ProjectRow {
-  const decided = { actorId: "u2", at: "2026-01-02T09:00:00Z" };
+  const decided = { actorId: "u2", at: decidedAt };
   const project: Project =
     state === "Approved"
-      ? { ...base, id, startsOn, endsOn, state, priority: "Normal", ...decided }
+      ? { ...base, id, startsOn, endsOn, createdAt, state, priority: "Normal", ...decided }
       : state === "Rejected"
-        ? { ...base, id, startsOn, endsOn, state, reason: "No", ...decided }
-        : { ...base, id, startsOn, endsOn, state };
+        ? { ...base, id, startsOn, endsOn, createdAt, state, reason: "No", ...decided }
+        : { ...base, id, startsOn, endsOn, createdAt, state };
   return {
     project,
     intention: { id: `i-${id}`, targetPages: 1000 },
@@ -50,7 +52,61 @@ function rowOf(
 }
 
 describe("projectSectionsOf", () => {
-  it("puts the proposed first, then the running by end, then the coming by start", () => {
+  it("sorts each category newest first by creation, start, end or decision date", () => {
+    const sections = projectSectionsOf([
+      rowOf(
+        "proposed-old",
+        "Proposed",
+        "Upcoming",
+        "2026-09-01",
+        "2027-01-01",
+        "2026-01-01T09:00:00Z",
+      ),
+      rowOf(
+        "rejected-old",
+        "Rejected",
+        "Upcoming",
+        "2026-09-01",
+        "2027-01-01",
+        undefined,
+        "2026-02-01T09:00:00Z",
+      ),
+      rowOf("active-old", "Approved", "Active", "2025-01-01", "2027-01-01"),
+      rowOf("ended-old", "Approved", "Ended", "2023-01-01", "2024-01-01"),
+      rowOf(
+        "proposed-new",
+        "Proposed",
+        "Upcoming",
+        "2026-09-01",
+        "2027-01-01",
+        "2026-02-01T09:00:00Z",
+      ),
+      rowOf(
+        "rejected-new",
+        "Rejected",
+        "Upcoming",
+        "2026-09-01",
+        "2027-01-01",
+        undefined,
+        "2026-03-01T09:00:00Z",
+      ),
+      rowOf("active-new", "Approved", "Active", "2026-01-01", "2027-01-01"),
+      rowOf("ended-new", "Approved", "Ended", "2023-01-01", "2025-01-01"),
+    ]);
+    expect(sections.cards.map((row) => row.project.id)).toEqual([
+      "proposed-new",
+      "proposed-old",
+      "active-new",
+      "active-old",
+    ]);
+    expect(sections.ended.map((row) => row.project.id)).toEqual(["ended-new", "ended-old"]);
+    expect(sections.rejected.map((row) => row.project.id)).toEqual([
+      "rejected-new",
+      "rejected-old",
+    ]);
+  });
+
+  it("puts proposed, active, upcoming, ended and rejected in order, newest first within each", () => {
     const sections = projectSectionsOf([
       rowOf("upcoming", "Approved", "Upcoming", "2026-09-01", "2027-08-31"),
       rowOf("late", "Approved", "Active", "2026-01-01", "2027-12-31"),
@@ -63,13 +119,13 @@ describe("projectSectionsOf", () => {
 
     expect(sections.cards.map((row) => row.project.id)).toEqual([
       "proposed",
-      "soon",
       "late",
+      "soon",
       "upcoming",
     ]);
     expect(sections.ended.map((row) => row.project.id)).toEqual(["lapsed", "ended"]);
     expect(sections.rejected.map((row) => row.project.id)).toEqual(["rejected"]);
-    expect(sections.counts).toEqual({ proposed: 1, active: 2, upcoming: 1, ended: 2 });
+    expect(sections.counts).toEqual({ proposed: 1, active: 2, upcoming: 1, ended: 2, rejected: 1 });
   });
 });
 

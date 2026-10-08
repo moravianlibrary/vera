@@ -3,15 +3,20 @@
 // the propose form offers, so they refetch those too.
 
 import { skipToken, useQuery } from "@tanstack/react-query";
+import type { ProjectQuery } from "@/api/projects";
 import { findProject, listProjectIndex } from "@/api/projects";
 import { documentsQueryKey } from "@/features/documents/use-documents-query";
 import { proposalsQueryKey } from "@/features/proposals/use-proposals-query";
 import { referenceQueryKey } from "@/hooks/use-reference-query";
+import { watchlistsQueryKey } from "@/hooks/use-watchlists-query";
 
 export const projectsQueryKey = ["projects"] as const;
 
-export function useProjectIndexQuery() {
-  return useQuery({ queryKey: [...projectsQueryKey, "index"], queryFn: listProjectIndex });
+export function useProjectIndexQuery(query: ProjectQuery = {}) {
+  return useQuery({
+    queryKey: [...projectsQueryKey, "index", query],
+    queryFn: () => listProjectIndex(query),
+  });
 }
 
 export function useProjectQuery(projectId: string | null) {
@@ -27,4 +32,5 @@ export const projectInvalidations = [
   proposalsQueryKey,
   documentsQueryKey,
   referenceQueryKey,
+  watchlistsQueryKey,
 ];

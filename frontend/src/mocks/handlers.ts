@@ -46,6 +46,7 @@ import { messageSubjectKindSchema, messageSubjectParams } from "@/api/messages";
 import { mixSetDraftSchema } from "@/api/mixes";
 import { instanceDraftSchema, newInstanceSchema } from "@/api/plugins";
 import {
+  parseProjectSearchParams,
   projectApprovalSchema,
   projectDraftSchema,
   projectMembersSchema,
@@ -746,13 +747,15 @@ export function createHandlers(profile: MockUserProfile) {
     }),
 
     // Before `/:projectId`, so the index is not read as a project named "overview".
-    http.get(route(apiRoutes.projectIndex), () => {
+    http.get(route(apiRoutes.projectIndex), ({ request }) => {
       const session = currentSession();
       if (!canReadProjects(session)) {
         return mayNotReadProjects();
       }
 
-      return HttpResponse.json(queryProjectIndex(session));
+      return HttpResponse.json(
+        queryProjectIndex(session, parseProjectSearchParams(new URL(request.url).searchParams)),
+      );
     }),
 
     http.get(route(`${apiRoutes.projects}/:projectId`), ({ params }) => {
