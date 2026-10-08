@@ -80,10 +80,26 @@ export function parseDay(raw: string): string | null {
 
 // ---------------------------------------------------------------- day ranges
 
-// The ranges of days asked for most, kept as words rather than days so that a saved filter
-// stays "the last 7 days" tomorrow (decided 2026-10-06). The server counts them from its today.
-export const dayPresets = ["last-7-days", "last-14-days", "last-30-days", "this-month"] as const;
+// Relative day ranges stay relative when saved in a watchlist. The server resolves them from
+// its today; view fields choose which presets to offer.
+export const dayPresets = [
+  "last-7-days",
+  "last-14-days",
+  "last-30-days",
+  "this-week",
+  "last-week",
+  "next-week",
+  "this-month",
+  "last-month",
+  "next-month",
+] as const;
 export type DayPreset = (typeof dayPresets)[number];
+export const recentDayPresets = [
+  "last-7-days",
+  "last-14-days",
+  "last-30-days",
+  "this-month",
+] as const;
 
 // Either two ends, or a preset.
 export type DayRange = ValueRange<string> | { readonly preset: DayPreset };
@@ -112,10 +128,26 @@ export function resolveDayRange(range: DayRange, today: Date): ValueRange<string
     return range;
   }
 
-  const lastDays = { "last-7-days": 7, "last-14-days": 14, "last-30-days": 30 } as const;
-  return range.preset === "this-month"
-    ? monthRange(today)
-    : lastDaysRange(today, lastDays[range.preset]);
+  switch (range.preset) {
+    case "last-7-days":
+      return lastDaysRange(today, 7);
+    case "last-14-days":
+      return lastDaysRange(today, 14);
+    case "last-30-days":
+      return lastDaysRange(today, 30);
+    case "this-week":
+      return weekRange(today);
+    case "last-week":
+      return weekRange(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7));
+    case "next-week":
+      return weekRange(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7));
+    case "this-month":
+      return monthRange(today);
+    case "last-month":
+      return monthRange(new Date(today.getFullYear(), today.getMonth() - 1, 1));
+    case "next-month":
+      return monthRange(new Date(today.getFullYear(), today.getMonth() + 1, 1));
+  }
 }
 
 // The local calendar day of a moment, as a range end.
@@ -134,6 +166,14 @@ export function lastDaysRange(today: Date, count: number): ValueRange<string> {
 export function monthRange(today: Date): ValueRange<string> {
   const first = new Date(today.getFullYear(), today.getMonth(), 1);
   const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  return { from: dayOf(first), to: dayOf(last) };
+}
+
+// Calendar weeks begin Monday, including when their days cross a month or year boundary.
+export function weekRange(today: Date): ValueRange<string> {
+  const mondayOffset = (today.getDay() + 6) % 7;
+  const first = new Date(today.getFullYear(), today.getMonth(), today.getDate() - mondayOffset);
+  const last = new Date(first.getFullYear(), first.getMonth(), first.getDate() + 6);
   return { from: dayOf(first), to: dayOf(last) };
 }
 

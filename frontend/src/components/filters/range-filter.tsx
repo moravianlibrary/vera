@@ -1,7 +1,7 @@
 // A range field on a view's filter bar: Pages, Asked, Waiting since. There is no Advanced editor
 // (decided 2026-10-06): a range is added from "+ Add filter" like any other field, as a chip
 // that reads "any" until a value is chosen, and the chip opens what the field takes. A range of
-// days offers its presets (the last 7, 14 or 30 days, this month), kept as words so a saved
+// days offers its presets (recent days or calendar weeks/months), kept as words so a saved
 // filter stays relative, or two days; a count offers the field's presets (Pages: under 100 up to
 // 1,000 and more), plain ranges, or two ends. Every tier edits it, the phone in
 // its filter sheet (filter-sheet.tsx) through the same editor.
@@ -17,7 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { formatDay } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
 import type { DayPreset, DayRange, ValueRange } from "@/lib/value-range";
-import { dayPresets, isOpenRange, isReversedRange } from "@/lib/value-range";
+import { isOpenRange, isReversedRange, recentDayPresets } from "@/lib/value-range";
 import type { RangeFieldDefinition } from "@/lib/view-definition";
 
 export type AnyRange = ValueRange<number> | DayRange;
@@ -26,7 +26,12 @@ export const dayPresetLabels = {
   "last-7-days": "Last 7 days",
   "last-14-days": "Last 14 days",
   "last-30-days": "Last 30 days",
+  "this-week": "This week",
+  "last-week": "Last week",
+  "next-week": "Next week",
   "this-month": "This month",
+  "last-month": "Last month",
+  "next-month": "Next month",
 } as const satisfies Record<DayPreset, string>;
 
 export function rangeOf<Query>(
@@ -154,7 +159,8 @@ export function RangeEditor<Query>({ field, range, onApply }: RangeEditorProps<Q
   const [draft, setDraft] = useState<ValueRange<number> | ValueRange<string>>(ends);
   const isReversed = isReversedRange(draft);
   const isDate = field.field.kind === "dateRange";
-  const datePresets = field.field.kind === "dateRange" ? (field.field.presets ?? dayPresets) : [];
+  const datePresets =
+    field.field.kind === "dateRange" ? (field.field.presets ?? recentDayPresets) : [];
   const preset = range !== undefined && "preset" in range ? range.preset : null;
   const { presets: countPresets = [], unit = "" } =
     field.field.kind === "numberRange" ? field.field : {};

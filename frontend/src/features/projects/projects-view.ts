@@ -22,8 +22,18 @@ import type { NoteTone } from "@/domain/status-notes";
 import { formatCalendarDay, formatDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { plural } from "@/lib/plural";
+import type { DayPreset } from "@/lib/value-range";
 import type { ViewDefinition } from "@/lib/view-definition";
 import { vocabulary } from "@/lib/view-definition";
+
+const projectDatePresets = [
+  "this-week",
+  "next-week",
+  "last-week",
+  "this-month",
+  "next-month",
+  "last-month",
+] as const satisfies readonly DayPreset[];
 
 export const projectsView: ViewDefinition<ProjectQuery> = {
   view: "projects",
@@ -52,7 +62,11 @@ export const projectsView: ViewDefinition<ProjectQuery> = {
       label: "Pace",
       field: vocabulary(projectPaces, { BehindPace: "Behind pace", OnTrack: "On track" }),
     },
-    { key: "dates", label: "Project dates", field: { kind: "dateRange", presets: [] } },
+    {
+      key: "dates",
+      label: "Project dates",
+      field: { kind: "dateRange", presets: projectDatePresets },
+    },
     { key: "timeElapsed", label: "Time elapsed", field: { kind: "numberRange", unit: "%" } },
     { key: "delivered", label: "Delivered", field: { kind: "numberRange", unit: "pages" } },
   ],

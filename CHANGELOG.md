@@ -6,6 +6,11 @@ All notable changes to this project are documented here.
 
 ### Added
 
+- Saved watchlist tabs now follow changes to search and filters. A search that matches no saved
+  watchlist appears as "Current search", where it can be saved as a new watchlist or used to
+  update one the user may edit. Project dates can be filtered by this, last or next week or
+  month, and saved date choices stay relative.
+
 - Projects now shows Proposed, Active, Ended and Rejected as sections instead of a summary
   count line. All start open; each person's open or closed choices are restored on their next
   visit. When a filter leaves one category, its projects appear without a section header.

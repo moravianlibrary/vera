@@ -15,6 +15,13 @@ This is the handoff for continuing VERA's new frontend on `feat/client-redesign`
 
 ## Current state
 
+- Saved watchlist tabs now follow the full live search and filter on Documents, Proposals,
+  Validations, Lists and Projects. A matching saved tab becomes active automatically; an
+  unmatched filter shows `Current search` at the end of the tabs. Its menu saves a new
+  watchlist or updates a chosen editable one, preferring the watchlist that the search
+  originated from. The tab strip scrolls the active tab into view after watchlists load.
+  Project dates also offers this, last and next calendar week or month as relative presets;
+  weeks run Monday through Sunday and saved presets continue to track the calendar.
 - Projects' four populated categories are now individually collapsible sections, all open
   by default. Their open state is stored per user in browser storage; a sole matching
   category shows directly, without a section heading, and does not overwrite that state.
@@ -67,16 +74,15 @@ The foundation is in place:
   `filter-controls.tsx` draws quick fields on the bar (`QuickFilter`, "Decision: any ▾"), the
   chips and the "+ Add filter" picker, with facet counts and several values per field.
   `watchlist-tabs.tsx` puts a view's watchlists as tabs above its bar: "All", the shared ones
-  (a people icon), the caller's own, each with its count, then "+". Each thing is saved in one
-  place: "+" saves the current filter as a new watchlist (Personal or Shared, the choice only
-  with `watchlist.manage_shared`); an open tab whose filter changed saves the change itself
-  (a save icon on the tab, and Save / Discard changes in its menu). Rename and Delete sit in
-  the open tab's menu where the caller may change it, with "Share with everyone" on their own
-  for holders of `watchlist.manage_shared`; opened bare, a view reopens on the tab last opened
-  there (`src/hooks/use-remembered-watchlist.ts`, kept in the user settings at `/session/settings`, `src/api/user-settings.ts`; the mock keeps them in localStorage under `vera.mock.user-settings` so they survive a reload); a shared tab they may not change shows only a dot
-  and Discard. A filter is saved once (filtering.md §4.5): "+" and Save changes are disabled
-  with the name of the tab that already holds it, and a refusal from the server shows in the
-  form or beside the tab.
+  (a people icon), and the caller's own, each with its count. The active tab follows the
+  full live filter, including search. An unmatched filter gets an active `Current search` tab;
+  its menu saves a new watchlist (Personal or Shared, where allowed) or updates a chosen
+  editable watchlist's filter. Rename, Share and Delete sit in an active editable tab's menu.
+  Opened bare, a view reopens on the tab last opened there (`src/hooks/use-remembered-watchlist.ts`,
+  kept in the user settings at `/session/settings`, `src/api/user-settings.ts`; the mock keeps
+  them in localStorage under `vera.mock.user-settings` so they survive a reload). A filter is
+  saved once (filtering.md §4.5); the server refuses duplicate filters, with the reason shown
+  in the form or beside the tab.
 - `src/lib/utils.ts` owns `cn()` (clsx + tailwind-merge).
 - `src/domain/` holds the model: zod schemas with inferred types for every entity
   (`entities.ts`), permission keys and grant checks (`permissions.ts`), the status

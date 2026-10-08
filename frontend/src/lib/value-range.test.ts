@@ -87,4 +87,31 @@ describe("day presets", () => {
     });
     expect(resolveDayRange({ from: "2026-06-01" }, today)).toEqual({ from: "2026-06-01" });
   });
+
+  it("keeps calendar week and month presets relative across year boundaries", () => {
+    const today = new Date(2026, 0, 1);
+
+    expect(parseDayRange("last-week")).toEqual({ preset: "last-week" });
+    expect(formatDayRange({ preset: "next-month" })).toBe("next-month");
+    expect(resolveDayRange({ preset: "this-week" }, today)).toEqual({
+      from: "2025-12-29",
+      to: "2026-01-04",
+    });
+    expect(resolveDayRange({ preset: "last-week" }, today)).toEqual({
+      from: "2025-12-22",
+      to: "2025-12-28",
+    });
+    expect(resolveDayRange({ preset: "next-week" }, today)).toEqual({
+      from: "2026-01-05",
+      to: "2026-01-11",
+    });
+    expect(resolveDayRange({ preset: "last-month" }, today)).toEqual({
+      from: "2025-12-01",
+      to: "2025-12-31",
+    });
+    expect(resolveDayRange({ preset: "next-month" }, today)).toEqual({
+      from: "2026-02-01",
+      to: "2026-02-28",
+    });
+  });
 });
