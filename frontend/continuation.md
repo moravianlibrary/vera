@@ -7,12 +7,23 @@ names, Primary, immutable revisions, snapshots, editable copies, and archive.
 Intentions have optional mix selection; project intentions start with no mix,
 and generation for them uses priority then request age. Intention Archive
 captures its displayed result, mix revision/tree, and category labels in mock
-memory. Overall output is separate from Primary. `/intentions` uses Targets,
-Output, and Repeats tabs; Categories picks a mix by ID. The older descriptions
+memory. Overall output is separate from Primary. `/intentions` now has one
+board with Repeats, Running, Upcoming, Ended, Archived sections, a two-column
+notebook grid, a Type filter for disjoint Targets/Output/Repeats, search, and
+shared watchlist tabs. Type, State, and Pace/attention stay visible on the filter bar;
+its additional fields are Repeat every, Mix, Project (named projects,
+Any project, or No project), counting start/end date ranges, and
+Planned/Delivered/Time elapsed percentages. Planned and Delivered are percent
+of page target; records without one do not match those filters. Sections
+remember each user's open state. Categories picks a mix by ID and links its
+selected mix beside the picker. `/mixes` and mix detail routes stay addressable;
+the Mixes sidebar entry remains only for accounts without Categories access.
+The older descriptions
 below of mix ownership, Categories' intention picker, project mixes, and
 Unarchive describe the previous model. Open follow-up: project filtering on a
-mix, archive correction/restore, saved filters for the new tabs and Mixes,
-and scheduled creation of repeat occurrences. No `.v2` demos were edited.
+mix, archive correction/restore, saved filters for Mixes,
+and scheduled creation of repeat occurrences. The `.v2` demos remain separate
+from the React frontend.
 
 **Completion handoff (2026-10-08):** follow
 [completion-plan.md](completion-plan.md) for steps 11–12, then the verified

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" data-tier="notebook">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tasks — VERA (notebook v2)</title>
+<link rel="stylesheet" href="../shared/vera.css">
+<style>
+  .filterbar .right > button:not([id]) { display: none; }
+  .detail.docked.tk-detail { width: 50%; }
+  .tk-detail .pane-empty { min-height: 65vh; display: grid; place-items: center; text-align: center; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="../shared/vera-model.js"></script>
+<script src="../shared/vera-data.js"></script>
+<script src="../shared/vera-ui.js"></script>
+<script src="../shared/page-tasks.v2.js"></script>
+<script>PAGE_TASKS('notebook');document.querySelectorAll('.tierbar a[href$="/tasks.v2.html"]').forEach(a => { if (!a.classList.contains('current')) a.href = a.href.replace('tasks.v2.html', 'tasks.html'); });</script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" data-tier="notebook">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Users & Permissions — VERA (notebook)</title>
+<link rel="stylesheet" href="../shared/vera.css">
+<style>
+  .av { padding: 1.25rem 1.5rem 3rem; max-width: 1500px; width: 100%; margin: auto; }
+  .av-top { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem; }
+  .av-intro { margin:0; color:var(--muted-foreground); font-size:.8125rem; line-height:1.5; }
+  .av-tabs { display:flex; gap:.25rem; border-bottom:1px solid var(--border); margin-bottom:1.25rem; overflow-x:auto; }
+  .av-tabs button { border:0; border-bottom:2px solid transparent; background:transparent; color:var(--muted-foreground); padding:.7rem .9rem; font:500 .875rem var(--font-sans); white-space:nowrap; cursor:pointer; }
+  .av-tabs button:hover { color:var(--foreground); }
+  .av-tabs button.active { color:var(--foreground); border-color:var(--chart-3); }
+  .av-tabs small { margin-left:.35rem; color:var(--muted-foreground); }
+  .av-members { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 1.125rem; margin-bottom:1.25rem; border:1px solid #bfdbfe; background:#eff6ff; border-radius:var(--radius); }
+  .av-members strong { display:block; font-size:.875rem; }
+  .av-members p { margin:.25rem 0 0; color:#525252; font-size:.75rem; }
+  .av-toolbar { display:flex; align-items:center; gap:.625rem; margin-bottom:.75rem; flex-wrap:wrap; }
+  .av-search { min-width:16rem; flex:1; border:1px solid var(--border); border-radius:var(--radius-md); padding:.5rem .7rem; font:inherit; font-size:.8125rem; background:#fff; }
+  .av-select { border:1px solid var(--border); border-radius:var(--radius-md); padding:.5rem .7rem; font:inherit; font-size:.8125rem; background:#fff; }
+  .av-count { color:var(--muted-foreground); font-size:.75rem; white-space:nowrap; }
+  .av-filter-chip { display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .45rem; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--secondary); font-size:.75rem; }
+  .av-filter-chip button { border:0; background:none; color:var(--muted-foreground); cursor:pointer; font:inherit; }
+  .av-tablewrap { overflow-x:auto; border:1px solid var(--border); border-radius:var(--radius); background:#fff; }
+  .av-table { width:100%; border-collapse:collapse; font-size:.8125rem; }
+  .av-table th { text-align:left; font-size:.6875rem; font-weight:600; color:var(--muted-foreground); background:#fafafa; border-bottom:1px solid var(--border); padding:.7rem .875rem; white-space:nowrap; }
+  .av-table td { border-bottom:1px solid #f0f0f0; padding:.75rem .875rem; vertical-align:middle; }
+  .av-table tr:last-child td { border-bottom:0; }
+  .av-table tbody tr { cursor:pointer; }
+  .av-table tbody tr:hover { background:#f8fafc; }
+  .av-table tbody tr:focus-visible { outline:2px solid var(--chart-3); outline-offset:-2px; }
+  .av-person { display:flex; align-items:center; gap:.7rem; min-width:12rem; }
+  .av-avatar { width:2rem; height:2rem; flex:none; border-radius:50%; display:grid; place-items:center; color:#1d4ed8; background:#dbeafe; font-size:.6875rem; font-weight:700; }
+  .av-avatar.agent { background:#f3e8ff; color:#7e22ce; }
+  .av-person b { display:block; font-size:.8125rem; font-weight:600; }
+  .av-sub { display:block; color:var(--muted-foreground); font-size:.75rem; margin-top:.15rem; }
+  .av-pill { display:inline-block; padding:.18rem .48rem; border-radius:999px; background:#f5f5f5; color:#525252; font-size:.6875rem; margin:.08rem .18rem .08rem 0; white-space:nowrap; }
+  .av-pill.blue { color:#1d4ed8; background:#dbeafe; }
+  .av-pill.green { color:#15803d; background:#dcfce7; }
+  .av-pill.amber { color:#92400e; background:#fef3c7; }
+  .av-muted { color:var(--muted-foreground); }
+  .av-link { color:#155dfc; font-size:.75rem; font-weight:500; white-space:nowrap; }
+  .av-pager { display:flex; justify-content:flex-end; align-items:center; gap:.65rem; padding:.75rem 0; color:var(--muted-foreground); font-size:.75rem; }
+  .av-empty { padding:2rem; text-align:center; color:var(--muted-foreground); font-size:.8125rem; }
+  .av-drawer-screen { position:fixed; inset:0; background:rgba(10,10,10,.26); z-index:80; }
+  .av-drawer { position:fixed; top:0; bottom:0; right:0; width:min(33rem,100vw); background:#fff; box-shadow:-12px 0 32px #0002; z-index:81; display:flex; flex-direction:column; }
+  .av-dhead { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; padding:1.25rem 1.5rem; border-bottom:1px solid var(--border); }
+  .av-dhead h2 { margin:0; font-size:1.125rem; }
+  .av-dbody { padding:1.25rem 1.5rem 2rem; overflow:auto; flex:1; }
+  .av-dbody h3 { margin:1.35rem 0 .55rem; font-size:.75rem; text-transform:uppercase; letter-spacing:.05em; color:#525252; }
+  .av-dbody h3:first-child { margin-top:0; }
+  .av-dbody p { font-size:.8125rem; line-height:1.5; }
+  .av-drow { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; padding:.55rem 0; border-bottom:1px solid #f0f0f0; font-size:.8125rem; }
+  .av-drow:last-child { border-bottom:0; }
+  .av-drow .av-sub { margin-top:.25rem; }
+  .av-drow a { color:#155dfc; text-decoration:none; }
+  .av-drow a:hover { text-decoration:underline; }
+  .av-dactions { display:flex; gap:.5rem; flex-wrap:wrap; margin:.8rem 0 1.2rem; }
+  .av-note { padding:.65rem .8rem; background:#eff6ff; border-left:3px solid #3b82f6; color:#1e40af; font-size:.75rem; line-height:1.5; }
+  .av-edit { border:1px solid var(--border); border-radius:var(--radius); padding:.8rem; margin:.7rem 0; }
+  .av-edit label { display:flex; gap:.5rem; align-items:center; padding:.3rem 0; font-size:.8125rem; }
+  .av-edit .av-edit-title { font-weight:600; font-size:.75rem; margin:.65rem 0 .2rem; }
+  .av-edit .av-edit-title:first-child { margin-top:0; }
+  .av-edit input { accent-color:#155dfc; }
+  .av-edit-foot { display:flex; justify-content:flex-end; gap:.5rem; margin-top:.7rem; }
+  .av-segment { display:inline-flex; padding:.2rem; border:1px solid var(--border); border-radius:var(--radius-md); background:#f5f5f5; gap:.15rem; }
+  .av-segment button { border:0; background:transparent; padding:.35rem .75rem; border-radius:var(--radius-sm); cursor:pointer; color:#737373; font:500 .75rem var(--font-sans); }
+  .av-segment button.active { background:#fff; color:#171717; box-shadow:0 1px 3px #0002; }
+  .av-graph { display:flex; align-items:flex-start; gap:1rem; overflow:auto; padding:1rem 0; }
+  .av-root { min-width:12rem; padding:1rem; background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; border-radius:var(--radius); font-weight:600; font-size:.875rem; }
+  .av-branches { display:grid; grid-template-columns:repeat(2,minmax(12rem,1fr)); gap:.7rem; flex:1; }
+  .av-branch { border:1px solid var(--border); border-radius:var(--radius); padding:.8rem; }
+  .av-branch h4 { margin:0 0 .5rem; font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; color:#737373; }
+  .av-branch div { padding:.25rem 0; font-size:.8125rem; }
+  .av-branch button { border:0; background:none; color:#155dfc; padding:0; font:inherit; cursor:pointer; text-align:left; }
+  @media(min-width:801px) { .av-root,.av-branch { position:relative; } .av-root:after { content:""; position:absolute; left:100%; top:50%; width:1rem; border-top:1px solid #93c5fd; } .av-branch:before { content:""; position:absolute; right:100%; top:50%; width:1rem; border-top:1px solid #93c5fd; } }
+  @media(max-width:800px) { .av { padding:1rem; } .av-branches { grid-template-columns:1fr; } .av-graph { display:block; } .av-root { margin-bottom:.7rem; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="../shared/vera-model.js"></script>
+<script src="../shared/vera-data.js"></script>
+<script src="../shared/vera-ui.js"></script>
+<script>
+(() => {
+  const D = VERA_DATA, U = VERA_UI;
+  const by = (xs, id) => xs.find(x => x.id === id);
+  const user = id => by(D.users, id), group = id => by(D.groups, id), role = id => by(D.roles, id);
+  const custody = id => by(D.proposalCustodies, id), project = id => by(D.projects, id), category = id => D.cat(id);
+  const catName = id => D.pathOf(id).join(' / ');
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const qs = new URLSearchParams(location.search);
+  const validViews = ['users','roles','groups','custodies'];
+  const state = { view:validViews.includes(qs.get('view')) ? qs.get('view') : 'users', type:qs.get('type') === 'categories' ? 'categories':'proposals', query:'', filter:'all', custodySource:qs.get('source')||'', custodyBucket:qs.get('custody')||'', page:1, selected:null, edit:null, explore:false, memberProject:D.projects[0]?.id };
+  const pageSize = 8;
+  const roleSources = u => {
+    const m = new Map();
+    (u.roles || []).forEach(id => m.set(id,['Direct']));
+    (u.mapped || []).forEach(x => m.set(x.role,[...(m.get(x.role)||[]),`Mapped from ${x.claim}`]));
+    return [...m].map(([id,sources]) => ({id,sources}));
+  };
+  const effective = u => {
+    const proposals = new Map(), categories = new Map(), projects = new Map();
+    const add = (m,id,source) => m.set(id,[...(m.get(id)||[]),source]);
+    D.proposalCustodies.forEach(c => { if(c.users.includes(u.id)) add(proposals,c.id,'Direct'); c.groups.filter(g => u.groups.includes(g)).forEach(g => add(proposals,c.id,`via ${group(g).name}`)); });
+    Object.entries(D.categoryMembers || {}).forEach(([id,ids]) => { if(ids.includes(u.id)) add(categories,id,'Direct'); });
+    u.groups.forEach(gid => (group(gid)?.categories||[]).forEach(id => add(categories,id,`via ${group(gid).name}`)));
+    D.projects.forEach(p => { if((p.members||[]).includes(u.id)) add(projects,p.id,p.manager===u.id?'Manager · direct':'Direct'); });
+    u.groups.forEach(gid => (group(gid)?.projects||[]).forEach(id => add(projects,id,`via ${group(gid).name}`)));
+    return {proposals,categories,projects};
+  };
+  const membersOf = g => D.users.filter(u => u.groups.includes(g.id));
+  const projectPeople = p => D.users.map(u => ({u,sources:effective(u).projects.get(p.id)||[]})).filter(x => x.sources.length);
+  const catSources = c => {
+    const direct = (D.categoryMembers[c.id]||[]).map(id => user(id)).filter(Boolean);
+    const groups = D.groups.filter(g => (g.categories||[]).includes(c.id));
+    return {direct,groups};
+  };
+  const categoryPeople = c => {
+    const ancestors=[]; for(let n=c;n;n=n.parent?category(n.parent):null) ancestors.push(n);
+    const result=new Map();
+    const add=(u,source)=>result.set(u.id,{u,sources:[...(result.get(u.id)?.sources||[]),source]});
+    ancestors.forEach(n=>{const s=catSources(n), suffix=n.id===c.id?'':` · from ${catName(n.id)}`;
+      s.direct.forEach(u=>add(u,`Direct${suffix}`));
+      s.groups.forEach(g=>membersOf(g).forEach(u=>add(u,`via ${g.name}${suffix}`)));
+    });
+    return [...result.values()];
+  };
+  const custodyPeople = c => D.users.map(u => ({u,sources:effective(u).proposals.get(c.id)||[]})).filter(x => x.sources.length);
+  const proposals = [...new Map(D.requests.filter(r=>r.decision==='Pending').map(r=>[r.doc,r])).values()].map(r=>({id:r.doc,name:D.doc(r.doc)?.title||r.doc,request:r}));
+  const proposalCustodies = p => D.custodiesOf(p.request).map(custody).filter(Boolean);
+  const proposalPeople = p => {
+    const people=new Map();
+    proposalCustodies(p).forEach(c=>custodyPeople(c).forEach(({u,sources})=>people.set(u.id,{u,sources:[...(people.get(u.id)?.sources||[]),...sources.map(s=>`${s} · ${c.name}`)]})));
+    return [...people.values()];
+  };
+  const badges = values => values.length ? values.map(v => `<span class="av-pill">${esc(v)}</span>`).join('') : '<span class="av-muted">—</span>';
+  const sourcePills = sources => sources.map(s => `<span class="av-pill ${s.startsWith('via ') ? 'blue':'green'}">${esc(s)}</span>`).join('');
+  const link = (kind,id,label) => `<a href="#" data-open="${kind}:${esc(id)}">${esc(label)}</a>`;
+  const initials = name => name.split(/\s+/).slice(0,2).map(s=>s[0]).join('').toUpperCase();
+  const av = document.createElement('div'); av.className='av';
+  U.mount({tier:'notebook',active:'access',role:U.currentRole('admin'),title:'Users & Permissions',subtitle:'Manage assignments and inspect where access comes from.',body:'<div id="accessV2"></div>'});
+  document.querySelectorAll('.tierbar a[href$="/access.v2.html"]').forEach(a=>{if(!a.classList.contains('current'))a.href=a.href.replace('access.v2.html','access.html');});
+  document.getElementById('accessV2').appendChild(av);
+  function open(kind,id) { state.selected={kind,id}; state.edit=null; state.explore=false; render(); }
+  function updateUrl() { const next=new URLSearchParams({view:state.view});if(state.view==='custodies'){next.set('type',state.type);if(state.custodySource)next.set('source',state.custodySource);if(state.custodyBucket)next.set('custody',state.custodyBucket);}history.replaceState(null,'',`access.v2.html?${next}`); }
+  function setView(v) { state.view=v; state.query=''; state.filter='all'; state.page=1; state.selected=null; state.edit=null; updateUrl(); render(); }
+  function rows() {
+    const q=state.query.toLocaleLowerCase();
+    const match = s => String(s).toLocaleLowerCase().includes(q);
+    if(state.view==='users') return D.users.filter(u => match(`${u.name} ${u.email||''} ${roleSources(u).map(r=>r.id).join(' ')} ${u.groups.map(g=>group(g)?.name).join(' ')}`) && (state.filter==='all'||(state.filter==='no-role'?!roleSources(u).length:state.filter==='member'?[...effective(u).projects.keys()].length>0:u.kind===state.filter)));
+    if(state.view==='roles') return D.roles.filter(r => match(`${r.name} ${r.description}`));
+    if(state.view==='groups') return D.groups.filter(g => match(`${g.name} ${g.description}`));
+    return (state.type==='proposals'?proposals:D.categories).filter(c => {
+      if(!match(state.type==='proposals'?`${c.name} ${c.id} ${proposalCustodies(c).map(x=>x.name).join(' ')}`:catName(c.id)))return false;
+      if(state.type==='proposals') {const cs=proposalCustodies(c), people=proposalPeople(c);
+        const source=state.custodySource;
+        return (!state.custodyBucket||cs.some(x=>x.id===state.custodyBucket))
+          && (!source||(source==='direct'?cs.some(x=>x.users.length):source==='group'?cs.some(x=>x.groups.length):people.length===0));
+      }
+      const people=categoryPeople(c), source=state.custodySource;
+      let inGroup=false;for(let node=c;node;node=node.parent?category(node.parent):null){if((group(state.custodyBucket)?.categories||[]).includes(node.id))inGroup=true;}
+      return (!state.custodyBucket||inGroup)
+        && (!source||(source==='direct'?people.some(x=>x.sources.some(s=>s.startsWith('Direct'))):source==='group'?people.some(x=>x.sources.some(s=>s.startsWith('via '))):people.length===0));
+    });
+  }
+  function table(data) {
+    let head, body;
+    if(state.view==='users') {
+      head='<tr><th>User</th><th>Roles</th><th>Groups</th><th>Access</th><th></th></tr>';
+      body=data.map(u => { const e=effective(u), parts=[e.projects.size?'Project member':'',e.proposals.size?`${e.proposals.size} proposal ${e.proposals.size===1?'custody':'custodies'}`:'',e.categories.size?`${e.categories.size} ${e.categories.size===1?'category':'categories'}`:''].filter(Boolean);
+        return `<tr tabindex="0" data-open="user:${u.id}"><td><div class="av-person"><span class="av-avatar ${u.kind==='agent'?'agent':''}">${initials(u.name)}</span><span><b>${esc(u.name)}</b><span class="av-sub">${esc(u.email||'Agent · '+u.entry)}</span></span></div></td><td>${badges(roleSources(u).map(r=>role(r.id)?.name||r.id))}</td><td>${badges(u.groups.map(g=>group(g)?.name||g))}</td><td>${parts.length?esc(parts.join(' · ')):'<span class="av-muted">No resource access</span>'}</td><td class="av-link">View access →</td></tr>`; }).join('');
+    } else if(state.view==='roles') {
+      head='<tr><th>Role</th><th>Purpose</th><th>Grants</th><th>Users</th><th></th></tr>';
+      body=data.map(r=>`<tr tabindex="0" data-open="role:${r.id}"><td><b>${esc(r.name)}</b> ${r.shipped?'<span class="av-pill">Shipped</span>':''}</td><td>${esc(r.description)}</td><td>${r.grants.length}</td><td>${D.users.filter(u=>roleSources(u).some(x=>x.id===r.id)).length}</td><td class="av-link">Inspect →</td></tr>`).join('');
+    } else if(state.view==='groups') {
+      head='<tr><th>Group</th><th>Members</th><th>Proposal custody</th><th>Category custody</th><th>Projects</th><th></th></tr>';
+      body=data.map(g=>`<tr tabindex="0" data-open="group:${g.id}"><td><b>${esc(g.name)}</b><span class="av-sub">${esc(g.description)}</span></td><td>${membersOf(g).length}</td><td>${D.proposalCustodies.filter(c=>c.groups.includes(g.id)).length}</td><td>${g.categories.length}</td><td>${g.projects.length}</td><td class="av-link">Inspect →</td></tr>`).join('');
+    } else if(state.type==='proposals') {
+      head='<tr><th>Proposal</th><th>Custody</th><th>Direct custodians</th><th>Via groups</th><th>Effective people</th><th></th></tr>';
+      body=data.map(p=>{const cs=proposalCustodies(p);return `<tr tabindex="0" data-open="proposal:${p.id}"><td><b>${esc(p.name)}</b><span class="av-sub">${esc(p.id)}</span></td><td>${badges(cs.map(c=>c.name))}</td><td>${new Set(cs.flatMap(c=>c.users)).size}</td><td>${new Set(cs.flatMap(c=>c.groups)).size}</td><td>${proposalPeople(p).length}</td><td class="av-link">Inspect →</td></tr>`;}).join('');
+    } else {
+      head='<tr><th>Category</th><th>Direct custodians</th><th>Via groups</th><th>Effective people</th><th></th></tr>';
+      body=data.map(c=>{const s=catSources(c);return `<tr tabindex="0" data-open="category:${c.id}"><td><b>${esc(catName(c.id))}</b></td><td>${s.direct.length}</td><td>${s.groups.length}</td><td>${categoryPeople(c).length}</td><td class="av-link">Inspect →</td></tr>`;}).join('');
+    }
+    return `<div class="av-tablewrap"><table class="av-table"><thead>${head}</thead><tbody>${body||`<tr><td colspan="6" class="av-empty">No matches. Try another search or filter.</td></tr>`}</tbody></table></div>`;
+  }
+  function section(title,body) { return `<h3>${title}</h3>${body||'<p class="av-muted">None</p>'}`; }
+  function drow(name,sources,href) { return `<div class="av-drow"><span>${href||esc(name)}</span><span>${sourcePills(sources)}</span></div>`; }
+  function userDetail(u) {
+    const e=effective(u);
+    const roleRows=roleSources(u).map(r=>drow(role(r.id)?.name||r.id,r.sources,link('role',r.id,role(r.id)?.name||r.id))).join('');
+    const groupRows=u.groups.map(id=>drow(group(id)?.name||id,['Direct'],link('group',id,group(id)?.name||id))).join('');
+    const pRows=[...e.proposals].map(([id,s])=>drow(custody(id)?.name||id,s,link('custody',id,custody(id)?.name||id))).join('');
+    const cRows=[...e.categories].map(([id,s])=>drow(catName(id),s,link('category',id,catName(id)))).join('');
+    const projRows=[...e.projects].map(([id,s])=>drow(project(id)?.name||id,s,esc(project(id)?.name||id))).join('');
+    return `<div class="av-note">Roles determine what this user can do. Custody and project assignments determine which resources those actions can reach.</div>
+      <div class="av-dactions"><button class="btn btn-sm" data-edit="user">Edit roles & groups</button><button class="btn btn-sm" data-explore>Explore relationships</button></div>
+      ${section('Roles',roleRows)}${section('Groups',groupRows)}${section('Proposal custody',pRows)}${section('Category custody',cRows)}${section('Project membership',projRows)}`;
+  }
+  function groupDetail(g) {
+    const members=membersOf(g), pc=D.proposalCustodies.filter(c=>c.groups.includes(g.id));
+    return `<div class="av-note">This group grants resource access and project membership to its members. Roles are assigned separately.</div>
+      <div class="av-dactions"><button class="btn btn-sm" data-edit="group">Edit group access & members</button><button class="btn btn-sm" data-explore>Explore relationships</button></div>
+      ${section(`Members · ${members.length}`,members.map(u=>drow(u.name,['Member'],link('user',u.id,u.name))).join(''))}
+      ${section('Project membership',g.projects.map(id=>drow(project(id)?.name||id,['via group'])).join(''))}
+      ${section('Proposal custody',pc.map(c=>drow(c.name,['via group'],link('custody',c.id,c.name))).join(''))}
+      ${section('Category custody',g.categories.map(id=>drow(catName(id),['via group'],link('category',id,catName(id)))).join(''))}`;
+  }
+  function roleDetail(r) {
+    const holders=D.users.filter(u=>roleSources(u).some(x=>x.id===r.id));
+    return `<p>${esc(r.description)}</p><div class="av-note">A role grants actions. Its scope still depends on the user’s custody or project membership.</div>
+      <div class="av-dactions"><a class="btn btn-sm" href="access.html?r=${encodeURIComponent(r.id)}">Edit grants</a><button class="btn btn-sm" data-explore>Explore relationships</button></div>
+      ${section(`Users · ${holders.length}`,holders.map(u=>drow(u.name,roleSources(u).find(x=>x.id===r.id).sources,link('user',u.id,u.name))).join(''))}
+      ${section(`Grants · ${r.grants.length}`,r.grants.map(([key,scope])=>drow(key,[scope||'own'])).join(''))}`;
+  }
+  function custodyDetail(c) {
+    const people=custodyPeople(c);
+    return `<p>${esc(c.description)}</p><div class="av-note">${c.fallback?'Proposals with no matching custody rule land here.':'Custody rules place proposals here. Edit those rules on Plugins.'} Membership alone does not grant an action; a role must also permit it.</div>
+      <div class="av-dactions"><button class="btn btn-sm" data-edit="custody">Edit custodians</button><button class="btn btn-sm" data-explore>Explore relationships</button></div>
+      ${section(`Effective custodians · ${people.length}`,people.map(({u,sources})=>drow(u.name,sources,link('user',u.id,u.name))).join(''))}
+      ${section('Direct assignments',c.users.map(id=>drow(user(id)?.name||id,['Direct'],link('user',id,user(id)?.name||id))).join(''))}
+      ${section('Via groups',c.groups.map(id=>drow(group(id)?.name||id,[`${membersOf(group(id)).length} members`],link('group',id,group(id)?.name||id))).join(''))}`;
+  }
+  function proposalDetail(p) {
+    const cs=proposalCustodies(p), direct=new Set(cs.flatMap(c=>c.users)), groups=[...new Set(cs.flatMap(c=>c.groups))].map(group).filter(Boolean);
+    return `<div class="av-note">This proposal was placed in ${cs.length===1?'a custody':'custodies'} by the Custody rules. A person still needs a role with a proposal action to use this access.</div>
+      <div class="av-dactions"><a class="btn btn-sm" href="proposals.html?doc=${encodeURIComponent(p.id)}">Open proposal</a><button class="btn btn-sm" data-explore>Explore relationships</button></div>
+      ${section('Custody assignments',cs.map(c=>drow(c.name,[c.fallback?'Fallback':'Rule assigned'],link('custody',c.id,c.name))).join(''))}
+      ${section('Direct custodians',[...direct].map(id=>drow(user(id)?.name||id,['Direct',...cs.filter(c=>c.users.includes(id)).map(c=>c.name)],link('user',id,user(id)?.name||id))).join(''))}
+      ${section('Via groups',groups.map(g=>`<div class="av-drow"><span>${link('group',g.id,g.name)}<span class="av-sub">${cs.filter(c=>c.groups.includes(g.id)).map(c=>esc(c.name)).join(', ')}</span></span><span>${membersOf(g).map(u=>link('user',u.id,u.name)).join(', ')||'<span class="av-muted">No members</span>'}</span></div>`).join(''))}
+      ${section(`Effective custodians · ${proposalPeople(p).length}`,proposalPeople(p).map(({u,sources})=>drow(u.name,sources,link('user',u.id,u.name))).join(''))}`;
+  }
+  function categoryDetail(c) {
+    const s=catSources(c), people=categoryPeople(c);
+    return `<div class="av-note">Category custody applies to this category and everything below it. Manage direct assignments on Categories.</div>
+      <div class="av-dactions"><a class="btn btn-sm" href="categories.html?c=${encodeURIComponent(c.id)}">Open in Categories</a><button class="btn btn-sm" data-explore>Explore relationships</button></div>
+      ${section(`Effective custodians · ${people.length}`,people.map(({u,sources})=>drow(u.name,sources,link('user',u.id,u.name))).join(''))}
+      ${section('Direct assignments',s.direct.map(u=>drow(u.name,['Direct'],link('user',u.id,u.name))).join(''))}
+      ${section('Via groups',s.groups.map(g=>drow(g.name,[`${membersOf(g).length} members`],link('group',g.id,g.name))).join(''))}`;
+  }
+  function projectDetail(p) {
+    return `<div class="av-note">A person can be a member directly, through a group, or both. Both sources remain visible below.</div>
+      <div class="av-dactions"><button class="btn btn-sm" data-edit="project">Manage members</button><button class="btn btn-sm" data-explore>Explore relationships</button></div>
+      ${section(`Members · ${projectPeople(p).length}`,projectPeople(p).map(({u,sources})=>drow(u.name,sources,link('user',u.id,u.name))).join(''))}
+      ${section('Groups granting membership',D.groups.filter(g=>g.projects.includes(p.id)).map(g=>drow(g.name,[`${membersOf(g).length} members`],link('group',g.id,g.name))).join(''))}`;
+  }
+  const checks=(name,items,selected)=>items.map(x=>`<label><input type="checkbox" name="${name}" value="${esc(x.id)}" ${selected.includes(x.id)?'checked':''}> ${esc(x.name)}</label>`).join('');
+  function editForm(kind,item) {
+    let fields='';
+    if(kind==='user') fields=`<div class="av-edit-title">Direct roles</div>${checks('roles',D.roles,item.roles)}<div class="av-edit-title">Groups</div>${checks('groups',D.groups,item.groups)}<p class="av-sub">Mapped roles stay linked to their identity provider.</p>`;
+    if(kind==='group') fields=`<div class="av-edit-title">Members</div>${checks('members',D.users.filter(u=>u.kind==='person'),membersOf(item).map(u=>u.id))}<div class="av-edit-title">Proposal custodies</div>${checks('custodies',D.proposalCustodies,D.proposalCustodies.filter(c=>c.groups.includes(item.id)).map(c=>c.id))}<div class="av-edit-title">Category custodies</div>${checks('categories',D.categories,item.categories)}<div class="av-edit-title">Projects</div>${checks('projects',D.projects,item.projects)}`;
+    if(kind==='custody') fields=`<div class="av-edit-title">Direct custodians</div>${checks('users',D.users.filter(u=>u.kind==='person'),item.users)}<div class="av-edit-title">Groups</div>${checks('groups',D.groups,item.groups)}`;
+    if(kind==='project') fields=`<div class="av-edit-title">Direct members</div>${checks('users',D.users.filter(u=>u.kind==='person'),item.members)}<div class="av-edit-title">Groups granting membership</div>${checks('groups',D.groups,D.groups.filter(g=>g.projects.includes(item.id)).map(g=>g.id))}`;
+    return `<form class="av-edit" id="avEdit">${fields}<div class="av-edit-foot"><button type="button" class="btn btn-sm" data-cancel-edit>Cancel</button><button type="submit" class="btn btn-primary btn-sm">Save assignments</button></div></form>`;
+  }
+  function saveEdit(form) {
+    const selected=name=>[...form.querySelectorAll(`input[name="${name}"]:checked`)].map(x=>x.value);
+    const {kind,id}=state.selected, item={user,group,custody,project}[kind](id);
+    if(kind==='user') { item.roles=selected('roles'); item.groups=selected('groups'); }
+    if(kind==='group') { D.users.forEach(u=>u.groups=selected('members').includes(u.id)?[...new Set([...u.groups,item.id])]:u.groups.filter(g=>g!==item.id)); D.proposalCustodies.forEach(c=>c.groups=selected('custodies').includes(c.id)?[...new Set([...c.groups,item.id])]:c.groups.filter(g=>g!==item.id)); item.categories=selected('categories'); item.projects=selected('projects'); }
+    if(kind==='custody') { item.users=selected('users'); item.groups=selected('groups'); }
+    if(kind==='project') { item.members=selected('users'); D.groups.forEach(g=>g.projects=selected('groups').includes(g.id)?[...new Set([...g.projects,item.id])]:g.projects.filter(p=>p!==item.id)); }
+    state.edit=null; render();
+  }
+  function graph(kind,item) {
+    const branch=(title,entries)=>`<div class="av-branch"><h4>${title}</h4>${entries.length?entries.map(([label,target,source])=>`<div>${target?`<button data-open="${target}">${esc(label)}</button>`:esc(label)} ${source?`<span class="av-sub">${esc(source)}</span>`:''}</div>`).join(''):'<div class="av-muted">None</div>'}</div>`;
+    let branches=[];
+    if(kind==='user') { const e=effective(item); branches=[branch('Roles',roleSources(item).map(r=>[role(r.id)?.name||r.id,`role:${r.id}`,r.sources.join(' · ')])),branch('Groups',item.groups.map(id=>[group(id)?.name||id,`group:${id}`])),branch('Proposal custody',[...e.proposals].map(([id,s])=>[custody(id)?.name||id,`custody:${id}`,s.join(' · ')])),branch('Category custody',[...e.categories].map(([id,s])=>[catName(id),`category:${id}`,s.join(' · ')])),branch('Projects',[...e.projects].map(([id,s])=>[project(id)?.name||id,null,s.join(' · ')]))]; }
+    if(kind==='group') branches=[branch('Members',membersOf(item).map(u=>[u.name,`user:${u.id}`])),branch('Proposal custody',D.proposalCustodies.filter(c=>c.groups.includes(item.id)).map(c=>[c.name,`custody:${c.id}`])),branch('Category custody',item.categories.map(id=>[catName(id),`category:${id}`])),branch('Projects',item.projects.map(id=>[project(id)?.name||id]))];
+    if(kind==='role') branches=[branch('Users',D.users.filter(u=>roleSources(u).some(r=>r.id===item.id)).map(u=>[u.name,`user:${u.id}`])),branch('Grants',item.grants.map(([key,scope])=>[key,null,scope||'own']))];
+    if(kind==='custody') branches=[branch('Direct custodians',item.users.map(id=>[user(id)?.name||id,`user:${id}`])),branch('Via groups',item.groups.map(id=>[group(id)?.name||id,`group:${id}`])),branch('Effective people',custodyPeople(item).map(({u,sources})=>[u.name,`user:${u.id}`,sources.join(' · ')]))];
+    if(kind==='proposal') branches=[branch('Custodies',proposalCustodies(item).map(c=>[c.name,`custody:${c.id}`])),branch('Direct custodians',[...new Set(proposalCustodies(item).flatMap(c=>c.users))].map(id=>[user(id)?.name||id,`user:${id}`])),branch('Via groups',[...new Set(proposalCustodies(item).flatMap(c=>c.groups))].map(id=>[group(id)?.name||id,`group:${id}`])),branch('Effective custodians',proposalPeople(item).map(({u,sources})=>[u.name,`user:${u.id}`,sources.join(' · ')]))];
+    if(kind==='category') {const s=catSources(item);branches=[branch('Direct custodians',s.direct.map(u=>[u.name,`user:${u.id}`])),branch('Via groups',s.groups.map(g=>[g.name,`group:${g.id}`])),branch('Effective people',categoryPeople(item).map(({u,sources})=>[u.name,`user:${u.id}`,sources.join(' · ')]))];}
+    if(kind==='project') branches=[branch('Direct members',item.members.map(id=>[user(id)?.name||id,`user:${id}`])),branch('Via groups',D.groups.filter(g=>g.projects.includes(item.id)).map(g=>[g.name,`group:${g.id}`])),branch('Effective members',projectPeople(item).map(({u,sources})=>[u.name,`user:${u.id}`,sources.join(' · ')]))];
+    return `<div class="av-graph"><div class="av-root">${esc(item.name)}</div><div class="av-branches">${branches.join('')}</div></div>`;
+  }
+  function drawer() {
+    if(!state.selected) return '';
+    const {kind,id}=state.selected, item={user,group,role,custody,category,project,proposal:id=>proposals.find(p=>p.id===id)}[kind](id);
+    if(!item) return '';
+    const title=kind==='category'?catName(id):item.name;
+    const subtitle={user:item.email||'Agent',role:'Role',group:'Access bundle',custody:'Proposal custody',category:'Category custody',project:'Project members',proposal:'Open proposal'}[kind];
+    const detail={user:userDetail,group:groupDetail,role:roleDetail,custody:custodyDetail,category:categoryDetail,project:projectDetail,proposal:proposalDetail}[kind];
+    return `<div class="av-drawer-screen" data-close></div><aside class="av-drawer" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="av-dhead"><div><h2>${esc(title)}</h2><span class="av-sub">${esc(subtitle)}</span></div><button class="btn btn-sm" data-close aria-label="Close details">✕</button></div><div class="av-dbody">${state.explore?`<button class="btn btn-sm" data-back-detail>← Back to details</button>${graph(kind,item)}`:state.edit?editForm(kind,item):detail(item)}</div></aside>`;
+  }
+  function render() {
+    const all=rows(), pages=Math.max(1,Math.ceil(all.length/pageSize)); state.page=Math.min(state.page,pages);
+    const paged=all.slice((state.page-1)*pageSize,state.page*pageSize);
+    const bucketOptions=state.type==='proposals'?D.proposalCustodies:D.groups;
+    const bucketLabel=state.type==='proposals'?'Proposal custody':'Group';
+    const chosenBucket=bucketOptions.find(x=>x.id===state.custodyBucket);
+    const custodyControls=state.view==='custodies'?`<select class="av-select" id="avSource" aria-label="Custodian source">${[['','Custodians: any'],['direct','Direct'],['group','Via group'],['none','No custodians']].map(([v,l])=>`<option value="${v}" ${state.custodySource===v?'selected':''}>${l}</option>`).join('')}</select>
+      ${chosenBucket?`<span class="av-filter-chip">${bucketLabel}: <b>${esc(chosenBucket.name)}</b><button data-clear-bucket aria-label="Remove ${bucketLabel} filter">×</button></span>`:''}
+      <select class="av-select" id="avAddFilter" aria-label="Add filter"><option value="">+ Add filter</option><optgroup label="${bucketLabel}">${bucketOptions.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</optgroup></select>`:'';
+    av.innerHTML=`<div class="av-top"><p class="av-intro">Find a person or resource, then inspect every assignment and its source.</p></div>
+      <nav class="av-tabs" aria-label="Permission views">${[['users','Users',D.users.length],['roles','Roles',D.roles.length],['groups','Groups',D.groups.length],['custodies','Custodies',proposals.length+D.categories.length]].map(([k,label,n])=>`<button data-view="${k}" class="${state.view===k?'active':''}" aria-current="${state.view===k?'page':'false'}">${label}<small>${n}</small></button>`).join('')}</nav>
+      ${state.view==='users'?`<div class="av-members"><div><strong>Project members</strong><p>Manage a project’s small member list and see direct and group membership together.</p></div><div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap"><select class="av-select" id="avProject">${D.projects.map(p=>`<option value="${p.id}" ${p.id===state.memberProject?'selected':''}>${esc(p.name)} · ${projectPeople(p).length} members</option>`).join('')}</select><button class="btn btn-sm" data-project-manage>Manage</button></div></div>`:''}
+      <div class="av-toolbar">${state.view==='custodies'?`<span class="av-segment"><button data-type="proposals" class="${state.type==='proposals'?'active':''}">Proposals</button><button data-type="categories" class="${state.type==='categories'?'active':''}">Categories</button></span>`:''}<input class="av-search" id="avSearch" type="search" placeholder="Search ${state.view==='users'?'users, roles or groups':state.view==='custodies'?'proposals or categories':state.view}…" value="${esc(state.query)}" aria-label="Search ${state.view}">${state.view==='users'?`<select class="av-select" id="avFilter" aria-label="Filter users">${[['all','All users'],['person','People'],['agent','Agents'],['member','Project members'],['no-role','No role']].map(([v,l])=>`<option value="${v}" ${state.filter===v?'selected':''}>${l}</option>`).join('')}</select>`:''}${custodyControls}<span class="av-count">${all.length} ${state.view==='users'?'users':state.view==='roles'?'roles':state.view==='groups'?'groups':state.type==='proposals'?'proposals':'categories'}</span></div>
+      ${table(paged)}<div class="av-pager"><span>${all.length?`${(state.page-1)*pageSize+1}–${Math.min(state.page*pageSize,all.length)} of ${all.length}`:'0 results'}</span><button class="btn btn-sm" data-page="prev" ${state.page===1?'disabled':''}>Previous</button><button class="btn btn-sm" data-page="next" ${state.page===pages?'disabled':''}>Next</button></div>${drawer()}`;
+  }
+  av.addEventListener('click', e => {
+    const t=e.target;
+    const o=t.closest('[data-open]'); if(o){e.preventDefault(); const [kind,id]=o.dataset.open.split(':');open(kind,id);return;}
+    if(t.closest('[data-close]')) {state.selected=null;state.edit=null;state.explore=false;render();return;}
+    if(t.closest('[data-view]')) return setView(t.closest('[data-view]').dataset.view);
+    if(t.closest('[data-type]')) {state.type=t.closest('[data-type]').dataset.type;state.custodySource='';state.custodyBucket='';state.page=1;updateUrl();render();return;}
+    if(t.closest('[data-clear-bucket]')) {state.custodyBucket='';state.page=1;updateUrl();render();return;}
+    if(t.closest('[data-project-manage]')) return open('project',state.memberProject);
+    if(t.closest('[data-page]')) {state.page+=t.closest('[data-page]').dataset.page==='next'?1:-1;render();return;}
+    if(t.closest('[data-edit]')) {state.edit=t.closest('[data-edit]').dataset.edit;render();return;}
+    if(t.closest('[data-cancel-edit]')) {state.edit=null;render();return;}
+    if(t.closest('[data-explore]')) {state.explore=true;render();return;}
+    if(t.closest('[data-back-detail]')) {state.explore=false;render();}
+  });
+  av.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('tr[data-open]')){e.preventDefault();const [kind,id]=e.target.dataset.open.split(':');open(kind,id);} if(e.key==='Escape'&&state.selected){state.selected=null;render();}});
+  av.addEventListener('input',e=>{if(e.target.id==='avSearch'){const pos=e.target.selectionStart;state.query=e.target.value;state.page=1;render();const next=av.querySelector('#avSearch');next.focus();next.setSelectionRange(pos,pos);}});
+  av.addEventListener('change',e=>{if(e.target.id==='avFilter'){state.filter=e.target.value;state.page=1;render();}if(e.target.id==='avProject')state.memberProject=e.target.value;
+    if(e.target.id==='avSource'){state.custodySource=e.target.value;state.page=1;updateUrl();render();}
+    if(e.target.id==='avAddFilter'&&e.target.value){state.custodyBucket=e.target.value;state.page=1;updateUrl();render();}});
+  av.addEventListener('submit',e=>{if(e.target.id==='avEdit'){e.preventDefault();saveEdit(e.target);}});
+  render();
+})();
+</script>
+</body>
+</html>
