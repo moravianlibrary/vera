@@ -1,6 +1,7 @@
 # VERA frontend
 
-React, TypeScript, Vite, Tailwind CSS v4, and shadcn/ui (New York style).
+React, TypeScript, Vite, Tailwind CSS v4, and shadcn/ui (Radix Nova style,
+preset `b2BWi3afQ`). VERA keeps a custom dark navigation bar.
 
 ## Getting started
 

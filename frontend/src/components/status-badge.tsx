@@ -22,7 +22,7 @@ const toneVariants = cva("border-transparent", {
       red: "bg-tone-red text-tone-red-foreground",
       purple: "bg-tone-purple text-tone-purple-foreground",
       // Forbidden: the one verdict nothing downstream can discharge.
-      dark: "bg-primary text-primary-foreground",
+      dark: "bg-black text-white",
     },
   },
 });

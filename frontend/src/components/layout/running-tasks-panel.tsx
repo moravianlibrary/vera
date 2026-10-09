@@ -49,7 +49,7 @@ export function RunningTasksPanel({
   }
 
   return (
-    <section aria-label="Tasks running" className="mb-3 px-1.5">
+    <section aria-label="Tasks running" className="mb-3 min-w-0 px-1.5">
       <Link
         to="/tasks"
         onClick={onNavigate}
@@ -60,14 +60,15 @@ export function RunningTasksPanel({
       </Link>
       <ul className="mt-2 grid gap-2">
         {runs.map((run) => (
-          <li key={run.id}>
+          <li key={run.id} className="min-w-0">
             <Link
               to={`/tasks?run=${encodeURIComponent(run.id)}`}
               onClick={onNavigate}
-              className="group grid gap-1"
+              className="group grid min-w-0 gap-1"
+              title={run.what}
             >
-              <span className="flex justify-between gap-2 text-xs">
-                <span className="truncate group-hover:text-sidebar-accent-foreground">
+              <span className="flex min-w-0 items-center gap-2 text-xs">
+                <span className="min-w-0 flex-1 truncate group-hover:text-sidebar-accent-foreground">
                   {run.what}
                 </span>
                 <span className="shrink-0 tabular-nums">
