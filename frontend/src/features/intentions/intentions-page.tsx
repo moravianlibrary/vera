@@ -1,5 +1,4 @@
-// The Intentions page: Targets, Output (all intentions), and Repeats tabs. Each intention tab
-// runs running → upcoming with Ended and Archived folded below. `?col=track` opens Output;
+// The Intentions page: one filtered board, repeats then running, upcoming, ended and archived.
 // `?i=` opens one card, marks it and scrolls to it, `?t=` marks one repeat. *New intention* and
 // *Edit* need `intention.edit`, *New repeat* and a repeat's *Edit* `intention.repeat`; what was
 // done is said above the columns, and the card it was done to is marked. Whoever builds lists,
@@ -18,14 +17,13 @@ import type { ViewAction } from "@/components/actions/action-bar";
 import { ActionBar } from "@/components/actions/action-bar";
 import type { CardSection } from "@/components/card-sections";
 import { CardSections } from "@/components/card-sections";
+import { FilterBar } from "@/components/filters/filter-bar";
+import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
-import type { ColumnDefinition } from "@/components/lists/record-list";
-import { ToneBadge } from "@/components/status-badge";
 import { StatusNote } from "@/components/status-note";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Session } from "@/domain/entities";
 import { scopeOfIntention } from "@/domain/intentions";
-import { can } from "@/domain/permissions";
+import { can, hasPermission } from "@/domain/permissions";
 import type { NoteTone } from "@/domain/status-notes";
 import type { MixLink } from "@/features/intentions/intention-card";
 import { IntentionCard } from "@/features/intentions/intention-card";
@@ -36,20 +34,20 @@ import {
   IntentionFormDialog,
   TemplateFormDialog,
 } from "@/features/intentions/intention-dialogs";
-import type { IntentionColumn } from "@/features/intentions/intentions-view";
+import {
+  intentionBoardSectionsOf,
+  intentionFacets,
+  intentionsView,
+  matchingIntentions,
+} from "@/features/intentions/intentions-board-view";
 import {
   columnOf,
-  columnSectionsOf,
   columnTitles,
   everyLabels,
-  intentionColumns,
-  intentionsUrlStateOf,
   periodNouns,
-  shortWindowOf,
-  tileOf,
-  verdictBadgeOf,
 } from "@/features/intentions/intentions-view";
 import { intentionMixHrefOf } from "@/features/intentions/mix-view";
+import { useIntentionSectionPreferences } from "@/features/intentions/use-intention-section-preferences";
 import {
   intentionInvalidations,
   useIntentionIndexQuery,
@@ -57,9 +55,10 @@ import {
 import { generationHrefOf } from "@/features/lists/lists-view";
 import { useListGeneratorsQuery } from "@/features/lists/use-lists-query";
 import { useActionMutation } from "@/hooks/use-action-mutation";
-import { useProjectsQuery, useUsersQuery } from "@/hooks/use-reference-query";
+import { useProjectsQuery } from "@/hooks/use-reference-query";
 import { useSessionQuery } from "@/hooks/use-session-query";
-import { formatCalendarDay, formatDay } from "@/lib/format-date";
+import { useViewUrlState } from "@/hooks/use-view-url-state";
+import { formatCalendarDay } from "@/lib/format-date";
 import { formatCount } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 
@@ -79,7 +78,6 @@ interface Note {
 // What the person may do here, and to each intention.
 export interface IntentionActs {
   cardActionsOf: (row: IntentionRow) => ViewAction[];
-  foldActionOf: (row: IntentionRow) => ViewAction | null;
   // Null when the person may not set repeats.
   editTemplate: ((row: IntentionTemplateRow) => void) | null;
   // To its Mix (`/intentions/:id/mix`).
@@ -87,6 +85,7 @@ export interface IntentionActs {
 }
 
 export function IntentionsPage() {
+  const view = useViewUrlState(intentionsView, "i");
   const { data: index, error } = useIntentionIndexQuery();
   const { data: session } = useSessionQuery();
   const { data: projects = [] } = useProjectsQuery();
@@ -100,9 +99,20 @@ export function IntentionsPage() {
     invalidates: intentionInvalidations,
   });
 
-  const focus = (intentionId: string | null, said: Note) => {
+  const focus = (intentionId: string | null, said: Note, row?: IntentionRow) => {
     setNote(said);
-    setParams(intentionId === null ? {} : { i: intentionId }, { replace: true });
+    const next = new URLSearchParams(params);
+    next.delete("i");
+    next.delete("t");
+    if (
+      row !== undefined &&
+      matchingIntentions({ rows: [row], templates: [] }, view.query).rows.length === 0
+    ) {
+      for (const key of intentionsView.toSearchParams(view.query).keys()) next.delete(key);
+      next.delete("watchlist");
+    }
+    if (intentionId !== null) next.set("i", intentionId);
+    setParams(next, { replace: true });
   };
   const canEdit = (row: IntentionRow) =>
     session !== undefined &&
@@ -186,17 +196,6 @@ export function IntentionsPage() {
           : [];
       return [...(generate === null ? [] : [generate]), ...edits];
     },
-    foldActionOf: (row) =>
-      canEdit(row) &&
-      row.intention.archived === null &&
-      !row.intention.isOverall &&
-      row.intention.projectId === null
-        ? {
-            id: "archive",
-            label: "Archive",
-            onSelect: () => void toggleArchived(row),
-          }
-        : null,
     editTemplate:
       session !== undefined && can(session, "intention.repeat")
         ? (row) => setDialog({ kind: "template", row })
@@ -241,6 +240,26 @@ export function IntentionsPage() {
   return (
     <>
       <PageHeader title="Intentions" actions={headerActions} />
+      {session !== undefined && hasPermission(session, "watch") && (
+        <WatchlistTabs
+          view="intentions"
+          filter={view.filter}
+          openedId={view.watchlistId}
+          canShare={hasPermission(session, "watchlist.manage_shared")}
+          onOpen={view.openWatchlist}
+          onDetach={view.detachWatchlist}
+          isBare={view.isBare}
+        />
+      )}
+      <FilterBar
+        key={view.filterReplacements}
+        fields={intentionsView.fields}
+        query={view.query}
+        facets={index === undefined ? undefined : intentionFacets(index, view.query)}
+        onQueryChange={view.setQuery}
+        searchLabel="Search intentions"
+        searchPlaceholder="Search intentions and repeats"
+      />
       <PageContent>
         {error !== null ? (
           <StatusNote tone="red" title="Intentions could not be loaded">
@@ -253,7 +272,18 @@ export function IntentionsPage() {
                 {note.text}
               </StatusNote>
             )}
-            <IntentionBoard index={index} acts={acts} params={params} setParams={setParams} />
+            {session !== undefined && (
+              <IntentionBoard
+                key={session.user.id}
+                index={matchingIntentions(index, view.query)}
+                allTemplates={index.templates}
+                isFiltered={Object.keys(view.filter).length > 0}
+                focusedId={params.get("i")}
+                focusedTemplateId={params.get("t")}
+                acts={acts}
+                session={session}
+              />
+            )}
           </>
         )}
       </PageContent>
@@ -277,7 +307,7 @@ interface PageDialogsProps {
   session: Session;
   onClose: () => void;
   onOpen: (dialog: OpenDialog) => void;
-  onDone: (intentionId: string | null, note: Note) => void;
+  onDone: (intentionId: string | null, note: Note, row?: IntentionRow) => void;
 }
 
 function PageDialogs({ dialog, index, session, onClose, onOpen, onDone }: PageDialogsProps) {
@@ -361,6 +391,7 @@ function PageDialogs({ dialog, index, session, onClose, onOpen, onDone }: PageDi
                 title: `Saved ${row.intention.name}.`,
                 text: "Its counts are worked out again over its whole window.",
               },
+          row,
         )
       }
       onCopy={
@@ -375,90 +406,105 @@ function PageDialogs({ dialog, index, session, onClose, onOpen, onDone }: PageDi
   );
 }
 
+type BoardItem =
+  | { kind: "intention"; row: IntentionRow }
+  | { kind: "repeat"; row: IntentionTemplateRow };
+
 interface IntentionBoardProps {
   index: IntentionIndex;
+  allTemplates: readonly IntentionTemplateRow[];
+  isFiltered: boolean;
+  focusedId: string | null;
+  focusedTemplateId: string | null;
   acts: IntentionActs;
-  params: URLSearchParams;
-  setParams: ReturnType<typeof useSearchParams>[1];
+  session: Session;
 }
 
-function IntentionBoard({ index, acts, params, setParams }: IntentionBoardProps) {
-  const urlState = intentionsUrlStateOf(params, index.rows);
-  const view = params.get("view") === "repeats" || params.has("t") ? "repeats" : urlState.column;
-  const switchView = (selected: string) => {
-    const next = new URLSearchParams(params);
-    next.delete("i");
-    next.delete("t");
-    if (selected === "target") {
-      next.delete("col");
-      next.delete("view");
-    } else if (selected === "track") {
-      next.set("col", "track");
-      next.delete("view");
-    } else {
-      next.set("view", "repeats");
-      next.delete("col");
-    }
-    setParams(next);
-  };
+function IntentionBoard({
+  index,
+  allTemplates,
+  isFiltered,
+  focusedId,
+  focusedTemplateId,
+  acts,
+  session,
+}: IntentionBoardProps) {
+  const { isOpen, setOpen } = useIntentionSectionPreferences(session.user.id);
+  const sections = intentionBoardSectionsOf(index);
+  const visibleCount = Object.values(sections).filter((items) => items.length > 0).length;
+  const isHeadingHidden = visibleCount === 1;
+  const everyOf = (row: IntentionRow) =>
+    allTemplates.find((template) => template.template.id === row.intention.templateId)?.template
+      .every ?? null;
+  const isFocusedIn = (id: keyof typeof sections) =>
+    id === "repeats"
+      ? sections.repeats.some((row) => row.template.id === focusedTemplateId)
+      : sections[id].some((row) => row.intention.id === focusedId);
+  const repeatSection = (id: "repeats", title: string): CardSection<BoardItem> => ({
+    id,
+    title,
+    items: sections.repeats.map((row) => ({ kind: "repeat", row })),
+    isHeadingHidden,
+    isOpen: isOpen(id) || isFocusedIn(id),
+    onOpenChange: (open) => setOpen(id, open),
+  });
+  const intentionSection = (
+    id: "running" | "upcoming" | "ended" | "archived",
+    title: string,
+  ): CardSection<BoardItem> => ({
+    id,
+    title,
+    items: sections[id].map((row) => ({ kind: "intention", row })),
+    isHeadingHidden,
+    isOpen: isOpen(id) || isFocusedIn(id),
+    onOpenChange: (open) => setOpen(id, open),
+  });
+  const cardSections: CardSection<BoardItem>[] = [
+    repeatSection("repeats", "Repeats"),
+    intentionSection("running", "Running"),
+    intentionSection("upcoming", "Upcoming"),
+    intentionSection("ended", "Ended"),
+    intentionSection("archived", "Archived"),
+  ];
 
   return (
     <div className="grid gap-6">
-      <Tabs value={view} onValueChange={switchView}>
-        <TabsList>
-          {intentionColumns.map((column) => (
-            <TabsTrigger key={column} value={column}>
-              {columnTitles[column]}
-              <span className="ml-1 tabular-nums opacity-70">
-                {
-                  index.rows.filter(
-                    (row) =>
-                      (column === "track" || columnOf(row.intention) === column) &&
-                      row.intention.archived === null,
-                  ).length
-                }
-              </span>
-            </TabsTrigger>
-          ))}
-          <TabsTrigger value="repeats">
-            Repeats <span className="ml-1 tabular-nums opacity-70">{index.templates.length}</span>
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-      {view === "repeats" ? (
-        <div className="grid max-w-4xl gap-3">
-          {index.templates.map((row) => (
-            <RepeatLine
-              key={row.template.id}
-              row={row}
-              isFocused={row.template.id === urlState.focusedTemplateId}
-              onEdit={acts.editTemplate}
-            />
-          ))}
-          {index.templates.length === 0 && (
-            <p className="text-sm text-muted-foreground">No repeats yet.</p>
-          )}
-        </div>
+      {visibleCount === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          {isFiltered
+            ? "No intentions or repeats match these filters"
+            : "No intentions or repeats yet."}
+        </p>
       ) : (
-        <div className="grid max-w-6xl items-start gap-6">
-          {[view].map((column) => (
-            <IntentionColumnView
-              key={column}
-              column={column}
-              rows={index.rows}
-              templates={[]}
-              focusedId={urlState.focusedId}
-              focusedTemplateId={urlState.focusedTemplateId}
-              acts={acts}
-            />
-          ))}
-        </div>
+        <CardSections
+          sections={cardSections}
+          itemId={(item) => (item.kind === "repeat" ? item.row.template.id : item.row.intention.id)}
+          renderCard={(item) =>
+            item.kind === "repeat" ? (
+              <RepeatLine
+                row={item.row}
+                isFocused={item.row.template.id === focusedTemplateId}
+                onEdit={acts.editTemplate}
+              />
+            ) : (
+              <IntentionCard
+                row={item.row}
+                repeatEvery={everyOf(item.row)}
+                isOpen={item.row.intention.id === focusedId}
+                actions={acts.cardActionsOf(item.row)}
+                mixLink={acts.mixLinkOf(item.row)}
+              />
+            )
+          }
+          columns={{ notebook: 2, small: 1, phone: 1 }}
+          focusedId={focusedId ?? focusedTemplateId}
+        />
       )}
       <p className="rounded-md border border-dashed bg-card px-3 py-2 text-xs leading-relaxed text-muted-foreground">
         <b className="text-foreground">Nothing is attached to an intention.</b> An item counts
-        towards every intention whose funding and category it matches, when its list starts inside
-        the window — so one page can count towards a grant, a regional target and Overall output at
-        once. Those figures overlap and are never added.
+        towards every intention whose project scope and category it matches, when its list starts
+        inside the window — so one page can count towards a grant, a regional target and Overall
+        output at once. Those figures overlap and are never added.
         <br />
         <b className="text-foreground">Planned and delivered are plan completion</b>: what was put
         on lists in the window, and how much of that was digitized in it.{" "}
@@ -468,120 +514,6 @@ function IntentionBoard({ index, acts, params, setParams }: IntentionBoardProps)
         <b className="text-foreground">The counting start is fixed once created.</b> To count from
         another date, make a new intention from the old one.
       </p>
-    </div>
-  );
-}
-
-interface IntentionColumnViewProps {
-  column: IntentionColumn;
-  rows: readonly IntentionRow[];
-  templates: readonly IntentionTemplateRow[];
-  focusedId: string | null;
-  focusedTemplateId: string | null;
-  acts: IntentionActs;
-}
-
-function IntentionColumnView({
-  column,
-  rows,
-  templates,
-  focusedId,
-  focusedTemplateId,
-  acts,
-}: IntentionColumnViewProps) {
-  const { data: users = [] } = useUsersQuery();
-  const sections = columnSectionsOf(rows, column);
-  const isFocusedIn = (items: readonly IntentionRow[]) =>
-    items.some((row) => row.intention.id === focusedId);
-  const everyOf = (row: IntentionRow) =>
-    templates.find((template) => template.template.id === row.intention.templateId)?.template
-      .every ?? null;
-  const archivedBy = (row: IntentionRow) => {
-    const actor = row.intention.archived?.actor;
-    if (actor?.kind === "system") {
-      return "VERA (repeat)";
-    }
-
-    return actor?.kind === "user"
-      ? (users.find((user) => user.id === actor.userId)?.name ?? actor.userId)
-      : "";
-  };
-  const fold = (
-    id: "ended" | "archived",
-    title: string,
-    items: IntentionRow[],
-  ): CardSection<IntentionRow> => ({
-    id,
-    title,
-    items,
-    isCollapsedByDefault: !isFocusedIn(items),
-    presentation: { table: { notebook: foldColumns(id, archivedBy, acts.foldActionOf) } },
-  });
-  const cardSections: CardSection<IntentionRow>[] = [
-    { id: "running", items: sections.running, emptyText: "Nothing running." },
-    { id: "upcoming", title: "Upcoming", items: sections.upcoming },
-    fold("ended", "Ended", sections.ended),
-    fold("archived", "Archived", sections.archived),
-  ];
-
-  return (
-    <section className="grid min-w-0 gap-3.5">
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b pb-2">
-        <h2 className="text-base font-semibold">{columnTitles[column]}</h2>
-        <Tile column={column} sections={sections} />
-      </div>
-      {templates.map((row) => (
-        <RepeatLine
-          key={row.template.id}
-          row={row}
-          isFocused={row.template.id === focusedTemplateId}
-          onEdit={acts.editTemplate}
-        />
-      ))}
-      <CardSections
-        sections={cardSections}
-        itemId={(row) => row.intention.id}
-        renderCard={(row) => (
-          <IntentionCard
-            row={row}
-            repeatEvery={everyOf(row)}
-            isOpen={row.intention.id === focusedId}
-            actions={acts.cardActionsOf(row)}
-            mixLink={acts.mixLinkOf(row)}
-          />
-        )}
-        columns={{ notebook: 1 }}
-        focusedId={focusedId}
-      />
-    </section>
-  );
-}
-
-function Tile({
-  column,
-  sections,
-}: {
-  column: IntentionColumn;
-  sections: ReturnType<typeof columnSectionsOf>;
-}) {
-  return (
-    <div className="text-[0.8125rem] text-muted-foreground">
-      {tileOf(sections, column).map((part, index) => (
-        <span key={part.key}>
-          {index > 0 && " · "}
-          {part.count !== null && (
-            <b
-              className={cn(
-                "font-semibold text-foreground",
-                part.isAlert && "text-tone-red-foreground",
-              )}
-            >
-              {part.count}
-            </b>
-          )}{" "}
-          {part.label}
-        </span>
-      ))}
     </div>
   );
 }
@@ -626,64 +558,4 @@ function RepeatLine({
       )}
     </div>
   );
-}
-
-function foldColumns(
-  kind: "ended" | "archived",
-  archivedBy: (row: IntentionRow) => string,
-  actionOf: (row: IntentionRow) => ViewAction | null,
-): ColumnDefinition<IntentionRow>[] {
-  return [
-    {
-      key: "intention",
-      header: "Intention",
-      track: "minmax(10rem,1fr)",
-      cell: (row) => (
-        <>
-          <span className="font-medium">{row.intention.name}</span>
-          {row.intention.templateId !== null && <span className="text-muted-foreground"> ↻</span>}
-          <div className="text-xs text-muted-foreground">{shortWindowOf(row.intention)}</div>
-        </>
-      ),
-    },
-    {
-      key: "result",
-      header: "Result",
-      track: "max-content",
-      isNumeric: true,
-      cell: (row) =>
-        row.intention.targetPages === null
-          ? `${formatCount(row.outputPages)} pp output`
-          : `${formatCount(row.deliveredPages)} / ${formatCount(row.intention.targetPages)} pp`,
-    },
-    {
-      key: "status",
-      header: kind === "archived" ? "Archived" : "",
-      track: "max-content",
-      cell: (row) => {
-        const verdict = verdictBadgeOf(row);
-        return (
-          <>
-            {verdict !== null && (
-              <ToneBadge tone={verdict.tone}>{verdict.text.replace("Ended — ", "")}</ToneBadge>
-            )}
-            {kind === "archived" && row.intention.archived !== null && (
-              <div className="text-xs text-muted-foreground">
-                {formatDay(row.intention.archived.at)} · {archivedBy(row)}
-              </div>
-            )}
-          </>
-        );
-      },
-    },
-    {
-      key: "act",
-      header: "",
-      track: "max-content",
-      cell: (row) => {
-        const action = actionOf(row);
-        return action === null ? null : <ActionBar actions={[action]} />;
-      },
-    },
-  ];
 }

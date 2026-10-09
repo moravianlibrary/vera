@@ -10,7 +10,6 @@
 // TODO(rrandiak): labels move to i18n.
 
 import { useQuery } from "@tanstack/react-query";
-import { listMixes } from "@/api/mix-catalog";
 import { useId, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { Link } from "react-router";
@@ -33,6 +32,7 @@ import {
   saveIntention,
   saveIntentionTemplate,
 } from "@/api/intentions";
+import { listMixes } from "@/api/mix-catalog";
 import { Field } from "@/components/classification-fields";
 import { ConsequenceDialog } from "@/components/dialogs/consequence-dialog";
 import { DialogShell } from "@/components/dialogs/dialog-shell";
@@ -68,7 +68,8 @@ const refusalTexts = {
   "intention.tracked": "Others track its mix: move them along, or keep its own mix.",
   "intention.not_owner": "That intention tracks another one meanwhile; pick again.",
   "intention.counts_from": "The counting start is fixed once created.",
-  "intention.project": "Its name, funding, window and target are its project's; change them there.",
+  "intention.project":
+    "Its name, project scope, window and target are its project's; change them there.",
   403: "You may no longer change this intention.",
 } as const;
 
@@ -89,9 +90,9 @@ const fundingOf = (value: string): IntentionFunding =>
 const pagesText = /^\s*([1-9][\d\s,]*)?$/;
 const pagesOf = (text: string) => (text.trim() === "" ? null : Number(text.replace(/\D/g, "")));
 
-// Any and no project only for whoever reaches what no project funds; a project for whoever may
-// set intentions on it.
-function FundingSelect({
+// Unscoped choices only for whoever may set an unscoped intention; a named project for whoever
+// may set intentions on it.
+function ProjectScopeSelect({
   id,
   value,
   session,
@@ -119,7 +120,7 @@ function FundingSelect({
       </SelectTrigger>
       <SelectContent>
         {(canUnscoped || value === fundingAny) && (
-          <SelectItem value={fundingAny}>Any — funded or not</SelectItem>
+          <SelectItem value={fundingAny}>All work — with or without a project</SelectItem>
         )}
         {(canUnscoped || value === fundingNone) && (
           <SelectItem value={fundingNone}>No project</SelectItem>
@@ -435,7 +436,7 @@ export function IntentionFormDialog({
           ) : (
             <p className="rounded-md bg-tone-blue px-3 py-2 text-[0.8125rem] text-tone-blue-foreground">
               <b className="font-semibold">{ownProject.name}&apos;s own intention.</b> Its name,
-              funding, window and target are the project&apos;s:{" "}
+              project scope, window and target are the project&apos;s:{" "}
               <Link
                 to={`/projects/${encodeURIComponent(ownProject.id)}`}
                 className="font-medium underline underline-offset-2"
@@ -497,7 +498,7 @@ interface IntentionFieldsProps {
   rows: readonly IntentionRow[];
   session: Session;
   onCopy: (() => void) | undefined;
-  // Its funding, window and target are its project's, shown, not edited.
+  // Its project scope, window and target are its project's, shown, not edited.
   isProjectOwn: boolean;
 }
 
@@ -560,8 +561,8 @@ function IntentionFields({
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field id={`${id}-funding`} label="Funding">
-          <FundingSelect
+        <Field id={`${id}-funding`} label="Project">
+          <ProjectScopeSelect
             id={`${id}-funding`}
             value={values.funding}
             session={session}
@@ -1005,8 +1006,8 @@ export function TemplateFormDialog({
             </div>
             <FieldError message={form.formState.errors.targetPages?.message} />
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field id={`${id}-funding`} label="Funding">
-                <FundingSelect
+              <Field id={`${id}-funding`} label="Project">
+                <ProjectScopeSelect
                   id={`${id}-funding`}
                   value={values.funding}
                   session={session}

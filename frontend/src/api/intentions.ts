@@ -120,6 +120,8 @@ export type IntentionTemplateRow = z.infer<typeof intentionTemplateRowSchema>;
 export const intentionIndexSchema = z.object({
   rows: z.array(intentionRowSchema),
   templates: z.array(intentionTemplateRowSchema),
+  // The server's calendar day for relative date filters.
+  asOf: z.iso.date().optional(),
 });
 export type IntentionIndex = z.infer<typeof intentionIndexSchema>;
 

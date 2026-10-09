@@ -24,10 +24,15 @@ import { matchingCategoryIds } from "@/domain/category-filters";
 import type { Session, Watchlist, WatchlistAudience, WatchlistView } from "@/domain/entities";
 import { isShared } from "@/domain/entities";
 import { hasPermission } from "@/domain/permissions";
+import {
+  matchingIntentions,
+  parseIntentionsSearchParams,
+} from "@/features/intentions/intentions-board-view";
 import { canReadCategories, queryCategoryIndex } from "@/mocks/categories";
 import type { StoredWatchlist } from "@/mocks/database";
 import { database } from "@/mocks/database";
 import { audienceOf, queryDocuments } from "@/mocks/documents";
+import { canReadIntentions, queryIntentionIndex } from "@/mocks/intentions";
 import { canReadLists, queryLists } from "@/mocks/lists";
 import { canReadProjects, queryProjectIndex } from "@/mocks/projects";
 import { canDecide, queryProposals } from "@/mocks/proposal-review";
@@ -108,6 +113,8 @@ function canOpenView(session: Session, view: WatchlistView): boolean {
       return canReadProjects(session);
     case "categories":
       return canReadCategories(session);
+    case "intentions":
+      return canReadIntentions(session);
   }
 }
 
@@ -235,6 +242,14 @@ const counters = {
           parseCategorySearchParams(filter),
         ).size
       : 0,
+  intentions: (session, filter) => {
+    if (!canReadIntentions(session)) return 0;
+    const matching = matchingIntentions(
+      queryIntentionIndex(session),
+      parseIntentionsSearchParams(filter),
+    );
+    return matching.rows.length + matching.templates.length;
+  },
 } as const satisfies Record<WatchlistView, (session: Session, filter: URLSearchParams) => number>;
 
 function itemCountOf(session: Session, watchlist: Watchlist): number {

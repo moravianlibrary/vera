@@ -5,6 +5,7 @@ import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { getCategoryIndex, parseCategorySearchParams } from "@/api/categories";
 import { ApiError } from "@/api/http";
+import { listIntentionIndex } from "@/api/intentions";
 import { listLists } from "@/api/lists";
 import { listProjectIndex } from "@/api/projects";
 import {
@@ -17,6 +18,10 @@ import {
 import type { MockUserProfile } from "@/config/env";
 import { matchingCategoryIds } from "@/domain/category-filters";
 import { isShared } from "@/domain/entities";
+import {
+  matchingIntentions,
+  parseIntentionsSearchParams,
+} from "@/features/intentions/intentions-board-view";
 import { categories } from "@/mocks/fixtures/categories";
 import { createHandlers } from "@/mocks/handlers";
 
@@ -74,6 +79,22 @@ describe("listWatchlists", () => {
 
     signInAs("reader");
     expect(await listWatchlists("projects")).toEqual([]);
+  });
+  it("counts the Targets, Output and Repeats tabs over visible intentions", async () => {
+    signInAs("admin");
+    const index = await listIntentionIndex();
+    const watchlists = await listWatchlists("intentions");
+    expect(watchlists.map((row) => row.name)).toEqual(["Repeats", "Targets", "Output"]);
+    for (const watchlist of watchlists) {
+      const matching = matchingIntentions(
+        index,
+        parseIntentionsSearchParams(new URLSearchParams(watchlist.filter)),
+      );
+      expect(watchlist.itemCount).toBe(matching.rows.length + matching.templates.length);
+    }
+
+    signInAs("reader");
+    expect(await listWatchlists("intentions")).toEqual([]);
   });
   it("counts the Current Lists tab from its saved state filter and scopes it to readers", async () => {
     signInAs("digitization");

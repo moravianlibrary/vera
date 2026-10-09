@@ -111,9 +111,15 @@ function IntentionBadges({
   const verdict = verdictBadgeOf(row);
   return (
     <>
+      {row.intention.targetPages === null ? (
+        <ToneBadge tone="slate">Output</ToneBadge>
+      ) : (
+        <ToneBadge tone="blue">Target</ToneBadge>
+      )}
       {row.intention.isOverall && <ToneBadge tone="purple">Overall</ToneBadge>}
       {row.intention.projectId !== null && <ToneBadge tone="blue">Project</ToneBadge>}
       {row.state === "Upcoming" && <ToneBadge tone="slate">Upcoming</ToneBadge>}
+      {row.outOfBandCount > 0 && <ToneBadge tone="red">Out of band</ToneBadge>}
       {verdict !== null && <ToneBadge tone={verdict.tone}>{verdict.text}</ToneBadge>}
       {repeatEvery !== null && <ToneBadge tone="slate">↻ {everyLabels[repeatEvery]}</ToneBadge>}
     </>
@@ -124,7 +130,7 @@ function ScopeLine({ row }: { row: IntentionRow }) {
   const { funding } = row.intention;
   const parts: { key: string; part: ReactNode }[] = [];
   if (funding.kind === "none") {
-    parts.push({ key: "funding", part: "Funding: No project" });
+    parts.push({ key: "funding", part: "Counts work without a project" });
   }
 
   if (row.project !== null) {
@@ -132,7 +138,7 @@ function ScopeLine({ row }: { row: IntentionRow }) {
       key: "funding",
       part: (
         <>
-          {row.intention.projectId === null ? "Funding: " : "The project's own: "}
+          {row.intention.projectId === null ? "Project: " : "The project's own: "}
           <Link
             to={`/projects/${encodeURIComponent(row.project.id)}`}
             className="underline underline-offset-2 hover:text-foreground"
@@ -198,6 +204,12 @@ function TargetBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
           </b>{" "}
           to go · no end, so no pace
         </p>
+      )}
+      {row.outOfBandCount > 0 && (
+        <div className="grid gap-1.5">
+          <DriftLine rows={row.mixRows} isIndented={false} />
+          <OutOfBandDetail row={row} />
+        </div>
       )}
       <Expansion label="Per category and lists" isOpen={isOpen}>
         <DataTable
@@ -300,10 +312,6 @@ const flagBadges = {
 
 function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
   const basis = outputBasisOf(row);
-  const outOfBand = row.mixRows.filter(
-    (mixRow) => mixRow.flag !== null && mixRow.flag !== "inBand" && mixRow.flag !== "noShare",
-  );
-  const worst = worstDriftOf(row.mixRows);
   return (
     <>
       <p className="text-[0.8125rem] text-muted-foreground">
@@ -328,19 +336,8 @@ function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
           <DriftLine rows={row.mixRows} />
         </div>
       )}
-      {outOfBand.length > 0 ? (
-        <p className="text-[0.8125rem] text-tone-red-foreground">
-          {plural(outOfBand.length, "category", "categories")} out of the {bandText} band
-          {worst !== null && worst.drift !== null && (
-            <>
-              {" "}
-              · worst:{" "}
-              <b className="font-semibold">
-                {worst.name} {signedPoints(worst.drift)} pts
-              </b>
-            </>
-          )}
-        </p>
+      {row.outOfBandCount > 0 ? (
+        <OutOfBandDetail row={row} />
       ) : (
         row.outputPages > 0 &&
         row.mix !== null && (
@@ -377,15 +374,39 @@ function TrackingBody({ row, isOpen }: { row: IntentionRow; isOpen: boolean }) {
   );
 }
 
+function OutOfBandDetail({ row }: { row: IntentionRow }) {
+  const worst = worstDriftOf(row.mixRows);
+  return (
+    <p className="text-[0.8125rem] text-tone-red-foreground">
+      {plural(row.outOfBandCount, "category", "categories")} out of the {bandText} band
+      {worst !== null && worst.drift !== null && (
+        <>
+          {" "}
+          · worst:{" "}
+          <b className="font-semibold">
+            {worst.name} {signedPoints(worst.drift)} pts
+          </b>
+        </>
+      )}
+    </p>
+  );
+}
+
 // Under the two bars: each category off its share, in the direction it is off.
-function DriftLine({ rows }: { rows: readonly MixRowView[] }) {
+function DriftLine({
+  rows,
+  isIndented = true,
+}: {
+  rows: readonly MixRowView[];
+  isIndented?: boolean;
+}) {
   const off = rows.filter((mixRow) => mixRow.flag !== null && mixRow.flag !== "inBand");
   if (off.length === 0) {
     return null;
   }
 
   return (
-    <p className="pl-[5.5rem] text-xs font-semibold">
+    <p className={cn("text-xs font-semibold", isIndented && "pl-[5.5rem]")}>
       {off.map((mixRow, index) => (
         <span key={mixRow.categoryId}>
           {index > 0 && <span className="font-normal text-muted-foreground"> · </span>}

@@ -306,6 +306,7 @@ function templateRowOf(template: IntentionTemplate): IntentionTemplateRow {
 
 export function queryIntentionIndex(session: Session): IntentionIndex {
   return {
+    asOf: dayOf(mockToday),
     rows: database.intentions.filter((intention) => isVisible(session, intention)).map(rowOf),
     // A repeat makes intentions only `any` reaches.
     templates: can(session, "intention.read", { kind: "unscoped" })

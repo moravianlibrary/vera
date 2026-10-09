@@ -1,0 +1,404 @@
+import type { IntentionIndex, IntentionRow, IntentionTemplateRow } from "@/api/intentions";
+import {
+  anyProjectFundingFilterValue,
+  intentionStates,
+  noMixFilterValue,
+  noProjectFundingFilterValue,
+} from "@/domain/intentions";
+import type { DayRange, ValueRange } from "@/lib/value-range";
+import {
+  formatDayRange,
+  formatRange,
+  isReversedRange,
+  isWithinRange,
+  parseCount,
+  parseDayRange,
+  parseRange,
+  resolveDayRange,
+} from "@/lib/value-range";
+import { type ViewDefinition, vocabulary } from "@/lib/view-definition";
+
+export const intentionKinds = ["Target", "Output", "Repeat"] as const;
+export type IntentionKind = (typeof intentionKinds)[number];
+export const intentionBoardStates = [...intentionStates, "Archived"] as const;
+export const intentionPaces = [
+  "OutOfBand",
+  "behindPace",
+  "short",
+  "onPace",
+  "fullyPlanned",
+  "targetMet",
+  "NoPace",
+] as const;
+export const repeatIntervals = ["week", "month", "quarter"] as const;
+type BoardState = (typeof intentionBoardStates)[number];
+type Pace = (typeof intentionPaces)[number];
+type RepeatInterval = (typeof repeatIntervals)[number];
+export interface IntentionsQuery {
+  readonly search?: string;
+  readonly kinds?: readonly IntentionKind[];
+  readonly states?: readonly BoardState[];
+  readonly paces?: readonly Pace[];
+  readonly intervals?: readonly RepeatInterval[];
+  readonly mixes?: readonly string[];
+  readonly projects?: readonly string[];
+  readonly starts?: DayRange;
+  readonly ends?: DayRange;
+  readonly planned?: ValueRange<number>;
+  readonly delivered?: ValueRange<number>;
+  readonly timeElapsed?: ValueRange<number>;
+}
+
+const paramsOf = {
+  kinds: "type",
+  states: "state",
+  paces: "pace",
+  intervals: "every",
+  mixes: "mix",
+  projects: "project",
+  starts: "starts",
+  ends: "ends",
+  planned: "planned",
+  delivered: "delivered",
+  timeElapsed: "elapsed",
+} as const;
+const valuesOf = <Value extends string>(
+  params: URLSearchParams,
+  key: string,
+  values: readonly Value[],
+): Value[] | undefined => {
+  const picked = (params.get(key) ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value): value is Value => values.includes(value as Value));
+  return picked.length > 0 ? [...new Set(picked)] : undefined;
+};
+const idsOf = (params: URLSearchParams, key: string): string[] | undefined => {
+  const picked = (params.get(key) ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return picked.length > 0 ? [...new Set(picked)] : undefined;
+};
+export function parseIntentionsSearchParams(params: URLSearchParams): IntentionsQuery {
+  return {
+    search: params.get("q")?.trim() || undefined,
+    kinds: valuesOf(params, paramsOf.kinds, intentionKinds),
+    states: valuesOf(params, paramsOf.states, intentionBoardStates),
+    paces: valuesOf(params, paramsOf.paces, intentionPaces),
+    intervals: valuesOf(params, paramsOf.intervals, repeatIntervals),
+    mixes: idsOf(params, paramsOf.mixes),
+    projects:
+      idsOf(params, paramsOf.projects) ??
+      (params.get("funding") === "none"
+        ? [noProjectFundingFilterValue]
+        : params.get("funding") === "project"
+          ? [anyProjectFundingFilterValue]
+          : undefined),
+    starts: parseDayRange(params.get(paramsOf.starts)),
+    ends: parseDayRange(params.get(paramsOf.ends)),
+    planned: parseRange(params.get(paramsOf.planned), parseCount),
+    delivered: parseRange(params.get(paramsOf.delivered), parseCount),
+    timeElapsed: parseRange(params.get(paramsOf.timeElapsed), parseCount),
+  };
+}
+
+export function toIntentionsSearchParams(query: IntentionsQuery): URLSearchParams {
+  const params = new URLSearchParams();
+  if (query.search?.trim()) params.set("q", query.search.trim());
+  for (const key of ["kinds", "states", "paces", "intervals", "mixes", "projects"] as const) {
+    if (query[key]?.length) params.set(paramsOf[key], query[key].join(","));
+  }
+  for (const key of ["starts", "ends"] as const) {
+    const range = formatDayRange(query[key]);
+    if (range !== null) params.set(paramsOf[key], range);
+  }
+  for (const key of ["planned", "delivered", "timeElapsed"] as const) {
+    const range = formatRange(query[key]);
+    if (range !== null) params.set(paramsOf[key], range);
+  }
+  return params;
+}
+
+export function isSameIntentionsQuery(first: IntentionsQuery, second: IntentionsQuery): boolean {
+  const canonical = (query: IntentionsQuery) =>
+    toIntentionsSearchParams({
+      ...query,
+      kinds: query.kinds?.toSorted(),
+      states: query.states?.toSorted(),
+      paces: query.paces?.toSorted(),
+      intervals: query.intervals?.toSorted(),
+      mixes: query.mixes?.toSorted(),
+      projects: query.projects?.toSorted(),
+    }).toString();
+  return canonical(first) === canonical(second);
+}
+
+export const intentionsView: ViewDefinition<IntentionsQuery> = {
+  view: "intentions",
+  parseSearchParams: parseIntentionsSearchParams,
+  toSearchParams: toIntentionsSearchParams,
+  isSameQuery: isSameIntentionsQuery,
+  fields: [
+    {
+      key: "kinds",
+      label: "Type",
+      field: vocabulary(intentionKinds, {
+        Target: "Targets",
+        Output: "Output",
+        Repeat: "Repeats",
+      }),
+      isQuick: true,
+    },
+    {
+      key: "states",
+      label: "State",
+      field: vocabulary(intentionBoardStates, {
+        Running: "Running",
+        Upcoming: "Upcoming",
+        Ended: "Ended",
+        Archived: "Archived",
+      }),
+      isQuick: true,
+    },
+    {
+      key: "paces",
+      label: "Pace / attention",
+      field: vocabulary(intentionPaces, {
+        OutOfBand: "Out of band",
+        onPace: "On pace",
+        behindPace: "Behind pace",
+        targetMet: "Target met",
+        short: "Ended short",
+        fullyPlanned: "Fully planned",
+        NoPace: "No pace",
+      }),
+      isQuick: true,
+    },
+    {
+      key: "intervals",
+      label: "Repeat every",
+      field: vocabulary(repeatIntervals, {
+        week: "Weekly",
+        month: "Monthly",
+        quarter: "Quarterly",
+      }),
+    },
+    { key: "mixes", label: "Mix", field: { kind: "reference", reference: "mixes" } },
+    { key: "projects", label: "Project", field: { kind: "reference", reference: "projects" } },
+    { key: "starts", label: "Counting start", field: { kind: "dateRange" } },
+    { key: "ends", label: "Counting end", field: { kind: "dateRange" } },
+    { key: "planned", label: "Planned", field: { kind: "numberRange", unit: "% of target" } },
+    { key: "delivered", label: "Delivered", field: { kind: "numberRange", unit: "% of target" } },
+    { key: "timeElapsed", label: "Time elapsed", field: { kind: "numberRange", unit: "%" } },
+  ],
+  groupings: [],
+  groupingParam: "group",
+};
+
+const matchesSearch = (text: string, search: string | undefined) =>
+  search === undefined || text.toLocaleLowerCase().includes(search.toLocaleLowerCase());
+const picked = (selected: readonly string[] | undefined, value: string | null) =>
+  selected === undefined || (value !== null && selected.includes(value));
+const pickedAny = (selected: readonly string[] | undefined, values: readonly string[]) =>
+  selected === undefined || values.some((value) => selected.includes(value));
+const fundingProjectOf = (funding: { kind: string; projectId?: string }) =>
+  funding.kind === "project" ? (funding.projectId ?? null) : null;
+const matchesProject = (
+  selected: readonly string[] | undefined,
+  funding: { kind: string; projectId?: string },
+  ownProjectId: string | null,
+) =>
+  selected === undefined ||
+  selected.some((value) =>
+    value === noProjectFundingFilterValue
+      ? funding.kind === "none"
+      : value === anyProjectFundingFilterValue
+        ? funding.kind === "project"
+        : value === (ownProjectId ?? fundingProjectOf(funding)),
+  );
+const matchDay = (value: string | null, range: DayRange | undefined, today: Date) => {
+  if (range === undefined) return true;
+  if (value === null) return false;
+  const resolved = resolveDayRange(range, today);
+  return !isReversedRange(resolved) && isWithinRange(value, resolved);
+};
+const matchPercent = (value: number | null, range: ValueRange<number> | undefined) =>
+  range === undefined || (value !== null && !isReversedRange(range) && isWithinRange(value, range));
+const percentOf = (pages: number, target: number | null) =>
+  target === null ? null : Math.round((pages / target) * 100);
+const paceValuesOf = (row: IntentionRow): Pace[] => {
+  const values: Pace[] = [];
+  if (row.outOfBandCount > 0) values.push("OutOfBand");
+  if (row.verdict !== null) values.push(row.verdict);
+  if (values.length === 0) values.push("NoPace");
+  return values;
+};
+const stateOf = (row: IntentionRow): BoardState =>
+  row.intention.archived === null ? row.state : "Archived";
+export function intentionKindOf(row: IntentionRow): IntentionKind {
+  return row.intention.targetPages === null ? "Output" : "Target";
+}
+export function matchingIntentions(index: IntentionIndex, query: IntentionsQuery): IntentionIndex {
+  const today = index.asOf === undefined ? new Date() : new Date(`${index.asOf}T12:00:00`);
+  return {
+    asOf: index.asOf,
+    rows: index.rows.filter(
+      (row) =>
+        picked(query.kinds, intentionKindOf(row)) &&
+        matchesSearch(`${row.intention.name} ${row.intention.description}`, query.search) &&
+        picked(query.states, stateOf(row)) &&
+        pickedAny(query.paces, paceValuesOf(row)) &&
+        query.intervals === undefined &&
+        picked(query.mixes, row.intention.distributionId ?? noMixFilterValue) &&
+        matchesProject(query.projects, row.intention.funding, row.intention.projectId) &&
+        matchDay(row.intention.countsFrom, query.starts, today) &&
+        matchDay(row.intention.endsOn, query.ends, today) &&
+        matchPercent(percentOf(row.plannedPages, row.intention.targetPages), query.planned) &&
+        matchPercent(percentOf(row.deliveredPages, row.intention.targetPages), query.delivered) &&
+        matchPercent(
+          row.timeElapsed === null ? null : Math.round(row.timeElapsed * 100),
+          query.timeElapsed,
+        ),
+    ),
+    templates: index.templates.filter(
+      (row) =>
+        picked(query.kinds, "Repeat") &&
+        matchesSearch(row.template.namePattern, query.search) &&
+        query.states === undefined &&
+        query.paces === undefined &&
+        picked(query.intervals, row.template.every) &&
+        picked(query.mixes, row.template.distributionId ?? noMixFilterValue) &&
+        matchesProject(query.projects, row.template.funding, null) &&
+        matchDay(row.template.since, query.starts, today) &&
+        query.ends === undefined &&
+        query.planned === undefined &&
+        query.delivered === undefined &&
+        query.timeElapsed === undefined,
+    ),
+  };
+}
+
+export function intentionFacets(index: IntentionIndex, query: IntentionsQuery) {
+  const candidates = <Key extends keyof IntentionsQuery>(key: Key) =>
+    matchingIntentions(index, { ...query, [key]: undefined });
+  const count = (
+    values: readonly string[],
+    selected: keyof IntentionsQuery,
+    of: (index: IntentionIndex, value: string) => number,
+  ) => values.map((value) => ({ value, count: of(candidates(selected), value) }));
+  const rows = (index: IntentionIndex, predicate: (row: IntentionRow) => boolean) =>
+    index.rows.filter(predicate).length;
+  return {
+    kinds: count(intentionKinds, "kinds", (matching, value) =>
+      value === "Repeat"
+        ? matching.templates.length
+        : rows(matching, (row) => intentionKindOf(row) === value),
+    ),
+    states: count(intentionBoardStates, "states", (matching, value) =>
+      rows(matching, (row) => stateOf(row) === value),
+    ),
+    paces: count(intentionPaces, "paces", (matching, value) =>
+      rows(matching, (row) => paceValuesOf(row).includes(value as Pace)),
+    ),
+    intervals: count(
+      repeatIntervals,
+      "intervals",
+      (matching, value) => matching.templates.filter((row) => row.template.every === value).length,
+    ),
+    mixes: count(
+      [
+        ...new Set([
+          noMixFilterValue,
+          ...index.rows
+            .map((row) => row.intention.distributionId)
+            .filter((id): id is string => id !== null),
+          ...index.templates
+            .map((row) => row.template.distributionId)
+            .filter((id): id is string => id !== null),
+        ]),
+      ],
+      "mixes",
+      (matching, value) =>
+        rows(matching, (row) => (row.intention.distributionId ?? noMixFilterValue) === value) +
+        matching.templates.filter(
+          (row) => (row.template.distributionId ?? noMixFilterValue) === value,
+        ).length,
+    ),
+    projects: count(
+      [
+        ...new Set(
+          [
+            noProjectFundingFilterValue,
+            anyProjectFundingFilterValue,
+            ...index.rows.map(
+              (row) => row.intention.projectId ?? fundingProjectOf(row.intention.funding),
+            ),
+            ...index.templates.map((row) => fundingProjectOf(row.template.funding)),
+          ].filter((id): id is string => id !== null),
+        ),
+      ],
+      "projects",
+      (matching, value) =>
+        rows(matching, (row) =>
+          matchesProject([value], row.intention.funding, row.intention.projectId),
+        ) +
+        matching.templates.filter((row) => matchesProject([value], row.template.funding, null))
+          .length,
+    ),
+  };
+}
+
+export interface IntentionBoardSections {
+  repeats: IntentionTemplateRow[];
+  running: IntentionRow[];
+  upcoming: IntentionRow[];
+  ended: IntentionRow[];
+  archived: IntentionRow[];
+}
+
+const attentionRank = (row: IntentionRow) => {
+  if (row.outOfBandCount > 0) return 0;
+  switch (row.verdict) {
+    case "behindPace":
+    case "short":
+      return 1;
+    case "onPace":
+      return 2;
+    case "fullyPlanned":
+      return 3;
+    case "targetMet":
+      return 4;
+    default:
+      return 5;
+  }
+};
+
+export function compareIntentionCards(first: IntentionRow, second: IntentionRow): number {
+  return (
+    attentionRank(first) - attentionRank(second) ||
+    (first.intention.endsOn ?? "9999-12-31").localeCompare(
+      second.intention.endsOn ?? "9999-12-31",
+    ) ||
+    (second.intention.targetPages ?? 0) - (first.intention.targetPages ?? 0) ||
+    first.intention.name.localeCompare(second.intention.name) ||
+    first.intention.id.localeCompare(second.intention.id)
+  );
+}
+
+export function intentionBoardSectionsOf(index: IntentionIndex): IntentionBoardSections {
+  const rows = index.rows;
+  return {
+    repeats: index.templates.toSorted((a, b) => a.template.nextOn.localeCompare(b.template.nextOn)),
+    running: rows
+      .filter((row) => row.intention.archived === null && row.state === "Running")
+      .toSorted(compareIntentionCards),
+    upcoming: rows
+      .filter((row) => row.intention.archived === null && row.state === "Upcoming")
+      .toSorted(compareIntentionCards),
+    ended: rows
+      .filter((row) => row.intention.archived === null && row.state === "Ended")
+      .toSorted(compareIntentionCards),
+    archived: rows.filter((row) => row.intention.archived !== null).toSorted(compareIntentionCards),
+  };
+}

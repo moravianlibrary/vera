@@ -2,7 +2,15 @@
 // writing `users.find(…)?.name ?? id` (component-interfaces.md §9.8). A name not (yet) known
 // reads as its id. Only the kinds asked for are fetched.
 
+import { useQuery } from "@tanstack/react-query";
+import { listMixes } from "@/api/mix-catalog";
 import { categoryLabelOf } from "@/components/classification-fields";
+import {
+  anyProjectFundingFilterValue,
+  noMixFilterValue,
+  noProjectFundingFilterValue,
+} from "@/domain/intentions";
+import { can } from "@/domain/permissions";
 import {
   useBatchesQuery,
   useCategoriesQuery,
@@ -11,10 +19,12 @@ import {
   useProposalCustodiesQuery,
   useUsersQuery,
 } from "@/hooks/use-reference-query";
+import { useSessionQuery } from "@/hooks/use-session-query";
 
 export const referenceKinds = [
   "users",
   "projects",
+  "mixes",
   "categories",
   "batches",
   "proposalCustodies",
@@ -29,8 +39,14 @@ export function useReferenceLabels(
   kinds: readonly ReferenceKind[],
 ): Readonly<Record<ReferenceKind, LabelOf>> {
   const isNeeded = (kind: ReferenceKind) => ({ isEnabled: kinds.includes(kind) });
+  const { data: session } = useSessionQuery();
   const { data: users = [] } = useUsersQuery(isNeeded("users"));
   const { data: projects = [] } = useProjectsQuery(isNeeded("projects"));
+  const { data: mixes = [] } = useQuery({
+    queryKey: ["mixes"],
+    queryFn: listMixes,
+    enabled: kinds.includes("mixes") && session !== undefined && can(session, "mix.read"),
+  });
   const { data: categories = [] } = useCategoriesQuery(isNeeded("categories"));
   const { data: batches = [] } = useBatchesQuery(isNeeded("batches"));
   const { data: custodies = [] } = useProposalCustodiesQuery(isNeeded("proposalCustodies"));
@@ -43,7 +59,13 @@ export function useReferenceLabels(
 
   return {
     users: nameOf(users),
-    projects: nameOf(projects),
+    projects: (id) =>
+      id === noProjectFundingFilterValue
+        ? "No project"
+        : id === anyProjectFundingFilterValue
+          ? "Any project"
+          : nameOf(projects)(id),
+    mixes: (id) => (id === noMixFilterValue ? "No mix" : nameOf(mixes)(id)),
     categories: (id) => categoryLabelOf(categories, id) || id,
     batches: (id) => {
       const batch = batches.find((candidate) => candidate.id === id);

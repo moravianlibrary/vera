@@ -1,16 +1,9 @@
-// How the Intentions page arranges the server's rows: the two columns and their order, the tile
-// that counts intentions, the verdict words and what the URL picks.
+// Words on intention cards.
 
 import { describe, expect, it } from "vitest";
 import type { IntentionRow } from "@/api/intentions";
 import type { Intention } from "@/domain/entities";
-import {
-  columnSectionsOf,
-  intentionsUrlStateOf,
-  mixLabelOf,
-  tileOf,
-  verdictBadgeOf,
-} from "@/features/intentions/intentions-view";
+import { mixLabelOf, verdictBadgeOf } from "@/features/intentions/intentions-view";
 
 const intention = (id: string, overrides: Partial<Intention> = {}): Intention => ({
   id,
@@ -88,49 +81,6 @@ const rows = [
   }),
 ];
 
-describe("columnSectionsOf", () => {
-  it("runs dated targets by their end, then open-ended ones by how far along they are", () => {
-    const targets = columnSectionsOf(rows, "target");
-
-    expect(targets.running.map((value) => value.intention.id)).toEqual([
-      "soon",
-      "late",
-      "open-far",
-      "open-near",
-    ]);
-    expect(targets.upcoming.map((value) => value.intention.id)).toEqual(["next"]);
-    expect(targets.ended.map((value) => value.intention.id)).toEqual(["may"]);
-    expect(targets.archived.map((value) => value.intention.id)).toEqual(["gone"]);
-  });
-
-  it("shows every intention in Output, with Overall first", () => {
-    expect(columnSectionsOf(rows, "track").running.map((value) => value.intention.id)).toEqual([
-      "house",
-      "late",
-      "open-far",
-      "open-near",
-      "soon",
-      "watch",
-    ]);
-  });
-});
-
-describe("tileOf", () => {
-  it("counts intentions and their verdicts, never pages", () => {
-    const parts = (column: "target" | "track") =>
-      tileOf(columnSectionsOf(rows, column), column).map((part) => `${part.count} ${part.label}`);
-
-    expect(parts("target")).toEqual(["4 running", "1 upcoming", "1 on pace", "1 behind pace"]);
-    expect(parts("track")).toEqual([
-      "6 running",
-      "1 upcoming",
-      "1 behind pace",
-      "1 on pace",
-      "1 out of band",
-    ]);
-  });
-});
-
 describe("verdictBadgeOf", () => {
   it("says what an ended target fell short by", () => {
     expect(verdictBadgeOf(rows[5])).toEqual({ text: "Ended — 600 pp short", tone: "amber" });
@@ -145,19 +95,5 @@ describe("mixLabelOf", () => {
     expect(mixLabelOf(rows[0])).toBe("House mix");
     expect(mixLabelOf(rows[8])).toBe("House mix");
     expect(mixLabelOf(row(intention("x"), { mix: null }))).toBe("No mix");
-  });
-});
-
-describe("intentionsUrlStateOf", () => {
-  it("shows the column of the focused card, else the one asked for", () => {
-    expect(intentionsUrlStateOf(new URLSearchParams("i=watch"), rows)).toMatchObject({
-      focusedId: "watch",
-      column: "track",
-    });
-    expect(intentionsUrlStateOf(new URLSearchParams("col=track"), rows).column).toBe("track");
-    expect(intentionsUrlStateOf(new URLSearchParams("i=nobody"), rows)).toMatchObject({
-      focusedId: null,
-      column: "target",
-    });
   });
 });

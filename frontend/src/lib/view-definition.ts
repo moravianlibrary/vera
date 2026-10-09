@@ -57,7 +57,7 @@ interface FilterFieldBase {
 export interface ListFieldDefinition<Query> extends FilterFieldBase {
   readonly key: ListFieldOf<Query>;
   readonly field: ListFieldKind;
-  // On the bar itself, reading "any" when empty, at most two (filtering.md §3.1); otherwise a
+  // On the bar itself, reading "any" when empty; otherwise a
   // chip once a value is picked, under "+ Add filter".
   readonly isQuick?: boolean;
 }

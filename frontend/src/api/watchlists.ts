@@ -17,6 +17,10 @@ import { apiRoutes, watchlistRoute } from "@/api/routes";
 import { isSameValidationQuery, parseValidationSearchParams } from "@/api/validations";
 import type { Watchlist, WatchlistView } from "@/domain/entities";
 import { watchlistAudienceSchema, watchlistSchema } from "@/domain/entities";
+import {
+  isSameIntentionsQuery,
+  parseIntentionsSearchParams,
+} from "@/features/intentions/intentions-board-view";
 
 // Some groups and roles means at least one of either.
 const audienceSchema = watchlistAudienceSchema.refine(
@@ -102,6 +106,11 @@ const filterComparers = {
     isSameCategoryQuery(
       parseCategorySearchParams(new URLSearchParams(first)),
       parseCategorySearchParams(new URLSearchParams(second)),
+    ),
+  intentions: (first, second) =>
+    isSameIntentionsQuery(
+      parseIntentionsSearchParams(new URLSearchParams(first)),
+      parseIntentionsSearchParams(new URLSearchParams(second)),
     ),
 } as const satisfies Record<WatchlistView, (first: Filter, second: Filter) => boolean>;
 

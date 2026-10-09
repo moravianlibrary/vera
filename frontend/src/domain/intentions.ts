@@ -23,6 +23,10 @@ import { isProgressAtLeast } from "@/domain/status";
 
 export const intentionStates = ["Running", "Upcoming", "Ended"] as const;
 export type IntentionState = (typeof intentionStates)[number];
+// A filter value for intentions whose optional mix is absent.
+export const noMixFilterValue = "__no_mix__";
+export const anyProjectFundingFilterValue = "__project_funding__";
+export const noProjectFundingFilterValue = "__no_project_funding__";
 
 // On pace or behind while it runs, met or short once ended, and a target already covered by what
 // is planned. Projects shows its own intention's (projects.md §1.1).

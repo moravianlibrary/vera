@@ -471,6 +471,7 @@ export const watchlistViewSchema = z.enum([
   "lists",
   "projects",
   "categories",
+  "intentions",
 ]);
 export type WatchlistView = z.infer<typeof watchlistViewSchema>;
 
