@@ -1,18 +1,16 @@
-// Tasks (page-composition.md §5 *Tasks*; docs/demos/shared/page-tasks.js `runsView`): the tiles,
-// the running runs as cards on top, since a run that finishes moves down into Finished instead of
-// vanishing from where it was watched, then the finished runs as a table, filtered, and how long
-// runs are kept. A run opens in the drawer (`?run=`). `task.read` sees everyone's runs and the
-// next scheduled one; with `task.read_own` alone the page is *My Tasks*, the person's own runs.
+// Tasks: watchlists and filters above an upcoming-run strip, running cards, then a sticky Finished
+// section with its own scrolling table and retention note. A run opens in the drawer (`?run=`).
+// `task.read` sees everyone's runs and next scheduled work; with `task.read_own` alone the page
+// is *My Tasks*, the person's own runs.
 // TODO(rrandiak): labels move to i18n.
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import type { Run, RunIndex } from "@/api/tasks";
 import { runAgain } from "@/api/tasks";
-import type { Stat } from "@/components/detail-card";
-import { StatTiles } from "@/components/detail-card";
 import { FilterBar } from "@/components/filters/filter-bar";
-import { visibleNavigation } from "@/components/layout/navigation";
+import { WatchlistTabs } from "@/components/filters/watchlist-tabs";
+import { canOpenNavigationEntry, visibleNavigation } from "@/components/layout/navigation";
 import { PageContent, PageHeader } from "@/components/layout/page-header";
 import { TableWithDrawer } from "@/components/table-with-drawer";
 import type { Session } from "@/domain/entities";
@@ -37,9 +35,8 @@ import { taskInvalidations, useRunQuery, useRunsQuery } from "@/features/tasks/u
 import { useActionMutation } from "@/hooks/use-action-mutation";
 import { useReferenceLabels } from "@/hooks/use-reference-labels";
 import { useSessionQuery } from "@/hooks/use-session-query";
-import { useTier } from "@/hooks/use-tier";
 import { useViewUrlState } from "@/hooks/use-view-url-state";
-import { aheadText, shortDayOf } from "@/lib/format-moment";
+import { aheadText } from "@/lib/format-moment";
 import { plural } from "@/lib/plural";
 
 export function TasksPage() {
@@ -52,6 +49,9 @@ export function TasksPage() {
   const [notice, setNotice] = useState<ShownNotice | null>(null);
   const [cancelling, setCancelling] = useState<Run | null>(null);
   const [isRetentionOpen, setIsRetentionOpen] = useState(false);
+  const [visibleFinished, setVisibleFinished] = useState({ key: "", count: 40 });
+  const filterKey = JSON.stringify(view.filter);
+  const visibleFinishedCount = visibleFinished.key === filterKey ? visibleFinished.count : 40;
   const rerun = useActionMutation({
     call: runAgain,
     invalidates: taskInvalidations,
@@ -96,8 +96,20 @@ export function TasksPage() {
   return (
     <>
       <PageHeader title={title} />
-      {index !== undefined && index.visibleCount > 0 && (
+      {hasPermission(session, "watch") && (
+        <WatchlistTabs
+          view="tasks"
+          filter={view.filter}
+          openedId={view.watchlistId}
+          canShare={hasPermission(session, "watchlist.manage_shared")}
+          onOpen={view.openWatchlist}
+          onDetach={view.detachWatchlist}
+          isBare={view.isBare}
+        />
+      )}
+      {index !== undefined && (
         <FilterBar
+          key={view.filterReplacements}
           fields={runFieldsFor(seesEveryone)}
           query={query}
           facets={index.facets}
@@ -106,7 +118,10 @@ export function TasksPage() {
           searchPlaceholder="Search runs — what ran, ID"
         />
       )}
-      <PageContent className="@container">
+      {index !== undefined &&
+        index.schedules !== null &&
+        canOpenNavigationEntry(session, "schedules") && <NextRunsStrip index={index} />}
+      <PageContent className="@container flex flex-col !pb-0">
         {index === undefined ? null : (
           <TableWithDrawer
             openId={openRunId}
@@ -144,15 +159,14 @@ export function TasksPage() {
                 openRunId={openRunId}
                 onOpen={select}
                 onCancel={(run) => setCancelling(run)}
-                isFiltered={!tasksView.isSameQuery(query, {})}
               />
             }
             table={{
-              rows: index.visibleCount === 0 ? [] : index.finished,
+              rows: index.finished.slice(0, visibleFinishedCount),
               rowId: (run) => run.id,
               columns: runColumns({ asOf: index.asOf, nameOf, onOpen: select }),
               onOpen: select,
-              emptyText: index.visibleCount === 0 ? "" : "No finished run matches these filters.",
+              emptyText: "No finished run matches these filters.",
               noteOf: (run) =>
                 run.failure === null ? null : (
                   <FailureNote run={run} onRunAgain={actsOf(run).onRunAgain} />
@@ -161,25 +175,38 @@ export function TasksPage() {
                 <RunCard run={run} asOf={index.asOf} nameOf={nameOf} onOpen={select} />
               ),
             }}
+            tableSection={{
+              header: <SectionTitle title="Finished" count={index.finished.length} />,
+              className: "sticky top-0 flex h-full min-h-0 shrink-0 flex-col bg-background pb-4",
+              bodyClassName: "min-h-0 flex-1 overflow-y-auto",
+              onBodyScroll: (element) => {
+                if (
+                  element.scrollTop + element.clientHeight >= element.scrollHeight - 200 &&
+                  visibleFinishedCount < index.finished.length
+                ) {
+                  setVisibleFinished({
+                    key: filterKey,
+                    count: Math.min(visibleFinishedCount + 40, index.finished.length),
+                  });
+                }
+              },
+            }}
             below={
-              index.visibleCount > 0 && (
-                <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-                  Runs are kept for{" "}
-                  <b className="font-semibold">{daysText(index.retention.days)}</b>, failed and
-                  cancelled ones for{" "}
-                  <b className="font-semibold">{daysText(index.retention.failedDays)}</b>. Nobody
-                  deletes them by hand: this is the record of what changed the data.{" "}
-                  {hasPermission(session, "task.schedule") && (
-                    <button
-                      type="button"
-                      className="text-primary underline-offset-2 hover:underline"
-                      onClick={() => setIsRetentionOpen(true)}
-                    >
-                      Change…
-                    </button>
-                  )}
-                </p>
-              )
+              <p className="mt-3 shrink-0 text-xs leading-relaxed text-muted-foreground">
+                Runs are kept for <b className="font-semibold">{daysText(index.retention.days)}</b>,
+                failed and cancelled ones for{" "}
+                <b className="font-semibold">{daysText(index.retention.failedDays)}</b>. Nobody
+                deletes them by hand: this is the record of what changed the data.{" "}
+                {hasPermission(session, "task.schedule") && (
+                  <button
+                    type="button"
+                    className="text-primary underline-offset-2 hover:underline"
+                    onClick={() => setIsRetentionOpen(true)}
+                  >
+                    Change…
+                  </button>
+                )}
+              </p>
             }
           />
         )}
@@ -223,10 +250,9 @@ interface RunsAboveProps {
   openRunId: string | null;
   onOpen: (runId: string) => void;
   onCancel: (run: Run) => void;
-  isFiltered: boolean;
 }
 
-// What sits above the finished table: a notice, the tiles, and the running runs.
+// What sits above the finished table: a notice and the running runs.
 function RunsAbove({
   index,
   session,
@@ -236,100 +262,81 @@ function RunsAbove({
   openRunId,
   onOpen,
   onCancel,
-  isFiltered,
 }: RunsAboveProps) {
   return (
     <>
       {notice !== null && (
         <NoticeLine notice={notice} onOpenRun={onOpen} onDismiss={onDismissNotice} />
       )}
-      <RunTiles index={index} />
       {index.visibleCount === 0 ? (
         <p className="mt-6 text-sm text-muted-foreground">
           Nothing you started has run yet. Re-checks, generated lists and ingests you start show up
           here while they run, and after.
         </p>
-      ) : (
+      ) : index.running.length > 0 ? (
         <>
-          {index.running.length > 0 && (
-            <>
-              <SectionTitle title="Running" count={index.running.length} />
-              <div className="grid gap-2.5 @4xl:grid-cols-2">
-                {index.running.map((run) => (
-                  <RunningCard
-                    key={run.id}
-                    run={run}
-                    asOf={index.asOf}
-                    nameOf={nameOf}
-                    isOpen={run.id === openRunId}
-                    onOpen={onOpen}
-                    onCancel={canCancelRun(session, run) ? () => onCancel(run) : undefined}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-          <SectionTitle
-            title={isFiltered ? "Matching runs" : "Finished"}
-            count={index.finished.length}
-          />
+          <SectionTitle title="Running" count={index.running.length} />
+          <div className="grid gap-2.5 @4xl:grid-cols-2">
+            {index.running.map((run) => (
+              <RunningCard
+                key={run.id}
+                run={run}
+                asOf={index.asOf}
+                nameOf={nameOf}
+                isOpen={run.id === openRunId}
+                onOpen={onOpen}
+                onCancel={canCancelRun(session, run) ? () => onCancel(run) : undefined}
+              />
+            ))}
+          </div>
         </>
-      )}
+      ) : null}
     </>
   );
 }
 
-// Running, failed in the last 7 days, and the next scheduled run, or with only the person's own
-// runs, what of theirs finished. On a phone, one line.
-function RunTiles({ index }: { index: RunIndex }) {
-  const tier = useTier();
-  const { tiles, asOf } = index;
-  const runningNames = index.running.map((run) => run.what.split(" — ")[0]).join(", ");
-  const failedFoot = [
-    tiles.withErrorsCount > 0 ? `${tiles.withErrorsCount} finished with errors` : null,
-    tiles.lastFailureAt === null
-      ? "none on record"
-      : `last failure ${shortDayOf(tiles.lastFailureAt)}`,
-  ]
-    .filter((part) => part !== null)
-    .join(" · ");
-  const stats: Stat[] = [
-    {
-      label: "Running",
-      value: tiles.runningCount,
-      foot:
-        tiles.runningCount === 0
-          ? "nothing right now"
-          : runningNames || "left out by the State filter",
-    },
-    { label: "Failed · last 7 days", value: tiles.failedCount, foot: failedFoot },
-    index.schedules === null
-      ? { label: "Finished · last 7 days", value: tiles.finishedCount, foot: "started by you" }
-      : {
-          label: "Next run",
-          value: tiles.nextRun === null ? "—" : aheadText(tiles.nextRun.at, asOf),
-          isText: true,
-          foot: (
-            <>
-              {tiles.nextRun?.name}
-              {tiles.nextRun !== null && " · "}
-              <Link to="/schedules" className="text-primary underline-offset-2 hover:underline">
-                {plural(index.schedules.activeCount, "schedule")} active
-              </Link>
-            </>
-          ),
-        },
-  ];
-
-  if (tier === "phone") {
-    return (
-      <p className="rounded-lg border bg-card px-3.5 py-2.5 text-xs">
-        <b className="font-semibold">{tiles.runningCount}</b> running ·{" "}
-        <b className="font-semibold">{tiles.failedCount}</b> failed in the last 7 days
-        {tiles.nextRun !== null && <> · next {aheadText(tiles.nextRun.at, asOf)}</>}
-      </p>
-    );
-  }
-
-  return <StatTiles stats={stats} />;
+function NextRunsStrip({ index }: { index: RunIndex }) {
+  const availableRef = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(1);
+  useLayoutEffect(() => {
+    const available = availableRef.current;
+    if (available === null) return;
+    const measure = () =>
+      setVisibleCount(Math.max(1, Math.floor((available.clientWidth + 8) / 232)));
+    const observer = new ResizeObserver(measure);
+    observer.observe(available);
+    measure();
+    return () => observer.disconnect();
+  }, []);
+  if (index.schedules === null) return null;
+  return (
+    <div className="flex shrink-0 items-center gap-3 border-b px-4 py-2 text-xs sm:px-6">
+      <span className="shrink-0 font-semibold tracking-wider text-muted-foreground uppercase">
+        Next runs
+      </span>
+      <div
+        ref={availableRef}
+        className="flex min-w-0 flex-1 gap-2 overflow-hidden whitespace-nowrap"
+      >
+        {index.nextRuns.length === 0 ? (
+          <span className="text-muted-foreground">None scheduled</span>
+        ) : (
+          index.nextRuns.slice(0, visibleCount).map((run) => (
+            <Link
+              key={`${run.path}:${run.at}`}
+              to={run.path}
+              title={`${run.name} · ${aheadText(run.at, index.asOf)}`}
+              className="w-56 max-w-full shrink-0 truncate rounded-md border bg-card px-2 py-1 hover:bg-muted"
+            >
+              {run.name}{" "}
+              <span className="text-muted-foreground">· {aheadText(run.at, index.asOf)}</span>
+            </Link>
+          ))
+        )}
+      </div>
+      <Link to="/schedules" className="shrink-0 text-primary hover:underline">
+        {plural(index.schedules.activeCount, "schedule")} active
+      </Link>
+    </div>
+  );
 }

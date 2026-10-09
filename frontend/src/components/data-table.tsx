@@ -47,6 +47,7 @@ export interface DataTableProps<Row> {
   // On a phone, each row as a card instead of the table; its title opens it from the keyboard.
   cardOf?: (row: Row) => ReactNode;
   groupBy?: readonly GroupLevel<Row>[];
+  stickyHeader?: boolean;
 }
 
 interface Group<Row> {
@@ -93,6 +94,7 @@ export function DataTable<Row>({
   noteOf,
   cardOf,
   groupBy = [],
+  stickyHeader = false,
 }: DataTableProps<Row>) {
   const tier = useTier();
   const shown = valueForTier(columns, tier);
@@ -289,9 +291,9 @@ export function DataTable<Row>({
     });
 
   return (
-    <div className="overflow-hidden rounded-lg border">
+    <div className={cn("rounded-lg border", stickyHeader ? "overflow-visible" : "overflow-hidden")}>
       <table className="w-full border-collapse text-[0.8125rem]">
-        <thead>
+        <thead className={stickyHeader ? "sticky top-0 z-10" : undefined}>
           <tr className="bg-muted">
             {shown.map((column) => (
               <th

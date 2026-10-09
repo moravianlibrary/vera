@@ -29,6 +29,7 @@ import type { StoredRun } from "@/mocks/fixtures/tasks";
 import type { Outcome } from "@/mocks/mutations";
 import { findInstanceSummary } from "@/mocks/plugin-instances";
 import { mockNow } from "@/mocks/today";
+import { dayOf, isReversedRange, isWithinRange, resolveDayRange } from "@/lib/value-range";
 
 const minuteMilliseconds = 60_000;
 const dayMilliseconds = 24 * 60 * minuteMilliseconds;
@@ -151,7 +152,7 @@ function findVisibleRun(session: Session, runId: string, now: Date): Run | null 
 // ---------------------------------------------------------------- the page
 
 const fieldValues = {
-  states: (run) => (run.state === "Running" ? [] : [run.state]),
+  states: (run) => [run.state],
   triggers: (run) => [run.trigger.kind],
   instanceIds: (run) => (run.source.kind === "plugin" ? [run.source.instance.id] : []),
   startedBy: (run) => (run.startedBy === null ? [] : [run.startedBy]),
@@ -159,7 +160,7 @@ const fieldValues = {
 
 const listFields = Object.keys(fieldValues) as RunListField[];
 
-function predicatesOf(query: RunQuery) {
+function predicatesOf(query: RunQuery, now: Date) {
   const search = query.search?.trim().toLocaleLowerCase();
   const predicates: { field: keyof RunQuery; matches: (run: Run) => boolean }[] = [];
   if (search) {
@@ -167,6 +168,15 @@ function predicatesOf(query: RunQuery) {
       field: "search",
       matches: (run) =>
         run.what.toLocaleLowerCase().includes(search) || run.id.toLowerCase().includes(search),
+    });
+  }
+
+  if (query.started !== undefined) {
+    const range = resolveDayRange(query.started, now);
+    predicates.push({
+      field: "started",
+      matches: (run) =>
+        !isReversedRange(range) && isWithinRange(dayOf(new Date(run.startedAt)), range),
     });
   }
 
@@ -188,12 +198,11 @@ function predicatesOf(query: RunQuery) {
 export function queryRuns(session: Session, query: RunQuery): RunIndex {
   const now = mockNow();
   const visible = visibleRuns(session, now);
-  const predicates = predicatesOf(query);
+  const predicates = predicatesOf(query, now);
   const matchingAllBut = (field: RunListField | null) =>
     visible.filter((run) =>
       predicates.every((predicate) => predicate.field === field || predicate.matches(run)),
     );
-  const isStateChosen = (query.states?.length ?? 0) > 0;
   const finished = visible.filter((run) => run.state !== "Running");
   const recent = finished.filter(
     (run) => now.getTime() - Date.parse(run.startedAt) < tileDays * dayMilliseconds,
@@ -201,10 +210,11 @@ export function queryRuns(session: Session, query: RunQuery): RunIndex {
   const lastFailure = finished.find((run) => run.state === "Failed");
   const seesSchedules = hasPermission(session, "task.read");
   const pausedCount = database.schedules.filter((schedule) => schedule.pause !== null).length;
+  const nextRuns = seesSchedules ? nextScheduledRuns(now) : [];
 
   return {
     asOf: now.toISOString(),
-    running: isStateChosen ? [] : matchingAllBut("states").filter((run) => run.state === "Running"),
+    running: matchingAllBut(null).filter((run) => run.state === "Running"),
     finished: matchingAllBut(null).filter((run) => run.state !== "Running"),
     visibleCount: visible.length,
     tiles: {
@@ -214,8 +224,9 @@ export function queryRuns(session: Session, query: RunQuery): RunIndex {
       finishedCount: recent.filter((run) => run.state === "Done" || run.state === "DoneWithErrors")
         .length,
       lastFailureAt: lastFailure?.startedAt ?? null,
-      nextRun: seesSchedules ? nextScheduledRun(now) : null,
+      nextRun: nextRuns[0] === undefined ? null : { at: nextRuns[0].at, name: nextRuns[0].name },
     },
+    nextRuns,
     // Each list's values were produced by that field's own value function.
     facets: runIndexSchema.shape.facets.parse(
       Object.fromEntries(
@@ -233,18 +244,24 @@ export function queryRuns(session: Session, query: RunQuery): RunIndex {
 }
 
 // The soonest run of a schedule that is not paused, or of a repeat.
-function nextScheduledRun(now: Date): { at: string; name: string } | null {
+function nextScheduledRuns(now: Date): { at: string; name: string; path: string }[] {
   const upcoming = [
     ...database.schedules
       .filter((schedule) => schedule.pause === null)
-      .map((schedule) => ({ name: schedule.name, at: nextOccurrenceOf(schedule.cadence, now) })),
+      .map((schedule) => ({
+        name: schedule.name,
+        at: nextOccurrenceOf(schedule.cadence, now),
+        path: `/schedules?s=${encodeURIComponent(schedule.id)}`,
+      })),
     ...database.intentionTemplates.map((template) => ({
       name: template.namePattern.replace("{period}", "next period"),
       at: nextOccurrenceOf(repeatCadenceOf(template.every), now),
+      path: `/intentions?t=${encodeURIComponent(template.id)}`,
     })),
-  ].flatMap(({ name, at }) => (at === null ? [] : [{ name, at }]));
-  const [soonest] = upcoming.toSorted((first, second) => first.at.getTime() - second.at.getTime());
-  return soonest === undefined ? null : { name: soonest.name, at: soonest.at.toISOString() };
+  ].flatMap(({ name, at, path }) => (at === null ? [] : [{ name, at, path }]));
+  return upcoming
+    .toSorted((first, second) => first.at.getTime() - second.at.getTime())
+    .map(({ name, at, path }) => ({ name, at: at.toISOString(), path }));
 }
 
 export function runningRuns(session: Session): RunningRuns {

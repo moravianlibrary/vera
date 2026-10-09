@@ -35,6 +35,7 @@ export const viewLabels = {
   projects: "Projects",
   categories: "Categories",
   intentions: "Intentions",
+  tasks: "Tasks",
 } as const satisfies Record<Watchlist["view"], string>;
 
 interface ShareWatchlistDialogProps {

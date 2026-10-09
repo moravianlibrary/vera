@@ -22,6 +22,12 @@ interface TableWithDrawerProps<Row> {
   drawer: ReactNode;
   above?: ReactNode;
   below?: ReactNode;
+  tableSection?: {
+    header: ReactNode;
+    className: string;
+    bodyClassName: string;
+    onBodyScroll?: (element: HTMLDivElement) => void;
+  };
 }
 
 export function TableWithDrawer<Row>({
@@ -33,12 +39,31 @@ export function TableWithDrawer<Row>({
   drawer,
   above,
   below,
+  tableSection,
 }: TableWithDrawerProps<Row>) {
+  const tableAndNote = (
+    <>
+      <DataTable {...table} focusedId={openId} />
+      {below}
+    </>
+  );
   return (
     <>
       {above}
-      <DataTable {...table} focusedId={openId} />
-      {below}
+      {tableSection === undefined ? (
+        tableAndNote
+      ) : (
+        <section className={tableSection.className}>
+          {tableSection.header}
+          <div
+            className={tableSection.bodyClassName}
+            onScroll={(event) => tableSection.onBodyScroll?.(event.currentTarget)}
+          >
+            <DataTable {...table} focusedId={openId} stickyHeader />
+          </div>
+          {below}
+        </section>
+      )}
       <DrawerPrimitive.Root
         open={openId !== null}
         modal={false}

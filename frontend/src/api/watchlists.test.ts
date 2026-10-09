@@ -8,6 +8,7 @@ import { ApiError } from "@/api/http";
 import { listIntentionIndex } from "@/api/intentions";
 import { listLists } from "@/api/lists";
 import { listProjectIndex } from "@/api/projects";
+import { listRuns, parseRunSearchParams } from "@/api/tasks";
 import {
   createWatchlist,
   deleteWatchlist,
@@ -95,6 +96,18 @@ describe("listWatchlists", () => {
 
     signInAs("reader");
     expect(await listWatchlists("intentions")).toEqual([]);
+  });
+  it("counts Running and recent failures as Tasks watchlists", async () => {
+    signInAs("admin");
+    const watchlists = await listWatchlists("tasks");
+    expect(watchlists.map((row) => row.name)).toEqual(["Running", "Failed in last 7 days"]);
+    for (const watchlist of watchlists) {
+      const index = await listRuns(parseRunSearchParams(new URLSearchParams(watchlist.filter)));
+      expect(watchlist.itemCount).toBe(index.running.length + index.finished.length);
+    }
+
+    signInAs("reader");
+    expect(await listWatchlists("tasks")).toEqual([]);
   });
   it("counts the Current Lists tab from its saved state filter and scopes it to readers", async () => {
     signInAs("digitization");

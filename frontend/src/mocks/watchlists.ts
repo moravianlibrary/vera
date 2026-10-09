@@ -12,6 +12,7 @@ import { parseDocumentSearchParams } from "@/api/documents";
 import { parseListSearchParams } from "@/api/lists";
 import { parseProjectSearchParams } from "@/api/projects";
 import { parseProposalSearchParams } from "@/api/proposal-review";
+import { parseRunSearchParams } from "@/api/tasks";
 import { parseValidationSearchParams } from "@/api/validations";
 import type {
   WatchlistReach,
@@ -35,6 +36,7 @@ import { audienceOf, queryDocuments } from "@/mocks/documents";
 import { canReadIntentions, queryIntentionIndex } from "@/mocks/intentions";
 import { canReadLists, queryLists } from "@/mocks/lists";
 import { canReadProjects, queryProjectIndex } from "@/mocks/projects";
+import { canReadRuns, queryRuns } from "@/mocks/tasks";
 import { canDecide, queryProposals } from "@/mocks/proposal-review";
 import { sessionOf } from "@/mocks/session";
 import { canReview, queryValidations } from "@/mocks/validations";
@@ -115,6 +117,8 @@ function canOpenView(session: Session, view: WatchlistView): boolean {
       return canReadCategories(session);
     case "intentions":
       return canReadIntentions(session);
+    case "tasks":
+      return canReadRuns(session);
   }
 }
 
@@ -249,6 +253,11 @@ const counters = {
       parseIntentionsSearchParams(filter),
     );
     return matching.rows.length + matching.templates.length;
+  },
+  tasks: (session, filter) => {
+    if (!canReadRuns(session)) return 0;
+    const index = queryRuns(session, parseRunSearchParams(filter));
+    return index.running.length + index.finished.length;
   },
 } as const satisfies Record<WatchlistView, (session: Session, filter: URLSearchParams) => number>;
 

@@ -10,6 +10,7 @@ import type { GrantScope, Permission } from "@/domain/permissions";
 import { categoriesView } from "@/features/categories/categories-view";
 import { documentsView } from "@/features/documents/documents-view";
 import { intentionsView } from "@/features/intentions/intentions-board-view";
+import { tasksView } from "@/features/tasks/tasks-view";
 import { listsView } from "@/features/lists/lists-view";
 import { projectsView } from "@/features/projects/projects-view";
 import { proposalsView } from "@/features/proposals/proposals-view";
@@ -138,6 +139,8 @@ export function filterSummaryOf({ view, filter }: Pick<Watchlist, "view" | "filt
       return summaryIn(categoriesView, params);
     case "intentions":
       return summaryIn(intentionsView, params);
+    case "tasks":
+      return summaryIn(tasksView, params);
   }
 }
 

@@ -1,5 +1,5 @@
 // Tasks end to end against the mock server over HTTP: who sees which runs, a run still going as
-// far as its pace takes it at the mock's moment, the filters and their facets, the tiles, one
+// far as its pace takes it at the mock's moment, the filters and their facets, upcoming runs, one
 // run's items and log, and cancel, run again and retention. The mock's clock stands still under
 // tests. The acts change the mock's state, so they come last, each on its own run.
 
@@ -52,8 +52,14 @@ describe("the query in the URL", () => {
       ...query,
       instanceIds: undefined,
       startedBy: undefined,
+      started: undefined,
     });
-    expect(parseRunSearchParams(new URLSearchParams("state=Running,Nope")).states).toBeUndefined();
+    expect(parseRunSearchParams(new URLSearchParams("state=Running,Nope")).states).toEqual([
+      "Running",
+    ]);
+    expect(
+      parseRunSearchParams(toRunSearchParams({ started: { preset: "last-7-days" } })).started,
+    ).toEqual({ preset: "last-7-days" });
   });
 });
 
@@ -117,6 +123,7 @@ describe("listRuns", () => {
     expect(idsOf(index.running)).toEqual(["T-9915"]);
     expect(idsOf(index.finished)).toEqual(["T-9893"]);
     expect(index.tiles.nextRun).toBeNull();
+    expect(index.nextRuns).toEqual([]);
     expect(index.schedules).toBeNull();
   });
 
@@ -137,6 +144,11 @@ describe("listRuns", () => {
     expect(failed.running).toEqual([]);
     expect(idsOf(kramerius.running)).toEqual(["T-9916"]);
     expect(idsOf(kramerius.finished)).toEqual(["T-9914", "T-9884"]);
+    expect(idsOf((await listRuns({ states: ["Running"] })).running)).toEqual(["T-9916", "T-9915"]);
+    expect((await listRuns({ states: ["Running"] })).finished).toEqual([]);
+    expect(
+      (await listRuns({ states: ["Failed"], started: { preset: "last-7-days" } })).finished,
+    ).toEqual([]);
   });
 
   it("counts each field's values over every other filter", async () => {
@@ -160,9 +172,9 @@ describe("listRuns", () => {
     expect(idsOf((await listRuns({ search: "9897" })).finished)).toEqual(["T-9897"]);
   });
 
-  it("puts the next scheduled run and the last week's failures on the tiles", async () => {
+  it("orders the next run of every active schedule and repeat", async () => {
     signInAs("admin");
-    const { tiles } = await listRuns({});
+    const { tiles, nextRuns } = await listRuns({});
 
     expect(tiles).toMatchObject({
       runningCount: 2,
@@ -172,6 +184,11 @@ describe("listRuns", () => {
     });
     expect(new Date(tiles.nextRun?.at ?? "")).toEqual(new Date(2026, 5, 25, 10, 45));
     expect(new Date(tiles.lastFailureAt ?? "")).toEqual(new Date(2026, 5, 14, 10, 31));
+    expect(nextRuns[0]).toMatchObject({
+      name: "MZK Aleph — catalog resync",
+      path: "/schedules?s=s1",
+    });
+    expect(nextRuns.map((run) => run.at)).toEqual(nextRuns.map((run) => run.at).toSorted());
   });
 });
 

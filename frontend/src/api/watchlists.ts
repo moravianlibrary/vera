@@ -14,6 +14,7 @@ import { isSameListQuery, parseListSearchParams } from "@/api/lists";
 import { isSameProjectQuery, parseProjectSearchParams } from "@/api/projects";
 import { isSameProposalQuery, parseProposalSearchParams } from "@/api/proposal-review";
 import { apiRoutes, watchlistRoute } from "@/api/routes";
+import { isSameRunQuery, parseRunSearchParams } from "@/api/tasks";
 import { isSameValidationQuery, parseValidationSearchParams } from "@/api/validations";
 import type { Watchlist, WatchlistView } from "@/domain/entities";
 import { watchlistAudienceSchema, watchlistSchema } from "@/domain/entities";
@@ -111,6 +112,11 @@ const filterComparers = {
     isSameIntentionsQuery(
       parseIntentionsSearchParams(new URLSearchParams(first)),
       parseIntentionsSearchParams(new URLSearchParams(second)),
+    ),
+  tasks: (first, second) =>
+    isSameRunQuery(
+      parseRunSearchParams(new URLSearchParams(first)),
+      parseRunSearchParams(new URLSearchParams(second)),
     ),
 } as const satisfies Record<WatchlistView, (first: Filter, second: Filter) => boolean>;
 

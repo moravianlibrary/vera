@@ -48,6 +48,12 @@ const sharedLenses: readonly Lens[] = [
   { name: "Repeats", filter: { type: "Repeat" }, view: "intentions" },
   { name: "Targets", filter: { type: "Target" }, view: "intentions" },
   { name: "Output", filter: { type: "Output" }, view: "intentions" },
+  { name: "Running", filter: { state: "Running" }, view: "tasks" },
+  {
+    name: "Failed in last 7 days",
+    filter: { state: "Failed", started: "last-7-days" },
+    view: "tasks",
+  },
   { name: "Without custody", filter: { custody: "Unheld" }, view: "categories" },
   {
     name: "Mix gaps",

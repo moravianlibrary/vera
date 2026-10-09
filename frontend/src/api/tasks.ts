@@ -12,8 +12,10 @@ import { apiRoutes, taskActionRoute, taskRoute } from "@/api/routes";
 import { env } from "@/config/env";
 import { pluginInstanceSchema } from "@/domain/plugins";
 import { cadenceSchema } from "@/domain/schedules";
-import type { FinishedRunState, TriggerKind } from "@/domain/tasks";
-import { finishedRunStates, runStates, triggerKinds } from "@/domain/tasks";
+import type { RunState, TriggerKind } from "@/domain/tasks";
+import { runStates, triggerKinds } from "@/domain/tasks";
+import type { DayRange } from "@/lib/value-range";
+import { formatDayRange, parseDayRange } from "@/lib/value-range";
 
 const id = z.string().min(1);
 const timestamp = z.iso.datetime();
@@ -22,17 +24,18 @@ const count = z.number().int().nonnegative();
 // ---------------------------------------------------------------- query
 
 // Each list matches any of its values; the fields together match all of them (filtering.md §2).
-// A state names a finished state: the running runs are the top of the page, not a filter value.
+// A state may name Running as well as a finished state; Running is still its own page section.
 export interface RunQuery {
   readonly search?: string;
-  readonly states?: readonly FinishedRunState[];
+  readonly states?: readonly RunState[];
   readonly triggers?: readonly TriggerKind[];
   readonly instanceIds?: readonly string[];
   // People only: VERA's own runs are found by their trigger.
   readonly startedBy?: readonly string[];
+  readonly started?: DayRange;
 }
 
-export type RunListField = Exclude<keyof RunQuery, "search">;
+export type RunListField = Exclude<keyof RunQuery, "search" | "started">;
 
 // Query-string names; the same names address the filter in the page URL.
 export const runQueryParams = {
@@ -41,9 +44,10 @@ export const runQueryParams = {
   triggers: "trigger",
   instanceIds: "plugin",
   startedBy: "by",
+  started: "started",
 } as const satisfies Record<keyof RunQuery, string>;
 
-const runStateValueSchema = z.enum(finishedRunStates);
+const runStateValueSchema = z.enum(runStates);
 const triggerKindSchema = z.enum(triggerKinds);
 
 const runFieldSchemas = {
@@ -72,6 +76,9 @@ export function toRunSearchParams(query: RunQuery): URLSearchParams {
     params.set(runQueryParams[field], values.toSorted().join(listSeparator));
   }
 
+  const started = formatDayRange(query.started);
+  if (started !== null) params.set(runQueryParams.started, started);
+
   return params;
 }
 
@@ -88,6 +95,8 @@ export function parseRunSearchParams(params: URLSearchParams): RunQuery {
     });
     query[field] = values.length === 0 ? undefined : [...new Set(values)];
   }
+
+  query.started = parseDayRange(params.get(runQueryParams.started));
 
   // Every value of each field was parsed by that field's own schema.
   return query as RunQuery;
@@ -193,6 +202,9 @@ export const runIndexSchema = z.object({
   // Runs the caller sees at all, before any filter: none says nothing has run for them yet.
   visibleCount: count,
   tiles: runTilesSchema,
+  nextRuns: z.array(
+    z.object({ at: timestamp, name: z.string(), path: z.string().startsWith("/") }),
+  ),
   facets: z.object({
     states: facetCountsOf(runStateValueSchema),
     triggers: facetCountsOf(triggerKindSchema),
