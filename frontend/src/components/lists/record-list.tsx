@@ -132,7 +132,8 @@ export function RecordList<Row, Group extends GroupCounts, Grouping extends stri
                     "block w-full border-b px-4 py-3 text-left hover:bg-muted",
                     "@2xl:col-span-full @2xl:grid @2xl:grid-cols-subgrid @2xl:items-center @2xl:px-0",
                     hasWhyLine ? "@2xl:pt-0 @2xl:pb-2.5" : "@2xl:py-0",
-                    isSelected && "bg-secondary shadow-[inset_3px_0_0_var(--primary)]",
+                    isSelected &&
+                      "bg-primary/8 shadow-[inset_3px_0_0_var(--primary)] hover:bg-primary/12",
                   )}
                 >
                   <span className="block @2xl:hidden">

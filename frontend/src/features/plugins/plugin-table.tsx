@@ -229,13 +229,12 @@ export function useInstanceGroups({
       keyOf: (instance) => instance.kind,
       keysWithin: () => pluginKinds.filter((kind) => implementationsOf(kind).length > 0),
       isCollapsible: true,
-      rowClassName:
-        "border-l-4 border-l-primary bg-primary/10 py-3 hover:bg-primary/15 [&_td]:py-3",
+      rowClassName: "[&_td]:py-3",
       header: (key, rows) => {
         const kind = kindOf(key);
         return kind === undefined ? null : (
           <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-            <span className="text-[0.625rem] font-semibold tracking-wider text-primary uppercase">
+            <span className="text-[0.625rem] font-semibold tracking-wider text-muted-foreground uppercase">
               Type
             </span>
             <KindBadge kind={kind} />
@@ -254,7 +253,7 @@ export function useInstanceGroups({
         implementationsOf(kind ?? "").map((implementation) => implementation.id),
       isCollapsible: false,
       isOpenable: true,
-      rowClassName: "border-l-4 border-l-border bg-secondary py-3 hover:bg-muted/70 [&_td]:py-3",
+      rowClassName: "[&_td]:py-3",
       emptyText: () =>
         isFiltered
           ? "No instance in this state."

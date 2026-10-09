@@ -83,8 +83,12 @@ export function groupsOf<Row>(
   });
 }
 
-// Each level's header shade, the outer one the strongest.
-const headerShades = ["bg-muted", "bg-muted/40"] as const;
+// Neutral bands describe hierarchy; teal marks the row open in the drawer.
+const headerShades = ["bg-muted", "bg-muted/50"] as const;
+const headerBorders = [
+  "border-t-2 border-t-foreground/30 border-l-4 border-l-foreground/50",
+  "border-t border-t-border border-l-4 border-l-border",
+] as const;
 
 export function DataTable<Row>({
   rows,
@@ -168,9 +172,9 @@ export function DataTable<Row>({
             key={id}
             data-focused={id === focusedId || undefined}
             className={cn(
-              "scroll-mt-4 rounded-lg border bg-card px-3.5 py-3 text-[0.8125rem]",
+              "scroll-mt-4 rounded-lg border border-l-4 border-l-transparent bg-card px-3.5 py-3 text-[0.8125rem]",
               onOpen !== undefined && "cursor-pointer hover:bg-muted",
-              id === focusedId && "border-ring bg-tone-blue",
+              id === focusedId && "border-l-primary bg-primary/8 hover:bg-primary/12",
             )}
             onClick={(event) => openFrom(id, event.target)}
           >
@@ -191,9 +195,10 @@ export function DataTable<Row>({
                 className={cn(
                   "rounded-md px-2 py-1.5 text-xs",
                   headerShades[group.depth] ?? headerShades[1],
+                  headerBorders[group.depth] ?? headerBorders[1],
                   level.isOpenable === true && "cursor-pointer",
                   level.rowClassName,
-                  group.key === focusedId && "ring-1 ring-ring",
+                  group.key === focusedId && "border-l-primary ring-1 ring-primary/50",
                 )}
                 onClick={
                   level.isOpenable === true
@@ -225,9 +230,9 @@ export function DataTable<Row>({
           <tr
             data-focused={id === focusedId || undefined}
             className={cn(
-              "scroll-mt-4 border-t",
+              "scroll-mt-4 border-t border-l-4 border-l-transparent",
               onOpen !== undefined && "cursor-pointer hover:bg-muted",
-              id === focusedId && "bg-tone-blue",
+              id === focusedId && "border-l-primary bg-primary/8 hover:bg-primary/12",
             )}
             onClick={(event) => openFrom(id, event.target)}
           >
@@ -265,11 +270,12 @@ export function DataTable<Row>({
             <tr
               data-focused={group.key === focusedId || undefined}
               className={cn(
-                "scroll-mt-4 border-t",
+                "scroll-mt-4",
                 headerShades[group.depth] ?? headerShades[1],
-                isOpenable && "cursor-pointer hover:bg-muted",
+                headerBorders[group.depth] ?? headerBorders[1],
+                isOpenable && "cursor-pointer hover:bg-muted/80",
                 level?.rowClassName,
-                group.key === focusedId && "bg-tone-blue",
+                group.key === focusedId && "border-l-primary ring-1 ring-inset ring-primary/50",
               )}
               onClick={isOpenable ? (event) => openFrom(group.key, event.target) : undefined}
             >

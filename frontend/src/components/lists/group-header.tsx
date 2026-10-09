@@ -17,8 +17,8 @@ export interface GroupHeaderProps {
 
 export function GroupHeader({ title, meta, action, footnote }: GroupHeaderProps) {
   return (
-    <div className="border-t-2 border-b border-l-4 border-t-muted-foreground border-l-primary bg-muted px-4 py-3 text-xs @2xl:col-span-full">
-      <div className="text-sm leading-snug">{title}</div>
+    <div className="border-t-2 border-b border-l-4 border-t-foreground/30 border-l-foreground/50 bg-muted px-4 py-3 text-xs @2xl:col-span-full">
+      <div className="text-sm leading-snug font-semibold">{title}</div>
       {meta !== undefined && <div className="mt-1 text-muted-foreground">{meta}</div>}
 
       {action !== undefined && (
